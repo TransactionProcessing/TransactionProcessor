@@ -1,0 +1,110 @@
+name: Release
+
+on:
+  release:
+    types: [published]
+
+jobs:
+  build:
+    name: "Release"
+    env:
+        ASPNETCORE_ENVIRONMENT: "Production"
+
+    runs-on: ubuntu-16.04
+
+    steps:
+    - uses: actions/checkout@v1
+
+    - name: Get the version
+      id: get_version
+      run: echo ::set-output name=VERSION::${GITHUB_REF/refs\/tags\//}
+
+    - name: Setup .NET Core 3.0
+      uses: actions/setup-dotnet@v1
+      with:
+        dotnet-version: 3.0.100
+
+    - name: Restore Nuget Packages
+      run: dotnet restore TransactionProcessor.sln --source https://api.nuget.org/v3/index.json --source https://www.myget.org/F/transactionprocessing/api/v3/index.json
+
+    - name: Build Code
+      run: dotnet build TransactionProcessor.sln --configuration Release
+            
+    - name: Build Docker Images 
+      run: |
+        docker build . --file TransactionProcessor/Dockerfile --tag transactionprocessor:latest --tag stuartferguson/transactionprocessor:latest --tag stuartferguson/transactionprocessor:${{ steps.get_version.outputs.VERSION }}         
+
+    - name: Publish Images to Docker Hub
+      run: |
+        docker login --username=${{ secrets.DOCKER_USERNAME }} --password=${{ secrets.DOCKER_PASSWORD }}
+        docker push stuartferguson/transactionprocessor:latest
+        docker push stuartferguson/transactionprocessor:${{ steps.get_version.outputs.VERSION }}
+
+    - name: Publish API
+      run: dotnet publish "TransactionProcessor\TransactionProcessor.csproj" --configuration Release --output publishOutput
+
+    - name: Setup .NET Core 2.0
+      uses: actions/setup-dotnet@v1
+      with:
+        dotnet-version: 2.0.0
+
+    - name: Extract Octopus Tools
+      run: |
+        mkdir /opt/octo
+        cd /opt/octo
+        wget -O /opt/octo/octopus.zip https://download.octopusdeploy.com/octopus-tools/6.12.0/OctopusTools.6.12.0.portable.zip
+        unzip /opt/octo/octopus.zip
+        chmod +x /opt/octo/Octo
+
+    - name: Pack Files for Octopus
+      run: >-
+        /opt/octo/Octo pack
+        --outFolder /home/runner/work/TransactionProcessor/TransactionProcessor
+        --basePath /home/runner/work/TransactionProcessor/TransactionProcessor/publishOutput
+        --id TransactionProcessor
+        --version ${{ steps.get_version.outputs.VERSION }}
+        --format zip
+        --verbose
+        --logLevel=verbose
+
+    - name: Push Package to Octopus
+      run: >-
+        /opt/octo/Octo push
+        --server http://sferguson.ddns.net:9001
+        --apiKey API-UTN58QCF8HSATACNUBY41XPUC
+        --package /home/runner/work/TransactionProcessor/TransactionProcessor/TransactionProcessor.${{ steps.get_version.outputs.VERSION }}.zip
+        --overwrite-mode IgnoreIfExists
+    
+    - name: Get Release
+      id: getrelease
+      uses: octokit/request-action@v1.x
+      with:
+          route: GET /repos/StuartFerguson/TransactionProcessor/releases/tags/${{ steps.get_version.outputs.VERSION }}
+      env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+    - name: Build Release Notes
+      id: buildreleasenotes
+      uses: gr2m/get-json-paths-action@v1.x
+      with:
+          json: ${{ steps.getrelease.outputs.data }}
+          releasenote: "body"
+    
+    - name: Create & Deploy Release in Octopus
+      run: >-
+        /opt/octo/Octo create-release
+        --server http://sferguson.ddns.net:9001
+        --apiKey API-UTN58QCF8HSATACNUBY41XPUC
+        --project "Transaction Processor"
+        --version ${{ steps.get_version.outputs.VERSION }}
+        --channel Default
+        --deployTo Development
+        --waitfordeployment
+        --deploymenttimeout 00:05:00
+        --releasenotes "${{ steps.buildreleasenotes.outputs.releasenote }}" 
+    
+    - name: Setup .NET Core 3.0
+      uses: actions/setup-dotnet@v1
+      with:
+        dotnet-version: 3.0.100
+
