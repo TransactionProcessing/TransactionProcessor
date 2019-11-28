@@ -26,5 +26,11 @@ jobs:
     - name: Build Code
       run: dotnet build TransactionProcessor.sln --configuration Release
 
+    - name: Run Unit Tests
+      run: |
+        echo "ASPNETCORE_ENVIRONMENT are > ${ASPNETCORE_ENVIRONMENT}"
+        dotnet test "TransactionProcessor.BusinessLogic.Tests\TransactionProcessor.BusinessLogic.Tests.csproj"
+        dotnet test "TransactionProcessor.Tests\TransactionProcessor.Tests.csproj"      
+        
     - name: Build Docker Image
       run: docker build . --file TransactionProcessor/Dockerfile --tag transactionprocessor:latest

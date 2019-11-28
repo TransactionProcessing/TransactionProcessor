@@ -1,10 +1,12 @@
 ﻿namespace TransactionProcessor.DataTransferObjects
 {
     using System;
+    using System.Diagnostics.CodeAnalysis;
 
     /// <summary>
     /// 
     /// </summary>
+    [ExcludeFromCodeCoverage]
     public class LogonTransactionRequest
     {
         #region Properties
@@ -24,6 +26,14 @@
         /// The merchant identifier.
         /// </value>
         public Guid MerchantId { get; set; }
+
+        /// <summary>
+        /// Gets or sets the estate identifier.
+        /// </summary>
+        /// <value>
+        /// The estate identifier.
+        /// </value>
+        public Guid EstateId { get; set; }
 
         /// <summary>
         /// Gets or sets the transaction date time.
