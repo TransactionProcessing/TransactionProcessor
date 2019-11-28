@@ -6,8 +6,6 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <!--<PackageReference Include="Lamar.Diagnostics" Version="1.1.2" />
-    <PackageReference Include="Lamar.Microsoft.DependencyInjection" Version="4.0.2" />-->
     <PackageReference Include="Autofac.Extensions.DependencyInjection" Version="5.0.1" />
     <PackageReference Include="Microsoft.AspNetCore.Mvc.Versioning" Version="4.0.0-preview8.19405.7" />
     <PackageReference Include="Microsoft.AspNetCore.Mvc.Versioning.ApiExplorer" Version="4.0.0-preview8.19405.7" />

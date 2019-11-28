@@ -1,0 +1,13 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>netcoreapp3.0</TargetFramework>
+    <DebugType>None</DebugType>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\TransactionProcessor.BusinessLogic\TransactionProcessor.BusinessLogic.csproj" />
+    <ProjectReference Include="..\TransactionProcessor.Models\TransactionProcessor.Models.csproj" />
+  </ItemGroup>
+
+</Project>

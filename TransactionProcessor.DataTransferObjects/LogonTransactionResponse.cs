@@ -1,10 +1,12 @@
 ﻿namespace TransactionProcessor.DataTransferObjects
 {
     using System;
+    using System.Diagnostics.CodeAnalysis;
 
     /// <summary>
     /// 
     /// </summary>
+    [ExcludeFromCodeCoverage]
     public class LogonTransactionResponse
     {
         #region Properties

@@ -18,6 +18,11 @@
         /// <returns></returns>
         public LogonTransactionResponse ConvertFrom(ProcessLogonTransactionResponse processLogonTransactionResponse)
         {
+            if (processLogonTransactionResponse == null)
+            {
+                return null;
+            }
+
             return new LogonTransactionResponse
                    {
                        ResponseMessage = processLogonTransactionResponse.ResponseMessage,

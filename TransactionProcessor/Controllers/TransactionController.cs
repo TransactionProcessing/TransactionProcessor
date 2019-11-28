@@ -63,11 +63,17 @@
         public async Task<IActionResult> LogonTransaction([FromBody] LogonTransactionRequest logonTransactionRequest,
                                                           CancellationToken cancellationToken)
         {
-            ProcessLogonTransactionCommand command = new ProcessLogonTransactionCommand(Guid.NewGuid());
+            ProcessLogonTransactionCommand command = ProcessLogonTransactionCommand.Create(logonTransactionRequest.EstateId,
+                                                                                           logonTransactionRequest.MerchantId,
+                                                                                           logonTransactionRequest.IMEINumber,
+                                                                                           logonTransactionRequest.TransactionType,
+                                                                                           logonTransactionRequest.TransactionDateTime,
+                                                                                           logonTransactionRequest.TransactionNumber);
 
             await this.CommandRouter.Route(command, cancellationToken);
 
-            return this.Ok(this.ModelFactory.ConvertFrom(command.Response));
+            // TODO: Populate the GET route
+            return this.Created("", this.ModelFactory.ConvertFrom(command.Response));
         }
 
         #endregion
