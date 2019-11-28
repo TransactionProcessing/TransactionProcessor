@@ -1,0 +1,20 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>netcoreapp3.0</TargetFramework>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Shared" Version="0.0.4.1" />
+    <PackageReference Include="Shared.DomainDrivenDesign" Version="0.0.4.1" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Folder Include="Manager\" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\TransactionProcessor.Models\TransactionProcessor.Models.csproj" />
+  </ItemGroup>
+
+</Project>
