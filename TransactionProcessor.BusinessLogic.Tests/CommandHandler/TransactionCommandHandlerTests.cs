@@ -2,6 +2,7 @@
 {
     using System.Threading;
     using BusinessLogic.Commands;
+    using BusinessLogic.Services;
     using CommandHandlers;
     using Commands;
     using Moq;

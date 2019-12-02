@@ -7,6 +7,7 @@ namespace TransactionProcessor.BusinessLogic.Tests.CommandHandler
     using System.Threading;
     using System.Threading.Tasks;
     using BusinessLogic.Commands;
+    using BusinessLogic.Services;
     using CommandHandlers;
     using Commands;
     using Moq;

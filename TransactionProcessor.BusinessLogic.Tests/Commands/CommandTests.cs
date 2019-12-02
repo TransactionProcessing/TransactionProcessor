@@ -14,7 +14,7 @@ namespace TransactionProcessor.BusinessLogic.Tests.Commands
         [Fact]
         public void ProcessLogonTransactionCommand_CanBeCreated_IsCreated()
         {
-            ProcessLogonTransactionCommand processLogonTransactionCommand = ProcessLogonTransactionCommand.Create(TestData.EstateId, TestData.MerchantId, TestData.IMEINumber,TestData.TransactionType, TestData.TransactionDateTime,
+            ProcessLogonTransactionCommand processLogonTransactionCommand = ProcessLogonTransactionCommand.Create(TestData.TransactionId, TestData.EstateId, TestData.MerchantId, TestData.IMEINumber,TestData.TransactionType, TestData.TransactionDateTime,
                                                                                            TestData.TransactionNumber);
 
             processLogonTransactionCommand.ShouldNotBeNull();

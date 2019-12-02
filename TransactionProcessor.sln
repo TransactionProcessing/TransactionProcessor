@@ -15,11 +15,17 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TransactionProcessor.Busine
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TransactionProcessor.Models", "TransactionProcessor.Models\TransactionProcessor.Models.csproj", "{97B646C6-7BF7-4F84-A74A-10E50A70CB91}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TransactionProcessor.Tests", "TransactionProcessor.Tests\TransactionProcessor.Tests.csproj", "{99D19D28-C5ED-409B-9A34-DCCBCD8A9532}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TransactionProcessor.Tests", "TransactionProcessor.Tests\TransactionProcessor.Tests.csproj", "{99D19D28-C5ED-409B-9A34-DCCBCD8A9532}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TransactionProcessor.Testing", "TransactionProcessor.Testing\TransactionProcessor.Testing.csproj", "{7BDDFAA7-0391-4672-94F1-6817E55020FD}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TransactionProcessor.Testing", "TransactionProcessor.Testing\TransactionProcessor.Testing.csproj", "{7BDDFAA7-0391-4672-94F1-6817E55020FD}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TransactionProcessor.BusinessLogic.Tests", "TransactionProcessor.BusinessLogic.Tests\TransactionProcessor.BusinessLogic.Tests.csproj", "{8EAA1681-4095-473B-900B-C09FA823ACD7}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TransactionProcessor.BusinessLogic.Tests", "TransactionProcessor.BusinessLogic.Tests\TransactionProcessor.BusinessLogic.Tests.csproj", "{8EAA1681-4095-473B-900B-C09FA823ACD7}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TransactionProcessor.TransactionAggregate", "TransactionProcessor.TransactionAgrgegate\TransactionProcessor.TransactionAggregate.csproj", "{BE2AF4BD-AED2-4723-AC25-3051C870CAC2}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TransactionProcessor.Transaction.DomainEvents", "TransactionProcessor.Transaction.DomainEvents\TransactionProcessor.Transaction.DomainEvents.csproj", "{AC0E260E-47CC-4DA7-BE62-0714F9266AEA}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TransactionProcessor.TransactionAggregate.Tests", "TransactionProcessor.TransactionAggregate.Tests\TransactionProcessor.TransactionAggregate.Tests.csproj", "{69BE1042-5AB9-420B-9A27-E2F1ADFC4E65}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -55,6 +61,18 @@ Global
 		{8EAA1681-4095-473B-900B-C09FA823ACD7}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{8EAA1681-4095-473B-900B-C09FA823ACD7}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{8EAA1681-4095-473B-900B-C09FA823ACD7}.Release|Any CPU.Build.0 = Release|Any CPU
+		{BE2AF4BD-AED2-4723-AC25-3051C870CAC2}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{BE2AF4BD-AED2-4723-AC25-3051C870CAC2}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{BE2AF4BD-AED2-4723-AC25-3051C870CAC2}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{BE2AF4BD-AED2-4723-AC25-3051C870CAC2}.Release|Any CPU.Build.0 = Release|Any CPU
+		{AC0E260E-47CC-4DA7-BE62-0714F9266AEA}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{AC0E260E-47CC-4DA7-BE62-0714F9266AEA}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{AC0E260E-47CC-4DA7-BE62-0714F9266AEA}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{AC0E260E-47CC-4DA7-BE62-0714F9266AEA}.Release|Any CPU.Build.0 = Release|Any CPU
+		{69BE1042-5AB9-420B-9A27-E2F1ADFC4E65}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{69BE1042-5AB9-420B-9A27-E2F1ADFC4E65}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{69BE1042-5AB9-420B-9A27-E2F1ADFC4E65}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{69BE1042-5AB9-420B-9A27-E2F1ADFC4E65}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -67,6 +85,9 @@ Global
 		{99D19D28-C5ED-409B-9A34-DCCBCD8A9532} = {71B30DC4-AB27-4D30-8481-B4C326D074CB}
 		{7BDDFAA7-0391-4672-94F1-6817E55020FD} = {71B30DC4-AB27-4D30-8481-B4C326D074CB}
 		{8EAA1681-4095-473B-900B-C09FA823ACD7} = {71B30DC4-AB27-4D30-8481-B4C326D074CB}
+		{BE2AF4BD-AED2-4723-AC25-3051C870CAC2} = {749ADE74-A6F0-4469-A638-8FD7E82A8667}
+		{AC0E260E-47CC-4DA7-BE62-0714F9266AEA} = {749ADE74-A6F0-4469-A638-8FD7E82A8667}
+		{69BE1042-5AB9-420B-9A27-E2F1ADFC4E65} = {71B30DC4-AB27-4D30-8481-B4C326D074CB}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {193D13DE-424B-4D50-B674-01F9E4CC2CA9}

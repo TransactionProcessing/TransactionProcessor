@@ -35,6 +35,7 @@ jobs:
         echo "ASPNETCORE_ENVIRONMENT are > ${ASPNETCORE_ENVIRONMENT}"
         dotnet test "TransactionProcessor.BusinessLogic.Tests\TransactionProcessor.BusinessLogic.Tests.csproj"
         dotnet test "TransactionProcessor.Tests\TransactionProcessor.Tests.csproj"      
+        dotnet test "TransactionProcessor.TransactionAggregate.Tests\TransactionProcessor.TransactionAggregate.Tests.csproj"
             
     - name: Build Docker Images 
       run: |

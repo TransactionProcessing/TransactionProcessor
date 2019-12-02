@@ -2,7 +2,7 @@
 
   <PropertyGroup>
     <TargetFramework>netcoreapp3.0</TargetFramework>
-    <DebugType>None</DebugType>
+    <DebugTYpe>None</DebugTYpe>
     <IsPackable>false</IsPackable>
   </PropertyGroup>
 
@@ -19,15 +19,9 @@
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
-
   </ItemGroup>
 
   <ItemGroup>
-    <Folder Include="Manager\" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <ProjectReference Include="..\TransactionProcessor.BusinessLogic\TransactionProcessor.BusinessLogic.csproj" />
     <ProjectReference Include="..\TransactionProcessor.Testing\TransactionProcessor.Testing.csproj" />
   </ItemGroup>
 

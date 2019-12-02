@@ -63,7 +63,10 @@
         public async Task<IActionResult> LogonTransaction([FromBody] LogonTransactionRequest logonTransactionRequest,
                                                           CancellationToken cancellationToken)
         {
-            ProcessLogonTransactionCommand command = ProcessLogonTransactionCommand.Create(logonTransactionRequest.EstateId,
+            Guid transactionId = Guid.NewGuid();
+
+            ProcessLogonTransactionCommand command = ProcessLogonTransactionCommand.Create( transactionId,
+                                                                                            logonTransactionRequest.EstateId,
                                                                                            logonTransactionRequest.MerchantId,
                                                                                            logonTransactionRequest.IMEINumber,
                                                                                            logonTransactionRequest.TransactionType,
