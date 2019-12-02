@@ -55,7 +55,7 @@ namespace TransactionProcessor.Tests.ControllerTests
 
             LogonTransactionResponse responseObject = JsonConvert.DeserializeObject<LogonTransactionResponse>(responseAsJson);
             responseObject.ShouldNotBeNull();
-            responseObject.ResponseCode.ShouldBe(0);
+            responseObject.ResponseCode.ShouldBe("0000");
             responseObject.ResponseMessage.ShouldBe("SUCCESS");
         }
     }

@@ -50,7 +50,7 @@ namespace TransactionProcessor.Tests.Common
                                                                                                                                                                          command.Response = new ProcessLogonTransactionResponse
                                                                                                                                                                                             {
                                                                                                                                                                                                 ResponseMessage = "SUCCESS",
-                                                                                                                                                                                                ResponseCode = 0
+                                                                                                                                                                                                ResponseCode = "0000"
                                                                                                                                                                                             };
                                                                                                                                                                          return Task.CompletedTask;
                                                                                                                                                                      });

@@ -56,7 +56,8 @@
         private async Task HandleCommand(ProcessLogonTransactionCommand command,
                                          CancellationToken cancellationToken)
         {
-            ProcessLogonTransactionResponse logonResponse = await this.TransactionDomainService.ProcessLogonTransaction(cancellationToken);
+            ProcessLogonTransactionResponse logonResponse = await this.TransactionDomainService.ProcessLogonTransaction(command.TransactionId, command.EstateId,
+                command.MerchantId, command.TransactionDateTime, command.TransactionNumber, command.IMEINumber, cancellationToken);
 
             command.Response = logonResponse;
         }

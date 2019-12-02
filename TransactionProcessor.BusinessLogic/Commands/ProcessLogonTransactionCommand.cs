@@ -10,6 +10,8 @@
     /// <seealso cref="Shared.DomainDrivenDesign.CommandHandling.Command{TransactionProcessor.Models.ProcessLogonTransactionResponse}" />
     public class ProcessLogonTransactionCommand : Command<ProcessLogonTransactionResponse>
     {
+        public Guid TransactionId { get; private set; }
+
         #region Constructors
 
         /// <summary>
@@ -22,7 +24,8 @@
         /// <param name="transactionDateTime">The transaction date time.</param>
         /// <param name="transactionNumber">The transaction number.</param>
         /// <param name="commandId">The command identifier.</param>
-        private ProcessLogonTransactionCommand(Guid estateId,
+        private ProcessLogonTransactionCommand(Guid transactionId, 
+                                               Guid estateId,
                                                Guid merchantId,
                                                String imeiNumber,
                                                String transactionType,
@@ -30,6 +33,7 @@
                                                String transactionNumber,
                                                Guid commandId) : base(commandId)
         {
+            this.TransactionId = transactionId;
             this.EstateId = estateId;
             this.IMEINumber = imeiNumber;
             this.MerchantId = merchantId;
@@ -104,14 +108,15 @@
         /// <param name="transactionDateTime">The transaction date time.</param>
         /// <param name="transactionNumber">The transaction number.</param>
         /// <returns></returns>
-        public static ProcessLogonTransactionCommand Create(Guid estateId,
+        public static ProcessLogonTransactionCommand Create(Guid transactionId, 
+                                                            Guid estateId,
                                                             Guid merchantId,
                                                             String imeiNumber,
                                                             String transactionType,
                                                             DateTime transactionDateTime,
                                                             String transactionNumber)
         {
-            return new ProcessLogonTransactionCommand(estateId, merchantId, imeiNumber, transactionType, transactionDateTime, transactionNumber, Guid.NewGuid());
+            return new ProcessLogonTransactionCommand(transactionId, estateId, merchantId, imeiNumber, transactionType, transactionDateTime, transactionNumber, Guid.NewGuid());
         }
 
         #endregion

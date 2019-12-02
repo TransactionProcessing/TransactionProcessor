@@ -19,6 +19,7 @@ namespace TransactionProcessor
     using BusinessLogic.CommandHandlers;
     using BusinessLogic.Services;
     using Common;
+    using EventStore.ClientAPI;
     using Microsoft.AspNetCore.Mvc.ApiExplorer;
     using Microsoft.AspNetCore.Mvc.Versioning;
     using Microsoft.Extensions.Options;
@@ -26,10 +27,15 @@ namespace TransactionProcessor
     using Newtonsoft.Json.Serialization;
     using NLog.Extensions.Logging;
     using Shared.DomainDrivenDesign.CommandHandling;
+    using Shared.DomainDrivenDesign.EventStore;
+    using Shared.EntityFramework.ConnectionStringConfiguration;
+    using Shared.EventStore.EventStore;
     using Shared.Extensions;
     using Shared.General;
+    using Shared.Repositories;
     using Swashbuckle.AspNetCore.Filters;
     using Swashbuckle.AspNetCore.SwaggerGen;
+    using ILogger = Microsoft.Extensions.Logging.ILogger;
 
     [ExcludeFromCodeCoverage]
     public class Startup
@@ -58,6 +64,50 @@ namespace TransactionProcessor
 
         public void ConfigureContainer(ContainerBuilder builder)
         {
+            ConfigurationReader.Initialise(Startup.Configuration);
+            String connString = Startup.Configuration.GetValue<String>("EventStoreSettings:ConnectionString");
+            String connectionName = Startup.Configuration.GetValue<String>("EventStoreSettings:ConnectionName");
+            Int32 httpPort = Startup.Configuration.GetValue<Int32>("EventStoreSettings:HttpPort");
+
+            Boolean useConnectionStringConfig = Boolean.Parse(ConfigurationReader.GetValue("AppSettings", "UseConnectionStringConfig"));
+            EventStoreConnectionSettings settings = EventStoreConnectionSettings.Create(connString, connectionName, httpPort);
+            builder.RegisterInstance(settings);
+
+            Func<EventStoreConnectionSettings, IEventStoreConnection> eventStoreConnectionFunc = (connectionSettings) =>
+            {
+                return EventStoreConnection.Create(connectionSettings.ConnectionString);
+            };
+
+            builder.RegisterInstance<Func<EventStoreConnectionSettings, IEventStoreConnection>>(eventStoreConnectionFunc);
+
+            Func<String, IEventStoreContext> eventStoreContextFunc = (connectionString) =>
+            {
+                EventStoreConnectionSettings connectionSettings = EventStoreConnectionSettings.Create(connectionString, connectionName, httpPort);
+
+                IEventStoreContext context = new EventStoreContext(connectionSettings, eventStoreConnectionFunc);
+
+                return context;
+            };
+
+            builder.RegisterInstance<Func<String, IEventStoreContext>>(eventStoreContextFunc);
+
+            if (useConnectionStringConfig)
+            {
+                String connectionStringConfigurationConnString = ConfigurationReader.GetConnectionString("ConnectionStringConfiguration");
+                builder.Register(c => new ConnectionStringConfigurationContext(connectionStringConfigurationConnString)).InstancePerDependency();
+                builder.RegisterType<ConnectionStringConfigurationRepository>().As<IConnectionStringConfigurationRepository>().SingleInstance();
+                builder.RegisterType<EventStoreContextManager>().As<IEventStoreContextManager>().UsingConstructor(typeof(Func<String, IEventStoreContext>), typeof(IConnectionStringConfigurationRepository)).SingleInstance();
+            }
+            else
+            {
+                builder.RegisterType<EventStoreContextManager>().As<IEventStoreContextManager>().UsingConstructor(typeof(IEventStoreContext)).SingleInstance();
+                // TODO: Once we have a Read Model
+                //this.RegisterType<Vme.Repositories.IConnectionStringRepository, ConfigReaderConnectionStringRepository>().Singleton();
+            }
+
+            builder.RegisterType<EventStoreContext>().As<IEventStoreContext>();
+            builder.RegisterType<AggregateRepositoryManager>().As<IAggregateRepositoryManager>().SingleInstance();
+            builder.RegisterType<AggregateRepository<TransactionAggregate.TransactionAggregate>>().As<IAggregateRepository<TransactionAggregate.TransactionAggregate>>().SingleInstance();
             builder.RegisterType<TransactionDomainService>().As<ITransactionDomainService>().SingleInstance();
             builder.RegisterType<Factories.ModelFactory>().As<Factories.IModelFactory>().SingleInstance();
         }

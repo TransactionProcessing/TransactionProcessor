@@ -17,7 +17,7 @@
         /// <value>
         /// The response code.
         /// </value>
-        public Int32 ResponseCode { get; set; }
+        public String ResponseCode { get; set; }
 
         /// <summary>
         /// Gets or sets the response message.
