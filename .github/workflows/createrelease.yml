@@ -41,6 +41,9 @@ jobs:
       run: |
         docker build . --file TransactionProcessor/Dockerfile --tag transactionprocessor:latest --tag stuartferguson/transactionprocessor:latest --tag stuartferguson/transactionprocessor:${{ steps.get_version.outputs.VERSION }}         
 
+    - name: Run Integration Tests
+      run: dotnet test "TransactionProcessor.IntegrationTests\TransactionProcessor.IntegrationTests.csproj"
+
     - name: Publish Images to Docker Hub
       run: |
         docker login --username=${{ secrets.DOCKER_USERNAME }} --password=${{ secrets.DOCKER_PASSWORD }}

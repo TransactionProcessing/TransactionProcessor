@@ -37,3 +37,5 @@ jobs:
     - name: Build Docker Image
       run: docker build . --file TransactionProcessor/Dockerfile --tag transactionprocessor:latest
 
+    - name: Run Integration Tests
+      run: dotnet test "TransactionProcessor.IntegrationTests\TransactionProcessor.IntegrationTests.csproj" --filter Category=PRTest
