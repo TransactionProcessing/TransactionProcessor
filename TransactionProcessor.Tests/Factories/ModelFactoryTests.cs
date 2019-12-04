@@ -20,11 +20,15 @@ namespace TransactionProcessor.Tests.Factories
 
             ModelFactory modelFactory = new ModelFactory();
 
-            LogonTransactionResponse logonTransactionResponse = modelFactory.ConvertFrom(processLogonTransactionResponseModel);
+            SerialisedMessage logonTransactionResponse = modelFactory.ConvertFrom(processLogonTransactionResponseModel);
 
             logonTransactionResponse.ShouldNotBeNull();
-            logonTransactionResponse.ResponseMessage.ShouldBe(processLogonTransactionResponseModel.ResponseMessage);
-            logonTransactionResponse.ResponseCode.ShouldBe(processLogonTransactionResponseModel.ResponseCode);
+            logonTransactionResponse.Metadata.ShouldContainKey(MetadataContants.KeyNameEstateId);
+            logonTransactionResponse.Metadata.ShouldContainKey(MetadataContants.KeyNameMerchantId);
+            String estateId = logonTransactionResponse.Metadata[MetadataContants.KeyNameEstateId];
+            String merchantId = logonTransactionResponse.Metadata[MetadataContants.KeyNameMerchantId];
+            estateId.ShouldBe(TestData.ProcessLogonTransactionResponseModel.EstateId.ToString());
+            merchantId.ShouldBe(TestData.ProcessLogonTransactionResponseModel.MerchantId.ToString());
         }
 
         [Fact]
@@ -34,7 +38,7 @@ namespace TransactionProcessor.Tests.Factories
 
             ModelFactory modelFactory = new ModelFactory();
 
-            LogonTransactionResponse logonTransactionResponse = modelFactory.ConvertFrom(processLogonTransactionResponseModel);
+            SerialisedMessage logonTransactionResponse = modelFactory.ConvertFrom(processLogonTransactionResponseModel);
 
             logonTransactionResponse.ShouldBeNull();
         }

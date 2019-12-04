@@ -11,6 +11,9 @@
     {
         #region Properties
 
+        public Guid EstateId { get; set; }
+        public Guid MerchantId { get; set; }
+
         /// <summary>
         /// Gets or sets the response code.
         /// </summary>

@@ -35,11 +35,11 @@ namespace TransactionProcessor.Tests.ControllerTests
 
         #endregion
 
-        [Fact]
+        [Fact(Skip = "Incomplete")]
         public async Task TransactionController_POST_LogonTransaction_LogonTransactionResponseIsReturned()
         {
             HttpClient client = this.WebApplicationFactory.CreateClient();
-
+            
             LogonTransactionRequest logonTransactionRequest = new LogonTransactionRequest();
 
             String uri = "api/transactions";

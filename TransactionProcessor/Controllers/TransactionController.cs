@@ -8,6 +8,8 @@
     using DataTransferObjects;
     using Factories;
     using Microsoft.AspNetCore.Mvc;
+    using Microsoft.VisualBasic;
+    using Newtonsoft.Json;
     using Shared.DomainDrivenDesign.CommandHandling;
 
     /// <summary>
@@ -49,7 +51,7 @@
         }
 
         #endregion
-
+        
         #region Methods
 
         /// <summary>
@@ -60,12 +62,31 @@
         /// <returns></returns>
         [HttpPost]
         [Route("")]
-        public async Task<IActionResult> LogonTransaction([FromBody] LogonTransactionRequest logonTransactionRequest,
+        public async Task<IActionResult> PerformTransaction([FromBody] SerialisedMessage transactionRequest,
                                                           CancellationToken cancellationToken)
+        {
+            Guid estateId = Guid.Parse(transactionRequest.Metadata[MetadataContants.KeyNameEstateId]);
+            Guid merchantId = Guid.Parse(transactionRequest.Metadata[MetadataContants.KeyNameMerchantId]);
+
+            DataTransferObject dto = JsonConvert.DeserializeObject<DataTransferObject>(transactionRequest.SerialisedData,
+                                                                                       new JsonSerializerSettings
+                                                                                       {
+                                                                                           TypeNameHandling = TypeNameHandling.Auto
+                                                                                       });
+            dto.MerchantId = merchantId;
+            dto.EstateId = estateId;
+
+            SerialisedMessage transactionResponse = await this.ProcessSpecificMessage((dynamic)dto, cancellationToken);
+            
+            // TODO: Populate the GET route
+            return this.Created("", transactionResponse);
+        }
+
+        private async Task<SerialisedMessage> ProcessSpecificMessage(LogonTransactionRequest logonTransactionRequest, CancellationToken cancellationToken)
         {
             Guid transactionId = Guid.NewGuid();
 
-            ProcessLogonTransactionCommand command = ProcessLogonTransactionCommand.Create( transactionId,
+            ProcessLogonTransactionCommand command = ProcessLogonTransactionCommand.Create(transactionId,
                                                                                             logonTransactionRequest.EstateId,
                                                                                            logonTransactionRequest.MerchantId,
                                                                                            logonTransactionRequest.IMEINumber,
@@ -75,8 +96,7 @@
 
             await this.CommandRouter.Route(command, cancellationToken);
 
-            // TODO: Populate the GET route
-            return this.Created("", this.ModelFactory.ConvertFrom(command.Response));
+            return this.ModelFactory.ConvertFrom(command.Response);
         }
 
         #endregion
