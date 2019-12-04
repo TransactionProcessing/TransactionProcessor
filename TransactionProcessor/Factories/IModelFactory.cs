@@ -15,7 +15,7 @@
         /// </summary>
         /// <param name="processLogonTransactionResponse">The process logon transaction response.</param>
         /// <returns></returns>
-        LogonTransactionResponse ConvertFrom(ProcessLogonTransactionResponse processLogonTransactionResponse);
+        SerialisedMessage ConvertFrom(ProcessLogonTransactionResponse processLogonTransactionResponse);
 
         #endregion
     }

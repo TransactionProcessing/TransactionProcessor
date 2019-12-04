@@ -27,6 +27,8 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TransactionProcessor.Transa
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TransactionProcessor.TransactionAggregate.Tests", "TransactionProcessor.TransactionAggregate.Tests\TransactionProcessor.TransactionAggregate.Tests.csproj", "{69BE1042-5AB9-420B-9A27-E2F1ADFC4E65}"
 EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TransactionProcessor.IntegrationTests", "TransactionProcessor.IntegrationTests\TransactionProcessor.IntegrationTests.csproj", "{3C40D27B-66B6-4C4A-839C-1E2BD7B4994C}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -73,6 +75,10 @@ Global
 		{69BE1042-5AB9-420B-9A27-E2F1ADFC4E65}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{69BE1042-5AB9-420B-9A27-E2F1ADFC4E65}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{69BE1042-5AB9-420B-9A27-E2F1ADFC4E65}.Release|Any CPU.Build.0 = Release|Any CPU
+		{3C40D27B-66B6-4C4A-839C-1E2BD7B4994C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{3C40D27B-66B6-4C4A-839C-1E2BD7B4994C}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{3C40D27B-66B6-4C4A-839C-1E2BD7B4994C}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{3C40D27B-66B6-4C4A-839C-1E2BD7B4994C}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -88,6 +94,7 @@ Global
 		{BE2AF4BD-AED2-4723-AC25-3051C870CAC2} = {749ADE74-A6F0-4469-A638-8FD7E82A8667}
 		{AC0E260E-47CC-4DA7-BE62-0714F9266AEA} = {749ADE74-A6F0-4469-A638-8FD7E82A8667}
 		{69BE1042-5AB9-420B-9A27-E2F1ADFC4E65} = {71B30DC4-AB27-4D30-8481-B4C326D074CB}
+		{3C40D27B-66B6-4C4A-839C-1E2BD7B4994C} = {71B30DC4-AB27-4D30-8481-B4C326D074CB}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {193D13DE-424B-4D50-B674-01F9E4CC2CA9}

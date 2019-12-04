@@ -54,7 +54,9 @@
             return new ProcessLogonTransactionResponse
                    {
                        ResponseMessage = transactionAggregate.ResponseMessage,
-                       ResponseCode = transactionAggregate.ResponseCode
+                       ResponseCode = transactionAggregate.ResponseCode,
+                       EstateId = estateId,
+                       MerchantId = merchantId
                    };
         }
 

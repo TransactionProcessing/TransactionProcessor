@@ -27,6 +27,10 @@
         /// </value>
         public String ResponseMessage { get; set; }
 
+        public Guid EstateId { get; set; }
+
+        public Guid MerchantId { get; set; }
+
         #endregion
     }
 }

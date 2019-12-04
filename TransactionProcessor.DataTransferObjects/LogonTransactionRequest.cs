@@ -7,7 +7,7 @@
     /// 
     /// </summary>
     [ExcludeFromCodeCoverage]
-    public class LogonTransactionRequest
+    public class LogonTransactionRequest : DataTransferObject
     {
         #region Properties
 
