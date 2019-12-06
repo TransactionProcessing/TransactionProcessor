@@ -29,6 +29,8 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TransactionProcessor.Transa
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TransactionProcessor.IntegrationTests", "TransactionProcessor.IntegrationTests\TransactionProcessor.IntegrationTests.csproj", "{3C40D27B-66B6-4C4A-839C-1E2BD7B4994C}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TransactionProcessor.Client", "TransactionProcessor.Client\TransactionProcessor.Client.csproj", "{DAF20F25-8BD1-4FA5-ADAD-71B068CDF393}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -79,6 +81,10 @@ Global
 		{3C40D27B-66B6-4C4A-839C-1E2BD7B4994C}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{3C40D27B-66B6-4C4A-839C-1E2BD7B4994C}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{3C40D27B-66B6-4C4A-839C-1E2BD7B4994C}.Release|Any CPU.Build.0 = Release|Any CPU
+		{DAF20F25-8BD1-4FA5-ADAD-71B068CDF393}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{DAF20F25-8BD1-4FA5-ADAD-71B068CDF393}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{DAF20F25-8BD1-4FA5-ADAD-71B068CDF393}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{DAF20F25-8BD1-4FA5-ADAD-71B068CDF393}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -95,6 +101,7 @@ Global
 		{AC0E260E-47CC-4DA7-BE62-0714F9266AEA} = {749ADE74-A6F0-4469-A638-8FD7E82A8667}
 		{69BE1042-5AB9-420B-9A27-E2F1ADFC4E65} = {71B30DC4-AB27-4D30-8481-B4C326D074CB}
 		{3C40D27B-66B6-4C4A-839C-1E2BD7B4994C} = {71B30DC4-AB27-4D30-8481-B4C326D074CB}
+		{DAF20F25-8BD1-4FA5-ADAD-71B068CDF393} = {749ADE74-A6F0-4469-A638-8FD7E82A8667}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {193D13DE-424B-4D50-B674-01F9E4CC2CA9}
