@@ -10,7 +10,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\TransactionProcessor.DataTransferObjects\TransactionProcessor.DataTransferObjects.csproj" />
+    <ProjectReference Include="..\TransactionProcessor.DataTransferObjects\TransactionProcessor.DataTransferObjects.csproj" PrivateAssets="All" />
   </ItemGroup>
 
   <Target Name="IncludeP2PAssets">
