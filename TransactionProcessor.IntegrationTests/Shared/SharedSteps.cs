@@ -256,18 +256,9 @@ namespace TransactionProcessor.IntegrationTests.Shared
                                                                                                         TypeNameHandling = TypeNameHandling.All
                                                                                                     });
 
-            String uri = "api/transactions";
-
-            StringContent content = new StringContent(JsonConvert.SerializeObject(serialisedMessage), Encoding.UTF8, "application/json");
-
-            HttpResponseMessage response = await this.TestingContext.DockerHelper.HttpClient.PostAsync(uri, content, cancellationToken);
-
-            response.IsSuccessStatusCode.ShouldBeTrue();
-
-            SerialisedMessage responseSerialisedMessage = JsonConvert.DeserializeObject<SerialisedMessage>(await response.Content.ReadAsStringAsync());
-
+            SerialisedMessage responseSerialisedMessage = await this.TestingContext.DockerHelper.TransactionProcessorClient.PerformTransaction(serialisedMessage, cancellationToken);
+            
             this.TestingContext.TransactionResponses.Add(transactionNumber, responseSerialisedMessage);
-
         }
 
         [Then(@"transaction response should contain the following information")]

@@ -4,6 +4,7 @@
     using System.Collections.Generic;
     using System.Net.Http;
     using System.Threading.Tasks;
+    using Client;
     using Ductus.FluentDocker.Builders;
     using Ductus.FluentDocker.Model.Builders;
     using Ductus.FluentDocker.Services;
@@ -23,7 +24,8 @@
         protected IContainerService EventStoreContainer;
 
         public IEstateClient EstateClient;
-        public HttpClient HttpClient;
+        public ITransactionProcessorClient TransactionProcessorClient;
+        //public HttpClient HttpClient;
 
         protected String EventStoreConnectionString;
 
@@ -86,10 +88,11 @@
 
             HttpClient httpClient = new HttpClient();
             this.EstateClient = new EstateClient(estateManagementBaseAddressResolver, httpClient);
+            this.TransactionProcessorClient = new TransactionProcessorClient(transactionProcessorBaseAddressResolver, httpClient);
 
             // TODO: Use this to talk to txn processor until we have a client
-            this.HttpClient = new HttpClient();
-            this.HttpClient.BaseAddress = new Uri(transactionProcessorBaseAddressResolver(String.Empty));
+            //this.HttpClient = new HttpClient();
+            //this.HttpClient.BaseAddress = new Uri(transactionProcessorBaseAddressResolver(String.Empty));
         }
 
         public async Task StopContainersForScenarioRun()
