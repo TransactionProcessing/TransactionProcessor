@@ -102,7 +102,7 @@ namespace TransactionProcessor.IntegrationTests.LogonTransaction
                     "PRTest"};
             TechTalk.SpecFlow.ScenarioInfo scenarioInfo = new TechTalk.SpecFlow.ScenarioInfo("Logon Transaction", null, new string[] {
                         "PRTest"});
-#line 17
+#line 18
 this.ScenarioInitialize(scenarioInfo);
 #line hidden
             bool isScenarioIgnored = default(bool);
@@ -149,7 +149,7 @@ this.FeatureBackground();
                             "Logon",
                             "Test Merchant 3",
                             "123456789"});
-#line 18
+#line 19
  testRunner.When("I perform the following transactions", ((string)(null)), table1, "When ");
 #line hidden
                 TechTalk.SpecFlow.Table table2 = new TechTalk.SpecFlow.Table(new string[] {
@@ -168,7 +168,7 @@ this.FeatureBackground();
                             "3",
                             "0000",
                             "SUCCESS"});
-#line 24
+#line 25
  testRunner.Then("transaction response should contain the following information", ((string)(null)), table2, "Then ");
 #line hidden
             }
