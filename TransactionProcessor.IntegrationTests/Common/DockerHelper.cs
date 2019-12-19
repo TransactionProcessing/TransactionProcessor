@@ -74,20 +74,20 @@
 
             this.SetupTestNetwork();
             this.SetupEventStoreContainer(traceFolder);
-            //this.SetupEstateManagementContainer(traceFolder);
+            this.SetupEstateManagementContainer(traceFolder);
             this.SetupTransactionProcessorContainer(traceFolder);
 
             // Cache the ports
-            //this.EstateManagementPort = this.EstateManagementContainer.ToHostExposedEndpoint("5000/tcp").Port;
+            this.EstateManagementPort = this.EstateManagementContainer.ToHostExposedEndpoint("5000/tcp").Port;
             this.TransactionProcessorPort = this.TransactionProcessorContainer.ToHostExposedEndpoint("5002/tcp").Port;
             this.EventStorePort = this.EventStoreContainer.ToHostExposedEndpoint("2113/tcp").Port;
             
             // Setup the base address resolver
-            //Func<String, String> estateManagementBaseAddressResolver = api => $"http://127.0.0.1:{this.EstateManagementPort}";
+            Func<String, String> estateManagementBaseAddressResolver = api => $"http://127.0.0.1:{this.EstateManagementPort}";
             Func<String, String> transactionProcessorBaseAddressResolver = api => $"http://127.0.0.1:{this.TransactionProcessorPort}";
 
             HttpClient httpClient = new HttpClient();
-            //this.EstateClient = new EstateClient(estateManagementBaseAddressResolver, httpClient);
+            this.EstateClient = new EstateClient(estateManagementBaseAddressResolver, httpClient);
             this.TransactionProcessorClient = new TransactionProcessorClient(transactionProcessorBaseAddressResolver, httpClient);
 
             // TODO: Use this to talk to txn processor until we have a client
