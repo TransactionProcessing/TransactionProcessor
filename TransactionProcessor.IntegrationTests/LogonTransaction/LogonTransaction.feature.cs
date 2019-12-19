@@ -85,54 +85,6 @@ namespace TransactionProcessor.IntegrationTests.LogonTransaction
         {
 #line 4
 #line hidden
-            TechTalk.SpecFlow.Table table1 = new TechTalk.SpecFlow.Table(new string[] {
-                        "EstateName"});
-            table1.AddRow(new string[] {
-                        "Test Estate 1"});
-            table1.AddRow(new string[] {
-                        "Test Estate 2"});
-#line 5
- testRunner.Given("I have created the following estates", ((string)(null)), table1, "Given ");
-#line hidden
-            TechTalk.SpecFlow.Table table2 = new TechTalk.SpecFlow.Table(new string[] {
-                        "MerchantName",
-                        "AddressLine1",
-                        "Town",
-                        "Region",
-                        "Country",
-                        "ContactName",
-                        "EmailAddress",
-                        "EstateName"});
-            table2.AddRow(new string[] {
-                        "Test Merchant 1",
-                        "Address Line 1",
-                        "TestTown",
-                        "Test Region",
-                        "United Kingdom",
-                        "Test Contact 1",
-                        "testcontact1@merchant1.co.uk",
-                        "Test Estate 1"});
-            table2.AddRow(new string[] {
-                        "Test Merchant 2",
-                        "Address Line 1",
-                        "TestTown",
-                        "Test Region",
-                        "United Kingdom",
-                        "Test Contact 2",
-                        "testcontact2@merchant2.co.uk",
-                        "Test Estate 1"});
-            table2.AddRow(new string[] {
-                        "Test Merchant 3",
-                        "Address Line 1",
-                        "TestTown",
-                        "Test Region",
-                        "United Kingdom",
-                        "Test Contact 3",
-                        "testcontact3@merchant2.co.uk",
-                        "Test Estate 2"});
-#line 10
- testRunner.Given("I create the following merchants", ((string)(null)), table2, "Given ");
-#line hidden
         }
         
         void System.IDisposable.Dispose()
@@ -173,51 +125,51 @@ this.ScenarioInitialize(scenarioInfo);
 #line 4
 this.FeatureBackground();
 #line hidden
-                TechTalk.SpecFlow.Table table3 = new TechTalk.SpecFlow.Table(new string[] {
+                TechTalk.SpecFlow.Table table1 = new TechTalk.SpecFlow.Table(new string[] {
                             "DateTime",
                             "TransactionNumber",
                             "TransactionType",
                             "MerchantName",
                             "IMEINumber"});
-                table3.AddRow(new string[] {
+                table1.AddRow(new string[] {
                             "Today",
                             "1",
                             "Logon",
                             "Test Merchant 1",
                             "123456789"});
-                table3.AddRow(new string[] {
+                table1.AddRow(new string[] {
                             "Today",
                             "2",
                             "Logon",
                             "Test Merchant 2",
                             "123456789"});
-                table3.AddRow(new string[] {
+                table1.AddRow(new string[] {
                             "Today",
                             "3",
                             "Logon",
                             "Test Merchant 3",
                             "123456789"});
 #line 18
- testRunner.When("I perform the following transactions", ((string)(null)), table3, "When ");
+ testRunner.When("I perform the following transactions", ((string)(null)), table1, "When ");
 #line hidden
-                TechTalk.SpecFlow.Table table4 = new TechTalk.SpecFlow.Table(new string[] {
+                TechTalk.SpecFlow.Table table2 = new TechTalk.SpecFlow.Table(new string[] {
                             "TransactionNumber",
                             "ResponseCode",
                             "ResponseMessage"});
-                table4.AddRow(new string[] {
+                table2.AddRow(new string[] {
                             "1",
                             "0000",
                             "SUCCESS"});
-                table4.AddRow(new string[] {
+                table2.AddRow(new string[] {
                             "2",
                             "0000",
                             "SUCCESS"});
-                table4.AddRow(new string[] {
+                table2.AddRow(new string[] {
                             "3",
                             "0000",
                             "SUCCESS"});
 #line 24
- testRunner.Then("transaction response should contain the following information", ((string)(null)), table4, "Then ");
+ testRunner.Then("transaction response should contain the following information", ((string)(null)), table2, "Then ");
 #line hidden
             }
             this.ScenarioCleanup();

@@ -217,8 +217,10 @@ namespace TransactionProcessor.IntegrationTests.Shared
                 String transactionType = SpecflowTableHelper.GetStringRowValue(tableRow, "TransactionType");
                 String imeiNumber = SpecflowTableHelper.GetStringRowValue(tableRow, "IMEINumber");
 
-                Guid merchantId = this.TestingContext.Merchants[merchantName];
-                Guid estateId = this.TestingContext.EstateMerchants.Single(e => e.Value.Contains(merchantId)).Key;
+                //Guid merchantId = this.TestingContext.Merchants[merchantName];
+                Guid merchantId = Guid.NewGuid();
+                //Guid estateId = this.TestingContext.EstateMerchants.Single(e => e.Value.Contains(merchantId)).Key;
+                Guid estateId = Guid.NewGuid();
 
                 switch (transactionType)
                 {
