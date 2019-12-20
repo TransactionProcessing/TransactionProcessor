@@ -39,3 +39,6 @@ jobs:
 
     - name: Run Integration Tests
       run: dotnet test "TransactionProcessor.IntegrationTests\TransactionProcessor.IntegrationTests.csproj" --filter Category=PRTest
+
+    - name: Setup tmate session
+      uses: mxschmitt/action-tmate@v1
