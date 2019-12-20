@@ -19,8 +19,8 @@
         protected Int32 TransactionProcessorPort;
         protected Int32 EventStorePort;
 
-        protected IContainerService EstateManagementContainer;
-        protected IContainerService TransactionProcessorContainer;
+        public IContainerService EstateManagementContainer;
+        public IContainerService TransactionProcessorContainer;
         protected IContainerService EventStoreContainer;
 
         public IEstateClient EstateClient;
