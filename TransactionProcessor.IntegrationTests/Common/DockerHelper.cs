@@ -158,10 +158,8 @@
             this.EstateManagementContainer = new Builder()
                                                 .UseContainer()
                                                 .WithName(this.EstateManagementContainerName)
-                                                .WithEnvironment(this.EventStoreConnectionString) //,
-                                                //"AppSettings:MigrateDatabase=true",
-                                                //"EventStoreSettings:START_PROJECTIONS=true",
-                                                //"EventStoreSettings:ContinuousProjectionsFolder=/app/projections/continuous")
+                                                .WithEnvironment(this.EventStoreConnectionString,
+                                                                 "urls=http://*:5000")
                                                 .WithCredential("https://www.docker.com", "stuartferguson", "Sc0tland")
                                                 .UseImage("stuartferguson/estatemanagement")
                                                 .ExposePort(5000)
