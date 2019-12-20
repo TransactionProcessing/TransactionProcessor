@@ -82,7 +82,8 @@
             this.TransactionProcessorPort = this.TransactionProcessorContainer.ToHostExposedEndpoint("5002/tcp").Port;
             this.EventStorePort = this.EventStoreContainer.ToHostExposedEndpoint("2113/tcp").Port;
 
-            Console.Out.WriteLine("Started Estate Management on Port {this.EstateManagementPort}");
+            Console.Out.WriteLine($"Started Estate Management on Port {this.EstateManagementPort}");
+            Console.Out.WriteLine($"Started Txn Processor Management on Port {this.TransactionProcessorPort}");
 
             // Setup the base address resolver
             Func<String, String> estateManagementBaseAddressResolver = api => $"http://127.0.0.1:{this.EstateManagementPort}";
