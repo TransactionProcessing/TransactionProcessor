@@ -149,6 +149,8 @@
                                                 .Mount(traceFolder, "/home", MountType.ReadWrite)
                                                 .Build()
                                                 .Start().WaitForPort("5000/tcp", 30000);
+
+            Console.Out.WriteLine("Started Estate Management");
         }
 
         private void SetupTransactionProcessorContainer(String traceFolder)
