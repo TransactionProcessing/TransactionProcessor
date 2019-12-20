@@ -113,39 +113,39 @@
 
         public async Task StopContainersForScenarioRun()
         {
-            try
-            {
-                if (this.TransactionProcessorContainer != null)
-                {
-                    this.TransactionProcessorContainer.StopOnDispose = true;
-                    this.TransactionProcessorContainer.RemoveOnDispose = true;
-                    this.TransactionProcessorContainer.Dispose();
-                }
+            //try
+            //{
+            //    if (this.TransactionProcessorContainer != null)
+            //    {
+            //        this.TransactionProcessorContainer.StopOnDispose = true;
+            //        this.TransactionProcessorContainer.RemoveOnDispose = true;
+            //        this.TransactionProcessorContainer.Dispose();
+            //    }
 
-                if (this.EstateManagementContainer != null)
-                {
-                    this.EstateManagementContainer.StopOnDispose = true;
-                    this.EstateManagementContainer.RemoveOnDispose = true;
-                    this.EstateManagementContainer.Dispose();
-                }
+            //    if (this.EstateManagementContainer != null)
+            //    {
+            //        this.EstateManagementContainer.StopOnDispose = true;
+            //        this.EstateManagementContainer.RemoveOnDispose = true;
+            //        this.EstateManagementContainer.Dispose();
+            //    }
 
-                if (this.EventStoreContainer != null)
-                {
-                    this.EventStoreContainer.StopOnDispose = true;
-                    this.EventStoreContainer.RemoveOnDispose = true;
-                    this.EventStoreContainer.Dispose();
-                }
+            //    if (this.EventStoreContainer != null)
+            //    {
+            //        this.EventStoreContainer.StopOnDispose = true;
+            //        this.EventStoreContainer.RemoveOnDispose = true;
+            //        this.EventStoreContainer.Dispose();
+            //    }
 
-                if (this.TestNetwork != null)
-                {
-                    this.TestNetwork.Stop();
-                    this.TestNetwork.Remove(true);
-                }
-            }
-            catch (Exception e)
-            {
-                Console.WriteLine(e);
-            }
+            //    if (this.TestNetwork != null)
+            //    {
+            //        this.TestNetwork.Stop();
+            //        this.TestNetwork.Remove(true);
+            //    }
+            //}
+            //catch (Exception e)
+            //{
+            //    Console.WriteLine(e);
+            //}
         }
 
         private void SetupEstateManagementContainer(String traceFolder)
