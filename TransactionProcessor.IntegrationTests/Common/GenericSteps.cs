@@ -25,8 +25,8 @@ namespace TransactionProcessor.IntegrationTests.Common
             this.ScenarioContext = scenarioContext;
             this.TestingContext = testingContext;
         }
-
-        [BeforeScenario()]
+        
+        [BeforeScenario]
         public async Task StartSystem()
         {
             String scenarioName = this.ScenarioContext.ScenarioInfo.Title.Replace(" ", "");
@@ -34,9 +34,12 @@ namespace TransactionProcessor.IntegrationTests.Common
             await this.TestingContext.DockerHelper.StartContainersForScenarioRun(scenarioName).ConfigureAwait(false);
         }
 
-        [AfterScenario()]
+        [AfterScenario]
         public async Task StopSystem()
         {
+            Console.Out.WriteLine("In After Scenario");
+            Console.Out.WriteLine(this.ScenarioContext.TestError != null);
+
             if (this.ScenarioContext.TestError != null)
             {
                 // The test has failed, grab the logs from all the containers
