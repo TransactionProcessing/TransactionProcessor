@@ -5,6 +5,7 @@ using System.Text;
 namespace TransactionProcessor.IntegrationTests.Common
 {
     using DataTransferObjects;
+    using global::Shared.Logger;
 
     public class TestingContext
     {
@@ -16,6 +17,8 @@ namespace TransactionProcessor.IntegrationTests.Common
             this.EstateMerchants = new Dictionary<Guid, List<Guid>>();
             this.TransactionResponses=new Dictionary<String, SerialisedMessage>();
         }
+
+        public NlogLogger Logger { get; set; }
 
         public DockerHelper DockerHelper { get; set; }
 

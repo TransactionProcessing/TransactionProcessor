@@ -6,22 +6,26 @@
     using System.Threading.Tasks;
     using Client;
     using Ductus.FluentDocker.Builders;
+    using Ductus.FluentDocker.Common;
     using Ductus.FluentDocker.Model.Builders;
     using Ductus.FluentDocker.Services;
     using Ductus.FluentDocker.Services.Extensions;
     using EstateManagement.Client;
+    using global::Shared.Logger;
 
     public class DockerHelper
     {
+        private readonly NlogLogger Logger;
+
         protected INetworkService TestNetwork;
         
         protected Int32 EstateManagementPort;
         protected Int32 TransactionProcessorPort;
         protected Int32 EventStorePort;
 
-        protected IContainerService EstateManagementContainer;
-        protected IContainerService TransactionProcessorContainer;
-        protected IContainerService EventStoreContainer;
+        public IContainerService EstateManagementContainer;
+        public IContainerService TransactionProcessorContainer;
+        public IContainerService EventStoreContainer;
 
         public IEstateClient EstateClient;
         public ITransactionProcessorClient TransactionProcessorClient;
@@ -33,14 +37,24 @@
         protected String TransactionProcessorContainerName;
         protected String EventStoreContainerName;
 
+        public DockerHelper(NlogLogger logger)
+        {
+            this.Logger = logger;
+        }
+
         private void SetupTestNetwork()
         {
+            this.Logger.LogInformation("Starting Network Setup");
             // Build a network
             this.TestNetwork = new Ductus.FluentDocker.Builders.Builder().UseNetwork($"testnetwork{Guid.NewGuid()}").Build();
+
+            this.Logger.LogInformation("Network Setup Complete");
         }
         public Guid TestId;
         private void SetupEventStoreContainer(String traceFolder)
         {
+            this.Logger.LogInformation("About to Start Event Store Container");
+
             // Event Store Container
             this.EventStoreContainer = new Ductus.FluentDocker.Builders.Builder()
                                        .UseContainer()
@@ -53,16 +67,20 @@
                                        .Mount(traceFolder, "/var/log/eventstore", MountType.ReadWrite)
                                        .Build()
                                        .Start().WaitForPort("2113/tcp", 30000);
+
+            this.Logger.LogInformation("Event Store Container Started");
         }
 
         public async Task StartContainersForScenarioRun(String scenarioName)
         {
-            String traceFolder = $"/home/ubuntu/estatemanagement/trace/{scenarioName}/";
+            String traceFolder = FdOs.IsWindows() ? $"D:\\home\\txnproc\\trace\\{scenarioName}" : $"//home//txnproc//trace//{scenarioName}";
 
             Logging.Enabled();
 
             Guid testGuid = Guid.NewGuid();
             this.TestId = testGuid;
+
+            this.Logger.LogInformation($"Test Id is {testGuid}");
 
             // Setup the container names
             this.EstateManagementContainerName = $"estate{testGuid:N}";
@@ -134,6 +152,8 @@
 
         private void SetupEstateManagementContainer(String traceFolder)
         {
+            this.Logger.LogInformation("About to Start Estate Management Container");
+
             // Management API Container
             this.EstateManagementContainer = new Builder()
                                                 .UseContainer()
@@ -149,10 +169,14 @@
                                                 .Mount(traceFolder, "/home", MountType.ReadWrite)
                                                 .Build()
                                                 .Start().WaitForPort("5000/tcp", 30000);
+
+            this.Logger.LogInformation("Estate Management Container Started");
         }
 
         private void SetupTransactionProcessorContainer(String traceFolder)
         {
+            this.Logger.LogInformation("About to Start Transaction Processor Container");
+
             // Management API Container
             this.TransactionProcessorContainer = new Builder()
                                                 .UseContainer()
@@ -167,6 +191,8 @@
                                                 .Mount(traceFolder, "/home", MountType.ReadWrite)
                                                 .Build()
                                                 .Start().WaitForPort("5002/tcp", 30000);
+
+            this.Logger.LogInformation("Transaction Processor Container Started");
         }
     }
 }

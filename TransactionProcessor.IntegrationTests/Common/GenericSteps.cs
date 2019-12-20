@@ -5,6 +5,12 @@ using System.Text;
 namespace TransactionProcessor.IntegrationTests.Common
 {
     using System.Threading.Tasks;
+    using Ductus.FluentDocker.Executors;
+    using Ductus.FluentDocker.Extensions;
+    using Ductus.FluentDocker.Services;
+    using Ductus.FluentDocker.Services.Extensions;
+    using global::Shared.Logger;
+    using NLog;
     using TechTalk.SpecFlow;
 
     [Binding]
@@ -25,15 +31,44 @@ namespace TransactionProcessor.IntegrationTests.Common
         [BeforeScenario()]
         public async Task StartSystem()
         {
+            // Initialise a logger
             String scenarioName = this.ScenarioContext.ScenarioInfo.Title.Replace(" ", "");
-            this.TestingContext.DockerHelper = new DockerHelper();
+            NlogLogger logger = new NlogLogger();
+            logger.Initialise(LogManager.GetLogger(scenarioName), scenarioName);
+            LogManager.AddHiddenAssembly(typeof(NlogLogger).Assembly);
+
+            this.TestingContext.DockerHelper = new DockerHelper(logger);
+            this.TestingContext.Logger = logger;
+            this.TestingContext.Logger.LogInformation("About to Start Containers for Scenario Run");
             await this.TestingContext.DockerHelper.StartContainersForScenarioRun(scenarioName).ConfigureAwait(false);
+            this.TestingContext.Logger.LogInformation("Containers for Scenario Run Started");
         }
 
         [AfterScenario()]
         public async Task StopSystem()
         {
+            if (this.ScenarioContext.TestError != null)
+            {
+                // The test has failed, grab the logs from all the containers
+                List<IContainerService> containers = new List<IContainerService>();
+                containers.Add(this.TestingContext.DockerHelper.EstateManagementContainer);
+                containers.Add(this.TestingContext.DockerHelper.TransactionProcessorContainer);
+
+                foreach (IContainerService containerService in containers)
+                {
+                    ConsoleStream<String> logStream = containerService.Logs();
+                    IList<String> logData = logStream.ReadToEnd();
+
+                    foreach (String s in logData)
+                    {
+                        this.TestingContext.Logger.LogWarning(s);
+                    }
+                }
+            }
+
+            this.TestingContext.Logger.LogInformation("About to Stop Containers for Scenario Run");
             await this.TestingContext.DockerHelper.StopContainersForScenarioRun().ConfigureAwait(false);
+            this.TestingContext.Logger.LogInformation("Containers for Scenario Run Stopped");
         }
     }
 }
