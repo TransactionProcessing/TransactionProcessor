@@ -6,6 +6,8 @@
     using System.Threading.Tasks;
     using Client;
     using Ductus.FluentDocker.Builders;
+    using Ductus.FluentDocker.Executors;
+    using Ductus.FluentDocker.Extensions;
     using Ductus.FluentDocker.Model.Builders;
     using Ductus.FluentDocker.Services;
     using Ductus.FluentDocker.Services.Extensions;
@@ -83,6 +85,16 @@
             this.EventStorePort = this.EventStoreContainer.ToHostExposedEndpoint("2113/tcp").Port;
 
             Console.Out.WriteLine($"Started Estate Management on Port {this.EstateManagementPort}");
+
+
+            ConsoleStream<String> logStream = this.EstateManagementContainer.Logs();
+            IList<String> logData = logStream.ReadToEnd();
+
+            foreach (String s in logData)
+            {
+                Console.Out.WriteLine(s);
+            }
+
             Console.Out.WriteLine($"Started Txn Processor Management on Port {this.TransactionProcessorPort}");
 
             // Setup the base address resolver
