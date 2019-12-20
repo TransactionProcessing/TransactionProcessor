@@ -16,9 +16,6 @@ jobs:
     steps:
     - uses: actions/checkout@v1
 
-    - name: Setup tmate session
-      uses: mxschmitt/action-tmate@v1
-
     - name: Setup .NET Core
       uses: actions/setup-dotnet@v1
       with:
