@@ -7,15 +7,15 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="ClientProxyBase" Version="0.0.4.1" />
+    <PackageReference Include="ClientProxyBase" Version="0.0.5.1" />
     <PackageReference Include="Ductus.FluentDocker" Version="2.7.3" />
-    <PackageReference Include="EstateManagement.Client" Version="0.0.4.1" />
+    <PackageReference Include="EstateManagement.Client" Version="0.0.5" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" Version="3.0.0" />
-    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="16.3.0" />
+    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="16.4.0" />
     <PackageReference Include="Shouldly" Version="3.0.2" />
-    <PackageReference Include="SpecFlow" Version="3.1.44-beta" />
-    <PackageReference Include="SpecFlow.Tools.MsBuild.Generation" Version="3.1.44-beta" />
-    <PackageReference Include="SpecFlow.xUnit" Version="3.1.44-beta" />
+    <PackageReference Include="SpecFlow" Version="3.1.67" />
+    <PackageReference Include="SpecFlow.Tools.MsBuild.Generation" Version="3.1.67" />
+    <PackageReference Include="SpecFlow.xUnit" Version="3.1.67" />
     <PackageReference Include="xunit" Version="2.4.1" />
     <PackageReference Include="xunit.runner.visualstudio" Version="2.4.1">
       <PrivateAssets>all</PrivateAssets>

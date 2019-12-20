@@ -35,7 +35,7 @@ namespace TransactionProcessor.IntegrationTests.LogonTransaction
 #line 1 "LogonTransaction.feature"
 #line hidden
         
-        public LogonTransactionFeature(LogonTransactionFeature.FixtureData fixtureData, InternalSpecFlow.XUnitAssemblyFixture assemblyFixture, Xunit.Abstractions.ITestOutputHelper testOutputHelper)
+        public LogonTransactionFeature(LogonTransactionFeature.FixtureData fixtureData, TransactionProcessor_IntegrationTests_XUnitAssemblyFixture assemblyFixture, Xunit.Abstractions.ITestOutputHelper testOutputHelper)
         {
             this._testOutputHelper = testOutputHelper;
             this.TestInitialize();
