@@ -55,6 +55,10 @@ namespace TransactionProcessor.IntegrationTests.Common
                     }
                 }
             }
+            else
+            {
+                Console.Out.WriteLine("No Error :|");
+            }
 
             await this.TestingContext.DockerHelper.StopContainersForScenarioRun().ConfigureAwait(false);
         }
