@@ -55,6 +55,14 @@ response = await this.TestingContext.DockerHelper.EstateClient.CreateEstate(Stri
                 catch(Exception e)
                 {
                     Console.WriteLine(e);
+                    if (e.InnerException != null)
+                    {
+                        Console.WriteLine(e.InnerException);
+                        if (e.InnerException.InnerException != null)
+                        {
+                            Console.WriteLine(e.InnerException.InnerException);
+                        }
+                    }
                     throw;
                 }
                 
