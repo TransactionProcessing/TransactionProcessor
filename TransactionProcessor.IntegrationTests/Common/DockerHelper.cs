@@ -81,14 +81,17 @@
             this.EstateManagementPort = this.EstateManagementContainer.ToHostExposedEndpoint("5000/tcp").Port;
             this.TransactionProcessorPort = this.TransactionProcessorContainer.ToHostExposedEndpoint("5002/tcp").Port;
             this.EventStorePort = this.EventStoreContainer.ToHostExposedEndpoint("2113/tcp").Port;
-            
+
+            Console.Out.WriteLine("Started Estate Management on Port {this.EstateManagementPort}");
+
             // Setup the base address resolver
             Func<String, String> estateManagementBaseAddressResolver = api => $"http://127.0.0.1:{this.EstateManagementPort}";
             Func<String, String> transactionProcessorBaseAddressResolver = api => $"http://127.0.0.1:{this.TransactionProcessorPort}";
 
             HttpClient httpClient = new HttpClient();
+            HttpClient httpClient2 = new HttpClient();
             this.EstateClient = new EstateClient(estateManagementBaseAddressResolver, httpClient);
-            this.TransactionProcessorClient = new TransactionProcessorClient(transactionProcessorBaseAddressResolver, httpClient);
+            this.TransactionProcessorClient = new TransactionProcessorClient(transactionProcessorBaseAddressResolver, httpClient2);
 
             // TODO: Use this to talk to txn processor until we have a client
             //this.HttpClient = new HttpClient();
