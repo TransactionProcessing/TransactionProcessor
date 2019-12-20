@@ -47,8 +47,17 @@ namespace TransactionProcessor.IntegrationTests.Shared
                     EstateId = Guid.NewGuid(),
                     EstateName = estateName
                 };
-
-                CreateEstateResponse response = await this.TestingContext.DockerHelper.EstateClient.CreateEstate(String.Empty, createEstateRequest, CancellationToken.None).ConfigureAwait(false);
+                CreateEstateResponse response = null;
+                try
+                {
+response = await this.TestingContext.DockerHelper.EstateClient.CreateEstate(String.Empty, createEstateRequest, CancellationToken.None).ConfigureAwait(false);
+                }
+                catch(Exception e)
+                {
+                    Console.WriteLine(e);
+                    throw;
+                }
+                
 
                 response.ShouldNotBeNull();
                 response.EstateId.ShouldNotBe(Guid.Empty);
