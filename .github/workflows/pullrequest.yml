@@ -41,4 +41,5 @@ jobs:
       run: dotnet test "TransactionProcessor.IntegrationTests\TransactionProcessor.IntegrationTests.csproj" --filter Category=PRTest
 
     - name: Setup tmate session
+      if: failure()
       uses: mxschmitt/action-tmate@v1

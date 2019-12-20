@@ -104,7 +104,7 @@
             HttpClient httpClient = new HttpClient();
             //HttpClient httpClient2 = new HttpClient();
             this.EstateClient = new EstateClient(estateManagementBaseAddressResolver, httpClient);
-            this.TransactionProcessorClient = new TransactionProcessorClient(transactionProcessorBaseAddressResolver, httpClient);
+            this.TransactionProcessorClient = new TransactionProcessorClient(transactionProcessorBaseAddressResolver, new HttpClient());
 
             // TODO: Use this to talk to txn processor until we have a client
             //this.HttpClient = new HttpClient();
