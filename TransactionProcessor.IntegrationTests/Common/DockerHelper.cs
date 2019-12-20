@@ -154,7 +154,8 @@
             this.EstateManagementContainer = new Builder()
                                                 .UseContainer()
                                                 .WithName(this.EstateManagementContainerName)
-                                                .WithEnvironment(this.EventStoreConnectionString) //,
+                                                .WithEnvironment(this.EventStoreConnectionString,
+                                                                 "urls=http://*:5000") //,
                                                 //"AppSettings:MigrateDatabase=true",
                                                 //"EventStoreSettings:START_PROJECTIONS=true",
                                                 //"EventStoreSettings:ContinuousProjectionsFolder=/app/projections/continuous")
