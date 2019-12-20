@@ -42,6 +42,14 @@ namespace TransactionProcessor.IntegrationTests.Common
 
             if (this.ScenarioContext.TestError != null)
             {
+                Exception currentEx = this.ScenarioContext.TestError;
+                Console.Out.WriteLine(currentEx.Message);
+                while (currentEx.InnerException != null)
+                {
+                    currentEx = currentEx.InnerException;
+                    Console.Out.WriteLine(currentEx.Message);
+                }
+
                 // The test has failed, grab the logs from all the containers
                 List<IContainerService> containers = new List<IContainerService>();
                 containers.Add(this.TestingContext.DockerHelper.EstateManagementContainer);

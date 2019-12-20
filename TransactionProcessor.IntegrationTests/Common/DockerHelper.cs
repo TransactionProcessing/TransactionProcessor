@@ -90,9 +90,9 @@
             Func<String, String> transactionProcessorBaseAddressResolver = api => $"http://127.0.0.1:{this.TransactionProcessorPort}";
 
             HttpClient httpClient = new HttpClient();
-            HttpClient httpClient2 = new HttpClient();
+            //HttpClient httpClient2 = new HttpClient();
             this.EstateClient = new EstateClient(estateManagementBaseAddressResolver, httpClient);
-            this.TransactionProcessorClient = new TransactionProcessorClient(transactionProcessorBaseAddressResolver, httpClient2);
+            //this.TransactionProcessorClient = new TransactionProcessorClient(transactionProcessorBaseAddressResolver, httpClient2);
 
             // TODO: Use this to talk to txn processor until we have a client
             //this.HttpClient = new HttpClient();
