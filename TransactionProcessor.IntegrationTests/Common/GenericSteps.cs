@@ -71,7 +71,7 @@ namespace TransactionProcessor.IntegrationTests.Common
                 Console.Out.WriteLine("No Error :|");
             }
 
-            await this.TestingContext.DockerHelper.StopContainersForScenarioRun().ConfigureAwait(false);
+            //await this.TestingContext.DockerHelper.StopContainersForScenarioRun().ConfigureAwait(false);
         }
     }
 }
