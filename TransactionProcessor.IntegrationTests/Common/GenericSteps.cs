@@ -4,12 +4,14 @@ using System.Text;
 
 namespace TransactionProcessor.IntegrationTests.Common
 {
+    using System.Threading;
     using System.Threading.Tasks;
     using Ductus.FluentDocker.Executors;
     using Ductus.FluentDocker.Extensions;
     using Ductus.FluentDocker.Services;
     using Ductus.FluentDocker.Services.Extensions;
     using TechTalk.SpecFlow;
+    using TechTalk.SpecFlow.Plugins;
 
     [Binding]
     [Scope(Tag = "base")]
@@ -32,6 +34,7 @@ namespace TransactionProcessor.IntegrationTests.Common
             String scenarioName = this.ScenarioContext.ScenarioInfo.Title.Replace(" ", "");
             this.TestingContext.DockerHelper = new DockerHelper();
             await this.TestingContext.DockerHelper.StartContainersForScenarioRun(scenarioName).ConfigureAwait(false);
+            Thread.Sleep(20000);
         }
 
         [AfterScenario]
@@ -71,7 +74,7 @@ namespace TransactionProcessor.IntegrationTests.Common
                 Console.Out.WriteLine("No Error :|");
             }
 
-            //await this.TestingContext.DockerHelper.StopContainersForScenarioRun().ConfigureAwait(false);
+            await this.TestingContext.DockerHelper.StopContainersForScenarioRun().ConfigureAwait(false);
         }
     }
 }
