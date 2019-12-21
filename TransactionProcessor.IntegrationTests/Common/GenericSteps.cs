@@ -40,9 +40,6 @@ namespace TransactionProcessor.IntegrationTests.Common
         [AfterScenario]
         public async Task StopSystem()
         {
-            Console.Out.WriteLine("In After Scenario");
-            Console.Out.WriteLine(this.ScenarioContext.TestError != null);
-
             if (this.ScenarioContext.TestError != null)
             {
                 Exception currentEx = this.ScenarioContext.TestError;
@@ -68,10 +65,6 @@ namespace TransactionProcessor.IntegrationTests.Common
                         Console.Out.WriteLine(s);
                     }
                 }
-            }
-            else
-            {
-                Console.Out.WriteLine("No Error :|");
             }
 
             await this.TestingContext.DockerHelper.StopContainersForScenarioRun().ConfigureAwait(false);

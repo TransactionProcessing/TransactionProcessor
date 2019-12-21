@@ -52,7 +52,7 @@
                                        .WithName(this.EventStoreContainerName)
                                        .WithEnvironment("EVENTSTORE_RUN_PROJECTIONS=all", "EVENTSTORE_START_STANDARD_PROJECTIONS=true")
                                        .UseNetwork(this.TestNetwork)
-                                       //.Mount(traceFolder, "/var/log/eventstore", MountType.ReadWrite)
+                                       .Mount(traceFolder, "/var/log/eventstore", MountType.ReadWrite)
                                        .Build()
                                        .Start().WaitForPort("2113/tcp", 30000);
         }
@@ -84,16 +84,11 @@
             this.TransactionProcessorPort = this.TransactionProcessorContainer.ToHostExposedEndpoint("5002/tcp").Port;
             this.EventStorePort = this.EventStoreContainer.ToHostExposedEndpoint("2113/tcp").Port;
 
-            Console.Out.WriteLine($"Started Estate Management on Port {this.EstateManagementPort}");
-            Console.Out.WriteLine($"Started Txn Processor Management on Port {this.TransactionProcessorPort}");
-
             // Setup the base address resolver
             Func<String, String> estateManagementBaseAddressResolver = api => $"http://127.0.0.1:{this.EstateManagementPort}";
             Func<String, String> transactionProcessorBaseAddressResolver = api => $"http://127.0.0.1:{this.TransactionProcessorPort}";
 
-            HttpClient httpClient = new HttpClient();
-            //HttpClient httpClient2 = new HttpClient();
-            this.EstateClient = new EstateClient(estateManagementBaseAddressResolver, httpClient);
+            this.EstateClient = new EstateClient(estateManagementBaseAddressResolver, new HttpClient());
             this.TransactionProcessorClient = new TransactionProcessorClient(transactionProcessorBaseAddressResolver, new HttpClient());
 
             // TODO: Use this to talk to txn processor until we have a client
@@ -153,11 +148,9 @@
                                                 .UseImage("stuartferguson/estatemanagement")
                                                 .ExposePort(5000)
                                                 .UseNetwork(new List<INetworkService> { this.TestNetwork, Setup.DatabaseServerNetwork }.ToArray())
-                                                //.Mount(traceFolder, "/home", MountType.ReadWrite)
+                                                .Mount(traceFolder, "/home", MountType.ReadWrite)
                                                 .Build()
                                                 .Start().WaitForPort("5000/tcp", 30000);
-
-            Console.Out.WriteLine("Started Estate Management");
         }
 
         private void SetupTransactionProcessorContainer(String traceFolder)
@@ -173,7 +166,7 @@
                                                 .UseImage("transactionprocessor")
                                                 .ExposePort(5002)
                                                 .UseNetwork(new List<INetworkService> { this.TestNetwork, Setup.DatabaseServerNetwork }.ToArray())
-                                                //.Mount(traceFolder, "/home", MountType.ReadWrite)
+                                                .Mount(traceFolder, "/home", MountType.ReadWrite)
                                                 .Build()
                                                 .Start().WaitForPort("5002/tcp", 30000);
         }
