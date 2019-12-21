@@ -52,7 +52,7 @@
                                        .WithName(this.EventStoreContainerName)
                                        .WithEnvironment("EVENTSTORE_RUN_PROJECTIONS=all", "EVENTSTORE_START_STANDARD_PROJECTIONS=true")
                                        .UseNetwork(this.TestNetwork)
-                                       .Mount(traceFolder, "/var/log/eventstore", MountType.ReadWrite)
+                                       //.Mount(traceFolder, "/var/log/eventstore", MountType.ReadWrite)
                                        .Build()
                                        .Start().WaitForPort("2113/tcp", 30000);
         }
@@ -85,16 +85,6 @@
             this.EventStorePort = this.EventStoreContainer.ToHostExposedEndpoint("2113/tcp").Port;
 
             Console.Out.WriteLine($"Started Estate Management on Port {this.EstateManagementPort}");
-
-
-            ConsoleStream<String> logStream = this.EstateManagementContainer.Logs();
-            IList<String> logData = logStream.ReadToEnd();
-
-            foreach (String s in logData)
-            {
-                Console.Out.WriteLine(s);
-            }
-
             Console.Out.WriteLine($"Started Txn Processor Management on Port {this.TransactionProcessorPort}");
 
             // Setup the base address resolver
@@ -163,7 +153,7 @@
                                                 .UseImage("stuartferguson/estatemanagement")
                                                 .ExposePort(5000)
                                                 .UseNetwork(new List<INetworkService> { this.TestNetwork, Setup.DatabaseServerNetwork }.ToArray())
-                                                .Mount(traceFolder, "/home", MountType.ReadWrite)
+                                                //.Mount(traceFolder, "/home", MountType.ReadWrite)
                                                 .Build()
                                                 .Start().WaitForPort("5000/tcp", 30000);
 
@@ -183,7 +173,7 @@
                                                 .UseImage("transactionprocessor")
                                                 .ExposePort(5002)
                                                 .UseNetwork(new List<INetworkService> { this.TestNetwork, Setup.DatabaseServerNetwork }.ToArray())
-                                                .Mount(traceFolder, "/home", MountType.ReadWrite)
+                                                //.Mount(traceFolder, "/home", MountType.ReadWrite)
                                                 .Build()
                                                 .Start().WaitForPort("5002/tcp", 30000);
         }
