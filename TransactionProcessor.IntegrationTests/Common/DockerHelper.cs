@@ -6,6 +6,8 @@
     using System.Threading.Tasks;
     using Client;
     using Ductus.FluentDocker.Builders;
+    using Ductus.FluentDocker.Executors;
+    using Ductus.FluentDocker.Extensions;
     using Ductus.FluentDocker.Model.Builders;
     using Ductus.FluentDocker.Services;
     using Ductus.FluentDocker.Services.Extensions;
@@ -19,8 +21,8 @@
         protected Int32 TransactionProcessorPort;
         protected Int32 EventStorePort;
 
-        protected IContainerService EstateManagementContainer;
-        protected IContainerService TransactionProcessorContainer;
+        public IContainerService EstateManagementContainer;
+        public IContainerService TransactionProcessorContainer;
         protected IContainerService EventStoreContainer;
 
         public IEstateClient EstateClient;
@@ -81,14 +83,13 @@
             this.EstateManagementPort = this.EstateManagementContainer.ToHostExposedEndpoint("5000/tcp").Port;
             this.TransactionProcessorPort = this.TransactionProcessorContainer.ToHostExposedEndpoint("5002/tcp").Port;
             this.EventStorePort = this.EventStoreContainer.ToHostExposedEndpoint("2113/tcp").Port;
-            
+
             // Setup the base address resolver
             Func<String, String> estateManagementBaseAddressResolver = api => $"http://127.0.0.1:{this.EstateManagementPort}";
             Func<String, String> transactionProcessorBaseAddressResolver = api => $"http://127.0.0.1:{this.TransactionProcessorPort}";
 
-            HttpClient httpClient = new HttpClient();
-            this.EstateClient = new EstateClient(estateManagementBaseAddressResolver, httpClient);
-            this.TransactionProcessorClient = new TransactionProcessorClient(transactionProcessorBaseAddressResolver, httpClient);
+            this.EstateClient = new EstateClient(estateManagementBaseAddressResolver, new HttpClient());
+            this.TransactionProcessorClient = new TransactionProcessorClient(transactionProcessorBaseAddressResolver, new HttpClient());
 
             // TODO: Use this to talk to txn processor until we have a client
             //this.HttpClient = new HttpClient();
@@ -138,7 +139,8 @@
             this.EstateManagementContainer = new Builder()
                                                 .UseContainer()
                                                 .WithName(this.EstateManagementContainerName)
-                                                .WithEnvironment(this.EventStoreConnectionString) //,
+                                                .WithEnvironment(this.EventStoreConnectionString,
+                                                                 "urls=http://*:5000") //,
                                                 //"AppSettings:MigrateDatabase=true",
                                                 //"EventStoreSettings:START_PROJECTIONS=true",
                                                 //"EventStoreSettings:ContinuousProjectionsFolder=/app/projections/continuous")

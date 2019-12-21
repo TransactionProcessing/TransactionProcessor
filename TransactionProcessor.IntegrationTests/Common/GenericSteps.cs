@@ -4,8 +4,14 @@ using System.Text;
 
 namespace TransactionProcessor.IntegrationTests.Common
 {
+    using System.Threading;
     using System.Threading.Tasks;
+    using Ductus.FluentDocker.Executors;
+    using Ductus.FluentDocker.Extensions;
+    using Ductus.FluentDocker.Services;
+    using Ductus.FluentDocker.Services.Extensions;
     using TechTalk.SpecFlow;
+    using TechTalk.SpecFlow.Plugins;
 
     [Binding]
     [Scope(Tag = "base")]
@@ -21,18 +27,46 @@ namespace TransactionProcessor.IntegrationTests.Common
             this.ScenarioContext = scenarioContext;
             this.TestingContext = testingContext;
         }
-
-        [BeforeScenario()]
+        
+        [BeforeScenario]
         public async Task StartSystem()
         {
             String scenarioName = this.ScenarioContext.ScenarioInfo.Title.Replace(" ", "");
             this.TestingContext.DockerHelper = new DockerHelper();
             await this.TestingContext.DockerHelper.StartContainersForScenarioRun(scenarioName).ConfigureAwait(false);
+            Thread.Sleep(20000);
         }
 
-        [AfterScenario()]
+        [AfterScenario]
         public async Task StopSystem()
         {
+            if (this.ScenarioContext.TestError != null)
+            {
+                Exception currentEx = this.ScenarioContext.TestError;
+                Console.Out.WriteLine(currentEx.Message);
+                while (currentEx.InnerException != null)
+                {
+                    currentEx = currentEx.InnerException;
+                    Console.Out.WriteLine(currentEx.Message);
+                }
+
+                // The test has failed, grab the logs from all the containers
+                List<IContainerService> containers = new List<IContainerService>();
+                containers.Add(this.TestingContext.DockerHelper.EstateManagementContainer);
+                containers.Add(this.TestingContext.DockerHelper.TransactionProcessorContainer);
+
+                foreach (IContainerService containerService in containers)
+                {
+                    ConsoleStream<String> logStream = containerService.Logs();
+                    IList<String> logData = logStream.ReadToEnd();
+
+                    foreach (String s in logData)
+                    {
+                        Console.Out.WriteLine(s);
+                    }
+                }
+            }
+
             await this.TestingContext.DockerHelper.StopContainersForScenarioRun().ConfigureAwait(false);
         }
     }
