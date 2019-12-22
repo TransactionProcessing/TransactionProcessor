@@ -2,6 +2,7 @@
 {
     using System;
     using System.Net.Http;
+    using System.Net.Http.Headers;
     using System.Text;
     using System.Threading;
     using System.Threading.Tasks;
@@ -12,7 +13,7 @@
     /// <summary>
     /// 
     /// </summary>
-    /// <seealso cref="ClientProxyBase.ClientProxyBase" />
+    /// <seealso cref="ClientProxyBase" />
     /// <seealso cref="TransactionProcessor.Client.ITransactionProcessorClient" />
     public class TransactionProcessorClient : ClientProxyBase, ITransactionProcessorClient
     {
@@ -48,10 +49,12 @@
         /// <summary>
         /// Performs the transaction.
         /// </summary>
+        /// <param name="accessToken">The access token.</param>
         /// <param name="transactionRequest">The transaction request.</param>
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns></returns>
-        public async Task<SerialisedMessage> PerformTransaction(SerialisedMessage transactionRequest,
+        public async Task<SerialisedMessage> PerformTransaction(String accessToken,
+                                                                SerialisedMessage transactionRequest,
                                                                 CancellationToken cancellationToken)
         {
             SerialisedMessage response = null;
@@ -65,7 +68,7 @@
                 StringContent httpContent = new StringContent(requestSerialised, Encoding.UTF8, "application/json");
 
                 // Add the access token to the client headers
-                //this.HttpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", accessToken);
+                this.HttpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", accessToken);
 
                 // Make the Http Call here
                 HttpResponseMessage httpResponse = await this.HttpClient.PostAsync(requestUri, httpContent, cancellationToken);

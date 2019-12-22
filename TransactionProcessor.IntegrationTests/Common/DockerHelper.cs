@@ -3,6 +3,7 @@
     using System;
     using System.Collections.Generic;
     using System.Net.Http;
+    using System.Threading;
     using System.Threading.Tasks;
     using Client;
     using Ductus.FluentDocker.Builders;
@@ -12,28 +13,40 @@
     using Ductus.FluentDocker.Services;
     using Ductus.FluentDocker.Services.Extensions;
     using EstateManagement.Client;
+    using global::Shared.Logger;
+    using SecurityService.Client;
 
     public class DockerHelper
     {
+        private readonly NlogLogger Logger;
+
         protected INetworkService TestNetwork;
-        
+
+        public Int32 SecurityServicePort;
         protected Int32 EstateManagementPort;
         protected Int32 TransactionProcessorPort;
         protected Int32 EventStorePort;
 
+        public IContainerService SecurityServiceContainer;
         public IContainerService EstateManagementContainer;
         public IContainerService TransactionProcessorContainer;
         protected IContainerService EventStoreContainer;
 
         public IEstateClient EstateClient;
         public ITransactionProcessorClient TransactionProcessorClient;
-        //public HttpClient HttpClient;
+        public ISecurityServiceClient SecurityServiceClient;
 
         protected String EventStoreConnectionString;
 
+        public String SecurityServiceContainerName;
         protected String EstateManagementContainerName;
         protected String TransactionProcessorContainerName;
         protected String EventStoreContainerName;
+
+        public DockerHelper(NlogLogger logger)
+        {
+            this.Logger = logger;
+        }
 
         private void SetupTestNetwork()
         {
@@ -67,6 +80,7 @@
             this.TestId = testGuid;
 
             // Setup the container names
+            this.SecurityServiceContainerName = $"securityservice{testGuid:N}";
             this.EstateManagementContainerName = $"estate{testGuid:N}";
             this.TransactionProcessorContainerName = $"txnprocessor{testGuid:N}";
             this.EventStoreContainerName = $"eventstore{testGuid:N}";
@@ -75,6 +89,7 @@
                 $"EventStoreSettings:ConnectionString=ConnectTo=tcp://admin:changeit@{this.EventStoreContainerName}:1113;VerboseLogging=true;";
 
             this.SetupTestNetwork();
+            this.SetupSecurityServiceContainer(traceFolder);
             this.SetupEventStoreContainer(traceFolder);
             this.SetupEstateManagementContainer(traceFolder);
             this.SetupTransactionProcessorContainer(traceFolder);
@@ -83,14 +98,17 @@
             this.EstateManagementPort = this.EstateManagementContainer.ToHostExposedEndpoint("5000/tcp").Port;
             this.TransactionProcessorPort = this.TransactionProcessorContainer.ToHostExposedEndpoint("5002/tcp").Port;
             this.EventStorePort = this.EventStoreContainer.ToHostExposedEndpoint("2113/tcp").Port;
+            this.SecurityServicePort = this.SecurityServiceContainer.ToHostExposedEndpoint("5001/tcp").Port;
 
             // Setup the base address resolver
             Func<String, String> estateManagementBaseAddressResolver = api => $"http://127.0.0.1:{this.EstateManagementPort}";
             Func<String, String> transactionProcessorBaseAddressResolver = api => $"http://127.0.0.1:{this.TransactionProcessorPort}";
+            Func<String, String> securityServiceBaseAddressResolver = api => $"http://127.0.0.1:{this.SecurityServicePort}";
 
-            this.EstateClient = new EstateClient(estateManagementBaseAddressResolver, new HttpClient());
-            this.TransactionProcessorClient = new TransactionProcessorClient(transactionProcessorBaseAddressResolver, new HttpClient());
-
+            HttpClient httpClient = new HttpClient();
+            this.EstateClient = new EstateClient(estateManagementBaseAddressResolver, httpClient);
+            this.TransactionProcessorClient = new TransactionProcessorClient(transactionProcessorBaseAddressResolver, httpClient);
+            this.SecurityServiceClient = new SecurityServiceClient(securityServiceBaseAddressResolver, httpClient);
             // TODO: Use this to talk to txn processor until we have a client
             //this.HttpClient = new HttpClient();
             //this.HttpClient.BaseAddress = new Uri(transactionProcessorBaseAddressResolver(String.Empty));
@@ -100,6 +118,13 @@
         {
             try
             {
+                if (this.SecurityServiceContainer != null)
+                {
+                    this.SecurityServiceContainer.StopOnDispose = true;
+                    this.SecurityServiceContainer.RemoveOnDispose = true;
+                    this.SecurityServiceContainer.Dispose();
+                }
+
                 if (this.TransactionProcessorContainer != null)
                 {
                     this.TransactionProcessorContainer.StopOnDispose = true;
@@ -133,6 +158,27 @@
             }
         }
 
+        private void SetupSecurityServiceContainer(String traceFolder)
+        {
+            this.Logger.LogInformation("About to Start Security Container");
+
+            this.SecurityServiceContainer = new Builder().UseContainer().WithName(this.SecurityServiceContainerName)
+                                                         .WithEnvironment($"ServiceOptions:PublicOrigin=http://{this.SecurityServiceContainerName}:5001",
+                                                                          $"ServiceOptions:IssuerUrl=http://{this.SecurityServiceContainerName}:5001",
+                                                                          "ASPNETCORE_ENVIRONMENT=IntegrationTest",
+                                                                          "urls=http://*:5001")
+                                                         .WithCredential("https://www.docker.com", "stuartferguson", "Sc0tland")
+                                                         .UseImage("stuartferguson/securityservice").ExposePort(5001).UseNetwork(new List<INetworkService>
+                                                                                                                                 {
+                                                                                                                                     this.TestNetwork
+                                                                                                                                 }.ToArray())
+                                                         .Mount(traceFolder, "/home/txnproc/trace", MountType.ReadWrite).Build().Start().WaitForPort("5001/tcp", 30000);
+            Thread.Sleep(20000);
+
+            this.Logger.LogInformation("Security Service Container Started");
+
+        }
+
         private void SetupEstateManagementContainer(String traceFolder)
         {
             // Management API Container
@@ -140,6 +186,8 @@
                                                 .UseContainer()
                                                 .WithName(this.EstateManagementContainerName)
                                                 .WithEnvironment(this.EventStoreConnectionString,
+                                                                 $"AppSettings:SecurityService=http://{this.SecurityServiceContainerName}:5001",
+                                                                 $"SecurityConfiguration:Authority=http://{this.SecurityServiceContainerName}:5001",
                                                                  "urls=http://*:5000") //,
                                                 //"AppSettings:MigrateDatabase=true",
                                                 //"EventStoreSettings:START_PROJECTIONS=true",
@@ -159,7 +207,9 @@
             this.TransactionProcessorContainer = new Builder()
                                                 .UseContainer()
                                                 .WithName(this.TransactionProcessorContainerName)
-                                                .WithEnvironment(this.EventStoreConnectionString) //,
+                                                .WithEnvironment(this.EventStoreConnectionString,
+                                                                 $"AppSettings:SecurityService=http://{this.SecurityServiceContainerName}:5001",
+                                                                 $"SecurityConfiguration:Authority=http://{this.SecurityServiceContainerName}:5001") //,
                                                 //"AppSettings:MigrateDatabase=true",
                                                 //"EventStoreSettings:START_PROJECTIONS=true",
                                                 //"EventStoreSettings:ContinuousProjectionsFolder=/app/projections/continuous")
