@@ -5,10 +5,11 @@
     using System.Threading;
     using System.Threading.Tasks;
     using BusinessLogic.Commands;
+    using Common;
     using DataTransferObjects;
     using Factories;
+    using Microsoft.AspNetCore.Authorization;
     using Microsoft.AspNetCore.Mvc;
-    using Microsoft.VisualBasic;
     using Newtonsoft.Json;
     using Shared.DomainDrivenDesign.CommandHandling;
 
@@ -20,6 +21,7 @@
     [Route(TransactionController.ControllerRoute)]
     [ApiController]
     [ApiVersion("1.0")]
+    [Authorize]
     public class TransactionController : ControllerBase
     {
         #region Fields
@@ -39,7 +41,7 @@
         #region Constructors
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="TransactionController"/> class.
+        /// Initializes a new instance of the <see cref="TransactionController" /> class.
         /// </summary>
         /// <param name="commandRouter">The command router.</param>
         /// <param name="modelFactory">The model factory.</param>
@@ -51,20 +53,26 @@
         }
 
         #endregion
-        
+
         #region Methods
 
         /// <summary>
         /// Logons the transaction.
         /// </summary>
-        /// <param name="logonTransactionRequest">The logon transaction request.</param>
+        /// <param name="transactionRequest">The transaction request.</param>
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns></returns>
         [HttpPost]
         [Route("")]
         public async Task<IActionResult> PerformTransaction([FromBody] SerialisedMessage transactionRequest,
-                                                          CancellationToken cancellationToken)
+                                                            CancellationToken cancellationToken)
         {
+            // Reject password tokens
+            if (ClaimsHelper.IsPasswordToken(this.User))
+            {
+                return this.Forbid();
+            }
+
             Guid estateId = Guid.Parse(transactionRequest.Metadata[MetadataContants.KeyNameEstateId]);
             Guid merchantId = Guid.Parse(transactionRequest.Metadata[MetadataContants.KeyNameMerchantId]);
 
@@ -77,17 +85,24 @@
             dto.EstateId = estateId;
 
             SerialisedMessage transactionResponse = await this.ProcessSpecificMessage((dynamic)dto, cancellationToken);
-            
+
             // TODO: Populate the GET route
             return this.Created("", transactionResponse);
         }
 
-        private async Task<SerialisedMessage> ProcessSpecificMessage(LogonTransactionRequest logonTransactionRequest, CancellationToken cancellationToken)
+        /// <summary>
+        /// Processes the specific message.
+        /// </summary>
+        /// <param name="logonTransactionRequest">The logon transaction request.</param>
+        /// <param name="cancellationToken">The cancellation token.</param>
+        /// <returns></returns>
+        private async Task<SerialisedMessage> ProcessSpecificMessage(LogonTransactionRequest logonTransactionRequest,
+                                                                     CancellationToken cancellationToken)
         {
             Guid transactionId = Guid.NewGuid();
 
             ProcessLogonTransactionCommand command = ProcessLogonTransactionCommand.Create(transactionId,
-                                                                                            logonTransactionRequest.EstateId,
+                                                                                           logonTransactionRequest.EstateId,
                                                                                            logonTransactionRequest.MerchantId,
                                                                                            logonTransactionRequest.IMEINumber,
                                                                                            logonTransactionRequest.TransactionType,
