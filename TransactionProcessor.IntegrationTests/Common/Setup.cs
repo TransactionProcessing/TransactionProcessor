@@ -26,93 +26,23 @@ namespace TransactionProcessor.IntegrationTests.Common
         [BeforeTestRun]
         protected static void GlobalSetup()
         {
-            ShouldlyConfiguration.DefaultTaskTimeout = TimeSpan.FromMinutes(1);
+            (String, String, String) dockerCredentials = ("https://www.docker.com", "stuartferguson", "Sc0tland");
 
             // Setup a network for the DB Server
-            DatabaseServerNetwork = new Builder().UseNetwork($"sharednetwork").ReuseIfExist().Build();
+            DatabaseServerNetwork = global::Shared.IntegrationTesting.DockerHelper.SetupTestNetwork("sharednetwork", true);
 
             // Start the Database Server here
-            DbConnectionStringWithNoDatabase = StartMySqlContainerWithOpenConnection();
+            DbConnectionStringWithNoDatabase = global::Shared.IntegrationTesting.DockerHelper.StartSqlContainerWithOpenConnection("shareddatabasesqlserver",
+                                                                                                                                  null,
+                                                                                                                                  "stuartferguson/subscriptionservicedatabasesqlserver",
+                                                                                                                                  Setup.DatabaseServerNetwork,
+                                                                                                                                  "",
+                                                                                                                                  dockerCredentials);
         }
 
         public static String GetConnectionString(String databaseName)
         {
             return $"{DbConnectionStringWithNoDatabase} database={databaseName};";
-        }
-
-        private static String StartMySqlContainerWithOpenConnection()
-        {
-            String containerName = $"shareddatabasesqlserver";
-            DatabaseServerContainer = new Ductus.FluentDocker.Builders.Builder()
-                .UseContainer()
-                .WithName(containerName)
-                .WithCredential("https://docker.io", "stuartferguson", "Sc0tland")
-                .UseImage("stuartferguson/subscriptionservicedatabasesqlserver")
-                .WithEnvironment("ACCEPT_EULA=Y", $"SA_PASSWORD=thisisalongpassword123!")
-                .ExposePort(1433)
-                .UseNetwork(DatabaseServerNetwork)
-                .KeepContainer()
-                .KeepRunning()
-                .ReuseIfExists()
-                .Build()
-                .Start()
-                .WaitForPort("1433/tcp", 30000);
-
-            IPEndPoint sqlServerEndpoint = DatabaseServerContainer.ToHostExposedEndpoint("1433/tcp");
-
-            // Try opening a connection
-            Int32 maxRetries = 10;
-            Int32 counter = 1;
-
-            String server = "127.0.0.1";
-            String database = "SubscriptionServiceConfiguration";
-            String user = "sa";
-            String password = "thisisalongpassword123!";
-            String port = sqlServerEndpoint.Port.ToString();
-
-            String connectionString = $"server={server},{port};user id={user}; password={password}; database={database};";
-
-            SqlConnection connection = new SqlConnection(connectionString);
-
-            using (StreamWriter sw = new StreamWriter("C:\\Temp\\testlog.log", true))
-            {
-                while (counter <= maxRetries)
-                {
-                    try
-                    {
-                        sw.WriteLine($"Attempt {counter}");
-                        sw.WriteLine(DateTime.Now);
-
-                        connection.Open();
-
-                        SqlCommand command = connection.CreateCommand();
-                        command.CommandText = "SELECT * FROM EventStoreServers";
-                        command.ExecuteNonQuery();
-
-                        sw.WriteLine("Connection Opened");
-
-                        connection.Close();
-
-                        break;
-                    }
-                    catch (SqlException ex)
-                    {
-                        if (connection.State == ConnectionState.Open)
-                        {
-                            connection.Close();
-                        }
-
-                        sw.WriteLine(ex);
-                        Thread.Sleep(20000);
-                    }
-                    finally
-                    {
-                        counter++;
-                    }
-                }
-            }
-
-            return $"server={containerName};user id={user}; password={password};";
         }
     }
 }

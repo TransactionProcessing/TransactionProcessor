@@ -53,29 +53,29 @@ namespace TransactionProcessor.IntegrationTests.Common
         {
             if (this.ScenarioContext.TestError != null)
             {
-                Exception currentEx = this.ScenarioContext.TestError;
-                Console.Out.WriteLine(currentEx.Message);
-                while (currentEx.InnerException != null)
-                {
-                    currentEx = currentEx.InnerException;
-                    Console.Out.WriteLine(currentEx.Message);
-                }
+                //Exception currentEx = this.ScenarioContext.TestError;
+                //Console.Out.WriteLine(currentEx.Message);
+                //while (currentEx.InnerException != null)
+                //{
+                //    currentEx = currentEx.InnerException;
+                //    Console.Out.WriteLine(currentEx.Message);
+                //}
 
-                // The test has failed, grab the logs from all the containers
-                List<IContainerService> containers = new List<IContainerService>();
-                containers.Add(this.TestingContext.DockerHelper.EstateManagementContainer);
-                containers.Add(this.TestingContext.DockerHelper.TransactionProcessorContainer);
+                //// The test has failed, grab the logs from all the containers
+                //List<IContainerService> containers = new List<IContainerService>();
+                //containers.Add(this.TestingContext.DockerHelper.EstateManagementContainer);
+                //containers.Add(this.TestingContext.DockerHelper.TransactionProcessorContainer);
 
-                foreach (IContainerService containerService in containers)
-                {
-                    ConsoleStream<String> logStream = containerService.Logs();
-                    IList<String> logData = logStream.ReadToEnd();
+                //foreach (IContainerService containerService in containers)
+                //{
+                //    ConsoleStream<String> logStream = containerService.Logs();
+                //    IList<String> logData = logStream.ReadToEnd();
 
-                    foreach (String s in logData)
-                    {
-                        Console.Out.WriteLine(s);
-                    }
-                }
+                //    foreach (String s in logData)
+                //    {
+                //        Console.Out.WriteLine(s);
+                //    }
+                //}
             }
 
             await this.TestingContext.DockerHelper.StopContainersForScenarioRun().ConfigureAwait(false);
