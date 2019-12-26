@@ -7,7 +7,7 @@
 
 ## Nuget Versions
 
-**Client Proy Base:**  [![Estate Management Client MyGet Badge](https://buildstats.info/myget/transactionprocessing/EstateManagement.Client)](https://buildstats.info/myget/transactionprocessing/TransactionProcessor.Client)
+**Client Proy Base:**  [![Transaction Processor Client MyGet Badge](https://buildstats.info/myget/transactionprocessing/TransactionProcessor.Client)](https://buildstats.info/myget/transactionprocessing/TransactionProcessor.Client)
 
 ## Code Coverage Results
 
