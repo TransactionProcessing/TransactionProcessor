@@ -26,21 +26,21 @@
         /// <summary>
         /// Processes the logon transaction.
         /// </summary>
-        /// <param name="transactionId"></param>
-        /// <param name="estateId"></param>
-        /// <param name="merchantId"></param>
-        /// <param name="transactionDateTime"></param>
-        /// <param name="transactionNumber"></param>
-        /// <param name="imeiNumber"></param>
+        /// <param name="transactionId">The transaction identifier.</param>
+        /// <param name="estateId">The estate identifier.</param>
+        /// <param name="merchantId">The merchant identifier.</param>
+        /// <param name="transactionDateTime">The transaction date time.</param>
+        /// <param name="transactionNumber">The transaction number.</param>
+        /// <param name="deviceIdentifier">The device identifier.</param>
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns></returns>
         public async Task<ProcessLogonTransactionResponse> ProcessLogonTransaction(Guid transactionId, Guid estateId, Guid merchantId, DateTime transactionDateTime,
-                                                                                   String transactionNumber, String imeiNumber, CancellationToken cancellationToken)
+                                                                                   String transactionNumber, String deviceIdentifier, CancellationToken cancellationToken)
         {
             IAggregateRepository<TransactionAggregate> transactionAggregateRepository = this.AggregateRepositoryManager.GetAggregateRepository<TransactionAggregate>(estateId);
             
             TransactionAggregate transactionAggregate = await transactionAggregateRepository.GetLatestVersion(transactionId, cancellationToken);
-            transactionAggregate.StartTransaction(transactionDateTime, transactionNumber, "Logon", estateId, merchantId, imeiNumber);
+            transactionAggregate.StartTransaction(transactionDateTime, transactionNumber, "Logon", estateId, merchantId, deviceIdentifier);
             await transactionAggregateRepository.SaveChanges(transactionAggregate, cancellationToken);
 
             transactionAggregate = await transactionAggregateRepository.GetLatestVersion(transactionId, cancellationToken);

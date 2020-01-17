@@ -20,14 +20,14 @@ namespace TransactionProcessor.TransactionAggregate.Tests
                                                                                                       TestData.TransactionDateTime,
                                                                                                       TestData.TransactionNumber,
                                                                                                       TestData.TransactionType,
-                                                                                                      TestData.IMEINumber);
+                                                                                                      TestData.DeviceIdentifier);
             transactionHasStartedEvent.ShouldNotBeNull();
             transactionHasStartedEvent.AggregateId.ShouldBe(TestData.TransactionId);
             transactionHasStartedEvent.EventCreatedDateTime.ShouldNotBe(DateTime.MinValue);
             transactionHasStartedEvent.EventId.ShouldNotBe(Guid.Empty);
             transactionHasStartedEvent.TransactionId.ShouldBe(TestData.TransactionId);
             transactionHasStartedEvent.EstateId.ShouldBe(TestData.EstateId);
-            transactionHasStartedEvent.ImeiNumber.ShouldBe(TestData.IMEINumber);
+            transactionHasStartedEvent.DeviceIdentifier.ShouldBe(TestData.DeviceIdentifier);
             transactionHasStartedEvent.MerchantId.ShouldBe(TestData.MerchantId);
             transactionHasStartedEvent.TransactionDateTime.ShouldBe(TestData.TransactionDateTime);
             transactionHasStartedEvent.TransactionNumber.ShouldBe(TestData.TransactionNumber);

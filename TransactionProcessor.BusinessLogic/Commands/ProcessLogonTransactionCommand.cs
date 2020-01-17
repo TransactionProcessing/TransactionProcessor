@@ -17,9 +17,10 @@
         /// <summary>
         /// Initializes a new instance of the <see cref="ProcessLogonTransactionCommand" /> class.
         /// </summary>
+        /// <param name="transactionId">The transaction identifier.</param>
         /// <param name="estateId">The estate identifier.</param>
         /// <param name="merchantId">The merchant identifier.</param>
-        /// <param name="imeiNumber">The imei number.</param>
+        /// <param name="deviceIdentifier">The device identifier.</param>
         /// <param name="transactionType">Type of the transaction.</param>
         /// <param name="transactionDateTime">The transaction date time.</param>
         /// <param name="transactionNumber">The transaction number.</param>
@@ -27,7 +28,7 @@
         private ProcessLogonTransactionCommand(Guid transactionId, 
                                                Guid estateId,
                                                Guid merchantId,
-                                               String imeiNumber,
+                                               String deviceIdentifier,
                                                String transactionType,
                                                DateTime transactionDateTime,
                                                String transactionNumber,
@@ -35,7 +36,7 @@
         {
             this.TransactionId = transactionId;
             this.EstateId = estateId;
-            this.IMEINumber = imeiNumber;
+            this.DeviceIdentifier = deviceIdentifier;
             this.MerchantId = merchantId;
             this.TransactionDateTime = transactionDateTime;
             this.TransactionNumber = transactionNumber;
@@ -55,12 +56,12 @@
         public Guid EstateId { get; }
 
         /// <summary>
-        /// Gets the imei number.
+        /// Gets the device identifier.
         /// </summary>
         /// <value>
-        /// The imei number.
+        /// The device identifier.
         /// </value>
-        public String IMEINumber { get; }
+        public String DeviceIdentifier { get; }
 
         /// <summary>
         /// Gets the merchant identifier.
@@ -101,9 +102,10 @@
         /// <summary>
         /// Creates the specified estate identifier.
         /// </summary>
+        /// <param name="transactionId">The transaction identifier.</param>
         /// <param name="estateId">The estate identifier.</param>
         /// <param name="merchantId">The merchant identifier.</param>
-        /// <param name="imeiNumber">The imei number.</param>
+        /// <param name="deviceIdentifier">The device identifier.</param>
         /// <param name="transactionType">Type of the transaction.</param>
         /// <param name="transactionDateTime">The transaction date time.</param>
         /// <param name="transactionNumber">The transaction number.</param>
@@ -111,12 +113,12 @@
         public static ProcessLogonTransactionCommand Create(Guid transactionId, 
                                                             Guid estateId,
                                                             Guid merchantId,
-                                                            String imeiNumber,
+                                                            String deviceIdentifier,
                                                             String transactionType,
                                                             DateTime transactionDateTime,
                                                             String transactionNumber)
         {
-            return new ProcessLogonTransactionCommand(transactionId, estateId, merchantId, imeiNumber, transactionType, transactionDateTime, transactionNumber, Guid.NewGuid());
+            return new ProcessLogonTransactionCommand(transactionId, estateId, merchantId, deviceIdentifier, transactionType, transactionDateTime, transactionNumber, Guid.NewGuid());
         }
 
         #endregion

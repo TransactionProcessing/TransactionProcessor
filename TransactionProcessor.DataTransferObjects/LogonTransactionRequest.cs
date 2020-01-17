@@ -12,12 +12,12 @@
         #region Properties
 
         /// <summary>
-        /// Gets or sets the imei number.
+        /// Gets or sets the device identifier.
         /// </summary>
         /// <value>
-        /// The imei number.
+        /// The device identifier.
         /// </value>
-        public String IMEINumber { get; set; }
+        public String DeviceIdentifier { get; set; }
 
         /// <summary>
         /// Gets or sets the transaction date time.

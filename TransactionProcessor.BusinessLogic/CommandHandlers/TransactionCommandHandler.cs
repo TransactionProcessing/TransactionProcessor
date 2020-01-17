@@ -57,7 +57,7 @@
                                          CancellationToken cancellationToken)
         {
             ProcessLogonTransactionResponse logonResponse = await this.TransactionDomainService.ProcessLogonTransaction(command.TransactionId, command.EstateId,
-                command.MerchantId, command.TransactionDateTime, command.TransactionNumber, command.IMEINumber, cancellationToken);
+                command.MerchantId, command.TransactionDateTime, command.TransactionNumber, command.DeviceIdentifier, cancellationToken);
 
             command.Response = logonResponse;
         }

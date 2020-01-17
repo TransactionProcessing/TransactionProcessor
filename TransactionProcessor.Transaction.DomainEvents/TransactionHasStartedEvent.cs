@@ -32,7 +32,7 @@
         /// <param name="transactionDateTime">The transaction date time.</param>
         /// <param name="transactionNumber">The transaction number.</param>
         /// <param name="transactionType">Type of the transaction.</param>
-        /// <param name="imeiNumber">The imei number.</param>
+        /// <param name="deviceIdentifier">The device identifier.</param>
         public TransactionHasStartedEvent(Guid aggregateId,
                                           Guid eventId,
                                           Guid estateId,
@@ -40,7 +40,7 @@
                                           DateTime transactionDateTime,
                                           String transactionNumber,
                                           String transactionType,
-                                          String imeiNumber) : base(aggregateId, eventId)
+                                          String deviceIdentifier) : base(aggregateId, eventId)
         {
             this.TransactionId = aggregateId;
             this.EstateId = estateId;
@@ -48,7 +48,7 @@
             this.TransactionDateTime = transactionDateTime;
             this.TransactionNumber = transactionNumber;
             this.TransactionType = transactionType;
-            this.ImeiNumber = imeiNumber;
+            this.DeviceIdentifier = deviceIdentifier;
         }
 
         #endregion
@@ -65,13 +65,13 @@
         public Guid EstateId { get; private set; }
 
         /// <summary>
-        /// Gets the imei number.
+        /// Gets the device identifier.
         /// </summary>
         /// <value>
-        /// The imei number.
+        /// The device identifier.
         /// </value>
         [JsonProperty]
-        public String ImeiNumber { get; private set; }
+        public String DeviceIdentifier { get; private set; }
 
         /// <summary>
         /// Gets the merchant identifier.
@@ -131,7 +131,7 @@
         /// <param name="transactionDateTime">The transaction date time.</param>
         /// <param name="transactionNumber">The transaction number.</param>
         /// <param name="transactionType">Type of the transaction.</param>
-        /// <param name="imeiNumber">The imei number.</param>
+        /// <param name="deviceIdentifier">The device identifier.</param>
         /// <returns></returns>
         public static TransactionHasStartedEvent Create(Guid aggregateId,
                                                         Guid estateId,
@@ -139,9 +139,9 @@
                                                         DateTime transactionDateTime,
                                                         String transactionNumber,
                                                         String transactionType,
-                                                        String imeiNumber)
+                                                        String deviceIdentifier)
         {
-            return new TransactionHasStartedEvent(aggregateId, Guid.NewGuid(), estateId, merchantId, transactionDateTime, transactionNumber, transactionType, imeiNumber);
+            return new TransactionHasStartedEvent(aggregateId, Guid.NewGuid(), estateId, merchantId, transactionDateTime, transactionNumber, transactionType, deviceIdentifier);
         }
 
         #endregion

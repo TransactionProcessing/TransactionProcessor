@@ -25,11 +25,11 @@ namespace TransactionProcessor.Testing
         public static Guid TransactionId = Guid.Parse("AE89B2F6-307B-46F4-A8E7-CEF27097D766");
 
         public static ProcessLogonTransactionCommand ProcessLogonTransactionCommand = ProcessLogonTransactionCommand.Create( TestData.TransactionId, TestData.EstateId, TestData.MerchantId,
-                                                                                                                         TestData.IMEINumber, TestData.TransactionType,
+                                                                                                                         TestData.DeviceIdentifier, TestData.TransactionType,
                                                                                                                          TestData.TransactionDateTime,
                                                                                                                          TestData.TransactionNumber);
 
-        public static String IMEINumber = "1234567890";
+        public static String DeviceIdentifier = "1234567890";
 
         public static String TransactionType = "Logon";
 
@@ -51,7 +51,7 @@ namespace TransactionProcessor.Testing
             TransactionAggregate transactionAggregate = TransactionAggregate.Create(TestData.TransactionId);
 
             transactionAggregate.StartTransaction(TestData.TransactionDateTime,TestData.TransactionNumber, TestData.TransactionType, TestData.EstateId, TestData.MerchantId,
-                                                  TestData.IMEINumber);
+                                                  TestData.DeviceIdentifier);
 
             return transactionAggregate;
         }
@@ -61,7 +61,7 @@ namespace TransactionProcessor.Testing
             TransactionAggregate transactionAggregate = TransactionAggregate.Create(TestData.TransactionId);
 
             transactionAggregate.StartTransaction(TestData.TransactionDateTime, TestData.TransactionNumber, TestData.TransactionType, TestData.EstateId, TestData.MerchantId,
-                                                  TestData.IMEINumber);
+                                                  TestData.DeviceIdentifier);
 
             transactionAggregate.AuthoriseTransactionLocally(TestData.AuthorisationCode, TestData.ResponseCode, TestData.ResponseMessage);
 
@@ -73,7 +73,7 @@ namespace TransactionProcessor.Testing
             TransactionAggregate transactionAggregate = TransactionAggregate.Create(TestData.TransactionId);
 
             transactionAggregate.StartTransaction(TestData.TransactionDateTime, TestData.TransactionNumber, TestData.TransactionType, TestData.EstateId, TestData.MerchantId,
-                                                  TestData.IMEINumber);
+                                                  TestData.DeviceIdentifier);
 
             transactionAggregate.AuthoriseTransactionLocally(TestData.AuthorisationCode, TestData.ResponseCode, TestData.ResponseMessage);
 

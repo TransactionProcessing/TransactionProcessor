@@ -39,7 +39,7 @@ namespace TransactionProcessor.BusinessLogic.Tests.Services
                                                              TestData.MerchantId,
                                                              TestData.TransactionDateTime,
                                                              TestData.TransactionNumber,
-                                                             TestData.IMEINumber,
+                                                             TestData.DeviceIdentifier,
                                                              CancellationToken.None);
 
             response.ShouldNotBeNull();
