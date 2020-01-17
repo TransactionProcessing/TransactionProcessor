@@ -104,7 +104,7 @@
             ProcessLogonTransactionCommand command = ProcessLogonTransactionCommand.Create(transactionId,
                                                                                            logonTransactionRequest.EstateId,
                                                                                            logonTransactionRequest.MerchantId,
-                                                                                           logonTransactionRequest.IMEINumber,
+                                                                                           logonTransactionRequest.DeviceIdentifier,
                                                                                            logonTransactionRequest.TransactionType,
                                                                                            logonTransactionRequest.TransactionDateTime,
                                                                                            logonTransactionRequest.TransactionNumber);

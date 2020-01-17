@@ -246,7 +246,7 @@ namespace TransactionProcessor.IntegrationTests.Shared
             }
         }
 
-        private async Task<SerialisedMessage> PerformLogonTransaction(Guid estateId, Guid merchantId, DateTime transactionDateTime, String transactionType, String transactionNumber, String imeiNumber, CancellationToken cancellationToken)
+        private async Task<SerialisedMessage> PerformLogonTransaction(Guid estateId, Guid merchantId, DateTime transactionDateTime, String transactionType, String transactionNumber, String deviceIdentifier, CancellationToken cancellationToken)
         {
             LogonTransactionRequest logonTransactionRequest = new LogonTransactionRequest
                                                               {
@@ -254,7 +254,7 @@ namespace TransactionProcessor.IntegrationTests.Shared
                                                                   EstateId = estateId,
                                                                   TransactionDateTime = transactionDateTime,
                                                                   TransactionNumber = transactionNumber,
-                                                                  IMEINumber = imeiNumber,
+                                                                  DeviceIdentifier = deviceIdentifier,
                                                                   TransactionType = transactionType
                                                               };
 
