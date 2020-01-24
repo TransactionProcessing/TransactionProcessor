@@ -7,7 +7,7 @@ namespace TransactionProcessor.Tests.Common
     using System.Net.Http;
     using System.Threading;
     using System.Threading.Tasks;
-    using BusinessLogic.Commands;
+    using MediatR;
     using Microsoft.AspNetCore.Hosting;
     using Microsoft.AspNetCore.Mvc.Authorization;
     using Microsoft.AspNetCore.Mvc.Testing;
@@ -23,13 +23,13 @@ namespace TransactionProcessor.Tests.Common
         protected override void ConfigureWebHost(IWebHostBuilder builder)
         {
             // Setup my mocks in here
-            Mock<ICommandRouter> commandRouterMock = this.CreateCommandRouterMock();
+            Mock<IMediator> mediatorMock = this.CreateMediatorMock();
 
             builder.ConfigureServices((builderContext, services) =>
             {
-                if (commandRouterMock != null)
+                if (mediatorMock != null)
                 {
-                    services.AddSingleton<ICommandRouter>(commandRouterMock.Object);
+                    services.AddSingleton<IMediator>(mediatorMock.Object);
                 }
 
                 services.AddMvc(options =>
@@ -41,21 +41,13 @@ namespace TransactionProcessor.Tests.Common
             ;
         }
 
-        private Mock<ICommandRouter> CreateCommandRouterMock()
+        private Mock<IMediator> CreateMediatorMock()
         {
-            Mock<ICommandRouter> commandRouterMock = new Mock<ICommandRouter>(MockBehavior.Strict);
+            Mock<IMediator> mediatorMock = new Mock<IMediator>(MockBehavior.Strict);
 
-            commandRouterMock.Setup(c => c.Route(It.IsAny<ProcessLogonTransactionCommand>(), It.IsAny<CancellationToken>())).Returns<ProcessLogonTransactionCommand, CancellationToken>((ProcessLogonTransactionCommand command, CancellationToken cancellationToken) =>
-                                                                                                                                                                     {
-                                                                                                                                                                         command.Response = new ProcessLogonTransactionResponse
-                                                                                                                                                                                            {
-                                                                                                                                                                                                ResponseMessage = "SUCCESS",
-                                                                                                                                                                                                ResponseCode = "0000"
-                                                                                                                                                                                            };
-                                                                                                                                                                         return Task.CompletedTask;
-                                                                                                                                                                     });
+            mediatorMock.Setup(c => c.Send(It.IsAny<IRequest<String>>(), It.IsAny<CancellationToken>())).Returns(Task.FromResult("Hello"));
 
-            return commandRouterMock;
+            return mediatorMock;
         }
 
     }

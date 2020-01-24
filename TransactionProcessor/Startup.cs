@@ -16,14 +16,17 @@ namespace TransactionProcessor
     using System.IO;
     using System.Reflection;
     using Autofac;
-    using BusinessLogic.CommandHandlers;
+    using BusinessLogic.RequestHandlers;
+    using BusinessLogic.Requests;
     using BusinessLogic.Services;
     using Common;
     using EventStore.ClientAPI;
+    using MediatR;
     using Microsoft.AspNetCore.Authentication.JwtBearer;
     using Microsoft.AspNetCore.Mvc.ApiExplorer;
     using Microsoft.AspNetCore.Mvc.Versioning;
     using Microsoft.Extensions.Options;
+    using Models;
     using Newtonsoft.Json;
     using Newtonsoft.Json.Serialization;
     using NLog.Extensions.Logging;
@@ -61,7 +64,7 @@ namespace TransactionProcessor
         {
             this.ConfigureMiddlewareServices(services);
 
-            services.AddSingleton<ICommandRouter, CommandRouter>();
+            services.AddTransient<IMediator, Mediator>();
         }
 
         public void ConfigureContainer(ContainerBuilder builder)
@@ -112,6 +115,15 @@ namespace TransactionProcessor
             builder.RegisterType<AggregateRepository<TransactionAggregate.TransactionAggregate>>().As<IAggregateRepository<TransactionAggregate.TransactionAggregate>>().SingleInstance();
             builder.RegisterType<TransactionDomainService>().As<ITransactionDomainService>().SingleInstance();
             builder.RegisterType<Factories.ModelFactory>().As<Factories.IModelFactory>().SingleInstance();
+
+            // request & notification handlers
+            builder.Register<ServiceFactory>(context =>
+                                             {
+                                                 var c = context.Resolve<IComponentContext>();
+                                                 return t => c.Resolve(t);
+                                             });
+
+            builder.RegisterType<TransactionRequestHandler>().As<IRequestHandler<ProcessLogonTransactionRequest, ProcessLogonTransactionResponse>>().SingleInstance();
         }
 
         private void ConfigureMiddlewareServices(IServiceCollection services)

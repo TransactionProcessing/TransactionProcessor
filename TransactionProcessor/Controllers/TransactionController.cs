@@ -4,12 +4,14 @@
     using System.Diagnostics.CodeAnalysis;
     using System.Threading;
     using System.Threading.Tasks;
-    using BusinessLogic.Commands;
+    using BusinessLogic.Requests;
     using Common;
     using DataTransferObjects;
     using Factories;
+    using MediatR;
     using Microsoft.AspNetCore.Authorization;
     using Microsoft.AspNetCore.Mvc;
+    using Models;
     using Newtonsoft.Json;
     using Shared.DomainDrivenDesign.CommandHandling;
 
@@ -27,9 +29,9 @@
         #region Fields
 
         /// <summary>
-        /// The command router
+        /// The mediator
         /// </summary>
-        private readonly ICommandRouter CommandRouter;
+        private readonly IMediator Mediator;
 
         /// <summary>
         /// The model factory
@@ -45,10 +47,10 @@
         /// </summary>
         /// <param name="commandRouter">The command router.</param>
         /// <param name="modelFactory">The model factory.</param>
-        public TransactionController(ICommandRouter commandRouter,
+        public TransactionController(IMediator mediator,
                                      IModelFactory modelFactory)
         {
-            this.CommandRouter = commandRouter;
+            this.Mediator = mediator;
             this.ModelFactory = modelFactory;
         }
 
@@ -101,17 +103,17 @@
         {
             Guid transactionId = Guid.NewGuid();
 
-            ProcessLogonTransactionCommand command = ProcessLogonTransactionCommand.Create(transactionId,
-                                                                                           logonTransactionRequest.EstateId,
-                                                                                           logonTransactionRequest.MerchantId,
-                                                                                           logonTransactionRequest.DeviceIdentifier,
-                                                                                           logonTransactionRequest.TransactionType,
-                                                                                           logonTransactionRequest.TransactionDateTime,
-                                                                                           logonTransactionRequest.TransactionNumber);
+            ProcessLogonTransactionRequest request = ProcessLogonTransactionRequest.Create(transactionId,
+                                                                                                       logonTransactionRequest.EstateId,
+                                                                                                       logonTransactionRequest.MerchantId,
+                                                                                                       logonTransactionRequest.DeviceIdentifier,
+                                                                                                       logonTransactionRequest.TransactionType,
+                                                                                                       logonTransactionRequest.TransactionDateTime,
+                                                                                                       logonTransactionRequest.TransactionNumber);
 
-            await this.CommandRouter.Route(command, cancellationToken);
+            ProcessLogonTransactionResponse response = await this.Mediator.Send(request, cancellationToken);
 
-            return this.ModelFactory.ConvertFrom(command.Response);
+            return this.ModelFactory.ConvertFrom(response);
         }
 
         #endregion

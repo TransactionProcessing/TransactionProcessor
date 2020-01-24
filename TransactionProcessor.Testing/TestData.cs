@@ -4,7 +4,7 @@ using System.Text;
 
 namespace TransactionProcessor.Testing
 {
-    using BusinessLogic.Commands;
+    using BusinessLogic.Requests;
     using Models;
     using TransactionAggregate;
 
@@ -24,10 +24,10 @@ namespace TransactionProcessor.Testing
         public static Guid MerchantId = Guid.Parse("833B5AAC-A5C5-46C2-A499-F2B4252B2942");
         public static Guid TransactionId = Guid.Parse("AE89B2F6-307B-46F4-A8E7-CEF27097D766");
 
-        public static ProcessLogonTransactionCommand ProcessLogonTransactionCommand = ProcessLogonTransactionCommand.Create( TestData.TransactionId, TestData.EstateId, TestData.MerchantId,
-                                                                                                                         TestData.DeviceIdentifier, TestData.TransactionType,
-                                                                                                                         TestData.TransactionDateTime,
-                                                                                                                         TestData.TransactionNumber);
+        public static ProcessLogonTransactionRequest ProcessLogonTransactionRequest = ProcessLogonTransactionRequest.Create( TestData.TransactionId, TestData.EstateId, TestData.MerchantId,
+                                                                                                                             TestData.DeviceIdentifier, TestData.TransactionType,
+                                                                                                                             TestData.TransactionDateTime,
+                                                                                                                             TestData.TransactionNumber);
 
         public static String DeviceIdentifier = "1234567890";
 
