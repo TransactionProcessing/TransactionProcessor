@@ -1,21 +1,19 @@
-﻿namespace TransactionProcessor.BusinessLogic.Commands
+﻿namespace TransactionProcessor.BusinessLogic.Requests
 {
     using System;
+    using MediatR;
     using Models;
-    using Shared.DomainDrivenDesign.CommandHandling;
 
     /// <summary>
     /// 
     /// </summary>
-    /// <seealso cref="Shared.DomainDrivenDesign.CommandHandling.Command{TransactionProcessor.Models.ProcessLogonTransactionResponse}" />
-    public class ProcessLogonTransactionCommand : Command<ProcessLogonTransactionResponse>
+    /// <seealso cref="MediatR.IRequest{TransactionProcessor.Models.ProcessLogonTransactionResponse}" />
+    public class ProcessLogonTransactionRequest : IRequest<ProcessLogonTransactionResponse>
     {
-        public Guid TransactionId { get; private set; }
-
         #region Constructors
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="ProcessLogonTransactionCommand" /> class.
+        /// Initializes a new instance of the <see cref="ProcessLogonTransactionRequest"/> class.
         /// </summary>
         /// <param name="transactionId">The transaction identifier.</param>
         /// <param name="estateId">The estate identifier.</param>
@@ -24,15 +22,13 @@
         /// <param name="transactionType">Type of the transaction.</param>
         /// <param name="transactionDateTime">The transaction date time.</param>
         /// <param name="transactionNumber">The transaction number.</param>
-        /// <param name="commandId">The command identifier.</param>
-        private ProcessLogonTransactionCommand(Guid transactionId, 
+        private ProcessLogonTransactionRequest(Guid transactionId,
                                                Guid estateId,
                                                Guid merchantId,
                                                String deviceIdentifier,
                                                String transactionType,
                                                DateTime transactionDateTime,
-                                               String transactionNumber,
-                                               Guid commandId) : base(commandId)
+                                               String transactionNumber)
         {
             this.TransactionId = transactionId;
             this.EstateId = estateId;
@@ -48,20 +44,20 @@
         #region Properties
 
         /// <summary>
-        /// Gets the estate identifier.
-        /// </summary>
-        /// <value>
-        /// The estate identifier.
-        /// </value>
-        public Guid EstateId { get; }
-
-        /// <summary>
         /// Gets the device identifier.
         /// </summary>
         /// <value>
         /// The device identifier.
         /// </value>
         public String DeviceIdentifier { get; }
+
+        /// <summary>
+        /// Gets the estate identifier.
+        /// </summary>
+        /// <value>
+        /// The estate identifier.
+        /// </value>
+        public Guid EstateId { get; }
 
         /// <summary>
         /// Gets the merchant identifier.
@@ -78,6 +74,14 @@
         /// The transaction date time.
         /// </value>
         public DateTime TransactionDateTime { get; }
+
+        /// <summary>
+        /// Gets the transaction identifier.
+        /// </summary>
+        /// <value>
+        /// The transaction identifier.
+        /// </value>
+        public Guid TransactionId { get; }
 
         /// <summary>
         /// Gets the transaction number.
@@ -110,7 +114,7 @@
         /// <param name="transactionDateTime">The transaction date time.</param>
         /// <param name="transactionNumber">The transaction number.</param>
         /// <returns></returns>
-        public static ProcessLogonTransactionCommand Create(Guid transactionId, 
+        public static ProcessLogonTransactionRequest Create(Guid transactionId,
                                                             Guid estateId,
                                                             Guid merchantId,
                                                             String deviceIdentifier,
@@ -118,7 +122,7 @@
                                                             DateTime transactionDateTime,
                                                             String transactionNumber)
         {
-            return new ProcessLogonTransactionCommand(transactionId, estateId, merchantId, deviceIdentifier, transactionType, transactionDateTime, transactionNumber, Guid.NewGuid());
+            return new ProcessLogonTransactionRequest(transactionId, estateId, merchantId, deviceIdentifier, transactionType, transactionDateTime, transactionNumber);
         }
 
         #endregion

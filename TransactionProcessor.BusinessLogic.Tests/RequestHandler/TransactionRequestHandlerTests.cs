@@ -1,26 +1,27 @@
 ﻿namespace TransactionProcessor.BusinessLogic.Tests.CommandHandler
 {
     using System.Threading;
-    using BusinessLogic.Commands;
     using BusinessLogic.Services;
-    using CommandHandlers;
     using Commands;
+    using MediatR;
     using Moq;
+    using RequestHandlers;
+    using Requests;
     using Services;
     using Shared.DomainDrivenDesign.CommandHandling;
     using Shouldly;
     using Testing;
     using Xunit;
 
-    public class TransactionCommandHandlerTests
+    public class TransactionRequestHandlerTests
     {
         [Fact]
-        public void EstateCommandHandler_CreateEstateCommand_IsHandled()
+        public void TransactionRequestHandler_ProcessLogonTransactionRequest_IsHandled()
         {
             Mock<ITransactionDomainService> transactionDomainService = new Mock<ITransactionDomainService>();
-            ICommandHandler handler = new TransactionCommandHandler(transactionDomainService.Object);
+            TransactionRequestHandler handler = new TransactionRequestHandler(transactionDomainService.Object);
 
-            ProcessLogonTransactionCommand command = TestData.ProcessLogonTransactionCommand;
+            ProcessLogonTransactionRequest command = TestData.ProcessLogonTransactionRequest;
 
             Should.NotThrow(async () =>
                             {
