@@ -102,7 +102,7 @@
             else
             {
                 // Record the failure
-                Logger.LogInformation(validationResult.responseMessage);
+                throw new NotImplementedException();
             }
 
             transactionAggregate = await transactionAggregateRepository.GetLatestVersion(transactionId, cancellationToken);
