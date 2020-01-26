@@ -59,6 +59,10 @@
             configuration.Add("EventStoreSettings:ConnectionName", "UnitTestConnection");
             configuration.Add("EventStoreSettings:HttpPort", "2113");
             configuration.Add("AppSettings:UseConnectionStringConfig", "false");
+            configuration.Add("AppSettings:ClientId", "clientId");
+            configuration.Add("AppSettings:ClientSecret", "clientSecret");
+            configuration.Add("AppSettings:EstateManagementApi", "http://localhost");
+            configuration.Add("AppSettings:SecurityService", "http://localhost");
 
             builder.AddInMemoryCollection(configuration);
 

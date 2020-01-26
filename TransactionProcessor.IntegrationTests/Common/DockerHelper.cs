@@ -4,24 +4,86 @@
     using System.Collections.Generic;
     using System.Linq;
     using System.Net.Http;
-    using System.Threading;
     using System.Threading.Tasks;
     using Client;
-    using Ductus.FluentDocker.Builders;
     using Ductus.FluentDocker.Common;
-    using Ductus.FluentDocker.Executors;
-    using Ductus.FluentDocker.Extensions;
-    using Ductus.FluentDocker.Model.Builders;
     using Ductus.FluentDocker.Services;
     using Ductus.FluentDocker.Services.Extensions;
     using EstateManagement.Client;
     using global::Shared.Logger;
     using SecurityService.Client;
 
+    /// <summary>
+    /// 
+    /// </summary>
+    /// <seealso cref="Shared.IntegrationTesting.DockerHelper" />
     public class DockerHelper : global::Shared.IntegrationTesting.DockerHelper
     {
+        #region Fields
+
+        /// <summary>
+        /// The estate client
+        /// </summary>
+        public IEstateClient EstateClient;
+
+        /// <summary>
+        /// The security service client
+        /// </summary>
+        public ISecurityServiceClient SecurityServiceClient;
+
+        /// <summary>
+        /// The test identifier
+        /// </summary>
+        public Guid TestId;
+
+        /// <summary>
+        /// The transaction processor client
+        /// </summary>
+        public ITransactionProcessorClient TransactionProcessorClient;
+
+        /// <summary>
+        /// The containers
+        /// </summary>
+        protected List<IContainerService> Containers;
+
+        /// <summary>
+        /// The estate management API port
+        /// </summary>
+        protected Int32 EstateManagementApiPort;
+
+        /// <summary>
+        /// The event store HTTP port
+        /// </summary>
+        protected Int32 EventStoreHttpPort;
+
+        /// <summary>
+        /// The security service port
+        /// </summary>
+        protected Int32 SecurityServicePort;
+
+        /// <summary>
+        /// The test networks
+        /// </summary>
+        protected List<INetworkService> TestNetworks;
+
+        /// <summary>
+        /// The transaction processor port
+        /// </summary>
+        protected Int32 TransactionProcessorPort;
+
+        /// <summary>
+        /// The logger
+        /// </summary>
         private readonly NlogLogger Logger;
 
+        #endregion
+
+        #region Constructors
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="DockerHelper"/> class.
+        /// </summary>
+        /// <param name="logger">The logger.</param>
         public DockerHelper(NlogLogger logger)
         {
             this.Logger = logger;
@@ -29,12 +91,14 @@
             this.TestNetworks = new List<INetworkService>();
         }
 
-        public Guid TestId;
+        #endregion
 
-        protected List<IContainerService> Containers;
+        #region Methods
 
-        protected List<INetworkService> TestNetworks;
-
+        /// <summary>
+        /// Starts the containers for scenario run.
+        /// </summary>
+        /// <param name="scenarioName">Name of the scenario.</param>
         public override async Task StartContainersForScenarioRun(String scenarioName)
         {
             String traceFolder = FdOs.IsWindows() ? $"D:\\home\\txnproc\\trace\\{scenarioName}" : $"//home//txnproc//trace//{scenarioName}";
@@ -59,7 +123,6 @@
             IContainerService eventStoreContainer =
                 DockerHelper.SetupEventStoreContainer(eventStoreContainerName, this.Logger, "eventstore/eventstore:release-5.0.2", testNetwork, traceFolder);
 
-
             IContainerService estateManagementContainer = DockerHelper.SetupEstateManagementContainer(estateManagementApiContainerName,
                                                                                                       this.Logger,
                                                                                                       "stuartferguson/estatemanagement",
@@ -70,14 +133,17 @@
                                                                                                       traceFolder,
                                                                                                       dockerCredentials,
                                                                                                       securityServiceContainerName,
-                                                                                                      eventStoreContainerName);
+                                                                                                      eventStoreContainerName,
+                                                                                                      (null, null),
+                                                                                                      true);
 
             IContainerService securityServiceContainer = DockerHelper.SetupSecurityServiceContainer(securityServiceContainerName,
                                                                                                     this.Logger,
                                                                                                     "stuartferguson/securityservice",
                                                                                                     testNetwork,
                                                                                                     traceFolder,
-                                                                                                    dockerCredentials);
+                                                                                                    dockerCredentials,
+                                                                                                    true);
 
             IContainerService transactionProcessorContainer = DockerHelper.SetupTransactionProcessorContainer(transactionProcessorContainerName,
                                                                                                               this.Logger,
@@ -89,8 +155,9 @@
                                                                                                               traceFolder,
                                                                                                               dockerCredentials,
                                                                                                               securityServiceContainerName,
-                                                                                                              eventStoreContainerName);
-
+                                                                                                              estateManagementApiContainerName,
+                                                                                                              eventStoreContainerName,
+                                                                                                              ("serviceClient", "Secret1"));
 
             this.Containers.AddRange(new List<IContainerService>
                                      {
@@ -117,20 +184,9 @@
             this.TransactionProcessorClient = new TransactionProcessorClient(TransactionProcessorBaseAddressResolver, httpClient);
         }
 
-        public IEstateClient EstateClient;
-
-        public ITransactionProcessorClient TransactionProcessorClient;
-
-        public ISecurityServiceClient SecurityServiceClient;
-
-        protected Int32 EstateManagementApiPort;
-
-        protected Int32 SecurityServicePort;
-
-        protected Int32 EventStoreHttpPort;
-
-        protected Int32 TransactionProcessorPort;
-
+        /// <summary>
+        /// Stops the containers for scenario run.
+        /// </summary>
         public override async Task StopContainersForScenarioRun()
         {
             if (this.Containers.Any())
@@ -152,5 +208,7 @@
                 }
             }
         }
+
+        #endregion
     }
 }

@@ -14,12 +14,14 @@ namespace TransactionProcessor
 {
     using System.Diagnostics.CodeAnalysis;
     using System.IO;
+    using System.Net.Http;
     using System.Reflection;
     using Autofac;
     using BusinessLogic.RequestHandlers;
     using BusinessLogic.Requests;
     using BusinessLogic.Services;
     using Common;
+    using EstateManagement.Client;
     using EventStore.ClientAPI;
     using MediatR;
     using Microsoft.AspNetCore.Authentication.JwtBearer;
@@ -30,6 +32,7 @@ namespace TransactionProcessor
     using Newtonsoft.Json;
     using Newtonsoft.Json.Serialization;
     using NLog.Extensions.Logging;
+    using SecurityService.Client;
     using Shared.DomainDrivenDesign.CommandHandling;
     using Shared.DomainDrivenDesign.EventStore;
     using Shared.EntityFramework.ConnectionStringConfiguration;
@@ -115,7 +118,14 @@ namespace TransactionProcessor
             builder.RegisterType<AggregateRepository<TransactionAggregate.TransactionAggregate>>().As<IAggregateRepository<TransactionAggregate.TransactionAggregate>>().SingleInstance();
             builder.RegisterType<TransactionDomainService>().As<ITransactionDomainService>().SingleInstance();
             builder.RegisterType<Factories.ModelFactory>().As<Factories.IModelFactory>().SingleInstance();
-
+            builder.RegisterType<EstateClient>().As<IEstateClient>().SingleInstance();
+            builder.RegisterType<SecurityServiceClient>().As<ISecurityServiceClient>().SingleInstance();
+            builder.RegisterType(typeof(HttpClient)).SingleInstance();
+            builder.Register<Func<String, String>>(c => (api) =>
+                                                        {
+                                                            Uri uri = ConfigurationReader.GetBaseServerUri(api);
+                                                            return uri.AbsoluteUri.Substring(0, uri.AbsoluteUri.Length - 1);
+                                                        });
             // request & notification handlers
             builder.Register<ServiceFactory>(context =>
                                              {
