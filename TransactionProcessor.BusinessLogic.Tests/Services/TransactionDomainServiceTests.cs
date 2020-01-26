@@ -16,6 +16,7 @@ namespace TransactionProcessor.BusinessLogic.Tests.Services
     using Shared.DomainDrivenDesign.EventStore;
     using Shared.EventStore.EventStore;
     using Shared.General;
+    using Shared.Logger;
     using Shouldly;
     using Testing;
     using TransactionAggregate;
@@ -28,6 +29,8 @@ namespace TransactionProcessor.BusinessLogic.Tests.Services
         {
             var configurationRoot = new ConfigurationBuilder().AddInMemoryCollection(TestData.DefaultAppSettings).Build();
             ConfigurationReader.Initialise(configurationRoot);
+
+            Logger.Initialise(NullLogger.Instance);
 
             Mock<IAggregateRepositoryManager> aggregateRepositoryManager = new Mock<IAggregateRepositoryManager>();
             Mock<IAggregateRepository<TransactionAggregate>> transactionAggregateRepository = new Mock<IAggregateRepository<TransactionAggregate>>();
