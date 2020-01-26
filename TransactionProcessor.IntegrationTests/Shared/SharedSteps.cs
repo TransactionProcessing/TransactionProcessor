@@ -221,7 +221,7 @@ namespace TransactionProcessor.IntegrationTests.Shared
                 DateTime transactionDateTime = SpecflowTableHelper.GetDateForDateString(dateString, DateTime.Today);
                 String transactionNumber = SpecflowTableHelper.GetStringRowValue(tableRow, "TransactionNumber");
                 String transactionType = SpecflowTableHelper.GetStringRowValue(tableRow, "TransactionType");
-                String imeiNumber = SpecflowTableHelper.GetStringRowValue(tableRow, "IMEINumber");
+                String deviceIdentifier = SpecflowTableHelper.GetStringRowValue(tableRow, "DeviceIdentifier");
 
                 EstateDetails estateDetails = this.TestingContext.GetEstateDetails(tableRow);
 
@@ -236,7 +236,7 @@ namespace TransactionProcessor.IntegrationTests.Shared
                                                            transactionDateTime,
                                                            transactionType,
                                                            transactionNumber,
-                                                           imeiNumber,
+                                                           deviceIdentifier,
                                                            CancellationToken.None);
                         break;
                         
@@ -403,5 +403,39 @@ namespace TransactionProcessor.IntegrationTests.Shared
             }
         }
 
+        [Given(@"I have assigned the following devices to the merchants")]
+        public async Task GivenIHaveAssignedTheFollowingDevicesToTheMerchants(Table table)
+        {
+            foreach (TableRow tableRow in table.Rows)
+            {
+                EstateDetails estateDetails = this.TestingContext.GetEstateDetails(tableRow);
+
+                String token = this.TestingContext.AccessToken;
+                if (String.IsNullOrEmpty(estateDetails.AccessToken) == false)
+                {
+                    token = estateDetails.AccessToken;
+                }
+
+                // Lookup the merchant id
+                String merchantName = SpecflowTableHelper.GetStringRowValue(tableRow, "MerchantName");
+                Guid merchantId = estateDetails.GetMerchantId(merchantName);
+
+                // Lookup the operator id
+                String deviceIdentifier = SpecflowTableHelper.GetStringRowValue(tableRow, "DeviceIdentifier");
+
+                AddMerchantDeviceRequest addMerchantDeviceRequest = new AddMerchantDeviceRequest
+                                                                    {
+                                                                        DeviceIdentifier = deviceIdentifier
+                                                                    };
+
+                AddMerchantDeviceResponse addMerchantDeviceResponse = await this.TestingContext.DockerHelper.EstateClient.AddDeviceToMerchant(token, estateDetails.EstateId, merchantId, addMerchantDeviceRequest, CancellationToken.None).ConfigureAwait(false);
+
+                addMerchantDeviceResponse.EstateId.ShouldBe(estateDetails.EstateId);
+                addMerchantDeviceResponse.MerchantId.ShouldBe(merchantId);
+                addMerchantDeviceResponse.DeviceId.ShouldNotBe(Guid.Empty);
+
+                this.TestingContext.Logger.LogInformation($"Device {deviceIdentifier} assigned to Merchant {merchantName} Estate {estateDetails.EstateName}");
+            }
+        }
     }
 }

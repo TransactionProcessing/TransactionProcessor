@@ -5,7 +5,9 @@ using System.Text;
 namespace TransactionProcessor.Testing
 {
     using BusinessLogic.Requests;
+    using EstateManagement.DataTransferObjects.Responses;
     using Models;
+    using SecurityService.DataTransferObjects.Responses;
     using TransactionAggregate;
 
     public class TestData
@@ -81,5 +83,28 @@ namespace TransactionProcessor.Testing
 
             return transactionAggregate;
         }
+
+        public static IReadOnlyDictionary<String, String> DefaultAppSettings { get; } = new Dictionary<String, String>
+        {
+            ["AppSettings:ClientId"] = "clientId",
+            ["AppSettings:ClientSecret"] = "clientSecret"
+        };
+
+        public static TokenResponse TokenResponse()
+        {
+            return SecurityService.DataTransferObjects.Responses.TokenResponse.Create("AccessToken", String.Empty, 100);
+        }
+
+        public static Guid DeviceId = Guid.Parse("840F32FF-8B74-467C-8078-F5D9297FED56");
+
+        public static MerchantResponse GetMerchantResponse = new MerchantResponse
+                                                             {
+                                                                 EstateId = TestData.EstateId,
+                                                                 MerchantId = TestData.MerchantId,
+                                                                 Devices = new Dictionary<Guid, String>
+                                                                           {
+                                                                               {TestData.DeviceId, TestData.DeviceIdentifier}
+                                                                           }
+                                                             };
     }
 }
