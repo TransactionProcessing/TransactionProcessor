@@ -1,10 +1,12 @@
 ﻿namespace TransactionProcessor.DataTransferObjects
 {
     using System;
+    using System.Diagnostics.CodeAnalysis;
 
     /// <summary>
     /// 
     /// </summary>
+    [ExcludeFromCodeCoverage]
     public abstract class DataTransferObject
     {
         #region Properties
@@ -27,11 +29,5 @@
         public Guid MerchantId { get; set; }
 
         #endregion
-    }
-
-    public class MetadataContants
-    {
-        public const String KeyNameEstateId = "EstateId";
-        public const String KeyNameMerchantId = "MerchantId";
     }
 }

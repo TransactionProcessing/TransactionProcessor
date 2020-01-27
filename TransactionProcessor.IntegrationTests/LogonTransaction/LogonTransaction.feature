@@ -64,7 +64,7 @@ Scenario: Logon Transaction with Existing Device
 	| EstateName    | MerchantName    | TransactionNumber | ResponseCode | ResponseMessage |
 	| Test Estate 1 | Test Merchant 1 | 1                 | 0000         | SUCCESS         |
 
-@ignore
+@PRTest
 Scenario: Logon Transaction with Invalid Device
 
 	Given I have assigned the following devices to the merchants
@@ -76,5 +76,5 @@ Scenario: Logon Transaction with Invalid Device
 	| Today    | 1                 | Logon           | Test Merchant 1 | 123456781        | Test Estate 1 |
 	
 	Then transaction response should contain the following information
-	| EstateName    | MerchantName    | TransactionNumber | ResponseCode | ResponseMessage |
-	| Test Estate 1 | Test Merchant 1 | 1                 | 0000         | SUCCESS         |
+	| EstateName    | MerchantName    | TransactionNumber | ResponseCode | ResponseMessage                                                    |
+	| Test Estate 1 | Test Merchant 1 | 1                 | 1000         | Device Identifier 123456781 not valid for Merchant Test Merchant 1 |

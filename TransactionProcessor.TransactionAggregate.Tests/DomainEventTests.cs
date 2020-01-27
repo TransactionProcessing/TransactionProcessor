@@ -79,5 +79,27 @@ namespace TransactionProcessor.TransactionAggregate.Tests
             transactionHasBeenCompletedEvent.IsAuthorised.ShouldBe(TestData.IsAuthorised);
         }
 
+        [Fact]
+        public void TransactionHasBeenLocallyDeclinedEvent_CanBeCreated_IsCreated()
+        {
+            TransactionHasBeenLocallyDeclinedEvent transactionHasBeenLocallyDeclinedEvent = TransactionHasBeenLocallyDeclinedEvent.Create(TestData.TransactionId,
+                                                                                                                                          TestData.EstateId,
+                                                                                                                                          TestData.MerchantId,
+                                                                                                                                          TestData.DeclinedResponseCode,
+                                                                                                                                          TestData
+                                                                                                                                              .DeclinedResponseMessage);
+
+            transactionHasBeenLocallyDeclinedEvent.ShouldNotBeNull();
+            transactionHasBeenLocallyDeclinedEvent.AggregateId.ShouldBe(TestData.TransactionId);
+            transactionHasBeenLocallyDeclinedEvent.EventCreatedDateTime.ShouldNotBe(DateTime.MinValue);
+            transactionHasBeenLocallyDeclinedEvent.EventId.ShouldNotBe(Guid.Empty);
+            transactionHasBeenLocallyDeclinedEvent.TransactionId.ShouldBe(TestData.TransactionId);
+            transactionHasBeenLocallyDeclinedEvent.EstateId.ShouldBe(TestData.EstateId);
+            transactionHasBeenLocallyDeclinedEvent.MerchantId.ShouldBe(TestData.MerchantId);
+            transactionHasBeenLocallyDeclinedEvent.ResponseCode.ShouldBe(TestData.DeclinedResponseCode);
+            transactionHasBeenLocallyDeclinedEvent.ResponseMessage.ShouldBe(TestData.DeclinedResponseMessage);
+
+
+        }
     }
 }
