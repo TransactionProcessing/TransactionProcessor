@@ -456,8 +456,8 @@ this.FeatureBackground();
                             "Test Estate 1",
                             "Test Merchant 1",
                             "1",
-                            "0000",
-                            "SUCCESS"});
+                            "1000",
+                            "Device Identifier 123456781 not valid for Merchant Test Merchant 1"});
 #line 77
  testRunner.Then("transaction response should contain the following information", ((string)(null)), table15, "Then ");
 #line hidden

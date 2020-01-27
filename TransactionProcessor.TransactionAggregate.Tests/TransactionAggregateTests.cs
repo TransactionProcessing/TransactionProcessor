@@ -143,6 +143,60 @@ namespace TransactionProcessor.TransactionAggregate.Tests
         }
 
         [Fact]
+        public void TransactionAggregate_DeclineTransactionLocally_TransactionIsDeclined()
+        {
+            TransactionAggregate transactionAggregate = TransactionAggregate.Create(TestData.TransactionId);
+            transactionAggregate.StartTransaction(TestData.TransactionDateTime, TestData.TransactionNumber, TestData.TransactionType, TestData.EstateId, TestData.MerchantId, TestData.DeviceIdentifier);
+
+            transactionAggregate.DeclineTransactionLocally(TestData.DeclinedResponseCode, TestData.DeclinedResponseMessage);
+
+            transactionAggregate.IsAuthorised.ShouldBeFalse();
+            transactionAggregate.IsLocallyAuthorised.ShouldBeFalse();
+            transactionAggregate.IsDeclined.ShouldBeFalse();
+            transactionAggregate.IsLocallyDeclined.ShouldBeTrue();
+
+            transactionAggregate.ResponseCode.ShouldBe(TestData.DeclinedResponseCode);
+            transactionAggregate.ResponseMessage.ShouldBe(TestData.DeclinedResponseMessage);
+        }
+
+        [Fact]
+        public void TransactionAggregate_DeclineTransactionLocally_TransactionNotStarted_ErrorThrown()
+        {
+            TransactionAggregate transactionAggregate = TransactionAggregate.Create(TestData.TransactionId);
+
+            Should.Throw<InvalidOperationException>(() =>
+            {
+                transactionAggregate.DeclineTransactionLocally(TestData.ResponseCode, TestData.ResponseMessage);
+            });
+        }
+
+        [Fact]
+        public void TransactionAggregate_DeclineTransactionLocally_TransactionAlreadyAuthorised_ErrorThrown()
+        {
+            TransactionAggregate transactionAggregate = TransactionAggregate.Create(TestData.TransactionId);
+            transactionAggregate.StartTransaction(TestData.TransactionDateTime, TestData.TransactionNumber, TestData.TransactionType, TestData.EstateId, TestData.MerchantId, TestData.DeviceIdentifier);
+            transactionAggregate.AuthoriseTransactionLocally(TestData.AuthorisationCode, TestData.ResponseCode, TestData.ResponseMessage);
+
+            Should.Throw<InvalidOperationException>(() =>
+            {
+                transactionAggregate.DeclineTransactionLocally(TestData.ResponseCode, TestData.ResponseMessage);
+            });
+        }
+
+        [Fact]
+        public void TransactionAggregate_DeclineTransactionLocally_TransactionAlreadyDeclined_ErrorThrown()
+        {
+            TransactionAggregate transactionAggregate = TransactionAggregate.Create(TestData.TransactionId);
+            transactionAggregate.StartTransaction(TestData.TransactionDateTime, TestData.TransactionNumber, TestData.TransactionType, TestData.EstateId, TestData.MerchantId, TestData.DeviceIdentifier);
+            transactionAggregate.DeclineTransactionLocally(TestData.ResponseCode, TestData.ResponseMessage);
+
+            Should.Throw<InvalidOperationException>(() =>
+                                                    {
+                                                        transactionAggregate.DeclineTransactionLocally(TestData.ResponseCode, TestData.ResponseMessage);
+                                                    });
+        }
+
+        [Fact]
         public void TransactionAggregate_CompleteTransaction_TransactionIsCompleted()
         {
             TransactionAggregate transactionAggregate = TransactionAggregate.Create(TestData.TransactionId);

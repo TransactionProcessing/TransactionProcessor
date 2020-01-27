@@ -73,6 +73,14 @@
         public Boolean IsAuthorised { get; private set; }
 
         /// <summary>
+        /// Gets a value indicating whether this instance is declined.
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if this instance is declined; otherwise, <c>false</c>.
+        /// </value>
+        public Boolean IsDeclined { get; private set; }
+
+        /// <summary>
         /// Gets a value indicating whether this instance is completed.
         /// </summary>
         /// <value>
@@ -87,6 +95,14 @@
         ///   <c>true</c> if this instance is locally authorised; otherwise, <c>false</c>.
         /// </value>
         public Boolean IsLocallyAuthorised { get; private set; }
+
+        /// <summary>
+        /// Gets a value indicating whether this instance is locally declined.
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if this instance is locally declined; otherwise, <c>false</c>.
+        /// </value>
+        public Boolean IsLocallyDeclined { get; private set; }
 
         /// <summary>
         /// Gets a value indicating whether this instance is started.
@@ -172,7 +188,7 @@
         public void CompleteTransaction()
         {
             this.CheckTransactionHasBeenStarted();
-            this.CheckTransactionHasBeenAuthorised();
+            this.CheckTransactionHasBeenAuthorisedOrDeclined();
             this.CheckTransactionNotAlreadyCompleted();
 
             TransactionHasBeenCompletedEvent transactionHasBeenCompletedEvent =
@@ -194,8 +210,29 @@
         /// <summary>
         /// Declines the transaction.
         /// </summary>
-        public void DeclineTransaction()
+        public void DeclineTransactionLocally(String responseCode,
+                                              String responseMessage)
         {
+            this.CheckTransactionHasBeenStarted();
+            this.CheckTransactionNotAlreadyAuthorised();
+            this.CheckTransactionNotAlreadyDeclined();
+            TransactionHasBeenLocallyDeclinedEvent transactionHasBeenLocallyDeclinedEvent =
+                TransactionHasBeenLocallyDeclinedEvent.Create(this.AggregateId, this.EstateId, this.MerchantId, responseCode, responseMessage);
+
+            this.ApplyAndPend(transactionHasBeenLocallyDeclinedEvent);
+        }
+
+        /// <summary>
+        /// Checks the transaction not already declined.
+        /// </summary>
+        /// <exception cref="InvalidOperationException">Transaction [{this.AggregateId}] has already been{authtype}declined</exception>
+        private void CheckTransactionNotAlreadyDeclined()
+        {
+            if (this.IsLocallyDeclined || this.IsDeclined)
+            {
+                String authtype = this.IsLocallyAuthorised ? " locally " : " ";
+                throw new InvalidOperationException($"Transaction [{this.AggregateId}] has already been{authtype}declined");
+            }
         }
 
         /// <summary>
@@ -280,11 +317,12 @@
         /// Checks the transaction has been authorised.
         /// </summary>
         /// <exception cref="InvalidOperationException">Transaction [{this.AggregateId}] has not been authorised</exception>
-        private void CheckTransactionHasBeenAuthorised()
+        private void CheckTransactionHasBeenAuthorisedOrDeclined()
         {
-            if (this.IsAuthorised == false && this.IsLocallyAuthorised == false)
+            if (this.IsAuthorised == false && this.IsLocallyAuthorised == false &&
+                this.IsDeclined == false && this.IsLocallyDeclined == false)
             {
-                throw new InvalidOperationException($"Transaction [{this.AggregateId}] has not been authorised");
+                throw new InvalidOperationException($"Transaction [{this.AggregateId}] has not been authorised or declined");
             }
         }
 
@@ -350,6 +388,10 @@
             this.TransactionDateTime = domainEvent.TransactionDateTime;
             this.TransactionNumber = domainEvent.TransactionNumber;
             this.TransactionType = domainEvent.TransactionType;
+            this.IsLocallyDeclined = false;
+            this.IsDeclined = false;
+            this.IsLocallyAuthorised = false;
+            this.IsAuthorised = false;
         }
 
         /// <summary>
@@ -362,6 +404,17 @@
             this.ResponseMessage = domainEvent.ResponseMessage;
             this.ResponseCode = domainEvent.ResponseCode;
             this.AuthorisationCode = domainEvent.AuthorisationCode;
+        }
+
+        /// <summary>
+        /// Plays the event.
+        /// </summary>
+        /// <param name="domainEvent">The domain event.</param>
+        private void PlayEvent(TransactionHasBeenLocallyDeclinedEvent domainEvent)
+        {
+            this.IsLocallyDeclined = true;
+            this.ResponseMessage = domainEvent.ResponseMessage;
+            this.ResponseCode = domainEvent.ResponseCode;
         }
 
         /// <summary>

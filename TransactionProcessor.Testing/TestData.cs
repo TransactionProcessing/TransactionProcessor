@@ -22,16 +22,22 @@ namespace TransactionProcessor.Testing
 
         public static String ResponseCode= "0000";
 
+        public static String DeclinedResponseCode = "0001";
+
+        public static String DeclinedResponseMessage = "DeclinedResponseMessage";
+
         public static Guid EstateId = Guid.Parse("A522FA27-F9D0-470A-A88D-325DED3B62EE");
         public static Guid MerchantId = Guid.Parse("833B5AAC-A5C5-46C2-A499-F2B4252B2942");
         public static Guid TransactionId = Guid.Parse("AE89B2F6-307B-46F4-A8E7-CEF27097D766");
 
         public static ProcessLogonTransactionRequest ProcessLogonTransactionRequest = ProcessLogonTransactionRequest.Create( TestData.TransactionId, TestData.EstateId, TestData.MerchantId,
-                                                                                                                             TestData.DeviceIdentifier, TestData.TransactionType,
+                                                                                                                           TestData.DeviceIdentifier, TestData.TransactionType,
                                                                                                                              TestData.TransactionDateTime,
                                                                                                                              TestData.TransactionNumber);
 
         public static String DeviceIdentifier = "1234567890";
+
+        public static String DeviceIdentifier1 = "1234567891";
 
         public static String TransactionType = "Logon";
 
@@ -106,5 +112,19 @@ namespace TransactionProcessor.Testing
                                                                                {TestData.DeviceId, TestData.DeviceIdentifier}
                                                                            }
                                                              };
+
+        public static MerchantResponse GetMerchantResponseWithNullDevices = new MerchantResponse
+                                                             {
+                                                                 EstateId = TestData.EstateId,
+                                                                 MerchantId = TestData.MerchantId,
+                                                                 Devices = null
+                                                             };
+
+        public static MerchantResponse GetMerchantResponseWithNoDevices = new MerchantResponse
+                                                                            {
+                                                                                EstateId = TestData.EstateId,
+                                                                                MerchantId = TestData.MerchantId,
+                                                                                Devices = new Dictionary<Guid, String>()
+                                                                            };
     }
 }

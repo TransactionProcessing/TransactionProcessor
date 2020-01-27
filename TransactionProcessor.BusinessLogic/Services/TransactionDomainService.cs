@@ -102,7 +102,9 @@
             else
             {
                 // Record the failure
-                throw new NotImplementedException();
+                transactionAggregate = await transactionAggregateRepository.GetLatestVersion(transactionId, cancellationToken);
+                transactionAggregate.DeclineTransactionLocally(((Int32)validationResult.responseCode).ToString().PadLeft(4, '0'), validationResult.responseMessage);
+                await transactionAggregateRepository.SaveChanges(transactionAggregate, cancellationToken);
             }
 
             transactionAggregate = await transactionAggregateRepository.GetLatestVersion(transactionId, cancellationToken);
@@ -190,31 +192,5 @@
     {
         Success = 0,
         InvalidDeviceIdentifier = 1000
-    }
-
-    public class TransactionValidationException : Exception
-    {
-        public TransactionResponseCode ResponseCode { get; private set; }
-
-        /// <summary>
-        /// Initializes a new instance of the <see cref="TransactionValidationException" /> class.
-        /// </summary>
-        /// <param name="message">The message that describes the error.</param>
-        /// <param name="responseCode">The response code.</param>
-        public TransactionValidationException(String message, TransactionResponseCode responseCode) : this(message, responseCode, null)
-        {
-            
-        }
-
-        /// <summary>
-        /// Initializes a new instance of the <see cref="TransactionValidationException" /> class.
-        /// </summary>
-        /// <param name="message">The error message that explains the reason for the exception.</param>
-        /// <param name="responseCode">The response code.</param>
-        /// <param name="innerException">The exception that is the cause of the current exception, or a null reference (Nothing in Visual Basic) if no inner exception is specified.</param>
-        public TransactionValidationException(String message, TransactionResponseCode responseCode, Exception innerException) : base(message, innerException)
-        {
-            this.ResponseCode = responseCode;
-        }
     }
 }
