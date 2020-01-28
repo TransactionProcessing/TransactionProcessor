@@ -126,5 +126,19 @@ namespace TransactionProcessor.Testing
                                                                                 MerchantId = TestData.MerchantId,
                                                                                 Devices = new Dictionary<Guid, String>()
                                                                             };
+
+        public static EstateResponse GetEmptyEstateResponse = new EstateResponse
+                                                              {
+                                                                  EstateName = null,
+                                                                  EstateId = TestData.EstateId
+                                                              };
+        public static String EstateName = "Test Estate 1";
+        public static EstateResponse GetEstateResponse = new EstateResponse
+                                                         {
+                                                             EstateName = TestData.EstateName,
+                                                             EstateId = TestData.EstateId
+                                                         };
+
+        
     }
 }

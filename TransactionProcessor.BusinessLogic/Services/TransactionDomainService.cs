@@ -147,6 +147,21 @@
                 TokenResponse token = await this.SecurityServiceClient.GetToken(clientId, clientSecret, cancellationToken);
                 Logger.LogInformation($"Token is {token.AccessToken}");
 
+                // Validate the Estate Record is a valid estate
+                var estate = await this.EstateClient.GetEstate(token.AccessToken, estateId, cancellationToken);
+
+                // TODO: Remove this once GetEstate returns correct response when estate not found
+                if (estate.EstateName == null)
+                {
+
+
+
+
+
+
+                    throw new TransactionValidationException($"Estate Id [{estateId}] is not a valid estate", TransactionResponseCode.InvalidEstateId);
+                }
+
                 // get the merchant record and validate the device
                 // TODO: Token
                 MerchantResponse merchant = await this.EstateClient.GetMerchant(token.AccessToken, estateId, merchantId, cancellationToken);
@@ -186,11 +201,5 @@
         }
 
         #endregion
-    }
-
-    public enum TransactionResponseCode
-    {
-        Success = 0,
-        InvalidDeviceIdentifier = 1000
     }
 }
