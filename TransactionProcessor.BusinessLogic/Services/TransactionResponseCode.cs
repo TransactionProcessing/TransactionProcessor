@@ -5,6 +5,7 @@
         Success = 0,
 
         InvalidDeviceIdentifier = 1000,
-        InvalidEstateId = 1001
+        InvalidEstateId = 1001,
+        InvalidMerchantId = 1002
     }
 }
