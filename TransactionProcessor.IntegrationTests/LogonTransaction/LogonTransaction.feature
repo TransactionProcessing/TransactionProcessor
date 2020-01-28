@@ -93,3 +93,17 @@ Scenario: Logon Transaction with Invalid Estate
 	| EstateName    | MerchantName    | TransactionNumber | ResponseCode | ResponseMessage                                                        |
 	| InvalidEstate | Test Merchant 1 | 1                 | 1001         | Estate Id [79902550-64df-4491-b0c1-4e78943928a3] is not a valid estate |
 
+Scenario: Logon Transaction with Invalid Merchant
+
+	Given I have assigned the following devices to the merchants
+	| DeviceIdentifier | MerchantName    | MerchantNumber | EstateName    |
+	| 123456780        | Test Merchant 1 | 00000001       | Test Estate 1 |
+
+	When I perform the following transactions
+	| DateTime | TransactionNumber | TransactionType | MerchantName    | DeviceIdentifier | EstateName    |
+	| Today    | 1                 | Logon           | InvalidMerchant | 123456781        | Test Estate 1 |
+	
+	Then transaction response should contain the following information
+	| EstateName    | MerchantName    | TransactionNumber | ResponseCode | ResponseMessage                                                                                       |
+	| Test Estate 1 | InvalidMerchant | 1                 | 1002         | Merchant Id [d59320fa-4c3e-4900-a999-483f6a10c69a] is not a valid merchant for estate [Test Estate 1] |
+

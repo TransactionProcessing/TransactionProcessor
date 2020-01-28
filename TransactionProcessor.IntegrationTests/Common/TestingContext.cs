@@ -167,6 +167,11 @@ namespace TransactionProcessor.IntegrationTests.Common
 
         public Guid GetMerchantId(String merchantName)
         {
+            if (merchantName == "InvalidMerchant")
+            {
+                return Guid.Parse("D59320FA-4C3E-4900-A999-483F6A10C69A");
+            }
+
             return this.Merchants.Single(m => m.Key == merchantName).Value;
         }
 

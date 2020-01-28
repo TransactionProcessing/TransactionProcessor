@@ -153,18 +153,18 @@
                 // TODO: Remove this once GetEstate returns correct response when estate not found
                 if (estate.EstateName == null)
                 {
-
-
-
-
-
-
                     throw new TransactionValidationException($"Estate Id [{estateId}] is not a valid estate", TransactionResponseCode.InvalidEstateId);
                 }
 
                 // get the merchant record and validate the device
                 // TODO: Token
                 MerchantResponse merchant = await this.EstateClient.GetMerchant(token.AccessToken, estateId, merchantId, cancellationToken);
+
+                // TODO: Remove this once GetMerchant returns correct response when merchant not found
+                if (merchant.MerchantName == null)
+                {
+                    throw new TransactionValidationException($"Merchant Id [{merchantId}] is not a valid merchant for estate [{estate.EstateName}]", TransactionResponseCode.InvalidMerchantId);
+                }
 
                 if (merchant.Devices == null || merchant.Devices.Any() == false)
                 {

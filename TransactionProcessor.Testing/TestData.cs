@@ -5,6 +5,7 @@ using System.Text;
 namespace TransactionProcessor.Testing
 {
     using BusinessLogic.Requests;
+    using BusinessLogic.Services;
     using EstateManagement.DataTransferObjects.Responses;
     using Models;
     using SecurityService.DataTransferObjects.Responses;
@@ -76,6 +77,18 @@ namespace TransactionProcessor.Testing
             return transactionAggregate;
         }
 
+        public static TransactionAggregate GetLocallyDeclinedTransactionAggregate(TransactionResponseCode transactionResponseCode)
+        {
+            TransactionAggregate transactionAggregate = TransactionAggregate.Create(TestData.TransactionId);
+
+            transactionAggregate.StartTransaction(TestData.TransactionDateTime, TestData.TransactionNumber, TestData.TransactionType, TestData.EstateId, TestData.MerchantId,
+                                                  TestData.DeviceIdentifier);
+
+            transactionAggregate.DeclineTransactionLocally(TestData.GetResponseCodeAsString(transactionResponseCode), TestData.GetResponseCodeMessage(transactionResponseCode));
+
+            return transactionAggregate;
+        }
+
         public static TransactionAggregate GetCompletedTransactionAggregate()
         {
             TransactionAggregate transactionAggregate = TransactionAggregate.Create(TestData.TransactionId);
@@ -103,10 +116,13 @@ namespace TransactionProcessor.Testing
 
         public static Guid DeviceId = Guid.Parse("840F32FF-8B74-467C-8078-F5D9297FED56");
 
+        private static String MerchantName = "Test Merchant Name";
+
         public static MerchantResponse GetMerchantResponse = new MerchantResponse
                                                              {
                                                                  EstateId = TestData.EstateId,
                                                                  MerchantId = TestData.MerchantId,
+                                                                 MerchantName = TestData.MerchantName,
                                                                  Devices = new Dictionary<Guid, String>
                                                                            {
                                                                                {TestData.DeviceId, TestData.DeviceIdentifier}
@@ -114,18 +130,20 @@ namespace TransactionProcessor.Testing
                                                              };
 
         public static MerchantResponse GetMerchantResponseWithNullDevices = new MerchantResponse
-                                                             {
-                                                                 EstateId = TestData.EstateId,
-                                                                 MerchantId = TestData.MerchantId,
-                                                                 Devices = null
-                                                             };
-
-        public static MerchantResponse GetMerchantResponseWithNoDevices = new MerchantResponse
                                                                             {
                                                                                 EstateId = TestData.EstateId,
                                                                                 MerchantId = TestData.MerchantId,
-                                                                                Devices = new Dictionary<Guid, String>()
+                                                                                MerchantName = TestData.MerchantName,
+                                                                                Devices = null
                                                                             };
+
+        public static MerchantResponse GetMerchantResponseWithNoDevices = new MerchantResponse
+                                                                          {
+                                                                              EstateId = TestData.EstateId,
+                                                                              MerchantId = TestData.MerchantId,
+                                                                              MerchantName = TestData.MerchantName,
+                                                                              Devices = new Dictionary<Guid, String>()
+                                                                          };
 
         public static EstateResponse GetEmptyEstateResponse = new EstateResponse
                                                               {
@@ -139,6 +157,22 @@ namespace TransactionProcessor.Testing
                                                              EstateId = TestData.EstateId
                                                          };
 
+        public static MerchantResponse GetEmptyMerchantResponse = new MerchantResponse
+                                                                  {
+                                                                      MerchantId = TestData.MerchantId,
+                                                                      MerchantName = null
+                                                                  };
+
         
+
+        public static String GetResponseCodeAsString(TransactionResponseCode transactionResponseCode)
+        {
+            return ((Int32)transactionResponseCode).ToString().PadLeft(4, '0');
+        }
+
+        public static String GetResponseCodeMessage(TransactionResponseCode transactionResponseCode)
+        {
+            return transactionResponseCode.ToString();
+        }
     }
 }
