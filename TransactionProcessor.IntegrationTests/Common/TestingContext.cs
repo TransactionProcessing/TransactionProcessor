@@ -56,14 +56,22 @@ namespace TransactionProcessor.IntegrationTests.Common
         public EstateDetails GetEstateDetails(TableRow tableRow)
         {
             String estateName = SpecflowTableHelper.GetStringRowValue(tableRow, "EstateName");
+            EstateDetails estateDetails = null;
+            
+            estateDetails = this.Estates.SingleOrDefault(e => e.EstateName == estateName);
 
-            EstateDetails estateDetails = this.Estates.SingleOrDefault(e => e.EstateName == estateName);
+            if (estateDetails == null && estateName == "InvalidEstate")
+            {
+                estateDetails = EstateDetails.Create(Guid.Parse("79902550-64DF-4491-B0C1-4E78943928A3"), estateName);
+                estateDetails.AddMerchant(Guid.Parse("36AA0109-E2E3-4049-9575-F507A887BB1F"), "Test Merchant 1");
+                this.Estates.Add(estateDetails);
+            }
 
             estateDetails.ShouldNotBeNull();
 
             return estateDetails;
         }
-        
+
         public EstateDetails GetEstateDetails(String estateName)
         {
             EstateDetails estateDetails = this.Estates.SingleOrDefault(e => e.EstateName == estateName);
