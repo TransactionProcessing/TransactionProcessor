@@ -10,7 +10,7 @@ jobs:
     env:
         ASPNETCORE_ENVIRONMENT: "Production"
 
-    runs-on: ubuntu-16.04
+    runs-on: ubuntu-latest
 
     steps:
     - uses: actions/checkout@v1
@@ -39,11 +39,8 @@ jobs:
             
     - name: Build Docker Images 
       run: |
-        docker build . --file TransactionProcessor/Dockerfile --tag transactionprocessor:latest --tag stuartferguson/transactionprocessor:latest --tag stuartferguson/transactionprocessor:${{ steps.get_version.outputs.VERSION }}         
-
-    - name: Run Integration Tests
-      run: dotnet test "TransactionProcessor.IntegrationTests\TransactionProcessor.IntegrationTests.csproj"
-
+        docker build . --file TransactionProcessor/Dockerfile --tag stuartferguson/transactionprocessor:latest --tag stuartferguson/transactionprocessor:${{ steps.get_version.outputs.VERSION }}         
+        
     - name: Publish Images to Docker Hub
       run: |
         docker login --username=${{ secrets.DOCKER_USERNAME }} --password=${{ secrets.DOCKER_PASSWORD }}
@@ -80,8 +77,8 @@ jobs:
     - name: Push Package to Octopus
       run: >-
         /opt/octo/Octo push
-        --server http://sferguson.ddns.net:9001
-        --apiKey API-UTN58QCF8HSATACNUBY41XPUC
+        --server ${{ secrets.OCTOPUS_URL }}
+        --apiKey ${{ secrets.OCTOPUS_APIKEY }}
         --package /home/runner/work/TransactionProcessor/TransactionProcessor/TransactionProcessor.${{ steps.get_version.outputs.VERSION }}.zip
         --overwrite-mode IgnoreIfExists
     
@@ -103,8 +100,8 @@ jobs:
     - name: Create & Deploy Release in Octopus
       run: >-
         /opt/octo/Octo create-release
-        --server http://sferguson.ddns.net:9001
-        --apiKey API-UTN58QCF8HSATACNUBY41XPUC
+        --server ${{ secrets.OCTOPUS_URL }}
+        --apiKey ${{ secrets.OCTOPUS_APIKEY }}
         --project "Transaction Processor"
         --version ${{ steps.get_version.outputs.VERSION }}
         --channel Default
