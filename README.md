@@ -6,8 +6,9 @@
 [![Last Release Build Status Badge](https://github.com/StuartFerguson/TransactionProcessor/workflows/Release/badge.svg)](https://github.com/StuartFerguson/TransactionProcessor/workflows/Release/badge.svg)
 
 ## Nuget Versions
-
-**Client Proy Base:**  [![Transaction Processor Client MyGet Badge](https://buildstats.info/myget/transactionprocessing/TransactionProcessor.Client)](https://buildstats.info/myget/transactionprocessing/TransactionProcessor.Client)
+|||
+| --- | --- |
+|**TransactionProcessor.Client** | [![Transaction Processor Client MyGet Badge](https://buildstats.info/myget/transactionprocessing/TransactionProcessor.Client)](https://buildstats.info/myget/transactionprocessing/TransactionProcessor.Client) |
 
 ## Code Coverage Results
 
