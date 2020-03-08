@@ -13,6 +13,7 @@
     using SecurityService.DataTransferObjects.Responses;
     using Shared.DomainDrivenDesign.EventStore;
     using Shared.EventStore.EventStore;
+    using Shared.Exceptions;
     using Shared.General;
     using Shared.Logger;
     using TransactionAggregate;
@@ -147,15 +148,17 @@
                 TokenResponse token = await this.SecurityServiceClient.GetToken(clientId, clientSecret, cancellationToken);
                 Logger.LogInformation($"Token is {token.AccessToken}");
 
-                // Validate the Estate Record is a valid estate
-                var estate = await this.EstateClient.GetEstate(token.AccessToken, estateId, cancellationToken);
-
-                // TODO: Remove this once GetEstate returns correct response when estate not found
-                if (estate.EstateName == null)
+                EstateResponse estate = null;
+                try
+                {
+                    // Validate the Estate Record is a valid estate
+                    estate = await this.EstateClient.GetEstate(token.AccessToken, estateId, cancellationToken);
+                }
+                catch(Exception e) when (e.InnerException is KeyNotFoundException)
                 {
                     throw new TransactionValidationException($"Estate Id [{estateId}] is not a valid estate", TransactionResponseCode.InvalidEstateId);
                 }
-
+                
                 // get the merchant record and validate the device
                 // TODO: Token
                 MerchantResponse merchant = await this.EstateClient.GetMerchant(token.AccessToken, estateId, merchantId, cancellationToken);

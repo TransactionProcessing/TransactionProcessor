@@ -72,6 +72,10 @@ namespace TransactionProcessor.IntegrationTests.Common
             return estateDetails;
         }
 
+        public List<Guid> GetAllEstateIds()
+        {
+            return this.Estates.Select(e => e.EstateId).ToList();
+        }
         public EstateDetails GetEstateDetails(String estateName)
         {
             EstateDetails estateDetails = this.Estates.SingleOrDefault(e => e.EstateName == estateName);
