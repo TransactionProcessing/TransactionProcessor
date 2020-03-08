@@ -28,6 +28,7 @@ namespace TransactionProcessor
     using Microsoft.AspNetCore.Mvc.ApiExplorer;
     using Microsoft.AspNetCore.Mvc.Versioning;
     using Microsoft.Extensions.Options;
+    using Microsoft.IdentityModel.Logging;
     using Models;
     using Newtonsoft.Json;
     using Newtonsoft.Json.Serialization;
@@ -170,7 +171,9 @@ namespace TransactionProcessor
             });
 
             services.AddSwaggerExamplesFromAssemblyOf<SwaggerJsonConverter>();
-
+            
+            IdentityModelEventSource.ShowPII = true;
+            
             services.AddAuthentication(options =>
                                       {
                                           options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
