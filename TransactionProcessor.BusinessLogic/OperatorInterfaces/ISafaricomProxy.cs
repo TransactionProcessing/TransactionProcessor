@@ -19,7 +19,7 @@ namespace TransactionProcessor.BusinessLogic.OperatorInterfaces
     {
         public async Task ProcessMessage(CancellationToken cancellationToken)
         {
-            
+            throw new NotImplementedException();
         }
     }
 
