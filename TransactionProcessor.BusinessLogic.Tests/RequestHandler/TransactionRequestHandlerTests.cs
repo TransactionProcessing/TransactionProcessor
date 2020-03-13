@@ -29,5 +29,20 @@
                             });
 
         }
+
+        [Fact]
+        public void TransactionRequestHandler_ProcessSaleTransactionRequest_IsHandled()
+        {
+            Mock<ITransactionDomainService> transactionDomainService = new Mock<ITransactionDomainService>();
+            TransactionRequestHandler handler = new TransactionRequestHandler(transactionDomainService.Object);
+
+            ProcessSaleTransactionRequest command = TestData.ProcessSaleTransactionRequest;
+
+            Should.NotThrow(async () =>
+                            {
+                                await handler.Handle(command, CancellationToken.None);
+                            });
+
+        }
     }
 }

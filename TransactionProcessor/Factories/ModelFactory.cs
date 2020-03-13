@@ -48,6 +48,41 @@
                    };
         }
 
+        /// <summary>
+        /// Converts from.
+        /// </summary>
+        /// <param name="processSaleTransactionResponse">The process sale transaction response.</param>
+        /// <returns></returns>
+        public SerialisedMessage ConvertFrom(ProcessSaleTransactionResponse processSaleTransactionResponse)
+        {
+            if (processSaleTransactionResponse == null)
+            {
+                return null;
+            }
+
+            SaleTransactionResponse saleTransactionResponse = new SaleTransactionResponse
+                                                                {
+                                                                    ResponseMessage = processSaleTransactionResponse.ResponseMessage,
+                                                                    ResponseCode = processSaleTransactionResponse.ResponseCode,
+                                                                    MerchantId = processSaleTransactionResponse.MerchantId,
+                                                                    EstateId = processSaleTransactionResponse.EstateId,
+                                                                    AdditionalTransactionMetadata = processSaleTransactionResponse.AdditionalTransactionMetadata
+                                                                };
+
+            return new SerialisedMessage
+                   {
+                       Metadata = new Dictionary<String, String>()
+                                  {
+                                      {MetadataContants.KeyNameEstateId, processSaleTransactionResponse.EstateId.ToString()},
+                                      {MetadataContants.KeyNameMerchantId, processSaleTransactionResponse.MerchantId.ToString()}
+                                  },
+                       SerialisedData = JsonConvert.SerializeObject(saleTransactionResponse, new JsonSerializerSettings
+                                                                                             {
+                                                                                                 TypeNameHandling = TypeNameHandling.All
+                                                                                             })
+                   };
+        }
+
         #endregion
     }
 }

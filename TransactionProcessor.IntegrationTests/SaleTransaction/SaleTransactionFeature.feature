@@ -1,5 +1,5 @@
 ﻿@base @shared
-Feature: LogonTransaction
+Feature: SaleTransaction
 
 Background: 
 
@@ -22,8 +22,8 @@ Background:
 	| Test Estate 2 |
 
 	Given I have created the following operators
-	| EstateName    | OperatorName    | RequireCustomMerchantNumber | RequireCustomTerminalNumber |
-	| Test Estate 1 | Test Operator 1 | True                        | True                        |
+	| EstateName    | OperatorName | RequireCustomMerchantNumber | RequireCustomTerminalNumber |
+	| Test Estate 1 | Safaricom    | True                        | True                        |
 
 	Given I create the following merchants
 	| MerchantName    | AddressLine1   | Town     | Region      | Country        | ContactName    | EmailAddress                 | EstateName    |
@@ -32,76 +32,76 @@ Background:
 	| Test Merchant 3 | Address Line 1 | TestTown | Test Region | United Kingdom | Test Contact 3 | testcontact3@merchant2.co.uk | Test Estate 2 |
 
 	Given I have assigned the following  operator to the merchants
-	| OperatorName    | MerchantName    | MerchantNumber | TerminalNumber | EstateName    |
-	| Test Operator 1 | Test Merchant 1 | 00000001       | 10000001       | Test Estate 1 |
+	| OperatorName | MerchantName    | MerchantNumber | TerminalNumber | EstateName    |
+	| Safaricom    | Test Merchant 1 | 00000001       | 10000001       | Test Estate 1 |
 
 @PRTest
-Scenario: Logon Transactions
+Scenario: Sale Transactions
 
 	When I perform the following transactions
-	| DateTime | TransactionNumber | TransactionType | MerchantName    | DeviceIdentifier | EstateName    |
-	| Today    | 1                 | Logon           | Test Merchant 1 | 123456780  | Test Estate 1 |
-	| Today    | 2                 | Logon           | Test Merchant 2 | 123456781  | Test Estate 1 |
-	| Today    | 3                 | Logon           | Test Merchant 3 | 123456782  | Test Estate 2 |
+	| DateTime | TransactionNumber | TransactionType | MerchantName    | DeviceIdentifier | EstateName    | OperatorName | TransactionAmount |
+	| Today    | 1                 | Sale            | Test Merchant 1 | 123456780        | Test Estate 1 | Safaricom    | 100.00            |
+	#| Today    | 2                 | Sale            | Test Merchant 2 | 123456781        | Test Estate 1 | Safaricom    | 100.00            |
+	#| Today    | 3                 | Sale            | Test Merchant 3 | 123456782        | Test Estate 2 | Safaricom    | 100.00            |
 	
 	Then transaction response should contain the following information
 	| EstateName    | MerchantName    | TransactionNumber | ResponseCode | ResponseMessage |
 	| Test Estate 1 | Test Merchant 1 | 1                 | 0000         | SUCCESS         |
-	| Test Estate 1 | Test Merchant 2 | 2                 | 0000         | SUCCESS         |
-	| Test Estate 2 | Test Merchant 3 | 3                 | 0000         | SUCCESS         |
+	#| Test Estate 1 | Test Merchant 2 | 2                 | 0000         | SUCCESS         |
+	#| Test Estate 2 | Test Merchant 3 | 3                 | 0000         | SUCCESS         |
 
-Scenario: Logon Transaction with Existing Device
+Scenario: Sale Transaction with Existing Device
 
 	Given I have assigned the following devices to the merchants
 	| DeviceIdentifier | MerchantName    | MerchantNumber | EstateName    |
 	| 123456780       | Test Merchant 1 | 00000001       | Test Estate 1 |
 
 	When I perform the following transactions
-	| DateTime | TransactionNumber | TransactionType | MerchantName    | DeviceIdentifier | EstateName    |
-	| Today    | 1                 | Logon           | Test Merchant 1 | 123456780  | Test Estate 1 |
+	| DateTime | TransactionNumber | TransactionType | MerchantName    | DeviceIdentifier | EstateName    | OperatorName |TransactionAmount |
+	| Today    | 1                 | Sale            | Test Merchant 1 | 123456780        | Test Estate 1 | Safaricom    |100.00            |
 	
 	Then transaction response should contain the following information
 	| EstateName    | MerchantName    | TransactionNumber | ResponseCode | ResponseMessage |
 	| Test Estate 1 | Test Merchant 1 | 1                 | 0000         | SUCCESS         |
 
 @PRTest
-Scenario: Logon Transaction with Invalid Device
+Scenario: Sale Transaction with Invalid Device
 
 	Given I have assigned the following devices to the merchants
 	| DeviceIdentifier | MerchantName    | MerchantNumber | EstateName    |
 	| 123456780        | Test Merchant 1 | 00000001       | Test Estate 1 |
 
 	When I perform the following transactions
-	| DateTime | TransactionNumber | TransactionType | MerchantName    | DeviceIdentifier | EstateName    |
-	| Today    | 1                 | Logon           | Test Merchant 1 | 123456781        | Test Estate 1 |
+	| DateTime | TransactionNumber | TransactionType | MerchantName    | DeviceIdentifier | EstateName    |OperatorName |TransactionAmount |
+	| Today    | 1                 | Sale           | Test Merchant 1 | 123456781        | Test Estate 1 |Safaricom    | 100.00            |
 	
 	Then transaction response should contain the following information
 	| EstateName    | MerchantName    | TransactionNumber | ResponseCode | ResponseMessage                                                    |
 	| Test Estate 1 | Test Merchant 1 | 1                 | 1000         | Device Identifier 123456781 not valid for Merchant Test Merchant 1 |
 
-Scenario: Logon Transaction with Invalid Estate
+Scenario: Sale Transaction with Invalid Estate
 
 	Given I have assigned the following devices to the merchants
 	| DeviceIdentifier | MerchantName    | MerchantNumber | EstateName    |
 	| 123456780        | Test Merchant 1 | 00000001       | Test Estate 1 |
 
 	When I perform the following transactions
-	| DateTime | TransactionNumber | TransactionType | MerchantName    | DeviceIdentifier | EstateName    |
-	| Today    | 1                 | Logon           | Test Merchant 1 | 123456781        | InvalidEstate |
+	| DateTime | TransactionNumber | TransactionType | MerchantName    | DeviceIdentifier | EstateName    |OperatorName |TransactionAmount |
+	| Today    | 1                 | Sale           | Test Merchant 1 | 123456781        | InvalidEstate |Safaricom    | 100.00            |
 	
 	Then transaction response should contain the following information
 	| EstateName    | MerchantName    | TransactionNumber | ResponseCode | ResponseMessage                                                        |
 	| InvalidEstate | Test Merchant 1 | 1                 | 1001         | Estate Id [79902550-64df-4491-b0c1-4e78943928a3] is not a valid estate |
 
-Scenario: Logon Transaction with Invalid Merchant
+Scenario: Sale Transaction with Invalid Merchant
 
 	Given I have assigned the following devices to the merchants
 	| DeviceIdentifier | MerchantName    | MerchantNumber | EstateName    |
 	| 123456780        | Test Merchant 1 | 00000001       | Test Estate 1 |
 
 	When I perform the following transactions
-	| DateTime | TransactionNumber | TransactionType | MerchantName    | DeviceIdentifier | EstateName    |
-	| Today    | 1                 | Logon           | InvalidMerchant | 123456781        | Test Estate 1 |
+	| DateTime | TransactionNumber | TransactionType | MerchantName    | DeviceIdentifier | EstateName    |OperatorName |TransactionAmount |
+	| Today    | 1                 | Sale           | InvalidMerchant | 123456781        | Test Estate 1 |Safaricom    | 100.00            |
 	
 	Then transaction response should contain the following information
 	| EstateName    | MerchantName    | TransactionNumber | ResponseCode | ResponseMessage                                                                                       |

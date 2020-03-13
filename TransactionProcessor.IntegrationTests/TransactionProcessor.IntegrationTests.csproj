@@ -48,6 +48,9 @@
       <Generator>SpecFlowSingleFileGenerator</Generator>
       <LastGenOutput>LogonTransaction.feature.cs</LastGenOutput>
     </SpecFlowFeatureFiles>
+    <SpecFlowFeatureFiles Update="SaleTransaction\SaleTransactionFeature.feature">
+      <Generator>SpecFlowSingleFileGenerator</Generator>
+    </SpecFlowFeatureFiles>
   </ItemGroup>
 
 </Project>

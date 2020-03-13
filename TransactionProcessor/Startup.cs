@@ -17,6 +17,7 @@ namespace TransactionProcessor
     using System.Net.Http;
     using System.Reflection;
     using Autofac;
+    using BusinessLogic.OperatorInterfaces;
     using BusinessLogic.RequestHandlers;
     using BusinessLogic.Requests;
     using BusinessLogic.Services;
@@ -126,6 +127,8 @@ namespace TransactionProcessor
                                                             Uri uri = ConfigurationReader.GetBaseServerUri(api);
                                                             return uri.AbsoluteUri.Substring(0, uri.AbsoluteUri.Length - 1);
                                                         });
+            builder.Register<Func<String, IOperatorProxy>>(c => (operatorIdentifier) => { return new SafaricomPinlessProxy();});
+
             // request & notification handlers
             builder.Register<ServiceFactory>(context =>
                                              {
@@ -134,6 +137,7 @@ namespace TransactionProcessor
                                              });
 
             builder.RegisterType<TransactionRequestHandler>().As<IRequestHandler<ProcessLogonTransactionRequest, ProcessLogonTransactionResponse>>().SingleInstance();
+            builder.RegisterType<TransactionRequestHandler>().As<IRequestHandler<ProcessSaleTransactionRequest, ProcessSaleTransactionResponse>>().SingleInstance();
         }
 
         private void ConfigureMiddlewareServices(IServiceCollection services)

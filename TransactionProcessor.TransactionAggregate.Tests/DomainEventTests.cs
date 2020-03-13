@@ -4,6 +4,7 @@ using System.Text;
 
 namespace TransactionProcessor.TransactionAggregate.Tests
 {
+    using Models;
     using Shouldly;
     using Testing;
     using Transaction.DomainEvents;
@@ -11,15 +12,17 @@ namespace TransactionProcessor.TransactionAggregate.Tests
 
     public class DomainEventTests
     {
-        [Fact]
-        public void TransactionHasStartedEvent_CanBeCreated_IsCreated()
+        [Theory]
+        [InlineData(TransactionType.Logon)]
+        [InlineData(TransactionType.Sale)]
+        public void TransactionHasStartedEvent_CanBeCreated_IsCreated(TransactionType transactionType)
         {
             TransactionHasStartedEvent transactionHasStartedEvent = TransactionHasStartedEvent.Create(TestData.TransactionId,
                                                                                                       TestData.EstateId,
                                                                                                       TestData.MerchantId,
                                                                                                       TestData.TransactionDateTime,
                                                                                                       TestData.TransactionNumber,
-                                                                                                      TestData.TransactionType,
+                                                                                                      transactionType.ToString(),
                                                                                                       TestData.DeviceIdentifier);
             transactionHasStartedEvent.ShouldNotBeNull();
             transactionHasStartedEvent.AggregateId.ShouldBe(TestData.TransactionId);
@@ -31,7 +34,7 @@ namespace TransactionProcessor.TransactionAggregate.Tests
             transactionHasStartedEvent.MerchantId.ShouldBe(TestData.MerchantId);
             transactionHasStartedEvent.TransactionDateTime.ShouldBe(TestData.TransactionDateTime);
             transactionHasStartedEvent.TransactionNumber.ShouldBe(TestData.TransactionNumber);
-            transactionHasStartedEvent.TransactionType.ShouldBe(TestData.TransactionType);
+            transactionHasStartedEvent.TransactionType.ShouldBe(transactionType.ToString());
         }
 
         [Fact]

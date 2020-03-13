@@ -3,6 +3,7 @@
     using System;
     using System.Diagnostics.CodeAnalysis;
     using System.Text.RegularExpressions;
+    using Models;
     using Shared.DomainDrivenDesign.EventSourcing;
     using Shared.DomainDrivenDesign.EventStore;
     using Shared.General;
@@ -158,7 +159,7 @@
         /// <value>
         /// The type of the transaction.
         /// </value>
-        public String TransactionType { get; private set; }
+        public TransactionType TransactionType { get; private set; }
 
         #endregion
 
@@ -181,7 +182,7 @@
 
             this.ApplyAndPend(transactionHasBeenLocallyAuthorisedEvent);
         }
-
+        
         /// <summary>
         /// Completes the transaction.
         /// </summary>
@@ -253,7 +254,7 @@
         /// </exception>
         public void StartTransaction(DateTime transactionDateTime,
                                      String transactionNumber,
-                                     String transactionType,
+                                     TransactionType transactionType,
                                      Guid estateId,
                                      Guid merchantId,
                                      String deviceIdentifier)
@@ -265,13 +266,8 @@
                 throw new ArgumentException("Transaction Number must be numeric");
             }
 
-            Guard.ThrowIfNullOrEmpty(transactionType, typeof(ArgumentException), "Transaction Type must not be null or empty");
-
-            // Temporary validation until using enum
-            if (transactionType != "Logon")
-            {
-                throw new ArgumentException($"Invalid Transaction Type [{transactionType}]");
-            }
+            // Validate the transaction Type
+            Guard.ThrowIfInvalidEnum(typeof(TransactionType), transactionType, typeof(ArgumentOutOfRangeException), $"Invalid Transaction Type [{transactionType}]");
 
             Guard.ThrowIfInvalidGuid(estateId, typeof(ArgumentException), $"Estate Id must not be [{Guid.Empty}]");
             Guard.ThrowIfInvalidGuid(merchantId, typeof(ArgumentException), $"Merchant Id must not be [{Guid.Empty}]");
@@ -286,7 +282,7 @@
             this.CheckTransactionNotAlreadyStarted();
             this.CheckTransactionNotAlreadyCompleted();
             TransactionHasStartedEvent transactionHasStartedEvent =
-                TransactionHasStartedEvent.Create(this.AggregateId, estateId, merchantId, transactionDateTime, transactionNumber, transactionType, deviceIdentifier);
+                TransactionHasStartedEvent.Create(this.AggregateId, estateId, merchantId, transactionDateTime, transactionNumber, transactionType.ToString(), deviceIdentifier);
 
             this.ApplyAndPend(transactionHasStartedEvent);
         }
@@ -387,7 +383,7 @@
             this.IsStarted = true;
             this.TransactionDateTime = domainEvent.TransactionDateTime;
             this.TransactionNumber = domainEvent.TransactionNumber;
-            this.TransactionType = domainEvent.TransactionType;
+            this.TransactionType = Enum.Parse<TransactionType>(domainEvent.TransactionType);
             this.IsLocallyDeclined = false;
             this.IsDeclined = false;
             this.IsLocallyAuthorised = false;
