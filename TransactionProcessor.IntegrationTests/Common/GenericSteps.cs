@@ -39,7 +39,7 @@ namespace TransactionProcessor.IntegrationTests.Common
             logger.Initialise(LogManager.GetLogger(scenarioName), scenarioName);
             LogManager.AddHiddenAssembly(typeof(NlogLogger).Assembly);
 
-            this.TestingContext.DockerHelper = new DockerHelper(logger);
+            this.TestingContext.DockerHelper = new DockerHelper(logger, this.TestingContext);
             this.TestingContext.Logger = logger;
             this.TestingContext.Logger.LogInformation("About to Start Containers for Scenario Run");
             await this.TestingContext.DockerHelper.StartContainersForScenarioRun(scenarioName).ConfigureAwait(false);

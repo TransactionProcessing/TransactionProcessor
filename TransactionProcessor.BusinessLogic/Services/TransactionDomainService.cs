@@ -14,6 +14,7 @@
     using SecurityService.DataTransferObjects.Responses;
     using Shared.DomainDrivenDesign.EventStore;
     using Shared.EventStore.EventStore;
+    using Shared.Exceptions;
     using Shared.General;
     using Shared.Logger;
     using TransactionAggregate;
@@ -232,7 +233,7 @@
                 {
                     throw new TransactionValidationException($"Estate Id [{estateId}] is not a valid estate", TransactionResponseCode.InvalidEstateId);
                 }
-
+                
                 // get the merchant record and validate the device
                 // TODO: Token
                 MerchantResponse merchant = await this.EstateClient.GetMerchant(token.AccessToken, estateId, merchantId, cancellationToken);
