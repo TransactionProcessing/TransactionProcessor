@@ -116,6 +116,32 @@
             return this.ModelFactory.ConvertFrom(response);
         }
 
+        /// <summary>
+        /// Processes the specific message.
+        /// </summary>
+        /// <param name="saleTransactionRequest">The sale transaction request.</param>
+        /// <param name="cancellationToken">The cancellation token.</param>
+        /// <returns></returns>
+        private async Task<SerialisedMessage> ProcessSpecificMessage(SaleTransactionRequest saleTransactionRequest,
+                                                                     CancellationToken cancellationToken)
+        {
+            Guid transactionId = Guid.NewGuid();
+
+            ProcessSaleTransactionRequest request = ProcessSaleTransactionRequest.Create(transactionId,
+                                                                                         saleTransactionRequest.EstateId,
+                                                                                         saleTransactionRequest.MerchantId,
+                                                                                         saleTransactionRequest.DeviceIdentifier,
+                                                                                         saleTransactionRequest.TransactionType,
+                                                                                         saleTransactionRequest.TransactionDateTime,
+                                                                                         saleTransactionRequest.TransactionNumber,
+                                                                                         saleTransactionRequest.OperatorIdentifier,
+                                                                                         saleTransactionRequest.AdditionalTransactionMetadata);
+
+            ProcessSaleTransactionResponse response = await this.Mediator.Send(request, cancellationToken);
+
+            return this.ModelFactory.ConvertFrom(response);
+        }
+
         #endregion
 
         #region Others

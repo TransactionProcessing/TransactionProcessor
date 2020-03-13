@@ -16,7 +16,7 @@ namespace TransactionProcessor.Testing
         public static ProcessLogonTransactionResponse ProcessLogonTransactionResponseModel = new ProcessLogonTransactionResponse
                                                                                              {
                                                                                                  ResponseMessage = TestData.ResponseMessage,
-                                                                                                 ResponseCode = TestData.ResponseCode
+                                                                                                 ResponseCode = TestData.ResponseCode,
                                                                                              };
 
         public static String ResponseMessage = "SUCCESS";
@@ -32,7 +32,7 @@ namespace TransactionProcessor.Testing
         public static Guid TransactionId = Guid.Parse("AE89B2F6-307B-46F4-A8E7-CEF27097D766");
 
         public static ProcessLogonTransactionRequest ProcessLogonTransactionRequest = ProcessLogonTransactionRequest.Create( TestData.TransactionId, TestData.EstateId, TestData.MerchantId,
-                                                                                                                           TestData.DeviceIdentifier, TestData.TransactionType,
+                                                                                                                           TestData.DeviceIdentifier, TestData.TransactionTypeLogon.ToString(),
                                                                                                                              TestData.TransactionDateTime,
                                                                                                                              TestData.TransactionNumber);
 
@@ -40,7 +40,8 @@ namespace TransactionProcessor.Testing
 
         public static String DeviceIdentifier1 = "1234567891";
 
-        public static String TransactionType = "Logon";
+        public static TransactionType TransactionTypeLogon = TransactionType.Logon;
+        public static TransactionType TransactionTypeSale = TransactionType.Sale;
 
         public static DateTime TransactionDateTime = DateTime.Now;
 
@@ -59,7 +60,7 @@ namespace TransactionProcessor.Testing
         {
             TransactionAggregate transactionAggregate = TransactionAggregate.Create(TestData.TransactionId);
 
-            transactionAggregate.StartTransaction(TestData.TransactionDateTime,TestData.TransactionNumber, TestData.TransactionType, TestData.EstateId, TestData.MerchantId,
+            transactionAggregate.StartTransaction(TestData.TransactionDateTime,TestData.TransactionNumber, TestData.TransactionTypeLogon, TestData.EstateId, TestData.MerchantId,
                                                   TestData.DeviceIdentifier);
 
             return transactionAggregate;
@@ -69,7 +70,7 @@ namespace TransactionProcessor.Testing
         {
             TransactionAggregate transactionAggregate = TransactionAggregate.Create(TestData.TransactionId);
 
-            transactionAggregate.StartTransaction(TestData.TransactionDateTime, TestData.TransactionNumber, TestData.TransactionType, TestData.EstateId, TestData.MerchantId,
+            transactionAggregate.StartTransaction(TestData.TransactionDateTime, TestData.TransactionNumber, TestData.TransactionTypeLogon, TestData.EstateId, TestData.MerchantId,
                                                   TestData.DeviceIdentifier);
 
             transactionAggregate.AuthoriseTransactionLocally(TestData.AuthorisationCode, TestData.ResponseCode, TestData.ResponseMessage);
@@ -81,7 +82,7 @@ namespace TransactionProcessor.Testing
         {
             TransactionAggregate transactionAggregate = TransactionAggregate.Create(TestData.TransactionId);
 
-            transactionAggregate.StartTransaction(TestData.TransactionDateTime, TestData.TransactionNumber, TestData.TransactionType, TestData.EstateId, TestData.MerchantId,
+            transactionAggregate.StartTransaction(TestData.TransactionDateTime, TestData.TransactionNumber, TestData.TransactionTypeLogon, TestData.EstateId, TestData.MerchantId,
                                                   TestData.DeviceIdentifier);
 
             transactionAggregate.DeclineTransactionLocally(TestData.GetResponseCodeAsString(transactionResponseCode), TestData.GetResponseCodeMessage(transactionResponseCode));
@@ -93,7 +94,7 @@ namespace TransactionProcessor.Testing
         {
             TransactionAggregate transactionAggregate = TransactionAggregate.Create(TestData.TransactionId);
 
-            transactionAggregate.StartTransaction(TestData.TransactionDateTime, TestData.TransactionNumber, TestData.TransactionType, TestData.EstateId, TestData.MerchantId,
+            transactionAggregate.StartTransaction(TestData.TransactionDateTime, TestData.TransactionNumber, TestData.TransactionTypeLogon, TestData.EstateId, TestData.MerchantId,
                                                   TestData.DeviceIdentifier);
 
             transactionAggregate.AuthoriseTransactionLocally(TestData.AuthorisationCode, TestData.ResponseCode, TestData.ResponseMessage);
@@ -163,7 +164,29 @@ namespace TransactionProcessor.Testing
                                                                       MerchantName = null
                                                                   };
 
-        
+        public static ProcessSaleTransactionResponse ProcessSaleTransactionResponseModel = new ProcessSaleTransactionResponse
+                                                                                           {
+                                                                                               ResponseMessage = TestData.ResponseMessage,
+                                                                                               ResponseCode = TestData.ResponseCode,
+                                                                                               AdditionalTransactionMetadata = new Dictionary<String, String>
+                                                                                                                               {
+                                                                                                                                   {"OperatorResponseCode", "1000"}
+                                                                                                                               }
+                                                                                           };
+
+        public static String OperatorIdentifier = "Safaricom";
+
+        public static Dictionary<String, String> AdditionalTransactionMetaData = new Dictionary<String, String>
+                                                                                 {
+                                                                                     {"Amount", "100.00"}
+                                                                                 };
+
+        public static ProcessSaleTransactionRequest ProcessSaleTransactionRequest = ProcessSaleTransactionRequest.Create(TestData.TransactionId, TestData.EstateId, TestData.MerchantId,
+                                                                                                                         TestData.DeviceIdentifier, TestData.TransactionTypeLogon.ToString(),
+                                                                                                                         TestData.TransactionDateTime,
+                                                                                                                         TestData.TransactionNumber,
+                                                                                                                         TestData.OperatorIdentifier,
+                                                                                                                         TestData.AdditionalTransactionMetaData);
 
         public static String GetResponseCodeAsString(TransactionResponseCode transactionResponseCode)
         {

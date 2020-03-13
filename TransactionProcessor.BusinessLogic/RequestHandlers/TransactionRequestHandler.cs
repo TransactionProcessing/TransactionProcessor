@@ -12,7 +12,8 @@
     /// </summary>
     /// <seealso cref="MediatR.IRequestHandler{TransactionProcessor.BusinessLogic.Requests.ProcessLogonTransactionRequest, TransactionProcessor.Models.ProcessLogonTransactionResponse}" />
     /// <seealso cref="" />
-    public class TransactionRequestHandler : IRequestHandler<ProcessLogonTransactionRequest, ProcessLogonTransactionResponse> 
+    public class TransactionRequestHandler : IRequestHandler<ProcessLogonTransactionRequest, ProcessLogonTransactionResponse>,
+                                             IRequestHandler<ProcessSaleTransactionRequest, ProcessSaleTransactionResponse>
     {
         #region Fields
 
@@ -34,6 +35,12 @@
 
         #region Methods
 
+        /// <summary>
+        /// Handles the specified request.
+        /// </summary>
+        /// <param name="request">The request.</param>
+        /// <param name="cancellationToken">The cancellation token.</param>
+        /// <returns></returns>
         public async Task<ProcessLogonTransactionResponse> Handle(ProcessLogonTransactionRequest request,
                                                                   CancellationToken cancellationToken)
         {
@@ -50,5 +57,27 @@
         }
 
         #endregion
+
+        /// <summary>
+        /// Handles the specified request.
+        /// </summary>
+        /// <param name="request">The request.</param>
+        /// <param name="cancellationToken">The cancellation token.</param>
+        /// <returns></returns>
+        public async Task<ProcessSaleTransactionResponse> Handle(ProcessSaleTransactionRequest request,
+                                                                 CancellationToken cancellationToken)
+        {
+            ProcessSaleTransactionResponse saleResponse = await this.TransactionDomainService.ProcessSaleTransaction(request.TransactionId,
+                                                                                                                     request.EstateId,
+                                                                                                                     request.MerchantId,
+                                                                                                                     request.TransactionDateTime,
+                                                                                                                     request.TransactionNumber,
+                                                                                                                     request.DeviceIdentifier,
+                                                                                                                     request.OperatorIdentifier,
+                                                                                                                     request.AdditionalTransactionMetadata,
+                                                                                                                     cancellationToken);
+
+            return saleResponse;
+        }
     }
 }

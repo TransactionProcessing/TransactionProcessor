@@ -42,5 +42,35 @@ namespace TransactionProcessor.Tests.Factories
 
             logonTransactionResponse.ShouldBeNull();
         }
+
+        [Fact]
+        public void ModelFactory_ProcessSaleTransactionResponseModel_IsConverted()
+        {
+            ProcessSaleTransactionResponse processSaleTransactionResponseModel = TestData.ProcessSaleTransactionResponseModel;
+
+            ModelFactory modelFactory = new ModelFactory();
+
+            SerialisedMessage saleTransactionResponse = modelFactory.ConvertFrom(processSaleTransactionResponseModel);
+
+            saleTransactionResponse.ShouldNotBeNull();
+            saleTransactionResponse.Metadata.ShouldContainKey(MetadataContants.KeyNameEstateId);
+            saleTransactionResponse.Metadata.ShouldContainKey(MetadataContants.KeyNameMerchantId);
+            String estateId = saleTransactionResponse.Metadata[MetadataContants.KeyNameEstateId];
+            String merchantId = saleTransactionResponse.Metadata[MetadataContants.KeyNameMerchantId];
+            estateId.ShouldBe(TestData.ProcessSaleTransactionResponseModel.EstateId.ToString());
+            merchantId.ShouldBe(TestData.ProcessSaleTransactionResponseModel.MerchantId.ToString());
+        }
+
+        [Fact]
+        public void ModelFactory_ProcessSaleTransactionResponseModel_NullInput_IsConverted()
+        {
+            ProcessSaleTransactionResponse processSaleTransactionResponseModel = null;
+
+            ModelFactory modelFactory = new ModelFactory();
+
+            SerialisedMessage saleTransactionResponse = modelFactory.ConvertFrom(processSaleTransactionResponseModel);
+
+            saleTransactionResponse.ShouldBeNull();
+        }
     }
 }

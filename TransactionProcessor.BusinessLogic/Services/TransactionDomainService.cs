@@ -9,6 +9,7 @@
     using EstateManagement.DataTransferObjects.Requests;
     using EstateManagement.DataTransferObjects.Responses;
     using Models;
+    using OperatorInterfaces;
     using SecurityService.Client;
     using SecurityService.DataTransferObjects.Responses;
     using Shared.DomainDrivenDesign.EventStore;
@@ -41,6 +42,8 @@
         /// </summary>
         private readonly ISecurityServiceClient SecurityServiceClient;
 
+        private readonly Func<String, IOperatorProxy> OperatorProxyResolver;
+
         #endregion
 
         #region Constructors
@@ -51,13 +54,16 @@
         /// <param name="aggregateRepositoryManager">The aggregate repository manager.</param>
         /// <param name="estateClient">The estate client.</param>
         /// <param name="securityServiceClient">The security service client.</param>
+        /// <param name="operatorProxyResolver">The operator proxy resolver.</param>
         public TransactionDomainService(IAggregateRepositoryManager aggregateRepositoryManager,
                                         IEstateClient estateClient,
-                                        ISecurityServiceClient securityServiceClient)
+                                        ISecurityServiceClient securityServiceClient,
+                                        Func<String, IOperatorProxy> operatorProxyResolver)
         {
             this.AggregateRepositoryManager = aggregateRepositoryManager;
             this.EstateClient = estateClient;
             this.SecurityServiceClient = securityServiceClient;
+            this.OperatorProxyResolver = operatorProxyResolver;
         }
 
         #endregion
@@ -83,14 +89,16 @@
                                                                                    String deviceIdentifier,
                                                                                    CancellationToken cancellationToken)
         {
+            TransactionType transactionType = TransactionType.Logon;
+
             IAggregateRepository<TransactionAggregate> transactionAggregateRepository =
                 this.AggregateRepositoryManager.GetAggregateRepository<TransactionAggregate>(estateId);
 
             TransactionAggregate transactionAggregate = await transactionAggregateRepository.GetLatestVersion(transactionId, cancellationToken);
-            transactionAggregate.StartTransaction(transactionDateTime, transactionNumber, "Logon", estateId, merchantId, deviceIdentifier);
+            transactionAggregate.StartTransaction(transactionDateTime, transactionNumber, transactionType, estateId, merchantId, deviceIdentifier);
             await transactionAggregateRepository.SaveChanges(transactionAggregate, cancellationToken);
 
-            (String responseMessage, TransactionResponseCode responseCode) validationResult = await this.ValidateTransaction(estateId, merchantId, deviceIdentifier, cancellationToken);
+            (String responseMessage, TransactionResponseCode responseCode) validationResult = await this.ValidateTransaction(estateId, merchantId, deviceIdentifier, transactionType, cancellationToken);
 
             if (validationResult.responseCode == TransactionResponseCode.Success)
             {
@@ -122,17 +130,84 @@
         }
 
         /// <summary>
+        /// Processes the sale transaction.
+        /// </summary>
+        /// <param name="transactionId">The transaction identifier.</param>
+        /// <param name="estateId">The estate identifier.</param>
+        /// <param name="merchantId">The merchant identifier.</param>
+        /// <param name="transactionDateTime">The transaction date time.</param>
+        /// <param name="transactionNumber">The transaction number.</param>
+        /// <param name="deviceIdentifier">The device identifier.</param>
+        /// <param name="operatorId">The operator identifier.</param>
+        /// <param name="additionalTransactionMetadata">The additional transaction metadata.</param>
+        /// <param name="cancellationToken">The cancellation token.</param>
+        /// <returns></returns>
+        public async Task<ProcessSaleTransactionResponse> ProcessSaleTransaction(Guid transactionId,
+                                                                                 Guid estateId,
+                                                                                 Guid merchantId,
+                                                                                 DateTime transactionDateTime,
+                                                                                 String transactionNumber,
+                                                                                 String deviceIdentifier,
+                                                                                 String operatorId,
+                                                                                 Dictionary<String, String> additionalTransactionMetadata,
+                                                                                 CancellationToken cancellationToken)
+        {
+            TransactionType transactionType = TransactionType.Sale;
+
+            IAggregateRepository<TransactionAggregate> transactionAggregateRepository =
+                this.AggregateRepositoryManager.GetAggregateRepository<TransactionAggregate>(estateId);
+
+            TransactionAggregate transactionAggregate = await transactionAggregateRepository.GetLatestVersion(transactionId, cancellationToken);
+            transactionAggregate.StartTransaction(transactionDateTime, transactionNumber, transactionType, estateId, merchantId, deviceIdentifier);
+            await transactionAggregateRepository.SaveChanges(transactionAggregate, cancellationToken);
+
+            (String responseMessage, TransactionResponseCode responseCode) validationResult = await this.ValidateTransaction(estateId, merchantId, deviceIdentifier, transactionType, cancellationToken);
+
+            if (validationResult.responseCode == TransactionResponseCode.Success)
+            {
+                // TODO: Do the online processing with the operator here
+                // Record the successful validation
+                transactionAggregate = await transactionAggregateRepository.GetLatestVersion(transactionId, cancellationToken);
+                // TODO: Generate local authcode
+                transactionAggregate.AuthoriseTransactionLocally("ABCD1234", ((Int32)validationResult.responseCode).ToString().PadLeft(4, '0'), validationResult.responseMessage);
+                await transactionAggregateRepository.SaveChanges(transactionAggregate, cancellationToken);
+            }
+            else
+            {
+                // Record the failure
+                transactionAggregate = await transactionAggregateRepository.GetLatestVersion(transactionId, cancellationToken);
+                transactionAggregate.DeclineTransactionLocally(((Int32)validationResult.responseCode).ToString().PadLeft(4, '0'), validationResult.responseMessage);
+                await transactionAggregateRepository.SaveChanges(transactionAggregate, cancellationToken);
+            }
+
+            transactionAggregate = await transactionAggregateRepository.GetLatestVersion(transactionId, cancellationToken);
+            transactionAggregate.CompleteTransaction();
+            await transactionAggregateRepository.SaveChanges(transactionAggregate, cancellationToken);
+
+            return new ProcessSaleTransactionResponse
+                   {
+                       ResponseMessage = transactionAggregate.ResponseMessage,
+                       ResponseCode = transactionAggregate.ResponseCode,
+                       EstateId = estateId,
+                       MerchantId = merchantId,
+                       AdditionalTransactionMetadata = new Dictionary<String, String>()
+                   };
+        }
+
+        /// <summary>
         /// Validates the transaction.
         /// </summary>
         /// <param name="estateId">The estate identifier.</param>
         /// <param name="merchantId">The merchant identifier.</param>
         /// <param name="deviceIdentifier">The device identifier.</param>
+        /// <param name="transactionType">Type of the transaction.</param>
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns></returns>
         /// <exception cref="TransactionProcessor.BusinessLogic.Services.TransactionValidationException">Device Identifier {deviceIdentifier} not valid for Merchant {merchant.MerchantName}</exception>
         private async Task<(String responseMessage, TransactionResponseCode responseCode)> ValidateTransaction(Guid estateId,
                                                     Guid merchantId,
                                                     String deviceIdentifier,
+                                                    TransactionType transactionType,
                                                     CancellationToken cancellationToken)
         {
             try
@@ -149,12 +224,12 @@
                 Logger.LogInformation($"Token is {token.AccessToken}");
 
                 EstateResponse estate = null;
+                // Validate the Estate Record is a valid estate
                 try
                 {
-                    // Validate the Estate Record is a valid estate
                     estate = await this.EstateClient.GetEstate(token.AccessToken, estateId, cancellationToken);
                 }
-                catch(Exception e) when (e.InnerException is KeyNotFoundException)
+                catch (Exception ex) when (ex.InnerException != null && ex.InnerException.GetType() == typeof(KeyNotFoundException))
                 {
                     throw new TransactionValidationException($"Estate Id [{estateId}] is not a valid estate", TransactionResponseCode.InvalidEstateId);
                 }
@@ -166,20 +241,29 @@
                 // TODO: Remove this once GetMerchant returns correct response when merchant not found
                 if (merchant.MerchantName == null)
                 {
-                    throw new TransactionValidationException($"Merchant Id [{merchantId}] is not a valid merchant for estate [{estate.EstateName}]", TransactionResponseCode.InvalidMerchantId);
+                    throw new TransactionValidationException($"Merchant Id [{merchantId}] is not a valid merchant for estate [{estate.EstateName}]",
+                                                             TransactionResponseCode.InvalidMerchantId);
                 }
 
                 if (merchant.Devices == null || merchant.Devices.Any() == false)
                 {
-                    // Add the device to the merchant
-                    await this.EstateClient.AddDeviceToMerchant(token.AccessToken,
-                                                                estateId,
-                                                                merchantId,
-                                                                new AddMerchantDeviceRequest
-                                                                {
-                                                                    DeviceIdentifier = deviceIdentifier
-                                                                },
-                                                                cancellationToken);
+                    if (transactionType == TransactionType.Logon)
+                    {
+                        // Add the device to the merchant
+                        await this.EstateClient.AddDeviceToMerchant(token.AccessToken,
+                                                                    estateId,
+                                                                    merchantId,
+                                                                    new AddMerchantDeviceRequest
+                                                                    {
+                                                                        DeviceIdentifier = deviceIdentifier
+                                                                    },
+                                                                    cancellationToken);
+                    }
+                    else
+                    {
+                        throw new TransactionValidationException($"Merchant {merchant.MerchantName} has no valid Devices for this transaction.",
+                                                                 TransactionResponseCode.NoValidDevices);
+                    }
                 }
                 else
                 {
@@ -189,7 +273,8 @@
                     if (device.Key == Guid.Empty)
                     {
                         // Device not found,throw error
-                        throw new TransactionValidationException($"Device Identifier {deviceIdentifier} not valid for Merchant {merchant.MerchantName}", TransactionResponseCode.InvalidDeviceIdentifier);
+                        throw new TransactionValidationException($"Device Identifier {deviceIdentifier} not valid for Merchant {merchant.MerchantName}",
+                                                                 TransactionResponseCode.InvalidDeviceIdentifier);
                     }
                 }
 
@@ -199,6 +284,11 @@
             catch (TransactionValidationException tvex)
             {
                 return (tvex.Message, tvex.ResponseCode);
+            }
+            catch (Exception ex)
+            {
+                Logger.LogError(ex);
+                return ("Unspecified Processing Error", TransactionResponseCode.UnknownFailure);
             }
 
         }

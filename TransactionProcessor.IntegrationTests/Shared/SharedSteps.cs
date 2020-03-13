@@ -228,7 +228,7 @@ namespace TransactionProcessor.IntegrationTests.Shared
                 String transactionNumber = SpecflowTableHelper.GetStringRowValue(tableRow, "TransactionNumber");
                 String transactionType = SpecflowTableHelper.GetStringRowValue(tableRow, "TransactionType");
                 String deviceIdentifier = SpecflowTableHelper.GetStringRowValue(tableRow, "DeviceIdentifier");
-
+                
                 EstateDetails estateDetails = this.TestingContext.GetEstateDetails(tableRow);
 
                 // Lookup the merchant id
@@ -245,6 +245,22 @@ namespace TransactionProcessor.IntegrationTests.Shared
                                                            deviceIdentifier,
                                                            CancellationToken.None);
                         break;
+                    case "Sale":
+
+                        // Get specific sale fields
+                        String operatorName = SpecflowTableHelper.GetStringRowValue(tableRow, "OperatorName");
+                        Decimal transactionAmount = SpecflowTableHelper.GetDecimalValue(tableRow, "TransactionAmount");
+
+                        transactionResponse = await this.PerformSaleTransaction(estateDetails.EstateId,
+                                                                                merchantId,
+                                                                                transactionDateTime,
+                                                                                transactionType,
+                                                                                transactionNumber,
+                                                                                deviceIdentifier,
+                                                                                operatorName,
+                                                                                transactionAmount,
+                                                                                CancellationToken.None);
+                        break;
                         
                 }
 
@@ -252,6 +268,17 @@ namespace TransactionProcessor.IntegrationTests.Shared
             }
         }
 
+        /// <summary>
+        /// Performs the logon transaction.
+        /// </summary>
+        /// <param name="estateId">The estate identifier.</param>
+        /// <param name="merchantId">The merchant identifier.</param>
+        /// <param name="transactionDateTime">The transaction date time.</param>
+        /// <param name="transactionType">Type of the transaction.</param>
+        /// <param name="transactionNumber">The transaction number.</param>
+        /// <param name="deviceIdentifier">The device identifier.</param>
+        /// <param name="cancellationToken">The cancellation token.</param>
+        /// <returns></returns>
         private async Task<SerialisedMessage> PerformLogonTransaction(Guid estateId, Guid merchantId, DateTime transactionDateTime, String transactionType, String transactionNumber, String deviceIdentifier, CancellationToken cancellationToken)
         {
             LogonTransactionRequest logonTransactionRequest = new LogonTransactionRequest
@@ -271,6 +298,39 @@ namespace TransactionProcessor.IntegrationTests.Shared
                                                                                                     {
                                                                                                         TypeNameHandling = TypeNameHandling.All
                                                                                                     });
+
+            SerialisedMessage responseSerialisedMessage =
+                await this.TestingContext.DockerHelper.TransactionProcessorClient.PerformTransaction(this.TestingContext.AccessToken,
+                                                                                                     serialisedMessage,
+                                                                                                     cancellationToken);
+
+            return responseSerialisedMessage;
+        }
+
+        private async Task<SerialisedMessage> PerformSaleTransaction(Guid estateId, Guid merchantId, DateTime transactionDateTime, String transactionType, String transactionNumber, String deviceIdentifier, String operatorIdentifier, Decimal transactionAmount, CancellationToken cancellationToken)
+        {
+            SaleTransactionRequest saleTransactionRequest = new SaleTransactionRequest
+            {
+                MerchantId = merchantId,
+                EstateId = estateId,
+                TransactionDateTime = transactionDateTime,
+                TransactionNumber = transactionNumber,
+                DeviceIdentifier = deviceIdentifier,
+                TransactionType = transactionType,
+                OperatorIdentifier = operatorIdentifier,
+                AdditionalTransactionMetadata = new Dictionary<String, String>
+                                                {
+                                                    { "Amount", transactionAmount.ToString() }
+                                                }
+            };
+
+            SerialisedMessage serialisedMessage = new SerialisedMessage();
+            serialisedMessage.Metadata.Add(MetadataContants.KeyNameEstateId, estateId.ToString());
+            serialisedMessage.Metadata.Add(MetadataContants.KeyNameMerchantId, merchantId.ToString());
+            serialisedMessage.SerialisedData = JsonConvert.SerializeObject(saleTransactionRequest, new JsonSerializerSettings
+                                                                                                   {
+                                                                                                       TypeNameHandling = TypeNameHandling.All
+                                                                                                   });
 
             SerialisedMessage responseSerialisedMessage =
                 await this.TestingContext.DockerHelper.TransactionProcessorClient.PerformTransaction(this.TestingContext.AccessToken,
@@ -310,6 +370,16 @@ namespace TransactionProcessor.IntegrationTests.Shared
 
             logonTransactionResponse.ResponseCode.ShouldBe(expectedResponseCode);
             logonTransactionResponse.ResponseMessage.ShouldBe(expectedResponseMessage);
+        }
+
+        private void ValidateTransactionResponse(SaleTransactionResponse saleTransactionResponse,
+                                                 TableRow tableRow)
+        {
+            String expectedResponseCode = SpecflowTableHelper.GetStringRowValue(tableRow, "ResponseCode");
+            String expectedResponseMessage = SpecflowTableHelper.GetStringRowValue(tableRow, "ResponseMessage");
+
+            saleTransactionResponse.ResponseCode.ShouldBe(expectedResponseCode);
+            saleTransactionResponse.ResponseMessage.ShouldBe(expectedResponseMessage);
         }
 
         [Given(@"the following api resources exist")]
