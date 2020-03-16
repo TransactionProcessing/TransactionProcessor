@@ -1,10 +1,12 @@
 ﻿namespace TransactionProcessor.BusinessLogic.OperatorInterfaces
 {
     using System;
+    using System.Diagnostics.CodeAnalysis;
 
     /// <summary>
     /// 
     /// </summary>
+    [ExcludeFromCodeCoverage]
     public class OperatorResponse
     {
         #region Properties
@@ -32,6 +34,14 @@
         /// The response message.
         /// </value>
         public String ResponseMessage { get; set; }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether this instance is successful.
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if this instance is successful; otherwise, <c>false</c>.
+        /// </value>
+        public Boolean IsSuccessful { get; set; }
 
         #endregion
     }

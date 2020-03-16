@@ -2,6 +2,7 @@
 {
     using System;
     using System.ComponentModel;
+    using System.Diagnostics.CodeAnalysis;
     using System.Xml.Serialization;
 
     /// <summary>
@@ -11,6 +12,7 @@
     [DesignerCategory("code")]
     [XmlType(AnonymousType = true)]
     [XmlRoot(Namespace = "", IsNullable = false, ElementName = "COMMAND")]
+    [ExcludeFromCodeCoverage]
     public class SafaricomResponse
     {
         #region Properties
@@ -22,7 +24,7 @@
         /// The type.
         /// </value>
         [XmlElement(ElementName = "TYPE")]
-        public String TYPE { get; set; }
+        public String TransactionType { get; set; }
 
         /// <summary>
         /// Gets or sets the txnstatus.
@@ -31,7 +33,7 @@
         /// The txnstatus.
         /// </value>
         [XmlElement(ElementName = "TXNSTATUS")]
-        public Int32 TXNSTATUS { get; set; }
+        public Int32 TransactionStatus { get; set; }
 
         /// <summary>
         /// Gets or sets the date.
@@ -40,7 +42,7 @@
         /// The date.
         /// </value>
         [XmlElement(ElementName = "DATE")]
-        public String DATE { get; set; }
+        public String TransactionDate { get; set; }
 
         /// <summary>
         /// Gets or sets the extrefnum.
@@ -49,7 +51,7 @@
         /// The extrefnum.
         /// </value>
         [XmlElement(ElementName = "EXTREFNUM")]
-        public String EXTREFNUM { get; set; }
+        public String ExternalReferenceNumber { get; set; }
 
         /// <summary>
         /// Gets or sets the txnid.
@@ -58,7 +60,7 @@
         /// The txnid.
         /// </value>
         [XmlElement(ElementName = "TXNID")]
-        public String TXNID { get; set; }
+        public String TransactionId { get; set; }
 
         /// <summary>
         /// Gets or sets the message.
@@ -67,7 +69,7 @@
         /// The message.
         /// </value>
         [XmlElement(ElementName = "MESSAGE")]
-        public String MESSAGE { get; set; }
+        public String Message { get; set; }
 
         #endregion
     }
