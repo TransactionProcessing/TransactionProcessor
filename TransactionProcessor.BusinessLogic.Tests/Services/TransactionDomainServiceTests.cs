@@ -6,6 +6,7 @@ namespace TransactionProcessor.BusinessLogic.Tests.Services
 {
     using System.Threading;
     using System.Threading.Tasks;
+    using BusinessLogic.OperatorInterfaces;
     using BusinessLogic.Services;
     using EstateManagement.Client;
     using Microsoft.Extensions.Configuration;

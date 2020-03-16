@@ -4,6 +4,7 @@ using System.Text;
 
 namespace TransactionProcessor.Testing
 {
+    using BusinessLogic.OperatorInterfaces.SafaricomPinless;
     using BusinessLogic.Requests;
     using BusinessLogic.Services;
     using EstateManagement.DataTransferObjects.Responses;
@@ -197,5 +198,26 @@ namespace TransactionProcessor.Testing
         {
             return transactionResponseCode.ToString();
         }
+
+        public static SafaricomConfiguration SafaricomConfiguration = new SafaricomConfiguration
+                                                                      {
+                                                                          ExtCode = "ExtCode1",
+                                                                          LoginId = "LoginId",
+                                                                          MSISDN = "123456789",
+                                                                          Password = "Password",
+                                                                          Url = "http://localhost",
+                                                                          Pin = "1234"
+                                                                      };
+
+        public static MerchantResponse Merchant = new MerchantResponse
+                                                  {
+                                                      EstateId = TestData.EstateId,
+                                                      MerchantId = TestData.MerchantId,
+                                                      MerchantName = TestData.MerchantName
+                                                  };
+
+        public static String SuccessfulSafaricomTopup = "<COMMAND xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\" xmlns:xsd=\"http://www.w3.org/2001/XMLSchema\"><TYPE>EXRCTRFRESP</TYPE><TXNSTATUS>200</TXNSTATUS><DATE>02-JUL-2018</DATE><EXTREFNUM>100022814</EXTREFNUM><TXNID>20200314231322847</TXNID><MESSAGE>Topup Successful</MESSAGE></COMMAND>";
+
+        public static String FailedSafaricomTopup = "<COMMAND xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\" xmlns:xsd=\"http://www.w3.org/2001/XMLSchema\"><TYPE>EXRCTRFRESP</TYPE><TXNSTATUS>500</TXNSTATUS><DATE>02-JUL-2018</DATE><EXTREFNUM>100022814</EXTREFNUM><TXNID>20200314231322847</TXNID><MESSAGE>Topup failed</MESSAGE></COMMAND>";
     }
 }

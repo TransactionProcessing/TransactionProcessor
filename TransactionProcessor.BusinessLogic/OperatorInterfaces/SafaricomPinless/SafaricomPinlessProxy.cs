@@ -135,8 +135,10 @@
             return new OperatorResponse
                    {
                        AuthorisationCode = "ABCD1234",
-                       ResponseCode = cl.TXNSTATUS.ToString(),
-                       ResponseMessage = cl.MESSAGE
+                       ResponseCode = cl.TransactionStatus.ToString(),
+                       ResponseMessage = cl.Message,
+                       IsSuccessful = cl.TransactionStatus == 200
+
                    };
         }
 
