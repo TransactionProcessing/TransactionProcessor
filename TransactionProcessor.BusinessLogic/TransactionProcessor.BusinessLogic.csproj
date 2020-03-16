@@ -7,9 +7,9 @@
   <ItemGroup>
     <PackageReference Include="EstateManagement.Client" Version="0.0.9.1" />
     <PackageReference Include="SecurityService.Client" Version="0.0.9" />
-    <PackageReference Include="Shared" Version="0.0.11.3" />
-    <PackageReference Include="Shared.DomainDrivenDesign" Version="0.0.11.3" />
-    <PackageReference Include="Shared.EventStore" Version="0.0.11.3" />
+    <PackageReference Include="Shared" Version="0.0.12" />
+    <PackageReference Include="Shared.DomainDrivenDesign" Version="0.0.12" />
+    <PackageReference Include="Shared.EventStore" Version="0.0.12" />
     <PackageReference Include="MediatR" Version="8.0.0" />
   </ItemGroup>
 

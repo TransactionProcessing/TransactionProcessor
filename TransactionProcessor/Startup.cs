@@ -18,6 +18,7 @@ namespace TransactionProcessor
     using System.Reflection;
     using Autofac;
     using BusinessLogic.OperatorInterfaces;
+    using BusinessLogic.OperatorInterfaces.SafaricomPinless;
     using BusinessLogic.RequestHandlers;
     using BusinessLogic.Requests;
     using BusinessLogic.Services;
@@ -101,6 +102,20 @@ namespace TransactionProcessor
 
             builder.RegisterInstance<Func<String, IEventStoreContext>>(eventStoreContextFunc);
 
+            SafaricomConfiguration safaricomConfiguration = new SafaricomConfiguration();
+
+            if (Startup.Configuration != null)
+            {
+                IConfigurationSection section = Startup.Configuration.GetSection("AppSettings:EventHandlerConfiguration");
+
+                if (section != null)
+                {
+                    Startup.Configuration.GetSection("OperatorConfiguration:Safaricom").Bind(safaricomConfiguration);
+                }
+            }
+
+            builder.RegisterInstance<SafaricomConfiguration>(safaricomConfiguration);
+            
             if (useConnectionStringConfig)
             {
                 String connectionStringConfigurationConnString = ConfigurationReader.GetConnectionString("ConnectionStringConfiguration");
@@ -128,12 +143,21 @@ namespace TransactionProcessor
                                                             Uri uri = ConfigurationReader.GetBaseServerUri(api);
                                                             return uri.AbsoluteUri.Substring(0, uri.AbsoluteUri.Length - 1);
                                                         });
-            builder.Register<Func<String, IOperatorProxy>>(c => (operatorIdentifier) => { return new SafaricomPinlessProxy();});
+            builder.Register<Func<String, IOperatorProxy>>(c => 
+                                                                {
+                                                                    IComponentContext cx = c.Resolve<IComponentContext>();
+                                                                    return operatorrIdentifier =>
+                                                                           {
+                                                                               SafaricomConfiguration configuration = cx.Resolve<SafaricomConfiguration>();
+                                                                               HttpClient client = cx.Resolve<HttpClient>();
+                                                                               return new SafaricomPinlessProxy(configuration, client);
+                                                                           };
+                                                                });
 
             // request & notification handlers
             builder.Register<ServiceFactory>(context =>
                                              {
-                                                 var c = context.Resolve<IComponentContext>();
+                                                 IComponentContext c = context.Resolve<IComponentContext>();
                                                  return t => c.Resolve(t);
                                              });
 

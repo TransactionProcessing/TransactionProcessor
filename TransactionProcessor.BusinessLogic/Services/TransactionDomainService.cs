@@ -166,6 +166,10 @@
             if (validationResult.responseCode == TransactionResponseCode.Success)
             {
                 // TODO: Do the online processing with the operator here
+                MerchantResponse merchant = await this.GetMerchant(estateId, merchantId, cancellationToken);
+                IOperatorProxy operatorProxy = OperatorProxyResolver(operatorId);
+                await operatorProxy.ProcessSaleMessage(transactionId, merchant, transactionDateTime, additionalTransactionMetadata, cancellationToken);
+
                 // Record the successful validation
                 transactionAggregate = await transactionAggregateRepository.GetLatestVersion(transactionId, cancellationToken);
                 // TODO: Generate local authcode
@@ -212,31 +216,20 @@
         {
             try
             {
-
-                // Get a token to talk to the estate service
-                String clientId = ConfigurationReader.GetValue("AppSettings", "ClientId");
-                String clientSecret = ConfigurationReader.GetValue("AppSettings", "ClientSecret");
-
-                Logger.LogInformation($"Client Id is {clientId}");
-                Logger.LogInformation($"Client Secret is {clientSecret}");
-
-                TokenResponse token = await this.SecurityServiceClient.GetToken(clientId, clientSecret, cancellationToken);
-                Logger.LogInformation($"Token is {token.AccessToken}");
-
                 EstateResponse estate = null;
                 // Validate the Estate Record is a valid estate
                 try
                 {
-                    estate = await this.EstateClient.GetEstate(token.AccessToken, estateId, cancellationToken);
+                    estate = await this.GetEstate(estateId, cancellationToken);
                 }
                 catch (Exception ex) when (ex.InnerException != null && ex.InnerException.GetType() == typeof(KeyNotFoundException))
                 {
                     throw new TransactionValidationException($"Estate Id [{estateId}] is not a valid estate", TransactionResponseCode.InvalidEstateId);
                 }
-                
+
                 // get the merchant record and validate the device
                 // TODO: Token
-                MerchantResponse merchant = await this.EstateClient.GetMerchant(token.AccessToken, estateId, merchantId, cancellationToken);
+                MerchantResponse merchant = await this.GetMerchant(estateId, merchantId, cancellationToken);
 
                 // TODO: Remove this once GetMerchant returns correct response when merchant not found
                 if (merchant.MerchantName == null)
@@ -249,15 +242,7 @@
                 {
                     if (transactionType == TransactionType.Logon)
                     {
-                        // Add the device to the merchant
-                        await this.EstateClient.AddDeviceToMerchant(token.AccessToken,
-                                                                    estateId,
-                                                                    merchantId,
-                                                                    new AddMerchantDeviceRequest
-                                                                    {
-                                                                        DeviceIdentifier = deviceIdentifier
-                                                                    },
-                                                                    cancellationToken);
+                        await this.AddDeviceToMerchant(estateId, merchantId, deviceIdentifier, cancellationToken);
                     }
                     else
                     {
@@ -291,6 +276,63 @@
                 return ("Unspecified Processing Error", TransactionResponseCode.UnknownFailure);
             }
 
+        }
+
+        private TokenResponse TokenResponse;
+
+        private async Task<EstateResponse> GetEstate(Guid estateId, CancellationToken cancellationToken)
+        {
+            await this.GetToken(cancellationToken);
+
+            EstateResponse estate = await this.EstateClient.GetEstate(this.TokenResponse.AccessToken, estateId, cancellationToken);
+            
+            return estate;
+        }
+
+        private async Task<MerchantResponse> GetMerchant(Guid estateId,
+                                                         Guid merchantId,
+                                                         CancellationToken cancellationToken)
+        {
+            await this.GetToken(cancellationToken);
+
+            MerchantResponse merchant = await this.EstateClient.GetMerchant(this.TokenResponse.AccessToken, estateId, merchantId, cancellationToken);
+
+            return merchant;
+        }
+
+        private async Task GetToken(CancellationToken cancellationToken)
+        {
+            if (this.TokenResponse == null)
+            {
+                // Get a token to talk to the estate service
+                String clientId = ConfigurationReader.GetValue("AppSettings", "ClientId");
+                String clientSecret = ConfigurationReader.GetValue("AppSettings", "ClientSecret");
+
+                Logger.LogInformation($"Client Id is {clientId}");
+                Logger.LogInformation($"Client Secret is {clientSecret}");
+
+                TokenResponse token = await this.SecurityServiceClient.GetToken(clientId, clientSecret, cancellationToken);
+                Logger.LogInformation($"Token is {token.AccessToken}");
+                this.TokenResponse = token;
+            }
+        }
+
+        private async Task AddDeviceToMerchant(Guid estateId,
+                                               Guid merchantId, 
+                                               String deviceIdentifier,
+                                               CancellationToken cancellationToken)
+        {
+            await this.GetToken(cancellationToken);
+
+            // Add the device to the merchant
+            await this.EstateClient.AddDeviceToMerchant(this.TokenResponse.AccessToken,
+                                                        estateId,
+                                                        merchantId,
+                                                        new AddMerchantDeviceRequest
+                                                        {
+                                                            DeviceIdentifier = deviceIdentifier
+                                                        },
+                                                        cancellationToken);
         }
 
         #endregion
