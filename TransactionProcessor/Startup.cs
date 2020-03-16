@@ -16,7 +16,6 @@ namespace TransactionProcessor
     using System.IO;
     using System.Net.Http;
     using System.Reflection;
-    using Autofac;
     using BusinessLogic.OperatorInterfaces;
     using BusinessLogic.OperatorInterfaces.SafaricomPinless;
     using BusinessLogic.RequestHandlers;
@@ -71,10 +70,7 @@ namespace TransactionProcessor
             this.ConfigureMiddlewareServices(services);
 
             services.AddTransient<IMediator, Mediator>();
-        }
 
-        public void ConfigureContainer(ContainerBuilder builder)
-        {
             ConfigurationReader.Initialise(Startup.Configuration);
             String connString = Startup.Configuration.GetValue<String>("EventStoreSettings:ConnectionString");
             String connectionName = Startup.Configuration.GetValue<String>("EventStoreSettings:ConnectionName");
@@ -82,25 +78,26 @@ namespace TransactionProcessor
 
             Boolean useConnectionStringConfig = Boolean.Parse(ConfigurationReader.GetValue("AppSettings", "UseConnectionStringConfig"));
             EventStoreConnectionSettings settings = EventStoreConnectionSettings.Create(connString, connectionName, httpPort);
-            builder.RegisterInstance(settings);
+            services.AddSingleton(settings);
 
-            Func<EventStoreConnectionSettings, IEventStoreConnection> eventStoreConnectionFunc = (connectionSettings) =>
-            {
-                return EventStoreConnection.Create(connectionSettings.ConnectionString);
-            };
+            services.AddSingleton<Func<EventStoreConnectionSettings, IEventStoreConnection>>(cont => (connectionSettings) =>
+                                                                                                     {
+                                                                                                         return EventStoreConnection.Create(connectionSettings
+                                                                                                                                                .ConnectionString);
+                                                                                                     });
 
-            builder.RegisterInstance<Func<EventStoreConnectionSettings, IEventStoreConnection>>(eventStoreConnectionFunc);
+            services.AddSingleton<Func<String, IEventStoreContext>>(cont => (connectionString) =>
+                                                                            {
+                                                                                EventStoreConnectionSettings connectionSettings =
+                                                                                    EventStoreConnectionSettings.Create(connectionString, connectionName, httpPort);
 
-            Func<String, IEventStoreContext> eventStoreContextFunc = (connectionString) =>
-            {
-                EventStoreConnectionSettings connectionSettings = EventStoreConnectionSettings.Create(connectionString, connectionName, httpPort);
+                                                                                Func<EventStoreConnectionSettings, IEventStoreConnection> eventStoreConnectionFunc = cont.GetService<Func<EventStoreConnectionSettings, IEventStoreConnection>>();
 
-                IEventStoreContext context = new EventStoreContext(connectionSettings, eventStoreConnectionFunc);
+                                                                                IEventStoreContext context =
+                                                                                    new EventStoreContext(connectionSettings, eventStoreConnectionFunc);
 
-                return context;
-            };
-
-            builder.RegisterInstance<Func<String, IEventStoreContext>>(eventStoreContextFunc);
+                                                                                return context;
+                                                                            });
 
             SafaricomConfiguration safaricomConfiguration = new SafaricomConfiguration();
 
@@ -114,56 +111,66 @@ namespace TransactionProcessor
                 }
             }
 
-            builder.RegisterInstance<SafaricomConfiguration>(safaricomConfiguration);
-            
+            services.AddSingleton<SafaricomConfiguration>(safaricomConfiguration);
+
             if (useConnectionStringConfig)
             {
                 String connectionStringConfigurationConnString = ConfigurationReader.GetConnectionString("ConnectionStringConfiguration");
-                builder.Register(c => new ConnectionStringConfigurationContext(connectionStringConfigurationConnString)).InstancePerDependency();
-                builder.RegisterType<ConnectionStringConfigurationRepository>().As<IConnectionStringConfigurationRepository>().SingleInstance();
-                builder.RegisterType<EventStoreContextManager>().As<IEventStoreContextManager>().UsingConstructor(typeof(Func<String, IEventStoreContext>), typeof(IConnectionStringConfigurationRepository)).SingleInstance();
+                services.AddSingleton<IConnectionStringConfigurationRepository, ConnectionStringConfigurationRepository>();
+                services.AddTransient<ConnectionStringConfigurationContext>(c =>
+                                                                            {
+                                                                                return new ConnectionStringConfigurationContext(connectionStringConfigurationConnString);
+                                                                            });
+
+                services.AddSingleton<IEventStoreContextManager, EventStoreContextManager>(c =>
+                                                                                           {
+                                                                                               Func<String, IEventStoreContext> contextFunc = c.GetService<Func<String, IEventStoreContext>>();
+                                                                                               IConnectionStringConfigurationRepository connectionStringConfigurationRepository =
+                                                                                                   c.GetService<IConnectionStringConfigurationRepository>();
+                                                                                               return new EventStoreContextManager(contextFunc,
+                                                                                                                                   connectionStringConfigurationRepository);
+                                                                                           });
             }
             else
             {
-                builder.RegisterType<EventStoreContextManager>().As<IEventStoreContextManager>().UsingConstructor(typeof(IEventStoreContext)).SingleInstance();
-                // TODO: Once we have a Read Model
-                //this.RegisterType<Vme.Repositories.IConnectionStringRepository, ConfigReaderConnectionStringRepository>().Singleton();
+                services.AddSingleton<IEventStoreContextManager, EventStoreContextManager>(c =>
+                                                                                           {
+                                                                                               IEventStoreContext context = c.GetService<IEventStoreContext>();
+                                                                                               return new EventStoreContextManager(context);
+                                                                                           });
+                //services.AddSingleton<IConnectionStringConfigurationRepository, ConfigurationReaderConnectionStringRepository>();
             }
 
-            builder.RegisterType<EventStoreContext>().As<IEventStoreContext>();
-            builder.RegisterType<AggregateRepositoryManager>().As<IAggregateRepositoryManager>().SingleInstance();
-            builder.RegisterType<AggregateRepository<TransactionAggregate.TransactionAggregate>>().As<IAggregateRepository<TransactionAggregate.TransactionAggregate>>().SingleInstance();
-            builder.RegisterType<TransactionDomainService>().As<ITransactionDomainService>().SingleInstance();
-            builder.RegisterType<Factories.ModelFactory>().As<Factories.IModelFactory>().SingleInstance();
-            builder.RegisterType<EstateClient>().As<IEstateClient>().SingleInstance();
-            builder.RegisterType<SecurityServiceClient>().As<ISecurityServiceClient>().SingleInstance();
-            builder.RegisterType(typeof(HttpClient)).SingleInstance();
-            builder.Register<Func<String, String>>(c => (api) =>
-                                                        {
-                                                            Uri uri = ConfigurationReader.GetBaseServerUri(api);
-                                                            return uri.AbsoluteUri.Substring(0, uri.AbsoluteUri.Length - 1);
-                                                        });
-            builder.Register<Func<String, IOperatorProxy>>(c => 
-                                                                {
-                                                                    IComponentContext cx = c.Resolve<IComponentContext>();
-                                                                    return operatorrIdentifier =>
-                                                                           {
-                                                                               SafaricomConfiguration configuration = cx.Resolve<SafaricomConfiguration>();
-                                                                               HttpClient client = cx.Resolve<HttpClient>();
-                                                                               return new SafaricomPinlessProxy(configuration, client);
-                                                                           };
-                                                                });
-
+            services.AddTransient<IEventStoreContext, EventStoreContext>();
+            services.AddSingleton<IAggregateRepositoryManager, AggregateRepositoryManager>();
+            services.AddSingleton<IAggregateRepository<TransactionAggregate.TransactionAggregate>, AggregateRepository<TransactionAggregate.TransactionAggregate>>();
+            services.AddSingleton<ITransactionDomainService, TransactionDomainService>();
+            services.AddSingleton<Factories.IModelFactory, Factories.ModelFactory>();
+            services.AddSingleton<ISecurityServiceClient, SecurityServiceClient>();
+            services.AddSingleton<Func<String, String>>(container => (serviceName) =>
+                                                                     {
+                                                                         return ConfigurationReader.GetBaseServerUri(serviceName).OriginalString;
+                                                                     });
+            services.AddSingleton<HttpClient>();
+            services.AddSingleton<IEstateClient, EstateClient>();
             // request & notification handlers
-            builder.Register<ServiceFactory>(context =>
-                                             {
-                                                 IComponentContext c = context.Resolve<IComponentContext>();
-                                                 return t => c.Resolve(t);
-                                             });
+            services.AddTransient<ServiceFactory>(context =>
+                                                  {
+                                                      return t => context.GetService(t);
+                                                  });
 
-            builder.RegisterType<TransactionRequestHandler>().As<IRequestHandler<ProcessLogonTransactionRequest, ProcessLogonTransactionResponse>>().SingleInstance();
-            builder.RegisterType<TransactionRequestHandler>().As<IRequestHandler<ProcessSaleTransactionRequest, ProcessSaleTransactionResponse>>().SingleInstance();
+            services.AddSingleton<IRequestHandler<ProcessLogonTransactionRequest, ProcessLogonTransactionResponse>, TransactionRequestHandler>();
+            services.AddSingleton<IRequestHandler<ProcessSaleTransactionRequest, ProcessSaleTransactionResponse>, TransactionRequestHandler>();
+
+            services.AddTransient<Func<String, IOperatorProxy>>(context => (operatorIdentifier) =>
+                                                             {
+                                                                 SafaricomConfiguration configuration = context.GetRequiredService<SafaricomConfiguration>();
+                                                                 HttpClient client = context.GetRequiredService<HttpClient>();
+                                                                 return new SafaricomPinlessProxy(configuration, client);
+                                                             });
         }
+
+        
 
         private void ConfigureMiddlewareServices(IServiceCollection services)
         {

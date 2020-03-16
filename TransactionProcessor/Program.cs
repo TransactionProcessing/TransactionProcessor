@@ -11,7 +11,6 @@ namespace TransactionProcessor
 {
     using System.Diagnostics.CodeAnalysis;
     using System.IO;
-    using Autofac.Extensions.DependencyInjection;
 
     [ExcludeFromCodeCoverage]
     public class Program
@@ -37,7 +36,7 @@ namespace TransactionProcessor
                                                      webBuilder.UseStartup<Startup>();
                                                      webBuilder.UseConfiguration(config);
                                                      webBuilder.UseKestrel();
-                                                 }).UseServiceProviderFactory(new AutofacServiceProviderFactory());
+                                                 });
             return hostBuilder;
         }
 
