@@ -8,7 +8,9 @@
     using System.Threading;
     using System.Threading.Tasks;
     using Client;
+    using Ductus.FluentDocker.Builders;
     using Ductus.FluentDocker.Common;
+    using Ductus.FluentDocker.Model.Builders;
     using Ductus.FluentDocker.Services;
     using Ductus.FluentDocker.Services.Extensions;
     using EstateManagement.Client;
@@ -82,6 +84,8 @@
 
         protected String TransactionProcessorContainerName;
 
+        protected String TestHostContainerName;
+
         /// <summary>
         /// The transaction processor port
         /// </summary>
@@ -113,6 +117,33 @@
 
         #endregion
 
+        public const Int32 TestHostPort = 9000;
+
+        public static IContainerService SetupTestHostContainer(String containerName, ILogger logger, String imageName,
+                                                               List<INetworkService> networkServices,
+                                                               String hostFolder,
+                                                               (String URL, String UserName, String Password)? dockerCredentials,
+                                                               Boolean forceLatestImage = false)
+        {
+            logger.LogInformation("About to Start Test Hosts Container");
+
+            ContainerBuilder testHostContainer = new Builder().UseContainer().WithName(containerName)
+                                                              .UseImage(imageName, forceLatestImage).ExposePort(DockerHelper.TestHostPort)
+                                                              .UseNetwork(networkServices.ToArray()).Mount(hostFolder, "/home", MountType.ReadWrite);
+
+            if (dockerCredentials.HasValue)
+            {
+                testHostContainer.WithCredential(dockerCredentials.Value.URL, dockerCredentials.Value.UserName, dockerCredentials.Value.Password);
+            }
+
+            // Now build and return the container                
+            IContainerService builtContainer = testHostContainer.Build().Start().WaitForPort($"{DockerHelper.TestHostPort}/tcp", 30000);
+
+            logger.LogInformation("Test Hosts Container Started");
+
+            return builtContainer;
+        }
+
         #region Methods
 
         /// <summary>
@@ -137,6 +168,7 @@
             this.EstateReportingContainerName = $"estatereporting{testGuid:N}";
             this.SubscriptionServiceContainerName = $"subscription{testGuid:N}";
             this.TransactionProcessorContainerName = $"txnprocessor{testGuid:N}";
+            this.TestHostContainerName = $"testhosts{testGuid:N}";
 
             (String, String, String) dockerCredentials = ("https://www.docker.com", "stuartferguson", "Sc0tland");
 
@@ -178,7 +210,8 @@
                                                                                                               this.SecurityServiceContainerName,
                                                                                                               this.EstateManagementContainerName,
                                                                                                               this.EventStoreContainerName,
-                                                                                                              ("serviceClient", "Secret1"));
+                                                                                                              ("serviceClient", "Secret1"),
+                                                                                                              this.TestHostContainerName);
 
             IContainerService estateReportingContainer = DockerHelper.SetupEstateReportingContainer(this.EstateReportingContainerName,
                                                                                                     this.Logger,
@@ -197,13 +230,25 @@
                                                                                                     ("serviceClient", "Secret1"),
                                                                                                     true);
 
+            IContainerService testhostContainer = SetupTestHostContainer(this.TestHostContainerName,
+                                                                         this.Logger,
+                                                                         "stuartferguson/testhosts",
+                                                                         new List<INetworkService>
+                                                                         {
+                                                                             testNetwork
+                                                                         },
+                                                                         traceFolder,
+                                                                         dockerCredentials,
+                                                                         true);
+
             this.Containers.AddRange(new List<IContainerService>
                                      {
                                          eventStoreContainer,
                                          estateManagementContainer,
                                          securityServiceContainer,
                                          transactionProcessorContainer,
-                                         estateReportingContainer
+                                         estateReportingContainer,
+                                         testhostContainer
                                      });
 
             // Cache the ports

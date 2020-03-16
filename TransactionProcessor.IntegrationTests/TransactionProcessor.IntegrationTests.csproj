@@ -7,15 +7,15 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="ClientProxyBase" Version="0.0.11.3" />
+    <PackageReference Include="ClientProxyBase" Version="0.0.12" />
     <PackageReference Include="Ductus.FluentDocker" Version="2.7.3" />
     <PackageReference Include="EstateManagement.Client" Version="0.0.9.1" />
     <PackageReference Include="EstateReporting.Database" Version="0.0.1.1" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" Version="3.1.1" />
     <PackageReference Include="Microsoft.NET.Test.Sdk" Version="16.4.0" />
     <PackageReference Include="SecurityService.Client" Version="0.0.9" />
-    <PackageReference Include="Shared" Version="0.0.11.3" />
-    <PackageReference Include="Shared.IntegrationTesting" Version="0.0.11.3" />
+    <PackageReference Include="Shared" Version="0.0.12" />
+    <PackageReference Include="Shared.IntegrationTesting" Version="0.0.12" />
     <PackageReference Include="Shouldly" Version="3.0.2" />
     <PackageReference Include="SpecFlow" Version="3.1.78" />
     <PackageReference Include="SpecFlow.Tools.MsBuild.Generation" Version="3.1.78" />
