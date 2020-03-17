@@ -1,0 +1,41 @@
+name: Publish Pre-Release Nuget 
+
+on:
+  push:
+    # branches to consider in the event; optional, defaults to all
+    branches:
+      - master
+
+jobs:
+  build:
+    name: "Publish Pre-Release Nugets"
+    env:
+        ASPNETCORE_ENVIRONMENT: "Production"
+
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v1
+
+    - name: Restore Nuget Packages
+      run: dotnet restore TransactionProcessor.sln --source https://api.nuget.org/v3/index.json --source https://www.myget.org/F/transactionprocessing/api/v3/index.json
+
+    - name: Build Code
+      run: dotnet build TransactionProcessor.sln --configuration Release
+
+    - name: Get the last version
+      id: get_version
+      run: echo ::set-output name=VERSION::$(git tag --sort=committerdate  | tail -1)
+    
+    - name: Print Version
+      id: next_version
+      run: echo ::set-output name=VERSION::${{ steps.get_version.outputs.VERSION }}.$GITHUB_RUN_NUMBER
+
+    - name: Build and Publish Nuget Packages
+      run: |
+        dotnet pack "TransactionProcessor.Client\TransactionProcessor.Client.csproj" /p:PackageVersion=${{ steps.next_version.outputs.VERSION }} --output Nugets
+        dotnet nuget push Nugets/TransactionProcessor.Client.${{ steps.next_version.outputs.VERSION }}.nupkg --api-key ${{ secrets.MYGET_APIKEY }} --source https://www.myget.org/F/transactionprocessing/api/v2/package
+        dotnet pack "TransactionProcessor.Transaction.DomainEvents\TransactionProcessor.Transaction.DomainEvents.csproj" /p:PackageVersion=${{ steps.next_version.outputs.VERSION }} --output Nugets
+        dotnet nuget push Nugets/TransactionProcessor.Transaction.DomainEvents.${{ steps.next_version.outputs.VERSION }}.nupkg --api-key ${{ secrets.MYGET_APIKEY }} --source https://www.myget.org/F/transactionprocessing/api/v2/package
+
+
