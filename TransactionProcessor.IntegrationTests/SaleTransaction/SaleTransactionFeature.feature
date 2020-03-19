@@ -24,6 +24,7 @@ Background:
 	Given I have created the following operators
 	| EstateName    | OperatorName | RequireCustomMerchantNumber | RequireCustomTerminalNumber |
 	| Test Estate 1 | Safaricom    | True                        | True                        |
+	| Test Estate 2 | Safaricom    | True                        | True                        |
 
 	Given I create the following merchants
 	| MerchantName    | AddressLine1   | Town     | Region      | Country        | ContactName    | EmailAddress                 | EstateName    |
@@ -34,6 +35,8 @@ Background:
 	Given I have assigned the following  operator to the merchants
 	| OperatorName | MerchantName    | MerchantNumber | TerminalNumber | EstateName    |
 	| Safaricom    | Test Merchant 1 | 00000001       | 10000001       | Test Estate 1 |
+	| Safaricom    | Test Merchant 2 | 00000002       | 10000002       | Test Estate 1 |
+	| Safaricom    | Test Merchant 3 | 00000003       | 10000003       | Test Estate 2 |
 
 	Given I have assigned the following devices to the merchants
 	| DeviceIdentifier | MerchantName    | EstateName    |
