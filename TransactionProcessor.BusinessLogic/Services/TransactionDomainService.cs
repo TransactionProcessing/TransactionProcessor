@@ -255,7 +255,6 @@
             try
             {
                 (EstateResponse estate, MerchantResponse merchant) validateTransactionResponse = await this.ValidateTransaction(estateId, merchantId, cancellationToken);
-                EstateResponse estate = validateTransactionResponse.estate;
                 MerchantResponse merchant = validateTransactionResponse.merchant;
 
                 // Device Validation
