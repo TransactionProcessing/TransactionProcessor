@@ -98,7 +98,7 @@
             transactionAggregate.StartTransaction(transactionDateTime, transactionNumber, transactionType, estateId, merchantId, deviceIdentifier);
             await transactionAggregateRepository.SaveChanges(transactionAggregate, cancellationToken);
 
-            (String responseMessage, TransactionResponseCode responseCode) validationResult = await this.ValidateTransaction(estateId, merchantId, deviceIdentifier, transactionType, cancellationToken);
+            (String responseMessage, TransactionResponseCode responseCode) validationResult = await this.ValidateLogonTransaction(estateId, merchantId, deviceIdentifier, cancellationToken);
 
             if (validationResult.responseCode == TransactionResponseCode.Success)
             {
@@ -138,7 +138,7 @@
         /// <param name="transactionDateTime">The transaction date time.</param>
         /// <param name="transactionNumber">The transaction number.</param>
         /// <param name="deviceIdentifier">The device identifier.</param>
-        /// <param name="operatorId">The operator identifier.</param>
+        /// <param name="operatorIdentifier">The operator identifier.</param>
         /// <param name="additionalTransactionMetadata">The additional transaction metadata.</param>
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns></returns>
@@ -148,7 +148,7 @@
                                                                                  DateTime transactionDateTime,
                                                                                  String transactionNumber,
                                                                                  String deviceIdentifier,
-                                                                                 String operatorId,
+                                                                                 String operatorIdentifier,
                                                                                  Dictionary<String, String> additionalTransactionMetadata,
                                                                                  CancellationToken cancellationToken)
         {
@@ -161,13 +161,13 @@
             transactionAggregate.StartTransaction(transactionDateTime, transactionNumber, transactionType, estateId, merchantId, deviceIdentifier);
             await transactionAggregateRepository.SaveChanges(transactionAggregate, cancellationToken);
 
-            (String responseMessage, TransactionResponseCode responseCode) validationResult = await this.ValidateTransaction(estateId, merchantId, deviceIdentifier, transactionType, cancellationToken);
+            (String responseMessage, TransactionResponseCode responseCode) validationResult = await this.ValidateSaleTransaction(estateId, merchantId, deviceIdentifier, operatorIdentifier, cancellationToken);
 
             if (validationResult.responseCode == TransactionResponseCode.Success)
             {
                 // TODO: Do the online processing with the operator here
                 MerchantResponse merchant = await this.GetMerchant(estateId, merchantId, cancellationToken);
-                IOperatorProxy operatorProxy = OperatorProxyResolver(operatorId);
+                IOperatorProxy operatorProxy = OperatorProxyResolver(operatorIdentifier);
                 await operatorProxy.ProcessSaleMessage(transactionId, merchant, transactionDateTime, additionalTransactionMetadata, cancellationToken);
 
                 // Record the successful validation
@@ -203,52 +203,126 @@
         /// </summary>
         /// <param name="estateId">The estate identifier.</param>
         /// <param name="merchantId">The merchant identifier.</param>
+        /// <param name="cancellationToken">The cancellation token.</param>
+        /// <returns></returns>
+        /// <exception cref="TransactionValidationException">
+        /// Estate Id [{estateId}] is not a valid estate
+        /// or
+        /// Merchant Id [{merchantId}] is not a valid merchant for estate [{estate.EstateName}]
+        /// </exception>
+        private async Task<(EstateResponse estate, MerchantResponse merchant)> ValidateTransaction(Guid estateId,
+                                               Guid merchantId, CancellationToken cancellationToken)
+        {
+            EstateResponse estate = null;
+            // Validate the Estate Record is a valid estate
+            try
+            {
+                estate = await this.GetEstate(estateId, cancellationToken);
+            }
+            catch (Exception ex) when (ex.InnerException != null && ex.InnerException.GetType() == typeof(KeyNotFoundException))
+            {
+                throw new TransactionValidationException($"Estate Id [{estateId}] is not a valid estate", TransactionResponseCode.InvalidEstateId);
+            }
+
+            // get the merchant record and validate the device
+            // TODO: Token
+            MerchantResponse merchant = await this.GetMerchant(estateId, merchantId, cancellationToken);
+
+            // TODO: Remove this once GetMerchant returns correct response when merchant not found
+            if (merchant.MerchantName == null)
+            {
+                throw new TransactionValidationException($"Merchant Id [{merchantId}] is not a valid merchant for estate [{estate.EstateName}]",
+                                                         TransactionResponseCode.InvalidMerchantId);
+            }
+
+            return (estate, merchant);
+        }
+
+        /// <summary>
+        /// Validates the transaction.
+        /// </summary>
+        /// <param name="estateId">The estate identifier.</param>
+        /// <param name="merchantId">The merchant identifier.</param>
         /// <param name="deviceIdentifier">The device identifier.</param>
-        /// <param name="transactionType">Type of the transaction.</param>
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns></returns>
         /// <exception cref="TransactionProcessor.BusinessLogic.Services.TransactionValidationException">Device Identifier {deviceIdentifier} not valid for Merchant {merchant.MerchantName}</exception>
-        private async Task<(String responseMessage, TransactionResponseCode responseCode)> ValidateTransaction(Guid estateId,
+        private async Task<(String responseMessage, TransactionResponseCode responseCode)> ValidateLogonTransaction(Guid estateId,
                                                     Guid merchantId,
                                                     String deviceIdentifier,
-                                                    TransactionType transactionType,
                                                     CancellationToken cancellationToken)
         {
             try
             {
-                EstateResponse estate = null;
-                // Validate the Estate Record is a valid estate
-                try
-                {
-                    estate = await this.GetEstate(estateId, cancellationToken);
-                }
-                catch (Exception ex) when (ex.InnerException != null && ex.InnerException.GetType() == typeof(KeyNotFoundException))
-                {
-                    throw new TransactionValidationException($"Estate Id [{estateId}] is not a valid estate", TransactionResponseCode.InvalidEstateId);
-                }
+                (EstateResponse estate, MerchantResponse merchant) validateTransactionResponse = await this.ValidateTransaction(estateId, merchantId, cancellationToken);
+                MerchantResponse merchant = validateTransactionResponse.merchant;
 
-                // get the merchant record and validate the device
-                // TODO: Token
-                MerchantResponse merchant = await this.GetMerchant(estateId, merchantId, cancellationToken);
-
-                // TODO: Remove this once GetMerchant returns correct response when merchant not found
-                if (merchant.MerchantName == null)
-                {
-                    throw new TransactionValidationException($"Merchant Id [{merchantId}] is not a valid merchant for estate [{estate.EstateName}]",
-                                                             TransactionResponseCode.InvalidMerchantId);
-                }
-
+                // Device Validation
                 if (merchant.Devices == null || merchant.Devices.Any() == false)
                 {
-                    if (transactionType == TransactionType.Logon)
+                    await this.AddDeviceToMerchant(estateId, merchantId, deviceIdentifier, cancellationToken);
+                }
+                else
+                {
+                    // Validate the device
+                    KeyValuePair<Guid, String> device = merchant.Devices.SingleOrDefault(d => d.Value == deviceIdentifier);
+
+                    if (device.Key == Guid.Empty)
                     {
-                        await this.AddDeviceToMerchant(estateId, merchantId, deviceIdentifier, cancellationToken);
+                        // Device not found,throw error
+                        throw new TransactionValidationException($"Device Identifier {deviceIdentifier} not valid for Merchant {merchant.MerchantName}",
+                                                                 TransactionResponseCode.InvalidDeviceIdentifier);
                     }
-                    else
-                    {
-                        throw new TransactionValidationException($"Merchant {merchant.MerchantName} has no valid Devices for this transaction.",
-                                                                 TransactionResponseCode.NoValidDevices);
-                    }
+                }
+                
+                // If we get here everything is good
+                return ("SUCCESS", TransactionResponseCode.Success);
+            }
+            catch (TransactionValidationException tvex)
+            {
+                return (tvex.Message, tvex.ResponseCode);
+            }
+        }
+
+        /// <summary>
+        /// Validates the sale transaction.
+        /// </summary>
+        /// <param name="estateId">The estate identifier.</param>
+        /// <param name="merchantId">The merchant identifier.</param>
+        /// <param name="deviceIdentifier">The device identifier.</param>
+        /// <param name="operatorIdentifier">The operator identifier.</param>
+        /// <param name="cancellationToken">The cancellation token.</param>
+        /// <returns></returns>
+        /// <exception cref="TransactionValidationException">
+        /// Merchant {merchant.MerchantName} has no valid Devices for this transaction.
+        /// or
+        /// Device Identifier {deviceIdentifier} not valid for Merchant {merchant.MerchantName}
+        /// or
+        /// Estate {estate.EstateName} has no operators defined
+        /// or
+        /// Operator {operatorIdentifier} not configured for Estate [{estate.EstateName}]
+        /// or
+        /// Merchant {merchant.MerchantName} has no operators defined
+        /// or
+        /// Operator {operatorIdentifier} not configured for Merchant [{merchant.MerchantName}]
+        /// </exception>
+        private async Task<(String responseMessage, TransactionResponseCode responseCode)> ValidateSaleTransaction(Guid estateId,
+                                                    Guid merchantId,
+                                                    String deviceIdentifier,
+                                                    String operatorIdentifier,
+                                                    CancellationToken cancellationToken)
+        {
+            try
+            {
+                (EstateResponse estate, MerchantResponse merchant) validateTransactionResponse = await this.ValidateTransaction(estateId, merchantId, cancellationToken);
+                EstateResponse estate = validateTransactionResponse.estate;
+                MerchantResponse merchant = validateTransactionResponse.merchant;
+                
+                // Device Validation
+                if (merchant.Devices == null || merchant.Devices.Any() == false)
+                {
+                    throw new TransactionValidationException($"Merchant {merchant.MerchantName} has no valid Devices for this transaction.",
+                                                             TransactionResponseCode.NoValidDevices);
                 }
                 else
                 {
@@ -263,6 +337,39 @@
                     }
                 }
 
+                // Operator Validation (Estate)
+                if (estate.Operators == null || estate.Operators.Any() == false)
+                {
+                    throw new TransactionValidationException($"Estate {estate.EstateName} has no operators defined",
+                                                             TransactionResponseCode.NoEstateOperators);
+                }
+                else
+                {
+                    // Operators have been configured for the estate
+                    EstateOperatorResponse operatorRecord = estate.Operators.SingleOrDefault(o => o.Name == operatorIdentifier);
+                    if (operatorRecord == null)
+                    {
+                        throw new TransactionValidationException($"Operator {operatorIdentifier} not configured for Estate [{estate.EstateName}]", TransactionResponseCode.OperatorNotValidForEstate);
+                    }
+                }
+
+                // Operator Validation (Merchant)
+                if (merchant.Operators == null || merchant.Operators.Any() == false)
+                {
+                    throw new TransactionValidationException($"Merchant {merchant.MerchantName} has no operators defined",
+                                                             TransactionResponseCode.NoEstateOperators);
+                }
+                else
+                {
+                    // Operators have been configured for the estate
+                    MerchantOperatorResponse operatorRecord = merchant.Operators.SingleOrDefault(o => o.Name == operatorIdentifier);
+                    if (operatorRecord == null)
+                    {
+                        throw new TransactionValidationException($"Operator {operatorIdentifier} not configured for Merchant [{merchant.MerchantName}]", TransactionResponseCode.OperatorNotValidForMerchant);
+                    }
+                }
+
+
                 // If we get here everything is good
                 return ("SUCCESS", TransactionResponseCode.Success);
             }
@@ -270,12 +377,6 @@
             {
                 return (tvex.Message, tvex.ResponseCode);
             }
-            catch (Exception ex)
-            {
-                Logger.LogError(ex);
-                return ("Unspecified Processing Error", TransactionResponseCode.UnknownFailure);
-            }
-
         }
 
         private TokenResponse TokenResponse;
