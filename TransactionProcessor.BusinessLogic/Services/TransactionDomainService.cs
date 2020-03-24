@@ -28,9 +28,9 @@
         #region Fields
 
         /// <summary>
-        /// The aggregate repository manager
+        /// The transaction aggregate manager
         /// </summary>
-        private readonly IAggregateRepositoryManager AggregateRepositoryManager;
+        private readonly ITransactionAggregateManager TransactionAggregateManager;
 
         /// <summary>
         /// The estate client
@@ -51,16 +51,16 @@
         /// <summary>
         /// Initializes a new instance of the <see cref="TransactionDomainService" /> class.
         /// </summary>
-        /// <param name="aggregateRepositoryManager">The aggregate repository manager.</param>
+        /// <param name="transactionAggregateManager">The transaction aggregate manager.</param>
         /// <param name="estateClient">The estate client.</param>
         /// <param name="securityServiceClient">The security service client.</param>
         /// <param name="operatorProxyResolver">The operator proxy resolver.</param>
-        public TransactionDomainService(IAggregateRepositoryManager aggregateRepositoryManager,
+        public TransactionDomainService(ITransactionAggregateManager transactionAggregateManager,
                                         IEstateClient estateClient,
                                         ISecurityServiceClient securityServiceClient,
                                         Func<String, IOperatorProxy> operatorProxyResolver)
         {
-            this.AggregateRepositoryManager = aggregateRepositoryManager;
+            this.TransactionAggregateManager = transactionAggregateManager;
             this.EstateClient = estateClient;
             this.SecurityServiceClient = securityServiceClient;
             this.OperatorProxyResolver = operatorProxyResolver;
@@ -91,34 +91,32 @@
         {
             TransactionType transactionType = TransactionType.Logon;
 
-            IAggregateRepository<TransactionAggregate> transactionAggregateRepository =
-                this.AggregateRepositoryManager.GetAggregateRepository<TransactionAggregate>(estateId);
-
-            TransactionAggregate transactionAggregate = await transactionAggregateRepository.GetLatestVersion(transactionId, cancellationToken);
-            transactionAggregate.StartTransaction(transactionDateTime, transactionNumber, transactionType, estateId, merchantId, deviceIdentifier);
-            await transactionAggregateRepository.SaveChanges(transactionAggregate, cancellationToken);
+            await this.TransactionAggregateManager.StartTransaction(transactionId,
+                                                                    transactionDateTime,
+                                                                    transactionNumber,
+                                                                    transactionType,
+                                                                    estateId,
+                                                                    merchantId,
+                                                                    deviceIdentifier,
+                                                                    cancellationToken);
 
             (String responseMessage, TransactionResponseCode responseCode) validationResult = await this.ValidateLogonTransaction(estateId, merchantId, deviceIdentifier, cancellationToken);
 
             if (validationResult.responseCode == TransactionResponseCode.Success)
             {
                 // Record the successful validation
-                transactionAggregate = await transactionAggregateRepository.GetLatestVersion(transactionId, cancellationToken);
                 // TODO: Generate local authcode
-                transactionAggregate.AuthoriseTransactionLocally("ABCD1234", ((Int32)validationResult.responseCode).ToString().PadLeft(4,'0'), validationResult.responseMessage);
-                await transactionAggregateRepository.SaveChanges(transactionAggregate, cancellationToken);
+                await this.TransactionAggregateManager.AuthoriseTransactionLocally(estateId, transactionId, "ABCD1234", validationResult, cancellationToken);
             }
             else
             {
                 // Record the failure
-                transactionAggregate = await transactionAggregateRepository.GetLatestVersion(transactionId, cancellationToken);
-                transactionAggregate.DeclineTransactionLocally(((Int32)validationResult.responseCode).ToString().PadLeft(4, '0'), validationResult.responseMessage);
-                await transactionAggregateRepository.SaveChanges(transactionAggregate, cancellationToken);
+                await this.TransactionAggregateManager.DeclineTransactionLocally(estateId, transactionId, validationResult, cancellationToken);
             }
 
-            transactionAggregate = await transactionAggregateRepository.GetLatestVersion(transactionId, cancellationToken);
-            transactionAggregate.CompleteTransaction();
-            await transactionAggregateRepository.SaveChanges(transactionAggregate, cancellationToken);
+            await this.TransactionAggregateManager.CompleteTransaction(estateId, transactionId, cancellationToken);
+
+            TransactionAggregate transactionAggregate = await this.TransactionAggregateManager.GetAggregate(estateId, transactionId, cancellationToken);
 
             return new ProcessLogonTransactionResponse
                    {
@@ -154,39 +152,65 @@
         {
             TransactionType transactionType = TransactionType.Sale;
 
-            IAggregateRepository<TransactionAggregate> transactionAggregateRepository =
-                this.AggregateRepositoryManager.GetAggregateRepository<TransactionAggregate>(estateId);
-
-            TransactionAggregate transactionAggregate = await transactionAggregateRepository.GetLatestVersion(transactionId, cancellationToken);
-            transactionAggregate.StartTransaction(transactionDateTime, transactionNumber, transactionType, estateId, merchantId, deviceIdentifier);
-            await transactionAggregateRepository.SaveChanges(transactionAggregate, cancellationToken);
+            await this.TransactionAggregateManager.StartTransaction(transactionId,
+                                                                    transactionDateTime,
+                                                                    transactionNumber,
+                                                                    transactionType,
+                                                                    estateId,
+                                                                    merchantId,
+                                                                    deviceIdentifier,
+                                                                    cancellationToken);
 
             (String responseMessage, TransactionResponseCode responseCode) validationResult = await this.ValidateSaleTransaction(estateId, merchantId, deviceIdentifier, operatorIdentifier, cancellationToken);
 
             if (validationResult.responseCode == TransactionResponseCode.Success)
             {
-                // TODO: Do the online processing with the operator here
+                // Record any additional request metadata
+                await this.TransactionAggregateManager.RecordAdditionalRequestData(estateId, transactionId, additionalTransactionMetadata, cancellationToken);
+                
+                // Do the online processing with the operator here
                 MerchantResponse merchant = await this.GetMerchant(estateId, merchantId, cancellationToken);
                 IOperatorProxy operatorProxy = OperatorProxyResolver(operatorIdentifier);
-                await operatorProxy.ProcessSaleMessage(transactionId, merchant, transactionDateTime, additionalTransactionMetadata, cancellationToken);
+                OperatorResponse operatorResponse = await operatorProxy.ProcessSaleMessage(transactionId, merchant, transactionDateTime, additionalTransactionMetadata, cancellationToken);
 
-                // Record the successful validation
-                transactionAggregate = await transactionAggregateRepository.GetLatestVersion(transactionId, cancellationToken);
-                // TODO: Generate local authcode
-                transactionAggregate.AuthoriseTransactionLocally("ABCD1234", ((Int32)validationResult.responseCode).ToString().PadLeft(4, '0'), validationResult.responseMessage);
-                await transactionAggregateRepository.SaveChanges(transactionAggregate, cancellationToken);
+                if (operatorResponse.IsSuccessful)
+                {
+                    TransactionResponseCode transactionResponseCode = TransactionResponseCode.Success;
+                    String responseMessage = "SUCCESS";
+
+                    await this.TransactionAggregateManager.AuthoriseTransaction(estateId,
+                                                                                transactionId,
+                                                                                operatorResponse,
+                                                                                transactionResponseCode,
+                                                                                responseMessage,
+                                                                                cancellationToken);
+                }
+                else
+                {
+                    TransactionResponseCode transactionResponseCode = TransactionResponseCode.TransactionDeclinedByOperator;
+                    String responseMessage = "DECLINED BY OPERATOR";
+
+                    await this.TransactionAggregateManager.DeclineTransaction(estateId,
+                                                                              transactionId,
+                                                                              operatorResponse,
+                                                                              transactionResponseCode,
+                                                                              responseMessage,
+                                                                              cancellationToken);
+                }
+
+                // Record any additional operator response metadata
+                await this.TransactionAggregateManager.RecordAdditionalResponseData(estateId, transactionId, operatorResponse.AdditionalTransactionResponseMetadata, cancellationToken);
+
             }
             else
             {
                 // Record the failure
-                transactionAggregate = await transactionAggregateRepository.GetLatestVersion(transactionId, cancellationToken);
-                transactionAggregate.DeclineTransactionLocally(((Int32)validationResult.responseCode).ToString().PadLeft(4, '0'), validationResult.responseMessage);
-                await transactionAggregateRepository.SaveChanges(transactionAggregate, cancellationToken);
+                await this.TransactionAggregateManager.DeclineTransactionLocally(estateId, transactionId, validationResult, cancellationToken);
             }
 
-            transactionAggregate = await transactionAggregateRepository.GetLatestVersion(transactionId, cancellationToken);
-            transactionAggregate.CompleteTransaction();
-            await transactionAggregateRepository.SaveChanges(transactionAggregate, cancellationToken);
+            await this.TransactionAggregateManager.CompleteTransaction(estateId, transactionId, cancellationToken);
+
+            TransactionAggregate transactionAggregate = await this.TransactionAggregateManager.GetAggregate(estateId, transactionId, cancellationToken);
 
             return new ProcessSaleTransactionResponse
                    {

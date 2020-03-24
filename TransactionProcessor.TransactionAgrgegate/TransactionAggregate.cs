@@ -1,6 +1,7 @@
 ﻿namespace TransactionProcessor.TransactionAggregate
 {
     using System;
+    using System.Collections.Generic;
     using System.Diagnostics.CodeAnalysis;
     using System.Text.RegularExpressions;
     using Models;
@@ -15,6 +16,20 @@
     /// <seealso cref="Shared.DomainDrivenDesign.EventStore.Aggregate" />
     public class TransactionAggregate : Aggregate
     {
+        #region Fields
+
+        /// <summary>
+        /// The additional transaction request metadata
+        /// </summary>
+        private Dictionary<String, String> AdditionalTransactionRequestMetadata;
+
+        /// <summary>
+        /// The additional transaction response metadata
+        /// </summary>
+        private Dictionary<String, String> AdditionalTransactionResponseMetadata;
+
+        #endregion
+
         #region Constructors
 
         /// <summary>
@@ -74,20 +89,20 @@
         public Boolean IsAuthorised { get; private set; }
 
         /// <summary>
-        /// Gets a value indicating whether this instance is declined.
-        /// </summary>
-        /// <value>
-        ///   <c>true</c> if this instance is declined; otherwise, <c>false</c>.
-        /// </value>
-        public Boolean IsDeclined { get; private set; }
-
-        /// <summary>
         /// Gets a value indicating whether this instance is completed.
         /// </summary>
         /// <value>
         ///   <c>true</c> if this instance is completed; otherwise, <c>false</c>.
         /// </value>
         public Boolean IsCompleted { get; private set; }
+
+        /// <summary>
+        /// Gets a value indicating whether this instance is declined.
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if this instance is declined; otherwise, <c>false</c>.
+        /// </value>
+        public Boolean IsDeclined { get; private set; }
 
         /// <summary>
         /// Gets a value indicating whether this instance is locally authorised.
@@ -120,6 +135,30 @@
         /// The merchant identifier.
         /// </value>
         public Guid MerchantId { get; private set; }
+
+        /// <summary>
+        /// Gets the operator response code.
+        /// </summary>
+        /// <value>
+        /// The operator response code.
+        /// </value>
+        public String OperatorResponseCode { get; private set; }
+
+        /// <summary>
+        /// Gets the operator response message.
+        /// </summary>
+        /// <value>
+        /// The operator response message.
+        /// </value>
+        public String OperatorResponseMessage { get; private set; }
+
+        /// <summary>
+        /// Gets the operator transaction identifier.
+        /// </summary>
+        /// <value>
+        /// The operator transaction identifier.
+        /// </value>
+        public String OperatorTransactionId { get; private set; }
 
         /// <summary>
         /// Gets the response code.
@@ -169,6 +208,37 @@
         /// Authorises the transaction.
         /// </summary>
         /// <param name="authorisationCode">The authorisation code.</param>
+        /// <param name="operatorResponseCode">The operator response code.</param>
+        /// <param name="operatorResponseMessage">The operator response message.</param>
+        /// <param name="operatorTransactionId">The operator transaction identifier.</param>
+        /// <param name="responseCode">The response code.</param>
+        /// <param name="responseMessage">The response message.</param>
+        public void AuthoriseTransaction(String authorisationCode,
+                                         String operatorResponseCode,
+                                         String operatorResponseMessage,
+                                         String operatorTransactionId,
+                                         String responseCode,
+                                         String responseMessage)
+        {
+            this.CheckTransactionHasBeenStarted();
+            this.CheckTransactionNotAlreadyAuthorised();
+
+            TransactionAuthorisedByOperatorEvent transactionAuthorisedByOperatorEvent = TransactionAuthorisedByOperatorEvent.Create(this.AggregateId,
+                                                                                                                                    this.EstateId,
+                                                                                                                                    this.MerchantId,
+                                                                                                                                    authorisationCode,
+                                                                                                                                    operatorResponseCode,
+                                                                                                                                    operatorResponseMessage,
+                                                                                                                                    operatorTransactionId,
+                                                                                                                                    responseCode,
+                                                                                                                                    responseMessage);
+            this.ApplyAndPend(transactionAuthorisedByOperatorEvent);
+        }
+
+        /// <summary>
+        /// Authorises the transaction.
+        /// </summary>
+        /// <param name="authorisationCode">The authorisation code.</param>
         /// <param name="responseCode">The response code.</param>
         /// <param name="responseMessage">The response message.</param>
         public void AuthoriseTransactionLocally(String authorisationCode,
@@ -177,12 +247,13 @@
         {
             this.CheckTransactionHasBeenStarted();
             this.CheckTransactionNotAlreadyAuthorised();
+            this.CheckTransactionCanBeLocallyAuthorised();
             TransactionHasBeenLocallyAuthorisedEvent transactionHasBeenLocallyAuthorisedEvent =
                 TransactionHasBeenLocallyAuthorisedEvent.Create(this.AggregateId, this.EstateId, this.MerchantId, authorisationCode, responseCode, responseMessage);
 
             this.ApplyAndPend(transactionHasBeenLocallyAuthorisedEvent);
         }
-        
+
         /// <summary>
         /// Completes the transaction.
         /// </summary>
@@ -193,7 +264,12 @@
             this.CheckTransactionNotAlreadyCompleted();
 
             TransactionHasBeenCompletedEvent transactionHasBeenCompletedEvent =
-                TransactionHasBeenCompletedEvent.Create(this.AggregateId, this.EstateId, this.MerchantId, this.ResponseCode, this.ResponseMessage, true);
+                TransactionHasBeenCompletedEvent.Create(this.AggregateId,
+                                                        this.EstateId,
+                                                        this.MerchantId,
+                                                        this.ResponseCode,
+                                                        this.ResponseMessage,
+                                                        this.IsAuthorised || this.IsLocallyAuthorised);
 
             this.ApplyAndPend(transactionHasBeenCompletedEvent);
         }
@@ -211,6 +287,35 @@
         /// <summary>
         /// Declines the transaction.
         /// </summary>
+        /// <param name="operatorResponseCode">The operator response code.</param>
+        /// <param name="operatorResponseMessage">The operator response message.</param>
+        /// <param name="responseCode">The response code.</param>
+        /// <param name="responseMessage">The response message.</param>
+        public void DeclineTransaction(String operatorResponseCode,
+                                       String operatorResponseMessage,
+                                       String responseCode,
+                                       String responseMessage)
+        {
+            this.CheckTransactionHasBeenStarted();
+            this.CheckTransactionNotAlreadyAuthorised();
+            this.CheckTransactionNotAlreadyDeclined();
+
+            TransactionDeclinedByOperatorEvent transactionDeclinedByOperatorEvent =
+                TransactionDeclinedByOperatorEvent.Create(this.AggregateId,
+                                                          this.EstateId,
+                                                          this.MerchantId,
+                                                          operatorResponseCode,
+                                                          operatorResponseMessage,
+                                                          responseCode,
+                                                          responseMessage);
+            this.ApplyAndPend(transactionDeclinedByOperatorEvent);
+        }
+
+        /// <summary>
+        /// Declines the transaction.
+        /// </summary>
+        /// <param name="responseCode">The response code.</param>
+        /// <param name="responseMessage">The response message.</param>
         public void DeclineTransactionLocally(String responseCode,
                                               String responseMessage)
         {
@@ -224,16 +329,36 @@
         }
 
         /// <summary>
-        /// Checks the transaction not already declined.
+        /// Records the additional request data.
         /// </summary>
-        /// <exception cref="InvalidOperationException">Transaction [{this.AggregateId}] has already been{authtype}declined</exception>
-        private void CheckTransactionNotAlreadyDeclined()
+        /// <param name="additionalTransactionRequestMetadata">The additional transaction request metadata.</param>
+        public void RecordAdditionalRequestData(Dictionary<String, String> additionalTransactionRequestMetadata)
         {
-            if (this.IsLocallyDeclined || this.IsDeclined)
-            {
-                String authtype = this.IsLocallyAuthorised ? " locally " : " ";
-                throw new InvalidOperationException($"Transaction [{this.AggregateId}] has already been{authtype}declined");
-            }
+            this.CheckTransactionNotAlreadyCompleted();
+            this.CheckTransactionHasBeenStarted();
+            this.CheckTransactionNotAlreadyAuthorised();
+            this.CheckTransactionNotAlreadyDeclined();
+            this.CheckAdditionalRequestDataNotAlreadyRecorded();
+
+            AdditionalRequestDataRecordedEvent additionalRequestDataRecordedEvent =
+                AdditionalRequestDataRecordedEvent.Create(this.AggregateId, this.EstateId, this.MerchantId, additionalTransactionRequestMetadata);
+
+            this.ApplyAndPend(additionalRequestDataRecordedEvent);
+        }
+
+        /// <summary>
+        /// Records the additional response data.
+        /// </summary>
+        /// <param name="additionalTransactionResponseMetadata">The additional transaction response metadata.</param>
+        public void RecordAdditionalResponseData(Dictionary<String, String> additionalTransactionResponseMetadata)
+        {
+            this.CheckTransactionHasBeenStarted();
+            this.CheckAdditionalResponseDataNotAlreadyRecorded();
+
+            AdditionalResponseDataRecordedEvent additionalResponseDataRecordedEvent =
+                AdditionalResponseDataRecordedEvent.Create(this.AggregateId, this.EstateId, this.MerchantId, additionalTransactionResponseMetadata);
+
+            this.ApplyAndPend(additionalResponseDataRecordedEvent);
         }
 
         /// <summary>
@@ -245,13 +370,11 @@
         /// <param name="estateId">The estate identifier.</param>
         /// <param name="merchantId">The merchant identifier.</param>
         /// <param name="deviceIdentifier">The device identifier.</param>
-        /// <exception cref="ArgumentException">
-        /// Transaction Number must be numeric
+        /// <exception cref="ArgumentException">Transaction Number must be numeric
         /// or
         /// Invalid Transaction Type [{transactionType}]
         /// or
-        /// Device Identifier must be alphanumeric
-        /// </exception>
+        /// Device Identifier must be alphanumeric</exception>
         public void StartTransaction(DateTime transactionDateTime,
                                      String transactionNumber,
                                      TransactionType transactionType,
@@ -282,7 +405,13 @@
             this.CheckTransactionNotAlreadyStarted();
             this.CheckTransactionNotAlreadyCompleted();
             TransactionHasStartedEvent transactionHasStartedEvent =
-                TransactionHasStartedEvent.Create(this.AggregateId, estateId, merchantId, transactionDateTime, transactionNumber, transactionType.ToString(), deviceIdentifier);
+                TransactionHasStartedEvent.Create(this.AggregateId,
+                                                  estateId,
+                                                  merchantId,
+                                                  transactionDateTime,
+                                                  transactionNumber,
+                                                  transactionType.ToString(),
+                                                  deviceIdentifier);
 
             this.ApplyAndPend(transactionHasStartedEvent);
         }
@@ -310,13 +439,49 @@
         }
 
         /// <summary>
+        /// Checks the additional request data not already recorded.
+        /// </summary>
+        /// <exception cref="InvalidOperationException">Additional Request Data already recorded</exception>
+        private void CheckAdditionalRequestDataNotAlreadyRecorded()
+        {
+            if (this.AdditionalTransactionRequestMetadata != null)
+            {
+                throw new InvalidOperationException("Additional Request Data already recorded");
+            }
+        }
+
+        /// <summary>
+        /// Checks the additional response data not already recorded.
+        /// </summary>
+        /// <exception cref="InvalidOperationException">Additional Response Data already recorded</exception>
+        private void CheckAdditionalResponseDataNotAlreadyRecorded()
+        {
+            if (this.AdditionalTransactionResponseMetadata != null)
+            {
+                throw new InvalidOperationException("Additional Response Data already recorded");
+            }
+        }
+
+        /// <summary>
+        /// Checks the transaction can be locally authorised.
+        /// </summary>
+        /// <exception cref="InvalidOperationException">Sales cannot be locally authorised</exception>
+        /// <exception cref="NotSupportedException">Sales cannot be locally authorised</exception>
+        private void CheckTransactionCanBeLocallyAuthorised()
+        {
+            if (this.TransactionType == TransactionType.Sale)
+            {
+                throw new InvalidOperationException("Sales cannot be locally authorised");
+            }
+        }
+
+        /// <summary>
         /// Checks the transaction has been authorised.
         /// </summary>
         /// <exception cref="InvalidOperationException">Transaction [{this.AggregateId}] has not been authorised</exception>
         private void CheckTransactionHasBeenAuthorisedOrDeclined()
         {
-            if (this.IsAuthorised == false && this.IsLocallyAuthorised == false &&
-                this.IsDeclined == false && this.IsLocallyDeclined == false)
+            if (this.IsAuthorised == false && this.IsLocallyAuthorised == false && this.IsDeclined == false && this.IsLocallyDeclined == false)
             {
                 throw new InvalidOperationException($"Transaction [{this.AggregateId}] has not been authorised or declined");
             }
@@ -360,6 +525,19 @@
         }
 
         /// <summary>
+        /// Checks the transaction not already declined.
+        /// </summary>
+        /// <exception cref="InvalidOperationException">Transaction [{this.AggregateId}] has already been{authtype}declined</exception>
+        private void CheckTransactionNotAlreadyDeclined()
+        {
+            if (this.IsLocallyDeclined || this.IsDeclined)
+            {
+                String authtype = this.IsLocallyDeclined ? " locally " : " ";
+                throw new InvalidOperationException($"Transaction [{this.AggregateId}] has already been{authtype}declined");
+            }
+        }
+
+        /// <summary>
         /// Checks the transaction not already started.
         /// </summary>
         /// <exception cref="InvalidOperationException">Transaction Id [{this.AggregateId}] has already been started</exception>
@@ -369,6 +547,24 @@
             {
                 throw new InvalidOperationException($"Transaction Id [{this.AggregateId}] has already been started");
             }
+        }
+
+        /// <summary>
+        /// Plays the event.
+        /// </summary>
+        /// <param name="domainEvent">The domain event.</param>
+        private void PlayEvent(AdditionalRequestDataRecordedEvent domainEvent)
+        {
+            this.AdditionalTransactionRequestMetadata = domainEvent.AdditionalTransactionRequestMetadata;
+        }
+
+        /// <summary>
+        /// Plays the event.
+        /// </summary>
+        /// <param name="domainEvent">The domain event.</param>
+        private void PlayEvent(AdditionalResponseDataRecordedEvent domainEvent)
+        {
+            this.AdditionalTransactionResponseMetadata = domainEvent.AdditionalTransactionResponseMetadata;
         }
 
         /// <summary>
@@ -421,6 +617,34 @@
         {
             this.IsStarted = false; // Transaction has reached its final state
             this.IsCompleted = true;
+        }
+
+        /// <summary>
+        /// Plays the event.
+        /// </summary>
+        /// <param name="domainEvent">The domain event.</param>
+        private void PlayEvent(TransactionAuthorisedByOperatorEvent domainEvent)
+        {
+            this.IsAuthorised = true;
+            this.OperatorResponseCode = domainEvent.OperatorResponseCode;
+            this.OperatorResponseMessage = domainEvent.OperatorResponseMessage;
+            this.OperatorTransactionId = domainEvent.OperatorTransactionId;
+            this.AuthorisationCode = domainEvent.AuthorisationCode;
+            this.ResponseCode = domainEvent.ResponseCode;
+            this.ResponseMessage = domainEvent.ResponseMessage;
+        }
+
+        /// <summary>
+        /// Plays the event.
+        /// </summary>
+        /// <param name="domainEvent">The domain event.</param>
+        private void PlayEvent(TransactionDeclinedByOperatorEvent domainEvent)
+        {
+            this.IsDeclined = true;
+            this.OperatorResponseCode = domainEvent.OperatorResponseCode;
+            this.OperatorResponseMessage = domainEvent.OperatorResponseMessage;
+            this.ResponseCode = domainEvent.ResponseCode;
+            this.ResponseMessage = domainEvent.ResponseMessage;
         }
 
         #endregion

@@ -1,6 +1,7 @@
 ﻿namespace TransactionProcessor.BusinessLogic.OperatorInterfaces
 {
     using System;
+    using System.Collections.Generic;
     using System.Diagnostics.CodeAnalysis;
 
     /// <summary>
@@ -12,12 +13,28 @@
         #region Properties
 
         /// <summary>
+        /// Gets or sets the additional transaction response metadata.
+        /// </summary>
+        /// <value>
+        /// The additional transaction response metadata.
+        /// </value>
+        public Dictionary<String, String> AdditionalTransactionResponseMetadata { get; set; }
+
+        /// <summary>
         /// Gets or sets the authorisation code.
         /// </summary>
         /// <value>
         /// The authorisation code.
         /// </value>
         public String AuthorisationCode { get; set; }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether this instance is successful.
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if this instance is successful; otherwise, <c>false</c>.
+        /// </value>
+        public Boolean IsSuccessful { get; set; }
 
         /// <summary>
         /// Gets or sets the response code.
@@ -36,12 +53,12 @@
         public String ResponseMessage { get; set; }
 
         /// <summary>
-        /// Gets or sets a value indicating whether this instance is successful.
+        /// Gets or sets the transaction identifier.
         /// </summary>
         /// <value>
-        ///   <c>true</c> if this instance is successful; otherwise, <c>false</c>.
+        /// The transaction identifier.
         /// </value>
-        public Boolean IsSuccessful { get; set; }
+        public String TransactionId { get; set; }
 
         #endregion
     }

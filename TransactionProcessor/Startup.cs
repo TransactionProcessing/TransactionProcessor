@@ -142,6 +142,7 @@ namespace TransactionProcessor
             }
 
             services.AddTransient<IEventStoreContext, EventStoreContext>();
+            services.AddSingleton<ITransactionAggregateManager, TransactionAggregateManager>();
             services.AddSingleton<IAggregateRepositoryManager, AggregateRepositoryManager>();
             services.AddSingleton<IAggregateRepository<TransactionAggregate.TransactionAggregate>, AggregateRepository<TransactionAggregate.TransactionAggregate>>();
             services.AddSingleton<ITransactionDomainService, TransactionDomainService>();

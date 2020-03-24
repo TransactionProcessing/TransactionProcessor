@@ -101,8 +101,104 @@ namespace TransactionProcessor.TransactionAggregate.Tests
             transactionHasBeenLocallyDeclinedEvent.MerchantId.ShouldBe(TestData.MerchantId);
             transactionHasBeenLocallyDeclinedEvent.ResponseCode.ShouldBe(TestData.DeclinedResponseCode);
             transactionHasBeenLocallyDeclinedEvent.ResponseMessage.ShouldBe(TestData.DeclinedResponseMessage);
+        }
 
+        [Fact]
+        public void TransactionAuthorisedByOperatorEvent_CanBeCreated_IsCreated()
+        {
+            TransactionAuthorisedByOperatorEvent transactionAuthorisedByOperatorEvent = TransactionAuthorisedByOperatorEvent.Create(TestData.TransactionId,
+                                                                                                                                    TestData.EstateId,
+                                                                                                                                    TestData.MerchantId,
+                                                                                                                                    TestData.OperatorAuthorisationCode,
+                                                                                                                                    TestData.OperatorResponseCode,
+                                                                                                                                    TestData.OperatorResponseMessage,
+                                                                                                                                    TestData.OperatorTransactionId,
+                                                                                                                                    TestData.ResponseCode,
+                                                                                                                                    TestData.ResponseMessage);
 
+            transactionAuthorisedByOperatorEvent.ShouldNotBeNull();
+            transactionAuthorisedByOperatorEvent.AggregateId.ShouldBe(TestData.TransactionId);
+            transactionAuthorisedByOperatorEvent.EventCreatedDateTime.ShouldNotBe(DateTime.MinValue);
+            transactionAuthorisedByOperatorEvent.EventId.ShouldNotBe(Guid.Empty);
+            transactionAuthorisedByOperatorEvent.TransactionId.ShouldBe(TestData.TransactionId);
+            transactionAuthorisedByOperatorEvent.EstateId.ShouldBe(TestData.EstateId);
+            transactionAuthorisedByOperatorEvent.MerchantId.ShouldBe(TestData.MerchantId);
+            transactionAuthorisedByOperatorEvent.AuthorisationCode.ShouldBe(TestData.OperatorAuthorisationCode);
+            transactionAuthorisedByOperatorEvent.OperatorResponseCode.ShouldBe(TestData.OperatorResponseCode);
+            transactionAuthorisedByOperatorEvent.OperatorResponseMessage.ShouldBe(TestData.OperatorResponseMessage);
+            transactionAuthorisedByOperatorEvent.OperatorTransactionId.ShouldBe(TestData.OperatorTransactionId);
+            transactionAuthorisedByOperatorEvent.ResponseCode.ShouldBe(TestData.ResponseCode);
+            transactionAuthorisedByOperatorEvent.ResponseMessage.ShouldBe(TestData.ResponseMessage);
+        }
+
+        [Fact]
+        public void TransactionDeclinedByOperatorEvent_CanBeCreated_IsCreated()
+        {
+            TransactionDeclinedByOperatorEvent transactionDeclinedByOperatorEvent = TransactionDeclinedByOperatorEvent.Create(TestData.TransactionId,
+                                                                                                                              TestData.EstateId,
+                                                                                                                              TestData.MerchantId,
+                                                                                                                              TestData.DeclinedOperatorResponseCode,
+                                                                                                                              TestData.DeclinedOperatorResponseMessage,
+                                                                                                                              TestData.DeclinedResponseCode,
+                                                                                                                              TestData.DeclinedResponseMessage);
+
+            transactionDeclinedByOperatorEvent.ShouldNotBeNull();
+            transactionDeclinedByOperatorEvent.AggregateId.ShouldBe(TestData.TransactionId);
+            transactionDeclinedByOperatorEvent.EventCreatedDateTime.ShouldNotBe(DateTime.MinValue);
+            transactionDeclinedByOperatorEvent.EventId.ShouldNotBe(Guid.Empty);
+            transactionDeclinedByOperatorEvent.TransactionId.ShouldBe(TestData.TransactionId);
+            transactionDeclinedByOperatorEvent.EstateId.ShouldBe(TestData.EstateId);
+            transactionDeclinedByOperatorEvent.MerchantId.ShouldBe(TestData.MerchantId);
+            transactionDeclinedByOperatorEvent.OperatorResponseCode.ShouldBe(TestData.DeclinedOperatorResponseCode);
+            transactionDeclinedByOperatorEvent.OperatorResponseMessage.ShouldBe(TestData.DeclinedOperatorResponseMessage);
+            transactionDeclinedByOperatorEvent.ResponseCode.ShouldBe(TestData.DeclinedResponseCode);
+            transactionDeclinedByOperatorEvent.ResponseMessage.ShouldBe(TestData.DeclinedResponseMessage);
+        }
+
+        [Fact]
+        public void AdditionalResponseDataRecordedEvent_CanBeCreated_IsCreated()
+        {
+            AdditionalResponseDataRecordedEvent additionalResponseDataRecordedEvent = AdditionalResponseDataRecordedEvent.Create(TestData.TransactionId,
+                                                                                                                                 TestData.EstateId,
+                                                                                                                                 TestData.MerchantId,
+                                                                                                                                 TestData.AdditionalTransactionMetaData);
+
+            additionalResponseDataRecordedEvent.ShouldNotBeNull();
+            additionalResponseDataRecordedEvent.AggregateId.ShouldBe(TestData.TransactionId);
+            additionalResponseDataRecordedEvent.EventCreatedDateTime.ShouldNotBe(DateTime.MinValue);
+            additionalResponseDataRecordedEvent.EventId.ShouldNotBe(Guid.Empty);
+            additionalResponseDataRecordedEvent.TransactionId.ShouldBe(TestData.TransactionId);
+            additionalResponseDataRecordedEvent.EstateId.ShouldBe(TestData.EstateId);
+            additionalResponseDataRecordedEvent.MerchantId.ShouldBe(TestData.MerchantId);
+            additionalResponseDataRecordedEvent.AdditionalTransactionResponseMetadata.ShouldNotBeNull();
+
+            foreach (KeyValuePair<String, String> keyValuePair in TestData.AdditionalTransactionMetaData)
+            {
+                additionalResponseDataRecordedEvent.AdditionalTransactionResponseMetadata.ShouldContainKeyAndValue(keyValuePair.Key, keyValuePair.Value);
+            }
+        }
+
+        [Fact]
+        public void AdditionalRequestDataRecordedEvent_CanBeCreated_IsCreated()
+        {
+            AdditionalRequestDataRecordedEvent additionalRequestDataRecordedEvent = AdditionalRequestDataRecordedEvent.Create(TestData.TransactionId,
+                                                                                                                              TestData.EstateId,
+                                                                                                                              TestData.MerchantId,
+                                                                                                                              TestData.AdditionalTransactionMetaData);
+
+            additionalRequestDataRecordedEvent.ShouldNotBeNull();
+            additionalRequestDataRecordedEvent.AggregateId.ShouldBe(TestData.TransactionId);
+            additionalRequestDataRecordedEvent.EventCreatedDateTime.ShouldNotBe(DateTime.MinValue);
+            additionalRequestDataRecordedEvent.EventId.ShouldNotBe(Guid.Empty);
+            additionalRequestDataRecordedEvent.TransactionId.ShouldBe(TestData.TransactionId);
+            additionalRequestDataRecordedEvent.EstateId.ShouldBe(TestData.EstateId);
+            additionalRequestDataRecordedEvent.MerchantId.ShouldBe(TestData.MerchantId);
+            additionalRequestDataRecordedEvent.AdditionalTransactionRequestMetadata.ShouldNotBeNull();
+
+            foreach (KeyValuePair<String, String> keyValuePair in TestData.AdditionalTransactionMetaData)
+            {
+                additionalRequestDataRecordedEvent.AdditionalTransactionRequestMetadata.ShouldContainKeyAndValue(keyValuePair.Key, keyValuePair.Value);
+            }
         }
     }
 }
