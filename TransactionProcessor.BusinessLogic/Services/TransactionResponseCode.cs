@@ -12,6 +12,7 @@
         OperatorNotValidForEstate = 1005,
         NoMerchantOperators = 1006,
         OperatorNotValidForMerchant = 1007,
+        TransactionDeclinedByOperator = 1008,
 
         // A Catch All generic Error where reason has not been identified
         UnknownFailure = 9999

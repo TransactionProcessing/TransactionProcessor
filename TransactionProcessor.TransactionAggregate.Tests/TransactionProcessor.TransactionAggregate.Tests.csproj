@@ -2,7 +2,7 @@
 
   <PropertyGroup>
     <TargetFramework>netcoreapp3.1</TargetFramework>
-    <DebugTYpe>None</DebugTYpe>
+    <DebugType>None</DebugType>
     <IsPackable>false</IsPackable>
   </PropertyGroup>
 

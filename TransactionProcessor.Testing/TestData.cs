@@ -2,6 +2,7 @@
 {
     using System;
     using System.Collections.Generic;
+    using BusinessLogic.OperatorInterfaces;
     using BusinessLogic.OperatorInterfaces.SafaricomPinless;
     using BusinessLogic.Requests;
     using BusinessLogic.Services;
@@ -70,10 +71,59 @@
 
         private static String TerminalNumber = "00000001";
 
+        public static String OperatorAuthorisationCode = "OP1234";
+
+        public static String OperatorResponseCode = "200";
+
+        public static String OperatorResponseMessage = "Topup Successful";
+
+        public static String OperatorTransactionId = "SF12345";
+
+        public static String DeclinedOperatorResponseCode = "400";
+
+        public static String DeclinedOperatorResponseMessage = "Topup Failed";
+
+        public static TransactionResponseCode TransactionResponseCodeSuccess = TransactionResponseCode.Success;
+
+        public static TransactionResponseCode TransactionResponseCodeDeclinedByOperator = TransactionResponseCode.TransactionDeclinedByOperator;
+
+        public static OperatorResponse OperatorResponse =>
+            new OperatorResponse
+            {
+                ResponseMessage = TestData.OperatorResponseMessage,
+                AdditionalTransactionResponseMetadata = TestData.AdditionalTransactionMetaData,
+                TransactionId = TestData.OperatorTransactionId,
+                IsSuccessful = true,
+                AuthorisationCode = TestData.OperatorAuthorisationCode,
+                ResponseCode = TestData.OperatorResponseCode
+            };
+
         #endregion
 
         #region Properties
 
+        /// <summary>
+        /// Gets the null additional transaction meta data.
+        /// </summary>
+        /// <value>
+        /// The null additional transaction meta data.
+        /// </value>
+        public static Dictionary<String, String> NullAdditionalTransactionMetaData => null;
+
+        /// <summary>
+        /// Gets the empty additional transaction meta data.
+        /// </summary>
+        /// <value>
+        /// The empty additional transaction meta data.
+        /// </value>
+        public static Dictionary<String, String> EmptyAdditionalTransactionMetaData => new Dictionary<String, String>();
+
+        /// <summary>
+        /// Gets the additional transaction meta data.
+        /// </summary>
+        /// <value>
+        /// The additional transaction meta data.
+        /// </value>
         public static Dictionary<String, String> AdditionalTransactionMetaData =>
             new Dictionary<String, String>
             {
@@ -371,6 +421,25 @@
                                                   TestData.DeviceIdentifier);
 
             transactionAggregate.DeclineTransactionLocally(TestData.GetResponseCodeAsString(transactionResponseCode),
+                                                           TestData.GetResponseCodeMessage(transactionResponseCode));
+
+            return transactionAggregate;
+        }
+
+        public static TransactionAggregate GetDeclinedTransactionAggregate(TransactionResponseCode transactionResponseCode)
+        {
+            TransactionAggregate transactionAggregate = TransactionAggregate.Create(TestData.TransactionId);
+
+            transactionAggregate.StartTransaction(TestData.TransactionDateTime,
+                                                  TestData.TransactionNumber,
+                                                  TestData.TransactionTypeLogon,
+                                                  TestData.EstateId,
+                                                  TestData.MerchantId,
+                                                  TestData.DeviceIdentifier);
+
+            transactionAggregate.DeclineTransaction(TestData.DeclinedOperatorResponseCode,
+                                                    TestData.DeclinedOperatorResponseMessage,
+                                                    TestData.GetResponseCodeAsString(transactionResponseCode),
                                                            TestData.GetResponseCodeMessage(transactionResponseCode));
 
             return transactionAggregate;
