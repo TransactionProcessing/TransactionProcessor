@@ -200,6 +200,14 @@
         /// </value>
         public TransactionType TransactionType { get; private set; }
 
+        /// <summary>
+        /// Gets the transaction reference.
+        /// </summary>
+        /// <value>
+        /// The transaction reference.
+        /// </value>
+        public String TransactionReference { get; private set; }
+
         #endregion
 
         #region Methods
@@ -367,6 +375,7 @@
         /// <param name="transactionDateTime">The transaction date time.</param>
         /// <param name="transactionNumber">The transaction number.</param>
         /// <param name="transactionType">Type of the transaction.</param>
+        /// <param name="transactionReference">The transaction reference.</param>
         /// <param name="estateId">The estate identifier.</param>
         /// <param name="merchantId">The merchant identifier.</param>
         /// <param name="deviceIdentifier">The device identifier.</param>
@@ -378,12 +387,14 @@
         public void StartTransaction(DateTime transactionDateTime,
                                      String transactionNumber,
                                      TransactionType transactionType,
+                                     String transactionReference,
                                      Guid estateId,
                                      Guid merchantId,
                                      String deviceIdentifier)
         {
             Guard.ThrowIfInvalidDate(transactionDateTime, typeof(ArgumentException), $"Transaction Date Time must not be [{DateTime.MinValue}]");
             Guard.ThrowIfNullOrEmpty(transactionNumber, typeof(ArgumentException), "Transaction Number must not be null or empty");
+            Guard.ThrowIfNullOrEmpty(transactionReference, typeof(ArgumentException), "Transaction Reference must not be null or empty");
             if (int.TryParse(transactionNumber, out Int32 txnnumber) == false)
             {
                 throw new ArgumentException("Transaction Number must be numeric");
@@ -411,6 +422,7 @@
                                                   transactionDateTime,
                                                   transactionNumber,
                                                   transactionType.ToString(),
+                                                  transactionReference,
                                                   deviceIdentifier);
 
             this.ApplyAndPend(transactionHasStartedEvent);
@@ -580,6 +592,7 @@
             this.TransactionDateTime = domainEvent.TransactionDateTime;
             this.TransactionNumber = domainEvent.TransactionNumber;
             this.TransactionType = Enum.Parse<TransactionType>(domainEvent.TransactionType);
+            this.TransactionReference = domainEvent.TransactionReference;
             this.IsLocallyDeclined = false;
             this.IsDeclined = false;
             this.IsLocallyAuthorised = false;

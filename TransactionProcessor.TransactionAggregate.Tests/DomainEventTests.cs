@@ -23,6 +23,7 @@ namespace TransactionProcessor.TransactionAggregate.Tests
                                                                                                       TestData.TransactionDateTime,
                                                                                                       TestData.TransactionNumber,
                                                                                                       transactionType.ToString(),
+                                                                                                      TestData.TransactionReference,
                                                                                                       TestData.DeviceIdentifier);
             transactionHasStartedEvent.ShouldNotBeNull();
             transactionHasStartedEvent.AggregateId.ShouldBe(TestData.TransactionId);
@@ -35,6 +36,7 @@ namespace TransactionProcessor.TransactionAggregate.Tests
             transactionHasStartedEvent.TransactionDateTime.ShouldBe(TestData.TransactionDateTime);
             transactionHasStartedEvent.TransactionNumber.ShouldBe(TestData.TransactionNumber);
             transactionHasStartedEvent.TransactionType.ShouldBe(transactionType.ToString());
+            transactionHasStartedEvent.TransactionReference.ShouldBe(TestData.TransactionReference);
         }
 
         [Fact]

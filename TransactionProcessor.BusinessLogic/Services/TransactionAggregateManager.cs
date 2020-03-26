@@ -244,6 +244,7 @@
         /// <param name="transactionDateTime">The transaction date time.</param>
         /// <param name="transactionNumber">The transaction number.</param>
         /// <param name="transactionType">Type of the transaction.</param>
+        /// <param name="transactionReference">The transaction reference.</param>
         /// <param name="estateId">The estate identifier.</param>
         /// <param name="merchantId">The merchant identifier.</param>
         /// <param name="deviceIdentifier">The device identifier.</param>
@@ -252,6 +253,7 @@
                                            DateTime transactionDateTime,
                                            String transactionNumber,
                                            TransactionType transactionType,
+                                           String transactionReference,
                                            Guid estateId,
                                            Guid merchantId,
                                            String deviceIdentifier,
@@ -262,7 +264,7 @@
 
             TransactionAggregate transactionAggregate = await transactionAggregateRepository.GetLatestVersion(transactionId, cancellationToken);
 
-            transactionAggregate.StartTransaction(transactionDateTime, transactionNumber, transactionType, estateId, merchantId, deviceIdentifier);
+            transactionAggregate.StartTransaction(transactionDateTime, transactionNumber, transactionType, transactionReference, estateId, merchantId, deviceIdentifier);
 
             await transactionAggregateRepository.SaveChanges(transactionAggregate, cancellationToken);
         }

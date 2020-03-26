@@ -40,6 +40,7 @@
                                           DateTime transactionDateTime,
                                           String transactionNumber,
                                           String transactionType,
+                                          String transactionReference,
                                           String deviceIdentifier) : base(aggregateId, eventId)
         {
             this.TransactionId = aggregateId;
@@ -48,6 +49,7 @@
             this.TransactionDateTime = transactionDateTime;
             this.TransactionNumber = transactionNumber;
             this.TransactionType = transactionType;
+            this.TransactionReference = transactionReference;
             this.DeviceIdentifier = deviceIdentifier;
         }
 
@@ -118,6 +120,9 @@
         [JsonProperty]
         public String TransactionType { get; private set; }
 
+        [JsonProperty]
+        public String TransactionReference { get; private set; }
+
         #endregion
 
         #region Methods
@@ -131,6 +136,7 @@
         /// <param name="transactionDateTime">The transaction date time.</param>
         /// <param name="transactionNumber">The transaction number.</param>
         /// <param name="transactionType">Type of the transaction.</param>
+        /// <param name="transactionReference">The transaction reference.</param>
         /// <param name="deviceIdentifier">The device identifier.</param>
         /// <returns></returns>
         public static TransactionHasStartedEvent Create(Guid aggregateId,
@@ -139,9 +145,10 @@
                                                         DateTime transactionDateTime,
                                                         String transactionNumber,
                                                         String transactionType,
+                                                        String transactionReference,
                                                         String deviceIdentifier)
         {
-            return new TransactionHasStartedEvent(aggregateId, Guid.NewGuid(), estateId, merchantId, transactionDateTime, transactionNumber, transactionType, deviceIdentifier);
+            return new TransactionHasStartedEvent(aggregateId, Guid.NewGuid(), estateId, merchantId, transactionDateTime, transactionNumber, transactionType, transactionReference, deviceIdentifier);
         }
 
         #endregion

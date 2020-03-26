@@ -250,6 +250,7 @@ namespace TransactionProcessor.IntegrationTests.Shared
                         // Get specific sale fields
                         String operatorName = SpecflowTableHelper.GetStringRowValue(tableRow, "OperatorName");
                         Decimal transactionAmount = SpecflowTableHelper.GetDecimalValue(tableRow, "TransactionAmount");
+                        String customerAccountNumber = SpecflowTableHelper.GetStringRowValue(tableRow, "CustomerAccountNumber");
 
                         transactionResponse = await this.PerformSaleTransaction(estateDetails.EstateId,
                                                                                 merchantId,
@@ -259,6 +260,7 @@ namespace TransactionProcessor.IntegrationTests.Shared
                                                                                 deviceIdentifier,
                                                                                 operatorName,
                                                                                 transactionAmount,
+                                                                                customerAccountNumber,
                                                                                 CancellationToken.None);
                         break;
                         
@@ -307,22 +309,23 @@ namespace TransactionProcessor.IntegrationTests.Shared
             return responseSerialisedMessage;
         }
 
-        private async Task<SerialisedMessage> PerformSaleTransaction(Guid estateId, Guid merchantId, DateTime transactionDateTime, String transactionType, String transactionNumber, String deviceIdentifier, String operatorIdentifier, Decimal transactionAmount, CancellationToken cancellationToken)
+        private async Task<SerialisedMessage> PerformSaleTransaction(Guid estateId, Guid merchantId, DateTime transactionDateTime, String transactionType, String transactionNumber, String deviceIdentifier, String operatorIdentifier, Decimal transactionAmount, String customerAccountNumber, CancellationToken cancellationToken)
         {
             SaleTransactionRequest saleTransactionRequest = new SaleTransactionRequest
-            {
-                MerchantId = merchantId,
-                EstateId = estateId,
-                TransactionDateTime = transactionDateTime,
-                TransactionNumber = transactionNumber,
-                DeviceIdentifier = deviceIdentifier,
-                TransactionType = transactionType,
-                OperatorIdentifier = operatorIdentifier,
-                AdditionalTransactionMetadata = new Dictionary<String, String>
-                                                {
-                                                    { "Amount", transactionAmount.ToString() }
-                                                }
-            };
+                                                            {
+                                                                MerchantId = merchantId,
+                                                                EstateId = estateId,
+                                                                TransactionDateTime = transactionDateTime,
+                                                                TransactionNumber = transactionNumber,
+                                                                DeviceIdentifier = deviceIdentifier,
+                                                                TransactionType = transactionType,
+                                                                OperatorIdentifier = operatorIdentifier,
+                                                                AdditionalTransactionMetadata = new Dictionary<String, String>
+                                                                                                {
+                                                                                                    {"Amount", transactionAmount.ToString()},
+                                                                                                    {"CustomerAccountNumber", customerAccountNumber}
+                                                                                                }
+                                                            };
 
             SerialisedMessage serialisedMessage = new SerialisedMessage();
             serialisedMessage.Metadata.Add(MetadataContants.KeyNameEstateId, estateId.ToString());

@@ -35,6 +35,7 @@ namespace TransactionProcessor.BusinessLogic.Tests.OperatorInterfaces
             OperatorResponse operatorResponse = await  safaricomPinlessproxy.ProcessSaleMessage(TestData.TransactionId,
                                                                                                 TestData.Merchant,
                                                                                                 TestData.TransactionDateTime,
+                                                                                                TestData.TransactionReference,
                                                                                                 TestData.AdditionalTransactionMetaData,
                                                                                                 CancellationToken.None);
 
@@ -61,6 +62,7 @@ namespace TransactionProcessor.BusinessLogic.Tests.OperatorInterfaces
             OperatorResponse operatorResponse = await safaricomPinlessproxy.ProcessSaleMessage(TestData.TransactionId,
                                                                                                TestData.Merchant,
                                                                                                TestData.TransactionDateTime,
+                                                                                               TestData.TransactionReference,
                                                                                                TestData.AdditionalTransactionMetaData,
                                                                                                CancellationToken.None);
 
@@ -88,7 +90,44 @@ namespace TransactionProcessor.BusinessLogic.Tests.OperatorInterfaces
                                         await safaricomPinlessproxy.ProcessSaleMessage(TestData.TransactionId,
                                                                                        TestData.Merchant,
                                                                                        TestData.TransactionDateTime,
+                                                                                       TestData.TransactionReference,
                                                                                        TestData.AdditionalTransactionMetaData,
+                                                                                       CancellationToken.None);
+                                    });
+        }
+
+        [Theory]
+        [InlineData("", "123456789")]
+        [InlineData(null, "123456789")]
+        [InlineData("A", "123456789")]
+        [InlineData("1000.00", "")]
+        [InlineData("1000.00", null)]
+        public async Task SafaricomPinlessProxy_ProcessSaleMessage_InvalidData_ErrorThrown(String transactionAmount, String customerAccountNumber)
+        {
+            HttpResponseMessage responseMessage = new HttpResponseMessage
+                                                  {
+                                                      StatusCode = HttpStatusCode.OK,
+                                                      Content = new StringContent(TestData.SuccessfulSafaricomTopup)
+                                                  };
+
+            SafaricomConfiguration safaricomConfiguration = TestData.SafaricomConfiguration;
+            HttpClient httpClient = SetupMockHttpClient(responseMessage);
+
+            IOperatorProxy safaricomPinlessproxy = new SafaricomPinlessProxy(safaricomConfiguration, httpClient);
+
+            Dictionary<String,String> additionalMetatdata = new Dictionary<String, String>
+                                                            {
+                                                                {"Amount", transactionAmount},
+                                                                {"CustomerAccountNumber",customerAccountNumber }
+                                                            };
+
+            Should.Throw<Exception>(async () =>
+                                    {
+                                        await safaricomPinlessproxy.ProcessSaleMessage(TestData.TransactionId,
+                                                                                       TestData.Merchant,
+                                                                                       TestData.TransactionDateTime,
+                                                                                       TestData.TransactionReference,
+                                                                                       additionalMetatdata,
                                                                                        CancellationToken.None);
                                     });
         }

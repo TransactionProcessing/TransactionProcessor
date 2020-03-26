@@ -48,10 +48,10 @@ Background:
 Scenario: Sale Transactions
 
 	When I perform the following transactions
-	| DateTime | TransactionNumber | TransactionType | MerchantName    | DeviceIdentifier | EstateName    | OperatorName | TransactionAmount |
-	| Today    | 1                 | Sale            | Test Merchant 1 | 123456780        | Test Estate 1 | Safaricom    | 100.00            |
-	| Today    | 2                 | Sale            | Test Merchant 2 | 123456781        | Test Estate 1 | Safaricom    | 100.00            |
-	| Today    | 3                 | Sale            | Test Merchant 3 | 123456782        | Test Estate 2 | Safaricom    | 100.00            |
+	| DateTime | TransactionNumber | TransactionType | MerchantName    | DeviceIdentifier | EstateName    | OperatorName | TransactionAmount | CustomerAccountNumber |
+	| Today    | 1                 | Sale            | Test Merchant 1 | 123456780        | Test Estate 1 | Safaricom    | 1000.00            | 123456789             |
+	| Today    | 2                 | Sale            | Test Merchant 2 | 123456781        | Test Estate 1 | Safaricom    | 1000.00            |123456789             |
+	| Today    | 3                 | Sale            | Test Merchant 3 | 123456782        | Test Estate 2 | Safaricom    | 1000.00            |123456789             |
 	
 	Then transaction response should contain the following information
 	| EstateName    | MerchantName    | TransactionNumber | ResponseCode | ResponseMessage |
@@ -64,7 +64,7 @@ Scenario: Sale Transaction with Invalid Device
 
 	When I perform the following transactions
 	| DateTime | TransactionNumber | TransactionType | MerchantName    | DeviceIdentifier | EstateName    | OperatorName | TransactionAmount |
-	| Today    | 1                 | Sale            | Test Merchant 1 | 123456781        | Test Estate 1 | Safaricom    | 100.00            |
+	| Today    | 1                 | Sale            | Test Merchant 1 | 123456781        | Test Estate 1 | Safaricom    | 1000.00            |
 	
 	Then transaction response should contain the following information
 	| EstateName    | MerchantName    | TransactionNumber | ResponseCode | ResponseMessage                                                    |
@@ -74,7 +74,7 @@ Scenario: Sale Transaction with Invalid Estate
 
 	When I perform the following transactions
 	| DateTime | TransactionNumber | TransactionType | MerchantName    | DeviceIdentifier | EstateName    |OperatorName |TransactionAmount |
-	| Today    | 1                 | Sale           | Test Merchant 1 | 123456780       | InvalidEstate |Safaricom    | 100.00            |
+	| Today    | 1                 | Sale           | Test Merchant 1 | 123456780       | InvalidEstate |Safaricom    | 1000.00            |
 	
 	Then transaction response should contain the following information
 	| EstateName    | MerchantName    | TransactionNumber | ResponseCode | ResponseMessage                                                        |
@@ -84,7 +84,7 @@ Scenario: Sale Transaction with Invalid Merchant
 
 	When I perform the following transactions
 	| DateTime | TransactionNumber | TransactionType | MerchantName    | DeviceIdentifier | EstateName    |OperatorName |TransactionAmount |
-	| Today    | 1                 | Sale           | InvalidMerchant | 123456780        | Test Estate 1 |Safaricom    | 100.00            |
+	| Today    | 1                 | Sale           | InvalidMerchant | 123456780        | Test Estate 1 |Safaricom    | 1000.00            |
 	
 	Then transaction response should contain the following information
 	| EstateName    | MerchantName    | TransactionNumber | ResponseCode | ResponseMessage                                                                                       |
