@@ -204,6 +204,7 @@ namespace TransactionProcessor.BusinessLogic.Tests.Services
                                                                TestData.TransactionDateTime,
                                                                TestData.TransactionNumber,
                                                                transactionType,
+                                                               TestData.TransactionReference,
                                                                TestData.EstateId,
                                                                TestData.MerchantId,
                                                                TestData.DeviceIdentifier,

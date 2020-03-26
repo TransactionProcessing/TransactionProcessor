@@ -91,10 +91,14 @@
         {
             TransactionType transactionType = TransactionType.Logon;
 
+            // Generate a transaction reference
+            String transactionReference = this.GenerateTransactionReference();
+
             await this.TransactionAggregateManager.StartTransaction(transactionId,
                                                                     transactionDateTime,
                                                                     transactionNumber,
                                                                     transactionType,
+                                                                    transactionReference,
                                                                     estateId,
                                                                     merchantId,
                                                                     deviceIdentifier,
@@ -128,6 +132,20 @@
         }
 
         /// <summary>
+        /// Generates the transaction reference.
+        /// </summary>
+        /// <returns></returns>
+        private String GenerateTransactionReference()
+        {
+            Int64 i = 1;
+            foreach (Byte b in Guid.NewGuid().ToByteArray())
+            {
+                i *= ((Int32)b + 1);
+            }
+            return $"{i - DateTime.Now.Ticks:x}";
+        }
+
+        /// <summary>
         /// Processes the sale transaction.
         /// </summary>
         /// <param name="transactionId">The transaction identifier.</param>
@@ -152,10 +170,14 @@
         {
             TransactionType transactionType = TransactionType.Sale;
 
+            // Generate a transaction reference
+            String transactionReference = this.GenerateTransactionReference();
+
             await this.TransactionAggregateManager.StartTransaction(transactionId,
                                                                     transactionDateTime,
                                                                     transactionNumber,
                                                                     transactionType,
+                                                                    transactionReference,
                                                                     estateId,
                                                                     merchantId,
                                                                     deviceIdentifier,
@@ -171,7 +193,7 @@
                 // Do the online processing with the operator here
                 MerchantResponse merchant = await this.GetMerchant(estateId, merchantId, cancellationToken);
                 IOperatorProxy operatorProxy = OperatorProxyResolver(operatorIdentifier);
-                OperatorResponse operatorResponse = await operatorProxy.ProcessSaleMessage(transactionId, merchant, transactionDateTime, additionalTransactionMetadata, cancellationToken);
+                OperatorResponse operatorResponse = await operatorProxy.ProcessSaleMessage(transactionId, merchant, transactionDateTime, transactionReference, additionalTransactionMetadata, cancellationToken);
 
                 if (operatorResponse.IsSuccessful)
                 {

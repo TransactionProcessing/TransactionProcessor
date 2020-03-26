@@ -289,7 +289,8 @@ this.FeatureBackground();
                             "DeviceIdentifier",
                             "EstateName",
                             "OperatorName",
-                            "TransactionAmount"});
+                            "TransactionAmount",
+                            "CustomerAccountNumber"});
                 table30.AddRow(new string[] {
                             "Today",
                             "1",
@@ -298,7 +299,8 @@ this.FeatureBackground();
                             "123456780",
                             "Test Estate 1",
                             "Safaricom",
-                            "100.00"});
+                            "1000.00",
+                            "123456789"});
                 table30.AddRow(new string[] {
                             "Today",
                             "2",
@@ -307,7 +309,8 @@ this.FeatureBackground();
                             "123456781",
                             "Test Estate 1",
                             "Safaricom",
-                            "100.00"});
+                            "1000.00",
+                            "123456789"});
                 table30.AddRow(new string[] {
                             "Today",
                             "3",
@@ -316,7 +319,8 @@ this.FeatureBackground();
                             "123456782",
                             "Test Estate 2",
                             "Safaricom",
-                            "100.00"});
+                            "1000.00",
+                            "123456789"});
 #line 50
  testRunner.When("I perform the following transactions", ((string)(null)), table30, "When ");
 #line hidden
@@ -401,7 +405,7 @@ this.FeatureBackground();
                             "123456781",
                             "Test Estate 1",
                             "Safaricom",
-                            "100.00"});
+                            "1000.00"});
 #line 65
  testRunner.When("I perform the following transactions", ((string)(null)), table32, "When ");
 #line hidden
@@ -471,7 +475,7 @@ this.FeatureBackground();
                             "123456780",
                             "InvalidEstate",
                             "Safaricom",
-                            "100.00"});
+                            "1000.00"});
 #line 75
  testRunner.When("I perform the following transactions", ((string)(null)), table34, "When ");
 #line hidden
@@ -541,7 +545,7 @@ this.FeatureBackground();
                             "123456780",
                             "Test Estate 1",
                             "Safaricom",
-                            "100.00"});
+                            "1000.00"});
 #line 85
  testRunner.When("I perform the following transactions", ((string)(null)), table36, "When ");
 #line hidden

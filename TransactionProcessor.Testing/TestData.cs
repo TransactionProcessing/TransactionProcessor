@@ -63,6 +63,8 @@
 
         public static TransactionType TransactionTypeLogon = TransactionType.Logon;
 
+        public static String TransactionReference = "ABCDEFGHI";
+
         public static TransactionType TransactionTypeSale = TransactionType.Sale;
 
         private static readonly String MerchantName = "Test Merchant Name";
@@ -127,7 +129,8 @@
         public static Dictionary<String, String> AdditionalTransactionMetaData =>
             new Dictionary<String, String>
             {
-                {"Amount", "100.00"}
+                {"Amount", "100.00"},
+                {"CustomerAccountNumber", "123456789" }
             };
 
         public static IReadOnlyDictionary<String, String> DefaultAppSettings =>
@@ -377,6 +380,7 @@
             transactionAggregate.StartTransaction(TestData.TransactionDateTime,
                                                   TestData.TransactionNumber,
                                                   TestData.TransactionTypeLogon,
+                                                  TestData.TransactionReference,
                                                   TestData.EstateId,
                                                   TestData.MerchantId,
                                                   TestData.DeviceIdentifier);
@@ -400,6 +404,7 @@
             transactionAggregate.StartTransaction(TestData.TransactionDateTime,
                                                   TestData.TransactionNumber,
                                                   TestData.TransactionTypeLogon,
+                                                  TestData.TransactionReference,
                                                   TestData.EstateId,
                                                   TestData.MerchantId,
                                                   TestData.DeviceIdentifier);
@@ -416,6 +421,7 @@
             transactionAggregate.StartTransaction(TestData.TransactionDateTime,
                                                   TestData.TransactionNumber,
                                                   TestData.TransactionTypeLogon,
+                                                  TestData.TransactionReference,
                                                   TestData.EstateId,
                                                   TestData.MerchantId,
                                                   TestData.DeviceIdentifier);
@@ -433,6 +439,7 @@
             transactionAggregate.StartTransaction(TestData.TransactionDateTime,
                                                   TestData.TransactionNumber,
                                                   TestData.TransactionTypeLogon,
+                                                  TestData.TransactionReference,
                                                   TestData.EstateId,
                                                   TestData.MerchantId,
                                                   TestData.DeviceIdentifier);
@@ -462,6 +469,7 @@
             transactionAggregate.StartTransaction(TestData.TransactionDateTime,
                                                   TestData.TransactionNumber,
                                                   TestData.TransactionTypeLogon,
+                                                  TestData.TransactionReference,
                                                   TestData.EstateId,
                                                   TestData.MerchantId,
                                                   TestData.DeviceIdentifier);

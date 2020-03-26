@@ -268,6 +268,7 @@ namespace TransactionProcessor.BusinessLogic.Tests.Services
             operatorProxy.Setup(o => o.ProcessSaleMessage(It.IsAny<Guid>(),
                                                           It.IsAny<MerchantResponse>(),
                                                           It.IsAny<DateTime>(),
+                                                          It.IsAny<String>(),
                                                           It.IsAny<Dictionary<String, String>>(),
                                                           It.IsAny<CancellationToken>())).ReturnsAsync(new OperatorResponse
                                                                                                        {
@@ -319,6 +320,7 @@ namespace TransactionProcessor.BusinessLogic.Tests.Services
             operatorProxy.Setup(o => o.ProcessSaleMessage(It.IsAny<Guid>(),
                                                           It.IsAny<MerchantResponse>(),
                                                           It.IsAny<DateTime>(),
+                                                          It.IsAny<String>(),
                                                           It.IsAny<Dictionary<String, String>>(),
                                                           It.IsAny<CancellationToken>())).ReturnsAsync(new OperatorResponse
                                                           {
