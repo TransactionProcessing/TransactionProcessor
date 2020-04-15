@@ -29,6 +29,7 @@ namespace TransactionProcessor.BusinessLogic.Tests.Services
             
             await transactionAggregateManager.AuthoriseTransaction(TestData.EstateId,
                                                              TestData.TransactionId,
+                                                             TestData.OperatorIdentifier1,
                                                              TestData.OperatorResponse,
                                                              TestData.TransactionResponseCodeSuccess,
                                                              TestData.ResponseMessage,
@@ -62,6 +63,7 @@ namespace TransactionProcessor.BusinessLogic.Tests.Services
 
             await transactionAggregateManager.DeclineTransaction(TestData.EstateId,
                                                                    TestData.TransactionId,
+                                                                   TestData.OperatorIdentifier1,
                                                                    TestData.OperatorResponse,
                                                                    TestData.TransactionResponseCodeDeclinedByOperator,
                                                                    TestData.ResponseMessage,
@@ -110,6 +112,7 @@ namespace TransactionProcessor.BusinessLogic.Tests.Services
 
             await transactionAggregateManager.RecordAdditionalRequestData(TestData.EstateId,
                                                                         TestData.TransactionId,
+                                                                        TestData.OperatorIdentifier1,
                                                                         TestData.AdditionalTransactionMetaData,
                                                                         CancellationToken.None);
         }
@@ -125,6 +128,7 @@ namespace TransactionProcessor.BusinessLogic.Tests.Services
 
             await transactionAggregateManager.RecordAdditionalRequestData(TestData.EstateId,
                                                                           TestData.TransactionId,
+                                                                          TestData.OperatorIdentifier1,
                                                                           TestData.NullAdditionalTransactionMetaData,
                                                                           CancellationToken.None);
         }
@@ -140,6 +144,7 @@ namespace TransactionProcessor.BusinessLogic.Tests.Services
 
             await transactionAggregateManager.RecordAdditionalRequestData(TestData.EstateId,
                                                                           TestData.TransactionId,
+                                                                          TestData.OperatorIdentifier1,
                                                                           TestData.EmptyAdditionalTransactionMetaData,
                                                                           CancellationToken.None);
         }
@@ -155,6 +160,7 @@ namespace TransactionProcessor.BusinessLogic.Tests.Services
 
             await transactionAggregateManager.RecordAdditionalResponseData(TestData.EstateId,
                                                                           TestData.TransactionId,
+                                                                          TestData.OperatorIdentifier1,
                                                                           TestData.AdditionalTransactionMetaData,
                                                                           CancellationToken.None);
         }
@@ -170,6 +176,7 @@ namespace TransactionProcessor.BusinessLogic.Tests.Services
 
             await transactionAggregateManager.RecordAdditionalResponseData(TestData.EstateId,
                                                                            TestData.TransactionId,
+                                                                           TestData.OperatorIdentifier1,
                                                                            TestData.NullAdditionalTransactionMetaData,
                                                                            CancellationToken.None);
         }
@@ -185,6 +192,7 @@ namespace TransactionProcessor.BusinessLogic.Tests.Services
 
             await transactionAggregateManager.RecordAdditionalResponseData(TestData.EstateId,
                                                                            TestData.TransactionId,
+                                                                           TestData.OperatorIdentifier1,
                                                                            TestData.EmptyAdditionalTransactionMetaData,
                                                                            CancellationToken.None);
         }

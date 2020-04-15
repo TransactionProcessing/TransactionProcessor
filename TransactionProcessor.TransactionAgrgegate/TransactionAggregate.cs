@@ -215,13 +215,15 @@
         /// <summary>
         /// Authorises the transaction.
         /// </summary>
+        /// <param name="operatorIdentifier">The operator identifier.</param>
         /// <param name="authorisationCode">The authorisation code.</param>
         /// <param name="operatorResponseCode">The operator response code.</param>
         /// <param name="operatorResponseMessage">The operator response message.</param>
         /// <param name="operatorTransactionId">The operator transaction identifier.</param>
         /// <param name="responseCode">The response code.</param>
         /// <param name="responseMessage">The response message.</param>
-        public void AuthoriseTransaction(String authorisationCode,
+        public void AuthoriseTransaction(String operatorIdentifier, 
+                                         String authorisationCode,
                                          String operatorResponseCode,
                                          String operatorResponseMessage,
                                          String operatorTransactionId,
@@ -234,6 +236,7 @@
             TransactionAuthorisedByOperatorEvent transactionAuthorisedByOperatorEvent = TransactionAuthorisedByOperatorEvent.Create(this.AggregateId,
                                                                                                                                     this.EstateId,
                                                                                                                                     this.MerchantId,
+                                                                                                                                    operatorIdentifier,
                                                                                                                                     authorisationCode,
                                                                                                                                     operatorResponseCode,
                                                                                                                                     operatorResponseMessage,
@@ -295,11 +298,13 @@
         /// <summary>
         /// Declines the transaction.
         /// </summary>
+        /// <param name="operatorIdentifier">The operator identifier.</param>
         /// <param name="operatorResponseCode">The operator response code.</param>
         /// <param name="operatorResponseMessage">The operator response message.</param>
         /// <param name="responseCode">The response code.</param>
         /// <param name="responseMessage">The response message.</param>
-        public void DeclineTransaction(String operatorResponseCode,
+        public void DeclineTransaction(String operatorIdentifier, 
+                                       String operatorResponseCode,
                                        String operatorResponseMessage,
                                        String responseCode,
                                        String responseMessage)
@@ -312,6 +317,7 @@
                 TransactionDeclinedByOperatorEvent.Create(this.AggregateId,
                                                           this.EstateId,
                                                           this.MerchantId,
+                                                          operatorIdentifier,
                                                           operatorResponseCode,
                                                           operatorResponseMessage,
                                                           responseCode,
@@ -339,8 +345,9 @@
         /// <summary>
         /// Records the additional request data.
         /// </summary>
+        /// <param name="operatorIdentifier">The operator identifier.</param>
         /// <param name="additionalTransactionRequestMetadata">The additional transaction request metadata.</param>
-        public void RecordAdditionalRequestData(Dictionary<String, String> additionalTransactionRequestMetadata)
+        public void RecordAdditionalRequestData(String operatorIdentifier, Dictionary<String, String> additionalTransactionRequestMetadata)
         {
             this.CheckTransactionNotAlreadyCompleted();
             this.CheckTransactionHasBeenStarted();
@@ -349,7 +356,7 @@
             this.CheckAdditionalRequestDataNotAlreadyRecorded();
 
             AdditionalRequestDataRecordedEvent additionalRequestDataRecordedEvent =
-                AdditionalRequestDataRecordedEvent.Create(this.AggregateId, this.EstateId, this.MerchantId, additionalTransactionRequestMetadata);
+                AdditionalRequestDataRecordedEvent.Create(this.AggregateId, this.EstateId, this.MerchantId, operatorIdentifier, additionalTransactionRequestMetadata);
 
             this.ApplyAndPend(additionalRequestDataRecordedEvent);
         }
@@ -357,14 +364,15 @@
         /// <summary>
         /// Records the additional response data.
         /// </summary>
+        /// <param name="operatorIdentifier">The operator identifier.</param>
         /// <param name="additionalTransactionResponseMetadata">The additional transaction response metadata.</param>
-        public void RecordAdditionalResponseData(Dictionary<String, String> additionalTransactionResponseMetadata)
+        public void RecordAdditionalResponseData(String operatorIdentifier, Dictionary<String, String> additionalTransactionResponseMetadata)
         {
             this.CheckTransactionHasBeenStarted();
             this.CheckAdditionalResponseDataNotAlreadyRecorded();
 
             AdditionalResponseDataRecordedEvent additionalResponseDataRecordedEvent =
-                AdditionalResponseDataRecordedEvent.Create(this.AggregateId, this.EstateId, this.MerchantId, additionalTransactionResponseMetadata);
+                AdditionalResponseDataRecordedEvent.Create(this.AggregateId, this.EstateId, this.MerchantId, operatorIdentifier, additionalTransactionResponseMetadata);
 
             this.ApplyAndPend(additionalResponseDataRecordedEvent);
         }

@@ -22,6 +22,7 @@
         /// <param name="eventId">The event identifier.</param>
         /// <param name="estateId">The estate identifier.</param>
         /// <param name="merchantId">The merchant identifier.</param>
+        /// <param name="operatorIdentifier">The operator identifier.</param>
         /// <param name="authorisationCode">The authorisation code.</param>
         /// <param name="operatorResponseCode">The operator response code.</param>
         /// <param name="operatorResponseMessage">The operator response message.</param>
@@ -32,6 +33,7 @@
                                                     Guid eventId,
                                                     Guid estateId,
                                                     Guid merchantId,
+                                                    String operatorIdentifier,
                                                     String authorisationCode,
                                                     String operatorResponseCode,
                                                     String operatorResponseMessage,
@@ -42,6 +44,7 @@
             this.TransactionId = aggregateId;
             this.EstateId = estateId;
             this.MerchantId = merchantId;
+            this.OperatorIdentifier = operatorIdentifier;
             this.AuthorisationCode = authorisationCode;
             this.OperatorResponseCode = operatorResponseCode;
             this.OperatorResponseMessage = operatorResponseMessage;
@@ -80,6 +83,15 @@
         /// </value>
         [JsonProperty]
         public Guid MerchantId { get; private set; }
+
+        /// <summary>
+        /// Gets the operator identifier.
+        /// </summary>
+        /// <value>
+        /// The operator identifier.
+        /// </value>
+        [JsonProperty]
+        public String OperatorIdentifier { get; private set; }
 
         /// <summary>
         /// Gets the operator response code.
@@ -145,6 +157,7 @@
         /// <param name="aggregateId">The aggregate identifier.</param>
         /// <param name="estateId">The estate identifier.</param>
         /// <param name="merchantId">The merchant identifier.</param>
+        /// <param name="operatorIdentifier">The operator identifier.</param>
         /// <param name="authorisationCode">The authorisation code.</param>
         /// <param name="operatorResponseCode">The operator response code.</param>
         /// <param name="operatorResponseMessage">The operator response message.</param>
@@ -155,6 +168,7 @@
         public static TransactionAuthorisedByOperatorEvent Create(Guid aggregateId,
                                                                   Guid estateId,
                                                                   Guid merchantId,
+                                                                  String operatorIdentifier,
                                                                   String authorisationCode,
                                                                   String operatorResponseCode,
                                                                   String operatorResponseMessage,
@@ -166,6 +180,7 @@
                                                             Guid.NewGuid(),
                                                             estateId,
                                                             merchantId,
+                                                            operatorIdentifier,
                                                             authorisationCode,
                                                             operatorResponseCode,
                                                             operatorResponseMessage,

@@ -444,10 +444,11 @@
                                                   TestData.MerchantId,
                                                   TestData.DeviceIdentifier);
 
-            transactionAggregate.DeclineTransaction(TestData.DeclinedOperatorResponseCode,
+            transactionAggregate.DeclineTransaction(TestData.OperatorIdentifier1, 
+                                                    TestData.DeclinedOperatorResponseCode,
                                                     TestData.DeclinedOperatorResponseMessage,
                                                     TestData.GetResponseCodeAsString(transactionResponseCode),
-                                                           TestData.GetResponseCodeMessage(transactionResponseCode));
+                                                    TestData.GetResponseCodeMessage(transactionResponseCode));
 
             return transactionAggregate;
         }

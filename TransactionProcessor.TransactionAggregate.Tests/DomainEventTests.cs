@@ -111,6 +111,7 @@ namespace TransactionProcessor.TransactionAggregate.Tests
             TransactionAuthorisedByOperatorEvent transactionAuthorisedByOperatorEvent = TransactionAuthorisedByOperatorEvent.Create(TestData.TransactionId,
                                                                                                                                     TestData.EstateId,
                                                                                                                                     TestData.MerchantId,
+                                                                                                                                    TestData.OperatorIdentifier1,
                                                                                                                                     TestData.OperatorAuthorisationCode,
                                                                                                                                     TestData.OperatorResponseCode,
                                                                                                                                     TestData.OperatorResponseMessage,
@@ -131,6 +132,7 @@ namespace TransactionProcessor.TransactionAggregate.Tests
             transactionAuthorisedByOperatorEvent.OperatorTransactionId.ShouldBe(TestData.OperatorTransactionId);
             transactionAuthorisedByOperatorEvent.ResponseCode.ShouldBe(TestData.ResponseCode);
             transactionAuthorisedByOperatorEvent.ResponseMessage.ShouldBe(TestData.ResponseMessage);
+            transactionAuthorisedByOperatorEvent.OperatorIdentifier.ShouldBe(TestData.OperatorIdentifier1);
         }
 
         [Fact]
@@ -139,6 +141,7 @@ namespace TransactionProcessor.TransactionAggregate.Tests
             TransactionDeclinedByOperatorEvent transactionDeclinedByOperatorEvent = TransactionDeclinedByOperatorEvent.Create(TestData.TransactionId,
                                                                                                                               TestData.EstateId,
                                                                                                                               TestData.MerchantId,
+                                                                                                                              TestData.OperatorIdentifier1,
                                                                                                                               TestData.DeclinedOperatorResponseCode,
                                                                                                                               TestData.DeclinedOperatorResponseMessage,
                                                                                                                               TestData.DeclinedResponseCode,
@@ -155,6 +158,7 @@ namespace TransactionProcessor.TransactionAggregate.Tests
             transactionDeclinedByOperatorEvent.OperatorResponseMessage.ShouldBe(TestData.DeclinedOperatorResponseMessage);
             transactionDeclinedByOperatorEvent.ResponseCode.ShouldBe(TestData.DeclinedResponseCode);
             transactionDeclinedByOperatorEvent.ResponseMessage.ShouldBe(TestData.DeclinedResponseMessage);
+            transactionDeclinedByOperatorEvent.OperatorIdentifier.ShouldBe(TestData.OperatorIdentifier1);
         }
 
         [Fact]
@@ -163,6 +167,7 @@ namespace TransactionProcessor.TransactionAggregate.Tests
             AdditionalResponseDataRecordedEvent additionalResponseDataRecordedEvent = AdditionalResponseDataRecordedEvent.Create(TestData.TransactionId,
                                                                                                                                  TestData.EstateId,
                                                                                                                                  TestData.MerchantId,
+                                                                                                                                 TestData.OperatorIdentifier1,
                                                                                                                                  TestData.AdditionalTransactionMetaData);
 
             additionalResponseDataRecordedEvent.ShouldNotBeNull();
@@ -172,6 +177,7 @@ namespace TransactionProcessor.TransactionAggregate.Tests
             additionalResponseDataRecordedEvent.TransactionId.ShouldBe(TestData.TransactionId);
             additionalResponseDataRecordedEvent.EstateId.ShouldBe(TestData.EstateId);
             additionalResponseDataRecordedEvent.MerchantId.ShouldBe(TestData.MerchantId);
+            additionalResponseDataRecordedEvent.OperatorIdentifier.ShouldBe(TestData.OperatorIdentifier1);
             additionalResponseDataRecordedEvent.AdditionalTransactionResponseMetadata.ShouldNotBeNull();
 
             foreach (KeyValuePair<String, String> keyValuePair in TestData.AdditionalTransactionMetaData)
@@ -186,6 +192,7 @@ namespace TransactionProcessor.TransactionAggregate.Tests
             AdditionalRequestDataRecordedEvent additionalRequestDataRecordedEvent = AdditionalRequestDataRecordedEvent.Create(TestData.TransactionId,
                                                                                                                               TestData.EstateId,
                                                                                                                               TestData.MerchantId,
+                                                                                                                              TestData.OperatorIdentifier1,
                                                                                                                               TestData.AdditionalTransactionMetaData);
 
             additionalRequestDataRecordedEvent.ShouldNotBeNull();
@@ -195,6 +202,7 @@ namespace TransactionProcessor.TransactionAggregate.Tests
             additionalRequestDataRecordedEvent.TransactionId.ShouldBe(TestData.TransactionId);
             additionalRequestDataRecordedEvent.EstateId.ShouldBe(TestData.EstateId);
             additionalRequestDataRecordedEvent.MerchantId.ShouldBe(TestData.MerchantId);
+            additionalRequestDataRecordedEvent.OperatorIdentifier.ShouldBe(TestData.OperatorIdentifier1);
             additionalRequestDataRecordedEvent.AdditionalTransactionRequestMetadata.ShouldNotBeNull();
 
             foreach (KeyValuePair<String, String> keyValuePair in TestData.AdditionalTransactionMetaData)
