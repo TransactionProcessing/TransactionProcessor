@@ -46,12 +46,15 @@
         /// </summary>
         /// <param name="estateId">The estate identifier.</param>
         /// <param name="transactionId">The transaction identifier.</param>
+        /// <param name="operatorIdentifier">The operator identifier.</param>
         /// <param name="operatorResponse">The operator response.</param>
         /// <param name="transactionResponseCode">The transaction response code.</param>
         /// <param name="responseMessage">The response message.</param>
         /// <param name="cancellationToken">The cancellation token.</param>
+        /// <returns></returns>
         public async Task AuthoriseTransaction(Guid estateId,
                                                Guid transactionId,
+                                               String operatorIdentifier,
                                                OperatorResponse operatorResponse,
                                                TransactionResponseCode transactionResponseCode,
                                                String responseMessage,
@@ -62,7 +65,8 @@
 
             TransactionAggregate transactionAggregate = await transactionAggregateRepository.GetLatestVersion(transactionId, cancellationToken);
 
-            transactionAggregate.AuthoriseTransaction(operatorResponse.AuthorisationCode,
+            transactionAggregate.AuthoriseTransaction(operatorIdentifier,
+                                                      operatorResponse.AuthorisationCode,
                                                       operatorResponse.ResponseCode,
                                                       operatorResponse.ResponseMessage,
                                                       operatorResponse.TransactionId,
@@ -129,6 +133,7 @@
         /// <param name="cancellationToken">The cancellation token.</param>
         public async Task DeclineTransaction(Guid estateId,
                                              Guid transactionId,
+                                             String operatorIdentifier,
                                              OperatorResponse operatorResponse,
                                              TransactionResponseCode transactionResponseCode,
                                              String responseMessage,
@@ -139,7 +144,8 @@
 
             TransactionAggregate transactionAggregate = await transactionAggregateRepository.GetLatestVersion(transactionId, cancellationToken);
 
-            transactionAggregate.DeclineTransaction(operatorResponse.ResponseCode,
+            transactionAggregate.DeclineTransaction(operatorIdentifier,
+                                                    operatorResponse.ResponseCode,
                                                     operatorResponse.ResponseMessage,
                                                     ((Int32)transactionResponseCode).ToString().PadLeft(4, '0'),
                                                     responseMessage);
@@ -192,10 +198,12 @@
         /// </summary>
         /// <param name="estateId">The estate identifier.</param>
         /// <param name="transactionId">The transaction identifier.</param>
+        /// <param name="operatorIdentifier">The operator identifier.</param>
         /// <param name="additionalTransactionRequestMetadata">The additional transaction request metadata.</param>
         /// <param name="cancellationToken">The cancellation token.</param>
         public async Task RecordAdditionalRequestData(Guid estateId,
                                                       Guid transactionId,
+                                                      String operatorIdentifier,
                                                       Dictionary<String, String> additionalTransactionRequestMetadata,
                                                       CancellationToken cancellationToken)
         {
@@ -206,7 +214,7 @@
 
                 TransactionAggregate transactionAggregate = await transactionAggregateRepository.GetLatestVersion(transactionId, cancellationToken);
 
-                transactionAggregate.RecordAdditionalRequestData(additionalTransactionRequestMetadata);
+                transactionAggregate.RecordAdditionalRequestData(operatorIdentifier, additionalTransactionRequestMetadata);
 
                 await transactionAggregateRepository.SaveChanges(transactionAggregate, cancellationToken);
             }
@@ -221,6 +229,7 @@
         /// <param name="cancellationToken">The cancellation token.</param>
         public async Task RecordAdditionalResponseData(Guid estateId,
                                                        Guid transactionId,
+                                                       String operatorIdentifier,
                                                        Dictionary<String, String> additionalTransactionResponseMetadata,
                                                        CancellationToken cancellationToken)
         {
@@ -231,7 +240,7 @@
 
                 TransactionAggregate transactionAggregate = await transactionAggregateRepository.GetLatestVersion(transactionId, cancellationToken);
 
-                transactionAggregate.RecordAdditionalResponseData(additionalTransactionResponseMetadata);
+                transactionAggregate.RecordAdditionalResponseData(operatorIdentifier, additionalTransactionResponseMetadata);
 
                 await transactionAggregateRepository.SaveChanges(transactionAggregate, cancellationToken);
             }

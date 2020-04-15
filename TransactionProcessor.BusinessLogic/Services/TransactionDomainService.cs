@@ -188,7 +188,7 @@
             if (validationResult.responseCode == TransactionResponseCode.Success)
             {
                 // Record any additional request metadata
-                await this.TransactionAggregateManager.RecordAdditionalRequestData(estateId, transactionId, additionalTransactionMetadata, cancellationToken);
+                await this.TransactionAggregateManager.RecordAdditionalRequestData(estateId, transactionId, operatorIdentifier, additionalTransactionMetadata, cancellationToken);
                 
                 // Do the online processing with the operator here
                 MerchantResponse merchant = await this.GetMerchant(estateId, merchantId, cancellationToken);
@@ -202,6 +202,7 @@
 
                     await this.TransactionAggregateManager.AuthoriseTransaction(estateId,
                                                                                 transactionId,
+                                                                                operatorIdentifier,
                                                                                 operatorResponse,
                                                                                 transactionResponseCode,
                                                                                 responseMessage,
@@ -214,6 +215,7 @@
 
                     await this.TransactionAggregateManager.DeclineTransaction(estateId,
                                                                               transactionId,
+                                                                              operatorIdentifier,
                                                                               operatorResponse,
                                                                               transactionResponseCode,
                                                                               responseMessage,
@@ -221,7 +223,7 @@
                 }
 
                 // Record any additional operator response metadata
-                await this.TransactionAggregateManager.RecordAdditionalResponseData(estateId, transactionId, operatorResponse.AdditionalTransactionResponseMetadata, cancellationToken);
+                await this.TransactionAggregateManager.RecordAdditionalResponseData(estateId, transactionId, operatorIdentifier, operatorResponse.AdditionalTransactionResponseMetadata, cancellationToken);
 
             }
             else

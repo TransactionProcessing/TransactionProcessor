@@ -20,6 +20,7 @@
         /// </summary>
         /// <param name="estateId">The estate identifier.</param>
         /// <param name="transactionId">The transaction identifier.</param>
+        /// <param name="operatorIdentifier">The operator identifier.</param>
         /// <param name="operatorResponse">The operator response.</param>
         /// <param name="transactionResponseCode">The transaction response code.</param>
         /// <param name="responseMessage">The response message.</param>
@@ -27,6 +28,7 @@
         /// <returns></returns>
         Task AuthoriseTransaction(Guid estateId,
                                   Guid transactionId,
+                                  String operatorIdentifier,
                                   OperatorResponse operatorResponse,
                                   TransactionResponseCode transactionResponseCode,
                                   String responseMessage,
@@ -63,6 +65,7 @@
         /// </summary>
         /// <param name="estateId">The estate identifier.</param>
         /// <param name="transactionId">The transaction identifier.</param>
+        /// <param name="operatorIdentifier">The operator identifier.</param>
         /// <param name="operatorResponse">The operator response.</param>
         /// <param name="transactionResponseCode">The transaction response code.</param>
         /// <param name="responseMessage">The response message.</param>
@@ -70,6 +73,7 @@
         /// <returns></returns>
         Task DeclineTransaction(Guid estateId,
                                 Guid transactionId,
+                                String operatorIdentifier,
                                 OperatorResponse operatorResponse,
                                 TransactionResponseCode transactionResponseCode,
                                 String responseMessage,
@@ -104,11 +108,13 @@
         /// </summary>
         /// <param name="estateId">The estate identifier.</param>
         /// <param name="transactionId">The transaction identifier.</param>
+        /// <param name="operatorIdentifier">The operator identifier.</param>
         /// <param name="additionalTransactionRequestMetadata">The additional transaction request metadata.</param>
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns></returns>
         Task RecordAdditionalRequestData(Guid estateId,
                                          Guid transactionId,
+                                         String operatorIdentifier,
                                          Dictionary<String, String> additionalTransactionRequestMetadata,
                                          CancellationToken cancellationToken);
 
@@ -117,11 +123,13 @@
         /// </summary>
         /// <param name="estateId">The estate identifier.</param>
         /// <param name="transactionId">The transaction identifier.</param>
+        /// <param name="operatorIdentifier">The operator identifier.</param>
         /// <param name="additionalTransactionResponseMetadata">The additional transaction response metadata.</param>
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns></returns>
         Task RecordAdditionalResponseData(Guid estateId,
                                           Guid transactionId,
+                                          String operatorIdentifier,
                                           Dictionary<String, String> additionalTransactionResponseMetadata,
                                           CancellationToken cancellationToken);
 

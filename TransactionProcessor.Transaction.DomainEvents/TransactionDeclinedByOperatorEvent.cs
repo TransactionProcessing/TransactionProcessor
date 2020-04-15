@@ -22,12 +22,16 @@
         /// <param name="eventId">The event identifier.</param>
         /// <param name="estateId">The estate identifier.</param>
         /// <param name="merchantId">The merchant identifier.</param>
+        /// <param name="operatorIdentifier">The operator identifier.</param>
         /// <param name="operatorResponseCode">The operator response code.</param>
         /// <param name="operatorResponseMessage">The operator response message.</param>
+        /// <param name="responseCode">The response code.</param>
+        /// <param name="responseMessage">The response message.</param>
         public TransactionDeclinedByOperatorEvent(Guid aggregateId,
                                                   Guid eventId,
                                                   Guid estateId,
                                                   Guid merchantId,
+                                                  String operatorIdentifier,
                                                   String operatorResponseCode,
                                                   String operatorResponseMessage,
                                                   String responseCode,
@@ -36,6 +40,7 @@
             this.TransactionId = aggregateId;
             this.EstateId = estateId;
             this.MerchantId = merchantId;
+            this.OperatorIdentifier = operatorIdentifier;
             this.OperatorResponseCode = operatorResponseCode;
             this.OperatorResponseMessage = operatorResponseMessage;
             this.ResponseCode = responseCode;
@@ -63,6 +68,15 @@
         /// </value>
         [JsonProperty]
         public Guid MerchantId { get; private set; }
+
+        /// <summary>
+        /// Gets the operator identifier.
+        /// </summary>
+        /// <value>
+        /// The operator identifier.
+        /// </value>
+        [JsonProperty]
+        public String OperatorIdentifier { get; private set; }
 
         /// <summary>
         /// Gets the operator response code.
@@ -119,6 +133,7 @@
         /// <param name="aggregateId">The aggregate identifier.</param>
         /// <param name="estateId">The estate identifier.</param>
         /// <param name="merchantId">The merchant identifier.</param>
+        /// <param name="operatorIdentifier">The operator identifier.</param>
         /// <param name="operatorResponseCode">The operator response code.</param>
         /// <param name="operatorResponseMessage">The operator response message.</param>
         /// <param name="responseCode">The response code.</param>
@@ -127,6 +142,7 @@
         public static TransactionDeclinedByOperatorEvent Create(Guid aggregateId,
                                                                 Guid estateId,
                                                                 Guid merchantId,
+                                                                String operatorIdentifier,
                                                                 String operatorResponseCode,
                                                                 String operatorResponseMessage,
                                                                 String responseCode,
@@ -136,6 +152,7 @@
                                                           Guid.NewGuid(),
                                                           estateId,
                                                           merchantId,
+                                                          operatorIdentifier,
                                                           operatorResponseCode,
                                                           operatorResponseMessage,
                                                           responseCode,
