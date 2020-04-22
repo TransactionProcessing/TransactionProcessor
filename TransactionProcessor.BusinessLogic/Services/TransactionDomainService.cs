@@ -260,7 +260,7 @@
                                                String deviceIdentifier,
                                                CancellationToken cancellationToken)
         {
-            await this.GetToken(cancellationToken);
+            this.TokenResponse = await this.GetToken(cancellationToken);
 
             // Add the device to the merchant
             await this.EstateClient.AddDeviceToMerchant(this.TokenResponse.AccessToken,
@@ -291,7 +291,7 @@
         private async Task<EstateResponse> GetEstate(Guid estateId,
                                                      CancellationToken cancellationToken)
         {
-            await this.GetToken(cancellationToken);
+            this.TokenResponse = await this.GetToken(cancellationToken);
 
             EstateResponse estate = await this.EstateClient.GetEstate(this.TokenResponse.AccessToken, estateId, cancellationToken);
 
@@ -302,7 +302,7 @@
                                                          Guid merchantId,
                                                          CancellationToken cancellationToken)
         {
-            await this.GetToken(cancellationToken);
+            this.TokenResponse = await this.GetToken(cancellationToken);
 
             MerchantResponse merchant = await this.EstateClient.GetMerchant(this.TokenResponse.AccessToken, estateId, merchantId, cancellationToken);
 
