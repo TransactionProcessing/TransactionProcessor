@@ -291,6 +291,7 @@ namespace TransactionProcessor.BusinessLogic.Tests.Services
                                                                                                             TestData.TransactionNumber,
                                                                                                             TestData.DeviceIdentifier,
                                                                                                             TestData.OperatorIdentifier1,
+                                                                                                            TestData.CustomerEmailAddress,
                                                                                                             TestData.AdditionalTransactionMetaData,
                                                                                                             CancellationToken.None);
 
@@ -341,6 +342,7 @@ namespace TransactionProcessor.BusinessLogic.Tests.Services
                                                                                                             TestData.TransactionNumber,
                                                                                                             TestData.DeviceIdentifier,
                                                                                                             TestData.OperatorIdentifier1,
+                                                                                                            TestData.CustomerEmailAddress,
                                                                                                             TestData.AdditionalTransactionMetaData,
                                                                                                             CancellationToken.None);
 
@@ -379,6 +381,7 @@ namespace TransactionProcessor.BusinessLogic.Tests.Services
                                                                                                             TestData.TransactionNumber,
                                                                                                             TestData.DeviceIdentifier,
                                                                                                             TestData.OperatorIdentifier1,
+                                                                                                            TestData.CustomerEmailAddress,
                                                                                                             TestData.AdditionalTransactionMetaData,
                                                                                                             CancellationToken.None);
 
@@ -418,6 +421,7 @@ namespace TransactionProcessor.BusinessLogic.Tests.Services
                                                                                                             TestData.TransactionNumber,
                                                                                                             TestData.DeviceIdentifier,
                                                                                                             TestData.OperatorIdentifier1,
+                                                                                                            TestData.CustomerEmailAddress,
                                                                                                             TestData.AdditionalTransactionMetaData,
                                                                                                             CancellationToken.None);
 
@@ -456,6 +460,7 @@ namespace TransactionProcessor.BusinessLogic.Tests.Services
                                                                                                             TestData.TransactionNumber,
                                                                                                             TestData.DeviceIdentifier1,
                                                                                                             TestData.OperatorIdentifier1,
+                                                                                                            TestData.CustomerEmailAddress,
                                                                                                             TestData.AdditionalTransactionMetaData,
                                                                                                             CancellationToken.None);
 
@@ -494,6 +499,7 @@ namespace TransactionProcessor.BusinessLogic.Tests.Services
                                                                                                             TestData.TransactionNumber,
                                                                                                             TestData.DeviceIdentifier1,
                                                                                                             TestData.OperatorIdentifier1,
+                                                                                                            TestData.CustomerEmailAddress,
                                                                                                             TestData.AdditionalTransactionMetaData,
                                                                                                             CancellationToken.None);
 
@@ -532,6 +538,7 @@ namespace TransactionProcessor.BusinessLogic.Tests.Services
                                                                                                             TestData.TransactionNumber,
                                                                                                             TestData.DeviceIdentifier1,
                                                                                                             TestData.OperatorIdentifier1,
+                                                                                                            TestData.CustomerEmailAddress,
                                                                                                             TestData.AdditionalTransactionMetaData,
                                                                                                             CancellationToken.None);
 
@@ -570,6 +577,7 @@ namespace TransactionProcessor.BusinessLogic.Tests.Services
                                                                                                             TestData.TransactionNumber,
                                                                                                             TestData.DeviceIdentifier,
                                                                                                             TestData.OperatorIdentifier1,
+                                                                                                            TestData.CustomerEmailAddress,
                                                                                                             TestData.AdditionalTransactionMetaData,
                                                                                                             CancellationToken.None);
 
@@ -608,6 +616,7 @@ namespace TransactionProcessor.BusinessLogic.Tests.Services
                                                                                                             TestData.TransactionNumber,
                                                                                                             TestData.DeviceIdentifier,
                                                                                                             TestData.OperatorIdentifier1,
+                                                                                                            TestData.CustomerEmailAddress,
                                                                                                             TestData.AdditionalTransactionMetaData,
                                                                                                             CancellationToken.None);
 
@@ -646,6 +655,7 @@ namespace TransactionProcessor.BusinessLogic.Tests.Services
                                                                                                             TestData.TransactionNumber,
                                                                                                             TestData.DeviceIdentifier,
                                                                                                             TestData.OperatorIdentifier2,
+                                                                                                            TestData.CustomerEmailAddress,
                                                                                                             TestData.AdditionalTransactionMetaData,
                                                                                                             CancellationToken.None);
 
@@ -684,6 +694,7 @@ namespace TransactionProcessor.BusinessLogic.Tests.Services
                                                                                                             TestData.TransactionNumber,
                                                                                                             TestData.DeviceIdentifier,
                                                                                                             TestData.OperatorIdentifier1,
+                                                                                                            TestData.CustomerEmailAddress,
                                                                                                             TestData.AdditionalTransactionMetaData,
                                                                                                             CancellationToken.None);
 
@@ -722,6 +733,7 @@ namespace TransactionProcessor.BusinessLogic.Tests.Services
                                                                                                             TestData.TransactionNumber,
                                                                                                             TestData.DeviceIdentifier,
                                                                                                             TestData.OperatorIdentifier1,
+                                                                                                            TestData.CustomerEmailAddress,
                                                                                                             TestData.AdditionalTransactionMetaData,
                                                                                                             CancellationToken.None);
 
@@ -760,6 +772,7 @@ namespace TransactionProcessor.BusinessLogic.Tests.Services
                                                                                                             TestData.TransactionNumber,
                                                                                                             TestData.DeviceIdentifier,
                                                                                                             TestData.OperatorIdentifier1,
+                                                                                                            TestData.CustomerEmailAddress,
                                                                                                             TestData.AdditionalTransactionMetaData,
                                                                                                             CancellationToken.None);
 

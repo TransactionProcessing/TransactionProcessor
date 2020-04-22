@@ -2,6 +2,7 @@
 {
     using System;
     using System.Collections.Generic;
+    using System.Diagnostics.CodeAnalysis;
     using Newtonsoft.Json;
     using Shared.DomainDrivenDesign.EventSourcing;
 
@@ -14,6 +15,15 @@
         #region Constructors
 
         /// <summary>
+        /// Initializes a new instance of the <see cref="AdditionalRequestDataRecordedEvent"/> class.
+        /// </summary>
+        [ExcludeFromCodeCoverage]
+        public AdditionalRequestDataRecordedEvent()
+        {
+
+        }
+
+        /// <summary>
         /// Initializes a new instance of the <see cref="AdditionalRequestDataRecordedEvent" /> class.
         /// </summary>
         /// <param name="aggregateId">The aggregate identifier.</param>
@@ -22,12 +32,12 @@
         /// <param name="merchantId">The merchant identifier.</param>
         /// <param name="operatorIdentifier">The operator identifier.</param>
         /// <param name="additionalTransactionRequestMetadata">The additional transaction request metadata.</param>
-        public AdditionalRequestDataRecordedEvent(Guid aggregateId,
-                                                  Guid eventId,
-                                                  Guid estateId,
-                                                  Guid merchantId,
-                                                  String operatorIdentifier,
-                                                  Dictionary<String, String> additionalTransactionRequestMetadata) : base(aggregateId, eventId)
+        private AdditionalRequestDataRecordedEvent(Guid aggregateId,
+                                                   Guid eventId,
+                                                   Guid estateId,
+                                                   Guid merchantId,
+                                                   String operatorIdentifier,
+                                                   Dictionary<String, String> additionalTransactionRequestMetadata) : base(aggregateId, eventId)
         {
             this.TransactionId = aggregateId;
             this.EstateId = estateId;

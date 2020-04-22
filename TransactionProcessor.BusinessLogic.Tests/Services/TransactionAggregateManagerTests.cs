@@ -232,5 +232,20 @@ namespace TransactionProcessor.BusinessLogic.Tests.Services
                                                                   TestData.TransactionId,
                                                                   CancellationToken.None);
         }
+
+        [Fact]
+        public async Task TransactionAggregateManager_RequestEmailReceipt_EmailRecieptRequested()
+        {
+            Mock<IAggregateRepository<TransactionAggregate>> aggregateRepository = new Mock<IAggregateRepository<TransactionAggregate>>();
+            aggregateRepository.Setup(a => a.GetLatestVersion(It.IsAny<Guid>(), It.IsAny<CancellationToken>())).ReturnsAsync(TestData.GetCompletedTransactionAggregate);
+            Mock<IAggregateRepositoryManager> aggregateRepositoryManager = new Mock<IAggregateRepositoryManager>();
+            aggregateRepositoryManager.Setup(a => a.GetAggregateRepository<TransactionAggregate>(It.IsAny<Guid>())).Returns(aggregateRepository.Object);
+            TransactionAggregateManager transactionAggregateManager = new TransactionAggregateManager(aggregateRepositoryManager.Object);
+
+            await transactionAggregateManager.RequestEmailReceipt(TestData.EstateId,
+                                                                  TestData.TransactionId,
+                                                                  TestData.CustomerEmailAddress,
+                                                                  CancellationToken.None);
+        }
     }
 }

@@ -42,6 +42,7 @@
         /// <param name="transactionNumber">The transaction number.</param>
         /// <param name="deviceIdentifier">The device identifier.</param>
         /// <param name="operatorId">The operator identifier.</param>
+        /// <param name="customerEmailAddress">The customer email address.</param>
         /// <param name="additionalTransactionMetadata">The additional transaction metadata.</param>
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns></returns>
@@ -52,6 +53,7 @@
                                                                     String transactionNumber,
                                                                     String deviceIdentifier,
                                                                     String operatorId,
+                                                                    String customerEmailAddress,
                                                                     Dictionary<String, String> additionalTransactionMetadata,
                                                                     CancellationToken cancellationToken);
 

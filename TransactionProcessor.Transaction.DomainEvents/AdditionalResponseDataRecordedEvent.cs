@@ -2,6 +2,7 @@
 {
     using System;
     using System.Collections.Generic;
+    using System.Diagnostics.CodeAnalysis;
     using Newtonsoft.Json;
     using Shared.DomainDrivenDesign.EventSourcing;
 
@@ -13,6 +14,12 @@
     {
         #region Constructors
 
+        [ExcludeFromCodeCoverage]
+        public AdditionalResponseDataRecordedEvent()
+        {
+
+        }
+
         /// <summary>
         /// Initializes a new instance of the <see cref="AdditionalResponseDataRecordedEvent" /> class.
         /// </summary>
@@ -22,7 +29,7 @@
         /// <param name="merchantId">The merchant identifier.</param>
         /// <param name="operatorIdentifier">The operator identifier.</param>
         /// <param name="additionalTransactionResponseMetadata">The additional transaction response metadata.</param>
-        public AdditionalResponseDataRecordedEvent(Guid aggregateId,
+        private AdditionalResponseDataRecordedEvent(Guid aggregateId,
                                                    Guid eventId,
                                                    Guid estateId,
                                                    Guid merchantId,

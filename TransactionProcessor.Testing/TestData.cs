@@ -40,6 +40,8 @@
 
         public static Guid OperatorId = Guid.Parse("804E9D8D-C6FE-4A46-9E55-6A04EA3E1AE5");
 
+        public static String CustomerEmailAddress = "testcustomer1@customer.co.uk";
+
         public static String OperatorIdentifier1 = "Safaricom";
 
         public static String OperatorIdentifier2 = "NotSupported";
@@ -345,6 +347,7 @@
                                                  TestData.TransactionDateTime,
                                                  TestData.TransactionNumber,
                                                  TestData.OperatorIdentifier1,
+                                                 TestData.CustomerEmailAddress,
                                                  TestData.AdditionalTransactionMetaData);
 
         public static ProcessSaleTransactionResponse ProcessSaleTransactionResponseModel =>

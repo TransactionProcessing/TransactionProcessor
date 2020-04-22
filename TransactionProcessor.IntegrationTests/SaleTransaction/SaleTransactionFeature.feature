@@ -48,16 +48,18 @@ Background:
 Scenario: Sale Transactions
 
 	When I perform the following transactions
-	| DateTime | TransactionNumber | TransactionType | MerchantName    | DeviceIdentifier | EstateName    | OperatorName | TransactionAmount | CustomerAccountNumber |
-	| Today    | 1                 | Sale            | Test Merchant 1 | 123456780        | Test Estate 1 | Safaricom    | 1000.00            | 123456789             |
-	| Today    | 2                 | Sale            | Test Merchant 2 | 123456781        | Test Estate 1 | Safaricom    | 1000.00            |123456789             |
-	| Today    | 3                 | Sale            | Test Merchant 3 | 123456782        | Test Estate 2 | Safaricom    | 1000.00            |123456789             |
+	| DateTime | TransactionNumber | TransactionType | MerchantName    | DeviceIdentifier | EstateName    | OperatorName | TransactionAmount | CustomerAccountNumber | CustomerEmailAddress        |
+	| Today    | 1                 | Sale            | Test Merchant 1 | 123456780        | Test Estate 1 | Safaricom    | 1000.00           | 123456789             |                             |
+	| Today    | 2                 | Sale            | Test Merchant 2 | 123456781        | Test Estate 1 | Safaricom    | 1000.00           | 123456789             |                             |
+	| Today    | 3                 | Sale            | Test Merchant 3 | 123456782        | Test Estate 2 | Safaricom    | 1000.00           | 123456789             |                             |
+	| Today    | 4                 | Sale            | Test Merchant 1 | 123456780        | Test Estate 1 | Safaricom    | 1000.00           | 123456789             | testcustomer@vustomer.co.uk |
 	
 	Then transaction response should contain the following information
 	| EstateName    | MerchantName    | TransactionNumber | ResponseCode | ResponseMessage |
 	| Test Estate 1 | Test Merchant 1 | 1                 | 0000         | SUCCESS         |
 	| Test Estate 1 | Test Merchant 2 | 2                 | 0000         | SUCCESS         |
 	| Test Estate 2 | Test Merchant 3 | 3                 | 0000         | SUCCESS         |
+	| Test Estate 1 | Test Merchant 1 | 4                 | 0000         | SUCCESS         |
 
 @PRTest
 Scenario: Sale Transaction with Invalid Device

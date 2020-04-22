@@ -10,7 +10,7 @@
     /// <summary>
     /// 
     /// </summary>
-    /// <seealso cref="MediatR.IRequestHandler{TransactionProcessor.BusinessLogic.Requests.ProcessLogonTransactionRequest, TransactionProcessor.Models.ProcessLogonTransactionResponse}" />
+    /// <seealso cref="MediatR.IRequestHandler{ProcessLogonTransactionRequest, ProcessLogonTransactionResponse}" />
     /// <seealso cref="" />
     public class TransactionRequestHandler : IRequestHandler<ProcessLogonTransactionRequest, ProcessLogonTransactionResponse>,
                                              IRequestHandler<ProcessSaleTransactionRequest, ProcessSaleTransactionResponse>
@@ -74,6 +74,7 @@
                                                                                                                      request.TransactionNumber,
                                                                                                                      request.DeviceIdentifier,
                                                                                                                      request.OperatorIdentifier,
+                                                                                                                     request.CustomerEmailAddress,
                                                                                                                      request.AdditionalTransactionMetadata,
                                                                                                                      cancellationToken);
 

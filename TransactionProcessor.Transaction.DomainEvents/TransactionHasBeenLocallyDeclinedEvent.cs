@@ -19,7 +19,7 @@
         /// <param name="merchantId">The merchant identifier.</param>
         /// <param name="responseCode">The response code.</param>
         /// <param name="responseMessage">The response message.</param>
-        public TransactionHasBeenLocallyDeclinedEvent(Guid aggregateId,
+        private TransactionHasBeenLocallyDeclinedEvent(Guid aggregateId,
                                                       Guid eventId,
                                                       Guid estateId,
                                                       Guid merchantId,

@@ -23,6 +23,7 @@ namespace TransactionProcessor.BusinessLogic.Requests
         /// <param name="transactionDateTime">The transaction date time.</param>
         /// <param name="transactionNumber">The transaction number.</param>
         /// <param name="operatorIdentifier">The operator identifier.</param>
+        /// <param name="customerEmailAddress">The customer email address.</param>
         /// <param name="additionalTransactionMetadata">The additional transaction metadata.</param>
         private ProcessSaleTransactionRequest(Guid transactionId,
                                               Guid estateId,
@@ -32,6 +33,7 @@ namespace TransactionProcessor.BusinessLogic.Requests
                                               DateTime transactionDateTime,
                                               String transactionNumber,
                                               String operatorIdentifier,
+                                              String customerEmailAddress,
                                               Dictionary<String, String> additionalTransactionMetadata)
         {
             this.TransactionId = transactionId;
@@ -41,6 +43,7 @@ namespace TransactionProcessor.BusinessLogic.Requests
             this.TransactionDateTime = transactionDateTime;
             this.TransactionNumber = transactionNumber;
             this.OperatorIdentifier = operatorIdentifier;
+            this.CustomerEmailAddress = customerEmailAddress;
             this.AdditionalTransactionMetadata = additionalTransactionMetadata;
             this.TransactionType = transactionType;
         }
@@ -114,6 +117,14 @@ namespace TransactionProcessor.BusinessLogic.Requests
         public String OperatorIdentifier { get; }
 
         /// <summary>
+        /// Gets the customer email address.
+        /// </summary>
+        /// <value>
+        /// The customer email address.
+        /// </value>
+        public String CustomerEmailAddress { get; private set; }
+
+        /// <summary>
         /// Gets or sets the additional transaction metadata.
         /// </summary>
         /// <value>
@@ -136,6 +147,7 @@ namespace TransactionProcessor.BusinessLogic.Requests
         /// <param name="transactionDateTime">The transaction date time.</param>
         /// <param name="transactionNumber">The transaction number.</param>
         /// <param name="operatorIdentifier">The operator identifier.</param>
+        /// <param name="customerEmailAddress">The customer email address.</param>
         /// <param name="additionalTransactionMetadata">The additional transaction metadata.</param>
         /// <returns></returns>
         public static ProcessSaleTransactionRequest Create(Guid transactionId,
@@ -146,6 +158,7 @@ namespace TransactionProcessor.BusinessLogic.Requests
                                                            DateTime transactionDateTime,
                                                            String transactionNumber,
                                                            String operatorIdentifier,
+                                                           String customerEmailAddress,
                                                            Dictionary<String, String> additionalTransactionMetadata)
         {
             return new ProcessSaleTransactionRequest(transactionId,
@@ -156,6 +169,7 @@ namespace TransactionProcessor.BusinessLogic.Requests
                                                      transactionDateTime,
                                                      transactionNumber,
                                                      operatorIdentifier,
+                                                     customerEmailAddress,
                                                      additionalTransactionMetadata);
         }
 

@@ -61,6 +61,19 @@
                                  CancellationToken cancellationToken);
 
         /// <summary>
+        /// Requests the email receipt.
+        /// </summary>
+        /// <param name="estateId">The estate identifier.</param>
+        /// <param name="transactionId">The transaction identifier.</param>
+        /// <param name="customerEmailAddress">The customer email address.</param>
+        /// <param name="cancellationToken">The cancellation token.</param>
+        /// <returns></returns>
+        Task RequestEmailReceipt(Guid estateId,
+                                 Guid transactionId,
+                                 String customerEmailAddress,
+                                 CancellationToken cancellationToken);
+
+        /// <summary>
         /// Declines the transaction.
         /// </summary>
         /// <param name="estateId">The estate identifier.</param>

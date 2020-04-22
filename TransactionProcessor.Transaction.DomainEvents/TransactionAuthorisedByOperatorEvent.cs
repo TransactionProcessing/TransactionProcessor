@@ -29,7 +29,7 @@
         /// <param name="operatorTransactionId">The operator transaction identifier.</param>
         /// <param name="responseCode">The response code.</param>
         /// <param name="responseMessage">The response message.</param>
-        public TransactionAuthorisedByOperatorEvent(Guid aggregateId,
+        private TransactionAuthorisedByOperatorEvent(Guid aggregateId,
                                                     Guid eventId,
                                                     Guid estateId,
                                                     Guid merchantId,

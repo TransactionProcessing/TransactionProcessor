@@ -50,6 +50,14 @@ namespace TransactionProcessor.DataTransferObjects
         public String OperatorIdentifier { get; set; }
 
         /// <summary>
+        /// Gets or sets the customer email address.
+        /// </summary>
+        /// <value>
+        /// The customer email address.
+        /// </value>
+        public String CustomerEmailAddress { get; set; }
+
+        /// <summary>
         /// Gets or sets the additional transaction metadata.
         /// </summary>
         /// <value>
