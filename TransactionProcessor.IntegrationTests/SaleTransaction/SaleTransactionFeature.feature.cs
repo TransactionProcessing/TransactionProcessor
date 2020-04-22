@@ -290,7 +290,8 @@ this.FeatureBackground();
                             "EstateName",
                             "OperatorName",
                             "TransactionAmount",
-                            "CustomerAccountNumber"});
+                            "CustomerAccountNumber",
+                            "CustomerEmailAddress"});
                 table30.AddRow(new string[] {
                             "Today",
                             "1",
@@ -300,7 +301,8 @@ this.FeatureBackground();
                             "Test Estate 1",
                             "Safaricom",
                             "1000.00",
-                            "123456789"});
+                            "123456789",
+                            ""});
                 table30.AddRow(new string[] {
                             "Today",
                             "2",
@@ -310,7 +312,8 @@ this.FeatureBackground();
                             "Test Estate 1",
                             "Safaricom",
                             "1000.00",
-                            "123456789"});
+                            "123456789",
+                            ""});
                 table30.AddRow(new string[] {
                             "Today",
                             "3",
@@ -320,7 +323,19 @@ this.FeatureBackground();
                             "Test Estate 2",
                             "Safaricom",
                             "1000.00",
-                            "123456789"});
+                            "123456789",
+                            ""});
+                table30.AddRow(new string[] {
+                            "Today",
+                            "4",
+                            "Sale",
+                            "Test Merchant 1",
+                            "123456780",
+                            "Test Estate 1",
+                            "Safaricom",
+                            "1000.00",
+                            "123456789",
+                            "testcustomer@vustomer.co.uk"});
 #line 50
  testRunner.When("I perform the following transactions", ((string)(null)), table30, "When ");
 #line hidden
@@ -348,7 +363,13 @@ this.FeatureBackground();
                             "3",
                             "0000",
                             "SUCCESS"});
-#line 56
+                table31.AddRow(new string[] {
+                            "Test Estate 1",
+                            "Test Merchant 1",
+                            "4",
+                            "0000",
+                            "SUCCESS"});
+#line 57
  testRunner.Then("transaction response should contain the following information", ((string)(null)), table31, "Then ");
 #line hidden
             }
@@ -365,7 +386,7 @@ this.FeatureBackground();
                     "PRTest"};
             TechTalk.SpecFlow.ScenarioInfo scenarioInfo = new TechTalk.SpecFlow.ScenarioInfo("Sale Transaction with Invalid Device", null, new string[] {
                         "PRTest"});
-#line 63
+#line 65
 this.ScenarioInitialize(scenarioInfo);
 #line hidden
             bool isScenarioIgnored = default(bool);
@@ -406,7 +427,7 @@ this.FeatureBackground();
                             "Test Estate 1",
                             "Safaricom",
                             "1000.00"});
-#line 65
+#line 67
  testRunner.When("I perform the following transactions", ((string)(null)), table32, "When ");
 #line hidden
                 TechTalk.SpecFlow.Table table33 = new TechTalk.SpecFlow.Table(new string[] {
@@ -421,7 +442,7 @@ this.FeatureBackground();
                             "1",
                             "1000",
                             "Device Identifier 123456781 not valid for Merchant Test Merchant 1"});
-#line 69
+#line 71
  testRunner.Then("transaction response should contain the following information", ((string)(null)), table33, "Then ");
 #line hidden
             }
@@ -435,7 +456,7 @@ this.FeatureBackground();
         {
             string[] tagsOfScenario = ((string[])(null));
             TechTalk.SpecFlow.ScenarioInfo scenarioInfo = new TechTalk.SpecFlow.ScenarioInfo("Sale Transaction with Invalid Estate", null, ((string[])(null)));
-#line 73
+#line 75
 this.ScenarioInitialize(scenarioInfo);
 #line hidden
             bool isScenarioIgnored = default(bool);
@@ -476,7 +497,7 @@ this.FeatureBackground();
                             "InvalidEstate",
                             "Safaricom",
                             "1000.00"});
-#line 75
+#line 77
  testRunner.When("I perform the following transactions", ((string)(null)), table34, "When ");
 #line hidden
                 TechTalk.SpecFlow.Table table35 = new TechTalk.SpecFlow.Table(new string[] {
@@ -491,7 +512,7 @@ this.FeatureBackground();
                             "1",
                             "1001",
                             "Estate Id [79902550-64df-4491-b0c1-4e78943928a3] is not a valid estate"});
-#line 79
+#line 81
  testRunner.Then("transaction response should contain the following information", ((string)(null)), table35, "Then ");
 #line hidden
             }
@@ -505,7 +526,7 @@ this.FeatureBackground();
         {
             string[] tagsOfScenario = ((string[])(null));
             TechTalk.SpecFlow.ScenarioInfo scenarioInfo = new TechTalk.SpecFlow.ScenarioInfo("Sale Transaction with Invalid Merchant", null, ((string[])(null)));
-#line 83
+#line 85
 this.ScenarioInitialize(scenarioInfo);
 #line hidden
             bool isScenarioIgnored = default(bool);
@@ -546,7 +567,7 @@ this.FeatureBackground();
                             "Test Estate 1",
                             "Safaricom",
                             "1000.00"});
-#line 85
+#line 87
  testRunner.When("I perform the following transactions", ((string)(null)), table36, "When ");
 #line hidden
                 TechTalk.SpecFlow.Table table37 = new TechTalk.SpecFlow.Table(new string[] {
@@ -562,7 +583,7 @@ this.FeatureBackground();
                             "1002",
                             "Merchant Id [d59320fa-4c3e-4900-a999-483f6a10c69a] is not a valid merchant for es" +
                                 "tate [Test Estate 1]"});
-#line 89
+#line 91
  testRunner.Then("transaction response should contain the following information", ((string)(null)), table37, "Then ");
 #line hidden
             }

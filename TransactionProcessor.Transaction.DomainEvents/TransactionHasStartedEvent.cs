@@ -32,8 +32,9 @@
         /// <param name="transactionDateTime">The transaction date time.</param>
         /// <param name="transactionNumber">The transaction number.</param>
         /// <param name="transactionType">Type of the transaction.</param>
+        /// <param name="transactionReference">The transaction reference.</param>
         /// <param name="deviceIdentifier">The device identifier.</param>
-        public TransactionHasStartedEvent(Guid aggregateId,
+        private TransactionHasStartedEvent(Guid aggregateId,
                                           Guid eventId,
                                           Guid estateId,
                                           Guid merchantId,

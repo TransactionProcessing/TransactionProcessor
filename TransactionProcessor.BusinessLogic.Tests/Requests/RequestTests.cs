@@ -33,6 +33,7 @@ namespace TransactionProcessor.BusinessLogic.Tests.Commands
             ProcessSaleTransactionRequest processSaleTransactionRequest = ProcessSaleTransactionRequest.Create(TestData.TransactionId, TestData.EstateId, TestData.MerchantId, TestData.DeviceIdentifier, TestData.TransactionTypeLogon.ToString(), TestData.TransactionDateTime,
                                                                                                                TestData.TransactionNumber,
                                                                                                                TestData.OperatorIdentifier1,
+                                                                                                               TestData.CustomerEmailAddress,
                                                                                                                TestData.AdditionalTransactionMetaData);
 
             processSaleTransactionRequest.ShouldNotBeNull();
@@ -44,6 +45,7 @@ namespace TransactionProcessor.BusinessLogic.Tests.Commands
             processSaleTransactionRequest.TransactionNumber.ShouldBe(TestData.TransactionNumber);
             processSaleTransactionRequest.TransactionId.ShouldBe(TestData.TransactionId);
             processSaleTransactionRequest.OperatorIdentifier.ShouldBe(TestData.OperatorIdentifier1);
+            processSaleTransactionRequest.CustomerEmailAddress.ShouldBe(TestData.CustomerEmailAddress);
             processSaleTransactionRequest.AdditionalTransactionMetadata.ShouldNotBeNull();
             processSaleTransactionRequest.AdditionalTransactionMetadata.Count.ShouldBe(TestData.AdditionalTransactionMetaData.Count);
         }

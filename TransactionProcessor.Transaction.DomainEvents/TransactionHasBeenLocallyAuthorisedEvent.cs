@@ -24,7 +24,7 @@
         /// <param name="authorisationCode">The authorisation code.</param>
         /// <param name="responseCode">The response code.</param>
         /// <param name="responseMessage">The response message.</param>
-        public TransactionHasBeenLocallyAuthorisedEvent(Guid aggregateId,
+        private TransactionHasBeenLocallyAuthorisedEvent(Guid aggregateId,
                                                         Guid eventId,
                                                         Guid estateId,
                                                         Guid merchantId,

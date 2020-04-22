@@ -32,7 +32,7 @@
         /// <param name="responseCode">The response code.</param>
         /// <param name="responseMessage">The response message.</param>
         /// <param name="isAuthorised">if set to <c>true</c> [is authorised].</param>
-        public TransactionHasBeenCompletedEvent(Guid aggregateId,
+        private TransactionHasBeenCompletedEvent(Guid aggregateId,
                                                 Guid eventId,
                                                 Guid estateId,
                                                 Guid merchantId,

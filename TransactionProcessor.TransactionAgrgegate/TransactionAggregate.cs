@@ -65,6 +65,14 @@
         public String AuthorisationCode { get; private set; }
 
         /// <summary>
+        /// Gets a value indicating whether [customer email receipt has been requested].
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if [customer email receipt has been requested]; otherwise, <c>false</c>.
+        /// </value>
+        public Boolean CustomerEmailReceiptHasBeenRequested { get; private set; }
+
+        /// <summary>
         /// Gets the device identifier.
         /// </summary>
         /// <value>
@@ -193,20 +201,20 @@
         public String TransactionNumber { get; private set; }
 
         /// <summary>
-        /// Gets the type of the transaction.
-        /// </summary>
-        /// <value>
-        /// The type of the transaction.
-        /// </value>
-        public TransactionType TransactionType { get; private set; }
-
-        /// <summary>
         /// Gets the transaction reference.
         /// </summary>
         /// <value>
         /// The transaction reference.
         /// </value>
         public String TransactionReference { get; private set; }
+
+        /// <summary>
+        /// Gets the type of the transaction.
+        /// </summary>
+        /// <value>
+        /// The type of the transaction.
+        /// </value>
+        public TransactionType TransactionType { get; private set; }
 
         #endregion
 
@@ -222,7 +230,7 @@
         /// <param name="operatorTransactionId">The operator transaction identifier.</param>
         /// <param name="responseCode">The response code.</param>
         /// <param name="responseMessage">The response message.</param>
-        public void AuthoriseTransaction(String operatorIdentifier, 
+        public void AuthoriseTransaction(String operatorIdentifier,
                                          String authorisationCode,
                                          String operatorResponseCode,
                                          String operatorResponseMessage,
@@ -303,7 +311,7 @@
         /// <param name="operatorResponseMessage">The operator response message.</param>
         /// <param name="responseCode">The response code.</param>
         /// <param name="responseMessage">The response message.</param>
-        public void DeclineTransaction(String operatorIdentifier, 
+        public void DeclineTransaction(String operatorIdentifier,
                                        String operatorResponseCode,
                                        String operatorResponseMessage,
                                        String responseCode,
@@ -347,7 +355,8 @@
         /// </summary>
         /// <param name="operatorIdentifier">The operator identifier.</param>
         /// <param name="additionalTransactionRequestMetadata">The additional transaction request metadata.</param>
-        public void RecordAdditionalRequestData(String operatorIdentifier, Dictionary<String, String> additionalTransactionRequestMetadata)
+        public void RecordAdditionalRequestData(String operatorIdentifier,
+                                                Dictionary<String, String> additionalTransactionRequestMetadata)
         {
             this.CheckTransactionNotAlreadyCompleted();
             this.CheckTransactionHasBeenStarted();
@@ -366,7 +375,8 @@
         /// </summary>
         /// <param name="operatorIdentifier">The operator identifier.</param>
         /// <param name="additionalTransactionResponseMetadata">The additional transaction response metadata.</param>
-        public void RecordAdditionalResponseData(String operatorIdentifier, Dictionary<String, String> additionalTransactionResponseMetadata)
+        public void RecordAdditionalResponseData(String operatorIdentifier,
+                                                 Dictionary<String, String> additionalTransactionResponseMetadata)
         {
             this.CheckTransactionHasBeenStarted();
             this.CheckAdditionalResponseDataNotAlreadyRecorded();
@@ -375,6 +385,33 @@
                 AdditionalResponseDataRecordedEvent.Create(this.AggregateId, this.EstateId, this.MerchantId, operatorIdentifier, additionalTransactionResponseMetadata);
 
             this.ApplyAndPend(additionalResponseDataRecordedEvent);
+        }
+
+        /// <summary>
+        /// Requests the email receipt.
+        /// </summary>
+        /// <param name="customerEmailAddress">The customer email address.</param>
+        public void RequestEmailReceipt(String customerEmailAddress)
+        {
+            this.CheckTransactionHasBeenCompleted();
+            this.CheckCustomerHasNotAlreadyRequestedEmailReceipt();
+
+            CustomerEmailReceiptRequestedEvent customerEmailReceiptRequestedEvent =
+                CustomerEmailReceiptRequestedEvent.Create(this.AggregateId, this.EstateId, this.MerchantId, customerEmailAddress);
+
+            this.ApplyAndPend(customerEmailReceiptRequestedEvent);
+        }
+
+        /// <summary>
+        /// Checks the transaction has been completed.
+        /// </summary>
+        /// <exception cref="InvalidOperationException">Transaction [{this.AggregateId}] has not been completed</exception>
+        private void CheckTransactionHasBeenCompleted()
+        {
+            if (this.IsCompleted == false)
+            {
+                throw new InvalidOperationException($"Transaction [{this.AggregateId}] has not been completed");
+            }
         }
 
         /// <summary>
@@ -423,15 +460,14 @@
 
             this.CheckTransactionNotAlreadyStarted();
             this.CheckTransactionNotAlreadyCompleted();
-            TransactionHasStartedEvent transactionHasStartedEvent =
-                TransactionHasStartedEvent.Create(this.AggregateId,
-                                                  estateId,
-                                                  merchantId,
-                                                  transactionDateTime,
-                                                  transactionNumber,
-                                                  transactionType.ToString(),
-                                                  transactionReference,
-                                                  deviceIdentifier);
+            TransactionHasStartedEvent transactionHasStartedEvent = TransactionHasStartedEvent.Create(this.AggregateId,
+                                                                                                      estateId,
+                                                                                                      merchantId,
+                                                                                                      transactionDateTime,
+                                                                                                      transactionNumber,
+                                                                                                      transactionType.ToString(),
+                                                                                                      transactionReference,
+                                                                                                      deviceIdentifier);
 
             this.ApplyAndPend(transactionHasStartedEvent);
         }
@@ -479,6 +515,18 @@
             if (this.AdditionalTransactionResponseMetadata != null)
             {
                 throw new InvalidOperationException("Additional Response Data already recorded");
+            }
+        }
+
+        /// <summary>
+        /// Checks the customer has not already requested email receipt.
+        /// </summary>
+        /// <exception cref="InvalidOperationException">Customer Email Receipt already requested for Transaction [{this.AggregateId}]</exception>
+        private void CheckCustomerHasNotAlreadyRequestedEmailReceipt()
+        {
+            if (this.CustomerEmailReceiptHasBeenRequested)
+            {
+                throw new InvalidOperationException($"Customer Email Receipt already requested for Transaction [{this.AggregateId}]");
             }
         }
 
@@ -567,6 +615,15 @@
             {
                 throw new InvalidOperationException($"Transaction Id [{this.AggregateId}] has already been started");
             }
+        }
+
+        /// <summary>
+        /// Plays the event.
+        /// </summary>
+        /// <param name="domainEvent">The domain event.</param>
+        private void PlayEvent(CustomerEmailReceiptRequestedEvent domainEvent)
+        {
+            this.CustomerEmailReceiptHasBeenRequested = true;
         }
 
         /// <summary>

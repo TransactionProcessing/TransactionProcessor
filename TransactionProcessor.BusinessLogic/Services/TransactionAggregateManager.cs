@@ -247,6 +247,24 @@
         }
 
         /// <summary>
+        /// Requests the email receipt.
+        /// </summary>
+        /// <param name="estateId">The estate identifier.</param>
+        /// <param name="transactionId">The transaction identifier.</param>
+        /// <param name="cancellationToken">The cancellation token.</param>
+        public async Task RequestEmailReceipt(Guid estateId, Guid transactionId, String customerEmailAddress, CancellationToken cancellationToken)
+        {
+            IAggregateRepository<TransactionAggregate> transactionAggregateRepository =
+                this.AggregateRepositoryManager.GetAggregateRepository<TransactionAggregate>(estateId);
+
+            TransactionAggregate transactionAggregate = await transactionAggregateRepository.GetLatestVersion(transactionId, cancellationToken);
+
+            transactionAggregate.RequestEmailReceipt(customerEmailAddress);
+
+            await transactionAggregateRepository.SaveChanges(transactionAggregate, cancellationToken);
+        }
+
+        /// <summary>
         /// Starts the transaction.
         /// </summary>
         /// <param name="transactionId">The transaction identifier.</param>

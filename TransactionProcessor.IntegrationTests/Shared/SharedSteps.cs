@@ -251,6 +251,7 @@ namespace TransactionProcessor.IntegrationTests.Shared
                         String operatorName = SpecflowTableHelper.GetStringRowValue(tableRow, "OperatorName");
                         Decimal transactionAmount = SpecflowTableHelper.GetDecimalValue(tableRow, "TransactionAmount");
                         String customerAccountNumber = SpecflowTableHelper.GetStringRowValue(tableRow, "CustomerAccountNumber");
+                        String customerEmailAddress = SpecflowTableHelper.GetStringRowValue(tableRow, "CustomerEmailAddress");
 
                         transactionResponse = await this.PerformSaleTransaction(estateDetails.EstateId,
                                                                                 merchantId,
@@ -261,6 +262,7 @@ namespace TransactionProcessor.IntegrationTests.Shared
                                                                                 operatorName,
                                                                                 transactionAmount,
                                                                                 customerAccountNumber,
+                                                                                customerEmailAddress,
                                                                                 CancellationToken.None);
                         break;
                         
@@ -309,7 +311,7 @@ namespace TransactionProcessor.IntegrationTests.Shared
             return responseSerialisedMessage;
         }
 
-        private async Task<SerialisedMessage> PerformSaleTransaction(Guid estateId, Guid merchantId, DateTime transactionDateTime, String transactionType, String transactionNumber, String deviceIdentifier, String operatorIdentifier, Decimal transactionAmount, String customerAccountNumber, CancellationToken cancellationToken)
+        private async Task<SerialisedMessage> PerformSaleTransaction(Guid estateId, Guid merchantId, DateTime transactionDateTime, String transactionType, String transactionNumber, String deviceIdentifier, String operatorIdentifier, Decimal transactionAmount, String customerAccountNumber, String customerEmailAddres, CancellationToken cancellationToken)
         {
             SaleTransactionRequest saleTransactionRequest = new SaleTransactionRequest
                                                             {
@@ -324,8 +326,9 @@ namespace TransactionProcessor.IntegrationTests.Shared
                                                                                                 {
                                                                                                     {"Amount", transactionAmount.ToString()},
                                                                                                     {"CustomerAccountNumber", customerAccountNumber}
-                                                                                                }
-                                                            };
+                                                                                                },
+                                                                CustomerEmailAddress = customerEmailAddres
+            };
 
             SerialisedMessage serialisedMessage = new SerialisedMessage();
             serialisedMessage.Metadata.Add(MetadataContants.KeyNameEstateId, estateId.ToString());

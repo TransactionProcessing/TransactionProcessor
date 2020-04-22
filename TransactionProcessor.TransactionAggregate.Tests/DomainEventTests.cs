@@ -210,5 +210,23 @@ namespace TransactionProcessor.TransactionAggregate.Tests
                 additionalRequestDataRecordedEvent.AdditionalTransactionRequestMetadata.ShouldContainKeyAndValue(keyValuePair.Key, keyValuePair.Value);
             }
         }
+
+        [Fact]
+        public void CustomerEmailReceiptRequestedEvent_CanBeCreated_IsCreated()
+        {
+            CustomerEmailReceiptRequestedEvent customerEmailReceiptRequestedEvent = CustomerEmailReceiptRequestedEvent.Create(TestData.TransactionId,
+                                                                                                                              TestData.EstateId,
+                                                                                                                              TestData.MerchantId,
+                                                                                                                              TestData.CustomerEmailAddress);
+
+            customerEmailReceiptRequestedEvent.ShouldNotBeNull();
+            customerEmailReceiptRequestedEvent.AggregateId.ShouldBe(TestData.TransactionId);
+            customerEmailReceiptRequestedEvent.EventCreatedDateTime.ShouldNotBe(DateTime.MinValue);
+            customerEmailReceiptRequestedEvent.EventId.ShouldNotBe(Guid.Empty);
+            customerEmailReceiptRequestedEvent.TransactionId.ShouldBe(TestData.TransactionId);
+            customerEmailReceiptRequestedEvent.EstateId.ShouldBe(TestData.EstateId);
+            customerEmailReceiptRequestedEvent.MerchantId.ShouldBe(TestData.MerchantId);
+            customerEmailReceiptRequestedEvent.CustomerEmailAddress.ShouldBe(TestData.CustomerEmailAddress);
+        }
     }
 }
