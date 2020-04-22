@@ -2,6 +2,7 @@
 {
     using System;
     using System.Collections.Generic;
+    using System.Diagnostics.Eventing.Reader;
     using System.Linq;
     using System.Threading;
     using System.Threading.Tasks;
@@ -259,7 +260,7 @@
                                                String deviceIdentifier,
                                                CancellationToken cancellationToken)
         {
-            await this.GetToken(cancellationToken);
+            this.TokenResponse = await this.GetToken(cancellationToken);
 
             // Add the device to the merchant
             await this.EstateClient.AddDeviceToMerchant(this.TokenResponse.AccessToken,
@@ -290,7 +291,7 @@
         private async Task<EstateResponse> GetEstate(Guid estateId,
                                                      CancellationToken cancellationToken)
         {
-            await this.GetToken(cancellationToken);
+            this.TokenResponse = await this.GetToken(cancellationToken);
 
             EstateResponse estate = await this.EstateClient.GetEstate(this.TokenResponse.AccessToken, estateId, cancellationToken);
 
@@ -301,28 +302,42 @@
                                                          Guid merchantId,
                                                          CancellationToken cancellationToken)
         {
-            await this.GetToken(cancellationToken);
+            this.TokenResponse = await this.GetToken(cancellationToken);
 
             MerchantResponse merchant = await this.EstateClient.GetMerchant(this.TokenResponse.AccessToken, estateId, merchantId, cancellationToken);
 
             return merchant;
         }
 
-        private async Task GetToken(CancellationToken cancellationToken)
+        /// <summary>
+        /// Gets the token.
+        /// </summary>
+        /// <param name="cancellationToken">The cancellation token.</param>
+        /// <returns></returns>
+        private async Task<TokenResponse> GetToken(CancellationToken cancellationToken)
         {
+            // Get a token to talk to the estate service
+            String clientId = ConfigurationReader.GetValue("AppSettings", "ClientId");
+            String clientSecret = ConfigurationReader.GetValue("AppSettings", "ClientSecret");
+            Logger.LogInformation($"Client Id is {clientId}");
+            Logger.LogInformation($"Client Secret is {clientSecret}");
+
             if (this.TokenResponse == null)
             {
-                // Get a token to talk to the estate service
-                String clientId = ConfigurationReader.GetValue("AppSettings", "ClientId");
-                String clientSecret = ConfigurationReader.GetValue("AppSettings", "ClientSecret");
-
-                Logger.LogInformation($"Client Id is {clientId}");
-                Logger.LogInformation($"Client Secret is {clientSecret}");
-
                 TokenResponse token = await this.SecurityServiceClient.GetToken(clientId, clientSecret, cancellationToken);
                 Logger.LogInformation($"Token is {token.AccessToken}");
-                this.TokenResponse = token;
+                return token;
             }
+
+            if (this.TokenResponse.Expires.UtcDateTime.Subtract(DateTime.UtcNow) < TimeSpan.FromMinutes(2))
+            {
+                Logger.LogInformation($"Token is about to expire at {this.TokenResponse.Expires.DateTime:O}");
+                TokenResponse token = await this.SecurityServiceClient.GetToken(clientId, clientSecret, cancellationToken);
+                Logger.LogInformation($"Token is {token.AccessToken}");
+                return token;
+            }
+
+            return this.TokenResponse;
         }
 
         /// <summary>
