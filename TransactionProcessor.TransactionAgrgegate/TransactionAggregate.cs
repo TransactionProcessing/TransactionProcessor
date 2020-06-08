@@ -185,6 +185,14 @@
         public String ResponseMessage { get; private set; }
 
         /// <summary>
+        /// Gets the transaction amount.
+        /// </summary>
+        /// <value>
+        /// The transaction amount.
+        /// </value>
+        public Decimal? TransactionAmount { get; private set; }
+
+        /// <summary>
         /// Gets the transaction date time.
         /// </summary>
         /// <value>
@@ -403,18 +411,6 @@
         }
 
         /// <summary>
-        /// Checks the transaction has been completed.
-        /// </summary>
-        /// <exception cref="InvalidOperationException">Transaction [{this.AggregateId}] has not been completed</exception>
-        private void CheckTransactionHasBeenCompleted()
-        {
-            if (this.IsCompleted == false)
-            {
-                throw new InvalidOperationException($"Transaction [{this.AggregateId}] has not been completed");
-            }
-        }
-
-        /// <summary>
         /// Starts the transaction.
         /// </summary>
         /// <param name="transactionDateTime">The transaction date time.</param>
@@ -424,6 +420,7 @@
         /// <param name="estateId">The estate identifier.</param>
         /// <param name="merchantId">The merchant identifier.</param>
         /// <param name="deviceIdentifier">The device identifier.</param>
+        /// <param name="transactionAmount">The transaction amount.</param>
         /// <exception cref="ArgumentException">Transaction Number must be numeric
         /// or
         /// Invalid Transaction Type [{transactionType}]
@@ -435,7 +432,8 @@
                                      String transactionReference,
                                      Guid estateId,
                                      Guid merchantId,
-                                     String deviceIdentifier)
+                                     String deviceIdentifier,
+                                     Decimal? transactionAmount)
         {
             Guard.ThrowIfInvalidDate(transactionDateTime, typeof(ArgumentException), $"Transaction Date Time must not be [{DateTime.MinValue}]");
             Guard.ThrowIfNullOrEmpty(transactionNumber, typeof(ArgumentException), "Transaction Number must not be null or empty");
@@ -467,7 +465,8 @@
                                                                                                       transactionNumber,
                                                                                                       transactionType.ToString(),
                                                                                                       transactionReference,
-                                                                                                      deviceIdentifier);
+                                                                                                      deviceIdentifier,
+                                                                                                      transactionAmount);
 
             this.ApplyAndPend(transactionHasStartedEvent);
         }
@@ -552,6 +551,18 @@
             if (this.IsAuthorised == false && this.IsLocallyAuthorised == false && this.IsDeclined == false && this.IsLocallyDeclined == false)
             {
                 throw new InvalidOperationException($"Transaction [{this.AggregateId}] has not been authorised or declined");
+            }
+        }
+
+        /// <summary>
+        /// Checks the transaction has been completed.
+        /// </summary>
+        /// <exception cref="InvalidOperationException">Transaction [{this.AggregateId}] has not been completed</exception>
+        private void CheckTransactionHasBeenCompleted()
+        {
+            if (this.IsCompleted == false)
+            {
+                throw new InvalidOperationException($"Transaction [{this.AggregateId}] has not been completed");
             }
         }
 
@@ -662,6 +673,7 @@
             this.IsDeclined = false;
             this.IsLocallyAuthorised = false;
             this.IsAuthorised = false;
+            this.TransactionAmount = domainEvent.TransactionAmount.HasValue ? domainEvent.TransactionAmount : null;
         }
 
         /// <summary>

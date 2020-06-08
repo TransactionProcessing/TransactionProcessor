@@ -24,9 +24,11 @@ namespace TransactionProcessor.TransactionAggregate.Tests
                                                                                                       TestData.TransactionNumber,
                                                                                                       transactionType.ToString(),
                                                                                                       TestData.TransactionReference,
-                                                                                                      TestData.DeviceIdentifier);
+                                                                                                      TestData.DeviceIdentifier,
+                                                                                                      TestData.TransactionAmount);
             transactionHasStartedEvent.ShouldNotBeNull();
             transactionHasStartedEvent.AggregateId.ShouldBe(TestData.TransactionId);
+            transactionHasStartedEvent.TransactionAmount.ShouldBe(TestData.TransactionAmount);
             transactionHasStartedEvent.EventCreatedDateTime.ShouldNotBe(DateTime.MinValue);
             transactionHasStartedEvent.EventId.ShouldNotBe(Guid.Empty);
             transactionHasStartedEvent.TransactionId.ShouldBe(TestData.TransactionId);

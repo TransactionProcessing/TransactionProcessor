@@ -34,6 +34,7 @@
         /// <param name="transactionType">Type of the transaction.</param>
         /// <param name="transactionReference">The transaction reference.</param>
         /// <param name="deviceIdentifier">The device identifier.</param>
+        /// <param name="transactionAmount">The transaction amount.</param>
         private TransactionHasStartedEvent(Guid aggregateId,
                                           Guid eventId,
                                           Guid estateId,
@@ -42,7 +43,8 @@
                                           String transactionNumber,
                                           String transactionType,
                                           String transactionReference,
-                                          String deviceIdentifier) : base(aggregateId, eventId)
+                                          String deviceIdentifier,
+                                          Decimal? transactionAmount) : base(aggregateId, eventId)
         {
             this.TransactionId = aggregateId;
             this.EstateId = estateId;
@@ -52,6 +54,7 @@
             this.TransactionType = transactionType;
             this.TransactionReference = transactionReference;
             this.DeviceIdentifier = deviceIdentifier;
+            this.TransactionAmount = transactionAmount;
         }
 
         #endregion
@@ -75,6 +78,15 @@
         /// </value>
         [JsonProperty]
         public String DeviceIdentifier { get; private set; }
+
+        /// <summary>
+        /// Gets the transaction amount.
+        /// </summary>
+        /// <value>
+        /// The transaction amount.
+        /// </value>
+        [JsonProperty(DefaultValueHandling = DefaultValueHandling.Ignore)]
+        public Decimal? TransactionAmount { get; private set; }
 
         /// <summary>
         /// Gets the merchant identifier.
@@ -139,6 +151,7 @@
         /// <param name="transactionType">Type of the transaction.</param>
         /// <param name="transactionReference">The transaction reference.</param>
         /// <param name="deviceIdentifier">The device identifier.</param>
+        /// <param name="transactionAmount">The transaction amount.</param>
         /// <returns></returns>
         public static TransactionHasStartedEvent Create(Guid aggregateId,
                                                         Guid estateId,
@@ -147,9 +160,10 @@
                                                         String transactionNumber,
                                                         String transactionType,
                                                         String transactionReference,
-                                                        String deviceIdentifier)
+                                                        String deviceIdentifier,
+                                                        Decimal? transactionAmount)
         {
-            return new TransactionHasStartedEvent(aggregateId, Guid.NewGuid(), estateId, merchantId, transactionDateTime, transactionNumber, transactionType, transactionReference, deviceIdentifier);
+            return new TransactionHasStartedEvent(aggregateId, Guid.NewGuid(), estateId, merchantId, transactionDateTime, transactionNumber, transactionType, transactionReference, deviceIdentifier, transactionAmount);
         }
 
         #endregion

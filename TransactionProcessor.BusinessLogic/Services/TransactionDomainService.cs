@@ -102,6 +102,7 @@
                                                                     estateId,
                                                                     merchantId,
                                                                     deviceIdentifier,
+                                                                    null, // Logon transaction has no amount
                                                                     cancellationToken);
 
             (String responseMessage, TransactionResponseCode responseCode) validationResult =
@@ -162,6 +163,9 @@
             // Generate a transaction reference
             String transactionReference = this.GenerateTransactionReference();
 
+            // Extract the transaction amount from the metadata
+            Decimal transactionAmount = this.ExtractFieldFromMetadata<Decimal>("Amount", additionalTransactionMetadata);
+
             await this.TransactionAggregateManager.StartTransaction(transactionId,
                                                                     transactionDateTime,
                                                                     transactionNumber,
@@ -170,6 +174,7 @@
                                                                     estateId,
                                                                     merchantId,
                                                                     deviceIdentifier,
+                                                                    transactionAmount,
                                                                     cancellationToken);
 
             (String responseMessage, TransactionResponseCode responseCode) validationResult =
@@ -253,6 +258,28 @@
                        MerchantId = merchantId,
                        AdditionalTransactionMetadata = new Dictionary<String, String>()
                    };
+        }
+
+        /// <summary>
+        /// Extracts the field from metadata.
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="fieldName">Name of the field.</param>
+        /// <param name="additionalTransactionMetadata">The additional transaction metadata.</param>
+        /// <returns></returns>
+        private T ExtractFieldFromMetadata<T>(String fieldName,
+                                                   Dictionary<String, String> additionalTransactionMetadata)
+        {
+            if (additionalTransactionMetadata.ContainsKey(fieldName))
+            {
+                String fieldData = additionalTransactionMetadata[fieldName];
+                return (T)Convert.ChangeType(fieldData, typeof(T));
+            }
+            else
+            {
+                return default(T);
+            }
+
         }
 
         private async Task AddDeviceToMerchant(Guid estateId,
