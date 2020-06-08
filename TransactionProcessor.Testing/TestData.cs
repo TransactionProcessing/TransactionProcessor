@@ -91,6 +91,8 @@
 
         public static TransactionResponseCode TransactionResponseCodeDeclinedByOperator = TransactionResponseCode.TransactionDeclinedByOperator;
 
+        public static Decimal TransactionAmount = 1000.00m;
+
         public static OperatorResponse OperatorResponse =>
             new OperatorResponse
             {
@@ -386,7 +388,8 @@
                                                   TestData.TransactionReference,
                                                   TestData.EstateId,
                                                   TestData.MerchantId,
-                                                  TestData.DeviceIdentifier);
+                                                  TestData.DeviceIdentifier,
+                                                  TestData.TransactionAmount);
 
             transactionAggregate.AuthoriseTransactionLocally(TestData.AuthorisationCode, TestData.ResponseCode, TestData.ResponseMessage);
 
@@ -410,7 +413,8 @@
                                                   TestData.TransactionReference,
                                                   TestData.EstateId,
                                                   TestData.MerchantId,
-                                                  TestData.DeviceIdentifier);
+                                                  TestData.DeviceIdentifier,
+                                                  TestData.TransactionAmount);
 
             transactionAggregate.AuthoriseTransactionLocally(TestData.AuthorisationCode, TestData.ResponseCode, TestData.ResponseMessage);
 
@@ -427,7 +431,8 @@
                                                   TestData.TransactionReference,
                                                   TestData.EstateId,
                                                   TestData.MerchantId,
-                                                  TestData.DeviceIdentifier);
+                                                  TestData.DeviceIdentifier,
+                                                  TestData.TransactionAmount);
 
             transactionAggregate.DeclineTransactionLocally(TestData.GetResponseCodeAsString(transactionResponseCode),
                                                            TestData.GetResponseCodeMessage(transactionResponseCode));
@@ -445,7 +450,8 @@
                                                   TestData.TransactionReference,
                                                   TestData.EstateId,
                                                   TestData.MerchantId,
-                                                  TestData.DeviceIdentifier);
+                                                  TestData.DeviceIdentifier,
+                                                  TestData.TransactionAmount);
 
             transactionAggregate.DeclineTransaction(TestData.OperatorIdentifier1, 
                                                     TestData.DeclinedOperatorResponseCode,
@@ -476,7 +482,8 @@
                                                   TestData.TransactionReference,
                                                   TestData.EstateId,
                                                   TestData.MerchantId,
-                                                  TestData.DeviceIdentifier);
+                                                  TestData.DeviceIdentifier,
+                                                  TestData.TransactionAmount);
 
             return transactionAggregate;
         }

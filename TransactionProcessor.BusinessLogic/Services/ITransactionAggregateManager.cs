@@ -157,6 +157,7 @@
         /// <param name="estateId">The estate identifier.</param>
         /// <param name="merchantId">The merchant identifier.</param>
         /// <param name="deviceIdentifier">The device identifier.</param>
+        /// <param name="transactionAmount">The transaction amount.</param>
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns></returns>
         Task StartTransaction(Guid transactionId,
@@ -167,6 +168,7 @@
                               Guid estateId,
                               Guid merchantId,
                               String deviceIdentifier,
+                              Decimal? transactionAmount,
                               CancellationToken cancellationToken);
 
         #endregion

@@ -216,6 +216,7 @@ namespace TransactionProcessor.BusinessLogic.Tests.Services
                                                                TestData.EstateId,
                                                                TestData.MerchantId,
                                                                TestData.DeviceIdentifier,
+                                                               TestData.TransactionAmount,
                                                                CancellationToken.None);
         }
 

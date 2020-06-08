@@ -275,6 +275,7 @@
         /// <param name="estateId">The estate identifier.</param>
         /// <param name="merchantId">The merchant identifier.</param>
         /// <param name="deviceIdentifier">The device identifier.</param>
+        /// <param name="transactionAmount">The transaction amount.</param>
         /// <param name="cancellationToken">The cancellation token.</param>
         public async Task StartTransaction(Guid transactionId,
                                            DateTime transactionDateTime,
@@ -284,6 +285,7 @@
                                            Guid estateId,
                                            Guid merchantId,
                                            String deviceIdentifier,
+                                           Decimal? transactionAmount,
                                            CancellationToken cancellationToken)
         {
             IAggregateRepository<TransactionAggregate> transactionAggregateRepository =
@@ -291,7 +293,7 @@
 
             TransactionAggregate transactionAggregate = await transactionAggregateRepository.GetLatestVersion(transactionId, cancellationToken);
 
-            transactionAggregate.StartTransaction(transactionDateTime, transactionNumber, transactionType, transactionReference, estateId, merchantId, deviceIdentifier);
+            transactionAggregate.StartTransaction(transactionDateTime, transactionNumber, transactionType, transactionReference, estateId, merchantId, deviceIdentifier, transactionAmount);
 
             await transactionAggregateRepository.SaveChanges(transactionAggregate, cancellationToken);
         }
