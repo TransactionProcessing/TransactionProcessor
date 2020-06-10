@@ -166,6 +166,9 @@
             // Extract the transaction amount from the metadata
             Decimal transactionAmount = this.ExtractFieldFromMetadata<Decimal>("Amount", additionalTransactionMetadata);
 
+            (String responseMessage, TransactionResponseCode responseCode) validationResult =
+                await this.ValidateSaleTransaction(estateId, merchantId, deviceIdentifier, operatorIdentifier, transactionAmount, cancellationToken);
+
             await this.TransactionAggregateManager.StartTransaction(transactionId,
                                                                     transactionDateTime,
                                                                     transactionNumber,
@@ -176,10 +179,7 @@
                                                                     deviceIdentifier,
                                                                     transactionAmount,
                                                                     cancellationToken);
-
-            (String responseMessage, TransactionResponseCode responseCode) validationResult =
-                await this.ValidateSaleTransaction(estateId, merchantId, deviceIdentifier, operatorIdentifier, cancellationToken);
-
+            
             if (validationResult.responseCode == TransactionResponseCode.Success)
             {
                 // Record any additional request metadata
@@ -420,10 +420,10 @@
         /// <param name="merchantId">The merchant identifier.</param>
         /// <param name="deviceIdentifier">The device identifier.</param>
         /// <param name="operatorIdentifier">The operator identifier.</param>
+        /// <param name="transactionAmount">The transaction amount.</param>
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns></returns>
-        /// <exception cref="TransactionValidationException">
-        /// Merchant {merchant.MerchantName} has no valid Devices for this transaction.
+        /// <exception cref="TransactionValidationException">Merchant {merchant.MerchantName} has no valid Devices for this transaction.
         /// or
         /// Device Identifier {deviceIdentifier} not valid for Merchant {merchant.MerchantName}
         /// or
@@ -433,12 +433,12 @@
         /// or
         /// Merchant {merchant.MerchantName} has no operators defined
         /// or
-        /// Operator {operatorIdentifier} not configured for Merchant [{merchant.MerchantName}]
-        /// </exception>
+        /// Operator {operatorIdentifier} not configured for Merchant [{merchant.MerchantName}]</exception>
         private async Task<(String responseMessage, TransactionResponseCode responseCode)> ValidateSaleTransaction(Guid estateId,
                                                                                                                    Guid merchantId,
                                                                                                                    String deviceIdentifier,
                                                                                                                    String operatorIdentifier,
+                                                                                                                   Decimal transactionAmount,
                                                                                                                    CancellationToken cancellationToken)
         {
             try
@@ -494,6 +494,13 @@
                         throw new TransactionValidationException($"Operator {operatorIdentifier} not configured for Merchant [{merchant.MerchantName}]",
                                                                  TransactionResponseCode.OperatorNotValidForMerchant);
                     }
+                }
+
+                // Check the merchant has enough balance to perform the sale
+                if (merchant.AvailableBalance < transactionAmount)
+                {
+                    throw new TransactionValidationException($"Merchant [{merchant.MerchantName}] does not have enough credit available [{merchant.AvailableBalance}] to perform transaction amount [{transactionAmount}]",
+                                                             TransactionResponseCode.MerchantDoesNotHaveEnoughCredit);
                 }
 
                 // If we get here everything is good
