@@ -3,7 +3,9 @@
     using System;
     using System.Collections.Generic;
     using System.Data;
+    using System.IO;
     using System.Linq;
+    using System.Net;
     using System.Net.Http;
     using System.Threading;
     using System.Threading.Tasks;
@@ -15,6 +17,9 @@
     using Ductus.FluentDocker.Services.Extensions;
     using EstateManagement.Client;
     using EstateReporting.Database;
+    using EventStore.ClientAPI.Common.Log;
+    using EventStore.ClientAPI.Projections;
+    using EventStore.ClientAPI.SystemData;
     using global::Shared.Logger;
     using Microsoft.Data.SqlClient;
     using SecurityService.Client;
@@ -144,6 +149,45 @@
             return builtContainer;
         }
 
+        private async Task LoadEventStoreProjections()
+        {
+            //Start our Continous Projections - we might decide to do this at a different stage, but now lets try here
+            String projectionsFolder = "../../../projections/continuous";
+            IPAddress[] ipAddresses = Dns.GetHostAddresses("127.0.0.1");
+            IPEndPoint endpoint = new IPEndPoint(ipAddresses.First(), this.EventStoreHttpPort);
+
+            if (!String.IsNullOrWhiteSpace(projectionsFolder))
+            {
+                DirectoryInfo di = new DirectoryInfo(projectionsFolder);
+
+                if (di.Exists)
+                {
+                    FileInfo[] files = di.GetFiles();
+
+                    // TODO: possibly need to change timeout and logger here
+                    ProjectionsManager projectionManager = new ProjectionsManager(new ConsoleLogger(), endpoint, TimeSpan.FromSeconds(30));
+
+                    foreach (FileInfo file in files)
+                    {
+                        String projection = File.ReadAllText(file.FullName);
+                        String projectionName = file.Name.Replace(".js", String.Empty);
+
+                        try
+                        {
+                            Logger.LogInformation($"Creating projection [{projectionName}]");
+                            await projectionManager.CreateContinuousAsync(projectionName, projection, new UserCredentials("admin", "changeit")).ConfigureAwait(false);
+                        }
+                        catch (Exception e)
+                        {
+                            Logger.LogError(new Exception($"Projection [{projectionName}] error", e));
+                        }
+                    }
+                }
+            }
+
+            Logger.LogInformation("Loaded projections");
+        }
+
         #region Methods
 
         /// <summary>
@@ -185,9 +229,9 @@
                                                                                                                           }, traceFolder, null,
                                                                                                       this.SecurityServiceContainerName,
                                                                                                       this.EventStoreContainerName,
-                                                                                                      Setup.SqlServerContainerName,
+                                                                                                      (Setup.SqlServerContainerName,
                                                                                                       "sa",
-                                                                                                      "thisisalongpassword123!",
+                                                                                                      "thisisalongpassword123!"),
                                                                                                       ("serviceClient", "Secret1"));
 
             IContainerService securityServiceContainer = DockerHelper.SetupSecurityServiceContainer(this.SecurityServiceContainerName,
@@ -224,9 +268,9 @@
                                                                                                     traceFolder,
                                                                                                     dockerCredentials,
                                                                                                     this.SecurityServiceContainerName,
-                                                                                                    Setup.SqlServerContainerName,
+                                                                                                    (Setup.SqlServerContainerName,
                                                                                                     "sa",
-                                                                                                    "thisisalongpassword123!",
+                                                                                                    "thisisalongpassword123!"),
                                                                                                     ("serviceClient", "Secret1"),
                                                                                                     true);
 
@@ -267,6 +311,8 @@
             this.SecurityServiceClient = new SecurityServiceClient(SecurityServiceBaseAddressResolver, httpClient);
             this.TransactionProcessorClient = new TransactionProcessorClient(TransactionProcessorBaseAddressResolver, httpClient);
 
+            await this.LoadEventStoreProjections().ConfigureAwait(false);
+
             await PopulateSubscriptionServiceConfiguration().ConfigureAwait(false);
 
             IContainerService subscriptionServiceContainer = DockerHelper.SetupSubscriptionServiceContainer(this.SubscriptionServiceContainerName,
@@ -280,9 +326,9 @@
                                                                                                             traceFolder,
                                                                                                             dockerCredentials,
                                                                                                             this.SecurityServiceContainerName,
-                                                                                                            Setup.SqlServerContainerName,
+                                                                                                            (Setup.SqlServerContainerName,
                                                                                                             "sa",
-                                                                                                            "thisisalongpassword123!",
+                                                                                                            "thisisalongpassword123!"),
                                                                                                             this.TestId,
                                                                                                             ("serviceClient", "Secret1"),
                                                                                                             true);

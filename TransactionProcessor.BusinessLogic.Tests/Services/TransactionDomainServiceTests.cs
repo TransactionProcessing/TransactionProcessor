@@ -507,6 +507,45 @@ namespace TransactionProcessor.BusinessLogic.Tests.Services
         }
 
         [Fact]
+        public async Task TransactionDomainService_ProcessSaleTransaction_NotEnoughCredit_TransactionIsProcessed()
+        {
+            IConfigurationRoot configurationRoot = new ConfigurationBuilder().AddInMemoryCollection(TestData.DefaultAppSettings).Build();
+            ConfigurationReader.Initialise(configurationRoot);
+
+            Logger.Initialise(NullLogger.Instance);
+
+            Mock<ITransactionAggregateManager> transactionAggregateManager = new Mock<ITransactionAggregateManager>();
+            Mock<IEstateClient> estateClient = new Mock<IEstateClient>();
+            Mock<ISecurityServiceClient> securityServiceClient = new Mock<ISecurityServiceClient>();
+            Mock<IOperatorProxy> operatorProxy = new Mock<IOperatorProxy>();
+            Func<String, IOperatorProxy> operatorProxyResolver = (operatorName) => { return operatorProxy.Object; };
+
+            securityServiceClient.Setup(s => s.GetToken(It.IsAny<String>(), It.IsAny<String>(), It.IsAny<CancellationToken>())).ReturnsAsync(TestData.TokenResponse);
+            estateClient.Setup(e => e.GetEstate(It.IsAny<String>(), It.IsAny<Guid>(), It.IsAny<CancellationToken>())).ReturnsAsync(TestData.GetEstateResponseWithOperator1);
+            estateClient.Setup(e => e.GetMerchant(It.IsAny<String>(), It.IsAny<Guid>(), It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
+                        .ReturnsAsync(TestData.GetMerchantResponseWithZeroAvailableBalance);
+            transactionAggregateManager.Setup(t => t.GetAggregate(It.IsAny<Guid>(), It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
+                                       .ReturnsAsync(TestData.GetLocallyDeclinedTransactionAggregate(TransactionResponseCode.MerchantDoesNotHaveEnoughCredit));
+
+            TransactionDomainService transactionDomainService =
+                new TransactionDomainService(transactionAggregateManager.Object, estateClient.Object, securityServiceClient.Object,
+                                             operatorProxyResolver);
+
+            ProcessSaleTransactionResponse response = await transactionDomainService.ProcessSaleTransaction(TestData.TransactionId,
+                                                                                                            TestData.EstateId,
+                                                                                                            TestData.MerchantId,
+                                                                                                            TestData.TransactionDateTime,
+                                                                                                            TestData.TransactionNumber,
+                                                                                                            TestData.DeviceIdentifier,
+                                                                                                            TestData.OperatorIdentifier1,
+                                                                                                            TestData.CustomerEmailAddress,
+                                                                                                            TestData.AdditionalTransactionMetaData,
+                                                                                                            CancellationToken.None);
+
+            this.ValidateResponse(response, TransactionResponseCode.MerchantDoesNotHaveEnoughCredit);
+        }
+
+        [Fact]
         public async Task TransactionDomainService_ProcessSaleTransaction_InvalidMerchant_TransactionIsProcessed()
         {
             IConfigurationRoot configurationRoot = new ConfigurationBuilder().AddInMemoryCollection(TestData.DefaultAppSettings).Build();
