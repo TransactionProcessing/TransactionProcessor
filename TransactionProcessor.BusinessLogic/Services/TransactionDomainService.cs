@@ -529,6 +529,8 @@
                                                                                                    CancellationToken cancellationToken)
         {
             EstateResponse estate = null;
+            MerchantResponse merchant = null;
+
             // Validate the Estate Record is a valid estate
             try
             {
@@ -540,11 +542,11 @@
             }
 
             // get the merchant record and validate the device
-            // TODO: Token
-            MerchantResponse merchant = await this.GetMerchant(estateId, merchantId, cancellationToken);
-
-            // TODO: Remove this once GetMerchant returns correct response when merchant not found
-            if (merchant.MerchantName == null)
+            try
+            {
+                merchant = await this.GetMerchant(estateId, merchantId, cancellationToken);
+            }
+            catch (Exception ex) when (ex.InnerException != null && ex.InnerException.GetType() == typeof(KeyNotFoundException))
             {
                 throw new TransactionValidationException($"Merchant Id [{merchantId}] is not a valid merchant for estate [{estate.EstateName}]",
                                                          TransactionResponseCode.InvalidMerchantId);

@@ -232,7 +232,8 @@
                                                                                                       (Setup.SqlServerContainerName,
                                                                                                       "sa",
                                                                                                       "thisisalongpassword123!"),
-                                                                                                      ("serviceClient", "Secret1"));
+                                                                                                      ("serviceClient", "Secret1"),
+                                                                                                      true);
 
             IContainerService securityServiceContainer = DockerHelper.SetupSecurityServiceContainer(this.SecurityServiceContainerName,
                                                                                                     this.Logger,
