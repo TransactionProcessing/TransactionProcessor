@@ -9,7 +9,6 @@ namespace TransactionProcessor.BusinessLogic.Tests.Services
     using BusinessLogic.Services;
     using Models;
     using Moq;
-    using Shared.DomainDrivenDesign.EventStore;
     using Shared.EventStore.EventStore;
     using Shouldly;
     using Testing;
@@ -23,9 +22,7 @@ namespace TransactionProcessor.BusinessLogic.Tests.Services
         {
             Mock<IAggregateRepository<TransactionAggregate>> aggregateRepository = new Mock<IAggregateRepository<TransactionAggregate>>();
             aggregateRepository.Setup(a => a.GetLatestVersion(It.IsAny<Guid>(), It.IsAny<CancellationToken>())).ReturnsAsync(TestData.GetStartedTransactionAggregate());
-            Mock<IAggregateRepositoryManager> aggregateRepositoryManager = new Mock<IAggregateRepositoryManager>();
-            aggregateRepositoryManager.Setup(a => a.GetAggregateRepository<TransactionAggregate>(It.IsAny<Guid>())).Returns(aggregateRepository.Object);
-            TransactionAggregateManager transactionAggregateManager = new TransactionAggregateManager(aggregateRepositoryManager.Object);
+            TransactionAggregateManager transactionAggregateManager = new TransactionAggregateManager(aggregateRepository.Object);
             
             await transactionAggregateManager.AuthoriseTransaction(TestData.EstateId,
                                                              TestData.TransactionId,
@@ -41,9 +38,7 @@ namespace TransactionProcessor.BusinessLogic.Tests.Services
         {
             Mock<IAggregateRepository<TransactionAggregate>> aggregateRepository = new Mock<IAggregateRepository<TransactionAggregate>>();
             aggregateRepository.Setup(a => a.GetLatestVersion(It.IsAny<Guid>(), It.IsAny<CancellationToken>())).ReturnsAsync(TestData.GetStartedTransactionAggregate());
-            Mock<IAggregateRepositoryManager> aggregateRepositoryManager = new Mock<IAggregateRepositoryManager>();
-            aggregateRepositoryManager.Setup(a => a.GetAggregateRepository<TransactionAggregate>(It.IsAny<Guid>())).Returns(aggregateRepository.Object);
-            TransactionAggregateManager transactionAggregateManager = new TransactionAggregateManager(aggregateRepositoryManager.Object);
+            TransactionAggregateManager transactionAggregateManager = new TransactionAggregateManager(aggregateRepository.Object);
 
             await transactionAggregateManager.AuthoriseTransactionLocally(TestData.EstateId,
                                                                    TestData.TransactionId,
@@ -57,9 +52,7 @@ namespace TransactionProcessor.BusinessLogic.Tests.Services
         {
             Mock<IAggregateRepository<TransactionAggregate>> aggregateRepository = new Mock<IAggregateRepository<TransactionAggregate>>();
             aggregateRepository.Setup(a => a.GetLatestVersion(It.IsAny<Guid>(), It.IsAny<CancellationToken>())).ReturnsAsync(TestData.GetStartedTransactionAggregate());
-            Mock<IAggregateRepositoryManager> aggregateRepositoryManager = new Mock<IAggregateRepositoryManager>();
-            aggregateRepositoryManager.Setup(a => a.GetAggregateRepository<TransactionAggregate>(It.IsAny<Guid>())).Returns(aggregateRepository.Object);
-            TransactionAggregateManager transactionAggregateManager = new TransactionAggregateManager(aggregateRepositoryManager.Object);
+            TransactionAggregateManager transactionAggregateManager = new TransactionAggregateManager(aggregateRepository.Object);
 
             await transactionAggregateManager.DeclineTransaction(TestData.EstateId,
                                                                    TestData.TransactionId,
@@ -75,9 +68,7 @@ namespace TransactionProcessor.BusinessLogic.Tests.Services
         {
             Mock<IAggregateRepository<TransactionAggregate>> aggregateRepository = new Mock<IAggregateRepository<TransactionAggregate>>();
             aggregateRepository.Setup(a => a.GetLatestVersion(It.IsAny<Guid>(), It.IsAny<CancellationToken>())).ReturnsAsync(TestData.GetStartedTransactionAggregate());
-            Mock<IAggregateRepositoryManager> aggregateRepositoryManager = new Mock<IAggregateRepositoryManager>();
-            aggregateRepositoryManager.Setup(a => a.GetAggregateRepository<TransactionAggregate>(It.IsAny<Guid>())).Returns(aggregateRepository.Object);
-            TransactionAggregateManager transactionAggregateManager = new TransactionAggregateManager(aggregateRepositoryManager.Object);
+            TransactionAggregateManager transactionAggregateManager = new TransactionAggregateManager(aggregateRepository.Object);
 
             await transactionAggregateManager.DeclineTransactionLocally(TestData.EstateId,
                                                                           TestData.TransactionId,
@@ -90,9 +81,7 @@ namespace TransactionProcessor.BusinessLogic.Tests.Services
         {
             Mock<IAggregateRepository<TransactionAggregate>> aggregateRepository = new Mock<IAggregateRepository<TransactionAggregate>>();
             aggregateRepository.Setup(a => a.GetLatestVersion(It.IsAny<Guid>(), It.IsAny<CancellationToken>())).ReturnsAsync(TestData.GetCompletedTransactionAggregate);
-            Mock<IAggregateRepositoryManager> aggregateRepositoryManager = new Mock<IAggregateRepositoryManager>();
-            aggregateRepositoryManager.Setup(a => a.GetAggregateRepository<TransactionAggregate>(It.IsAny<Guid>())).Returns(aggregateRepository.Object);
-            TransactionAggregateManager transactionAggregateManager = new TransactionAggregateManager(aggregateRepositoryManager.Object);
+            TransactionAggregateManager transactionAggregateManager = new TransactionAggregateManager(aggregateRepository.Object);
 
             TransactionAggregate result = await transactionAggregateManager.GetAggregate(TestData.EstateId,
                                                                                          TestData.TransactionId,
@@ -106,9 +95,7 @@ namespace TransactionProcessor.BusinessLogic.Tests.Services
         {
             Mock<IAggregateRepository<TransactionAggregate>> aggregateRepository = new Mock<IAggregateRepository<TransactionAggregate>>();
             aggregateRepository.Setup(a => a.GetLatestVersion(It.IsAny<Guid>(), It.IsAny<CancellationToken>())).ReturnsAsync(TestData.GetStartedTransactionAggregate());
-            Mock<IAggregateRepositoryManager> aggregateRepositoryManager = new Mock<IAggregateRepositoryManager>();
-            aggregateRepositoryManager.Setup(a => a.GetAggregateRepository<TransactionAggregate>(It.IsAny<Guid>())).Returns(aggregateRepository.Object);
-            TransactionAggregateManager transactionAggregateManager = new TransactionAggregateManager(aggregateRepositoryManager.Object);
+            TransactionAggregateManager transactionAggregateManager = new TransactionAggregateManager(aggregateRepository.Object);
 
             await transactionAggregateManager.RecordAdditionalRequestData(TestData.EstateId,
                                                                         TestData.TransactionId,
@@ -122,9 +109,7 @@ namespace TransactionProcessor.BusinessLogic.Tests.Services
         {
             Mock<IAggregateRepository<TransactionAggregate>> aggregateRepository = new Mock<IAggregateRepository<TransactionAggregate>>();
             aggregateRepository.Setup(a => a.GetLatestVersion(It.IsAny<Guid>(), It.IsAny<CancellationToken>())).ReturnsAsync(TestData.GetStartedTransactionAggregate());
-            Mock<IAggregateRepositoryManager> aggregateRepositoryManager = new Mock<IAggregateRepositoryManager>();
-            aggregateRepositoryManager.Setup(a => a.GetAggregateRepository<TransactionAggregate>(It.IsAny<Guid>())).Returns(aggregateRepository.Object);
-            TransactionAggregateManager transactionAggregateManager = new TransactionAggregateManager(aggregateRepositoryManager.Object);
+            TransactionAggregateManager transactionAggregateManager = new TransactionAggregateManager(aggregateRepository.Object);
 
             await transactionAggregateManager.RecordAdditionalRequestData(TestData.EstateId,
                                                                           TestData.TransactionId,
@@ -138,9 +123,7 @@ namespace TransactionProcessor.BusinessLogic.Tests.Services
         {
             Mock<IAggregateRepository<TransactionAggregate>> aggregateRepository = new Mock<IAggregateRepository<TransactionAggregate>>();
             aggregateRepository.Setup(a => a.GetLatestVersion(It.IsAny<Guid>(), It.IsAny<CancellationToken>())).ReturnsAsync(TestData.GetStartedTransactionAggregate());
-            Mock<IAggregateRepositoryManager> aggregateRepositoryManager = new Mock<IAggregateRepositoryManager>();
-            aggregateRepositoryManager.Setup(a => a.GetAggregateRepository<TransactionAggregate>(It.IsAny<Guid>())).Returns(aggregateRepository.Object);
-            TransactionAggregateManager transactionAggregateManager = new TransactionAggregateManager(aggregateRepositoryManager.Object);
+            TransactionAggregateManager transactionAggregateManager = new TransactionAggregateManager(aggregateRepository.Object);
 
             await transactionAggregateManager.RecordAdditionalRequestData(TestData.EstateId,
                                                                           TestData.TransactionId,
@@ -154,9 +137,7 @@ namespace TransactionProcessor.BusinessLogic.Tests.Services
         {
             Mock<IAggregateRepository<TransactionAggregate>> aggregateRepository = new Mock<IAggregateRepository<TransactionAggregate>>();
             aggregateRepository.Setup(a => a.GetLatestVersion(It.IsAny<Guid>(), It.IsAny<CancellationToken>())).ReturnsAsync(TestData.GetStartedTransactionAggregate());
-            Mock<IAggregateRepositoryManager> aggregateRepositoryManager = new Mock<IAggregateRepositoryManager>();
-            aggregateRepositoryManager.Setup(a => a.GetAggregateRepository<TransactionAggregate>(It.IsAny<Guid>())).Returns(aggregateRepository.Object);
-            TransactionAggregateManager transactionAggregateManager = new TransactionAggregateManager(aggregateRepositoryManager.Object);
+            TransactionAggregateManager transactionAggregateManager = new TransactionAggregateManager(aggregateRepository.Object);
 
             await transactionAggregateManager.RecordAdditionalResponseData(TestData.EstateId,
                                                                           TestData.TransactionId,
@@ -170,9 +151,7 @@ namespace TransactionProcessor.BusinessLogic.Tests.Services
         {
             Mock<IAggregateRepository<TransactionAggregate>> aggregateRepository = new Mock<IAggregateRepository<TransactionAggregate>>();
             aggregateRepository.Setup(a => a.GetLatestVersion(It.IsAny<Guid>(), It.IsAny<CancellationToken>())).ReturnsAsync(TestData.GetStartedTransactionAggregate());
-            Mock<IAggregateRepositoryManager> aggregateRepositoryManager = new Mock<IAggregateRepositoryManager>();
-            aggregateRepositoryManager.Setup(a => a.GetAggregateRepository<TransactionAggregate>(It.IsAny<Guid>())).Returns(aggregateRepository.Object);
-            TransactionAggregateManager transactionAggregateManager = new TransactionAggregateManager(aggregateRepositoryManager.Object);
+            TransactionAggregateManager transactionAggregateManager = new TransactionAggregateManager(aggregateRepository.Object);
 
             await transactionAggregateManager.RecordAdditionalResponseData(TestData.EstateId,
                                                                            TestData.TransactionId,
@@ -186,9 +165,7 @@ namespace TransactionProcessor.BusinessLogic.Tests.Services
         {
             Mock<IAggregateRepository<TransactionAggregate>> aggregateRepository = new Mock<IAggregateRepository<TransactionAggregate>>();
             aggregateRepository.Setup(a => a.GetLatestVersion(It.IsAny<Guid>(), It.IsAny<CancellationToken>())).ReturnsAsync(TestData.GetStartedTransactionAggregate());
-            Mock<IAggregateRepositoryManager> aggregateRepositoryManager = new Mock<IAggregateRepositoryManager>();
-            aggregateRepositoryManager.Setup(a => a.GetAggregateRepository<TransactionAggregate>(It.IsAny<Guid>())).Returns(aggregateRepository.Object);
-            TransactionAggregateManager transactionAggregateManager = new TransactionAggregateManager(aggregateRepositoryManager.Object);
+            TransactionAggregateManager transactionAggregateManager = new TransactionAggregateManager(aggregateRepository.Object);
 
             await transactionAggregateManager.RecordAdditionalResponseData(TestData.EstateId,
                                                                            TestData.TransactionId,
@@ -204,9 +181,7 @@ namespace TransactionProcessor.BusinessLogic.Tests.Services
         {
             Mock<IAggregateRepository<TransactionAggregate>> aggregateRepository = new Mock<IAggregateRepository<TransactionAggregate>>();
             aggregateRepository.Setup(a => a.GetLatestVersion(It.IsAny<Guid>(), It.IsAny<CancellationToken>())).ReturnsAsync(TestData.GetEmptyTransactionAggregate);
-            Mock<IAggregateRepositoryManager> aggregateRepositoryManager = new Mock<IAggregateRepositoryManager>();
-            aggregateRepositoryManager.Setup(a => a.GetAggregateRepository<TransactionAggregate>(It.IsAny<Guid>())).Returns(aggregateRepository.Object);
-            TransactionAggregateManager transactionAggregateManager = new TransactionAggregateManager(aggregateRepositoryManager.Object);
+            TransactionAggregateManager transactionAggregateManager = new TransactionAggregateManager(aggregateRepository.Object);
 
             await transactionAggregateManager.StartTransaction(TestData.TransactionId,
                                                                TestData.TransactionDateTime,
@@ -225,9 +200,7 @@ namespace TransactionProcessor.BusinessLogic.Tests.Services
         {
             Mock<IAggregateRepository<TransactionAggregate>> aggregateRepository = new Mock<IAggregateRepository<TransactionAggregate>>();
             aggregateRepository.Setup(a => a.GetLatestVersion(It.IsAny<Guid>(), It.IsAny<CancellationToken>())).ReturnsAsync(TestData.GetLocallyAuthorisedTransactionAggregate);
-            Mock<IAggregateRepositoryManager> aggregateRepositoryManager = new Mock<IAggregateRepositoryManager>();
-            aggregateRepositoryManager.Setup(a => a.GetAggregateRepository<TransactionAggregate>(It.IsAny<Guid>())).Returns(aggregateRepository.Object);
-            TransactionAggregateManager transactionAggregateManager = new TransactionAggregateManager(aggregateRepositoryManager.Object);
+            TransactionAggregateManager transactionAggregateManager = new TransactionAggregateManager(aggregateRepository.Object);
 
             await transactionAggregateManager.CompleteTransaction(TestData.EstateId,
                                                                   TestData.TransactionId,
@@ -239,9 +212,7 @@ namespace TransactionProcessor.BusinessLogic.Tests.Services
         {
             Mock<IAggregateRepository<TransactionAggregate>> aggregateRepository = new Mock<IAggregateRepository<TransactionAggregate>>();
             aggregateRepository.Setup(a => a.GetLatestVersion(It.IsAny<Guid>(), It.IsAny<CancellationToken>())).ReturnsAsync(TestData.GetCompletedTransactionAggregate);
-            Mock<IAggregateRepositoryManager> aggregateRepositoryManager = new Mock<IAggregateRepositoryManager>();
-            aggregateRepositoryManager.Setup(a => a.GetAggregateRepository<TransactionAggregate>(It.IsAny<Guid>())).Returns(aggregateRepository.Object);
-            TransactionAggregateManager transactionAggregateManager = new TransactionAggregateManager(aggregateRepositoryManager.Object);
+            TransactionAggregateManager transactionAggregateManager = new TransactionAggregateManager(aggregateRepository.Object);
 
             await transactionAggregateManager.RequestEmailReceipt(TestData.EstateId,
                                                                   TestData.TransactionId,

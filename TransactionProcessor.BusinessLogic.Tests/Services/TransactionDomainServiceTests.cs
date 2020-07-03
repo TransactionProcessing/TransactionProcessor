@@ -16,7 +16,6 @@ namespace TransactionProcessor.BusinessLogic.Tests.Services
     using OperatorInterfaces;
     using SecurityService.Client;
     using SecurityService.DataTransferObjects.Responses;
-    using Shared.DomainDrivenDesign.EventStore;
     using Shared.EventStore.EventStore;
     using Shared.General;
     using Shared.Logger;

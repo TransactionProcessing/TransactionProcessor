@@ -7,7 +7,6 @@
     using Microsoft.EntityFrameworkCore.Internal;
     using Models;
     using OperatorInterfaces;
-    using Shared.DomainDrivenDesign.EventStore;
     using Shared.EventStore.EventStore;
     using TransactionAggregate;
 
@@ -20,21 +19,21 @@
         #region Fields
 
         /// <summary>
-        /// The aggregate repository manager
+        /// The transaction aggregate repository
         /// </summary>
-        private readonly IAggregateRepositoryManager AggregateRepositoryManager;
+        private readonly IAggregateRepository<TransactionAggregate> TransactionAggregateRepository;
 
         #endregion
 
         #region Constructors
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="TransactionAggregateManager"/> class.
+        /// Initializes a new instance of the <see cref="TransactionAggregateManager" /> class.
         /// </summary>
-        /// <param name="aggregateRepositoryManager">The aggregate repository manager.</param>
-        public TransactionAggregateManager(IAggregateRepositoryManager aggregateRepositoryManager)
+        /// <param name="transactionAggregateRepository">The transaction aggregate repository.</param>
+        public TransactionAggregateManager(IAggregateRepository<TransactionAggregate> transactionAggregateRepository)
         {
-            this.AggregateRepositoryManager = aggregateRepositoryManager;
+            this.TransactionAggregateRepository = transactionAggregateRepository;
         }
 
         #endregion
@@ -60,10 +59,7 @@
                                                String responseMessage,
                                                CancellationToken cancellationToken)
         {
-            IAggregateRepository<TransactionAggregate> transactionAggregateRepository =
-                this.AggregateRepositoryManager.GetAggregateRepository<TransactionAggregate>(estateId);
-
-            TransactionAggregate transactionAggregate = await transactionAggregateRepository.GetLatestVersion(transactionId, cancellationToken);
+            TransactionAggregate transactionAggregate = await this.TransactionAggregateRepository.GetLatestVersion(transactionId, cancellationToken);
 
             transactionAggregate.AuthoriseTransaction(operatorIdentifier,
                                                       operatorResponse.AuthorisationCode,
@@ -73,7 +69,7 @@
                                                       ((Int32)transactionResponseCode).ToString().PadLeft(4, '0'),
                                                       responseMessage);
 
-            await transactionAggregateRepository.SaveChanges(transactionAggregate, cancellationToken);
+            await this.TransactionAggregateRepository.SaveChanges(transactionAggregate, cancellationToken);
         }
 
         /// <summary>
@@ -90,16 +86,13 @@
                                                       (String responseMessage, TransactionResponseCode responseCode) validationResult,
                                                       CancellationToken cancellationToken)
         {
-            IAggregateRepository<TransactionAggregate> transactionAggregateRepository =
-                this.AggregateRepositoryManager.GetAggregateRepository<TransactionAggregate>(estateId);
-
-            TransactionAggregate transactionAggregate = await transactionAggregateRepository.GetLatestVersion(transactionId, cancellationToken);
+            TransactionAggregate transactionAggregate = await this.TransactionAggregateRepository.GetLatestVersion(transactionId, cancellationToken);
 
             transactionAggregate.AuthoriseTransactionLocally(authorisationCode,
                                                              ((Int32)validationResult.responseCode).ToString().PadLeft(4, '0'),
                                                              validationResult.responseMessage);
 
-            await transactionAggregateRepository.SaveChanges(transactionAggregate, cancellationToken);
+            await this.TransactionAggregateRepository.SaveChanges(transactionAggregate, cancellationToken);
         }
 
         /// <summary>
@@ -112,14 +105,11 @@
                                               Guid transactionId,
                                               CancellationToken cancellationToken)
         {
-            IAggregateRepository<TransactionAggregate> transactionAggregateRepository =
-                this.AggregateRepositoryManager.GetAggregateRepository<TransactionAggregate>(estateId);
-
-            TransactionAggregate transactionAggregate = await transactionAggregateRepository.GetLatestVersion(transactionId, cancellationToken);
+            TransactionAggregate transactionAggregate = await this.TransactionAggregateRepository.GetLatestVersion(transactionId, cancellationToken);
 
             transactionAggregate.CompleteTransaction();
 
-            await transactionAggregateRepository.SaveChanges(transactionAggregate, cancellationToken);
+            await this.TransactionAggregateRepository.SaveChanges(transactionAggregate, cancellationToken);
         }
 
         /// <summary>
@@ -139,10 +129,7 @@
                                              String responseMessage,
                                              CancellationToken cancellationToken)
         {
-            IAggregateRepository<TransactionAggregate> transactionAggregateRepository =
-                this.AggregateRepositoryManager.GetAggregateRepository<TransactionAggregate>(estateId);
-
-            TransactionAggregate transactionAggregate = await transactionAggregateRepository.GetLatestVersion(transactionId, cancellationToken);
+            TransactionAggregate transactionAggregate = await this.TransactionAggregateRepository.GetLatestVersion(transactionId, cancellationToken);
 
             transactionAggregate.DeclineTransaction(operatorIdentifier,
                                                     operatorResponse.ResponseCode,
@@ -150,7 +137,7 @@
                                                     ((Int32)transactionResponseCode).ToString().PadLeft(4, '0'),
                                                     responseMessage);
 
-            await transactionAggregateRepository.SaveChanges(transactionAggregate, cancellationToken);
+            await this.TransactionAggregateRepository.SaveChanges(transactionAggregate, cancellationToken);
         }
 
         /// <summary>
@@ -165,14 +152,11 @@
                                                     (String responseMessage, TransactionResponseCode responseCode) validationResult,
                                                     CancellationToken cancellationToken)
         {
-            IAggregateRepository<TransactionAggregate> transactionAggregateRepository =
-                this.AggregateRepositoryManager.GetAggregateRepository<TransactionAggregate>(estateId);
-
-            TransactionAggregate transactionAggregate = await transactionAggregateRepository.GetLatestVersion(transactionId, cancellationToken);
+            TransactionAggregate transactionAggregate = await this.TransactionAggregateRepository.GetLatestVersion(transactionId, cancellationToken);
 
             transactionAggregate.DeclineTransactionLocally(((Int32)validationResult.responseCode).ToString().PadLeft(4, '0'), validationResult.responseMessage);
 
-            await transactionAggregateRepository.SaveChanges(transactionAggregate, cancellationToken);
+            await this.TransactionAggregateRepository.SaveChanges(transactionAggregate, cancellationToken);
         }
 
         /// <summary>
@@ -186,10 +170,7 @@
                                                              Guid transactionId,
                                                              CancellationToken cancellationToken)
         {
-            IAggregateRepository<TransactionAggregate> transactionAggregateRepository =
-                this.AggregateRepositoryManager.GetAggregateRepository<TransactionAggregate>(estateId);
-
-            TransactionAggregate transactionAggregate = await transactionAggregateRepository.GetLatestVersion(transactionId, cancellationToken);
+            TransactionAggregate transactionAggregate = await this.TransactionAggregateRepository.GetLatestVersion(transactionId, cancellationToken);
             return transactionAggregate;
         }
 
@@ -209,14 +190,11 @@
         {
             if (additionalTransactionRequestMetadata != null && additionalTransactionRequestMetadata.Any())
             {
-                IAggregateRepository<TransactionAggregate> transactionAggregateRepository =
-                    this.AggregateRepositoryManager.GetAggregateRepository<TransactionAggregate>(estateId);
-
-                TransactionAggregate transactionAggregate = await transactionAggregateRepository.GetLatestVersion(transactionId, cancellationToken);
+                TransactionAggregate transactionAggregate = await this.TransactionAggregateRepository.GetLatestVersion(transactionId, cancellationToken);
 
                 transactionAggregate.RecordAdditionalRequestData(operatorIdentifier, additionalTransactionRequestMetadata);
 
-                await transactionAggregateRepository.SaveChanges(transactionAggregate, cancellationToken);
+                await this.TransactionAggregateRepository.SaveChanges(transactionAggregate, cancellationToken);
             }
         }
 
@@ -235,14 +213,11 @@
         {
             if (additionalTransactionResponseMetadata != null && additionalTransactionResponseMetadata.Any())
             {
-                IAggregateRepository<TransactionAggregate> transactionAggregateRepository =
-                    this.AggregateRepositoryManager.GetAggregateRepository<TransactionAggregate>(estateId);
-
-                TransactionAggregate transactionAggregate = await transactionAggregateRepository.GetLatestVersion(transactionId, cancellationToken);
+                TransactionAggregate transactionAggregate = await this.TransactionAggregateRepository.GetLatestVersion(transactionId, cancellationToken);
 
                 transactionAggregate.RecordAdditionalResponseData(operatorIdentifier, additionalTransactionResponseMetadata);
 
-                await transactionAggregateRepository.SaveChanges(transactionAggregate, cancellationToken);
+                await this.TransactionAggregateRepository.SaveChanges(transactionAggregate, cancellationToken);
             }
         }
 
@@ -254,14 +229,11 @@
         /// <param name="cancellationToken">The cancellation token.</param>
         public async Task RequestEmailReceipt(Guid estateId, Guid transactionId, String customerEmailAddress, CancellationToken cancellationToken)
         {
-            IAggregateRepository<TransactionAggregate> transactionAggregateRepository =
-                this.AggregateRepositoryManager.GetAggregateRepository<TransactionAggregate>(estateId);
-
-            TransactionAggregate transactionAggregate = await transactionAggregateRepository.GetLatestVersion(transactionId, cancellationToken);
+            TransactionAggregate transactionAggregate = await this.TransactionAggregateRepository.GetLatestVersion(transactionId, cancellationToken);
 
             transactionAggregate.RequestEmailReceipt(customerEmailAddress);
 
-            await transactionAggregateRepository.SaveChanges(transactionAggregate, cancellationToken);
+            await this.TransactionAggregateRepository.SaveChanges(transactionAggregate, cancellationToken);
         }
 
         /// <summary>
@@ -288,14 +260,11 @@
                                            Decimal? transactionAmount,
                                            CancellationToken cancellationToken)
         {
-            IAggregateRepository<TransactionAggregate> transactionAggregateRepository =
-                this.AggregateRepositoryManager.GetAggregateRepository<TransactionAggregate>(estateId);
-
-            TransactionAggregate transactionAggregate = await transactionAggregateRepository.GetLatestVersion(transactionId, cancellationToken);
+            TransactionAggregate transactionAggregate = await this.TransactionAggregateRepository.GetLatestVersion(transactionId, cancellationToken);
 
             transactionAggregate.StartTransaction(transactionDateTime, transactionNumber, transactionType, transactionReference, estateId, merchantId, deviceIdentifier, transactionAmount);
 
-            await transactionAggregateRepository.SaveChanges(transactionAggregate, cancellationToken);
+            await this.TransactionAggregateRepository.SaveChanges(transactionAggregate, cancellationToken);
         }
 
         #endregion
