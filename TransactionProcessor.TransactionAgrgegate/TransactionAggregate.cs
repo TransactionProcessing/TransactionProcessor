@@ -6,14 +6,14 @@
     using System.Text.RegularExpressions;
     using Models;
     using Shared.DomainDrivenDesign.EventSourcing;
-    using Shared.DomainDrivenDesign.EventStore;
+    using Shared.EventStore.EventStore;
     using Shared.General;
     using Transaction.DomainEvents;
 
     /// <summary>
     /// 
     /// </summary>
-    /// <seealso cref="Shared.DomainDrivenDesign.EventStore.Aggregate" />
+    /// <seealso cref="Aggregate" />
     public class TransactionAggregate : Aggregate
     {
         #region Fields

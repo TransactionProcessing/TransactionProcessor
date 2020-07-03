@@ -23,7 +23,7 @@ namespace TransactionProcessor
     using BusinessLogic.Services;
     using Common;
     using EstateManagement.Client;
-    using EventStore.ClientAPI;
+    using EventStore.Client;
     using MediatR;
     using Microsoft.AspNetCore.Authentication.JwtBearer;
     using Microsoft.AspNetCore.Mvc.ApiExplorer;
@@ -36,7 +36,6 @@ namespace TransactionProcessor
     using NLog.Extensions.Logging;
     using SecurityService.Client;
     using Shared.DomainDrivenDesign.CommandHandling;
-    using Shared.DomainDrivenDesign.EventStore;
     using Shared.EntityFramework.ConnectionStringConfiguration;
     using Shared.EventStore.EventStore;
     using Shared.Extensions;
@@ -77,28 +76,7 @@ namespace TransactionProcessor
             Int32 httpPort = Startup.Configuration.GetValue<Int32>("EventStoreSettings:HttpPort");
 
             Boolean useConnectionStringConfig = Boolean.Parse(ConfigurationReader.GetValue("AppSettings", "UseConnectionStringConfig"));
-            EventStoreConnectionSettings settings = EventStoreConnectionSettings.Create(connString, connectionName, httpPort);
-            services.AddSingleton(settings);
-
-            services.AddSingleton<Func<EventStoreConnectionSettings, IEventStoreConnection>>(cont => (connectionSettings) =>
-                                                                                                     {
-                                                                                                         return EventStoreConnection.Create(connectionSettings
-                                                                                                                                                .ConnectionString);
-                                                                                                     });
-
-            services.AddSingleton<Func<String, IEventStoreContext>>(cont => (connectionString) =>
-                                                                            {
-                                                                                EventStoreConnectionSettings connectionSettings =
-                                                                                    EventStoreConnectionSettings.Create(connectionString, connectionName, httpPort);
-
-                                                                                Func<EventStoreConnectionSettings, IEventStoreConnection> eventStoreConnectionFunc = cont.GetService<Func<EventStoreConnectionSettings, IEventStoreConnection>>();
-
-                                                                                IEventStoreContext context =
-                                                                                    new EventStoreContext(connectionSettings, eventStoreConnectionFunc);
-
-                                                                                return context;
-                                                                            });
-
+            
             SafaricomConfiguration safaricomConfiguration = new SafaricomConfiguration();
 
             if (Startup.Configuration != null)
@@ -118,32 +96,63 @@ namespace TransactionProcessor
                 String connectionStringConfigurationConnString = ConfigurationReader.GetConnectionString("ConnectionStringConfiguration");
                 services.AddSingleton<IConnectionStringConfigurationRepository, ConnectionStringConfigurationRepository>();
                 services.AddTransient<ConnectionStringConfigurationContext>(c =>
-                                                                            {
-                                                                                return new ConnectionStringConfigurationContext(connectionStringConfigurationConnString);
-                                                                            });
+                {
+                    return new ConnectionStringConfigurationContext(connectionStringConfigurationConnString);
+                });
 
-                services.AddSingleton<IEventStoreContextManager, EventStoreContextManager>(c =>
-                                                                                           {
-                                                                                               Func<String, IEventStoreContext> contextFunc = c.GetService<Func<String, IEventStoreContext>>();
-                                                                                               IConnectionStringConfigurationRepository connectionStringConfigurationRepository =
-                                                                                                   c.GetService<IConnectionStringConfigurationRepository>();
-                                                                                               return new EventStoreContextManager(contextFunc,
-                                                                                                                                   connectionStringConfigurationRepository);
-                                                                                           });
+                // TODO: Read this from a the database and set
             }
             else
             {
-                services.AddSingleton<IEventStoreContextManager, EventStoreContextManager>(c =>
-                                                                                           {
-                                                                                               IEventStoreContext context = c.GetService<IEventStoreContext>();
-                                                                                               return new EventStoreContextManager(context);
-                                                                                           });
-                //services.AddSingleton<IConnectionStringConfigurationRepository, ConfigurationReaderConnectionStringRepository>();
+                services.AddEventStoreClient((settings) =>
+                {
+                    settings.CreateHttpMessageHandler = () => new SocketsHttpHandler
+                    {
+                        SslOptions =
+                                                                                               {
+                                                                                                   RemoteCertificateValidationCallback = (sender,
+                                                                                                                                          certificate,
+                                                                                                                                          chain,
+                                                                                                                                          errors) => true,
+                                                                                               }
+                    };
+                    settings.ConnectionName = Startup.Configuration.GetValue<String>("EventStoreSettings:ConnectionName");
+                    settings.ConnectivitySettings = new EventStoreClientConnectivitySettings
+                    {
+                        Address =
+                                                            new Uri(Startup.Configuration.GetValue<String>("EventStoreSettings:ConnectionString")),
+                    };
+                    settings.DefaultCredentials = new UserCredentials(Startup.Configuration.GetValue<String>("EventStoreSettings:UserName"),
+                                                                       Startup.Configuration.GetValue<String>("EventStoreSettings:Password"));
+                });
+
+
+
+                services.AddEventStoreProjectionManagerClient((settings) =>
+                {
+                    settings.CreateHttpMessageHandler = () => new SocketsHttpHandler
+                    {
+                        SslOptions =
+                                                                                                                {
+                                                                                                                    RemoteCertificateValidationCallback = (sender,
+                                                                                                                                                           certificate,
+                                                                                                                                                           chain,
+                                                                                                                                                           errors) => true,
+                                                                                                                }
+                    };
+                    settings.ConnectionName = Startup.Configuration.GetValue<String>("EventStoreSettings:ConnectionName");
+                    settings.ConnectivitySettings = new EventStoreClientConnectivitySettings
+                    {
+                        Address =
+                                                            new Uri(Startup.Configuration.GetValue<String>("EventStoreSettings:ConnectionString"))
+                    };
+                    settings.DefaultCredentials = new UserCredentials(Startup.Configuration.GetValue<String>("EventStoreSettings:UserName"),
+                                                                      Startup.Configuration.GetValue<String>("EventStoreSettings:Password"));
+                });
             }
 
             services.AddTransient<IEventStoreContext, EventStoreContext>();
             services.AddSingleton<ITransactionAggregateManager, TransactionAggregateManager>();
-            services.AddSingleton<IAggregateRepositoryManager, AggregateRepositoryManager>();
             services.AddSingleton<IAggregateRepository<TransactionAggregate.TransactionAggregate>, AggregateRepository<TransactionAggregate.TransactionAggregate>>();
             services.AddSingleton<ITransactionDomainService, TransactionDomainService>();
             services.AddSingleton<Factories.IModelFactory, Factories.ModelFactory>();
