@@ -16,6 +16,21 @@
         #region Methods
 
         /// <summary>
+        /// Adds the product details.
+        /// </summary>
+        /// <param name="estateId">The estate identifier.</param>
+        /// <param name="transactionId">The transaction identifier.</param>
+        /// <param name="contractId">The contract identifier.</param>
+        /// <param name="productId">The product identifier.</param>
+        /// <param name="cancellationToken">The cancellation token.</param>
+        /// <returns></returns>
+        Task AddProductDetails(Guid estateId,
+                               Guid transactionId,
+                               Guid contractId,
+                               Guid productId,
+                               CancellationToken cancellationToken);
+
+        /// <summary>
         /// Authorises the transaction.
         /// </summary>
         /// <param name="estateId">The estate identifier.</param>
@@ -58,19 +73,6 @@
         /// <returns></returns>
         Task CompleteTransaction(Guid estateId,
                                  Guid transactionId,
-                                 CancellationToken cancellationToken);
-
-        /// <summary>
-        /// Requests the email receipt.
-        /// </summary>
-        /// <param name="estateId">The estate identifier.</param>
-        /// <param name="transactionId">The transaction identifier.</param>
-        /// <param name="customerEmailAddress">The customer email address.</param>
-        /// <param name="cancellationToken">The cancellation token.</param>
-        /// <returns></returns>
-        Task RequestEmailReceipt(Guid estateId,
-                                 Guid transactionId,
-                                 String customerEmailAddress,
                                  CancellationToken cancellationToken);
 
         /// <summary>
@@ -145,6 +147,19 @@
                                           String operatorIdentifier,
                                           Dictionary<String, String> additionalTransactionResponseMetadata,
                                           CancellationToken cancellationToken);
+
+        /// <summary>
+        /// Requests the email receipt.
+        /// </summary>
+        /// <param name="estateId">The estate identifier.</param>
+        /// <param name="transactionId">The transaction identifier.</param>
+        /// <param name="customerEmailAddress">The customer email address.</param>
+        /// <param name="cancellationToken">The cancellation token.</param>
+        /// <returns></returns>
+        Task RequestEmailReceipt(Guid estateId,
+                                 Guid transactionId,
+                                 String customerEmailAddress,
+                                 CancellationToken cancellationToken);
 
         /// <summary>
         /// Starts the transaction.

@@ -1,6 +1,7 @@
 ﻿namespace TransactionProcessor.Transaction.DomainEvents
 {
     using System;
+    using System.Diagnostics.CodeAnalysis;
     using Newtonsoft.Json;
     using Shared.DomainDrivenDesign.EventSourcing;
 
@@ -12,6 +13,15 @@
     public class ProductDetailsAddedToTransactionEvent : DomainEvent
     {
         #region Constructors
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="ProductDetailsAddedToTransactionEvent"/> class.
+        /// </summary>
+        [ExcludeFromCodeCoverage]
+        public ProductDetailsAddedToTransactionEvent()
+        {
+
+        }
 
         /// <summary>
         /// Initializes a new instance of the <see cref="ProductDetailsAddedToTransactionEvent" /> class.

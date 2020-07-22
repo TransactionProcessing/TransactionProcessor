@@ -34,7 +34,9 @@ namespace TransactionProcessor.BusinessLogic.Tests.Commands
                                                                                                                TestData.TransactionNumber,
                                                                                                                TestData.OperatorIdentifier1,
                                                                                                                TestData.CustomerEmailAddress,
-                                                                                                               TestData.AdditionalTransactionMetaData);
+                                                                                                               TestData.AdditionalTransactionMetaData,
+                                                                                                               TestData.ContractId,
+                                                                                                               TestData.ProductId);
 
             processSaleTransactionRequest.ShouldNotBeNull();
             processSaleTransactionRequest.EstateId.ShouldBe(TestData.EstateId);
@@ -48,6 +50,8 @@ namespace TransactionProcessor.BusinessLogic.Tests.Commands
             processSaleTransactionRequest.CustomerEmailAddress.ShouldBe(TestData.CustomerEmailAddress);
             processSaleTransactionRequest.AdditionalTransactionMetadata.ShouldNotBeNull();
             processSaleTransactionRequest.AdditionalTransactionMetadata.Count.ShouldBe(TestData.AdditionalTransactionMetaData.Count);
+            processSaleTransactionRequest.ContractId.ShouldBe(TestData.ContractId);
+            processSaleTransactionRequest.ProductId.ShouldBe(TestData.ProductId);
         }
     }
 }

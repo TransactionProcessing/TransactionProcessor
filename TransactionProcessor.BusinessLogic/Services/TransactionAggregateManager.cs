@@ -41,6 +41,27 @@
         #region Methods
 
         /// <summary>
+        /// Adds the product details.
+        /// </summary>
+        /// <param name="estateId">The estate identifier.</param>
+        /// <param name="transactionId">The transaction identifier.</param>
+        /// <param name="contractId">The contract identifier.</param>
+        /// <param name="productId">The product identifier.</param>
+        /// <param name="cancellationToken">The cancellation token.</param>
+        public async Task AddProductDetails(Guid estateId,
+                                            Guid transactionId,
+                                            Guid contractId,
+                                            Guid productId,
+                                            CancellationToken cancellationToken)
+        {
+            TransactionAggregate transactionAggregate = await this.TransactionAggregateRepository.GetLatestVersion(transactionId, cancellationToken);
+
+            transactionAggregate.AddProductDetails(contractId, productId);
+
+            await this.TransactionAggregateRepository.SaveChanges(transactionAggregate, cancellationToken);
+        }
+
+        /// <summary>
         /// Authorises the transaction.
         /// </summary>
         /// <param name="estateId">The estate identifier.</param>
@@ -227,7 +248,10 @@
         /// <param name="estateId">The estate identifier.</param>
         /// <param name="transactionId">The transaction identifier.</param>
         /// <param name="cancellationToken">The cancellation token.</param>
-        public async Task RequestEmailReceipt(Guid estateId, Guid transactionId, String customerEmailAddress, CancellationToken cancellationToken)
+        public async Task RequestEmailReceipt(Guid estateId,
+                                              Guid transactionId,
+                                              String customerEmailAddress,
+                                              CancellationToken cancellationToken)
         {
             TransactionAggregate transactionAggregate = await this.TransactionAggregateRepository.GetLatestVersion(transactionId, cancellationToken);
 
@@ -262,7 +286,14 @@
         {
             TransactionAggregate transactionAggregate = await this.TransactionAggregateRepository.GetLatestVersion(transactionId, cancellationToken);
 
-            transactionAggregate.StartTransaction(transactionDateTime, transactionNumber, transactionType, transactionReference, estateId, merchantId, deviceIdentifier, transactionAmount);
+            transactionAggregate.StartTransaction(transactionDateTime,
+                                                  transactionNumber,
+                                                  transactionType,
+                                                  transactionReference,
+                                                  estateId,
+                                                  merchantId,
+                                                  deviceIdentifier,
+                                                  transactionAmount);
 
             await this.TransactionAggregateRepository.SaveChanges(transactionAggregate, cancellationToken);
         }

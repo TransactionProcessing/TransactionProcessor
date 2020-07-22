@@ -292,6 +292,8 @@ namespace TransactionProcessor.BusinessLogic.Tests.Services
                                                                                                             TestData.OperatorIdentifier1,
                                                                                                             TestData.CustomerEmailAddress,
                                                                                                             TestData.AdditionalTransactionMetaData,
+                                                                                                            TestData.ContractId,
+                                                                                                            TestData.ProductId,
                                                                                                             CancellationToken.None);
 
             this.ValidateResponse(response, TransactionResponseCode.Success);
@@ -343,6 +345,8 @@ namespace TransactionProcessor.BusinessLogic.Tests.Services
                                                                                                             TestData.OperatorIdentifier1,
                                                                                                             TestData.CustomerEmailAddress,
                                                                                                             TestData.AdditionalTransactionMetaData,
+                                                                                                            TestData.ContractId,
+                                                                                                            TestData.ProductId,
                                                                                                             CancellationToken.None);
 
             this.ValidateResponse(response, TransactionResponseCode.TransactionDeclinedByOperator);
@@ -382,6 +386,8 @@ namespace TransactionProcessor.BusinessLogic.Tests.Services
                                                                                                             TestData.OperatorIdentifier1,
                                                                                                             TestData.CustomerEmailAddress,
                                                                                                             TestData.AdditionalTransactionMetaData,
+                                                                                                            TestData.ContractId,
+                                                                                                            TestData.ProductId,
                                                                                                             CancellationToken.None);
 
             this.ValidateResponse(response, TransactionResponseCode.NoValidDevices);
@@ -422,6 +428,8 @@ namespace TransactionProcessor.BusinessLogic.Tests.Services
                                                                                                             TestData.OperatorIdentifier1,
                                                                                                             TestData.CustomerEmailAddress,
                                                                                                             TestData.AdditionalTransactionMetaData,
+                                                                                                            TestData.ContractId,
+                                                                                                            TestData.ProductId,
                                                                                                             CancellationToken.None);
 
             this.ValidateResponse(response, TransactionResponseCode.NoValidDevices);
@@ -461,6 +469,8 @@ namespace TransactionProcessor.BusinessLogic.Tests.Services
                                                                                                             TestData.OperatorIdentifier1,
                                                                                                             TestData.CustomerEmailAddress,
                                                                                                             TestData.AdditionalTransactionMetaData,
+                                                                                                            TestData.ContractId,
+                                                                                                            TestData.ProductId,
                                                                                                             CancellationToken.None);
 
             this.ValidateResponse(response, TransactionResponseCode.InvalidDeviceIdentifier);
@@ -500,6 +510,8 @@ namespace TransactionProcessor.BusinessLogic.Tests.Services
                                                                                                             TestData.OperatorIdentifier1,
                                                                                                             TestData.CustomerEmailAddress,
                                                                                                             TestData.AdditionalTransactionMetaData,
+                                                                                                            TestData.ContractId,
+                                                                                                            TestData.ProductId,
                                                                                                             CancellationToken.None);
 
             this.ValidateResponse(response, TransactionResponseCode.InvalidEstateId);
@@ -539,6 +551,8 @@ namespace TransactionProcessor.BusinessLogic.Tests.Services
                                                                                                             TestData.OperatorIdentifier1,
                                                                                                             TestData.CustomerEmailAddress,
                                                                                                             TestData.AdditionalTransactionMetaData,
+                                                                                                            TestData.ContractId,
+                                                                                                            TestData.ProductId,
                                                                                                             CancellationToken.None);
 
             this.ValidateResponse(response, TransactionResponseCode.MerchantDoesNotHaveEnoughCredit);
@@ -560,8 +574,7 @@ namespace TransactionProcessor.BusinessLogic.Tests.Services
 
             securityServiceClient.Setup(s => s.GetToken(It.IsAny<String>(), It.IsAny<String>(), It.IsAny<CancellationToken>())).ReturnsAsync(TestData.TokenResponse);
             estateClient.Setup(e => e.GetEstate(It.IsAny<String>(), It.IsAny<Guid>(), It.IsAny<CancellationToken>())).ReturnsAsync(TestData.GetEstateResponseWithOperator1);
-            estateClient.Setup(e => e.GetMerchant(It.IsAny<String>(), It.IsAny<Guid>(), It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
-                        .ReturnsAsync(TestData.GetEmptyMerchantResponse);
+            estateClient.Setup(e => e.GetMerchant(It.IsAny<String>(), It.IsAny<Guid>(), It.IsAny<Guid>(), It.IsAny<CancellationToken>())).ThrowsAsync(new Exception("Exception", new KeyNotFoundException("Invalid Merchant")));
             transactionAggregateManager.Setup(t => t.GetAggregate(It.IsAny<Guid>(), It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
                                        .ReturnsAsync(TestData.GetLocallyDeclinedTransactionAggregate(TransactionResponseCode.InvalidMerchantId));
 
@@ -578,6 +591,8 @@ namespace TransactionProcessor.BusinessLogic.Tests.Services
                                                                                                             TestData.OperatorIdentifier1,
                                                                                                             TestData.CustomerEmailAddress,
                                                                                                             TestData.AdditionalTransactionMetaData,
+                                                                                                            TestData.ContractId,
+                                                                                                            TestData.ProductId,
                                                                                                             CancellationToken.None);
 
             this.ValidateResponse(response, TransactionResponseCode.InvalidMerchantId);
@@ -617,6 +632,8 @@ namespace TransactionProcessor.BusinessLogic.Tests.Services
                                                                                                             TestData.OperatorIdentifier1,
                                                                                                             TestData.CustomerEmailAddress,
                                                                                                             TestData.AdditionalTransactionMetaData,
+                                                                                                            TestData.ContractId,
+                                                                                                            TestData.ProductId,
                                                                                                             CancellationToken.None);
 
             this.ValidateResponse(response, TransactionResponseCode.NoEstateOperators);
@@ -656,6 +673,8 @@ namespace TransactionProcessor.BusinessLogic.Tests.Services
                                                                                                             TestData.OperatorIdentifier1,
                                                                                                             TestData.CustomerEmailAddress,
                                                                                                             TestData.AdditionalTransactionMetaData,
+                                                                                                            TestData.ContractId,
+                                                                                                            TestData.ProductId,
                                                                                                             CancellationToken.None);
 
             this.ValidateResponse(response, TransactionResponseCode.NoEstateOperators);
@@ -695,6 +714,8 @@ namespace TransactionProcessor.BusinessLogic.Tests.Services
                                                                                                             TestData.OperatorIdentifier2,
                                                                                                             TestData.CustomerEmailAddress,
                                                                                                             TestData.AdditionalTransactionMetaData,
+                                                                                                            TestData.ContractId,
+                                                                                                            TestData.ProductId,
                                                                                                             CancellationToken.None);
 
             this.ValidateResponse(response, TransactionResponseCode.OperatorNotValidForEstate);
@@ -734,6 +755,8 @@ namespace TransactionProcessor.BusinessLogic.Tests.Services
                                                                                                             TestData.OperatorIdentifier1,
                                                                                                             TestData.CustomerEmailAddress,
                                                                                                             TestData.AdditionalTransactionMetaData,
+                                                                                                            TestData.ContractId,
+                                                                                                            TestData.ProductId,
                                                                                                             CancellationToken.None);
 
             this.ValidateResponse(response, TransactionResponseCode.NoMerchantOperators);
@@ -773,6 +796,8 @@ namespace TransactionProcessor.BusinessLogic.Tests.Services
                                                                                                             TestData.OperatorIdentifier1,
                                                                                                             TestData.CustomerEmailAddress,
                                                                                                             TestData.AdditionalTransactionMetaData,
+                                                                                                            TestData.ContractId,
+                                                                                                            TestData.ProductId,
                                                                                                             CancellationToken.None);
 
             this.ValidateResponse(response, TransactionResponseCode.NoMerchantOperators);
@@ -812,6 +837,8 @@ namespace TransactionProcessor.BusinessLogic.Tests.Services
                                                                                                             TestData.OperatorIdentifier1,
                                                                                                             TestData.CustomerEmailAddress,
                                                                                                             TestData.AdditionalTransactionMetaData,
+                                                                                                            TestData.ContractId,
+                                                                                                            TestData.ProductId,
                                                                                                             CancellationToken.None);
 
             this.ValidateResponse(response, TransactionResponseCode.OperatorNotValidForMerchant);

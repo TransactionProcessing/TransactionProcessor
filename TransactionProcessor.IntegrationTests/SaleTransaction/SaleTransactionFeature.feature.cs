@@ -157,6 +157,72 @@ namespace TransactionProcessor.IntegrationTests.SaleTransaction
  testRunner.Given("I have created the following operators", ((string)(null)), table26, "Given ");
 #line hidden
             TechTalk.SpecFlow.Table table27 = new TechTalk.SpecFlow.Table(new string[] {
+                        "EstateName",
+                        "OperatorName",
+                        "ContractDescription"});
+            table27.AddRow(new string[] {
+                        "Test Estate 1",
+                        "Safaricom",
+                        "Safaricom Contract"});
+            table27.AddRow(new string[] {
+                        "Test Estate 2",
+                        "Safaricom",
+                        "Safaricom Contract"});
+#line 29
+ testRunner.Given("I create a contract with the following values", ((string)(null)), table27, "Given ");
+#line hidden
+            TechTalk.SpecFlow.Table table28 = new TechTalk.SpecFlow.Table(new string[] {
+                        "EstateName",
+                        "OperatorName",
+                        "ContractDescription",
+                        "ProductName",
+                        "DisplayText",
+                        "Value"});
+            table28.AddRow(new string[] {
+                        "Test Estate 1",
+                        "Safaricom",
+                        "Safaricom Contract",
+                        "Variable Topup",
+                        "Custom",
+                        ""});
+            table28.AddRow(new string[] {
+                        "Test Estate 2",
+                        "Safaricom",
+                        "Safaricom Contract",
+                        "Variable Topup",
+                        "Custom",
+                        ""});
+#line 34
+ testRunner.When("I create the following Products", ((string)(null)), table28, "When ");
+#line hidden
+            TechTalk.SpecFlow.Table table29 = new TechTalk.SpecFlow.Table(new string[] {
+                        "EstateName",
+                        "OperatorName",
+                        "ContractDescription",
+                        "ProductName",
+                        "CalculationType",
+                        "FeeDescription",
+                        "Value"});
+            table29.AddRow(new string[] {
+                        "Test Estate 1",
+                        "Safaricom",
+                        "Safaricom Contract",
+                        "Variable Topup",
+                        "Fixed",
+                        "Merchant Commission",
+                        "2.50"});
+            table29.AddRow(new string[] {
+                        "Test Estate 2",
+                        "Safaricom",
+                        "Safaricom Contract",
+                        "Variable Topup",
+                        "Percentage",
+                        "Merchant Commission",
+                        "0.85"});
+#line 39
+ testRunner.When("I add the following Transaction Fees", ((string)(null)), table29, "When ");
+#line hidden
+            TechTalk.SpecFlow.Table table30 = new TechTalk.SpecFlow.Table(new string[] {
                         "MerchantName",
                         "AddressLine1",
                         "Town",
@@ -165,7 +231,7 @@ namespace TransactionProcessor.IntegrationTests.SaleTransaction
                         "ContactName",
                         "EmailAddress",
                         "EstateName"});
-            table27.AddRow(new string[] {
+            table30.AddRow(new string[] {
                         "Test Merchant 1",
                         "Address Line 1",
                         "TestTown",
@@ -174,7 +240,7 @@ namespace TransactionProcessor.IntegrationTests.SaleTransaction
                         "Test Contact 1",
                         "testcontact1@merchant1.co.uk",
                         "Test Estate 1"});
-            table27.AddRow(new string[] {
+            table30.AddRow(new string[] {
                         "Test Merchant 2",
                         "Address Line 1",
                         "TestTown",
@@ -183,7 +249,7 @@ namespace TransactionProcessor.IntegrationTests.SaleTransaction
                         "Test Contact 2",
                         "testcontact2@merchant2.co.uk",
                         "Test Estate 1"});
-            table27.AddRow(new string[] {
+            table30.AddRow(new string[] {
                         "Test Merchant 3",
                         "Address Line 1",
                         "TestTown",
@@ -192,81 +258,81 @@ namespace TransactionProcessor.IntegrationTests.SaleTransaction
                         "Test Contact 3",
                         "testcontact3@merchant2.co.uk",
                         "Test Estate 2"});
-#line 29
- testRunner.Given("I create the following merchants", ((string)(null)), table27, "Given ");
+#line 44
+ testRunner.Given("I create the following merchants", ((string)(null)), table30, "Given ");
 #line hidden
-            TechTalk.SpecFlow.Table table28 = new TechTalk.SpecFlow.Table(new string[] {
+            TechTalk.SpecFlow.Table table31 = new TechTalk.SpecFlow.Table(new string[] {
                         "OperatorName",
                         "MerchantName",
                         "MerchantNumber",
                         "TerminalNumber",
                         "EstateName"});
-            table28.AddRow(new string[] {
+            table31.AddRow(new string[] {
                         "Safaricom",
                         "Test Merchant 1",
                         "00000001",
                         "10000001",
                         "Test Estate 1"});
-            table28.AddRow(new string[] {
+            table31.AddRow(new string[] {
                         "Safaricom",
                         "Test Merchant 2",
                         "00000002",
                         "10000002",
                         "Test Estate 1"});
-            table28.AddRow(new string[] {
+            table31.AddRow(new string[] {
                         "Safaricom",
                         "Test Merchant 3",
                         "00000003",
                         "10000003",
                         "Test Estate 2"});
-#line 35
- testRunner.Given("I have assigned the following  operator to the merchants", ((string)(null)), table28, "Given ");
+#line 50
+ testRunner.Given("I have assigned the following  operator to the merchants", ((string)(null)), table31, "Given ");
 #line hidden
-            TechTalk.SpecFlow.Table table29 = new TechTalk.SpecFlow.Table(new string[] {
+            TechTalk.SpecFlow.Table table32 = new TechTalk.SpecFlow.Table(new string[] {
                         "DeviceIdentifier",
                         "MerchantName",
                         "EstateName"});
-            table29.AddRow(new string[] {
+            table32.AddRow(new string[] {
                         "123456780",
                         "Test Merchant 1",
                         "Test Estate 1"});
-            table29.AddRow(new string[] {
+            table32.AddRow(new string[] {
                         "123456781",
                         "Test Merchant 2",
                         "Test Estate 1"});
-            table29.AddRow(new string[] {
+            table32.AddRow(new string[] {
                         "123456782",
                         "Test Merchant 3",
                         "Test Estate 2"});
-#line 41
- testRunner.Given("I have assigned the following devices to the merchants", ((string)(null)), table29, "Given ");
+#line 56
+ testRunner.Given("I have assigned the following devices to the merchants", ((string)(null)), table32, "Given ");
 #line hidden
-            TechTalk.SpecFlow.Table table30 = new TechTalk.SpecFlow.Table(new string[] {
+            TechTalk.SpecFlow.Table table33 = new TechTalk.SpecFlow.Table(new string[] {
                         "Reference",
                         "Amount",
                         "DateTime",
                         "MerchantName",
                         "EstateName"});
-            table30.AddRow(new string[] {
+            table33.AddRow(new string[] {
                         "Deposit1",
                         "2000.00",
                         "Today",
                         "Test Merchant 1",
                         "Test Estate 1"});
-            table30.AddRow(new string[] {
+            table33.AddRow(new string[] {
                         "Deposit1",
                         "1000.00",
                         "Today",
                         "Test Merchant 2",
                         "Test Estate 1"});
-            table30.AddRow(new string[] {
+            table33.AddRow(new string[] {
                         "Deposit1",
                         "1000.00",
                         "Today",
                         "Test Merchant 3",
                         "Test Estate 2"});
-#line 47
- testRunner.Given("I make the following manual merchant deposits", ((string)(null)), table30, "Given ");
+#line 62
+ testRunner.Given("I make the following manual merchant deposits", ((string)(null)), table33, "Given ");
 #line hidden
         }
         
@@ -285,7 +351,7 @@ namespace TransactionProcessor.IntegrationTests.SaleTransaction
                     "PRTest"};
             System.Collections.Specialized.OrderedDictionary argumentsOfScenario = new System.Collections.Specialized.OrderedDictionary();
             TechTalk.SpecFlow.ScenarioInfo scenarioInfo = new TechTalk.SpecFlow.ScenarioInfo("Sale Transactions", null, tagsOfScenario, argumentsOfScenario);
-#line 54
+#line 69
 this.ScenarioInitialize(scenarioInfo);
 #line hidden
             bool isScenarioIgnored = default(bool);
@@ -308,7 +374,7 @@ this.ScenarioInitialize(scenarioInfo);
 #line 4
 this.FeatureBackground();
 #line hidden
-                TechTalk.SpecFlow.Table table31 = new TechTalk.SpecFlow.Table(new string[] {
+                TechTalk.SpecFlow.Table table34 = new TechTalk.SpecFlow.Table(new string[] {
                             "DateTime",
                             "TransactionNumber",
                             "TransactionType",
@@ -318,8 +384,10 @@ this.FeatureBackground();
                             "OperatorName",
                             "TransactionAmount",
                             "CustomerAccountNumber",
-                            "CustomerEmailAddress"});
-                table31.AddRow(new string[] {
+                            "CustomerEmailAddress",
+                            "ContractDescription",
+                            "ProductName"});
+                table34.AddRow(new string[] {
                             "Today",
                             "1",
                             "Sale",
@@ -329,8 +397,10 @@ this.FeatureBackground();
                             "Safaricom",
                             "1000.00",
                             "123456789",
-                            ""});
-                table31.AddRow(new string[] {
+                            "",
+                            "Safaricom Contract",
+                            "Variable Topup"});
+                table34.AddRow(new string[] {
                             "Today",
                             "2",
                             "Sale",
@@ -340,8 +410,10 @@ this.FeatureBackground();
                             "Safaricom",
                             "1000.00",
                             "123456789",
-                            ""});
-                table31.AddRow(new string[] {
+                            "",
+                            "Safaricom Contract",
+                            "Variable Topup"});
+                table34.AddRow(new string[] {
                             "Today",
                             "3",
                             "Sale",
@@ -351,8 +423,10 @@ this.FeatureBackground();
                             "Safaricom",
                             "1000.00",
                             "123456789",
-                            ""});
-                table31.AddRow(new string[] {
+                            "",
+                            "Safaricom Contract",
+                            "Variable Topup"});
+                table34.AddRow(new string[] {
                             "Today",
                             "4",
                             "Sale",
@@ -362,42 +436,44 @@ this.FeatureBackground();
                             "Safaricom",
                             "1000.00",
                             "123456789",
-                            "testcustomer@customer.co.uk"});
-#line 56
- testRunner.When("I perform the following transactions", ((string)(null)), table31, "When ");
+                            "testcustomer@customer.co.uk",
+                            "Safaricom Contract",
+                            "Variable Topup"});
+#line 71
+ testRunner.When("I perform the following transactions", ((string)(null)), table34, "When ");
 #line hidden
-                TechTalk.SpecFlow.Table table32 = new TechTalk.SpecFlow.Table(new string[] {
+                TechTalk.SpecFlow.Table table35 = new TechTalk.SpecFlow.Table(new string[] {
                             "EstateName",
                             "MerchantName",
                             "TransactionNumber",
                             "ResponseCode",
                             "ResponseMessage"});
-                table32.AddRow(new string[] {
+                table35.AddRow(new string[] {
                             "Test Estate 1",
                             "Test Merchant 1",
                             "1",
                             "0000",
                             "SUCCESS"});
-                table32.AddRow(new string[] {
+                table35.AddRow(new string[] {
                             "Test Estate 1",
                             "Test Merchant 2",
                             "2",
                             "0000",
                             "SUCCESS"});
-                table32.AddRow(new string[] {
+                table35.AddRow(new string[] {
                             "Test Estate 2",
                             "Test Merchant 3",
                             "3",
                             "0000",
                             "SUCCESS"});
-                table32.AddRow(new string[] {
+                table35.AddRow(new string[] {
                             "Test Estate 1",
                             "Test Merchant 1",
                             "4",
                             "0000",
                             "SUCCESS"});
-#line 63
- testRunner.Then("transaction response should contain the following information", ((string)(null)), table32, "Then ");
+#line 78
+ testRunner.Then("transaction response should contain the following information", ((string)(null)), table35, "Then ");
 #line hidden
             }
             this.ScenarioCleanup();
@@ -413,7 +489,7 @@ this.FeatureBackground();
                     "PRTest"};
             System.Collections.Specialized.OrderedDictionary argumentsOfScenario = new System.Collections.Specialized.OrderedDictionary();
             TechTalk.SpecFlow.ScenarioInfo scenarioInfo = new TechTalk.SpecFlow.ScenarioInfo("Sale Transaction with Invalid Device", null, tagsOfScenario, argumentsOfScenario);
-#line 71
+#line 86
 this.ScenarioInitialize(scenarioInfo);
 #line hidden
             bool isScenarioIgnored = default(bool);
@@ -436,7 +512,7 @@ this.ScenarioInitialize(scenarioInfo);
 #line 4
 this.FeatureBackground();
 #line hidden
-                TechTalk.SpecFlow.Table table33 = new TechTalk.SpecFlow.Table(new string[] {
+                TechTalk.SpecFlow.Table table36 = new TechTalk.SpecFlow.Table(new string[] {
                             "DateTime",
                             "TransactionNumber",
                             "TransactionType",
@@ -446,8 +522,10 @@ this.FeatureBackground();
                             "OperatorName",
                             "TransactionAmount",
                             "CustomerAccountNumber",
-                            "CustomerEmailAddress"});
-                table33.AddRow(new string[] {
+                            "CustomerEmailAddress",
+                            "ContractDescription",
+                            "ProductName"});
+                table36.AddRow(new string[] {
                             "Today",
                             "1",
                             "Sale",
@@ -457,24 +535,26 @@ this.FeatureBackground();
                             "Safaricom",
                             "1000.00",
                             "123456789",
-                            "testcustomer@customer.co.uk"});
-#line 73
- testRunner.When("I perform the following transactions", ((string)(null)), table33, "When ");
+                            "testcustomer@customer.co.uk",
+                            "Safaricom Contract",
+                            "Variable Topup"});
+#line 88
+ testRunner.When("I perform the following transactions", ((string)(null)), table36, "When ");
 #line hidden
-                TechTalk.SpecFlow.Table table34 = new TechTalk.SpecFlow.Table(new string[] {
+                TechTalk.SpecFlow.Table table37 = new TechTalk.SpecFlow.Table(new string[] {
                             "EstateName",
                             "MerchantName",
                             "TransactionNumber",
                             "ResponseCode",
                             "ResponseMessage"});
-                table34.AddRow(new string[] {
+                table37.AddRow(new string[] {
                             "Test Estate 1",
                             "Test Merchant 1",
                             "1",
                             "1000",
                             "Device Identifier 123456781 not valid for Merchant Test Merchant 1"});
-#line 77
- testRunner.Then("transaction response should contain the following information", ((string)(null)), table34, "Then ");
+#line 92
+ testRunner.Then("transaction response should contain the following information", ((string)(null)), table37, "Then ");
 #line hidden
             }
             this.ScenarioCleanup();
@@ -488,7 +568,7 @@ this.FeatureBackground();
             string[] tagsOfScenario = ((string[])(null));
             System.Collections.Specialized.OrderedDictionary argumentsOfScenario = new System.Collections.Specialized.OrderedDictionary();
             TechTalk.SpecFlow.ScenarioInfo scenarioInfo = new TechTalk.SpecFlow.ScenarioInfo("Sale Transaction with Invalid Estate", null, tagsOfScenario, argumentsOfScenario);
-#line 81
+#line 96
 this.ScenarioInitialize(scenarioInfo);
 #line hidden
             bool isScenarioIgnored = default(bool);
@@ -511,7 +591,7 @@ this.ScenarioInitialize(scenarioInfo);
 #line 4
 this.FeatureBackground();
 #line hidden
-                TechTalk.SpecFlow.Table table35 = new TechTalk.SpecFlow.Table(new string[] {
+                TechTalk.SpecFlow.Table table38 = new TechTalk.SpecFlow.Table(new string[] {
                             "DateTime",
                             "TransactionNumber",
                             "TransactionType",
@@ -521,8 +601,10 @@ this.FeatureBackground();
                             "OperatorName",
                             "TransactionAmount",
                             "CustomerAccountNumber",
-                            "CustomerEmailAddress"});
-                table35.AddRow(new string[] {
+                            "CustomerEmailAddress",
+                            "ContractDescription",
+                            "ProductName"});
+                table38.AddRow(new string[] {
                             "Today",
                             "1",
                             "Sale",
@@ -532,24 +614,26 @@ this.FeatureBackground();
                             "Safaricom",
                             "1000.00",
                             "123456789",
-                            "testcustomer@customer.co.uk"});
-#line 83
- testRunner.When("I perform the following transactions", ((string)(null)), table35, "When ");
+                            "testcustomer@customer.co.uk",
+                            "Safaricom Contract",
+                            "Variable Topup"});
+#line 98
+ testRunner.When("I perform the following transactions", ((string)(null)), table38, "When ");
 #line hidden
-                TechTalk.SpecFlow.Table table36 = new TechTalk.SpecFlow.Table(new string[] {
+                TechTalk.SpecFlow.Table table39 = new TechTalk.SpecFlow.Table(new string[] {
                             "EstateName",
                             "MerchantName",
                             "TransactionNumber",
                             "ResponseCode",
                             "ResponseMessage"});
-                table36.AddRow(new string[] {
+                table39.AddRow(new string[] {
                             "InvalidEstate",
                             "Test Merchant 1",
                             "1",
                             "1001",
                             "Estate Id [79902550-64df-4491-b0c1-4e78943928a3] is not a valid estate"});
-#line 87
- testRunner.Then("transaction response should contain the following information", ((string)(null)), table36, "Then ");
+#line 102
+ testRunner.Then("transaction response should contain the following information", ((string)(null)), table39, "Then ");
 #line hidden
             }
             this.ScenarioCleanup();
@@ -563,7 +647,7 @@ this.FeatureBackground();
             string[] tagsOfScenario = ((string[])(null));
             System.Collections.Specialized.OrderedDictionary argumentsOfScenario = new System.Collections.Specialized.OrderedDictionary();
             TechTalk.SpecFlow.ScenarioInfo scenarioInfo = new TechTalk.SpecFlow.ScenarioInfo("Sale Transaction with Invalid Merchant", null, tagsOfScenario, argumentsOfScenario);
-#line 91
+#line 106
 this.ScenarioInitialize(scenarioInfo);
 #line hidden
             bool isScenarioIgnored = default(bool);
@@ -586,7 +670,7 @@ this.ScenarioInitialize(scenarioInfo);
 #line 4
 this.FeatureBackground();
 #line hidden
-                TechTalk.SpecFlow.Table table37 = new TechTalk.SpecFlow.Table(new string[] {
+                TechTalk.SpecFlow.Table table40 = new TechTalk.SpecFlow.Table(new string[] {
                             "DateTime",
                             "TransactionNumber",
                             "TransactionType",
@@ -596,8 +680,10 @@ this.FeatureBackground();
                             "OperatorName",
                             "TransactionAmount",
                             "CustomerAccountNumber",
-                            "CustomerEmailAddress"});
-                table37.AddRow(new string[] {
+                            "CustomerEmailAddress",
+                            "ContractDescription",
+                            "ProductName"});
+                table40.AddRow(new string[] {
                             "Today",
                             "1",
                             "Sale",
@@ -607,25 +693,27 @@ this.FeatureBackground();
                             "Safaricom",
                             "1000.00",
                             "123456789",
-                            "testcustomer@customer.co.uk"});
-#line 93
- testRunner.When("I perform the following transactions", ((string)(null)), table37, "When ");
+                            "testcustomer@customer.co.uk",
+                            "Safaricom Contract",
+                            "Variable Topup"});
+#line 108
+ testRunner.When("I perform the following transactions", ((string)(null)), table40, "When ");
 #line hidden
-                TechTalk.SpecFlow.Table table38 = new TechTalk.SpecFlow.Table(new string[] {
+                TechTalk.SpecFlow.Table table41 = new TechTalk.SpecFlow.Table(new string[] {
                             "EstateName",
                             "MerchantName",
                             "TransactionNumber",
                             "ResponseCode",
                             "ResponseMessage"});
-                table38.AddRow(new string[] {
+                table41.AddRow(new string[] {
                             "Test Estate 1",
                             "InvalidMerchant",
                             "1",
                             "1002",
                             "Merchant Id [d59320fa-4c3e-4900-a999-483f6a10c69a] is not a valid merchant for es" +
                                 "tate [Test Estate 1]"});
-#line 97
- testRunner.Then("transaction response should contain the following information", ((string)(null)), table38, "Then ");
+#line 112
+ testRunner.Then("transaction response should contain the following information", ((string)(null)), table41, "Then ");
 #line hidden
             }
             this.ScenarioCleanup();
@@ -641,7 +729,7 @@ this.FeatureBackground();
                     "PRTest"};
             System.Collections.Specialized.OrderedDictionary argumentsOfScenario = new System.Collections.Specialized.OrderedDictionary();
             TechTalk.SpecFlow.ScenarioInfo scenarioInfo = new TechTalk.SpecFlow.ScenarioInfo("Sale Transaction with Not Enough Credit Available", null, tagsOfScenario, argumentsOfScenario);
-#line 102
+#line 117
 this.ScenarioInitialize(scenarioInfo);
 #line hidden
             bool isScenarioIgnored = default(bool);
@@ -664,7 +752,7 @@ this.ScenarioInitialize(scenarioInfo);
 #line 4
 this.FeatureBackground();
 #line hidden
-                TechTalk.SpecFlow.Table table39 = new TechTalk.SpecFlow.Table(new string[] {
+                TechTalk.SpecFlow.Table table42 = new TechTalk.SpecFlow.Table(new string[] {
                             "DateTime",
                             "TransactionNumber",
                             "TransactionType",
@@ -674,8 +762,10 @@ this.FeatureBackground();
                             "OperatorName",
                             "TransactionAmount",
                             "CustomerAccountNumber",
-                            "CustomerEmailAddress"});
-                table39.AddRow(new string[] {
+                            "CustomerEmailAddress",
+                            "ContractDescription",
+                            "ProductName"});
+                table42.AddRow(new string[] {
                             "Today",
                             "1",
                             "Sale",
@@ -685,25 +775,27 @@ this.FeatureBackground();
                             "Safaricom",
                             "3000.00",
                             "123456789",
-                            "testcustomer@customer.co.uk"});
-#line 104
- testRunner.When("I perform the following transactions", ((string)(null)), table39, "When ");
+                            "testcustomer@customer.co.uk",
+                            "Safaricom Contract",
+                            "Variable Topup"});
+#line 119
+ testRunner.When("I perform the following transactions", ((string)(null)), table42, "When ");
 #line hidden
-                TechTalk.SpecFlow.Table table40 = new TechTalk.SpecFlow.Table(new string[] {
+                TechTalk.SpecFlow.Table table43 = new TechTalk.SpecFlow.Table(new string[] {
                             "EstateName",
                             "MerchantName",
                             "TransactionNumber",
                             "ResponseCode",
                             "ResponseMessage"});
-                table40.AddRow(new string[] {
+                table43.AddRow(new string[] {
                             "Test Estate 1",
                             "Test Merchant 1",
                             "1",
                             "1009",
                             "Merchant [Test Merchant 1] does not have enough credit available [2000.0] to perf" +
                                 "orm transaction amount [3000.00]"});
-#line 109
- testRunner.Then("transaction response should contain the following information", ((string)(null)), table40, "Then ");
+#line 124
+ testRunner.Then("transaction response should contain the following information", ((string)(null)), table43, "Then ");
 #line hidden
             }
             this.ScenarioCleanup();

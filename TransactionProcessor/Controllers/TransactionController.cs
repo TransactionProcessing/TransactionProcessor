@@ -136,7 +136,9 @@
                                                                                          saleTransactionRequest.TransactionNumber,
                                                                                          saleTransactionRequest.OperatorIdentifier,
                                                                                          saleTransactionRequest.CustomerEmailAddress,
-                                                                                         saleTransactionRequest.AdditionalTransactionMetadata);
+                                                                                         saleTransactionRequest.AdditionalTransactionMetadata,
+                                                                                         saleTransactionRequest.ContractId,
+                                                                                         saleTransactionRequest.ProductId);
 
             ProcessSaleTransactionResponse response = await this.Mediator.Send(request, cancellationToken);
 

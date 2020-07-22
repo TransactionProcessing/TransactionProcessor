@@ -386,7 +386,9 @@
                                                  TestData.TransactionNumber,
                                                  TestData.OperatorIdentifier1,
                                                  TestData.CustomerEmailAddress,
-                                                 TestData.AdditionalTransactionMetaData);
+                                                 TestData.AdditionalTransactionMetaData,
+                                                 TestData.ContractId,
+                                                 TestData.ProductId);
 
         public static ProcessSaleTransactionResponse ProcessSaleTransactionResponseModel =>
             new ProcessSaleTransactionResponse

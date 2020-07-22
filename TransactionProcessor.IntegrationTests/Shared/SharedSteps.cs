@@ -11,6 +11,7 @@ namespace TransactionProcessor.IntegrationTests.Shared
     using System.Threading.Tasks;
     using Common;
     using DataTransferObjects;
+    using EstateManagement.DataTransferObjects;
     using EstateManagement.DataTransferObjects.Requests;
     using EstateManagement.DataTransferObjects.Responses;
     using Microsoft.EntityFrameworkCore.ValueGeneration.Internal;
@@ -236,7 +237,7 @@ namespace TransactionProcessor.IntegrationTests.Shared
                 String deviceIdentifier = SpecflowTableHelper.GetStringRowValue(tableRow, "DeviceIdentifier");
                 
                 EstateDetails estateDetails = this.TestingContext.GetEstateDetails(tableRow);
-
+                
                 // Lookup the merchant id
                 Guid merchantId = estateDetails.GetMerchantId(merchantName);
                 SerialisedMessage transactionResponse = null;
@@ -258,6 +259,11 @@ namespace TransactionProcessor.IntegrationTests.Shared
                         Decimal transactionAmount = SpecflowTableHelper.GetDecimalValue(tableRow, "TransactionAmount");
                         String customerAccountNumber = SpecflowTableHelper.GetStringRowValue(tableRow, "CustomerAccountNumber");
                         String customerEmailAddress = SpecflowTableHelper.GetStringRowValue(tableRow, "CustomerEmailAddress");
+                        String contractDescription = SpecflowTableHelper.GetStringRowValue(tableRow, "ContractDescription");
+                        String productName = SpecflowTableHelper.GetStringRowValue(tableRow, "ProductName");
+
+                        var contract = estateDetails.GetContract(contractDescription);
+                        var product = contract.GetProduct(productName);
 
                         transactionResponse = await this.PerformSaleTransaction(estateDetails.EstateId,
                                                                                 merchantId,
@@ -269,12 +275,130 @@ namespace TransactionProcessor.IntegrationTests.Shared
                                                                                 transactionAmount,
                                                                                 customerAccountNumber,
                                                                                 customerEmailAddress,
+                                                                                contract.ContractId,
+                                                                                product.ProductId,
                                                                                 CancellationToken.None);
                         break;
                         
                 }
 
                 estateDetails.AddTransactionResponse(merchantId, transactionNumber, transactionResponse);
+            }
+        }
+
+        [Given(@"I create a contract with the following values")]
+        public async Task GivenICreateAContractWithTheFollowingValues(Table table)
+        {
+            foreach (TableRow tableRow in table.Rows)
+            {
+                EstateDetails estateDetails = this.TestingContext.GetEstateDetails(tableRow);
+
+                String token = this.TestingContext.AccessToken;
+                if (String.IsNullOrEmpty(estateDetails.AccessToken) == false)
+                {
+                    token = estateDetails.AccessToken;
+                }
+
+                String operatorName = SpecflowTableHelper.GetStringRowValue(tableRow, "OperatorName");
+                Guid operatorId = estateDetails.GetOperatorId(operatorName);
+
+                CreateContractRequest createContractRequest = new CreateContractRequest
+                                                              {
+                                                                  OperatorId = operatorId,
+                                                                  Description = SpecflowTableHelper.GetStringRowValue(tableRow, "ContractDescription")
+                                                              };
+
+                CreateContractResponse contractResponse =
+                    await this.TestingContext.DockerHelper.EstateClient.CreateContract(token, estateDetails.EstateId, createContractRequest, CancellationToken.None);
+
+                estateDetails.AddContract(contractResponse.ContractId, createContractRequest.Description, operatorId);
+            }
+        }
+
+        [When(@"I create the following Products")]
+        public async Task WhenICreateTheFollowingProducts(Table table)
+        {
+            foreach (TableRow tableRow in table.Rows)
+            {
+                EstateDetails estateDetails = this.TestingContext.GetEstateDetails(tableRow);
+
+                String token = this.TestingContext.AccessToken;
+                if (String.IsNullOrEmpty(estateDetails.AccessToken) == false)
+                {
+                    token = estateDetails.AccessToken;
+                }
+
+                String contractName = SpecflowTableHelper.GetStringRowValue(tableRow, "ContractDescription");
+                Contract contract = estateDetails.GetContract(contractName);
+                String productValue = SpecflowTableHelper.GetStringRowValue(tableRow, "Value");
+
+                AddProductToContractRequest addProductToContractRequest = new AddProductToContractRequest
+                {
+                    ProductName = SpecflowTableHelper.GetStringRowValue(tableRow, "ProductName"),
+                    DisplayText = SpecflowTableHelper.GetStringRowValue(tableRow, "DisplayText"),
+                    Value = null
+                };
+                if (String.IsNullOrEmpty(productValue) == false)
+                {
+                    addProductToContractRequest.Value = Decimal.Parse(productValue);
+                }
+
+                AddProductToContractResponse addProductToContractResponse = await this.TestingContext.DockerHelper.EstateClient.AddProductToContract(token,
+                                                                                                                                                     estateDetails.EstateId,
+                                                                                                                                                     contract.ContractId,
+                                                                                                                                                     addProductToContractRequest,
+                                                                                                                                                     CancellationToken.None);
+
+                contract.AddProduct(addProductToContractResponse.ProductId, addProductToContractRequest.ProductName, addProductToContractRequest.DisplayText,
+                                    addProductToContractRequest.Value);
+            }
+        }
+
+        [When(@"I add the following Transaction Fees")]
+        public async Task WhenIAddTheFollowingTransactionFees(Table table)
+        {
+            foreach (TableRow tableRow in table.Rows)
+            {
+                EstateDetails estateDetails = this.TestingContext.GetEstateDetails(tableRow);
+
+                String token = this.TestingContext.AccessToken;
+                if (String.IsNullOrEmpty(estateDetails.AccessToken) == false)
+                {
+                    token = estateDetails.AccessToken;
+                }
+
+                String contractName = SpecflowTableHelper.GetStringRowValue(tableRow, "ContractDescription");
+                String productName = SpecflowTableHelper.GetStringRowValue(tableRow, "ProductName");
+                Contract contract = estateDetails.GetContract(contractName);
+
+                Product product = contract.GetProduct(productName);
+
+                AddTransactionFeeForProductToContractRequest addTransactionFeeForProductToContractRequest = new AddTransactionFeeForProductToContractRequest
+                {
+                    Value =
+                                                                                                                    SpecflowTableHelper
+                                                                                                                        .GetDecimalValue(tableRow, "Value"),
+                    Description =
+                                                                                                                    SpecflowTableHelper.GetStringRowValue(tableRow,
+                                                                                                                                                          "FeeDescription"),
+                    CalculationType =
+                                                                                                                    SpecflowTableHelper
+                                                                                                                        .GetEnumValue<CalculationType>(tableRow,
+                                                                                                                                                       "CalculationType")
+                };
+
+                AddTransactionFeeForProductToContractResponse addTransactionFeeForProductToContractResponse =
+                    await this.TestingContext.DockerHelper.EstateClient.AddTransactionFeeForProductToContract(token,
+                                                                                                              estateDetails.EstateId,
+                                                                                                              contract.ContractId,
+                                                                                                              product.ProductId,
+                                                                                                              addTransactionFeeForProductToContractRequest,
+                                                                                                              CancellationToken.None);
+
+                product.AddTransactionFee(addTransactionFeeForProductToContractResponse.TransactionFeeId,
+                                          addTransactionFeeForProductToContractRequest.CalculationType,
+                                          addTransactionFeeForProductToContractRequest.Description,
+                                          addTransactionFeeForProductToContractRequest.Value);
             }
         }
 
@@ -317,7 +441,10 @@ namespace TransactionProcessor.IntegrationTests.Shared
             return responseSerialisedMessage;
         }
 
-        private async Task<SerialisedMessage> PerformSaleTransaction(Guid estateId, Guid merchantId, DateTime transactionDateTime, String transactionType, String transactionNumber, String deviceIdentifier, String operatorIdentifier, Decimal transactionAmount, String customerAccountNumber, String customerEmailAddres, CancellationToken cancellationToken)
+        private async Task<SerialisedMessage> PerformSaleTransaction(Guid estateId, Guid merchantId, DateTime transactionDateTime, String transactionType, String transactionNumber, String deviceIdentifier, String operatorIdentifier, Decimal transactionAmount, String customerAccountNumber, String customerEmailAddress,
+                                                                     Guid contractId,
+                                                                     Guid productId,
+                                                                     CancellationToken cancellationToken)
         {
             SaleTransactionRequest saleTransactionRequest = new SaleTransactionRequest
                                                             {
@@ -333,7 +460,9 @@ namespace TransactionProcessor.IntegrationTests.Shared
                                                                                                     {"Amount", transactionAmount.ToString()},
                                                                                                     {"CustomerAccountNumber", customerAccountNumber}
                                                                                                 },
-                                                                CustomerEmailAddress = customerEmailAddres
+                                                                CustomerEmailAddress = customerEmailAddress,
+                                                                ProductId = productId,
+                                                                ContractId = contractId
             };
 
             SerialisedMessage serialisedMessage = new SerialisedMessage();
