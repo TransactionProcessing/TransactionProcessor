@@ -230,5 +230,21 @@ namespace TransactionProcessor.TransactionAggregate.Tests
             customerEmailReceiptRequestedEvent.MerchantId.ShouldBe(TestData.MerchantId);
             customerEmailReceiptRequestedEvent.CustomerEmailAddress.ShouldBe(TestData.CustomerEmailAddress);
         }
+
+        [Fact]
+        public void ProductDetailsAddedToTransactionEvent_CanBeCreated_IsCreated()
+        {
+            ProductDetailsAddedToTransactionEvent productDetailsAddedToTransactionEvent = ProductDetailsAddedToTransactionEvent.Create(TestData.TransactionId, TestData.EstateId,TestData.ContractId, TestData.ProductId);
+
+            productDetailsAddedToTransactionEvent.ShouldNotBeNull();
+            productDetailsAddedToTransactionEvent.AggregateId.ShouldBe(TestData.TransactionId);
+            productDetailsAddedToTransactionEvent.EventCreatedDateTime.ShouldNotBe(DateTime.MinValue);
+            productDetailsAddedToTransactionEvent.EventId.ShouldNotBe(Guid.Empty);
+            productDetailsAddedToTransactionEvent.TransactionId.ShouldBe(TestData.TransactionId);
+            productDetailsAddedToTransactionEvent.EstateId.ShouldBe(TestData.EstateId);
+            productDetailsAddedToTransactionEvent.ProductId.ShouldBe(TestData.ProductId);
+            productDetailsAddedToTransactionEvent.ContractId.ShouldBe(TestData.ContractId);
+
+        }
     }
 }
