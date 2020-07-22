@@ -55,6 +55,7 @@
             this.Operators = new Dictionary<String, Guid>();
             this.MerchantUsers = new Dictionary<String, Dictionary<String, String>>();
             this.TransactionResponses = new Dictionary<(Guid merchantId, String transactionNumber), SerialisedMessage>();
+            this.Contracts = new List<Contract>();
         }
 
         #endregion
