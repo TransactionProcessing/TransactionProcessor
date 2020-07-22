@@ -89,6 +89,21 @@
         public Guid EstateId { get; private set; }
 
         /// <summary>
+        /// Gets the contract identifier.
+        /// </summary>
+        /// <value>
+        /// The contract identifier.
+        /// </value>
+        public Guid ContractId { get; private set; }
+        /// <summary>
+        /// Gets the product identifier.
+        /// </summary>
+        /// <value>
+        /// The product identifier.
+        /// </value>
+        public Guid ProductId { get; private set; }
+
+        /// <summary>
         /// Gets a value indicating whether this instance is authorised.
         /// </summary>
         /// <value>
@@ -472,6 +487,27 @@
         }
 
         /// <summary>
+        /// Adds the product details.
+        /// </summary>
+        /// <param name="contractId">The contract identifier.</param>
+        /// <param name="productId">The product identifier.</param>
+        public void AddProductDetails(Guid contractId,
+                                      Guid productId)
+        {
+            Guard.ThrowIfInvalidGuid(contractId, typeof(ArgumentException), $"Contract Id must not be [{Guid.Empty}]");
+            Guard.ThrowIfInvalidGuid(productId, typeof(ArgumentException), $"Product Id must not be [{Guid.Empty}]");
+
+            this.CheckProductDetailsNotAlreadyAdded();
+
+            ProductDetailsAddedToTransactionEvent productDetailsAddedToTransactionEvent = ProductDetailsAddedToTransactionEvent.Create(this.AggregateId,
+                                                                                                                                       this.EstateId,
+                                                                                                                                       contractId,
+                                                                                                                                       productId);
+
+            this.ApplyAndPend(productDetailsAddedToTransactionEvent);
+        }
+
+        /// <summary>
         /// Gets the metadata.
         /// </summary>
         /// <returns></returns>
@@ -491,6 +527,14 @@
         protected override void PlayEvent(DomainEvent domainEvent)
         {
             this.PlayEvent((dynamic)domainEvent);
+        }
+
+        private void CheckProductDetailsNotAlreadyAdded()
+        {
+            if (this.IsProductDetailsAdded)
+            {
+                throw new InvalidOperationException("Product details already added");
+            }
         }
 
         /// <summary>
@@ -736,6 +780,21 @@
             this.ResponseCode = domainEvent.ResponseCode;
             this.ResponseMessage = domainEvent.ResponseMessage;
         }
+
+        private void PlayEvent(ProductDetailsAddedToTransactionEvent domainEvent)
+        {
+            this.IsProductDetailsAdded = true;
+            this.ContractId = domainEvent.ContractId;
+            this.ProductId = domainEvent.ProductId;
+        }
+
+        /// <summary>
+        /// Gets a value indicating whether this instance is product details added.
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if this instance is product details added; otherwise, <c>false</c>.
+        /// </value>
+        public Boolean IsProductDetailsAdded { get; private set; }
 
         #endregion
     }

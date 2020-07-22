@@ -18,7 +18,6 @@ namespace TransactionProcessor.TransactionAggregate.Tests
         }
 
         [Theory]
-        [InlineData(TransactionType.Logon)]
         [InlineData(TransactionType.Sale)]
         public void TransactionAggregate_StartTransaction_TransactionIsStarted(TransactionType transactionType)
         {
@@ -36,6 +35,25 @@ namespace TransactionProcessor.TransactionAggregate.Tests
             transactionAggregate.DeviceIdentifier.ShouldBe(TestData.DeviceIdentifier);
             transactionAggregate.TransactionReference.ShouldBe(TestData.TransactionReference);
             transactionAggregate.TransactionAmount.ShouldBe(TestData.TransactionAmount);
+        }
+
+        [Theory]
+        [InlineData(TransactionType.Logon)]
+        public void TransactionAggregate_StartTransaction_NullAmount_TransactionIsStarted(TransactionType transactionType)
+        {
+            TransactionAggregate transactionAggregate = TransactionAggregate.Create(TestData.TransactionId);
+            transactionAggregate.StartTransaction(TestData.TransactionDateTime, TestData.TransactionNumber, transactionType,
+                                                  TestData.TransactionReference, TestData.EstateId, TestData.MerchantId, TestData.DeviceIdentifier, null);
+
+            transactionAggregate.IsStarted.ShouldBeTrue();
+            transactionAggregate.TransactionDateTime.ShouldBe(TestData.TransactionDateTime);
+            transactionAggregate.TransactionNumber.ShouldBe(TestData.TransactionNumber);
+            transactionAggregate.TransactionType.ShouldBe(transactionType);
+            transactionAggregate.EstateId.ShouldBe(TestData.EstateId);
+            transactionAggregate.MerchantId.ShouldBe(TestData.MerchantId);
+            transactionAggregate.DeviceIdentifier.ShouldBe(TestData.DeviceIdentifier);
+            transactionAggregate.TransactionReference.ShouldBe(TestData.TransactionReference);
+            transactionAggregate.TransactionAmount.ShouldBeNull();
         }
 
         [Theory]
@@ -142,6 +160,65 @@ namespace TransactionProcessor.TransactionAggregate.Tests
                                                                                               deviceIdentifier,
                                                                                               TestData.TransactionAmount);
                                                     });
+        }
+
+        [Theory]
+        [InlineData(TransactionType.Sale)]
+        public void TransactionAggregate_AddProductDetails_ProductDetailsAdded(TransactionType transactionType)
+        {
+            TransactionAggregate transactionAggregate = TransactionAggregate.Create(TestData.TransactionId);
+            transactionAggregate.StartTransaction(TestData.TransactionDateTime, TestData.TransactionNumber, transactionType, TestData.TransactionReference, TestData.EstateId, TestData.MerchantId, TestData.DeviceIdentifier,
+                                                  TestData.TransactionAmount);
+
+            transactionAggregate.AddProductDetails(TestData.ContractId,TestData.ProductId);
+
+            transactionAggregate.IsProductDetailsAdded.ShouldBeTrue();
+            transactionAggregate.ContractId.ShouldBe(TestData.ContractId);
+            transactionAggregate.ProductId.ShouldBe(TestData.ProductId);
+        }
+
+        [Theory]
+        [InlineData(TransactionType.Sale)]
+        public void TransactionAggregate_AddProductDetails_InvalidContractId_ErrorThrown(TransactionType transactionType)
+        {
+            TransactionAggregate transactionAggregate = TransactionAggregate.Create(TestData.TransactionId);
+            transactionAggregate.StartTransaction(TestData.TransactionDateTime, TestData.TransactionNumber, transactionType, TestData.TransactionReference, TestData.EstateId, TestData.MerchantId, TestData.DeviceIdentifier,
+                                                  TestData.TransactionAmount);
+
+            Should.Throw<ArgumentException>(() =>
+                                                {
+                                                    transactionAggregate.AddProductDetails(Guid.Empty, TestData.ProductId);
+                                                });
+        }
+
+        [Theory]
+        [InlineData(TransactionType.Sale)]
+        public void TransactionAggregate_AddProductDetails_InvalidProductId_ErrorThrown(TransactionType transactionType)
+        {
+            TransactionAggregate transactionAggregate = TransactionAggregate.Create(TestData.TransactionId);
+            transactionAggregate.StartTransaction(TestData.TransactionDateTime, TestData.TransactionNumber, transactionType, TestData.TransactionReference, TestData.EstateId, TestData.MerchantId, TestData.DeviceIdentifier,
+                                                  TestData.TransactionAmount);
+
+            Should.Throw<ArgumentException>(() =>
+                                                {
+                                                    transactionAggregate.AddProductDetails(TestData.ContractId, Guid.Empty);
+                                                });
+        }
+
+        [Theory]
+        [InlineData(TransactionType.Sale)]
+        public void TransactionAggregate_AddProductDetails_ProductDetailsAlreadyAdded_ErrorThrown(TransactionType transactionType)
+        {
+            TransactionAggregate transactionAggregate = TransactionAggregate.Create(TestData.TransactionId);
+            transactionAggregate.StartTransaction(TestData.TransactionDateTime, TestData.TransactionNumber, transactionType, TestData.TransactionReference, TestData.EstateId, TestData.MerchantId, TestData.DeviceIdentifier,
+                                                  TestData.TransactionAmount);
+
+            transactionAggregate.AddProductDetails(TestData.ContractId, TestData.ProductId);
+
+            Should.Throw<InvalidOperationException>(() =>
+                                                {
+                                                    transactionAggregate.AddProductDetails(TestData.ContractId, TestData.ProductId);
+                                                });
         }
 
         [Theory]

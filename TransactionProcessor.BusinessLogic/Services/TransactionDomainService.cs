@@ -2,6 +2,7 @@
 {
     using System;
     using System.Collections.Generic;
+    using System.Diagnostics.CodeAnalysis;
     using System.Diagnostics.Eventing.Reader;
     using System.Linq;
     using System.Threading;
@@ -267,6 +268,7 @@
         /// <param name="fieldName">Name of the field.</param>
         /// <param name="additionalTransactionMetadata">The additional transaction metadata.</param>
         /// <returns></returns>
+        [ExcludeFromCodeCoverage]
         private T ExtractFieldFromMetadata<T>(String fieldName,
                                                    Dictionary<String, String> additionalTransactionMetadata)
         {
@@ -304,6 +306,7 @@
         /// Generates the transaction reference.
         /// </summary>
         /// <returns></returns>
+        [ExcludeFromCodeCoverage]
         private String GenerateTransactionReference()
         {
             Int64 i = 1;

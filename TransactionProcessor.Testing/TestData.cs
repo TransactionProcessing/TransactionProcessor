@@ -29,6 +29,10 @@
 
         public static Guid EstateId = Guid.Parse("A522FA27-F9D0-470A-A88D-325DED3B62EE");
 
+        public static Guid ContractId = Guid.Parse("97A9ED00-E522-428C-B3C3-5931092DBDCE");
+
+        public static Guid ProductId = Guid.Parse("ABA0E536-4E43-4E26-8362-7FB549DDA534");
+
         public static String EstateName = "Test Estate 1";
 
         public static String FailedSafaricomTopup =
