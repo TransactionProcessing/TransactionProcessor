@@ -1,11 +1,8 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-
-namespace TransactionProcessor.BusinessLogic.Requests
+﻿namespace TransactionProcessor.BusinessLogic.Requests
 {
+    using System;
+    using System.Collections.Generic;
     using MediatR;
-    using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
     using Models;
 
     public class ProcessSaleTransactionRequest : IRequest<ProcessSaleTransactionResponse>
@@ -25,6 +22,8 @@ namespace TransactionProcessor.BusinessLogic.Requests
         /// <param name="operatorIdentifier">The operator identifier.</param>
         /// <param name="customerEmailAddress">The customer email address.</param>
         /// <param name="additionalTransactionMetadata">The additional transaction metadata.</param>
+        /// <param name="contractId">The contract identifier.</param>
+        /// <param name="productId">The product identifier.</param>
         private ProcessSaleTransactionRequest(Guid transactionId,
                                               Guid estateId,
                                               Guid merchantId,
@@ -34,7 +33,9 @@ namespace TransactionProcessor.BusinessLogic.Requests
                                               String transactionNumber,
                                               String operatorIdentifier,
                                               String customerEmailAddress,
-                                              Dictionary<String, String> additionalTransactionMetadata)
+                                              Dictionary<String, String> additionalTransactionMetadata,
+                                              Guid contractId,
+                                              Guid productId)
         {
             this.TransactionId = transactionId;
             this.EstateId = estateId;
@@ -45,12 +46,30 @@ namespace TransactionProcessor.BusinessLogic.Requests
             this.OperatorIdentifier = operatorIdentifier;
             this.CustomerEmailAddress = customerEmailAddress;
             this.AdditionalTransactionMetadata = additionalTransactionMetadata;
+            this.ContractId = contractId;
+            this.ProductId = productId;
             this.TransactionType = transactionType;
         }
 
         #endregion
 
         #region Properties
+
+        /// <summary>
+        /// Gets or sets the additional transaction metadata.
+        /// </summary>
+        /// <value>
+        /// The additional transaction metadata.
+        /// </value>
+        public Dictionary<String, String> AdditionalTransactionMetadata { get; }
+
+        /// <summary>
+        /// Gets the customer email address.
+        /// </summary>
+        /// <value>
+        /// The customer email address.
+        /// </value>
+        public String CustomerEmailAddress { get; }
 
         /// <summary>
         /// Gets the device identifier.
@@ -75,6 +94,14 @@ namespace TransactionProcessor.BusinessLogic.Requests
         /// The merchant identifier.
         /// </value>
         public Guid MerchantId { get; }
+
+        /// <summary>
+        /// Gets or sets the operator identifier.
+        /// </summary>
+        /// <value>
+        /// The operator identifier.
+        /// </value>
+        public String OperatorIdentifier { get; }
 
         /// <summary>
         /// Gets the transaction date time.
@@ -109,28 +136,20 @@ namespace TransactionProcessor.BusinessLogic.Requests
         public String TransactionType { get; }
 
         /// <summary>
-        /// Gets or sets the operator identifier.
+        /// Gets the contract identifier.
         /// </summary>
         /// <value>
-        /// The operator identifier.
+        /// The contract identifier.
         /// </value>
-        public String OperatorIdentifier { get; }
+        public Guid ContractId { get; }
 
         /// <summary>
-        /// Gets the customer email address.
+        /// Gets the product identifier.
         /// </summary>
         /// <value>
-        /// The customer email address.
+        /// The product identifier.
         /// </value>
-        public String CustomerEmailAddress { get; private set; }
-
-        /// <summary>
-        /// Gets or sets the additional transaction metadata.
-        /// </summary>
-        /// <value>
-        /// The additional transaction metadata.
-        /// </value>
-        public Dictionary<String, String> AdditionalTransactionMetadata { get; }
+        public Guid ProductId { get; }
 
         #endregion
 
@@ -149,6 +168,8 @@ namespace TransactionProcessor.BusinessLogic.Requests
         /// <param name="operatorIdentifier">The operator identifier.</param>
         /// <param name="customerEmailAddress">The customer email address.</param>
         /// <param name="additionalTransactionMetadata">The additional transaction metadata.</param>
+        /// <param name="contractId">The contract identifier.</param>
+        /// <param name="productId">The product identifier.</param>
         /// <returns></returns>
         public static ProcessSaleTransactionRequest Create(Guid transactionId,
                                                            Guid estateId,
@@ -159,7 +180,9 @@ namespace TransactionProcessor.BusinessLogic.Requests
                                                            String transactionNumber,
                                                            String operatorIdentifier,
                                                            String customerEmailAddress,
-                                                           Dictionary<String, String> additionalTransactionMetadata)
+                                                           Dictionary<String, String> additionalTransactionMetadata,
+                                                           Guid contractId,
+                                                           Guid productId)
         {
             return new ProcessSaleTransactionRequest(transactionId,
                                                      estateId,
@@ -170,7 +193,9 @@ namespace TransactionProcessor.BusinessLogic.Requests
                                                      transactionNumber,
                                                      operatorIdentifier,
                                                      customerEmailAddress,
-                                                     additionalTransactionMetadata);
+                                                     additionalTransactionMetadata,
+                                                     contractId,
+                                                     productId);
         }
 
         #endregion

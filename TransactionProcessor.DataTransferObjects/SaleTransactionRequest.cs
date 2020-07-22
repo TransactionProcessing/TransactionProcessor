@@ -1,14 +1,38 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-
-namespace TransactionProcessor.DataTransferObjects
+﻿namespace TransactionProcessor.DataTransferObjects
 {
+    using System;
+    using System.Collections.Generic;
     using System.Diagnostics.CodeAnalysis;
 
     [ExcludeFromCodeCoverage]
     public class SaleTransactionRequest : DataTransferObject
     {
+        #region Properties
+
+        /// <summary>
+        /// Gets or sets the additional transaction metadata.
+        /// </summary>
+        /// <value>
+        /// The additional transaction metadata.
+        /// </value>
+        public Dictionary<String, String> AdditionalTransactionMetadata { get; set; }
+
+        /// <summary>
+        /// Gets or sets the contract identifier.
+        /// </summary>
+        /// <value>
+        /// The contract identifier.
+        /// </value>
+        public Guid ContractId { get; set; }
+
+        /// <summary>
+        /// Gets or sets the customer email address.
+        /// </summary>
+        /// <value>
+        /// The customer email address.
+        /// </value>
+        public String CustomerEmailAddress { get; set; }
+
         /// <summary>
         /// Gets or sets the device identifier.
         /// </summary>
@@ -16,6 +40,22 @@ namespace TransactionProcessor.DataTransferObjects
         /// The device identifier.
         /// </value>
         public String DeviceIdentifier { get; set; }
+
+        /// <summary>
+        /// Gets or sets the operator identifier.
+        /// </summary>
+        /// <value>
+        /// The operator identifier.
+        /// </value>
+        public String OperatorIdentifier { get; set; }
+
+        /// <summary>
+        /// Gets or sets the product identifier.
+        /// </summary>
+        /// <value>
+        /// The product identifier.
+        /// </value>
+        public Guid ProductId { get; set; }
 
         /// <summary>
         /// Gets or sets the transaction date time.
@@ -41,28 +81,6 @@ namespace TransactionProcessor.DataTransferObjects
         /// </value>
         public String TransactionType { get; set; }
 
-        /// <summary>
-        /// Gets or sets the operator identifier.
-        /// </summary>
-        /// <value>
-        /// The operator identifier.
-        /// </value>
-        public String OperatorIdentifier { get; set; }
-
-        /// <summary>
-        /// Gets or sets the customer email address.
-        /// </summary>
-        /// <value>
-        /// The customer email address.
-        /// </value>
-        public String CustomerEmailAddress { get; set; }
-
-        /// <summary>
-        /// Gets or sets the additional transaction metadata.
-        /// </summary>
-        /// <value>
-        /// The additional transaction metadata.
-        /// </value>
-        public Dictionary<String,String> AdditionalTransactionMetadata { get; set; }
+        #endregion
     }
 }

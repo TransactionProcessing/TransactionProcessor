@@ -76,6 +76,8 @@
                                                                                                                      request.OperatorIdentifier,
                                                                                                                      request.CustomerEmailAddress,
                                                                                                                      request.AdditionalTransactionMetadata,
+                                                                                                                     request.ContractId,
+                                                                                                                     request.ProductId,
                                                                                                                      cancellationToken);
 
             return saleResponse;

@@ -146,6 +146,8 @@
         /// <param name="operatorIdentifier">The operator identifier.</param>
         /// <param name="customerEmailAddress">The customer email address.</param>
         /// <param name="additionalTransactionMetadata">The additional transaction metadata.</param>
+        /// <param name="contractId">The contract identifier.</param>
+        /// <param name="productId">The product identifier.</param>
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns></returns>
         public async Task<ProcessSaleTransactionResponse> ProcessSaleTransaction(Guid transactionId,
@@ -157,6 +159,8 @@
                                                                                  String operatorIdentifier,
                                                                                  String customerEmailAddress,
                                                                                  Dictionary<String, String> additionalTransactionMetadata,
+                                                                                 Guid contractId,
+                                                                                 Guid productId,
                                                                                  CancellationToken cancellationToken)
         {
             TransactionType transactionType = TransactionType.Sale;
@@ -183,6 +187,9 @@
             
             if (validationResult.responseCode == TransactionResponseCode.Success)
             {
+                // Add the product details 
+                await this.TransactionAggregateManager.AddProductDetails(estateId, transactionId, contractId, productId, cancellationToken);
+
                 // Record any additional request metadata
                 await this.TransactionAggregateManager.RecordAdditionalRequestData(estateId,
                                                                                    transactionId,

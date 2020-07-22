@@ -219,5 +219,19 @@ namespace TransactionProcessor.BusinessLogic.Tests.Services
                                                                   TestData.CustomerEmailAddress,
                                                                   CancellationToken.None);
         }
+
+        [Fact]
+        public async Task TransactionAggregateManager_AddProductDetails_ProductDetailsAddedToTransaction()
+        {
+            Mock<IAggregateRepository<TransactionAggregate>> aggregateRepository = new Mock<IAggregateRepository<TransactionAggregate>>();
+            aggregateRepository.Setup(a => a.GetLatestVersion(It.IsAny<Guid>(), It.IsAny<CancellationToken>())).ReturnsAsync(TestData.GetStartedTransactionAggregate());
+            TransactionAggregateManager transactionAggregateManager = new TransactionAggregateManager(aggregateRepository.Object);
+
+            await transactionAggregateManager.AddProductDetails(TestData.EstateId,
+                                                                   TestData.TransactionId,
+                                                                   TestData.ContractId,
+                                                                   TestData.ProductId,
+                                                                   CancellationToken.None);
+        }
     }
 }
