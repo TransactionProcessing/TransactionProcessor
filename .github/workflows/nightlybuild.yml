@@ -3,6 +3,7 @@ name: Nightly Build
 on:
   schedule:
   - cron: "10 23 * * *"
+  repository_dispatch:
 
 jobs:
   build:
