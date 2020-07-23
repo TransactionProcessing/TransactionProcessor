@@ -247,7 +247,7 @@
                                                                                                       "sa",
                                                                                                       "thisisalongpassword123!"),
                                                                                                       ("serviceClient", "Secret1"),
-                                                                                                      false);
+                                                                                                      true);
 
             IContainerService securityServiceContainer = DockerHelper.SetupSecurityServiceContainer(this.SecurityServiceContainerName,
                                                                                                     this.Logger,
