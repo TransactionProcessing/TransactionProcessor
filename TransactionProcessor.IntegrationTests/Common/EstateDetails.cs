@@ -238,6 +238,10 @@
         /// <returns></returns>
         public Contract GetContract(String contractName)
         {
+            if (this.Contracts.Any() == false)
+            {
+                return null;
+            }
             return this.Contracts.Single(c => c.Description == contractName);
         }
 
