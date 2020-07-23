@@ -262,8 +262,15 @@ namespace TransactionProcessor.IntegrationTests.Shared
                         String contractDescription = SpecflowTableHelper.GetStringRowValue(tableRow, "ContractDescription");
                         String productName = SpecflowTableHelper.GetStringRowValue(tableRow, "ProductName");
 
+                        Guid contractId = Guid.Empty;
+                        Guid productId = Guid.Empty;
                         var contract = estateDetails.GetContract(contractDescription);
-                        var product = contract.GetProduct(productName);
+                        if (contract != null)
+                        {
+                            contractId = contract.ContractId;
+                            var product = contract.GetProduct(productName);
+                            productId = product.ProductId;
+                        }
 
                         transactionResponse = await this.PerformSaleTransaction(estateDetails.EstateId,
                                                                                 merchantId,
@@ -275,8 +282,8 @@ namespace TransactionProcessor.IntegrationTests.Shared
                                                                                 transactionAmount,
                                                                                 customerAccountNumber,
                                                                                 customerEmailAddress,
-                                                                                contract.ContractId,
-                                                                                product.ProductId,
+                                                                                contractId,
+                                                                                productId,
                                                                                 CancellationToken.None);
                         break;
                         
