@@ -173,7 +173,7 @@
 
             (String responseMessage, TransactionResponseCode responseCode) validationResult =
                 await this.ValidateSaleTransaction(estateId, merchantId, deviceIdentifier, operatorIdentifier, transactionAmount, cancellationToken);
-
+            
             await this.TransactionAggregateManager.StartTransaction(transactionId,
                                                                     transactionDateTime,
                                                                     transactionNumber,
@@ -184,12 +184,12 @@
                                                                     deviceIdentifier,
                                                                     transactionAmount,
                                                                     cancellationToken);
-            
+
+            // Add the product details 
+            await this.TransactionAggregateManager.AddProductDetails(estateId, transactionId, contractId, productId, cancellationToken);
+
             if (validationResult.responseCode == TransactionResponseCode.Success)
             {
-                // Add the product details 
-                await this.TransactionAggregateManager.AddProductDetails(estateId, transactionId, contractId, productId, cancellationToken);
-
                 // Record any additional request metadata
                 await this.TransactionAggregateManager.RecordAdditionalRequestData(estateId,
                                                                                    transactionId,

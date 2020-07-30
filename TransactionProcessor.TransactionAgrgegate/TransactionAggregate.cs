@@ -497,6 +497,8 @@
             Guard.ThrowIfInvalidGuid(contractId, typeof(ArgumentException), $"Contract Id must not be [{Guid.Empty}]");
             Guard.ThrowIfInvalidGuid(productId, typeof(ArgumentException), $"Product Id must not be [{Guid.Empty}]");
 
+            this.CheckTransactionHasBeenStarted();
+            this.CheckTransactionNotAlreadyCompleted();
             this.CheckProductDetailsNotAlreadyAdded();
 
             ProductDetailsAddedToTransactionEvent productDetailsAddedToTransactionEvent = ProductDetailsAddedToTransactionEvent.Create(this.AggregateId,
