@@ -4,6 +4,7 @@
     using System.Collections.Generic;
     using System.Threading;
     using System.Threading.Tasks;
+    using EventHandling;
     using Models;
     using OperatorInterfaces;
     using TransactionAggregate;
@@ -29,6 +30,19 @@
                                Guid contractId,
                                Guid productId,
                                CancellationToken cancellationToken);
+
+        /// <summary>
+        /// Adds the fee.
+        /// </summary>
+        /// <param name="estateId">The estate identifier.</param>
+        /// <param name="transactionId">The transaction identifier.</param>
+        /// <param name="calculatedFee">The calculated fee.</param>
+        /// <param name="cancellationToken">The cancellation token.</param>
+        /// <returns></returns>
+        Task AddFee(Guid estateId,
+                    Guid transactionId,
+                    CalculatedFee calculatedFee,
+                    CancellationToken cancellationToken);
 
         /// <summary>
         /// Authorises the transaction.

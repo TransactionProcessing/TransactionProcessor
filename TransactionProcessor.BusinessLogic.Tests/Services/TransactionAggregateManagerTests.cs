@@ -4,6 +4,7 @@ using System.Text;
 
 namespace TransactionProcessor.BusinessLogic.Tests.Services
 {
+    using System.Linq;
     using System.Threading;
     using System.Threading.Tasks;
     using BusinessLogic.Services;
@@ -80,7 +81,7 @@ namespace TransactionProcessor.BusinessLogic.Tests.Services
         public async Task TransactionAggregateManager_GetAggregate_AggregateReturned()
         {
             Mock<IAggregateRepository<TransactionAggregate>> aggregateRepository = new Mock<IAggregateRepository<TransactionAggregate>>();
-            aggregateRepository.Setup(a => a.GetLatestVersion(It.IsAny<Guid>(), It.IsAny<CancellationToken>())).ReturnsAsync(TestData.GetCompletedTransactionAggregate);
+            aggregateRepository.Setup(a => a.GetLatestVersion(It.IsAny<Guid>(), It.IsAny<CancellationToken>())).ReturnsAsync(TestData.GetCompletedLogonTransactionAggregate);
             TransactionAggregateManager transactionAggregateManager = new TransactionAggregateManager(aggregateRepository.Object);
 
             TransactionAggregate result = await transactionAggregateManager.GetAggregate(TestData.EstateId,
@@ -211,7 +212,7 @@ namespace TransactionProcessor.BusinessLogic.Tests.Services
         public async Task TransactionAggregateManager_RequestEmailReceipt_EmailRecieptRequested()
         {
             Mock<IAggregateRepository<TransactionAggregate>> aggregateRepository = new Mock<IAggregateRepository<TransactionAggregate>>();
-            aggregateRepository.Setup(a => a.GetLatestVersion(It.IsAny<Guid>(), It.IsAny<CancellationToken>())).ReturnsAsync(TestData.GetCompletedTransactionAggregate);
+            aggregateRepository.Setup(a => a.GetLatestVersion(It.IsAny<Guid>(), It.IsAny<CancellationToken>())).ReturnsAsync(TestData.GetCompletedLogonTransactionAggregate);
             TransactionAggregateManager transactionAggregateManager = new TransactionAggregateManager(aggregateRepository.Object);
 
             await transactionAggregateManager.RequestEmailReceipt(TestData.EstateId,
@@ -232,6 +233,19 @@ namespace TransactionProcessor.BusinessLogic.Tests.Services
                                                                    TestData.ContractId,
                                                                    TestData.ProductId,
                                                                    CancellationToken.None);
+        }
+
+        [Fact]
+        public async Task TransactionAggregateManager_AddFee_FeeAddedToTransaction()
+        {
+            Mock<IAggregateRepository<TransactionAggregate>> aggregateRepository = new Mock<IAggregateRepository<TransactionAggregate>>();
+            aggregateRepository.Setup(a => a.GetLatestVersion(It.IsAny<Guid>(), It.IsAny<CancellationToken>())).ReturnsAsync(TestData.GetCompletedAuthorisedSaleTransactionAggregate);
+            TransactionAggregateManager transactionAggregateManager = new TransactionAggregateManager(aggregateRepository.Object);
+
+            await transactionAggregateManager.AddFee(TestData.EstateId,
+                                                     TestData.TransactionId,
+                                                     TestData.CalculatedMerchantFees.First(),
+                                                     CancellationToken.None);
         }
     }
 }

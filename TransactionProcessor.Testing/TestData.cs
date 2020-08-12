@@ -6,10 +6,14 @@
     using BusinessLogic.OperatorInterfaces.SafaricomPinless;
     using BusinessLogic.Requests;
     using BusinessLogic.Services;
+    using EstateManagement.DataTransferObjects;
     using EstateManagement.DataTransferObjects.Responses;
     using Models;
     using SecurityService.DataTransferObjects.Responses;
+    using Transaction.DomainEvents;
     using TransactionAggregate;
+    using CalculationType = Models.CalculationType;
+    using FeeType = Models.FeeType;
 
     public class TestData
     {
@@ -416,7 +420,7 @@
 
         #region Methods
 
-        public static TransactionAggregate GetCompletedTransactionAggregate()
+        public static TransactionAggregate GetCompletedLogonTransactionAggregate()
         {
             TransactionAggregate transactionAggregate = TransactionAggregate.Create(TestData.TransactionId);
 
@@ -430,6 +434,132 @@
                                                   TestData.TransactionAmount);
 
             transactionAggregate.AuthoriseTransactionLocally(TestData.AuthorisationCode, TestData.ResponseCode, TestData.ResponseMessage);
+
+            transactionAggregate.CompleteTransaction();
+
+            return transactionAggregate;
+        }
+
+        public static TransactionAggregate GetCompletedAuthorisedSaleTransactionAggregate()
+        {
+            TransactionAggregate transactionAggregate = TransactionAggregate.Create(TestData.TransactionId);
+
+            transactionAggregate.StartTransaction(TestData.TransactionDateTime,
+                                                  TestData.TransactionNumber,
+                                                  TestData.TransactionTypeSale,
+                                                  TestData.TransactionReference,
+                                                  TestData.EstateId,
+                                                  TestData.MerchantId,
+                                                  TestData.DeviceIdentifier,
+                                                  TestData.TransactionAmount);
+
+            transactionAggregate.AddProductDetails(TestData.ContractId, TestData.ProductId);
+
+            transactionAggregate.AuthoriseTransaction(TestData.OperatorIdentifier1,
+                                                      TestData.AuthorisationCode,
+                                                      TestData.OperatorResponseCode,
+                                                      TestData.OperatorResponseMessage,
+                                                      TestData.OperatorTransactionId,
+                                                      TestData.ResponseCode,
+                                                      TestData.ResponseMessage);
+
+            transactionAggregate.CompleteTransaction();
+
+            return transactionAggregate;
+        }
+
+        public static TransactionAggregate GetCompletedDeclinedSaleTransactionAggregate()
+        {
+            TransactionAggregate transactionAggregate = TransactionAggregate.Create(TestData.TransactionId);
+
+            transactionAggregate.StartTransaction(TestData.TransactionDateTime,
+                                                  TestData.TransactionNumber,
+                                                  TestData.TransactionTypeSale,
+                                                  TestData.TransactionReference,
+                                                  TestData.EstateId,
+                                                  TestData.MerchantId,
+                                                  TestData.DeviceIdentifier,
+                                                  TestData.TransactionAmount);
+
+            transactionAggregate.AddProductDetails(TestData.ContractId, TestData.ProductId);
+
+            transactionAggregate.DeclineTransaction(TestData.OperatorIdentifier1,
+                                                      TestData.OperatorResponseCode,
+                                                      TestData.OperatorResponseMessage,
+                                                      TestData.ResponseCode,
+                                                      TestData.ResponseMessage);
+
+            transactionAggregate.CompleteTransaction();
+
+            return transactionAggregate;
+        }
+
+        public static TransactionAggregate GetIncompleteAuthorisedSaleTransactionAggregate()
+        {
+            TransactionAggregate transactionAggregate = TransactionAggregate.Create(TestData.TransactionId);
+
+            transactionAggregate.StartTransaction(TestData.TransactionDateTime,
+                                                  TestData.TransactionNumber,
+                                                  TestData.TransactionTypeSale,
+                                                  TestData.TransactionReference,
+                                                  TestData.EstateId,
+                                                  TestData.MerchantId,
+                                                  TestData.DeviceIdentifier,
+                                                  TestData.TransactionAmount);
+
+            transactionAggregate.AddProductDetails(TestData.ContractId, TestData.ProductId);
+
+            transactionAggregate.DeclineTransaction(TestData.OperatorIdentifier1,
+                                                    TestData.OperatorResponseCode,
+                                                    TestData.OperatorResponseMessage,
+                                                    TestData.ResponseCode,
+                                                    TestData.ResponseMessage);
+            
+            return transactionAggregate;
+        }
+
+        public static TransactionAggregate GetCompletedAuthorisedLogonTransactionAggregate()
+        {
+            TransactionAggregate transactionAggregate = TransactionAggregate.Create(TestData.TransactionId);
+
+            transactionAggregate.StartTransaction(TestData.TransactionDateTime,
+                                                  TestData.TransactionNumber,
+                                                  TestData.TransactionTypeLogon,
+                                                  TestData.TransactionReference,
+                                                  TestData.EstateId,
+                                                  TestData.MerchantId,
+                                                  TestData.DeviceIdentifier,
+                                                  TestData.TransactionAmount);
+
+            transactionAggregate.AuthoriseTransactionLocally(TestData.AuthorisationCode,
+                                                             TestData.ResponseCode,
+                                                             TestData.ResponseMessage);
+
+            transactionAggregate.CompleteTransaction();
+
+            return transactionAggregate;
+        }
+
+        public static TransactionAggregate GetCompletedAuthorisedSaleWithNoProductDetailsTransactionAggregate()
+        {
+            TransactionAggregate transactionAggregate = TransactionAggregate.Create(TestData.TransactionId);
+
+            transactionAggregate.StartTransaction(TestData.TransactionDateTime,
+                                                  TestData.TransactionNumber,
+                                                  TestData.TransactionTypeSale,
+                                                  TestData.TransactionReference,
+                                                  TestData.EstateId,
+                                                  TestData.MerchantId,
+                                                  TestData.DeviceIdentifier,
+                                                  TestData.TransactionAmount);
+            
+            transactionAggregate.AuthoriseTransaction(TestData.OperatorIdentifier1,
+                                                      TestData.AuthorisationCode,
+                                                      TestData.OperatorResponseCode,
+                                                      TestData.OperatorResponseMessage,
+                                                      TestData.OperatorTransactionId,
+                                                      TestData.ResponseCode,
+                                                      TestData.ResponseMessage);
 
             transactionAggregate.CompleteTransaction();
 
@@ -530,6 +660,74 @@
         {
             return SecurityService.DataTransferObjects.Responses.TokenResponse.Create("AccessToken", string.Empty, 100);
         }
+
+        public static TransactionHasBeenCompletedEvent TransactionHasBeenCompletedEvent = TransactionHasBeenCompletedEvent.Create(TestData.TransactionId,
+                                                                                                                                  TestData.EstateId,
+                                                                                                                                  TestData.MerchantId,
+                                                                                                                                  TestData.ResponseCode,
+                                                                                                                                  TestData.ResponseMessage,
+                                                                                                                                  TestData.IsAuthorised);
+
+        public static Guid TransactionFeeId = Guid.Parse("B83FCCCE-0D45-4FC2-8952-ED277A124BDB");
+
+        public static String TransactionFeeDescription = "Commission for Merchant";
+
+        public static Decimal TransactionFeeValue = 0.5m;
+        public static Decimal CalculatedFeeValue = 0.5m;
+
+        public static List<ContractProductTransactionFee> ContractProductTransactionFees =>
+            new List<ContractProductTransactionFee>
+            {
+                new ContractProductTransactionFee
+                {
+                    Value = TestData.TransactionFeeValue,
+                    TransactionFeeId = TestData.TransactionFeeId,
+                    Description = TestData.TransactionFeeDescription,
+                    CalculationType = (EstateManagement.DataTransferObjects.CalculationType)CalculationType.Fixed
+                }
+            };
+
+        public static CalculatedFee CalculatedFeeMerchantFee =>
+            new CalculatedFee
+            {
+                CalculatedValue = TestData.CalculatedFeeValue,
+                FeeCalculationType = CalculationType.Fixed,
+                FeeId = TestData.TransactionFeeId,
+                FeeValue = TestData.TransactionFeeValue,
+                FeeType = FeeType.Merchant
+            };
+
+        public static CalculatedFee CalculatedFeeServiceProviderFee =>
+            new CalculatedFee
+            {
+                CalculatedValue = TestData.CalculatedFeeValue,
+                FeeCalculationType = CalculationType.Fixed,
+                FeeId = TestData.TransactionFeeId,
+                FeeValue = TestData.TransactionFeeValue,
+                FeeType = FeeType.ServiceProvider
+            };
+
+        public static CalculatedFee CalculatedFeeUnsupportedFee =>
+            new CalculatedFee
+            {
+                CalculatedValue = TestData.CalculatedFeeValue,
+                FeeCalculationType = CalculationType.Fixed,
+                FeeId = TestData.TransactionFeeId,
+                FeeValue = TestData.TransactionFeeValue,
+                FeeType = (FeeType)99
+            };
+
+        public static List<CalculatedFee> CalculatedMerchantFees =>
+            new List<CalculatedFee>
+            {
+                TestData.CalculatedFeeMerchantFee
+            };
+
+        public static List<CalculatedFee> CalculatedServiceProviderFees =>
+            new List<CalculatedFee>
+            {
+                TestData.CalculatedFeeServiceProviderFee
+            };
 
         #endregion
     }

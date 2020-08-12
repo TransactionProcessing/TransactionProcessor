@@ -364,12 +364,21 @@
                     // Create an Event Store Server
                     await this.InsertEventStoreServer(connection, this.EventStoreContainerName).ConfigureAwait(false);
 
-                    String endPointUri = $"http://{this.EstateReportingContainerName}:5005/api/domainevents";
+                    String reportingEndPointUri = $"http://{this.EstateReportingContainerName}:5005/api/domainevents";
+                    String transactionProcessorEndPointUri = $"http://{this.TransactionProcessorContainerName}:5002/api/domainevents";
+
                     // Add Route for Estate Aggregate Events
-                    await this.InsertSubscription(connection, "$ce-EstateAggregate", "Reporting", endPointUri).ConfigureAwait(false);
+                    await this.InsertSubscription(connection, "$ce-EstateAggregate", "Reporting", reportingEndPointUri).ConfigureAwait(false);
 
                     // Add Route for Merchant Aggregate Events
-                    await this.InsertSubscription(connection, "$ce-MerchantAggregate", "Reporting", endPointUri).ConfigureAwait(false);
+                    await this.InsertSubscription(connection, "$ce-MerchantAggregate", "Reporting", reportingEndPointUri).ConfigureAwait(false);
+
+                    // Add Route for Contract Aggregate Events
+                    await this.InsertSubscription(connection, "$ce-ContractAggregate", "Reporting", reportingEndPointUri).ConfigureAwait(false);
+
+                    // Add Route for Transaction Aggregate Events
+                    await this.InsertSubscription(connection, "$ce-TransactionAggregate", "Reporting", reportingEndPointUri).ConfigureAwait(false);
+                    await this.InsertSubscription(connection, "$et-TransactionProcessor.Transaction.DomainEvents.TransactionHasBeenCompletedEvent", "Transaction Processor", transactionProcessorEndPointUri).ConfigureAwait(false);
 
                     await connection.CloseAsync().ConfigureAwait(false);
                 }

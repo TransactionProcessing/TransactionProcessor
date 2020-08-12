@@ -16,6 +16,8 @@ namespace TransactionProcessor
     using System.IO;
     using System.Net.Http;
     using System.Reflection;
+    using BusinessLogic.EventHandling;
+    using BusinessLogic.Manager;
     using BusinessLogic.OperatorInterfaces;
     using BusinessLogic.OperatorInterfaces.SafaricomPinless;
     using BusinessLogic.RequestHandlers;
@@ -25,6 +27,7 @@ namespace TransactionProcessor
     using EstateManagement.Client;
     using EventStore.Client;
     using MediatR;
+    using MessagingService.BusinessLogic.EventHandling;
     using Microsoft.AspNetCore.Authentication.JwtBearer;
     using Microsoft.AspNetCore.Mvc.ApiExplorer;
     using Microsoft.AspNetCore.Mvc.Versioning;
@@ -178,6 +181,29 @@ namespace TransactionProcessor
                                                                  HttpClient client = context.GetRequiredService<HttpClient>();
                                                                  return new SafaricomPinlessProxy(configuration, client);
                                                              });
+
+            Dictionary<String, String[]> eventHandlersConfiguration = new Dictionary<String, String[]>();
+
+            if (Startup.Configuration != null)
+            {
+                IConfigurationSection section = Startup.Configuration.GetSection("AppSettings:EventHandlerConfiguration");
+
+                if (section != null)
+                {
+                    Startup.Configuration.GetSection("AppSettings:EventHandlerConfiguration").Bind(eventHandlersConfiguration);
+                }
+            }
+            services.AddSingleton<Dictionary<String, String[]>>(eventHandlersConfiguration);
+
+            services.AddSingleton<Func<Type, IDomainEventHandler>>(container => (type) =>
+                                                                                {
+                                                                                    IDomainEventHandler handler = container.GetService(type) as IDomainEventHandler;
+                                                                                    return handler;
+                                                                                });
+
+            services.AddSingleton<TransactionDomainEventHandler>();
+            services.AddSingleton<IDomainEventHandlerResolver, DomainEventHandlerResolver>();
+            services.AddSingleton<IFeeCalculationManager, FeeCalculationManager>();
         }
 
         

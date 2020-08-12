@@ -4,6 +4,7 @@
     using System.Collections.Generic;
     using System.Threading;
     using System.Threading.Tasks;
+    using EventHandling;
     using Microsoft.EntityFrameworkCore.Internal;
     using Models;
     using OperatorInterfaces;
@@ -59,6 +60,26 @@
             transactionAggregate.AddProductDetails(contractId, productId);
 
             await this.TransactionAggregateRepository.SaveChanges(transactionAggregate, cancellationToken);
+        }
+
+        /// <summary>
+        /// Adds the fee.
+        /// </summary>
+        /// <param name="estateId">The estate identifier.</param>
+        /// <param name="transactionId">The transaction identifier.</param>
+        /// <param name="calculatedFee">The calculated fee.</param>
+        /// <param name="cancellationToken">The cancellation token.</param>
+        public async Task AddFee(Guid estateId,
+                                 Guid transactionId,
+                                 CalculatedFee calculatedFee,
+                                 CancellationToken cancellationToken)
+        {
+            TransactionAggregate transactionAggregate = await this.TransactionAggregateRepository.GetLatestVersion(transactionId, cancellationToken);
+            
+            transactionAggregate.AddFee(calculatedFee);
+
+            await this.TransactionAggregateRepository.SaveChanges(transactionAggregate, cancellationToken);
+
         }
 
         /// <summary>
