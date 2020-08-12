@@ -185,9 +185,12 @@
                                                                     transactionAmount,
                                                                     cancellationToken);
 
-            // Add the product details 
-            await this.TransactionAggregateManager.AddProductDetails(estateId, transactionId, contractId, productId, cancellationToken);
-
+            // Add the product details (unless invalid estate)
+            if (validationResult.responseCode != TransactionResponseCode.InvalidEstateId)
+            {
+                await this.TransactionAggregateManager.AddProductDetails(estateId, transactionId, contractId, productId, cancellationToken);
+            }
+            
             if (validationResult.responseCode == TransactionResponseCode.Success)
             {
                 // Record any additional request metadata
