@@ -29,16 +29,20 @@
         /// <param name="aggregateId">The aggregate identifier.</param>
         /// <param name="eventId">The event identifier.</param>
         /// <param name="estateId">The estate identifier.</param>
+        /// <param name="merchantId">The merchant identifier.</param>
         /// <param name="contractId">The contract identifier.</param>
         /// <param name="productId">The product identifier.</param>
         private ProductDetailsAddedToTransactionEvent(Guid aggregateId,
                                                       Guid eventId,
                                                       Guid estateId,
+                                                      Guid merchantId,
                                                       Guid contractId,
                                                       Guid productId) : base(aggregateId, eventId)
         {
             this.TransactionId = aggregateId;
+            this.EventId = eventId;
             this.EstateId = estateId;
+            this.MerchantId = merchantId;
             this.ContractId = contractId;
             this.ProductId = productId;
         }
@@ -66,6 +70,15 @@
         public Guid EstateId { get; private set; }
 
         /// <summary>
+        /// Gets the merchant identifier.
+        /// </summary>
+        /// <value>
+        /// The merchant identifier.
+        /// </value>
+        [JsonProperty]
+        public Guid MerchantId { get; private set; }
+
+        /// <summary>
         /// Gets the product identifier.
         /// </summary>
         /// <value>
@@ -83,6 +96,8 @@
         [JsonProperty]
         public Guid TransactionId { get; private set; }
 
+        public Guid EventId { get; private set; }
+
         #endregion
 
         #region Methods
@@ -92,15 +107,17 @@
         /// </summary>
         /// <param name="aggregateId">The aggregate identifier.</param>
         /// <param name="estateId">The estate identifier.</param>
+        /// <param name="merchantId">The merchant identifier.</param>
         /// <param name="contractId">The contract identifier.</param>
         /// <param name="productId">The product identifier.</param>
         /// <returns></returns>
         public static ProductDetailsAddedToTransactionEvent Create(Guid aggregateId,
                                                                    Guid estateId,
+                                                                   Guid merchantId,
                                                                    Guid contractId,
                                                                    Guid productId)
         {
-            return new ProductDetailsAddedToTransactionEvent(aggregateId, Guid.NewGuid(), estateId, contractId, productId);
+            return new ProductDetailsAddedToTransactionEvent(aggregateId, Guid.NewGuid(), estateId, merchantId, contractId, productId);
         }
 
         #endregion

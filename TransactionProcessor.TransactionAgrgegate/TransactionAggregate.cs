@@ -3,6 +3,7 @@
     using System;
     using System.Collections.Generic;
     using System.Diagnostics.CodeAnalysis;
+    using System.Linq;
     using System.Text.RegularExpressions;
     using Models;
     using Shared.DomainDrivenDesign.EventSourcing;
@@ -13,6 +14,7 @@
     /// <summary>
     /// 
     /// </summary>
+    /// <seealso cref="Shared.EventStore.EventStore.Aggregate" />
     /// <seealso cref="Aggregate" />
     public class TransactionAggregate : Aggregate
     {
@@ -28,6 +30,11 @@
         /// </summary>
         private Dictionary<String, String> AdditionalTransactionResponseMetadata;
 
+        /// <summary>
+        /// The calculated fees
+        /// </summary>
+        private readonly List<CalculatedFee> CalculatedFees;
+
         #endregion
 
         #region Constructors
@@ -38,7 +45,7 @@
         [ExcludeFromCodeCoverage]
         public TransactionAggregate()
         {
-            // Nothing here
+            this.CalculatedFees = new List<CalculatedFee>();
         }
 
         /// <summary>
@@ -50,6 +57,7 @@
             Guard.ThrowIfInvalidGuid(aggregateId, "Aggregate Id cannot be an Empty Guid");
 
             this.AggregateId = aggregateId;
+            this.CalculatedFees = new List<CalculatedFee>();
         }
 
         #endregion
@@ -63,6 +71,14 @@
         /// The authorisation code.
         /// </value>
         public String AuthorisationCode { get; private set; }
+
+        /// <summary>
+        /// Gets the contract identifier.
+        /// </summary>
+        /// <value>
+        /// The contract identifier.
+        /// </value>
+        public Guid ContractId { get; private set; }
 
         /// <summary>
         /// Gets a value indicating whether [customer email receipt has been requested].
@@ -87,21 +103,6 @@
         /// The estate identifier.
         /// </value>
         public Guid EstateId { get; private set; }
-
-        /// <summary>
-        /// Gets the contract identifier.
-        /// </summary>
-        /// <value>
-        /// The contract identifier.
-        /// </value>
-        public Guid ContractId { get; private set; }
-        /// <summary>
-        /// Gets the product identifier.
-        /// </summary>
-        /// <value>
-        /// The product identifier.
-        /// </value>
-        public Guid ProductId { get; private set; }
 
         /// <summary>
         /// Gets a value indicating whether this instance is authorised.
@@ -144,6 +145,14 @@
         public Boolean IsLocallyDeclined { get; private set; }
 
         /// <summary>
+        /// Gets a value indicating whether this instance is product details added.
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if this instance is product details added; otherwise, <c>false</c>.
+        /// </value>
+        public Boolean IsProductDetailsAdded { get; private set; }
+
+        /// <summary>
         /// Gets a value indicating whether this instance is started.
         /// </summary>
         /// <value>
@@ -182,6 +191,14 @@
         /// The operator transaction identifier.
         /// </value>
         public String OperatorTransactionId { get; private set; }
+
+        /// <summary>
+        /// Gets the product identifier.
+        /// </summary>
+        /// <value>
+        /// The product identifier.
+        /// </value>
+        public Guid ProductId { get; private set; }
 
         /// <summary>
         /// Gets the response code.
@@ -242,6 +259,79 @@
         #endregion
 
         #region Methods
+
+        /// <summary>
+        /// Adds the fee.
+        /// </summary>
+        /// <param name="calculatedFee">The calculated fee.</param>
+        /// <exception cref="ArgumentNullException">calculatedFee</exception>
+        /// <exception cref="InvalidOperationException">Unsupported Fee Type</exception>
+        public void AddFee(CalculatedFee calculatedFee)
+        {
+            if (calculatedFee == null)
+            {
+                throw new ArgumentNullException(nameof(calculatedFee));
+            }
+
+            this.CheckFeeHasNotAlreadyBeenAdded(calculatedFee);
+            this.CheckTransactionHasBeenAuthorised();
+            this.CheckTransactionHasBeenCompleted();
+            this.CheckTransactionCanAttractFees();
+
+            DomainEvent @event = null;
+            if (calculatedFee.FeeType == FeeType.Merchant)
+            {
+                // This is a merchant fee
+                @event = MerchantFeeAddedToTransactionEvent.Create(this.AggregateId,
+                                                                   this.EstateId,
+                                                                   this.MerchantId,
+                                                                   calculatedFee.CalculatedValue,
+                                                                   (Int32)calculatedFee.FeeCalculationType,
+                                                                   calculatedFee.FeeId,
+                                                                   calculatedFee.FeeValue);
+            }
+            else if (calculatedFee.FeeType == FeeType.ServiceProvider)
+            {
+                // This is an operational (service provider) fee
+                @event = ServiceProviderFeeAddedToTransactionEvent.Create(this.AggregateId,
+                                                                          this.EstateId,
+                                                                          this.MerchantId,
+                                                                          calculatedFee.CalculatedValue,
+                                                                          (Int32)calculatedFee.FeeCalculationType,
+                                                                          calculatedFee.FeeId,
+                                                                          calculatedFee.FeeValue);
+            }
+            else
+            {
+                throw new InvalidOperationException("Unsupported Fee Type");
+            }
+
+            if (@event != null)
+            {
+                this.ApplyAndPend(@event);
+            }
+        }
+
+        /// <summary>
+        /// Adds the product details.
+        /// </summary>
+        /// <param name="contractId">The contract identifier.</param>
+        /// <param name="productId">The product identifier.</param>
+        public void AddProductDetails(Guid contractId,
+                                      Guid productId)
+        {
+            Guard.ThrowIfInvalidGuid(contractId, typeof(ArgumentException), $"Contract Id must not be [{Guid.Empty}]");
+            Guard.ThrowIfInvalidGuid(productId, typeof(ArgumentException), $"Product Id must not be [{Guid.Empty}]");
+
+            this.CheckTransactionHasBeenStarted();
+            this.CheckTransactionNotAlreadyCompleted();
+            this.CheckProductDetailsNotAlreadyAdded();
+
+            ProductDetailsAddedToTransactionEvent productDetailsAddedToTransactionEvent =
+                ProductDetailsAddedToTransactionEvent.Create(this.AggregateId, this.EstateId, this.MerchantId, contractId, productId);
+
+            this.ApplyAndPend(productDetailsAddedToTransactionEvent);
+        }
 
         /// <summary>
         /// Authorises the transaction.
@@ -374,6 +464,15 @@
         }
 
         /// <summary>
+        /// Gets the fees.
+        /// </summary>
+        /// <returns></returns>
+        public List<CalculatedFee> GetFees()
+        {
+            return this.CalculatedFees;
+        }
+
+        /// <summary>
         /// Records the additional request data.
         /// </summary>
         /// <param name="operatorIdentifier">The operator identifier.</param>
@@ -487,29 +586,6 @@
         }
 
         /// <summary>
-        /// Adds the product details.
-        /// </summary>
-        /// <param name="contractId">The contract identifier.</param>
-        /// <param name="productId">The product identifier.</param>
-        public void AddProductDetails(Guid contractId,
-                                      Guid productId)
-        {
-            Guard.ThrowIfInvalidGuid(contractId, typeof(ArgumentException), $"Contract Id must not be [{Guid.Empty}]");
-            Guard.ThrowIfInvalidGuid(productId, typeof(ArgumentException), $"Product Id must not be [{Guid.Empty}]");
-
-            this.CheckTransactionHasBeenStarted();
-            this.CheckTransactionNotAlreadyCompleted();
-            this.CheckProductDetailsNotAlreadyAdded();
-
-            ProductDetailsAddedToTransactionEvent productDetailsAddedToTransactionEvent = ProductDetailsAddedToTransactionEvent.Create(this.AggregateId,
-                                                                                                                                       this.EstateId,
-                                                                                                                                       contractId,
-                                                                                                                                       productId);
-
-            this.ApplyAndPend(productDetailsAddedToTransactionEvent);
-        }
-
-        /// <summary>
         /// Gets the metadata.
         /// </summary>
         /// <returns></returns>
@@ -529,14 +605,6 @@
         protected override void PlayEvent(DomainEvent domainEvent)
         {
             this.PlayEvent((dynamic)domainEvent);
-        }
-
-        private void CheckProductDetailsNotAlreadyAdded()
-        {
-            if (this.IsProductDetailsAdded)
-            {
-                throw new InvalidOperationException("Product details already added");
-            }
         }
 
         /// <summary>
@@ -576,6 +644,43 @@
         }
 
         /// <summary>
+        /// Checks the fee has not already been added.
+        /// </summary>
+        /// <param name="calculatedFee">The calculated fee.</param>
+        /// <exception cref="InvalidOperationException">Fee with Id [{calculatedFee.FeeId}] has already been added to this transaction</exception>
+        private void CheckFeeHasNotAlreadyBeenAdded(CalculatedFee calculatedFee)
+        {
+            if (this.CalculatedFees.Any(c => c.FeeId == calculatedFee.FeeId))
+            {
+                throw new InvalidOperationException($"Fee with Id [{calculatedFee.FeeId}] has already been added to this transaction");
+            }
+        }
+
+        /// <summary>
+        /// Checks the product details not already added.
+        /// </summary>
+        /// <exception cref="InvalidOperationException">Product details already added</exception>
+        private void CheckProductDetailsNotAlreadyAdded()
+        {
+            if (this.IsProductDetailsAdded)
+            {
+                throw new InvalidOperationException("Product details already added");
+            }
+        }
+
+        /// <summary>
+        /// Checks the transaction can attract fees.
+        /// </summary>
+        /// <exception cref="NotSupportedException">Transactions of type {this.TransactionType} cannot attract fees</exception>
+        private void CheckTransactionCanAttractFees()
+        {
+            if (this.TransactionType != TransactionType.Sale)
+            {
+                throw new NotSupportedException($"Transactions of type {this.TransactionType} cannot attract fees");
+            }
+        }
+
+        /// <summary>
         /// Checks the transaction can be locally authorised.
         /// </summary>
         /// <exception cref="InvalidOperationException">Sales cannot be locally authorised</exception>
@@ -585,6 +690,18 @@
             if (this.TransactionType == TransactionType.Sale)
             {
                 throw new InvalidOperationException("Sales cannot be locally authorised");
+            }
+        }
+
+        /// <summary>
+        /// Checks the transaction has been authorised.
+        /// </summary>
+        /// <exception cref="InvalidOperationException">Transaction [{this.AggregateId}] has not been authorised</exception>
+        private void CheckTransactionHasBeenAuthorised()
+        {
+            if (this.IsLocallyAuthorised == false && this.IsAuthorised == false)
+            {
+                throw new InvalidOperationException($"Transaction [{this.AggregateId}] has not been authorised");
             }
         }
 
@@ -783,6 +900,10 @@
             this.ResponseMessage = domainEvent.ResponseMessage;
         }
 
+        /// <summary>
+        /// Plays the event.
+        /// </summary>
+        /// <param name="domainEvent">The domain event.</param>
         private void PlayEvent(ProductDetailsAddedToTransactionEvent domainEvent)
         {
             this.IsProductDetailsAdded = true;
@@ -791,12 +912,36 @@
         }
 
         /// <summary>
-        /// Gets a value indicating whether this instance is product details added.
+        /// Plays the event.
         /// </summary>
-        /// <value>
-        ///   <c>true</c> if this instance is product details added; otherwise, <c>false</c>.
-        /// </value>
-        public Boolean IsProductDetailsAdded { get; private set; }
+        /// <param name="domainEvent">The domain event.</param>
+        private void PlayEvent(MerchantFeeAddedToTransactionEvent domainEvent)
+        {
+            this.CalculatedFees.Add(new CalculatedFee
+                                    {
+                                        CalculatedValue = domainEvent.CalculatedValue,
+                                        FeeId = domainEvent.FeeId,
+                                        FeeType = FeeType.Merchant,
+                                        FeeValue = domainEvent.FeeValue,
+                                        FeeCalculationType = (CalculationType)domainEvent.FeeCalculationType
+                                    });
+        }
+
+        /// <summary>
+        /// Plays the event.
+        /// </summary>
+        /// <param name="domainEvent">The domain event.</param>
+        private void PlayEvent(ServiceProviderFeeAddedToTransactionEvent domainEvent)
+        {
+            this.CalculatedFees.Add(new CalculatedFee
+                                    {
+                                        CalculatedValue = domainEvent.CalculatedValue,
+                                        FeeId = domainEvent.FeeId,
+                                        FeeType = FeeType.ServiceProvider,
+                                        FeeValue = domainEvent.FeeValue,
+                                        FeeCalculationType = (CalculationType)domainEvent.FeeCalculationType
+                                    });
+        }
 
         #endregion
     }

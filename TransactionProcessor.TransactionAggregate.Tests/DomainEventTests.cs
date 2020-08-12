@@ -4,11 +4,13 @@ using System.Text;
 
 namespace TransactionProcessor.TransactionAggregate.Tests
 {
+    using EstateManagement.DataTransferObjects;
     using Models;
     using Shouldly;
     using Testing;
     using Transaction.DomainEvents;
     using Xunit;
+    using CalculationType = Models.CalculationType;
 
     public class DomainEventTests
     {
@@ -234,7 +236,7 @@ namespace TransactionProcessor.TransactionAggregate.Tests
         [Fact]
         public void ProductDetailsAddedToTransactionEvent_CanBeCreated_IsCreated()
         {
-            ProductDetailsAddedToTransactionEvent productDetailsAddedToTransactionEvent = ProductDetailsAddedToTransactionEvent.Create(TestData.TransactionId, TestData.EstateId,TestData.ContractId, TestData.ProductId);
+            ProductDetailsAddedToTransactionEvent productDetailsAddedToTransactionEvent = ProductDetailsAddedToTransactionEvent.Create(TestData.TransactionId, TestData.EstateId,TestData.MerchantId, TestData.ContractId, TestData.ProductId);
 
             productDetailsAddedToTransactionEvent.ShouldNotBeNull();
             productDetailsAddedToTransactionEvent.AggregateId.ShouldBe(TestData.TransactionId);
@@ -242,8 +244,58 @@ namespace TransactionProcessor.TransactionAggregate.Tests
             productDetailsAddedToTransactionEvent.EventId.ShouldNotBe(Guid.Empty);
             productDetailsAddedToTransactionEvent.TransactionId.ShouldBe(TestData.TransactionId);
             productDetailsAddedToTransactionEvent.EstateId.ShouldBe(TestData.EstateId);
+            productDetailsAddedToTransactionEvent.MerchantId.ShouldBe(TestData.MerchantId);
             productDetailsAddedToTransactionEvent.ProductId.ShouldBe(TestData.ProductId);
             productDetailsAddedToTransactionEvent.ContractId.ShouldBe(TestData.ContractId);
+        }
+
+        [Fact]
+        public void MerchantFeeAddedToTransactionEvent_CanBeCreated_IsCreated()
+        {
+            MerchantFeeAddedToTransactionEvent merchantFeeAddedToTransactionEvent = MerchantFeeAddedToTransactionEvent.Create(TestData.TransactionId,
+                                                                                                                              TestData.EstateId,
+                                                                                                                              TestData.MerchantId,
+                                                                                                                              TestData.CalculatedFeeValue,
+                                                                                                                              (Int32)CalculationType.Fixed,
+                                                                                                                              TestData.TransactionFeeId,
+                                                                                                                              TestData.TransactionFeeValue);
+
+            merchantFeeAddedToTransactionEvent.ShouldNotBeNull();
+            merchantFeeAddedToTransactionEvent.AggregateId.ShouldBe(TestData.TransactionId);
+            merchantFeeAddedToTransactionEvent.EventCreatedDateTime.ShouldNotBe(DateTime.MinValue);
+            merchantFeeAddedToTransactionEvent.EventId.ShouldNotBe(Guid.Empty);
+            merchantFeeAddedToTransactionEvent.TransactionId.ShouldBe(TestData.TransactionId);
+            merchantFeeAddedToTransactionEvent.EstateId.ShouldBe(TestData.EstateId);
+            merchantFeeAddedToTransactionEvent.MerchantId.ShouldBe(TestData.MerchantId);
+            merchantFeeAddedToTransactionEvent.CalculatedValue.ShouldBe(TestData.CalculatedFeeValue);
+            merchantFeeAddedToTransactionEvent.FeeCalculationType.ShouldBe((Int32)CalculationType.Fixed);
+            merchantFeeAddedToTransactionEvent.FeeId.ShouldBe(TestData.TransactionFeeId);
+            merchantFeeAddedToTransactionEvent.FeeValue.ShouldBe(TestData.TransactionFeeValue);
+
+        }
+
+        [Fact]
+        public void ServiceProviderFeeAddedToTransactionEvent_CanBeCreated_IsCreated()
+        {
+            ServiceProviderFeeAddedToTransactionEvent serviceProviderFeeAddedToTransactionEvent = ServiceProviderFeeAddedToTransactionEvent.Create(TestData.TransactionId,
+                                                                                                                                                   TestData.EstateId,
+                                                                                                                                                   TestData.MerchantId,
+                                                                                                                                                   TestData.CalculatedFeeValue,
+                                                                                                                                                   (Int32)CalculationType.Fixed,
+                                                                                                                                                   TestData.TransactionFeeId,
+                                                                                                                                                   TestData.TransactionFeeValue);
+
+            serviceProviderFeeAddedToTransactionEvent.ShouldNotBeNull();
+            serviceProviderFeeAddedToTransactionEvent.AggregateId.ShouldBe(TestData.TransactionId);
+            serviceProviderFeeAddedToTransactionEvent.EventCreatedDateTime.ShouldNotBe(DateTime.MinValue);
+            serviceProviderFeeAddedToTransactionEvent.EventId.ShouldNotBe(Guid.Empty);
+            serviceProviderFeeAddedToTransactionEvent.TransactionId.ShouldBe(TestData.TransactionId);
+            serviceProviderFeeAddedToTransactionEvent.EstateId.ShouldBe(TestData.EstateId);
+            serviceProviderFeeAddedToTransactionEvent.MerchantId.ShouldBe(TestData.MerchantId);
+            serviceProviderFeeAddedToTransactionEvent.CalculatedValue.ShouldBe(TestData.CalculatedFeeValue);
+            serviceProviderFeeAddedToTransactionEvent.FeeCalculationType.ShouldBe((Int32)CalculationType.Fixed);
+            serviceProviderFeeAddedToTransactionEvent.FeeId.ShouldBe(TestData.TransactionFeeId);
+            serviceProviderFeeAddedToTransactionEvent.FeeValue.ShouldBe(TestData.TransactionFeeValue);
 
         }
     }

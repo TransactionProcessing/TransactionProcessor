@@ -43,7 +43,7 @@ namespace TransactionProcessor.BusinessLogic.Tests.Services
             estateClient.Setup(e => e.GetMerchant(It.IsAny<String>(), It.IsAny<Guid>(), It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
                         .ReturnsAsync(TestData.GetMerchantResponseWithOperator1);
             transactionAggregateManager.Setup(t => t.GetAggregate(It.IsAny<Guid>(), It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
-                                       .ReturnsAsync(TestData.GetCompletedTransactionAggregate);
+                                       .ReturnsAsync(TestData.GetCompletedLogonTransactionAggregate);
 
             Mock<IOperatorProxy> operatorProxy = new Mock<IOperatorProxy>();
             Func<String,IOperatorProxy> operatorProxyResolver = (operatorName) => { return operatorProxy.Object; };
@@ -82,7 +82,7 @@ namespace TransactionProcessor.BusinessLogic.Tests.Services
             estateClient.Setup(e => e.GetMerchant(It.IsAny<String>(), It.IsAny<Guid>(), It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
                         .ReturnsAsync(TestData.GetMerchantResponseWithNullDevices);
             transactionAggregateManager.Setup(t => t.GetAggregate(It.IsAny<Guid>(), It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
-                                       .ReturnsAsync(TestData.GetCompletedTransactionAggregate);
+                                       .ReturnsAsync(TestData.GetCompletedLogonTransactionAggregate);
 
             TransactionDomainService transactionDomainService =
                 new TransactionDomainService(transactionAggregateManager.Object, estateClient.Object, securityServiceClient.Object,
@@ -119,7 +119,7 @@ namespace TransactionProcessor.BusinessLogic.Tests.Services
             estateClient.Setup(e => e.GetMerchant(It.IsAny<String>(), It.IsAny<Guid>(), It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
                         .ReturnsAsync(TestData.GetMerchantResponseWithNoDevices);
             transactionAggregateManager.Setup(t => t.GetAggregate(It.IsAny<Guid>(), It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
-                                       .ReturnsAsync(TestData.GetCompletedTransactionAggregate);
+                                       .ReturnsAsync(TestData.GetCompletedLogonTransactionAggregate);
 
             TransactionDomainService transactionDomainService =
                 new TransactionDomainService(transactionAggregateManager.Object, estateClient.Object, securityServiceClient.Object,
@@ -261,7 +261,7 @@ namespace TransactionProcessor.BusinessLogic.Tests.Services
             estateClient.Setup(e => e.GetMerchant(It.IsAny<String>(), It.IsAny<Guid>(), It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
                         .ReturnsAsync(TestData.GetMerchantResponseWithOperator1);
             transactionAggregateManager.Setup(t => t.GetAggregate(It.IsAny<Guid>(), It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
-                                       .ReturnsAsync(TestData.GetCompletedTransactionAggregate);
+                                       .ReturnsAsync(TestData.GetCompletedAuthorisedSaleTransactionAggregate);
 
             Mock<IOperatorProxy> operatorProxy = new Mock<IOperatorProxy>();
             operatorProxy.Setup(o => o.ProcessSaleMessage(It.IsAny<Guid>(),
