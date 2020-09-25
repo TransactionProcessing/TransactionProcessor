@@ -26,11 +26,14 @@ namespace TransactionProcessor
     using Common;
     using EstateManagement.Client;
     using EventStore.Client;
+    using HealthChecks.UI.Client;
     using MediatR;
     using MessagingService.BusinessLogic.EventHandling;
     using Microsoft.AspNetCore.Authentication.JwtBearer;
+    using Microsoft.AspNetCore.Diagnostics.HealthChecks;
     using Microsoft.AspNetCore.Mvc.ApiExplorer;
     using Microsoft.AspNetCore.Mvc.Versioning;
+    using Microsoft.Extensions.Diagnostics.HealthChecks;
     using Microsoft.Extensions.Options;
     using Microsoft.IdentityModel.Logging;
     using Models;
@@ -69,6 +72,10 @@ namespace TransactionProcessor
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
+            ConfigurationReader.Initialise(Startup.Configuration);
+
+            Startup.ConfigureEventStoreSettings();
+
             this.ConfigureMiddlewareServices(services);
 
             services.AddTransient<IMediator, Mediator>();
@@ -107,51 +114,8 @@ namespace TransactionProcessor
             }
             else
             {
-                services.AddEventStoreClient((settings) =>
-                {
-                    settings.CreateHttpMessageHandler = () => new SocketsHttpHandler
-                    {
-                        SslOptions =
-                                                                                               {
-                                                                                                   RemoteCertificateValidationCallback = (sender,
-                                                                                                                                          certificate,
-                                                                                                                                          chain,
-                                                                                                                                          errors) => true,
-                                                                                               }
-                    };
-                    settings.ConnectionName = Startup.Configuration.GetValue<String>("EventStoreSettings:ConnectionName");
-                    settings.ConnectivitySettings = new EventStoreClientConnectivitySettings
-                    {
-                        Address =
-                                                            new Uri(Startup.Configuration.GetValue<String>("EventStoreSettings:ConnectionString")),
-                    };
-                    settings.DefaultCredentials = new UserCredentials(Startup.Configuration.GetValue<String>("EventStoreSettings:UserName"),
-                                                                       Startup.Configuration.GetValue<String>("EventStoreSettings:Password"));
-                });
-
-
-
-                services.AddEventStoreProjectionManagerClient((settings) =>
-                {
-                    settings.CreateHttpMessageHandler = () => new SocketsHttpHandler
-                    {
-                        SslOptions =
-                                                                                                                {
-                                                                                                                    RemoteCertificateValidationCallback = (sender,
-                                                                                                                                                           certificate,
-                                                                                                                                                           chain,
-                                                                                                                                                           errors) => true,
-                                                                                                                }
-                    };
-                    settings.ConnectionName = Startup.Configuration.GetValue<String>("EventStoreSettings:ConnectionName");
-                    settings.ConnectivitySettings = new EventStoreClientConnectivitySettings
-                    {
-                        Address =
-                                                            new Uri(Startup.Configuration.GetValue<String>("EventStoreSettings:ConnectionString"))
-                    };
-                    settings.DefaultCredentials = new UserCredentials(Startup.Configuration.GetValue<String>("EventStoreSettings:UserName"),
-                                                                      Startup.Configuration.GetValue<String>("EventStoreSettings:Password"));
-                });
+                services.AddEventStoreClient(Startup.ConfigureEventStoreSettings);
+                services.AddEventStoreProjectionManagerClient(Startup.ConfigureEventStoreSettings);
             }
 
             services.AddTransient<IEventStoreContext, EventStoreContext>();
@@ -206,10 +170,55 @@ namespace TransactionProcessor
             services.AddSingleton<IFeeCalculationManager, FeeCalculationManager>();
         }
 
-        
+        private static EventStoreClientSettings EventStoreClientSettings;
+
+        private static void ConfigureEventStoreSettings(EventStoreClientSettings settings = null)
+        {
+            if (settings == null)
+            {
+                settings = new EventStoreClientSettings();
+            }
+
+            settings.CreateHttpMessageHandler = () => new SocketsHttpHandler
+                                                      {
+                                                          SslOptions =
+                                                          {
+                                                              RemoteCertificateValidationCallback = (sender,
+                                                                                                     certificate,
+                                                                                                     chain,
+                                                                                                     errors) => true,
+                                                          }
+                                                      };
+            settings.ConnectionName = Startup.Configuration.GetValue<String>("EventStoreSettings:ConnectionName");
+            settings.ConnectivitySettings = new EventStoreClientConnectivitySettings
+                                            {
+                                                Address = new Uri(Startup.Configuration.GetValue<String>("EventStoreSettings:ConnectionString")),
+                                            };
+
+            settings.DefaultCredentials = new UserCredentials(Startup.Configuration.GetValue<String>("EventStoreSettings:UserName"),
+                                                              Startup.Configuration.GetValue<String>("EventStoreSettings:Password"));
+            Startup.EventStoreClientSettings = settings;
+        }
 
         private void ConfigureMiddlewareServices(IServiceCollection services)
         {
+            services.AddHealthChecks()
+                    .AddEventStore(Startup.EventStoreClientSettings,
+                                   userCredentials: Startup.EventStoreClientSettings.DefaultCredentials,
+                                   name: "Eventstore",
+                                   failureStatus: HealthStatus.Unhealthy,
+                                   tags: new string[] { "db", "eventstore" })
+                    .AddUrlGroup(new Uri($"{ConfigurationReader.GetValue("SecurityConfiguration", "Authority")}/.well-known/openid-configuration"),
+                                 name: "Security Service",
+                                 httpMethod: HttpMethod.Get,
+                                 failureStatus: HealthStatus.Unhealthy,
+                                 tags: new string[] { "security", "authorisation" })
+                    .AddUrlGroup(new Uri($"{ConfigurationReader.GetValue("AppSettings", "EstateManagementApi")}/.well-known/openid-configuration"),
+                                 name: "Estate Management Service",
+                                 httpMethod: HttpMethod.Get,
+                                 failureStatus: HealthStatus.Unhealthy,
+                                 tags: new string[] { "application", "estatemanagement" });
+
             services.AddApiVersioning(
                                       options =>
                                       {
@@ -299,8 +308,6 @@ namespace TransactionProcessor
 
             Logger.Initialise(logger);
 
-            ConfigurationReader.Initialise(Startup.Configuration);
-
             app.AddRequestLogging();
             app.AddResponseLogging();
             app.AddExceptionHandler();
@@ -313,6 +320,11 @@ namespace TransactionProcessor
             app.UseEndpoints(endpoints =>
                              {
                                  endpoints.MapControllers();
+                                 endpoints.MapHealthChecks("health", new HealthCheckOptions()
+                                                                     {
+                                                                         Predicate = _ => true,
+                                                                         ResponseWriter = UIResponseWriter.WriteHealthCheckUIResponse
+                                                                     });
                              });
 
             app.UseSwagger();
@@ -326,17 +338,6 @@ namespace TransactionProcessor
                                      options.SwaggerEndpoint($"/swagger/{description.GroupName}/swagger.json", description.GroupName.ToUpperInvariant());
                                  }
                              });
-
-            //if (String.Compare(ConfigurationReader.GetValue("EventStoreSettings", "START_PROJECTIONS"),
-            //                   Boolean.TrueString,
-            //                   StringComparison.InvariantCultureIgnoreCase) == 0)
-            //{
-            //    app.PreWarm(true).Wait();
-            //}
-            //else
-            //{
-            //    app.PreWarm();
-            //}
         }
     }
 }
