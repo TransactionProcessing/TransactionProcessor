@@ -208,12 +208,12 @@ namespace TransactionProcessor
                                    name: "Eventstore",
                                    failureStatus: HealthStatus.Unhealthy,
                                    tags: new string[] { "db", "eventstore" })
-                    .AddUrlGroup(new Uri($"{ConfigurationReader.GetValue("SecurityConfiguration", "Authority")}/.well-known/openid-configuration"),
+                    .AddUrlGroup(new Uri($"{ConfigurationReader.GetValue("SecurityConfiguration", "Authority")}/health"),
                                  name: "Security Service",
                                  httpMethod: HttpMethod.Get,
                                  failureStatus: HealthStatus.Unhealthy,
                                  tags: new string[] { "security", "authorisation" })
-                    .AddUrlGroup(new Uri($"{ConfigurationReader.GetValue("AppSettings", "EstateManagementApi")}/.well-known/openid-configuration"),
+                    .AddUrlGroup(new Uri($"{ConfigurationReader.GetValue("AppSettings", "EstateManagementApi")}/health"),
                                  name: "Estate Management Service",
                                  httpMethod: HttpMethod.Get,
                                  failureStatus: HealthStatus.Unhealthy,
