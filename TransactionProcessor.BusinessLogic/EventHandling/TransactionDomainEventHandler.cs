@@ -42,6 +42,8 @@
         /// </summary>
         private readonly ISecurityServiceClient SecurityServiceClient;
 
+        private readonly ITransactionReceiptBuilder TransactionReceiptBuilder;
+
         /// <summary>
         /// The token response
         /// </summary>
@@ -57,21 +59,24 @@
         #region Constructors
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="TransactionDomainEventHandler"/> class.
+        /// Initializes a new instance of the <see cref="TransactionDomainEventHandler" /> class.
         /// </summary>
         /// <param name="transactionAggregateManager">The transaction aggregate manager.</param>
         /// <param name="feeCalculationManager">The fee calculation manager.</param>
         /// <param name="estateClient">The estate client.</param>
         /// <param name="securityServiceClient">The security service client.</param>
+        /// <param name="transactionReceiptBuilder">The transaction receipt builder.</param>
         public TransactionDomainEventHandler(ITransactionAggregateManager transactionAggregateManager,
                                              IFeeCalculationManager feeCalculationManager,
                                              IEstateClient estateClient,
-                                             ISecurityServiceClient securityServiceClient)
+                                             ISecurityServiceClient securityServiceClient,
+                                             ITransactionReceiptBuilder transactionReceiptBuilder)
         {
             this.TransactionAggregateManager = transactionAggregateManager;
             this.FeeCalculationManager = feeCalculationManager;
             this.EstateClient = estateClient;
             this.SecurityServiceClient = securityServiceClient;
+            this.TransactionReceiptBuilder = transactionReceiptBuilder;
         }
 
         #endregion
@@ -177,6 +182,28 @@
                 // Add Fee to the Transaction 
                 await this.TransactionAggregateManager.AddFee(transactionAggregate.EstateId, transactionAggregate.AggregateId, calculatedFee, cancellationToken);
             }
+        }
+
+        private async Task HandleSpecificDomainEvent(CustomerEmailReceiptRequestedEvent domainEvent,
+                                                     CancellationToken cancellationToken)
+        {
+            TransactionAggregate transactionAggregate = await this.TransactionAggregateManager.GetAggregate(domainEvent.EstateId, domainEvent.TransactionId, cancellationToken);
+
+            // TODO: Add DTO method to aggregate
+            // Determine the body of the email
+            var receiptMessage = await this.TransactionReceiptBuilder.GetEmailReceiptMessage(new Transaction(), cancellationToken);
+
+            // Send the message
+            await this.SendEmailMessage("Transaction Successful", receiptMessage, domainEvent.CustomerEmailAddress, cancellationToken);
+
+        }
+
+        private async Task SendEmailMessage(String subject,
+                                            String body,
+                                            String emailAddress,
+                                            CancellationToken cancellationToken)
+        {
+
         }
 
         #endregion

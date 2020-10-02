@@ -11,6 +11,7 @@
     <PackageReference Include="Shared.DomainDrivenDesign" Version="0.0.15.7" />
     <PackageReference Include="Shared.EventStore" Version="0.0.15.7" />
     <PackageReference Include="MediatR" Version="8.0.2" />
+    <PackageReference Include="System.IO.Abstractions" Version="12.2.1" />
   </ItemGroup>
 
   <ItemGroup>
