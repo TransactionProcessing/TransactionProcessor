@@ -35,6 +35,14 @@
         /// </summary>
         private readonly List<CalculatedFee> CalculatedFees;
 
+        /// <summary>
+        /// Gets the operator identifier.
+        /// </summary>
+        /// <value>
+        /// The operator identifier.
+        /// </value>
+        public String OperatorIdentifier { get; private set; }
+
         #endregion
 
         #region Constructors
@@ -807,6 +815,7 @@
         private void PlayEvent(AdditionalRequestDataRecordedEvent domainEvent)
         {
             this.AdditionalTransactionRequestMetadata = domainEvent.AdditionalTransactionRequestMetadata;
+            this.OperatorIdentifier = domainEvent.OperatorIdentifier;
         }
 
         /// <summary>
@@ -944,5 +953,21 @@
         }
 
         #endregion
+
+        public Transaction GetTransaction()
+        {
+            return new Transaction
+                   {
+                       AuthorisationCode = this.AuthorisationCode,
+                       MerchantId = this.MerchantId,
+                       OperatorTransactionId = this.OperatorTransactionId,
+                       ResponseMessage = this.ResponseMessage,
+                       TransactionAmount = this.TransactionAmount.HasValue ? this.TransactionAmount.Value : 0,
+                       TransactionDateTime = this.TransactionDateTime,
+                       TransactionNumber = this.TransactionNumber,
+                       TransactionReference = this.TransactionReference,
+                       OperatorIdentifier = this.OperatorIdentifier
+                   };
+        }
     }
 }

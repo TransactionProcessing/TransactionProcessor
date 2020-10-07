@@ -661,6 +661,9 @@
             return SecurityService.DataTransferObjects.Responses.TokenResponse.Create("AccessToken", string.Empty, 100);
         }
 
+        public static CustomerEmailReceiptRequestedEvent CustomerEmailReceiptRequestedEvent =
+            CustomerEmailReceiptRequestedEvent.Create(TestData.TransactionId, TestData.EstateId, TestData.MerchantId, TestData.CustomerEmailAddress);
+
         public static TransactionHasBeenCompletedEvent TransactionHasBeenCompletedEvent = TransactionHasBeenCompletedEvent.Create(TestData.TransactionId,
                                                                                                                                   TestData.EstateId,
                                                                                                                                   TestData.MerchantId,

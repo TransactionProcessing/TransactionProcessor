@@ -1,38 +1,29 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-
-namespace TransactionProcessor.BusinessLogic.Services
+﻿namespace TransactionProcessor.BusinessLogic.Services
 {
-    using System.IO.Abstractions;
+    using System;
     using System.Threading;
     using System.Threading.Tasks;
+    using EstateManagement.DataTransferObjects.Responses;
     using Models;
 
+    /// <summary>
+    /// 
+    /// </summary>
     public interface ITransactionReceiptBuilder
     {
-        Task<String> GetEmailReceiptMessage(Transaction transaction, CancellationToken cancellationToken);
+        #region Methods
+
+        /// <summary>
+        /// Gets the email receipt message.
+        /// </summary>
+        /// <param name="transaction">The transaction.</param>
+        /// <param name="merchant">The merchant.</param>
+        /// <param name="cancellationToken">The cancellation token.</param>
+        /// <returns></returns>
+        Task<String> GetEmailReceiptMessage(Transaction transaction,
+                                            MerchantResponse merchant,
+                                            CancellationToken cancellationToken);
+
+        #endregion
     }
-
-    public class TransactionReceiptBuilder : ITransactionReceiptBuilder
-    {
-        private readonly IFileSystem FileSystem;
-
-        public TransactionReceiptBuilder(IFileSystem fileSystem)
-        {
-            this.FileSystem = fileSystem;
-        }
-
-        public async Task<String> GetEmailReceiptMessage(Transaction transaction,
-                                                    CancellationToken cancellationToken)
-        {
-            var fileData = await this.FileSystem.File.ReadAllTextAsync($"\\Receipts\\Email\\{transaction.OperatorIdentifier}\\TransactionAuthorised.html", cancellationToken);
-
-            // TODO: We will do substitutions here
-
-            return fileData;
-        }
-    }
-
-    
 }
