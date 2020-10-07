@@ -8,6 +8,7 @@
     using BusinessLogic.Services;
     using EstateManagement.Client;
     using EventHandling;
+    using MessagingService.Client;
     using Microsoft.Extensions.Configuration;
     using Moq;
     using SecurityService.Client;
@@ -39,6 +40,8 @@
             Mock<ISecurityServiceClient> securityServiceClient = new Mock<ISecurityServiceClient>();
             securityServiceClient.Setup(s => s.GetToken(It.IsAny<String>(), It.IsAny<String>(), It.IsAny<CancellationToken>())).ReturnsAsync(TestData.TokenResponse);
 
+            Mock<ITransactionReceiptBuilder> transactionReceiptBulder = new Mock<ITransactionReceiptBuilder>();
+            Mock<IMessagingServiceClient> messagingServiceClient = new Mock<IMessagingServiceClient>();
 
             IConfigurationRoot configurationRoot = new ConfigurationBuilder().AddInMemoryCollection(TestData.DefaultAppSettings).Build();
             ConfigurationReader.Initialise(configurationRoot);
@@ -47,7 +50,9 @@
             TransactionDomainEventHandler transactionDomainEventHandler = new TransactionDomainEventHandler(transactionAggregateManager.Object,
                                                                                                       feeCalculationManager.Object,
                                                                                                       estateClient.Object,
-                                                                                                      securityServiceClient.Object);
+                                                                                                      securityServiceClient.Object,
+                                                                                                      transactionReceiptBulder.Object,
+                                                                                                      messagingServiceClient.Object);
 
             await transactionDomainEventHandler.Handle(TestData.TransactionHasBeenCompletedEvent, CancellationToken.None);
         }
@@ -63,6 +68,9 @@
 
             Mock<ISecurityServiceClient> securityServiceClient = new Mock<ISecurityServiceClient>();
 
+            Mock<ITransactionReceiptBuilder> transactionReceiptBulder = new Mock<ITransactionReceiptBuilder>();
+            Mock<IMessagingServiceClient> messagingServiceClient = new Mock<IMessagingServiceClient>();
+
             IConfigurationRoot configurationRoot = new ConfigurationBuilder().AddInMemoryCollection(TestData.DefaultAppSettings).Build();
             ConfigurationReader.Initialise(configurationRoot);
             Logger.Initialise(NullLogger.Instance);
@@ -70,7 +78,9 @@
             TransactionDomainEventHandler transactionDomainEventHandler = new TransactionDomainEventHandler(transactionAggregateManager.Object,
                                                                                                       feeCalculationManager.Object,
                                                                                                       estateClient.Object,
-                                                                                                      securityServiceClient.Object);
+                                                                                                      securityServiceClient.Object,
+                                                                                                      transactionReceiptBulder.Object,
+                                                                                                      messagingServiceClient.Object);
 
             await transactionDomainEventHandler.Handle(TestData.TransactionHasBeenCompletedEvent, CancellationToken.None);
         }
@@ -86,6 +96,9 @@
 
             Mock<ISecurityServiceClient> securityServiceClient = new Mock<ISecurityServiceClient>();
 
+            Mock<ITransactionReceiptBuilder> transactionReceiptBulder = new Mock<ITransactionReceiptBuilder>();
+            Mock<IMessagingServiceClient> messagingServiceClient = new Mock<IMessagingServiceClient>();
+
             IConfigurationRoot configurationRoot = new ConfigurationBuilder().AddInMemoryCollection(TestData.DefaultAppSettings).Build();
             ConfigurationReader.Initialise(configurationRoot);
             Logger.Initialise(NullLogger.Instance);
@@ -93,7 +106,9 @@
             TransactionDomainEventHandler transactionDomainEventHandler = new TransactionDomainEventHandler(transactionAggregateManager.Object,
                                                                                                             feeCalculationManager.Object,
                                                                                                             estateClient.Object,
-                                                                                                            securityServiceClient.Object);
+                                                                                                            securityServiceClient.Object,
+                                                                                                            transactionReceiptBulder.Object,
+                                                                                                            messagingServiceClient.Object);
 
             await transactionDomainEventHandler.Handle(TestData.TransactionHasBeenCompletedEvent, CancellationToken.None);
         }
@@ -109,6 +124,9 @@
 
             Mock<ISecurityServiceClient> securityServiceClient = new Mock<ISecurityServiceClient>();
 
+            Mock<ITransactionReceiptBuilder> transactionReceiptBulder = new Mock<ITransactionReceiptBuilder>();
+            Mock<IMessagingServiceClient> messagingServiceClient = new Mock<IMessagingServiceClient>();
+
             IConfigurationRoot configurationRoot = new ConfigurationBuilder().AddInMemoryCollection(TestData.DefaultAppSettings).Build();
             ConfigurationReader.Initialise(configurationRoot);
             Logger.Initialise(NullLogger.Instance);
@@ -116,7 +134,9 @@
             TransactionDomainEventHandler transactionDomainEventHandler = new TransactionDomainEventHandler(transactionAggregateManager.Object,
                                                                                                             feeCalculationManager.Object,
                                                                                                             estateClient.Object,
-                                                                                                            securityServiceClient.Object);
+                                                                                                            securityServiceClient.Object,
+                                                                                                            transactionReceiptBulder.Object,
+                                                                                                            messagingServiceClient.Object);
 
             await transactionDomainEventHandler.Handle(TestData.TransactionHasBeenCompletedEvent, CancellationToken.None);
         }
@@ -132,6 +152,9 @@
 
             Mock<ISecurityServiceClient> securityServiceClient = new Mock<ISecurityServiceClient>();
 
+            Mock<ITransactionReceiptBuilder> transactionReceiptBulder = new Mock<ITransactionReceiptBuilder>();
+            Mock<IMessagingServiceClient> messagingServiceClient = new Mock<IMessagingServiceClient>();
+
             IConfigurationRoot configurationRoot = new ConfigurationBuilder().AddInMemoryCollection(TestData.DefaultAppSettings).Build();
             ConfigurationReader.Initialise(configurationRoot);
             Logger.Initialise(NullLogger.Instance);
@@ -139,9 +162,40 @@
             TransactionDomainEventHandler transactionDomainEventHandler = new TransactionDomainEventHandler(transactionAggregateManager.Object,
                                                                                                             feeCalculationManager.Object,
                                                                                                             estateClient.Object,
-                                                                                                            securityServiceClient.Object);
+                                                                                                            securityServiceClient.Object,
+                                                                                                            transactionReceiptBulder.Object,
+                                                                                                            messagingServiceClient.Object);
 
             await transactionDomainEventHandler.Handle(TestData.TransactionHasBeenCompletedEvent, CancellationToken.None);
+        }
+
+        [Fact]
+        public async Task TransactionDomainEventHandler_Handle_CustomerEmailReceiptRequestedEvent_EventIsHandled()
+        {
+            Mock<ITransactionAggregateManager> transactionAggregateManager = new Mock<ITransactionAggregateManager>();
+            transactionAggregateManager.Setup(t => t.GetAggregate(It.IsAny<Guid>(), It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
+                                       .ReturnsAsync(TestData.GetCompletedAuthorisedSaleTransactionAggregate);
+            Mock<IFeeCalculationManager> feeCalculationManager = new Mock<IFeeCalculationManager>();
+            Mock<IEstateClient> estateClient = new Mock<IEstateClient>();
+
+            Mock<ISecurityServiceClient> securityServiceClient = new Mock<ISecurityServiceClient>();
+            securityServiceClient.Setup(s => s.GetToken(It.IsAny<String>(), It.IsAny<String>(), It.IsAny<CancellationToken>())).ReturnsAsync(TestData.TokenResponse);
+
+            Mock<ITransactionReceiptBuilder> transactionReceiptBulder = new Mock<ITransactionReceiptBuilder>();
+            Mock<IMessagingServiceClient> messagingServiceClient = new Mock<IMessagingServiceClient>();
+
+            IConfigurationRoot configurationRoot = new ConfigurationBuilder().AddInMemoryCollection(TestData.DefaultAppSettings).Build();
+            ConfigurationReader.Initialise(configurationRoot);
+            Logger.Initialise(NullLogger.Instance);
+
+            TransactionDomainEventHandler transactionDomainEventHandler = new TransactionDomainEventHandler(transactionAggregateManager.Object,
+                                                                                                            feeCalculationManager.Object,
+                                                                                                            estateClient.Object,
+                                                                                                            securityServiceClient.Object,
+                                                                                                            transactionReceiptBulder.Object,
+                                                                                                            messagingServiceClient.Object);
+
+            await transactionDomainEventHandler.Handle(TestData.CustomerEmailReceiptRequestedEvent, CancellationToken.None);
         }
     }
 }

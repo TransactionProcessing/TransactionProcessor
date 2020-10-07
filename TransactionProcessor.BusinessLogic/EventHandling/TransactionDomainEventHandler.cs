@@ -9,6 +9,8 @@
     using EstateManagement.DataTransferObjects.Responses;
     using Manager;
     using MessagingService.BusinessLogic.EventHandling;
+    using MessagingService.Client;
+    using MessagingService.DataTransferObjects;
     using Models;
     using SecurityService.Client;
     using SecurityService.DataTransferObjects.Responses;
@@ -42,6 +44,10 @@
         /// </summary>
         private readonly ISecurityServiceClient SecurityServiceClient;
 
+        private readonly ITransactionReceiptBuilder TransactionReceiptBuilder;
+
+        private readonly IMessagingServiceClient MessagingServiceClient;
+
         /// <summary>
         /// The token response
         /// </summary>
@@ -57,21 +63,27 @@
         #region Constructors
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="TransactionDomainEventHandler"/> class.
+        /// Initializes a new instance of the <see cref="TransactionDomainEventHandler" /> class.
         /// </summary>
         /// <param name="transactionAggregateManager">The transaction aggregate manager.</param>
         /// <param name="feeCalculationManager">The fee calculation manager.</param>
         /// <param name="estateClient">The estate client.</param>
         /// <param name="securityServiceClient">The security service client.</param>
+        /// <param name="transactionReceiptBuilder">The transaction receipt builder.</param>
+        /// <param name="messagingServiceClient">The messaging service client.</param>
         public TransactionDomainEventHandler(ITransactionAggregateManager transactionAggregateManager,
                                              IFeeCalculationManager feeCalculationManager,
                                              IEstateClient estateClient,
-                                             ISecurityServiceClient securityServiceClient)
+                                             ISecurityServiceClient securityServiceClient,
+                                             ITransactionReceiptBuilder transactionReceiptBuilder,
+                                             IMessagingServiceClient messagingServiceClient)
         {
             this.TransactionAggregateManager = transactionAggregateManager;
             this.FeeCalculationManager = feeCalculationManager;
             this.EstateClient = estateClient;
             this.SecurityServiceClient = securityServiceClient;
+            this.TransactionReceiptBuilder = transactionReceiptBuilder;
+            this.MessagingServiceClient = messagingServiceClient;
         }
 
         #endregion
@@ -177,6 +189,62 @@
                 // Add Fee to the Transaction 
                 await this.TransactionAggregateManager.AddFee(transactionAggregate.EstateId, transactionAggregate.AggregateId, calculatedFee, cancellationToken);
             }
+        }
+
+        /// <summary>
+        /// Handles the specific domain event.
+        /// </summary>
+        /// <param name="domainEvent">The domain event.</param>
+        /// <param name="cancellationToken">The cancellation token.</param>
+        private async Task HandleSpecificDomainEvent(CustomerEmailReceiptRequestedEvent domainEvent,
+                                                     CancellationToken cancellationToken)
+        {
+            this.TokenResponse = await this.GetToken(cancellationToken);
+
+            TransactionAggregate transactionAggregate = await this.TransactionAggregateManager.GetAggregate(domainEvent.EstateId, domainEvent.TransactionId, cancellationToken);
+
+            var merchant = await this.EstateClient.GetMerchant(this.TokenResponse.AccessToken, domainEvent.EstateId, domainEvent.MerchantId, cancellationToken);
+
+            // Determine the body of the email
+            String receiptMessage = await this.TransactionReceiptBuilder.GetEmailReceiptMessage(transactionAggregate.GetTransaction(), merchant, cancellationToken);
+
+            // Send the message
+            await this.SendEmailMessage(this.TokenResponse.AccessToken, domainEvent.EstateId, "Transaction Successful", receiptMessage, domainEvent.CustomerEmailAddress, cancellationToken);
+
+        }
+
+        /// <summary>
+        /// Sends the email message.
+        /// </summary>
+        /// <param name="accessToken">The access token.</param>
+        /// <param name="estateId">The estate identifier.</param>
+        /// <param name="subject">The subject.</param>
+        /// <param name="body">The body.</param>
+        /// <param name="emailAddress">The email address.</param>
+        /// <param name="cancellationToken">The cancellation token.</param>
+        private async Task SendEmailMessage(String accessToken, 
+                                            Guid estateId,
+                                            String subject,
+                                            String body,
+                                            String emailAddress,
+                                            CancellationToken cancellationToken)
+        {
+            SendEmailRequest sendEmailRequest = new SendEmailRequest
+                                                {
+                                                    Body = body,
+                                                    ConnectionIdentifier = estateId,
+                                                    FromAddress = "golfhandicapping@btinternet.com", // TODO: lookup from config
+                                                    IsHtml = true,
+                                                    Subject = subject,
+                                                    ToAddresses = new List<String>
+                                                                  {
+                                                                      emailAddress
+                                                                  }
+                                                };
+
+            // TODO: may decide to record the message Id againsts the Transaction Aggregate in future, but for now
+            // we wont do this...
+            await this.MessagingServiceClient.SendEmail(accessToken, sendEmailRequest, cancellationToken);
         }
 
         #endregion

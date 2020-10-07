@@ -37,6 +37,9 @@ namespace TransactionProcessor.TransactionAggregate.Tests
             transactionAggregate.DeviceIdentifier.ShouldBe(TestData.DeviceIdentifier);
             transactionAggregate.TransactionReference.ShouldBe(TestData.TransactionReference);
             transactionAggregate.TransactionAmount.ShouldBe(TestData.TransactionAmount);
+
+            Transaction transaction = transactionAggregate.GetTransaction();
+            transaction.ShouldNotBeNull();
         }
 
         [Theory]
@@ -56,6 +59,9 @@ namespace TransactionProcessor.TransactionAggregate.Tests
             transactionAggregate.DeviceIdentifier.ShouldBe(TestData.DeviceIdentifier);
             transactionAggregate.TransactionReference.ShouldBe(TestData.TransactionReference);
             transactionAggregate.TransactionAmount.ShouldBeNull();
+
+            Transaction transaction = transactionAggregate.GetTransaction();
+            transaction.ShouldNotBeNull();
         }
 
         [Theory]

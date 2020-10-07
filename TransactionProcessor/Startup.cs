@@ -14,6 +14,7 @@ namespace TransactionProcessor
 {
     using System.Diagnostics.CodeAnalysis;
     using System.IO;
+    using System.IO.Abstractions;
     using System.Net.Http;
     using System.Reflection;
     using BusinessLogic.EventHandling;
@@ -29,6 +30,7 @@ namespace TransactionProcessor
     using HealthChecks.UI.Client;
     using MediatR;
     using MessagingService.BusinessLogic.EventHandling;
+    using MessagingService.Client;
     using Microsoft.AspNetCore.Authentication.JwtBearer;
     using Microsoft.AspNetCore.Diagnostics.HealthChecks;
     using Microsoft.AspNetCore.Mvc.ApiExplorer;
@@ -124,6 +126,10 @@ namespace TransactionProcessor
             services.AddSingleton<ITransactionDomainService, TransactionDomainService>();
             services.AddSingleton<Factories.IModelFactory, Factories.ModelFactory>();
             services.AddSingleton<ISecurityServiceClient, SecurityServiceClient>();
+            services.AddSingleton<IMessagingServiceClient, MessagingServiceClient>();
+            services.AddSingleton<ITransactionReceiptBuilder, TransactionReceiptBuilder>();
+            services.AddSingleton<IFileSystem, FileSystem>();
+
             services.AddSingleton<Func<String, String>>(container => (serviceName) =>
                                                                      {
                                                                          return ConfigurationReader.GetBaseServerUri(serviceName).OriginalString;
