@@ -203,13 +203,13 @@
 
             TransactionAggregate transactionAggregate = await this.TransactionAggregateManager.GetAggregate(domainEvent.EstateId, domainEvent.TransactionId, cancellationToken);
 
-            var merchant = await this.EstateClient.GetMerchant(this.TokenResponse.AccessToken, domainEvent.EstateId, domainEvent.MerchantId, cancellationToken);
+            MerchantResponse merchant = await this.EstateClient.GetMerchant(this.TokenResponse.AccessToken, domainEvent.EstateId, domainEvent.MerchantId, cancellationToken);
 
             // Determine the body of the email
             String receiptMessage = await this.TransactionReceiptBuilder.GetEmailReceiptMessage(transactionAggregate.GetTransaction(), merchant, cancellationToken);
 
             // Send the message
-            await this.SendEmailMessage(this.TokenResponse.AccessToken, domainEvent.EstateId, "Transaction Successful", receiptMessage, domainEvent.CustomerEmailAddress, cancellationToken);
+            await this.SendEmailMessage(this.TokenResponse.AccessToken, domainEvent.EventId, domainEvent.EstateId, "Transaction Successful", receiptMessage, domainEvent.CustomerEmailAddress, cancellationToken);
 
         }
 
@@ -217,12 +217,14 @@
         /// Sends the email message.
         /// </summary>
         /// <param name="accessToken">The access token.</param>
+        /// <param name="messageId">The message identifier.</param>
         /// <param name="estateId">The estate identifier.</param>
         /// <param name="subject">The subject.</param>
         /// <param name="body">The body.</param>
         /// <param name="emailAddress">The email address.</param>
         /// <param name="cancellationToken">The cancellation token.</param>
         private async Task SendEmailMessage(String accessToken, 
+                                            Guid messageId,
                                             Guid estateId,
                                             String subject,
                                             String body,
@@ -231,6 +233,7 @@
         {
             SendEmailRequest sendEmailRequest = new SendEmailRequest
                                                 {
+                                                    MessageId = messageId,
                                                     Body = body,
                                                     ConnectionIdentifier = estateId,
                                                     FromAddress = "golfhandicapping@btinternet.com", // TODO: lookup from config
@@ -244,7 +247,19 @@
 
             // TODO: may decide to record the message Id againsts the Transaction Aggregate in future, but for now
             // we wont do this...
-            await this.MessagingServiceClient.SendEmail(accessToken, sendEmailRequest, cancellationToken);
+            try
+            {
+                await this.MessagingServiceClient.SendEmail(accessToken, sendEmailRequest, cancellationToken);
+            }
+            catch(Exception ex) when (ex.InnerException != null && ex.InnerException.GetType() == typeof(InvalidOperationException))
+            {
+                // Only bubble up if not a duplicate message
+                if (ex.InnerException.Message.Contains("Cannot send a message to provider that has already been sent", StringComparison.InvariantCultureIgnoreCase) == false)
+                {
+                    throw;
+                }
+            }
+            
         }
 
         #endregion
