@@ -123,4 +123,4 @@ Scenario: Sale Transaction with Not Enough Credit Available
 	
 	Then transaction response should contain the following information
 	| EstateName    | MerchantName    | TransactionNumber | ResponseCode | ResponseMessage                                                                                                    |
-	| Test Estate 1 | Test Merchant 1 | 1                 | 1009         | Merchant [Test Merchant 1] does not have enough credit available [2000.0] to perform transaction amount [3000.00] |
+	| Test Estate 1 | Test Merchant 1 | 1                 | 1009         | Merchant [Test Merchant 1] does not have enough credit available [200.0] to perform transaction amount [300.00] |
