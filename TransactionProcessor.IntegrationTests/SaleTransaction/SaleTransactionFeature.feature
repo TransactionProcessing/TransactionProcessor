@@ -61,19 +61,19 @@ Background:
 
 	Given I make the following manual merchant deposits 
 	| Reference | Amount  | DateTime | MerchantName    | EstateName    |
-	| Deposit1  | 2000.00 | Today    | Test Merchant 1 | Test Estate 1 |
-	| Deposit1  | 1000.00 | Today    | Test Merchant 2 | Test Estate 1 |
-	| Deposit1  | 1000.00 | Today    | Test Merchant 3 | Test Estate 2 |
+	| Deposit1  | 200.00 | Today    | Test Merchant 1 | Test Estate 1 |
+	| Deposit1  | 100.00 | Today    | Test Merchant 2 | Test Estate 1 |
+	| Deposit1  | 100.00 | Today    | Test Merchant 3 | Test Estate 2 |
 
 @PRTest
 Scenario: Sale Transactions
 
 	When I perform the following transactions
 	| DateTime | TransactionNumber | TransactionType | MerchantName    | DeviceIdentifier | EstateName    | OperatorName | TransactionAmount | CustomerAccountNumber | CustomerEmailAddress        | ContractDescription | ProductName    |
-	| Today    | 1                 | Sale            | Test Merchant 1 | 123456780        | Test Estate 1 | Safaricom    | 1000.00           | 123456789             |                             | Safaricom Contract   | Variable Topup |
-	| Today    | 2                 | Sale            | Test Merchant 2 | 123456781        | Test Estate 1 | Safaricom    | 1000.00           | 123456789             |                             | Safaricom Contract   | Variable Topup |
-	| Today    | 3                 | Sale            | Test Merchant 3 | 123456782        | Test Estate 2 | Safaricom    | 1000.00           | 123456789             |                             | Safaricom Contract   | Variable Topup |
-	| Today    | 4                 | Sale            | Test Merchant 1 | 123456780        | Test Estate 1 | Safaricom    | 1000.00           | 123456789             | testcustomer@customer.co.uk | Safaricom Contract   | Variable Topup |
+	| Today    | 1                 | Sale            | Test Merchant 1 | 123456780        | Test Estate 1 | Safaricom    | 100.00           | 123456789             |                             | Safaricom Contract   | Variable Topup |
+	| Today    | 2                 | Sale            | Test Merchant 2 | 123456781        | Test Estate 1 | Safaricom    | 100.00           | 123456789             |                             | Safaricom Contract   | Variable Topup |
+	| Today    | 3                 | Sale            | Test Merchant 3 | 123456782        | Test Estate 2 | Safaricom    | 100.00           | 123456789             |                             | Safaricom Contract   | Variable Topup |
+	| Today    | 4                 | Sale            | Test Merchant 1 | 123456780        | Test Estate 1 | Safaricom    | 100.00           | 123456789             | testcustomer@customer.co.uk | Safaricom Contract   | Variable Topup |
 	
 	Then transaction response should contain the following information
 	| EstateName    | MerchantName    | TransactionNumber | ResponseCode | ResponseMessage |
@@ -87,7 +87,7 @@ Scenario: Sale Transaction with Invalid Device
 
 	When I perform the following transactions
 	| DateTime | TransactionNumber | TransactionType | MerchantName    | DeviceIdentifier | EstateName    | OperatorName | TransactionAmount | CustomerAccountNumber | CustomerEmailAddress        | ContractDescription | ProductName    |
-	| Today    | 1                 | Sale            | Test Merchant 1 | 123456781        | Test Estate 1 | Safaricom    | 1000.00           | 123456789             | testcustomer@customer.co.uk | Safaricom Contract   | Variable Topup |
+	| Today    | 1                 | Sale            | Test Merchant 1 | 123456781        | Test Estate 1 | Safaricom    | 100.00           | 123456789             | testcustomer@customer.co.uk | Safaricom Contract   | Variable Topup |
 	
 	Then transaction response should contain the following information
 	| EstateName    | MerchantName    | TransactionNumber | ResponseCode | ResponseMessage                                                    |
@@ -97,7 +97,7 @@ Scenario: Sale Transaction with Invalid Estate
 
 	When I perform the following transactions
 	| DateTime | TransactionNumber | TransactionType | MerchantName    | DeviceIdentifier | EstateName    | OperatorName | TransactionAmount | CustomerAccountNumber | CustomerEmailAddress        | ContractDescription | ProductName    |
-	| Today    | 1                 | Sale            | Test Merchant 1 | 123456780        | InvalidEstate | Safaricom    | 1000.00           | 123456789             | testcustomer@customer.co.uk | Safaricom Contract   | Variable Topup |
+	| Today    | 1                 | Sale            | Test Merchant 1 | 123456780        | InvalidEstate | Safaricom    | 100.00           | 123456789             | testcustomer@customer.co.uk | Safaricom Contract   | Variable Topup |
 	
 	Then transaction response should contain the following information
 	| EstateName    | MerchantName    | TransactionNumber | ResponseCode | ResponseMessage                                                        |
@@ -107,7 +107,7 @@ Scenario: Sale Transaction with Invalid Merchant
 
 	When I perform the following transactions
 	| DateTime | TransactionNumber | TransactionType | MerchantName    | DeviceIdentifier | EstateName    | OperatorName | TransactionAmount | CustomerAccountNumber | CustomerEmailAddress        | ContractDescription | ProductName    |
-	| Today    | 1                 | Sale            | InvalidMerchant | 123456780        | Test Estate 1 | Safaricom    | 1000.00           | 123456789             | testcustomer@customer.co.uk | Safaricom Contract   | Variable Topup |
+	| Today    | 1                 | Sale            | InvalidMerchant | 123456780        | Test Estate 1 | Safaricom    | 100.00           | 123456789             | testcustomer@customer.co.uk | Safaricom Contract   | Variable Topup |
 	
 	Then transaction response should contain the following information
 	| EstateName    | MerchantName    | TransactionNumber | ResponseCode | ResponseMessage                                                                                       |
@@ -118,9 +118,9 @@ Scenario: Sale Transaction with Not Enough Credit Available
 
 	When I perform the following transactions
 	| DateTime | TransactionNumber | TransactionType | MerchantName    | DeviceIdentifier | EstateName    | OperatorName | TransactionAmount | CustomerAccountNumber | CustomerEmailAddress        | ContractDescription | ProductName    |
-	| Today    | 1                 | Sale            | Test Merchant 1 | 123456780        | Test Estate 1 | Safaricom    | 3000.00           | 123456789             | testcustomer@customer.co.uk | Safaricom Contract   | Variable Topup |
+	| Today    | 1                 | Sale            | Test Merchant 1 | 123456780        | Test Estate 1 | Safaricom    | 300.00           | 123456789             | testcustomer@customer.co.uk | Safaricom Contract   | Variable Topup |
 	
 	
 	Then transaction response should contain the following information
 	| EstateName    | MerchantName    | TransactionNumber | ResponseCode | ResponseMessage                                                                                                    |
-	| Test Estate 1 | Test Merchant 1 | 1                 | 1009         | Merchant [Test Merchant 1] does not have enough credit available [2000.0] to perform transaction amount [3000.00] |
+	| Test Estate 1 | Test Merchant 1 | 1                 | 1009         | Merchant [Test Merchant 1] does not have enough credit available [200.0] to perform transaction amount [300.00] |
