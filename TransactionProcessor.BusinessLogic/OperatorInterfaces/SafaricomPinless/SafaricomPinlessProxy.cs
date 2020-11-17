@@ -84,7 +84,16 @@
                 throw new Exception("CustomerAccountNumber is a required field for this transaction type");
             }
 
-            String requestUrl = this.BuildRequest(transactionDateTime, transactionReference, customerMsisdn, transactionAmount);
+            // Multiply amount before sending
+            // Covert the transaction amount to Decimal and remove decimal places
+            if (Decimal.TryParse(transactionAmount, out Decimal amountAsDecimal) == false)
+            {
+                throw new Exception("Transaction Amount is not a valid decimal value");
+            }
+
+            Decimal operatorTransactionAmount = amountAsDecimal * 100;
+            
+            String requestUrl = this.BuildRequest(transactionDateTime, transactionReference, customerMsisdn, operatorTransactionAmount);
 
             // Concatenate the request message
             HttpRequestMessage requestMessage = new HttpRequestMessage(HttpMethod.Get, new Uri(requestUrl));
@@ -115,18 +124,12 @@
         private String BuildRequest(DateTime transactionDateTime,
                                     String externalReference,
                                     String customerMsisdn,
-                                    String transactionAmount)
+                                    Decimal transactionAmount)
         {
             String requestUrl = $"{this.SafaricomConfiguration.Url}?VENDOR={this.SafaricomConfiguration.LoginId}&REQTYPE=EXRCTRFREQ&DATA=";
 
             StringBuilder xmlData = new StringBuilder();
-
-            // Covert the transaction amount to Decimal and remove decimal places
-            if (Decimal.TryParse(transactionAmount, out Decimal amountAsDecimal) == false)
-            {
-                throw new Exception("Transaction Amount is not a valid decimal value");
-            }
-
+            
             // Now build up the XML part of the message
             xmlData.Append("<?xml version=\"1.0\" encoding=\"utf-8\"?>");
             xmlData.Append("<ns0:COMMAND xmlns:ns0=\"http://safaricom.co.ke/Pinless/keyaccounts/\">");
@@ -140,7 +143,7 @@
             xmlData.Append($"<ns0:EXTCODE>{this.SafaricomConfiguration.ExtCode}</ns0:EXTCODE>");
             xmlData.Append($"<ns0:EXTREFNUM>{externalReference}</ns0:EXTREFNUM>");
             xmlData.Append($"<ns0:MSISDN2>{customerMsisdn}</ns0:MSISDN2>");
-            xmlData.Append($"<ns0:AMOUNT>{amountAsDecimal:G0}</ns0:AMOUNT>");
+            xmlData.Append($"<ns0:AMOUNT>{transactionAmount:G0}</ns0:AMOUNT>");
             xmlData.Append("<ns0:LANGUAGE1>0</ns0:LANGUAGE1>");
             xmlData.Append("<ns0:LANGUAGE2>0</ns0:LANGUAGE2>");
             xmlData.Append("<ns0:SELECTOR>0</ns0:SELECTOR>");
