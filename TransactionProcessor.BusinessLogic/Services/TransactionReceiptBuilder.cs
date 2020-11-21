@@ -52,7 +52,7 @@
             IDirectoryInfo path = this.FileSystem.Directory.GetParent(Assembly.GetExecutingAssembly().Location);
 
             String fileData =
-                await this.FileSystem.File.ReadAllTextAsync($"{path}\\Receipts\\Email\\{transaction.OperatorIdentifier}\\TransactionAuthorised.html", cancellationToken);
+                await this.FileSystem.File.ReadAllTextAsync($"{path}/Receipts/Email/{transaction.OperatorIdentifier}/TransactionAuthorised.html", cancellationToken);
 
             PropertyInfo[] transactonProperties = transaction.GetType().GetProperties(BindingFlags.Public | BindingFlags.Instance);
 
