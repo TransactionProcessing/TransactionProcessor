@@ -31,7 +31,7 @@ namespace TransactionProcessor.BusinessLogic.Tests.Services
 
             var fileSystem = new MockFileSystem(new Dictionary<string, MockFileData>
                                                 {
-                                                    { $"{path}\\Receipts\\Email\\{transaction.OperatorIdentifier}\\TransactionAuthorised.html", new MockFileData("Transaction Number: [TransactionNumber]") }
+                                                    { $"{path}/Receipts/Email/{transaction.OperatorIdentifier}/TransactionAuthorised.html", new MockFileData("Transaction Number: [TransactionNumber]") }
                                                 });
 
             TransactionReceiptBuilder receiptBuilder = new TransactionReceiptBuilder(fileSystem);
