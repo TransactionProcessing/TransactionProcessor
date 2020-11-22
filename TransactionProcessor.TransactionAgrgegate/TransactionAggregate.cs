@@ -403,6 +403,8 @@
             this.CheckTransactionHasBeenAuthorisedOrDeclined();
             this.CheckTransactionNotAlreadyCompleted();
 
+            Decimal? transactionAmount = this.IsAuthorised || this.IsLocallyAuthorised && this.TransactionType != TransactionType.Logon ? this.TransactionAmount : null;
+
             TransactionHasBeenCompletedEvent transactionHasBeenCompletedEvent =
                 TransactionHasBeenCompletedEvent.Create(this.AggregateId,
                                                         this.EstateId,
@@ -410,7 +412,7 @@
                                                         this.ResponseCode,
                                                         this.ResponseMessage,
                                                         this.IsAuthorised || this.IsLocallyAuthorised,
-                                                        this.TransactionType != TransactionType.Logon ? this.TransactionAmount : null);
+                                                        transactionAmount);
 
             this.ApplyAndPend(transactionHasBeenCompletedEvent);
         }
