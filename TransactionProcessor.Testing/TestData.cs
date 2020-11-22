@@ -669,7 +669,8 @@
                                                                                                                                   TestData.MerchantId,
                                                                                                                                   TestData.ResponseCode,
                                                                                                                                   TestData.ResponseMessage,
-                                                                                                                                  TestData.IsAuthorised);
+                                                                                                                                  TestData.IsAuthorised,
+                                                                                                                                  TestData.TransactionAmount);
 
         public static Guid TransactionFeeId = Guid.Parse("B83FCCCE-0D45-4FC2-8952-ED277A124BDB");
 

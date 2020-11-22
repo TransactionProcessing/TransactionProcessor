@@ -23,7 +23,7 @@
         }
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="TransactionHasBeenCompletedEvent"/> class.
+        /// Initializes a new instance of the <see cref="TransactionHasBeenCompletedEvent" /> class.
         /// </summary>
         /// <param name="aggregateId">The aggregate identifier.</param>
         /// <param name="eventId">The event identifier.</param>
@@ -32,13 +32,15 @@
         /// <param name="responseCode">The response code.</param>
         /// <param name="responseMessage">The response message.</param>
         /// <param name="isAuthorised">if set to <c>true</c> [is authorised].</param>
+        /// <param name="transactionAmount">The transaction amount.</param>
         private TransactionHasBeenCompletedEvent(Guid aggregateId,
                                                 Guid eventId,
                                                 Guid estateId,
                                                 Guid merchantId,
                                                 String responseCode,
                                                 String responseMessage,
-                                                Boolean isAuthorised) : base(aggregateId, eventId)
+                                                Boolean isAuthorised,
+                                                Decimal? transactionAmount) : base(aggregateId, eventId)
         {
             this.TransactionId = aggregateId;
             this.EstateId = estateId;
@@ -46,6 +48,7 @@
             this.ResponseCode = responseCode;
             this.ResponseMessage = responseMessage;
             this.IsAuthorised = isAuthorised;
+            this.TransactionAmount = transactionAmount;
         }
 
         #endregion
@@ -69,6 +72,15 @@
         /// </value>
         [JsonProperty]
         public Boolean IsAuthorised { get; private set; }
+
+        /// <summary>
+        /// Gets the transaction amount.
+        /// </summary>
+        /// <value>
+        /// The transaction amount.
+        /// </value>
+        [JsonProperty(DefaultValueHandling = DefaultValueHandling.Ignore)]
+        public Decimal? TransactionAmount { get; private set; }
 
         /// <summary>
         /// Gets the merchant identifier.
@@ -119,15 +131,17 @@
         /// <param name="responseCode">The response code.</param>
         /// <param name="responseMessage">The response message.</param>
         /// <param name="isAuthorised">if set to <c>true</c> [is authorised].</param>
+        /// <param name="transactionAmount">The transaction amount.</param>
         /// <returns></returns>
         public static TransactionHasBeenCompletedEvent Create(Guid aggregateId,
                                                               Guid estateId,
                                                               Guid merchantId,
                                                               String responseCode,
                                                               String responseMessage,
-                                                              Boolean isAuthorised)
+                                                              Boolean isAuthorised,
+                                                              Decimal? transactionAmount)
         {
-            return new TransactionHasBeenCompletedEvent(aggregateId, Guid.NewGuid(), estateId, merchantId, responseCode, responseMessage, isAuthorised);
+            return new TransactionHasBeenCompletedEvent(aggregateId, Guid.NewGuid(), estateId, merchantId, responseCode, responseMessage, isAuthorised, transactionAmount);
         }
 
         #endregion

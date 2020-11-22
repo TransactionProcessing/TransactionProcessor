@@ -409,7 +409,8 @@
                                                         this.MerchantId,
                                                         this.ResponseCode,
                                                         this.ResponseMessage,
-                                                        this.IsAuthorised || this.IsLocallyAuthorised);
+                                                        this.IsAuthorised || this.IsLocallyAuthorised,
+                                                        this.TransactionType != TransactionType.Logon ? this.TransactionAmount : null);
 
             this.ApplyAndPend(transactionHasBeenCompletedEvent);
         }
