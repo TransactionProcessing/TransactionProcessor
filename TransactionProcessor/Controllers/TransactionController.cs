@@ -2,6 +2,7 @@
 {
     using System;
     using System.Diagnostics.CodeAnalysis;
+    using System.Net;
     using System.Threading;
     using System.Threading.Tasks;
     using BusinessLogic.Requests;
@@ -45,7 +46,7 @@
         /// <summary>
         /// Initializes a new instance of the <see cref="TransactionController" /> class.
         /// </summary>
-        /// <param name="commandRouter">The command router.</param>
+        /// <param name="mediator">The mediator.</param>
         /// <param name="modelFactory">The model factory.</param>
         public TransactionController(IMediator mediator,
                                      IModelFactory modelFactory)
@@ -141,6 +142,30 @@
                                                                                          saleTransactionRequest.ProductId);
 
             ProcessSaleTransactionResponse response = await this.Mediator.Send(request, cancellationToken);
+
+            return this.ModelFactory.ConvertFrom(response);
+        }
+
+        /// <summary>
+        /// Processes the specific message.
+        /// </summary>
+        /// <param name="reconciliationRequest">The reconciliation request.</param>
+        /// <param name="cancellationToken">The cancellation token.</param>
+        /// <returns></returns>
+        private async Task<SerialisedMessage> ProcessSpecificMessage(ReconciliationRequest reconciliationRequest,
+                                                                     CancellationToken cancellationToken)
+        {
+            Guid transactionId = Guid.NewGuid();
+
+            ProcessReconciliationRequest request = ProcessReconciliationRequest.Create(transactionId,
+                                                                                       reconciliationRequest.EstateId,
+                                                                                       reconciliationRequest.MerchantId,
+                                                                                       reconciliationRequest.DeviceIdentifier,
+                                                                                       reconciliationRequest.TransactionDateTime,
+                                                                                       reconciliationRequest.TransactionCount,
+                                                                                       reconciliationRequest.TransactionValue);
+
+            ProcessReconciliationTransactionResponse response = await this.Mediator.Send(request, cancellationToken);
 
             return this.ModelFactory.ConvertFrom(response);
         }

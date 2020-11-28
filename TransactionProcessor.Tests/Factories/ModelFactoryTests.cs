@@ -72,5 +72,35 @@ namespace TransactionProcessor.Tests.Factories
 
             saleTransactionResponse.ShouldBeNull();
         }
+
+        [Fact]
+        public void ModelFactory_ProcessReconciliationTransactionResponse_IsConverted()
+        {
+            ProcessReconciliationTransactionResponse processReconciliationTransactionResponseModel = TestData.ProcessReconciliationTransactionResponseModel;
+
+            ModelFactory modelFactory = new ModelFactory();
+
+            SerialisedMessage processReconciliationTransactionResponse = modelFactory.ConvertFrom(processReconciliationTransactionResponseModel);
+
+            processReconciliationTransactionResponse.ShouldNotBeNull();
+            processReconciliationTransactionResponse.Metadata.ShouldContainKey(MetadataContants.KeyNameEstateId);
+            processReconciliationTransactionResponse.Metadata.ShouldContainKey(MetadataContants.KeyNameMerchantId);
+            String estateId = processReconciliationTransactionResponse.Metadata[MetadataContants.KeyNameEstateId];
+            String merchantId = processReconciliationTransactionResponse.Metadata[MetadataContants.KeyNameMerchantId];
+            estateId.ShouldBe(TestData.ProcessSaleTransactionResponseModel.EstateId.ToString());
+            merchantId.ShouldBe(TestData.ProcessSaleTransactionResponseModel.MerchantId.ToString());
+        }
+
+        [Fact]
+        public void ModelFactory_ProcessReconciliationTransactionResponse_NullInput_IsConverted()
+        {
+            ProcessReconciliationTransactionResponse processReconciliationTransactionResponseModel = null;
+
+            ModelFactory modelFactory = new ModelFactory();
+
+            SerialisedMessage processReconciliationTransactionResponse = modelFactory.ConvertFrom(processReconciliationTransactionResponseModel);
+
+            processReconciliationTransactionResponse.ShouldBeNull();
+        }
     }
 }

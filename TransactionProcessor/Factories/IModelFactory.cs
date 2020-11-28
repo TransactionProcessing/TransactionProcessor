@@ -1,5 +1,6 @@
 ﻿namespace TransactionProcessor.Factories
 {
+    using BusinessLogic.Requests;
     using DataTransferObjects;
     using Models;
 
@@ -23,6 +24,13 @@
         /// <param name="processSaleTransactionResponse">The process sale transaction response.</param>
         /// <returns></returns>
         SerialisedMessage ConvertFrom(ProcessSaleTransactionResponse processSaleTransactionResponse);
+
+        /// <summary>
+        /// Converts from.
+        /// </summary>
+        /// <param name="processReconciliationTransactionResponse">The process reconciliation transaction response.</param>
+        /// <returns></returns>
+        SerialisedMessage ConvertFrom(ProcessReconciliationTransactionResponse processReconciliationTransactionResponse);
 
         #endregion
     }

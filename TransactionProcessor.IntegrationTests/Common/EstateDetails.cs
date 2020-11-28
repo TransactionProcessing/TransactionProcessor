@@ -55,6 +55,7 @@
             this.Operators = new Dictionary<String, Guid>();
             this.MerchantUsers = new Dictionary<String, Dictionary<String, String>>();
             this.TransactionResponses = new Dictionary<(Guid merchantId, String transactionNumber), SerialisedMessage>();
+            this.ReconciliationResponses = new Dictionary<Guid, SerialisedMessage>();
             this.Contracts = new List<Contract>();
         }
 
@@ -109,6 +110,14 @@
         /// The transaction responses.
         /// </value>
         private Dictionary<(Guid merchantId, String transactionNumber), SerialisedMessage> TransactionResponses { get; }
+
+        /// <summary>
+        /// Gets the reconciliation responses.
+        /// </summary>
+        /// <value>
+        /// The reconciliation responses.
+        /// </value>
+        private Dictionary<Guid, SerialisedMessage> ReconciliationResponses { get; }
 
         #endregion
 
@@ -219,6 +228,12 @@
             this.TransactionResponses.Add((merchantId, transactionNumber), transactionResponse);
         }
 
+        public void AddReconciliationResponse(Guid merchantId,
+                                           SerialisedMessage reconciliationResponse)
+        {
+            this.ReconciliationResponses.Add(merchantId, reconciliationResponse);
+        }
+
         /// <summary>
         /// Creates the specified estate identifier.
         /// </summary>
@@ -293,6 +308,14 @@
                 this.TransactionResponses.Where(t => t.Key.merchantId == merchantId && t.Key.transactionNumber == transactionNumber).SingleOrDefault();
 
             return transactionResponse.Value;
+        }
+
+        public SerialisedMessage GetReconciliationResponse(Guid merchantId)
+        {
+            KeyValuePair<Guid, SerialisedMessage> reconciliationResponse =
+                this.ReconciliationResponses.Where(t => t.Key == merchantId).SingleOrDefault();
+
+            return reconciliationResponse.Value;
         }
 
         /// <summary>

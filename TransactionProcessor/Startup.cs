@@ -54,9 +54,16 @@ namespace TransactionProcessor
     using Swashbuckle.AspNetCore.SwaggerGen;
     using ILogger = Microsoft.Extensions.Logging.ILogger;
 
+    /// <summary>
+    /// 
+    /// </summary>
     [ExcludeFromCodeCoverage]
     public class Startup
     {
+        /// <summary>
+        /// Initializes a new instance of the <see cref="Startup"/> class.
+        /// </summary>
+        /// <param name="webHostEnvironment">The web host environment.</param>
         public Startup(IWebHostEnvironment webHostEnvironment)
         {
             IConfigurationBuilder builder = new ConfigurationBuilder().SetBasePath(webHostEnvironment.ContentRootPath)
@@ -67,11 +74,27 @@ namespace TransactionProcessor
             Startup.WebHostEnvironment = webHostEnvironment;
         }
 
+        /// <summary>
+        /// Gets or sets the configuration.
+        /// </summary>
+        /// <value>
+        /// The configuration.
+        /// </value>
         public static IConfigurationRoot Configuration { get; set; }
 
+        /// <summary>
+        /// Gets or sets the web host environment.
+        /// </summary>
+        /// <value>
+        /// The web host environment.
+        /// </value>
         public static IWebHostEnvironment WebHostEnvironment { get; set; }
 
         // This method gets called by the runtime. Use this method to add services to the container.
+        /// <summary>
+        /// Configures the services.
+        /// </summary>
+        /// <param name="services">The services.</param>
         public void ConfigureServices(IServiceCollection services)
         {
             ConfigurationReader.Initialise(Startup.Configuration);
@@ -123,6 +146,7 @@ namespace TransactionProcessor
             services.AddTransient<IEventStoreContext, EventStoreContext>();
             services.AddSingleton<ITransactionAggregateManager, TransactionAggregateManager>();
             services.AddSingleton<IAggregateRepository<TransactionAggregate.TransactionAggregate>, AggregateRepository<TransactionAggregate.TransactionAggregate>>();
+            services.AddSingleton<IAggregateRepository<ReconciliationAggregate.ReconciliationAggregate>, AggregateRepository<ReconciliationAggregate.ReconciliationAggregate>>();
             services.AddSingleton<ITransactionDomainService, TransactionDomainService>();
             services.AddSingleton<Factories.IModelFactory, Factories.ModelFactory>();
             services.AddSingleton<ISecurityServiceClient, SecurityServiceClient>();
@@ -144,6 +168,7 @@ namespace TransactionProcessor
 
             services.AddSingleton<IRequestHandler<ProcessLogonTransactionRequest, ProcessLogonTransactionResponse>, TransactionRequestHandler>();
             services.AddSingleton<IRequestHandler<ProcessSaleTransactionRequest, ProcessSaleTransactionResponse>, TransactionRequestHandler>();
+            services.AddSingleton<IRequestHandler<ProcessReconciliationRequest, ProcessReconciliationTransactionResponse>, TransactionRequestHandler>();
 
             services.AddTransient<Func<String, IOperatorProxy>>(context => (operatorIdentifier) =>
                                                              {
@@ -176,8 +201,15 @@ namespace TransactionProcessor
             services.AddSingleton<IFeeCalculationManager, FeeCalculationManager>();
         }
 
+        /// <summary>
+        /// The event store client settings
+        /// </summary>
         private static EventStoreClientSettings EventStoreClientSettings;
 
+        /// <summary>
+        /// Configures the event store settings.
+        /// </summary>
+        /// <param name="settings">The settings.</param>
         private static void ConfigureEventStoreSettings(EventStoreClientSettings settings = null)
         {
             if (settings == null)
@@ -206,6 +238,10 @@ namespace TransactionProcessor
             Startup.EventStoreClientSettings = settings;
         }
 
+        /// <summary>
+        /// Configures the middleware services.
+        /// </summary>
+        /// <param name="services">The services.</param>
         private void ConfigureMiddlewareServices(IServiceCollection services)
         {
             services.AddHealthChecks()
@@ -296,6 +332,13 @@ namespace TransactionProcessor
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
+        /// <summary>
+        /// Configures the specified application.
+        /// </summary>
+        /// <param name="app">The application.</param>
+        /// <param name="env">The env.</param>
+        /// <param name="loggerFactory">The logger factory.</param>
+        /// <param name="provider">The provider.</param>
         public void Configure(IApplicationBuilder app, IWebHostEnvironment env, ILoggerFactory loggerFactory,
                               IApiVersionDescriptionProvider provider)
         {

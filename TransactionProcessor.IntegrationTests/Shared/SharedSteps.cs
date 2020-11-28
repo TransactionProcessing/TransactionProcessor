@@ -488,6 +488,34 @@ namespace TransactionProcessor.IntegrationTests.Shared
             return responseSerialisedMessage;
         }
 
+        private async Task<SerialisedMessage> PerformReconciliationTransaction(Guid estateId, Guid merchantId, DateTime transactionDateTime,  String deviceIdentifier, Int32 transactionCount, Decimal transactionValue, CancellationToken cancellationToken)
+        {
+            ReconciliationRequest reconciliationRequest = new ReconciliationRequest
+            {
+                MerchantId = merchantId,
+                EstateId = estateId,
+                TransactionDateTime = transactionDateTime,
+                DeviceIdentifier = deviceIdentifier,
+                TransactionValue = transactionValue,
+                TransactionCount = transactionCount,
+            };
+
+            SerialisedMessage serialisedMessage = new SerialisedMessage();
+            serialisedMessage.Metadata.Add(MetadataContants.KeyNameEstateId, estateId.ToString());
+            serialisedMessage.Metadata.Add(MetadataContants.KeyNameMerchantId, merchantId.ToString());
+            serialisedMessage.SerialisedData = JsonConvert.SerializeObject(reconciliationRequest, new JsonSerializerSettings
+                                                                                                  {
+                                                                                                      TypeNameHandling = TypeNameHandling.All
+                                                                                                  });
+
+            SerialisedMessage responseSerialisedMessage =
+                await this.TestingContext.DockerHelper.TransactionProcessorClient.PerformTransaction(this.TestingContext.AccessToken,
+                                                                                                     serialisedMessage,
+                                                                                                     cancellationToken);
+
+            return responseSerialisedMessage;
+        }
+
         [Then(@"transaction response should contain the following information")]
         public void ThenTransactionResponseShouldContainTheFollowingInformation(Table table)
         {
@@ -528,6 +556,16 @@ namespace TransactionProcessor.IntegrationTests.Shared
 
             saleTransactionResponse.ResponseCode.ShouldBe(expectedResponseCode);
             saleTransactionResponse.ResponseMessage.ShouldBe(expectedResponseMessage);
+        }
+
+        private void ValidateTransactionResponse(ReconciliationResponse reconciliationResponse,
+                                                 TableRow tableRow)
+        {
+            String expectedResponseCode = SpecflowTableHelper.GetStringRowValue(tableRow, "ResponseCode");
+            String expectedResponseMessage = SpecflowTableHelper.GetStringRowValue(tableRow, "ResponseMessage");
+
+            reconciliationResponse.ResponseCode.ShouldBe(expectedResponseCode);
+            reconciliationResponse.ResponseMessage.ShouldBe(expectedResponseMessage);
         }
 
         [Given(@"the following api resources exist")]
@@ -705,6 +743,56 @@ namespace TransactionProcessor.IntegrationTests.Shared
 
             }
         }
+
+        [When(@"I perform the following reconciliations")]
+        public async Task WhenIPerformTheFollowingReconciliations(Table table)
+        {
+            foreach (TableRow tableRow in table.Rows)
+            {
+                String merchantName = SpecflowTableHelper.GetStringRowValue(tableRow, "MerchantName");
+                String dateString = SpecflowTableHelper.GetStringRowValue(tableRow, "DateTime");
+                DateTime transactionDateTime = SpecflowTableHelper.GetDateForDateString(dateString, DateTime.Today);
+                String deviceIdentifier = SpecflowTableHelper.GetStringRowValue(tableRow, "DeviceIdentifier");
+                Int32 transactionCount = SpecflowTableHelper.GetIntValue(tableRow, "TransactionCount");
+                Decimal transactionValue = SpecflowTableHelper.GetDecimalValue(tableRow, "TransactionValue");
+
+                EstateDetails estateDetails = this.TestingContext.GetEstateDetails(tableRow);
+
+                // Lookup the merchant id
+                Guid merchantId = estateDetails.GetMerchantId(merchantName);
+                SerialisedMessage reconciliationResponse = await this.PerformReconciliationTransaction(estateDetails.EstateId,
+                                                           merchantId,
+                                                           transactionDateTime,
+                                                           deviceIdentifier,
+                                                           transactionCount,
+                                                           transactionValue,
+                                                           CancellationToken.None);                                       
+
+                estateDetails.AddReconciliationResponse(merchantId, reconciliationResponse);
+            }
+        }
+
+        [Then(@"reconciliation response should contain the following information")]
+        public void ThenReconciliationResponseShouldContainTheFollowingInformation(Table table)
+        {
+            foreach (TableRow tableRow in table.Rows)
+            {
+                // Get the merchant name
+                EstateDetails estateDetails = this.TestingContext.GetEstateDetails(tableRow);
+
+                String merchantName = SpecflowTableHelper.GetStringRowValue(tableRow, "MerchantName");
+                Guid merchantId = estateDetails.GetMerchantId(merchantName);
+
+                SerialisedMessage serialisedMessage = estateDetails.GetReconciliationResponse(merchantId);
+                Object transactionResponse = JsonConvert.DeserializeObject(serialisedMessage.SerialisedData,
+                                                                           new JsonSerializerSettings
+                                                                           {
+                                                                               TypeNameHandling = TypeNameHandling.All
+                                                                           });
+                this.ValidateTransactionResponse((dynamic)transactionResponse, tableRow);
+            }
+        }
+
 
     }
 }

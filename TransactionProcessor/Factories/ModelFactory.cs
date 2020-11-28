@@ -2,6 +2,7 @@
 {
     using System;
     using System.Collections.Generic;
+    using BusinessLogic.Requests;
     using DataTransferObjects;
     using Models;
     using Newtonsoft.Json;
@@ -80,6 +81,41 @@
                                                                                              {
                                                                                                  TypeNameHandling = TypeNameHandling.All
                                                                                              })
+                   };
+        }
+
+
+        /// <summary>
+        /// Converts from.
+        /// </summary>
+        /// <param name="processReconciliationTransactionResponse">The process reconciliation transaction response.</param>
+        /// <returns></returns>
+        public SerialisedMessage ConvertFrom(ProcessReconciliationTransactionResponse processReconciliationTransactionResponse)
+        {
+            if (processReconciliationTransactionResponse == null)
+            {
+                return null;
+            }
+
+            ReconciliationResponse reconciliationTransactionResponse = new ReconciliationResponse
+            {
+                                                                           ResponseMessage = processReconciliationTransactionResponse.ResponseMessage,
+                                                                           ResponseCode = processReconciliationTransactionResponse.ResponseCode,
+                                                                           MerchantId = processReconciliationTransactionResponse.MerchantId,
+                                                                           EstateId = processReconciliationTransactionResponse.EstateId
+                                                                       };
+
+            return new SerialisedMessage
+                   {
+                       Metadata = new Dictionary<String, String>()
+                                  {
+                                      {MetadataContants.KeyNameEstateId, processReconciliationTransactionResponse.EstateId.ToString()},
+                                      {MetadataContants.KeyNameMerchantId, processReconciliationTransactionResponse.MerchantId.ToString()}
+                                  },
+                       SerialisedData = JsonConvert.SerializeObject(reconciliationTransactionResponse, new JsonSerializerSettings
+                                                                                                       {
+                                                                                                           TypeNameHandling = TypeNameHandling.All
+                                                                                                       })
                    };
         }
 

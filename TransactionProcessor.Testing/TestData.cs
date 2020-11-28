@@ -9,6 +9,7 @@
     using EstateManagement.DataTransferObjects;
     using EstateManagement.DataTransferObjects.Responses;
     using Models;
+    using ReconciliationAggregate;
     using SecurityService.DataTransferObjects.Responses;
     using Transaction.DomainEvents;
     using TransactionAggregate;
@@ -416,6 +417,16 @@
                 Pin = "1234"
             };
 
+        public static ProcessReconciliationRequest ProcessReconciliationRequest =>
+            ProcessReconciliationRequest.Create(TestData.TransactionId, TestData.EstateId, TestData.MerchantId, TestData.DeviceIdentifier, TestData.TransactionDateTime, TestData.ReconciliationTransactionCount, TestData.ReconciliationTransactionValue);
+
+        public static ProcessReconciliationTransactionResponse ProcessReconciliationTransactionResponseModel =>
+            new ProcessReconciliationTransactionResponse
+            {
+                ResponseMessage = TestData.ResponseMessage,
+                ResponseCode = TestData.ResponseCode
+            };
+
         #endregion
 
         #region Methods
@@ -570,7 +581,7 @@
         {
             return TransactionAggregate.Create(TestData.TransactionId);
         }
-
+        
         public static TransactionAggregate GetLocallyAuthorisedTransactionAggregate()
         {
             TransactionAggregate transactionAggregate = TransactionAggregate.Create(TestData.TransactionId);
@@ -678,6 +689,10 @@
 
         public static Decimal TransactionFeeValue = 0.5m;
         public static Decimal CalculatedFeeValue = 0.5m;
+
+        public static Int32 ReconciliationTransactionCount = 1;
+
+        public static Decimal ReconciliationTransactionValue = 100;
 
         public static List<ContractProductTransactionFee> ContractProductTransactionFees =>
             new List<ContractProductTransactionFee>

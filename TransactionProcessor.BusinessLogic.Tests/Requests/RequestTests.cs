@@ -53,5 +53,26 @@ namespace TransactionProcessor.BusinessLogic.Tests.Commands
             processSaleTransactionRequest.ContractId.ShouldBe(TestData.ContractId);
             processSaleTransactionRequest.ProductId.ShouldBe(TestData.ProductId);
         }
+
+        [Fact]
+        public void ProcessReconciliationRequest_CanBeCreated_IsCreated()
+        {
+            ProcessReconciliationRequest processReconciliationRequest = ProcessReconciliationRequest.Create(TestData.TransactionId,
+                                                                                                            TestData.EstateId,
+                                                                                                            TestData.MerchantId,
+                                                                                                            TestData.DeviceIdentifier,
+                                                                                                            TestData.TransactionDateTime,
+                                                                                                            TestData.ReconciliationTransactionCount,
+                                                                                                            TestData.ReconciliationTransactionValue);
+
+            processReconciliationRequest.ShouldNotBeNull();
+            processReconciliationRequest.EstateId.ShouldBe(TestData.EstateId);
+            processReconciliationRequest.MerchantId.ShouldBe(TestData.MerchantId);
+            processReconciliationRequest.DeviceIdentifier.ShouldBe(TestData.DeviceIdentifier);
+            processReconciliationRequest.TransactionDateTime.ShouldBe(TestData.TransactionDateTime);
+            processReconciliationRequest.TransactionCount.ShouldBe(TestData.ReconciliationTransactionCount);
+            processReconciliationRequest.TransactionValue.ShouldBe(TestData.ReconciliationTransactionValue);
+            processReconciliationRequest.TransactionId.ShouldBe(TestData.TransactionId);
+        }
     }
 }
