@@ -61,6 +61,27 @@
                                                                     Guid productId,
                                                                     CancellationToken cancellationToken);
 
+        /// <summary>
+        /// Processes the reconciliation transaction.
+        /// </summary>
+        /// <param name="transactionId">The transaction identifier.</param>
+        /// <param name="estateId">The estate identifier.</param>
+        /// <param name="merchantId">The merchant identifier.</param>
+        /// <param name="deviceIdentifier">The device identifier.</param>
+        /// <param name="transactionDateTime">The transaction date time.</param>
+        /// <param name="transactionCount">The transaction count.</param>
+        /// <param name="transactionValue">The transaction value.</param>
+        /// <param name="cancellationToken">The cancellation token.</param>
+        /// <returns></returns>
+        Task<ProcessReconciliationTransactionResponse> ProcessReconciliationTransaction(Guid transactionId,
+                                                                                        Guid estateId,
+                                                                                        Guid merchantId,
+                                                                                        String deviceIdentifier,
+                                                                                        DateTime transactionDateTime,
+                                                                                        Int32 transactionCount,
+                                                                                        Decimal transactionValue,
+                                                                                        CancellationToken cancellationToken);
+
         #endregion
     }
 }

@@ -272,6 +272,8 @@
         /// Adds the fee.
         /// </summary>
         /// <param name="calculatedFee">The calculated fee.</param>
+        /// <exception cref="System.ArgumentNullException">calculatedFee</exception>
+        /// <exception cref="System.InvalidOperationException">Unsupported Fee Type</exception>
         /// <exception cref="ArgumentNullException">calculatedFee</exception>
         /// <exception cref="InvalidOperationException">Unsupported Fee Type</exception>
         public void AddFee(CalculatedFee calculatedFee)
@@ -544,6 +546,11 @@
         /// <param name="merchantId">The merchant identifier.</param>
         /// <param name="deviceIdentifier">The device identifier.</param>
         /// <param name="transactionAmount">The transaction amount.</param>
+        /// <exception cref="System.ArgumentException">
+        /// Transaction Number must be numeric
+        /// or
+        /// Device Identifier must be alphanumeric
+        /// </exception>
         /// <exception cref="ArgumentException">Transaction Number must be numeric
         /// or
         /// Invalid Transaction Type [{transactionType}]
@@ -619,6 +626,7 @@
         /// <summary>
         /// Checks the additional request data not already recorded.
         /// </summary>
+        /// <exception cref="System.InvalidOperationException">Additional Request Data already recorded</exception>
         /// <exception cref="InvalidOperationException">Additional Request Data already recorded</exception>
         private void CheckAdditionalRequestDataNotAlreadyRecorded()
         {
@@ -631,6 +639,7 @@
         /// <summary>
         /// Checks the additional response data not already recorded.
         /// </summary>
+        /// <exception cref="System.InvalidOperationException">Additional Response Data already recorded</exception>
         /// <exception cref="InvalidOperationException">Additional Response Data already recorded</exception>
         private void CheckAdditionalResponseDataNotAlreadyRecorded()
         {
@@ -643,6 +652,7 @@
         /// <summary>
         /// Checks the customer has not already requested email receipt.
         /// </summary>
+        /// <exception cref="System.InvalidOperationException">Customer Email Receipt already requested for Transaction [{this.AggregateId}]</exception>
         /// <exception cref="InvalidOperationException">Customer Email Receipt already requested for Transaction [{this.AggregateId}]</exception>
         private void CheckCustomerHasNotAlreadyRequestedEmailReceipt()
         {
@@ -656,6 +666,7 @@
         /// Checks the fee has not already been added.
         /// </summary>
         /// <param name="calculatedFee">The calculated fee.</param>
+        /// <exception cref="System.InvalidOperationException">Fee with Id [{calculatedFee.FeeId}] has already been added to this transaction</exception>
         /// <exception cref="InvalidOperationException">Fee with Id [{calculatedFee.FeeId}] has already been added to this transaction</exception>
         private void CheckFeeHasNotAlreadyBeenAdded(CalculatedFee calculatedFee)
         {
@@ -668,6 +679,7 @@
         /// <summary>
         /// Checks the product details not already added.
         /// </summary>
+        /// <exception cref="System.InvalidOperationException">Product details already added</exception>
         /// <exception cref="InvalidOperationException">Product details already added</exception>
         private void CheckProductDetailsNotAlreadyAdded()
         {
@@ -680,6 +692,7 @@
         /// <summary>
         /// Checks the transaction can attract fees.
         /// </summary>
+        /// <exception cref="System.NotSupportedException">Transactions of type {this.TransactionType} cannot attract fees</exception>
         /// <exception cref="NotSupportedException">Transactions of type {this.TransactionType} cannot attract fees</exception>
         private void CheckTransactionCanAttractFees()
         {
@@ -692,6 +705,7 @@
         /// <summary>
         /// Checks the transaction can be locally authorised.
         /// </summary>
+        /// <exception cref="System.InvalidOperationException">Sales cannot be locally authorised</exception>
         /// <exception cref="InvalidOperationException">Sales cannot be locally authorised</exception>
         /// <exception cref="NotSupportedException">Sales cannot be locally authorised</exception>
         private void CheckTransactionCanBeLocallyAuthorised()
@@ -705,6 +719,7 @@
         /// <summary>
         /// Checks the transaction has been authorised.
         /// </summary>
+        /// <exception cref="System.InvalidOperationException">Transaction [{this.AggregateId}] has not been authorised</exception>
         /// <exception cref="InvalidOperationException">Transaction [{this.AggregateId}] has not been authorised</exception>
         private void CheckTransactionHasBeenAuthorised()
         {
@@ -717,6 +732,7 @@
         /// <summary>
         /// Checks the transaction has been authorised.
         /// </summary>
+        /// <exception cref="System.InvalidOperationException">Transaction [{this.AggregateId}] has not been authorised or declined</exception>
         /// <exception cref="InvalidOperationException">Transaction [{this.AggregateId}] has not been authorised</exception>
         private void CheckTransactionHasBeenAuthorisedOrDeclined()
         {
@@ -729,6 +745,7 @@
         /// <summary>
         /// Checks the transaction has been completed.
         /// </summary>
+        /// <exception cref="System.InvalidOperationException">Transaction [{this.AggregateId}] has not been completed</exception>
         /// <exception cref="InvalidOperationException">Transaction [{this.AggregateId}] has not been completed</exception>
         private void CheckTransactionHasBeenCompleted()
         {
@@ -741,6 +758,7 @@
         /// <summary>
         /// Checks the transaction has been started.
         /// </summary>
+        /// <exception cref="System.InvalidOperationException">Transaction [{this.AggregateId}] has not been started</exception>
         /// <exception cref="InvalidOperationException">Transaction [{this.AggregateId}] has not been started</exception>
         private void CheckTransactionHasBeenStarted()
         {
@@ -753,6 +771,7 @@
         /// <summary>
         /// Checks the transaction not already authorised.
         /// </summary>
+        /// <exception cref="System.InvalidOperationException">Transaction [{this.AggregateId}] has already been{authtype}authorised</exception>
         /// <exception cref="InvalidOperationException">Transaction [{this.AggregateId}] has already been{authtype}authorised</exception>
         private void CheckTransactionNotAlreadyAuthorised()
         {
@@ -766,6 +785,7 @@
         /// <summary>
         /// Checks the transaction not already completed.
         /// </summary>
+        /// <exception cref="System.InvalidOperationException">Transaction Id [{this.AggregateId}] has already been completed</exception>
         /// <exception cref="InvalidOperationException">Transaction Id [{this.AggregateId}] has already been completed</exception>
         private void CheckTransactionNotAlreadyCompleted()
         {
@@ -778,6 +798,7 @@
         /// <summary>
         /// Checks the transaction not already declined.
         /// </summary>
+        /// <exception cref="System.InvalidOperationException">Transaction [{this.AggregateId}] has already been{authtype}declined</exception>
         /// <exception cref="InvalidOperationException">Transaction [{this.AggregateId}] has already been{authtype}declined</exception>
         private void CheckTransactionNotAlreadyDeclined()
         {
@@ -791,6 +812,7 @@
         /// <summary>
         /// Checks the transaction not already started.
         /// </summary>
+        /// <exception cref="System.InvalidOperationException">Transaction Id [{this.AggregateId}] has already been started</exception>
         /// <exception cref="InvalidOperationException">Transaction Id [{this.AggregateId}] has already been started</exception>
         private void CheckTransactionNotAlreadyStarted()
         {
@@ -955,6 +977,11 @@
 
         #endregion
 
+
+        /// <summary>
+        /// Gets the transaction.
+        /// </summary>
+        /// <returns></returns>
         public Transaction GetTransaction()
         {
             return new Transaction

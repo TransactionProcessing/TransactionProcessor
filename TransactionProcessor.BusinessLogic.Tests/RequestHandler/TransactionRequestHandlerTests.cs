@@ -44,5 +44,20 @@
                             });
 
         }
+
+        [Fact]
+        public void TransactionRequestHandler_ProcessReconciliationRequest_IsHandled()
+        {
+            Mock<ITransactionDomainService> transactionDomainService = new Mock<ITransactionDomainService>();
+            TransactionRequestHandler handler = new TransactionRequestHandler(transactionDomainService.Object);
+
+            ProcessReconciliationRequest command = TestData.ProcessReconciliationRequest;
+
+            Should.NotThrow(async () =>
+                            {
+                                await handler.Handle(command, CancellationToken.None);
+                            });
+
+        }
     }
 }

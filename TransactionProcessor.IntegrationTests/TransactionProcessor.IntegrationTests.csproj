@@ -43,6 +43,9 @@
       <AutoGen>True</AutoGen>
       <DependentUpon>LogonTransaction.feature</DependentUpon>
     </Compile>
+    <Compile Update="Reconciliation\ReconciliationFeature.feature.cs">
+      <DesignTime>True</DesignTime>
+    </Compile>
     <Compile Update="SaleTransaction\SaleTransactionFeature.feature.cs">
       <DesignTime>True</DesignTime>
     </Compile>
@@ -58,6 +61,10 @@
     <SpecFlowFeatureFiles Update="LogonTransaction\LogonTransaction.feature">
       <Generator>SpecFlowSingleFileGenerator</Generator>
       <LastGenOutput>LogonTransaction.feature.cs</LastGenOutput>
+    </SpecFlowFeatureFiles>
+    <SpecFlowFeatureFiles Update="Reconciliation\ReconciliationFeature.feature">
+      <Generator>SpecFlowSingleFileGenerator</Generator>
+      <LastGenOutput>ReconciliationFeature.feature.cs</LastGenOutput>
     </SpecFlowFeatureFiles>
     <SpecFlowFeatureFiles Update="SaleTransaction\SaleTransactionFeature.feature">
       <Generator>SpecFlowSingleFileGenerator</Generator>

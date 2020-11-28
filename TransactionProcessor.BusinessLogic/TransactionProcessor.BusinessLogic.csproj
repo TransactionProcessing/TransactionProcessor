@@ -17,6 +17,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\TransactionProcessor.Models\TransactionProcessor.Models.csproj" />
+    <ProjectReference Include="..\TransactionProcessor.ReconciliationAggregate\TransactionProcessor.ReconciliationAggregate.csproj" />
     <ProjectReference Include="..\TransactionProcessor.TransactionAgrgegate\TransactionProcessor.TransactionAggregate.csproj" />
   </ItemGroup>
 
