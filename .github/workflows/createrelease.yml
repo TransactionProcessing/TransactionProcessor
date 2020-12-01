@@ -101,12 +101,12 @@ jobs:
 
     - name: Build and Publish Nuget Packages
       run: |
-        dotnet pack "TransactionProcessor.Client\TransactionProcessor.Client.csproj" /p:PackageVersion=${{ steps.next_version.outputs.VERSION }} --output Nugets
-        dotnet nuget push Nugets/TransactionProcessor.Client.${{ steps.next_version.outputs.VERSION }}.nupkg --api-key ${{ secrets.MYGET_APIKEY }} --source https://www.myget.org/F/transactionprocessing/api/v2/package
-        dotnet pack "TransactionProcessor.Transaction.DomainEvents\TransactionProcessor.Transaction.DomainEvents.csproj" /p:PackageVersion=${{ steps.next_version.outputs.VERSION }} --output Nugets
-        dotnet nuget push Nugets/TransactionProcessor.Transaction.DomainEvents.${{ steps.next_version.outputs.VERSION }}.nupkg --api-key ${{ secrets.MYGET_APIKEY }} --source https://www.myget.org/F/transactionprocessing/api/v2/package
-        dotnet pack "TransactionProcessor.Reconciliation.DomainEvents\TransactionProcessor.Reconciliation.DomainEvents.csproj" /p:PackageVersion=${{ steps.next_version.outputs.VERSION }} --output Nugets
-        dotnet nuget push Nugets/TransactionProcessor.Reconciliation.DomainEvents.${{ steps.next_version.outputs.VERSION }}.nupkg --api-key ${{ secrets.MYGET_APIKEY }} --source https://www.myget.org/F/transactionprocessing/api/v2/package
+        dotnet pack "TransactionProcessor.Client\TransactionProcessor.Client.csproj" /p:PackageVersion=${{ steps.get_version.outputs.VERSION }} --output Nugets
+        dotnet nuget push Nugets/TransactionProcessor.Client.${{ steps.get_version.outputs.VERSION }}.nupkg --api-key ${{ secrets.MYGET_APIKEY }} --source https://www.myget.org/F/transactionprocessing/api/v2/package
+        dotnet pack "TransactionProcessor.Transaction.DomainEvents\TransactionProcessor.Transaction.DomainEvents.csproj" /p:PackageVersion=${{ steps.get_version.outputs.VERSION }} --output Nugets
+        dotnet nuget push Nugets/TransactionProcessor.Transaction.DomainEvents.${{ steps.get_version.outputs.VERSION }}.nupkg --api-key ${{ secrets.MYGET_APIKEY }} --source https://www.myget.org/F/transactionprocessing/api/v2/package
+        dotnet pack "TransactionProcessor.Reconciliation.DomainEvents\TransactionProcessor.Reconciliation.DomainEvents.csproj" /p:PackageVersion=${{ steps.get_version.outputs.VERSION }} --output Nugets
+        dotnet nuget push Nugets/TransactionProcessor.Reconciliation.DomainEvents.${{ steps.get_version.outputs.VERSION }}.nupkg --api-key ${{ secrets.MYGET_APIKEY }} --source https://www.myget.org/F/transactionprocessing/api/v2/package
 
 
 
