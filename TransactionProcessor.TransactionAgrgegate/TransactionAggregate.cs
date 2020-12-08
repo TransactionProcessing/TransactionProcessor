@@ -994,7 +994,10 @@
                        TransactionDateTime = this.TransactionDateTime,
                        TransactionNumber = this.TransactionNumber,
                        TransactionReference = this.TransactionReference,
-                       OperatorIdentifier = this.OperatorIdentifier
+                       OperatorIdentifier = this.OperatorIdentifier,
+                       AdditionalRequestMetadata = this.AdditionalTransactionRequestMetadata,
+                       AdditionalResponseMetadata = this.AdditionalTransactionResponseMetadata,
+                       ResponseCode = this.ResponseCode
                    };
         }
     }

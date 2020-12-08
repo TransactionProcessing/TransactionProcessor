@@ -49,21 +49,23 @@
         /// <summary>
         /// Processes the sale message.
         /// </summary>
+        /// <param name="accessToken">The access token.</param>
         /// <param name="transactionId">The transaction identifier.</param>
+        /// <param name="operatorIdentifier">The operator identifier.</param>
         /// <param name="merchant">The merchant.</param>
         /// <param name="transactionDateTime">The transaction date time.</param>
         /// <param name="transactionReference">The transaction reference.</param>
         /// <param name="additionalTransactionMetadata">The additional transaction metadata.</param>
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns></returns>
-        /// <exception cref="Exception">
-        /// Amount is a required field for this transaction type
+        /// <exception cref="Exception">Amount is a required field for this transaction type
         /// or
         /// CustomerAccountNumber is a required field for this transaction type
         /// or
-        /// Error sending request [{requestUrl}] to Safaricom.  Status Code [{responseMessage.StatusCode}]
-        /// </exception>
-        public async Task<OperatorResponse> ProcessSaleMessage(Guid transactionId,
+        /// Error sending request [{requestUrl}] to Safaricom.  Status Code [{responseMessage.StatusCode}]</exception>
+        public async Task<OperatorResponse> ProcessSaleMessage(String accessToken,
+                                                               Guid transactionId,
+                                                               String operatorIdentifier,
                                                                MerchantResponse merchant,
                                                                DateTime transactionDateTime,
                                                                String transactionReference,

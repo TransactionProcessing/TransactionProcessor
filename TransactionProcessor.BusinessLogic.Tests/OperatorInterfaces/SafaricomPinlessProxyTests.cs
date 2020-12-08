@@ -32,7 +32,9 @@ namespace TransactionProcessor.BusinessLogic.Tests.OperatorInterfaces
 
             IOperatorProxy safaricomPinlessproxy = new SafaricomPinlessProxy(safaricomConfiguration, httpClient);
 
-            OperatorResponse operatorResponse = await  safaricomPinlessproxy.ProcessSaleMessage(TestData.TransactionId,
+            OperatorResponse operatorResponse = await  safaricomPinlessproxy.ProcessSaleMessage(TestData.TokenResponse().AccessToken,
+                                                                                                TestData.TransactionId,
+                                                                                                TestData.OperatorIdentifier1,
                                                                                                 TestData.Merchant,
                                                                                                 TestData.TransactionDateTime,
                                                                                                 TestData.TransactionReference,
@@ -59,7 +61,9 @@ namespace TransactionProcessor.BusinessLogic.Tests.OperatorInterfaces
 
             IOperatorProxy safaricomPinlessproxy = new SafaricomPinlessProxy(safaricomConfiguration, httpClient);
 
-            OperatorResponse operatorResponse = await safaricomPinlessproxy.ProcessSaleMessage(TestData.TransactionId,
+            OperatorResponse operatorResponse = await safaricomPinlessproxy.ProcessSaleMessage(TestData.TokenResponse().AccessToken, 
+                                                                                               TestData.TransactionId,
+                                                                                               TestData.OperatorIdentifier1,
                                                                                                TestData.Merchant,
                                                                                                TestData.TransactionDateTime,
                                                                                                TestData.TransactionReference,
@@ -87,7 +91,9 @@ namespace TransactionProcessor.BusinessLogic.Tests.OperatorInterfaces
 
             Should.Throw<Exception>(async () =>
                                     {
-                                        await safaricomPinlessproxy.ProcessSaleMessage(TestData.TransactionId,
+                                        await safaricomPinlessproxy.ProcessSaleMessage(TestData.TokenResponse().AccessToken, 
+                                                                                       TestData.TransactionId,
+                                                                                       TestData.OperatorIdentifier1,
                                                                                        TestData.Merchant,
                                                                                        TestData.TransactionDateTime,
                                                                                        TestData.TransactionReference,
@@ -123,7 +129,9 @@ namespace TransactionProcessor.BusinessLogic.Tests.OperatorInterfaces
 
             Should.Throw<Exception>(async () =>
                                     {
-                                        await safaricomPinlessproxy.ProcessSaleMessage(TestData.TransactionId,
+                                        await safaricomPinlessproxy.ProcessSaleMessage(TestData.TokenResponse().AccessToken, 
+                                                                                       TestData.TransactionId,
+                                                                                       TestData.OperatorIdentifier1,
                                                                                        TestData.Merchant,
                                                                                        TestData.TransactionDateTime,
                                                                                        TestData.TransactionReference,
