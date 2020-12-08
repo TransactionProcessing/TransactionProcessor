@@ -15,6 +15,7 @@ namespace TransactionProcessor.IntegrationTests.Shared
     using EstateManagement.DataTransferObjects.Requests;
     using EstateManagement.DataTransferObjects.Responses;
     using Microsoft.EntityFrameworkCore.ValueGeneration.Internal;
+    using Microsoft.Extensions.Logging;
     using Newtonsoft.Json;
     using Newtonsoft.Json.Linq;
     using SecurityService.DataTransferObjects;
@@ -264,13 +265,15 @@ namespace TransactionProcessor.IntegrationTests.Shared
 
                         Guid contractId = Guid.Empty;
                         Guid productId = Guid.Empty;
-                        var contract = estateDetails.GetContract(contractDescription);
+                        Contract contract = estateDetails.GetContract(contractDescription);
                         if (contract != null)
                         {
                             contractId = contract.ContractId;
-                            var product = contract.GetProduct(productName);
+                            Product product = contract.GetProduct(productName);
                             productId = product.ProductId;
                         }
+                        String recipientEmail = SpecflowTableHelper.GetStringRowValue(tableRow, "RecipientEmail");
+                        String recipientMobile = SpecflowTableHelper.GetStringRowValue(tableRow, "RecipientMobile");
 
                         transactionResponse = await this.PerformSaleTransaction(estateDetails.EstateId,
                                                                                 merchantId,
@@ -284,6 +287,8 @@ namespace TransactionProcessor.IntegrationTests.Shared
                                                                                 customerEmailAddress,
                                                                                 contractId,
                                                                                 productId,
+                                                                                recipientEmail,
+                                                                                recipientMobile,
                                                                                 CancellationToken.None);
                         break;
                         
@@ -451,6 +456,8 @@ namespace TransactionProcessor.IntegrationTests.Shared
         private async Task<SerialisedMessage> PerformSaleTransaction(Guid estateId, Guid merchantId, DateTime transactionDateTime, String transactionType, String transactionNumber, String deviceIdentifier, String operatorIdentifier, Decimal transactionAmount, String customerAccountNumber, String customerEmailAddress,
                                                                      Guid contractId,
                                                                      Guid productId,
+                                                                     String recipientEmail,
+                                                                     String recipientMobile,
                                                                      CancellationToken cancellationToken)
         {
             SaleTransactionRequest saleTransactionRequest = new SaleTransactionRequest
@@ -462,15 +469,36 @@ namespace TransactionProcessor.IntegrationTests.Shared
                                                                 DeviceIdentifier = deviceIdentifier,
                                                                 TransactionType = transactionType,
                                                                 OperatorIdentifier = operatorIdentifier,
-                                                                AdditionalTransactionMetadata = new Dictionary<String, String>
-                                                                                                {
-                                                                                                    {"Amount", transactionAmount.ToString()},
-                                                                                                    {"CustomerAccountNumber", customerAccountNumber}
-                                                                                                },
                                                                 CustomerEmailAddress = customerEmailAddress,
                                                                 ProductId = productId,
                                                                 ContractId = contractId
             };
+
+            if (operatorIdentifier == "Voucher")
+            {
+                saleTransactionRequest.AdditionalTransactionMetadata = new Dictionary<String, String>
+                                                                       {
+                                                                           {"Amount", transactionAmount.ToString()},
+                                                                       };
+
+                if (String.IsNullOrEmpty(recipientEmail) == false)
+                {
+                    saleTransactionRequest.AdditionalTransactionMetadata.Add("RecipientEmail", recipientEmail);
+                }
+
+                if (String.IsNullOrEmpty(recipientMobile) == false)
+                {
+                    saleTransactionRequest.AdditionalTransactionMetadata.Add("RecipientMobile", recipientMobile);
+                }
+            }
+            else
+            {
+                saleTransactionRequest.AdditionalTransactionMetadata = new Dictionary<String, String>
+                                                                       {
+                                                                           {"Amount", transactionAmount.ToString()},
+                                                                           {"CustomerAccountNumber", customerAccountNumber}
+                                                                       };
+            }
 
             SerialisedMessage serialisedMessage = new SerialisedMessage();
             serialisedMessage.Metadata.Add(MetadataContants.KeyNameEstateId, estateId.ToString());

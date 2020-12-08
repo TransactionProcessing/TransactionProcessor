@@ -220,7 +220,9 @@
                 MerchantResponse merchant = await this.GetMerchant(estateId, merchantId, cancellationToken);
                 IOperatorProxy operatorProxy = this.OperatorProxyResolver(operatorIdentifier);
                 OperatorResponse operatorResponse =
-                    await operatorProxy.ProcessSaleMessage(transactionId,
+                    await operatorProxy.ProcessSaleMessage(this.TokenResponse.AccessToken,
+                                                           transactionId,
+                                                           operatorIdentifier,
                                                            merchant,
                                                            transactionDateTime,
                                                            transactionReference,
@@ -277,13 +279,16 @@
 
             TransactionAggregate transactionAggregate = await this.TransactionAggregateManager.GetAggregate(estateId, transactionId, cancellationToken);
 
+            // Get the model from the aggregate
+            Transaction transaction = transactionAggregate.GetTransaction();
+            
             return new ProcessSaleTransactionResponse
                    {
-                       ResponseMessage = transactionAggregate.ResponseMessage,
-                       ResponseCode = transactionAggregate.ResponseCode,
+                       ResponseMessage = transaction.ResponseMessage,
+                       ResponseCode = transaction.ResponseCode,
                        EstateId = estateId,
                        MerchantId = merchantId,
-                       AdditionalTransactionMetadata = new Dictionary<String, String>()
+                       AdditionalTransactionMetadata = transaction.AdditionalResponseMetadata
                    };
         }
 

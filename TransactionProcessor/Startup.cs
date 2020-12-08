@@ -21,6 +21,7 @@ namespace TransactionProcessor
     using BusinessLogic.Manager;
     using BusinessLogic.OperatorInterfaces;
     using BusinessLogic.OperatorInterfaces.SafaricomPinless;
+    using BusinessLogic.OperatorInterfaces.VoucherManagement;
     using BusinessLogic.RequestHandlers;
     using BusinessLogic.Requests;
     using BusinessLogic.Services;
@@ -52,6 +53,7 @@ namespace TransactionProcessor
     using Shared.Repositories;
     using Swashbuckle.AspNetCore.Filters;
     using Swashbuckle.AspNetCore.SwaggerGen;
+    using VoucherManagement.Client;
     using ILogger = Microsoft.Extensions.Logging.ILogger;
 
     /// <summary>
@@ -160,6 +162,8 @@ namespace TransactionProcessor
                                                                      });
             services.AddSingleton<HttpClient>();
             services.AddSingleton<IEstateClient, EstateClient>();
+            services.AddSingleton<IVoucherManagementClient, VoucherManagementClient>();
+
             // request & notification handlers
             services.AddTransient<ServiceFactory>(context =>
                                                   {
@@ -172,9 +176,19 @@ namespace TransactionProcessor
 
             services.AddTransient<Func<String, IOperatorProxy>>(context => (operatorIdentifier) =>
                                                              {
-                                                                 SafaricomConfiguration configuration = context.GetRequiredService<SafaricomConfiguration>();
-                                                                 HttpClient client = context.GetRequiredService<HttpClient>();
-                                                                 return new SafaricomPinlessProxy(configuration, client);
+                                                                 if (String.Compare(operatorIdentifier, "Safaricom", StringComparison.CurrentCultureIgnoreCase) == 0)
+                                                                 {
+                                                                     SafaricomConfiguration configuration = context.GetRequiredService<SafaricomConfiguration>();
+                                                                     HttpClient client = context.GetRequiredService<HttpClient>();
+                                                                     return new SafaricomPinlessProxy(configuration, client);
+                                                                 }
+                                                                 else
+                                                                 {
+                                                                     // Voucher
+                                                                     IVoucherManagementClient voucherManagementClient = context.GetRequiredService<IVoucherManagementClient>();
+                                                                     return new VoucherManagementProxy(voucherManagementClient);
+
+                                                                 }
                                                              });
 
             Dictionary<String, String[]> eventHandlersConfiguration = new Dictionary<String, String[]>();

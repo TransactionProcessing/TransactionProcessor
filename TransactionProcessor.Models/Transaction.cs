@@ -1,6 +1,7 @@
 ﻿namespace TransactionProcessor.Models
 {
     using System;
+    using System.Collections.Generic;
     using System.Diagnostics.CodeAnalysis;
 
     /// <summary>
@@ -10,6 +11,30 @@
     public class Transaction
     {
         #region Properties
+
+        /// <summary>
+        /// Gets or sets the additional request metadata.
+        /// </summary>
+        /// <value>
+        /// The additional request metadata.
+        /// </value>
+        public Dictionary<String, String> AdditionalRequestMetadata { get; set; }
+
+        /// <summary>
+        /// Gets or sets the additional response metadata.
+        /// </summary>
+        /// <value>
+        /// The additional response metadata.
+        /// </value>
+        public Dictionary<String, String> AdditionalResponseMetadata { get; set; }
+
+        /// <summary>
+        /// Gets or sets the response code.
+        /// </summary>
+        /// <value>
+        /// The response code.
+        /// </value>
+        public String ResponseCode { get; set; }
 
         /// <summary>
         /// Gets or sets the authorisation code.

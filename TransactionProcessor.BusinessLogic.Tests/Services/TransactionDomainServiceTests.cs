@@ -491,7 +491,9 @@ namespace TransactionProcessor.BusinessLogic.Tests.Services
                                        .ReturnsAsync(TestData.GetCompletedAuthorisedSaleTransactionAggregate);
 
             Mock<IOperatorProxy> operatorProxy = new Mock<IOperatorProxy>();
-            operatorProxy.Setup(o => o.ProcessSaleMessage(It.IsAny<Guid>(),
+            operatorProxy.Setup(o => o.ProcessSaleMessage(It.IsAny<String>(),
+                                                          It.IsAny<Guid>(),
+                                                          It.IsAny<String>(),
                                                           It.IsAny<MerchantResponse>(),
                                                           It.IsAny<DateTime>(),
                                                           It.IsAny<String>(),
@@ -549,7 +551,9 @@ namespace TransactionProcessor.BusinessLogic.Tests.Services
                                        .ReturnsAsync(TestData.GetDeclinedTransactionAggregate(TransactionResponseCode.TransactionDeclinedByOperator));
 
             Mock<IOperatorProxy> operatorProxy = new Mock<IOperatorProxy>();
-            operatorProxy.Setup(o => o.ProcessSaleMessage(It.IsAny<Guid>(),
+            operatorProxy.Setup(o => o.ProcessSaleMessage(It.IsAny<String>(),
+                                                          It.IsAny<Guid>(),
+                                                          It.IsAny<String>(),
                                                           It.IsAny<MerchantResponse>(),
                                                           It.IsAny<DateTime>(),
                                                           It.IsAny<String>(),

@@ -2,6 +2,7 @@
 {
     using System;
     using System.Collections.Generic;
+    using System.Reflection.Metadata;
     using BusinessLogic.OperatorInterfaces;
     using BusinessLogic.OperatorInterfaces.SafaricomPinless;
     using BusinessLogic.Requests;
@@ -13,6 +14,7 @@
     using SecurityService.DataTransferObjects.Responses;
     using Transaction.DomainEvents;
     using TransactionAggregate;
+    using VoucherManagement.DataTransferObjects;
     using CalculationType = Models.CalculationType;
     using FeeType = Models.FeeType;
 
@@ -144,6 +146,14 @@
             {
                 {"Amount", "100.00"},
                 {"CustomerAccountNumber", "123456789" }
+            };
+
+        public static Dictionary<String, String> AdditionalTransactionMetaDataForVoucher =>
+            new Dictionary<String, String>
+            {
+                {"Amount", "100.00"},
+                {"RecipientEmail", "test@testvoucher.co.uk" }
+
             };
 
         public static IReadOnlyDictionary<String, String> DefaultAppSettings =>
@@ -693,6 +703,22 @@
         public static Int32 ReconciliationTransactionCount = 1;
 
         public static Decimal ReconciliationTransactionValue = 100;
+
+        public static IssueVoucherResponse IssueVoucherResponse =>
+            new IssueVoucherResponse
+            {
+                ExpiryDate = TestData.VoucherExpiryDate,
+                Message = TestData.VoucherMessage,
+                VoucherCode = TestData.VoucherCode,
+                VoucherId = TestData.VoucherId
+            };
+
+        public static DateTime VoucherExpiryDate = new DateTime(2021,1,8);
+        public static String VoucherMessage = String.Empty;
+
+        public static String VoucherCode = "ABCDE1234";
+        public static Guid VoucherId = Guid.Parse("ED744C18-1F45-47E7-A9FC-7AAC1D9E9D8A");
+
 
         public static List<ContractProductTransactionFee> ContractProductTransactionFees =>
             new List<ContractProductTransactionFee>
