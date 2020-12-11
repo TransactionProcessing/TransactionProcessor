@@ -74,7 +74,9 @@ namespace TransactionProcessor.TransactionAggregate.Tests
                                                                                                                         TestData.MerchantId,
                                                                                                                         TestData.ResponseCode,
                                                                                                                         TestData.ResponseMessage,
-                                                                                                                        TestData.IsAuthorised, TestData.TransactionAmount);
+                                                                                                                        TestData.IsAuthorised, 
+                                                                                                                        TestData.TransactionDateTime,
+                                                                                                                        TestData.TransactionAmount);
 
             transactionHasBeenCompletedEvent.ShouldNotBeNull();
             transactionHasBeenCompletedEvent.AggregateId.ShouldBe(TestData.TransactionId);
@@ -86,6 +88,7 @@ namespace TransactionProcessor.TransactionAggregate.Tests
             transactionHasBeenCompletedEvent.ResponseCode.ShouldBe(TestData.ResponseCode);
             transactionHasBeenCompletedEvent.ResponseMessage.ShouldBe(TestData.ResponseMessage);
             transactionHasBeenCompletedEvent.IsAuthorised.ShouldBe(TestData.IsAuthorised);
+            transactionHasBeenCompletedEvent.CompletedDateTime.ShouldBe(TestData.TransactionDateTime);
             transactionHasBeenCompletedEvent.TransactionAmount.ShouldBe(TestData.TransactionAmount);
         }
 

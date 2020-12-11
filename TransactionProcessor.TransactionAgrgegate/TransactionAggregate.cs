@@ -412,6 +412,7 @@
                                                         this.ResponseCode,
                                                         this.ResponseMessage,
                                                         this.IsAuthorised || this.IsLocallyAuthorised,
+                                                        this.TransactionDateTime,
                                                         this.TransactionType != TransactionType.Logon ? this.TransactionAmount : null);
 
             this.ApplyAndPend(transactionHasBeenCompletedEvent);

@@ -32,6 +32,7 @@
         /// <param name="responseCode">The response code.</param>
         /// <param name="responseMessage">The response message.</param>
         /// <param name="isAuthorised">if set to <c>true</c> [is authorised].</param>
+        /// <param name="completedDateTime">The completed date time.</param>
         /// <param name="transactionAmount">The transaction amount.</param>
         private TransactionHasBeenCompletedEvent(Guid aggregateId,
                                                 Guid eventId,
@@ -40,6 +41,7 @@
                                                 String responseCode,
                                                 String responseMessage,
                                                 Boolean isAuthorised,
+                                                DateTime completedDateTime,
                                                 Decimal? transactionAmount) : base(aggregateId, eventId)
         {
             this.TransactionId = aggregateId;
@@ -48,12 +50,16 @@
             this.ResponseCode = responseCode;
             this.ResponseMessage = responseMessage;
             this.IsAuthorised = isAuthorised;
+            this.CompletedDateTime = completedDateTime;
             this.TransactionAmount = transactionAmount;
         }
 
         #endregion
 
         #region Properties
+
+        [JsonProperty]
+        public DateTime CompletedDateTime { get; private set; }
 
         /// <summary>
         /// Gets the estate identifier.
@@ -131,6 +137,7 @@
         /// <param name="responseCode">The response code.</param>
         /// <param name="responseMessage">The response message.</param>
         /// <param name="isAuthorised">if set to <c>true</c> [is authorised].</param>
+        /// <param name="completedDateTime">The completed date time.</param>
         /// <param name="transactionAmount">The transaction amount.</param>
         /// <returns></returns>
         public static TransactionHasBeenCompletedEvent Create(Guid aggregateId,
@@ -139,9 +146,10 @@
                                                               String responseCode,
                                                               String responseMessage,
                                                               Boolean isAuthorised,
+                                                              DateTime completedDateTime,
                                                               Decimal? transactionAmount)
         {
-            return new TransactionHasBeenCompletedEvent(aggregateId, Guid.NewGuid(), estateId, merchantId, responseCode, responseMessage, isAuthorised, transactionAmount);
+            return new TransactionHasBeenCompletedEvent(aggregateId, Guid.NewGuid(), estateId, merchantId, responseCode, responseMessage, isAuthorised, completedDateTime, transactionAmount);
         }
 
         #endregion
