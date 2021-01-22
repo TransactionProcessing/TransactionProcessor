@@ -14,7 +14,7 @@
     <PackageReference Include="EventStore.Client.Grpc.ProjectionManagement" Version="20.10.0" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" Version="5.0.2" />
     <PackageReference Include="Microsoft.NET.Test.Sdk" Version="16.8.3" />
-    <PackageReference Include="SecurityService.Client" Version="1.0.4" />
+    <PackageReference Include="SecurityService.Client" Version="1.0.4.1" />
     <PackageReference Include="Shared.IntegrationTesting" Version="1.0.3" />
     <PackageReference Include="Shouldly" Version="4.0.3" />
     <PackageReference Include="SpecFlow" Version="3.5.14" />
