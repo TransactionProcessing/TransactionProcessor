@@ -325,7 +325,7 @@ namespace TransactionProcessor
                                      options.TokenValidationParameters = new Microsoft.IdentityModel.Tokens.TokenValidationParameters()
                                                                          {
                                                                              ValidateIssuer = true,
-                                                                             ValidateAudience = true,
+                                                                             ValidateAudience = false,
                                                                              ValidAudience = ConfigurationReader.GetValue("SecurityConfiguration", "ApiName"),
                                                                              ValidIssuer = ConfigurationReader.GetValue("SecurityConfiguration", "Authority"),
                                                                          };
