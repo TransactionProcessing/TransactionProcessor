@@ -14,6 +14,7 @@
         OperatorNotValidForMerchant = 1007,
         TransactionDeclinedByOperator = 1008,
         MerchantDoesNotHaveEnoughCredit = 1009,
+        OperatorCommsError = 1010,
 
         // A Catch All generic Error where reason has not been identified
         UnknownFailure = 9999
