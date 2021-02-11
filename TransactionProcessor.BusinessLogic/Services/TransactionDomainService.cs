@@ -218,7 +218,7 @@
 
                 // Do the online processing with the operator here
                 MerchantResponse merchant = await this.GetMerchant(estateId, merchantId, cancellationToken);
-                OperatorResponse operatorResponse = await this.ProcessMessageWithOperator(merchant, transactionId, estateId, transactionDateTime, operatorIdentifier, additionalTransactionMetadata, transactionReference, cancellationToken);
+                OperatorResponse operatorResponse = await this.ProcessMessageWithOperator(merchant, transactionId, transactionDateTime, operatorIdentifier, additionalTransactionMetadata, transactionReference, cancellationToken);
 
                 // Act on the operator response
                 if (operatorResponse == null)
@@ -302,7 +302,6 @@
 
         private async Task<OperatorResponse> ProcessMessageWithOperator(MerchantResponse merchant, 
                                                                         Guid transactionId,
-                                                                        Guid estateId,
                                                                         DateTime transactionDateTime,
                                                                         String operatorIdentifier,
                                                                         Dictionary<String, String> additionalTransactionMetadata,
