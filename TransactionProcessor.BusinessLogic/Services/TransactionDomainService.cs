@@ -218,50 +218,58 @@
 
                 // Do the online processing with the operator here
                 MerchantResponse merchant = await this.GetMerchant(estateId, merchantId, cancellationToken);
-                IOperatorProxy operatorProxy = this.OperatorProxyResolver(operatorIdentifier);
-                OperatorResponse operatorResponse =
-                    await operatorProxy.ProcessSaleMessage(this.TokenResponse.AccessToken,
-                                                           transactionId,
-                                                           operatorIdentifier,
-                                                           merchant,
-                                                           transactionDateTime,
-                                                           transactionReference,
-                                                           additionalTransactionMetadata,
-                                                           cancellationToken);
+                OperatorResponse operatorResponse = await this.ProcessMessageWithOperator(merchant, transactionId, transactionDateTime, operatorIdentifier, additionalTransactionMetadata, transactionReference, cancellationToken);
 
-                if (operatorResponse.IsSuccessful)
+                // Act on the operator response
+                if (operatorResponse == null)
                 {
-                    TransactionResponseCode transactionResponseCode = TransactionResponseCode.Success;
-                    String responseMessage = "SUCCESS";
+                    // Failed to perform sed/receive with the operator
+                    TransactionResponseCode transactionResponseCode = TransactionResponseCode.OperatorCommsError;
+                    String responseMessage = "OPERATOR COMMS ERROR";
 
-                    await this.TransactionAggregateManager.AuthoriseTransaction(estateId,
-                                                                                transactionId,
-                                                                                operatorIdentifier,
-                                                                                operatorResponse,
-                                                                                transactionResponseCode,
-                                                                                responseMessage,
-                                                                                cancellationToken);
+                    await this.TransactionAggregateManager.DeclineTransactionLocally(estateId,
+                                                                              transactionId,
+                                                                              (responseMessage, transactionResponseCode),
+                                                                              cancellationToken);
                 }
                 else
                 {
-                    TransactionResponseCode transactionResponseCode = TransactionResponseCode.TransactionDeclinedByOperator;
-                    String responseMessage = "DECLINED BY OPERATOR";
 
-                    await this.TransactionAggregateManager.DeclineTransaction(estateId,
-                                                                              transactionId,
-                                                                              operatorIdentifier,
-                                                                              operatorResponse,
-                                                                              transactionResponseCode,
-                                                                              responseMessage,
-                                                                              cancellationToken);
-                }
 
-                // Record any additional operator response metadata
-                await this.TransactionAggregateManager.RecordAdditionalResponseData(estateId,
+                    if (operatorResponse.IsSuccessful)
+                    {
+                        TransactionResponseCode transactionResponseCode = TransactionResponseCode.Success;
+                        String responseMessage = "SUCCESS";
+
+                        await this.TransactionAggregateManager.AuthoriseTransaction(estateId,
                                                                                     transactionId,
                                                                                     operatorIdentifier,
-                                                                                    operatorResponse.AdditionalTransactionResponseMetadata,
+                                                                                    operatorResponse,
+                                                                                    transactionResponseCode,
+                                                                                    responseMessage,
                                                                                     cancellationToken);
+                    }
+                    else
+                    {
+                        TransactionResponseCode transactionResponseCode = TransactionResponseCode.TransactionDeclinedByOperator;
+                        String responseMessage = "DECLINED BY OPERATOR";
+
+                        await this.TransactionAggregateManager.DeclineTransaction(estateId,
+                                                                                  transactionId,
+                                                                                  operatorIdentifier,
+                                                                                  operatorResponse,
+                                                                                  transactionResponseCode,
+                                                                                  responseMessage,
+                                                                                  cancellationToken);
+                    }
+
+                    // Record any additional operator response metadata
+                    await this.TransactionAggregateManager.RecordAdditionalResponseData(estateId,
+                                                                                        transactionId,
+                                                                                        operatorIdentifier,
+                                                                                        operatorResponse.AdditionalTransactionResponseMetadata,
+                                                                                        cancellationToken);
+                }
             }
             else
             {
@@ -290,6 +298,36 @@
                        MerchantId = merchantId,
                        AdditionalTransactionMetadata = transaction.AdditionalResponseMetadata
                    };
+        }
+
+        private async Task<OperatorResponse> ProcessMessageWithOperator(MerchantResponse merchant, 
+                                                                        Guid transactionId,
+                                                                        DateTime transactionDateTime,
+                                                                        String operatorIdentifier,
+                                                                        Dictionary<String, String> additionalTransactionMetadata,
+                                                                        String transactionReference,
+                                                                        CancellationToken cancellationToken)
+        {
+            IOperatorProxy operatorProxy = this.OperatorProxyResolver(operatorIdentifier);
+            OperatorResponse operatorResponse = null;
+            try
+            {
+                operatorResponse = await operatorProxy.ProcessSaleMessage(this.TokenResponse.AccessToken,
+                                                                          transactionId,
+                                                                          operatorIdentifier,
+                                                                          merchant,
+                                                                          transactionDateTime,
+                                                                          transactionReference,
+                                                                          additionalTransactionMetadata,
+                                                                          cancellationToken);
+            }
+            catch(Exception e)
+            {
+                // Log out the error
+                Logger.LogError(e);
+            }
+            
+            return operatorResponse;
         }
 
         /// <summary>
