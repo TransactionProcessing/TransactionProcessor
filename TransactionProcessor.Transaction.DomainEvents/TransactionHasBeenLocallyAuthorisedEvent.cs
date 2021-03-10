@@ -9,8 +9,7 @@
     /// 
     /// </summary>
     /// <seealso cref="Shared.DomainDrivenDesign.EventSourcing.DomainEvent" />
-    [JsonObject]
-    public class TransactionHasBeenLocallyAuthorisedEvent : DomainEvent
+    public record TransactionHasBeenLocallyAuthorisedEvent : DomainEventRecord.DomainEvent
     {
         #region Constructors
 
@@ -18,19 +17,17 @@
         /// Initializes a new instance of the <see cref="TransactionHasBeenLocallyAuthorisedEvent" /> class.
         /// </summary>
         /// <param name="aggregateId">The aggregate identifier.</param>
-        /// <param name="eventId">The event identifier.</param>
         /// <param name="estateId">The estate identifier.</param>
         /// <param name="merchantId">The merchant identifier.</param>
         /// <param name="authorisationCode">The authorisation code.</param>
         /// <param name="responseCode">The response code.</param>
         /// <param name="responseMessage">The response message.</param>
-        private TransactionHasBeenLocallyAuthorisedEvent(Guid aggregateId,
-                                                        Guid eventId,
+        public TransactionHasBeenLocallyAuthorisedEvent(Guid aggregateId,
                                                         Guid estateId,
                                                         Guid merchantId,
                                                         String authorisationCode,
                                                         String responseCode,
-                                                        String responseMessage) : base(aggregateId, eventId)
+                                                        String responseMessage) : base(aggregateId, Guid.NewGuid())
         {
             this.TransactionId = aggregateId;
             this.EstateId = estateId;
@@ -38,14 +35,6 @@
             this.AuthorisationCode = authorisationCode;
             this.ResponseCode = responseCode;
             this.ResponseMessage = responseMessage;
-        }
-
-        /// <summary>
-        /// Initializes a new instance of the <see cref="TransactionHasBeenLocallyAuthorisedEvent" /> class.
-        /// </summary>
-        [ExcludeFromCodeCoverage]
-        public TransactionHasBeenLocallyAuthorisedEvent()
-        {
         }
 
         #endregion
@@ -58,8 +47,7 @@
         /// <value>
         /// The authorisation code.
         /// </value>
-        [JsonProperty]
-        public String AuthorisationCode { get; private set; }
+        public String AuthorisationCode { get; init; }
 
         /// <summary>
         /// Gets the estate identifier.
@@ -67,8 +55,7 @@
         /// <value>
         /// The estate identifier.
         /// </value>
-        [JsonProperty]
-        public Guid EstateId { get; private set; }
+        public Guid EstateId { get; init; }
 
         /// <summary>
         /// Gets the merchant identifier.
@@ -76,8 +63,7 @@
         /// <value>
         /// The merchant identifier.
         /// </value>
-        [JsonProperty]
-        public Guid MerchantId { get; private set; }
+        public Guid MerchantId { get; init; }
 
         /// <summary>
         /// Gets the response code.
@@ -85,8 +71,7 @@
         /// <value>
         /// The response code.
         /// </value>
-        [JsonProperty]
-        public String ResponseCode { get; private set; }
+        public String ResponseCode { get; init; }
 
         /// <summary>
         /// Gets the response message.
@@ -94,8 +79,7 @@
         /// <value>
         /// The response message.
         /// </value>
-        [JsonProperty]
-        public String ResponseMessage { get; private set; }
+        public String ResponseMessage { get; init; }
 
         /// <summary>
         /// Gets the transaction identifier.
@@ -103,32 +87,7 @@
         /// <value>
         /// The transaction identifier.
         /// </value>
-        [JsonProperty]
-        public Guid TransactionId { get; private set; }
-
-        #endregion
-
-        #region Methods
-
-        /// <summary>
-        /// Creates the specified aggregate identifier.
-        /// </summary>
-        /// <param name="aggregateId">The aggregate identifier.</param>
-        /// <param name="estateId">The estate identifier.</param>
-        /// <param name="merchantId">The merchant identifier.</param>
-        /// <param name="authorisationCode">The authorisation code.</param>
-        /// <param name="responseCode">The response code.</param>
-        /// <param name="responseMessage">The response message.</param>
-        /// <returns></returns>
-        public static TransactionHasBeenLocallyAuthorisedEvent Create(Guid aggregateId,
-                                                                      Guid estateId,
-                                                                      Guid merchantId,
-                                                                      String authorisationCode,
-                                                                      String responseCode,
-                                                                      String responseMessage)
-        {
-            return new TransactionHasBeenLocallyAuthorisedEvent(aggregateId, Guid.NewGuid(), estateId, merchantId, authorisationCode, responseCode, responseMessage);
-        }
+        public Guid TransactionId { get; init; }
 
         #endregion
     }

@@ -12,19 +12,10 @@ namespace TransactionProcessor.Reconciliation.DomainEvents
     /// 
     /// </summary>
     /// <seealso cref="Shared.DomainDrivenDesign.EventSourcing.DomainEvent" />
-    [JsonObject]
-    public class ReconciliationHasStartedEvent : DomainEvent
+    public record ReconciliationHasStartedEvent : DomainEventRecord.DomainEvent
     {
         #region Constructors
-
-        /// <summary>
-        /// Initializes a new instance of the <see cref="ReconciliationHasStartedEvent" /> class.
-        /// </summary>
-        [ExcludeFromCodeCoverage]
-        public ReconciliationHasStartedEvent()
-        {
-        }
-
+        
         /// <summary>
         /// Initializes a new instance of the <see cref="ReconciliationHasStartedEvent" /> class.
         /// </summary>
@@ -33,11 +24,10 @@ namespace TransactionProcessor.Reconciliation.DomainEvents
         /// <param name="estateId">The estate identifier.</param>
         /// <param name="merchantId">The merchant identifier.</param>
         /// <param name="transactionDateTime">The transaction date time.</param>
-        private ReconciliationHasStartedEvent(Guid aggregateId,
-                                              Guid eventId,
+        public ReconciliationHasStartedEvent(Guid aggregateId,
                                               Guid estateId,
                                               Guid merchantId,
-                                              DateTime transactionDateTime) : base(aggregateId, eventId)
+                                              DateTime transactionDateTime) : base(aggregateId, Guid.NewGuid())
         {
             this.TransactionId = aggregateId;
             this.EstateId = estateId;
@@ -55,8 +45,7 @@ namespace TransactionProcessor.Reconciliation.DomainEvents
         /// <value>
         /// The estate identifier.
         /// </value>
-        [JsonProperty]
-        public Guid EstateId { get; private set; }
+        public Guid EstateId { get; init; }
 
         /// <summary>
         /// Gets the merchant identifier.
@@ -64,8 +53,7 @@ namespace TransactionProcessor.Reconciliation.DomainEvents
         /// <value>
         /// The merchant identifier.
         /// </value>
-        [JsonProperty]
-        public Guid MerchantId { get; private set; }
+        public Guid MerchantId { get; init; }
 
         /// <summary>
         /// Gets the transaction date time.
@@ -73,8 +61,7 @@ namespace TransactionProcessor.Reconciliation.DomainEvents
         /// <value>
         /// The transaction date time.
         /// </value>
-        [JsonProperty]
-        public DateTime TransactionDateTime { get; private set; }
+        public DateTime TransactionDateTime { get; init; }
 
         /// <summary>
         /// Gets the transaction identifier.
@@ -82,28 +69,7 @@ namespace TransactionProcessor.Reconciliation.DomainEvents
         /// <value>
         /// The transaction identifier.
         /// </value>
-        [JsonProperty]
-        public Guid TransactionId { get; private set; }
-
-        #endregion
-
-        #region Methods
-
-        /// <summary>
-        /// Creates the specified aggregate identifier.
-        /// </summary>
-        /// <param name="aggregateId">The aggregate identifier.</param>
-        /// <param name="estateId">The estate identifier.</param>
-        /// <param name="merchantId">The merchant identifier.</param>
-        /// <param name="transactionDateTime">The transaction date time.</param>
-        /// <returns></returns>
-        public static ReconciliationHasStartedEvent Create(Guid aggregateId,
-                                                           Guid estateId,
-                                                           Guid merchantId,
-                                                           DateTime transactionDateTime)
-        {
-            return new ReconciliationHasStartedEvent(aggregateId, Guid.NewGuid(), estateId, merchantId, transactionDateTime);
-        }
+        public Guid TransactionId { get; init; }
 
         #endregion
     }

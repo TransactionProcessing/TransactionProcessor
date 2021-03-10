@@ -9,19 +9,10 @@
     /// 
     /// </summary>
     /// <seealso cref="Shared.DomainDrivenDesign.EventSourcing.DomainEvent" />
-    [JsonObject]
-    public class ReconciliationHasCompletedEvent : DomainEvent
+    public record ReconciliationHasCompletedEvent : DomainEventRecord.DomainEvent
     {
         #region Constructors
-
-        /// <summary>
-        /// Initializes a new instance of the <see cref="ReconciliationHasCompletedEvent" /> class.
-        /// </summary>
-        [ExcludeFromCodeCoverage]
-        public ReconciliationHasCompletedEvent()
-        {
-        }
-
+        
         /// <summary>
         /// Initializes a new instance of the <see cref="ReconciliationHasCompletedEvent" /> class.
         /// </summary>
@@ -29,10 +20,9 @@
         /// <param name="eventId">The event identifier.</param>
         /// <param name="estateId">The estate identifier.</param>
         /// <param name="merchantId">The merchant identifier.</param>
-        private ReconciliationHasCompletedEvent(Guid aggregateId,
-                                                Guid eventId,
+        public ReconciliationHasCompletedEvent(Guid aggregateId,
                                                 Guid estateId,
-                                                Guid merchantId) : base(aggregateId, eventId)
+                                                Guid merchantId) : base(aggregateId, Guid.NewGuid())
         {
             this.TransactionId = aggregateId;
             this.EstateId = estateId;
@@ -49,8 +39,7 @@
         /// <value>
         /// The estate identifier.
         /// </value>
-        [JsonProperty]
-        public Guid EstateId { get; private set; }
+        public Guid EstateId { get; init; }
 
         /// <summary>
         /// Gets the merchant identifier.
@@ -58,8 +47,7 @@
         /// <value>
         /// The merchant identifier.
         /// </value>
-        [JsonProperty]
-        public Guid MerchantId { get; private set; }
+        public Guid MerchantId { get; init; }
 
         /// <summary>
         /// Gets the transaction identifier.
@@ -67,28 +55,8 @@
         /// <value>
         /// The transaction identifier.
         /// </value>
-        [JsonProperty]
-        public Guid TransactionId { get; private set; }
+        public Guid TransactionId { get; init; }
 
         #endregion
-
-        #region Methods
-
-        /// <summary>
-        /// Creates the specified aggregate identifier.
-        /// </summary>
-        /// <param name="aggregateId">The aggregate identifier.</param>
-        /// <param name="estateId">The estate identifier.</param>
-        /// <param name="merchantId">The merchant identifier.</param>
-        /// <returns></returns>
-        public static ReconciliationHasCompletedEvent Create(Guid aggregateId,
-                                                             Guid estateId,
-                                                             Guid merchantId)
-        {
-            return new ReconciliationHasCompletedEvent(aggregateId, Guid.NewGuid(), estateId, merchantId);
-        }
-
-        #endregion
-
     }
 }

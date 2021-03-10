@@ -5,14 +5,14 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="EstateManagement.Client" Version="1.0.6" />
-    <PackageReference Include="MessagingService.Client" Version="1.0.7" />
-    <PackageReference Include="SecurityService.Client" Version="1.0.4" />
-    <PackageReference Include="Shared.DomainDrivenDesign" Version="1.0.3" />
-    <PackageReference Include="Shared.EventStore" Version="1.0.3" />
+    <PackageReference Include="EstateManagement.Client" Version="1.0.8" />
+    <PackageReference Include="MessagingService.Client" Version="1.0.8" />
+    <PackageReference Include="SecurityService.Client" Version="1.0.5" />
+    <PackageReference Include="Shared.DomainDrivenDesign" Version="1.0.3.1" />
+    <PackageReference Include="Shared.EventStore" Version="1.0.3.1" />
     <PackageReference Include="MediatR" Version="9.0.0" />
     <PackageReference Include="System.IO.Abstractions" Version="13.2.9" />
-    <PackageReference Include="VoucherManagement.Client" Version="1.0.1" />
+    <PackageReference Include="VoucherManagement.Client" Version="1.0.2" />
   </ItemGroup>
 
   <ItemGroup>

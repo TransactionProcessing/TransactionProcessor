@@ -30,7 +30,6 @@ namespace TransactionProcessor
     using EventStore.Client;
     using HealthChecks.UI.Client;
     using MediatR;
-    using MessagingService.BusinessLogic.EventHandling;
     using MessagingService.Client;
     using Microsoft.AspNetCore.Authentication.JwtBearer;
     using Microsoft.AspNetCore.Diagnostics.HealthChecks;
@@ -45,8 +44,12 @@ namespace TransactionProcessor
     using NLog.Extensions.Logging;
     using SecurityService.Client;
     using Shared.DomainDrivenDesign.CommandHandling;
+    using Shared.DomainDrivenDesign.EventSourcing;
     using Shared.EntityFramework.ConnectionStringConfiguration;
+    using Shared.EventStore.Aggregate;
+    using Shared.EventStore.EventHandling;
     using Shared.EventStore.EventStore;
+    using Shared.EventStore.Extensions;
     using Shared.Extensions;
     using Shared.General;
     using Shared.Logger;
@@ -142,13 +145,14 @@ namespace TransactionProcessor
             else
             {
                 services.AddEventStoreClient(Startup.ConfigureEventStoreSettings);
-                services.AddEventStoreProjectionManagerClient(Startup.ConfigureEventStoreSettings);
+                services.AddEventStoreProjectionManagementClient(Startup.ConfigureEventStoreSettings);
+                services.AddEventStorePersistentSubscriptionsClient(Startup.ConfigureEventStoreSettings);
             }
 
             services.AddTransient<IEventStoreContext, EventStoreContext>();
             services.AddSingleton<ITransactionAggregateManager, TransactionAggregateManager>();
-            services.AddSingleton<IAggregateRepository<TransactionAggregate.TransactionAggregate>, AggregateRepository<TransactionAggregate.TransactionAggregate>>();
-            services.AddSingleton<IAggregateRepository<ReconciliationAggregate.ReconciliationAggregate>, AggregateRepository<ReconciliationAggregate.ReconciliationAggregate>>();
+            services.AddSingleton<IAggregateRepository<TransactionAggregate.TransactionAggregate, DomainEventRecord.DomainEvent>, AggregateRepository<TransactionAggregate.TransactionAggregate, DomainEventRecord.DomainEvent>>();
+            services.AddSingleton<IAggregateRepository<ReconciliationAggregate.ReconciliationAggregate, DomainEventRecord.DomainEvent>, AggregateRepository<ReconciliationAggregate.ReconciliationAggregate, DomainEventRecord.DomainEvent>>();
             services.AddSingleton<ITransactionDomainService, TransactionDomainService>();
             services.AddSingleton<Factories.IModelFactory, Factories.ModelFactory>();
             services.AddSingleton<ISecurityServiceClient, SecurityServiceClient>();
@@ -370,6 +374,11 @@ namespace TransactionProcessor
             ILogger logger = loggerFactory.CreateLogger("TransactionProcessor");
 
             Logger.Initialise(logger);
+
+            foreach (KeyValuePair<Type, String> type in TypeMap.Map)
+            {
+                Logger.LogInformation($"Type name {type.Value} mapped to {type.Key.Name}");
+            }
 
             app.AddRequestLogging();
             app.AddResponseLogging();

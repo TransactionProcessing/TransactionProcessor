@@ -9,17 +9,9 @@
     /// 
     /// </summary>
     /// <seealso cref="Shared.DomainDrivenDesign.EventSourcing.DomainEvent" />
-    public class CustomerEmailReceiptRequestedEvent : DomainEvent
+    public record CustomerEmailReceiptRequestedEvent : DomainEventRecord.DomainEvent
     {
         #region Constructors
-
-        /// <summary>
-        /// Initializes a new instance of the <see cref="CustomerEmailReceiptRequestedEvent"/> class.
-        /// </summary>
-        [ExcludeFromCodeCoverage]
-        public CustomerEmailReceiptRequestedEvent()
-        {
-        }
 
         /// <summary>
         /// Initializes a new instance of the <see cref="CustomerEmailReceiptRequestedEvent"/> class.
@@ -29,11 +21,10 @@
         /// <param name="estateId">The estate identifier.</param>
         /// <param name="merchantId">The merchant identifier.</param>
         /// <param name="customerEmailAddress">The customer email address.</param>
-        private CustomerEmailReceiptRequestedEvent(Guid aggregateId,
-                                                   Guid eventId,
+        public CustomerEmailReceiptRequestedEvent(Guid aggregateId,
                                                    Guid estateId,
                                                    Guid merchantId,
-                                                   String customerEmailAddress) : base(aggregateId, eventId)
+                                                   String customerEmailAddress) : base(aggregateId, Guid.NewGuid())
         {
             this.TransactionId = aggregateId;
             this.EstateId = estateId;
@@ -51,8 +42,7 @@
         /// <value>
         /// The customer email address.
         /// </value>
-        [JsonProperty]
-        public String CustomerEmailAddress { get; private set; }
+        public String CustomerEmailAddress { get; init; }
 
         /// <summary>
         /// Gets the estate identifier.
@@ -60,8 +50,7 @@
         /// <value>
         /// The estate identifier.
         /// </value>
-        [JsonProperty]
-        public Guid EstateId { get; private set; }
+        public Guid EstateId { get; init; }
 
         /// <summary>
         /// Gets the merchant identifier.
@@ -69,8 +58,7 @@
         /// <value>
         /// The merchant identifier.
         /// </value>
-        [JsonProperty]
-        public Guid MerchantId { get; private set; }
+        public Guid MerchantId { get; init; }
 
         /// <summary>
         /// Gets the transaction identifier.
@@ -78,28 +66,7 @@
         /// <value>
         /// The transaction identifier.
         /// </value>
-        [JsonProperty]
-        public Guid TransactionId { get; private set; }
-
-        #endregion
-
-        #region Methods
-
-        /// <summary>
-        /// Creates the specified aggregate identifier.
-        /// </summary>
-        /// <param name="aggregateId">The aggregate identifier.</param>
-        /// <param name="estateId">The estate identifier.</param>
-        /// <param name="merchantId">The merchant identifier.</param>
-        /// <param name="customerEmailAddress">The customer email address.</param>
-        /// <returns></returns>
-        public static CustomerEmailReceiptRequestedEvent Create(Guid aggregateId,
-                                                                Guid estateId,
-                                                                Guid merchantId,
-                                                                String customerEmailAddress)
-        {
-            return new CustomerEmailReceiptRequestedEvent(aggregateId, Guid.NewGuid(), estateId, merchantId, customerEmailAddress);
-        }
+        public Guid TransactionId { get; init; }
 
         #endregion
     }

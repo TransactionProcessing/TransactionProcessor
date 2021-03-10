@@ -11,6 +11,11 @@ namespace TransactionProcessor
 {
     using System.Diagnostics.CodeAnalysis;
     using System.IO;
+    using Microsoft.Extensions.DependencyInjection;
+    using Reconciliation.DomainEvents;
+    using Shared.EventStore.Aggregate;
+    using Shared.EventStore.Subscriptions;
+    using Transaction.DomainEvents;
 
     [ExcludeFromCodeCoverage]
     public class Program
@@ -36,7 +41,19 @@ namespace TransactionProcessor
                                                      webBuilder.UseStartup<Startup>();
                                                      webBuilder.UseConfiguration(config);
                                                      webBuilder.UseKestrel();
-                                                 });
+                                                 })
+                       .ConfigureServices(services =>
+                                          {
+                                              TransactionHasStartedEvent t = new TransactionHasStartedEvent(Guid.Parse("2AA2D43B-5E24-4327-8029-1135B20F35CE"), Guid.NewGuid(),Guid.NewGuid(), 
+                                                                                                            DateTime.Now, "","","","",null);
+
+                                              ReconciliationHasStartedEvent r =
+                                                  new ReconciliationHasStartedEvent(Guid.NewGuid(), Guid.NewGuid(), Guid.NewGuid(), DateTime.Now);
+
+                                              TypeProvider.LoadDomainEventsTypeDynamically();
+
+                                              services.AddHostedService<SubscriptionWorker>();
+                                          });
             return hostBuilder;
         }
 

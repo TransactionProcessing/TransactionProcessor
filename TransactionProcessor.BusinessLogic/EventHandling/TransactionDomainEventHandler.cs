@@ -8,7 +8,6 @@
     using EstateManagement.Client;
     using EstateManagement.DataTransferObjects.Responses;
     using Manager;
-    using MessagingService.BusinessLogic.EventHandling;
     using MessagingService.Client;
     using MessagingService.DataTransferObjects;
     using Models;
@@ -16,6 +15,7 @@
     using SecurityService.DataTransferObjects.Responses;
     using Services;
     using Shared.DomainDrivenDesign.EventSourcing;
+    using Shared.EventStore.EventHandling;
     using Shared.General;
     using Shared.Logger;
     using Transaction.DomainEvents;
@@ -24,7 +24,8 @@
     /// <summary>
     /// 
     /// </summary>
-    /// <seealso cref="MessagingService.BusinessLogic.EventHandling.IDomainEventHandler" />
+    /// <seealso cref="Shared.EventStore.EventHandling.IDomainEventHandler" />
+    /// <seealso cref="IDomainEventHandler" />
     public class TransactionDomainEventHandler : IDomainEventHandler
     {
         #region Fields
@@ -44,8 +45,14 @@
         /// </summary>
         private readonly ISecurityServiceClient SecurityServiceClient;
 
+        /// <summary>
+        /// The transaction receipt builder
+        /// </summary>
         private readonly ITransactionReceiptBuilder TransactionReceiptBuilder;
 
+        /// <summary>
+        /// The messaging service client
+        /// </summary>
         private readonly IMessagingServiceClient MessagingServiceClient;
 
         /// <summary>
@@ -95,7 +102,7 @@
         /// </summary>
         /// <param name="domainEvent">The domain event.</param>
         /// <param name="cancellationToken">The cancellation token.</param>
-        public async Task Handle(DomainEvent domainEvent,
+        public async Task Handle(IDomainEvent domainEvent,
                                  CancellationToken cancellationToken)
         {
             await this.HandleSpecificDomainEvent((dynamic)domainEvent, cancellationToken);

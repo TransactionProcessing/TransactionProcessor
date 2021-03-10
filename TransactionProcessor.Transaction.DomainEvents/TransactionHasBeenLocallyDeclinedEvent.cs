@@ -5,8 +5,7 @@
     using Newtonsoft.Json;
     using Shared.DomainDrivenDesign.EventSourcing;
 
-    [JsonObject]
-    public class TransactionHasBeenLocallyDeclinedEvent : DomainEvent
+    public record TransactionHasBeenLocallyDeclinedEvent : DomainEventRecord.DomainEvent
     {
         #region Constructors
 
@@ -14,31 +13,21 @@
         /// Initializes a new instance of the <see cref="TransactionHasBeenLocallyDeclinedEvent" /> class.
         /// </summary>
         /// <param name="aggregateId">The aggregate identifier.</param>
-        /// <param name="eventId">The event identifier.</param>
         /// <param name="estateId">The estate identifier.</param>
         /// <param name="merchantId">The merchant identifier.</param>
         /// <param name="responseCode">The response code.</param>
         /// <param name="responseMessage">The response message.</param>
-        private TransactionHasBeenLocallyDeclinedEvent(Guid aggregateId,
-                                                      Guid eventId,
+        public TransactionHasBeenLocallyDeclinedEvent(Guid aggregateId,
                                                       Guid estateId,
                                                       Guid merchantId,
                                                       String responseCode,
-                                                      String responseMessage) : base(aggregateId, eventId)
+                                                      String responseMessage) : base(aggregateId, Guid.NewGuid())
         {
             this.TransactionId = aggregateId;
             this.EstateId = estateId;
             this.MerchantId = merchantId;
             this.ResponseCode = responseCode;
             this.ResponseMessage = responseMessage;
-        }
-
-        /// <summary>
-        /// Initializes a new instance of the <see cref="TransactionHasBeenLocallyDeclinedEvent" /> class.
-        /// </summary>
-        [ExcludeFromCodeCoverage]
-        public TransactionHasBeenLocallyDeclinedEvent()
-        {
         }
 
         #endregion
@@ -51,8 +40,7 @@
         /// <value>
         /// The estate identifier.
         /// </value>
-        [JsonProperty]
-        public Guid EstateId { get; private set; }
+        public Guid EstateId { get; init; }
 
         /// <summary>
         /// Gets the merchant identifier.
@@ -60,8 +48,7 @@
         /// <value>
         /// The merchant identifier.
         /// </value>
-        [JsonProperty]
-        public Guid MerchantId { get; private set; }
+        public Guid MerchantId { get; init; }
 
         /// <summary>
         /// Gets the response code.
@@ -69,8 +56,7 @@
         /// <value>
         /// The response code.
         /// </value>
-        [JsonProperty]
-        public String ResponseCode { get; private set; }
+        public String ResponseCode { get; init; }
 
         /// <summary>
         /// Gets the response message.
@@ -78,8 +64,7 @@
         /// <value>
         /// The response message.
         /// </value>
-        [JsonProperty]
-        public String ResponseMessage { get; private set; }
+        public String ResponseMessage { get; init; }
 
         /// <summary>
         /// Gets the transaction identifier.
@@ -87,30 +72,7 @@
         /// <value>
         /// The transaction identifier.
         /// </value>
-        [JsonProperty]
-        public Guid TransactionId { get; private set; }
-
-        #endregion
-
-        #region Methods
-
-        /// <summary>
-        /// Creates the specified aggregate identifier.
-        /// </summary>
-        /// <param name="aggregateId">The aggregate identifier.</param>
-        /// <param name="estateId">The estate identifier.</param>
-        /// <param name="merchantId">The merchant identifier.</param>
-        /// <param name="responseCode">The response code.</param>
-        /// <param name="responseMessage">The response message.</param>
-        /// <returns></returns>
-        public static TransactionHasBeenLocallyDeclinedEvent Create(Guid aggregateId,
-                                                                      Guid estateId,
-                                                                      Guid merchantId,
-                                                                      String responseCode,
-                                                                      String responseMessage)
-        {
-            return new TransactionHasBeenLocallyDeclinedEvent(aggregateId, Guid.NewGuid(), estateId, merchantId, responseCode, responseMessage);
-        }
+        public Guid TransactionId { get; init; }
 
         #endregion
     }

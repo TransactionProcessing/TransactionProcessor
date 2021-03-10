@@ -9,38 +9,25 @@
     /// 
     /// </summary>
     /// <seealso cref="Shared.DomainDrivenDesign.EventSourcing.DomainEvent" />
-    [JsonObject]
-    public class ProductDetailsAddedToTransactionEvent : DomainEvent
+    public record ProductDetailsAddedToTransactionEvent : DomainEventRecord.DomainEvent
     {
         #region Constructors
-
-        /// <summary>
-        /// Initializes a new instance of the <see cref="ProductDetailsAddedToTransactionEvent"/> class.
-        /// </summary>
-        [ExcludeFromCodeCoverage]
-        public ProductDetailsAddedToTransactionEvent()
-        {
-
-        }
 
         /// <summary>
         /// Initializes a new instance of the <see cref="ProductDetailsAddedToTransactionEvent" /> class.
         /// </summary>
         /// <param name="aggregateId">The aggregate identifier.</param>
-        /// <param name="eventId">The event identifier.</param>
         /// <param name="estateId">The estate identifier.</param>
         /// <param name="merchantId">The merchant identifier.</param>
         /// <param name="contractId">The contract identifier.</param>
         /// <param name="productId">The product identifier.</param>
-        private ProductDetailsAddedToTransactionEvent(Guid aggregateId,
-                                                      Guid eventId,
+        public ProductDetailsAddedToTransactionEvent(Guid aggregateId,
                                                       Guid estateId,
                                                       Guid merchantId,
                                                       Guid contractId,
-                                                      Guid productId) : base(aggregateId, eventId)
+                                                      Guid productId) : base(aggregateId, Guid.NewGuid())
         {
             this.TransactionId = aggregateId;
-            this.EventId = eventId;
             this.EstateId = estateId;
             this.MerchantId = merchantId;
             this.ContractId = contractId;
@@ -57,8 +44,7 @@
         /// <value>
         /// The contract identifier.
         /// </value>
-        [JsonProperty]
-        public Guid ContractId { get; private set; }
+        public Guid ContractId { get; init; }
 
         /// <summary>
         /// Gets the estate identifier.
@@ -66,8 +52,7 @@
         /// <value>
         /// The estate identifier.
         /// </value>
-        [JsonProperty]
-        public Guid EstateId { get; private set; }
+        public Guid EstateId { get; init; }
 
         /// <summary>
         /// Gets the merchant identifier.
@@ -75,8 +60,7 @@
         /// <value>
         /// The merchant identifier.
         /// </value>
-        [JsonProperty]
-        public Guid MerchantId { get; private set; }
+        public Guid MerchantId { get; init; }
 
         /// <summary>
         /// Gets the product identifier.
@@ -84,8 +68,7 @@
         /// <value>
         /// The product identifier.
         /// </value>
-        [JsonProperty]
-        public Guid ProductId { get; private set; }
+        public Guid ProductId { get; init; }
 
         /// <summary>
         /// Gets the transaction identifier.
@@ -93,32 +76,7 @@
         /// <value>
         /// The transaction identifier.
         /// </value>
-        [JsonProperty]
-        public Guid TransactionId { get; private set; }
-
-        public Guid EventId { get; private set; }
-
-        #endregion
-
-        #region Methods
-
-        /// <summary>
-        /// Creates the specified aggregate identifier.
-        /// </summary>
-        /// <param name="aggregateId">The aggregate identifier.</param>
-        /// <param name="estateId">The estate identifier.</param>
-        /// <param name="merchantId">The merchant identifier.</param>
-        /// <param name="contractId">The contract identifier.</param>
-        /// <param name="productId">The product identifier.</param>
-        /// <returns></returns>
-        public static ProductDetailsAddedToTransactionEvent Create(Guid aggregateId,
-                                                                   Guid estateId,
-                                                                   Guid merchantId,
-                                                                   Guid contractId,
-                                                                   Guid productId)
-        {
-            return new ProductDetailsAddedToTransactionEvent(aggregateId, Guid.NewGuid(), estateId, merchantId, contractId, productId);
-        }
+        public Guid TransactionId { get; init; }
 
         #endregion
     }

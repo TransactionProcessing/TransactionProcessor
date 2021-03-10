@@ -10,15 +10,9 @@
     /// 
     /// </summary>
     /// <seealso cref="Shared.DomainDrivenDesign.EventSourcing.DomainEvent" />
-    public class AdditionalResponseDataRecordedEvent : DomainEvent
+    public record AdditionalResponseDataRecordedEvent : DomainEventRecord.DomainEvent
     {
         #region Constructors
-
-        [ExcludeFromCodeCoverage]
-        public AdditionalResponseDataRecordedEvent()
-        {
-
-        }
 
         /// <summary>
         /// Initializes a new instance of the <see cref="AdditionalResponseDataRecordedEvent" /> class.
@@ -29,12 +23,11 @@
         /// <param name="merchantId">The merchant identifier.</param>
         /// <param name="operatorIdentifier">The operator identifier.</param>
         /// <param name="additionalTransactionResponseMetadata">The additional transaction response metadata.</param>
-        private AdditionalResponseDataRecordedEvent(Guid aggregateId,
-                                                   Guid eventId,
+        public AdditionalResponseDataRecordedEvent(Guid aggregateId,
                                                    Guid estateId,
                                                    Guid merchantId,
                                                    String operatorIdentifier,
-                                                   Dictionary<String, String> additionalTransactionResponseMetadata) : base(aggregateId, eventId)
+                                                   Dictionary<String, String> additionalTransactionResponseMetadata) : base(aggregateId, Guid.NewGuid())
         {
             this.TransactionId = aggregateId;
             this.EstateId = estateId;
@@ -53,8 +46,7 @@
         /// <value>
         /// The additional transaction request metadata.
         /// </value>
-        [JsonProperty]
-        public Dictionary<String, String> AdditionalTransactionResponseMetadata { get; private set; }
+        public Dictionary<String, String> AdditionalTransactionResponseMetadata { get; init; }
 
         /// <summary>
         /// Gets the estate identifier.
@@ -62,8 +54,7 @@
         /// <value>
         /// The estate identifier.
         /// </value>
-        [JsonProperty]
-        public Guid EstateId { get; private set; }
+        public Guid EstateId { get; init; }
 
         /// <summary>
         /// Gets the merchant identifier.
@@ -71,8 +62,7 @@
         /// <value>
         /// The merchant identifier.
         /// </value>
-        [JsonProperty]
-        public Guid MerchantId { get; private set; }
+        public Guid MerchantId { get; init; }
 
         /// <summary>
         /// Gets the operator identifier.
@@ -80,8 +70,7 @@
         /// <value>
         /// The operator identifier.
         /// </value>
-        [JsonProperty]
-        public String OperatorIdentifier { get; private set; }
+        public String OperatorIdentifier { get; init; }
 
         /// <summary>
         /// Gets the transaction identifier.
@@ -89,30 +78,7 @@
         /// <value>
         /// The transaction identifier.
         /// </value>
-        [JsonProperty]
-        public Guid TransactionId { get; private set; }
-
-        #endregion
-
-        #region Methods
-
-        /// <summary>
-        /// Creates the specified aggregate identifier.
-        /// </summary>
-        /// <param name="aggregateId">The aggregate identifier.</param>
-        /// <param name="estateId">The estate identifier.</param>
-        /// <param name="merchantId">The merchant identifier.</param>
-        /// <param name="operatorIdentifier">The operator identifier.</param>
-        /// <param name="additionalTransactionResponseMetadata">The additional transaction response metadata.</param>
-        /// <returns></returns>
-        public static AdditionalResponseDataRecordedEvent Create(Guid aggregateId,
-                                                                 Guid estateId,
-                                                                 Guid merchantId,
-                                                                 String operatorIdentifier,
-                                                                 Dictionary<String, String> additionalTransactionResponseMetadata)
-        {
-            return new AdditionalResponseDataRecordedEvent(aggregateId, Guid.NewGuid(), estateId, merchantId, operatorIdentifier, additionalTransactionResponseMetadata);
-        }
+        public Guid TransactionId { get; init; }
 
         #endregion
     }

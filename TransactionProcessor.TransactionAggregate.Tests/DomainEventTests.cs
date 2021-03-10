@@ -19,7 +19,7 @@ namespace TransactionProcessor.TransactionAggregate.Tests
         [InlineData(TransactionType.Sale)]
         public void TransactionHasStartedEvent_CanBeCreated_IsCreated(TransactionType transactionType)
         {
-            TransactionHasStartedEvent transactionHasStartedEvent = TransactionHasStartedEvent.Create(TestData.TransactionId,
+            TransactionHasStartedEvent transactionHasStartedEvent = new TransactionHasStartedEvent(TestData.TransactionId,
                                                                                                       TestData.EstateId,
                                                                                                       TestData.MerchantId,
                                                                                                       TestData.TransactionDateTime,
@@ -31,7 +31,6 @@ namespace TransactionProcessor.TransactionAggregate.Tests
             transactionHasStartedEvent.ShouldNotBeNull();
             transactionHasStartedEvent.AggregateId.ShouldBe(TestData.TransactionId);
             transactionHasStartedEvent.TransactionAmount.ShouldBe(TestData.TransactionAmount);
-            transactionHasStartedEvent.EventCreatedDateTime.ShouldNotBe(DateTime.MinValue);
             transactionHasStartedEvent.EventId.ShouldNotBe(Guid.Empty);
             transactionHasStartedEvent.TransactionId.ShouldBe(TestData.TransactionId);
             transactionHasStartedEvent.EstateId.ShouldBe(TestData.EstateId);
@@ -47,7 +46,7 @@ namespace TransactionProcessor.TransactionAggregate.Tests
         public void TransactionHasBeenLocallyAuthorisedEvent_CanBeCreated_IsCreated()
         {
             TransactionHasBeenLocallyAuthorisedEvent transactionHasBeenLocallyAuthorisedEvent =
-                TransactionHasBeenLocallyAuthorisedEvent.Create(TestData.TransactionId,
+                new TransactionHasBeenLocallyAuthorisedEvent(TestData.TransactionId,
                                                                 TestData.EstateId,
                                                                 TestData.MerchantId,
                                                                 TestData.AuthorisationCode,
@@ -56,7 +55,6 @@ namespace TransactionProcessor.TransactionAggregate.Tests
 
             transactionHasBeenLocallyAuthorisedEvent.ShouldNotBeNull();
             transactionHasBeenLocallyAuthorisedEvent.AggregateId.ShouldBe(TestData.TransactionId);
-            transactionHasBeenLocallyAuthorisedEvent.EventCreatedDateTime.ShouldNotBe(DateTime.MinValue);
             transactionHasBeenLocallyAuthorisedEvent.EventId.ShouldNotBe(Guid.Empty);
             transactionHasBeenLocallyAuthorisedEvent.TransactionId.ShouldBe(TestData.TransactionId);
             transactionHasBeenLocallyAuthorisedEvent.EstateId.ShouldBe(TestData.EstateId);
@@ -69,7 +67,7 @@ namespace TransactionProcessor.TransactionAggregate.Tests
         [Fact]
         public void TransactionHasBeenCompletedEvent_CanBeCreated_IsCreated()
         {
-            TransactionHasBeenCompletedEvent transactionHasBeenCompletedEvent = TransactionHasBeenCompletedEvent.Create(TestData.TransactionId,
+            TransactionHasBeenCompletedEvent transactionHasBeenCompletedEvent = new TransactionHasBeenCompletedEvent(TestData.TransactionId,
                                                                                                                         TestData.EstateId,
                                                                                                                         TestData.MerchantId,
                                                                                                                         TestData.ResponseCode,
@@ -80,7 +78,6 @@ namespace TransactionProcessor.TransactionAggregate.Tests
 
             transactionHasBeenCompletedEvent.ShouldNotBeNull();
             transactionHasBeenCompletedEvent.AggregateId.ShouldBe(TestData.TransactionId);
-            transactionHasBeenCompletedEvent.EventCreatedDateTime.ShouldNotBe(DateTime.MinValue);
             transactionHasBeenCompletedEvent.EventId.ShouldNotBe(Guid.Empty);
             transactionHasBeenCompletedEvent.TransactionId.ShouldBe(TestData.TransactionId);
             transactionHasBeenCompletedEvent.EstateId.ShouldBe(TestData.EstateId);
@@ -95,7 +92,7 @@ namespace TransactionProcessor.TransactionAggregate.Tests
         [Fact]
         public void TransactionHasBeenLocallyDeclinedEvent_CanBeCreated_IsCreated()
         {
-            TransactionHasBeenLocallyDeclinedEvent transactionHasBeenLocallyDeclinedEvent = TransactionHasBeenLocallyDeclinedEvent.Create(TestData.TransactionId,
+            TransactionHasBeenLocallyDeclinedEvent transactionHasBeenLocallyDeclinedEvent = new TransactionHasBeenLocallyDeclinedEvent(TestData.TransactionId,
                                                                                                                                           TestData.EstateId,
                                                                                                                                           TestData.MerchantId,
                                                                                                                                           TestData.DeclinedResponseCode,
@@ -104,7 +101,6 @@ namespace TransactionProcessor.TransactionAggregate.Tests
 
             transactionHasBeenLocallyDeclinedEvent.ShouldNotBeNull();
             transactionHasBeenLocallyDeclinedEvent.AggregateId.ShouldBe(TestData.TransactionId);
-            transactionHasBeenLocallyDeclinedEvent.EventCreatedDateTime.ShouldNotBe(DateTime.MinValue);
             transactionHasBeenLocallyDeclinedEvent.EventId.ShouldNotBe(Guid.Empty);
             transactionHasBeenLocallyDeclinedEvent.TransactionId.ShouldBe(TestData.TransactionId);
             transactionHasBeenLocallyDeclinedEvent.EstateId.ShouldBe(TestData.EstateId);
@@ -116,7 +112,7 @@ namespace TransactionProcessor.TransactionAggregate.Tests
         [Fact]
         public void TransactionAuthorisedByOperatorEvent_CanBeCreated_IsCreated()
         {
-            TransactionAuthorisedByOperatorEvent transactionAuthorisedByOperatorEvent = TransactionAuthorisedByOperatorEvent.Create(TestData.TransactionId,
+            TransactionAuthorisedByOperatorEvent transactionAuthorisedByOperatorEvent = new TransactionAuthorisedByOperatorEvent(TestData.TransactionId,
                                                                                                                                     TestData.EstateId,
                                                                                                                                     TestData.MerchantId,
                                                                                                                                     TestData.OperatorIdentifier1,
@@ -129,7 +125,6 @@ namespace TransactionProcessor.TransactionAggregate.Tests
 
             transactionAuthorisedByOperatorEvent.ShouldNotBeNull();
             transactionAuthorisedByOperatorEvent.AggregateId.ShouldBe(TestData.TransactionId);
-            transactionAuthorisedByOperatorEvent.EventCreatedDateTime.ShouldNotBe(DateTime.MinValue);
             transactionAuthorisedByOperatorEvent.EventId.ShouldNotBe(Guid.Empty);
             transactionAuthorisedByOperatorEvent.TransactionId.ShouldBe(TestData.TransactionId);
             transactionAuthorisedByOperatorEvent.EstateId.ShouldBe(TestData.EstateId);
@@ -146,7 +141,7 @@ namespace TransactionProcessor.TransactionAggregate.Tests
         [Fact]
         public void TransactionDeclinedByOperatorEvent_CanBeCreated_IsCreated()
         {
-            TransactionDeclinedByOperatorEvent transactionDeclinedByOperatorEvent = TransactionDeclinedByOperatorEvent.Create(TestData.TransactionId,
+            TransactionDeclinedByOperatorEvent transactionDeclinedByOperatorEvent = new TransactionDeclinedByOperatorEvent(TestData.TransactionId,
                                                                                                                               TestData.EstateId,
                                                                                                                               TestData.MerchantId,
                                                                                                                               TestData.OperatorIdentifier1,
@@ -157,7 +152,6 @@ namespace TransactionProcessor.TransactionAggregate.Tests
 
             transactionDeclinedByOperatorEvent.ShouldNotBeNull();
             transactionDeclinedByOperatorEvent.AggregateId.ShouldBe(TestData.TransactionId);
-            transactionDeclinedByOperatorEvent.EventCreatedDateTime.ShouldNotBe(DateTime.MinValue);
             transactionDeclinedByOperatorEvent.EventId.ShouldNotBe(Guid.Empty);
             transactionDeclinedByOperatorEvent.TransactionId.ShouldBe(TestData.TransactionId);
             transactionDeclinedByOperatorEvent.EstateId.ShouldBe(TestData.EstateId);
@@ -172,7 +166,7 @@ namespace TransactionProcessor.TransactionAggregate.Tests
         [Fact]
         public void AdditionalResponseDataRecordedEvent_CanBeCreated_IsCreated()
         {
-            AdditionalResponseDataRecordedEvent additionalResponseDataRecordedEvent = AdditionalResponseDataRecordedEvent.Create(TestData.TransactionId,
+            AdditionalResponseDataRecordedEvent additionalResponseDataRecordedEvent = new AdditionalResponseDataRecordedEvent(TestData.TransactionId,
                                                                                                                                  TestData.EstateId,
                                                                                                                                  TestData.MerchantId,
                                                                                                                                  TestData.OperatorIdentifier1,
@@ -180,7 +174,6 @@ namespace TransactionProcessor.TransactionAggregate.Tests
 
             additionalResponseDataRecordedEvent.ShouldNotBeNull();
             additionalResponseDataRecordedEvent.AggregateId.ShouldBe(TestData.TransactionId);
-            additionalResponseDataRecordedEvent.EventCreatedDateTime.ShouldNotBe(DateTime.MinValue);
             additionalResponseDataRecordedEvent.EventId.ShouldNotBe(Guid.Empty);
             additionalResponseDataRecordedEvent.TransactionId.ShouldBe(TestData.TransactionId);
             additionalResponseDataRecordedEvent.EstateId.ShouldBe(TestData.EstateId);
@@ -197,7 +190,7 @@ namespace TransactionProcessor.TransactionAggregate.Tests
         [Fact]
         public void AdditionalRequestDataRecordedEvent_CanBeCreated_IsCreated()
         {
-            AdditionalRequestDataRecordedEvent additionalRequestDataRecordedEvent = AdditionalRequestDataRecordedEvent.Create(TestData.TransactionId,
+            AdditionalRequestDataRecordedEvent additionalRequestDataRecordedEvent = new AdditionalRequestDataRecordedEvent(TestData.TransactionId,
                                                                                                                               TestData.EstateId,
                                                                                                                               TestData.MerchantId,
                                                                                                                               TestData.OperatorIdentifier1,
@@ -205,7 +198,6 @@ namespace TransactionProcessor.TransactionAggregate.Tests
 
             additionalRequestDataRecordedEvent.ShouldNotBeNull();
             additionalRequestDataRecordedEvent.AggregateId.ShouldBe(TestData.TransactionId);
-            additionalRequestDataRecordedEvent.EventCreatedDateTime.ShouldNotBe(DateTime.MinValue);
             additionalRequestDataRecordedEvent.EventId.ShouldNotBe(Guid.Empty);
             additionalRequestDataRecordedEvent.TransactionId.ShouldBe(TestData.TransactionId);
             additionalRequestDataRecordedEvent.EstateId.ShouldBe(TestData.EstateId);
@@ -222,14 +214,13 @@ namespace TransactionProcessor.TransactionAggregate.Tests
         [Fact]
         public void CustomerEmailReceiptRequestedEvent_CanBeCreated_IsCreated()
         {
-            CustomerEmailReceiptRequestedEvent customerEmailReceiptRequestedEvent = CustomerEmailReceiptRequestedEvent.Create(TestData.TransactionId,
+            CustomerEmailReceiptRequestedEvent customerEmailReceiptRequestedEvent = new CustomerEmailReceiptRequestedEvent(TestData.TransactionId,
                                                                                                                               TestData.EstateId,
                                                                                                                               TestData.MerchantId,
                                                                                                                               TestData.CustomerEmailAddress);
 
             customerEmailReceiptRequestedEvent.ShouldNotBeNull();
             customerEmailReceiptRequestedEvent.AggregateId.ShouldBe(TestData.TransactionId);
-            customerEmailReceiptRequestedEvent.EventCreatedDateTime.ShouldNotBe(DateTime.MinValue);
             customerEmailReceiptRequestedEvent.EventId.ShouldNotBe(Guid.Empty);
             customerEmailReceiptRequestedEvent.TransactionId.ShouldBe(TestData.TransactionId);
             customerEmailReceiptRequestedEvent.EstateId.ShouldBe(TestData.EstateId);
@@ -240,11 +231,10 @@ namespace TransactionProcessor.TransactionAggregate.Tests
         [Fact]
         public void ProductDetailsAddedToTransactionEvent_CanBeCreated_IsCreated()
         {
-            ProductDetailsAddedToTransactionEvent productDetailsAddedToTransactionEvent = ProductDetailsAddedToTransactionEvent.Create(TestData.TransactionId, TestData.EstateId,TestData.MerchantId, TestData.ContractId, TestData.ProductId);
+            ProductDetailsAddedToTransactionEvent productDetailsAddedToTransactionEvent = new ProductDetailsAddedToTransactionEvent(TestData.TransactionId, TestData.EstateId,TestData.MerchantId, TestData.ContractId, TestData.ProductId);
 
             productDetailsAddedToTransactionEvent.ShouldNotBeNull();
             productDetailsAddedToTransactionEvent.AggregateId.ShouldBe(TestData.TransactionId);
-            productDetailsAddedToTransactionEvent.EventCreatedDateTime.ShouldNotBe(DateTime.MinValue);
             productDetailsAddedToTransactionEvent.EventId.ShouldNotBe(Guid.Empty);
             productDetailsAddedToTransactionEvent.TransactionId.ShouldBe(TestData.TransactionId);
             productDetailsAddedToTransactionEvent.EstateId.ShouldBe(TestData.EstateId);
@@ -256,7 +246,7 @@ namespace TransactionProcessor.TransactionAggregate.Tests
         [Fact]
         public void MerchantFeeAddedToTransactionEvent_CanBeCreated_IsCreated()
         {
-            MerchantFeeAddedToTransactionEvent merchantFeeAddedToTransactionEvent = MerchantFeeAddedToTransactionEvent.Create(TestData.TransactionId,
+            MerchantFeeAddedToTransactionEvent merchantFeeAddedToTransactionEvent = new MerchantFeeAddedToTransactionEvent(TestData.TransactionId,
                                                                                                                               TestData.EstateId,
                                                                                                                               TestData.MerchantId,
                                                                                                                               TestData.CalculatedFeeValue,
@@ -266,7 +256,6 @@ namespace TransactionProcessor.TransactionAggregate.Tests
 
             merchantFeeAddedToTransactionEvent.ShouldNotBeNull();
             merchantFeeAddedToTransactionEvent.AggregateId.ShouldBe(TestData.TransactionId);
-            merchantFeeAddedToTransactionEvent.EventCreatedDateTime.ShouldNotBe(DateTime.MinValue);
             merchantFeeAddedToTransactionEvent.EventId.ShouldNotBe(Guid.Empty);
             merchantFeeAddedToTransactionEvent.TransactionId.ShouldBe(TestData.TransactionId);
             merchantFeeAddedToTransactionEvent.EstateId.ShouldBe(TestData.EstateId);
@@ -281,7 +270,7 @@ namespace TransactionProcessor.TransactionAggregate.Tests
         [Fact]
         public void ServiceProviderFeeAddedToTransactionEvent_CanBeCreated_IsCreated()
         {
-            ServiceProviderFeeAddedToTransactionEvent serviceProviderFeeAddedToTransactionEvent = ServiceProviderFeeAddedToTransactionEvent.Create(TestData.TransactionId,
+            ServiceProviderFeeAddedToTransactionEvent serviceProviderFeeAddedToTransactionEvent = new ServiceProviderFeeAddedToTransactionEvent(TestData.TransactionId,
                                                                                                                                                    TestData.EstateId,
                                                                                                                                                    TestData.MerchantId,
                                                                                                                                                    TestData.CalculatedFeeValue,
@@ -291,7 +280,6 @@ namespace TransactionProcessor.TransactionAggregate.Tests
 
             serviceProviderFeeAddedToTransactionEvent.ShouldNotBeNull();
             serviceProviderFeeAddedToTransactionEvent.AggregateId.ShouldBe(TestData.TransactionId);
-            serviceProviderFeeAddedToTransactionEvent.EventCreatedDateTime.ShouldNotBe(DateTime.MinValue);
             serviceProviderFeeAddedToTransactionEvent.EventId.ShouldNotBe(Guid.Empty);
             serviceProviderFeeAddedToTransactionEvent.TransactionId.ShouldBe(TestData.TransactionId);
             serviceProviderFeeAddedToTransactionEvent.EstateId.ShouldBe(TestData.EstateId);
