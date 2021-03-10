@@ -9,24 +9,14 @@
     /// 
     /// </summary>
     /// <seealso cref="Shared.DomainDrivenDesign.EventSourcing.DomainEvent" />
-    [JsonObject]
-    public class TransactionHasBeenCompletedEvent : DomainEvent
+    public record TransactionHasBeenCompletedEvent : DomainEventRecord.DomainEvent
     {
         #region Constructors
-
-        /// <summary>
-        /// Initializes a new instance of the <see cref="TransactionHasBeenCompletedEvent"/> class.
-        /// </summary>
-        [ExcludeFromCodeCoverage]
-        public TransactionHasBeenCompletedEvent()
-        {
-        }
 
         /// <summary>
         /// Initializes a new instance of the <see cref="TransactionHasBeenCompletedEvent" /> class.
         /// </summary>
         /// <param name="aggregateId">The aggregate identifier.</param>
-        /// <param name="eventId">The event identifier.</param>
         /// <param name="estateId">The estate identifier.</param>
         /// <param name="merchantId">The merchant identifier.</param>
         /// <param name="responseCode">The response code.</param>
@@ -34,15 +24,14 @@
         /// <param name="isAuthorised">if set to <c>true</c> [is authorised].</param>
         /// <param name="completedDateTime">The completed date time.</param>
         /// <param name="transactionAmount">The transaction amount.</param>
-        private TransactionHasBeenCompletedEvent(Guid aggregateId,
-                                                Guid eventId,
+        public TransactionHasBeenCompletedEvent(Guid aggregateId,
                                                 Guid estateId,
                                                 Guid merchantId,
                                                 String responseCode,
                                                 String responseMessage,
                                                 Boolean isAuthorised,
                                                 DateTime completedDateTime,
-                                                Decimal? transactionAmount) : base(aggregateId, eventId)
+                                                Decimal? transactionAmount) : base(aggregateId, Guid.NewGuid())
         {
             this.TransactionId = aggregateId;
             this.EstateId = estateId;
@@ -58,8 +47,13 @@
 
         #region Properties
 
-        [JsonProperty]
-        public DateTime CompletedDateTime { get; private set; }
+        /// <summary>
+        /// Gets or sets the completed date time.
+        /// </summary>
+        /// <value>
+        /// The completed date time.
+        /// </value>
+        public DateTime CompletedDateTime { get; init; }
 
         /// <summary>
         /// Gets the estate identifier.
@@ -67,8 +61,7 @@
         /// <value>
         /// The estate identifier.
         /// </value>
-        [JsonProperty]
-        public Guid EstateId { get; private set; }
+        public Guid EstateId { get; init; }
 
         /// <summary>
         /// Gets a value indicating whether this instance is authorised.
@@ -76,8 +69,7 @@
         /// <value>
         ///   <c>true</c> if this instance is authorised; otherwise, <c>false</c>.
         /// </value>
-        [JsonProperty]
-        public Boolean IsAuthorised { get; private set; }
+        public Boolean IsAuthorised { get; init; }
 
         /// <summary>
         /// Gets the transaction amount.
@@ -86,7 +78,7 @@
         /// The transaction amount.
         /// </value>
         [JsonProperty(DefaultValueHandling = DefaultValueHandling.Ignore)]
-        public Decimal? TransactionAmount { get; private set; }
+        public Decimal? TransactionAmount { get; init; }
 
         /// <summary>
         /// Gets the merchant identifier.
@@ -94,8 +86,7 @@
         /// <value>
         /// The merchant identifier.
         /// </value>
-        [JsonProperty]
-        public Guid MerchantId { get; private set; }
+        public Guid MerchantId { get; init; }
 
         /// <summary>
         /// Gets the response code.
@@ -103,8 +94,7 @@
         /// <value>
         /// The response code.
         /// </value>
-        [JsonProperty]
-        public String ResponseCode { get; private set; }
+        public String ResponseCode { get; init; }
 
         /// <summary>
         /// Gets the response message.
@@ -112,8 +102,7 @@
         /// <value>
         /// The response message.
         /// </value>
-        [JsonProperty]
-        public String ResponseMessage { get; private set; }
+        public String ResponseMessage { get; init; }
 
         /// <summary>
         /// Gets the transaction identifier.
@@ -121,36 +110,7 @@
         /// <value>
         /// The transaction identifier.
         /// </value>
-        [JsonProperty]
-        public Guid TransactionId { get; private set; }
-
-        #endregion
-
-        #region Methods
-
-        /// <summary>
-        /// Creates the specified aggregate identifier.
-        /// </summary>
-        /// <param name="aggregateId">The aggregate identifier.</param>
-        /// <param name="estateId">The estate identifier.</param>
-        /// <param name="merchantId">The merchant identifier.</param>
-        /// <param name="responseCode">The response code.</param>
-        /// <param name="responseMessage">The response message.</param>
-        /// <param name="isAuthorised">if set to <c>true</c> [is authorised].</param>
-        /// <param name="completedDateTime">The completed date time.</param>
-        /// <param name="transactionAmount">The transaction amount.</param>
-        /// <returns></returns>
-        public static TransactionHasBeenCompletedEvent Create(Guid aggregateId,
-                                                              Guid estateId,
-                                                              Guid merchantId,
-                                                              String responseCode,
-                                                              String responseMessage,
-                                                              Boolean isAuthorised,
-                                                              DateTime completedDateTime,
-                                                              Decimal? transactionAmount)
-        {
-            return new TransactionHasBeenCompletedEvent(aggregateId, Guid.NewGuid(), estateId, merchantId, responseCode, responseMessage, isAuthorised, completedDateTime, transactionAmount);
-        }
+        public Guid TransactionId { get; init; }
 
         #endregion
     }

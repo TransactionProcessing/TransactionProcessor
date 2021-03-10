@@ -5,12 +5,21 @@ namespace TransactionProcessor.ReconciliationAggregate
     using System.Diagnostics.CodeAnalysis;
     using Reconciliation.DomainEvents;
     using Shared.DomainDrivenDesign.EventSourcing;
+    using Shared.EventStore.Aggregate;
     using Shared.EventStore.EventStore;
     using Shared.General;
     using Transaction.DomainEvents;
 
+    /// <summary>
+    /// 
+    /// </summary>
+    /// <seealso cref="Shared.EventStore.Aggregate.Aggregate" />
     public class ReconciliationAggregate : Aggregate
     {
+        /// <summary>
+        /// Gets the metadata.
+        /// </summary>
+        /// <returns></returns>
         [ExcludeFromCodeCoverage]
         protected override Object GetMetadata()
         {
@@ -20,7 +29,11 @@ namespace TransactionProcessor.ReconciliationAggregate
                    };
         }
 
-        protected override void PlayEvent(DomainEvent domainEvent)
+        /// <summary>
+        /// Plays the event.
+        /// </summary>
+        /// <param name="domainEvent">The domain event.</param>
+        public override void PlayEvent(IDomainEvent domainEvent)
         {
             this.PlayEvent((dynamic)domainEvent);
         }
@@ -46,12 +59,54 @@ namespace TransactionProcessor.ReconciliationAggregate
             this.AggregateId = aggregateId;
         }
 
+        /// <summary>
+        /// Gets the estate identifier.
+        /// </summary>
+        /// <value>
+        /// The estate identifier.
+        /// </value>
         public Guid EstateId { get; private set; }
+        /// <summary>
+        /// Gets a value indicating whether this instance is started.
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if this instance is started; otherwise, <c>false</c>.
+        /// </value>
         public Boolean IsStarted { get; private set; }
+        /// <summary>
+        /// Gets the merchant identifier.
+        /// </summary>
+        /// <value>
+        /// The merchant identifier.
+        /// </value>
         public Guid MerchantId { get; private set; }
+        /// <summary>
+        /// Gets the response code.
+        /// </summary>
+        /// <value>
+        /// The response code.
+        /// </value>
         public String ResponseCode { get; private set; }
+        /// <summary>
+        /// Gets a value indicating whether this instance is completed.
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if this instance is completed; otherwise, <c>false</c>.
+        /// </value>
         public Boolean IsCompleted { get; private set; }
+        /// <summary>
+        /// Gets a value indicating whether this instance is authorised.
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if this instance is authorised; otherwise, <c>false</c>.
+        /// </value>
         public Boolean IsAuthorised { get; private set; }
+        /// <summary>
+        /// Gets a value indicating whether this instance is declined.
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if this instance is declined; otherwise, <c>false</c>.
+        /// </value>
         public Boolean IsDeclined { get; private set; }
 
         /// <summary>
@@ -62,8 +117,20 @@ namespace TransactionProcessor.ReconciliationAggregate
         /// </value>
         public String ResponseMessage { get; private set; }
 
+        /// <summary>
+        /// Gets the transaction count.
+        /// </summary>
+        /// <value>
+        /// The transaction count.
+        /// </value>
         public Int32 TransactionCount { get; private set; }
 
+        /// <summary>
+        /// Gets the transaction value.
+        /// </summary>
+        /// <value>
+        /// The transaction value.
+        /// </value>
         public Decimal TransactionValue { get; private set; }
 
         /// <summary>
@@ -76,6 +143,10 @@ namespace TransactionProcessor.ReconciliationAggregate
             return new ReconciliationAggregate(aggregateId);
         }
 
+        /// <summary>
+        /// Checks the reconciliation not already started.
+        /// </summary>
+        /// <exception cref="InvalidOperationException">Reconciliation Id [{this.AggregateId}] has already been started</exception>
         private void CheckReconciliationNotAlreadyStarted()
         {
             if (this.IsStarted)
@@ -84,6 +155,10 @@ namespace TransactionProcessor.ReconciliationAggregate
             }
         }
 
+        /// <summary>
+        /// Checks the reconciliation not already completed.
+        /// </summary>
+        /// <exception cref="InvalidOperationException">Reconciliation Id [{this.AggregateId}] has already been completed</exception>
         private void CheckReconciliationNotAlreadyCompleted()
         {
             if (this.IsCompleted)
@@ -92,6 +167,12 @@ namespace TransactionProcessor.ReconciliationAggregate
             }
         }
 
+        /// <summary>
+        /// Starts the reconciliation.
+        /// </summary>
+        /// <param name="transactionDateTime">The transaction date time.</param>
+        /// <param name="estateId">The estate identifier.</param>
+        /// <param name="merchantId">The merchant identifier.</param>
         public void StartReconciliation(DateTime transactionDateTime,
                                         Guid estateId,
                                         Guid merchantId)
@@ -105,11 +186,15 @@ namespace TransactionProcessor.ReconciliationAggregate
             this.CheckReconciliationNotAlreadyCompleted();
 
             ReconciliationHasStartedEvent reconciliationHasStartedEvent =
-                ReconciliationHasStartedEvent.Create(this.AggregateId, estateId, merchantId, transactionDateTime);
+                new ReconciliationHasStartedEvent(this.AggregateId, estateId, merchantId, transactionDateTime);
 
-            this.ApplyAndPend(reconciliationHasStartedEvent);
+            this.ApplyAndAppend(reconciliationHasStartedEvent);
         }
 
+        /// <summary>
+        /// Checks the reconciliation has been started.
+        /// </summary>
+        /// <exception cref="InvalidOperationException">Reconciliation [{this.AggregateId}] has not been started</exception>
         private void CheckReconciliationHasBeenStarted()
         {
             if (this.IsStarted == false)
@@ -118,16 +203,26 @@ namespace TransactionProcessor.ReconciliationAggregate
             }
         }
 
+        /// <summary>
+        /// Records the overall totals.
+        /// </summary>
+        /// <param name="totalCount">The total count.</param>
+        /// <param name="totalValue">The total value.</param>
         public void RecordOverallTotals(Int32 totalCount, Decimal totalValue)
         {
             // TODO: Rules
             this.CheckReconciliationHasBeenStarted();
             this.CheckReconciliationNotAlreadyCompleted();
 
-            OverallTotalsRecordedEvent overallTotalsRecordedEvent = OverallTotalsRecordedEvent.Create(this.AggregateId, this.EstateId,this.MerchantId, totalCount, totalValue);
-            this.ApplyAndPend(overallTotalsRecordedEvent);
+            OverallTotalsRecordedEvent overallTotalsRecordedEvent = new OverallTotalsRecordedEvent(this.AggregateId, this.EstateId,this.MerchantId, totalCount, totalValue);
+            this.ApplyAndAppend(overallTotalsRecordedEvent);
         }
 
+        /// <summary>
+        /// Authorises the specified response code.
+        /// </summary>
+        /// <param name="responseCode">The response code.</param>
+        /// <param name="responseMessage">The response message.</param>
         public void Authorise(String responseCode, String responseMessage)
         {
             this.CheckReconciliationHasBeenStarted();
@@ -135,12 +230,16 @@ namespace TransactionProcessor.ReconciliationAggregate
             this.CheckReconciliationNotAlreadyAuthorised();
             this.CheckReconciliationNotAlreadyDeclined();
 
-            ReconciliationHasBeenLocallyAuthorisedEvent reconciliationHasBeenLocallyAuthorisedEvent = ReconciliationHasBeenLocallyAuthorisedEvent.Create(this.AggregateId, this.EstateId, this.MerchantId,
+            ReconciliationHasBeenLocallyAuthorisedEvent reconciliationHasBeenLocallyAuthorisedEvent = new ReconciliationHasBeenLocallyAuthorisedEvent(this.AggregateId, this.EstateId, this.MerchantId,
                  responseCode, responseMessage);
 
-            this.ApplyAndPend(reconciliationHasBeenLocallyAuthorisedEvent);
+            this.ApplyAndAppend(reconciliationHasBeenLocallyAuthorisedEvent);
         }
 
+        /// <summary>
+        /// Checks the reconciliation not already authorised.
+        /// </summary>
+        /// <exception cref="InvalidOperationException">Reconciliation [{this.AggregateId}] has already been authorised</exception>
         private void CheckReconciliationNotAlreadyAuthorised()
         {
             if (this.IsAuthorised)
@@ -149,6 +248,10 @@ namespace TransactionProcessor.ReconciliationAggregate
             }
         }
 
+        /// <summary>
+        /// Checks the reconciliation not already declined.
+        /// </summary>
+        /// <exception cref="InvalidOperationException">Reconciliation [{this.AggregateId}] has already been declined</exception>
         private void CheckReconciliationNotAlreadyDeclined()
         {
             if (this.IsDeclined)
@@ -157,6 +260,10 @@ namespace TransactionProcessor.ReconciliationAggregate
             }
         }
 
+        /// <summary>
+        /// Checks the reconciliation has been authorised or declined.
+        /// </summary>
+        /// <exception cref="InvalidOperationException">Reconciliation [{this.AggregateId}] has not been authorised or declined</exception>
         private void CheckReconciliationHasBeenAuthorisedOrDeclined()
         {
             if (this.IsAuthorised == false && this.IsDeclined == false)
@@ -165,6 +272,11 @@ namespace TransactionProcessor.ReconciliationAggregate
             }
         }
 
+        /// <summary>
+        /// Declines the specified response code.
+        /// </summary>
+        /// <param name="responseCode">The response code.</param>
+        /// <param name="responseMessage">The response message.</param>
         public void Decline(String responseCode, String responseMessage)
         {
             this.CheckReconciliationHasBeenStarted();
@@ -172,12 +284,15 @@ namespace TransactionProcessor.ReconciliationAggregate
             this.CheckReconciliationNotAlreadyAuthorised();
             this.CheckReconciliationNotAlreadyDeclined();
 
-            ReconciliationHasBeenLocallyDeclinedEvent reconciliationHasBeenLocallyDeclinedEvent = ReconciliationHasBeenLocallyDeclinedEvent.Create(this.AggregateId, this.EstateId, this.MerchantId,
+            ReconciliationHasBeenLocallyDeclinedEvent reconciliationHasBeenLocallyDeclinedEvent = new ReconciliationHasBeenLocallyDeclinedEvent(this.AggregateId, this.EstateId, this.MerchantId,
                 responseCode, responseMessage);
 
-            this.ApplyAndPend(reconciliationHasBeenLocallyDeclinedEvent);
+            this.ApplyAndAppend(reconciliationHasBeenLocallyDeclinedEvent);
         }
 
+        /// <summary>
+        /// Completes the reconciliation.
+        /// </summary>
         public void CompleteReconciliation()
         {
             this.CheckReconciliationHasBeenStarted();
@@ -185,13 +300,17 @@ namespace TransactionProcessor.ReconciliationAggregate
             this.CheckReconciliationHasBeenAuthorisedOrDeclined();
 
             ReconciliationHasCompletedEvent reconciliationHasCompletedEvent =
-                ReconciliationHasCompletedEvent.Create(this.AggregateId, this.EstateId, this.MerchantId);
+                new ReconciliationHasCompletedEvent(this.AggregateId, this.EstateId, this.MerchantId);
 
-            this.ApplyAndPend(reconciliationHasCompletedEvent);
+            this.ApplyAndAppend(reconciliationHasCompletedEvent);
 
         }
         #endregion
 
+        /// <summary>
+        /// Plays the event.
+        /// </summary>
+        /// <param name="domainEvent">The domain event.</param>
         private void PlayEvent(ReconciliationHasStartedEvent domainEvent)
         {
             this.EstateId = domainEvent.EstateId;
@@ -199,12 +318,20 @@ namespace TransactionProcessor.ReconciliationAggregate
             this.IsStarted = true;
         }
 
+        /// <summary>
+        /// Plays the event.
+        /// </summary>
+        /// <param name="domainEvent">The domain event.</param>
         private void PlayEvent(OverallTotalsRecordedEvent domainEvent)
         {
             this.TransactionCount = domainEvent.TransactionCount;
             this.TransactionValue = domainEvent.TransactionValue;
         }
 
+        /// <summary>
+        /// Plays the event.
+        /// </summary>
+        /// <param name="domainEvent">The domain event.</param>
         private void PlayEvent(ReconciliationHasBeenLocallyAuthorisedEvent domainEvent)
         {
             this.ResponseCode = domainEvent.ResponseCode;
@@ -212,6 +339,10 @@ namespace TransactionProcessor.ReconciliationAggregate
             this.IsAuthorised = true;
         }
 
+        /// <summary>
+        /// Plays the event.
+        /// </summary>
+        /// <param name="domainEvent">The domain event.</param>
         private void PlayEvent(ReconciliationHasBeenLocallyDeclinedEvent domainEvent)
         {
             this.ResponseCode = domainEvent.ResponseCode;
@@ -219,6 +350,10 @@ namespace TransactionProcessor.ReconciliationAggregate
             this.IsDeclined = true;
         }
 
+        /// <summary>
+        /// Plays the event.
+        /// </summary>
+        /// <param name="domainEvent">The domain event.</param>
         private void PlayEvent(ReconciliationHasCompletedEvent domainEvent)
         {
             this.IsStarted = false;

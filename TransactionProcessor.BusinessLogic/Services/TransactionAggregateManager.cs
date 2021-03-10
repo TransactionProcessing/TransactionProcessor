@@ -9,6 +9,8 @@
     using Microsoft.EntityFrameworkCore.Internal;
     using Models;
     using OperatorInterfaces;
+    using Shared.DomainDrivenDesign.EventSourcing;
+    using Shared.EventStore.Aggregate;
     using Shared.EventStore.EventStore;
     using TransactionAggregate;
 
@@ -23,7 +25,7 @@
         /// <summary>
         /// The transaction aggregate repository
         /// </summary>
-        private readonly IAggregateRepository<TransactionAggregate> TransactionAggregateRepository;
+        private readonly IAggregateRepository<TransactionAggregate,DomainEventRecord.DomainEvent> TransactionAggregateRepository;
 
         #endregion
 
@@ -33,7 +35,7 @@
         /// Initializes a new instance of the <see cref="TransactionAggregateManager" /> class.
         /// </summary>
         /// <param name="transactionAggregateRepository">The transaction aggregate repository.</param>
-        public TransactionAggregateManager(IAggregateRepository<TransactionAggregate> transactionAggregateRepository)
+        public TransactionAggregateManager(IAggregateRepository<TransactionAggregate, DomainEventRecord.DomainEvent> transactionAggregateRepository)
         {
             this.TransactionAggregateRepository = transactionAggregateRepository;
         }

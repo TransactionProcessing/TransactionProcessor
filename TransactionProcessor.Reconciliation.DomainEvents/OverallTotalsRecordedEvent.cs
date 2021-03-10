@@ -9,19 +9,10 @@
     /// 
     /// </summary>
     /// <seealso cref="Shared.DomainDrivenDesign.EventSourcing.DomainEvent" />
-    [JsonObject]
-    public class OverallTotalsRecordedEvent : DomainEvent
+    public record OverallTotalsRecordedEvent : DomainEventRecord.DomainEvent
     {
         #region Constructors
-
-        /// <summary>
-        /// Initializes a new instance of the <see cref="OverallTotalsRecordedEvent" /> class.
-        /// </summary>
-        [ExcludeFromCodeCoverage]
-        public OverallTotalsRecordedEvent()
-        {
-        }
-
+        
         /// <summary>
         /// Initializes a new instance of the <see cref="OverallTotalsRecordedEvent" /> class.
         /// </summary>
@@ -31,12 +22,11 @@
         /// <param name="merchantId">The merchant identifier.</param>
         /// <param name="transactionCount">The transaction count.</param>
         /// <param name="transactionValue">The transaction value.</param>
-        private OverallTotalsRecordedEvent(Guid aggregateId,
-                                           Guid eventId,
+        public OverallTotalsRecordedEvent(Guid aggregateId,
                                            Guid estateId,
                                            Guid merchantId,
                                            Int32 transactionCount,
-                                           Decimal transactionValue) : base(aggregateId, eventId)
+                                           Decimal transactionValue) : base(aggregateId, Guid.NewGuid())
         {
             this.TransactionId = aggregateId;
             this.EstateId = estateId;
@@ -55,8 +45,7 @@
         /// <value>
         /// The estate identifier.
         /// </value>
-        [JsonProperty]
-        public Guid EstateId { get; private set; }
+        public Guid EstateId { get; init; }
 
         /// <summary>
         /// Gets the merchant identifier.
@@ -64,8 +53,7 @@
         /// <value>
         /// The merchant identifier.
         /// </value>
-        [JsonProperty]
-        public Guid MerchantId { get; private set; }
+        public Guid MerchantId { get; init; }
 
         /// <summary>
         /// Gets the transaction count.
@@ -73,8 +61,7 @@
         /// <value>
         /// The transaction count.
         /// </value>
-        [JsonProperty]
-        public Int32 TransactionCount { get; private set; }
+        public Int32 TransactionCount { get; init; }
 
         /// <summary>
         /// Gets the transaction value.
@@ -82,39 +69,15 @@
         /// <value>
         /// The transaction value.
         /// </value>
-        [JsonProperty]
-        public Decimal TransactionValue { get; private set; }
-        
+        public Decimal TransactionValue { get; init; }
+
         /// <summary>
         /// Gets the transaction identifier.
         /// </summary>
         /// <value>
         /// The transaction identifier.
         /// </value>
-        [JsonProperty]
-        public Guid TransactionId { get; private set; }
-
-        #endregion
-
-        #region Methods
-
-        /// <summary>
-        /// Creates the specified aggregate identifier.
-        /// </summary>
-        /// <param name="aggregateId">The aggregate identifier.</param>
-        /// <param name="estateId">The estate identifier.</param>
-        /// <param name="merchantId">The merchant identifier.</param>
-        /// <param name="transactionCount">The transaction count.</param>
-        /// <param name="transactionValue">The transaction value.</param>
-        /// <returns></returns>
-        public static OverallTotalsRecordedEvent Create(Guid aggregateId,
-                                                        Guid estateId,
-                                                        Guid merchantId,
-                                                        Int32 transactionCount,
-                                                        Decimal transactionValue)
-        {
-            return new OverallTotalsRecordedEvent(aggregateId, Guid.NewGuid(), estateId, merchantId, transactionCount, transactionValue);
-        }
+        public Guid TransactionId { get; init; }
 
         #endregion
     }

@@ -20,7 +20,7 @@ namespace TransactionProcessor.ReconciliationAggregate.Tests
         [Fact]
         public void OverallTotalsRecordedEvent_CanBeCreated_IsCreated()
         {
-            OverallTotalsRecordedEvent overallTotalsRecordedEvent = OverallTotalsRecordedEvent.Create(TestData.TransactionId,
+            OverallTotalsRecordedEvent overallTotalsRecordedEvent = new OverallTotalsRecordedEvent(TestData.TransactionId,
                                                                                                       TestData.EstateId,
                                                                                                       TestData.MerchantId,
                                                                                                       TestData.ReconciliationTransactionCount,
@@ -28,7 +28,6 @@ namespace TransactionProcessor.ReconciliationAggregate.Tests
 
             overallTotalsRecordedEvent.ShouldNotBeNull();
             overallTotalsRecordedEvent.AggregateId.ShouldBe(TestData.TransactionId);
-            overallTotalsRecordedEvent.EventCreatedDateTime.ShouldNotBe(DateTime.MinValue);
             overallTotalsRecordedEvent.EventId.ShouldNotBe(Guid.Empty);
             overallTotalsRecordedEvent.TransactionId.ShouldBe(TestData.TransactionId);
             overallTotalsRecordedEvent.EstateId.ShouldBe(TestData.EstateId);
@@ -44,7 +43,7 @@ namespace TransactionProcessor.ReconciliationAggregate.Tests
         public void ReconciliationHasBeenLocallyAuthorisedEvent_CanBeCreated_IsCreated()
         {
             ReconciliationHasBeenLocallyAuthorisedEvent reconciliationHasBeenLocallyAuthorisedEvent =
-                ReconciliationHasBeenLocallyAuthorisedEvent.Create(TestData.TransactionId,
+                new ReconciliationHasBeenLocallyAuthorisedEvent(TestData.TransactionId,
                                                                    TestData.EstateId,
                                                                    TestData.MerchantId,
                                                                    TestData.ResponseCode,
@@ -52,7 +51,6 @@ namespace TransactionProcessor.ReconciliationAggregate.Tests
 
             reconciliationHasBeenLocallyAuthorisedEvent.ShouldNotBeNull();
             reconciliationHasBeenLocallyAuthorisedEvent.AggregateId.ShouldBe(TestData.TransactionId);
-            reconciliationHasBeenLocallyAuthorisedEvent.EventCreatedDateTime.ShouldNotBe(DateTime.MinValue);
             reconciliationHasBeenLocallyAuthorisedEvent.EventId.ShouldNotBe(Guid.Empty);
             reconciliationHasBeenLocallyAuthorisedEvent.TransactionId.ShouldBe(TestData.TransactionId);
             reconciliationHasBeenLocallyAuthorisedEvent.EstateId.ShouldBe(TestData.EstateId);
@@ -68,11 +66,10 @@ namespace TransactionProcessor.ReconciliationAggregate.Tests
         public void ReconciliationHasCompletedEvent_CanBeCreated_IsCreated()
         {
             ReconciliationHasCompletedEvent reconciliationHasCompletedEvent =
-                ReconciliationHasCompletedEvent.Create(TestData.TransactionId, TestData.EstateId, TestData.MerchantId);
+                new ReconciliationHasCompletedEvent(TestData.TransactionId, TestData.EstateId, TestData.MerchantId);
 
             reconciliationHasCompletedEvent.ShouldNotBeNull();
             reconciliationHasCompletedEvent.AggregateId.ShouldBe(TestData.TransactionId);
-            reconciliationHasCompletedEvent.EventCreatedDateTime.ShouldNotBe(DateTime.MinValue);
             reconciliationHasCompletedEvent.EventId.ShouldNotBe(Guid.Empty);
             reconciliationHasCompletedEvent.TransactionId.ShouldBe(TestData.TransactionId);
             reconciliationHasCompletedEvent.EstateId.ShouldBe(TestData.EstateId);
@@ -85,13 +82,12 @@ namespace TransactionProcessor.ReconciliationAggregate.Tests
         [Fact]
         public void ReconciliationHasStartedEvent_CanBeCreated_IsCreated()
         {
-            ReconciliationHasStartedEvent reconciliationHasStartedEvent = ReconciliationHasStartedEvent.Create(TestData.TransactionId,
+            ReconciliationHasStartedEvent reconciliationHasStartedEvent = new ReconciliationHasStartedEvent(TestData.TransactionId,
                                                                                                                TestData.EstateId,
                                                                                                                TestData.MerchantId,
                                                                                                                TestData.TransactionDateTime);
             reconciliationHasStartedEvent.ShouldNotBeNull();
             reconciliationHasStartedEvent.AggregateId.ShouldBe(TestData.TransactionId);
-            reconciliationHasStartedEvent.EventCreatedDateTime.ShouldNotBe(DateTime.MinValue);
             reconciliationHasStartedEvent.EventId.ShouldNotBe(Guid.Empty);
             reconciliationHasStartedEvent.TransactionId.ShouldBe(TestData.TransactionId);
             reconciliationHasStartedEvent.EstateId.ShouldBe(TestData.EstateId);
@@ -105,7 +101,7 @@ namespace TransactionProcessor.ReconciliationAggregate.Tests
         [Fact]
         public void TransactionHasBeenLocallyDeclinedEvent_CanBeCreated_IsCreated()
         {
-            ReconciliationHasBeenLocallyDeclinedEvent reconciliationHasBeenLocallyDeclinedEvent = ReconciliationHasBeenLocallyDeclinedEvent.Create(TestData.TransactionId,
+            ReconciliationHasBeenLocallyDeclinedEvent reconciliationHasBeenLocallyDeclinedEvent = new ReconciliationHasBeenLocallyDeclinedEvent(TestData.TransactionId,
                 TestData.EstateId,
                 TestData.MerchantId,
                 TestData.DeclinedResponseCode,
@@ -113,7 +109,6 @@ namespace TransactionProcessor.ReconciliationAggregate.Tests
 
             reconciliationHasBeenLocallyDeclinedEvent.ShouldNotBeNull();
             reconciliationHasBeenLocallyDeclinedEvent.AggregateId.ShouldBe(TestData.TransactionId);
-            reconciliationHasBeenLocallyDeclinedEvent.EventCreatedDateTime.ShouldNotBe(DateTime.MinValue);
             reconciliationHasBeenLocallyDeclinedEvent.EventId.ShouldNotBe(Guid.Empty);
             reconciliationHasBeenLocallyDeclinedEvent.TransactionId.ShouldBe(TestData.TransactionId);
             reconciliationHasBeenLocallyDeclinedEvent.EstateId.ShouldBe(TestData.EstateId);

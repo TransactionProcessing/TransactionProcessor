@@ -9,24 +9,14 @@
     /// 
     /// </summary>
     /// <seealso cref="Shared.DomainDrivenDesign.EventSourcing.DomainEvent" />
-    [JsonObject]
-    public class TransactionHasStartedEvent : DomainEvent
+    public record TransactionHasStartedEvent : DomainEventRecord.DomainEvent
     {
         #region Constructors
 
         /// <summary>
         /// Initializes a new instance of the <see cref="TransactionHasStartedEvent" /> class.
         /// </summary>
-        [ExcludeFromCodeCoverage]
-        public TransactionHasStartedEvent()
-        {
-        }
-
-        /// <summary>
-        /// Initializes a new instance of the <see cref="TransactionHasStartedEvent" /> class.
-        /// </summary>
         /// <param name="aggregateId">The aggregate identifier.</param>
-        /// <param name="eventId">The event identifier.</param>
         /// <param name="estateId">The estate identifier.</param>
         /// <param name="merchantId">The merchant identifier.</param>
         /// <param name="transactionDateTime">The transaction date time.</param>
@@ -35,8 +25,7 @@
         /// <param name="transactionReference">The transaction reference.</param>
         /// <param name="deviceIdentifier">The device identifier.</param>
         /// <param name="transactionAmount">The transaction amount.</param>
-        private TransactionHasStartedEvent(Guid aggregateId,
-                                          Guid eventId,
+        public TransactionHasStartedEvent(Guid aggregateId,
                                           Guid estateId,
                                           Guid merchantId,
                                           DateTime transactionDateTime,
@@ -44,7 +33,7 @@
                                           String transactionType,
                                           String transactionReference,
                                           String deviceIdentifier,
-                                          Decimal? transactionAmount) : base(aggregateId, eventId)
+                                          Decimal? transactionAmount) : base(aggregateId, Guid.NewGuid())
         {
             this.TransactionId = aggregateId;
             this.EstateId = estateId;
@@ -67,8 +56,7 @@
         /// <value>
         /// The estate identifier.
         /// </value>
-        [JsonProperty]
-        public Guid EstateId { get; private set; }
+        public Guid EstateId { get; init; }
 
         /// <summary>
         /// Gets the device identifier.
@@ -76,8 +64,7 @@
         /// <value>
         /// The device identifier.
         /// </value>
-        [JsonProperty]
-        public String DeviceIdentifier { get; private set; }
+        public String DeviceIdentifier { get; init; }
 
         /// <summary>
         /// Gets the transaction amount.
@@ -86,7 +73,7 @@
         /// The transaction amount.
         /// </value>
         [JsonProperty(DefaultValueHandling = DefaultValueHandling.Ignore)]
-        public Decimal? TransactionAmount { get; private set; }
+        public Decimal? TransactionAmount { get; init; }
 
         /// <summary>
         /// Gets the merchant identifier.
@@ -94,8 +81,7 @@
         /// <value>
         /// The merchant identifier.
         /// </value>
-        [JsonProperty]
-        public Guid MerchantId { get; private set; }
+        public Guid MerchantId { get; init; }
 
         /// <summary>
         /// Gets the transaction date time.
@@ -103,8 +89,7 @@
         /// <value>
         /// The transaction date time.
         /// </value>
-        [JsonProperty]
-        public DateTime TransactionDateTime { get; private set; }
+        public DateTime TransactionDateTime { get; init; }
 
         /// <summary>
         /// Gets the transaction identifier.
@@ -112,8 +97,7 @@
         /// <value>
         /// The transaction identifier.
         /// </value>
-        [JsonProperty]
-        public Guid TransactionId { get; private set; }
+        public Guid TransactionId { get; init; }
 
         /// <summary>
         /// Gets the transaction number.
@@ -121,8 +105,7 @@
         /// <value>
         /// The transaction number.
         /// </value>
-        [JsonProperty]
-        public String TransactionNumber { get; private set; }
+        public String TransactionNumber { get; init; }
 
         /// <summary>
         /// Gets the type of the transaction.
@@ -130,41 +113,15 @@
         /// <value>
         /// The type of the transaction.
         /// </value>
-        [JsonProperty]
-        public String TransactionType { get; private set; }
-
-        [JsonProperty]
-        public String TransactionReference { get; private set; }
-
-        #endregion
-
-        #region Methods
-
+        public String TransactionType { get; init; }
+        
         /// <summary>
-        /// Creates the specified aggregate identifier.
+        /// Gets or sets the transaction reference.
         /// </summary>
-        /// <param name="aggregateId">The aggregate identifier.</param>
-        /// <param name="estateId">The estate identifier.</param>
-        /// <param name="merchantId">The merchant identifier.</param>
-        /// <param name="transactionDateTime">The transaction date time.</param>
-        /// <param name="transactionNumber">The transaction number.</param>
-        /// <param name="transactionType">Type of the transaction.</param>
-        /// <param name="transactionReference">The transaction reference.</param>
-        /// <param name="deviceIdentifier">The device identifier.</param>
-        /// <param name="transactionAmount">The transaction amount.</param>
-        /// <returns></returns>
-        public static TransactionHasStartedEvent Create(Guid aggregateId,
-                                                        Guid estateId,
-                                                        Guid merchantId,
-                                                        DateTime transactionDateTime,
-                                                        String transactionNumber,
-                                                        String transactionType,
-                                                        String transactionReference,
-                                                        String deviceIdentifier,
-                                                        Decimal? transactionAmount)
-        {
-            return new TransactionHasStartedEvent(aggregateId, Guid.NewGuid(), estateId, merchantId, transactionDateTime, transactionNumber, transactionType, transactionReference, deviceIdentifier, transactionAmount);
-        }
+        /// <value>
+        /// The transaction reference.
+        /// </value>
+        public String TransactionReference { get; init; }
 
         #endregion
     }

@@ -4,22 +4,15 @@
     using System.Diagnostics.CodeAnalysis;
     using Newtonsoft.Json;
     using Shared.DomainDrivenDesign.EventSourcing;
-
-    [JsonObject]
-    public class TransactionAuthorisedByOperatorEvent : DomainEvent
+    
+    public record TransactionAuthorisedByOperatorEvent : DomainEventRecord.DomainEvent
     {
         #region Constructors
-
-        [ExcludeFromCodeCoverage]
-        public TransactionAuthorisedByOperatorEvent()
-        {
-        }
 
         /// <summary>
         /// Initializes a new instance of the <see cref="TransactionAuthorisedByOperatorEvent" /> class.
         /// </summary>
         /// <param name="aggregateId">The aggregate identifier.</param>
-        /// <param name="eventId">The event identifier.</param>
         /// <param name="estateId">The estate identifier.</param>
         /// <param name="merchantId">The merchant identifier.</param>
         /// <param name="operatorIdentifier">The operator identifier.</param>
@@ -29,8 +22,7 @@
         /// <param name="operatorTransactionId">The operator transaction identifier.</param>
         /// <param name="responseCode">The response code.</param>
         /// <param name="responseMessage">The response message.</param>
-        private TransactionAuthorisedByOperatorEvent(Guid aggregateId,
-                                                    Guid eventId,
+        public TransactionAuthorisedByOperatorEvent(Guid aggregateId,
                                                     Guid estateId,
                                                     Guid merchantId,
                                                     String operatorIdentifier,
@@ -39,7 +31,7 @@
                                                     String operatorResponseMessage,
                                                     String operatorTransactionId,
                                                     String responseCode,
-                                                    String responseMessage) : base(aggregateId, eventId)
+                                                    String responseMessage) : base(aggregateId, Guid.NewGuid())
         {
             this.TransactionId = aggregateId;
             this.EstateId = estateId;
@@ -63,8 +55,7 @@
         /// <value>
         /// The authorisation code.
         /// </value>
-        [JsonProperty]
-        public String AuthorisationCode { get; private set; }
+        public String AuthorisationCode { get; init; }
 
         /// <summary>
         /// Gets the estate identifier.
@@ -72,8 +63,7 @@
         /// <value>
         /// The estate identifier.
         /// </value>
-        [JsonProperty]
-        public Guid EstateId { get; private set; }
+        public Guid EstateId { get; init; }
 
         /// <summary>
         /// Gets the merchant identifier.
@@ -81,8 +71,7 @@
         /// <value>
         /// The merchant identifier.
         /// </value>
-        [JsonProperty]
-        public Guid MerchantId { get; private set; }
+        public Guid MerchantId { get; init; }
 
         /// <summary>
         /// Gets the operator identifier.
@@ -90,8 +79,7 @@
         /// <value>
         /// The operator identifier.
         /// </value>
-        [JsonProperty]
-        public String OperatorIdentifier { get; private set; }
+        public String OperatorIdentifier { get; init; }
 
         /// <summary>
         /// Gets the operator response code.
@@ -99,8 +87,7 @@
         /// <value>
         /// The operator response code.
         /// </value>
-        [JsonProperty]
-        public String OperatorResponseCode { get; private set; }
+        public String OperatorResponseCode { get; init; }
 
         /// <summary>
         /// Gets the operator response message.
@@ -108,8 +95,7 @@
         /// <value>
         /// The operator response message.
         /// </value>
-        [JsonProperty]
-        public String OperatorResponseMessage { get; private set; }
+        public String OperatorResponseMessage { get; init; }
 
         /// <summary>
         /// Gets or sets the operator transaction identifier.
@@ -117,8 +103,7 @@
         /// <value>
         /// The operator transaction identifier.
         /// </value>
-        [JsonProperty]
-        public String OperatorTransactionId { get; set; }
+        public String OperatorTransactionId { get; init; }
 
         /// <summary>
         /// Gets the response code.
@@ -126,8 +111,7 @@
         /// <value>
         /// The response code.
         /// </value>
-        [JsonProperty]
-        public String ResponseCode { get; private set; }
+        public String ResponseCode { get; init; }
 
         /// <summary>
         /// Gets the response message.
@@ -135,8 +119,7 @@
         /// <value>
         /// The response message.
         /// </value>
-        [JsonProperty]
-        public String ResponseMessage { get; private set; }
+        public String ResponseMessage { get; init; }
 
         /// <summary>
         /// Gets the transaction identifier.
@@ -144,51 +127,8 @@
         /// <value>
         /// The transaction identifier.
         /// </value>
-        [JsonProperty]
-        public Guid TransactionId { get; private set; }
-
-        #endregion
-
-        #region Methods
-
-        /// <summary>
-        /// Creates the specified aggregate identifier.
-        /// </summary>
-        /// <param name="aggregateId">The aggregate identifier.</param>
-        /// <param name="estateId">The estate identifier.</param>
-        /// <param name="merchantId">The merchant identifier.</param>
-        /// <param name="operatorIdentifier">The operator identifier.</param>
-        /// <param name="authorisationCode">The authorisation code.</param>
-        /// <param name="operatorResponseCode">The operator response code.</param>
-        /// <param name="operatorResponseMessage">The operator response message.</param>
-        /// <param name="operatorTransactionId">The operator transaction identifier.</param>
-        /// <param name="responseCode">The response code.</param>
-        /// <param name="responseMessage">The response message.</param>
-        /// <returns></returns>
-        public static TransactionAuthorisedByOperatorEvent Create(Guid aggregateId,
-                                                                  Guid estateId,
-                                                                  Guid merchantId,
-                                                                  String operatorIdentifier,
-                                                                  String authorisationCode,
-                                                                  String operatorResponseCode,
-                                                                  String operatorResponseMessage,
-                                                                  String operatorTransactionId,
-                                                                  String responseCode,
-                                                                  String responseMessage)
-        {
-            return new TransactionAuthorisedByOperatorEvent(aggregateId,
-                                                            Guid.NewGuid(),
-                                                            estateId,
-                                                            merchantId,
-                                                            operatorIdentifier,
-                                                            authorisationCode,
-                                                            operatorResponseCode,
-                                                            operatorResponseMessage,
-                                                            operatorTransactionId,
-                                                            responseCode,
-                                                            responseMessage);
-        }
-
+        public Guid TransactionId { get; init; }
+        
         #endregion
     }
 }

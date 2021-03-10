@@ -7,6 +7,7 @@
     using System.Text.RegularExpressions;
     using Models;
     using Shared.DomainDrivenDesign.EventSourcing;
+    using Shared.EventStore.Aggregate;
     using Shared.EventStore.EventStore;
     using Shared.General;
     using Transaction.DomainEvents;
@@ -14,7 +15,7 @@
     /// <summary>
     /// 
     /// </summary>
-    /// <seealso cref="Shared.EventStore.EventStore.Aggregate" />
+    /// <seealso cref="Aggregate" />
     /// <seealso cref="Aggregate" />
     public class TransactionAggregate : Aggregate
     {
@@ -288,11 +289,11 @@
             this.CheckTransactionHasBeenCompleted();
             this.CheckTransactionCanAttractFees();
 
-            DomainEvent @event = null;
+            DomainEventRecord.DomainEvent @event = null;
             if (calculatedFee.FeeType == FeeType.Merchant)
             {
                 // This is a merchant fee
-                @event = MerchantFeeAddedToTransactionEvent.Create(this.AggregateId,
+                @event = new MerchantFeeAddedToTransactionEvent(this.AggregateId,
                                                                    this.EstateId,
                                                                    this.MerchantId,
                                                                    calculatedFee.CalculatedValue,
@@ -303,7 +304,7 @@
             else if (calculatedFee.FeeType == FeeType.ServiceProvider)
             {
                 // This is an operational (service provider) fee
-                @event = ServiceProviderFeeAddedToTransactionEvent.Create(this.AggregateId,
+                @event = new ServiceProviderFeeAddedToTransactionEvent(this.AggregateId,
                                                                           this.EstateId,
                                                                           this.MerchantId,
                                                                           calculatedFee.CalculatedValue,
@@ -318,7 +319,7 @@
 
             if (@event != null)
             {
-                this.ApplyAndPend(@event);
+                this.ApplyAndAppend(@event);
             }
         }
 
@@ -338,9 +339,9 @@
             this.CheckProductDetailsNotAlreadyAdded();
 
             ProductDetailsAddedToTransactionEvent productDetailsAddedToTransactionEvent =
-                ProductDetailsAddedToTransactionEvent.Create(this.AggregateId, this.EstateId, this.MerchantId, contractId, productId);
+                new ProductDetailsAddedToTransactionEvent(this.AggregateId, this.EstateId, this.MerchantId, contractId, productId);
 
-            this.ApplyAndPend(productDetailsAddedToTransactionEvent);
+            this.ApplyAndAppend(productDetailsAddedToTransactionEvent);
         }
 
         /// <summary>
@@ -364,7 +365,7 @@
             this.CheckTransactionHasBeenStarted();
             this.CheckTransactionNotAlreadyAuthorised();
 
-            TransactionAuthorisedByOperatorEvent transactionAuthorisedByOperatorEvent = TransactionAuthorisedByOperatorEvent.Create(this.AggregateId,
+            TransactionAuthorisedByOperatorEvent transactionAuthorisedByOperatorEvent = new TransactionAuthorisedByOperatorEvent(this.AggregateId,
                                                                                                                                     this.EstateId,
                                                                                                                                     this.MerchantId,
                                                                                                                                     operatorIdentifier,
@@ -374,7 +375,7 @@
                                                                                                                                     operatorTransactionId,
                                                                                                                                     responseCode,
                                                                                                                                     responseMessage);
-            this.ApplyAndPend(transactionAuthorisedByOperatorEvent);
+            this.ApplyAndAppend(transactionAuthorisedByOperatorEvent);
         }
 
         /// <summary>
@@ -391,9 +392,9 @@
             this.CheckTransactionNotAlreadyAuthorised();
             this.CheckTransactionCanBeLocallyAuthorised();
             TransactionHasBeenLocallyAuthorisedEvent transactionHasBeenLocallyAuthorisedEvent =
-                TransactionHasBeenLocallyAuthorisedEvent.Create(this.AggregateId, this.EstateId, this.MerchantId, authorisationCode, responseCode, responseMessage);
+                new TransactionHasBeenLocallyAuthorisedEvent(this.AggregateId, this.EstateId, this.MerchantId, authorisationCode, responseCode, responseMessage);
 
-            this.ApplyAndPend(transactionHasBeenLocallyAuthorisedEvent);
+            this.ApplyAndAppend(transactionHasBeenLocallyAuthorisedEvent);
         }
 
         /// <summary>
@@ -406,7 +407,7 @@
             this.CheckTransactionNotAlreadyCompleted();
 
             TransactionHasBeenCompletedEvent transactionHasBeenCompletedEvent =
-                TransactionHasBeenCompletedEvent.Create(this.AggregateId,
+                new TransactionHasBeenCompletedEvent(this.AggregateId,
                                                         this.EstateId,
                                                         this.MerchantId,
                                                         this.ResponseCode,
@@ -415,7 +416,7 @@
                                                         this.TransactionDateTime,
                                                         this.TransactionType != TransactionType.Logon ? this.TransactionAmount : null);
 
-            this.ApplyAndPend(transactionHasBeenCompletedEvent);
+            this.ApplyAndAppend(transactionHasBeenCompletedEvent);
         }
 
         /// <summary>
@@ -447,7 +448,7 @@
             this.CheckTransactionNotAlreadyDeclined();
 
             TransactionDeclinedByOperatorEvent transactionDeclinedByOperatorEvent =
-                TransactionDeclinedByOperatorEvent.Create(this.AggregateId,
+                new TransactionDeclinedByOperatorEvent(this.AggregateId,
                                                           this.EstateId,
                                                           this.MerchantId,
                                                           operatorIdentifier,
@@ -455,7 +456,7 @@
                                                           operatorResponseMessage,
                                                           responseCode,
                                                           responseMessage);
-            this.ApplyAndPend(transactionDeclinedByOperatorEvent);
+            this.ApplyAndAppend(transactionDeclinedByOperatorEvent);
         }
 
         /// <summary>
@@ -470,9 +471,9 @@
             this.CheckTransactionNotAlreadyAuthorised();
             this.CheckTransactionNotAlreadyDeclined();
             TransactionHasBeenLocallyDeclinedEvent transactionHasBeenLocallyDeclinedEvent =
-                TransactionHasBeenLocallyDeclinedEvent.Create(this.AggregateId, this.EstateId, this.MerchantId, responseCode, responseMessage);
+                new TransactionHasBeenLocallyDeclinedEvent(this.AggregateId, this.EstateId, this.MerchantId, responseCode, responseMessage);
 
-            this.ApplyAndPend(transactionHasBeenLocallyDeclinedEvent);
+            this.ApplyAndAppend(transactionHasBeenLocallyDeclinedEvent);
         }
 
         /// <summary>
@@ -499,9 +500,9 @@
             this.CheckAdditionalRequestDataNotAlreadyRecorded();
 
             AdditionalRequestDataRecordedEvent additionalRequestDataRecordedEvent =
-                AdditionalRequestDataRecordedEvent.Create(this.AggregateId, this.EstateId, this.MerchantId, operatorIdentifier, additionalTransactionRequestMetadata);
+                new AdditionalRequestDataRecordedEvent(this.AggregateId, this.EstateId, this.MerchantId, operatorIdentifier, additionalTransactionRequestMetadata);
 
-            this.ApplyAndPend(additionalRequestDataRecordedEvent);
+            this.ApplyAndAppend(additionalRequestDataRecordedEvent);
         }
 
         /// <summary>
@@ -516,9 +517,9 @@
             this.CheckAdditionalResponseDataNotAlreadyRecorded();
 
             AdditionalResponseDataRecordedEvent additionalResponseDataRecordedEvent =
-                AdditionalResponseDataRecordedEvent.Create(this.AggregateId, this.EstateId, this.MerchantId, operatorIdentifier, additionalTransactionResponseMetadata);
+                new AdditionalResponseDataRecordedEvent(this.AggregateId, this.EstateId, this.MerchantId, operatorIdentifier, additionalTransactionResponseMetadata);
 
-            this.ApplyAndPend(additionalResponseDataRecordedEvent);
+            this.ApplyAndAppend(additionalResponseDataRecordedEvent);
         }
 
         /// <summary>
@@ -531,9 +532,9 @@
             this.CheckCustomerHasNotAlreadyRequestedEmailReceipt();
 
             CustomerEmailReceiptRequestedEvent customerEmailReceiptRequestedEvent =
-                CustomerEmailReceiptRequestedEvent.Create(this.AggregateId, this.EstateId, this.MerchantId, customerEmailAddress);
+                new CustomerEmailReceiptRequestedEvent(this.AggregateId, this.EstateId, this.MerchantId, customerEmailAddress);
 
-            this.ApplyAndPend(customerEmailReceiptRequestedEvent);
+            this.ApplyAndAppend(customerEmailReceiptRequestedEvent);
         }
 
         /// <summary>
@@ -589,7 +590,7 @@
 
             this.CheckTransactionNotAlreadyStarted();
             this.CheckTransactionNotAlreadyCompleted();
-            TransactionHasStartedEvent transactionHasStartedEvent = TransactionHasStartedEvent.Create(this.AggregateId,
+            TransactionHasStartedEvent transactionHasStartedEvent = new TransactionHasStartedEvent(this.AggregateId,
                                                                                                       estateId,
                                                                                                       merchantId,
                                                                                                       transactionDateTime,
@@ -599,7 +600,7 @@
                                                                                                       deviceIdentifier,
                                                                                                       transactionAmount);
 
-            this.ApplyAndPend(transactionHasStartedEvent);
+            this.ApplyAndAppend(transactionHasStartedEvent);
         }
 
         /// <summary>
@@ -619,7 +620,7 @@
         /// Plays the event.
         /// </summary>
         /// <param name="domainEvent">The domain event.</param>
-        protected override void PlayEvent(DomainEvent domainEvent)
+        public override void PlayEvent(IDomainEvent domainEvent)
         {
             this.PlayEvent((dynamic)domainEvent);
         }
