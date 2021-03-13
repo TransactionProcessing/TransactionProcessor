@@ -17,10 +17,10 @@ isValidEvent = function (e) {
 };
 
 getMerchantId = function (e) {
-    if (e.data.MerchantId === undefined) {
+    if (e.data.merchantId === undefined) {
         return null;
     }
-    return e.data.MerchantId;
+    return e.data.merchantId;
 };
 
 fromAll()
