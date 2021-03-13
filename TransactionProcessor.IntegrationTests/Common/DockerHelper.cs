@@ -119,87 +119,8 @@
         }
 
         #endregion
-
-        public const Int32 TestHostPort = 9000;
-        private Int32 VoucherManagementPort;
+        
         protected String VoucherManagementContainerName;
-        public const Int32 VoucherManagementDockerPort = 5007;
-
-        public static IContainerService SetupVoucherManagementContainer(String containerName, ILogger logger, String imageName,
-                                                               List<INetworkService> networkServices,
-                                                               String hostFolder,
-                                                               (String URL, String UserName, String Password)? dockerCredentials,
-                                                               String securityServiceContainerName,
-                                                               String estateManagementContainerName,
-                                                               String eventStoreContainerName,
-                                                               (string clientId, string clientSecret) clientDetails,
-                                                               Boolean forceLatestImage = false,
-                                                               Int32 securityServicePort = DockerHelper.SecurityServiceDockerPort,
-                                                               List<String> additionalEnvironmentVariables = null)
-        {
-            logger.LogInformation("About to Start Voucher Management Container");
-
-            List<String> environmentVariables = new List<String>();
-            environmentVariables.Add($"EventStoreSettings:ConnectionString=https://{eventStoreContainerName}:{DockerHelper.EventStoreHttpDockerPort}");
-            environmentVariables.Add($"AppSettings:SecurityService=http://{securityServiceContainerName}:{securityServicePort}");
-            environmentVariables.Add($"AppSettings:EstateManagementApi=http://{estateManagementContainerName}:{DockerHelper.EstateManagementDockerPort}");
-            environmentVariables.Add($"SecurityConfiguration:Authority=http://{securityServiceContainerName}:{securityServicePort}");
-            environmentVariables.Add($"urls=http://*:{DockerHelper.VoucherManagementDockerPort}");
-            environmentVariables.Add($"AppSettings:ClientId={clientDetails.clientId}");
-            environmentVariables.Add($"AppSettings:ClientSecret={clientDetails.clientSecret}");
-
-            if (additionalEnvironmentVariables != null)
-            {
-                environmentVariables.AddRange(additionalEnvironmentVariables);
-            }
-
-            ContainerBuilder voucherManagementContainer = new Builder().UseContainer().WithName(containerName)
-                                                                       .WithEnvironment(environmentVariables.ToArray())
-                                                              .UseImage(imageName, forceLatestImage).ExposePort(DockerHelper.VoucherManagementDockerPort)
-                                                              .UseNetwork(networkServices.ToArray()).Mount(hostFolder, "/home", MountType.ReadWrite);
-
-            if (String.IsNullOrEmpty(hostFolder) == false)
-            {
-                voucherManagementContainer = voucherManagementContainer.Mount(hostFolder, "/home/txnproc/trace", MountType.ReadWrite);
-            }
-
-            if (dockerCredentials.HasValue)
-            {
-                voucherManagementContainer.WithCredential(dockerCredentials.Value.URL, dockerCredentials.Value.UserName, dockerCredentials.Value.Password);
-            }
-
-            // Now build and return the container                
-            IContainerService builtContainer = voucherManagementContainer.Build().Start().WaitForPort($"{DockerHelper.VoucherManagementDockerPort}/tcp", 30000);
-
-            logger.LogInformation("Voucher Management  Container Started");
-
-            return builtContainer;
-        }
-
-        public static IContainerService SetupTestHostContainer(String containerName, ILogger logger, String imageName,
-                                                               List<INetworkService> networkServices,
-                                                               String hostFolder,
-                                                               (String URL, String UserName, String Password)? dockerCredentials,
-                                                               Boolean forceLatestImage = false)
-        {
-            logger.LogInformation("About to Start Test Hosts Container");
-
-            ContainerBuilder testHostContainer = new Builder().UseContainer().WithName(containerName)
-                                                              .UseImage(imageName, forceLatestImage).ExposePort(DockerHelper.TestHostPort)
-                                                              .UseNetwork(networkServices.ToArray()).Mount(hostFolder, "/home", MountType.ReadWrite);
-
-            if (dockerCredentials.HasValue)
-            {
-                testHostContainer.WithCredential(dockerCredentials.Value.URL, dockerCredentials.Value.UserName, dockerCredentials.Value.Password);
-            }
-
-            // Now build and return the container                
-            IContainerService builtContainer = testHostContainer.Build().Start().WaitForPort($"{DockerHelper.TestHostPort}/tcp", 30000);
-
-            logger.LogInformation("Test Hosts Container Started");
-
-            return builtContainer;
-        }
 
         private async Task LoadEventStoreProjections()
         {
@@ -215,26 +136,7 @@
                 {
                     FileInfo[] files = di.GetFiles();
 
-                    EventStoreClientSettings eventStoreClientSettings = new EventStoreClientSettings
-                    {
-                        ConnectivitySettings = new EventStoreClientConnectivitySettings
-                        {
-                            Address = new Uri($"https://{ipAddresses.First().ToString()}:{this.EventStoreHttpPort}")
-                        },
-                        CreateHttpMessageHandler = () => new SocketsHttpHandler
-                        {
-                            SslOptions =
-                                                                                                                 {
-                                                                                                                     RemoteCertificateValidationCallback = (sender,
-                                                                                                                                                            certificate,
-                                                                                                                                                            chain,
-                                                                                                                                                            errors) => true,
-                                                                                                                 }
-                        },
-                        DefaultCredentials = new UserCredentials("admin", "changeit")
-
-                    };
-                    EventStoreProjectionManagementClient projectionClient = new EventStoreProjectionManagementClient(eventStoreClientSettings);
+                    EventStoreProjectionManagementClient projectionClient = new EventStoreProjectionManagementClient(ConfigureEventStoreSettings(this.EventStoreHttpPort));
 
                     foreach (FileInfo file in files)
                     {
@@ -284,11 +186,19 @@
             this.TestHostContainerName = $"testhosts{testGuid:N}";
             this.VoucherManagementContainerName = $"vouchermanagement{testGuid:N}";
 
+            String eventStoreAddress = $"http://{this.EventStoreContainerName}";
+
             (String, String, String) dockerCredentials = ("https://www.docker.com", "stuartferguson", "Sc0tland");
 
             INetworkService testNetwork = DockerHelper.SetupTestNetwork();
             this.TestNetworks.Add(testNetwork);
-            IContainerService eventStoreContainer = DockerHelper.SetupEventStoreContainer(this.EventStoreContainerName, this.Logger, "eventstore/eventstore:20.6.0-buster-slim", testNetwork, traceFolder, usesEventStore2006OrLater: true);
+            IContainerService eventStoreContainer = DockerHelper.SetupEventStoreContainer(this.EventStoreContainerName, this.Logger, "eventstore/eventstore:20.10.0-buster-slim", testNetwork, traceFolder);
+            this.EventStoreHttpPort = eventStoreContainer.ToHostExposedEndpoint($"{DockerHelper.EventStoreHttpDockerPort}/tcp").Port;
+
+            await Retry.For(async () =>
+                            {
+                                await this.PopulateSubscriptionServiceConfiguration().ConfigureAwait(false);
+                            }, retryFor: TimeSpan.FromMinutes(2), retryInterval: TimeSpan.FromSeconds(30));
 
             IContainerService estateManagementContainer = DockerHelper.SetupEstateManagementContainer(this.EstateManagementContainerName, this.Logger,
                                                                                                       "stuartferguson/estatemanagement", new List<INetworkService>
@@ -297,7 +207,7 @@
                                                                                                                               Setup.DatabaseServerNetwork
                                                                                                                           }, traceFolder, dockerCredentials,
                                                                                                       this.SecurityServiceContainerName,
-                                                                                                      this.EventStoreContainerName,
+                                                                                                      eventStoreAddress,
                                                                                                       (Setup.SqlServerContainerName,
                                                                                                       "sa",
                                                                                                       "thisisalongpassword123!"),
@@ -323,7 +233,10 @@
                                                                                            dockerCredentials,
                                                                                            this.SecurityServiceContainerName,
                                                                                            this.EstateManagementContainerName,
-                                                                                           this.EventStoreContainerName,
+                                                                                           eventStoreAddress,
+                                                                                           (Setup.SqlServerContainerName,
+                                                                                               "sa",
+                                                                                               "thisisalongpassword123!"),
                                                                                            ("serviceClient", "Secret1"),
                                                                                            true);
 
@@ -342,10 +255,10 @@
                                                                                                               dockerCredentials,
                                                                                                               this.SecurityServiceContainerName,
                                                                                                               this.EstateManagementContainerName,
-                                                                                                              this.EventStoreContainerName,
+                                                                                                              eventStoreAddress,
                                                                                                               ("serviceClient", "Secret1"),
                                                                                                               this.TestHostContainerName,
-                                                                                                              additionalEnvironmentVariables:additionalVariables);
+                                                                                                              this.VoucherManagementContainerName);
 
             IContainerService estateReportingContainer = DockerHelper.SetupEstateReportingContainer(this.EstateReportingContainerName,
                                                                                                     this.Logger,
@@ -358,6 +271,7 @@
                                                                                                     traceFolder,
                                                                                                     dockerCredentials,
                                                                                                     this.SecurityServiceContainerName,
+                                                                                                    eventStoreAddress,
                                                                                                     (Setup.SqlServerContainerName,
                                                                                                     "sa",
                                                                                                     "thisisalongpassword123!"),
@@ -389,7 +303,6 @@
             // Cache the ports
             this.EstateManagementApiPort = estateManagementContainer.ToHostExposedEndpoint("5000/tcp").Port;
             this.SecurityServicePort = securityServiceContainer.ToHostExposedEndpoint("5001/tcp").Port;
-            this.EventStoreHttpPort = eventStoreContainer.ToHostExposedEndpoint("2113/tcp").Port;
             this.TransactionProcessorPort = transactionProcessorContainer.ToHostExposedEndpoint("5002/tcp").Port;
 
             // Setup the base address resolvers
@@ -403,67 +316,45 @@
             this.TransactionProcessorClient = new TransactionProcessorClient(TransactionProcessorBaseAddressResolver, httpClient);
 
             await this.LoadEventStoreProjections().ConfigureAwait(false);
-
-            await PopulateSubscriptionServiceConfiguration().ConfigureAwait(false);
-
-            IContainerService subscriptionServiceContainer = DockerHelper.SetupSubscriptionServiceContainer(this.SubscriptionServiceContainerName,
-                                                                                                            this.Logger,
-                                                                                                            "stuartferguson/subscriptionservicehost",
-                                                                                                            new List<INetworkService>
-                                                                                                            {
-                                                                                                                testNetwork,
-                                                                                                                Setup.DatabaseServerNetwork
-                                                                                                            },
-                                                                                                            traceFolder,
-                                                                                                            dockerCredentials,
-                                                                                                            this.SecurityServiceContainerName,
-                                                                                                            (Setup.SqlServerContainerName,
-                                                                                                            "sa",
-                                                                                                            "thisisalongpassword123!"),
-                                                                                                            this.TestId,
-                                                                                                            ("serviceClient", "Secret1"),
-                                                                                                            true);
-
-            this.Containers.Add(subscriptionServiceContainer);
         }
 
         protected async Task PopulateSubscriptionServiceConfiguration()
         {
-            String connectionString = Setup.GetLocalConnectionString("SubscriptionServiceConfiguration");
+            EventStorePersistentSubscriptionsClient client = new EventStorePersistentSubscriptionsClient(ConfigureEventStoreSettings(this.EventStoreHttpPort));
 
-            await using (SqlConnection connection = new SqlConnection(connectionString))
-            {
-                try
-                {
-                    await connection.OpenAsync(CancellationToken.None).ConfigureAwait(false);
-
-                    // Create an Event Store Server
-                    await this.InsertEventStoreServer(connection, this.EventStoreContainerName).ConfigureAwait(false);
-
-                    String reportingEndPointUri = $"http://{this.EstateReportingContainerName}:5005/api/domainevents";
-                    String transactionProcessorEndPointUri = $"http://{this.TransactionProcessorContainerName}:5002/api/domainevents";
-
-                    // Add Route for Estate Aggregate Events
-                    await this.InsertSubscription(connection, "$ce-EstateAggregate", "Reporting", reportingEndPointUri).ConfigureAwait(false);
-
-                    // Add Route for Merchant Aggregate Events
-                    await this.InsertSubscription(connection, "$ce-MerchantAggregate", "Reporting", reportingEndPointUri).ConfigureAwait(false);
-
-                    // Add Route for Contract Aggregate Events
-                    await this.InsertSubscription(connection, "$ce-ContractAggregate", "Reporting", reportingEndPointUri).ConfigureAwait(false);
-
-                    // Add Route for Transaction Aggregate Events
-                    await this.InsertSubscription(connection, "$ce-TransactionAggregate", "Reporting", reportingEndPointUri).ConfigureAwait(false);
-                    await this.InsertSubscription(connection, "$et-TransactionProcessor.Transaction.DomainEvents.TransactionHasBeenCompletedEvent", "Transaction Processor", transactionProcessorEndPointUri).ConfigureAwait(false);
-
-                    await connection.CloseAsync().ConfigureAwait(false);
-                }
-                catch (Exception e)
-                {
-                    throw;
-                }
-            }
+            PersistentSubscriptionSettings settings = new PersistentSubscriptionSettings(resolveLinkTos: true);
+            await client.CreateAsync("$ce-EstateAggregate", "Reporting", settings);
+            await client.CreateAsync("$ce-MerchantAggregate", "Reporting", settings);
+            await client.CreateAsync("$ce-ContractAggregate", "Reporting", settings);
+            await client.CreateAsync("$ce-TransactionAggregate", "Reporting", settings);
+            await client.CreateAsync("$et-TransactionHasBeenCompletedEvent", "TransactionProcessor", settings);
         }
+
+        private static EventStoreClientSettings ConfigureEventStoreSettings(Int32 eventStoreHttpPort)
+        {
+            String connectionString = $"http://127.0.0.1:{eventStoreHttpPort}";
+
+            EventStoreClientSettings settings = new EventStoreClientSettings();
+            settings.CreateHttpMessageHandler = () => new SocketsHttpHandler
+                                                      {
+                                                          SslOptions =
+                                                          {
+                                                              RemoteCertificateValidationCallback = (sender,
+                                                                                                     certificate,
+                                                                                                     chain,
+                                                                                                     errors) => true,
+                                                          }
+                                                      };
+            settings.ConnectionName = "Specflow";
+            settings.ConnectivitySettings = new EventStoreClientConnectivitySettings
+                                            {
+                                                Address = new Uri(connectionString),
+                                            };
+
+            settings.DefaultCredentials = new UserCredentials("admin", "changeit");
+            return settings;
+        }
+
         protected async Task CleanUpSubscriptionServiceConfiguration()
         {
             String connectionString = Setup.GetLocalConnectionString("SubscriptionServiceConfiguration");
