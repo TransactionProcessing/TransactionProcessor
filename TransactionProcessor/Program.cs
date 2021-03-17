@@ -11,10 +11,14 @@ namespace TransactionProcessor
 {
     using System.Diagnostics.CodeAnalysis;
     using System.IO;
+    using System.Net.Http;
+    using EventStore.Client;
     using Microsoft.Extensions.DependencyInjection;
     using Reconciliation.DomainEvents;
     using Shared.EventStore.Aggregate;
+    using Shared.EventStore.EventHandling;
     using Shared.EventStore.Subscriptions;
+    using Shared.Logger;
     using Transaction.DomainEvents;
 
     [ExcludeFromCodeCoverage]
@@ -52,10 +56,48 @@ namespace TransactionProcessor
 
                                               TypeProvider.LoadDomainEventsTypeDynamically();
 
-                                              services.AddHostedService<SubscriptionWorker>();
+                                              services.AddHostedService<SubscriptionWorker>(provider =>
+                                                                                            {
+                                                                                                IDomainEventHandlerResolver r =
+                                                                                                    provider.GetRequiredService<IDomainEventHandlerResolver>();
+                                                                                                EventStorePersistentSubscriptionsClient p = provider.GetRequiredService<EventStorePersistentSubscriptionsClient>();
+                                                                                                HttpClient h = provider.GetRequiredService<HttpClient>();
+                                                                                                SubscriptionWorker worker = new SubscriptionWorker(r, p, h);
+                                                                                                worker.TraceGenerated += Worker_TraceGenerated;
+                                                                                                return worker;
+                                                                                            });
                                           });
             return hostBuilder;
         }
 
+        /// <summary>
+        /// Workers the trace generated.
+        /// </summary>
+        /// <param name="trace">The trace.</param>
+        /// <param name="logLevel">The log level.</param>
+        private static void Worker_TraceGenerated(string trace, LogLevel logLevel)
+        {
+            switch (logLevel)
+            {
+                case LogLevel.Trace:
+                    Logger.LogTrace(trace);
+                    break;
+                case LogLevel.Debug:
+                    Logger.LogDebug(trace);
+                    break;
+                case LogLevel.Information:
+                    Logger.LogInformation(trace);
+                    break;
+                case LogLevel.Warning:
+                    Logger.LogWarning(trace);
+                    break;
+                case LogLevel.Error:
+                    Logger.LogError(new Exception(trace));
+                    break;
+                case LogLevel.Critical:
+                    Logger.LogCritical(new Exception(trace));
+                    break;
+            }
+        }
     }
 }
