@@ -23,13 +23,15 @@
         /// <param name="feeCalculationType">Type of the fee calculation.</param>
         /// <param name="feeId">The fee identifier.</param>
         /// <param name="feeValue">The fee value.</param>
+        /// <param name="feeCalculatedDateTime">The fee calculated date time.</param>
         public ServiceProviderFeeAddedToTransactionEvent(Guid aggregateId,
                                                           Guid estateId,
                                                           Guid merchantId,
                                                           Decimal calculatedValue,
                                                           Int32 feeCalculationType,
                                                           Guid feeId,
-                                                          Decimal feeValue) : base(aggregateId, Guid.NewGuid())
+                                                          Decimal feeValue,
+                                                          DateTime feeCalculatedDateTime) : base(aggregateId, Guid.NewGuid())
         {
             this.TransactionId = aggregateId;
             this.EstateId = estateId;
@@ -38,6 +40,7 @@
             this.FeeCalculationType = feeCalculationType;
             this.FeeId = feeId;
             this.FeeValue = feeValue;
+            this.FeeCalculatedDateTime = feeCalculatedDateTime;
         }
 
         #endregion
@@ -83,6 +86,14 @@
         /// The fee value.
         /// </value>
         public Decimal FeeValue { get; init; }
+
+        /// <summary>
+        /// Gets or sets the fee calculated date time.
+        /// </summary>
+        /// <value>
+        /// The fee calculated date time.
+        /// </value>
+        public DateTime FeeCalculatedDateTime { get; init; }
 
         /// <summary>
         /// Gets the merchant identifier.

@@ -28,6 +28,14 @@
         public CalculationType FeeCalculationType { get; set; }
 
         /// <summary>
+        /// Gets or sets the fee calculated date time.
+        /// </summary>
+        /// <value>
+        /// The fee calculated date time.
+        /// </value>
+        public DateTime FeeCalculatedDateTime { get; set; }
+
+        /// <summary>
         /// Gets or sets the fee identifier.
         /// </summary>
         /// <value>
