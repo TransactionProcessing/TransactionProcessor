@@ -164,7 +164,20 @@ namespace TransactionProcessor
                                                                      {
                                                                          return ConfigurationReader.GetBaseServerUri(serviceName).OriginalString;
                                                                      });
-            services.AddSingleton<HttpClient>();
+
+            var httpMessageHandler = new SocketsHttpHandler
+                                     {
+                                         SslOptions =
+                                         {
+                                             RemoteCertificateValidationCallback = (sender,
+                                                                                    certificate,
+                                                                                    chain,
+                                                                                    errors) => true,
+                                         }
+                                     };
+            HttpClient httpClient = new HttpClient(httpMessageHandler);
+            services.AddSingleton(httpClient);
+
             services.AddSingleton<IEstateClient, EstateClient>();
             services.AddSingleton<IVoucherManagementClient, VoucherManagementClient>();
 
