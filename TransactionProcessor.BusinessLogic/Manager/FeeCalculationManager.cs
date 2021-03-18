@@ -36,7 +36,8 @@
                                            FeeType = transactionFeeToCalculate.FeeType,
                                            FeeCalculationType = transactionFeeToCalculate.CalculationType,
                                            FeeId = transactionFeeToCalculate.FeeId,
-                                           FeeValue = transactionFeeToCalculate.Value
+                                           FeeValue = transactionFeeToCalculate.Value,
+                                           FeeCalculatedDateTime = DateTime.Now
                                        });
                 }
 
@@ -49,8 +50,9 @@
                                            FeeType = transactionFeeToCalculate.FeeType,
                                            FeeCalculationType = transactionFeeToCalculate.CalculationType,
                                            FeeId = transactionFeeToCalculate.FeeId,
-                                           FeeValue = transactionFeeToCalculate.Value
-                                       });
+                                           FeeValue = transactionFeeToCalculate.Value,
+                                           FeeCalculatedDateTime = DateTime.Now
+                    });
                 }
             }
 

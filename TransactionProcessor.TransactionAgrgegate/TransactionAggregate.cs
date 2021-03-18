@@ -299,7 +299,8 @@
                                                                    calculatedFee.CalculatedValue,
                                                                    (Int32)calculatedFee.FeeCalculationType,
                                                                    calculatedFee.FeeId,
-                                                                   calculatedFee.FeeValue);
+                                                                   calculatedFee.FeeValue,
+                                                                calculatedFee.FeeCalculatedDateTime);
             }
             else if (calculatedFee.FeeType == FeeType.ServiceProvider)
             {
@@ -310,7 +311,8 @@
                                                                           calculatedFee.CalculatedValue,
                                                                           (Int32)calculatedFee.FeeCalculationType,
                                                                           calculatedFee.FeeId,
-                                                                          calculatedFee.FeeValue);
+                                                                          calculatedFee.FeeValue,
+                                                                          calculatedFee.FeeCalculatedDateTime);
             }
             else
             {

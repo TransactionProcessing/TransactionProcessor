@@ -699,6 +699,8 @@
         public static String TransactionFeeDescription = "Commission for Merchant";
 
         public static Decimal TransactionFeeValue = 0.5m;
+
+        public static DateTime TransactionFeeCalculateDateTime = new DateTime(2021, 3, 18);
         public static Decimal CalculatedFeeValue = 0.5m;
 
         public static Int32 ReconciliationTransactionCount = 1;

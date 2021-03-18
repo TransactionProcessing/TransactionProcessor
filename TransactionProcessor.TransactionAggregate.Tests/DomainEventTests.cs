@@ -252,7 +252,8 @@ namespace TransactionProcessor.TransactionAggregate.Tests
                                                                                                                               TestData.CalculatedFeeValue,
                                                                                                                               (Int32)CalculationType.Fixed,
                                                                                                                               TestData.TransactionFeeId,
-                                                                                                                              TestData.TransactionFeeValue);
+                                                                                                                              TestData.TransactionFeeValue,
+                 TestData.TransactionFeeCalculateDateTime);
 
             merchantFeeAddedToTransactionEvent.ShouldNotBeNull();
             merchantFeeAddedToTransactionEvent.AggregateId.ShouldBe(TestData.TransactionId);
@@ -264,6 +265,7 @@ namespace TransactionProcessor.TransactionAggregate.Tests
             merchantFeeAddedToTransactionEvent.FeeCalculationType.ShouldBe((Int32)CalculationType.Fixed);
             merchantFeeAddedToTransactionEvent.FeeId.ShouldBe(TestData.TransactionFeeId);
             merchantFeeAddedToTransactionEvent.FeeValue.ShouldBe(TestData.TransactionFeeValue);
+            merchantFeeAddedToTransactionEvent.FeeCalculatedDateTime.ShouldBe(TestData.TransactionFeeCalculateDateTime);
 
         }
 
@@ -276,7 +278,8 @@ namespace TransactionProcessor.TransactionAggregate.Tests
                                                                                                                                                    TestData.CalculatedFeeValue,
                                                                                                                                                    (Int32)CalculationType.Fixed,
                                                                                                                                                    TestData.TransactionFeeId,
-                                                                                                                                                   TestData.TransactionFeeValue);
+                                                                                                                                                   TestData.TransactionFeeValue,
+                                                                                                                                                   TestData.TransactionFeeCalculateDateTime);
 
             serviceProviderFeeAddedToTransactionEvent.ShouldNotBeNull();
             serviceProviderFeeAddedToTransactionEvent.AggregateId.ShouldBe(TestData.TransactionId);
@@ -288,6 +291,7 @@ namespace TransactionProcessor.TransactionAggregate.Tests
             serviceProviderFeeAddedToTransactionEvent.FeeCalculationType.ShouldBe((Int32)CalculationType.Fixed);
             serviceProviderFeeAddedToTransactionEvent.FeeId.ShouldBe(TestData.TransactionFeeId);
             serviceProviderFeeAddedToTransactionEvent.FeeValue.ShouldBe(TestData.TransactionFeeValue);
+            serviceProviderFeeAddedToTransactionEvent.FeeCalculatedDateTime.ShouldBe(TestData.TransactionFeeCalculateDateTime);
 
         }
     }
