@@ -26,13 +26,22 @@ jobs:
       run: dotnet build TransactionProcessor.sln --configuration Release
 
     - name: 'Get Previous tag'
-      id: previoustag
-      uses: "WyriHaximus/github-action-get-previous-tag@1.0.0"
-        
+      id: get-latest-tag
+      uses: actions-ecosystem/action-get-latest-tag@v1
+      with:
+          semver_only: true
+
+    - name: 'Bump Version'
+      id: bump-semver
+      uses: actions-ecosystem/action-bump-semver@v1
+      with:
+        current_version: ${{ steps.get-latest-tag.outputs.tag }}
+        level: patch
+    
     - name: Print Version
       id: next_version
-      run: echo ::set-output name=VERSION::${{ steps.previoustag.outputs.tag }}-build$GITHUB_RUN_NUMBER
-
+      run: echo ::set-output name=VERSION::${{ steps.bump-semver.outputs.new_version }}-build$GITHUB_RUN_NUMBER
+        
     - name: Build and Publish Nuget Packages
       run: |
         dotnet pack "TransactionProcessor.Client\TransactionProcessor.Client.csproj" /p:PackageVersion=${{ steps.next_version.outputs.VERSION }} --output Nugets
