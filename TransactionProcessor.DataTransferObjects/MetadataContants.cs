@@ -14,12 +14,12 @@
         /// <summary>
         /// The key name estate identifier
         /// </summary>
-        public const String KeyNameEstateId = "estateId";
+        public const String KeyNameEstateId = "estate_id";
 
         /// <summary>
         /// The key name merchant identifier
         /// </summary>
-        public const String KeyNameMerchantId = "merchantId";
+        public const String KeyNameMerchantId = "merchant_id";
 
         #endregion
     }

@@ -3,6 +3,7 @@
     using System;
     using System.Collections.Generic;
     using System.Diagnostics.CodeAnalysis;
+    using Newtonsoft.Json;
 
     [ExcludeFromCodeCoverage]
     public class SaleTransactionResponse
@@ -15,6 +16,7 @@
         /// <value>
         /// The estate identifier.
         /// </value>
+        [JsonProperty("estate_id")]
         public Guid EstateId { get; set; }
 
         /// <summary>
@@ -23,6 +25,7 @@
         /// <value>
         /// The merchant identifier.
         /// </value>
+        [JsonProperty("merchant_id")]
         public Guid MerchantId { get; set; }
 
         /// <summary>
@@ -31,6 +34,7 @@
         /// <value>
         /// The response code.
         /// </value>
+        [JsonProperty("response_code")]
         public String ResponseCode { get; set; }
 
         /// <summary>
@@ -39,6 +43,7 @@
         /// <value>
         /// The response message.
         /// </value>
+        [JsonProperty("response_message")]
         public String ResponseMessage { get; set; }
 
         /// <summary>
@@ -47,6 +52,7 @@
         /// <value>
         /// The additional transaction metadata.
         /// </value>
+        [JsonProperty("additional_transaction_metadata")]
         public Dictionary<String, String> AdditionalTransactionMetadata { get; set; }
 
         #endregion

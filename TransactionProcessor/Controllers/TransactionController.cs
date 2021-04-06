@@ -1,12 +1,14 @@
 ﻿namespace TransactionProcessor.Controllers
 {
     using System;
+    using System.Collections.Generic;
     using System.Diagnostics.CodeAnalysis;
     using System.Net;
     using System.Threading;
     using System.Threading.Tasks;
     using BusinessLogic.Requests;
     using Common;
+    using Common.Examples;
     using DataTransferObjects;
     using Factories;
     using MediatR;
@@ -15,6 +17,8 @@
     using Models;
     using Newtonsoft.Json;
     using Shared.DomainDrivenDesign.CommandHandling;
+    using Swashbuckle.AspNetCore.Annotations;
+    using Swashbuckle.AspNetCore.Filters;
 
     /// <summary>
     /// 
@@ -23,7 +27,6 @@
     [ExcludeFromCodeCoverage]
     [Route(TransactionController.ControllerRoute)]
     [ApiController]
-    [ApiVersion("1.0")]
     [Authorize]
     public class TransactionController : ControllerBase
     {
@@ -67,6 +70,9 @@
         /// <returns></returns>
         [HttpPost]
         [Route("")]
+        [SwaggerResponse(201, "Created", typeof(SerialisedMessage))]
+        [SwaggerRequestExample(typeof(List<SerialisedMessage>), typeof(TransactionRequestExample))]
+        [SwaggerResponseExample(201, typeof(TransactionResponseExample))]
         public async Task<IActionResult> PerformTransaction([FromBody] SerialisedMessage transactionRequest,
                                                             CancellationToken cancellationToken)
         {
