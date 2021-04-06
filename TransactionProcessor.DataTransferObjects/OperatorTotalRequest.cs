@@ -2,6 +2,7 @@
 {
     using System;
     using System.Diagnostics.CodeAnalysis;
+    using Newtonsoft.Json;
 
     /// <summary>
     /// 
@@ -17,6 +18,7 @@
         /// <value>
         /// The contract identifier.
         /// </value>
+        [JsonProperty("contract_id")]
         public Guid ContractId { get; set; }
 
         /// <summary>
@@ -25,6 +27,7 @@
         /// <value>
         /// The operator identifier.
         /// </value>
+        [JsonProperty("operator_identifier")]
         public String OperatorIdentifier { get; set; }
 
         /// <summary>
@@ -33,6 +36,7 @@
         /// <value>
         /// The transaction count.
         /// </value>
+        [JsonProperty("transaction_count")]
         public Int32 TransactionCount { get; set; }
 
         /// <summary>
@@ -41,6 +45,7 @@
         /// <value>
         /// The transaction value.
         /// </value>
+        [JsonProperty("transaction_cvalue")]
         public Decimal TransactionValue { get; set; }
 
         #endregion

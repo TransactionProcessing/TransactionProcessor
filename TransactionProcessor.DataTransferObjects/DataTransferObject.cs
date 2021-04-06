@@ -2,12 +2,13 @@
 {
     using System;
     using System.Diagnostics.CodeAnalysis;
+    using Newtonsoft.Json;
 
     /// <summary>
     /// 
     /// </summary>
     [ExcludeFromCodeCoverage]
-    public abstract class DataTransferObject
+    public class DataTransferObject
     {
         #region Properties
 
@@ -18,6 +19,7 @@
         /// <value>
         /// The estate identifier.
         /// </value>
+        [JsonProperty("estate_id")]
         public Guid EstateId { get; set; }
 
         /// <summary>
@@ -26,6 +28,7 @@
         /// <value>
         /// The merchant identifier.
         /// </value>
+        [JsonProperty("merchant_id")]
         public Guid MerchantId { get; set; }
 
         #endregion

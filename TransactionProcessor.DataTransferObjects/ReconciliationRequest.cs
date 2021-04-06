@@ -3,6 +3,7 @@
     using System;
     using System.Collections.Generic;
     using System.Diagnostics.CodeAnalysis;
+    using Newtonsoft.Json;
 
     /// <summary>
     /// 
@@ -19,6 +20,7 @@
         /// <value>
         /// The device identifier.
         /// </value>
+        [JsonProperty("device_identifier")]
         public String DeviceIdentifier { get; set; }
 
         /// <summary>
@@ -27,6 +29,7 @@
         /// <value>
         /// The operator totals.
         /// </value>
+        [JsonProperty("operator_totals")]
         public List<OperatorTotalRequest> OperatorTotals { get; set; }
 
         /// <summary>
@@ -35,6 +38,7 @@
         /// <value>
         /// The transaction count.
         /// </value>
+        [JsonProperty("transaction_count")]
         public Int32 TransactionCount { get; set; }
 
         /// <summary>
@@ -43,6 +47,7 @@
         /// <value>
         /// The transaction date time.
         /// </value>
+        [JsonProperty("transaction_date_time")]
         public DateTime TransactionDateTime { get; set; }
 
         /// <summary>
@@ -51,6 +56,7 @@
         /// <value>
         /// The transaction value.
         /// </value>
+        [JsonProperty("transaction_value")]
         public Decimal TransactionValue { get; set; }
 
         #endregion
