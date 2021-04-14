@@ -63,16 +63,14 @@
         #region Methods
 
         /// <summary>
-        /// Logons the transaction.
+        /// Performs the transaction.
         /// </summary>
         /// <param name="transactionRequest">The transaction request.</param>
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns></returns>
         [HttpPost]
         [Route("")]
-        [SwaggerResponse(201, "Created", typeof(SerialisedMessage))]
-        [SwaggerRequestExample(typeof(List<SerialisedMessage>), typeof(TransactionRequestExample))]
-        [SwaggerResponseExample(201, typeof(TransactionResponseExample))]
+        [ProducesResponseType(typeof(SerialisedMessage), 201)]
         public async Task<IActionResult> PerformTransaction([FromBody] SerialisedMessage transactionRequest,
                                                             CancellationToken cancellationToken)
         {
