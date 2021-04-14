@@ -1,0 +1,371 @@
+<?xml version="1.0"?>
+<doc>
+    <assembly>
+        <name>TransactionProcessor.DataTransferObjects</name>
+    </assembly>
+    <members>
+        <member name="T:TransactionProcessor.DataTransferObjects.DataTransferObject">
+            <summary>
+            
+            </summary>
+        </member>
+        <member name="P:TransactionProcessor.DataTransferObjects.DataTransferObject.EstateId">
+            <summary>
+            Gets or sets the estate identifier.
+            </summary>
+            <value>
+            The estate identifier.
+            </value>
+        </member>
+        <member name="P:TransactionProcessor.DataTransferObjects.DataTransferObject.MerchantId">
+            <summary>
+            Gets or sets the merchant identifier.
+            </summary>
+            <value>
+            The merchant identifier.
+            </value>
+        </member>
+        <member name="T:TransactionProcessor.DataTransferObjects.LogonTransactionRequest">
+            <summary>
+            
+            </summary>
+        </member>
+        <member name="P:TransactionProcessor.DataTransferObjects.LogonTransactionRequest.DeviceIdentifier">
+            <summary>
+            Gets or sets the device identifier.
+            </summary>
+            <value>
+            The device identifier.
+            </value>
+        </member>
+        <member name="P:TransactionProcessor.DataTransferObjects.LogonTransactionRequest.TransactionDateTime">
+            <summary>
+            Gets or sets the transaction date time.
+            </summary>
+            <value>
+            The transaction date time.
+            </value>
+        </member>
+        <member name="P:TransactionProcessor.DataTransferObjects.LogonTransactionRequest.TransactionNumber">
+            <summary>
+            Gets or sets the transaction number.
+            </summary>
+            <value>
+            The transaction number.
+            </value>
+        </member>
+        <member name="P:TransactionProcessor.DataTransferObjects.LogonTransactionRequest.TransactionType">
+            <summary>
+            Gets or sets the type of the transaction.
+            </summary>
+            <value>
+            The type of the transaction.
+            </value>
+        </member>
+        <member name="T:TransactionProcessor.DataTransferObjects.LogonTransactionResponse">
+            <summary>
+            
+            </summary>
+        </member>
+        <member name="P:TransactionProcessor.DataTransferObjects.LogonTransactionResponse.EstateId">
+            <summary>
+            Gets or sets the estate identifier.
+            </summary>
+            <value>
+            The estate identifier.
+            </value>
+        </member>
+        <member name="P:TransactionProcessor.DataTransferObjects.LogonTransactionResponse.MerchantId">
+            <summary>
+            Gets or sets the merchant identifier.
+            </summary>
+            <value>
+            The merchant identifier.
+            </value>
+        </member>
+        <member name="P:TransactionProcessor.DataTransferObjects.LogonTransactionResponse.ResponseCode">
+            <summary>
+            Gets or sets the response code.
+            </summary>
+            <value>
+            The response code.
+            </value>
+        </member>
+        <member name="P:TransactionProcessor.DataTransferObjects.LogonTransactionResponse.ResponseMessage">
+            <summary>
+            Gets or sets the response message.
+            </summary>
+            <value>
+            The response message.
+            </value>
+        </member>
+        <member name="T:TransactionProcessor.DataTransferObjects.MetadataContants">
+            <summary>
+            
+            </summary>
+        </member>
+        <member name="F:TransactionProcessor.DataTransferObjects.MetadataContants.KeyNameEstateId">
+            <summary>
+            The key name estate identifier
+            </summary>
+        </member>
+        <member name="F:TransactionProcessor.DataTransferObjects.MetadataContants.KeyNameMerchantId">
+            <summary>
+            The key name merchant identifier
+            </summary>
+        </member>
+        <member name="T:TransactionProcessor.DataTransferObjects.OperatorTotalRequest">
+            <summary>
+            
+            </summary>
+        </member>
+        <member name="P:TransactionProcessor.DataTransferObjects.OperatorTotalRequest.ContractId">
+            <summary>
+            Gets or sets the contract identifier.
+            </summary>
+            <value>
+            The contract identifier.
+            </value>
+        </member>
+        <member name="P:TransactionProcessor.DataTransferObjects.OperatorTotalRequest.OperatorIdentifier">
+            <summary>
+            Gets or sets the operator identifier.
+            </summary>
+            <value>
+            The operator identifier.
+            </value>
+        </member>
+        <member name="P:TransactionProcessor.DataTransferObjects.OperatorTotalRequest.TransactionCount">
+            <summary>
+            Gets or sets the transaction count.
+            </summary>
+            <value>
+            The transaction count.
+            </value>
+        </member>
+        <member name="P:TransactionProcessor.DataTransferObjects.OperatorTotalRequest.TransactionValue">
+            <summary>
+            Gets or sets the transaction value.
+            </summary>
+            <value>
+            The transaction value.
+            </value>
+        </member>
+        <member name="T:TransactionProcessor.DataTransferObjects.ReconciliationRequest">
+            <summary>
+            
+            </summary>
+            <seealso cref="T:TransactionProcessor.DataTransferObjects.DataTransferObject" />
+        </member>
+        <member name="P:TransactionProcessor.DataTransferObjects.ReconciliationRequest.DeviceIdentifier">
+            <summary>
+            Gets or sets the device identifier.
+            </summary>
+            <value>
+            The device identifier.
+            </value>
+        </member>
+        <member name="P:TransactionProcessor.DataTransferObjects.ReconciliationRequest.OperatorTotals">
+            <summary>
+            Gets or sets the operator totals.
+            </summary>
+            <value>
+            The operator totals.
+            </value>
+        </member>
+        <member name="P:TransactionProcessor.DataTransferObjects.ReconciliationRequest.TransactionCount">
+            <summary>
+            Gets or sets the transaction count.
+            </summary>
+            <value>
+            The transaction count.
+            </value>
+        </member>
+        <member name="P:TransactionProcessor.DataTransferObjects.ReconciliationRequest.TransactionDateTime">
+            <summary>
+            Gets or sets the transaction date time.
+            </summary>
+            <value>
+            The transaction date time.
+            </value>
+        </member>
+        <member name="P:TransactionProcessor.DataTransferObjects.ReconciliationRequest.TransactionValue">
+            <summary>
+            Gets or sets the transaction value.
+            </summary>
+            <value>
+            The transaction value.
+            </value>
+        </member>
+        <member name="P:TransactionProcessor.DataTransferObjects.ReconciliationResponse.EstateId">
+            <summary>
+            Gets or sets the estate identifier.
+            </summary>
+            <value>
+            The estate identifier.
+            </value>
+        </member>
+        <member name="P:TransactionProcessor.DataTransferObjects.ReconciliationResponse.MerchantId">
+            <summary>
+            Gets or sets the merchant identifier.
+            </summary>
+            <value>
+            The merchant identifier.
+            </value>
+        </member>
+        <member name="P:TransactionProcessor.DataTransferObjects.ReconciliationResponse.ResponseCode">
+            <summary>
+            Gets or sets the response code.
+            </summary>
+            <value>
+            The response code.
+            </value>
+        </member>
+        <member name="P:TransactionProcessor.DataTransferObjects.ReconciliationResponse.ResponseMessage">
+            <summary>
+            Gets or sets the response message.
+            </summary>
+            <value>
+            The response message.
+            </value>
+        </member>
+        <member name="P:TransactionProcessor.DataTransferObjects.SaleTransactionRequest.AdditionalTransactionMetadata">
+            <summary>
+            Gets or sets the additional transaction metadata.
+            </summary>
+            <value>
+            The additional transaction metadata.
+            </value>
+        </member>
+        <member name="P:TransactionProcessor.DataTransferObjects.SaleTransactionRequest.ContractId">
+            <summary>
+            Gets or sets the contract identifier.
+            </summary>
+            <value>
+            The contract identifier.
+            </value>
+        </member>
+        <member name="P:TransactionProcessor.DataTransferObjects.SaleTransactionRequest.CustomerEmailAddress">
+            <summary>
+            Gets or sets the customer email address.
+            </summary>
+            <value>
+            The customer email address.
+            </value>
+        </member>
+        <member name="P:TransactionProcessor.DataTransferObjects.SaleTransactionRequest.DeviceIdentifier">
+            <summary>
+            Gets or sets the device identifier.
+            </summary>
+            <value>
+            The device identifier.
+            </value>
+        </member>
+        <member name="P:TransactionProcessor.DataTransferObjects.SaleTransactionRequest.OperatorIdentifier">
+            <summary>
+            Gets or sets the operator identifier.
+            </summary>
+            <value>
+            The operator identifier.
+            </value>
+        </member>
+        <member name="P:TransactionProcessor.DataTransferObjects.SaleTransactionRequest.ProductId">
+            <summary>
+            Gets or sets the product identifier.
+            </summary>
+            <value>
+            The product identifier.
+            </value>
+        </member>
+        <member name="P:TransactionProcessor.DataTransferObjects.SaleTransactionRequest.TransactionDateTime">
+            <summary>
+            Gets or sets the transaction date time.
+            </summary>
+            <value>
+            The transaction date time.
+            </value>
+        </member>
+        <member name="P:TransactionProcessor.DataTransferObjects.SaleTransactionRequest.TransactionNumber">
+            <summary>
+            Gets or sets the transaction number.
+            </summary>
+            <value>
+            The transaction number.
+            </value>
+        </member>
+        <member name="P:TransactionProcessor.DataTransferObjects.SaleTransactionRequest.TransactionType">
+            <summary>
+            Gets or sets the type of the transaction.
+            </summary>
+            <value>
+            The type of the transaction.
+            </value>
+        </member>
+        <member name="P:TransactionProcessor.DataTransferObjects.SaleTransactionResponse.EstateId">
+            <summary>
+            Gets or sets the estate identifier.
+            </summary>
+            <value>
+            The estate identifier.
+            </value>
+        </member>
+        <member name="P:TransactionProcessor.DataTransferObjects.SaleTransactionResponse.MerchantId">
+            <summary>
+            Gets or sets the merchant identifier.
+            </summary>
+            <value>
+            The merchant identifier.
+            </value>
+        </member>
+        <member name="P:TransactionProcessor.DataTransferObjects.SaleTransactionResponse.ResponseCode">
+            <summary>
+            Gets or sets the response code.
+            </summary>
+            <value>
+            The response code.
+            </value>
+        </member>
+        <member name="P:TransactionProcessor.DataTransferObjects.SaleTransactionResponse.ResponseMessage">
+            <summary>
+            Gets or sets the response message.
+            </summary>
+            <value>
+            The response message.
+            </value>
+        </member>
+        <member name="P:TransactionProcessor.DataTransferObjects.SaleTransactionResponse.AdditionalTransactionMetadata">
+            <summary>
+            Gets or sets the additional transaction metadata.
+            </summary>
+            <value>
+            The additional transaction metadata.
+            </value>
+        </member>
+        <member name="T:TransactionProcessor.DataTransferObjects.SerialisedMessage">
+            <summary>
+            
+            </summary>
+        </member>
+        <member name="M:TransactionProcessor.DataTransferObjects.SerialisedMessage.#ctor">
+            <summary>
+            Initializes a new instance of the <see cref="T:TransactionProcessor.DataTransferObjects.SerialisedMessage"/> class.
+            </summary>
+        </member>
+        <member name="P:TransactionProcessor.DataTransferObjects.SerialisedMessage.Metadata">
+            <summary>
+            Gets or sets the metadata.
+            </summary>
+            <value>
+            The metadata.
+            </value>
+        </member>
+        <member name="P:TransactionProcessor.DataTransferObjects.SerialisedMessage.SerialisedData">
+            <summary>
+            Gets or sets the serialised data.
+            </summary>
+            <value>
+            The serialised data.
+            </value>
+        </member>
+    </members>
+</doc>
