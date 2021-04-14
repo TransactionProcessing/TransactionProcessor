@@ -70,7 +70,9 @@
         /// <returns></returns>
         [HttpPost]
         [Route("")]
-        [ProducesResponseType(typeof(SerialisedMessage), 201)]
+        [SwaggerResponse(201, "Created", typeof(SerialisedMessage))]
+        [SwaggerRequestExample(typeof(List<SerialisedMessage>), typeof(TransactionRequestExample))]
+        [SwaggerResponseExample(201, typeof(TransactionResponseExample))]
         public async Task<IActionResult> PerformTransaction([FromBody] SerialisedMessage transactionRequest,
                                                             CancellationToken cancellationToken)
         {
