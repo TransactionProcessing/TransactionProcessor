@@ -32,7 +32,8 @@
                                                                     ResponseMessage = processLogonTransactionResponse.ResponseMessage,
                                                                     ResponseCode = processLogonTransactionResponse.ResponseCode,
                                                                     MerchantId = processLogonTransactionResponse.MerchantId,
-                                                                    EstateId = processLogonTransactionResponse.EstateId
+                                                                    EstateId = processLogonTransactionResponse.EstateId,
+                                                                    TransactionId = processLogonTransactionResponse.TransactionId
                                                                 };
 
             return new SerialisedMessage
@@ -67,7 +68,8 @@
                                                                     ResponseCode = processSaleTransactionResponse.ResponseCode,
                                                                     MerchantId = processSaleTransactionResponse.MerchantId,
                                                                     EstateId = processSaleTransactionResponse.EstateId,
-                                                                    AdditionalTransactionMetadata = processSaleTransactionResponse.AdditionalTransactionMetadata
+                                                                    AdditionalTransactionMetadata = processSaleTransactionResponse.AdditionalTransactionMetadata,
+                                                                    TransactionId = processSaleTransactionResponse.TransactionId
                                                                 };
 
             return new SerialisedMessage
@@ -102,7 +104,8 @@
                                                                            ResponseMessage = processReconciliationTransactionResponse.ResponseMessage,
                                                                            ResponseCode = processReconciliationTransactionResponse.ResponseCode,
                                                                            MerchantId = processReconciliationTransactionResponse.MerchantId,
-                                                                           EstateId = processReconciliationTransactionResponse.EstateId
+                                                                           EstateId = processReconciliationTransactionResponse.EstateId,
+                                                                           TransactionId = processReconciliationTransactionResponse.TransactionId
                                                                        };
 
             return new SerialisedMessage

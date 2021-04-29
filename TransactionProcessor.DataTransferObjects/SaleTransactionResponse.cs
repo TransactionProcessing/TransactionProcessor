@@ -55,6 +55,15 @@
         [JsonProperty("additional_transaction_metadata")]
         public Dictionary<String, String> AdditionalTransactionMetadata { get; set; }
 
+        /// <summary>
+        /// Gets or sets the transaction identifier.
+        /// </summary>
+        /// <value>
+        /// The transaction identifier.
+        /// </value>
+        [JsonProperty("transaction_id")]
+        public Guid TransactionId { get; set; }
+
         #endregion
     }
 }

@@ -23,7 +23,8 @@
                                                     EstateId = ExampleData.EstateId,
                                                     MerchantId = ExampleData.MerchantId,
                                                     ResponseCode = ExampleData.LogonResponseCode,
-                                                    ResponseMessage = ExampleData.LogonResponseMessage
+                                                    ResponseMessage = ExampleData.LogonResponseMessage,
+                                                    TransactionId = ExampleData.TransactionId
                                                 };
 
             return new SwaggerExample<SerialisedMessage>
@@ -52,8 +53,9 @@
                                                   EstateId = ExampleData.EstateId,
                                                   MerchantId = ExampleData.MerchantId,
                                                   ResponseCode = ExampleData.ReconciliationResponseCode,
-                                                  ResponseMessage = ExampleData.ReconciliationResponseMessage
-                                              };
+                                                  ResponseMessage = ExampleData.ReconciliationResponseMessage,
+                                                  TransactionId = ExampleData.TransactionId
+            };
 
             return new SwaggerExample<SerialisedMessage>
                    {
@@ -82,8 +84,9 @@
                                                    MerchantId = ExampleData.MerchantId,
                                                    AdditionalTransactionMetadata = new Dictionary<String, String>(),
                                                    ResponseCode = ExampleData.SaleResponseCode,
-                                                   ResponseMessage = ExampleData.SaleResponseMessage
-                                               };
+                                                   ResponseMessage = ExampleData.SaleResponseMessage,
+                                                   TransactionId = ExampleData.TransactionId
+            };
 
             return new SwaggerExample<SerialisedMessage>
                    {

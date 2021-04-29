@@ -51,6 +51,14 @@ namespace TransactionProcessor.Models
         /// </value>
         public Dictionary<String, String> AdditionalTransactionMetadata { get; set; }
 
+        /// <summary>
+        /// Gets or sets the transaction identifier.
+        /// </summary>
+        /// <value>
+        /// The transaction identifier.
+        /// </value>
+        public Guid TransactionId { get; set; }
+
         #endregion
     }
 }
