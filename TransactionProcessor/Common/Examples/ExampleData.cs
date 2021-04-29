@@ -114,6 +114,11 @@
         /// </summary>
         internal static Decimal TransactionValue = 10.00m;
 
+        /// <summary>
+        /// The transaction identifier
+        /// </summary>
+        internal static Guid TransactionId = Guid.Parse("612970B8-FDF1-4CAA-998A-D84632BD4DE0");
+
         #endregion
     }
 }

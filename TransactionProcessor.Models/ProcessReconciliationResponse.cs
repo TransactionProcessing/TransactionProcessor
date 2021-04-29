@@ -40,6 +40,14 @@
         /// </value>
         public Guid MerchantId { get; set; }
 
+        /// <summary>
+        /// Gets or sets the transaction identifier.
+        /// </summary>
+        /// <value>
+        /// The transaction identifier.
+        /// </value>
+        public Guid TransactionId { get; set; }
+
         #endregion
     }
 }

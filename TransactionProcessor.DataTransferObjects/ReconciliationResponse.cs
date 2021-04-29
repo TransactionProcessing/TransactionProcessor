@@ -45,6 +45,15 @@
         [JsonProperty("response_message")]
         public String ResponseMessage { get; set; }
 
+        /// <summary>
+        /// Gets or sets the transaction identifier.
+        /// </summary>
+        /// <value>
+        /// The transaction identifier.
+        /// </value>
+        [JsonProperty("transaction_id")]
+        public Guid TransactionId { get; set; }
+
         #endregion
     }
 }

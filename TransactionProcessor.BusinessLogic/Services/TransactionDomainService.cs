@@ -148,8 +148,9 @@
                        ResponseMessage = transactionAggregate.ResponseMessage,
                        ResponseCode = transactionAggregate.ResponseCode,
                        EstateId = estateId,
-                       MerchantId = merchantId
-                   };
+                       MerchantId = merchantId,
+                       TransactionId = transactionId
+            };
         }
 
         /// <summary>
@@ -298,8 +299,9 @@
                        ResponseCode = transaction.ResponseCode,
                        EstateId = estateId,
                        MerchantId = merchantId,
-                       AdditionalTransactionMetadata = transaction.AdditionalResponseMetadata
-                   };
+                       AdditionalTransactionMetadata = transaction.AdditionalResponseMetadata,
+                       TransactionId = transactionId
+            };
         }
 
         private async Task<OperatorResponse> ProcessMessageWithOperator(MerchantResponse merchant, 
@@ -382,7 +384,8 @@
                        EstateId = reconciliationAggregate.EstateId,
                        MerchantId = reconciliationAggregate.MerchantId,
                        ResponseCode = reconciliationAggregate.ResponseCode,
-                       ResponseMessage = reconciliationAggregate.ResponseMessage
+                       ResponseMessage = reconciliationAggregate.ResponseMessage,
+                       TransactionId = transactionId
                    };
         }
 
