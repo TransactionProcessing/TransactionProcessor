@@ -47,6 +47,71 @@ namespace TransactionProcessor.BusinessLogic.Tests.OperatorInterfaces
             operatorResponse.ResponseMessage.ShouldBe("Topup Successful");
         }
 
+        [Theory]
+        [InlineData("amount")]
+        [InlineData("Amount")]
+        [InlineData("AMOUNT")]
+        public async Task SafaricomPinlessProxy_ProcessSaleMessage_MetadataCasingTests_Amount_TopupSuccessful_SaleMessageIsProcessed(String amountFieldName)
+        {
+            HttpResponseMessage responseMessage = new HttpResponseMessage
+            {
+                StatusCode = HttpStatusCode.OK,
+                Content = new StringContent(TestData.SuccessfulSafaricomTopup)
+            };
+
+            SafaricomConfiguration safaricomConfiguration = TestData.SafaricomConfiguration;
+            HttpClient httpClient = SetupMockHttpClient(responseMessage);
+
+            IOperatorProxy safaricomPinlessproxy = new SafaricomPinlessProxy(safaricomConfiguration, httpClient);
+
+            OperatorResponse operatorResponse = await safaricomPinlessproxy.ProcessSaleMessage(TestData.TokenResponse().AccessToken,
+                                                                                                TestData.TransactionId,
+                                                                                                TestData.OperatorIdentifier1,
+                                                                                                TestData.Merchant,
+                                                                                                TestData.TransactionDateTime,
+                                                                                                TestData.TransactionReference,
+                                                                                                TestData.AdditionalTransactionMetaData(amountName: amountFieldName),
+                                                                                                CancellationToken.None);
+
+            operatorResponse.ShouldNotBeNull();
+            operatorResponse.IsSuccessful.ShouldBeTrue();
+            operatorResponse.ResponseCode.ShouldBe("200");
+            operatorResponse.ResponseMessage.ShouldBe("Topup Successful");
+        }
+
+        [Theory]
+        [InlineData("customeraccountnumber")]
+        [InlineData("customerAccountNumber")]
+        [InlineData("CustomerAccountNumber")]
+        [InlineData("CUSTOMERACCOUNTNUMBER")]
+        public async Task SafaricomPinlessProxy_ProcessSaleMessage_MetadataCasingTests_CustomerAccountNumber_TopupSuccessful_SaleMessageIsProcessed(String customerAccountNumberFieldName)
+        {
+            HttpResponseMessage responseMessage = new HttpResponseMessage
+            {
+                StatusCode = HttpStatusCode.OK,
+                Content = new StringContent(TestData.SuccessfulSafaricomTopup)
+            };
+
+            SafaricomConfiguration safaricomConfiguration = TestData.SafaricomConfiguration;
+            HttpClient httpClient = SetupMockHttpClient(responseMessage);
+
+            IOperatorProxy safaricomPinlessproxy = new SafaricomPinlessProxy(safaricomConfiguration, httpClient);
+
+            OperatorResponse operatorResponse = await safaricomPinlessproxy.ProcessSaleMessage(TestData.TokenResponse().AccessToken,
+                                                                                                TestData.TransactionId,
+                                                                                                TestData.OperatorIdentifier1,
+                                                                                                TestData.Merchant,
+                                                                                                TestData.TransactionDateTime,
+                                                                                                TestData.TransactionReference,
+                                                                                                TestData.AdditionalTransactionMetaData(customerAccountNumberName: customerAccountNumberFieldName),
+                                                                                                CancellationToken.None);
+
+            operatorResponse.ShouldNotBeNull();
+            operatorResponse.IsSuccessful.ShouldBeTrue();
+            operatorResponse.ResponseCode.ShouldBe("200");
+            operatorResponse.ResponseMessage.ShouldBe("Topup Successful");
+        }
+
         [Fact]
         public async Task SafaricomPinlessProxy_ProcessSaleMessage_TopupFailed_SaleMessageIsProcessed()
         {

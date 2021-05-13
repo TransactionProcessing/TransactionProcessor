@@ -2,6 +2,7 @@
 {
     using System;
     using System.Collections.Generic;
+    using System.Diagnostics.CodeAnalysis;
     using System.IO;
     using System.Net.Http;
     using System.Text;
@@ -73,8 +74,8 @@
                                                                CancellationToken cancellationToken)
         {
             // Extract the required fields
-            String transactionAmount = additionalTransactionMetadata.GetValueOrDefault("Amount");
-            String customerMsisdn = additionalTransactionMetadata.GetValueOrDefault("CustomerAccountNumber");
+            String transactionAmount = this.ExtractFieldFromMetadata("Amount", additionalTransactionMetadata);
+            String customerMsisdn = this.ExtractFieldFromMetadata("CustomerAccountNumber", additionalTransactionMetadata);
 
             if (String.IsNullOrEmpty(transactionAmount))
             {
@@ -113,6 +114,28 @@
             String responseContent = await responseMessage.Content.ReadAsStringAsync();
 
             return this.CreateFrom(responseContent);
+        }
+
+        [ExcludeFromCodeCoverage]
+        private String ExtractFieldFromMetadata(String fieldName,
+                                              Dictionary<String, String> additionalTransactionMetadata)
+        {
+            // Create a case insensitive version of the dictionary
+            Dictionary<String, String> caseInsensitiveDictionary = new Dictionary<String, String>(StringComparer.InvariantCultureIgnoreCase);
+            foreach (KeyValuePair<String, String> keyValuePair in additionalTransactionMetadata)
+            {
+                caseInsensitiveDictionary.Add(keyValuePair.Key, keyValuePair.Value);
+            }
+
+            if (caseInsensitiveDictionary.ContainsKey(fieldName))
+            {
+                return caseInsensitiveDictionary[fieldName];
+            }
+            else
+            {
+                return String.Empty;
+            }
+
         }
 
         /// <summary>
