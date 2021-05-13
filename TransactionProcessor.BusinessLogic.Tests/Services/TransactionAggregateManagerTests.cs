@@ -103,7 +103,7 @@ namespace TransactionProcessor.BusinessLogic.Tests.Services
             await transactionAggregateManager.RecordAdditionalRequestData(TestData.EstateId,
                                                                         TestData.TransactionId,
                                                                         TestData.OperatorIdentifier1,
-                                                                        TestData.AdditionalTransactionMetaData,
+                                                                        TestData.AdditionalTransactionMetaData(),
                                                                         CancellationToken.None);
         }
 
@@ -145,7 +145,7 @@ namespace TransactionProcessor.BusinessLogic.Tests.Services
             await transactionAggregateManager.RecordAdditionalResponseData(TestData.EstateId,
                                                                           TestData.TransactionId,
                                                                           TestData.OperatorIdentifier1,
-                                                                          TestData.AdditionalTransactionMetaData,
+                                                                          TestData.AdditionalTransactionMetaData(),
                                                                           CancellationToken.None);
         }
 

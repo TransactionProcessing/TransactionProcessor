@@ -4,6 +4,7 @@
     using System.Collections.Generic;
     using System.Diagnostics.CodeAnalysis;
     using System.Diagnostics.Eventing.Reader;
+    using System.IO;
     using System.Linq;
     using System.Threading;
     using System.Threading.Tasks;
@@ -189,9 +190,14 @@
 
             // Extract the transaction amount from the metadata
             Decimal transactionAmount = this.ExtractFieldFromMetadata<Decimal>("Amount", additionalTransactionMetadata);
-
+            
             (String responseMessage, TransactionResponseCode responseCode) validationResult =
                 await this.ValidateSaleTransaction(estateId, merchantId, deviceIdentifier, operatorIdentifier, transactionAmount, cancellationToken);
+
+            if (validationResult.responseCode == TransactionResponseCode.InvalidSaleTransactionAmount)
+            {
+                throw new InvalidDataException(validationResult.responseMessage);
+            }
 
             await this.TransactionAggregateManager.StartTransaction(transactionId,
                                                                     transactionDateTime,
@@ -400,9 +406,16 @@
         private T ExtractFieldFromMetadata<T>(String fieldName,
                                               Dictionary<String, String> additionalTransactionMetadata)
         {
-            if (additionalTransactionMetadata.ContainsKey(fieldName))
+            // Create a case insensitive version of the dictionary
+            Dictionary<String, String> caseInsensitiveDictionary = new Dictionary<String, String>(StringComparer.InvariantCultureIgnoreCase);
+            foreach (KeyValuePair<String, String> keyValuePair in additionalTransactionMetadata)
             {
-                String fieldData = additionalTransactionMetadata[fieldName];
+                caseInsensitiveDictionary.Add(keyValuePair.Key, keyValuePair.Value);
+            }
+
+            if (caseInsensitiveDictionary.ContainsKey(fieldName))
+            {
+                String fieldData = caseInsensitiveDictionary[fieldName];
                 return (T)Convert.ChangeType(fieldData, typeof(T));
             }
             else
@@ -646,6 +659,12 @@
                         throw new TransactionValidationException($"Operator {operatorIdentifier} not configured for Merchant [{merchant.MerchantName}]",
                                                                  TransactionResponseCode.OperatorNotValidForMerchant);
                     }
+                }
+
+                // Check the amount
+                if (transactionAmount <= 0)
+                {
+                    throw new TransactionValidationException("Transaction Amount must be greater than 0", TransactionResponseCode.InvalidSaleTransactionAmount);
                 }
 
                 // Check the merchant has enough balance to perform the sale

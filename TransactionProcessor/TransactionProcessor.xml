@@ -151,6 +151,11 @@
             The transaction value
             </summary>
         </member>
+        <member name="F:TransactionProcessor.Common.Examples.ExampleData.TransactionId">
+            <summary>
+            The transaction identifier
+            </summary>
+        </member>
         <member name="T:TransactionProcessor.Common.Examples.TransactionRequestExample">
              <summary>
             

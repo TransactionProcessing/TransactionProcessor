@@ -29,7 +29,7 @@
                                                                                                 TestData.Merchant,
                                                                                                 TestData.TransactionDateTime,
                                                                                                 TestData.TransactionReference,
-                                                                                                TestData.AdditionalTransactionMetaDataForVoucher,
+                                                                                                TestData.AdditionalTransactionMetaDataForVoucher(),
                                                                                                 CancellationToken.None);
 
             operatorResponse.ShouldNotBeNull();
@@ -56,7 +56,7 @@
                                                                                         TestData.Merchant,
                                                                                         TestData.TransactionDateTime,
                                                                                         TestData.TransactionReference,
-                                                                                        TestData.AdditionalTransactionMetaDataForVoucher,
+                                                                                        TestData.AdditionalTransactionMetaDataForVoucher(),
                                                                                         CancellationToken.None);
 
 
@@ -71,7 +71,7 @@
         {
             Mock<IVoucherManagementClient> voucherManagementClient = new Mock<IVoucherManagementClient>();
 
-            Dictionary<String, String> additionalMetatdata = TestData.AdditionalTransactionMetaDataForVoucher;
+            Dictionary<String, String> additionalMetatdata = TestData.AdditionalTransactionMetaDataForVoucher();
             additionalMetatdata["Amount"] = transactionAmount;
 
             IOperatorProxy voucherManagementProxy = new VoucherManagementProxy(voucherManagementClient.Object);
