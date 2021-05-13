@@ -108,7 +108,7 @@
             new OperatorResponse
             {
                 ResponseMessage = TestData.OperatorResponseMessage,
-                AdditionalTransactionResponseMetadata = TestData.AdditionalTransactionMetaData,
+                AdditionalTransactionResponseMetadata = TestData.AdditionalTransactionMetaData(),
                 TransactionId = TestData.OperatorTransactionId,
                 IsSuccessful = true,
                 AuthorisationCode = TestData.OperatorAuthorisationCode,
@@ -141,18 +141,18 @@
         /// <value>
         /// The additional transaction meta data.
         /// </value>
-        public static Dictionary<String, String> AdditionalTransactionMetaData =>
+        public static Dictionary<String, String> AdditionalTransactionMetaData(String amountName = "Amount", String customerAccountNumberName = "CustomerAccountNumber") =>
             new Dictionary<String, String>
             {
-                {"Amount", "100.00"},
-                {"CustomerAccountNumber", "123456789" }
+                {amountName, "100.00"},
+                {customerAccountNumberName, "123456789" }
             };
 
-        public static Dictionary<String, String> AdditionalTransactionMetaDataForVoucher =>
+        public static Dictionary<String, String> AdditionalTransactionMetaDataForVoucher(String amountName = "Amount", String recipientEmailName = "RecipientEmail") =>
             new Dictionary<String, String>
             {
-                {"Amount", "100.00"},
-                {"RecipientEmail", "test@testvoucher.co.uk" }
+                {amountName, "100.00"},
+                {recipientEmailName, "test@testvoucher.co.uk" }
 
             };
 
@@ -401,7 +401,7 @@
                                                  TestData.TransactionNumber,
                                                  TestData.OperatorIdentifier1,
                                                  TestData.CustomerEmailAddress,
-                                                 TestData.AdditionalTransactionMetaData,
+                                                 TestData.AdditionalTransactionMetaData(),
                                                  TestData.ContractId,
                                                  TestData.ProductId);
 

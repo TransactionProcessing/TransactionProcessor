@@ -170,7 +170,7 @@ namespace TransactionProcessor.TransactionAggregate.Tests
                                                                                                                                  TestData.EstateId,
                                                                                                                                  TestData.MerchantId,
                                                                                                                                  TestData.OperatorIdentifier1,
-                                                                                                                                 TestData.AdditionalTransactionMetaData);
+                                                                                                                                 TestData.AdditionalTransactionMetaData());
 
             additionalResponseDataRecordedEvent.ShouldNotBeNull();
             additionalResponseDataRecordedEvent.AggregateId.ShouldBe(TestData.TransactionId);
@@ -181,7 +181,7 @@ namespace TransactionProcessor.TransactionAggregate.Tests
             additionalResponseDataRecordedEvent.OperatorIdentifier.ShouldBe(TestData.OperatorIdentifier1);
             additionalResponseDataRecordedEvent.AdditionalTransactionResponseMetadata.ShouldNotBeNull();
 
-            foreach (KeyValuePair<String, String> keyValuePair in TestData.AdditionalTransactionMetaData)
+            foreach (KeyValuePair<String, String> keyValuePair in TestData.AdditionalTransactionMetaData())
             {
                 additionalResponseDataRecordedEvent.AdditionalTransactionResponseMetadata.ShouldContainKeyAndValue(keyValuePair.Key, keyValuePair.Value);
             }
@@ -194,7 +194,7 @@ namespace TransactionProcessor.TransactionAggregate.Tests
                                                                                                                               TestData.EstateId,
                                                                                                                               TestData.MerchantId,
                                                                                                                               TestData.OperatorIdentifier1,
-                                                                                                                              TestData.AdditionalTransactionMetaData);
+                                                                                                                              TestData.AdditionalTransactionMetaData());
 
             additionalRequestDataRecordedEvent.ShouldNotBeNull();
             additionalRequestDataRecordedEvent.AggregateId.ShouldBe(TestData.TransactionId);
@@ -205,7 +205,7 @@ namespace TransactionProcessor.TransactionAggregate.Tests
             additionalRequestDataRecordedEvent.OperatorIdentifier.ShouldBe(TestData.OperatorIdentifier1);
             additionalRequestDataRecordedEvent.AdditionalTransactionRequestMetadata.ShouldNotBeNull();
 
-            foreach (KeyValuePair<String, String> keyValuePair in TestData.AdditionalTransactionMetaData)
+            foreach (KeyValuePair<String, String> keyValuePair in TestData.AdditionalTransactionMetaData())
             {
                 additionalRequestDataRecordedEvent.AdditionalTransactionRequestMetadata.ShouldContainKeyAndValue(keyValuePair.Key, keyValuePair.Value);
             }

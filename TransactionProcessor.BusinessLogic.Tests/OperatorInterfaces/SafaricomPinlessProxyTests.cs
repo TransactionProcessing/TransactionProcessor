@@ -38,7 +38,7 @@ namespace TransactionProcessor.BusinessLogic.Tests.OperatorInterfaces
                                                                                                 TestData.Merchant,
                                                                                                 TestData.TransactionDateTime,
                                                                                                 TestData.TransactionReference,
-                                                                                                TestData.AdditionalTransactionMetaData,
+                                                                                                TestData.AdditionalTransactionMetaData(),
                                                                                                 CancellationToken.None);
 
             operatorResponse.ShouldNotBeNull();
@@ -67,7 +67,7 @@ namespace TransactionProcessor.BusinessLogic.Tests.OperatorInterfaces
                                                                                                TestData.Merchant,
                                                                                                TestData.TransactionDateTime,
                                                                                                TestData.TransactionReference,
-                                                                                               TestData.AdditionalTransactionMetaData,
+                                                                                               TestData.AdditionalTransactionMetaData(),
                                                                                                CancellationToken.None);
 
             operatorResponse.ShouldNotBeNull();
@@ -97,7 +97,7 @@ namespace TransactionProcessor.BusinessLogic.Tests.OperatorInterfaces
                                                                                        TestData.Merchant,
                                                                                        TestData.TransactionDateTime,
                                                                                        TestData.TransactionReference,
-                                                                                       TestData.AdditionalTransactionMetaData,
+                                                                                       TestData.AdditionalTransactionMetaData(),
                                                                                        CancellationToken.None);
                                     });
         }

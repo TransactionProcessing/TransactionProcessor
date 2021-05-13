@@ -99,6 +99,14 @@
             The response message.
             </value>
         </member>
+        <member name="P:TransactionProcessor.DataTransferObjects.LogonTransactionResponse.TransactionId">
+            <summary>
+            Gets or sets the transaction identifier.
+            </summary>
+            <value>
+            The transaction identifier.
+            </value>
+        </member>
         <member name="T:TransactionProcessor.DataTransferObjects.MetadataContants">
             <summary>
             
@@ -229,6 +237,14 @@
             The response message.
             </value>
         </member>
+        <member name="P:TransactionProcessor.DataTransferObjects.ReconciliationResponse.TransactionId">
+            <summary>
+            Gets or sets the transaction identifier.
+            </summary>
+            <value>
+            The transaction identifier.
+            </value>
+        </member>
         <member name="P:TransactionProcessor.DataTransferObjects.SaleTransactionRequest.AdditionalTransactionMetadata">
             <summary>
             Gets or sets the additional transaction metadata.
@@ -339,6 +355,14 @@
             </summary>
             <value>
             The additional transaction metadata.
+            </value>
+        </member>
+        <member name="P:TransactionProcessor.DataTransferObjects.SaleTransactionResponse.TransactionId">
+            <summary>
+            Gets or sets the transaction identifier.
+            </summary>
+            <value>
+            The transaction identifier.
             </value>
         </member>
         <member name="T:TransactionProcessor.DataTransferObjects.SerialisedMessage">
