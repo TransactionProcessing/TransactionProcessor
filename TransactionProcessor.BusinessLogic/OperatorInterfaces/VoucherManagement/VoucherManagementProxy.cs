@@ -7,6 +7,7 @@ namespace TransactionProcessor.BusinessLogic.OperatorInterfaces.VoucherManagemen
     using System.Security.Policy;
     using System.Threading;
     using System.Threading.Tasks;
+    using Common;
     using EstateManagement.DataTransferObjects.Responses;
     using global::VoucherManagement.Client;
     using global::VoucherManagement.DataTransferObjects;
@@ -58,9 +59,9 @@ namespace TransactionProcessor.BusinessLogic.OperatorInterfaces.VoucherManagemen
                                                                CancellationToken cancellationToken)
         {
             // Extract the required fields
-            String recipientEmail = additionalTransactionMetadata.GetValueOrDefault("RecipientEmail");
-            String recipientMobile = additionalTransactionMetadata.GetValueOrDefault("RecipientMobile");
-            String transactionAmount = additionalTransactionMetadata.GetValueOrDefault("Amount");
+            String recipientEmail = additionalTransactionMetadata.ExtractFieldFromMetadata<String>("RecipientEmail");
+            String recipientMobile = additionalTransactionMetadata.ExtractFieldFromMetadata<String>("RecipientMobile");
+            String transactionAmount = additionalTransactionMetadata.ExtractFieldFromMetadata<String>("Amount");
 
             // Covert the transaction amount to Decimal and remove decimal places
             if (Decimal.TryParse(transactionAmount, out Decimal amountAsDecimal) == false)
