@@ -8,6 +8,7 @@
     using System.Linq;
     using System.Threading;
     using System.Threading.Tasks;
+    using Common;
     using EstateManagement.Client;
     using EstateManagement.DataTransferObjects.Requests;
     using EstateManagement.DataTransferObjects.Responses;
@@ -189,7 +190,7 @@
             String transactionReference = this.GenerateTransactionReference();
 
             // Extract the transaction amount from the metadata
-            Decimal transactionAmount = this.ExtractFieldFromMetadata<Decimal>("Amount", additionalTransactionMetadata);
+            Decimal transactionAmount = additionalTransactionMetadata.ExtractFieldFromMetadata<Decimal>("Amount");
             
             (String responseMessage, TransactionResponseCode responseCode) validationResult =
                 await this.ValidateSaleTransaction(estateId, merchantId, deviceIdentifier, operatorIdentifier, transactionAmount, cancellationToken);
@@ -395,35 +396,7 @@
                    };
         }
 
-        /// <summary>
-        /// Extracts the field from metadata.
-        /// </summary>
-        /// <typeparam name="T"></typeparam>
-        /// <param name="fieldName">Name of the field.</param>
-        /// <param name="additionalTransactionMetadata">The additional transaction metadata.</param>
-        /// <returns></returns>
-        [ExcludeFromCodeCoverage]
-        private T ExtractFieldFromMetadata<T>(String fieldName,
-                                              Dictionary<String, String> additionalTransactionMetadata)
-        {
-            // Create a case insensitive version of the dictionary
-            Dictionary<String, String> caseInsensitiveDictionary = new Dictionary<String, String>(StringComparer.InvariantCultureIgnoreCase);
-            foreach (KeyValuePair<String, String> keyValuePair in additionalTransactionMetadata)
-            {
-                caseInsensitiveDictionary.Add(keyValuePair.Key, keyValuePair.Value);
-            }
-
-            if (caseInsensitiveDictionary.ContainsKey(fieldName))
-            {
-                String fieldData = caseInsensitiveDictionary[fieldName];
-                return (T)Convert.ChangeType(fieldData, typeof(T));
-            }
-            else
-            {
-                return default(T);
-            }
-
-        }
+        
 
         /// <summary>
         /// Adds the device to merchant.

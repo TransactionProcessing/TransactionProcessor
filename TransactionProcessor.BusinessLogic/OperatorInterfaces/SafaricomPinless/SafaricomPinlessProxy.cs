@@ -10,6 +10,7 @@
     using System.Threading.Tasks;
     using System.Xml;
     using System.Xml.Serialization;
+    using Common;
     using EstateManagement.DataTransferObjects.Responses;
 
     /// <summary>
@@ -74,8 +75,8 @@
                                                                CancellationToken cancellationToken)
         {
             // Extract the required fields
-            String transactionAmount = this.ExtractFieldFromMetadata("Amount", additionalTransactionMetadata);
-            String customerMsisdn = this.ExtractFieldFromMetadata("CustomerAccountNumber", additionalTransactionMetadata);
+            String transactionAmount = additionalTransactionMetadata.ExtractFieldFromMetadata<String>("Amount");
+            String customerMsisdn = additionalTransactionMetadata.ExtractFieldFromMetadata<String>("CustomerAccountNumber");
 
             if (String.IsNullOrEmpty(transactionAmount))
             {
@@ -114,28 +115,6 @@
             String responseContent = await responseMessage.Content.ReadAsStringAsync();
 
             return this.CreateFrom(responseContent);
-        }
-
-        [ExcludeFromCodeCoverage]
-        private String ExtractFieldFromMetadata(String fieldName,
-                                              Dictionary<String, String> additionalTransactionMetadata)
-        {
-            // Create a case insensitive version of the dictionary
-            Dictionary<String, String> caseInsensitiveDictionary = new Dictionary<String, String>(StringComparer.InvariantCultureIgnoreCase);
-            foreach (KeyValuePair<String, String> keyValuePair in additionalTransactionMetadata)
-            {
-                caseInsensitiveDictionary.Add(keyValuePair.Key, keyValuePair.Value);
-            }
-
-            if (caseInsensitiveDictionary.ContainsKey(fieldName))
-            {
-                return caseInsensitiveDictionary[fieldName];
-            }
-            else
-            {
-                return String.Empty;
-            }
-
         }
 
         /// <summary>
