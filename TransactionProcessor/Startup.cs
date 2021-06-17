@@ -331,13 +331,16 @@ namespace TransactionProcessor
                                       })
                    .AddJwtBearer(options =>
                                  {
-                                     //options.SaveToken = true;
+                                     options.BackchannelHttpHandler = new HttpClientHandler
+                                                                      {
+                                                                          ServerCertificateCustomValidationCallback =
+                                                                              (message, certificate, chain, sslPolicyErrors) => true
+                                                                      };
                                      options.Authority = ConfigurationReader.GetValue("SecurityConfiguration", "Authority");
                                      options.Audience = ConfigurationReader.GetValue("SecurityConfiguration", "ApiName");
-                                     options.RequireHttpsMetadata = false;
+
                                      options.TokenValidationParameters = new Microsoft.IdentityModel.Tokens.TokenValidationParameters()
                                                                          {
-                                                                             ValidateIssuer = true,
                                                                              ValidateAudience = false,
                                                                              ValidAudience = ConfigurationReader.GetValue("SecurityConfiguration", "ApiName"),
                                                                              ValidIssuer = ConfigurationReader.GetValue("SecurityConfiguration", "Authority"),
