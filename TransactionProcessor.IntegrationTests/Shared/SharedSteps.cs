@@ -790,10 +790,18 @@ namespace TransactionProcessor.IntegrationTests.Shared
 
                 this.TestingContext.Logger.LogInformation($"Deposit Reference {makeMerchantDepositRequest.Reference} made for Merchant {merchantName}");
 
-                // Check the merchant balance
-                MerchantBalanceResponse currentMerchantBalance = await this.TestingContext.DockerHelper.EstateClient.GetMerchantBalance(token, estateDetails.EstateId, merchantId, CancellationToken.None);
+                await Retry.For(async () =>
+                                {
+                                    // Check the merchant balance
+                                    MerchantBalanceResponse currentMerchantBalance =
+                                        await this.TestingContext.DockerHelper.EstateClient.GetMerchantBalance(token,
+                                                                                                               estateDetails.EstateId,
+                                                                                                               merchantId,
+                                                                                                               CancellationToken.None);
 
-                currentMerchantBalance.AvailableBalance.ShouldBe(previousMerchantBalance.AvailableBalance + makeMerchantDepositRequest.Amount);
+                                    currentMerchantBalance.AvailableBalance.ShouldBe(previousMerchantBalance.AvailableBalance + makeMerchantDepositRequest.Amount);
+                                });
+
 
             }
         }
