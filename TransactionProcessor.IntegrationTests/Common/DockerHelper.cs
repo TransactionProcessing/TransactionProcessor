@@ -202,14 +202,7 @@
                             {
                                 await this.PopulateSubscriptionServiceConfiguration().ConfigureAwait(false);
                             }, retryFor: TimeSpan.FromMinutes(2), retryInterval: TimeSpan.FromSeconds(30));
-
-            //List<String> additionalVoucherManagementVariables = new List<String>()
-            //                                                    {
-            //                                                        $"ConnectionStrings:HealthCheck=\"server=" + Setup.SqlServerContainerName + ";user id=" + "sa" +
-            //                                                        ";password=" + "thisisalongpassword123!" + ";database=master\"",
-            //                                                        $"AppSettings:MessagingServiceApi=http://{this.MessagingServiceContainerName}:{DockerHelper.MessagingServiceDockerPort}",
-            //                                                        "AppSettings:UseConnectionStringConfig=false"
-            //                                                    };
+            
             IContainerService voucherManagementContainer = SetupVoucherManagementContainer(this.VoucherManagementContainerName,
                                                                                            this.Logger,
                                                                                            "stuartferguson/vouchermanagement",
