@@ -89,6 +89,8 @@
 
         protected String TestHostContainerName;
 
+        protected String MessagingServiceContainerName;
+
         /// <summary>
         /// The transaction processor port
         /// </summary>
@@ -185,6 +187,7 @@
             this.TransactionProcessorContainerName = $"txnprocessor{testGuid:N}";
             this.TestHostContainerName = $"testhosts{testGuid:N}";
             this.VoucherManagementContainerName = $"vouchermanagement{testGuid:N}";
+            this.MessagingServiceContainerName = $"messaging{testGuid:N}";
 
             String eventStoreAddress = $"http://{this.EventStoreContainerName}";
 
@@ -199,29 +202,7 @@
                             {
                                 await this.PopulateSubscriptionServiceConfiguration().ConfigureAwait(false);
                             }, retryFor: TimeSpan.FromMinutes(2), retryInterval: TimeSpan.FromSeconds(30));
-
-            IContainerService estateManagementContainer = DockerHelper.SetupEstateManagementContainer(this.EstateManagementContainerName, this.Logger,
-                                                                                                      "stuartferguson/estatemanagement", new List<INetworkService>
-                                                                                                                          {
-                                                                                                                              testNetwork,
-                                                                                                                              Setup.DatabaseServerNetwork
-                                                                                                                          }, traceFolder, dockerCredentials,
-                                                                                                      this.SecurityServiceContainerName,
-                                                                                                      eventStoreAddress,
-                                                                                                      (Setup.SqlServerContainerName,
-                                                                                                      "sa",
-                                                                                                      "thisisalongpassword123!"),
-                                                                                                      ("serviceClient", "Secret1"),
-                                                                                                      true);
-
-            IContainerService securityServiceContainer = DockerHelper.SetupSecurityServiceContainer(this.SecurityServiceContainerName,
-                                                                                                    this.Logger,
-                                                                                                    "stuartferguson/securityservice",
-                                                                                                    testNetwork,
-                                                                                                    traceFolder,
-                                                                                                    dockerCredentials,
-                                                                                                    true);
-
+            
             IContainerService voucherManagementContainer = SetupVoucherManagementContainer(this.VoucherManagementContainerName,
                                                                                            this.Logger,
                                                                                            "stuartferguson/vouchermanagement",
@@ -239,6 +220,39 @@
                                                                                                "thisisalongpassword123!"),
                                                                                            ("serviceClient", "Secret1"),
                                                                                            true);
+
+            IContainerService estateManagementContainer = DockerHelper.SetupEstateManagementContainer(this.EstateManagementContainerName, this.Logger,
+                                                                                                      "stuartferguson/estatemanagement", new List<INetworkService>
+                                                                                                                          {
+                                                                                                                              testNetwork,
+                                                                                                                              Setup.DatabaseServerNetwork
+                                                                                                                          }, traceFolder, dockerCredentials,
+                                                                                                      this.SecurityServiceContainerName,
+                                                                                                      eventStoreAddress,
+                                                                                                      (Setup.SqlServerContainerName,
+                                                                                                      "sa",
+                                                                                                      "thisisalongpassword123!"),
+                                                                                                      ("serviceClient", "Secret1"),
+                                                                                                      true);
+
+            IContainerService messagingServiceContainer = DockerHelper.SetupMessagingServiceContainer(this.MessagingServiceContainerName, this.Logger,
+                                                                                                      "stuartferguson/messagingservice", new List<INetworkService>
+                                                                                                          {
+                                                                                                              testNetwork
+                                                                                                          }, traceFolder, dockerCredentials,
+                                                                                                      this.SecurityServiceContainerName,
+                                                                                                      eventStoreAddress,
+                                                                                                      ("serviceClient", "Secret1"),
+                                                                                                      true);
+
+            IContainerService securityServiceContainer = DockerHelper.SetupSecurityServiceContainer(this.SecurityServiceContainerName,
+                                                                                                    this.Logger,
+                                                                                                    "stuartferguson/securityservice",
+                                                                                                    testNetwork,
+                                                                                                    traceFolder,
+                                                                                                    dockerCredentials,
+                                                                                                    true);
+            
 
             List<String> additionalVariables = new List<String>()
                                                {
@@ -297,7 +311,8 @@
                                          transactionProcessorContainer,
                                          estateReportingContainer,
                                          testhostContainer,
-                                         voucherManagementContainer
+                                         voucherManagementContainer,
+                                         messagingServiceContainer
                                      });
 
             // Cache the ports
