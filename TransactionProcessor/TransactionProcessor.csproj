@@ -17,7 +17,7 @@
 	<PackageReference Include="AspNetCore.HealthChecks.Uris" Version="5.0.1" />
 	<PackageReference Include="EventStore.Client.Grpc.PersistentSubscriptions" Version="20.10.0" />
 	<PackageReference Include="EventStore.Client.Grpc.ProjectionManagement" Version="20.10.0" />
-	<PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="5.0.2" />
+	<PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="5.0.9" />
 	<PackageReference Include="Microsoft.AspNetCore.Mvc.NewtonsoftJson" Version="5.0.2" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" Version="5.0.2" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.Tools" Version="5.0.2">
