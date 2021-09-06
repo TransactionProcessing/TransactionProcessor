@@ -6,6 +6,7 @@ namespace TransactionProcessor.IntegrationTests
 {
     using System.Threading;
     using System.Threading.Tasks;
+    using global::Shared.Logger;
 
     public static class Retry
     {
@@ -55,6 +56,7 @@ namespace TransactionProcessor.IntegrationTests
                 catch (Exception e)
                 {
                     lastException = e;
+                    Logger.LogError(e);
 
                     // wait before retrying
                     Thread.Sleep(retryInterval ?? Retry.DefaultRetryInterval);

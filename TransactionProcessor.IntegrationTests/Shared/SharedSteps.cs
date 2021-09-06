@@ -534,10 +534,15 @@ namespace TransactionProcessor.IntegrationTests.Shared
                                                                                                        TypeNameHandling = TypeNameHandling.All
                                                                                                    });
 
-            SerialisedMessage responseSerialisedMessage =
-                await this.TestingContext.DockerHelper.TransactionProcessorClient.PerformTransaction(this.TestingContext.AccessToken,
-                                                                                                     serialisedMessage,
-                                                                                                     cancellationToken);
+            SerialisedMessage responseSerialisedMessage = null;
+            await Retry.For(async () =>
+                            {
+                                responseSerialisedMessage =
+                                    await this.TestingContext.DockerHelper.TransactionProcessorClient.PerformTransaction(this.TestingContext.AccessToken,
+                                        serialisedMessage,
+                                        cancellationToken);
+                            }, TimeSpan.FromSeconds(60), TimeSpan.FromSeconds(15));
+            
 
             return responseSerialisedMessage;
         }
