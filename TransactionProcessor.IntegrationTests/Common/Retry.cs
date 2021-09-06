@@ -56,7 +56,6 @@ namespace TransactionProcessor.IntegrationTests
                 catch (Exception e)
                 {
                     lastException = e;
-                    Logger.LogError(e);
 
                     // wait before retrying
                     Thread.Sleep(retryInterval ?? Retry.DefaultRetryInterval);
