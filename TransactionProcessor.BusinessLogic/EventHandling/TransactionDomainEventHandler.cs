@@ -3,23 +3,31 @@
     using System;
     using System.Collections.Generic;
     using System.Diagnostics.CodeAnalysis;
+    using System.Linq;
     using System.Threading;
     using System.Threading.Tasks;
+    using Common;
     using EstateManagement.Client;
+    using EstateManagement.DataTransferObjects;
     using EstateManagement.DataTransferObjects.Responses;
     using Manager;
     using MessagingService.Client;
     using MessagingService.DataTransferObjects;
     using Models;
+    using Newtonsoft.Json;
     using SecurityService.Client;
     using SecurityService.DataTransferObjects.Responses;
     using Services;
+    using SettlementAggregates;
     using Shared.DomainDrivenDesign.EventSourcing;
+    using Shared.EventStore.Aggregate;
     using Shared.EventStore.EventHandling;
     using Shared.General;
     using Shared.Logger;
     using Transaction.DomainEvents;
     using TransactionAggregate;
+    using CalculationType = Models.CalculationType;
+    using FeeType = Models.FeeType;
 
     /// <summary>
     /// 
@@ -55,6 +63,8 @@
         /// </summary>
         private readonly IMessagingServiceClient MessagingServiceClient;
 
+        private readonly IAggregateRepository<PendingSettlementAggregate, DomainEventRecord.DomainEvent> PendingSettlementAggregateRepository;
+
         /// <summary>
         /// The token response
         /// </summary>
@@ -83,7 +93,8 @@
                                              IEstateClient estateClient,
                                              ISecurityServiceClient securityServiceClient,
                                              ITransactionReceiptBuilder transactionReceiptBuilder,
-                                             IMessagingServiceClient messagingServiceClient)
+                                             IMessagingServiceClient messagingServiceClient,
+                                             IAggregateRepository<PendingSettlementAggregate, DomainEventRecord.DomainEvent> pendingSettlementAggregateRepository)
         {
             this.TransactionAggregateManager = transactionAggregateManager;
             this.FeeCalculationManager = feeCalculationManager;
@@ -91,6 +102,7 @@
             this.SecurityServiceClient = securityServiceClient;
             this.TransactionReceiptBuilder = transactionReceiptBuilder;
             this.MessagingServiceClient = messagingServiceClient;
+            this.PendingSettlementAggregateRepository = pendingSettlementAggregateRepository;
         }
 
         #endregion
@@ -165,6 +177,7 @@
             }
 
             this.TokenResponse = await this.GetToken(cancellationToken);
+            
             // Ok we should have filtered out the not applicable transactions
             // Get the fees to be calculated
             List<ContractProductTransactionFee> feesForProduct = await this.EstateClient.GetTransactionFeesForProduct(this.TokenResponse.AccessToken,
@@ -191,10 +204,50 @@
             // Do the fee calculation
             List<CalculatedFee> resultFees = this.FeeCalculationManager.CalculateFees(feesForCalculation, transactionAggregate.TransactionAmount.Value);
 
-            foreach (CalculatedFee calculatedFee in resultFees)
+            // Process the non merchant fees
+            IEnumerable<CalculatedFee> nonMerchantFees = resultFees.Where(f => f.FeeType == FeeType.ServiceProvider);
+
+            foreach (CalculatedFee calculatedFee in nonMerchantFees)
             {
                 // Add Fee to the Transaction 
                 await this.TransactionAggregateManager.AddFee(transactionAggregate.EstateId, transactionAggregate.AggregateId, calculatedFee, cancellationToken);
+            }
+
+            // Now deal with merchant fees 
+            IEnumerable<CalculatedFee> merchantFees = resultFees.Where(f => f.FeeType == FeeType.Merchant);
+
+            // get the merchant now to see the settlement schedule
+            this.TokenResponse = await this.GetToken(cancellationToken);
+            MerchantResponse merchant = await this.EstateClient.GetMerchant(this.TokenResponse.AccessToken, domainEvent.EstateId, domainEvent.MerchantId, cancellationToken);
+                        
+            // Add fees to transaction now if settlement is immediate
+            if (merchant.SettlementSchedule == SettlementSchedule.Immediate)
+            {
+                foreach (CalculatedFee calculatedFee in merchantFees)
+                {
+                    // Add Fee to the Transaction 
+                    await this.TransactionAggregateManager.AddFee(transactionAggregate.EstateId, transactionAggregate.AggregateId, calculatedFee, cancellationToken);
+                }
+            }
+            else
+            {
+                foreach (CalculatedFee calculatedFee in merchantFees)
+                {
+                    // Determine when the fee should be applied
+                    Guid aggregateId = merchant.NextSettlementDueDate.ToGuid();
+
+                    // We need to add the fees to a pending settlement stream (for today)
+                    PendingSettlementAggregate aggregate = await this.PendingSettlementAggregateRepository.GetLatestVersion(aggregateId, cancellationToken);
+
+                    if (aggregate.IsCreated == false)
+                    {
+                        aggregate.Create(transactionAggregate.EstateId, merchant.NextSettlementDueDate);
+                    }
+
+                    aggregate.AddFee(transactionAggregate.MerchantId, transactionAggregate.AggregateId, calculatedFee);
+
+                    await this.PendingSettlementAggregateRepository.SaveChanges(aggregate, cancellationToken);
+                }
             }
         }
 

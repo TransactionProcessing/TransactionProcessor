@@ -2,6 +2,7 @@
 {
     using System;
     using System.Collections.Generic;
+    using System.Diagnostics.CodeAnalysis;
     using DataTransferObjects;
     using Newtonsoft.Json;
     using Swashbuckle.AspNetCore.Filters;
@@ -10,6 +11,7 @@
     /// 
     /// </summary>
     /// <seealso cref="Swashbuckle.AspNetCore.Filters.IMultipleExamplesProvider{TransactionProcessor.DataTransferObjects.SerialisedMessage}" />
+    [ExcludeFromCodeCoverage]
     public class TransactionResponseExample : IMultipleExamplesProvider<SerialisedMessage>
     {
         /// <summary>

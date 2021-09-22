@@ -19,6 +19,11 @@
                                                    SerialisedMessage transactionRequest,
                                                    CancellationToken cancellationToken);
 
+        Task<PendingSettlementResponse> GetPendingSettlementByDate(String accessToken, 
+                                                                   DateTime pendingSettlementDate,
+                                                                   Guid estateId,
+                                                                   CancellationToken cancellationToken);
+
         #endregion
     }
 }

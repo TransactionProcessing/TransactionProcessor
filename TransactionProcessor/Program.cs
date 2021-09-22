@@ -15,6 +15,7 @@ namespace TransactionProcessor
     using EventStore.Client;
     using Microsoft.Extensions.DependencyInjection;
     using Reconciliation.DomainEvents;
+    using Settlement.DomainEvents;
     using Shared.EventStore.Aggregate;
     using Shared.EventStore.EventHandling;
     using Shared.EventStore.Subscriptions;
@@ -48,6 +49,11 @@ namespace TransactionProcessor
                                                  })
                        .ConfigureServices(services =>
                                           {
+                                              PendingSettlementCreatedForDateEvent s =
+                                                  new PendingSettlementCreatedForDateEvent(Guid.Parse("62CA5BF0-D138-4A19-9970-A4F7D52DE292"),
+                                                                                           Guid.Parse("3E42516B-6C6F-4F86-BF08-3EF0ACDDDD55"),
+                                                                                           DateTime.Now);
+
                                               TransactionHasStartedEvent t = new TransactionHasStartedEvent(Guid.Parse("2AA2D43B-5E24-4327-8029-1135B20F35CE"), Guid.NewGuid(),Guid.NewGuid(), 
                                                                                                             DateTime.Now, "","","","",null);
 

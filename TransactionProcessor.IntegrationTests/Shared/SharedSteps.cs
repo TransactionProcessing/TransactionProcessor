@@ -196,6 +196,15 @@ namespace TransactionProcessor.IntegrationTests.Shared
                 }
 
                 String merchantName = SpecflowTableHelper.GetStringRowValue(tableRow, "MerchantName");
+
+                var settlementSchedule = SpecflowTableHelper.GetStringRowValue(tableRow, "SettlementSchedule");
+
+                SettlementSchedule schedule = SettlementSchedule.Immediate;
+                if (String.IsNullOrEmpty(settlementSchedule) == false)
+                {
+                    schedule = Enum.Parse<SettlementSchedule>(settlementSchedule);
+                }
+
                 CreateMerchantRequest createMerchantRequest = new CreateMerchantRequest
                 {
                     Name = merchantName,
@@ -210,7 +219,8 @@ namespace TransactionProcessor.IntegrationTests.Shared
                         Town = SpecflowTableHelper.GetStringRowValue(tableRow, "Town"),
                         Region = SpecflowTableHelper.GetStringRowValue(tableRow, "Region"),
                         Country = SpecflowTableHelper.GetStringRowValue(tableRow, "Country")
-                    }
+                    },
+                    SettlementSchedule = schedule
                 };
 
                 CreateMerchantResponse response = await this.TestingContext.DockerHelper.EstateClient
@@ -860,6 +870,44 @@ namespace TransactionProcessor.IntegrationTests.Shared
             }
         }
 
+        [When(@"I get the pending settlements the following information should be returned")]
+        public async Task WhenIGetThePendingSettlementsTheFollowingInformationShouldBeReturned(Table table)
+        {
+            foreach (TableRow tableRow in table.Rows)
+            {
+                // Get the merchant name
+                EstateDetails estateDetails = this.TestingContext.GetEstateDetails(tableRow);
+                String nextSettlementDateString = SpecflowTableHelper.GetStringRowValue(tableRow, "NextSettlementDate");
+                Int32 numberOfFees = SpecflowTableHelper.GetIntValue(tableRow, "NumberOfFees");
+                DateTime nextSettlementDate = this.GetNextSettlementDate(DateTime.Now, nextSettlementDateString);
 
+                await Retry.For(async () =>
+                                {
+                                    PendingSettlementResponse pendingSettlements =
+                                        await this.TestingContext.DockerHelper.TransactionProcessorClient.GetPendingSettlementByDate(this.TestingContext.AccessToken,
+                                            nextSettlementDate,
+                                            estateDetails.EstateId,
+                                            CancellationToken.None);
+                                    
+                                    pendingSettlements.NumberOfFeesPendingSettlement.ShouldBe(numberOfFees);
+                                });
+            }
+        }
+
+        private DateTime GetNextSettlementDate(DateTime now,
+                                               String nextSettlementDate)
+        {
+            if (nextSettlementDate == "NextWeek")
+            {
+                return now.AddDays(7);
+            }
+
+            if (nextSettlementDate == "NextMonth")
+            {
+                return now.AddMonths(1);
+            }
+
+            return now;
+        }
     }
 }
