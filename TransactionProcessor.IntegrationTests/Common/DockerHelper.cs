@@ -380,58 +380,7 @@
             settings.DefaultCredentials = new UserCredentials("admin", "changeit");
             return settings;
         }
-
-        protected async Task CleanUpSubscriptionServiceConfiguration()
-        {
-            String connectionString = Setup.GetLocalConnectionString("SubscriptionServiceConfiguration");
-
-            await using (SqlConnection connection = new SqlConnection(connectionString))
-            {
-                await connection.OpenAsync(CancellationToken.None).ConfigureAwait(false);
-
-                // Delete the Event Store Server
-                await this.DeleteEventStoreServer(connection).ConfigureAwait(false);
-
-                // Delete the Subscriptions
-                await this.DeleteSubscriptions(connection).ConfigureAwait(false);
-
-                await connection.CloseAsync().ConfigureAwait(false);
-            }
-        }
-
-        protected async Task InsertEventStoreServer(SqlConnection openConnection, String eventStoreContainerName)
-        {
-            String esConnectionString = $"ConnectTo=tcp://admin:changeit@{eventStoreContainerName}:{DockerHelper.EventStoreTcpDockerPort};VerboseLogging=true;";
-            SqlCommand command = openConnection.CreateCommand();
-            command.CommandText = $"INSERT INTO EventStoreServer(EventStoreServerId, ConnectionString,Name) SELECT '{this.TestId}', '{esConnectionString}', 'TestEventStore'";
-            command.CommandType = CommandType.Text;
-            await command.ExecuteNonQueryAsync(CancellationToken.None).ConfigureAwait(false);
-        }
-
-        protected async Task DeleteEventStoreServer(SqlConnection openConnection)
-        {
-            SqlCommand command = openConnection.CreateCommand();
-            command.CommandText = $"DELETE FROM EventStoreServer WHERE EventStoreServerId = '{this.TestId}'";
-            command.CommandType = CommandType.Text;
-            await command.ExecuteNonQueryAsync(CancellationToken.None).ConfigureAwait(false);
-        }
-
-        protected async Task DeleteSubscriptions(SqlConnection openConnection)
-        {
-            SqlCommand command = openConnection.CreateCommand();
-            command.CommandText = $"DELETE FROM Subscription WHERE EventStoreId = '{this.TestId}'";
-            command.CommandType = CommandType.Text;
-            await command.ExecuteNonQueryAsync(CancellationToken.None).ConfigureAwait(false);
-        }
-
-        protected async Task InsertSubscription(SqlConnection openConnection, String streamName, String groupName, String endPointUri)
-        {
-            SqlCommand command = openConnection.CreateCommand();
-            command.CommandText = $"INSERT INTO subscription(SubscriptionId, EventStoreId, StreamName, GroupName, EndPointUri, StreamPosition) SELECT '{Guid.NewGuid()}', '{this.TestId}', '{streamName}', '{groupName}', '{endPointUri}', null";
-            command.CommandType = CommandType.Text;
-            await command.ExecuteNonQueryAsync(CancellationToken.None).ConfigureAwait(false);
-        }
-
+        
         private async Task RemoveEstateReadModel()
         {
             List<Guid> estateIdList = this.TestingContext.GetAllEstateIds();
@@ -455,8 +404,6 @@
         /// </summary>
         public override async Task StopContainersForScenarioRun()
         {
-            await CleanUpSubscriptionServiceConfiguration().ConfigureAwait(false);
-
             await RemoveEstateReadModel().ConfigureAwait(false);
 
             if (this.Containers.Any())

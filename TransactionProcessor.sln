@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio Version 16
-VisualStudioVersion = 16.0.29509.3
+# Visual Studio Version 17
+VisualStudioVersion = 17.0.31717.71
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TransactionProcessor", "TransactionProcessor\TransactionProcessor.csproj", "{1EBD3402-AF91-4919-A5A1-2E3728918507}"
 EndProject
@@ -31,11 +31,17 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TransactionProcessor.Integr
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TransactionProcessor.Client", "TransactionProcessor.Client\TransactionProcessor.Client.csproj", "{DAF20F25-8BD1-4FA5-ADAD-71B068CDF393}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TransactionProcessor.ReconciliationAggregate", "TransactionProcessor.ReconciliationAggregate\TransactionProcessor.ReconciliationAggregate.csproj", "{74CA5F89-A99B-49AE-B690-376900DF488E}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TransactionProcessor.ReconciliationAggregate", "TransactionProcessor.ReconciliationAggregate\TransactionProcessor.ReconciliationAggregate.csproj", "{74CA5F89-A99B-49AE-B690-376900DF488E}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TransactionProcessor.Reconciliation.DomainEvents", "TransactionProcessor.Reconciliation.DomainEvents\TransactionProcessor.Reconciliation.DomainEvents.csproj", "{E079DF81-BA19-4F71-85D6-AE36463F2B7F}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TransactionProcessor.Reconciliation.DomainEvents", "TransactionProcessor.Reconciliation.DomainEvents\TransactionProcessor.Reconciliation.DomainEvents.csproj", "{E079DF81-BA19-4F71-85D6-AE36463F2B7F}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TransactionProcessor.ReconciliationAggregate.Tests", "TransactionProcessor.ReconciliationAggregate.Tests\TransactionProcessor.ReconciliationAggregate.Tests.csproj", "{E71A7E6D-B320-40A1-BF86-C2857B472313}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TransactionProcessor.ReconciliationAggregate.Tests", "TransactionProcessor.ReconciliationAggregate.Tests\TransactionProcessor.ReconciliationAggregate.Tests.csproj", "{E71A7E6D-B320-40A1-BF86-C2857B472313}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TransactionProcessor.SettlementAggregates", "TransactionProcessor.SettlementAggregates\TransactionProcessor.SettlementAggregates.csproj", "{2FF2AE7B-21F8-4EEF-9B47-3FCDAA39885B}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TransactionProcessor.SettlementAggregates.Tests", "TransactionProcessor.SettlementAggregates.Tests\TransactionProcessor.SettlementAggregates.Tests.csproj", "{1FF2753E-6F90-400D-9A98-E5FE3F79518E}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TransactionProcessor.Settlement.DomainEvents", "TransactionProcessor.Settlement.DomainEvents\TransactionProcessor.Settlement.DomainEvents.csproj", "{1D6CF3B6-41D3-46B8-BD6B-03FD32483763}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -103,6 +109,18 @@ Global
 		{E71A7E6D-B320-40A1-BF86-C2857B472313}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{E71A7E6D-B320-40A1-BF86-C2857B472313}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{E71A7E6D-B320-40A1-BF86-C2857B472313}.Release|Any CPU.Build.0 = Release|Any CPU
+		{2FF2AE7B-21F8-4EEF-9B47-3FCDAA39885B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{2FF2AE7B-21F8-4EEF-9B47-3FCDAA39885B}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{2FF2AE7B-21F8-4EEF-9B47-3FCDAA39885B}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{2FF2AE7B-21F8-4EEF-9B47-3FCDAA39885B}.Release|Any CPU.Build.0 = Release|Any CPU
+		{1FF2753E-6F90-400D-9A98-E5FE3F79518E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{1FF2753E-6F90-400D-9A98-E5FE3F79518E}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{1FF2753E-6F90-400D-9A98-E5FE3F79518E}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{1FF2753E-6F90-400D-9A98-E5FE3F79518E}.Release|Any CPU.Build.0 = Release|Any CPU
+		{1D6CF3B6-41D3-46B8-BD6B-03FD32483763}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{1D6CF3B6-41D3-46B8-BD6B-03FD32483763}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{1D6CF3B6-41D3-46B8-BD6B-03FD32483763}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{1D6CF3B6-41D3-46B8-BD6B-03FD32483763}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -123,6 +141,9 @@ Global
 		{74CA5F89-A99B-49AE-B690-376900DF488E} = {749ADE74-A6F0-4469-A638-8FD7E82A8667}
 		{E079DF81-BA19-4F71-85D6-AE36463F2B7F} = {749ADE74-A6F0-4469-A638-8FD7E82A8667}
 		{E71A7E6D-B320-40A1-BF86-C2857B472313} = {71B30DC4-AB27-4D30-8481-B4C326D074CB}
+		{2FF2AE7B-21F8-4EEF-9B47-3FCDAA39885B} = {749ADE74-A6F0-4469-A638-8FD7E82A8667}
+		{1FF2753E-6F90-400D-9A98-E5FE3F79518E} = {71B30DC4-AB27-4D30-8481-B4C326D074CB}
+		{1D6CF3B6-41D3-46B8-BD6B-03FD32483763} = {749ADE74-A6F0-4469-A638-8FD7E82A8667}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {193D13DE-424B-4D50-B674-01F9E4CC2CA9}

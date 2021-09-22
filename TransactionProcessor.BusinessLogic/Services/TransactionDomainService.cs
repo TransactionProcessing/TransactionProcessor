@@ -61,7 +61,7 @@
         /// The reconciliation aggregate repository
         /// </summary>
         private readonly IAggregateRepository<ReconciliationAggregate, DomainEventRecord.DomainEvent> ReconciliationAggregateRepository;
-
+        
         #endregion
 
         #region Constructors

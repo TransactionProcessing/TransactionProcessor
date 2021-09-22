@@ -18,7 +18,8 @@ namespace TransactionProcessor.BusinessLogic.Common
         /// <param name="additionalTransactionMetadata">The additional transaction metadata.</param>
         /// <returns></returns>
         [ExcludeFromCodeCoverage]
-        public static T ExtractFieldFromMetadata<T>(this Dictionary<String, String> additionalTransactionMetadata, String fieldName)
+        public static T ExtractFieldFromMetadata<T>(this Dictionary<String, String> additionalTransactionMetadata,
+                                                    String fieldName)
         {
             // Create a case insensitive version of the dictionary
             Dictionary<String, String> caseInsensitiveDictionary = new Dictionary<String, String>(StringComparer.InvariantCultureIgnoreCase);
@@ -36,6 +37,24 @@ namespace TransactionProcessor.BusinessLogic.Common
             {
                 return default(T);
             }
+        }
+
+        public static Guid ToGuid(this DateTime dt)
+        {
+            var bytes = BitConverter.GetBytes(dt.Ticks);
+
+            Array.Resize(ref bytes, 16);
+
+            return new Guid(bytes);
+        }
+
+        public static DateTime ToDateTime(this Guid guid)
+        {
+            var bytes = guid.ToByteArray();
+
+            Array.Resize(ref bytes, 8);
+
+            return new DateTime(BitConverter.ToInt64(bytes));
         }
     }
 }

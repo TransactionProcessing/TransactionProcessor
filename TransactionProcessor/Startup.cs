@@ -42,6 +42,7 @@ namespace TransactionProcessor
     using Newtonsoft.Json.Serialization;
     using NLog.Extensions.Logging;
     using SecurityService.Client;
+    using SettlementAggregates;
     using Shared.DomainDrivenDesign.CommandHandling;
     using Shared.DomainDrivenDesign.EventSourcing;
     using Shared.EntityFramework.ConnectionStringConfiguration;
@@ -55,6 +56,7 @@ namespace TransactionProcessor
     using Shared.Repositories;
     using Swashbuckle.AspNetCore.Filters;
     using Swashbuckle.AspNetCore.SwaggerGen;
+    using TransactionAggregate;
     using VoucherManagement.Client;
     using ILogger = Microsoft.Extensions.Logging.ILogger;
 
@@ -155,6 +157,7 @@ namespace TransactionProcessor
             services.AddSingleton<ITransactionAggregateManager, TransactionAggregateManager>();
             services.AddSingleton<IAggregateRepository<TransactionAggregate.TransactionAggregate, DomainEventRecord.DomainEvent>, AggregateRepository<TransactionAggregate.TransactionAggregate, DomainEventRecord.DomainEvent>>();
             services.AddSingleton<IAggregateRepository<ReconciliationAggregate.ReconciliationAggregate, DomainEventRecord.DomainEvent>, AggregateRepository<ReconciliationAggregate.ReconciliationAggregate, DomainEventRecord.DomainEvent>>();
+            services.AddSingleton<IAggregateRepository<PendingSettlementAggregate, DomainEventRecord.DomainEvent>, AggregateRepository<PendingSettlementAggregate, DomainEventRecord.DomainEvent>>();
             services.AddSingleton<ITransactionDomainService, TransactionDomainService>();
             services.AddSingleton<Factories.IModelFactory, Factories.ModelFactory>();
             services.AddSingleton<ISecurityServiceClient, SecurityServiceClient>();

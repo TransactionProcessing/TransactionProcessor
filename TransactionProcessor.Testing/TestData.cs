@@ -72,6 +72,8 @@
 
         public static Guid TransactionId = Guid.Parse("AE89B2F6-307B-46F4-A8E7-CEF27097D766");
 
+        public static Guid PendingSettlementAggregateId = Guid.Parse("BAEBA232-CD7F-46F5-AE2E-3204FE69A441");
+
         public static String TransactionNumber = "0001";
 
         public static TransactionType TransactionTypeLogon = TransactionType.Logon;
@@ -696,6 +698,8 @@
 
         public static Guid TransactionFeeId = Guid.Parse("B83FCCCE-0D45-4FC2-8952-ED277A124BDB");
 
+        public static Guid TransactionFeeId2 = Guid.Parse("CA2D5119-1232-41D6-B6FD-9D84B9B5460C");
+
         public static String TransactionFeeDescription = "Commission for Merchant";
 
         public static Decimal TransactionFeeValue = 0.5m;
@@ -722,6 +726,7 @@
         public static String VoucherCode = "ABCDE1234";
         public static Guid VoucherId = Guid.Parse("ED744C18-1F45-47E7-A9FC-7AAC1D9E9D8A");
 
+        public static DateTime SettlementDate = new DateTime(2021,9,22, 1,2,3);
 
         public static List<ContractProductTransactionFee> ContractProductTransactionFees =>
             new List<ContractProductTransactionFee>
@@ -741,6 +746,16 @@
                 CalculatedValue = TestData.CalculatedFeeValue,
                 FeeCalculationType = CalculationType.Fixed,
                 FeeId = TestData.TransactionFeeId,
+                FeeValue = TestData.TransactionFeeValue,
+                FeeType = FeeType.Merchant
+            };
+
+        public static CalculatedFee CalculatedFeeMerchantFee2 =>
+            new CalculatedFee
+            {
+                CalculatedValue = TestData.CalculatedFeeValue,
+                FeeCalculationType = CalculationType.Fixed,
+                FeeId = TestData.TransactionFeeId2,
                 FeeValue = TestData.TransactionFeeValue,
                 FeeType = FeeType.Merchant
             };
