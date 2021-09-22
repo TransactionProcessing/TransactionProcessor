@@ -890,7 +890,7 @@ namespace TransactionProcessor.IntegrationTests.Shared
                                             CancellationToken.None);
                                     
                                     pendingSettlements.NumberOfFeesPendingSettlement.ShouldBe(numberOfFees);
-                                });
+                                }, TimeSpan.FromMinutes(3));
             }
         }
 
