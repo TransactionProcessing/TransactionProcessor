@@ -62,6 +62,18 @@ namespace TransactionProcessor.SettlementAggregates.Tests
         }
 
         [Fact]
+        public void PendingSettlementAggregate_AddFee_TwoFeesAdded_SameFeeIdDifferentTransaction_FeesAreAdded()
+        {
+            PendingSettlementAggregate aggregate = PendingSettlementAggregate.Create(TestData.PendingSettlementAggregateId);
+            aggregate.Create(TestData.EstateId, TestData.SettlementDate);
+            aggregate.AddFee(TestData.MerchantId, TestData.TransactionId, TestData.CalculatedFeeMerchantFee);
+            aggregate.AddFee(TestData.MerchantId, TestData.TransactionId2, TestData.CalculatedFeeMerchantFee);
+
+            aggregate.AggregateId.ShouldBe(TestData.PendingSettlementAggregateId);
+            aggregate.GetNumberOfFeesPendingSettlement().ShouldBe(2);
+        }
+
+        [Fact]
         public void PendingSettlementAggregate_AddFee_AggregateNotCreated_ErrorThrown()
         {
             PendingSettlementAggregate aggregate = PendingSettlementAggregate.Create(TestData.PendingSettlementAggregateId);
