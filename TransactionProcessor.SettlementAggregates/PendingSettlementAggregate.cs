@@ -72,7 +72,7 @@
             }
 
             this.CheckHasBeenCreated();
-            this.CheckFeeHasNotAlreadyBeenAdded(calculatedFee);
+            this.CheckFeeHasNotAlreadyBeenAdded(transactionId, calculatedFee);
 
             DomainEventRecord.DomainEvent @event = null;
             if (calculatedFee.FeeType == FeeType.Merchant)
@@ -137,11 +137,11 @@
             return null;
         }
 
-        private void CheckFeeHasNotAlreadyBeenAdded(CalculatedFee calculatedFee)
+        private void CheckFeeHasNotAlreadyBeenAdded(Guid transactionId, CalculatedFee calculatedFee)
         {
-            if (this.CalculatedFeesPendingSettlement.Any(c => c.calculatedFee.FeeId == calculatedFee.FeeId))
+            if (this.CalculatedFeesPendingSettlement.Any(c => c.calculatedFee.FeeId == calculatedFee.FeeId && c.transactionId == transactionId))
             {
-                throw new InvalidOperationException($"Fee with Id [{calculatedFee.FeeId}] has already been added to this days pending settlement");
+                throw new InvalidOperationException($"Fee with Id [{calculatedFee.FeeId}] for Transaction Id [{transactionId}] has already been added to this days pending settlement");
             }
         }
 

@@ -247,12 +247,14 @@ namespace TransactionProcessor.IntegrationTests.Settlement
         [Xunit.SkippableFactAttribute(DisplayName="Settlement Processing")]
         [Xunit.TraitAttribute("FeatureTitle", "Settlement")]
         [Xunit.TraitAttribute("Description", "Settlement Processing")]
+        [Xunit.TraitAttribute("Category", "PRTest")]
         public virtual void SettlementProcessing()
         {
-            string[] tagsOfScenario = ((string[])(null));
+            string[] tagsOfScenario = new string[] {
+                    "PRTest"};
             System.Collections.Specialized.OrderedDictionary argumentsOfScenario = new System.Collections.Specialized.OrderedDictionary();
             TechTalk.SpecFlow.ScenarioInfo scenarioInfo = new TechTalk.SpecFlow.ScenarioInfo("Settlement Processing", null, tagsOfScenario, argumentsOfScenario);
-#line 49
+#line 50
 this.ScenarioInitialize(scenarioInfo);
 #line hidden
             bool isScenarioIgnored = default(bool);
@@ -315,7 +317,7 @@ this.FeatureBackground();
                             "testcontact3@merchant2.co.uk",
                             "Test Estate 1",
                             "Monthly"});
-#line 50
+#line 51
  testRunner.Given("I create the following merchants", ((string)(null)), table71, "Given ");
 #line hidden
                 TechTalk.SpecFlow.Table table72 = new TechTalk.SpecFlow.Table(new string[] {
@@ -360,7 +362,7 @@ this.FeatureBackground();
                             "00000003",
                             "10000003",
                             "Test Estate 1"});
-#line 56
+#line 57
  testRunner.Given("I have assigned the following  operator to the merchants", ((string)(null)), table72, "Given ");
 #line hidden
                 TechTalk.SpecFlow.Table table73 = new TechTalk.SpecFlow.Table(new string[] {
@@ -379,7 +381,7 @@ this.FeatureBackground();
                             "123456782",
                             "Test Merchant 3",
                             "Test Estate 1"});
-#line 65
+#line 66
  testRunner.Given("I have assigned the following devices to the merchants", ((string)(null)), table73, "Given ");
 #line hidden
                 TechTalk.SpecFlow.Table table74 = new TechTalk.SpecFlow.Table(new string[] {
@@ -406,7 +408,7 @@ this.FeatureBackground();
                             "Today",
                             "Test Merchant 3",
                             "Test Estate 1"});
-#line 71
+#line 72
  testRunner.Given("I make the following manual merchant deposits", ((string)(null)), table74, "Given ");
 #line hidden
                 TechTalk.SpecFlow.Table table75 = new TechTalk.SpecFlow.Table(new string[] {
@@ -544,7 +546,7 @@ this.FeatureBackground();
                             "10 KES",
                             "test@recipient.co.uk",
                             ""});
-#line 77
+#line 78
  testRunner.When("I perform the following transactions", ((string)(null)), table75, "When ");
 #line hidden
                 TechTalk.SpecFlow.Table table76 = new TechTalk.SpecFlow.Table(new string[] {
@@ -601,7 +603,7 @@ this.FeatureBackground();
                             "8",
                             "0000",
                             "SUCCESS"});
-#line 88
+#line 89
  testRunner.Then("transaction response should contain the following information", ((string)(null)), table76, "Then ");
 #line hidden
                 TechTalk.SpecFlow.Table table77 = new TechTalk.SpecFlow.Table(new string[] {
@@ -616,7 +618,7 @@ this.FeatureBackground();
                             "NextMonth",
                             "Test Estate 1",
                             "1"});
-#line 99
+#line 100
  testRunner.When("I get the pending settlements the following information should be returned", ((string)(null)), table77, "When ");
 #line hidden
             }

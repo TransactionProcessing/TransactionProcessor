@@ -229,6 +229,10 @@
                     await this.TransactionAggregateManager.AddFee(transactionAggregate.EstateId, transactionAggregate.AggregateId, calculatedFee, cancellationToken);
                 }
             }
+            else if (merchant.SettlementSchedule == SettlementSchedule.NotSet)
+            {
+                throw new NotSupportedException($"Merchant {merchant.MerchantId} does not have a settlement schedule configured");
+            }
             else
             {
                 foreach (CalculatedFee calculatedFee in merchantFees)

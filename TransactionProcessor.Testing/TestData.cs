@@ -72,6 +72,8 @@
 
         public static Guid TransactionId = Guid.Parse("AE89B2F6-307B-46F4-A8E7-CEF27097D766");
 
+        public static Guid TransactionId2 = Guid.Parse("760E702C-682E-41B1-A582-3D4ECA0F38C3");
+
         public static Guid PendingSettlementAggregateId = Guid.Parse("BAEBA232-CD7F-46F5-AE2E-3204FE69A441");
 
         public static String TransactionNumber = "0001";
