@@ -60,4 +60,22 @@
 
         }
     }
+
+    public class SettlementRequestHanslerTests
+    {
+        [Fact]
+        public void TransactionRequestHandler_ProcessLogonTransactionRequest_IsHandled()
+        {
+            Mock<ITransactionDomainService> transactionDomainService = new Mock<ITransactionDomainService>();
+            SettlementRequestHandler handler = new SettlementRequestHandler(transactionDomainService.Object);
+
+            ProcessSettlementRequest command = TestData.ProcessSettlementRequest;
+
+            Should.NotThrow(async () =>
+                            {
+                                await handler.Handle(command, CancellationToken.None);
+                            });
+
+        }
+    }
 }

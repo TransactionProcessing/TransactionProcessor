@@ -41,6 +41,8 @@
                     return today.AddDays(-1).Date;
                 case "LASTWEEK":
                     return today.AddDays(-7).Date;
+                case "NEXTWEEK":
+                    return today.AddDays(7).Date;
                 case "LASTMONTH":
                     return today.AddMonths(-1).Date;
                 case "LASTYEAR":

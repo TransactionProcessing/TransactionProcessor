@@ -1,9 +1,14 @@
-﻿namespace TransactionProcessor.Settlement.DomainEvents
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+
+namespace TransactionProcessor.Settlement.DomainEvents
 {
-    using System;
     using Shared.DomainDrivenDesign.EventSourcing;
 
-    public record MerchantFeeAddedPendingSettlementEvent : DomainEventRecord.DomainEvent
+    public record MerchantFeeSettledEvent : DomainEventRecord.DomainEvent
     {
         #region Properties
 
@@ -75,15 +80,15 @@
 
         #endregion
 
-        public MerchantFeeAddedPendingSettlementEvent(Guid aggregateId,
-                                                      Guid estateId,
-                                                      Guid merchantId,
-                                                      Guid transactionId,
-                                                      Decimal calculatedValue,
-                                                      Int32 feeCalculationType,
-                                                      Guid feeId,
-                                                      Decimal feeValue,
-                                                      DateTime feeCalculatedDateTime) : base(aggregateId, Guid.NewGuid())
+        public MerchantFeeSettledEvent(Guid aggregateId,
+                                       Guid estateId,
+                                       Guid merchantId,
+                                       Guid transactionId,
+                                       Decimal calculatedValue,
+                                       Int32 feeCalculationType,
+                                       Guid feeId,
+                                       Decimal feeValue,
+                                       DateTime feeCalculatedDateTime) : base(aggregateId, Guid.NewGuid())
         {
             this.EstateId = estateId;
             this.MerchantId = merchantId;

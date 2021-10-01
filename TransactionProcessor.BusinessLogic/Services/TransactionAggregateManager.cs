@@ -85,6 +85,20 @@
 
         }
 
+        public async Task AddSettledFee(Guid estateId,
+                                        Guid transactionId,
+                                        CalculatedFee calculatedFee,
+                                        DateTime settlementDueDate,
+                                        DateTime settledDateTime,
+                                        CancellationToken cancellationToken)
+        {
+            TransactionAggregate transactionAggregate = await this.TransactionAggregateRepository.GetLatestVersion(transactionId, cancellationToken);
+
+            transactionAggregate.AddSettledFee(calculatedFee, settlementDueDate, settledDateTime);
+
+            await this.TransactionAggregateRepository.SaveChanges(transactionAggregate, cancellationToken);
+        }
+
         /// <summary>
         /// Authorises the transaction.
         /// </summary>

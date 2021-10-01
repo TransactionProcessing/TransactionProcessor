@@ -82,6 +82,10 @@
                                                                                         Decimal transactionValue,
                                                                                         CancellationToken cancellationToken);
 
+        Task<ProcessSettlementResponse> ProcessSettlement(DateTime pendingSettlementDate,
+                                                          Guid estateId,
+                                                          CancellationToken cancellationToken);
+
         #endregion
     }
 }

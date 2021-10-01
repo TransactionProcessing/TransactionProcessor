@@ -12,6 +12,7 @@
     using Models;
     using ReconciliationAggregate;
     using SecurityService.DataTransferObjects.Responses;
+    using SettlementAggregates;
     using Transaction.DomainEvents;
     using TransactionAggregate;
     using VoucherManagement.DataTransferObjects;
@@ -74,7 +75,7 @@
 
         public static Guid TransactionId2 = Guid.Parse("760E702C-682E-41B1-A582-3D4ECA0F38C3");
 
-        public static Guid PendingSettlementAggregateId = Guid.Parse("BAEBA232-CD7F-46F5-AE2E-3204FE69A441");
+        public static Guid SettlementAggregateId = Guid.Parse("BAEBA232-CD7F-46F5-AE2E-3204FE69A441");
 
         public static String TransactionNumber = "0001";
 
@@ -145,18 +146,18 @@
         /// <value>
         /// The additional transaction meta data.
         /// </value>
-        public static Dictionary<String, String> AdditionalTransactionMetaData(String amountName = "Amount", String customerAccountNumberName = "CustomerAccountNumber") =>
+        public static Dictionary<String, String> AdditionalTransactionMetaData(String amountName = "Amount", String customerAccountNumberName = "CustomerAccountNumber", String amount="100.00", String customerAccountNumber = "123456789") =>
             new Dictionary<String, String>
             {
-                {amountName, "100.00"},
-                {customerAccountNumberName, "123456789" }
+                {amountName, amount},
+                {customerAccountNumberName, customerAccountNumber }
             };
 
-        public static Dictionary<String, String> AdditionalTransactionMetaDataForVoucher(String amountName = "Amount", String recipientEmailName = "RecipientEmail") =>
+        public static Dictionary<String, String> AdditionalTransactionMetaDataForVoucher(String amountName = "Amount", String recipientEmailName = "RecipientEmail", String amount = "100.00", String recipientEmail = "test@testvoucher.co.uk") =>
             new Dictionary<String, String>
             {
-                {amountName, "100.00"},
-                {recipientEmailName, "test@testvoucher.co.uk" }
+                {amountName, amount},
+                {recipientEmailName, recipientEmail }
 
             };
 
@@ -387,6 +388,10 @@
                                                   TestData.TransactionTypeLogon.ToString(),
                                                   TestData.TransactionDateTime,
                                                   TestData.TransactionNumber);
+
+        public static ProcessSettlementRequest ProcessSettlementRequest =>
+            ProcessSettlementRequest.Create(TestData.SettlementDate,
+                                            TestData.EstateId);
 
         public static ProcessLogonTransactionResponse ProcessLogonTransactionResponseModel =>
             new ProcessLogonTransactionResponse
@@ -689,6 +694,17 @@
         public static CustomerEmailReceiptRequestedEvent CustomerEmailReceiptRequestedEvent =
             new CustomerEmailReceiptRequestedEvent(TestData.TransactionId, TestData.EstateId, TestData.MerchantId, TestData.CustomerEmailAddress);
 
+        public static MerchantFeeAddedToTransactionEvent MerchantFeeAddedToTransactionEvent(DateTime settlementDueDate) => new MerchantFeeAddedToTransactionEvent(TestData.SettlementAggregateId,
+            TestData.EstateId,
+            TestData.MerchantId,
+            TestData.CalculatedFeeValue,
+            (Int32)CalculationType.Fixed,
+            TestData.TransactionFeeId,
+            TestData.CalculatedFeeValue,
+            TestData.TransactionFeeCalculateDateTime,
+            settlementDueDate,
+            TestData.SettlementDate);
+
         public static TransactionHasBeenCompletedEvent TransactionHasBeenCompletedEvent = new TransactionHasBeenCompletedEvent(TestData.TransactionId,
                                                                                                                                   TestData.EstateId,
                                                                                                                                   TestData.MerchantId,
@@ -707,6 +723,11 @@
         public static Decimal TransactionFeeValue = 0.5m;
 
         public static DateTime TransactionFeeCalculateDateTime = new DateTime(2021, 3, 18);
+
+        public static DateTime TransactionFeeSettlementDueDate = new DateTime(2021, 3, 19);
+
+        public static DateTime TransactionFeeSettledDateTime = new DateTime(2021, 3, 19,1,2,3);
+
         public static Decimal CalculatedFeeValue = 0.5m;
 
         public static Int32 ReconciliationTransactionCount = 1;
@@ -742,12 +763,22 @@
                 }
             };
 
-        public static CalculatedFee CalculatedFeeMerchantFee =>
+        public static CalculatedFee CalculatedFeeMerchantFee() =>
             new CalculatedFee
             {
                 CalculatedValue = TestData.CalculatedFeeValue,
                 FeeCalculationType = CalculationType.Fixed,
                 FeeId = TestData.TransactionFeeId,
+                FeeValue = TestData.TransactionFeeValue,
+                FeeType = FeeType.Merchant
+            };
+
+        public static CalculatedFee CalculatedFeeMerchantFee(Guid transactionFeeId) =>
+            new CalculatedFee
+            {
+                CalculatedValue = TestData.CalculatedFeeValue,
+                FeeCalculationType = CalculationType.Fixed,
+                FeeId = transactionFeeId,
                 FeeValue = TestData.TransactionFeeValue,
                 FeeType = FeeType.Merchant
             };
@@ -785,7 +816,7 @@
         public static List<CalculatedFee> CalculatedMerchantFees =>
             new List<CalculatedFee>
             {
-                TestData.CalculatedFeeMerchantFee
+                TestData.CalculatedFeeMerchantFee()
             };
 
         public static List<CalculatedFee> CalculatedServiceProviderFees =>
@@ -793,6 +824,66 @@
             {
                 TestData.CalculatedFeeServiceProviderFee
             };
+
+        public static SettlementAggregate GetEmptySettlementAggregate()
+        {
+            return SettlementAggregate.Create(TestData.SettlementAggregateId);
+        }
+
+        public static SettlementAggregate GetCreatedSettlementAggregate()
+        {
+            var aggregate = SettlementAggregate.Create(TestData.SettlementAggregateId);
+            aggregate.Create(TestData.EstateId, TestData.SettlementDate);
+            return aggregate;
+        }
+
+        public static SettlementAggregate GetSettlementAggregateWithPendingMerchantFees(Int32 numberOfFees)
+        {
+            var aggregate = SettlementAggregate.Create(TestData.SettlementAggregateId);
+            aggregate.Create(TestData.EstateId, TestData.SettlementDate);
+
+            for (int i = 0; i < numberOfFees; i++)
+            {
+                aggregate.AddFee(TestData.MerchantId, Guid.NewGuid(), CalculatedFeeMerchantFee(Guid.NewGuid()));
+            }
+
+            return aggregate;
+        }
+
+        public static SettlementAggregate GetSettlementAggregateWithAllFeesSettled(Int32 numberOfFees)
+        {
+            var aggregate = SettlementAggregate.Create(TestData.SettlementAggregateId);
+            aggregate.Create(TestData.EstateId, TestData.SettlementDate);
+
+            for (int i = 0; i < numberOfFees; i++)
+            {
+                Guid transactionId = Guid.NewGuid();
+                Guid transactionFeeId = Guid.NewGuid();
+                aggregate.AddFee(TestData.MerchantId, transactionId, CalculatedFeeMerchantFee(transactionFeeId));
+                aggregate.MarkFeeAsSettled(TestData.MerchantId, transactionId, transactionFeeId);
+            }
+
+            return aggregate;
+        }
+
+        public static SettlementAggregate GetSettlementAggregateWithNotAllFeesSettled(Int32 numberOfFees)
+        {
+            var aggregate = SettlementAggregate.Create(TestData.SettlementAggregateId);
+            aggregate.Create(TestData.EstateId, TestData.SettlementDate);
+
+            for (int i = 0; i <= numberOfFees; i++)
+            {
+                Guid transactionId = Guid.NewGuid();
+                Guid transactionFeeId = Guid.NewGuid();
+                aggregate.AddFee(TestData.MerchantId, transactionId, CalculatedFeeMerchantFee(transactionFeeId));
+                if (i < numberOfFees)
+                {
+                    aggregate.MarkFeeAsSettled(TestData.MerchantId, transactionId, transactionFeeId);
+                }
+            }
+
+            return aggregate;
+        }
 
         #endregion
     }

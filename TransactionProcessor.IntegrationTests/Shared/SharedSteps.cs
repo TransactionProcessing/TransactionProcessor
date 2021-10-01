@@ -883,17 +883,41 @@ namespace TransactionProcessor.IntegrationTests.Shared
 
                 await Retry.For(async () =>
                                 {
-                                    PendingSettlementResponse pendingSettlements =
-                                        await this.TestingContext.DockerHelper.TransactionProcessorClient.GetPendingSettlementByDate(this.TestingContext.AccessToken,
+                                    SettlementResponse settlements =
+                                        await this.TestingContext.DockerHelper.TransactionProcessorClient.GetSettlementByDate(this.TestingContext.AccessToken,
                                             nextSettlementDate,
                                             estateDetails.EstateId,
                                             CancellationToken.None);
                                     
-                                    pendingSettlements.NumberOfFeesPendingSettlement.ShouldBe(numberOfFees);
+                                    settlements.NumberOfFeesPendingSettlement.ShouldBe(numberOfFees);
                                 }, TimeSpan.FromMinutes(3));
             }
         }
 
+        [When(@"I process the settlement for '([^']*)' on Estate '([^']*)' then (.*) fees are marked as settled and the settlement is completed")]
+        public async Task WhenIProcessTheSettlementForOnEstateThenFeesAreMarkedAsSettledAndTheSettlementIsCompleted(String dateString, String estateName, Int32 numberOfFeesSettled)
+        {
+            var settlementDate = SpecflowTableHelper.GetDateForDateString(dateString, DateTime.Now);
+            EstateDetails estateDetails = this.TestingContext.GetEstateDetails(estateName);
+            await this.TestingContext.DockerHelper.TransactionProcessorClient.ProcessSettlement(this.TestingContext.AccessToken,
+                                                                                          settlementDate,
+                                                                                          estateDetails.EstateId,
+                                                                                          CancellationToken.None);
+
+            await Retry.For(async () =>
+                            {
+                                SettlementResponse settlement =
+                                    await this.TestingContext.DockerHelper.TransactionProcessorClient.GetSettlementByDate(this.TestingContext.AccessToken,
+                                        settlementDate,
+                                        estateDetails.EstateId,
+                                        CancellationToken.None);
+
+                                settlement.NumberOfFeesPendingSettlement.ShouldBe(0);
+                                settlement.NumberOfFeesSettled.ShouldBe(numberOfFeesSettled);
+                                settlement.SettlementCompleted.ShouldBeTrue();
+                            });
+        }
+        
         private DateTime GetNextSettlementDate(DateTime now,
                                                String nextSettlementDate)
         {

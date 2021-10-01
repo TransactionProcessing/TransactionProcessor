@@ -90,14 +90,14 @@
             return response;
         }
 
-        public async Task<PendingSettlementResponse> GetPendingSettlementByDate(String accessToken,
-                                                                                DateTime pendingSettlementDate,
+        public async Task<SettlementResponse> GetSettlementByDate(String accessToken,
+                                                                                DateTime settlementDate,
                                                                                 Guid estateId,
                                                                                 CancellationToken cancellationToken)
         {
-            PendingSettlementResponse response = null;
+            SettlementResponse response = null;
 
-            String requestUri = $"{this.BaseAddress}/api/settlements/{pendingSettlementDate.Date:yyyy-MM-dd}/estates/{estateId}/pending";
+            String requestUri = $"{this.BaseAddress}/api/settlements/{settlementDate.Date:yyyy-MM-dd}/estates/{estateId}/pending";
 
             try
             {
@@ -111,17 +111,47 @@
                 String content = await this.HandleResponse(httpResponse, cancellationToken);
 
                 // call was successful so now deserialise the body to the response object
-                response = JsonConvert.DeserializeObject<PendingSettlementResponse>(content);
+                response = JsonConvert.DeserializeObject<SettlementResponse>(content);
             }
             catch (Exception ex)
             {
                 // An exception has occurred, add some additional information to the message
-                Exception exception = new Exception("Error getting pending settlment.", ex);
+                Exception exception = new Exception("Error getting settlment.", ex);
 
                 throw exception;
             }
 
             return response;
+        }
+
+        public async Task ProcessSettlement(String accessToken,
+                                            DateTime settlementDate,
+                                            Guid estateId,
+                                            CancellationToken cancellationToken)
+        {
+            String requestUri = $"{this.BaseAddress}/api/settlements/{settlementDate.Date:yyyy-MM-dd}/estates/{estateId}";
+
+            try
+            {
+                // Add the access token to the client headers
+                this.HttpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", accessToken);
+
+                StringContent requestContent = new StringContent(String.Empty);
+
+                // Make the Http Call here
+                HttpResponseMessage httpResponse = await this.HttpClient.PostAsync(requestUri, requestContent, cancellationToken);
+
+                // Process the response
+                await this.HandleResponse(httpResponse, cancellationToken);
+
+            }
+            catch (Exception ex)
+            {
+                // An exception has occurred, add some additional information to the message
+                Exception exception = new Exception("Error processing settlment.", ex);
+
+                throw exception;
+            }
         }
 
         #endregion

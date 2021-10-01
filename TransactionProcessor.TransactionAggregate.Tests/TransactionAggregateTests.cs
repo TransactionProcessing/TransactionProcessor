@@ -1003,7 +1003,6 @@ namespace TransactionProcessor.TransactionAggregate.Tests
 
         [Theory]
         [InlineData(TransactionType.Sale, FeeType.ServiceProvider)]
-        [InlineData(TransactionType.Sale, FeeType.Merchant)]
         public void TransactionAggregate_AddFee_FeeDetailsAdded(TransactionType transactionType, FeeType feeType)
         {
             TransactionAggregate transactionAggregate = TransactionAggregate.Create(TestData.TransactionId);
@@ -1072,7 +1071,7 @@ namespace TransactionProcessor.TransactionAggregate.Tests
             CalculatedFee calculatedFee = null;
             if (feeType == FeeType.Merchant)
             {
-                calculatedFee = TestData.CalculatedFeeMerchantFee;
+                calculatedFee = TestData.CalculatedFeeMerchantFee();
             }
             else if (feeType == FeeType.ServiceProvider)
             {
@@ -1084,7 +1083,6 @@ namespace TransactionProcessor.TransactionAggregate.Tests
 
         [Theory]
         [InlineData(TransactionType.Sale, FeeType.ServiceProvider)]
-        [InlineData(TransactionType.Sale, FeeType.Merchant)]
         public void TransactionAggregate_AddFee_TransactionNotCompleted_ErrorThrown(TransactionType transactionType, FeeType feeType)
         {
             TransactionAggregate transactionAggregate = TransactionAggregate.Create(TestData.TransactionId);
@@ -1102,7 +1100,6 @@ namespace TransactionProcessor.TransactionAggregate.Tests
 
         [Theory]
         [InlineData(TransactionType.Sale, FeeType.ServiceProvider)]
-        [InlineData(TransactionType.Sale, FeeType.Merchant)]
         public void TransactionAggregate_AddFee_FeeAlreadyAdded_ErrorThrown(TransactionType transactionType, FeeType feeType)
         {
             TransactionAggregate transactionAggregate = TransactionAggregate.Create(TestData.TransactionId);
@@ -1154,6 +1151,144 @@ namespace TransactionProcessor.TransactionAggregate.Tests
                                                     {
                                                         transactionAggregate.AddFee(this.GetCalculatedFeeToAdd(feeType));
                                                     });
+        }
+
+
+        //###############
+
+        [Theory]
+        [InlineData(TransactionType.Sale, FeeType.Merchant)]
+        public void TransactionAggregate_AddSettledFee_FeeDetailsAdded(TransactionType transactionType, FeeType feeType)
+        {
+            TransactionAggregate transactionAggregate = TransactionAggregate.Create(TestData.TransactionId);
+            transactionAggregate.StartTransaction(TestData.TransactionDateTime, TestData.TransactionNumber, transactionType, TestData.TransactionReference, TestData.EstateId, TestData.MerchantId, TestData.DeviceIdentifier,
+                                                  TestData.TransactionAmount);
+
+            transactionAggregate.AddProductDetails(TestData.ContractId, TestData.ProductId);
+            transactionAggregate.AuthoriseTransaction(TestData.OperatorIdentifier1, TestData.OperatorAuthorisationCode, TestData.OperatorResponseCode, TestData.OperatorResponseMessage, TestData.OperatorTransactionId, TestData.ResponseCode, TestData.ResponseMessage);
+            transactionAggregate.CompleteTransaction();
+
+            CalculatedFee calculatedFee = this.GetCalculatedFeeToAdd(feeType);
+
+            transactionAggregate.AddSettledFee(calculatedFee, TestData.TransactionFeeSettlementDueDate, TestData.SettlementDate);
+
+            List<CalculatedFee> fees = transactionAggregate.GetFees();
+
+            fees.ShouldHaveSingleItem();
+            CalculatedFee calculatedFeeAdded = fees.Single();
+            calculatedFeeAdded.FeeId.ShouldBe(calculatedFee.FeeId);
+            calculatedFeeAdded.CalculatedValue.ShouldBe(calculatedFee.CalculatedValue);
+            calculatedFeeAdded.FeeCalculationType.ShouldBe(calculatedFee.FeeCalculationType);
+            calculatedFeeAdded.FeeType.ShouldBe(calculatedFee.FeeType);
+            calculatedFeeAdded.FeeValue.ShouldBe(calculatedFee.FeeValue);
+
+        }
+
+        [Theory]
+        [InlineData(TransactionType.Sale)]
+        public void TransactionAggregate_AddSettledFee_NullFee_ErrorThrown(TransactionType transactionType)
+        {
+            TransactionAggregate transactionAggregate = TransactionAggregate.Create(TestData.TransactionId);
+            transactionAggregate.StartTransaction(TestData.TransactionDateTime, TestData.TransactionNumber, transactionType, TestData.TransactionReference, TestData.EstateId, TestData.MerchantId, TestData.DeviceIdentifier,
+                                                  TestData.TransactionAmount);
+
+            transactionAggregate.AddProductDetails(TestData.ContractId, TestData.ProductId);
+            transactionAggregate.AuthoriseTransaction(TestData.OperatorIdentifier1, TestData.OperatorAuthorisationCode, TestData.OperatorResponseCode, TestData.OperatorResponseMessage, TestData.OperatorTransactionId, TestData.ResponseCode, TestData.ResponseMessage);
+            transactionAggregate.CompleteTransaction();
+
+            Should.Throw<ArgumentNullException>(() =>
+            {
+                transactionAggregate.AddSettledFee(null, TestData.TransactionFeeSettlementDueDate, TestData.SettlementDate);
+            });
+        }
+
+        [Theory]
+        [InlineData(TransactionType.Sale, FeeType.Merchant)]
+        public void TransactionAggregate_AddSettledFee_TransactionNotAuthorised_ErrorThrown(TransactionType transactionType, FeeType feeType)
+        {
+            TransactionAggregate transactionAggregate = TransactionAggregate.Create(TestData.TransactionId);
+            transactionAggregate.StartTransaction(TestData.TransactionDateTime, TestData.TransactionNumber, transactionType, TestData.TransactionReference, TestData.EstateId, TestData.MerchantId, TestData.DeviceIdentifier,
+                                                  TestData.TransactionAmount);
+
+            transactionAggregate.AddProductDetails(TestData.ContractId, TestData.ProductId);
+            transactionAggregate.DeclineTransaction(TestData.OperatorIdentifier1, TestData.OperatorResponseCode, TestData.OperatorResponseMessage, TestData.ResponseCode, TestData.ResponseMessage);
+            transactionAggregate.CompleteTransaction();
+
+            Should.Throw<InvalidOperationException>(() =>
+            {
+                transactionAggregate.AddSettledFee(this.GetCalculatedFeeToAdd(feeType), TestData.TransactionFeeSettlementDueDate, TestData.SettlementDate);
+            });
+        }
+
+        [Theory]
+        [InlineData(TransactionType.Sale, FeeType.Merchant)]
+        public void TransactionAggregate_AddSettledFee_TransactionNotCompleted_ErrorThrown(TransactionType transactionType, FeeType feeType)
+        {
+            TransactionAggregate transactionAggregate = TransactionAggregate.Create(TestData.TransactionId);
+            transactionAggregate.StartTransaction(TestData.TransactionDateTime, TestData.TransactionNumber, transactionType, TestData.TransactionReference, TestData.EstateId, TestData.MerchantId, TestData.DeviceIdentifier,
+                                                  TestData.TransactionAmount);
+
+            transactionAggregate.AddProductDetails(TestData.ContractId, TestData.ProductId);
+            transactionAggregate.AuthoriseTransaction(TestData.OperatorIdentifier1, TestData.OperatorAuthorisationCode, TestData.OperatorResponseCode, TestData.OperatorResponseMessage, TestData.OperatorTransactionId, TestData.ResponseCode, TestData.ResponseMessage);
+
+            Should.Throw<InvalidOperationException>(() =>
+            {
+                transactionAggregate.AddSettledFee(this.GetCalculatedFeeToAdd(feeType), TestData.TransactionFeeSettlementDueDate, TestData.SettlementDate);
+            });
+        }
+
+        [Theory]
+        [InlineData(TransactionType.Sale, FeeType.Merchant)]
+        public void TransactionAggregate_AddSettledFee_FeeAlreadyAdded_ErrorThrown(TransactionType transactionType, FeeType feeType)
+        {
+            TransactionAggregate transactionAggregate = TransactionAggregate.Create(TestData.TransactionId);
+            transactionAggregate.StartTransaction(TestData.TransactionDateTime, TestData.TransactionNumber, transactionType, TestData.TransactionReference, TestData.EstateId, TestData.MerchantId, TestData.DeviceIdentifier,
+                                                  TestData.TransactionAmount);
+
+            transactionAggregate.AddProductDetails(TestData.ContractId, TestData.ProductId);
+            transactionAggregate.AuthoriseTransaction(TestData.OperatorIdentifier1, TestData.OperatorAuthorisationCode, TestData.OperatorResponseCode, TestData.OperatorResponseMessage, TestData.OperatorTransactionId, TestData.ResponseCode, TestData.ResponseMessage);
+            transactionAggregate.CompleteTransaction();
+            transactionAggregate.AddSettledFee(this.GetCalculatedFeeToAdd(feeType), TestData.TransactionFeeSettlementDueDate, TestData.SettlementDate);
+
+            Should.Throw<InvalidOperationException>(() =>
+            {
+                transactionAggregate.AddSettledFee(this.GetCalculatedFeeToAdd(feeType), TestData.TransactionFeeSettlementDueDate, TestData.SettlementDate);
+            });
+        }
+
+        [Theory]
+        [InlineData(TransactionType.Sale)]
+        public void TransactionAggregate_AddSettledFee_UnsupportedFeeType_ErrorThrown(TransactionType transactionType)
+        {
+            TransactionAggregate transactionAggregate = TransactionAggregate.Create(TestData.TransactionId);
+            transactionAggregate.StartTransaction(TestData.TransactionDateTime, TestData.TransactionNumber, transactionType, TestData.TransactionReference, TestData.EstateId, TestData.MerchantId, TestData.DeviceIdentifier,
+                                                  TestData.TransactionAmount);
+
+            transactionAggregate.AddProductDetails(TestData.ContractId, TestData.ProductId);
+            transactionAggregate.AuthoriseTransaction(TestData.OperatorIdentifier1, TestData.OperatorAuthorisationCode, TestData.OperatorResponseCode, TestData.OperatorResponseMessage, TestData.OperatorTransactionId, TestData.ResponseCode, TestData.ResponseMessage);
+            transactionAggregate.CompleteTransaction();
+
+            Should.Throw<InvalidOperationException>(() =>
+            {
+                transactionAggregate.AddSettledFee(TestData.CalculatedFeeUnsupportedFee, TestData.TransactionFeeSettlementDueDate, TestData.SettlementDate);
+            });
+        }
+
+        [Theory]
+        [InlineData(FeeType.Merchant)]
+        public void TransactionAggregate_AddSettledFee_LogonTransaction_ErrorThrown(FeeType feeType)
+        {
+            TransactionAggregate transactionAggregate = TransactionAggregate.Create(TestData.TransactionId);
+            transactionAggregate.StartTransaction(TestData.TransactionDateTime, TestData.TransactionNumber, TransactionType.Logon, TestData.TransactionReference, TestData.EstateId, TestData.MerchantId, TestData.DeviceIdentifier,
+                                                  TestData.TransactionAmount);
+
+            transactionAggregate.AuthoriseTransactionLocally(TestData.AuthorisationCode, TestData.ResponseCode, TestData.ResponseMessage);
+            transactionAggregate.CompleteTransaction();
+
+            Should.Throw<NotSupportedException>(() =>
+            {
+                transactionAggregate.AddSettledFee(this.GetCalculatedFeeToAdd(feeType), TestData.TransactionFeeSettlementDueDate, TestData.SettlementDate);
+            });
         }
     }
 }
