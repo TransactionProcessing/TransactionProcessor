@@ -151,9 +151,6 @@ namespace TransactionProcessor.SettlementAggregates.Tests
         {
             SettlementAggregate aggregate = SettlementAggregate.Create(TestData.SettlementAggregateId);
             aggregate.Create(TestData.EstateId, TestData.SettlementDate);
-            //aggregate.AddFee(TestData.MerchantId, TestData.TransactionId, TestData.CalculatedFeeMerchantFee());
-
-            //aggregate.GetNumberOfFeesPendingSettlement().ShouldBe(1);
 
             aggregate.MarkFeeAsSettled(TestData.MerchantId, TestData.TransactionId, TestData.CalculatedFeeMerchantFee().FeeId);
 

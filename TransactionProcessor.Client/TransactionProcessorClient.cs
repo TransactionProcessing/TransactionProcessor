@@ -129,8 +129,6 @@
                                             Guid estateId,
                                             CancellationToken cancellationToken)
         {
-            SettlementResponse response = null;
-
             String requestUri = $"{this.BaseAddress}/api/settlements/{settlementDate.Date:yyyy-MM-dd}/estates/{estateId}";
 
             try
@@ -146,8 +144,6 @@
                 // Process the response
                 await this.HandleResponse(httpResponse, cancellationToken);
 
-                // call was successful so now deserialise the body to the response object
-                //response = JsonConvert.DeserializeObject<SettlementResponse>(content);
             }
             catch (Exception ex)
             {

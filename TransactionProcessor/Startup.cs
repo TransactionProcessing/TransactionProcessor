@@ -270,23 +270,7 @@ namespace TransactionProcessor
             {
                 Address = new Uri(Startup.Configuration.GetValue<String>("EventStoreSettings:ConnectionString")),
             };
-
-
-
-
-            //var connectionString = Startup.Configuration.GetValue<String>("EventStoreSettings:ConnectionString");
-            //settings = EventStoreClientSettings.Create(connectionString);
-            //settings.CreateHttpMessageHandler = () => new SocketsHttpHandler
-            //{
-            //    SslOptions =
-            //                                              {
-            //                                                  RemoteCertificateValidationCallback = (sender,
-            //                                                                                         certificate,
-            //                                                                                         chain,
-            //                                                                                         errors) => true,
-            //                                              }
-            //};
-
+            
             Startup.EventStoreClientSettings = settings;
         }
 
