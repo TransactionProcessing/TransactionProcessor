@@ -44,6 +44,14 @@
                     CalculatedFee calculatedFee,
                     CancellationToken cancellationToken);
 
+
+        Task AddSettledFee(Guid estateId,
+                    Guid transactionId,
+                    CalculatedFee calculatedFee,
+                    DateTime settlementDueDate,
+                    DateTime settledDateTime,
+                    CancellationToken cancellationToken);
+
         /// <summary>
         /// Authorises the transaction.
         /// </summary>

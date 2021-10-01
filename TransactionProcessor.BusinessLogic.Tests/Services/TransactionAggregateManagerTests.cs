@@ -246,7 +246,22 @@ namespace TransactionProcessor.BusinessLogic.Tests.Services
 
             await transactionAggregateManager.AddFee(TestData.EstateId,
                                                      TestData.TransactionId,
-                                                     TestData.CalculatedMerchantFees.First(),
+                                                     TestData.CalculatedFeeServiceProviderFee,
+                                                     CancellationToken.None);
+        }
+
+        [Fact]
+        public async Task TransactionAggregateManager_AddSettledFee_FeeAddedToTransaction()
+        {
+            Mock<IAggregateRepository<TransactionAggregate, DomainEventRecord.DomainEvent>> aggregateRepository = new Mock<IAggregateRepository<TransactionAggregate, DomainEventRecord.DomainEvent>>();
+            aggregateRepository.Setup(a => a.GetLatestVersion(It.IsAny<Guid>(), It.IsAny<CancellationToken>())).ReturnsAsync(TestData.GetCompletedAuthorisedSaleTransactionAggregate);
+            TransactionAggregateManager transactionAggregateManager = new TransactionAggregateManager(aggregateRepository.Object);
+
+            await transactionAggregateManager.AddSettledFee(TestData.EstateId,
+                                                     TestData.TransactionId,
+                                                     TestData.CalculatedFeeMerchantFee2,
+                                                     TestData.TransactionFeeSettlementDueDate,
+                                                     TestData.TransactionFeeSettledDateTime,
                                                      CancellationToken.None);
         }
     }

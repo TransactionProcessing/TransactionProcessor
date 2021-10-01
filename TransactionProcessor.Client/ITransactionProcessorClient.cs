@@ -19,10 +19,15 @@
                                                    SerialisedMessage transactionRequest,
                                                    CancellationToken cancellationToken);
 
-        Task<PendingSettlementResponse> GetPendingSettlementByDate(String accessToken, 
-                                                                   DateTime pendingSettlementDate,
+        Task<SettlementResponse> GetSettlementByDate(String accessToken, 
+                                                                   DateTime settlementDate,
                                                                    Guid estateId,
                                                                    CancellationToken cancellationToken);
+
+        Task ProcessSettlement(String accessToken,
+                               DateTime settlementDate,
+                               Guid estateId,
+                               CancellationToken cancellationToken);
 
         #endregion
     }

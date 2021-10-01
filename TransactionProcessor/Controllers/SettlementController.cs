@@ -8,7 +8,10 @@ namespace TransactionProcessor.Controllers
     using System.Threading;
     using System.Threading.Tasks;
     using BusinessLogic.Common;
+    using BusinessLogic.Requests;
     using DataTransferObjects;
+    using Factories;
+    using MediatR;
     using Microsoft.AspNetCore.Authorization;
     using SettlementAggregates;
     using Shared.DomainDrivenDesign.EventSourcing;
@@ -20,7 +23,11 @@ namespace TransactionProcessor.Controllers
     [Authorize]
     public class SettlementController : ControllerBase
     {
-        private readonly IAggregateRepository<PendingSettlementAggregate, DomainEventRecord.DomainEvent> PendingSettlmentAggregateRepository;
+        private readonly IAggregateRepository<SettlementAggregate, DomainEventRecord.DomainEvent> SettlmentAggregateRepository;
+
+        private readonly IMediator Mediator;
+
+        private readonly IModelFactory ModelFactory;
 
         #region Others
 
@@ -34,34 +41,53 @@ namespace TransactionProcessor.Controllers
         /// </summary>
         private const String ControllerRoute = "api/" + SettlementController.ControllerName;
 
-        public SettlementController(IAggregateRepository<PendingSettlementAggregate, DomainEventRecord.DomainEvent> pendingSettlmentAggregateRepository)
+        public SettlementController(IAggregateRepository<SettlementAggregate, DomainEventRecord.DomainEvent> settlmentAggregateRepository,
+                                    IMediator mediator,
+                                    IModelFactory modelFactory)
         {
-            this.PendingSettlmentAggregateRepository = pendingSettlmentAggregateRepository;
+            this.SettlmentAggregateRepository = settlmentAggregateRepository;
+            this.Mediator = mediator;
+            this.ModelFactory = modelFactory;
         }
 
         [HttpGet]
-        [Route("{pendingSettlementDate}/estates/{estateId}/pending")]
-        public async Task<IActionResult> GetPendingSettlement([FromRoute] DateTime pendingSettlementDate,
+        [Route("{settlementDate}/estates/{estateId}/pending")]
+        public async Task<IActionResult> GetPendingSettlement([FromRoute] DateTime settlementDate,
                                                         [FromRoute] Guid estateId,
                                                         CancellationToken cancellationToken)
         {
             // TODO: Convert to using a manager/model/factory
             // Convert the date passed in to a guid
-            var aggregateId = pendingSettlementDate.Date.ToGuid();
+            var aggregateId = settlementDate.Date.ToGuid();
 
-            var pendingSettlementAggregate = await this.PendingSettlmentAggregateRepository.GetLatestVersion(aggregateId, cancellationToken);
+            var settlementAggregate = await this.SettlmentAggregateRepository.GetLatestVersion(aggregateId, cancellationToken);
 
-            var pendingSettlementResponse = new PendingSettlementResponse
+            var settlementResponse = new SettlementResponse
                                             {
-                                                EstateId = pendingSettlementAggregate.EstateId,
-                                                NumberOfFeesPendingSettlement = pendingSettlementAggregate.GetNumberOfFeesPendingSettlement(),
-                                                NumberOfFeesSettled = pendingSettlementAggregate.GetNumberOfFeesSettled(),
-                                                SettlementDate = pendingSettlementAggregate.SettlmentDate,
+                                                EstateId = settlementAggregate.EstateId,
+                                                NumberOfFeesPendingSettlement = settlementAggregate.GetNumberOfFeesPendingSettlement(),
+                                                NumberOfFeesSettled = settlementAggregate.GetNumberOfFeesSettled(),
+                                                SettlementDate = settlementAggregate.SettlementDate,
+                                                SettlementCompleted = settlementAggregate.SettlementComplete
                                             };
 
-            return this.Ok(pendingSettlementResponse);
+            return this.Ok(settlementResponse);
 
         }
+
+        [HttpPost]
+        [Route("{settlementDate}/estates/{estateId}")]
+        public async Task<IActionResult> ProcessSettlement([FromRoute] DateTime settlementDate,
+                                                           [FromRoute] Guid estateId,
+                                                           CancellationToken cancellationToken)
+        {
+            ProcessSettlementRequest command = ProcessSettlementRequest.Create(settlementDate, estateId);
+
+            var processSettlementResponse = await this.Mediator.Send(command, cancellationToken);
+
+            return this.Ok();
+        }
+
         #endregion
 
     }

@@ -63,7 +63,7 @@
         /// </summary>
         private readonly IMessagingServiceClient MessagingServiceClient;
 
-        private readonly IAggregateRepository<PendingSettlementAggregate, DomainEventRecord.DomainEvent> PendingSettlementAggregateRepository;
+        private readonly IAggregateRepository<SettlementAggregate, DomainEventRecord.DomainEvent> SettlementAggregateRepository;
 
         /// <summary>
         /// The token response
@@ -94,7 +94,7 @@
                                              ISecurityServiceClient securityServiceClient,
                                              ITransactionReceiptBuilder transactionReceiptBuilder,
                                              IMessagingServiceClient messagingServiceClient,
-                                             IAggregateRepository<PendingSettlementAggregate, DomainEventRecord.DomainEvent> pendingSettlementAggregateRepository)
+                                             IAggregateRepository<SettlementAggregate, DomainEventRecord.DomainEvent> settlementAggregateRepository)
         {
             this.TransactionAggregateManager = transactionAggregateManager;
             this.FeeCalculationManager = feeCalculationManager;
@@ -102,7 +102,7 @@
             this.SecurityServiceClient = securityServiceClient;
             this.TransactionReceiptBuilder = transactionReceiptBuilder;
             this.MessagingServiceClient = messagingServiceClient;
-            this.PendingSettlementAggregateRepository = pendingSettlementAggregateRepository;
+            this.SettlementAggregateRepository = settlementAggregateRepository;
         }
 
         #endregion
@@ -226,7 +226,7 @@
                 foreach (CalculatedFee calculatedFee in merchantFees)
                 {
                     // Add Fee to the Transaction 
-                    await this.TransactionAggregateManager.AddFee(transactionAggregate.EstateId, transactionAggregate.AggregateId, calculatedFee, cancellationToken);
+                    await this.TransactionAggregateManager.AddSettledFee(transactionAggregate.EstateId, transactionAggregate.AggregateId, calculatedFee, DateTime.Now.Date, DateTime.Now, cancellationToken);
                 }
             }
             else if (merchant.SettlementSchedule == SettlementSchedule.NotSet)
@@ -241,7 +241,7 @@
                     Guid aggregateId = merchant.NextSettlementDueDate.ToGuid();
 
                     // We need to add the fees to a pending settlement stream (for today)
-                    PendingSettlementAggregate aggregate = await this.PendingSettlementAggregateRepository.GetLatestVersion(aggregateId, cancellationToken);
+                    SettlementAggregate aggregate = await this.SettlementAggregateRepository.GetLatestVersion(aggregateId, cancellationToken);
 
                     if (aggregate.IsCreated == false)
                     {
@@ -250,7 +250,7 @@
 
                     aggregate.AddFee(transactionAggregate.MerchantId, transactionAggregate.AggregateId, calculatedFee);
 
-                    await this.PendingSettlementAggregateRepository.SaveChanges(aggregate, cancellationToken);
+                    await this.SettlementAggregateRepository.SaveChanges(aggregate, cancellationToken);
                 }
             }
         }
@@ -275,6 +275,24 @@
             // Send the message
             await this.SendEmailMessage(this.TokenResponse.AccessToken, domainEvent.EventId, domainEvent.EstateId, "Transaction Successful", receiptMessage, domainEvent.CustomerEmailAddress, cancellationToken);
 
+        }
+
+        private async Task HandleSpecificDomainEvent(MerchantFeeAddedToTransactionEvent domainEvent,
+                                                     CancellationToken cancellationToken)
+        {
+            if (domainEvent.SettlementDueDate == DateTime.MinValue)
+            {
+                // Old event format before settlement
+                return;
+            }
+
+            Guid aggregateId = domainEvent.SettlementDueDate.ToGuid();
+
+            SettlementAggregate pendingSettlementAggregate = await this.SettlementAggregateRepository.GetLatestVersion(aggregateId, cancellationToken);
+
+            pendingSettlementAggregate.MarkFeeAsSettled(domainEvent.MerchantId, domainEvent.TransactionId, domainEvent.FeeId);
+
+            await this.SettlementAggregateRepository.SaveChanges(pendingSettlementAggregate, cancellationToken);
         }
 
         /// <summary>

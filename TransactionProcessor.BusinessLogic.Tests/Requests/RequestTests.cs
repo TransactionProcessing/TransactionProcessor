@@ -74,5 +74,17 @@ namespace TransactionProcessor.BusinessLogic.Tests.Commands
             processReconciliationRequest.TransactionValue.ShouldBe(TestData.ReconciliationTransactionValue);
             processReconciliationRequest.TransactionId.ShouldBe(TestData.TransactionId);
         }
+
+        [Fact]
+        public void ProcessSettlementRequest_CanBeCreated_IsCreated()
+        {
+            ProcessSettlementRequest processSettlementRequest = ProcessSettlementRequest.Create(TestData.SettlementDate, 
+                                                                                                TestData.EstateId);
+
+            processSettlementRequest.ShouldNotBeNull();
+            processSettlementRequest.EstateId.ShouldBe(TestData.EstateId);
+            processSettlementRequest.SettlementDate.ShouldBe(TestData.SettlementDate);
+
+        }
     }
 }

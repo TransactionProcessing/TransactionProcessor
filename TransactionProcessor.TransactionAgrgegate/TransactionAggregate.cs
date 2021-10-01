@@ -279,6 +279,39 @@
         /// <exception cref="InvalidOperationException">Unsupported Fee Type</exception>
         public void AddFee(CalculatedFee calculatedFee)
         {
+            Guard.ThrowIfNull(calculatedFee, nameof(calculatedFee));
+
+            this.CheckFeeHasNotAlreadyBeenAdded(calculatedFee);
+            this.CheckTransactionHasBeenAuthorised();
+            this.CheckTransactionHasBeenCompleted();
+            this.CheckTransactionCanAttractFees();
+
+            DomainEventRecord.DomainEvent @event = null;
+            if (calculatedFee.FeeType == FeeType.ServiceProvider)
+            {
+                // This is an operational (service provider) fee
+                @event = new ServiceProviderFeeAddedToTransactionEvent(this.AggregateId,
+                                                                          this.EstateId,
+                                                                          this.MerchantId,
+                                                                          calculatedFee.CalculatedValue,
+                                                                          (Int32)calculatedFee.FeeCalculationType,
+                                                                          calculatedFee.FeeId,
+                                                                          calculatedFee.FeeValue,
+                                                                          calculatedFee.FeeCalculatedDateTime);
+            }
+            else
+            {
+                throw new InvalidOperationException("Unsupported Fee Type");
+            }
+
+            if (@event != null)
+            {
+                this.ApplyAndAppend(@event);
+            }
+        }
+
+        public void AddSettledFee(CalculatedFee calculatedFee, DateTime settlementDueDate, DateTime settledDateTime)
+        {
             if (calculatedFee == null)
             {
                 throw new ArgumentNullException(nameof(calculatedFee));
@@ -300,19 +333,9 @@
                                                                    (Int32)calculatedFee.FeeCalculationType,
                                                                    calculatedFee.FeeId,
                                                                    calculatedFee.FeeValue,
-                                                                calculatedFee.FeeCalculatedDateTime);
-            }
-            else if (calculatedFee.FeeType == FeeType.ServiceProvider)
-            {
-                // This is an operational (service provider) fee
-                @event = new ServiceProviderFeeAddedToTransactionEvent(this.AggregateId,
-                                                                          this.EstateId,
-                                                                          this.MerchantId,
-                                                                          calculatedFee.CalculatedValue,
-                                                                          (Int32)calculatedFee.FeeCalculationType,
-                                                                          calculatedFee.FeeId,
-                                                                          calculatedFee.FeeValue,
-                                                                          calculatedFee.FeeCalculatedDateTime);
+                                                                   calculatedFee.FeeCalculatedDateTime,
+                                                                   settlementDueDate,
+                                                                   settledDateTime);
             }
             else
             {

@@ -76,7 +76,7 @@
 
         private Mock<ITransactionAggregateManager> TransactionAggregateManager;
 
-        private Mock<IAggregateRepository<PendingSettlementAggregate, DomainEventRecord.DomainEvent>> PendingSettlementAggregateRepository;
+        private Mock<IAggregateRepository<SettlementAggregate, DomainEventRecord.DomainEvent>> SettlementAggregateRepository;
 
         private Mock<IFeeCalculationManager> FeeCalculationManager;
 
@@ -90,7 +90,7 @@
         public TransactionDomainEventHandlerTests()
         {
             this.TransactionAggregateManager = new Mock<ITransactionAggregateManager>();
-            this.PendingSettlementAggregateRepository = new Mock<IAggregateRepository<PendingSettlementAggregate, DomainEventRecord.DomainEvent>>();
+            this.SettlementAggregateRepository = new Mock<IAggregateRepository<SettlementAggregate, DomainEventRecord.DomainEvent>>();
             this.FeeCalculationManager = new Mock<IFeeCalculationManager>();
             this.EstateClient = new Mock<IEstateClient>();
             this.SecurityServiceClient = new Mock<ISecurityServiceClient>();
@@ -110,7 +110,7 @@
 
             this.FeeCalculationManager.Setup(f => f.CalculateFees(It.IsAny<List<TransactionFeeToCalculate>>(), It.IsAny<Decimal>())).Returns(new List<CalculatedFee>
                 {
-                    TestData.CalculatedFeeMerchantFee,
+                    TestData.CalculatedFeeMerchantFee(),
                     TestData.CalculatedFeeServiceProviderFee
                 });
 
@@ -135,14 +135,14 @@
                                                                                                             this.SecurityServiceClient.Object,
                                                                                                             this.TransactionReceiptBuilder.Object,
                                                                                                             this.MessagingServiceClient.Object,
-                                                                                                            this.PendingSettlementAggregateRepository.Object);
+                                                                                                            this.SettlementAggregateRepository.Object);
             
             await transactionDomainEventHandler.Handle(TestData.TransactionHasBeenCompletedEvent, CancellationToken.None);
 
             this.TransactionAggregateManager.Verify(t => t.AddFee(It.IsAny<Guid>(),
                                                                   It.IsAny<Guid>(),
                                                                   It.IsAny<CalculatedFee>(),
-                                                                  It.IsAny<CancellationToken>()),Times.Exactly(2));
+                                                                  It.IsAny<CancellationToken>()),Times.Once);
         }
 
         [Fact]
@@ -150,13 +150,13 @@
         {
             this.TransactionAggregateManager.Setup(t => t.GetAggregate(It.IsAny<Guid>(), It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
                 .ReturnsAsync(TestData.GetCompletedAuthorisedSaleTransactionAggregate);
-            PendingSettlementAggregate pendingSettlementAggregate = new PendingSettlementAggregate();
-            this.PendingSettlementAggregateRepository.Setup(p => p.GetLatestVersion(It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
+            SettlementAggregate pendingSettlementAggregate = new SettlementAggregate();
+            this.SettlementAggregateRepository.Setup(p => p.GetLatestVersion(It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
                 .ReturnsAsync(pendingSettlementAggregate);
 
             this.FeeCalculationManager.Setup(f => f.CalculateFees(It.IsAny<List<TransactionFeeToCalculate>>(), It.IsAny<Decimal>())).Returns(new List<CalculatedFee>
                 {
-                    TestData.CalculatedFeeMerchantFee,
+                    TestData.CalculatedFeeMerchantFee(),
                     TestData.CalculatedFeeServiceProviderFee
                 });
             var merchant = new MerchantResponse
@@ -182,7 +182,7 @@
                                                                                                             this.SecurityServiceClient.Object,
                                                                                                             this.TransactionReceiptBuilder.Object,
                                                                                                             this.MessagingServiceClient.Object,
-                                                                                                            this.PendingSettlementAggregateRepository.Object);
+                                                                                                            this.SettlementAggregateRepository.Object);
 
             await transactionDomainEventHandler.Handle(TestData.TransactionHasBeenCompletedEvent, CancellationToken.None);
 
@@ -190,8 +190,8 @@
                                                                   It.IsAny<Guid>(),
                                                                   It.IsAny<CalculatedFee>(),
                                                                   It.IsAny<CancellationToken>()), Times.Once);
-            this.PendingSettlementAggregateRepository.Verify(p => p.GetLatestVersion(It.IsAny<Guid>(), It.IsAny<CancellationToken>()),Times.Once);
-            this.PendingSettlementAggregateRepository.Verify(p => p.SaveChanges(It.IsAny<PendingSettlementAggregate>(), It.IsAny<CancellationToken>()), Times.Once);
+            this.SettlementAggregateRepository.Verify(p => p.GetLatestVersion(It.IsAny<Guid>(), It.IsAny<CancellationToken>()),Times.Once);
+            this.SettlementAggregateRepository.Verify(p => p.SaveChanges(It.IsAny<SettlementAggregate>(), It.IsAny<CancellationToken>()), Times.Once);
             pendingSettlementAggregate.GetNumberOfFeesPendingSettlement().ShouldBe(1);
             pendingSettlementAggregate.GetNumberOfFeesSettled().ShouldBe(0);
         }
@@ -201,13 +201,13 @@
         {
             this.TransactionAggregateManager.Setup(t => t.GetAggregate(It.IsAny<Guid>(), It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
                 .ReturnsAsync(TestData.GetCompletedAuthorisedSaleTransactionAggregate);
-            PendingSettlementAggregate pendingSettlementAggregate = new PendingSettlementAggregate();
-            this.PendingSettlementAggregateRepository.Setup(p => p.GetLatestVersion(It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
+            SettlementAggregate pendingSettlementAggregate = new SettlementAggregate();
+            this.SettlementAggregateRepository.Setup(p => p.GetLatestVersion(It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
                 .ReturnsAsync(pendingSettlementAggregate);
 
             this.FeeCalculationManager.Setup(f => f.CalculateFees(It.IsAny<List<TransactionFeeToCalculate>>(), It.IsAny<Decimal>())).Returns(new List<CalculatedFee>
                 {
-                    TestData.CalculatedFeeMerchantFee,
+                    TestData.CalculatedFeeMerchantFee(),
                     TestData.CalculatedFeeServiceProviderFee
                 });
             var merchant = new MerchantResponse
@@ -233,7 +233,7 @@
                                                                                                             this.SecurityServiceClient.Object,
                                                                                                             this.TransactionReceiptBuilder.Object,
                                                                                                             this.MessagingServiceClient.Object,
-                                                                                                            this.PendingSettlementAggregateRepository.Object);
+                                                                                                            this.SettlementAggregateRepository.Object);
 
             await transactionDomainEventHandler.Handle(TestData.TransactionHasBeenCompletedEvent, CancellationToken.None);
 
@@ -241,8 +241,8 @@
                                                                   It.IsAny<Guid>(),
                                                                   It.IsAny<CalculatedFee>(),
                                                                   It.IsAny<CancellationToken>()), Times.Once);
-            this.PendingSettlementAggregateRepository.Verify(p => p.GetLatestVersion(It.IsAny<Guid>(), It.IsAny<CancellationToken>()), Times.Once);
-            this.PendingSettlementAggregateRepository.Verify(p => p.SaveChanges(It.IsAny<PendingSettlementAggregate>(), It.IsAny<CancellationToken>()), Times.Once);
+            this.SettlementAggregateRepository.Verify(p => p.GetLatestVersion(It.IsAny<Guid>(), It.IsAny<CancellationToken>()), Times.Once);
+            this.SettlementAggregateRepository.Verify(p => p.SaveChanges(It.IsAny<SettlementAggregate>(), It.IsAny<CancellationToken>()), Times.Once);
             pendingSettlementAggregate.GetNumberOfFeesPendingSettlement().ShouldBe(1);
             pendingSettlementAggregate.GetNumberOfFeesSettled().ShouldBe(0);
         }
@@ -259,7 +259,7 @@
                                                                                                             this.SecurityServiceClient.Object,
                                                                                                             this.TransactionReceiptBuilder.Object,
                                                                                                             this.MessagingServiceClient.Object,
-                                                                                                            this.PendingSettlementAggregateRepository.Object);
+                                                                                                            this.SettlementAggregateRepository.Object);
 
             await transactionDomainEventHandler.Handle(TestData.TransactionHasBeenCompletedEvent, CancellationToken.None);
         }
@@ -276,7 +276,7 @@
                                                                                                             this.SecurityServiceClient.Object,
                                                                                                             this.TransactionReceiptBuilder.Object,
                                                                                                             this.MessagingServiceClient.Object,
-                                                                                                            this.PendingSettlementAggregateRepository.Object);
+                                                                                                            this.SettlementAggregateRepository.Object);
 
             await transactionDomainEventHandler.Handle(TestData.TransactionHasBeenCompletedEvent, CancellationToken.None);
         }
@@ -293,7 +293,7 @@
                                                                                                             this.SecurityServiceClient.Object,
                                                                                                             this.TransactionReceiptBuilder.Object,
                                                                                                             this.MessagingServiceClient.Object,
-                                                                                                            this.PendingSettlementAggregateRepository.Object);
+                                                                                                            this.SettlementAggregateRepository.Object);
 
             await transactionDomainEventHandler.Handle(TestData.TransactionHasBeenCompletedEvent, CancellationToken.None);
         }
@@ -310,7 +310,7 @@
                                                                                                             this.SecurityServiceClient.Object,
                                                                                                             this.TransactionReceiptBuilder.Object,
                                                                                                             this.MessagingServiceClient.Object,
-                                                                                                            this.PendingSettlementAggregateRepository.Object);
+                                                                                                            this.SettlementAggregateRepository.Object);
 
             await transactionDomainEventHandler.Handle(TestData.TransactionHasBeenCompletedEvent, CancellationToken.None);
         }
@@ -329,9 +329,40 @@
                                                                                                             this.SecurityServiceClient.Object,
                                                                                                             this.TransactionReceiptBuilder.Object,
                                                                                                             this.MessagingServiceClient.Object,
-                                                                                                            this.PendingSettlementAggregateRepository.Object);
+                                                                                                            this.SettlementAggregateRepository.Object);
 
             await transactionDomainEventHandler.Handle(TestData.CustomerEmailReceiptRequestedEvent, CancellationToken.None);
+        }
+
+        [Fact]
+        public async Task TransactionDomainEventHandler_Handle_MerchantFeeAddedToTransactionEvent_EventIsHandled()
+        {
+            this.SettlementAggregateRepository.Setup(s => s.GetLatestVersion(It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
+                .ReturnsAsync(TestData.GetSettlementAggregateWithPendingMerchantFees(1));
+
+            TransactionDomainEventHandler transactionDomainEventHandler = new TransactionDomainEventHandler(this.TransactionAggregateManager.Object,
+                                                                                                            this.FeeCalculationManager.Object,
+                                                                                                            this.EstateClient.Object,
+                                                                                                            this.SecurityServiceClient.Object,
+                                                                                                            this.TransactionReceiptBuilder.Object,
+                                                                                                            this.MessagingServiceClient.Object,
+                                                                                                            this.SettlementAggregateRepository.Object);
+
+            await transactionDomainEventHandler.Handle(TestData.MerchantFeeAddedToTransactionEvent(TestData.TransactionFeeSettlementDueDate), CancellationToken.None);
+        }
+
+        [Fact]
+        public async Task TransactionDomainEventHandler_Handle_MerchantFeeAddedToTransactionEvent_EventHasNoSettlementDueDate_EventIsHandled()
+        {
+            TransactionDomainEventHandler transactionDomainEventHandler = new TransactionDomainEventHandler(this.TransactionAggregateManager.Object,
+                                                                                                            this.FeeCalculationManager.Object,
+                                                                                                            this.EstateClient.Object,
+                                                                                                            this.SecurityServiceClient.Object,
+                                                                                                            this.TransactionReceiptBuilder.Object,
+                                                                                                            this.MessagingServiceClient.Object,
+                                                                                                            this.SettlementAggregateRepository.Object);
+
+            await transactionDomainEventHandler.Handle(TestData.MerchantFeeAddedToTransactionEvent(DateTime.MinValue), CancellationToken.None);
         }
     }
 }

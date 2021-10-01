@@ -49,8 +49,8 @@ namespace TransactionProcessor
                                                  })
                        .ConfigureServices(services =>
                                           {
-                                              PendingSettlementCreatedForDateEvent s =
-                                                  new PendingSettlementCreatedForDateEvent(Guid.Parse("62CA5BF0-D138-4A19-9970-A4F7D52DE292"),
+                                              SettlementCreatedForDateEvent s =
+                                                  new SettlementCreatedForDateEvent(Guid.Parse("62CA5BF0-D138-4A19-9970-A4F7D52DE292"),
                                                                                            Guid.Parse("3E42516B-6C6F-4F86-BF08-3EF0ACDDDD55"),
                                                                                            DateTime.Now);
 

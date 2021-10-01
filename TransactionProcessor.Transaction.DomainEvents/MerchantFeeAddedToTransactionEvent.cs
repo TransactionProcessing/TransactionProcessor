@@ -29,7 +29,9 @@
                                                   Int32 feeCalculationType,
                                                   Guid feeId,
                                                   Decimal feeValue,
-                                                  DateTime feeCalculatedDateTime) : base(aggregateId, Guid.NewGuid())
+                                                  DateTime feeCalculatedDateTime,
+                                                  DateTime settlementDueDate,
+                                                  DateTime settledDateTime) : base(aggregateId, Guid.NewGuid())
         {
             this.TransactionId = aggregateId;
             this.EstateId = estateId;
@@ -39,6 +41,8 @@
             this.FeeId = feeId;
             this.FeeValue = feeValue;
             this.FeeCalculatedDateTime = feeCalculatedDateTime;
+            this.SettlementDueDate = settlementDueDate;
+            this.SettledDateTime = settledDateTime;
         }
 
         #endregion
@@ -60,6 +64,10 @@
         /// The fee calculated date time.
         /// </value>
         public DateTime FeeCalculatedDateTime { get; init; }
+
+        public DateTime SettlementDueDate { get; init; }
+        
+        public DateTime SettledDateTime { get; init; }
 
         /// <summary>
         /// Gets the estate identifier.

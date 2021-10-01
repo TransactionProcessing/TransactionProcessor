@@ -157,7 +157,7 @@ namespace TransactionProcessor
             services.AddSingleton<ITransactionAggregateManager, TransactionAggregateManager>();
             services.AddSingleton<IAggregateRepository<TransactionAggregate.TransactionAggregate, DomainEventRecord.DomainEvent>, AggregateRepository<TransactionAggregate.TransactionAggregate, DomainEventRecord.DomainEvent>>();
             services.AddSingleton<IAggregateRepository<ReconciliationAggregate.ReconciliationAggregate, DomainEventRecord.DomainEvent>, AggregateRepository<ReconciliationAggregate.ReconciliationAggregate, DomainEventRecord.DomainEvent>>();
-            services.AddSingleton<IAggregateRepository<PendingSettlementAggregate, DomainEventRecord.DomainEvent>, AggregateRepository<PendingSettlementAggregate, DomainEventRecord.DomainEvent>>();
+            services.AddSingleton<IAggregateRepository<SettlementAggregate, DomainEventRecord.DomainEvent>, AggregateRepository<SettlementAggregate, DomainEventRecord.DomainEvent>>();
             services.AddSingleton<ITransactionDomainService, TransactionDomainService>();
             services.AddSingleton<Factories.IModelFactory, Factories.ModelFactory>();
             services.AddSingleton<ISecurityServiceClient, SecurityServiceClient>();
@@ -195,6 +195,8 @@ namespace TransactionProcessor
             services.AddSingleton<IRequestHandler<ProcessLogonTransactionRequest, ProcessLogonTransactionResponse>, TransactionRequestHandler>();
             services.AddSingleton<IRequestHandler<ProcessSaleTransactionRequest, ProcessSaleTransactionResponse>, TransactionRequestHandler>();
             services.AddSingleton<IRequestHandler<ProcessReconciliationRequest, ProcessReconciliationTransactionResponse>, TransactionRequestHandler>();
+
+            services.AddSingleton<IRequestHandler<ProcessSettlementRequest, ProcessSettlementResponse>, SettlementRequestHandler>();
 
             services.AddTransient<Func<String, IOperatorProxy>>(context => (operatorIdentifier) =>
                                                              {
@@ -254,23 +256,37 @@ namespace TransactionProcessor
             }
 
             settings.CreateHttpMessageHandler = () => new SocketsHttpHandler
-                                                      {
-                                                          SslOptions =
+            {
+                SslOptions =
                                                           {
                                                               RemoteCertificateValidationCallback = (sender,
                                                                                                      certificate,
                                                                                                      chain,
                                                                                                      errors) => true,
                                                           }
-                                                      };
+            };
             settings.ConnectionName = Startup.Configuration.GetValue<String>("EventStoreSettings:ConnectionName");
             settings.ConnectivitySettings = new EventStoreClientConnectivitySettings
-                                            {
-                                                Address = new Uri(Startup.Configuration.GetValue<String>("EventStoreSettings:ConnectionString")),
-                                            };
+            {
+                Address = new Uri(Startup.Configuration.GetValue<String>("EventStoreSettings:ConnectionString")),
+            };
 
-            settings.DefaultCredentials = new UserCredentials(Startup.Configuration.GetValue<String>("EventStoreSettings:UserName"),
-                                                              Startup.Configuration.GetValue<String>("EventStoreSettings:Password"));
+
+
+
+            //var connectionString = Startup.Configuration.GetValue<String>("EventStoreSettings:ConnectionString");
+            //settings = EventStoreClientSettings.Create(connectionString);
+            //settings.CreateHttpMessageHandler = () => new SocketsHttpHandler
+            //{
+            //    SslOptions =
+            //                                              {
+            //                                                  RemoteCertificateValidationCallback = (sender,
+            //                                                                                         certificate,
+            //                                                                                         chain,
+            //                                                                                         errors) => true,
+            //                                              }
+            //};
+
             Startup.EventStoreClientSettings = settings;
         }
 

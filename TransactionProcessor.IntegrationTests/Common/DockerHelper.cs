@@ -354,6 +354,7 @@
             await client.CreateAsync("$ce-ContractAggregate", "Reporting", settings);
             await client.CreateAsync("$ce-TransactionAggregate", "Reporting", settings);
             await client.CreateAsync("$et-TransactionHasBeenCompletedEvent", "TransactionProcessor", settings);
+            await client.CreateAsync("$et-MerchantFeeAddedToTransactionEvent", "TransactionProcessor", settings);
         }
 
         private static EventStoreClientSettings ConfigureEventStoreSettings(Int32 eventStoreHttpPort)

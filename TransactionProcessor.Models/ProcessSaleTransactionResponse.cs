@@ -61,4 +61,14 @@ namespace TransactionProcessor.Models
 
         #endregion
     }
+
+    [ExcludeFromCodeCoverage]
+    public class ProcessSettlementResponse
+    {
+        public Int32 NumberOfFeesPendingSettlement { get; set; }
+
+        public Int32 NumberOfFeesSuccessfullySettled { get; set; }
+
+        public Int32 NumberOfFeesFailedToSettle { get; set; }
+    }
 }
