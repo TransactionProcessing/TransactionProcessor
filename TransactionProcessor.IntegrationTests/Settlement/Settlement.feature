@@ -97,9 +97,9 @@ Scenario: Get Pending Settlement
 	| Test Estate 1 | Test Merchant 3 | 8                 | 0000         | SUCCESS         |
 		
 	When I get the pending settlements the following information should be returned
-	| NextSettlementDate | EstateName    | NumberOfFees |
-	| NextWeek           | Test Estate 1 | 1            |
-	| NextMonth          | Test Estate 1 | 1            |
+	| SettlementDate | EstateName    | NumberOfFees |
+	| NextWeek       | Test Estate 1 | 1            |
+	| NextMonth      | Test Estate 1 | 1            |
 
 @PRTest
 Scenario: Process Settlement
@@ -142,9 +142,9 @@ Scenario: Process Settlement
 	| Test Estate 1 | Test Merchant 2 | 6                 | 0000         | SUCCESS         |
 
 	When I get the pending settlements the following information should be returned
-	| NextSettlementDate | EstateName    | NumberOfFees |
-	| NextWeek              | Test Estate 1 | 1            |
+	| SettlementDate | EstateName    | NumberOfFees |
+	| Yesterday              | Test Estate 1 | 1            |
 
-	When I process the settlement for 'NextWeek' on Estate 'Test Estate 1' then 1 fees are marked as settled and the settlement is completed
+	When I process the settlement for 'Yesterday' on Estate 'Test Estate 1' then 1 fees are marked as settled and the settlement is completed
 
 

@@ -877,15 +877,15 @@ namespace TransactionProcessor.IntegrationTests.Shared
             {
                 // Get the merchant name
                 EstateDetails estateDetails = this.TestingContext.GetEstateDetails(tableRow);
-                String nextSettlementDateString = SpecflowTableHelper.GetStringRowValue(tableRow, "NextSettlementDate");
+                String settlementDateString = SpecflowTableHelper.GetStringRowValue(tableRow, "SettlementDate");
                 Int32 numberOfFees = SpecflowTableHelper.GetIntValue(tableRow, "NumberOfFees");
-                DateTime nextSettlementDate = this.GetNextSettlementDate(DateTime.Now, nextSettlementDateString);
+                DateTime settlementDate = this.GetSettlementDate(DateTime.Now, settlementDateString);
 
                 await Retry.For(async () =>
                                 {
                                     SettlementResponse settlements =
                                         await this.TestingContext.DockerHelper.TransactionProcessorClient.GetSettlementByDate(this.TestingContext.AccessToken,
-                                            nextSettlementDate,
+                                            settlementDate,
                                             estateDetails.EstateId,
                                             CancellationToken.None);
                                     
@@ -918,9 +918,14 @@ namespace TransactionProcessor.IntegrationTests.Shared
                             });
         }
         
-        private DateTime GetNextSettlementDate(DateTime now,
+        private DateTime GetSettlementDate(DateTime now,
                                                String nextSettlementDate)
         {
+            if (nextSettlementDate == "Yesterday")
+            {
+                return now.AddDays(-1);
+            }
+
             if (nextSettlementDate == "NextWeek")
             {
                 return now.AddDays(7);
