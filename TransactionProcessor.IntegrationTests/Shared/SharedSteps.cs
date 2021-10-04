@@ -924,7 +924,7 @@ namespace TransactionProcessor.IntegrationTests.Shared
         {
             if (nextSettlementDate == "Yesterday")
             {
-                return now.Date.AddDays(-1).Date;
+                return now.Date.AddHours(-1).AddDays(-1).Date;
             }
 
             if (nextSettlementDate == "NextWeek")
