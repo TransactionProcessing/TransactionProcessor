@@ -143,7 +143,7 @@ Scenario: Process Settlement
 
 	When I get the pending settlements the following information should be returned
 	| SettlementDate | EstateName    | NumberOfFees |
-	| Yesterday              | Test Estate 1 | 1            |
+	| Yesterday      | Test Estate 1 | 1            |
 
 	When I process the settlement for 'Yesterday' on Estate 'Test Estate 1' then 1 fees are marked as settled and the settlement is completed
 
