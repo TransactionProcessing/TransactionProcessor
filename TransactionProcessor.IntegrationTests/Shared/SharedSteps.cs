@@ -890,7 +890,7 @@ namespace TransactionProcessor.IntegrationTests.Shared
                                             estateDetails.EstateId,
                                             CancellationToken.None);
                                     
-                                    settlements.NumberOfFeesPendingSettlement.ShouldBe(numberOfFees);
+                                    settlements.NumberOfFeesPendingSettlement.ShouldBe(numberOfFees, $"Settlment date {settlementDate}");
                                 }, TimeSpan.FromMinutes(3));
             }
         }
