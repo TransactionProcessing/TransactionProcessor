@@ -898,7 +898,8 @@ namespace TransactionProcessor.IntegrationTests.Shared
         [When(@"I process the settlement for '([^']*)' on Estate '([^']*)' then (.*) fees are marked as settled and the settlement is completed")]
         public async Task WhenIProcessTheSettlementForOnEstateThenFeesAreMarkedAsSettledAndTheSettlementIsCompleted(String dateString, String estateName, Int32 numberOfFeesSettled)
         {
-            var settlementDate = SpecflowTableHelper.GetDateForDateString(dateString, DateTime.Now);
+            DateTime settlementDate = this.GetSettlementDate(DateTime.Now, dateString);
+            Console.WriteLine($"Settlement date is {settlementDate}");
             EstateDetails estateDetails = this.TestingContext.GetEstateDetails(estateName);
             await this.TestingContext.DockerHelper.TransactionProcessorClient.ProcessSettlement(this.TestingContext.AccessToken,
                                                                                           settlementDate,
@@ -924,7 +925,7 @@ namespace TransactionProcessor.IntegrationTests.Shared
         {
             if (nextSettlementDate == "Yesterday")
             {
-                return now.Date.AddHours(-1).AddDays(-1).Date;
+                return now.Date.AddDays(-1).Date;
             }
 
             if (nextSettlementDate == "NextWeek")
