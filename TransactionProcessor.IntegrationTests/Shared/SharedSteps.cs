@@ -9,6 +9,7 @@ namespace TransactionProcessor.IntegrationTests.Shared
     using System.Runtime.InteropServices;
     using System.Threading;
     using System.Threading.Tasks;
+    using BusinessLogic.Common;
     using Common;
     using DataTransferObjects;
     using EstateManagement.DataTransferObjects;
@@ -880,7 +881,7 @@ namespace TransactionProcessor.IntegrationTests.Shared
                 String settlementDateString = SpecflowTableHelper.GetStringRowValue(tableRow, "SettlementDate");
                 Int32 numberOfFees = SpecflowTableHelper.GetIntValue(tableRow, "NumberOfFees");
                 DateTime settlementDate = this.GetSettlementDate(DateTime.Now, settlementDateString);
-
+                var aggregateid = settlementDate.ToGuid();
                 await Retry.For(async () =>
                                 {
                                     SettlementResponse settlements =
@@ -915,7 +916,7 @@ namespace TransactionProcessor.IntegrationTests.Shared
                                 settlement.NumberOfFeesPendingSettlement.ShouldBe(0);
                                 settlement.NumberOfFeesSettled.ShouldBe(numberOfFeesSettled);
                                 settlement.SettlementCompleted.ShouldBeTrue();
-                            });
+                            }, TimeSpan.FromMinutes(2));
         }
         
         private DateTime GetSettlementDate(DateTime now,
@@ -923,20 +924,20 @@ namespace TransactionProcessor.IntegrationTests.Shared
         {
             if (nextSettlementDate == "Yesterday")
             {
-                return now.AddDays(-1);
+                return now.Date.AddDays(-1).Date;
             }
 
             if (nextSettlementDate == "NextWeek")
             {
-                return now.AddDays(7);
+                return now.Date.AddHours(-1).AddDays(7).Date;
             }
 
             if (nextSettlementDate == "NextMonth")
             {
-                return now.AddMonths(1);
+                return now.Date.AddHours(-1).AddMonths(1).Date;
             }
 
-            return now;
+            return now.Date;
         }
     }
 }

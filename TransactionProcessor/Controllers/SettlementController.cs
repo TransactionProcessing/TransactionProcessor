@@ -16,6 +16,7 @@ namespace TransactionProcessor.Controllers
     using SettlementAggregates;
     using Shared.DomainDrivenDesign.EventSourcing;
     using Shared.EventStore.Aggregate;
+    using Shared.Logger;
 
     [ExcludeFromCodeCoverage]
     [Route(SettlementController.ControllerRoute)]
@@ -59,6 +60,8 @@ namespace TransactionProcessor.Controllers
             // TODO: Convert to using a manager/model/factory
             // Convert the date passed in to a guid
             var aggregateId = settlementDate.Date.ToGuid();
+
+            Logger.LogInformation($"Settlement Aggregate Id {aggregateId}");
 
             var settlementAggregate = await this.SettlmentAggregateRepository.GetLatestVersion(aggregateId, cancellationToken);
 
