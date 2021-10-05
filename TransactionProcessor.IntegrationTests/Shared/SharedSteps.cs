@@ -883,7 +883,7 @@ namespace TransactionProcessor.IntegrationTests.Shared
                 DateTime settlementDate = this.GetSettlementDate(DateTime.Today, settlementDateString);
                 if (Environment.GetEnvironmentVariable("CI") == Boolean.TrueString.ToLower())
                 {
-                    settlementDate = settlementDate.AddDays(-1);
+                    settlementDate = settlementDate.AddDays(1);
                 }
                 
                 var aggregateid = settlementDate.ToGuid();
@@ -911,6 +911,10 @@ namespace TransactionProcessor.IntegrationTests.Shared
                                                                                           estateDetails.EstateId,
                                                                                           CancellationToken.None);
 
+            if (Environment.GetEnvironmentVariable("CI") == Boolean.TrueString.ToLower())
+            {
+                settlementDate = settlementDate.AddDays(1);
+            }
             await Retry.For(async () =>
                             {
                                 SettlementResponse settlement =
