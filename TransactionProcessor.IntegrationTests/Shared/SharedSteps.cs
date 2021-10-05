@@ -925,17 +925,17 @@ namespace TransactionProcessor.IntegrationTests.Shared
         {
             if (nextSettlementDate == "Yesterday")
             {
-                return now.Date.AddDays(-1).Date;
+                return now.AddDays(-1).Date;
             }
 
             if (nextSettlementDate == "NextWeek")
             {
-                return now.Date.AddHours(-1).AddDays(7).Date;
+                return now.AddDays(7).Date;
             }
 
             if (nextSettlementDate == "NextMonth")
             {
-                return now.Date.AddHours(-1).AddMonths(1).Date;
+                return now.AddMonths(1).Date;
             }
 
             return now.Date;

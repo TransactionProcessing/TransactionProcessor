@@ -38,17 +38,17 @@
                 case "TODAY":
                     return today.Date;
                 case "YESTERDAY":
-                    return today.Date.AddDays(-1).Date;
+                    return today.AddDays(-1).Date;
                 case "LASTWEEK":
-                    return today.Date.AddDays(-7).Date;
+                    return today.AddDays(-7).Date;
                 case "NEXTWEEK":
-                    return today.Date.AddDays(7).Date;
+                    return today.AddDays(7).Date;
                 case "LASTMONTH":
-                    return today.Date.AddMonths(-1).Date;
+                    return today.AddMonths(-1).Date;
                 case "LASTYEAR":
                     return today.AddYears(-1).Date;
                 case "TOMORROW":
-                    return today.Date.AddDays(1).Date;
+                    return today.AddDays(1).Date;
                 default:
                     return DateTime.Parse(dateString);
             }
