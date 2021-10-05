@@ -903,7 +903,7 @@ namespace TransactionProcessor.IntegrationTests.Shared
         [When(@"I process the settlement for '([^']*)' on Estate '([^']*)' then (.*) fees are marked as settled and the settlement is completed")]
         public async Task WhenIProcessTheSettlementForOnEstateThenFeesAreMarkedAsSettledAndTheSettlementIsCompleted(String dateString, String estateName, Int32 numberOfFeesSettled)
         {
-            DateTime settlementDate = this.GetSettlementDate(DateTime.Now, dateString);
+            DateTime settlementDate = this.GetSettlementDate(DateTime.Today, dateString);
             Console.WriteLine($"Settlement date is {settlementDate}");
             EstateDetails estateDetails = this.TestingContext.GetEstateDetails(estateName);
             await this.TestingContext.DockerHelper.TransactionProcessorClient.ProcessSettlement(this.TestingContext.AccessToken,
