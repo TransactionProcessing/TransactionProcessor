@@ -904,17 +904,17 @@ namespace TransactionProcessor.IntegrationTests.Shared
         public async Task WhenIProcessTheSettlementForOnEstateThenFeesAreMarkedAsSettledAndTheSettlementIsCompleted(String dateString, String estateName, Int32 numberOfFeesSettled)
         {
             DateTime settlementDate = this.GetSettlementDate(DateTime.Today, dateString);
-            Console.WriteLine($"Settlement date is {settlementDate}");
+            if (Environment.GetEnvironmentVariable("CI") == Boolean.TrueString.ToLower())
+            {
+                settlementDate = settlementDate.AddDays(1);
+            }
+
             EstateDetails estateDetails = this.TestingContext.GetEstateDetails(estateName);
             await this.TestingContext.DockerHelper.TransactionProcessorClient.ProcessSettlement(this.TestingContext.AccessToken,
                                                                                           settlementDate,
                                                                                           estateDetails.EstateId,
                                                                                           CancellationToken.None);
 
-            if (Environment.GetEnvironmentVariable("CI") == Boolean.TrueString.ToLower())
-            {
-                settlementDate = settlementDate.AddDays(1);
-            }
             await Retry.For(async () =>
                             {
                                 SettlementResponse settlement =
