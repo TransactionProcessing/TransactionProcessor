@@ -895,15 +895,15 @@ this.FeatureBackground();
                             "EstateName",
                             "NumberOfFees"});
                 table84.AddRow(new string[] {
-                            "Yesterday",
+                            "Today",
                             "Test Estate 1",
                             "1"});
 #line 144
  testRunner.When("I get the pending settlements the following information should be returned", ((string)(null)), table84, "When ");
 #line hidden
 #line 148
- testRunner.When("I process the settlement for \'Yesterday\' on Estate \'Test Estate 1\' then 1 fees ar" +
-                        "e marked as settled and the settlement is completed", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "When ");
+ testRunner.When("I process the settlement for \'Today\' on Estate \'Test Estate 1\' then 1 fees are ma" +
+                        "rked as settled and the settlement is completed", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "When ");
 #line hidden
             }
             this.ScenarioCleanup();

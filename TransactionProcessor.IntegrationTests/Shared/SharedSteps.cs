@@ -881,6 +881,11 @@ namespace TransactionProcessor.IntegrationTests.Shared
                 String settlementDateString = SpecflowTableHelper.GetStringRowValue(tableRow, "SettlementDate");
                 Int32 numberOfFees = SpecflowTableHelper.GetIntValue(tableRow, "NumberOfFees");
                 DateTime settlementDate = this.GetSettlementDate(DateTime.Today, settlementDateString);
+                if (Environment.GetEnvironmentVariable("CI") == Boolean.TrueString.ToLower())
+                {
+                    settlementDate = settlementDate.AddDays(-1);
+                }
+                
                 var aggregateid = settlementDate.ToGuid();
                 await Retry.For(async () =>
                                 {
