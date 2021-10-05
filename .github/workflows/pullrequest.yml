@@ -34,3 +34,9 @@ jobs:
 
     - name: Run Integration Tests
       run: dotnet test "TransactionProcessor.IntegrationTests\TransactionProcessor.IntegrationTests.csproj" --filter Category=PRTest
+
+    - uses: actions/upload-artifact@v2
+      if: ${{ failure() }}
+      with:
+        name: tracelogs
+        path: /home/txnproc/trace/   

@@ -9,6 +9,7 @@ namespace TransactionProcessor.IntegrationTests.Shared
     using System.Runtime.InteropServices;
     using System.Threading;
     using System.Threading.Tasks;
+    using BusinessLogic.Common;
     using Common;
     using DataTransferObjects;
     using EstateManagement.DataTransferObjects;
@@ -877,19 +878,24 @@ namespace TransactionProcessor.IntegrationTests.Shared
             {
                 // Get the merchant name
                 EstateDetails estateDetails = this.TestingContext.GetEstateDetails(tableRow);
-                String nextSettlementDateString = SpecflowTableHelper.GetStringRowValue(tableRow, "NextSettlementDate");
+                String settlementDateString = SpecflowTableHelper.GetStringRowValue(tableRow, "SettlementDate");
                 Int32 numberOfFees = SpecflowTableHelper.GetIntValue(tableRow, "NumberOfFees");
-                DateTime nextSettlementDate = this.GetNextSettlementDate(DateTime.Now, nextSettlementDateString);
-
+                DateTime settlementDate = this.GetSettlementDate(DateTime.Today, settlementDateString);
+                if (Environment.GetEnvironmentVariable("CI") == Boolean.TrueString.ToLower())
+                {
+                    settlementDate = settlementDate.AddDays(1);
+                }
+                
+                var aggregateid = settlementDate.ToGuid();
                 await Retry.For(async () =>
                                 {
                                     SettlementResponse settlements =
                                         await this.TestingContext.DockerHelper.TransactionProcessorClient.GetSettlementByDate(this.TestingContext.AccessToken,
-                                            nextSettlementDate,
+                                            settlementDate,
                                             estateDetails.EstateId,
                                             CancellationToken.None);
                                     
-                                    settlements.NumberOfFeesPendingSettlement.ShouldBe(numberOfFees);
+                                    settlements.NumberOfFeesPendingSettlement.ShouldBe(numberOfFees, $"Settlment date {settlementDate}");
                                 }, TimeSpan.FromMinutes(3));
             }
         }
@@ -897,7 +903,12 @@ namespace TransactionProcessor.IntegrationTests.Shared
         [When(@"I process the settlement for '([^']*)' on Estate '([^']*)' then (.*) fees are marked as settled and the settlement is completed")]
         public async Task WhenIProcessTheSettlementForOnEstateThenFeesAreMarkedAsSettledAndTheSettlementIsCompleted(String dateString, String estateName, Int32 numberOfFeesSettled)
         {
-            var settlementDate = SpecflowTableHelper.GetDateForDateString(dateString, DateTime.Now);
+            DateTime settlementDate = this.GetSettlementDate(DateTime.Today, dateString);
+            if (Environment.GetEnvironmentVariable("CI") == Boolean.TrueString.ToLower())
+            {
+                settlementDate = settlementDate.AddDays(1);
+            }
+
             EstateDetails estateDetails = this.TestingContext.GetEstateDetails(estateName);
             await this.TestingContext.DockerHelper.TransactionProcessorClient.ProcessSettlement(this.TestingContext.AccessToken,
                                                                                           settlementDate,
@@ -915,23 +926,28 @@ namespace TransactionProcessor.IntegrationTests.Shared
                                 settlement.NumberOfFeesPendingSettlement.ShouldBe(0);
                                 settlement.NumberOfFeesSettled.ShouldBe(numberOfFeesSettled);
                                 settlement.SettlementCompleted.ShouldBeTrue();
-                            });
+                            }, TimeSpan.FromMinutes(2));
         }
         
-        private DateTime GetNextSettlementDate(DateTime now,
+        private DateTime GetSettlementDate(DateTime now,
                                                String nextSettlementDate)
         {
+            if (nextSettlementDate == "Yesterday")
+            {
+                return now.AddDays(-1).Date;
+            }
+
             if (nextSettlementDate == "NextWeek")
             {
-                return now.AddDays(7);
+                return now.AddDays(7).Date;
             }
 
             if (nextSettlementDate == "NextMonth")
             {
-                return now.AddMonths(1);
+                return now.AddMonths(1).Date;
             }
 
-            return now;
+            return now.Date;
         }
     }
 }

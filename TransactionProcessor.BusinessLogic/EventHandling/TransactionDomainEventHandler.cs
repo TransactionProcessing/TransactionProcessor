@@ -238,20 +238,37 @@
                 foreach (CalculatedFee calculatedFee in merchantFees)
                 {
                     // Determine when the fee should be applied
-                    Guid aggregateId = merchant.NextSettlementDueDate.ToGuid();
+                    Logger.LogInformation($"Completed Date {domainEvent.CompletedDateTime}");
+                    Logger.LogInformation($"SettlementSchedule {merchant.SettlementSchedule}");
+                    DateTime settlementDate = CalculateSettlementDate(merchant.SettlementSchedule, domainEvent.CompletedDateTime);
+                    Logger.LogInformation($"Settlement Date {settlementDate}");
+                    Guid aggregateId = settlementDate.ToGuid();
 
                     // We need to add the fees to a pending settlement stream (for today)
                     SettlementAggregate aggregate = await this.SettlementAggregateRepository.GetLatestVersion(aggregateId, cancellationToken);
 
                     if (aggregate.IsCreated == false)
                     {
-                        aggregate.Create(transactionAggregate.EstateId, merchant.NextSettlementDueDate);
+                        aggregate.Create(transactionAggregate.EstateId, settlementDate);
                     }
 
                     aggregate.AddFee(transactionAggregate.MerchantId, transactionAggregate.AggregateId, calculatedFee);
 
                     await this.SettlementAggregateRepository.SaveChanges(aggregate, cancellationToken);
                 }
+            }
+        }
+
+        private DateTime CalculateSettlementDate(SettlementSchedule merchantSettlementSchedule, DateTime completeDateTime)
+        {
+            switch(merchantSettlementSchedule)
+            {
+                case SettlementSchedule.Weekly:
+                    return completeDateTime.Date.AddDays(7).Date;
+                case SettlementSchedule.Monthly:
+                    return completeDateTime.Date.AddMonths(1).Date;
+                default:
+                    throw new Exception("Invalid merchant settlement schedule");
             }
         }
 
