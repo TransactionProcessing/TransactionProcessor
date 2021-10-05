@@ -880,7 +880,7 @@ namespace TransactionProcessor.IntegrationTests.Shared
                 EstateDetails estateDetails = this.TestingContext.GetEstateDetails(tableRow);
                 String settlementDateString = SpecflowTableHelper.GetStringRowValue(tableRow, "SettlementDate");
                 Int32 numberOfFees = SpecflowTableHelper.GetIntValue(tableRow, "NumberOfFees");
-                DateTime settlementDate = this.GetSettlementDate(DateTime.Now, settlementDateString);
+                DateTime settlementDate = this.GetSettlementDate(DateTime.Today, settlementDateString);
                 var aggregateid = settlementDate.ToGuid();
                 await Retry.For(async () =>
                                 {
