@@ -159,6 +159,7 @@ namespace TransactionProcessor
             services.AddSingleton<IAggregateRepository<ReconciliationAggregate.ReconciliationAggregate, DomainEventRecord.DomainEvent>, AggregateRepository<ReconciliationAggregate.ReconciliationAggregate, DomainEventRecord.DomainEvent>>();
             services.AddSingleton<IAggregateRepository<SettlementAggregate, DomainEventRecord.DomainEvent>, AggregateRepository<SettlementAggregate, DomainEventRecord.DomainEvent>>();
             services.AddSingleton<ITransactionDomainService, TransactionDomainService>();
+            services.AddSingleton<ISettlementDomainService, SettlementDomainService>();
             services.AddSingleton<Factories.IModelFactory, Factories.ModelFactory>();
             services.AddSingleton<ISecurityServiceClient, SecurityServiceClient>();
             services.AddSingleton<IMessagingServiceClient, MessagingServiceClient>();

@@ -6,9 +6,6 @@
     using System.Threading.Tasks;
     using Models;
 
-    /// <summary>
-    /// 
-    /// </summary>
     public interface ITransactionDomainService
     {
         #region Methods
@@ -81,11 +78,6 @@
                                                                                         Int32 transactionCount,
                                                                                         Decimal transactionValue,
                                                                                         CancellationToken cancellationToken);
-
-        Task<ProcessSettlementResponse> ProcessSettlement(DateTime pendingSettlementDate,
-                                                          Guid estateId,
-                                                          CancellationToken cancellationToken);
-
         #endregion
     }
 }

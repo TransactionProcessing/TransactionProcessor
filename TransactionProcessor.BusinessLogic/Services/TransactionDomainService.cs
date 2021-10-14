@@ -17,7 +17,6 @@
     using ReconciliationAggregate;
     using SecurityService.Client;
     using SecurityService.DataTransferObjects.Responses;
-    using SettlementAggregates;
     using Shared.DomainDrivenDesign.EventSourcing;
     using Shared.EventStore.Aggregate;
     using Shared.EventStore.EventStore;
@@ -63,8 +62,6 @@
         /// </summary>
         private readonly IAggregateRepository<ReconciliationAggregate, DomainEventRecord.DomainEvent> ReconciliationAggregateRepository;
 
-        private readonly IAggregateRepository<SettlementAggregate, DomainEventRecord.DomainEvent> SettlementAggregateRepository;
-
         #endregion
 
         #region Constructors
@@ -81,15 +78,13 @@
                                         IEstateClient estateClient,
                                         ISecurityServiceClient securityServiceClient,
                                         Func<String, IOperatorProxy> operatorProxyResolver,
-                                        IAggregateRepository<ReconciliationAggregate, DomainEventRecord.DomainEvent> reconciliationAggregateRepository,
-                                        IAggregateRepository<SettlementAggregate, DomainEventRecord.DomainEvent> settlementAggregateRepository)
+                                        IAggregateRepository<ReconciliationAggregate, DomainEventRecord.DomainEvent> reconciliationAggregateRepository)
         {
             this.TransactionAggregateManager = transactionAggregateManager;
             this.EstateClient = estateClient;
             this.SecurityServiceClient = securityServiceClient;
             this.OperatorProxyResolver = operatorProxyResolver;
             this.ReconciliationAggregateRepository = reconciliationAggregateRepository;
-            this.SettlementAggregateRepository = settlementAggregateRepository;
         }
 
         #endregion
@@ -396,49 +391,7 @@
                    };
         }
 
-        public async Task<ProcessSettlementResponse> ProcessSettlement(DateTime settlementDate,
-                                                                       Guid estateId,
-                                                                       CancellationToken cancellationToken)
-        {
-            ProcessSettlementResponse response = new ProcessSettlementResponse();
-            
-            Guid aggregateId = settlementDate.ToGuid();
-
-            SettlementAggregate settlementAggregate = await this.SettlementAggregateRepository.GetLatestVersion(aggregateId, cancellationToken);
-
-            if (settlementAggregate.IsCreated == false)
-            {
-                // Not pending settlement for this date
-                return response;
-            }
-
-            var feesToBeSettled = settlementAggregate.GetFeesToBeSettled();
-            response.NumberOfFeesPendingSettlement = feesToBeSettled.Count;
-
-            foreach ((Guid transactionId, Guid merchantId, CalculatedFee calculatedFee) feeToSettle in feesToBeSettled)
-            {
-                try
-                {
-                    await this.TransactionAggregateManager.AddSettledFee(estateId,
-                                                                         feeToSettle.transactionId,
-                                                                         feeToSettle.calculatedFee,
-                                                                         settlementDate,
-                                                                         DateTime.Now,
-                                                                         cancellationToken);
-                    response.NumberOfFeesSuccessfullySettled++;
-                    response.NumberOfFeesPendingSettlement--;
-                }
-                catch(Exception ex)
-                {
-                    Logger.LogError(ex);
-                    response.NumberOfFeesPendingSettlement--;
-                    response.NumberOfFeesFailedToSettle++;
-                }
-                
-            }
-
-            return response;
-        }
+        
 
         /// <summary>
         /// Adds the device to merchant.
