@@ -178,6 +178,7 @@
             this.PlayEvent((dynamic)domainEvent);
         }
 
+        [ExcludeFromCodeCoverage]
         protected override Object GetMetadata()
         {
             return null;

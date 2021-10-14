@@ -261,15 +261,17 @@
 
         private DateTime CalculateSettlementDate(SettlementSchedule merchantSettlementSchedule, DateTime completeDateTime)
         {
-            switch(merchantSettlementSchedule)
+            if (merchantSettlementSchedule == SettlementSchedule.Weekly)
             {
-                case SettlementSchedule.Weekly:
-                    return completeDateTime.Date.AddDays(7).Date;
-                case SettlementSchedule.Monthly:
-                    return completeDateTime.Date.AddMonths(1).Date;
-                default:
-                    throw new Exception("Invalid merchant settlement schedule");
+                return completeDateTime.Date.AddDays(7).Date;
             }
+            
+            if (merchantSettlementSchedule == SettlementSchedule.Monthly)
+            {
+                return completeDateTime.Date.AddMonths(1).Date;
+            }
+
+            return completeDateTime;
         }
 
         /// <summary>

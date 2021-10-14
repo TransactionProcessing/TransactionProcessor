@@ -248,6 +248,46 @@
         }
 
         [Fact]
+        public async Task TransactionDomainEventHandler_Handle_TransactionHasBeenCompletedEvent_SuccessfulSale_MerchantWithNotSetSettlementSchedule_ErrorThrown()
+        {
+            this.TransactionAggregateManager.Setup(t => t.GetAggregate(It.IsAny<Guid>(), It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
+                .ReturnsAsync(TestData.GetCompletedAuthorisedSaleTransactionAggregate);
+
+            this.FeeCalculationManager.Setup(f => f.CalculateFees(It.IsAny<List<TransactionFeeToCalculate>>(), It.IsAny<Decimal>())).Returns(new List<CalculatedFee>
+                {
+                    TestData.CalculatedFeeMerchantFee(),
+                    TestData.CalculatedFeeServiceProviderFee
+                });
+
+            this.EstateClient.Setup(e => e.GetMerchant(It.IsAny<String>(), It.IsAny<Guid>(), It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
+                .ReturnsAsync(new MerchantResponse
+                {
+                    SettlementSchedule = SettlementSchedule.NotSet,
+                });
+            this.EstateClient.Setup(e => e.GetTransactionFeesForProduct(It.IsAny<String>(),
+                                                                        It.IsAny<Guid>(),
+                                                                        It.IsAny<Guid>(),
+                                                                        It.IsAny<Guid>(),
+                                                                        It.IsAny<Guid>(),
+                                                                        It.IsAny<CancellationToken>())).ReturnsAsync(TestData.ContractProductTransactionFees);
+
+            this.SecurityServiceClient.Setup(s => s.GetToken(It.IsAny<String>(), It.IsAny<String>(), It.IsAny<CancellationToken>())).ReturnsAsync(TestData.TokenResponse);
+
+
+            TransactionDomainEventHandler transactionDomainEventHandler = new TransactionDomainEventHandler(this.TransactionAggregateManager.Object,
+                                                                                                            this.FeeCalculationManager.Object,
+                                                                                                            this.EstateClient.Object,
+                                                                                                            this.SecurityServiceClient.Object,
+                                                                                                            this.TransactionReceiptBuilder.Object,
+                                                                                                            this.MessagingServiceClient.Object,
+                                                                                                            this.SettlementAggregateRepository.Object);
+            Should.Throw<NotSupportedException>(async () =>
+                                                {
+                                                    await transactionDomainEventHandler.Handle(TestData.TransactionHasBeenCompletedEvent, CancellationToken.None);
+                                                });
+        }
+
+        [Fact]
         public async Task TransactionDomainEventHandler_Handle_TransactionHasBeenCompletedEvent_UnsuccessfulSale_EventIsHandled()
         {
             this.TransactionAggregateManager.Setup(t => t.GetAggregate(It.IsAny<Guid>(), It.IsAny<Guid>(), It.IsAny<CancellationToken>()))

@@ -14,17 +14,17 @@ namespace TransactionProcessor.BusinessLogic.RequestHandlers
 
     public class SettlementRequestHandler : IRequestHandler<ProcessSettlementRequest, ProcessSettlementResponse>
     {
-        private readonly ITransactionDomainService TransactionDomainService;
+        private readonly ISettlementDomainService SettlementDomainService;
 
-        public SettlementRequestHandler(ITransactionDomainService transactionDomainService)
+        public SettlementRequestHandler(ISettlementDomainService settlementDomainService)
         {
-            this.TransactionDomainService = transactionDomainService;
+            this.SettlementDomainService = settlementDomainService;
         }
 
         public async Task<ProcessSettlementResponse> Handle(ProcessSettlementRequest request,
                                                             CancellationToken cancellationToken)
         {
-            ProcessSettlementResponse processSettlementResponse = await this.TransactionDomainService.ProcessSettlement(request.SettlementDate, request.EstateId, cancellationToken);
+            ProcessSettlementResponse processSettlementResponse = await this.SettlementDomainService.ProcessSettlement(request.SettlementDate, request.EstateId, cancellationToken);
 
             return processSettlementResponse;
         }

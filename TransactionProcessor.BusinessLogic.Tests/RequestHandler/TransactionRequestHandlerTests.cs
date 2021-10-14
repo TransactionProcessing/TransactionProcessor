@@ -61,13 +61,13 @@
         }
     }
 
-    public class SettlementRequestHanslerTests
+    public class SettlementRequestHandlerTests
     {
         [Fact]
         public void TransactionRequestHandler_ProcessLogonTransactionRequest_IsHandled()
         {
-            Mock<ITransactionDomainService> transactionDomainService = new Mock<ITransactionDomainService>();
-            SettlementRequestHandler handler = new SettlementRequestHandler(transactionDomainService.Object);
+            Mock<ISettlementDomainService> settlementDomainService = new Mock<ISettlementDomainService>();
+            SettlementRequestHandler handler = new SettlementRequestHandler(settlementDomainService.Object);
 
             ProcessSettlementRequest command = TestData.ProcessSettlementRequest;
 
