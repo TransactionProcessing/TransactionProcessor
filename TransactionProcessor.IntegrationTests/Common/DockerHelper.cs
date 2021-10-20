@@ -361,6 +361,7 @@
             List<String> environmentVariables = new List<String>();
             environmentVariables
                 .Add($"ConnectionStrings:TestBankReadModel=\"server={sqlServerDetails.sqlServerContainerName};user id={sqlServerDetails.sqlServerUserName};password={sqlServerDetails.sqlServerPassword};database=TestBankReadModel\"");
+            environmentVariables.Add("ASPNETCORE_ENVIRONMENT=IntegrationTest");
 
             ContainerBuilder testHostContainer = new Builder().UseContainer().WithName(containerName)
                                                               .WithEnvironment(environmentVariables.ToArray())
