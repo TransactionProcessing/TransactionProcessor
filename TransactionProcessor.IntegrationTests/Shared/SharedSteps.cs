@@ -604,27 +604,31 @@ namespace TransactionProcessor.IntegrationTests.Shared
                                                       {
                                                           TypeNameHandling = TypeNameHandling.All
                                                       });
-                this.ValidateTransactionResponse((dynamic)transactionResponse, tableRow);
+                this.ValidateTransactionResponse(transactionNumber, (dynamic)transactionResponse, tableRow);
             }
         }
 
-        private void ValidateTransactionResponse(LogonTransactionResponse logonTransactionResponse,
-                                           TableRow tableRow)
-        {
-            String expectedResponseCode = SpecflowTableHelper.GetStringRowValue(tableRow, "ResponseCode");
-            String expectedResponseMessage = SpecflowTableHelper.GetStringRowValue(tableRow, "ResponseMessage");
-
-            logonTransactionResponse.ResponseCode.ShouldBe(expectedResponseCode);
-            logonTransactionResponse.ResponseMessage.ShouldBe(expectedResponseMessage);
-        }
-
-        private void ValidateTransactionResponse(SaleTransactionResponse saleTransactionResponse,
+        private void ValidateTransactionResponse(String transactionNumber, 
+                                                 LogonTransactionResponse logonTransactionResponse,
                                                  TableRow tableRow)
         {
             String expectedResponseCode = SpecflowTableHelper.GetStringRowValue(tableRow, "ResponseCode");
             String expectedResponseMessage = SpecflowTableHelper.GetStringRowValue(tableRow, "ResponseMessage");
 
-            saleTransactionResponse.ResponseCode.ShouldBe(expectedResponseCode);
+            logonTransactionResponse.ResponseCode.ShouldBe(expectedResponseCode,
+                                                           $"Transaction Number {transactionNumber} response code {logonTransactionResponse.ResponseCode} does not match expected response code {expectedResponseMessage}");
+            logonTransactionResponse.ResponseMessage.ShouldBe(expectedResponseMessage);
+        }
+
+        private void ValidateTransactionResponse(String transactionNumber,
+                                                 SaleTransactionResponse saleTransactionResponse,
+                                                 TableRow tableRow)
+        {
+            String expectedResponseCode = SpecflowTableHelper.GetStringRowValue(tableRow, "ResponseCode");
+            String expectedResponseMessage = SpecflowTableHelper.GetStringRowValue(tableRow, "ResponseMessage");
+
+            saleTransactionResponse.ResponseCode.ShouldBe(expectedResponseCode,
+                                                          $"Transaction Number {transactionNumber} response code {saleTransactionResponse.ResponseCode} does not match expected response code {expectedResponseMessage}");
             saleTransactionResponse.ResponseMessage.ShouldBe(expectedResponseMessage);
         }
 
