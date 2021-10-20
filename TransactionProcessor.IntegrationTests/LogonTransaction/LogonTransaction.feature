@@ -46,7 +46,7 @@ Background:
 	| Deposit1  | 1000.00 | Today    | Test Merchant 2 | Test Estate 1 |
 	| Deposit1  | 1000.00 | Today    | Test Merchant 3 | Test Estate 2 |
 
-@PRTest
+#@PRTest
 Scenario: Logon Transactions
 
 	When I perform the following transactions
@@ -75,7 +75,7 @@ Scenario: Logon Transaction with Existing Device
 	| EstateName    | MerchantName    | TransactionNumber | ResponseCode | ResponseMessage |
 	| Test Estate 1 | Test Merchant 1 | 1                 | 0000         | SUCCESS         |
 
-@PRTest
+#@PRTest
 Scenario: Logon Transaction with Invalid Device
 
 	Given I have assigned the following devices to the merchants

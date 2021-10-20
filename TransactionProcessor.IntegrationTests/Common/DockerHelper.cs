@@ -292,16 +292,21 @@
                                                                                                     ("serviceClient", "Secret1"),
                                                                                                     true);
 
-            IContainerService testhostContainer = SetupTestHostContainer(this.TestHostContainerName,
-                                                                         this.Logger,
-                                                                         "stuartferguson/testhosts",
-                                                                         new List<INetworkService>
-                                                                         {
-                                                                             testNetwork
-                                                                         },
-                                                                         traceFolder,
-                                                                         dockerCredentials,
-                                                                         true);
+            IContainerService testhostContainer = SetupTestHostContainerDebug(this.TestHostContainerName,
+                                                                              this.Logger,
+                                                                              "stuartferguson/testhosts",
+                                                                              new List<INetworkService>
+                                                                              {
+                                                                                  testNetwork,
+                                                                                  ,
+                                                                                  Setup.DatabaseServerNetwork
+                                                                              },
+                                                                              traceFolder,
+                                                                              dockerCredentials,
+                                                                              (Setup.SqlServerContainerName,
+                                                                                  "sa",
+                                                                                  "thisisalongpassword123!")
+                                                                              true);
 
             this.Containers.AddRange(new List<IContainerService>
                                      {
@@ -342,6 +347,38 @@
             this.TransactionProcessorClient = new TransactionProcessorClient(TransactionProcessorBaseAddressResolver, httpClient);
 
             await this.LoadEventStoreProjections().ConfigureAwait(false);
+        }
+
+        public static IContainerService SetupTestHostContainerDebug(String containerName, ILogger logger, String imageName,
+                                                               List<INetworkService> networkServices,
+                                                               String hostFolder,
+                                                               (String URL, String UserName, String Password)? dockerCredentials,
+                                                               (String sqlServerContainerName, String sqlServerUserName, String sqlServerPassword)
+                                                                   sqlServerDetails,
+                                                               Boolean forceLatestImage = false)
+        {
+            logger.LogInformation("About to Start Test Hosts Container");
+
+            List<String> environmentVariables = new List<String>();
+            environmentVariables
+                .Add($"ConnectionStrings:TestBankReadModel=\"server={sqlServerDetails.sqlServerContainerName};user id={sqlServerDetails.sqlServerUserName};password={sqlServerDetails.sqlServerPassword};database=TestBankReadModel\"");
+
+            ContainerBuilder testHostContainer = new Builder().UseContainer().WithName(containerName)
+                                                              .WithEnvironment(environmentVariables.ToArray())
+                                                              .UseImage(imageName, forceLatestImage).ExposePort(DockerHelper.TestHostPort)
+                                                              .UseNetwork(networkServices.ToArray()).Mount(hostFolder, "/home", MountType.ReadWrite);
+
+            if (dockerCredentials.HasValue)
+            {
+                testHostContainer.WithCredential(dockerCredentials.Value.URL, dockerCredentials.Value.UserName, dockerCredentials.Value.Password);
+            }
+
+            // Now build and return the container                
+            IContainerService builtContainer = testHostContainer.Build().Start().WaitForPort($"{DockerHelper.TestHostPort}/tcp", 30000);
+
+            logger.LogInformation("Test Hosts Container Started");
+
+            return builtContainer;
         }
 
         protected async Task PopulateSubscriptionServiceConfiguration()
