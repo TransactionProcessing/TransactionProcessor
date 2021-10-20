@@ -297,10 +297,14 @@
                                                                          "stuartferguson/testhosts",
                                                                          new List<INetworkService>
                                                                          {
-                                                                             testNetwork
+                                                                             testNetwork,
+                                                                             Setup.DatabaseServerNetwork
                                                                          },
                                                                          traceFolder,
                                                                          dockerCredentials,
+                                                                         (Setup.SqlServerContainerName,
+                                                                             "sa",
+                                                                             "thisisalongpassword123!"),
                                                                          true);
 
             this.Containers.AddRange(new List<IContainerService>
