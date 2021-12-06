@@ -1,5 +1,5 @@
-﻿var fromAll = fromAll || require("../../node_modules/event-store-projection-testing").scope.fromAll;
-var linkTo = linkTo || require("../../node_modules/event-store-projection-testing").scope.linkTo;
+var fromAll = fromAll || require("../../node_modules/esprojection-testing-framework").scope.fromAll;
+var linkTo = linkTo || require("../../node_modules/esprojection-testing-framework").scope.linkTo;
 
 isValidEvent = function (e) {
 
@@ -29,10 +29,8 @@ fromAll()
             if (isValidEvent(e)) {
                 var merchantId = getMerchantId(e);
                 if (merchantId !== null) {
-                    s.merchantId = merchantId;
                     var streamName = "MerchantArchive-" + merchantId.replace(/-/gi, "");
-                    s.streamName = streamName;
-                    linkTo(streamName, e, e.metadata);
+                    linkTo(streamName, e);
                 }
             }
         }
