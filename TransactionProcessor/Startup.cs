@@ -279,6 +279,7 @@ namespace TransactionProcessor
             settings.ConnectionName = Startup.Configuration.GetValue<String>("EventStoreSettings:ConnectionName");
             settings.ConnectivitySettings = new EventStoreClientConnectivitySettings
             {
+                Insecure = Startup.Configuration.GetValue<Boolean>("EventStoreSettings:Insecure"),
                 Address = new Uri(Startup.Configuration.GetValue<String>("EventStoreSettings:ConnectionString")),
             };
             
@@ -498,8 +499,9 @@ namespace TransactionProcessor
                 String filter = ConfigurationReader.GetValue("AppSettings", "InternalSubscriptionServiceFilter");
                 String ignore = ConfigurationReader.GetValue("AppSettings", "InternalSubscriptionServiceIgnore");
                 String streamName = ConfigurationReader.GetValue("AppSettings", "InternalSubscriptionFilterOnStreamName");
+                Int32 cacheDuration = Int32.Parse(ConfigurationReader.GetValue("AppSettings", "InternalSubscriptionServiceCacheDuration"));
 
-                ISubscriptionRepository subscriptionRepository = SubscriptionRepository.Create(eventStoreConnectionString);
+                ISubscriptionRepository subscriptionRepository = SubscriptionRepository.Create(eventStoreConnectionString, cacheDuration);
 
                 ((SubscriptionRepository)subscriptionRepository).Trace += (sender, s) => Extensions.log(TraceEventType.Information, "REPOSITORY", s);
 

@@ -49,12 +49,21 @@ namespace TransactionProcessor.IntegrationTests.Shared
             foreach (TableRow tableRow in table.Rows)
             {
                 String estateName = SpecflowTableHelper.GetStringRowValue(tableRow, "EstateName");
+                // Setup the subscriptions for the estate
+                await Retry.For(async () => { await this.TestingContext.DockerHelper.PopulateSubscriptionServiceConfiguration(estateName).ConfigureAwait(false); },
+                                retryFor: TimeSpan.FromMinutes(2),
+                                retryInterval: TimeSpan.FromSeconds(30));
+            }
+
+            foreach (TableRow tableRow in table.Rows)
+            {
+                String estateName = SpecflowTableHelper.GetStringRowValue(tableRow, "EstateName");
 
                 CreateEstateRequest createEstateRequest = new CreateEstateRequest
-                                                          {
-                                                              EstateId = Guid.NewGuid(),
-                                                              EstateName = estateName
-                                                          };
+                {
+                    EstateId = Guid.NewGuid(),
+                    EstateName = estateName
+                };
 
                 CreateEstateResponse response = await this.TestingContext.DockerHelper.EstateClient.CreateEstate(this.TestingContext.AccessToken, createEstateRequest, CancellationToken.None).ConfigureAwait(false);
 
@@ -73,11 +82,11 @@ namespace TransactionProcessor.IntegrationTests.Shared
 
                 EstateResponse estate = null;
                 await Retry.For(async () =>
-                                {
-                                    estate = await this.TestingContext.DockerHelper.EstateClient
-                                                       .GetEstate(this.TestingContext.AccessToken, estateDetails.EstateId, CancellationToken.None).ConfigureAwait(false);
-                                    estate.ShouldNotBeNull();
-                                }).ConfigureAwait(false);
+                {
+                    estate = await this.TestingContext.DockerHelper.EstateClient
+                                       .GetEstate(this.TestingContext.AccessToken, estateDetails.EstateId, CancellationToken.None).ConfigureAwait(false);
+                    estate.ShouldNotBeNull();
+                }, retryFor: TimeSpan.FromSeconds(90)).ConfigureAwait(false);
 
                 estate.EstateName.ShouldBe(estateDetails.EstateName);
             }

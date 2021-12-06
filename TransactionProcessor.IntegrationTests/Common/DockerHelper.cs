@@ -161,6 +161,8 @@
             Logger.LogInformation("Loaded projections");
         }
 
+        protected String EventStoreConnectionString;
+
         #region Methods
 
         /// <summary>
@@ -188,9 +190,7 @@
             this.TestHostContainerName = $"testhosts{testGuid:N}";
             this.VoucherManagementContainerName = $"vouchermanagement{testGuid:N}";
             this.MessagingServiceContainerName = $"messaging{testGuid:N}";
-
-            String eventStoreAddress = $"http://{this.EventStoreContainerName}";
-
+            
             (String, String, String) dockerCredentials = ("https://www.docker.com", "stuartferguson", "Sc0tland");
 
             INetworkService testNetwork = DockerHelper.SetupTestNetwork();
@@ -198,11 +198,13 @@
             IContainerService eventStoreContainer = DockerHelper.SetupEventStoreContainer(this.EventStoreContainerName, this.Logger, "eventstore/eventstore:20.10.0-buster-slim", testNetwork, traceFolder);
             this.EventStoreHttpPort = eventStoreContainer.ToHostExposedEndpoint($"{DockerHelper.EventStoreHttpDockerPort}/tcp").Port;
 
-            await Retry.For(async () =>
-                            {
-                                await this.PopulateSubscriptionServiceConfiguration().ConfigureAwait(false);
-                            }, retryFor: TimeSpan.FromMinutes(2), retryInterval: TimeSpan.FromSeconds(30));
-            
+            this.EventStoreConnectionString =
+                $"esdb://admin:changeit@{this.EventStoreContainerName}:{DockerHelper.EventStoreHttpDockerPort}?tls=false";
+
+            String insecureEventStoreEnvironmentVariable = "EventStoreSettings:Insecure=true";
+            String persistentSubscriptionPollingInSeconds = "AppSettings:PersistentSubscriptionPollingInSeconds=10";
+            String internalSubscriptionServiceCacheDuration = "AppSettings:InternalSubscriptionServiceCacheDuration=0";
+
             IContainerService voucherManagementContainer = SetupVoucherManagementContainer(this.VoucherManagementContainerName,
                                                                                            this.Logger,
                                                                                            "stuartferguson/vouchermanagement",
@@ -214,12 +216,16 @@
                                                                                            dockerCredentials,
                                                                                            this.SecurityServiceContainerName,
                                                                                            this.EstateManagementContainerName,
-                                                                                           eventStoreAddress,
+                                                                                           this.EventStoreConnectionString,
                                                                                            (Setup.SqlServerContainerName,
                                                                                                "sa",
                                                                                                "thisisalongpassword123!"),
                                                                                            ("serviceClient", "Secret1"),
-                                                                                           true);
+                                                                                           true,
+                                                                                           additionalEnvironmentVariables: new List<String>
+                                                                                               {
+                                                                                                   insecureEventStoreEnvironmentVariable,
+                                                                                               });
 
             IContainerService estateManagementContainer = DockerHelper.SetupEstateManagementContainer(this.EstateManagementContainerName, this.Logger,
                                                                                                       "stuartferguson/estatemanagement", new List<INetworkService>
@@ -228,12 +234,18 @@
                                                                                                                               Setup.DatabaseServerNetwork
                                                                                                                           }, traceFolder, dockerCredentials,
                                                                                                       this.SecurityServiceContainerName,
-                                                                                                      eventStoreAddress,
+                                                                                                      this.EventStoreConnectionString,
                                                                                                       (Setup.SqlServerContainerName,
                                                                                                       "sa",
                                                                                                       "thisisalongpassword123!"),
                                                                                                       ("serviceClient", "Secret1"),
-                                                                                                      true);
+                                                                                                      true,
+                                                                                                      additionalEnvironmentVariables: new List<String>
+                                                                                                          {
+                                                                                                              insecureEventStoreEnvironmentVariable,
+                                                                                                              persistentSubscriptionPollingInSeconds,
+                                                                                                              internalSubscriptionServiceCacheDuration
+                                                                                                          });
 
             IContainerService messagingServiceContainer = DockerHelper.SetupMessagingServiceContainer(this.MessagingServiceContainerName, this.Logger,
                                                                                                       "stuartferguson/messagingservice", new List<INetworkService>
@@ -241,7 +253,7 @@
                                                                                                               testNetwork
                                                                                                           }, traceFolder, dockerCredentials,
                                                                                                       this.SecurityServiceContainerName,
-                                                                                                      eventStoreAddress,
+                                                                                                      this.EventStoreConnectionString,
                                                                                                       ("serviceClient", "Secret1"),
                                                                                                       true);
 
@@ -269,10 +281,16 @@
                                                                                                               dockerCredentials,
                                                                                                               this.SecurityServiceContainerName,
                                                                                                               this.EstateManagementContainerName,
-                                                                                                              eventStoreAddress,
+                                                                                                              this.EventStoreConnectionString,
                                                                                                               ("serviceClient", "Secret1"),
                                                                                                               this.TestHostContainerName,
-                                                                                                              this.VoucherManagementContainerName);
+                                                                                                              this.VoucherManagementContainerName,
+                                                                                                              additionalEnvironmentVariables: new List<String>
+                                                                                                                  {
+                                                                                                                      insecureEventStoreEnvironmentVariable,
+                                                                                                                      persistentSubscriptionPollingInSeconds,
+                                                                                                                      internalSubscriptionServiceCacheDuration
+                                                                                                                  });
 
             IContainerService estateReportingContainer = DockerHelper.SetupEstateReportingContainer(this.EstateReportingContainerName,
                                                                                                     this.Logger,
@@ -285,12 +303,18 @@
                                                                                                     traceFolder,
                                                                                                     dockerCredentials,
                                                                                                     this.SecurityServiceContainerName,
-                                                                                                    eventStoreAddress,
+                                                                                                    this.EventStoreConnectionString,
                                                                                                     (Setup.SqlServerContainerName,
                                                                                                     "sa",
                                                                                                     "thisisalongpassword123!"),
                                                                                                     ("serviceClient", "Secret1"),
-                                                                                                    true);
+                                                                                                    true,
+                                                                                                    additionalEnvironmentVariables: new List<String>
+                                                                                                        {
+                                                                                                            insecureEventStoreEnvironmentVariable,
+                                                                                                            persistentSubscriptionPollingInSeconds,
+                                                                                                            internalSubscriptionServiceCacheDuration
+                                                                                                        });
 
             IContainerService testhostContainer = SetupTestHostContainer(this.TestHostContainerName,
                                                                          this.Logger,
@@ -348,17 +372,13 @@
             await this.LoadEventStoreProjections().ConfigureAwait(false);
         }
 
-        protected async Task PopulateSubscriptionServiceConfiguration()
+        public async Task PopulateSubscriptionServiceConfiguration(String estateName)
         {
             EventStorePersistentSubscriptionsClient client = new EventStorePersistentSubscriptionsClient(ConfigureEventStoreSettings(this.EventStoreHttpPort));
 
-            PersistentSubscriptionSettings settings = new PersistentSubscriptionSettings(resolveLinkTos: true);
-            await client.CreateAsync("$ce-EstateAggregate", "Reporting", settings);
-            await client.CreateAsync("$ce-MerchantAggregate", "Reporting", settings);
-            await client.CreateAsync("$ce-ContractAggregate", "Reporting", settings);
-            await client.CreateAsync("$ce-TransactionAggregate", "Reporting", settings);
-            await client.CreateAsync("$et-TransactionHasBeenCompletedEvent", "TransactionProcessor", settings);
-            await client.CreateAsync("$et-MerchantFeeAddedToTransactionEvent", "TransactionProcessor", settings);
+            PersistentSubscriptionSettings settings = new PersistentSubscriptionSettings(resolveLinkTos: true, StreamPosition.Start);
+            await client.CreateAsync(estateName.Replace(" ", ""), "Reporting", settings);
+            await client.CreateAsync($"EstateManagementSubscriptionStream_{estateName.Replace(" ", "")}", "Estate Management", settings);
         }
 
         private static EventStoreClientSettings ConfigureEventStoreSettings(Int32 eventStoreHttpPort)
