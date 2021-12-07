@@ -364,7 +364,7 @@
                                 {
                                     // Build the connection string (to master)
                                     String connectionString = Setup.GetLocalConnectionString(databaseName);
-                                    EstateReportingContext context = new EstateReportingContext(connectionString);
+                                    EstateReportingSqlServerContext context = new EstateReportingSqlServerContext(connectionString);
                                     await context.Database.EnsureDeletedAsync(CancellationToken.None);
                                 });
             }

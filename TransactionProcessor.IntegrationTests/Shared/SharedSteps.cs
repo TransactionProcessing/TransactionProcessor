@@ -802,7 +802,6 @@ namespace TransactionProcessor.IntegrationTests.Shared
                 MakeMerchantDepositRequest makeMerchantDepositRequest = new MakeMerchantDepositRequest
                                                                         {
                                                                             DepositDateTime = SpecflowTableHelper.GetDateForDateString(SpecflowTableHelper.GetStringRowValue(tableRow, "DateTime"), DateTime.Now),
-                                                                            Source = MerchantDepositSource.Manual,
                                                                             Reference = SpecflowTableHelper.GetStringRowValue(tableRow, "Reference"),
                                                                             Amount = SpecflowTableHelper.GetDecimalValue(tableRow, "Amount")
                                                                         };
