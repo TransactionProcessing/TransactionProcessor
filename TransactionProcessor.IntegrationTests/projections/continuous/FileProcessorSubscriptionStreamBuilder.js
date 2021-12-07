@@ -1,5 +1,5 @@
-var fromAll = fromAll || require("../../node_modules/esprojection-testing-framework").scope.fromAll;
-var linkTo = linkTo || require("../../node_modules/esprojection-testing-framework").scope.linkTo;
+//var fromAll = fromAll || require("../../node_modules/esprojection-testing-framework").scope.fromAll;
+//var linkTo = linkTo || require("../../node_modules/esprojection-testing-framework").scope.linkTo;
 
 isEstateEvent = (e) => { return (e.data && e.data.estateId); }
 isAnEstateCreatedEvent = (e) => { return compareEventTypeSafely(e.eventType, 'EstateCreatedEvent') };

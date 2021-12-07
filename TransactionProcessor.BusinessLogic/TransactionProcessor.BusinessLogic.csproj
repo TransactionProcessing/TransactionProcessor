@@ -8,8 +8,8 @@
     <PackageReference Include="EstateManagement.Client" Version="1.0.15-build74" />
     <PackageReference Include="MessagingService.Client" Version="1.0.10.2" />
     <PackageReference Include="SecurityService.Client" Version="1.0.6.2" />
-    <PackageReference Include="Shared.DomainDrivenDesign" Version="1.0.18" />
-    <PackageReference Include="Shared.EventStore" Version="1.0.18" />
+    <PackageReference Include="Shared.DomainDrivenDesign" Version="1.1.0" />
+    <PackageReference Include="Shared.EventStore" Version="1.1.0" />
     <PackageReference Include="MediatR" Version="9.0.0" />
     <PackageReference Include="System.IO.Abstractions" Version="13.2.9" />
     <PackageReference Include="VoucherManagement.Client" Version="1.0.4.1" />

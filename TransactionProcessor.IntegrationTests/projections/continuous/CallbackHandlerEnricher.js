@@ -1,5 +1,5 @@
-var fromStreams = fromStreams || require('../../node_modules/esprojection-testing-framework').scope.fromStreams;
-var emit = emit || require('../../node_modules/esprojection-testing-framework').scope.emit;
+//var fromStreams = fromStreams || require('../../node_modules/esprojection-testing-framework').scope.fromStreams;
+//var emit = emit || require('../../node_modules/esprojection-testing-framework').scope.emit;
 
 fromStreams("$ce-EstateAggregate", "$et-CallbackReceivedEvent")
     .when({

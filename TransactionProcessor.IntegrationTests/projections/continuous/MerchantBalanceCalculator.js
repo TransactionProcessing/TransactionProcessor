@@ -1,6 +1,6 @@
-var fromCategory = fromCategory || require('../../node_modules/esprojection-testing-framework').scope.fromCategory;
-var partitionBy = partitionBy !== null ? partitionBy : require('../../node_modules/esprojection-testing-framework').scope.partitionBy;
-var emit = emit || require('../../node_modules/esprojection-testing-framework').scope.emit;
+//var fromCategory = fromCategory || require('../../node_modules/esprojection-testing-framework').scope.fromCategory;
+//var partitionBy = partitionBy !== null ? partitionBy : require('../../node_modules/esprojection-testing-framework').scope.partitionBy;
+//var emit = emit || require('../../node_modules/esprojection-testing-framework').scope.emit;
 
 fromCategory('MerchantArchive')
     .foreachStream()
@@ -184,7 +184,6 @@ var depositMadeEventHandler = function (s, e) {
     incrementBalanceFromDeposit(s, e.data.amount, e.data.depositDateTime);
 
     // emit an balance changed event here
-    console.log(e);
     s = emitBalanceChangedEvent(e.data.merchantId, e.eventId, s, e.data.amount, e.data.depositDateTime, "Merchant Deposit");
 };
 

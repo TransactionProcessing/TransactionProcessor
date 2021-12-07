@@ -86,7 +86,7 @@ namespace TransactionProcessor.IntegrationTests.Shared
                     estate = await this.TestingContext.DockerHelper.EstateClient
                                        .GetEstate(this.TestingContext.AccessToken, estateDetails.EstateId, CancellationToken.None).ConfigureAwait(false);
                     estate.ShouldNotBeNull();
-                }, retryFor: TimeSpan.FromSeconds(90)).ConfigureAwait(false);
+                }, retryFor: TimeSpan.FromSeconds(180)).ConfigureAwait(false);
 
                 estate.EstateName.ShouldBe(estateDetails.EstateName);
             }
