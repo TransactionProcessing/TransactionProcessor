@@ -108,6 +108,17 @@
             PersistentSubscriptionSettings settings = new PersistentSubscriptionSettings(resolveLinkTos:true, StreamPosition.Start);
             await client.CreateAsync(estateName.Replace(" ", ""), "Reporting", settings);
             await client.CreateAsync($"EstateManagementSubscriptionStream_{estateName.Replace(" ", "")}", "Estate Management", settings);
+            await client.CreateAsync($"TransactionProcessorSubscriptionStream_{ReplaceFirst(estateName," ", "")}", "Transaction Processor", settings);
+        }
+
+        public string ReplaceFirst(string text, string search, string replace)
+        {
+            int pos = text.IndexOf(search);
+            if (pos < 0)
+            {
+                return text;
+            }
+            return text.Substring(0, pos) + replace + text.Substring(pos + search.Length);
         }
 
         /// <summary>

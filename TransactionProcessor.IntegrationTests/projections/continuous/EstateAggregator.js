@@ -36,7 +36,6 @@ fromAll()
 
                     if (isAnEstateCreatedEvent(e)) {
                         s.estates[e.data.estateId] = {
-                            filteredName: e.data.estateName.replace(/-/gi, ""),
                             name: e.data.estateName.replace(/-/gi, "").replace(/ /g, "")
                         };
                     }

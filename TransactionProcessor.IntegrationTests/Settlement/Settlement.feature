@@ -73,7 +73,7 @@ Scenario: Get Pending Settlement
 	| Reference | Amount | DateTime | MerchantName    | EstateName    |
 	| Deposit1  | 210.00 | Today    | Test Merchant 1 | Test Estate 1 |
 	| Deposit1  | 110.00 | Today    | Test Merchant 2 | Test Estate 1 |
-	| Deposit1  | 110.00 | Today    | Test Merchant 3 | Test Estate 1 |
+	| Deposit1  | 120.00 | Today    | Test Merchant 3 | Test Estate 1 |
 
 	When I perform the following transactions
 	| DateTime | TransactionNumber | TransactionType | MerchantName    | DeviceIdentifier | EstateName    | OperatorName | TransactionAmount | CustomerAccountNumber | CustomerEmailAddress        | ContractDescription | ProductName    | RecipientEmail       | RecipientMobile |
