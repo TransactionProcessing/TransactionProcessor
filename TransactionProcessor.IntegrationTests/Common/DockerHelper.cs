@@ -192,10 +192,6 @@
 
             IContainerService securityServiceContainer = this.SetupSecurityServiceContainer("stuartferguson/securityservice", testNetwork, true);
 
-            List<String> additionalVariables = new List<String>
-                                               {
-                                                   $"AppSettings:VoucherManagementApi=http://{this.VoucherManagementContainerName}:{DockerHelper.VoucherManagementDockerPort}"
-                                               };
             IContainerService transactionProcessorContainer = this.SetupTransactionProcessorContainer("transactionprocessor",
                                                                                                       new List<INetworkService>
                                                                                                       {
@@ -205,7 +201,8 @@
                                                                                                           {
                                                                                                               insecureEventStoreEnvironmentVariable,
                                                                                                               persistentSubscriptionPollingInSeconds,
-                                                                                                              internalSubscriptionServiceCacheDuration
+                                                                                                              internalSubscriptionServiceCacheDuration,
+                                                                                                              $"AppSettings:VoucherManagementApi=http://{this.VoucherManagementContainerName}:{DockerHelper.VoucherManagementDockerPort}"
                                                                                                           });
 
             IContainerService estateReportingContainer = this.SetupEstateReportingContainer("stuartferguson/estatereporting",
