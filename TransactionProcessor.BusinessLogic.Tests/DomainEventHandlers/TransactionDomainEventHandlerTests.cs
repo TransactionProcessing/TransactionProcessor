@@ -162,7 +162,6 @@
             var merchant = new MerchantResponse
                            {
                                SettlementSchedule = SettlementSchedule.Weekly,
-                               NextSettlementDueDate = DateTime.Now.AddDays(7)
                            };
             this.EstateClient.Setup(e => e.GetMerchant(It.IsAny<String>(), It.IsAny<Guid>(), It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
                 .ReturnsAsync(merchant);
@@ -213,7 +212,6 @@
             var merchant = new MerchantResponse
             {
                 SettlementSchedule = SettlementSchedule.Monthly,
-                NextSettlementDueDate = DateTime.Now.AddMonths(1)
             };
             this.EstateClient.Setup(e => e.GetMerchant(It.IsAny<String>(), It.IsAny<Guid>(), It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
                 .ReturnsAsync(merchant);

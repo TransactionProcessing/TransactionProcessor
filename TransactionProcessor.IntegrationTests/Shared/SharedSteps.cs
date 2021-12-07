@@ -86,7 +86,7 @@ namespace TransactionProcessor.IntegrationTests.Shared
                     estate = await this.TestingContext.DockerHelper.EstateClient
                                        .GetEstate(this.TestingContext.AccessToken, estateDetails.EstateId, CancellationToken.None).ConfigureAwait(false);
                     estate.ShouldNotBeNull();
-                }, retryFor: TimeSpan.FromSeconds(90)).ConfigureAwait(false);
+                }, retryFor: TimeSpan.FromSeconds(180)).ConfigureAwait(false);
 
                 estate.EstateName.ShouldBe(estateDetails.EstateName);
             }
@@ -802,7 +802,6 @@ namespace TransactionProcessor.IntegrationTests.Shared
                 MakeMerchantDepositRequest makeMerchantDepositRequest = new MakeMerchantDepositRequest
                                                                         {
                                                                             DepositDateTime = SpecflowTableHelper.GetDateForDateString(SpecflowTableHelper.GetStringRowValue(tableRow, "DateTime"), DateTime.Now),
-                                                                            Source = MerchantDepositSource.Manual,
                                                                             Reference = SpecflowTableHelper.GetStringRowValue(tableRow, "Reference"),
                                                                             Amount = SpecflowTableHelper.GetDecimalValue(tableRow, "Amount")
                                                                         };

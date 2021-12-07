@@ -1,5 +1,5 @@
-var fromAll = fromAll || require("../../node_modules/esprojection-testing-framework").scope.fromAll;
-var linkTo = linkTo || require("../../node_modules/esprojection-testing-framework").scope.linkTo;
+//var fromAll = fromAll || require("../../node_modules/esprojection-testing-framework").scope.fromAll;
+//var linkTo = linkTo || require("../../node_modules/esprojection-testing-framework").scope.linkTo;
 
 isEstateEvent = (e) => { return (e.data && e.data.estateId); }
 isAnEstateCreatedEvent = (e) => { return compareEventTypeSafely(e.eventType, 'EstateCreatedEvent') };
@@ -36,7 +36,6 @@ fromAll()
 
                     if (isAnEstateCreatedEvent(e)) {
                         s.estates[e.data.estateId] = {
-                            filteredName: e.data.estateName.replace(/-/gi, ""),
                             name: e.data.estateName.replace(/-/gi, "").replace(/ /g, "")
                         };
                     }
