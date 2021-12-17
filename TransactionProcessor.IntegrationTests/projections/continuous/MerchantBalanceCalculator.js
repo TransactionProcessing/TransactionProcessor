@@ -1,6 +1,6 @@
-var fromCategory = fromCategory || require('../../node_modules/event-store-projection-testing').scope.fromCategory;
-var partitionBy = partitionBy !== null ? partitionBy : require('../../node_modules/event-store-projection-testing').scope.partitionBy;
-var emit = emit || require('../../node_modules/event-store-projection-testing').scope.emit;
+//var fromCategory = fromCategory || require('../../node_modules/esprojection-testing-framework').scope.fromCategory;
+//var partitionBy = partitionBy !== null ? partitionBy : require('../../node_modules/esprojection-testing-framework').scope.partitionBy;
+//var emit = emit || require('../../node_modules/esprojection-testing-framework').scope.emit;
 
 fromCategory('MerchantArchive')
     .foreachStream()
@@ -17,11 +17,11 @@ fromCategory('MerchantArchive')
                 totalDeposits: 0,
                 totalAuthorisedSales: 0,
                 totalDeclinedSales: 0,
-                totalFees: 0
+                totalFees: 0,
+                emittedEvents: 1
             }
         },
         $any: function (s, e) {
-
             if (e === null || e.data === null || e.data.IsJson === false)
                 return;
 
@@ -121,45 +121,47 @@ var incrementAvailableBalanceFromDeclinedTransaction = function (s, amount) {
 var merchantCreatedEventHandler = function (s, e) {
 
     // Setup the state here
-    s.estateId = e.data.EstateId;
-    s.merchantId = e.data.MerchantId;
-    s.merchantName = e.data.MerchantName;
+    s.estateId = e.data.estateId;
+    s.merchantId = e.data.merchantId;
+    s.merchantName = e.data.merchantName;
 };
 
 var emitBalanceChangedEvent = function (aggregateId, eventId, s, changeAmount, dateTime, reference) {
 
     if (s.initialised === true) {
+
         // Emit an opening balance event
         var openingBalanceEvent = {
             $type: getEventTypeName(),
-            "aggregateId": aggregateId,
             "merchantId": s.merchantId,
             "estateId": s.estateId,
             "balance": 0,
             "changeAmount": 0,
             "eventId": s.merchantId,
             "eventCreatedDateTime": dateTime,
-            "reference": "Opening Balance"
+            "reference": "Opening Balance",
+            "aggregateId": s.merchantId
         }
         emit(getStreamName(s), getEventType(), openingBalanceEvent);
+        s.emittedEvents++;
         s.initialised = false;
     }
 
     var balanceChangedEvent = {
         $type: getEventTypeName(),
-        "aggregateId": aggregateId,
         "merchantId": s.merchantId,
         "estateId": s.estateId,
         "balance": s.balance,
         "changeAmount": changeAmount,
         "eventId": eventId,
         "eventCreatedDateTime": dateTime,
-        "reference": reference
+        "reference": reference,
+        "aggregateId": aggregateId
     }
 
     // emit an balance changed event here
     emit(getStreamName(s), getEventType(), balanceChangedEvent);
-
+    s.emittedEvents++;
     return s;
 };
 
@@ -176,7 +178,7 @@ var depositMadeEventHandler = function (s, e) {
     incrementBalanceFromDeposit(s, e.data.amount, e.data.depositDateTime);
 
     // emit an balance changed event here
-    s = emitBalanceChangedEvent(e.data.aggregateId, e.data.eventId, s, e.data.amount, e.data.depositDateTime, "Merchant Deposit");
+    s = emitBalanceChangedEvent(e.data.merchantId, e.eventId, s, e.data.amount, e.data.depositDateTime, "Merchant Deposit");
 };
 
 var transactionHasStartedEventHandler = function (s, e) {
@@ -214,12 +216,12 @@ var transactionHasCompletedEventHandler = function (s, e) {
     var transactionDateTime = new Date(Date.parse(e.data.completedDateTime));
     var completedTime = new Date(transactionDateTime.getFullYear(), transactionDateTime.getMonth(), transactionDateTime.getDate(), transactionDateTime.getHours(), transactionDateTime.getMinutes(), transactionDateTime.getSeconds() + 2);
 
-    if (e.data.IsAuthorised) {
+    if (e.data.isAuthorised) {
         decrementBalanceFromAuthorisedTransaction(s, amount, completedTime);
 
         // emit an balance changed event here
         if (amount > 0) {
-            s = emitBalanceChangedEvent(e.data.aggregateId, e.data.eventId, s, amount * -1, completedTime, "Transaction Completed");
+            s = emitBalanceChangedEvent(e.data.transactionId, e.eventId, s, amount * -1, completedTime, "Transaction Completed");
         }
     }
     else {
@@ -238,8 +240,8 @@ var merchantFeeAddedToTransactionEventHandler = function (s, e) {
     }
 
     // increment the balance now
-    incrementBalanceFromMerchantFee(s, e.data.calculatedValue, e.data.eventCreatedDateTime);
+    incrementBalanceFromMerchantFee(s, e.data.calculatedValue, e.data.feeCalculatedDateTime);
 
     // emit an balance changed event here
-    s = emitBalanceChangedEvent(e.data.aggregateId, e.data.eventId, s, e.data.calculatedValue, e.data.eventCreatedDateTime, "Transaction Fee Processed");
+    s = emitBalanceChangedEvent(e.data.transactionId, e.eventId, s, e.data.calculatedValue, e.data.feeCalculatedDateTime, "Transaction Fee Processed");
 }

@@ -404,7 +404,7 @@ this.FeatureBackground();
                             "Test Estate 1"});
                 table74.AddRow(new string[] {
                             "Deposit1",
-                            "110.00",
+                            "120.00",
                             "Today",
                             "Test Merchant 3",
                             "Test Estate 1"});
