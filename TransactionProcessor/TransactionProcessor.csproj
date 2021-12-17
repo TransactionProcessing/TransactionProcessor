@@ -44,6 +44,12 @@
   </ItemGroup>
 
   <ItemGroup>
+    <Content Update="appsettings.preproduction.Development.json">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Update="appsettings.staging.Development.json">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
     <Content Update="appsettings.development.json">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
