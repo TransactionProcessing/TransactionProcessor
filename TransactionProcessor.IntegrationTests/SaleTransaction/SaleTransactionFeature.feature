@@ -104,7 +104,6 @@ Scenario: Sale Transactions
 	| Test Estate 1 | Test Merchant 2 | 6                 | 0000         | SUCCESS         |
 	| Test Estate 2 | Test Merchant 3 | 7                 | 0000         | SUCCESS         |
 
-@PRTest
 Scenario: Sale Transaction with Invalid Device
 
 	When I perform the following transactions
@@ -135,7 +134,6 @@ Scenario: Sale Transaction with Invalid Merchant
 	| EstateName    | MerchantName    | TransactionNumber | ResponseCode | ResponseMessage                                                                                       |
 	| Test Estate 1 | InvalidMerchant | 1                 | 1002         | Merchant Id [d59320fa-4c3e-4900-a999-483f6a10c69a] is not a valid merchant for estate [Test Estate 1] |
 
-@PRTest
 Scenario: Sale Transaction with Not Enough Credit Available
 
 	When I perform the following transactions

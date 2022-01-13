@@ -278,7 +278,7 @@ namespace TransactionProcessor.IntegrationTests.Shared
             {
                 String merchantName = SpecflowTableHelper.GetStringRowValue(tableRow, "MerchantName");
                 String dateString = SpecflowTableHelper.GetStringRowValue(tableRow, "DateTime");
-                DateTime transactionDateTime = SpecflowTableHelper.GetDateForDateString(dateString, DateTime.Today);
+                DateTime transactionDateTime = SpecflowTableHelper.GetDateForDateString(dateString, DateTime.UtcNow);
                 String transactionNumber = SpecflowTableHelper.GetStringRowValue(tableRow, "TransactionNumber");
                 String transactionType = SpecflowTableHelper.GetStringRowValue(tableRow, "TransactionType");
                 String deviceIdentifier = SpecflowTableHelper.GetStringRowValue(tableRow, "DeviceIdentifier");
@@ -801,7 +801,7 @@ namespace TransactionProcessor.IntegrationTests.Shared
                 
                 MakeMerchantDepositRequest makeMerchantDepositRequest = new MakeMerchantDepositRequest
                                                                         {
-                                                                            DepositDateTime = SpecflowTableHelper.GetDateForDateString(SpecflowTableHelper.GetStringRowValue(tableRow, "DateTime"), DateTime.Now),
+                                                                            DepositDateTime = SpecflowTableHelper.GetDateForDateString(SpecflowTableHelper.GetStringRowValue(tableRow, "DateTime"), DateTime.UtcNow),
                                                                             Reference = SpecflowTableHelper.GetStringRowValue(tableRow, "Reference"),
                                                                             Amount = SpecflowTableHelper.GetDecimalValue(tableRow, "Amount")
                                                                         };
@@ -888,11 +888,7 @@ namespace TransactionProcessor.IntegrationTests.Shared
                 EstateDetails estateDetails = this.TestingContext.GetEstateDetails(tableRow);
                 String settlementDateString = SpecflowTableHelper.GetStringRowValue(tableRow, "SettlementDate");
                 Int32 numberOfFees = SpecflowTableHelper.GetIntValue(tableRow, "NumberOfFees");
-                DateTime settlementDate = this.GetSettlementDate(DateTime.Today, settlementDateString);
-                if (Environment.GetEnvironmentVariable("CI") == Boolean.TrueString.ToLower())
-                {
-                    settlementDate = settlementDate.AddDays(1);
-                }
+                DateTime settlementDate = this.GetSettlementDate(DateTime.UtcNow.Date, settlementDateString);
                 
                 var aggregateid = settlementDate.ToGuid();
                 await Retry.For(async () =>
@@ -911,12 +907,8 @@ namespace TransactionProcessor.IntegrationTests.Shared
         [When(@"I process the settlement for '([^']*)' on Estate '([^']*)' then (.*) fees are marked as settled and the settlement is completed")]
         public async Task WhenIProcessTheSettlementForOnEstateThenFeesAreMarkedAsSettledAndTheSettlementIsCompleted(String dateString, String estateName, Int32 numberOfFeesSettled)
         {
-            DateTime settlementDate = this.GetSettlementDate(DateTime.Today, dateString);
-            if (Environment.GetEnvironmentVariable("CI") == Boolean.TrueString.ToLower())
-            {
-                settlementDate = settlementDate.AddDays(1);
-            }
-
+            DateTime settlementDate = this.GetSettlementDate(DateTime.UtcNow.Date, dateString);
+            
             EstateDetails estateDetails = this.TestingContext.GetEstateDetails(estateName);
             await this.TestingContext.DockerHelper.TransactionProcessorClient.ProcessSettlement(this.TestingContext.AccessToken,
                                                                                           settlementDate,

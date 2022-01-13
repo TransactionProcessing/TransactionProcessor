@@ -20,7 +20,8 @@
         /// <param name="transactionAmount">The transaction amount.</param>
         /// <returns></returns>
         public List<CalculatedFee> CalculateFees(List<TransactionFeeToCalculate> feeList,
-                                                 Decimal transactionAmount)
+                                                 Decimal transactionAmount,
+                                                 DateTime calculationDateTime = new DateTime())
         {
             List<CalculatedFee> calculatedFees = new List<CalculatedFee>();
 
@@ -37,7 +38,7 @@
                                            FeeCalculationType = transactionFeeToCalculate.CalculationType,
                                            FeeId = transactionFeeToCalculate.FeeId,
                                            FeeValue = transactionFeeToCalculate.Value,
-                                           FeeCalculatedDateTime = DateTime.Now
+                                           FeeCalculatedDateTime = calculationDateTime == DateTime.MinValue ? DateTime.Now : calculationDateTime
                                        });
                 }
 
@@ -51,7 +52,7 @@
                                            FeeCalculationType = transactionFeeToCalculate.CalculationType,
                                            FeeId = transactionFeeToCalculate.FeeId,
                                            FeeValue = transactionFeeToCalculate.Value,
-                                           FeeCalculatedDateTime = DateTime.Now
+                                           FeeCalculatedDateTime = calculationDateTime == DateTime.MinValue ? DateTime.Now : calculationDateTime
                     });
                 }
             }
