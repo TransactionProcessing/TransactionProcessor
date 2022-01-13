@@ -630,14 +630,12 @@ this.FeatureBackground();
         [Xunit.SkippableFactAttribute(DisplayName="Sale Transaction with Invalid Device")]
         [Xunit.TraitAttribute("FeatureTitle", "SaleTransaction")]
         [Xunit.TraitAttribute("Description", "Sale Transaction with Invalid Device")]
-        [Xunit.TraitAttribute("Category", "PRTest")]
         public virtual void SaleTransactionWithInvalidDevice()
         {
-            string[] tagsOfScenario = new string[] {
-                    "PRTest"};
+            string[] tagsOfScenario = ((string[])(null));
             System.Collections.Specialized.OrderedDictionary argumentsOfScenario = new System.Collections.Specialized.OrderedDictionary();
             TechTalk.SpecFlow.ScenarioInfo scenarioInfo = new TechTalk.SpecFlow.ScenarioInfo("Sale Transaction with Invalid Device", null, tagsOfScenario, argumentsOfScenario);
-#line 108
+#line 107
 this.ScenarioInitialize(scenarioInfo);
 #line hidden
             bool isScenarioIgnored = default(bool);
@@ -686,7 +684,7 @@ this.FeatureBackground();
                             "testcustomer@customer.co.uk",
                             "Safaricom Contract",
                             "Variable Topup"});
-#line 110
+#line 109
  testRunner.When("I perform the following transactions", ((string)(null)), table54, "When ");
 #line hidden
                 TechTalk.SpecFlow.Table table55 = new TechTalk.SpecFlow.Table(new string[] {
@@ -701,7 +699,7 @@ this.FeatureBackground();
                             "1",
                             "1000",
                             "Device Identifier 123456781 not valid for Merchant Test Merchant 1"});
-#line 114
+#line 113
  testRunner.Then("transaction response should contain the following information", ((string)(null)), table55, "Then ");
 #line hidden
             }
@@ -716,7 +714,7 @@ this.FeatureBackground();
             string[] tagsOfScenario = ((string[])(null));
             System.Collections.Specialized.OrderedDictionary argumentsOfScenario = new System.Collections.Specialized.OrderedDictionary();
             TechTalk.SpecFlow.ScenarioInfo scenarioInfo = new TechTalk.SpecFlow.ScenarioInfo("Sale Transaction with Invalid Estate", null, tagsOfScenario, argumentsOfScenario);
-#line 118
+#line 117
 this.ScenarioInitialize(scenarioInfo);
 #line hidden
             bool isScenarioIgnored = default(bool);
@@ -765,7 +763,7 @@ this.FeatureBackground();
                             "testcustomer@customer.co.uk",
                             "Safaricom Contract",
                             "Variable Topup"});
-#line 120
+#line 119
  testRunner.When("I perform the following transactions", ((string)(null)), table56, "When ");
 #line hidden
                 TechTalk.SpecFlow.Table table57 = new TechTalk.SpecFlow.Table(new string[] {
@@ -780,7 +778,7 @@ this.FeatureBackground();
                             "1",
                             "1001",
                             "Estate Id [79902550-64df-4491-b0c1-4e78943928a3] is not a valid estate"});
-#line 124
+#line 123
  testRunner.Then("transaction response should contain the following information", ((string)(null)), table57, "Then ");
 #line hidden
             }
@@ -795,7 +793,7 @@ this.FeatureBackground();
             string[] tagsOfScenario = ((string[])(null));
             System.Collections.Specialized.OrderedDictionary argumentsOfScenario = new System.Collections.Specialized.OrderedDictionary();
             TechTalk.SpecFlow.ScenarioInfo scenarioInfo = new TechTalk.SpecFlow.ScenarioInfo("Sale Transaction with Invalid Merchant", null, tagsOfScenario, argumentsOfScenario);
-#line 128
+#line 127
 this.ScenarioInitialize(scenarioInfo);
 #line hidden
             bool isScenarioIgnored = default(bool);
@@ -844,7 +842,7 @@ this.FeatureBackground();
                             "testcustomer@customer.co.uk",
                             "Safaricom Contract",
                             "Variable Topup"});
-#line 130
+#line 129
  testRunner.When("I perform the following transactions", ((string)(null)), table58, "When ");
 #line hidden
                 TechTalk.SpecFlow.Table table59 = new TechTalk.SpecFlow.Table(new string[] {
@@ -860,7 +858,7 @@ this.FeatureBackground();
                             "1002",
                             "Merchant Id [d59320fa-4c3e-4900-a999-483f6a10c69a] is not a valid merchant for es" +
                                 "tate [Test Estate 1]"});
-#line 134
+#line 133
  testRunner.Then("transaction response should contain the following information", ((string)(null)), table59, "Then ");
 #line hidden
             }
@@ -870,14 +868,12 @@ this.FeatureBackground();
         [Xunit.SkippableFactAttribute(DisplayName="Sale Transaction with Not Enough Credit Available")]
         [Xunit.TraitAttribute("FeatureTitle", "SaleTransaction")]
         [Xunit.TraitAttribute("Description", "Sale Transaction with Not Enough Credit Available")]
-        [Xunit.TraitAttribute("Category", "PRTest")]
         public virtual void SaleTransactionWithNotEnoughCreditAvailable()
         {
-            string[] tagsOfScenario = new string[] {
-                    "PRTest"};
+            string[] tagsOfScenario = ((string[])(null));
             System.Collections.Specialized.OrderedDictionary argumentsOfScenario = new System.Collections.Specialized.OrderedDictionary();
             TechTalk.SpecFlow.ScenarioInfo scenarioInfo = new TechTalk.SpecFlow.ScenarioInfo("Sale Transaction with Not Enough Credit Available", null, tagsOfScenario, argumentsOfScenario);
-#line 139
+#line 137
 this.ScenarioInitialize(scenarioInfo);
 #line hidden
             bool isScenarioIgnored = default(bool);
@@ -926,7 +922,7 @@ this.FeatureBackground();
                             "testcustomer@customer.co.uk",
                             "Safaricom Contract",
                             "Variable Topup"});
-#line 141
+#line 139
  testRunner.When("I perform the following transactions", ((string)(null)), table60, "When ");
 #line hidden
                 TechTalk.SpecFlow.Table table61 = new TechTalk.SpecFlow.Table(new string[] {
@@ -942,7 +938,7 @@ this.FeatureBackground();
                             "1009",
                             "Merchant [Test Merchant 1] does not have enough credit available [210.0] to perfo" +
                                 "rm transaction amount [300.00]"});
-#line 146
+#line 144
  testRunner.Then("transaction response should contain the following information", ((string)(null)), table61, "Then ");
 #line hidden
             }

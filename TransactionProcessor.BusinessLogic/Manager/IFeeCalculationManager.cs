@@ -17,9 +17,11 @@
         /// </summary>
         /// <param name="feeList">The fee list.</param>
         /// <param name="transactionAmount">The transaction amount.</param>
+        /// <param name="calculationDateTime">The calculation date time.</param>
         /// <returns></returns>
         List<CalculatedFee> CalculateFees(List<TransactionFeeToCalculate> feeList,
-                                          Decimal transactionAmount);
+                                          Decimal transactionAmount,
+                                          DateTime calculationDateTime = new DateTime());
 
         #endregion
     }

@@ -75,7 +75,6 @@ Scenario: Logon Transaction with Existing Device
 	| EstateName    | MerchantName    | TransactionNumber | ResponseCode | ResponseMessage |
 	| Test Estate 1 | Test Merchant 1 | 1                 | 0000         | SUCCESS         |
 
-@PRTest
 Scenario: Logon Transaction with Invalid Device
 
 	Given I have assigned the following devices to the merchants

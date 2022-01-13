@@ -432,14 +432,12 @@ this.FeatureBackground();
         [Xunit.SkippableFactAttribute(DisplayName="Logon Transaction with Invalid Device")]
         [Xunit.TraitAttribute("FeatureTitle", "LogonTransaction")]
         [Xunit.TraitAttribute("Description", "Logon Transaction with Invalid Device")]
-        [Xunit.TraitAttribute("Category", "PRTest")]
         public virtual void LogonTransactionWithInvalidDevice()
         {
-            string[] tagsOfScenario = new string[] {
-                    "PRTest"};
+            string[] tagsOfScenario = ((string[])(null));
             System.Collections.Specialized.OrderedDictionary argumentsOfScenario = new System.Collections.Specialized.OrderedDictionary();
             TechTalk.SpecFlow.ScenarioInfo scenarioInfo = new TechTalk.SpecFlow.ScenarioInfo("Logon Transaction with Invalid Device", null, tagsOfScenario, argumentsOfScenario);
-#line 79
+#line 78
 this.ScenarioInitialize(scenarioInfo);
 #line hidden
             bool isScenarioIgnored = default(bool);
@@ -472,7 +470,7 @@ this.FeatureBackground();
                             "Test Merchant 1",
                             "00000001",
                             "Test Estate 1"});
-#line 81
+#line 80
  testRunner.Given("I have assigned the following devices to the merchants", ((string)(null)), table15, "Given ");
 #line hidden
                 TechTalk.SpecFlow.Table table16 = new TechTalk.SpecFlow.Table(new string[] {
@@ -489,7 +487,7 @@ this.FeatureBackground();
                             "Test Merchant 1",
                             "123456781",
                             "Test Estate 1"});
-#line 85
+#line 84
  testRunner.When("I perform the following transactions", ((string)(null)), table16, "When ");
 #line hidden
                 TechTalk.SpecFlow.Table table17 = new TechTalk.SpecFlow.Table(new string[] {
@@ -504,7 +502,7 @@ this.FeatureBackground();
                             "1",
                             "1000",
                             "Device Identifier 123456781 not valid for Merchant Test Merchant 1"});
-#line 89
+#line 88
  testRunner.Then("transaction response should contain the following information", ((string)(null)), table17, "Then ");
 #line hidden
             }
@@ -519,7 +517,7 @@ this.FeatureBackground();
             string[] tagsOfScenario = ((string[])(null));
             System.Collections.Specialized.OrderedDictionary argumentsOfScenario = new System.Collections.Specialized.OrderedDictionary();
             TechTalk.SpecFlow.ScenarioInfo scenarioInfo = new TechTalk.SpecFlow.ScenarioInfo("Logon Transaction with Invalid Estate", null, tagsOfScenario, argumentsOfScenario);
-#line 93
+#line 92
 this.ScenarioInitialize(scenarioInfo);
 #line hidden
             bool isScenarioIgnored = default(bool);
@@ -552,7 +550,7 @@ this.FeatureBackground();
                             "Test Merchant 1",
                             "00000001",
                             "Test Estate 1"});
-#line 95
+#line 94
  testRunner.Given("I have assigned the following devices to the merchants", ((string)(null)), table18, "Given ");
 #line hidden
                 TechTalk.SpecFlow.Table table19 = new TechTalk.SpecFlow.Table(new string[] {
@@ -569,7 +567,7 @@ this.FeatureBackground();
                             "Test Merchant 1",
                             "123456781",
                             "InvalidEstate"});
-#line 99
+#line 98
  testRunner.When("I perform the following transactions", ((string)(null)), table19, "When ");
 #line hidden
                 TechTalk.SpecFlow.Table table20 = new TechTalk.SpecFlow.Table(new string[] {
@@ -584,7 +582,7 @@ this.FeatureBackground();
                             "1",
                             "1001",
                             "Estate Id [79902550-64df-4491-b0c1-4e78943928a3] is not a valid estate"});
-#line 103
+#line 102
  testRunner.Then("transaction response should contain the following information", ((string)(null)), table20, "Then ");
 #line hidden
             }
@@ -599,7 +597,7 @@ this.FeatureBackground();
             string[] tagsOfScenario = ((string[])(null));
             System.Collections.Specialized.OrderedDictionary argumentsOfScenario = new System.Collections.Specialized.OrderedDictionary();
             TechTalk.SpecFlow.ScenarioInfo scenarioInfo = new TechTalk.SpecFlow.ScenarioInfo("Logon Transaction with Invalid Merchant", null, tagsOfScenario, argumentsOfScenario);
-#line 107
+#line 106
 this.ScenarioInitialize(scenarioInfo);
 #line hidden
             bool isScenarioIgnored = default(bool);
@@ -632,7 +630,7 @@ this.FeatureBackground();
                             "Test Merchant 1",
                             "00000001",
                             "Test Estate 1"});
-#line 109
+#line 108
  testRunner.Given("I have assigned the following devices to the merchants", ((string)(null)), table21, "Given ");
 #line hidden
                 TechTalk.SpecFlow.Table table22 = new TechTalk.SpecFlow.Table(new string[] {
@@ -649,7 +647,7 @@ this.FeatureBackground();
                             "InvalidMerchant",
                             "123456781",
                             "Test Estate 1"});
-#line 113
+#line 112
  testRunner.When("I perform the following transactions", ((string)(null)), table22, "When ");
 #line hidden
                 TechTalk.SpecFlow.Table table23 = new TechTalk.SpecFlow.Table(new string[] {
@@ -665,7 +663,7 @@ this.FeatureBackground();
                             "1002",
                             "Merchant Id [d59320fa-4c3e-4900-a999-483f6a10c69a] is not a valid merchant for es" +
                                 "tate [Test Estate 1]"});
-#line 117
+#line 116
  testRunner.Then("transaction response should contain the following information", ((string)(null)), table23, "Then ");
 #line hidden
             }

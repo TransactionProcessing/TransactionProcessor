@@ -46,7 +46,6 @@ Background:
 	| EstateName    | OperatorName | ContractDescription | ProductName    | CalculationType | FeeDescription      | Value |
 	| Test Estate 1 | Safaricom    | Safaricom Contract  | Variable Topup | Fixed           | Merchant Commission | 2.50  |
 
-@PRTest
 Scenario: Get Pending Settlement
 	Given I create the following merchants
 	| MerchantName    | AddressLine1   | Town     | Region      | Country        | ContactName    | EmailAddress                 | EstateName    | SettlementSchedule |
@@ -144,8 +143,8 @@ Scenario: Process Settlement
 
 	When I get the pending settlements the following information should be returned
 	| SettlementDate | EstateName    | NumberOfFees |
-	| Yesterday      | Test Estate 1 | 1            |
+	| Today          | Test Estate 1 | 1            |
 
-	When I process the settlement for 'Yesterday' on Estate 'Test Estate 1' then 1 fees are marked as settled and the settlement is completed
+	When I process the settlement for 'Today' on Estate 'Test Estate 1' then 1 fees are marked as settled and the settlement is completed
 
 
