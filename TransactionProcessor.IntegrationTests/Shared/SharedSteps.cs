@@ -888,11 +888,6 @@ namespace TransactionProcessor.IntegrationTests.Shared
                 EstateDetails estateDetails = this.TestingContext.GetEstateDetails(tableRow);
                 String settlementDateString = SpecflowTableHelper.GetStringRowValue(tableRow, "SettlementDate");
                 Int32 numberOfFees = SpecflowTableHelper.GetIntValue(tableRow, "NumberOfFees");
-                //DateTime settlementDate = this.GetSettlementDate(DateTime.Today, settlementDateString);
-                //if (Environment.GetEnvironmentVariable("CI") == Boolean.TrueString.ToLower())
-                //{
-                //    settlementDate = settlementDate.AddDays(1);
-                //}
                 DateTime settlementDate = this.GetSettlementDate(DateTime.UtcNow.Date, settlementDateString);
                 
                 var aggregateid = settlementDate.ToGuid();
@@ -913,11 +908,7 @@ namespace TransactionProcessor.IntegrationTests.Shared
         public async Task WhenIProcessTheSettlementForOnEstateThenFeesAreMarkedAsSettledAndTheSettlementIsCompleted(String dateString, String estateName, Int32 numberOfFeesSettled)
         {
             DateTime settlementDate = this.GetSettlementDate(DateTime.UtcNow.Date, dateString);
-            //if (Environment.GetEnvironmentVariable("CI") == Boolean.TrueString.ToLower())
-            //{
-            //    settlementDate = settlementDate.AddDays(1);
-            //}
-
+            
             EstateDetails estateDetails = this.TestingContext.GetEstateDetails(estateName);
             await this.TestingContext.DockerHelper.TransactionProcessorClient.ProcessSettlement(this.TestingContext.AccessToken,
                                                                                           settlementDate,
