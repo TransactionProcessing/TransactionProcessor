@@ -6,13 +6,13 @@
     public enum CalculationType
     {
         /// <summary>
-        /// The percentage
-        /// </summary>
-        Percentage,
-
-        /// <summary>
         /// The fixed
         /// </summary>
-        Fixed
+        Fixed,
+
+        /// <summary>
+        /// The percentage
+        /// </summary>
+        Percentage
     }
 }
