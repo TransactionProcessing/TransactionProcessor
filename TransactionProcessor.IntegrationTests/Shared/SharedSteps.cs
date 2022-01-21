@@ -939,12 +939,12 @@ namespace TransactionProcessor.IntegrationTests.Shared
 
             if (nextSettlementDate == "NextWeek")
             {
-                return now.AddDays(6).Date;
+                return now.AddDays(7).Date;
             }
 
             if (nextSettlementDate == "NextMonth")
             {
-                return now.AddMonths(1).Date.AddDays(-1).Date;
+                return now.AddMonths(1).Date.Date;
             }
 
             return now.Date;
