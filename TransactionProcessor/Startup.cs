@@ -282,8 +282,25 @@ namespace TransactionProcessor
                 Insecure = Startup.Configuration.GetValue<Boolean>("EventStoreSettings:Insecure"),
                 Address = new Uri(Startup.Configuration.GetValue<String>("EventStoreSettings:ConnectionString")),
             };
-            
+
+            settings.DefaultCredentials = new UserCredentials(Startup.Configuration.GetValue<String>("EventStoreSettings:UserName"),
+                                                              Startup.Configuration.GetValue<String>("EventStoreSettings:Password"));
+
             Startup.EventStoreClientSettings = settings;
+        }
+
+        private HttpClientHandler ApiEndpointHttpHandler(IServiceProvider serviceProvider)
+        {
+            return new HttpClientHandler
+                   {
+                       ServerCertificateCustomValidationCallback = (message,
+                                                                    cert,
+                                                                    chain,
+                                                                    errors) =>
+                                                                   {
+                                                                       return true;
+                                                                   }
+                   };
         }
 
         /// <summary>
@@ -298,16 +315,8 @@ namespace TransactionProcessor
                                    name: "Eventstore",
                                    failureStatus: HealthStatus.Unhealthy,
                                    tags: new string[] { "db", "eventstore" })
-                    .AddUrlGroup(new Uri($"{ConfigurationReader.GetValue("SecurityConfiguration", "Authority")}/health"),
-                                 name: "Security Service",
-                                 httpMethod: HttpMethod.Get,
-                                 failureStatus: HealthStatus.Unhealthy,
-                                 tags: new string[] { "security", "authorisation" })
-                    .AddUrlGroup(new Uri($"{ConfigurationReader.GetValue("AppSettings", "EstateManagementApi")}/health"),
-                                 name: "Estate Management Service",
-                                 httpMethod: HttpMethod.Get,
-                                 failureStatus: HealthStatus.Unhealthy,
-                                 tags: new string[] { "application", "estatemanagement" });
+                    .AddSecurityService(this.ApiEndpointHttpHandler)
+                    .AddEstateManagementService();
 
             services.AddSwaggerGen(c =>
             {
@@ -393,7 +402,6 @@ namespace TransactionProcessor
 
             if (env.IsDevelopment())
             {
-                nlogConfigFilename = $"nlog.{env.EnvironmentName}.config";
                 app.UseDeveloperExceptionPage();
             }
 
