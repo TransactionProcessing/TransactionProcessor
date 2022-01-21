@@ -252,7 +252,7 @@
             this.SecurityServiceClient = new SecurityServiceClient(SecurityServiceBaseAddressResolver, httpClient);
             this.TransactionProcessorClient = new TransactionProcessorClient(TransactionProcessorBaseAddressResolver, httpClient);
 
-            await this.LoadEventStoreProjections().ConfigureAwait(false);
+            await this.LoadEventStoreProjections(this.EventStoreHttpPort).ConfigureAwait(false);
         }
 
         /// <summary>
