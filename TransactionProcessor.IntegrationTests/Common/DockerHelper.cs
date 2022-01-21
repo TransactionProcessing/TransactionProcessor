@@ -102,23 +102,11 @@
 
         public async Task PopulateSubscriptionServiceConfiguration(String estateName)
         {
-            EventStorePersistentSubscriptionsClient client =
-                new EventStorePersistentSubscriptionsClient(DockerHelper.ConfigureEventStoreSettings(this.EventStoreHttpPort));
-
-            PersistentSubscriptionSettings settings = new PersistentSubscriptionSettings(resolveLinkTos:true, StreamPosition.Start);
-            await client.CreateAsync(estateName.Replace(" ", ""), "Reporting", settings);
-            await client.CreateAsync($"EstateManagementSubscriptionStream_{estateName.Replace(" ", "")}", "Estate Management", settings);
-            await client.CreateAsync($"TransactionProcessorSubscriptionStream_{ReplaceFirst(estateName," ", "")}", "Transaction Processor", settings);
-        }
-
-        public string ReplaceFirst(string text, string search, string replace)
-        {
-            int pos = text.IndexOf(search);
-            if (pos < 0)
-            {
-                return text;
-            }
-            return text.Substring(0, pos) + replace + text.Substring(pos + search.Length);
+            List<(String streamName, String groupName)> subscriptions = new List<(String streamName, String groupName)>();
+            subscriptions.Add((estateName.Replace(" ", ""), "Reporting"));
+            subscriptions.Add(($"EstateManagementSubscriptionStream_{estateName.Replace(" ", "")}", "Estate Management"));
+            subscriptions.Add(($"TransactionProcessorSubscriptionStream_{estateName.Replace(" ", "")}", "Transaction Processor"));
+            await this.PopulateSubscriptionServiceConfiguration(this.EventStoreHttpPort, subscriptions);
         }
 
         /// <summary>
@@ -293,73 +281,7 @@
                 }
             }
         }
-
-        private static EventStoreClientSettings ConfigureEventStoreSettings(Int32 eventStoreHttpPort)
-        {
-            String connectionString = $"http://127.0.0.1:{eventStoreHttpPort}";
-
-            EventStoreClientSettings settings = new EventStoreClientSettings();
-            settings.CreateHttpMessageHandler = () => new SocketsHttpHandler
-                                                      {
-                                                          SslOptions =
-                                                          {
-                                                              RemoteCertificateValidationCallback = (sender,
-                                                                                                     certificate,
-                                                                                                     chain,
-                                                                                                     errors) => true,
-                                                          }
-                                                      };
-            settings.ConnectionName = "Specflow";
-            settings.ConnectivitySettings = new EventStoreClientConnectivitySettings
-                                            {
-                                                Insecure = true,
-                                                Address = new Uri(connectionString),
-                                            };
-
-            settings.DefaultCredentials = new UserCredentials("admin", "changeit");
-            return settings;
-        }
-
-        private async Task LoadEventStoreProjections()
-        {
-            //Start our Continous Projections - we might decide to do this at a different stage, but now lets try here
-            String projectionsFolder = "../../../projections/continuous";
-            IPAddress[] ipAddresses = Dns.GetHostAddresses("127.0.0.1");
-
-            if (!string.IsNullOrWhiteSpace(projectionsFolder))
-            {
-                DirectoryInfo di = new DirectoryInfo(projectionsFolder);
-
-                if (di.Exists)
-                {
-                    FileInfo[] files = di.GetFiles();
-
-                    EventStoreProjectionManagementClient projectionClient =
-                        new EventStoreProjectionManagementClient(DockerHelper.ConfigureEventStoreSettings(this.EventStoreHttpPort));
-
-                    foreach (FileInfo file in files)
-                    {
-                        String projection = File.ReadAllText(file.FullName);
-                        String projectionName = file.Name.Replace(".js", string.Empty);
-
-                        try
-                        {
-                            this.Logger.LogInformation($"Creating projection [{projectionName}]");
-                            await projectionClient.CreateContinuousAsync(projectionName, projection, trackEmittedStreams:true).ConfigureAwait(false);
-                            var status = await projectionClient.GetStatusAsync(projectionName);
-                            
-                        }
-                        catch(Exception e)
-                        {
-                            this.Logger.LogError(new Exception($"Projection [{projectionName}] error", e));
-                        }
-                    }
-                }
-            }
-
-            this.Logger.LogInformation("Loaded projections");
-        }
-
+        
         private async Task RemoveEstateReadModel()
         {
             List<Guid> estateIdList = this.TestingContext.GetAllEstateIds();
