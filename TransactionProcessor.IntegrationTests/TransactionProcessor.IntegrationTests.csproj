@@ -7,7 +7,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="ClientProxyBase" Version="1.1.4" />
+    <PackageReference Include="ClientProxyBase" Version="1.1.5" />
     <PackageReference Include="Ductus.FluentDocker" Version="2.10.7" />
     <PackageReference Include="EstateManagement.Client" Version="1.0.17-build86" />
     <PackageReference Include="EstateReporting.Database" Version="1.0.19-build87" />
