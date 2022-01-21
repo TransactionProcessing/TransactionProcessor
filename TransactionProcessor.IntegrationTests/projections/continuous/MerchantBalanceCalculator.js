@@ -1,7 +1,3 @@
-//var fromCategory = fromCategory || require('../../node_modules/esprojection-testing-framework').scope.fromCategory;
-//var partitionBy = partitionBy !== null ? partitionBy : require('../../node_modules/esprojection-testing-framework').scope.partitionBy;
-//var emit = emit || require('../../node_modules/esprojection-testing-framework').scope.emit;
-
 fromCategory('MerchantArchive')
     .foreachStream()
     .when({
@@ -18,10 +14,11 @@ fromCategory('MerchantArchive')
                 totalAuthorisedSales: 0,
                 totalDeclinedSales: 0,
                 totalFees: 0,
-                emittedEvents: 1
+                emittedEvents:1
             }
         },
-        $any: function (s, e) {
+        $any: function (s, e)
+        {
             if (e === null || e.data === null || e.data.IsJson === false)
                 return;
 
@@ -38,6 +35,11 @@ var eventbus = {
         }
 
         if (e.eventType === 'ManualDepositMadeEvent') {
+            depositMadeEventHandler(s, e);
+            return;
+        }
+
+        if (e.eventType === 'AutomaticDepositMadeEvent') {
             depositMadeEventHandler(s, e);
             return;
         }
@@ -178,6 +180,7 @@ var depositMadeEventHandler = function (s, e) {
     incrementBalanceFromDeposit(s, e.data.amount, e.data.depositDateTime);
 
     // emit an balance changed event here
+    console.log(e);
     s = emitBalanceChangedEvent(e.data.merchantId, e.eventId, s, e.data.amount, e.data.depositDateTime, "Merchant Deposit");
 };
 
