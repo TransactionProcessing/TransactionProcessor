@@ -888,7 +888,7 @@ namespace TransactionProcessor.IntegrationTests.Shared
                 EstateDetails estateDetails = this.TestingContext.GetEstateDetails(tableRow);
                 String settlementDateString = SpecflowTableHelper.GetStringRowValue(tableRow, "SettlementDate");
                 Int32 numberOfFees = SpecflowTableHelper.GetIntValue(tableRow, "NumberOfFees");
-                DateTime settlementDate = this.GetSettlementDate(DateTime.UtcNow.Date, settlementDateString);
+                DateTime settlementDate = SpecflowTableHelper.GetDateForDateString(settlementDateString, DateTime.UtcNow.Date);
                 
                 var aggregateid = settlementDate.ToGuid();
                 await Retry.For(async () =>
@@ -907,8 +907,8 @@ namespace TransactionProcessor.IntegrationTests.Shared
         [When(@"I process the settlement for '([^']*)' on Estate '([^']*)' then (.*) fees are marked as settled and the settlement is completed")]
         public async Task WhenIProcessTheSettlementForOnEstateThenFeesAreMarkedAsSettledAndTheSettlementIsCompleted(String dateString, String estateName, Int32 numberOfFeesSettled)
         {
-            DateTime settlementDate = this.GetSettlementDate(DateTime.UtcNow.Date, dateString);
-            
+            DateTime settlementDate = SpecflowTableHelper.GetDateForDateString(dateString, DateTime.UtcNow.Date);
+
             EstateDetails estateDetails = this.TestingContext.GetEstateDetails(estateName);
             await this.TestingContext.DockerHelper.TransactionProcessorClient.ProcessSettlement(this.TestingContext.AccessToken,
                                                                                           settlementDate,
@@ -927,27 +927,6 @@ namespace TransactionProcessor.IntegrationTests.Shared
                                 settlement.NumberOfFeesSettled.ShouldBe(numberOfFeesSettled);
                                 settlement.SettlementCompleted.ShouldBeTrue();
                             }, TimeSpan.FromMinutes(2));
-        }
-        
-        private DateTime GetSettlementDate(DateTime now,
-                                               String nextSettlementDate)
-        {
-            if (nextSettlementDate == "Yesterday")
-            {
-                return now.AddDays(-1).Date;
-            }
-
-            if (nextSettlementDate == "NextWeek")
-            {
-                return now.AddDays(7).Date;
-            }
-
-            if (nextSettlementDate == "NextMonth")
-            {
-                return now.AddMonths(1).Date.Date;
-            }
-
-            return now.Date;
         }
     }
 }

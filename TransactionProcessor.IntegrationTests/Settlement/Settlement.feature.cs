@@ -425,7 +425,7 @@ this.FeatureBackground();
                             "RecipientEmail",
                             "RecipientMobile"});
                 table75.AddRow(new string[] {
-                            "Today",
+                            "2022-01-06",
                             "1",
                             "Sale",
                             "Test Merchant 1",
@@ -440,7 +440,7 @@ this.FeatureBackground();
                             "",
                             ""});
                 table75.AddRow(new string[] {
-                            "Today",
+                            "2022-01-06",
                             "2",
                             "Sale",
                             "Test Merchant 2",
@@ -455,7 +455,7 @@ this.FeatureBackground();
                             "",
                             ""});
                 table75.AddRow(new string[] {
-                            "Today",
+                            "2022-01-06",
                             "3",
                             "Sale",
                             "Test Merchant 3",
@@ -470,7 +470,7 @@ this.FeatureBackground();
                             "",
                             ""});
                 table75.AddRow(new string[] {
-                            "Today",
+                            "2022-01-06",
                             "4",
                             "Sale",
                             "Test Merchant 1",
@@ -485,7 +485,7 @@ this.FeatureBackground();
                             "",
                             ""});
                 table75.AddRow(new string[] {
-                            "Today",
+                            "2022-01-06",
                             "5",
                             "Sale",
                             "Test Merchant 1",
@@ -500,7 +500,7 @@ this.FeatureBackground();
                             "test@recipient.co.uk",
                             ""});
                 table75.AddRow(new string[] {
-                            "Today",
+                            "2022-01-06",
                             "6",
                             "Sale",
                             "Test Merchant 2",
@@ -515,7 +515,7 @@ this.FeatureBackground();
                             "",
                             "123456789"});
                 table75.AddRow(new string[] {
-                            "Today",
+                            "2022-01-06",
                             "7",
                             "Sale",
                             "Test Merchant 3",
@@ -530,7 +530,7 @@ this.FeatureBackground();
                             "test@recipient.co.uk",
                             ""});
                 table75.AddRow(new string[] {
-                            "Today",
+                            "2022-01-06",
                             "8",
                             "Sale",
                             "Test Merchant 3",
@@ -609,11 +609,11 @@ this.FeatureBackground();
                             "EstateName",
                             "NumberOfFees"});
                 table77.AddRow(new string[] {
-                            "NextWeek",
+                            "2022-01-13",
                             "Test Estate 1",
                             "1"});
                 table77.AddRow(new string[] {
-                            "NextMonth",
+                            "2022-02-06",
                             "Test Estate 1",
                             "1"});
 #line 99
@@ -774,7 +774,7 @@ this.FeatureBackground();
                             "RecipientEmail",
                             "RecipientMobile"});
                 table82.AddRow(new string[] {
-                            "LastWeek",
+                            "2022-01-06",
                             "1",
                             "Sale",
                             "Test Merchant 1",
@@ -789,7 +789,7 @@ this.FeatureBackground();
                             "",
                             ""});
                 table82.AddRow(new string[] {
-                            "LastWeek",
+                            "2022-01-06",
                             "2",
                             "Sale",
                             "Test Merchant 2",
@@ -804,7 +804,7 @@ this.FeatureBackground();
                             "",
                             ""});
                 table82.AddRow(new string[] {
-                            "LastWeek",
+                            "2022-01-06",
                             "4",
                             "Sale",
                             "Test Merchant 1",
@@ -819,7 +819,7 @@ this.FeatureBackground();
                             "",
                             ""});
                 table82.AddRow(new string[] {
-                            "LastWeek",
+                            "2022-01-06",
                             "5",
                             "Sale",
                             "Test Merchant 1",
@@ -834,7 +834,7 @@ this.FeatureBackground();
                             "test@recipient.co.uk",
                             ""});
                 table82.AddRow(new string[] {
-                            "LastWeek",
+                            "2022-01-06",
                             "6",
                             "Sale",
                             "Test Merchant 2",
@@ -895,15 +895,15 @@ this.FeatureBackground();
                             "EstateName",
                             "NumberOfFees"});
                 table84.AddRow(new string[] {
-                            "Today",
+                            "2022-01-13",
                             "Test Estate 1",
                             "1"});
 #line 144
  testRunner.When("I get the pending settlements the following information should be returned", ((string)(null)), table84, "When ");
 #line hidden
 #line 148
- testRunner.When("I process the settlement for \'Today\' on Estate \'Test Estate 1\' then 1 fees are ma" +
-                        "rked as settled and the settlement is completed", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "When ");
+ testRunner.When("I process the settlement for \'2022-01-13\' on Estate \'Test Estate 1\' then 1 fees a" +
+                        "re marked as settled and the settlement is completed", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "When ");
 #line hidden
             }
             this.ScenarioCleanup();
