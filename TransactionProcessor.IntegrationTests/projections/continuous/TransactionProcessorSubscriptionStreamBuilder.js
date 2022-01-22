@@ -8,6 +8,7 @@ getSupportedEventTypes = function () {
 
     eventTypes.push('CustomerEmailReceiptRequestedEvent');
     eventTypes.push('TransactionHasBeenCompletedEvent');
+    eventTypes.push('MerchantFeeAddedToTransactionEvent');
 
     return eventTypes;
 }

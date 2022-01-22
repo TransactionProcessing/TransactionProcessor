@@ -41,7 +41,7 @@ function merchantFeeAddedToTransactionEventHandler(s, e) {
         feeCalculationType: e.data.feeCalculationType,
         eventId: e.eventId
     }
-    emit(getStreamName(s), "MerchantFeeAddedToTransactionEnrichedEvent", newEvent, null);
+    emit(getStreamName(s), "MerchantFeeAddedToTransactionEnrichedEvent", newEvent, {});
 }
 
 function serviceProviderFeeAddedToTransactionEventHandler(s, e) {
@@ -56,7 +56,7 @@ function serviceProviderFeeAddedToTransactionEventHandler(s, e) {
         feeCalculationType: e.data.feeCalculationType,
         eventId: e.eventId
     }
-    emit(getStreamName(s), "ServiceProviderFeeAddedToTransactionEnrichedEvent", newEvent, null);
+    emit(getStreamName(s), "ServiceProviderFeeAddedToTransactionEnrichedEvent", newEvent, { });
 }
 
 function getStreamName(s) {

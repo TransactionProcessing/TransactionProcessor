@@ -28,6 +28,7 @@
 
             if (settlementAggregate.IsCreated == false)
             {
+                Logger.LogInformation($"No pending settlement for {settlementDate.ToString("yyyy-MM-dd")}");
                 // Not pending settlement for this date
                 return response;
             }
