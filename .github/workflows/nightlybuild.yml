@@ -52,6 +52,12 @@ jobs:
     - name: Run Integration Tests
       run: dotnet test "TransactionProcessor.IntegrationTests\TransactionProcessor.IntegrationTests.csproj"
 
+    - uses: actions/upload-artifact@v2
+      if: ${{ failure() }}
+      with:
+        name: tracelogs
+        path: /home/txnproc/trace/   
+
     - uses: nashmaniac/create-issue-action@v1.1
       if: ${{ failure() }}
       name: Create an issue on build failure
