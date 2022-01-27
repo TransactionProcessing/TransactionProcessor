@@ -30,21 +30,19 @@ jobs:
         echo "ASPNETCORE_ENVIRONMENT are > ${ASPNETCORE_ENVIRONMENT}"
         dotnet test "TransactionProcessor.BusinessLogic.Tests\TransactionProcessor.BusinessLogic.Tests.csproj"
         dotnet test "TransactionProcessor.Tests\TransactionProcessor.Tests.csproj"      
-        dotnet test "TransactionProcessor.TransactionAggregate.Tests\TransactionProcessor.TransactionAggregate.Tests.csproj"
-            
-    - name: Build Docker Images 
-      run: |
-        docker build . --file TransactionProcessor/Dockerfile --tag stuartferguson/transactionprocessor:latest --tag stuartferguson/transactionprocessor:${{ steps.get_version.outputs.VERSION }}         
+        dotnet test "TransactionProcessor.TransactionAggregate.Tests\TransactionProcessor.TransactionAggregate.Tests.csproj"          
         
     - name: Publish Images to Docker Hub - Pre Release
       if: ${{ github.event.release.prerelease == true }} 
       run: |
+        docker build . --file TransactionProcessor/Dockerfile --tag stuartferguson/transactionprocessor:dev
         docker login --username=${{ secrets.DOCKER_USERNAME }} --password=${{ secrets.DOCKER_PASSWORD }}
         docker push stuartferguson/transactionprocessor:dev
 
     - name: Publish Images to Docker Hub - Formal Release
       if: ${{ github.event.release.prerelease == false }} 
       run: |
+        docker build . --file TransactionProcessor/Dockerfile --tag stuartferguson/transactionprocessor:latest
         docker login --username=${{ secrets.DOCKER_USERNAME }} --password=${{ secrets.DOCKER_PASSWORD }}
         docker push stuartferguson/transactionprocessor:latest
 
