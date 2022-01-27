@@ -1,4 +1,4 @@
-name: Publish Pre-Release Nuget 
+name: Publish Pre-Release Nugets and Docker
 
 on:
   push:
@@ -8,7 +8,7 @@ on:
 
 jobs:
   build:
-    name: "Publish Pre-Release Nugets"
+    name: "Publish Pre-Release Nugets and Docker"
     env:
         ASPNETCORE_ENVIRONMENT: "Production"
 
@@ -52,5 +52,11 @@ jobs:
         dotnet nuget push Nugets/TransactionProcessor.Reconciliation.DomainEvents.${{ steps.next_version.outputs.VERSION }}.nupkg --api-key ${{ secrets.MYGET_APIKEY }} --source https://www.myget.org/F/transactionprocessing/api/v2/package
         dotnet pack "TransactionProcessor.Settlement.DomainEvents\TransactionProcessor.Settlement.DomainEvents.csproj" /p:PackageVersion=${{ steps.next_version.outputs.VERSION }} --output Nugets
         dotnet nuget push Nugets/TransactionProcessor.Settlement.DomainEvents.${{ steps.next_version.outputs.VERSION }}.nupkg --api-key ${{ secrets.MYGET_APIKEY }} --source https://www.myget.org/F/transactionprocessing/api/v2/package
+
+    - name: Publish Images to Docker Hub
+      run: |
+        docker build . --file TransactionProcessor/Dockerfile --tag stuartferguson/transactionprocessor:master
+        docker login --username=${{ secrets.DOCKER_USERNAME }} --password=${{ secrets.DOCKER_PASSWORD }}
+        docker push stuartferguson/transactionprocessor:master
 
 
