@@ -113,7 +113,8 @@
             Guard.ThrowIfNull(calculatedFee, nameof(calculatedFee));
 
             this.CheckHasBeenCreated();
-            this.CheckFeeHasNotAlreadyBeenAdded(transactionId, calculatedFee);
+            if (this.HasFeeAlreadyBeenAdded(transactionId, calculatedFee))
+                return;
 
             DomainEventRecord.DomainEvent @event = null;
             if (calculatedFee.FeeType == FeeType.Merchant)
@@ -184,12 +185,9 @@
             return null;
         }
 
-        private void CheckFeeHasNotAlreadyBeenAdded(Guid transactionId, CalculatedFee calculatedFee)
+        private Boolean HasFeeAlreadyBeenAdded(Guid transactionId, CalculatedFee calculatedFee)
         {
-            if (this.CalculatedFeesPendingSettlement.Any(c => c.calculatedFee.FeeId == calculatedFee.FeeId && c.transactionId == transactionId))
-            {
-                throw new InvalidOperationException($"Fee with Id [{calculatedFee.FeeId}] for Transaction Id [{transactionId}] has already been added to this days pending settlement");
-            }
+            return this.CalculatedFeesPendingSettlement.Any(c => c.calculatedFee.FeeId == calculatedFee.FeeId && c.transactionId == transactionId);
         }
 
         private void CheckHasBeenCreated()

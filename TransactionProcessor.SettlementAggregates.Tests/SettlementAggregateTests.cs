@@ -88,18 +88,17 @@ namespace TransactionProcessor.SettlementAggregates.Tests
         }
 
         [Fact]
-        public void SettlementAggregate_AddFee_DuplicateFee_ErrorThrown()
+        public void SettlementAggregate_AddFee_DuplicateFee_NoErrorThrown()
         {
             SettlementAggregate aggregate = SettlementAggregate.Create(TestData.SettlementAggregateId);
             aggregate.Create(TestData.EstateId, TestData.SettlementDate);
             aggregate.AddFee(TestData.MerchantId, TestData.TransactionId, TestData.CalculatedFeeMerchantFee());
 
-            Should.Throw<InvalidOperationException>(() =>
-                                                    {
-                                                        aggregate.AddFee(TestData.MerchantId,
-                                                                         TestData.TransactionId,
-                                                                         TestData.CalculatedFeeMerchantFee());
-                                                    });
+            Should.NotThrow(() =>
+                            {
+                                aggregate.AddFee(TestData.MerchantId, TestData.TransactionId, TestData.CalculatedFeeMerchantFee());
+                            });
+            aggregate.GetNumberOfFeesPendingSettlement().ShouldBe(1);
         }
 
         [Fact]

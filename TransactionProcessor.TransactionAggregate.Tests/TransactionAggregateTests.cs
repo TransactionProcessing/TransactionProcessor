@@ -1100,7 +1100,7 @@ namespace TransactionProcessor.TransactionAggregate.Tests
 
         [Theory]
         [InlineData(TransactionType.Sale, FeeType.ServiceProvider)]
-        public void TransactionAggregate_AddFee_FeeAlreadyAdded_ErrorThrown(TransactionType transactionType, FeeType feeType)
+        public void TransactionAggregate_AddFee_FeeAlreadyAdded_NoErrorThrown(TransactionType transactionType, FeeType feeType)
         {
             TransactionAggregate transactionAggregate = TransactionAggregate.Create(TestData.TransactionId);
             transactionAggregate.StartTransaction(TestData.TransactionDateTime, TestData.TransactionNumber, transactionType, TestData.TransactionReference, TestData.EstateId, TestData.MerchantId, TestData.DeviceIdentifier,
@@ -1111,10 +1111,11 @@ namespace TransactionProcessor.TransactionAggregate.Tests
             transactionAggregate.CompleteTransaction();
             transactionAggregate.AddFee(this.GetCalculatedFeeToAdd(feeType));
 
-            Should.Throw<InvalidOperationException>(() =>
+            Should.NotThrow(() =>
                                                     {
                                                         transactionAggregate.AddFee(this.GetCalculatedFeeToAdd(feeType));
                                                     });
+            transactionAggregate.GetFees().Count.ShouldBe(1);
         }
 
         [Theory]
@@ -1239,7 +1240,7 @@ namespace TransactionProcessor.TransactionAggregate.Tests
 
         [Theory]
         [InlineData(TransactionType.Sale, FeeType.Merchant)]
-        public void TransactionAggregate_AddSettledFee_FeeAlreadyAdded_ErrorThrown(TransactionType transactionType, FeeType feeType)
+        public void TransactionAggregate_AddSettledFee_FeeAlreadyAdded_NoErrorThrown(TransactionType transactionType, FeeType feeType)
         {
             TransactionAggregate transactionAggregate = TransactionAggregate.Create(TestData.TransactionId);
             transactionAggregate.StartTransaction(TestData.TransactionDateTime, TestData.TransactionNumber, transactionType, TestData.TransactionReference, TestData.EstateId, TestData.MerchantId, TestData.DeviceIdentifier,
@@ -1250,10 +1251,12 @@ namespace TransactionProcessor.TransactionAggregate.Tests
             transactionAggregate.CompleteTransaction();
             transactionAggregate.AddSettledFee(this.GetCalculatedFeeToAdd(feeType), TestData.TransactionFeeSettlementDueDate, TestData.SettlementDate);
 
-            Should.Throw<InvalidOperationException>(() =>
+            Should.NotThrow(() =>
             {
                 transactionAggregate.AddSettledFee(this.GetCalculatedFeeToAdd(feeType), TestData.TransactionFeeSettlementDueDate, TestData.SettlementDate);
             });
+
+            transactionAggregate.GetFees().Count.ShouldBe(1);
         }
 
         [Theory]
