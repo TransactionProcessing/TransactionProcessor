@@ -281,7 +281,9 @@
         {
             Guard.ThrowIfNull(calculatedFee, nameof(calculatedFee));
 
-            this.CheckFeeHasNotAlreadyBeenAdded(calculatedFee);
+            if (HasFeeAlreadyBeenAdded(calculatedFee) == true)
+                return;
+
             this.CheckTransactionHasBeenAuthorised();
             this.CheckTransactionHasBeenCompleted();
             this.CheckTransactionCanAttractFees();
@@ -317,7 +319,9 @@
                 throw new ArgumentNullException(nameof(calculatedFee));
             }
 
-            this.CheckFeeHasNotAlreadyBeenAdded(calculatedFee);
+            if (this.HasFeeAlreadyBeenAdded(calculatedFee) == true)
+                return;
+
             this.CheckTransactionHasBeenAuthorised();
             this.CheckTransactionHasBeenCompleted();
             this.CheckTransactionCanAttractFees();
@@ -689,18 +693,9 @@
             }
         }
 
-        /// <summary>
-        /// Checks the fee has not already been added.
-        /// </summary>
-        /// <param name="calculatedFee">The calculated fee.</param>
-        /// <exception cref="System.InvalidOperationException">Fee with Id [{calculatedFee.FeeId}] has already been added to this transaction</exception>
-        /// <exception cref="InvalidOperationException">Fee with Id [{calculatedFee.FeeId}] has already been added to this transaction</exception>
-        private void CheckFeeHasNotAlreadyBeenAdded(CalculatedFee calculatedFee)
+        private Boolean HasFeeAlreadyBeenAdded(CalculatedFee calculatedFee)
         {
-            if (this.CalculatedFees.Any(c => c.FeeId == calculatedFee.FeeId))
-            {
-                throw new InvalidOperationException($"Fee with Id [{calculatedFee.FeeId}] has already been added to this transaction");
-            }
+            return this.CalculatedFees.Any(c => c.FeeId == calculatedFee.FeeId);
         }
 
         /// <summary>
