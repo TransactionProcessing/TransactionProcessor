@@ -622,9 +622,10 @@ namespace TransactionProcessor.IntegrationTests.Shared
         {
             String expectedResponseCode = SpecflowTableHelper.GetStringRowValue(tableRow, "ResponseCode");
             String expectedResponseMessage = SpecflowTableHelper.GetStringRowValue(tableRow, "ResponseMessage");
+            String transactionNumber = SpecflowTableHelper.GetStringRowValue(tableRow, "TransactionNumber");
 
-            logonTransactionResponse.ResponseCode.ShouldBe(expectedResponseCode);
-            logonTransactionResponse.ResponseMessage.ShouldBe(expectedResponseMessage);
+            logonTransactionResponse.ResponseCode.ShouldBe(expectedResponseCode, $"Transaction Number {transactionNumber} verification failed");
+            logonTransactionResponse.ResponseMessage.ShouldBe(expectedResponseMessage, $"Transaction Number {transactionNumber} verification failed");
         }
 
         private void ValidateTransactionResponse(SaleTransactionResponse saleTransactionResponse,
@@ -632,9 +633,10 @@ namespace TransactionProcessor.IntegrationTests.Shared
         {
             String expectedResponseCode = SpecflowTableHelper.GetStringRowValue(tableRow, "ResponseCode");
             String expectedResponseMessage = SpecflowTableHelper.GetStringRowValue(tableRow, "ResponseMessage");
+            String transactionNumber = SpecflowTableHelper.GetStringRowValue(tableRow, "TransactionNumber");
 
-            saleTransactionResponse.ResponseCode.ShouldBe(expectedResponseCode);
-            saleTransactionResponse.ResponseMessage.ShouldBe(expectedResponseMessage);
+            saleTransactionResponse.ResponseCode.ShouldBe(expectedResponseCode, $"Transaction Number {transactionNumber} verification failed");
+            saleTransactionResponse.ResponseMessage.ShouldBe(expectedResponseMessage,$"Transaction Number {transactionNumber} verification failed");
         }
 
         private void ValidateTransactionResponse(ReconciliationResponse reconciliationResponse,
@@ -642,9 +644,10 @@ namespace TransactionProcessor.IntegrationTests.Shared
         {
             String expectedResponseCode = SpecflowTableHelper.GetStringRowValue(tableRow, "ResponseCode");
             String expectedResponseMessage = SpecflowTableHelper.GetStringRowValue(tableRow, "ResponseMessage");
+            String transactionNumber = SpecflowTableHelper.GetStringRowValue(tableRow, "TransactionNumber");
 
-            reconciliationResponse.ResponseCode.ShouldBe(expectedResponseCode);
-            reconciliationResponse.ResponseMessage.ShouldBe(expectedResponseMessage);
+            reconciliationResponse.ResponseCode.ShouldBe(expectedResponseCode, $"Transaction Number {transactionNumber} verification failed");
+            reconciliationResponse.ResponseMessage.ShouldBe(expectedResponseMessage,$"Transaction Number {transactionNumber} verification failed");
         }
 
         [Given(@"the following api resources exist")]
