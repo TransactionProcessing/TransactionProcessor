@@ -22,7 +22,7 @@
         {
             ProcessSettlementResponse response = new ProcessSettlementResponse();
 
-            Guid aggregateId = settlementDate.ToGuid();
+            Guid aggregateId = Helpers.CalculateSettlementAggregateId(settlementDate,estateId);
 
             SettlementAggregate settlementAggregate = await this.SettlementAggregateRepository.GetLatestVersion(aggregateId, cancellationToken);
 
