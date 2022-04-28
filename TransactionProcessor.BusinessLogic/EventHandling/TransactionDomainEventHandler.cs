@@ -242,7 +242,7 @@
                     Logger.LogInformation($"SettlementSchedule {merchant.SettlementSchedule}");
                     DateTime settlementDate = CalculateSettlementDate(merchant.SettlementSchedule, domainEvent.CompletedDateTime);
                     Logger.LogInformation($"Settlement Date {settlementDate}");
-                    Guid aggregateId = settlementDate.ToGuid();
+                    Guid aggregateId = Helpers.CalculateSettlementAggregateId(settlementDate, domainEvent.EstateId);
 
                     // We need to add the fees to a pending settlement stream (for today)
                     SettlementAggregate aggregate = await this.SettlementAggregateRepository.GetLatestVersion(aggregateId, cancellationToken);
@@ -258,6 +258,8 @@
                 }
             }
         }
+
+        
 
         private DateTime CalculateSettlementDate(SettlementSchedule merchantSettlementSchedule, DateTime completeDateTime)
         {
@@ -305,7 +307,7 @@
                 return;
             }
 
-            Guid aggregateId = domainEvent.SettlementDueDate.ToGuid();
+            Guid aggregateId = Helpers.CalculateSettlementAggregateId(domainEvent.SettlementDueDate, domainEvent.EstateId);
 
             SettlementAggregate pendingSettlementAggregate = await this.SettlementAggregateRepository.GetLatestVersion(aggregateId, cancellationToken);
 
