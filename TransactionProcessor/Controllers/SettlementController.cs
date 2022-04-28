@@ -59,7 +59,7 @@ namespace TransactionProcessor.Controllers
         {
             // TODO: Convert to using a manager/model/factory
             // Convert the date passed in to a guid
-            var aggregateId = settlementDate.Date.ToGuid();
+            Guid aggregateId = Helpers.CalculateSettlementAggregateId(settlementDate, estateId);
 
             Logger.LogInformation($"Settlement Aggregate Id {aggregateId}");
 
