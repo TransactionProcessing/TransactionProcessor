@@ -108,6 +108,9 @@
             this.TransactionAggregateManager.Setup(t => t.GetAggregate(It.IsAny<Guid>(), It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
                 .ReturnsAsync(TestData.GetCompletedAuthorisedSaleTransactionAggregate);
 
+            this.SettlementAggregateRepository.Setup(s => s.GetLatestVersion(It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
+                .ReturnsAsync(TestData.GetEmptySettlementAggregate);
+
             this.FeeCalculationManager.Setup(f => f.CalculateFees(It.IsAny<List<TransactionFeeToCalculate>>(), It.IsAny<Decimal>(), It.IsAny<DateTime>())).Returns(new List<CalculatedFee>
                 {
                     TestData.CalculatedFeeMerchantFee(),

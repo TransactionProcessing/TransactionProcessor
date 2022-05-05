@@ -882,6 +882,32 @@ namespace TransactionProcessor.IntegrationTests.Shared
             }
         }
 
+        [When(@"I get the completed settlements the following information should be returned")]
+        public async Task WhenIGetTheCompletedSettlementsTheFollowingInformationShouldBeReturned(Table table)
+        {
+            foreach (TableRow tableRow in table.Rows)
+            {
+                // Get the merchant name
+                EstateDetails estateDetails = this.TestingContext.GetEstateDetails(tableRow);
+                String settlementDateString = SpecflowTableHelper.GetStringRowValue(tableRow, "SettlementDate");
+                Int32 numberOfFees = SpecflowTableHelper.GetIntValue(tableRow, "NumberOfFees");
+                DateTime settlementDate = SpecflowTableHelper.GetDateForDateString(settlementDateString, DateTime.UtcNow.Date);
+
+                Guid aggregateId = Helpers.CalculateSettlementAggregateId(settlementDate, estateDetails.EstateId);
+                await Retry.For(async () =>
+                                {
+                                    SettlementResponse settlements =
+                                        await this.TestingContext.DockerHelper.TransactionProcessorClient.GetSettlementByDate(this.TestingContext.AccessToken,
+                                            settlementDate,
+                                            estateDetails.EstateId,
+                                            CancellationToken.None);
+
+                                    settlements.NumberOfFeesSettled.ShouldBe(numberOfFees, $"Settlment date {settlementDate}");
+                                }, TimeSpan.FromMinutes(3));
+            }
+        }
+
+
         [When(@"I get the pending settlements the following information should be returned")]
         public async Task WhenIGetThePendingSettlementsTheFollowingInformationShouldBeReturned(Table table)
         {
