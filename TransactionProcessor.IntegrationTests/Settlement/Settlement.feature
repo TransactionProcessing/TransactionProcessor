@@ -98,8 +98,12 @@ Scenario: Get Pending Settlement
 		
 	When I get the pending settlements the following information should be returned
 	| SettlementDate | EstateName    | NumberOfFees |
-	| 2022-01-13       | Test Estate 1 | 1            |
-	| 2022-02-06      | Test Estate 1 | 1            |
+	| 2022-01-13     | Test Estate 1 | 1            |
+	| 2022-02-06     | Test Estate 1 | 1            |
+
+	When I get the completed settlements the following information should be returned
+	| SettlementDate | EstateName    | NumberOfFees |
+	| 2022-01-06     | Test Estate 1 | 2            |
 
 @PRTest
 Scenario: Process Settlement
