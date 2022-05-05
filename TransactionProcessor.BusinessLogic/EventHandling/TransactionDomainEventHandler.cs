@@ -269,7 +269,7 @@
                 return completeDateTime.Date.AddMonths(1).Date;
             }
 
-            return completeDateTime;
+            return completeDateTime.Date;
         }
 
         /// <summary>
