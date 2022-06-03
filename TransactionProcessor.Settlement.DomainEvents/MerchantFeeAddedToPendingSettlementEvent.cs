@@ -3,7 +3,7 @@
     using System;
     using Shared.DomainDrivenDesign.EventSourcing;
 
-    public record MerchantFeeAddedPendingSettlementEvent : DomainEventRecord.DomainEvent
+    public record MerchantFeeAddedPendingSettlementEvent : DomainEvent
     {
         #region Properties
 

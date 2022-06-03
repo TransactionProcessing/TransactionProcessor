@@ -25,7 +25,7 @@
         /// <summary>
         /// The transaction aggregate repository
         /// </summary>
-        private readonly IAggregateRepository<TransactionAggregate,DomainEventRecord.DomainEvent> TransactionAggregateRepository;
+        private readonly IAggregateRepository<TransactionAggregate,DomainEvent> TransactionAggregateRepository;
 
         #endregion
 
@@ -35,7 +35,7 @@
         /// Initializes a new instance of the <see cref="TransactionAggregateManager" /> class.
         /// </summary>
         /// <param name="transactionAggregateRepository">The transaction aggregate repository.</param>
-        public TransactionAggregateManager(IAggregateRepository<TransactionAggregate, DomainEventRecord.DomainEvent> transactionAggregateRepository)
+        public TransactionAggregateManager(IAggregateRepository<TransactionAggregate, DomainEvent> transactionAggregateRepository)
         {
             this.TransactionAggregateRepository = transactionAggregateRepository;
         }

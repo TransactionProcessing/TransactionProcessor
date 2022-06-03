@@ -60,7 +60,7 @@
         /// <summary>
         /// The reconciliation aggregate repository
         /// </summary>
-        private readonly IAggregateRepository<ReconciliationAggregate, DomainEventRecord.DomainEvent> ReconciliationAggregateRepository;
+        private readonly IAggregateRepository<ReconciliationAggregate, DomainEvent> ReconciliationAggregateRepository;
 
         #endregion
 
@@ -78,7 +78,7 @@
                                         IEstateClient estateClient,
                                         ISecurityServiceClient securityServiceClient,
                                         Func<String, IOperatorProxy> operatorProxyResolver,
-                                        IAggregateRepository<ReconciliationAggregate, DomainEventRecord.DomainEvent> reconciliationAggregateRepository)
+                                        IAggregateRepository<ReconciliationAggregate, DomainEvent> reconciliationAggregateRepository)
         {
             this.TransactionAggregateManager = transactionAggregateManager;
             this.EstateClient = estateClient;

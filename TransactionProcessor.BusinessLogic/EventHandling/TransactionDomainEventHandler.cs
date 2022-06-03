@@ -63,7 +63,7 @@
         /// </summary>
         private readonly IMessagingServiceClient MessagingServiceClient;
 
-        private readonly IAggregateRepository<SettlementAggregate, DomainEventRecord.DomainEvent> SettlementAggregateRepository;
+        private readonly IAggregateRepository<SettlementAggregate, DomainEvent> SettlementAggregateRepository;
 
         /// <summary>
         /// The token response
@@ -94,7 +94,7 @@
                                              ISecurityServiceClient securityServiceClient,
                                              ITransactionReceiptBuilder transactionReceiptBuilder,
                                              IMessagingServiceClient messagingServiceClient,
-                                             IAggregateRepository<SettlementAggregate, DomainEventRecord.DomainEvent> settlementAggregateRepository)
+                                             IAggregateRepository<SettlementAggregate, DomainEvent> settlementAggregateRepository)
         {
             this.TransactionAggregateManager = transactionAggregateManager;
             this.FeeCalculationManager = feeCalculationManager;

@@ -9,7 +9,7 @@
     /// 
     /// </summary>
     /// <seealso cref="Shared.DomainDrivenDesign.EventSourcing.DomainEvent" />
-    public record ServiceProviderFeeAddedToTransactionEvent : DomainEventRecord.DomainEvent
+    public record ServiceProviderFeeAddedToTransactionEvent : DomainEvent
     {
         #region Constructors
 

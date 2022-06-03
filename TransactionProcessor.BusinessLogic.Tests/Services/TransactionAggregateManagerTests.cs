@@ -23,7 +23,7 @@ namespace TransactionProcessor.BusinessLogic.Tests.Services
         [Fact]
         public async Task TransactionAggregateManager_AuthoriseTransaction_TransactionAuthorised()
         {
-            Mock<IAggregateRepository<TransactionAggregate, DomainEventRecord.DomainEvent>> aggregateRepository = new Mock<IAggregateRepository<TransactionAggregate, DomainEventRecord.DomainEvent>>();
+            Mock<IAggregateRepository<TransactionAggregate, DomainEvent>> aggregateRepository = new Mock<IAggregateRepository<TransactionAggregate, DomainEvent>>();
             aggregateRepository.Setup(a => a.GetLatestVersion(It.IsAny<Guid>(), It.IsAny<CancellationToken>())).ReturnsAsync(TestData.GetStartedTransactionAggregate());
             TransactionAggregateManager transactionAggregateManager = new TransactionAggregateManager(aggregateRepository.Object);
             
@@ -39,7 +39,7 @@ namespace TransactionProcessor.BusinessLogic.Tests.Services
         [Fact]
         public async Task TransactionAggregateManager_AuthoriseTransactionLocally_TransactionLocallyAuthorised()
         {
-            Mock<IAggregateRepository<TransactionAggregate, DomainEventRecord.DomainEvent>> aggregateRepository = new Mock<IAggregateRepository<TransactionAggregate, DomainEventRecord.DomainEvent>>();
+            Mock<IAggregateRepository<TransactionAggregate, DomainEvent>> aggregateRepository = new Mock<IAggregateRepository<TransactionAggregate, DomainEvent>>();
             aggregateRepository.Setup(a => a.GetLatestVersion(It.IsAny<Guid>(), It.IsAny<CancellationToken>())).ReturnsAsync(TestData.GetStartedTransactionAggregate());
             TransactionAggregateManager transactionAggregateManager = new TransactionAggregateManager(aggregateRepository.Object);
 
@@ -53,7 +53,7 @@ namespace TransactionProcessor.BusinessLogic.Tests.Services
         [Fact]
         public async Task TransactionAggregateManager_DeclineTransaction_TransactionDeclined()
         {
-            Mock<IAggregateRepository<TransactionAggregate, DomainEventRecord.DomainEvent>> aggregateRepository = new Mock<IAggregateRepository<TransactionAggregate, DomainEventRecord.DomainEvent>>();
+            Mock<IAggregateRepository<TransactionAggregate, DomainEvent>> aggregateRepository = new Mock<IAggregateRepository<TransactionAggregate, DomainEvent>>();
             aggregateRepository.Setup(a => a.GetLatestVersion(It.IsAny<Guid>(), It.IsAny<CancellationToken>())).ReturnsAsync(TestData.GetStartedTransactionAggregate());
             TransactionAggregateManager transactionAggregateManager = new TransactionAggregateManager(aggregateRepository.Object);
 
@@ -69,7 +69,7 @@ namespace TransactionProcessor.BusinessLogic.Tests.Services
         [Fact]
         public async Task TransactionAggregateManager_DeclineTransactionLocally_TransactionLocallyDeclined()
         {
-            Mock<IAggregateRepository<TransactionAggregate, DomainEventRecord.DomainEvent>> aggregateRepository = new Mock<IAggregateRepository<TransactionAggregate, DomainEventRecord.DomainEvent>>();
+            Mock<IAggregateRepository<TransactionAggregate, DomainEvent>> aggregateRepository = new Mock<IAggregateRepository<TransactionAggregate, DomainEvent>>();
             aggregateRepository.Setup(a => a.GetLatestVersion(It.IsAny<Guid>(), It.IsAny<CancellationToken>())).ReturnsAsync(TestData.GetStartedTransactionAggregate());
             TransactionAggregateManager transactionAggregateManager = new TransactionAggregateManager(aggregateRepository.Object);
 
@@ -82,7 +82,7 @@ namespace TransactionProcessor.BusinessLogic.Tests.Services
         [Fact]
         public async Task TransactionAggregateManager_GetAggregate_AggregateReturned()
         {
-            Mock<IAggregateRepository<TransactionAggregate, DomainEventRecord.DomainEvent>> aggregateRepository = new Mock<IAggregateRepository<TransactionAggregate, DomainEventRecord.DomainEvent>>();
+            Mock<IAggregateRepository<TransactionAggregate, DomainEvent>> aggregateRepository = new Mock<IAggregateRepository<TransactionAggregate, DomainEvent>>();
             aggregateRepository.Setup(a => a.GetLatestVersion(It.IsAny<Guid>(), It.IsAny<CancellationToken>())).ReturnsAsync(TestData.GetCompletedLogonTransactionAggregate);
             TransactionAggregateManager transactionAggregateManager = new TransactionAggregateManager(aggregateRepository.Object);
 
@@ -96,7 +96,7 @@ namespace TransactionProcessor.BusinessLogic.Tests.Services
         [Fact]
         public async Task TransactionAggregateManager_RecordAdditionalRequestData_AdditionalRequestDataRecorded()
         {
-            Mock<IAggregateRepository<TransactionAggregate, DomainEventRecord.DomainEvent>> aggregateRepository = new Mock<IAggregateRepository<TransactionAggregate, DomainEventRecord.DomainEvent>>();
+            Mock<IAggregateRepository<TransactionAggregate, DomainEvent>> aggregateRepository = new Mock<IAggregateRepository<TransactionAggregate, DomainEvent>>();
             aggregateRepository.Setup(a => a.GetLatestVersion(It.IsAny<Guid>(), It.IsAny<CancellationToken>())).ReturnsAsync(TestData.GetStartedTransactionAggregate());
             TransactionAggregateManager transactionAggregateManager = new TransactionAggregateManager(aggregateRepository.Object);
 
@@ -110,7 +110,7 @@ namespace TransactionProcessor.BusinessLogic.Tests.Services
         [Fact]
         public async Task TransactionAggregateManager_RecordAdditionalRequestData_NullAdditionalRequestData_NoActionPerformed()
         {
-            Mock<IAggregateRepository<TransactionAggregate, DomainEventRecord.DomainEvent>> aggregateRepository = new Mock<IAggregateRepository<TransactionAggregate, DomainEventRecord.DomainEvent>>();
+            Mock<IAggregateRepository<TransactionAggregate, DomainEvent>> aggregateRepository = new Mock<IAggregateRepository<TransactionAggregate, DomainEvent>>();
             aggregateRepository.Setup(a => a.GetLatestVersion(It.IsAny<Guid>(), It.IsAny<CancellationToken>())).ReturnsAsync(TestData.GetStartedTransactionAggregate());
             TransactionAggregateManager transactionAggregateManager = new TransactionAggregateManager(aggregateRepository.Object);
 
@@ -124,7 +124,7 @@ namespace TransactionProcessor.BusinessLogic.Tests.Services
         [Fact]
         public async Task TransactionAggregateManager_RecordAdditionalRequestData_EmptyAdditionalRequestData_NoActionPerformed()
         {
-            Mock<IAggregateRepository<TransactionAggregate, DomainEventRecord.DomainEvent>> aggregateRepository = new Mock<IAggregateRepository<TransactionAggregate, DomainEventRecord.DomainEvent>>();
+            Mock<IAggregateRepository<TransactionAggregate, DomainEvent>> aggregateRepository = new Mock<IAggregateRepository<TransactionAggregate, DomainEvent>>();
             aggregateRepository.Setup(a => a.GetLatestVersion(It.IsAny<Guid>(), It.IsAny<CancellationToken>())).ReturnsAsync(TestData.GetStartedTransactionAggregate());
             TransactionAggregateManager transactionAggregateManager = new TransactionAggregateManager(aggregateRepository.Object);
 
@@ -138,7 +138,7 @@ namespace TransactionProcessor.BusinessLogic.Tests.Services
         [Fact]
         public async Task TransactionAggregateManager_RecordAdditionalResponseData_AdditionalResponseDataRecorded()
         {
-            Mock<IAggregateRepository<TransactionAggregate, DomainEventRecord.DomainEvent>> aggregateRepository = new Mock<IAggregateRepository<TransactionAggregate, DomainEventRecord.DomainEvent>>();
+            Mock<IAggregateRepository<TransactionAggregate, DomainEvent>> aggregateRepository = new Mock<IAggregateRepository<TransactionAggregate, DomainEvent>>();
             aggregateRepository.Setup(a => a.GetLatestVersion(It.IsAny<Guid>(), It.IsAny<CancellationToken>())).ReturnsAsync(TestData.GetStartedTransactionAggregate());
             TransactionAggregateManager transactionAggregateManager = new TransactionAggregateManager(aggregateRepository.Object);
 
@@ -152,7 +152,7 @@ namespace TransactionProcessor.BusinessLogic.Tests.Services
         [Fact]
         public async Task TransactionAggregateManager_RecordAdditionalResponseData_NullAdditionalResponseData_NoActionPerformed()
         {
-            Mock<IAggregateRepository<TransactionAggregate, DomainEventRecord.DomainEvent>> aggregateRepository = new Mock<IAggregateRepository<TransactionAggregate, DomainEventRecord.DomainEvent>>();
+            Mock<IAggregateRepository<TransactionAggregate, DomainEvent>> aggregateRepository = new Mock<IAggregateRepository<TransactionAggregate, DomainEvent>>();
             aggregateRepository.Setup(a => a.GetLatestVersion(It.IsAny<Guid>(), It.IsAny<CancellationToken>())).ReturnsAsync(TestData.GetStartedTransactionAggregate());
             TransactionAggregateManager transactionAggregateManager = new TransactionAggregateManager(aggregateRepository.Object);
 
@@ -166,7 +166,7 @@ namespace TransactionProcessor.BusinessLogic.Tests.Services
         [Fact]
         public async Task TransactionAggregateManager_RecordAdditionalResponseData_EmptyAdditionalResponseData_NoActionPerformed()
         {
-            Mock<IAggregateRepository<TransactionAggregate, DomainEventRecord.DomainEvent>> aggregateRepository = new Mock<IAggregateRepository<TransactionAggregate, DomainEventRecord.DomainEvent>>();
+            Mock<IAggregateRepository<TransactionAggregate, DomainEvent>> aggregateRepository = new Mock<IAggregateRepository<TransactionAggregate, DomainEvent>>();
             aggregateRepository.Setup(a => a.GetLatestVersion(It.IsAny<Guid>(), It.IsAny<CancellationToken>())).ReturnsAsync(TestData.GetStartedTransactionAggregate());
             TransactionAggregateManager transactionAggregateManager = new TransactionAggregateManager(aggregateRepository.Object);
 
@@ -182,7 +182,7 @@ namespace TransactionProcessor.BusinessLogic.Tests.Services
         [InlineData(TransactionType.Sale)]
         public async Task TransactionAggregateManager_StartTransaction_TransactionStarted(TransactionType transactionType)
         {
-            Mock<IAggregateRepository<TransactionAggregate, DomainEventRecord.DomainEvent>> aggregateRepository = new Mock<IAggregateRepository<TransactionAggregate, DomainEventRecord.DomainEvent>>();
+            Mock<IAggregateRepository<TransactionAggregate, DomainEvent>> aggregateRepository = new Mock<IAggregateRepository<TransactionAggregate, DomainEvent>>();
             aggregateRepository.Setup(a => a.GetLatestVersion(It.IsAny<Guid>(), It.IsAny<CancellationToken>())).ReturnsAsync(TestData.GetEmptyTransactionAggregate);
             TransactionAggregateManager transactionAggregateManager = new TransactionAggregateManager(aggregateRepository.Object);
 
@@ -201,7 +201,7 @@ namespace TransactionProcessor.BusinessLogic.Tests.Services
         [Fact]
         public async Task TransactionAggregateManager_CompleteTransaction_TransactionCompleted()
         {
-            Mock<IAggregateRepository<TransactionAggregate, DomainEventRecord.DomainEvent>> aggregateRepository = new Mock<IAggregateRepository<TransactionAggregate, DomainEventRecord.DomainEvent>>();
+            Mock<IAggregateRepository<TransactionAggregate, DomainEvent>> aggregateRepository = new Mock<IAggregateRepository<TransactionAggregate, DomainEvent>>();
             aggregateRepository.Setup(a => a.GetLatestVersion(It.IsAny<Guid>(), It.IsAny<CancellationToken>())).ReturnsAsync(TestData.GetLocallyAuthorisedTransactionAggregate);
             TransactionAggregateManager transactionAggregateManager = new TransactionAggregateManager(aggregateRepository.Object);
 
@@ -213,7 +213,7 @@ namespace TransactionProcessor.BusinessLogic.Tests.Services
         [Fact]
         public async Task TransactionAggregateManager_RequestEmailReceipt_EmailRecieptRequested()
         {
-            Mock<IAggregateRepository<TransactionAggregate, DomainEventRecord.DomainEvent>> aggregateRepository = new Mock<IAggregateRepository<TransactionAggregate, DomainEventRecord.DomainEvent>>();
+            Mock<IAggregateRepository<TransactionAggregate, DomainEvent>> aggregateRepository = new Mock<IAggregateRepository<TransactionAggregate, DomainEvent>>();
             aggregateRepository.Setup(a => a.GetLatestVersion(It.IsAny<Guid>(), It.IsAny<CancellationToken>())).ReturnsAsync(TestData.GetCompletedLogonTransactionAggregate);
             TransactionAggregateManager transactionAggregateManager = new TransactionAggregateManager(aggregateRepository.Object);
 
@@ -226,7 +226,7 @@ namespace TransactionProcessor.BusinessLogic.Tests.Services
         [Fact]
         public async Task TransactionAggregateManager_AddProductDetails_ProductDetailsAddedToTransaction()
         {
-            Mock<IAggregateRepository<TransactionAggregate, DomainEventRecord.DomainEvent>> aggregateRepository = new Mock<IAggregateRepository<TransactionAggregate, DomainEventRecord.DomainEvent>>();
+            Mock<IAggregateRepository<TransactionAggregate, DomainEvent>> aggregateRepository = new Mock<IAggregateRepository<TransactionAggregate, DomainEvent>>();
             aggregateRepository.Setup(a => a.GetLatestVersion(It.IsAny<Guid>(), It.IsAny<CancellationToken>())).ReturnsAsync(TestData.GetStartedTransactionAggregate());
             TransactionAggregateManager transactionAggregateManager = new TransactionAggregateManager(aggregateRepository.Object);
 
@@ -240,7 +240,7 @@ namespace TransactionProcessor.BusinessLogic.Tests.Services
         [Fact]
         public async Task TransactionAggregateManager_AddFee_FeeAddedToTransaction()
         {
-            Mock<IAggregateRepository<TransactionAggregate, DomainEventRecord.DomainEvent>> aggregateRepository = new Mock<IAggregateRepository<TransactionAggregate, DomainEventRecord.DomainEvent>>();
+            Mock<IAggregateRepository<TransactionAggregate, DomainEvent>> aggregateRepository = new Mock<IAggregateRepository<TransactionAggregate, DomainEvent>>();
             aggregateRepository.Setup(a => a.GetLatestVersion(It.IsAny<Guid>(), It.IsAny<CancellationToken>())).ReturnsAsync(TestData.GetCompletedAuthorisedSaleTransactionAggregate);
             TransactionAggregateManager transactionAggregateManager = new TransactionAggregateManager(aggregateRepository.Object);
 
@@ -253,7 +253,7 @@ namespace TransactionProcessor.BusinessLogic.Tests.Services
         [Fact]
         public async Task TransactionAggregateManager_AddSettledFee_FeeAddedToTransaction()
         {
-            Mock<IAggregateRepository<TransactionAggregate, DomainEventRecord.DomainEvent>> aggregateRepository = new Mock<IAggregateRepository<TransactionAggregate, DomainEventRecord.DomainEvent>>();
+            Mock<IAggregateRepository<TransactionAggregate, DomainEvent>> aggregateRepository = new Mock<IAggregateRepository<TransactionAggregate, DomainEvent>>();
             aggregateRepository.Setup(a => a.GetLatestVersion(It.IsAny<Guid>(), It.IsAny<CancellationToken>())).ReturnsAsync(TestData.GetCompletedAuthorisedSaleTransactionAggregate);
             TransactionAggregateManager transactionAggregateManager = new TransactionAggregateManager(aggregateRepository.Object);
 

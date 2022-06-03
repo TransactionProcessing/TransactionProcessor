@@ -5,7 +5,7 @@
     using Newtonsoft.Json;
     using Shared.DomainDrivenDesign.EventSourcing;
 
-    public record TransactionDeclinedByOperatorEvent : DomainEventRecord.DomainEvent
+    public record TransactionDeclinedByOperatorEvent : DomainEvent
     {
         #region Constructors
 

@@ -7,7 +7,7 @@
     /// 
     /// </summary>
     /// <seealso cref="Shared.DomainDrivenDesign.EventSourcing.DomainEvent" />
-    public record MerchantFeeAddedToTransactionEvent : DomainEventRecord.DomainEvent
+    public record MerchantFeeAddedToTransactionEvent : DomainEvent
     {
         #region Constructors
 

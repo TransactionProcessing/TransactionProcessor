@@ -10,7 +10,7 @@
     /// </summary>
     /// <seealso cref="Shared.DomainDrivenDesign.EventSourcing.DomainEvent" />
     
-    public record ReconciliationHasBeenLocallyAuthorisedEvent : DomainEventRecord.DomainEvent
+    public record ReconciliationHasBeenLocallyAuthorisedEvent : DomainEvent
     {
         #region Constructors
 

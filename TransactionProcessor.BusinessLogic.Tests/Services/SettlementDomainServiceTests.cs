@@ -27,8 +27,8 @@
             Logger.Initialise(NullLogger.Instance);
 
             Mock<ITransactionAggregateManager> transactionAggregateManager = new Mock<ITransactionAggregateManager>();
-            Mock<IAggregateRepository<SettlementAggregate, DomainEventRecord.DomainEvent>> settlementAggregateRepository =
-                new Mock<IAggregateRepository<SettlementAggregate, DomainEventRecord.DomainEvent>>();
+            Mock<IAggregateRepository<SettlementAggregate, DomainEvent>> settlementAggregateRepository =
+                new Mock<IAggregateRepository<SettlementAggregate, DomainEvent>>();
             settlementAggregateRepository.Setup(s => s.GetLatestVersion(It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
                                          .ReturnsAsync(TestData.GetSettlementAggregateWithPendingMerchantFees(10));
 
@@ -54,8 +54,8 @@
             Logger.Initialise(NullLogger.Instance);
 
             Mock<ITransactionAggregateManager> transactionAggregateManager = new Mock<ITransactionAggregateManager>();
-            Mock<IAggregateRepository<SettlementAggregate, DomainEventRecord.DomainEvent>> settlementAggregateRepository =
-                new Mock<IAggregateRepository<SettlementAggregate, DomainEventRecord.DomainEvent>>();
+            Mock<IAggregateRepository<SettlementAggregate, DomainEvent>> settlementAggregateRepository =
+                new Mock<IAggregateRepository<SettlementAggregate, DomainEvent>>();
             settlementAggregateRepository.Setup(s => s.GetLatestVersion(It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
                                          .ReturnsAsync(TestData.GetEmptySettlementAggregate);
 
@@ -82,8 +82,8 @@
             Logger.Initialise(NullLogger.Instance);
 
             Mock<ITransactionAggregateManager> transactionAggregateManager = new Mock<ITransactionAggregateManager>();
-            Mock<IAggregateRepository<SettlementAggregate, DomainEventRecord.DomainEvent>> settlementAggregateRepository =
-                new Mock<IAggregateRepository<SettlementAggregate, DomainEventRecord.DomainEvent>>();
+            Mock<IAggregateRepository<SettlementAggregate, DomainEvent>> settlementAggregateRepository =
+                new Mock<IAggregateRepository<SettlementAggregate, DomainEvent>>();
             settlementAggregateRepository.Setup(s => s.GetLatestVersion(It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
                                          .ReturnsAsync(TestData.GetCreatedSettlementAggregate);
 
@@ -117,8 +117,8 @@
                                                                    It.IsAny<DateTime>(),
                                                                    It.IsAny<CancellationToken>())).ThrowsAsync(new Exception());
             
-            Mock<IAggregateRepository<SettlementAggregate, DomainEventRecord.DomainEvent>> settlementAggregateRepository =
-                new Mock<IAggregateRepository<SettlementAggregate, DomainEventRecord.DomainEvent>>();
+            Mock<IAggregateRepository<SettlementAggregate, DomainEvent>> settlementAggregateRepository =
+                new Mock<IAggregateRepository<SettlementAggregate, DomainEvent>>();
             settlementAggregateRepository.Setup(s => s.GetLatestVersion(It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
                                          .ReturnsAsync(TestData.GetSettlementAggregateWithPendingMerchantFees(10));
 

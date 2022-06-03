@@ -47,12 +47,12 @@
             this.AddTransient<IEventStoreContext, EventStoreContext>();
 
             this.AddSingleton<ITransactionAggregateManager, TransactionAggregateManager>();
-            this.AddSingleton<IAggregateRepository<TransactionAggregate, DomainEventRecord.DomainEvent>,
-                AggregateRepository<TransactionAggregate, DomainEventRecord.DomainEvent>>();
-            this.AddSingleton<IAggregateRepository<ReconciliationAggregate, DomainEventRecord.DomainEvent>,
-                AggregateRepository<ReconciliationAggregate, DomainEventRecord.DomainEvent>>();
-            this.AddSingleton<IAggregateRepository<SettlementAggregate, DomainEventRecord.DomainEvent>,
-                AggregateRepository<SettlementAggregate, DomainEventRecord.DomainEvent>>();
+            this.AddSingleton<IAggregateRepository<TransactionAggregate, DomainEvent>,
+                AggregateRepository<TransactionAggregate, DomainEvent>>();
+            this.AddSingleton<IAggregateRepository<ReconciliationAggregate, DomainEvent>,
+                AggregateRepository<ReconciliationAggregate, DomainEvent>>();
+            this.AddSingleton<IAggregateRepository<SettlementAggregate, DomainEvent>,
+                AggregateRepository<SettlementAggregate, DomainEvent>>();
         }
 
         #endregion

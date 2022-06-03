@@ -76,7 +76,7 @@
 
         private Mock<ITransactionAggregateManager> TransactionAggregateManager;
 
-        private Mock<IAggregateRepository<SettlementAggregate, DomainEventRecord.DomainEvent>> SettlementAggregateRepository;
+        private Mock<IAggregateRepository<SettlementAggregate, DomainEvent>> SettlementAggregateRepository;
 
         private Mock<IFeeCalculationManager> FeeCalculationManager;
 
@@ -90,7 +90,7 @@
         public TransactionDomainEventHandlerTests()
         {
             this.TransactionAggregateManager = new Mock<ITransactionAggregateManager>();
-            this.SettlementAggregateRepository = new Mock<IAggregateRepository<SettlementAggregate, DomainEventRecord.DomainEvent>>();
+            this.SettlementAggregateRepository = new Mock<IAggregateRepository<SettlementAggregate, DomainEvent>>();
             this.FeeCalculationManager = new Mock<IFeeCalculationManager>();
             this.EstateClient = new Mock<IEstateClient>();
             this.SecurityServiceClient = new Mock<ISecurityServiceClient>();

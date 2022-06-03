@@ -49,8 +49,8 @@ namespace TransactionProcessor.BusinessLogic.Tests.Services
             Mock<IOperatorProxy> operatorProxy = new Mock<IOperatorProxy>();
             Func<String, IOperatorProxy> operatorProxyResolver = (operatorName) => { return operatorProxy.Object; };
 
-            Mock<IAggregateRepository<ReconciliationAggregate, DomainEventRecord.DomainEvent>> reconciliationAggregateRepository =
-                new Mock<IAggregateRepository<ReconciliationAggregate, DomainEventRecord.DomainEvent>>();
+            Mock<IAggregateRepository<ReconciliationAggregate, DomainEvent>> reconciliationAggregateRepository =
+                new Mock<IAggregateRepository<ReconciliationAggregate, DomainEvent>>();
             reconciliationAggregateRepository.Setup(r => r.GetLatestVersion(It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
                                              .ReturnsAsync(new ReconciliationAggregate());
 
@@ -90,8 +90,8 @@ namespace TransactionProcessor.BusinessLogic.Tests.Services
             estateClient.Setup(e => e.GetMerchant(It.IsAny<String>(), It.IsAny<Guid>(), It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
                         .ReturnsAsync(TestData.GetMerchantResponseWithOperator1);
 
-            Mock<IAggregateRepository<ReconciliationAggregate, DomainEventRecord.DomainEvent>> reconciliationAggregateRepository =
-                new Mock<IAggregateRepository<ReconciliationAggregate, DomainEventRecord.DomainEvent>>();
+            Mock<IAggregateRepository<ReconciliationAggregate, DomainEvent>> reconciliationAggregateRepository =
+                new Mock<IAggregateRepository<ReconciliationAggregate, DomainEvent>>();
             reconciliationAggregateRepository.Setup(r => r.GetLatestVersion(It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
                                              .ReturnsAsync(new ReconciliationAggregate());
 
@@ -134,8 +134,8 @@ namespace TransactionProcessor.BusinessLogic.Tests.Services
             estateClient.Setup(e => e.GetMerchant(It.IsAny<String>(), It.IsAny<Guid>(), It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
                         .ReturnsAsync(merchantResponse);
 
-            Mock<IAggregateRepository<ReconciliationAggregate, DomainEventRecord.DomainEvent>> reconciliationAggregateRepository =
-                new Mock<IAggregateRepository<ReconciliationAggregate, DomainEventRecord.DomainEvent>>();
+            Mock<IAggregateRepository<ReconciliationAggregate, DomainEvent>> reconciliationAggregateRepository =
+                new Mock<IAggregateRepository<ReconciliationAggregate, DomainEvent>>();
             reconciliationAggregateRepository.Setup(r => r.GetLatestVersion(It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
                                              .ReturnsAsync(new ReconciliationAggregate());
 
@@ -174,8 +174,8 @@ namespace TransactionProcessor.BusinessLogic.Tests.Services
             estateClient.Setup(e => e.GetMerchant(It.IsAny<String>(), It.IsAny<Guid>(), It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
                         .ReturnsAsync(TestData.GetMerchantResponseWithOperator1);
 
-            Mock<IAggregateRepository<ReconciliationAggregate, DomainEventRecord.DomainEvent>> reconciliationAggregateRepository =
-                new Mock<IAggregateRepository<ReconciliationAggregate, DomainEventRecord.DomainEvent>>();
+            Mock<IAggregateRepository<ReconciliationAggregate, DomainEvent>> reconciliationAggregateRepository =
+                new Mock<IAggregateRepository<ReconciliationAggregate, DomainEvent>>();
             reconciliationAggregateRepository.Setup(r => r.GetLatestVersion(It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
                                              .ReturnsAsync(new ReconciliationAggregate());
 
@@ -214,8 +214,8 @@ namespace TransactionProcessor.BusinessLogic.Tests.Services
             estateClient.Setup(e => e.GetMerchant(It.IsAny<String>(), It.IsAny<Guid>(), It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
                         .ThrowsAsync(new Exception("Exception", new KeyNotFoundException("Invalid Merchant")));
 
-            Mock<IAggregateRepository<ReconciliationAggregate, DomainEventRecord.DomainEvent>> reconciliationAggregateRepository =
-                new Mock<IAggregateRepository<ReconciliationAggregate, DomainEventRecord.DomainEvent>>();
+            Mock<IAggregateRepository<ReconciliationAggregate, DomainEvent>> reconciliationAggregateRepository =
+                new Mock<IAggregateRepository<ReconciliationAggregate, DomainEvent>>();
             reconciliationAggregateRepository.Setup(r => r.GetLatestVersion(It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
                                              .ReturnsAsync(new ReconciliationAggregate());
 
@@ -257,8 +257,8 @@ namespace TransactionProcessor.BusinessLogic.Tests.Services
             Mock<IOperatorProxy> operatorProxy = new Mock<IOperatorProxy>();
             Func<String,IOperatorProxy> operatorProxyResolver = (operatorName) => { return operatorProxy.Object; };
 
-            Mock<IAggregateRepository<ReconciliationAggregate, DomainEventRecord.DomainEvent>> reconciliationAggregateRepository =
-                new Mock<IAggregateRepository<ReconciliationAggregate, DomainEventRecord.DomainEvent>>();
+            Mock<IAggregateRepository<ReconciliationAggregate, DomainEvent>> reconciliationAggregateRepository =
+                new Mock<IAggregateRepository<ReconciliationAggregate, DomainEvent>>();
 
             TransactionDomainService transactionDomainService =
                 new TransactionDomainService(transactionAggregateManager.Object, estateClient.Object, securityServiceClient.Object,
@@ -297,8 +297,8 @@ namespace TransactionProcessor.BusinessLogic.Tests.Services
             transactionAggregateManager.Setup(t => t.GetAggregate(It.IsAny<Guid>(), It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
                                        .ReturnsAsync(TestData.GetCompletedLogonTransactionAggregate);
 
-            Mock<IAggregateRepository<ReconciliationAggregate, DomainEventRecord.DomainEvent>> reconciliationAggregateRepository =
-                new Mock<IAggregateRepository<ReconciliationAggregate, DomainEventRecord.DomainEvent>>();
+            Mock<IAggregateRepository<ReconciliationAggregate, DomainEvent>> reconciliationAggregateRepository =
+                new Mock<IAggregateRepository<ReconciliationAggregate, DomainEvent>>();
 
             TransactionDomainService transactionDomainService =
                 new TransactionDomainService(transactionAggregateManager.Object, estateClient.Object, securityServiceClient.Object,
@@ -337,8 +337,8 @@ namespace TransactionProcessor.BusinessLogic.Tests.Services
             transactionAggregateManager.Setup(t => t.GetAggregate(It.IsAny<Guid>(), It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
                                        .ReturnsAsync(TestData.GetCompletedLogonTransactionAggregate);
 
-            Mock<IAggregateRepository<ReconciliationAggregate, DomainEventRecord.DomainEvent>> reconciliationAggregateRepository =
-                new Mock<IAggregateRepository<ReconciliationAggregate, DomainEventRecord.DomainEvent>>();
+            Mock<IAggregateRepository<ReconciliationAggregate, DomainEvent>> reconciliationAggregateRepository =
+                new Mock<IAggregateRepository<ReconciliationAggregate, DomainEvent>>();
 
             TransactionDomainService transactionDomainService =
                 new TransactionDomainService(transactionAggregateManager.Object, estateClient.Object, securityServiceClient.Object,
@@ -376,8 +376,8 @@ namespace TransactionProcessor.BusinessLogic.Tests.Services
             transactionAggregateManager.Setup(t => t.GetAggregate(It.IsAny<Guid>(), It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
                                        .ReturnsAsync(TestData.GetLocallyDeclinedTransactionAggregate(TransactionResponseCode.InvalidDeviceIdentifier));
 
-            Mock<IAggregateRepository<ReconciliationAggregate, DomainEventRecord.DomainEvent>> reconciliationAggregateRepository =
-                new Mock<IAggregateRepository<ReconciliationAggregate, DomainEventRecord.DomainEvent>>();
+            Mock<IAggregateRepository<ReconciliationAggregate, DomainEvent>> reconciliationAggregateRepository =
+                new Mock<IAggregateRepository<ReconciliationAggregate, DomainEvent>>();
 
             TransactionDomainService transactionDomainService =
                 new TransactionDomainService(transactionAggregateManager.Object, estateClient.Object, securityServiceClient.Object,
@@ -415,8 +415,8 @@ namespace TransactionProcessor.BusinessLogic.Tests.Services
             transactionAggregateManager.Setup(t => t.GetAggregate(It.IsAny<Guid>(), It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
                                        .ReturnsAsync(TestData.GetLocallyDeclinedTransactionAggregate(TransactionResponseCode.InvalidEstateId));
 
-            Mock<IAggregateRepository<ReconciliationAggregate, DomainEventRecord.DomainEvent>> reconciliationAggregateRepository =
-                new Mock<IAggregateRepository<ReconciliationAggregate, DomainEventRecord.DomainEvent>>();
+            Mock<IAggregateRepository<ReconciliationAggregate, DomainEvent>> reconciliationAggregateRepository =
+                new Mock<IAggregateRepository<ReconciliationAggregate, DomainEvent>>();
 
             TransactionDomainService transactionDomainService =
                 new TransactionDomainService(transactionAggregateManager.Object, estateClient.Object, securityServiceClient.Object,
@@ -454,8 +454,8 @@ namespace TransactionProcessor.BusinessLogic.Tests.Services
             transactionAggregateManager.Setup(t => t.GetAggregate(It.IsAny<Guid>(), It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
                                        .ReturnsAsync(TestData.GetLocallyDeclinedTransactionAggregate(TransactionResponseCode.InvalidMerchantId));
 
-            Mock<IAggregateRepository<ReconciliationAggregate, DomainEventRecord.DomainEvent>> reconciliationAggregateRepository =
-                new Mock<IAggregateRepository<ReconciliationAggregate, DomainEventRecord.DomainEvent>>();
+            Mock<IAggregateRepository<ReconciliationAggregate, DomainEvent>> reconciliationAggregateRepository =
+                new Mock<IAggregateRepository<ReconciliationAggregate, DomainEvent>>();
             
             TransactionDomainService transactionDomainService =
                 new TransactionDomainService(transactionAggregateManager.Object, estateClient.Object, securityServiceClient.Object,
@@ -509,8 +509,8 @@ namespace TransactionProcessor.BusinessLogic.Tests.Services
                                                           });
             Func<String, IOperatorProxy> operatorProxyResolver = (operatorName) => { return operatorProxy.Object; };
 
-            Mock<IAggregateRepository<ReconciliationAggregate, DomainEventRecord.DomainEvent>> reconciliationAggregateRepository =
-                new Mock<IAggregateRepository<ReconciliationAggregate, DomainEventRecord.DomainEvent>>();
+            Mock<IAggregateRepository<ReconciliationAggregate, DomainEvent>> reconciliationAggregateRepository =
+                new Mock<IAggregateRepository<ReconciliationAggregate, DomainEvent>>();
             
             TransactionDomainService transactionDomainService =
                 new TransactionDomainService(transactionAggregateManager.Object, estateClient.Object, securityServiceClient.Object,
@@ -554,8 +554,8 @@ namespace TransactionProcessor.BusinessLogic.Tests.Services
             Mock<IOperatorProxy> operatorProxy = new Mock<IOperatorProxy>();
             Func<String, IOperatorProxy> operatorProxyResolver = (operatorName) => { return operatorProxy.Object; };
 
-            Mock<IAggregateRepository<ReconciliationAggregate, DomainEventRecord.DomainEvent>> reconciliationAggregateRepository =
-                new Mock<IAggregateRepository<ReconciliationAggregate, DomainEventRecord.DomainEvent>>();
+            Mock<IAggregateRepository<ReconciliationAggregate, DomainEvent>> reconciliationAggregateRepository =
+                new Mock<IAggregateRepository<ReconciliationAggregate, DomainEvent>>();
             
 
             TransactionDomainService transactionDomainService =
@@ -618,8 +618,8 @@ namespace TransactionProcessor.BusinessLogic.Tests.Services
                                                           });
             Func<String, IOperatorProxy> operatorProxyResolver = (operatorName) => { return operatorProxy.Object; };
 
-            Mock<IAggregateRepository<ReconciliationAggregate, DomainEventRecord.DomainEvent>> reconciliationAggregateRepository =
-                new Mock<IAggregateRepository<ReconciliationAggregate, DomainEventRecord.DomainEvent>>();
+            Mock<IAggregateRepository<ReconciliationAggregate, DomainEvent>> reconciliationAggregateRepository =
+                new Mock<IAggregateRepository<ReconciliationAggregate, DomainEvent>>();
 
             TransactionDomainService transactionDomainService =
                 new TransactionDomainService(transactionAggregateManager.Object, estateClient.Object, securityServiceClient.Object,
@@ -683,8 +683,8 @@ namespace TransactionProcessor.BusinessLogic.Tests.Services
                                                           });
             Func<String, IOperatorProxy> operatorProxyResolver = (operatorName) => { return operatorProxy.Object; };
 
-            Mock<IAggregateRepository<ReconciliationAggregate, DomainEventRecord.DomainEvent>> reconciliationAggregateRepository =
-                new Mock<IAggregateRepository<ReconciliationAggregate, DomainEventRecord.DomainEvent>>();
+            Mock<IAggregateRepository<ReconciliationAggregate, DomainEvent>> reconciliationAggregateRepository =
+                new Mock<IAggregateRepository<ReconciliationAggregate, DomainEvent>>();
 
             TransactionDomainService transactionDomainService =
                 new TransactionDomainService(transactionAggregateManager.Object, estateClient.Object, securityServiceClient.Object,
@@ -743,8 +743,8 @@ namespace TransactionProcessor.BusinessLogic.Tests.Services
                                                           });
             Func<String, IOperatorProxy> operatorProxyResolver = (operatorName) => { return operatorProxy.Object; };
 
-            Mock<IAggregateRepository<ReconciliationAggregate, DomainEventRecord.DomainEvent>> reconciliationAggregateRepository =
-                new Mock<IAggregateRepository<ReconciliationAggregate, DomainEventRecord.DomainEvent>>();
+            Mock<IAggregateRepository<ReconciliationAggregate, DomainEvent>> reconciliationAggregateRepository =
+                new Mock<IAggregateRepository<ReconciliationAggregate, DomainEvent>>();
 
             TransactionDomainService transactionDomainService =
                 new TransactionDomainService(transactionAggregateManager.Object, estateClient.Object, securityServiceClient.Object,
@@ -787,8 +787,8 @@ namespace TransactionProcessor.BusinessLogic.Tests.Services
             transactionAggregateManager.Setup(t => t.GetAggregate(It.IsAny<Guid>(), It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
                                        .ReturnsAsync(TestData.GetLocallyDeclinedTransactionAggregate(TransactionResponseCode.NoValidDevices));
 
-            Mock<IAggregateRepository<ReconciliationAggregate, DomainEventRecord.DomainEvent>> reconciliationAggregateRepository =
-                new Mock<IAggregateRepository<ReconciliationAggregate, DomainEventRecord.DomainEvent>>();
+            Mock<IAggregateRepository<ReconciliationAggregate, DomainEvent>> reconciliationAggregateRepository =
+                new Mock<IAggregateRepository<ReconciliationAggregate, DomainEvent>>();
 
             TransactionDomainService transactionDomainService =
                 new TransactionDomainService(transactionAggregateManager.Object, estateClient.Object, securityServiceClient.Object,
@@ -832,8 +832,8 @@ namespace TransactionProcessor.BusinessLogic.Tests.Services
             transactionAggregateManager.Setup(t => t.GetAggregate(It.IsAny<Guid>(), It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
                                        .ReturnsAsync(TestData.GetDeclinedTransactionAggregate(TransactionResponseCode.NoValidDevices));
 
-            Mock<IAggregateRepository<ReconciliationAggregate, DomainEventRecord.DomainEvent>> reconciliationAggregateRepository =
-                new Mock<IAggregateRepository<ReconciliationAggregate, DomainEventRecord.DomainEvent>>();
+            Mock<IAggregateRepository<ReconciliationAggregate, DomainEvent>> reconciliationAggregateRepository =
+                new Mock<IAggregateRepository<ReconciliationAggregate, DomainEvent>>();
 
             TransactionDomainService transactionDomainService =
                 new TransactionDomainService(transactionAggregateManager.Object, estateClient.Object, securityServiceClient.Object,
@@ -876,8 +876,8 @@ namespace TransactionProcessor.BusinessLogic.Tests.Services
             transactionAggregateManager.Setup(t => t.GetAggregate(It.IsAny<Guid>(), It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
                                        .ReturnsAsync(TestData.GetLocallyDeclinedTransactionAggregate(TransactionResponseCode.InvalidDeviceIdentifier));
 
-            Mock<IAggregateRepository<ReconciliationAggregate, DomainEventRecord.DomainEvent>> reconciliationAggregateRepository =
-                new Mock<IAggregateRepository<ReconciliationAggregate, DomainEventRecord.DomainEvent>>();
+            Mock<IAggregateRepository<ReconciliationAggregate, DomainEvent>> reconciliationAggregateRepository =
+                new Mock<IAggregateRepository<ReconciliationAggregate, DomainEvent>>();
 
             TransactionDomainService transactionDomainService =
                 new TransactionDomainService(transactionAggregateManager.Object, estateClient.Object, securityServiceClient.Object,
@@ -920,8 +920,8 @@ namespace TransactionProcessor.BusinessLogic.Tests.Services
             transactionAggregateManager.Setup(t => t.GetAggregate(It.IsAny<Guid>(), It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
                                        .ReturnsAsync(TestData.GetLocallyDeclinedTransactionAggregate(TransactionResponseCode.InvalidEstateId));
 
-            Mock<IAggregateRepository<ReconciliationAggregate, DomainEventRecord.DomainEvent>> reconciliationAggregateRepository =
-                new Mock<IAggregateRepository<ReconciliationAggregate, DomainEventRecord.DomainEvent>>();
+            Mock<IAggregateRepository<ReconciliationAggregate, DomainEvent>> reconciliationAggregateRepository =
+                new Mock<IAggregateRepository<ReconciliationAggregate, DomainEvent>>();
 
             TransactionDomainService transactionDomainService =
                 new TransactionDomainService(transactionAggregateManager.Object, estateClient.Object, securityServiceClient.Object,
@@ -964,8 +964,8 @@ namespace TransactionProcessor.BusinessLogic.Tests.Services
             transactionAggregateManager.Setup(t => t.GetAggregate(It.IsAny<Guid>(), It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
                                        .ReturnsAsync(TestData.GetDeclinedTransactionAggregate(TransactionResponseCode.MerchantDoesNotHaveEnoughCredit));
 
-            Mock<IAggregateRepository<ReconciliationAggregate, DomainEventRecord.DomainEvent>> reconciliationAggregateRepository =
-                new Mock<IAggregateRepository<ReconciliationAggregate, DomainEventRecord.DomainEvent>>();
+            Mock<IAggregateRepository<ReconciliationAggregate, DomainEvent>> reconciliationAggregateRepository =
+                new Mock<IAggregateRepository<ReconciliationAggregate, DomainEvent>>();
 
             TransactionDomainService transactionDomainService =
                 new TransactionDomainService(transactionAggregateManager.Object, estateClient.Object, securityServiceClient.Object,
@@ -1008,8 +1008,8 @@ namespace TransactionProcessor.BusinessLogic.Tests.Services
             transactionAggregateManager.Setup(t => t.GetAggregate(It.IsAny<Guid>(), It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
                                        .ReturnsAsync(TestData.GetLocallyDeclinedTransactionAggregate(TransactionResponseCode.InvalidMerchantId));
 
-            Mock<IAggregateRepository<ReconciliationAggregate, DomainEventRecord.DomainEvent>> reconciliationAggregateRepository =
-                new Mock<IAggregateRepository<ReconciliationAggregate, DomainEventRecord.DomainEvent>>();
+            Mock<IAggregateRepository<ReconciliationAggregate, DomainEvent>> reconciliationAggregateRepository =
+                new Mock<IAggregateRepository<ReconciliationAggregate, DomainEvent>>();
             
             TransactionDomainService transactionDomainService =
                 new TransactionDomainService(transactionAggregateManager.Object, estateClient.Object, securityServiceClient.Object,
@@ -1052,8 +1052,8 @@ namespace TransactionProcessor.BusinessLogic.Tests.Services
             transactionAggregateManager.Setup(t => t.GetAggregate(It.IsAny<Guid>(), It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
                                        .ReturnsAsync(TestData.GetLocallyDeclinedTransactionAggregate(TransactionResponseCode.NoEstateOperators));
 
-            Mock<IAggregateRepository<ReconciliationAggregate, DomainEventRecord.DomainEvent>> reconciliationAggregateRepository =
-                new Mock<IAggregateRepository<ReconciliationAggregate, DomainEventRecord.DomainEvent>>();
+            Mock<IAggregateRepository<ReconciliationAggregate, DomainEvent>> reconciliationAggregateRepository =
+                new Mock<IAggregateRepository<ReconciliationAggregate, DomainEvent>>();
             TransactionDomainService transactionDomainService =
                 new TransactionDomainService(transactionAggregateManager.Object, estateClient.Object, securityServiceClient.Object,
                                              operatorProxyResolver, reconciliationAggregateRepository.Object);
@@ -1095,8 +1095,8 @@ namespace TransactionProcessor.BusinessLogic.Tests.Services
             transactionAggregateManager.Setup(t => t.GetAggregate(It.IsAny<Guid>(), It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
                                        .ReturnsAsync(TestData.GetLocallyDeclinedTransactionAggregate(TransactionResponseCode.NoEstateOperators));
 
-            Mock<IAggregateRepository<ReconciliationAggregate, DomainEventRecord.DomainEvent>> reconciliationAggregateRepository =
-                new Mock<IAggregateRepository<ReconciliationAggregate, DomainEventRecord.DomainEvent>>();
+            Mock<IAggregateRepository<ReconciliationAggregate, DomainEvent>> reconciliationAggregateRepository =
+                new Mock<IAggregateRepository<ReconciliationAggregate, DomainEvent>>();
 
             TransactionDomainService transactionDomainService =
                 new TransactionDomainService(transactionAggregateManager.Object, estateClient.Object, securityServiceClient.Object,
@@ -1139,8 +1139,8 @@ namespace TransactionProcessor.BusinessLogic.Tests.Services
             transactionAggregateManager.Setup(t => t.GetAggregate(It.IsAny<Guid>(), It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
                                        .ReturnsAsync(TestData.GetDeclinedTransactionAggregate(TransactionResponseCode.OperatorNotValidForEstate));
 
-            Mock<IAggregateRepository<ReconciliationAggregate, DomainEventRecord.DomainEvent>> reconciliationAggregateRepository =
-                new Mock<IAggregateRepository<ReconciliationAggregate, DomainEventRecord.DomainEvent>>();
+            Mock<IAggregateRepository<ReconciliationAggregate, DomainEvent>> reconciliationAggregateRepository =
+                new Mock<IAggregateRepository<ReconciliationAggregate, DomainEvent>>();
 
             TransactionDomainService transactionDomainService =
                 new TransactionDomainService(transactionAggregateManager.Object, estateClient.Object, securityServiceClient.Object,
@@ -1183,8 +1183,8 @@ namespace TransactionProcessor.BusinessLogic.Tests.Services
             transactionAggregateManager.Setup(t => t.GetAggregate(It.IsAny<Guid>(), It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
                                        .ReturnsAsync(TestData.GetDeclinedTransactionAggregate(TransactionResponseCode.NoMerchantOperators));
 
-            Mock<IAggregateRepository<ReconciliationAggregate, DomainEventRecord.DomainEvent>> reconciliationAggregateRepository =
-                new Mock<IAggregateRepository<ReconciliationAggregate, DomainEventRecord.DomainEvent>>();
+            Mock<IAggregateRepository<ReconciliationAggregate, DomainEvent>> reconciliationAggregateRepository =
+                new Mock<IAggregateRepository<ReconciliationAggregate, DomainEvent>>();
 
             TransactionDomainService transactionDomainService =
                 new TransactionDomainService(transactionAggregateManager.Object, estateClient.Object, securityServiceClient.Object,
@@ -1228,8 +1228,8 @@ namespace TransactionProcessor.BusinessLogic.Tests.Services
             transactionAggregateManager.Setup(t => t.GetAggregate(It.IsAny<Guid>(), It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
                                        .ReturnsAsync(TestData.GetDeclinedTransactionAggregate(TransactionResponseCode.NoMerchantOperators));
 
-            Mock<IAggregateRepository<ReconciliationAggregate, DomainEventRecord.DomainEvent>> reconciliationAggregateRepository =
-                new Mock<IAggregateRepository<ReconciliationAggregate, DomainEventRecord.DomainEvent>>();
+            Mock<IAggregateRepository<ReconciliationAggregate, DomainEvent>> reconciliationAggregateRepository =
+                new Mock<IAggregateRepository<ReconciliationAggregate, DomainEvent>>();
 
             TransactionDomainService transactionDomainService =
                 new TransactionDomainService(transactionAggregateManager.Object, estateClient.Object, securityServiceClient.Object,
@@ -1272,8 +1272,8 @@ namespace TransactionProcessor.BusinessLogic.Tests.Services
             transactionAggregateManager.Setup(t => t.GetAggregate(It.IsAny<Guid>(), It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
                                        .ReturnsAsync(TestData.GetDeclinedTransactionAggregate(TransactionResponseCode.OperatorNotValidForMerchant));
 
-            Mock<IAggregateRepository<ReconciliationAggregate, DomainEventRecord.DomainEvent>> reconciliationAggregateRepository =
-                new Mock<IAggregateRepository<ReconciliationAggregate, DomainEventRecord.DomainEvent>>();;
+            Mock<IAggregateRepository<ReconciliationAggregate, DomainEvent>> reconciliationAggregateRepository =
+                new Mock<IAggregateRepository<ReconciliationAggregate, DomainEvent>>();;
 
             TransactionDomainService transactionDomainService =
                 new TransactionDomainService(transactionAggregateManager.Object, estateClient.Object, securityServiceClient.Object,
@@ -1325,8 +1325,8 @@ namespace TransactionProcessor.BusinessLogic.Tests.Services
                                                           It.IsAny<CancellationToken>())).ThrowsAsync(new Exception("Comms Error"));
             Func<String, IOperatorProxy> operatorProxyResolver = (operatorName) => { return operatorProxy.Object; };
 
-            Mock<IAggregateRepository<ReconciliationAggregate, DomainEventRecord.DomainEvent>> reconciliationAggregateRepository =
-                new Mock<IAggregateRepository<ReconciliationAggregate, DomainEventRecord.DomainEvent>>();
+            Mock<IAggregateRepository<ReconciliationAggregate, DomainEvent>> reconciliationAggregateRepository =
+                new Mock<IAggregateRepository<ReconciliationAggregate, DomainEvent>>();
 
             TransactionDomainService transactionDomainService =
                 new TransactionDomainService(transactionAggregateManager.Object, estateClient.Object, securityServiceClient.Object,

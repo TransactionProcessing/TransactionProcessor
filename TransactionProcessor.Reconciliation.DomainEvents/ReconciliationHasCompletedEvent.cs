@@ -9,7 +9,7 @@
     /// 
     /// </summary>
     /// <seealso cref="Shared.DomainDrivenDesign.EventSourcing.DomainEvent" />
-    public record ReconciliationHasCompletedEvent : DomainEventRecord.DomainEvent
+    public record ReconciliationHasCompletedEvent : DomainEvent
     {
         #region Constructors
         

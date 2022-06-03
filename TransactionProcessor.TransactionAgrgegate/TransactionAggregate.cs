@@ -288,7 +288,7 @@
             this.CheckTransactionHasBeenCompleted();
             this.CheckTransactionCanAttractFees();
 
-            DomainEventRecord.DomainEvent @event = null;
+            DomainEvent @event = null;
             if (calculatedFee.FeeType == FeeType.ServiceProvider)
             {
                 // This is an operational (service provider) fee
@@ -326,7 +326,7 @@
             this.CheckTransactionHasBeenCompleted();
             this.CheckTransactionCanAttractFees();
 
-            DomainEventRecord.DomainEvent @event = null;
+            DomainEvent @event = null;
             if (calculatedFee.FeeType == FeeType.Merchant)
             {
                 // This is a merchant fee
