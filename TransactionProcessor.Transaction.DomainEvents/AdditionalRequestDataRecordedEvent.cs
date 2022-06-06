@@ -10,18 +10,9 @@
     /// 
     /// </summary>
     /// <seealso cref="Shared.DomainDrivenDesign.EventSourcing.DomainEvent" />
-    public class AdditionalRequestDataRecordedEvent : DomainEvent
+    public record AdditionalRequestDataRecordedEvent : DomainEvent
     {
         #region Constructors
-
-        /// <summary>
-        /// Initializes a new instance of the <see cref="AdditionalRequestDataRecordedEvent"/> class.
-        /// </summary>
-        [ExcludeFromCodeCoverage]
-        public AdditionalRequestDataRecordedEvent()
-        {
-
-        }
 
         /// <summary>
         /// Initializes a new instance of the <see cref="AdditionalRequestDataRecordedEvent" /> class.

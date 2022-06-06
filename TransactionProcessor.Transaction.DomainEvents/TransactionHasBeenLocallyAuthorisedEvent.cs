@@ -9,7 +9,7 @@
     /// 
     /// </summary>
     /// <seealso cref="Shared.DomainDrivenDesign.EventSourcing.DomainEvent" />
-    public record TransactionHasBeenLocallyAuthorisedEvent : DomainEventRecord.DomainEvent
+    public record TransactionHasBeenLocallyAuthorisedEvent : DomainEvent
     {
         #region Constructors
 

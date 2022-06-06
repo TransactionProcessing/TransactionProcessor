@@ -12,7 +12,7 @@ namespace TransactionProcessor.Reconciliation.DomainEvents
     /// 
     /// </summary>
     /// <seealso cref="Shared.DomainDrivenDesign.EventSourcing.DomainEvent" />
-    public record ReconciliationHasStartedEvent : DomainEventRecord.DomainEvent
+    public record ReconciliationHasStartedEvent : DomainEvent
     {
         #region Constructors
         

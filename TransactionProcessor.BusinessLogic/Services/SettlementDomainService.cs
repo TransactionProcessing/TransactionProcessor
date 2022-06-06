@@ -14,7 +14,7 @@
     {
         private readonly ITransactionAggregateManager TransactionAggregateManager;
 
-        private readonly IAggregateRepository<SettlementAggregate, DomainEventRecord.DomainEvent> SettlementAggregateRepository;
+        private readonly IAggregateRepository<SettlementAggregate, DomainEvent> SettlementAggregateRepository;
 
         public async Task<ProcessSettlementResponse> ProcessSettlement(DateTime settlementDate,
                                                                        Guid estateId,
@@ -62,7 +62,7 @@
         }
 
         public SettlementDomainService(ITransactionAggregateManager transactionAggregateManager,
-                                       IAggregateRepository<SettlementAggregate, DomainEventRecord.DomainEvent> settlementAggregateRepository)
+                                       IAggregateRepository<SettlementAggregate, DomainEvent> settlementAggregateRepository)
         {
             this.TransactionAggregateManager = transactionAggregateManager;
             this.SettlementAggregateRepository = settlementAggregateRepository;

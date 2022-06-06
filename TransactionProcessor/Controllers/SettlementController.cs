@@ -24,7 +24,7 @@ namespace TransactionProcessor.Controllers
     [Authorize]
     public class SettlementController : ControllerBase
     {
-        private readonly IAggregateRepository<SettlementAggregate, DomainEventRecord.DomainEvent> SettlmentAggregateRepository;
+        private readonly IAggregateRepository<SettlementAggregate, DomainEvent> SettlmentAggregateRepository;
 
         private readonly IMediator Mediator;
 
@@ -42,7 +42,7 @@ namespace TransactionProcessor.Controllers
         /// </summary>
         private const String ControllerRoute = "api/" + SettlementController.ControllerName;
 
-        public SettlementController(IAggregateRepository<SettlementAggregate, DomainEventRecord.DomainEvent> settlmentAggregateRepository,
+        public SettlementController(IAggregateRepository<SettlementAggregate, DomainEvent> settlmentAggregateRepository,
                                     IMediator mediator,
                                     IModelFactory modelFactory)
         {

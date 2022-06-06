@@ -1,7 +1,7 @@
 FROM stuartferguson/txnprocbase:latest AS base
 WORKDIR /app
 
-FROM mcr.microsoft.com/dotnet/sdk:5.0.102-ca-patch-buster-slim AS build
+FROM mcr.microsoft.com/dotnet/sdk:6.0 AS build
 WORKDIR /src
 COPY ["TransactionProcessor/NuGet.Config", "."]
 COPY ["TransactionProcessor/TransactionProcessor.csproj", "TransactionProcessor/"]

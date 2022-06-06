@@ -9,7 +9,7 @@
     /// 
     /// </summary>
     /// <seealso cref="Shared.DomainDrivenDesign.EventSourcing.DomainEvent" />
-    public record CustomerEmailReceiptRequestedEvent : DomainEventRecord.DomainEvent
+    public record CustomerEmailReceiptRequestedEvent : DomainEvent
     {
         #region Constructors
 

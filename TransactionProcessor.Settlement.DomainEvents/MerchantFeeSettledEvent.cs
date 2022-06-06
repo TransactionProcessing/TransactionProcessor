@@ -8,7 +8,7 @@ namespace TransactionProcessor.Settlement.DomainEvents
 {
     using Shared.DomainDrivenDesign.EventSourcing;
 
-    public record MerchantFeeSettledEvent : DomainEventRecord.DomainEvent
+    public record MerchantFeeSettledEvent : DomainEvent
     {
         #region Properties
 

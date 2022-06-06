@@ -56,13 +56,13 @@ namespace TransactionProcessor
                 ISubscriptionRepository subscriptionRepository = SubscriptionRepository.Create(eventStoreConnectionString, cacheDuration);
 
                 ((SubscriptionRepository)subscriptionRepository).Trace += (sender, s) => Extensions.log(TraceEventType.Information, "REPOSITORY", s);
-
+                
                 // init our SubscriptionRepository
                 subscriptionRepository.PreWarm(CancellationToken.None).Wait();
 
                 var eventHandlerResolver = Startup.ServiceProvider.GetService<IDomainEventHandlerResolver>();
 
-                SubscriptionWorker concurrentSubscriptions = SubscriptionWorker.CreateConcurrentSubscriptionWorker(eventStoreConnectionString, eventHandlerResolver, subscriptionRepository, inflightMessages, persistentSubscriptionPollingInSeconds);
+                SubscriptionWorker concurrentSubscriptions = SubscriptionWorker.CreateConcurrentSubscriptionWorker(Startup.EventStoreClientSettings, eventHandlerResolver, subscriptionRepository, inflightMessages, persistentSubscriptionPollingInSeconds);
 
                 concurrentSubscriptions.Trace += (_, args) => Extensions.concurrentLog(TraceEventType.Information, args.Message);
                 concurrentSubscriptions.Warning += (_, args) => Extensions.concurrentLog(TraceEventType.Warning, args.Message);
@@ -75,7 +75,7 @@ namespace TransactionProcessor
 
                 if (!String.IsNullOrEmpty(filter))
                 {
-                    //NOTE: Not overly happy with this design, but
+                    //NOTE: Not overly happy with this design, but;
                     //the idea is if we supply a filter, this overrides ignore
                     concurrentSubscriptions = concurrentSubscriptions.FilterSubscriptions(filter)
                                                                      .IgnoreSubscriptions(null);

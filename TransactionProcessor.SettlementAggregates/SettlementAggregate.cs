@@ -116,7 +116,7 @@
             if (this.HasFeeAlreadyBeenAdded(transactionId, calculatedFee))
                 return;
 
-            DomainEventRecord.DomainEvent @event = null;
+            DomainEvent @event = null;
             if (calculatedFee.FeeType == FeeType.Merchant)
             {
                 // This is a merchant fee
