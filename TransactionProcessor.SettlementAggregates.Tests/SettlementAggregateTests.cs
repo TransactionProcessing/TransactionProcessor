@@ -174,5 +174,21 @@ namespace TransactionProcessor.SettlementAggregates.Tests
             aggregate.MarkFeeAsSettled(TestData.MerchantId, TestData.TransactionId, TestData.CalculatedFeeMerchantFee().FeeId);
         }
 
+        [Fact]
+        public void SettlementAggregate_ImmediatelyMarkFeeAsSettled_FeeIsSettledAndSettlementNotCompleted()
+        {
+            SettlementAggregate aggregate = SettlementAggregate.Create(TestData.SettlementAggregateId);
+            aggregate.Create(TestData.EstateId, TestData.SettlementDate);
+            aggregate.AddFee(TestData.MerchantId, TestData.TransactionId, TestData.CalculatedFeeMerchantFee());
+
+            aggregate.GetNumberOfFeesPendingSettlement().ShouldBe(1);
+
+            aggregate.ImmediatelyMarkFeeAsSettled(TestData.MerchantId, TestData.TransactionId, TestData.CalculatedFeeMerchantFee().FeeId);
+
+            aggregate.GetNumberOfFeesPendingSettlement().ShouldBe(0);
+            aggregate.GetNumberOfFeesSettled().ShouldBe(1);
+            aggregate.SettlementComplete.ShouldBeFalse();
+        }
+
     }
 }

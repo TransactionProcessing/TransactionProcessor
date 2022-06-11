@@ -104,6 +104,39 @@
             }
         }
 
+        public void ImmediatelyMarkFeeAsSettled(Guid merchantId, Guid transactionId, Guid feeId)
+        {
+            var pendingFee = this.CalculatedFeesPendingSettlement.Where(c => c.merchantId == merchantId && c.transactionId == transactionId && c.calculatedFee.FeeId == feeId)
+                          .SingleOrDefault();
+
+            var settledFee = this.SettledCalculatedFees.Where(c => c.merchantId == merchantId && c.transactionId == transactionId && c.calculatedFee.FeeId == feeId)
+                          .SingleOrDefault();
+
+            if (settledFee != default((Guid, Guid, CalculatedFee)))
+            {
+                // Fee already settled....
+                return;
+            }
+
+            if (pendingFee == default((Guid, Guid, CalculatedFee)))
+            {
+                // Fee not found....
+                return;
+            }
+
+            MerchantFeeSettledEvent merchantFeeSettledEvent = new MerchantFeeSettledEvent(this.AggregateId,
+                                                                                          this.EstateId,
+                                                                                          pendingFee.merchantId,
+                                                                                          pendingFee.transactionId,
+                                                                                          pendingFee.calculatedFee.CalculatedValue,
+                                                                                          (Int32)pendingFee.calculatedFee.FeeCalculationType,
+                                                                                          pendingFee.calculatedFee.FeeId,
+                                                                                          pendingFee.calculatedFee.FeeValue,
+                                                                                          pendingFee.calculatedFee.FeeCalculatedDateTime);
+
+            this.ApplyAndAppend(merchantFeeSettledEvent);
+        }
+
         public void AddFee(Guid merchantId,
                            Guid transactionId,
                            CalculatedFee calculatedFee)
