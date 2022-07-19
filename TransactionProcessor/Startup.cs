@@ -49,8 +49,7 @@ namespace TransactionProcessor
         /// Initializes a new instance of the <see cref="Startup"/> class.
         /// </summary>
         /// <param name="webHostEnvironment">The web host environment.</param>
-        public Startup(IWebHostEnvironment webHostEnvironment)
-        {
+        public Startup(IWebHostEnvironment webHostEnvironment) {
             IConfigurationBuilder builder = new ConfigurationBuilder().SetBasePath(webHostEnvironment.ContentRootPath)
                                                                       .AddJsonFile("/home/txnproc/config/appsettings.json", true, true)
                                                                       .AddJsonFile($"/home/txnproc/config/appsettings.{webHostEnvironment.EnvironmentName}.json",
@@ -99,12 +98,10 @@ namespace TransactionProcessor
         /// <param name="provider">The provider.</param>
         public void Configure(IApplicationBuilder app,
                               IWebHostEnvironment env,
-                              ILoggerFactory loggerFactory)
-        {
+                              ILoggerFactory loggerFactory) {
             String nlogConfigFilename = "nlog.config";
 
-            if (env.IsDevelopment())
-            {
+            if (env.IsDevelopment()) {
                 app.UseDeveloperExceptionPage();
             }
 
@@ -118,8 +115,7 @@ namespace TransactionProcessor
             Action<String> loggerAction = message => { Logger.LogInformation(message); };
             Startup.Configuration.LogConfiguration(loggerAction);
 
-            foreach (KeyValuePair<Type, String> type in TypeMap.Map)
-            {
+            foreach (KeyValuePair<Type, String> type in TypeMap.Map) {
                 Logger.LogInformation($"Type name {type.Value} mapped to {type.Key.Name}");
             }
 
@@ -132,15 +128,13 @@ namespace TransactionProcessor
             app.UseAuthentication();
             app.UseAuthorization();
 
-            app.UseEndpoints(endpoints =>
-                             {
+            app.UseEndpoints(endpoints => {
                                  endpoints.MapControllers();
                                  endpoints.MapHealthChecks("health",
-                                                           new HealthCheckOptions
-                                                           {
-                                                               Predicate = _ => true,
-                                                               ResponseWriter = UIResponseWriter.WriteHealthCheckUIResponse
-                                                           });
+                                                           new HealthCheckOptions {
+                                                                                      Predicate = _ => true,
+                                                                                      ResponseWriter = UIResponseWriter.WriteHealthCheckUIResponse
+                                                                                  });
                              });
 
             app.UseSwagger();
@@ -150,15 +144,12 @@ namespace TransactionProcessor
             app.PreWarm();
         }
 
-        public void ConfigureContainer(ServiceRegistry services)
-        {
+        public void ConfigureContainer(ServiceRegistry services) {
             ConfigurationReader.Initialise(Startup.Configuration);
 
-            Startup.ConfigureEventStoreSettings();
-
-            services.IncludeRegistry<MiddlewareRegistry>();
             services.IncludeRegistry<MediatorRegistry>();
             services.IncludeRegistry<RepositoryRegistry>();
+            services.IncludeRegistry<MiddlewareRegistry>();
             services.IncludeRegistry<DomainServiceRegistry>();
             services.IncludeRegistry<OperatorRegistry>();
             services.IncludeRegistry<ClientRegistry>();
@@ -172,8 +163,7 @@ namespace TransactionProcessor
             Startup.ServiceProvider = services.BuildServiceProvider();
         }
 
-        public static void LoadTypes()
-        {
+        public static void LoadTypes() {
             SettlementCreatedForDateEvent s =
                 new SettlementCreatedForDateEvent(Guid.Parse("62CA5BF0-D138-4A19-9970-A4F7D52DE292"), Guid.Parse("3E42516B-6C6F-4F86-BF08-3EF0ACDDDD55"), DateTime.Now);
 
@@ -196,35 +186,16 @@ namespace TransactionProcessor
         /// Configures the event store settings.
         /// </summary>
         /// <param name="settings">The settings.</param>
-        internal static void ConfigureEventStoreSettings(EventStoreClientSettings settings = null)
-        {
-            if (settings == null)
-            {
-                settings = new EventStoreClientSettings();
-            }
-
-            settings.CreateHttpMessageHandler = () => new SocketsHttpHandler
-                                                      {
-                                                          SslOptions =
-                                                          {
-                                                              RemoteCertificateValidationCallback = (sender,
-                                                                                                     certificate,
-                                                                                                     chain,
-                                                                                                     errors) => true,
-                                                          }
-                                                      };
-
-            settings.ConnectionName = Startup.Configuration.GetValue<String>("EventStoreSettings:ConnectionName");
+        internal static void ConfigureEventStoreSettings(EventStoreClientSettings settings) {
             settings.ConnectivitySettings = EventStoreClientConnectivitySettings.Default;
             settings.ConnectivitySettings.Address = new Uri(Startup.Configuration.GetValue<String>("EventStoreSettings:ConnectionString"));
             settings.ConnectivitySettings.Insecure = Startup.Configuration.GetValue<Boolean>("EventStoreSettings:Insecure");
 
             settings.DefaultCredentials = new UserCredentials(Startup.Configuration.GetValue<String>("EventStoreSettings:UserName"),
                                                               Startup.Configuration.GetValue<String>("EventStoreSettings:Password"));
-
             Startup.EventStoreClientSettings = settings;
         }
-
-        #endregion
     }
+
+    #endregion
 }

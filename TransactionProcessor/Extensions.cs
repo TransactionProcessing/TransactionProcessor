@@ -2,7 +2,9 @@ namespace TransactionProcessor
 {
     using System;
     using System.Diagnostics;
+    using System.Net.Http;
     using System.Threading;
+    using EventStore.Client;
     using Microsoft.AspNetCore.Builder;
     using Microsoft.Extensions.DependencyInjection;
     using Shared.EventStore.EventHandling;
@@ -12,6 +14,17 @@ namespace TransactionProcessor
 
     public static class Extensions
     {
+        public static IServiceCollection AddInSecureEventStoreClient(this IServiceCollection services,
+                                                                     Uri address,
+                                                                     Func<HttpMessageHandler>? createHttpMessageHandler = null)
+        {
+            return services.AddEventStoreClient((Action<EventStoreClientSettings>)(options => {
+                                                                                       options.ConnectivitySettings.Address = address;
+                                                                                       options.ConnectivitySettings.Insecure = true;
+                                                                                       options.CreateHttpMessageHandler = createHttpMessageHandler;
+                                                                                   }));
+        }
+
         static Action<TraceEventType, String, String> log = (tt, subType, message) => {
                                                                 String logMessage = $"{subType} - {message}";
                                                                 switch (tt)

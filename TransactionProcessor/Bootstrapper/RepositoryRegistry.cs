@@ -1,8 +1,11 @@
 ﻿namespace TransactionProcessor.Bootstrapper
 {
     using System;
+    using System.Net.Http;
+    using System.Net.Security;
     using BusinessLogic.Services;
     using Lamar;
+    using Microsoft.Extensions.Configuration;
     using Microsoft.Extensions.DependencyInjection;
     using ReconciliationAggregate;
     using SettlementAggregates;
@@ -10,6 +13,7 @@
     using Shared.EntityFramework.ConnectionStringConfiguration;
     using Shared.EventStore.Aggregate;
     using Shared.EventStore.EventStore;
+    using Shared.EventStore.Extensions;
     using Shared.General;
     using Shared.Repositories;
     using TransactionAggregate;
@@ -39,9 +43,34 @@
             }
             else
             {
-                this.AddEventStoreClient(Startup.ConfigureEventStoreSettings);
-                this.AddEventStoreProjectionManagementClient(Startup.ConfigureEventStoreSettings);
+                Boolean insecureES = Startup.Configuration.GetValue<Boolean>("EventStoreSettings:Insecure");
+
+                Func<SocketsHttpHandler> CreateHttpMessageHandler = () => new SocketsHttpHandler
+                                                                          {
+
+                                                                              SslOptions = new SslClientAuthenticationOptions
+                                                                                           {
+                                                                                               RemoteCertificateValidationCallback = (sender,
+                                                                                                   certificate,
+                                                                                                   chain,
+                                                                                                   errors) => {
+
+                                                                                                   return true;
+                                                                                               }
+                                                                                           }
+                                                                          };
+
+                this.AddEventStoreProjectionManagerClient(Startup.ConfigureEventStoreSettings);
                 this.AddEventStorePersistentSubscriptionsClient(Startup.ConfigureEventStoreSettings);
+
+                if (insecureES)
+                {
+                    this.AddInSecureEventStoreClient(Startup.EventStoreClientSettings.ConnectivitySettings.Address, CreateHttpMessageHandler);
+                }
+                else
+                {
+                    this.AddEventStoreClient(Startup.EventStoreClientSettings.ConnectivitySettings.Address, CreateHttpMessageHandler);
+                }
             }
 
             this.AddTransient<IEventStoreContext, EventStoreContext>();
