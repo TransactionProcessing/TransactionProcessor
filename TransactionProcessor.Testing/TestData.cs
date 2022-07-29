@@ -50,6 +50,8 @@
 
         public static Guid MerchantId = Guid.Parse("833B5AAC-A5C5-46C2-A499-F2B4252B2942");
 
+        public static Int32 TransactionSource = 1;
+
         public static Guid OperatorId = Guid.Parse("804E9D8D-C6FE-4A46-9E55-6A04EA3E1AE5");
 
         public static String CustomerEmailAddress = "testcustomer1@customer.co.uk";
@@ -412,7 +414,8 @@
                                                  TestData.CustomerEmailAddress,
                                                  TestData.AdditionalTransactionMetaData(),
                                                  TestData.ContractId,
-                                                 TestData.ProductId);
+                                                 TestData.ProductId,
+                                                 TestData.TransactionSource);
 
         public static ProcessSaleTransactionResponse ProcessSaleTransactionResponseModel =>
             new ProcessSaleTransactionResponse

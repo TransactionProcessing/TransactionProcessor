@@ -8,22 +8,7 @@
     public class ProcessSaleTransactionRequest : IRequest<ProcessSaleTransactionResponse>
     {
         #region Constructors
-
-        /// <summary>
-        /// Initializes a new instance of the <see cref="ProcessSaleTransactionRequest" /> class.
-        /// </summary>
-        /// <param name="transactionId">The transaction identifier.</param>
-        /// <param name="estateId">The estate identifier.</param>
-        /// <param name="merchantId">The merchant identifier.</param>
-        /// <param name="deviceIdentifier">The device identifier.</param>
-        /// <param name="transactionType">Type of the transaction.</param>
-        /// <param name="transactionDateTime">The transaction date time.</param>
-        /// <param name="transactionNumber">The transaction number.</param>
-        /// <param name="operatorIdentifier">The operator identifier.</param>
-        /// <param name="customerEmailAddress">The customer email address.</param>
-        /// <param name="additionalTransactionMetadata">The additional transaction metadata.</param>
-        /// <param name="contractId">The contract identifier.</param>
-        /// <param name="productId">The product identifier.</param>
+        
         private ProcessSaleTransactionRequest(Guid transactionId,
                                               Guid estateId,
                                               Guid merchantId,
@@ -35,7 +20,8 @@
                                               String customerEmailAddress,
                                               Dictionary<String, String> additionalTransactionMetadata,
                                               Guid contractId,
-                                              Guid productId)
+                                              Guid productId,
+                                              Int32 transactionSource)
         {
             this.TransactionId = transactionId;
             this.EstateId = estateId;
@@ -48,6 +34,7 @@
             this.AdditionalTransactionMetadata = additionalTransactionMetadata;
             this.ContractId = contractId;
             this.ProductId = productId;
+            this.TransactionSource = transactionSource;
             this.TransactionType = transactionType;
         }
 
@@ -151,26 +138,12 @@
         /// </value>
         public Guid ProductId { get; }
 
+        public Int32 TransactionSource { get; }
+
         #endregion
 
         #region Methods
 
-        /// <summary>
-        /// Creates the specified estate identifier.
-        /// </summary>
-        /// <param name="transactionId">The transaction identifier.</param>
-        /// <param name="estateId">The estate identifier.</param>
-        /// <param name="merchantId">The merchant identifier.</param>
-        /// <param name="deviceIdentifier">The device identifier.</param>
-        /// <param name="transactionType">Type of the transaction.</param>
-        /// <param name="transactionDateTime">The transaction date time.</param>
-        /// <param name="transactionNumber">The transaction number.</param>
-        /// <param name="operatorIdentifier">The operator identifier.</param>
-        /// <param name="customerEmailAddress">The customer email address.</param>
-        /// <param name="additionalTransactionMetadata">The additional transaction metadata.</param>
-        /// <param name="contractId">The contract identifier.</param>
-        /// <param name="productId">The product identifier.</param>
-        /// <returns></returns>
         public static ProcessSaleTransactionRequest Create(Guid transactionId,
                                                            Guid estateId,
                                                            Guid merchantId,
@@ -182,7 +155,8 @@
                                                            String customerEmailAddress,
                                                            Dictionary<String, String> additionalTransactionMetadata,
                                                            Guid contractId,
-                                                           Guid productId)
+                                                           Guid productId,
+                                                           Int32 transactionSource)
         {
             return new ProcessSaleTransactionRequest(transactionId,
                                                      estateId,
@@ -195,7 +169,8 @@
                                                      customerEmailAddress,
                                                      additionalTransactionMetadata,
                                                      contractId,
-                                                     productId);
+                                                     productId,
+                                                     transactionSource);
         }
 
         #endregion

@@ -133,7 +133,7 @@
                                                                      CancellationToken cancellationToken)
         {
             Guid transactionId = Guid.NewGuid();
-
+            
             ProcessSaleTransactionRequest request = ProcessSaleTransactionRequest.Create(transactionId,
                                                                                          saleTransactionRequest.EstateId,
                                                                                          saleTransactionRequest.MerchantId,
@@ -145,7 +145,9 @@
                                                                                          saleTransactionRequest.CustomerEmailAddress,
                                                                                          saleTransactionRequest.AdditionalTransactionMetadata,
                                                                                          saleTransactionRequest.ContractId,
-                                                                                         saleTransactionRequest.ProductId);
+                                                                                         saleTransactionRequest.ProductId,
+                                                                                         // Default to an online sale
+                                                                                         saleTransactionRequest.TransactionSource.GetValueOrDefault(1));
 
             ProcessSaleTransactionResponse response = await this.Mediator.Send(request, cancellationToken);
 

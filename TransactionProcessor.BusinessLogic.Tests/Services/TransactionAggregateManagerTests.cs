@@ -238,6 +238,19 @@ namespace TransactionProcessor.BusinessLogic.Tests.Services
         }
 
         [Fact]
+        public async Task TransactionAggregateManager_AddTransactionSource_TransactionSourceAddedToTransaction()
+        {
+            Mock<IAggregateRepository<TransactionAggregate, DomainEvent>> aggregateRepository = new Mock<IAggregateRepository<TransactionAggregate, DomainEvent>>();
+            aggregateRepository.Setup(a => a.GetLatestVersion(It.IsAny<Guid>(), It.IsAny<CancellationToken>())).ReturnsAsync(TestData.GetCompletedAuthorisedSaleTransactionAggregate);
+            TransactionAggregateManager transactionAggregateManager = new TransactionAggregateManager(aggregateRepository.Object);
+
+            await transactionAggregateManager.AddTransactionSource(TestData.EstateId,
+                                                                   TestData.TransactionId,
+                                                                   (TransactionSource)TestData.TransactionSource,
+                                                                   CancellationToken.None);
+        }
+
+        [Fact]
         public async Task TransactionAggregateManager_AddFee_FeeAddedToTransaction()
         {
             Mock<IAggregateRepository<TransactionAggregate, DomainEvent>> aggregateRepository = new Mock<IAggregateRepository<TransactionAggregate, DomainEvent>>();

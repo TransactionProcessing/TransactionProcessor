@@ -308,6 +308,7 @@ namespace TransactionProcessor.IntegrationTests.Shared
                         String customerEmailAddress = SpecflowTableHelper.GetStringRowValue(tableRow, "CustomerEmailAddress");
                         String contractDescription = SpecflowTableHelper.GetStringRowValue(tableRow, "ContractDescription");
                         String productName = SpecflowTableHelper.GetStringRowValue(tableRow, "ProductName");
+                        Int32 transactionSource = SpecflowTableHelper.GetIntValue(tableRow, "TransactionSource");
 
                         Guid contractId = Guid.Empty;
                         Guid productId = Guid.Empty;
@@ -335,6 +336,7 @@ namespace TransactionProcessor.IntegrationTests.Shared
                                                                                 productId,
                                                                                 recipientEmail,
                                                                                 recipientMobile,
+                                                                                transactionSource,
                                                                                 CancellationToken.None);
                         break;
                         
@@ -504,6 +506,7 @@ namespace TransactionProcessor.IntegrationTests.Shared
                                                                      Guid productId,
                                                                      String recipientEmail,
                                                                      String recipientMobile,
+                                                                     Int32 transactionSource,
                                                                      CancellationToken cancellationToken)
         {
             SaleTransactionRequest saleTransactionRequest = new SaleTransactionRequest
@@ -517,7 +520,8 @@ namespace TransactionProcessor.IntegrationTests.Shared
                                                                 OperatorIdentifier = operatorIdentifier,
                                                                 CustomerEmailAddress = customerEmailAddress,
                                                                 ProductId = productId,
-                                                                ContractId = contractId
+                                                                ContractId = contractId,
+                                                                TransactionSource = transactionSource
             };
 
             if (operatorIdentifier == "Voucher")

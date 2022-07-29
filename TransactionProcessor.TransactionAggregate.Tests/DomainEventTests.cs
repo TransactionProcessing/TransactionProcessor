@@ -296,7 +296,23 @@ namespace TransactionProcessor.TransactionAggregate.Tests
             serviceProviderFeeAddedToTransactionEvent.FeeId.ShouldBe(TestData.TransactionFeeId);
             serviceProviderFeeAddedToTransactionEvent.FeeValue.ShouldBe(TestData.TransactionFeeValue);
             serviceProviderFeeAddedToTransactionEvent.FeeCalculatedDateTime.ShouldBe(TestData.TransactionFeeCalculateDateTime);
+        }
 
+        [Fact]
+        public void TransactionSourceAddedToTransactionEvent_CanBeCreated_IsCreated()
+        {
+            TransactionSourceAddedToTransactionEvent transactionSourceAddedToTransactionEvent = new TransactionSourceAddedToTransactionEvent(TestData.TransactionId,
+                                                                                                                                                   TestData.EstateId,
+                                                                                                                                                   TestData.MerchantId,
+                                                                                                                                                   TestData.TransactionSource);
+
+            transactionSourceAddedToTransactionEvent.ShouldNotBeNull();
+            transactionSourceAddedToTransactionEvent.AggregateId.ShouldBe(TestData.TransactionId);
+            transactionSourceAddedToTransactionEvent.EventId.ShouldNotBe(Guid.Empty);
+            transactionSourceAddedToTransactionEvent.TransactionId.ShouldBe(TestData.TransactionId);
+            transactionSourceAddedToTransactionEvent.EstateId.ShouldBe(TestData.EstateId);
+            transactionSourceAddedToTransactionEvent.MerchantId.ShouldBe(TestData.MerchantId);
+            transactionSourceAddedToTransactionEvent.TransactionSource.ShouldBe(TestData.TransactionSource);
         }
     }
 }
