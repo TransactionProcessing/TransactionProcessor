@@ -6,6 +6,7 @@ namespace TransactionProcessor.TransactionAggregate.Tests
 {
     using System.Collections.Generic;
     using System.Linq;
+    using Microsoft.AspNetCore.SignalR;
     using Models;
     using Shouldly;
 
@@ -183,6 +184,56 @@ namespace TransactionProcessor.TransactionAggregate.Tests
             transactionAggregate.IsProductDetailsAdded.ShouldBeTrue();
             transactionAggregate.ContractId.ShouldBe(TestData.ContractId);
             transactionAggregate.ProductId.ShouldBe(TestData.ProductId);
+        }
+
+        [Theory]
+        [InlineData(TransactionSource.OnlineSale)]
+        [InlineData(TransactionSource.FileImport)]
+        public void TransactionAggregate_AddTransactionSource_TransactionSourceAdded(TransactionSource transactionSource)
+        {
+            TransactionAggregate transactionAggregate = TransactionAggregate.Create(TestData.TransactionId);
+            transactionAggregate.StartTransaction(TestData.TransactionDateTime, TestData.TransactionNumber, 
+                                                  TransactionType.Sale, TestData.TransactionReference, TestData.EstateId, 
+                                                  TestData.MerchantId, TestData.DeviceIdentifier,
+                                                  TestData.TransactionAmount);
+
+            transactionAggregate.AddProductDetails(TestData.ContractId, TestData.ProductId);
+            transactionAggregate.AddTransactionSource(transactionSource);
+
+            transactionAggregate.TransactionSource.ShouldBe(transactionSource);
+        }
+
+        [Fact]
+        public void TransactionAggregate_AddTransactionSource_InvalidSource_ErrorThrown()
+        {
+            TransactionAggregate transactionAggregate = TransactionAggregate.Create(TestData.TransactionId);
+            transactionAggregate.StartTransaction(TestData.TransactionDateTime, TestData.TransactionNumber,
+                                                  TransactionType.Sale, TestData.TransactionReference, TestData.EstateId,
+                                                  TestData.MerchantId, TestData.DeviceIdentifier,
+                                                  TestData.TransactionAmount);
+
+            transactionAggregate.AddProductDetails(TestData.ContractId, TestData.ProductId);
+            Should.Throw<ArgumentException>(() => {
+                                                transactionAggregate.AddTransactionSource((TransactionSource)99);
+                                            });
+        }
+
+        [Theory]
+        [InlineData(TransactionSource.OnlineSale)]
+        [InlineData(TransactionSource.FileImport)]
+        public void TransactionAggregate_AddTransactionSource_SourceAlreadySet_NoErrorThrown(TransactionSource transactionSource)
+        {
+            TransactionAggregate transactionAggregate = TransactionAggregate.Create(TestData.TransactionId);
+            transactionAggregate.StartTransaction(TestData.TransactionDateTime, TestData.TransactionNumber,
+                                                  TransactionType.Sale, TestData.TransactionReference, TestData.EstateId,
+                                                  TestData.MerchantId, TestData.DeviceIdentifier,
+                                                  TestData.TransactionAmount);
+
+            transactionAggregate.AddProductDetails(TestData.ContractId, TestData.ProductId);
+            transactionAggregate.AddTransactionSource(transactionSource);
+            Should.NotThrow(() => {
+                                                transactionAggregate.AddTransactionSource(transactionSource);
+                                            });
         }
 
         [Theory]

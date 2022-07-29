@@ -88,6 +88,7 @@
                 request.AdditionalTransactionMetadata,
                 request.ContractId,
                 request.ProductId,
+                request.TransactionSource,
                 cancellationToken);
 
             return saleResponse;

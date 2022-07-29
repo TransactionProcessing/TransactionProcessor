@@ -182,9 +182,12 @@
                                                                                  Dictionary<String, String> additionalTransactionMetadata,
                                                                                  Guid contractId,
                                                                                  Guid productId,
+                                                                                 Int32 transactionSource,
                                                                                  CancellationToken cancellationToken)
         {
             TransactionType transactionType = TransactionType.Sale;
+            TransactionSource transactionSourceValue = (TransactionSource)transactionSource;
+
 
             // Generate a transaction reference
             String transactionReference = this.GenerateTransactionReference();
@@ -211,6 +214,9 @@
             {
                 await this.TransactionAggregateManager.AddProductDetails(estateId, transactionId, contractId, productId, cancellationToken);
             }
+
+            // Add the transaction source
+            await this.TransactionAggregateManager.AddTransactionSource(estateId, transactionId, transactionSourceValue, cancellationToken);
 
             if (validationResult.responseCode == TransactionResponseCode.Success)
             {

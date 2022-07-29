@@ -31,6 +31,11 @@
                                Guid productId,
                                CancellationToken cancellationToken);
 
+        Task AddTransactionSource(Guid estateId,
+                               Guid transactionId,
+                               TransactionSource transactionSource,
+                               CancellationToken cancellationToken);
+
         /// <summary>
         /// Adds the fee.
         /// </summary>

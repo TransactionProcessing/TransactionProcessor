@@ -28,23 +28,7 @@
                                                                       String transactionNumber,
                                                                       String deviceIdentifier,
                                                                       CancellationToken cancellationToken);
-
-        /// <summary>
-        /// Processes the sale transaction.
-        /// </summary>
-        /// <param name="transactionId">The transaction identifier.</param>
-        /// <param name="estateId">The estate identifier.</param>
-        /// <param name="merchantId">The merchant identifier.</param>
-        /// <param name="transactionDateTime">The transaction date time.</param>
-        /// <param name="transactionNumber">The transaction number.</param>
-        /// <param name="deviceIdentifier">The device identifier.</param>
-        /// <param name="operatorId">The operator identifier.</param>
-        /// <param name="customerEmailAddress">The customer email address.</param>
-        /// <param name="additionalTransactionMetadata">The additional transaction metadata.</param>
-        /// <param name="contractId">The contract identifier.</param>
-        /// <param name="productId">The product identifier.</param>
-        /// <param name="cancellationToken">The cancellation token.</param>
-        /// <returns></returns>
+        
         Task<ProcessSaleTransactionResponse> ProcessSaleTransaction(Guid transactionId,
                                                                     Guid estateId,
                                                                     Guid merchantId,
@@ -56,6 +40,7 @@
                                                                     Dictionary<String, String> additionalTransactionMetadata,
                                                                     Guid contractId,
                                                                     Guid productId,
+                                                                    Int32 transactionSource,
                                                                     CancellationToken cancellationToken);
 
         /// <summary>
