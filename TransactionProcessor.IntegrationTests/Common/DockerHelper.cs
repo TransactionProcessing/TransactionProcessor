@@ -191,7 +191,7 @@
 
             String pataPawaConnectionString = $"ConnectionStrings:PataPawaReadModel=\"server={this.SqlServerDetails.sqlServerContainerName};user id=sa;password={this.SqlServerDetails.sqlServerPassword};database=PataPawaReadModel-{this.TestId:N}\"";
 
-            IContainerService testhostContainer = this.SetupTestHostContainer("testhosts",
+            IContainerService testhostContainer = this.SetupTestHostContainer("stuartferguson/testhosts:master",
                                                                               new List<INetworkService>
                                                                               {
                                                                                   testNetwork,
@@ -202,7 +202,7 @@
                                                                                                                   pataPawaConnectionString
                                                                                                               });
 
-            IContainerService voucherManagementContainer = this.SetupVoucherManagementContainer("stuartferguson/vouchermanagement",
+            IContainerService voucherManagementContainer = this.SetupVoucherManagementContainer("stuartferguson/vouchermanagement:master",
                                                                                                 new List<INetworkService>
                                                                                                 {
                                                                                                     testNetwork
@@ -213,7 +213,7 @@
                                                                                                         insecureEventStoreEnvironmentVariable,
                                                                                                     });
 
-            IContainerService estateManagementContainer = this.SetupEstateManagementContainer("stuartferguson/estatemanagement",
+            IContainerService estateManagementContainer = this.SetupEstateManagementContainer("stuartferguson/estatemanagement:master",
                                                                                               new List<INetworkService>
                                                                                               {
                                                                                                   testNetwork,
@@ -227,14 +227,14 @@
                                                                                                       internalSubscriptionServiceCacheDuration
                                                                                                   });
 
-            IContainerService messagingServiceContainer = this.SetupMessagingServiceContainer("stuartferguson/messagingservice",
+            IContainerService messagingServiceContainer = this.SetupMessagingServiceContainer("stuartferguson/messagingservice:master",
                                                                                               new List<INetworkService>
                                                                                               {
                                                                                                   testNetwork
                                                                                               },
                                                                                               true);
 
-            IContainerService securityServiceContainer = this.SetupSecurityServiceContainer("stuartferguson/securityservice", testNetwork, true);
+            IContainerService securityServiceContainer = this.SetupSecurityServiceContainer("stuartferguson/securityservice:master", testNetwork, true);
 
             IContainerService transactionProcessorContainer = this.SetupTransactionProcessorContainer("transactionprocessor",
                                                                                                       new List<INetworkService> {
@@ -248,7 +248,7 @@
                                                                                                           $"OperatorConfiguration:PataPawaPostPay:Url=http://{this.TestHostContainerName}:9000/PataPawaPostPayService/basichttp"
                                                                                                       });
 
-            IContainerService estateReportingContainer = this.SetupEstateReportingContainer("stuartferguson/estatereporting",
+            IContainerService estateReportingContainer = this.SetupEstateReportingContainer("stuartferguson/estatereporting:master",
                                                                                             new List<INetworkService>
                                                                                             {
                                                                                                 testNetwork,
