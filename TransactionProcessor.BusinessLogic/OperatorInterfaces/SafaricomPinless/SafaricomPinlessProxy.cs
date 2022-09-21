@@ -48,6 +48,11 @@
 
         #region Methods
 
+        public async Task<OperatorResponse> ProcessLogonMessage(String accessToken,
+                                                          CancellationToken cancellationToken) {
+            return null;
+        }
+
         /// <summary>
         /// Processes the sale message.
         /// </summary>
@@ -173,8 +178,7 @@
                        AuthorisationCode = "ABCD1234",
                        ResponseCode = cl.TransactionStatus.ToString(),
                        ResponseMessage = cl.Message,
-                       IsSuccessful = cl.TransactionStatus == 200
-
+                       IsSuccessful = cl.TransactionStatus == 200,
                    };
         }
 

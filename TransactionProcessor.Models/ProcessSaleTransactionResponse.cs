@@ -59,6 +59,8 @@ namespace TransactionProcessor.Models
         /// </value>
         public Guid TransactionId { get; set; }
 
+        public Boolean TransactionIsComplete { get; set; }
+
         #endregion
     }
 

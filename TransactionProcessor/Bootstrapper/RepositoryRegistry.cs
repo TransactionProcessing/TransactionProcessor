@@ -1,6 +1,7 @@
 ﻿namespace TransactionProcessor.Bootstrapper
 {
     using System;
+    using System.Diagnostics.CodeAnalysis;
     using System.Net.Http;
     using System.Net.Security;
     using BusinessLogic.Services;
@@ -22,6 +23,7 @@
     /// 
     /// </summary>
     /// <seealso cref="Lamar.ServiceRegistry" />
+    [ExcludeFromCodeCoverage]
     public class RepositoryRegistry : ServiceRegistry
     {
         #region Constructors

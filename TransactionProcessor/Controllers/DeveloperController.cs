@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Mvc;
 namespace TransactionProcessor.Controllers
 {
     using System;
+    using System.Diagnostics.CodeAnalysis;
     using System.Threading;
     using System.Threading.Tasks;
     using Models;
@@ -11,6 +12,7 @@ namespace TransactionProcessor.Controllers
     using Shared.EventStore.Aggregate;
     using TransactionAggregate;
 
+    [ExcludeFromCodeCoverage]
     [Route("api/[controller]")]
     [ApiController]
     public class DeveloperController : ControllerBase

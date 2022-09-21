@@ -12,6 +12,7 @@
     using EstateManagement.Client;
     using EstateManagement.DataTransferObjects.Requests;
     using EstateManagement.DataTransferObjects.Responses;
+    using Microsoft.Extensions.Caching.Memory;
     using Models;
     using OperatorInterfaces;
     using ReconciliationAggregate;
@@ -61,7 +62,6 @@
         /// The reconciliation aggregate repository
         /// </summary>
         private readonly IAggregateRepository<ReconciliationAggregate, DomainEvent> ReconciliationAggregateRepository;
-
         #endregion
 
         #region Constructors
@@ -183,17 +183,16 @@
                                                                                  Guid contractId,
                                                                                  Guid productId,
                                                                                  Int32 transactionSource,
-                                                                                 CancellationToken cancellationToken)
-        {
+                                                                                 CancellationToken cancellationToken) {
+            
             TransactionType transactionType = TransactionType.Sale;
             TransactionSource transactionSourceValue = (TransactionSource)transactionSource;
-
-
+            
             // Generate a transaction reference
             String transactionReference = this.GenerateTransactionReference();
 
             // Extract the transaction amount from the metadata
-            Decimal transactionAmount = additionalTransactionMetadata.ExtractFieldFromMetadata<Decimal>("Amount");
+            Decimal? transactionAmount = additionalTransactionMetadata.ExtractFieldFromMetadata<Decimal?>("Amount");
             
             (String responseMessage, TransactionResponseCode responseCode) validationResult =
                 await this.ValidateSaleTransaction(estateId, merchantId, deviceIdentifier, operatorIdentifier, transactionAmount, cancellationToken);
@@ -320,7 +319,7 @@
                                                                         String transactionReference,
                                                                         CancellationToken cancellationToken)
         {
-            IOperatorProxy operatorProxy = this.OperatorProxyResolver(operatorIdentifier);
+            IOperatorProxy operatorProxy = this.OperatorProxyResolver(operatorIdentifier.Replace(" ",""));
             OperatorResponse operatorResponse = null;
             try
             {
@@ -577,7 +576,7 @@
             Guid merchantId,
             String deviceIdentifier,
             String operatorIdentifier,
-            Decimal transactionAmount,
+            Decimal? transactionAmount,
             CancellationToken cancellationToken)
         {
             try
@@ -636,17 +635,17 @@
                 }
 
                 // Check the amount
-                if (transactionAmount <= 0)
-                {
-                    throw new TransactionValidationException("Transaction Amount must be greater than 0", TransactionResponseCode.InvalidSaleTransactionAmount);
-                }
+                if (transactionAmount.HasValue) {
+                    if (transactionAmount <= 0) {
+                        throw new TransactionValidationException("Transaction Amount must be greater than 0", TransactionResponseCode.InvalidSaleTransactionAmount);
+                    }
 
-                // Check the merchant has enough balance to perform the sale
-                if (merchant.AvailableBalance < transactionAmount)
-                {
-                    throw new
-                        TransactionValidationException($"Merchant [{merchant.MerchantName}] does not have enough credit available [{merchant.AvailableBalance}] to perform transaction amount [{transactionAmount}]",
-                                                       TransactionResponseCode.MerchantDoesNotHaveEnoughCredit);
+                    // Check the merchant has enough balance to perform the sale
+                    if (merchant.AvailableBalance < transactionAmount) {
+                        throw new
+                            TransactionValidationException($"Merchant [{merchant.MerchantName}] does not have enough credit available [{merchant.AvailableBalance}] to perform transaction amount [{transactionAmount}]",
+                                                           TransactionResponseCode.MerchantDoesNotHaveEnoughCredit);
+                    }
                 }
 
                 // If we get here everything is good

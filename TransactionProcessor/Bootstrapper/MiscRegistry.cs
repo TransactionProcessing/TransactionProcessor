@@ -1,5 +1,6 @@
 ﻿namespace TransactionProcessor.Bootstrapper
 {
+    using System.Diagnostics.CodeAnalysis;
     using System.IO.Abstractions;
     using BusinessLogic.Manager;
     using BusinessLogic.Services;
@@ -11,6 +12,7 @@
     /// 
     /// </summary>
     /// <seealso cref="Lamar.ServiceRegistry" />
+    [ExcludeFromCodeCoverage]
     public class MiscRegistry : ServiceRegistry
     {
         #region Constructors

@@ -34,7 +34,7 @@ namespace TransactionProcessor.BusinessLogic.Tests.Commands
                                                                                                                TestData.TransactionNumber,
                                                                                                                TestData.OperatorIdentifier1,
                                                                                                                TestData.CustomerEmailAddress,
-                                                                                                               TestData.AdditionalTransactionMetaData(),
+                                                                                                               TestData.AdditionalTransactionMetaDataForMobileTopup(),
                                                                                                                TestData.ContractId,
                                                                                                                TestData.ProductId,
                                                                                                                TestData.TransactionSource);
@@ -50,7 +50,7 @@ namespace TransactionProcessor.BusinessLogic.Tests.Commands
             processSaleTransactionRequest.OperatorIdentifier.ShouldBe(TestData.OperatorIdentifier1);
             processSaleTransactionRequest.CustomerEmailAddress.ShouldBe(TestData.CustomerEmailAddress);
             processSaleTransactionRequest.AdditionalTransactionMetadata.ShouldNotBeNull();
-            processSaleTransactionRequest.AdditionalTransactionMetadata.Count.ShouldBe(TestData.AdditionalTransactionMetaData().Count);
+            processSaleTransactionRequest.AdditionalTransactionMetadata.Count.ShouldBe(TestData.AdditionalTransactionMetaDataForMobileTopup().Count);
             processSaleTransactionRequest.ContractId.ShouldBe(TestData.ContractId);
             processSaleTransactionRequest.ProductId.ShouldBe(TestData.ProductId);
             processSaleTransactionRequest.TransactionSource.ShouldBe(TestData.TransactionSource);
