@@ -303,7 +303,8 @@
                                        OperatorIdentifier = this.OperatorIdentifier,
                                        AdditionalRequestMetadata = this.AdditionalTransactionRequestMetadata,
                                        AdditionalResponseMetadata = this.AdditionalTransactionResponseMetadata,
-                                       ResponseCode = this.ResponseCode
+                                       ResponseCode = this.ResponseCode,
+                                       IsComplete = this.IsCompleted
                                    };
         }
 

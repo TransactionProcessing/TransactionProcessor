@@ -4,7 +4,9 @@ using System.Text;
 
 namespace TransactionProcessor.IntegrationTests.Shared
 {
+    using System.Diagnostics;
     using System.Linq;
+    using System.Net;
     using System.Net.Http;
     using System.Runtime.InteropServices;
     using System.Threading;
@@ -36,36 +38,37 @@ namespace TransactionProcessor.IntegrationTests.Shared
         private readonly TestingContext TestingContext;
 
         public SharedSteps(ScenarioContext scenarioContext,
-                         TestingContext testingContext)
-        {
+                           TestingContext testingContext) {
             this.ScenarioContext = scenarioContext;
             this.TestingContext = testingContext;
         }
 
         [Given(@"I have created the following estates")]
         [When(@"I create the following estates")]
-        public async Task WhenICreateTheFollowingEstates(Table table)
-        {
-            foreach (TableRow tableRow in table.Rows)
-            {
+        public async Task WhenICreateTheFollowingEstates(Table table) {
+            foreach (TableRow tableRow in table.Rows) {
                 String estateName = SpecflowTableHelper.GetStringRowValue(tableRow, "EstateName");
                 // Setup the subscriptions for the estate
-                await Retry.For(async () => { await this.TestingContext.DockerHelper.PopulateSubscriptionServiceConfiguration(estateName, this.TestingContext.DockerHelper.IsSecureEventStore).ConfigureAwait(false); },
-                                retryFor: TimeSpan.FromMinutes(2),
-                                retryInterval: TimeSpan.FromSeconds(30));
+                await Retry.For(async () => {
+                                    await this.TestingContext.DockerHelper
+                                              .PopulateSubscriptionServiceConfiguration(estateName, this.TestingContext.DockerHelper.IsSecureEventStore)
+                                              .ConfigureAwait(false);
+                                },
+                                retryFor:TimeSpan.FromMinutes(2),
+                                retryInterval:TimeSpan.FromSeconds(30));
             }
 
-            foreach (TableRow tableRow in table.Rows)
-            {
+            foreach (TableRow tableRow in table.Rows) {
                 String estateName = SpecflowTableHelper.GetStringRowValue(tableRow, "EstateName");
 
-                CreateEstateRequest createEstateRequest = new CreateEstateRequest
-                {
-                    EstateId = Guid.NewGuid(),
-                    EstateName = estateName
-                };
+                CreateEstateRequest createEstateRequest = new CreateEstateRequest {
+                                                                                      EstateId = Guid.NewGuid(),
+                                                                                      EstateName = estateName
+                                                                                  };
 
-                CreateEstateResponse response = await this.TestingContext.DockerHelper.EstateClient.CreateEstate(this.TestingContext.AccessToken, createEstateRequest, CancellationToken.None).ConfigureAwait(false);
+                CreateEstateResponse response = await this.TestingContext.DockerHelper.EstateClient
+                                                          .CreateEstate(this.TestingContext.AccessToken, createEstateRequest, CancellationToken.None)
+                                                          .ConfigureAwait(false);
 
                 response.ShouldNotBeNull();
                 response.EstateId.ShouldNotBe(Guid.Empty);
@@ -76,35 +79,30 @@ namespace TransactionProcessor.IntegrationTests.Shared
                 this.TestingContext.Logger.LogInformation($"Estate {estateName} created with Id {response.EstateId}");
             }
 
-            foreach (TableRow tableRow in table.Rows)
-            {
+            foreach (TableRow tableRow in table.Rows) {
                 EstateDetails estateDetails = this.TestingContext.GetEstateDetails(tableRow);
 
                 EstateResponse estate = null;
-                await Retry.For(async () =>
-                {
-                    estate = await this.TestingContext.DockerHelper.EstateClient
-                                       .GetEstate(this.TestingContext.AccessToken, estateDetails.EstateId, CancellationToken.None).ConfigureAwait(false);
-                    estate.ShouldNotBeNull();
-                }, retryFor: TimeSpan.FromSeconds(180)).ConfigureAwait(false);
+                await Retry.For(async () => {
+                                    estate = await this.TestingContext.DockerHelper.EstateClient
+                                                       .GetEstate(this.TestingContext.AccessToken, estateDetails.EstateId, CancellationToken.None).ConfigureAwait(false);
+                                    estate.ShouldNotBeNull();
+                                },
+                                retryFor:TimeSpan.FromSeconds(180)).ConfigureAwait(false);
 
                 estate.EstateName.ShouldBe(estateDetails.EstateName);
             }
         }
 
         [Given(@"I create the following api scopes")]
-        public async Task GivenICreateTheFollowingApiScopes(Table table)
-        {
-            foreach (TableRow tableRow in table.Rows)
-            {
-                CreateApiScopeRequest createApiScopeRequest = new CreateApiScopeRequest
-                                                              {
-                                                                  Name = SpecflowTableHelper.GetStringRowValue(tableRow, "Name"),
-                                                                  Description = SpecflowTableHelper.GetStringRowValue(tableRow, "Description"),
-                                                                  DisplayName = SpecflowTableHelper.GetStringRowValue(tableRow, "DisplayName")
-                                                              };
-                var createApiScopeResponse =
-                    await this.CreateApiScope(createApiScopeRequest, CancellationToken.None).ConfigureAwait(false);
+        public async Task GivenICreateTheFollowingApiScopes(Table table) {
+            foreach (TableRow tableRow in table.Rows) {
+                CreateApiScopeRequest createApiScopeRequest = new CreateApiScopeRequest {
+                                                                                            Name = SpecflowTableHelper.GetStringRowValue(tableRow, "Name"),
+                                                                                            Description = SpecflowTableHelper.GetStringRowValue(tableRow, "Description"),
+                                                                                            DisplayName = SpecflowTableHelper.GetStringRowValue(tableRow, "DisplayName")
+                                                                                        };
+                var createApiScopeResponse = await this.CreateApiScope(createApiScopeRequest, CancellationToken.None).ConfigureAwait(false);
 
                 createApiScopeResponse.ShouldNotBeNull();
                 createApiScopeResponse.ApiScopeName.ShouldNotBeNullOrEmpty();
@@ -112,23 +110,20 @@ namespace TransactionProcessor.IntegrationTests.Shared
         }
 
         private async Task<CreateApiScopeResponse> CreateApiScope(CreateApiScopeRequest createApiScopeRequest,
-                                                                  CancellationToken cancellationToken)
-        {
-            CreateApiScopeResponse createApiScopeResponse = await this.TestingContext.DockerHelper.SecurityServiceClient.CreateApiScope(createApiScopeRequest, cancellationToken).ConfigureAwait(false);
+                                                                  CancellationToken cancellationToken) {
+            CreateApiScopeResponse createApiScopeResponse = await this.TestingContext.DockerHelper.SecurityServiceClient
+                                                                      .CreateApiScope(createApiScopeRequest, cancellationToken).ConfigureAwait(false);
             return createApiScopeResponse;
         }
 
         [Given(@"I have assigned the following  operator to the merchants")]
         [When(@"I assign the following  operator to the merchants")]
-        public async Task WhenIAssignTheFollowingOperatorToTheMerchants(Table table)
-        {
-            foreach (TableRow tableRow in table.Rows)
-            {
+        public async Task WhenIAssignTheFollowingOperatorToTheMerchants(Table table) {
+            foreach (TableRow tableRow in table.Rows) {
                 EstateDetails estateDetails = this.TestingContext.GetEstateDetails(tableRow);
 
                 String token = this.TestingContext.AccessToken;
-                if (String.IsNullOrEmpty(estateDetails.AccessToken) == false)
-                {
+                if (String.IsNullOrEmpty(estateDetails.AccessToken) == false) {
                     token = estateDetails.AccessToken;
                 }
 
@@ -140,14 +135,20 @@ namespace TransactionProcessor.IntegrationTests.Shared
                 String operatorName = SpecflowTableHelper.GetStringRowValue(tableRow, "OperatorName");
                 Guid operatorId = estateDetails.GetOperatorId(operatorName);
 
-                AssignOperatorRequest assignOperatorRequest = new AssignOperatorRequest
-                {
-                    OperatorId = operatorId,
-                    MerchantNumber = SpecflowTableHelper.GetStringRowValue(tableRow, "MerchantNumber"),
-                    TerminalNumber = SpecflowTableHelper.GetStringRowValue(tableRow, "TerminalNumber"),
-                };
+                AssignOperatorRequest assignOperatorRequest = new AssignOperatorRequest {
+                                                                                            OperatorId = operatorId,
+                                                                                            MerchantNumber =
+                                                                                                SpecflowTableHelper.GetStringRowValue(tableRow, "MerchantNumber"),
+                                                                                            TerminalNumber =
+                                                                                                SpecflowTableHelper.GetStringRowValue(tableRow, "TerminalNumber"),
+                                                                                        };
 
-                AssignOperatorResponse assignOperatorResponse = await this.TestingContext.DockerHelper.EstateClient.AssignOperatorToMerchant(token, estateDetails.EstateId, merchantId, assignOperatorRequest, CancellationToken.None).ConfigureAwait(false);
+                AssignOperatorResponse assignOperatorResponse = await this.TestingContext.DockerHelper.EstateClient
+                                                                          .AssignOperatorToMerchant(token,
+                                                                                                    estateDetails.EstateId,
+                                                                                                    merchantId,
+                                                                                                    assignOperatorRequest,
+                                                                                                    CancellationToken.None).ConfigureAwait(false);
 
                 assignOperatorResponse.EstateId.ShouldBe(estateDetails.EstateId);
                 assignOperatorResponse.MerchantId.ShouldBe(merchantId);
@@ -160,25 +161,26 @@ namespace TransactionProcessor.IntegrationTests.Shared
 
         [Given(@"I have created the following operators")]
         [When(@"I create the following operators")]
-        public async Task WhenICreateTheFollowingOperators(Table table)
-        {
-            foreach (TableRow tableRow in table.Rows)
-            {
+        public async Task WhenICreateTheFollowingOperators(Table table) {
+            foreach (TableRow tableRow in table.Rows) {
                 String operatorName = SpecflowTableHelper.GetStringRowValue(tableRow, "OperatorName");
                 Boolean requireCustomMerchantNumber = SpecflowTableHelper.GetBooleanValue(tableRow, "RequireCustomMerchantNumber");
                 Boolean requireCustomTerminalNumber = SpecflowTableHelper.GetBooleanValue(tableRow, "RequireCustomTerminalNumber");
 
-                CreateOperatorRequest createOperatorRequest = new CreateOperatorRequest
-                {
-                    Name = operatorName,
-                    RequireCustomMerchantNumber = requireCustomMerchantNumber,
-                    RequireCustomTerminalNumber = requireCustomTerminalNumber
-                };
+                CreateOperatorRequest createOperatorRequest = new CreateOperatorRequest {
+                                                                                            Name = operatorName,
+                                                                                            RequireCustomMerchantNumber = requireCustomMerchantNumber,
+                                                                                            RequireCustomTerminalNumber = requireCustomTerminalNumber
+                                                                                        };
 
                 // lookup the estate id based on the name in the table
                 EstateDetails estateDetails = this.TestingContext.GetEstateDetails(tableRow);
 
-                CreateOperatorResponse response = await this.TestingContext.DockerHelper.EstateClient.CreateOperator(this.TestingContext.AccessToken, estateDetails.EstateId, createOperatorRequest, CancellationToken.None).ConfigureAwait(false);
+                CreateOperatorResponse response = await this.TestingContext.DockerHelper.EstateClient
+                                                            .CreateOperator(this.TestingContext.AccessToken,
+                                                                            estateDetails.EstateId,
+                                                                            createOperatorRequest,
+                                                                            CancellationToken.None).ConfigureAwait(false);
 
                 response.ShouldNotBeNull();
                 response.EstateId.ShouldNotBe(Guid.Empty);
@@ -193,15 +195,12 @@ namespace TransactionProcessor.IntegrationTests.Shared
 
         [Given("I create the following merchants")]
         [When(@"I create the following merchants")]
-        public async Task WhenICreateTheFollowingMerchants(Table table)
-        {
-            foreach (TableRow tableRow in table.Rows)
-            {
+        public async Task WhenICreateTheFollowingMerchants(Table table) {
+            foreach (TableRow tableRow in table.Rows) {
                 // lookup the estate id based on the name in the table
                 EstateDetails estateDetails = this.TestingContext.GetEstateDetails(tableRow);
                 String token = this.TestingContext.AccessToken;
-                if (String.IsNullOrEmpty(estateDetails.AccessToken) == false)
-                {
+                if (String.IsNullOrEmpty(estateDetails.AccessToken) == false) {
                     token = estateDetails.AccessToken;
                 }
 
@@ -210,31 +209,39 @@ namespace TransactionProcessor.IntegrationTests.Shared
                 var settlementSchedule = SpecflowTableHelper.GetStringRowValue(tableRow, "SettlementSchedule");
 
                 SettlementSchedule schedule = SettlementSchedule.Immediate;
-                if (String.IsNullOrEmpty(settlementSchedule) == false)
-                {
+                if (String.IsNullOrEmpty(settlementSchedule) == false) {
                     schedule = Enum.Parse<SettlementSchedule>(settlementSchedule);
                 }
 
-                CreateMerchantRequest createMerchantRequest = new CreateMerchantRequest
-                {
-                    Name = merchantName,
-                    Contact = new Contact
-                    {
-                        ContactName = SpecflowTableHelper.GetStringRowValue(tableRow, "ContactName"),
-                        EmailAddress = SpecflowTableHelper.GetStringRowValue(tableRow, "EmailAddress")
-                    },
-                    Address = new Address
-                    {
-                        AddressLine1 = SpecflowTableHelper.GetStringRowValue(tableRow, "AddressLine1"),
-                        Town = SpecflowTableHelper.GetStringRowValue(tableRow, "Town"),
-                        Region = SpecflowTableHelper.GetStringRowValue(tableRow, "Region"),
-                        Country = SpecflowTableHelper.GetStringRowValue(tableRow, "Country")
-                    },
-                    SettlementSchedule = schedule
-                };
+                CreateMerchantRequest createMerchantRequest = new CreateMerchantRequest {
+                                                                                            Name = merchantName,
+                                                                                            Contact = new Contact {
+                                                                                                          ContactName =
+                                                                                                              SpecflowTableHelper.GetStringRowValue(tableRow,
+                                                                                                                  "ContactName"),
+                                                                                                          EmailAddress =
+                                                                                                              SpecflowTableHelper.GetStringRowValue(tableRow,
+                                                                                                                  "EmailAddress")
+                                                                                                      },
+                                                                                            Address = new Address {
+                                                                                                          AddressLine1 =
+                                                                                                              SpecflowTableHelper.GetStringRowValue(tableRow,
+                                                                                                                  "AddressLine1"),
+                                                                                                          Town =
+                                                                                                              SpecflowTableHelper.GetStringRowValue(tableRow, "Town"),
+                                                                                                          Region =
+                                                                                                              SpecflowTableHelper.GetStringRowValue(tableRow,
+                                                                                                                  "Region"),
+                                                                                                          Country =
+                                                                                                              SpecflowTableHelper.GetStringRowValue(tableRow,
+                                                                                                                  "Country")
+                                                                                                      },
+                                                                                            SettlementSchedule = schedule
+                                                                                        };
 
                 CreateMerchantResponse response = await this.TestingContext.DockerHelper.EstateClient
-                                                            .CreateMerchant(token, estateDetails.EstateId, createMerchantRequest, CancellationToken.None).ConfigureAwait(false);
+                                                            .CreateMerchant(token, estateDetails.EstateId, createMerchantRequest, CancellationToken.None)
+                                                            .ConfigureAwait(false);
 
                 response.ShouldNotBeNull();
                 response.EstateId.ShouldBe(estateDetails.EstateId);
@@ -246,8 +253,7 @@ namespace TransactionProcessor.IntegrationTests.Shared
                 this.TestingContext.Logger.LogInformation($"Merchant {merchantName} created with Id {response.MerchantId} for Estate {estateDetails.EstateName}");
             }
 
-            foreach (TableRow tableRow in table.Rows)
-            {
+            foreach (TableRow tableRow in table.Rows) {
                 EstateDetails estateDetails = this.TestingContext.GetEstateDetails(tableRow);
 
                 String merchantName = SpecflowTableHelper.GetStringRowValue(tableRow, "MerchantName");
@@ -255,13 +261,11 @@ namespace TransactionProcessor.IntegrationTests.Shared
                 Guid merchantId = estateDetails.GetMerchantId(merchantName);
 
                 String token = this.TestingContext.AccessToken;
-                if (String.IsNullOrEmpty(estateDetails.AccessToken) == false)
-                {
+                if (String.IsNullOrEmpty(estateDetails.AccessToken) == false) {
                     token = estateDetails.AccessToken;
                 }
 
-                await Retry.For(async () =>
-                                {
+                await Retry.For(async () => {
                                     MerchantResponse merchant = await this.TestingContext.DockerHelper.EstateClient
                                                                           .GetMerchant(token, estateDetails.EstateId, merchantId, CancellationToken.None)
                                                                           .ConfigureAwait(false);
@@ -270,34 +274,31 @@ namespace TransactionProcessor.IntegrationTests.Shared
                                 });
             }
         }
-        
+
         [When(@"I perform the following transactions")]
-        public async Task WhenIPerformTheFollowingTransactions(Table table)
-        {
-            foreach (TableRow tableRow in table.Rows)
-            {
+        public async Task WhenIPerformTheFollowingTransactions(Table table) {
+            foreach (TableRow tableRow in table.Rows) {
                 String merchantName = SpecflowTableHelper.GetStringRowValue(tableRow, "MerchantName");
                 String dateString = SpecflowTableHelper.GetStringRowValue(tableRow, "DateTime");
                 DateTime transactionDateTime = SpecflowTableHelper.GetDateForDateString(dateString, DateTime.UtcNow);
                 String transactionNumber = SpecflowTableHelper.GetStringRowValue(tableRow, "TransactionNumber");
                 String transactionType = SpecflowTableHelper.GetStringRowValue(tableRow, "TransactionType");
                 String deviceIdentifier = SpecflowTableHelper.GetStringRowValue(tableRow, "DeviceIdentifier");
-                
+
                 EstateDetails estateDetails = this.TestingContext.GetEstateDetails(tableRow);
-                
+
                 // Lookup the merchant id
                 Guid merchantId = estateDetails.GetMerchantId(merchantName);
                 SerialisedMessage transactionResponse = null;
-                switch (transactionType)
-                {
+                switch(transactionType) {
                     case "Logon":
                         transactionResponse = await this.PerformLogonTransaction(estateDetails.EstateId,
-                                                           merchantId,
-                                                           transactionDateTime,
-                                                           transactionType,
-                                                           transactionNumber,
-                                                           deviceIdentifier,
-                                                           CancellationToken.None);
+                                                                                 merchantId,
+                                                                                 transactionDateTime,
+                                                                                 transactionType,
+                                                                                 transactionNumber,
+                                                                                 deviceIdentifier,
+                                                                                 CancellationToken.None);
                         break;
                     case "Sale":
 
@@ -313,33 +314,39 @@ namespace TransactionProcessor.IntegrationTests.Shared
                         Guid contractId = Guid.Empty;
                         Guid productId = Guid.Empty;
                         Contract contract = estateDetails.GetContract(contractDescription);
-                        if (contract != null)
-                        {
+                        if (contract != null) {
                             contractId = contract.ContractId;
                             Product product = contract.GetProduct(productName);
                             productId = product.ProductId;
                         }
+
                         String recipientEmail = SpecflowTableHelper.GetStringRowValue(tableRow, "RecipientEmail");
                         String recipientMobile = SpecflowTableHelper.GetStringRowValue(tableRow, "RecipientMobile");
+                        String messageType = SpecflowTableHelper.GetStringRowValue(tableRow, "MessageType");
+                        String accountNumber = SpecflowTableHelper.GetStringRowValue(tableRow, "AccountNumber");
+                        String customerName = SpecflowTableHelper.GetStringRowValue(tableRow, "CustomerName");
 
                         transactionResponse = await this.PerformSaleTransaction(estateDetails.EstateId,
-                                                                                merchantId,
-                                                                                transactionDateTime,
-                                                                                transactionType,
-                                                                                transactionNumber,
-                                                                                deviceIdentifier,
-                                                                                operatorName,
-                                                                                transactionAmount,
-                                                                                customerAccountNumber,
-                                                                                customerEmailAddress,
-                                                                                contractId,
-                                                                                productId,
-                                                                                recipientEmail,
-                                                                                recipientMobile,
-                                                                                transactionSource,
-                                                                                CancellationToken.None);
+                                                                                       merchantId,
+                                                                                       transactionDateTime,
+                                                                                       transactionType,
+                                                                                       transactionNumber,
+                                                                                       deviceIdentifier,
+                                                                                       operatorName,
+                                                                                       transactionAmount,
+                                                                                       customerAccountNumber,
+                                                                                       customerEmailAddress,
+                                                                                       contractId,
+                                                                                       productId,
+                                                                                       recipientEmail,
+                                                                                       recipientMobile,
+                                                                                       transactionSource,
+                                                                                       messageType,
+                                                                                       accountNumber,
+                                                                                       customerName,
+                                                                                       CancellationToken.None);
                         break;
-                        
+
                 }
 
                 estateDetails.AddTransactionResponse(merchantId, transactionNumber, transactionResponse);
@@ -347,26 +354,23 @@ namespace TransactionProcessor.IntegrationTests.Shared
         }
 
         [Given(@"I create a contract with the following values")]
-        public async Task GivenICreateAContractWithTheFollowingValues(Table table)
-        {
-            foreach (TableRow tableRow in table.Rows)
-            {
+        public async Task GivenICreateAContractWithTheFollowingValues(Table table) {
+            foreach (TableRow tableRow in table.Rows) {
                 EstateDetails estateDetails = this.TestingContext.GetEstateDetails(tableRow);
 
                 String token = this.TestingContext.AccessToken;
-                if (String.IsNullOrEmpty(estateDetails.AccessToken) == false)
-                {
+                if (String.IsNullOrEmpty(estateDetails.AccessToken) == false) {
                     token = estateDetails.AccessToken;
                 }
 
                 String operatorName = SpecflowTableHelper.GetStringRowValue(tableRow, "OperatorName");
                 Guid operatorId = estateDetails.GetOperatorId(operatorName);
 
-                CreateContractRequest createContractRequest = new CreateContractRequest
-                                                              {
-                                                                  OperatorId = operatorId,
-                                                                  Description = SpecflowTableHelper.GetStringRowValue(tableRow, "ContractDescription")
-                                                              };
+                CreateContractRequest createContractRequest = new CreateContractRequest {
+                                                                                            OperatorId = operatorId,
+                                                                                            Description =
+                                                                                                SpecflowTableHelper.GetStringRowValue(tableRow, "ContractDescription")
+                                                                                        };
 
                 CreateContractResponse contractResponse =
                     await this.TestingContext.DockerHelper.EstateClient.CreateContract(token, estateDetails.EstateId, createContractRequest, CancellationToken.None);
@@ -376,15 +380,12 @@ namespace TransactionProcessor.IntegrationTests.Shared
         }
 
         [When(@"I create the following Products")]
-        public async Task WhenICreateTheFollowingProducts(Table table)
-        {
-            foreach (TableRow tableRow in table.Rows)
-            {
+        public async Task WhenICreateTheFollowingProducts(Table table) {
+            foreach (TableRow tableRow in table.Rows) {
                 EstateDetails estateDetails = this.TestingContext.GetEstateDetails(tableRow);
 
                 String token = this.TestingContext.AccessToken;
-                if (String.IsNullOrEmpty(estateDetails.AccessToken) == false)
-                {
+                if (String.IsNullOrEmpty(estateDetails.AccessToken) == false) {
                     token = estateDetails.AccessToken;
                 }
 
@@ -392,38 +393,40 @@ namespace TransactionProcessor.IntegrationTests.Shared
                 Contract contract = estateDetails.GetContract(contractName);
                 String productValue = SpecflowTableHelper.GetStringRowValue(tableRow, "Value");
 
-                AddProductToContractRequest addProductToContractRequest = new AddProductToContractRequest
-                {
-                    ProductName = SpecflowTableHelper.GetStringRowValue(tableRow, "ProductName"),
-                    DisplayText = SpecflowTableHelper.GetStringRowValue(tableRow, "DisplayText"),
-                    Value = null
-                };
-                if (String.IsNullOrEmpty(productValue) == false)
-                {
+                AddProductToContractRequest addProductToContractRequest = new AddProductToContractRequest {
+                                                                                                              ProductName =
+                                                                                                                  SpecflowTableHelper.GetStringRowValue(tableRow,
+                                                                                                                      "ProductName"),
+                                                                                                              DisplayText =
+                                                                                                                  SpecflowTableHelper.GetStringRowValue(tableRow,
+                                                                                                                      "DisplayText"),
+                                                                                                              Value = null
+                                                                                                          };
+                if (String.IsNullOrEmpty(productValue) == false) {
                     addProductToContractRequest.Value = Decimal.Parse(productValue);
                 }
 
-                AddProductToContractResponse addProductToContractResponse = await this.TestingContext.DockerHelper.EstateClient.AddProductToContract(token,
-                                                                                                                                                     estateDetails.EstateId,
-                                                                                                                                                     contract.ContractId,
-                                                                                                                                                     addProductToContractRequest,
-                                                                                                                                                     CancellationToken.None);
+                AddProductToContractResponse addProductToContractResponse =
+                    await this.TestingContext.DockerHelper.EstateClient.AddProductToContract(token,
+                                                                                             estateDetails.EstateId,
+                                                                                             contract.ContractId,
+                                                                                             addProductToContractRequest,
+                                                                                             CancellationToken.None);
 
-                contract.AddProduct(addProductToContractResponse.ProductId, addProductToContractRequest.ProductName, addProductToContractRequest.DisplayText,
+                contract.AddProduct(addProductToContractResponse.ProductId,
+                                    addProductToContractRequest.ProductName,
+                                    addProductToContractRequest.DisplayText,
                                     addProductToContractRequest.Value);
             }
         }
 
         [When(@"I add the following Transaction Fees")]
-        public async Task WhenIAddTheFollowingTransactionFees(Table table)
-        {
-            foreach (TableRow tableRow in table.Rows)
-            {
+        public async Task WhenIAddTheFollowingTransactionFees(Table table) {
+            foreach (TableRow tableRow in table.Rows) {
                 EstateDetails estateDetails = this.TestingContext.GetEstateDetails(tableRow);
 
                 String token = this.TestingContext.AccessToken;
-                if (String.IsNullOrEmpty(estateDetails.AccessToken) == false)
-                {
+                if (String.IsNullOrEmpty(estateDetails.AccessToken) == false) {
                     token = estateDetails.AccessToken;
                 }
 
@@ -433,19 +436,18 @@ namespace TransactionProcessor.IntegrationTests.Shared
 
                 Product product = contract.GetProduct(productName);
 
-                AddTransactionFeeForProductToContractRequest addTransactionFeeForProductToContractRequest = new AddTransactionFeeForProductToContractRequest
-                {
-                    Value =
-                                                                                                                    SpecflowTableHelper
-                                                                                                                        .GetDecimalValue(tableRow, "Value"),
-                    Description =
+                AddTransactionFeeForProductToContractRequest addTransactionFeeForProductToContractRequest = new AddTransactionFeeForProductToContractRequest {
+                                                                                                                Value =
+                                                                                                                    SpecflowTableHelper.GetDecimalValue(tableRow,
+                                                                                                                        "Value"),
+                                                                                                                Description =
                                                                                                                     SpecflowTableHelper.GetStringRowValue(tableRow,
-                                                                                                                                                          "FeeDescription"),
-                    CalculationType =
+                                                                                                                        "FeeDescription"),
+                                                                                                                CalculationType =
                                                                                                                     SpecflowTableHelper
                                                                                                                         .GetEnumValue<CalculationType>(tableRow,
-                                                                                                                                                       "CalculationType")
-                };
+                                                                                                                            "CalculationType")
+                                                                                                            };
 
                 AddTransactionFeeForProductToContractResponse addTransactionFeeForProductToContractResponse =
                     await this.TestingContext.DockerHelper.EstateClient.AddTransactionFeeForProductToContract(token,
@@ -473,25 +475,29 @@ namespace TransactionProcessor.IntegrationTests.Shared
         /// <param name="deviceIdentifier">The device identifier.</param>
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns></returns>
-        private async Task<SerialisedMessage> PerformLogonTransaction(Guid estateId, Guid merchantId, DateTime transactionDateTime, String transactionType, String transactionNumber, String deviceIdentifier, CancellationToken cancellationToken)
-        {
-            LogonTransactionRequest logonTransactionRequest = new LogonTransactionRequest
-                                                              {
-                                                                  MerchantId = merchantId,
-                                                                  EstateId = estateId,
-                                                                  TransactionDateTime = transactionDateTime,
-                                                                  TransactionNumber = transactionNumber,
-                                                                  DeviceIdentifier = deviceIdentifier,
-                                                                  TransactionType = transactionType
-                                                              };
+        private async Task<SerialisedMessage> PerformLogonTransaction(Guid estateId,
+                                                                      Guid merchantId,
+                                                                      DateTime transactionDateTime,
+                                                                      String transactionType,
+                                                                      String transactionNumber,
+                                                                      String deviceIdentifier,
+                                                                      CancellationToken cancellationToken) {
+            LogonTransactionRequest logonTransactionRequest = new LogonTransactionRequest {
+                                                                                              MerchantId = merchantId,
+                                                                                              EstateId = estateId,
+                                                                                              TransactionDateTime = transactionDateTime,
+                                                                                              TransactionNumber = transactionNumber,
+                                                                                              DeviceIdentifier = deviceIdentifier,
+                                                                                              TransactionType = transactionType
+                                                                                          };
 
             SerialisedMessage serialisedMessage = new SerialisedMessage();
             serialisedMessage.Metadata.Add(MetadataContants.KeyNameEstateId, estateId.ToString());
             serialisedMessage.Metadata.Add(MetadataContants.KeyNameMerchantId, merchantId.ToString());
-            serialisedMessage.SerialisedData = JsonConvert.SerializeObject(logonTransactionRequest, new JsonSerializerSettings
-                                                                                                    {
-                                                                                                        TypeNameHandling = TypeNameHandling.All
-                                                                                                    });
+            serialisedMessage.SerialisedData = JsonConvert.SerializeObject(logonTransactionRequest,
+                                                                           new JsonSerializerSettings {
+                                                                                                          TypeNameHandling = TypeNameHandling.All
+                                                                                                      });
 
             SerialisedMessage responseSerialisedMessage =
                 await this.TestingContext.DockerHelper.TransactionProcessorClient.PerformTransaction(this.TestingContext.AccessToken,
@@ -501,12 +507,24 @@ namespace TransactionProcessor.IntegrationTests.Shared
             return responseSerialisedMessage;
         }
 
-        private async Task<SerialisedMessage> PerformSaleTransaction(Guid estateId, Guid merchantId, DateTime transactionDateTime, String transactionType, String transactionNumber, String deviceIdentifier, String operatorIdentifier, Decimal transactionAmount, String customerAccountNumber, String customerEmailAddress,
+        private async Task<SerialisedMessage> PerformSaleTransaction(Guid estateId,
+                                                                     Guid merchantId,
+                                                                     DateTime transactionDateTime,
+                                                                     String transactionType,
+                                                                     String transactionNumber,
+                                                                     String deviceIdentifier,
+                                                                     String operatorIdentifier,
+                                                                     Decimal transactionAmount,
+                                                                     String customerAccountNumber,
+                                                                     String customerEmailAddress,
                                                                      Guid contractId,
                                                                      Guid productId,
                                                                      String recipientEmail,
                                                                      String recipientMobile,
                                                                      Int32 transactionSource,
+                                                                     String messageType,
+                                                                     String accountNumber,
+                                                                     String customerName,
                                                                      CancellationToken cancellationToken)
         {
             SaleTransactionRequest saleTransactionRequest = new SaleTransactionRequest
@@ -524,32 +542,12 @@ namespace TransactionProcessor.IntegrationTests.Shared
                                                                 TransactionSource = transactionSource
             };
 
-            if (operatorIdentifier == "Voucher")
-            {
-                saleTransactionRequest.AdditionalTransactionMetadata = new Dictionary<String, String>
-                                                                       {
-                                                                           {"Amount", transactionAmount.ToString()},
-                                                                       };
-
-                if (String.IsNullOrEmpty(recipientEmail) == false)
-                {
-                    saleTransactionRequest.AdditionalTransactionMetadata.Add("RecipientEmail", recipientEmail);
-                }
-
-                if (String.IsNullOrEmpty(recipientMobile) == false)
-                {
-                    saleTransactionRequest.AdditionalTransactionMetadata.Add("RecipientMobile", recipientMobile);
-                }
-            }
-            else
-            {
-                saleTransactionRequest.AdditionalTransactionMetadata = new Dictionary<String, String>
-                                                                       {
-                                                                           {"Amount", transactionAmount.ToString()},
-                                                                           {"CustomerAccountNumber", customerAccountNumber}
-                                                                       };
-            }
-
+            saleTransactionRequest.AdditionalTransactionMetadata = operatorIdentifier switch {
+                "Voucher" => BuildVoucherTransactionMetaData(recipientEmail, recipientMobile, transactionAmount),
+                "PataPawa PostPay" => BuildPataPawaMetaData(messageType,accountNumber,recipientMobile,customerName, transactionAmount),
+                _ => BuildMobileTopupMetaData(transactionAmount,customerAccountNumber)
+            };
+            
             SerialisedMessage serialisedMessage = new SerialisedMessage();
             serialisedMessage.Metadata.Add(MetadataContants.KeyNameEstateId, estateId.ToString());
             serialisedMessage.Metadata.Add(MetadataContants.KeyNameMerchantId, merchantId.ToString());
@@ -569,6 +567,64 @@ namespace TransactionProcessor.IntegrationTests.Shared
             
 
             return responseSerialisedMessage;
+        }
+
+        private Dictionary<String, String> BuildMobileTopupMetaData(Decimal transactionAmount, String customerAccountNumber) {
+            return new Dictionary<String, String>
+                                                                       {
+                                                                           {"Amount", transactionAmount.ToString()},
+                                                                           {"CustomerAccountNumber", customerAccountNumber}
+                                                                       };
+        }
+
+        private Dictionary<String, String> BuildPataPawaMetaData(String messageType,String accountNumber, String recipientMobile,
+                                                                 String customerName, Decimal transactionAmount) {
+            return messageType switch
+            {
+                "VerifyAccount" => BuildPataPawaMetaDataForVerifyAccount(accountNumber),
+                "ProcessBill" => BuildPataPawaMetaDataForProcessBill(accountNumber, recipientMobile,customerName,transactionAmount),
+                _ => throw new Exception($"Unsupported message type [{messageType}]")
+            };
+        }
+
+        private Dictionary<String, String> BuildPataPawaMetaDataForProcessBill(String accountNumber,
+                                                                               String recipientMobile,
+                                                                               String customerName,
+                                                                               Decimal transactionAmount) {
+            return new Dictionary<String, String>
+            {
+                {"PataPawaPostPaidMessageType", "ProcessBill"},
+                {"Amount", transactionAmount.ToString()},
+                {"CustomerAccountNumber", accountNumber},
+                {"MobileNumber", recipientMobile},
+                {"CustomerName", customerName},
+            };
+        }
+
+        private Dictionary<String, String> BuildPataPawaMetaDataForVerifyAccount(String accountNumber) {
+            return new Dictionary<String, String>
+                   {
+                       {"PataPawaPostPaidMessageType", "VerifyAccount"},
+                       {"CustomerAccountNumber", accountNumber}
+                   };
+        }
+
+        private Dictionary<String, String> BuildVoucherTransactionMetaData(String recipientEmail,
+                                                                           String recipientMobile,
+                                                                           Decimal transactionAmount) {
+            var additionalTransactionMetadata = new Dictionary<String, String> {
+                                                                                   {"Amount", transactionAmount.ToString()},
+                                                                               };
+
+            if (String.IsNullOrEmpty(recipientEmail) == false) {
+                additionalTransactionMetadata.Add("RecipientEmail", recipientEmail);
+            }
+
+            if (String.IsNullOrEmpty(recipientMobile) == false) {
+                additionalTransactionMetadata.Add("RecipientMobile", recipientMobile);
+            }
+
+            return additionalTransactionMetadata;
         }
 
         private async Task<SerialisedMessage> PerformReconciliationTransaction(Guid estateId, Guid merchantId, DateTime transactionDateTime,  String deviceIdentifier, Int32 transactionCount, Decimal transactionValue, CancellationToken cancellationToken)
@@ -836,6 +892,27 @@ namespace TransactionProcessor.IntegrationTests.Shared
 
             }
         }
+
+        [Given(@"the following bills are available at the PataPawa PostPaid Host")]
+        public async Task GivenTheFollowingBillsAreAvailableAtThePataPawaPostPaidHost(Table table) {
+
+
+            foreach (TableRow tableRow in table.Rows) {
+                HttpRequestMessage httpRequestMessage = new HttpRequestMessage(HttpMethod.Post, "/api/developer/patapawapostpay/createbill");
+                
+                var requestBody = new {
+                                          due_date = SpecflowTableHelper.GetDateForDateString(tableRow["DueDate"], DateTime.Now),
+                                          amount = SpecflowTableHelper.GetDecimalValue(tableRow, "Amount"),
+                                          account_number = SpecflowTableHelper.GetStringRowValue(tableRow, "AccountNumber"),
+                                          account_name = SpecflowTableHelper.GetStringRowValue(tableRow, "AccountName")
+                };
+                httpRequestMessage.Content = new StringContent(JsonConvert.SerializeObject(requestBody), Encoding.UTF8, "application/json");
+
+                HttpResponseMessage response = await this.TestingContext.DockerHelper.TestHostHttpClient.SendAsync(httpRequestMessage);
+                response.StatusCode.ShouldBe(HttpStatusCode.OK);
+            }
+        }
+
 
         [When(@"I perform the following reconciliations")]
         public async Task WhenIPerformTheFollowingReconciliations(Table table)

@@ -2,6 +2,7 @@
 {
     using System;
     using System.Collections.Generic;
+    using System.Diagnostics.CodeAnalysis;
     using BusinessLogic.EventHandling;
     using Lamar;
     using Microsoft.Extensions.Configuration;
@@ -12,6 +13,7 @@
     /// 
     /// </summary>
     /// <seealso cref="Lamar.ServiceRegistry" />
+    [ExcludeFromCodeCoverage]
     public class DomainEventHandlerRegistry : ServiceRegistry
     {
         #region Constructors

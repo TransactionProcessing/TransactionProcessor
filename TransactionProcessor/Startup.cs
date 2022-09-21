@@ -4,7 +4,9 @@ namespace TransactionProcessor
     using System.Collections.Generic;
     using System.Diagnostics.CodeAnalysis;
     using System.IO;
+    using System.Linq;
     using System.Net.Http;
+    using System.Threading;
     using Bootstrapper;
     using EventStore.Client;
     using HealthChecks.UI.Client;
@@ -12,11 +14,13 @@ namespace TransactionProcessor
     using Microsoft.AspNetCore.Builder;
     using Microsoft.AspNetCore.Diagnostics.HealthChecks;
     using Microsoft.AspNetCore.Hosting;
+    using Microsoft.Extensions.Caching.Memory;
     using Microsoft.Extensions.Configuration;
     using Microsoft.Extensions.DependencyInjection;
     using Microsoft.Extensions.Hosting;
     using Microsoft.Extensions.Logging;
     using NLog.Extensions.Logging;
+    using NuGet.Protocol;
     using Reconciliation.DomainEvents;
     using Settlement.DomainEvents;
     using Shared.EventStore.Aggregate;
@@ -24,6 +28,7 @@ namespace TransactionProcessor
     using Shared.General;
     using Shared.Logger;
     using Transaction.DomainEvents;
+    using TransactionProcessor.BusinessLogic.OperatorInterfaces;
     using ILogger = Microsoft.Extensions.Logging.ILogger;
 
     /// <summary>
@@ -40,6 +45,8 @@ namespace TransactionProcessor
         /// The event store client settings
         /// </summary>
         internal static EventStoreClientSettings EventStoreClientSettings;
+
+        public static List<String> AutoApiLogonOperators = new List<String>();
 
         #endregion
 
@@ -142,9 +149,11 @@ namespace TransactionProcessor
             app.UseSwaggerUI();
 
             app.PreWarm();
+            
         }
 
         public void ConfigureContainer(ServiceRegistry services) {
+
             ConfigurationReader.Initialise(Startup.Configuration);
 
             services.IncludeRegistry<MediatorRegistry>();
@@ -155,6 +164,7 @@ namespace TransactionProcessor
             services.IncludeRegistry<ClientRegistry>();
             services.IncludeRegistry<DomainEventHandlerRegistry>();
             services.IncludeRegistry<MiscRegistry>();
+            services.AddMemoryCache();
 
             Startup.LoadTypes();
 

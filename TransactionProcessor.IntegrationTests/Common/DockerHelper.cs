@@ -31,6 +31,8 @@
         /// </summary>
         public IEstateClient EstateClient;
 
+        public HttpClient TestHostHttpClient;
+
         /// <summary>
         /// The security service client
         /// </summary>
@@ -45,7 +47,7 @@
         /// The transaction processor client
         /// </summary>
         public ITransactionProcessorClient TransactionProcessorClient;
-
+        
         /// <summary>
         /// The containers
         /// </summary>
@@ -75,7 +77,9 @@
         /// The transaction processor port
         /// </summary>
         protected Int32 TransactionProcessorPort;
-        
+        protected Int32 TestHostPort;
+
+
         private readonly TestingContext TestingContext;
 
         #endregion
@@ -147,7 +151,7 @@
                 this.IsSecureEventStore = isSecure;
             }
 
-            this.HostTraceFolder = FdOs.IsWindows() ? $"D:\\home\\txnproc\\trace\\{scenarioName}" : $"//home//txnproc//trace//{scenarioName}";
+            this.HostTraceFolder = FdOs.IsWindows() ? $"C:\\home\\txnproc\\trace\\{scenarioName}" : $"//home//txnproc//trace//{scenarioName}";
             this.SqlServerDetails = (Setup.SqlServerContainerName, Setup.SqlUserName, Setup.SqlPassword);
             Logging.Enabled();
 
@@ -185,6 +189,19 @@
             String persistentSubscriptionPollingInSeconds = "AppSettings:PersistentSubscriptionPollingInSeconds=10";
             String internalSubscriptionServiceCacheDuration = "AppSettings:InternalSubscriptionServiceCacheDuration=0";
 
+            String pataPawaConnectionString = $"ConnectionStrings:PataPawaReadModel=\"server={this.SqlServerDetails.sqlServerContainerName};user id=sa;password={this.SqlServerDetails.sqlServerPassword};database=PataPawaReadModel-{this.TestId:N}\"";
+
+            IContainerService testhostContainer = this.SetupTestHostContainer("testhosts",
+                                                                              new List<INetworkService>
+                                                                              {
+                                                                                  testNetwork,
+                                                                                  Setup.DatabaseServerNetwork
+                                                                              },
+                                                                              additionalEnvironmentVariables: new List<String>
+                                                                                                              {
+                                                                                                                  pataPawaConnectionString
+                                                                                                              });
+
             IContainerService voucherManagementContainer = this.SetupVoucherManagementContainer("stuartferguson/vouchermanagement",
                                                                                                 new List<INetworkService>
                                                                                                 {
@@ -220,17 +237,16 @@
             IContainerService securityServiceContainer = this.SetupSecurityServiceContainer("stuartferguson/securityservice", testNetwork, true);
 
             IContainerService transactionProcessorContainer = this.SetupTransactionProcessorContainer("transactionprocessor",
-                                                                                                      new List<INetworkService>
-                                                                                                      {
+                                                                                                      new List<INetworkService> {
                                                                                                           testNetwork
                                                                                                       },
-                                                                                                      additionalEnvironmentVariables:new List<String>
-                                                                                                          {
-                                                                                                              insecureEventStoreEnvironmentVariable,
-                                                                                                              persistentSubscriptionPollingInSeconds,
-                                                                                                              internalSubscriptionServiceCacheDuration,
-                                                                                                              $"AppSettings:VoucherManagementApi=http://{this.VoucherManagementContainerName}:{DockerHelper.VoucherManagementDockerPort}"
-                                                                                                          });
+                                                                                                      additionalEnvironmentVariables:new List<String> {
+                                                                                                          insecureEventStoreEnvironmentVariable,
+                                                                                                          persistentSubscriptionPollingInSeconds,
+                                                                                                          internalSubscriptionServiceCacheDuration,
+                                                                                                          $"AppSettings:VoucherManagementApi=http://{this.VoucherManagementContainerName}:{DockerHelper.VoucherManagementDockerPort}",
+                                                                                                          $"OperatorConfiguration:PataPawaPostPay:Url=http://{this.TestHostContainerName}:9000/PataPawaPostPayService/basichttp"
+                                                                                                      });
 
             IContainerService estateReportingContainer = this.SetupEstateReportingContainer("stuartferguson/estatereporting",
                                                                                             new List<INetworkService>
@@ -246,30 +262,24 @@
                                                                                                     internalSubscriptionServiceCacheDuration
                                                                                                 });
 
-            IContainerService testhostContainer = this.SetupTestHostContainer("stuartferguson/testhosts",
-                                                                              new List<INetworkService>
-                                                                              {
-                                                                                  testNetwork,
-                                                                                  Setup.DatabaseServerNetwork
-                                                                              },
-                                                                              true);
-
-            this.Containers.AddRange(new List<IContainerService>
-                                     {
-                                         eventStoreContainer,
-                                         estateManagementContainer,
-                                         securityServiceContainer,
-                                         transactionProcessorContainer,
-                                         estateReportingContainer,
-                                         testhostContainer,
-                                         voucherManagementContainer,
-                                         messagingServiceContainer
-                                     });
+            
+                                                                                                                  this.Containers.AddRange(new List<IContainerService>
+                                                                                                                  {
+                                                                                                                  eventStoreContainer,
+                                                                                                                  estateManagementContainer,
+                                                                                                                  securityServiceContainer,
+                                                                                                                  transactionProcessorContainer,
+                                                                                                                  estateReportingContainer,
+                                                                                                                  testhostContainer,
+                                                                                                                  voucherManagementContainer,
+                                                                                                                  messagingServiceContainer
+                                                                                                              });
 
             // Cache the ports
             this.EstateManagementApiPort = estateManagementContainer.ToHostExposedEndpoint("5000/tcp").Port;
             this.SecurityServicePort = securityServiceContainer.ToHostExposedEndpoint("5001/tcp").Port;
             this.TransactionProcessorPort = transactionProcessorContainer.ToHostExposedEndpoint("5002/tcp").Port;
+            this.TestHostPort = testhostContainer.ToHostExposedEndpoint("9000/tcp").Port;
 
             // Setup the base address resolvers
             String EstateManagementBaseAddressResolver(String api) => $"http://127.0.0.1:{this.EstateManagementApiPort}";
@@ -290,6 +300,8 @@
             this.EstateClient = new EstateClient(EstateManagementBaseAddressResolver, httpClient);
             this.SecurityServiceClient = new SecurityServiceClient(SecurityServiceBaseAddressResolver, httpClient);
             this.TransactionProcessorClient = new TransactionProcessorClient(TransactionProcessorBaseAddressResolver, httpClient);
+            this.TestHostHttpClient= new HttpClient(clientHandler);
+            this.TestHostHttpClient.BaseAddress = new Uri($"http://127.0.0.1:{this.TestHostPort}");
 
             await this.LoadEventStoreProjections(this.EventStoreHttpPort, this.IsSecureEventStore).ConfigureAwait(false);
         }

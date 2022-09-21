@@ -29,30 +29,38 @@ Background:
 	| Test Estate 2 |
 
 	Given I have created the following operators
-	| EstateName    | OperatorName | RequireCustomMerchantNumber | RequireCustomTerminalNumber |
-	| Test Estate 1 | Safaricom    | True                        | True                        |
-	| Test Estate 1 | Voucher    | True                        | True                        |
-	| Test Estate 2 | Safaricom    | True                        | True                        |
-	| Test Estate 2 | Voucher    | True                        | True                        |
-
+	| EstateName    | OperatorName     | RequireCustomMerchantNumber | RequireCustomTerminalNumber |
+	| Test Estate 1 | Safaricom        | True                        | True                        |
+	| Test Estate 1 | Voucher          | True                        | True                        |
+	| Test Estate 1 | PataPawa PostPay | True                        | True                        |
+	| Test Estate 2 | Safaricom        | True                        | True                        |
+	| Test Estate 2 | Voucher          | True                        | True                        |
+	| Test Estate 2 | PataPawa PostPay | True                        | True                        |
+	
 	Given I create a contract with the following values
-	| EstateName    | OperatorName | ContractDescription |
-	| Test Estate 1 | Safaricom    | Safaricom Contract  |
-	| Test Estate 1 | Voucher      | Hospital 1 Contract |
-	| Test Estate 2 | Safaricom    | Safaricom Contract  |
-	| Test Estate 2 | Voucher      | Hospital 1 Contract |
+	| EstateName    | OperatorName     | ContractDescription       |
+	| Test Estate 1 | Safaricom        | Safaricom Contract        |
+	| Test Estate 1 | Voucher          | Hospital 1 Contract       |
+	| Test Estate 1 | PataPawa PostPay         | PataPawa PostPay Contract         |
+	| Test Estate 2 | Safaricom        | Safaricom Contract        |
+	| Test Estate 2 | Voucher          | Hospital 1 Contract       |
+	| Test Estate 2 | PataPawa PostPay | PataPawa PostPay Contract |
 
 	When I create the following Products
-	| EstateName    | OperatorName | ContractDescription | ProductName    | DisplayText | Value |
-	| Test Estate 1 | Safaricom    | Safaricom Contract  | Variable Topup | Custom      |       |
-	| Test Estate 1 | Voucher      | Hospital 1 Contract | 10 KES         | 10 KES      |       |
-	| Test Estate 2 | Safaricom    | Safaricom Contract  | Variable Topup | Custom      |       |
-	| Test Estate 2 | Voucher      | Hospital 1 Contract | 10 KES         | 10 KES      |       |
+	| EstateName    | OperatorName     | ContractDescription       | ProductName       | DisplayText     | Value |
+	| Test Estate 1 | Safaricom        | Safaricom Contract        | Variable Topup    | Custom          |       |
+	| Test Estate 1 | Voucher          | Hospital 1 Contract       | 10 KES            | 10 KES          |       |
+	| Test Estate 1 | PataPawa PostPay | PataPawa PostPay Contract | Post Pay Bill Pay | Bill Pay (Post) |       |
+	| Test Estate 2 | Safaricom        | Safaricom Contract        | Variable Topup    | Custom          |       |
+	| Test Estate 2 | Voucher          | Hospital 1 Contract       | 10 KES            | 10 KES          |       |
+	| Test Estate 2 | PataPawa PostPay | PataPawa PostPay Contract | Post Pay Bill Pay | Bill Pay (Post) |       |
 
 	When I add the following Transaction Fees
-	| EstateName    | OperatorName | ContractDescription | ProductName    | CalculationType | FeeDescription      | Value |
-	| Test Estate 1 | Safaricom    | Safaricom Contract  | Variable Topup | Fixed           | Merchant Commission | 2.50  |
-	| Test Estate 2 | Safaricom    | Safaricom Contract  | Variable Topup | Percentage      | Merchant Commission | 0.85  |
+	| EstateName    | OperatorName     | ContractDescription       | ProductName       | CalculationType | FeeDescription      | Value |
+	| Test Estate 1 | Safaricom        | Safaricom Contract        | Variable Topup    | Fixed           | Merchant Commission | 2.50  |
+	| Test Estate 1 | PataPawa PostPay | PataPawa PostPay Contract | Post Pay Bill Pay | Fixed           | Merchant Commission | 2.50  |
+	| Test Estate 2 | Safaricom        | Safaricom Contract        | Variable Topup    | Percentage      | Merchant Commission | 0.85  |
+	| Test Estate 2 | PataPawa PostPay | PataPawa PostPay Contract | Post Pay Bill Pay | Percentage      | Merchant Commission | 0.95  |
 
 	Given I create the following merchants
 	| MerchantName    | AddressLine1   | Town     | Region      | Country        | ContactName    | EmailAddress                 | EstateName    |
@@ -61,13 +69,16 @@ Background:
 	| Test Merchant 3 | Address Line 1 | TestTown | Test Region | United Kingdom | Test Contact 3 | testcontact3@merchant2.co.uk | Test Estate 2 |
 
 	Given I have assigned the following  operator to the merchants
-	| OperatorName | MerchantName    | MerchantNumber | TerminalNumber | EstateName    |
-	| Safaricom    | Test Merchant 1 | 00000001       | 10000001       | Test Estate 1 |
-	| Voucher      | Test Merchant 1 | 00000001       | 10000001       | Test Estate 1 |
-	| Safaricom    | Test Merchant 2 | 00000002       | 10000002       | Test Estate 1 |
-	| Voucher      | Test Merchant 2 | 00000002       | 10000002       | Test Estate 1 |
-	| Safaricom    | Test Merchant 3 | 00000003       | 10000003       | Test Estate 2 |
-	| Voucher      | Test Merchant 3 | 00000003       | 10000003       | Test Estate 2 |
+	| OperatorName     | MerchantName    | MerchantNumber | TerminalNumber | EstateName    |
+	| Safaricom        | Test Merchant 1 | 00000001       | 10000001       | Test Estate 1 |
+	| Voucher          | Test Merchant 1 | 00000001       | 10000001       | Test Estate 1 |
+	| PataPawa PostPay | Test Merchant 1 | 00000001       | 10000001       | Test Estate 1 |
+	| Safaricom        | Test Merchant 2 | 00000002       | 10000002       | Test Estate 1 |
+	| Voucher          | Test Merchant 2 | 00000002       | 10000002       | Test Estate 1 |
+	| PataPawa PostPay | Test Merchant 2 | 00000002       | 10000002       | Test Estate 1 |
+	| Safaricom        | Test Merchant 3 | 00000003       | 10000003       | Test Estate 2 |
+	| Voucher          | Test Merchant 3 | 00000003       | 10000003       | Test Estate 2 |
+	| PataPawa PostPay | Test Merchant 3 | 00000003       | 10000003       | Test Estate 2 |
 
 	Given I have assigned the following devices to the merchants
 	| DeviceIdentifier | MerchantName    | EstateName    |
@@ -77,22 +88,29 @@ Background:
 
 	Given I make the following manual merchant deposits 
 	| Reference | Amount  | DateTime | MerchantName    | EstateName    |
-	| Deposit1  | 210.00 | Today    | Test Merchant 1 | Test Estate 1 |
+	| Deposit1  | 230.00 | Today    | Test Merchant 1 | Test Estate 1 |
 	| Deposit1  | 110.00 | Today    | Test Merchant 2 | Test Estate 1 |
 	| Deposit1  | 110.00 | Today    | Test Merchant 3 | Test Estate 2 |
+
+	Given the following bills are available at the PataPawa PostPaid Host
+	| AccountNumber | AccountName    | DueDate | Amount |
+	| 12345678      | Test Account 1 | Today   | 100.00 |
 
 @PRTest
 Scenario: Sale Transactions
 
 	When I perform the following transactions
-	| DateTime | TransactionNumber | TransactionType | TransactionSource | MerchantName    | DeviceIdentifier | EstateName    | OperatorName | TransactionAmount | CustomerAccountNumber | CustomerEmailAddress        | ContractDescription | ProductName    | RecipientEmail       | RecipientMobile |
-	| Today    | 1                 | Sale            | 1                 | Test Merchant 1 | 123456780        | Test Estate 1 | Safaricom    | 100.00            | 123456789             |                             | Safaricom Contract  | Variable Topup |                      |                 |
-	| Today    | 2                 | Sale            | 1                 | Test Merchant 2 | 123456781        | Test Estate 1 | Safaricom    | 100.00            | 123456789             |                             | Safaricom Contract  | Variable Topup |                      |                 |
-	| Today    | 3                 | Sale            | 2                 | Test Merchant 3 | 123456782        | Test Estate 2 | Safaricom    | 100.00            | 123456789             |                             | Safaricom Contract  | Variable Topup |                      |                 |
-	| Today    | 4                 | Sale            | 1                 | Test Merchant 1 | 123456780        | Test Estate 1 | Safaricom    | 100.00            | 123456789             | testcustomer@customer.co.uk | Safaricom Contract  | Variable Topup |                      |                 |
-	| Today    | 5                 | Sale            | 1                 | Test Merchant 1 | 123456780        | Test Estate 1 | Voucher      | 10.00             |                       |                             | Hospital 1 Contract | 10 KES         | test@recipient.co.uk |                 |
-	| Today    | 6                 | Sale            | 1                 | Test Merchant 2 | 123456781        | Test Estate 1 | Voucher      | 10.00             |                       |                             | Hospital 1 Contract | 10 KES         |                      | 123456789       |
-	| Today    | 7                 | Sale            | 2                 | Test Merchant 3 | 123456782        | Test Estate 2 | Voucher      | 10.00             |                       |                             | Hospital 1 Contract | 10 KES         | test@recipient.co.uk |                 |
+	| DateTime | TransactionNumber | TransactionType | TransactionSource | MerchantName    | DeviceIdentifier | EstateName    | OperatorName     | TransactionAmount | CustomerAccountNumber | CustomerEmailAddress        | ContractDescription       | ProductName       | RecipientEmail       | RecipientMobile | MessageType   | AccountNumber | CustomerName     |
+	| Today    | 1                 | Sale            | 1                 | Test Merchant 1 | 123456780        | Test Estate 1 | Safaricom        | 100.00            | 123456789             |                             | Safaricom Contract        | Variable Topup    |                      |                 |               |               |                  |
+	| Today    | 2                 | Sale            | 1                 | Test Merchant 2 | 123456781        | Test Estate 1 | Safaricom        | 100.00            | 123456789             |                             | Safaricom Contract        | Variable Topup    |                      |                 |               |               |                  |
+	| Today    | 3                 | Sale            | 2                 | Test Merchant 3 | 123456782        | Test Estate 2 | Safaricom        | 100.00            | 123456789             |                             | Safaricom Contract        | Variable Topup    |                      |                 |               |               |                  |
+	| Today    | 4                 | Sale            | 1                 | Test Merchant 1 | 123456780        | Test Estate 1 | Safaricom        | 100.00            | 123456789             | testcustomer@customer.co.uk | Safaricom Contract        | Variable Topup    |                      |                 |               |               |                  |
+	| Today    | 5                 | Sale            | 1                 | Test Merchant 1 | 123456780        | Test Estate 1 | Voucher          | 10.00             |                       |                             | Hospital 1 Contract       | 10 KES            | test@recipient.co.uk |                 |               |               |                  |
+	| Today    | 6                 | Sale            | 1                 | Test Merchant 2 | 123456781        | Test Estate 1 | Voucher          | 10.00             |                       |                             | Hospital 1 Contract       | 10 KES            |                      | 123456789       |               |               |                  |
+	| Today    | 7                 | Sale            | 2                 | Test Merchant 3 | 123456782        | Test Estate 2 | Voucher          | 10.00             |                       |                             | Hospital 1 Contract       | 10 KES            | test@recipient.co.uk |                 |               |               |                  |
+	| Today    | 8                 | Sale            | 2                 | Test Merchant 1 | 123456780        | Test Estate 1 | PataPawa PostPay | 0.00              |                       |                             | PataPawa PostPay Contract | Post Pay Bill Pay | test@recipient.co.uk |                 | VerifyAccount | 12345678        |                  |
+	| Today    | 9                 | Sale            | 2                 | Test Merchant 1 | 123456780        | Test Estate 1 | PataPawa PostPay | 10.00             |                       |                             | PataPawa PostPay Contract | Post Pay Bill Pay | test@recipient.co.uk | 123456789       | ProcessBill   | 12345678        | Mr Test Customer |
+
 	
 	Then transaction response should contain the following information
 	| EstateName    | MerchantName    | TransactionNumber | ResponseCode | ResponseMessage |
@@ -103,6 +121,8 @@ Scenario: Sale Transactions
 	| Test Estate 1 | Test Merchant 1 | 5                 | 0000         | SUCCESS         |
 	| Test Estate 1 | Test Merchant 2 | 6                 | 0000         | SUCCESS         |
 	| Test Estate 2 | Test Merchant 3 | 7                 | 0000         | SUCCESS         |
+	| Test Estate 1 | Test Merchant 1 | 8                 | 0000         | SUCCESS         |
+	| Test Estate 1 | Test Merchant 1 | 9                 | 0000         | SUCCESS         |
 
 Scenario: Sale Transaction with Invalid Device
 

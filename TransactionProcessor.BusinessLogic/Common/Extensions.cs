@@ -6,7 +6,9 @@ using System.Threading.Tasks;
 
 namespace TransactionProcessor.BusinessLogic.Common
 {
+    using Google.Protobuf.WellKnownTypes;
     using System.Diagnostics.CodeAnalysis;
+    using Type = System.Type;
 
     public static class Helpers
     {
@@ -131,12 +133,12 @@ namespace TransactionProcessor.BusinessLogic.Common
             if (caseInsensitiveDictionary.ContainsKey(fieldName))
             {
                 String fieldData = caseInsensitiveDictionary[fieldName];
-                return (T)Convert.ChangeType(fieldData, typeof(T));
+                Type t = Nullable.GetUnderlyingType(typeof(T)) ?? typeof(T);
+                Object safeValue = (fieldData == null) ? null : Convert.ChangeType(fieldData, t);
+                return (T)safeValue;
             }
-            else
-            {
-                return default(T);
-            }
+
+            return default(T);
         }
 
         public static Guid ToGuid(this DateTime dt)

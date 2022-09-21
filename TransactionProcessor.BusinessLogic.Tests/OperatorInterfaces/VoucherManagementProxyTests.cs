@@ -16,6 +16,20 @@
     public class VoucherManagementProxyTests
     {
         [Fact]
+        public async Task VoucherManagementProxy_ProcessLogonMessage_NullReturned()
+        {
+            Mock<IVoucherManagementClient> voucherManagementClient = new Mock<IVoucherManagementClient>();
+            voucherManagementClient.Setup(v => v.IssueVoucher(It.IsAny<String>(), It.IsAny<IssueVoucherRequest>(), It.IsAny<CancellationToken>()))
+                                   .ReturnsAsync(TestData.IssueVoucherResponse);
+            IOperatorProxy voucherManagementProxy = new VoucherManagementProxy(voucherManagementClient.Object);
+
+            OperatorResponse operatorResponse = await voucherManagementProxy.ProcessLogonMessage(TestData.TokenResponse().AccessToken,
+                                                                                                CancellationToken.None);
+
+            operatorResponse.ShouldBeNull();
+        }
+
+        [Fact]
         public async Task VoucherManagementProxy_ProcessSaleMessage_VoucherIssueSuccessful_SaleMessageIsProcessed()
         {
             Mock<IVoucherManagementClient> voucherManagementClient = new Mock<IVoucherManagementClient>();

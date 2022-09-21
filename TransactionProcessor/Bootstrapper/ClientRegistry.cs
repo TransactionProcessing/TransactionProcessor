@@ -1,6 +1,7 @@
 ﻿namespace TransactionProcessor.Bootstrapper
 {
     using System;
+    using System.Diagnostics.CodeAnalysis;
     using System.Net.Http;
     using EstateManagement.Client;
     using Lamar;
@@ -14,6 +15,7 @@
     /// 
     /// </summary>
     /// <seealso cref="Lamar.ServiceRegistry" />
+    [ExcludeFromCodeCoverage]
     public class ClientRegistry : ServiceRegistry
     {
         #region Constructors

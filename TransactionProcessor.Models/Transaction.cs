@@ -12,6 +12,8 @@
     {
         #region Properties
 
+        public Boolean IsComplete { get; set; }
+
         /// <summary>
         /// Gets or sets the additional request metadata.
         /// </summary>

@@ -32,6 +32,12 @@ namespace TransactionProcessor.BusinessLogic.OperatorInterfaces.VoucherManagemen
         {
             this.VoucherManagementClient = voucherManagementClient;
         }
+
+        public async Task<OperatorResponse> ProcessLogonMessage(String accessToken,
+                                                                CancellationToken cancellationToken) {
+            return null;
+        }
+
         /// <summary>
         /// Processes the sale message.
         /// </summary>

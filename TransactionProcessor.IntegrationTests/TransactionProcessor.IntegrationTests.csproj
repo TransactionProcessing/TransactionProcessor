@@ -90,6 +90,7 @@
     <SpecFlowFeatureFiles Update="SaleTransaction\SaleTransactionFeature.feature">
       <Generator>SpecFlowSingleFileGenerator</Generator>
       <LastGenOutput>SaleTransactionFeature.feature.cs</LastGenOutput>
+      <Generator Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'"></Generator>
     </SpecFlowFeatureFiles>
   </ItemGroup>
 

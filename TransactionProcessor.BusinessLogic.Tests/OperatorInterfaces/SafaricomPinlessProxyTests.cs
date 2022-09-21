@@ -19,6 +19,22 @@ namespace TransactionProcessor.BusinessLogic.Tests.OperatorInterfaces
     public class SafaricomPinlessProxyTests
     {
         [Fact]
+        public async Task SafaricomPinlessProxy_ProcessLogonMessage_NullIsReturned() {
+            HttpResponseMessage responseMessage = new HttpResponseMessage
+                                                  {
+                                                      StatusCode = HttpStatusCode.OK,
+                                                      Content = new StringContent(TestData.SuccessfulSafaricomTopup)
+                                                  };
+            SafaricomConfiguration safaricomConfiguration = TestData.SafaricomConfiguration;
+            HttpClient httpClient = SetupMockHttpClient(responseMessage);
+
+            IOperatorProxy safaricomPinlessproxy = new SafaricomPinlessProxy(safaricomConfiguration, httpClient);
+            OperatorResponse operatorResponse = await safaricomPinlessproxy.ProcessLogonMessage(TestData.TokenResponse().AccessToken, CancellationToken.None);
+            operatorResponse.ShouldBeNull();
+
+        }
+
+        [Fact]
         public async Task SafaricomPinlessProxy_ProcessSaleMessage_TopupSuccessful_SaleMessageIsProcessed()
         {
             HttpResponseMessage responseMessage = new HttpResponseMessage
@@ -38,7 +54,7 @@ namespace TransactionProcessor.BusinessLogic.Tests.OperatorInterfaces
                                                                                                 TestData.Merchant,
                                                                                                 TestData.TransactionDateTime,
                                                                                                 TestData.TransactionReference,
-                                                                                                TestData.AdditionalTransactionMetaData(),
+                                                                                                TestData.AdditionalTransactionMetaDataForMobileTopup(),
                                                                                                 CancellationToken.None);
 
             operatorResponse.ShouldNotBeNull();
@@ -70,7 +86,7 @@ namespace TransactionProcessor.BusinessLogic.Tests.OperatorInterfaces
                                                                                                 TestData.Merchant,
                                                                                                 TestData.TransactionDateTime,
                                                                                                 TestData.TransactionReference,
-                                                                                                TestData.AdditionalTransactionMetaData(amountName: amountFieldName),
+                                                                                                TestData.AdditionalTransactionMetaDataForMobileTopup(amountName: amountFieldName),
                                                                                                 CancellationToken.None);
 
             operatorResponse.ShouldNotBeNull();
@@ -103,7 +119,7 @@ namespace TransactionProcessor.BusinessLogic.Tests.OperatorInterfaces
                                                                                                 TestData.Merchant,
                                                                                                 TestData.TransactionDateTime,
                                                                                                 TestData.TransactionReference,
-                                                                                                TestData.AdditionalTransactionMetaData(customerAccountNumberName: customerAccountNumberFieldName),
+                                                                                                TestData.AdditionalTransactionMetaDataForMobileTopup(customerAccountNumberName: customerAccountNumberFieldName),
                                                                                                 CancellationToken.None);
 
             operatorResponse.ShouldNotBeNull();
@@ -132,7 +148,7 @@ namespace TransactionProcessor.BusinessLogic.Tests.OperatorInterfaces
                                                                                                TestData.Merchant,
                                                                                                TestData.TransactionDateTime,
                                                                                                TestData.TransactionReference,
-                                                                                               TestData.AdditionalTransactionMetaData(),
+                                                                                               TestData.AdditionalTransactionMetaDataForMobileTopup(),
                                                                                                CancellationToken.None);
 
             operatorResponse.ShouldNotBeNull();
@@ -162,7 +178,7 @@ namespace TransactionProcessor.BusinessLogic.Tests.OperatorInterfaces
                                                                                        TestData.Merchant,
                                                                                        TestData.TransactionDateTime,
                                                                                        TestData.TransactionReference,
-                                                                                       TestData.AdditionalTransactionMetaData(),
+                                                                                       TestData.AdditionalTransactionMetaDataForMobileTopup(),
                                                                                        CancellationToken.None);
                                     });
         }

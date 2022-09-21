@@ -2,16 +2,23 @@ namespace TransactionProcessor
 {
     using System;
     using System.Diagnostics;
+    using System.Diagnostics.CodeAnalysis;
+    using System.Linq;
     using System.Net.Http;
     using System.Threading;
     using EventStore.Client;
     using Microsoft.AspNetCore.Builder;
+    using Microsoft.CodeAnalysis.Editing;
+    using Microsoft.Extensions.Caching.Memory;
     using Microsoft.Extensions.DependencyInjection;
+    using Newtonsoft.Json;
     using Shared.EventStore.EventHandling;
     using Shared.EventStore.SubscriptionWorker;
     using Shared.General;
     using Shared.Logger;
+    using TransactionProcessor.BusinessLogic.OperatorInterfaces;
 
+    [ExcludeFromCodeCoverage]
     public static class Extensions
     {
         public static IServiceCollection AddInSecureEventStoreClient(this IServiceCollection services,
@@ -102,6 +109,25 @@ namespace TransactionProcessor
 
                 concurrentSubscriptions.StartAsync(CancellationToken.None).Wait();
             }
+
+            if (Startup.AutoApiLogonOperators.Any())
+            {
+                foreach (String autoApiLogonOperator in Startup.AutoApiLogonOperators)
+                {
+                    OperatorLogon(autoApiLogonOperator);
+                }
+            }
+        }
+
+        private static void OperatorLogon(String operatorId)
+        {
+
+            Logger.LogInformation($"About to do auto logon for operator Id [{operatorId}]");
+            Func<String, IOperatorProxy> resolver = Startup.ServiceProvider.GetService<Func<String, IOperatorProxy>>();
+            IOperatorProxy proxy = resolver(operatorId);
+
+            OperatorResponse logonResult = proxy.ProcessLogonMessage(null, CancellationToken.None).Result;
+            Logger.LogInformation($"Auto logon for operator Id [{operatorId}] status [{logonResult.IsSuccessful}]");
         }
     }
 }

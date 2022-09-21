@@ -4,12 +4,14 @@
     using System.Collections.Generic;
     using System.Reflection.Metadata;
     using BusinessLogic.OperatorInterfaces;
+    using BusinessLogic.OperatorInterfaces.PataPawaPostPay;
     using BusinessLogic.OperatorInterfaces.SafaricomPinless;
     using BusinessLogic.Requests;
     using BusinessLogic.Services;
     using EstateManagement.DataTransferObjects;
     using EstateManagement.DataTransferObjects.Responses;
     using Models;
+    using PataPawaPostPay;
     using ReconciliationAggregate;
     using SecurityService.DataTransferObjects.Responses;
     using SettlementAggregates;
@@ -115,7 +117,7 @@
             new OperatorResponse
             {
                 ResponseMessage = TestData.OperatorResponseMessage,
-                AdditionalTransactionResponseMetadata = TestData.AdditionalTransactionMetaData(),
+                AdditionalTransactionResponseMetadata = TestData.AdditionalTransactionMetaDataForMobileTopup(),
                 TransactionId = TestData.OperatorTransactionId,
                 IsSuccessful = true,
                 AuthorisationCode = TestData.OperatorAuthorisationCode,
@@ -148,7 +150,7 @@
         /// <value>
         /// The additional transaction meta data.
         /// </value>
-        public static Dictionary<String, String> AdditionalTransactionMetaData(String amountName = "Amount", String customerAccountNumberName = "CustomerAccountNumber", String amount="100.00", String customerAccountNumber = "123456789") =>
+        public static Dictionary<String, String> AdditionalTransactionMetaDataForMobileTopup(String amountName = "Amount", String customerAccountNumberName = "CustomerAccountNumber", String amount="100.00", String customerAccountNumber = "123456789") =>
             new Dictionary<String, String>
             {
                 {amountName, amount},
@@ -161,6 +163,134 @@
                 {amountName, amount},
                 {recipientEmailName, recipientEmail }
 
+            };
+
+        public static Dictionary<String, String> AdditionalTransactionMetaDataForPataPawaVerifyAccount(String customerAccountNumberName = "CustomerAccountNumber", String pataPawaPostPaidMessageTypeName = "PataPawaPostPaidMessageType", String customerAccountNumber = "123456789", String pataPawaPostPaidMessageType = "VerifyAccount") =>
+            new Dictionary<String, String>
+            {
+                {pataPawaPostPaidMessageTypeName, pataPawaPostPaidMessageType},
+                {customerAccountNumberName, customerAccountNumber }
+            };
+        
+        public static Dictionary<String, String> AdditionalTransactionMetaDataForPataPawaVerifyAccount_NoMessageType(String customerAccountNumberName = "CustomerAccountNumber", String customerAccountNumber = "123456789") =>
+            new Dictionary<String, String>
+            {
+                {customerAccountNumberName, customerAccountNumber }
+            };
+
+        public static Dictionary<String, String> AdditionalTransactionMetaDataForPataPawaVerifyAccount_NoCustomerAccountNumber(String pataPawaPostPaidMessageTypeName = "PataPawaPostPaidMessageType", String pataPawaPostPaidMessageType = "VerifyAccount") =>
+            new Dictionary<String, String>
+            {
+                {pataPawaPostPaidMessageTypeName, pataPawaPostPaidMessageType},
+            };
+        
+        public static Dictionary<String, String> AdditionalTransactionMetaDataForPataPawaProcessBill(String customerAccountNumberName = "CustomerAccountNumber", 
+                                                                                                     String pataPawaPostPaidMessageTypeName = "PataPawaPostPaidMessageType",
+                                                                                                     String pataPawaPostPaidMobileNumberName = "MobileNumber",
+                                                                                                     String pataPawaPostPaidCustomerNameName = "CustomerName",
+                                                                                                     String pataPawaPostPaidAmountName = "Amount",
+                                                                                                     String customerAccountNumber = "123456789", 
+                                                                                                     String pataPawaPostPaidMessageType = "ProcessBill",
+                                                                                                     String pataPawaPostPaidMobileNumber = "123455",
+                                                                                                     String pataPawaPostPaidCustomerName = "Customer 1",
+                                                                                                     String pataPawaPostPaidAmount = "100.00") =>
+            new Dictionary<String, String>
+            {
+                {pataPawaPostPaidMessageTypeName, pataPawaPostPaidMessageType},
+                {customerAccountNumberName, customerAccountNumber },
+                {pataPawaPostPaidMobileNumberName, pataPawaPostPaidMobileNumber },
+                {pataPawaPostPaidCustomerNameName, pataPawaPostPaidCustomerName },
+                {pataPawaPostPaidAmountName, pataPawaPostPaidAmount }
+            };
+
+        public static Dictionary<String, String> AdditionalTransactionMetaDataForPataPawaProcessBill_NoMessageType(String customerAccountNumberName = "CustomerAccountNumber",
+                                                                                                     String pataPawaPostPaidMessageTypeName = "PataPawaPostPaidMessageType",
+                                                                                                     String pataPawaPostPaidMobileNumberName = "MobileNumber",
+                                                                                                     String pataPawaPostPaidCustomerNameName = "CustomerName",
+                                                                                                     String pataPawaPostPaidAmountName = "Amount",
+                                                                                                     String customerAccountNumber = "123456789",
+                                                                                                     String pataPawaPostPaidMessageType = "ProcessBill",
+                                                                                                     String pataPawaPostPaidMobileNumber = "123455",
+                                                                                                     String pataPawaPostPaidCustomerName = "Customer 1",
+                                                                                                     String pataPawaPostPaidAmount = "100.00") =>
+            new Dictionary<String, String>
+            {
+                {customerAccountNumberName, customerAccountNumber },
+                {pataPawaPostPaidMobileNumberName, pataPawaPostPaidMobileNumber },
+                {pataPawaPostPaidCustomerNameName, pataPawaPostPaidCustomerName },
+                {pataPawaPostPaidAmountName, pataPawaPostPaidAmount }
+            };
+
+        public static Dictionary<String, String> AdditionalTransactionMetaDataForPataPawaProcessBill_NoCustomerAccountNumber(String customerAccountNumberName = "CustomerAccountNumber",
+                                                                                                     String pataPawaPostPaidMessageTypeName = "PataPawaPostPaidMessageType",
+                                                                                                     String pataPawaPostPaidMobileNumberName = "MobileNumber",
+                                                                                                     String pataPawaPostPaidCustomerNameName = "CustomerName",
+                                                                                                     String pataPawaPostPaidAmountName = "Amount",
+                                                                                                     String customerAccountNumber = "123456789",
+                                                                                                     String pataPawaPostPaidMessageType = "ProcessBill",
+                                                                                                     String pataPawaPostPaidMobileNumber = "123455",
+                                                                                                     String pataPawaPostPaidCustomerName = "Customer 1",
+                                                                                                     String pataPawaPostPaidAmount = "100.00") =>
+            new Dictionary<String, String>
+            {
+                {pataPawaPostPaidMessageTypeName, pataPawaPostPaidMessageType},
+                {pataPawaPostPaidMobileNumberName, pataPawaPostPaidMobileNumber },
+                {pataPawaPostPaidCustomerNameName, pataPawaPostPaidCustomerName },
+                {pataPawaPostPaidAmountName, pataPawaPostPaidAmount }
+            };
+
+        public static Dictionary<String, String> AdditionalTransactionMetaDataForPataPawaProcessBill_NoMobileNumber(String customerAccountNumberName = "CustomerAccountNumber",
+                                                                                                     String pataPawaPostPaidMessageTypeName = "PataPawaPostPaidMessageType",
+                                                                                                     String pataPawaPostPaidMobileNumberName = "MobileNumber",
+                                                                                                     String pataPawaPostPaidCustomerNameName = "CustomerName",
+                                                                                                     String pataPawaPostPaidAmountName = "Amount",
+                                                                                                     String customerAccountNumber = "123456789",
+                                                                                                     String pataPawaPostPaidMessageType = "ProcessBill",
+                                                                                                     String pataPawaPostPaidMobileNumber = "123455",
+                                                                                                     String pataPawaPostPaidCustomerName = "Customer 1",
+                                                                                                     String pataPawaPostPaidAmount = "100.00") =>
+            new Dictionary<String, String>
+            {
+                {pataPawaPostPaidMessageTypeName, pataPawaPostPaidMessageType},
+                {customerAccountNumberName, customerAccountNumber },
+                {pataPawaPostPaidCustomerNameName, pataPawaPostPaidCustomerName },
+                {pataPawaPostPaidAmountName, pataPawaPostPaidAmount }
+            };
+
+        public static Dictionary<String, String> AdditionalTransactionMetaDataForPataPawaProcessBill_NoCustomerName(String customerAccountNumberName = "CustomerAccountNumber",
+                                                                                                     String pataPawaPostPaidMessageTypeName = "PataPawaPostPaidMessageType",
+                                                                                                     String pataPawaPostPaidMobileNumberName = "MobileNumber",
+                                                                                                     String pataPawaPostPaidCustomerNameName = "CustomerName",
+                                                                                                     String pataPawaPostPaidAmountName = "Amount",
+                                                                                                     String customerAccountNumber = "123456789",
+                                                                                                     String pataPawaPostPaidMessageType = "ProcessBill",
+                                                                                                     String pataPawaPostPaidMobileNumber = "123455",
+                                                                                                     String pataPawaPostPaidCustomerName = "Customer 1",
+                                                                                                     String pataPawaPostPaidAmount = "100.00") =>
+            new Dictionary<String, String>
+            {
+                {pataPawaPostPaidMessageTypeName, pataPawaPostPaidMessageType},
+                {customerAccountNumberName, customerAccountNumber },
+                {pataPawaPostPaidMobileNumberName, pataPawaPostPaidMobileNumber },
+                {pataPawaPostPaidAmountName, pataPawaPostPaidAmount }
+            };
+
+        public static Dictionary<String, String> AdditionalTransactionMetaDataForPataPawaProcessBill_NoAmount(String customerAccountNumberName = "CustomerAccountNumber",
+                                                                                                     String pataPawaPostPaidMessageTypeName = "PataPawaPostPaidMessageType",
+                                                                                                     String pataPawaPostPaidMobileNumberName = "MobileNumber",
+                                                                                                     String pataPawaPostPaidCustomerNameName = "CustomerName",
+                                                                                                     String pataPawaPostPaidAmountName = "Amount",
+                                                                                                     String customerAccountNumber = "123456789",
+                                                                                                     String pataPawaPostPaidMessageType = "ProcessBill",
+                                                                                                     String pataPawaPostPaidMobileNumber = "123455",
+                                                                                                     String pataPawaPostPaidCustomerName = "Customer 1",
+                                                                                                     String pataPawaPostPaidAmount = "100.00") =>
+            new Dictionary<String, String>
+            {
+                {pataPawaPostPaidMessageTypeName, pataPawaPostPaidMessageType},
+                {customerAccountNumberName, customerAccountNumber },
+                {pataPawaPostPaidMobileNumberName, pataPawaPostPaidMobileNumber },
+                {pataPawaPostPaidCustomerNameName, pataPawaPostPaidCustomerName }
             };
 
         public static IReadOnlyDictionary<String, String> DefaultAppSettings =>
@@ -412,7 +542,7 @@
                                                  TestData.TransactionNumber,
                                                  TestData.OperatorIdentifier1,
                                                  TestData.CustomerEmailAddress,
-                                                 TestData.AdditionalTransactionMetaData(),
+                                                 TestData.AdditionalTransactionMetaDataForMobileTopup(),
                                                  TestData.ContractId,
                                                  TestData.ProductId,
                                                  TestData.TransactionSource);
@@ -753,6 +883,90 @@
         public static Guid VoucherId = Guid.Parse("ED744C18-1F45-47E7-A9FC-7AAC1D9E9D8A");
 
         public static DateTime SettlementDate = new DateTime(2021,9,22, 1,2,3);
+
+        public static PataPawaPostPaidConfiguration PataPawaPostPaidConfiguration =>
+            new PataPawaPostPaidConfiguration {
+                                                  ApiLogonRequired = true,
+                                                  Password = "TestPassword",
+                                                  Url = "http://localhost",
+                                                  Username = "TestUserName"
+                                              };
+
+        public static String PataPawaPostPaidApiKey = "PataPawaApiKey1";
+        public static Decimal PataPawaPostPaidBalance = 100.00m;
+        public static String PataPawaPostPaidSuccessMessage = "Successful Logon";
+        public static String PataPawaPostPaidFailedMessage = "Error logging on with PataPawa Post Paid API";
+        public static Int32 PataPawaPostPaidSuccessStatus = 0;
+        public static Int32 PataPawaPostPaidFailedStatus = -1;
+
+        public static login PataPawaPostPaidSuccessfulLoginResponse = new login {
+                                                                                    api_key = TestData.PataPawaPostPaidApiKey,
+                                                                                    balance = PataPawaPostPaidBalance,
+                                                                                    message = PataPawaPostPaidSuccessMessage,
+                                                                                    status = PataPawaPostPaidSuccessStatus
+                                                                                };
+
+        public static login PataPawaPostPaidFailedLoginResponse = new login {
+                                                                                message = PataPawaPostPaidFailedMessage,
+                                                                                status = PataPawaPostPaidFailedStatus
+                                                                            };
+
+        public static Decimal PataPawaPostPaidAccountBalance = 250.00m;
+
+        public static String PataPawaPostPaidAccountName = "Mr Test Account";
+        public static String PataPawaPostPaidAccountNumber = "001122-abc";
+
+        public static DateTime PataPawaPostPaidAccountDueDate = new DateTime(2022, 9, 13);
+
+        public static verify PataPawaPostPaidSuccessfulVerifyAccountResponse = new verify {
+                                                                                              account_balance = TestData.PataPawaPostPaidAccountBalance,
+                                                                                              account_name = PataPawaPostPaidAccountName,
+                                                                                              due_date = PataPawaPostPaidAccountDueDate,
+                                                                                              account_no = PataPawaPostPaidAccountNumber
+                                                                                          };
+
+        public static paybill PataPawaPostPaidSuccessfulProcessBillResponse = new paybill
+                                                                               {
+                                                                                   status = 0,
+                                                                                   msg = "",
+                                                                                   receipt_no = "1",
+                                                                                   rescode = "0",
+                                                                                   agent_id = "PataPawa",
+                                                                                   sms_id = "12345"
+                                                                               };
+
+        public static paybill PataPawaPostPaidFailedProcessBillResponse = new paybill
+                                                                              {
+                                                                                  status = 1,
+                                                                                  msg = "",
+                                                                                  receipt_no = "1",
+                                                                                  rescode = "0",
+                                                                                  agent_id = "PataPawa",
+                                                                                  sms_id = "12345"
+                                                                              };
+
+        public static verify PataPawaPostPaidFailedVerifyAccountResponse = new verify
+                                                                               {
+                                                                                   account_name = String.Empty,
+                                                                                   
+                                                                               };
+
+        public static OperatorResponse PataPawaPostPaidSuccessfulLoginOperatorResponse = new OperatorResponse {
+                                                                                                                 IsSuccessful = true,
+                                                                                                                 AdditionalTransactionResponseMetadata =
+                                                                                                                     new Dictionary<String, String> {
+                                                                                                                         {
+                                                                                                                             "PataPawaPostPaidAPIKey",
+                                                                                                                             PataPawaPostPaidApiKey
+                                                                                                                         }
+                                                                                                                     }
+                                                                                                             };
+
+        public static OperatorResponse PataPawaPostPaidFailedLoginOperatorResponse = new OperatorResponse {
+                                                                                                              IsSuccessful = false,
+                                                                                                              AdditionalTransactionResponseMetadata =
+                                                                                                                  new Dictionary<String, String>()
+                                                                                                          };
 
         public static List<ContractProductTransactionFee> ContractProductTransactionFees =>
             new List<ContractProductTransactionFee>
