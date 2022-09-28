@@ -224,6 +224,18 @@ namespace TransactionProcessor.BusinessLogic.Tests.Services
         }
 
         [Fact]
+        public async Task TransactionAggregateManager_ResendReceipt_EmailRecieptResendRequested()
+        {
+            Mock<IAggregateRepository<TransactionAggregate, DomainEvent>> aggregateRepository = new Mock<IAggregateRepository<TransactionAggregate, DomainEvent>>();
+            aggregateRepository.Setup(a => a.GetLatestVersion(It.IsAny<Guid>(), It.IsAny<CancellationToken>())).ReturnsAsync(TestData.GetCompletedAuthorisedSaleTransactionWithReceiptRequestedAggregate);
+            TransactionAggregateManager transactionAggregateManager = new TransactionAggregateManager(aggregateRepository.Object);
+
+            await transactionAggregateManager.ResendReceipt(TestData.EstateId,
+                                                                  TestData.TransactionId,
+                                                                  CancellationToken.None);
+        }
+
+        [Fact]
         public async Task TransactionAggregateManager_AddProductDetails_ProductDetailsAddedToTransaction()
         {
             Mock<IAggregateRepository<TransactionAggregate, DomainEvent>> aggregateRepository = new Mock<IAggregateRepository<TransactionAggregate, DomainEvent>>();

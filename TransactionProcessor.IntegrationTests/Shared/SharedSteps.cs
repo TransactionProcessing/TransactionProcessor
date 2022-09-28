@@ -17,6 +17,7 @@ namespace TransactionProcessor.IntegrationTests.Shared
     using EstateManagement.DataTransferObjects;
     using EstateManagement.DataTransferObjects.Requests;
     using EstateManagement.DataTransferObjects.Responses;
+    using MessagingService.DataTransferObjects;
     using Microsoft.EntityFrameworkCore.ValueGeneration.Internal;
     using Microsoft.Extensions.Logging;
     using Newtonsoft.Json;
@@ -676,6 +677,39 @@ namespace TransactionProcessor.IntegrationTests.Shared
                 this.ValidateTransactionResponse((dynamic)transactionResponse, tableRow);
             }
         }
+
+        [When(@"I request the receipt is resent")]
+        public async Task WhenIRequestTheReceiptIsResent(Table table)
+        {
+            foreach (TableRow tableRow in table.Rows) {
+                // Get the merchant name
+                EstateDetails estateDetails = this.TestingContext.GetEstateDetails(tableRow);
+
+                String merchantName = SpecflowTableHelper.GetStringRowValue(tableRow, "MerchantName");
+                Guid merchantId = estateDetails.GetMerchantId(merchantName);
+
+                String transactionNumber = SpecflowTableHelper.GetStringRowValue(tableRow, "TransactionNumber");
+                SerialisedMessage serialisedMessage = estateDetails.GetTransactionResponse(merchantId, transactionNumber);
+
+                SaleTransactionResponse transactionResponse = JsonConvert.DeserializeObject<SaleTransactionResponse>(serialisedMessage.SerialisedData,
+                                                                           new JsonSerializerSettings
+                                                                           {
+                                                                               TypeNameHandling = TypeNameHandling.All
+                                                                           });
+
+                await Retry.For(async () => {
+                                    Should.NotThrow(async () => {
+                                                        await this.TestingContext.DockerHelper.TransactionProcessorClient.ResendEmailReceipt(this.TestingContext
+                                                                .AccessToken,
+                                                            estateDetails.EstateId,
+                                                            transactionResponse.TransactionId,
+                                                            CancellationToken.None);
+                                                    });
+                                });
+
+            }
+        }
+
 
         private void ValidateTransactionResponse(LogonTransactionResponse logonTransactionResponse,
                                            TableRow tableRow)

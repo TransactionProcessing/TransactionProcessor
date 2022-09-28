@@ -16,6 +16,7 @@
     using EstateReporting.Database;
     using EventStore.Client;
     using global::Shared.Logger;
+    using MessagingService.Client;
     using SecurityService.Client;
 
     /// <summary>
@@ -232,7 +233,10 @@
                                                                                               {
                                                                                                   testNetwork
                                                                                               },
-                                                                                              true);
+                                                                                              true,
+                                                                                              additionalEnvironmentVariables: new List<String>() {
+                                                                                                  insecureEventStoreEnvironmentVariable,
+                                                                                              });
 
             IContainerService securityServiceContainer = this.SetupSecurityServiceContainer("stuartferguson/securityservice:master", testNetwork, true);
 
@@ -245,7 +249,8 @@
                                                                                                           persistentSubscriptionPollingInSeconds,
                                                                                                           internalSubscriptionServiceCacheDuration,
                                                                                                           $"AppSettings:VoucherManagementApi=http://{this.VoucherManagementContainerName}:{DockerHelper.VoucherManagementDockerPort}",
-                                                                                                          $"OperatorConfiguration:PataPawaPostPay:Url=http://{this.TestHostContainerName}:9000/PataPawaPostPayService/basichttp"
+                                                                                                          $"OperatorConfiguration:PataPawaPostPay:Url=http://{this.TestHostContainerName}:9000/PataPawaPostPayService/basichttp",
+                                                                                                          $"AppSettings:MessagingServiceApi=http://{this.MessagingServiceContainerName}:{DockerHelper.MessagingServiceDockerPort}"
                                                                                                       });
 
             IContainerService estateReportingContainer = this.SetupEstateReportingContainer("stuartferguson/estatereporting:master",

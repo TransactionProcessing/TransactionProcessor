@@ -17,7 +17,8 @@
     /// <seealso cref="" />
     public class TransactionRequestHandler : IRequestHandler<ProcessLogonTransactionRequest, ProcessLogonTransactionResponse>,
                                              IRequestHandler<ProcessSaleTransactionRequest, ProcessSaleTransactionResponse>,
-                                             IRequestHandler<ProcessReconciliationRequest, ProcessReconciliationTransactionResponse>
+                                             IRequestHandler<ProcessReconciliationRequest, ProcessReconciliationTransactionResponse>,
+                                             IRequestHandler<ResendTransactionReceiptRequest>
     {
         #region Fields
 
@@ -118,5 +119,12 @@
         }
 
         #endregion
+
+        public async Task<Unit> Handle(ResendTransactionReceiptRequest request,
+                                 CancellationToken cancellationToken) {
+            await this.TransactionDomainService.ResendTransactionReceipt(request.TransactionId, request.EstateId, cancellationToken);
+
+            return Unit.Value;
+        }
     }
 }

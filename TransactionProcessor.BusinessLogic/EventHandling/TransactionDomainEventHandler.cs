@@ -294,6 +294,16 @@
 
         }
 
+        private async Task HandleSpecificDomainEvent(CustomerEmailReceiptResendRequestedEvent domainEvent,
+                                                     CancellationToken cancellationToken)
+        {
+            this.TokenResponse = await this.GetToken(cancellationToken);
+
+            // Send the message
+            await this.ResendEmailMessage(this.TokenResponse.AccessToken, domainEvent.EventId, domainEvent.EstateId, cancellationToken);
+
+        }
+
         private async Task HandleSpecificDomainEvent(MerchantFeeAddedToTransactionEvent domainEvent,
                                                      CancellationToken cancellationToken)
         {
@@ -359,6 +369,29 @@
                 }
             }
             
+        }
+
+        private async Task ResendEmailMessage(String accessToken,
+                                            Guid messageId,
+                                            Guid estateId,
+                                            CancellationToken cancellationToken) {
+            ResendEmailRequest resendEmailRequest = new ResendEmailRequest {
+                                                                               ConnectionIdentifier = estateId,
+                                                                               MessageId = messageId
+                                                                           };
+            try
+            {
+                await this.MessagingServiceClient.ResendEmail(accessToken, resendEmailRequest, cancellationToken);
+            }
+            catch (Exception ex) when (ex.InnerException != null && ex.InnerException.GetType() == typeof(InvalidOperationException))
+            {
+                // Only bubble up if not a duplicate message
+                if (ex.InnerException.Message.Contains("Cannot send a message to provider that has already been sent", StringComparison.InvariantCultureIgnoreCase) == false)
+                {
+                    throw;
+                }
+            }
+
         }
 
         #endregion

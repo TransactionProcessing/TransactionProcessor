@@ -13,7 +13,7 @@
         [JsonProperty("additional_transaction_metadata")]
         public Dictionary<String, String> AdditionalTransactionMetadata { get; set; }
 
-        [JsonProperty("contact_id")]
+        [JsonProperty("contract_id")]
         public Guid ContractId { get; set; }
 
         [JsonProperty("customer_email_address")]

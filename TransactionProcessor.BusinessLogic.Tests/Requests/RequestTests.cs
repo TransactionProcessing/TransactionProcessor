@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-
-namespace TransactionProcessor.BusinessLogic.Tests.Commands
+﻿namespace TransactionProcessor.BusinessLogic.Tests.Commands
 {
     using Requests;
     using Shouldly;
@@ -11,11 +7,18 @@ namespace TransactionProcessor.BusinessLogic.Tests.Commands
 
     public class RequestTests
     {
+        #region Methods
+
         [Fact]
-        public void ProcessLogonTransactionRequest_CanBeCreated_IsCreated()
-        {
-            ProcessLogonTransactionRequest processLogonTransactionRequest = ProcessLogonTransactionRequest.Create(TestData.TransactionId, TestData.EstateId, TestData.MerchantId, TestData.DeviceIdentifier,TestData.TransactionTypeLogon.ToString(), TestData.TransactionDateTime,
-                                                                                                                  TestData.TransactionNumber);
+        public void ProcessLogonTransactionRequest_CanBeCreated_IsCreated() {
+            ProcessLogonTransactionRequest processLogonTransactionRequest =
+                ProcessLogonTransactionRequest.Create(TestData.TransactionId,
+                                                      TestData.EstateId,
+                                                      TestData.MerchantId,
+                                                      TestData.DeviceIdentifier,
+                                                      TestData.TransactionTypeLogon.ToString(),
+                                                      TestData.TransactionDateTime,
+                                                      TestData.TransactionNumber);
 
             processLogonTransactionRequest.ShouldNotBeNull();
             processLogonTransactionRequest.EstateId.ShouldBe(TestData.EstateId);
@@ -28,9 +31,33 @@ namespace TransactionProcessor.BusinessLogic.Tests.Commands
         }
 
         [Fact]
-        public void ProcessSaleTransactionRequest_CanBeCreated_IsCreated()
-        {
-            ProcessSaleTransactionRequest processSaleTransactionRequest = ProcessSaleTransactionRequest.Create(TestData.TransactionId, TestData.EstateId, TestData.MerchantId, TestData.DeviceIdentifier, TestData.TransactionTypeLogon.ToString(), TestData.TransactionDateTime,
+        public void ProcessReconciliationRequest_CanBeCreated_IsCreated() {
+            ProcessReconciliationRequest processReconciliationRequest = ProcessReconciliationRequest.Create(TestData.TransactionId,
+                                                                                                            TestData.EstateId,
+                                                                                                            TestData.MerchantId,
+                                                                                                            TestData.DeviceIdentifier,
+                                                                                                            TestData.TransactionDateTime,
+                                                                                                            TestData.ReconciliationTransactionCount,
+                                                                                                            TestData.ReconciliationTransactionValue);
+
+            processReconciliationRequest.ShouldNotBeNull();
+            processReconciliationRequest.EstateId.ShouldBe(TestData.EstateId);
+            processReconciliationRequest.MerchantId.ShouldBe(TestData.MerchantId);
+            processReconciliationRequest.DeviceIdentifier.ShouldBe(TestData.DeviceIdentifier);
+            processReconciliationRequest.TransactionDateTime.ShouldBe(TestData.TransactionDateTime);
+            processReconciliationRequest.TransactionCount.ShouldBe(TestData.ReconciliationTransactionCount);
+            processReconciliationRequest.TransactionValue.ShouldBe(TestData.ReconciliationTransactionValue);
+            processReconciliationRequest.TransactionId.ShouldBe(TestData.TransactionId);
+        }
+
+        [Fact]
+        public void ProcessSaleTransactionRequest_CanBeCreated_IsCreated() {
+            ProcessSaleTransactionRequest processSaleTransactionRequest = ProcessSaleTransactionRequest.Create(TestData.TransactionId,
+                                                                                                               TestData.EstateId,
+                                                                                                               TestData.MerchantId,
+                                                                                                               TestData.DeviceIdentifier,
+                                                                                                               TestData.TransactionTypeLogon.ToString(),
+                                                                                                               TestData.TransactionDateTime,
                                                                                                                TestData.TransactionNumber,
                                                                                                                TestData.OperatorIdentifier1,
                                                                                                                TestData.CustomerEmailAddress,
@@ -57,36 +84,23 @@ namespace TransactionProcessor.BusinessLogic.Tests.Commands
         }
 
         [Fact]
-        public void ProcessReconciliationRequest_CanBeCreated_IsCreated()
-        {
-            ProcessReconciliationRequest processReconciliationRequest = ProcessReconciliationRequest.Create(TestData.TransactionId,
-                                                                                                            TestData.EstateId,
-                                                                                                            TestData.MerchantId,
-                                                                                                            TestData.DeviceIdentifier,
-                                                                                                            TestData.TransactionDateTime,
-                                                                                                            TestData.ReconciliationTransactionCount,
-                                                                                                            TestData.ReconciliationTransactionValue);
-
-            processReconciliationRequest.ShouldNotBeNull();
-            processReconciliationRequest.EstateId.ShouldBe(TestData.EstateId);
-            processReconciliationRequest.MerchantId.ShouldBe(TestData.MerchantId);
-            processReconciliationRequest.DeviceIdentifier.ShouldBe(TestData.DeviceIdentifier);
-            processReconciliationRequest.TransactionDateTime.ShouldBe(TestData.TransactionDateTime);
-            processReconciliationRequest.TransactionCount.ShouldBe(TestData.ReconciliationTransactionCount);
-            processReconciliationRequest.TransactionValue.ShouldBe(TestData.ReconciliationTransactionValue);
-            processReconciliationRequest.TransactionId.ShouldBe(TestData.TransactionId);
-        }
-
-        [Fact]
-        public void ProcessSettlementRequest_CanBeCreated_IsCreated()
-        {
-            ProcessSettlementRequest processSettlementRequest = ProcessSettlementRequest.Create(TestData.SettlementDate, 
-                                                                                                TestData.EstateId);
+        public void ProcessSettlementRequest_CanBeCreated_IsCreated() {
+            ProcessSettlementRequest processSettlementRequest = ProcessSettlementRequest.Create(TestData.SettlementDate, TestData.EstateId);
 
             processSettlementRequest.ShouldNotBeNull();
             processSettlementRequest.EstateId.ShouldBe(TestData.EstateId);
             processSettlementRequest.SettlementDate.ShouldBe(TestData.SettlementDate);
-
         }
+
+        [Fact]
+        public void Test_CanBeCreated_IsCreated() {
+            ResendTransactionReceiptRequest resendTransactionReceiptRequest = ResendTransactionReceiptRequest.Create(TestData.TransactionId,
+                 TestData.EstateId);
+
+            resendTransactionReceiptRequest.ShouldNotBeNull();
+            resendTransactionReceiptRequest.EstateId.ShouldBe(TestData.EstateId);
+            resendTransactionReceiptRequest.TransactionId.ShouldBe(TestData.TransactionId);
+        }
+        #endregion
     }
 }

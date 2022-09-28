@@ -63,6 +63,11 @@
                                                                                         Int32 transactionCount,
                                                                                         Decimal transactionValue,
                                                                                         CancellationToken cancellationToken);
+
+        Task ResendTransactionReceipt(Guid transactionId,
+                                      Guid estateId,
+                                      CancellationToken cancellationToken);
+
         #endregion
     }
 }

@@ -631,6 +631,36 @@
             return transactionAggregate;
         }
 
+        public static TransactionAggregate GetCompletedAuthorisedSaleTransactionWithReceiptRequestedAggregate()
+        {
+            TransactionAggregate transactionAggregate = TransactionAggregate.Create(TestData.TransactionId);
+
+            transactionAggregate.StartTransaction(TestData.TransactionDateTime,
+                                                  TestData.TransactionNumber,
+                                                  TestData.TransactionTypeSale,
+                                                  TestData.TransactionReference,
+                                                  TestData.EstateId,
+                                                  TestData.MerchantId,
+                                                  TestData.DeviceIdentifier,
+                                                  TestData.TransactionAmount);
+
+            transactionAggregate.AddProductDetails(TestData.ContractId, TestData.ProductId);
+
+            transactionAggregate.AuthoriseTransaction(TestData.OperatorIdentifier1,
+                                                      TestData.AuthorisationCode,
+                                                      TestData.OperatorResponseCode,
+                                                      TestData.OperatorResponseMessage,
+                                                      TestData.OperatorTransactionId,
+                                                      TestData.ResponseCode,
+                                                      TestData.ResponseMessage);
+
+            transactionAggregate.CompleteTransaction();
+
+            transactionAggregate.RequestEmailReceipt(TestData.CustomerEmailAddress);
+
+            return transactionAggregate;
+        }
+
         public static TransactionAggregate GetCompletedDeclinedSaleTransactionAggregate()
         {
             TransactionAggregate transactionAggregate = TransactionAggregate.Create(TestData.TransactionId);
@@ -827,6 +857,9 @@
         public static CustomerEmailReceiptRequestedEvent CustomerEmailReceiptRequestedEvent =
             new CustomerEmailReceiptRequestedEvent(TestData.TransactionId, TestData.EstateId, TestData.MerchantId, TestData.CustomerEmailAddress);
 
+        public static CustomerEmailReceiptResendRequestedEvent CustomerEmailReceiptResendRequestedEvent =
+            new CustomerEmailReceiptResendRequestedEvent(TestData.TransactionId, TestData.EstateId, TestData.MerchantId);
+        
         public static MerchantFeeAddedToTransactionEvent MerchantFeeAddedToTransactionEvent(DateTime settlementDueDate) => new MerchantFeeAddedToTransactionEvent(TestData.SettlementAggregateId,
             TestData.EstateId,
             TestData.MerchantId,
@@ -967,6 +1000,9 @@
                                                                                                               AdditionalTransactionResponseMetadata =
                                                                                                                   new Dictionary<String, String>()
                                                                                                           };
+
+        public static ResendTransactionReceiptRequest ResendTransactionReceiptRequest => ResendTransactionReceiptRequest.Create(TestData.TransactionId,
+             TestData.EstateId);
 
         public static List<ContractProductTransactionFee> ContractProductTransactionFees =>
             new List<ContractProductTransactionFee>

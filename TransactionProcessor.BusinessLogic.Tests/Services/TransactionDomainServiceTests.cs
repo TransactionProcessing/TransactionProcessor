@@ -1366,6 +1366,36 @@ namespace TransactionProcessor.BusinessLogic.Tests.Services
             this.ValidateResponse(response, TransactionResponseCode.OperatorCommsError);
         }
 
+        [Fact]
+        public async Task TransactionDomainService_ResendTransactionReceipt_TransactionReceiptResendIsRequested()
+        {
+            IConfigurationRoot configurationRoot = new ConfigurationBuilder().AddInMemoryCollection(TestData.DefaultAppSettings).Build();
+            ConfigurationReader.Initialise(configurationRoot);
+
+            Logger.Initialise(NullLogger.Instance);
+
+            Mock<ITransactionAggregateManager> transactionAggregateManager = new Mock<ITransactionAggregateManager>();
+            Mock<IEstateClient> estateClient = new Mock<IEstateClient>();
+            Mock<ISecurityServiceClient> securityServiceClient = new Mock<ISecurityServiceClient>();
+
+            transactionAggregateManager.Setup(t => t.GetAggregate(It.IsAny<Guid>(), It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
+                                       .ReturnsAsync(TestData.GetCompletedAuthorisedSaleTransactionAggregate);
+
+            Mock<IOperatorProxy> operatorProxy = new Mock<IOperatorProxy>();
+            Func<String, IOperatorProxy> operatorProxyResolver = (operatorName) => { return operatorProxy.Object; };
+
+            Mock<IAggregateRepository<ReconciliationAggregate, DomainEvent>> reconciliationAggregateRepository =
+                new Mock<IAggregateRepository<ReconciliationAggregate, DomainEvent>>();
+
+            TransactionDomainService transactionDomainService =
+                new TransactionDomainService(transactionAggregateManager.Object, estateClient.Object, securityServiceClient.Object,
+                                             operatorProxyResolver, reconciliationAggregateRepository.Object);
+
+            Should.NotThrow(async () => {
+                                await transactionDomainService.ResendTransactionReceipt(TestData.TransactionId, TestData.EstateId, CancellationToken.None);
+                            });
+        }
+
         private void ValidateResponse(ProcessLogonTransactionResponse response,
                                            TransactionResponseCode transactionResponseCode)
         {
