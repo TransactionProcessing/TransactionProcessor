@@ -99,6 +99,26 @@
             return this.Created("", transactionResponse);
         }
 
+        [HttpPost]
+        [Route("/api/{estateId}/transactions/{transactionId}/resendreceipt")][SwaggerResponseExample(201, typeof(TransactionResponseExample))]
+        public async Task<IActionResult> ResendTransactionReceipt([FromRoute] Guid estateId, 
+                                                                  [FromRoute] Guid transactionId,
+                                                                  CancellationToken cancellationToken)
+        {
+            // Reject password tokens
+            if (ClaimsHelper.IsPasswordToken(this.User))
+            {
+                return this.Forbid();
+            }
+
+            ResendTransactionReceiptRequest resendTransactionReceiptRequest = ResendTransactionReceiptRequest.Create(transactionId,estateId);
+
+            await this.Mediator.Send(resendTransactionReceiptRequest, cancellationToken);
+
+            // TODO: Populate the GET route
+            return this.Accepted();
+        }
+
         /// <summary>
         /// Processes the specific message.
         /// </summary>

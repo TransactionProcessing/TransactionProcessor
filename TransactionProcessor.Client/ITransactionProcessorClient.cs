@@ -8,13 +8,7 @@
     public interface ITransactionProcessorClient
     {
         #region Methods
-
-        /// <summary>
-        /// Performs the transaction.
-        /// </summary>
-        /// <param name="transactionRequest">The transaction request.</param>
-        /// <param name="cancellationToken">The cancellation token.</param>
-        /// <returns></returns>
+        
         Task<SerialisedMessage> PerformTransaction(String accessToken, 
                                                    SerialisedMessage transactionRequest,
                                                    CancellationToken cancellationToken);
@@ -27,6 +21,11 @@
         Task ProcessSettlement(String accessToken,
                                DateTime settlementDate,
                                Guid estateId,
+                               CancellationToken cancellationToken);
+
+        Task ResendEmailReceipt(String accessToken,
+                               Guid estateId,
+                               Guid transactionId,
                                CancellationToken cancellationToken);
 
         #endregion

@@ -6,9 +6,11 @@
     using System.Threading;
     using System.Threading.Tasks;
     using Models;
+    using Newtonsoft.Json;
     using OperatorInterfaces;
     using Shared.DomainDrivenDesign.EventSourcing;
     using Shared.EventStore.Aggregate;
+    using Shared.Logger;
     using TransactionAggregate;
 
     /// <summary>
@@ -196,6 +198,20 @@
             TransactionAggregate transactionAggregate = await this.TransactionAggregateRepository.GetLatestVersion(transactionId, cancellationToken);
 
             transactionAggregate.RequestEmailReceipt(customerEmailAddress);
+
+            await this.TransactionAggregateRepository.SaveChanges(transactionAggregate, cancellationToken);
+        }
+
+        public async Task ResendReceipt(Guid estateId,
+                                  Guid transactionId,
+                                  CancellationToken cancellationToken) {
+            TransactionAggregate transactionAggregate = await this.TransactionAggregateRepository.GetLatestVersion(transactionId, cancellationToken);
+            
+            var aggregateJson = JsonConvert.SerializeObject(transactionAggregate, Formatting.Indented);
+            Logger.LogInformation($"Transaction Id is [{transactionId}]");
+            Logger.LogInformation(aggregateJson);
+
+            transactionAggregate.RequestEmailReceiptResend();
 
             await this.TransactionAggregateRepository.SaveChanges(transactionAggregate, cancellationToken);
         }

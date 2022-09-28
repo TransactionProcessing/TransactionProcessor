@@ -7,17 +7,19 @@ Background:
 	| Name                 | DisplayName                       | Description                            |
 	| estateManagement     | Estate Managememt REST Scope      | A scope for Estate Managememt REST     |
 	| transactionProcessor | Transaction Processor REST  Scope | A scope for Transaction Processor REST |
-	| voucherManagement | Voucher Management REST  Scope | A scope for Voucher Management REST |
+	| voucherManagement    | Voucher Management REST  Scope    | A scope for Voucher Management REST    |
+	| messagingService     | Scope for Messaging REST          | Scope for Messaging REST               |
 
 	Given the following api resources exist
 	| ResourceName         | DisplayName                | Secret  | Scopes               | UserClaims                 |
 	| estateManagement     | Estate Managememt REST     | Secret1 | estateManagement     | MerchantId, EstateId, role |
 	| transactionProcessor | Transaction Processor REST | Secret1 | transactionProcessor |                            |
 	| voucherManagement    | Voucher Management REST    | Secret1 | voucherManagement    |                            |
+	| messagingService     | Messaging REST             | Secret  | messagingService     |                            |
 
 	Given the following clients exist
 	| ClientId      | ClientName     | Secret  | AllowedScopes    | AllowedGrantTypes  |
-	| serviceClient | Service Client | Secret1 | estateManagement,transactionProcessor,voucherManagement | client_credentials |
+	| serviceClient | Service Client | Secret1 | estateManagement,transactionProcessor,voucherManagement,messagingService | client_credentials |
 
 	Given I have a token to access the estate management and transaction processor resources
 	| ClientId      | 
@@ -123,6 +125,21 @@ Scenario: Sale Transactions
 	| Test Estate 2 | Test Merchant 3 | 7                 | 0000         | SUCCESS         |
 	| Test Estate 1 | Test Merchant 1 | 8                 | 0000         | SUCCESS         |
 	| Test Estate 1 | Test Merchant 1 | 9                 | 0000         | SUCCESS         |
+
+@PRTest
+Scenario: Resend Transaction Receipt
+
+	When I perform the following transactions
+	| DateTime | TransactionNumber | TransactionType | TransactionSource | MerchantName    | DeviceIdentifier | EstateName    | OperatorName     | TransactionAmount | CustomerAccountNumber | CustomerEmailAddress        | ContractDescription       | ProductName       | RecipientEmail       | RecipientMobile | MessageType   | AccountNumber | CustomerName     |
+	| Today    | 1                 | Sale            | 1                 | Test Merchant 1 | 123456780        | Test Estate 1 | Safaricom        | 100.00            | 123456789             | testcustomer@customer.co.uk | Safaricom Contract        | Variable Topup    |                      |                 |               |               |                  |
+		
+	Then transaction response should contain the following information
+	| EstateName    | MerchantName    | TransactionNumber | ResponseCode | ResponseMessage |
+	| Test Estate 1 | Test Merchant 1 | 1                 | 0000         | SUCCESS         |
+
+	When I request the receipt is resent
+	| EstateName    | MerchantName    | TransactionNumber | 
+	| Test Estate 1 | Test Merchant 1 | 1                 | 
 
 Scenario: Sale Transaction with Invalid Device
 

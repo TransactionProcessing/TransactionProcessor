@@ -153,6 +153,35 @@
                 throw exception;
             }
         }
+        
+        public async Task ResendEmailReceipt(String accessToken,
+                                       Guid estateId,
+                                       Guid transactionId,
+                                       CancellationToken cancellationToken) {
+            String requestUri = $"{this.BaseAddress}/api/{estateId}/transactions/{transactionId}/resendreceipt";
+
+            try
+            {
+                // Add the access token to the client headers
+                this.HttpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", accessToken);
+
+                StringContent requestContent = new StringContent(String.Empty);
+
+                // Make the Http Call here
+                HttpResponseMessage httpResponse = await this.HttpClient.PostAsync(requestUri, requestContent, cancellationToken);
+
+                // Process the response
+                await this.HandleResponse(httpResponse, cancellationToken);
+
+            }
+            catch (Exception ex)
+            {
+                // An exception has occurred, add some additional information to the message
+                Exception exception = new Exception("Error requesting receipt resend.", ex);
+
+                throw exception;
+            }
+        }
 
         #endregion
     }

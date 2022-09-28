@@ -52,6 +52,8 @@
 
         public Boolean CustomerEmailReceiptHasBeenRequested { get; private set; }
 
+        public String CustomerEmailAddress { get; private set; }
+
         public String DeviceIdentifier { get; private set; }
 
         public Guid EstateId { get; private set; }
@@ -97,6 +99,8 @@
         public TransactionSource TransactionSource { get; private set; }
 
         public TransactionType TransactionType { get; private set; }
+
+        public Int32 ReceiptResendCount { get; private set; }
 
         #endregion
 
@@ -347,6 +351,16 @@
             this.ApplyAndAppend(customerEmailReceiptRequestedEvent);
         }
 
+        public void RequestEmailReceiptResend()
+        {
+            this.CheckCustomerHasAlreadyRequestedEmailReceipt();
+            
+            CustomerEmailReceiptResendRequestedEvent customerEmailReceiptResendRequestedEvent =
+                new CustomerEmailReceiptResendRequestedEvent(this.AggregateId, this.EstateId, this.MerchantId);
+
+            this.ApplyAndAppend(customerEmailReceiptResendRequestedEvent);
+        }
+
         public void StartTransaction(DateTime transactionDateTime,
                                      String transactionNumber,
                                      TransactionType transactionType,
@@ -411,6 +425,14 @@
         private void CheckCustomerHasNotAlreadyRequestedEmailReceipt() {
             if (this.CustomerEmailReceiptHasBeenRequested) {
                 throw new InvalidOperationException($"Customer Email Receipt already requested for Transaction [{this.AggregateId}]");
+            }
+        }
+
+        private void CheckCustomerHasAlreadyRequestedEmailReceipt()
+        {
+            if (this.CustomerEmailReceiptHasBeenRequested == false)
+            {
+                throw new InvalidOperationException($"Customer Email Receipt not already requested for Transaction [{this.AggregateId}]");
             }
         }
 
@@ -487,7 +509,12 @@
         }
 
         private void PlayEvent(CustomerEmailReceiptRequestedEvent domainEvent) {
+            this.CustomerEmailAddress = domainEvent.CustomerEmailAddress;
             this.CustomerEmailReceiptHasBeenRequested = true;
+        }
+
+        private void PlayEvent(CustomerEmailReceiptResendRequestedEvent domainEvent) {
+            this.ReceiptResendCount++;
         }
 
         private void PlayEvent(AdditionalRequestDataRecordedEvent domainEvent) {

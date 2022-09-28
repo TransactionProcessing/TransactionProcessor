@@ -59,17 +59,14 @@
                             });
 
         }
-    }
 
-    public class SettlementRequestHandlerTests
-    {
         [Fact]
-        public void TransactionRequestHandler_ProcessLogonTransactionRequest_IsHandled()
+        public void TransactionRequestHandler_ResendTransactionReceiptRequest_IsHandled()
         {
-            Mock<ISettlementDomainService> settlementDomainService = new Mock<ISettlementDomainService>();
-            SettlementRequestHandler handler = new SettlementRequestHandler(settlementDomainService.Object);
+            Mock<ITransactionDomainService> transactionDomainService = new Mock<ITransactionDomainService>();
+            TransactionRequestHandler handler = new TransactionRequestHandler(transactionDomainService.Object);
 
-            ProcessSettlementRequest command = TestData.ProcessSettlementRequest;
+            ResendTransactionReceiptRequest command = TestData.ResendTransactionReceiptRequest;
 
             Should.NotThrow(async () =>
                             {

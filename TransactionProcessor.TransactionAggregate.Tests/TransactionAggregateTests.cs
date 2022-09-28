@@ -1019,6 +1019,7 @@ namespace TransactionProcessor.TransactionAggregate.Tests
             transactionAggregate.RequestEmailReceipt(TestData.CustomerEmailAddress);
 
             transactionAggregate.CustomerEmailReceiptHasBeenRequested.ShouldBeTrue();
+            transactionAggregate.CustomerEmailAddress.ShouldBe(TestData.CustomerEmailAddress);
         }
         
         [Fact]
@@ -1050,6 +1051,38 @@ namespace TransactionProcessor.TransactionAggregate.Tests
             transactionAggregate.RequestEmailReceipt(TestData.CustomerEmailAddress);
 
             Should.Throw<InvalidOperationException>(() => { transactionAggregate.RequestEmailReceipt(TestData.CustomerEmailAddress); });
+        }
+
+        [Fact]
+        public void TransactionAggregate_RequestEmailReceiptResend_CustomerEmailReceiptHasBeenRequested()
+        {
+            TransactionAggregate transactionAggregate = TransactionAggregate.Create(TestData.TransactionId);
+            transactionAggregate.StartTransaction(TestData.TransactionDateTime, TestData.TransactionNumber, TransactionType.Sale, TestData.TransactionReference, TestData.EstateId, TestData.MerchantId, TestData.DeviceIdentifier,
+                                                  TestData.TransactionAmount);
+            transactionAggregate.AddProductDetails(TestData.ContractId, TestData.ProductId);
+            transactionAggregate.RecordAdditionalRequestData(TestData.OperatorIdentifier1, TestData.AdditionalTransactionMetaDataForMobileTopup());
+            transactionAggregate.AuthoriseTransaction(TestData.OperatorIdentifier1, TestData.OperatorAuthorisationCode, TestData.OperatorResponseCode, TestData.OperatorResponseMessage, TestData.OperatorTransactionId, TestData.ResponseCode, TestData.ResponseMessage);
+            transactionAggregate.RecordAdditionalResponseData(TestData.OperatorIdentifier1, TestData.AdditionalTransactionMetaDataForMobileTopup());
+            transactionAggregate.CompleteTransaction();
+
+            transactionAggregate.RequestEmailReceipt(TestData.CustomerEmailAddress);
+            transactionAggregate.RequestEmailReceiptResend();
+
+            transactionAggregate.ReceiptResendCount.ShouldBe(1);
+        }
+
+        [Fact]
+        public void TransactionAggregate_RequestEmailReceiptResend_ReceiptNotSent_ErrorThrown()
+        {
+            TransactionAggregate transactionAggregate = TransactionAggregate.Create(TestData.TransactionId);
+            transactionAggregate.StartTransaction(TestData.TransactionDateTime, TestData.TransactionNumber, TransactionType.Sale, TestData.TransactionReference, TestData.EstateId, TestData.MerchantId, TestData.DeviceIdentifier,
+                                                  TestData.TransactionAmount);
+            transactionAggregate.AddProductDetails(TestData.ContractId, TestData.ProductId);
+            transactionAggregate.RecordAdditionalRequestData(TestData.OperatorIdentifier1, TestData.AdditionalTransactionMetaDataForMobileTopup());
+            transactionAggregate.AuthoriseTransaction(TestData.OperatorIdentifier1, TestData.OperatorAuthorisationCode, TestData.OperatorResponseCode, TestData.OperatorResponseMessage, TestData.OperatorTransactionId, TestData.ResponseCode, TestData.ResponseMessage);
+            transactionAggregate.RecordAdditionalResponseData(TestData.OperatorIdentifier1, TestData.AdditionalTransactionMetaDataForMobileTopup());
+
+            Should.Throw<InvalidOperationException>(() => { transactionAggregate.RequestEmailReceiptResend(); });
         }
 
         [Theory]

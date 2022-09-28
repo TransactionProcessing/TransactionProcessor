@@ -30,6 +30,7 @@
             this.AddSingleton<IRequestHandler<ProcessLogonTransactionRequest, ProcessLogonTransactionResponse>, TransactionRequestHandler>();
             this.AddSingleton<IRequestHandler<ProcessSaleTransactionRequest, ProcessSaleTransactionResponse>, TransactionRequestHandler>();
             this.AddSingleton<IRequestHandler<ProcessReconciliationRequest, ProcessReconciliationTransactionResponse>, TransactionRequestHandler>();
+            this.AddSingleton<IRequestHandler<ResendTransactionReceiptRequest>, TransactionRequestHandler>();
 
             this.AddSingleton<IRequestHandler<ProcessSettlementRequest, ProcessSettlementResponse>, SettlementRequestHandler>();
         }

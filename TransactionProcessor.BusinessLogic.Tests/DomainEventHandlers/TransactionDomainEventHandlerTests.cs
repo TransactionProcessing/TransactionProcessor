@@ -12,6 +12,7 @@
     using EstateManagement.DataTransferObjects.Responses;
     using EventHandling;
     using MessagingService.Client;
+    using MessagingService.DataTransferObjects;
     using Microsoft.Extensions.Configuration;
     using Models;
     using Moq;
@@ -30,50 +31,6 @@
 
     public class TransactionDomainEventHandlerTests
     {
-        //[Fact]
-        //public async Task TransactionDomainEventHandler_Handle_TransactionHasBeenCompletedEvent_SuccessfulSale_EventIsHandled()
-        //{
-        //    Mock<ITransactionAggregateManager> transactionAggregateManager = new Mock<ITransactionAggregateManager>();
-        //    transactionAggregateManager.Setup(t => t.GetAggregate(It.IsAny<Guid>(), It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
-        //                               .ReturnsAsync(TestData.GetCompletedAuthorisedSaleTransactionAggregate);
-        //    Mock<IAggregateRepository<PendingSettlementAggregate, DomainEventRecord.DomainEvent>> pendingSettlementAggregateRepository =
-        //        new Mock<IAggregateRepository<PendingSettlementAggregate, DomainEventRecord.DomainEvent>>();
-        //    Mock<IFeeCalculationManager> feeCalculationManager = new Mock<IFeeCalculationManager>();
-        //    feeCalculationManager.Setup(f => f.CalculateFees(It.IsAny<List<TransactionFeeToCalculate>>(), It.IsAny<Decimal>())).Returns(TestData.CalculatedMerchantFees);
-        //    Mock<IEstateClient> estateClient = new Mock<IEstateClient>();
-        //    estateClient.Setup(e => e.GetTransactionFeesForProduct(It.IsAny<String>(),
-        //                                                           It.IsAny<Guid>(),
-        //                                                           It.IsAny<Guid>(),
-        //                                                           It.IsAny<Guid>(),
-        //                                                           It.IsAny<Guid>(),
-        //                                                           It.IsAny<CancellationToken>())).ReturnsAsync(TestData.ContractProductTransactionFees);
-
-        //    Mock<ISecurityServiceClient> securityServiceClient = new Mock<ISecurityServiceClient>();
-        //    securityServiceClient.Setup(s => s.GetToken(It.IsAny<String>(), It.IsAny<String>(), It.IsAny<CancellationToken>())).ReturnsAsync(TestData.TokenResponse);
-
-        //    Mock<ITransactionReceiptBuilder> transactionReceiptBulder = new Mock<ITransactionReceiptBuilder>();
-        //    Mock<IMessagingServiceClient> messagingServiceClient = new Mock<IMessagingServiceClient>();
-
-        //    IConfigurationRoot configurationRoot = new ConfigurationBuilder().AddInMemoryCollection(TestData.DefaultAppSettings).Build();
-        //    ConfigurationReader.Initialise(configurationRoot);
-        //    Logger.Initialise(NullLogger.Instance);
-
-        //    TransactionDomainEventHandler transactionDomainEventHandler = new TransactionDomainEventHandler(transactionAggregateManager.Object,
-        //                                                                                              feeCalculationManager.Object,
-        //                                                                                              estateClient.Object,
-        //                                                                                              securityServiceClient.Object,
-        //                                                                                              transactionReceiptBulder.Object,
-        //                                                                                              messagingServiceClient.Object,
-        //                                                                                              pendingSettlementAggregateRepository.Object);
-
-        //    await transactionDomainEventHandler.Handle(TestData.TransactionHasBeenCompletedEvent, CancellationToken.None);
-        //}
-
-        //Merchant not found
-        //    Merchant with Immediate Settlement
-        //    Merchant with Weekly Settlement
-        //    Merchant with Monthly Settlement
-
         private Mock<ITransactionAggregateManager> TransactionAggregateManager;
 
         private Mock<IAggregateRepository<SettlementAggregate, DomainEvent>> SettlementAggregateRepository;
@@ -374,6 +331,27 @@
 
             await transactionDomainEventHandler.Handle(TestData.CustomerEmailReceiptRequestedEvent, CancellationToken.None);
         }
+
+        [Fact]
+        public async Task TransactionDomainEventHandler_Handle_CustomerEmailReceiptResendRequestedEvent_EventIsHandled()
+        {
+            this.SecurityServiceClient.Setup(s => s.GetToken(It.IsAny<String>(), It.IsAny<String>(), It.IsAny<CancellationToken>())).ReturnsAsync(TestData.TokenResponse);
+
+            TransactionDomainEventHandler transactionDomainEventHandler = new TransactionDomainEventHandler(this.TransactionAggregateManager.Object,
+                                                                                                            this.FeeCalculationManager.Object,
+                                                                                                            this.EstateClient.Object,
+                                                                                                            this.SecurityServiceClient.Object,
+                                                                                                            this.TransactionReceiptBuilder.Object,
+                                                                                                            this.MessagingServiceClient.Object,
+                                                                                                            this.SettlementAggregateRepository.Object);
+
+            await transactionDomainEventHandler.Handle(TestData.CustomerEmailReceiptResendRequestedEvent, CancellationToken.None);
+
+            this.MessagingServiceClient.Verify(v => v.ResendEmail(It.IsAny<String>(),
+                                                                  It.IsAny<ResendEmailRequest>(),
+                                                                  It.IsAny<CancellationToken>()), Times.Once);
+        }
+
 
         [Fact]
         public async Task TransactionDomainEventHandler_Handle_MerchantFeeAddedToTransactionEvent_EventIsHandled()
