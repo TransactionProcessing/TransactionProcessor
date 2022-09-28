@@ -697,11 +697,14 @@ namespace TransactionProcessor.IntegrationTests.Shared
                                                                                TypeNameHandling = TypeNameHandling.All
                                                                            });
 
-                Should.NotThrow(async () => {
-                                    await this.TestingContext.DockerHelper.TransactionProcessorClient.ResendEmailReceipt(this.TestingContext.AccessToken,
-                                                                                                              estateDetails.EstateId,
-                                                                                                              transactionResponse.TransactionId,
-                                                                                                              CancellationToken.None);
+                await Retry.For(async () => {
+                                    Should.NotThrow(async () => {
+                                                        await this.TestingContext.DockerHelper.TransactionProcessorClient.ResendEmailReceipt(this.TestingContext
+                                                                .AccessToken,
+                                                            estateDetails.EstateId,
+                                                            transactionResponse.TransactionId,
+                                                            CancellationToken.None);
+                                                    });
                                 });
 
             }
