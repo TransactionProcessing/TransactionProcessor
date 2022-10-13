@@ -237,7 +237,9 @@
             Decimal? transactionAmount = additionalTransactionMetadata.ExtractFieldFromMetadata<Decimal?>("Amount");
 
             (String responseMessage, TransactionResponseCode responseCode) validationResult =
-                await this.ValidateSaleTransaction(estateId, merchantId, deviceIdentifier, operatorIdentifier, transactionAmount, cancellationToken);
+                await this.ValidateSaleTransaction(estateId, merchantId,contractId, productId, deviceIdentifier, operatorIdentifier, transactionAmount, cancellationToken);
+
+            Logger.LogInformation($"Validation response is [{validationResult.responseCode}]");
 
             await this.TransactionAggregateManager.StartTransaction(transactionId,
                                                                     transactionDateTime,
@@ -250,90 +252,102 @@
                                                                     transactionAmount,
                                                                     cancellationToken);
 
-            // Add the product details (unless invalid estate)
-            if (validationResult.responseCode != TransactionResponseCode.InvalidEstateId) {
-                await this.TransactionAggregateManager.AddProductDetails(estateId, transactionId, contractId, productId, cancellationToken);
-            }
-
-            // Add the transaction source
-            await this.TransactionAggregateManager.AddTransactionSource(estateId, transactionId, transactionSourceValue, cancellationToken);
-
-            if (validationResult.responseCode == TransactionResponseCode.Success) {
-                // Record any additional request metadata
-                await this.TransactionAggregateManager.RecordAdditionalRequestData(estateId,
-                                                                                   transactionId,
-                                                                                   operatorIdentifier,
-                                                                                   additionalTransactionMetadata,
-                                                                                   cancellationToken);
-
-                // Do the online processing with the operator here
-                MerchantResponse merchant = await this.GetMerchant(estateId, merchantId, cancellationToken);
-                OperatorResponse operatorResponse = await this.ProcessMessageWithOperator(merchant,
-                                                                                          transactionId,
-                                                                                          transactionDateTime,
-                                                                                          operatorIdentifier,
-                                                                                          additionalTransactionMetadata,
-                                                                                          transactionReference,
-                                                                                          cancellationToken);
-
-                // Act on the operator response
-                if (operatorResponse == null) {
-                    // Failed to perform sed/receive with the operator
-                    TransactionResponseCode transactionResponseCode = TransactionResponseCode.OperatorCommsError;
-                    String responseMessage = "OPERATOR COMMS ERROR";
-
-                    await this.TransactionAggregateManager.DeclineTransactionLocally(estateId,
-                                                                                     transactionId,
-                                                                                     (responseMessage, transactionResponseCode),
-                                                                                     cancellationToken);
+                // Add the product details (unless invalid estate)
+                if (validationResult.responseCode != TransactionResponseCode.InvalidEstateId &&
+                    validationResult.responseCode != TransactionResponseCode.InvalidContractIdValue &&
+                    validationResult.responseCode != TransactionResponseCode.InvalidProductIdValue &&
+                    validationResult.responseCode != TransactionResponseCode.ContractNotValidForMerchant &&
+                    validationResult.responseCode != TransactionResponseCode.ProductNotValidForMerchant)
+                {
+                    await this.TransactionAggregateManager.AddProductDetails(estateId, transactionId, contractId, productId, cancellationToken);
                 }
-                else {
-                    if (operatorResponse.IsSuccessful) {
-                        TransactionResponseCode transactionResponseCode = TransactionResponseCode.Success;
-                        String responseMessage = "SUCCESS";
 
-                        await this.TransactionAggregateManager.AuthoriseTransaction(estateId,
-                                                                                    transactionId,
-                                                                                    operatorIdentifier,
-                                                                                    operatorResponse,
-                                                                                    transactionResponseCode,
-                                                                                    responseMessage,
-                                                                                    cancellationToken);
+                // Add the transaction source
+                await this.TransactionAggregateManager.AddTransactionSource(estateId, transactionId, transactionSourceValue, cancellationToken);
+
+                if (validationResult.responseCode == TransactionResponseCode.Success)
+                {
+                    // Record any additional request metadata
+                    await this.TransactionAggregateManager.RecordAdditionalRequestData(estateId,
+                                                                                       transactionId,
+                                                                                       operatorIdentifier,
+                                                                                       additionalTransactionMetadata,
+                                                                                       cancellationToken);
+
+                    // Do the online processing with the operator here
+                    MerchantResponse merchant = await this.GetMerchant(estateId, merchantId, cancellationToken);
+                    OperatorResponse operatorResponse = await this.ProcessMessageWithOperator(merchant,
+                                                                                              transactionId,
+                                                                                              transactionDateTime,
+                                                                                              operatorIdentifier,
+                                                                                              additionalTransactionMetadata,
+                                                                                              transactionReference,
+                                                                                              cancellationToken);
+
+                    // Act on the operator response
+                    if (operatorResponse == null)
+                    {
+                        // Failed to perform sed/receive with the operator
+                        TransactionResponseCode transactionResponseCode = TransactionResponseCode.OperatorCommsError;
+                        String responseMessage = "OPERATOR COMMS ERROR";
+
+                        await this.TransactionAggregateManager.DeclineTransactionLocally(estateId,
+                                                                                         transactionId,
+                                                                                         (responseMessage, transactionResponseCode),
+                                                                                         cancellationToken);
                     }
-                    else {
-                        TransactionResponseCode transactionResponseCode = TransactionResponseCode.TransactionDeclinedByOperator;
-                        String responseMessage = "DECLINED BY OPERATOR";
+                    else
+                    {
+                        if (operatorResponse.IsSuccessful)
+                        {
+                            TransactionResponseCode transactionResponseCode = TransactionResponseCode.Success;
+                            String responseMessage = "SUCCESS";
 
-                        await this.TransactionAggregateManager.DeclineTransaction(estateId,
-                                                                                  transactionId,
-                                                                                  operatorIdentifier,
-                                                                                  operatorResponse,
-                                                                                  transactionResponseCode,
-                                                                                  responseMessage,
-                                                                                  cancellationToken);
-                    }
-
-                    // Record any additional operator response metadata
-                    await this.TransactionAggregateManager.RecordAdditionalResponseData(estateId,
+                            await this.TransactionAggregateManager.AuthoriseTransaction(estateId,
                                                                                         transactionId,
                                                                                         operatorIdentifier,
-                                                                                        operatorResponse.AdditionalTransactionResponseMetadata,
+                                                                                        operatorResponse,
+                                                                                        transactionResponseCode,
+                                                                                        responseMessage,
                                                                                         cancellationToken);
+                        }
+                        else
+                        {
+                            TransactionResponseCode transactionResponseCode = TransactionResponseCode.TransactionDeclinedByOperator;
+                            String responseMessage = "DECLINED BY OPERATOR";
+
+                            await this.TransactionAggregateManager.DeclineTransaction(estateId,
+                                                                                      transactionId,
+                                                                                      operatorIdentifier,
+                                                                                      operatorResponse,
+                                                                                      transactionResponseCode,
+                                                                                      responseMessage,
+                                                                                      cancellationToken);
+                        }
+
+                        // Record any additional operator response metadata
+                        await this.TransactionAggregateManager.RecordAdditionalResponseData(estateId,
+                                                                                            transactionId,
+                                                                                            operatorIdentifier,
+                                                                                            operatorResponse.AdditionalTransactionResponseMetadata,
+                                                                                            cancellationToken);
+                    }
                 }
-            }
-            else {
-                // Record the failure
-                await this.TransactionAggregateManager.DeclineTransactionLocally(estateId, transactionId, validationResult, cancellationToken);
-            }
+                else
+                {
+                    // Record the failure
+                    await this.TransactionAggregateManager.DeclineTransactionLocally(estateId, transactionId, validationResult, cancellationToken);
+                }
 
-            await this.TransactionAggregateManager.CompleteTransaction(estateId, transactionId, cancellationToken);
+                await this.TransactionAggregateManager.CompleteTransaction(estateId, transactionId, cancellationToken);
 
-            // Determine if the email receipt is required
-            if (String.IsNullOrEmpty(customerEmailAddress) == false) {
-                await this.TransactionAggregateManager.RequestEmailReceipt(estateId, transactionId, customerEmailAddress, cancellationToken);
-            }
+                // Determine if the email receipt is required
+                if (String.IsNullOrEmpty(customerEmailAddress) == false)
+                {
+                    await this.TransactionAggregateManager.RequestEmailReceipt(estateId, transactionId, customerEmailAddress, cancellationToken);
+                }
 
-            TransactionAggregate transactionAggregate = await this.TransactionAggregateManager.GetAggregate(estateId, transactionId, cancellationToken);
+                TransactionAggregate transactionAggregate = await this.TransactionAggregateManager.GetAggregate(estateId, transactionId, cancellationToken);
 
             // Get the model from the aggregate
             Transaction transaction = transactionAggregate.GetTransaction();
@@ -423,6 +437,17 @@
             return merchant;
         }
 
+        private async Task<List<ContractResponse>> GetMerchantContracts(Guid estateId,
+                                                         Guid merchantId,
+                                                         CancellationToken cancellationToken)
+        {
+            this.TokenResponse = await this.GetToken(cancellationToken);
+
+            List<ContractResponse> merchantContracts = await this.EstateClient.GetMerchantContracts(this.TokenResponse.AccessToken, estateId, merchantId, cancellationToken);
+
+            return merchantContracts;
+        }
+
         /// <summary>
         /// Gets the token.
         /// </summary>
@@ -493,7 +518,7 @@
             String deviceIdentifier,
             CancellationToken cancellationToken) {
             try {
-                (EstateResponse estate, MerchantResponse merchant) validateTransactionResponse = await this.ValidateTransaction(estateId, merchantId, cancellationToken);
+                (EstateResponse estate, MerchantResponse merchant, List<ContractResponse> merchantContracts) validateTransactionResponse = await this.ValidateTransaction(estateId, merchantId, cancellationToken);
                 MerchantResponse merchant = validateTransactionResponse.merchant;
 
                 // Device Validation
@@ -535,7 +560,7 @@
             String deviceIdentifier,
             CancellationToken cancellationToken) {
             try {
-                (EstateResponse estate, MerchantResponse merchant) validateTransactionResponse = await this.ValidateTransaction(estateId, merchantId, cancellationToken);
+                (EstateResponse estate, MerchantResponse merchant, List<ContractResponse> merchantContracts) validateTransactionResponse = await this.ValidateTransaction(estateId, merchantId, cancellationToken);
                 MerchantResponse merchant = validateTransactionResponse.merchant;
 
                 // Device Validation
@@ -584,14 +609,17 @@
         /// Operator {operatorIdentifier} not configured for Merchant [{merchant.MerchantName}]</exception>
         private async Task<(String responseMessage, TransactionResponseCode responseCode)> ValidateSaleTransaction(Guid estateId,
             Guid merchantId,
+            Guid contractId,
+            Guid productId,
             String deviceIdentifier,
             String operatorIdentifier,
             Decimal? transactionAmount,
             CancellationToken cancellationToken) {
             try {
-                (EstateResponse estate, MerchantResponse merchant) validateTransactionResponse = await this.ValidateTransaction(estateId, merchantId, cancellationToken);
+                (EstateResponse estate, MerchantResponse merchant, List<ContractResponse> merchantContracts) validateTransactionResponse = await this.ValidateTransaction(estateId, merchantId, cancellationToken);
                 EstateResponse estate = validateTransactionResponse.estate;
                 MerchantResponse merchant = validateTransactionResponse.merchant;
+                List<ContractResponse> contracts = validateTransactionResponse.merchantContracts;
 
                 // Device Validation
                 if (merchant.Devices == null || merchant.Devices.Any() == false) {
@@ -650,6 +678,36 @@
                     }
                 }
 
+                // Contract and Product Validation
+                if (contractId == Guid.Empty)
+                {
+                    throw new TransactionValidationException($"Contract Id [{contractId}] must be set for a sale transaction",
+                        TransactionResponseCode.InvalidContractIdValue);
+                }
+
+                // Check the contract and product id against the merchant
+                ContractResponse contract = contracts.SingleOrDefault(c => c.ContractId == contractId);
+
+                if (contract == null)
+                {
+                    throw new TransactionValidationException($"Contract Id [{contractId}] not valid for Merchant [{merchant.MerchantName}]",
+                                                             TransactionResponseCode.ContractNotValidForMerchant);
+                }
+
+                if (productId == Guid.Empty)
+                {
+                    throw new TransactionValidationException($"Product Id [{productId}] must be set for a sale transaction",
+                        TransactionResponseCode.InvalidProductIdValue);
+                }
+                
+                ContractProduct contractProduct = contract.Products.SingleOrDefault(p => p.ProductId == productId);
+
+                if (contractProduct == null)
+                {
+                    throw new TransactionValidationException($"Product Id [{productId}] not valid for Merchant [{merchant.MerchantName}]",
+                                                             TransactionResponseCode.ProductNotValidForMerchant);
+                }
+
                 // If we get here everything is good
                 return ("SUCCESS", TransactionResponseCode.Success);
             }
@@ -668,11 +726,12 @@
         /// <exception cref="TransactionValidationException">Estate Id [{estateId}] is not a valid estate
         /// or
         /// Merchant Id [{merchantId}] is not a valid merchant for estate [{estate.EstateName}]</exception>
-        private async Task<(EstateResponse estate, MerchantResponse merchant)> ValidateTransaction(Guid estateId,
+        private async Task<(EstateResponse estate, MerchantResponse merchant, List<ContractResponse> merchantContracts)> ValidateTransaction(Guid estateId,
                                                                                                    Guid merchantId,
                                                                                                    CancellationToken cancellationToken) {
             EstateResponse estate = null;
             MerchantResponse merchant = null;
+            List<ContractResponse> merchantContracts = null;
 
             // Validate the Estate Record is a valid estate
             try {
@@ -691,7 +750,17 @@
                                                          TransactionResponseCode.InvalidMerchantId);
             }
 
-            return (estate, merchant);
+            try
+            {
+                merchantContracts = await this.GetMerchantContracts(estateId, merchantId, cancellationToken);
+            }
+            catch (Exception ex) when (ex.InnerException != null && ex.InnerException.GetType() == typeof(KeyNotFoundException))
+            {
+                //throw new TransactionValidationException($"Merchant Id [{merchantId}] is not a valid merchant for estate [{estate.EstateName}]",
+                //                                         TransactionResponseCode.InvalidMerchantId);
+            }
+
+            return (estate, merchant, merchantContracts);
         }
 
         #endregion
