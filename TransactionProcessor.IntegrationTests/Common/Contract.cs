@@ -82,6 +82,10 @@
         /// <returns></returns>
         public Product GetProduct(Guid productId)
         {
+            if (this.Products.Any() == false) {
+                return null;
+            }
+
             return this.Products.SingleOrDefault(p => p.ProductId == productId);
         }
 
@@ -90,9 +94,30 @@
         /// </summary>
         /// <param name="name">The name.</param>
         /// <returns></returns>
-        public Product GetProduct(String name)
+        public Product GetProduct(String productName)
         {
-            return this.Products.SingleOrDefault(p => p.Name == name);
+            if (this.Products.Any() == false)
+            {
+                return null;
+            }
+
+            if (productName == "EmptyProduct")
+            {
+                return new Product
+                {
+                           ProductId = Guid.Empty
+                };
+            }
+
+            if (productName == "InvalidProduct")
+            {
+                return new Product
+                {
+                           ProductId = Guid.Parse("934D8164-F36A-448E-B27B-4D671D41D180")
+                       };
+            }
+
+            return this.Products.SingleOrDefault(p => p.Name == productName);
         }
 
         #endregion

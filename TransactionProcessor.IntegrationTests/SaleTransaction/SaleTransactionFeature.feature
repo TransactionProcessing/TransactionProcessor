@@ -171,6 +171,48 @@ Scenario: Sale Transaction with Invalid Merchant
 	| EstateName    | MerchantName    | TransactionNumber | ResponseCode | ResponseMessage                                                                                       |
 	| Test Estate 1 | InvalidMerchant | 1                 | 1002         | Merchant Id [d59320fa-4c3e-4900-a999-483f6a10c69a] is not a valid merchant for estate [Test Estate 1] |
 
+Scenario: Sale Transaction with Empty Contract Id
+
+	When I perform the following transactions
+	| DateTime | TransactionNumber | TransactionType | TransactionSource | MerchantName    | DeviceIdentifier | EstateName    | OperatorName | TransactionAmount | CustomerAccountNumber | CustomerEmailAddress        | ContractDescription | ProductName    |
+	| Today    | 1                 | Sale            | 1                 | Test Merchant 1 | 123456780        | Test Estate 1 | Safaricom    | 100.00            | 123456789             | testcustomer@customer.co.uk | EmptyContract  | Variable Topup |
+	
+	Then transaction response should contain the following information
+	| EstateName    | MerchantName    | TransactionNumber | ResponseCode | ResponseMessage                                                                  |
+	| Test Estate 1 | Test Merchant 1 | 1                 | 1012         | Contract Id [00000000-0000-0000-0000-000000000000] must be set for a sale transaction |
+
+Scenario: Sale Transaction with Invalid Contract Id
+
+	When I perform the following transactions
+	| DateTime | TransactionNumber | TransactionType | TransactionSource | MerchantName    | DeviceIdentifier | EstateName    | OperatorName | TransactionAmount | CustomerAccountNumber | CustomerEmailAddress        | ContractDescription | ProductName    |
+	| Today    | 1                 | Sale            | 1                 | Test Merchant 1 | 123456780        | Test Estate 1 | Safaricom    | 100.00            | 123456789             | testcustomer@customer.co.uk | InvalidContract  | Variable Topup |
+	
+	Then transaction response should contain the following information
+	| EstateName    | MerchantName    | TransactionNumber | ResponseCode | ResponseMessage                                                                             |
+	| Test Estate 1 | Test Merchant 1 | 1                 | 1014         | Contract Id [934d8164-f36a-448e-b27b-4d671d41d180] not valid for Merchant [Test Merchant 1] |
+
+Scenario: Sale Transaction with Empty Product Id
+
+	When I perform the following transactions
+	| DateTime | TransactionNumber | TransactionType | TransactionSource | MerchantName    | DeviceIdentifier | EstateName    | OperatorName | TransactionAmount | CustomerAccountNumber | CustomerEmailAddress        | ContractDescription | ProductName    |
+	| Today    | 1                 | Sale            | 1                 | Test Merchant 1 | 123456780        | Test Estate 1 | Safaricom    | 100.00            | 123456789             | testcustomer@customer.co.uk | Safaricom Contract  | EmptyProduct |
+	
+	Then transaction response should contain the following information
+	| EstateName    | MerchantName    | TransactionNumber | ResponseCode | ResponseMessage                                                                      |
+	| Test Estate 1 | Test Merchant 1 | 1                 | 1013         | Product Id [00000000-0000-0000-0000-000000000000] must be set for a sale transaction |
+
+Scenario: Sale Transaction with Invalid Product Id
+
+	When I perform the following transactions
+	| DateTime | TransactionNumber | TransactionType | TransactionSource | MerchantName    | DeviceIdentifier | EstateName    | OperatorName | TransactionAmount | CustomerAccountNumber | CustomerEmailAddress        | ContractDescription | ProductName    |
+	| Today    | 1                 | Sale            | 1                 | Test Merchant 1 | 123456780        | Test Estate 1 | Safaricom    | 100.00            | 123456789             | testcustomer@customer.co.uk | Safaricom Contract  | InvalidProduct |
+	
+	Then transaction response should contain the following information
+	| EstateName    | MerchantName    | TransactionNumber | ResponseCode | ResponseMessage                                                                      |
+	| Test Estate 1 | Test Merchant 1 | 1                 | 1015         | Product Id [934d8164-f36a-448e-b27b-4d671d41d180] not valid for Merchant [Test Merchant 1] |
+
+
+
 Scenario: Sale Transaction with Not Enough Credit Available
 
 	When I perform the following transactions

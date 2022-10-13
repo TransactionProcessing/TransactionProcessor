@@ -257,6 +257,22 @@
             {
                 return null;
             }
+
+            if (contractName == "EmptyContract") {
+                return new Contract
+                       {
+                           ContractId = Guid.Empty,
+                           Products = new List<Product>()
+                       };
+            }
+
+            if (contractName == "InvalidContract") {
+                return new Contract {
+                                        ContractId = Guid.Parse("934D8164-F36A-448E-B27B-4D671D41D180"),
+                                        Products = new List<Product>()
+                };
+            }
+
             return this.Contracts.Single(c => c.Description == contractName);
         }
 

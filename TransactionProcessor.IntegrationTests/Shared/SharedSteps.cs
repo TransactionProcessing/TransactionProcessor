@@ -318,7 +318,9 @@ namespace TransactionProcessor.IntegrationTests.Shared
                         if (contract != null) {
                             contractId = contract.ContractId;
                             Product product = contract.GetProduct(productName);
-                            productId = product.ProductId;
+                            if (product != null) {
+                                productId = product.ProductId;
+                            }
                         }
 
                         String recipientEmail = SpecflowTableHelper.GetStringRowValue(tableRow, "RecipientEmail");

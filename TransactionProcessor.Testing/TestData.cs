@@ -1138,6 +1138,18 @@
             return aggregate;
         }
 
+        public static List<ContractResponse> MerchantContractResponses =>
+            new List<ContractResponse>() {
+                                             new ContractResponse {
+                                                                      ContractId = TestData.ContractId,
+                                                                      Products = new List<ContractProduct> {
+                                                                                                               new ContractProduct {
+                                                                                                                   ProductId = TestData.ProductId,
+                                                                                                               }
+                                                                                                           }
+                                                                  }
+                                         };
+
         #endregion
     }
 }
