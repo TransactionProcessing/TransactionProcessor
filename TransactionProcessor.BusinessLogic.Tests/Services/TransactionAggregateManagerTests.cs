@@ -19,6 +19,7 @@ namespace TransactionProcessor.BusinessLogic.Tests.Services
     using Testing;
     using TransactionAggregate;
     using Xunit;
+    using NullLogger = Shared.Logger.NullLogger;
 
     public class TransactionAggregateManagerTests
     {
