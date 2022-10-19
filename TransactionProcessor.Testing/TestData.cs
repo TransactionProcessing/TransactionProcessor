@@ -12,6 +12,7 @@
     using EstateManagement.DataTransferObjects.Responses;
     using Models;
     using PataPawaPostPay;
+    using ProjectionEngine.State;
     using ReconciliationAggregate;
     using SecurityService.DataTransferObjects.Responses;
     using SettlementAggregates;
@@ -1001,8 +1002,13 @@
                                                                                                                   new Dictionary<String, String>()
                                                                                                           };
 
+        public static MerchantBalanceState MerchantBalanceProjectionState =>
+            new MerchantBalanceState {
+                                         AvailableBalance = TestData.AvailableBalance,
+                                     };
+
         public static ResendTransactionReceiptRequest ResendTransactionReceiptRequest => ResendTransactionReceiptRequest.Create(TestData.TransactionId,
-             TestData.EstateId);
+                                                                                                                                TestData.EstateId);
 
         public static List<ContractProductTransactionFee> ContractProductTransactionFees =>
             new List<ContractProductTransactionFee>

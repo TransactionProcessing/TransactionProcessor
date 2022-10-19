@@ -14,6 +14,8 @@ namespace TransactionProcessor.BusinessLogic.Tests.Services
     using Models;
     using Moq;
     using OperatorInterfaces;
+    using ProjectionEngine.Repository;
+    using ProjectionEngine.State;
     using ReconciliationAggregate;
     using SecurityService.Client;
     using SecurityService.DataTransferObjects.Responses;
@@ -39,6 +41,8 @@ namespace TransactionProcessor.BusinessLogic.Tests.Services
 
         private TransactionDomainService transactionDomainService = null;
 
+        private Mock<IProjectionStateRepository<MerchantBalanceState>> stateRepository;
+
         private Mock<IAggregateRepository<ReconciliationAggregate, DomainEvent>> reconciliationAggregateRepository = null;
 
         public TransactionDomainServiceTests() {
@@ -53,12 +57,13 @@ namespace TransactionProcessor.BusinessLogic.Tests.Services
             operatorProxy = new Mock<IOperatorProxy>();
             reconciliationAggregateRepository = new Mock<IAggregateRepository<ReconciliationAggregate, DomainEvent>>();
             Func<String, IOperatorProxy> operatorProxyResolver = (operatorName) => { return operatorProxy.Object; };
-
+            stateRepository = new Mock<IProjectionStateRepository<MerchantBalanceState>>();
             transactionDomainService = new TransactionDomainService(transactionAggregateManager.Object,
                                                                     estateClient.Object,
                                                                     securityServiceClient.Object,
                                                                     operatorProxyResolver,
-                                                                    reconciliationAggregateRepository.Object);
+                                                                    reconciliationAggregateRepository.Object,
+                                                                    stateRepository.Object);
         }
 
         [Fact]
@@ -351,7 +356,10 @@ namespace TransactionProcessor.BusinessLogic.Tests.Services
                                                               TransactionId = TestData.OperatorTransactionId,
                                                               ResponseCode = TestData.ResponseCode
                                                           });
-            
+
+            this.stateRepository.Setup(p => p.Load(It.IsAny<Guid>(), It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
+                .ReturnsAsync(TestData.MerchantBalanceProjectionState);
+
             ProcessSaleTransactionResponse response = await transactionDomainService.ProcessSaleTransaction(TestData.TransactionId,
                                                                                                             TestData.EstateId,
                                                                                                             TestData.MerchantId,
@@ -430,7 +438,10 @@ namespace TransactionProcessor.BusinessLogic.Tests.Services
                                                               TransactionId = TestData.OperatorTransactionId,
                                                               ResponseCode = TestData.ResponseCode
                                                           });
-            
+
+            this.stateRepository.Setup(p => p.Load(It.IsAny<Guid>(), It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
+                .ReturnsAsync(TestData.MerchantBalanceProjectionState);
+
             ProcessSaleTransactionResponse response = await transactionDomainService.ProcessSaleTransaction(TestData.TransactionId,
                                                                                                             TestData.EstateId,
                                                                                                             TestData.MerchantId,
@@ -480,7 +491,10 @@ namespace TransactionProcessor.BusinessLogic.Tests.Services
                                                               TransactionId = TestData.OperatorTransactionId,
                                                               ResponseCode = TestData.ResponseCode
                                                           });
-            
+
+            this.stateRepository.Setup(p => p.Load(It.IsAny<Guid>(), It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
+                .ReturnsAsync(TestData.MerchantBalanceProjectionState);
+
             ProcessSaleTransactionResponse response = await transactionDomainService.ProcessSaleTransaction(TestData.TransactionId,
                                                                                                             TestData.EstateId,
                                                                                                             TestData.MerchantId,
@@ -525,7 +539,10 @@ namespace TransactionProcessor.BusinessLogic.Tests.Services
                                                               IsSuccessful = false,
                                                               ResponseCode = TestData.DeclinedOperatorResponseCode
                                                           });
-            
+
+            this.stateRepository.Setup(p => p.Load(It.IsAny<Guid>(), It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
+                .ReturnsAsync(TestData.MerchantBalanceProjectionState);
+
             ProcessSaleTransactionResponse response = await transactionDomainService.ProcessSaleTransaction(TestData.TransactionId,
                                                                                                             TestData.EstateId,
                                                                                                             TestData.MerchantId,
@@ -672,6 +689,9 @@ namespace TransactionProcessor.BusinessLogic.Tests.Services
             
             transactionAggregateManager.Setup(t => t.GetAggregate(It.IsAny<Guid>(), It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
                                        .ReturnsAsync(TestData.GetDeclinedTransactionAggregate(TransactionResponseCode.MerchantDoesNotHaveEnoughCredit));
+
+            this.stateRepository.Setup(p => p.Load(It.IsAny<Guid>(), It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
+                .ReturnsAsync(TestData.MerchantBalanceProjectionState);
 
             ProcessSaleTransactionResponse response = await transactionDomainService.ProcessSaleTransaction(TestData.TransactionId,
                                                                                                             TestData.EstateId,
@@ -849,6 +869,9 @@ namespace TransactionProcessor.BusinessLogic.Tests.Services
             transactionAggregateManager.Setup(t => t.GetAggregate(It.IsAny<Guid>(), It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
                                        .ReturnsAsync(TestData.GetLocallyDeclinedTransactionAggregate(expectedResponseCode));
 
+            this.stateRepository.Setup(p => p.Load(It.IsAny<Guid>(), It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
+                .ReturnsAsync(TestData.MerchantBalanceProjectionState);
+
             ProcessSaleTransactionResponse response = await transactionDomainService.ProcessSaleTransaction(TestData.TransactionId,
                                                                                                             TestData.EstateId,
                                                                                                             TestData.MerchantId,
@@ -881,6 +904,9 @@ namespace TransactionProcessor.BusinessLogic.Tests.Services
                         .ReturnsAsync(TestData.MerchantContractResponses);
             transactionAggregateManager.Setup(t => t.GetAggregate(It.IsAny<Guid>(), It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
                                        .ReturnsAsync(TestData.GetLocallyDeclinedTransactionAggregate(expectedResponseCode));
+
+            this.stateRepository.Setup(p => p.Load(It.IsAny<Guid>(), It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
+                .ReturnsAsync(TestData.MerchantBalanceProjectionState);
 
             ProcessSaleTransactionResponse response = await transactionDomainService.ProcessSaleTransaction(TestData.TransactionId,
                                                                                                             TestData.EstateId,
@@ -979,7 +1005,10 @@ namespace TransactionProcessor.BusinessLogic.Tests.Services
                                                           It.IsAny<String>(),
                                                           It.IsAny<Dictionary<String, String>>(),
                                                           It.IsAny<CancellationToken>())).ThrowsAsync(new Exception("Comms Error"));
-            
+
+            this.stateRepository.Setup(p => p.Load(It.IsAny<Guid>(), It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
+                .ReturnsAsync(TestData.MerchantBalanceProjectionState);
+
             ProcessSaleTransactionResponse response = await transactionDomainService.ProcessSaleTransaction(TestData.TransactionId,
                                                                                                             TestData.EstateId,
                                                                                                             TestData.MerchantId,

@@ -1,16 +1,29 @@
 ﻿namespace TransactionProcessor.Bootstrapper
 {
     using System;
+    using System.Data.Common;
     using System.Diagnostics.CodeAnalysis;
     using System.Net.Http;
     using System.Net.Security;
+    using System.Threading.Tasks;
+    using System.Threading;
     using BusinessLogic.Services;
     using Lamar;
+    using Microsoft.Data.SqlClient;
     using Microsoft.Extensions.Configuration;
     using Microsoft.Extensions.DependencyInjection;
+    using MySqlConnector;
+    using ProjectionEngine;
+    using ProjectionEngine.Database;
+    using ProjectionEngine.Database.Entities;
+    using ProjectionEngine.Dispatchers;
+    using ProjectionEngine.Projections;
+    using ProjectionEngine.Repository;
+    using ProjectionEngine.State;
     using ReconciliationAggregate;
     using SettlementAggregates;
     using Shared.DomainDrivenDesign.EventSourcing;
+    using Shared.EntityFramework;
     using Shared.EntityFramework.ConnectionStringConfiguration;
     using Shared.EventStore.Aggregate;
     using Shared.EventStore.EventStore;
@@ -18,6 +31,7 @@
     using Shared.General;
     using Shared.Repositories;
     using TransactionAggregate;
+    using ConnectionStringType = Shared.Repositories.ConnectionStringType;
 
     /// <summary>
     /// 
@@ -71,6 +85,8 @@
                 {
                     this.AddEventStoreClient(Startup.EventStoreClientSettings.ConnectivitySettings.Address, CreateHttpMessageHandler);
                 }
+
+                this.AddSingleton<IConnectionStringConfigurationRepository, ConfigurationReaderConnectionStringRepository>();
             }
 
             this.AddTransient<IEventStoreContext, EventStoreContext>();
@@ -82,6 +98,110 @@
                 AggregateRepository<ReconciliationAggregate, DomainEvent>>();
             this.AddSingleton<IAggregateRepository<SettlementAggregate, DomainEvent>,
                 AggregateRepository<SettlementAggregate, DomainEvent>>();
+
+
+            this.AddSingleton<IProjectionStateRepository<MerchantBalanceState>, MerchantBalanceStateRepository>();
+            this.AddSingleton<ITransactionProcessorReadRepository, TransactionProcessorReadRepository>();
+            this.AddSingleton<IProjection<MerchantBalanceState>, MerchantBalanceProjection>();
+
+            this.AddSingleton<IDbContextFactory<TransactionProcessorGenericContext>, DbContextFactory<TransactionProcessorGenericContext>>();
+
+            this.AddSingleton<Func<String, TransactionProcessorGenericContext>>(cont => connectionString =>
+                                                                                   {
+                                                                                       String databaseEngine =
+                                                                                           ConfigurationReader.GetValue("AppSettings", "DatabaseEngine");
+
+                                                                                       return databaseEngine switch
+                                                                                       {
+                                                                                           "MySql" => new TransactionProcessorMySqlContext(connectionString),
+                                                                                           "SqlServer" => new TransactionProcessorSqlServerContext(connectionString),
+                                                                                           _ => throw new
+                                                                                               NotSupportedException($"Unsupported Database Engine {databaseEngine}")
+                                                                                       };
+                                                                                   });
+        }
+
+        #endregion
+    }
+
+    [ExcludeFromCodeCoverage]
+    public class ConfigurationReaderConnectionStringRepository : IConnectionStringConfigurationRepository
+    {
+        #region Methods
+
+        /// <summary>
+        /// Creates the connection string.
+        /// </summary>
+        /// <param name="externalIdentifier">The external identifier.</param>
+        /// <param name="connectionStringType">Type of the connection string.</param>
+        /// <param name="connectionString">The connection string.</param>
+        /// <param name="cancellationToken">The cancellation token.</param>
+        public async Task CreateConnectionString(String externalIdentifier,
+                                                 ConnectionStringType connectionStringType,
+                                                 String connectionString,
+                                                 CancellationToken cancellationToken)
+        {
+            throw new NotImplementedException("This is only required to complete the interface");
+        }
+
+        /// <summary>
+        /// Deletes the connection string configuration.
+        /// </summary>
+        /// <param name="externalIdentifier">The external identifier.</param>
+        /// <param name="connectionStringType">Type of the connection string.</param>
+        /// <param name="cancellationToken">The cancellation token.</param>
+        public async Task DeleteConnectionStringConfiguration(String externalIdentifier,
+                                                              ConnectionStringType connectionStringType,
+                                                              CancellationToken cancellationToken)
+        {
+            throw new NotImplementedException("This is only required to complete the interface");
+        }
+
+        /// <summary>
+        /// Gets the connection string.
+        /// </summary>
+        /// <param name="externalIdentifier">The external identifier.</param>
+        /// <param name="connectionStringType">Type of the connection string.</param>
+        /// <param name="cancellationToken">The cancellation token.</param>
+        /// <returns></returns>
+        public async Task<String> GetConnectionString(String externalIdentifier,
+                                                      ConnectionStringType connectionStringType,
+                                                      CancellationToken cancellationToken)
+        {
+            String connectionString = string.Empty;
+            String databaseName = string.Empty;
+
+            String databaseEngine = ConfigurationReader.GetValue("AppSettings", "DatabaseEngine");
+
+            switch (connectionStringType)
+            {
+                case ConnectionStringType.ReadModel:
+                    databaseName = "TransactionProcessorReadModel" + externalIdentifier;
+                    connectionString = ConfigurationReader.GetConnectionString("TransactionProcessorReadModel");
+                    break;
+                default:
+                    throw new NotSupportedException($"Connection String type [{connectionStringType}] is not supported");
+            }
+
+            DbConnectionStringBuilder builder = null;
+
+            if (databaseEngine == "MySql")
+            {
+                builder = new MySqlConnectionStringBuilder(connectionString)
+                {
+                    Database = databaseName
+                };
+            }
+            else
+            {
+                // Default to SQL Server
+                builder = new SqlConnectionStringBuilder(connectionString)
+                {
+                    InitialCatalog = databaseName
+                };
+            }
+
+            return builder.ToString();
         }
 
         #endregion
