@@ -81,4 +81,25 @@
     <Folder Include="Settlement\" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Content Update="C:\Users\stuar\.nuget\packages\eventstoreprojections\1.0.9\contentFiles\any\net5.0\projections\continuous\CallbackHandlerEnricher.js">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Update="C:\Users\stuar\.nuget\packages\eventstoreprojections\1.0.9\contentFiles\any\net5.0\projections\continuous\EstateAggregator.js">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Update="C:\Users\stuar\.nuget\packages\eventstoreprojections\1.0.9\contentFiles\any\net5.0\projections\continuous\EstateManagementSubscriptionStreamBuilder.js">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Update="C:\Users\stuar\.nuget\packages\eventstoreprojections\1.0.9\contentFiles\any\net5.0\projections\continuous\FileProcessorSubscriptionStreamBuilder.js">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Update="C:\Users\stuar\.nuget\packages\eventstoreprojections\1.0.9\contentFiles\any\net5.0\projections\continuous\MerchantAggregator.js">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Update="C:\Users\stuar\.nuget\packages\eventstoreprojections\1.0.9\contentFiles\any\net5.0\projections\continuous\TransactionProcessorSubscriptionStreamBuilder.js">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+  </ItemGroup>
+
 </Project>
