@@ -422,7 +422,7 @@
         protected override async Task LoadEventStoreProjections(Int32 eventStoreHttpPort, Boolean isSecureEventStore = false)
         {
             //Start our Continous Projections - we might decide to do this at a different stage, but now lets try here
-            String projectionsFolder = "projections/continuous";
+            String projectionsFolder = "projections/**";
             
             IPAddress[] ipAddresses = Dns.GetHostAddresses("127.0.0.1");
 
