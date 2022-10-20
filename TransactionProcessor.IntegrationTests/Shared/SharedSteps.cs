@@ -29,6 +29,7 @@ namespace TransactionProcessor.IntegrationTests.Shared
     using TechTalk.SpecFlow;
     using Xunit;
     using ClientDetails = Common.ClientDetails;
+    using MerchantBalanceResponse = DataTransferObjects.MerchantBalanceResponse;
 
     [Binding]
     [Scope(Tag = "shared")]
@@ -52,7 +53,7 @@ namespace TransactionProcessor.IntegrationTests.Shared
                 // Setup the subscriptions for the estate
                 await Retry.For(async () => {
                                     await this.TestingContext.DockerHelper
-                                              .PopulateSubscriptionServiceConfiguration(estateName, this.TestingContext.DockerHelper.IsSecureEventStore)
+                                              .PopulateSubscriptionServiceConfigurationForEstate(estateName, this.TestingContext.DockerHelper.IsSecureEventStore)
                                               .ConfigureAwait(false);
                                 },
                                 retryFor:TimeSpan.FromMinutes(2),
@@ -266,13 +267,14 @@ namespace TransactionProcessor.IntegrationTests.Shared
                     token = estateDetails.AccessToken;
                 }
 
-                await Retry.For(async () => {
-                                    MerchantResponse merchant = await this.TestingContext.DockerHelper.EstateClient
-                                                                          .GetMerchant(token, estateDetails.EstateId, merchantId, CancellationToken.None)
-                                                                          .ConfigureAwait(false);
+                await Retry.For(async () =>
+                {
+                    MerchantResponse merchant = await this.TestingContext.DockerHelper.EstateClient
+                                                          .GetMerchant(token, estateDetails.EstateId, merchantId, CancellationToken.None)
+                                                          .ConfigureAwait(false);
 
-                                    merchant.MerchantName.ShouldBe(merchantName);
-                                });
+                    merchant.MerchantName.ShouldBe(merchantName);
+                });
             }
         }
 
@@ -896,7 +898,7 @@ namespace TransactionProcessor.IntegrationTests.Shared
                 Guid merchantId = estateDetails.GetMerchantId(merchantName);
 
                 // Get current balance
-                MerchantBalanceResponse previousMerchantBalance = await this.TestingContext.DockerHelper.EstateClient.GetMerchantBalance(token, estateDetails.EstateId, merchantId, CancellationToken.None);
+                MerchantBalanceResponse previousMerchantBalance = await this.TestingContext.DockerHelper.TransactionProcessorClient.GetMerchantBalance(token, estateDetails.EstateId, merchantId, CancellationToken.None);
                 
                 MakeMerchantDepositRequest makeMerchantDepositRequest = new MakeMerchantDepositRequest
                                                                         {
@@ -917,7 +919,7 @@ namespace TransactionProcessor.IntegrationTests.Shared
                                 {
                                     // Check the merchant balance
                                     MerchantBalanceResponse currentMerchantBalance =
-                                        await this.TestingContext.DockerHelper.EstateClient.GetMerchantBalance(token,
+                                        await this.TestingContext.DockerHelper.TransactionProcessorClient.GetMerchantBalance(token,
                                                                                                                estateDetails.EstateId,
                                                                                                                merchantId,
                                                                                                                CancellationToken.None);

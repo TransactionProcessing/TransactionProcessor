@@ -6,9 +6,14 @@ namespace TransactionProcessor
     using System.IO;
     using System.Linq;
     using System.Net.Http;
+    using System.Runtime.InteropServices.ComTypes;
     using System.Threading;
     using Bootstrapper;
+    using EstateManagement.Estate.DomainEvents;
+    using EstateManagement.Merchant.DomainEvents;
     using EventStore.Client;
+    using FileProcessor.File.DomainEvents;
+    using FileProcessor.FileImportLog.DomainEvents;
     using HealthChecks.UI.Client;
     using Lamar;
     using Microsoft.AspNetCore.Builder;
@@ -21,14 +26,19 @@ namespace TransactionProcessor
     using Microsoft.Extensions.Logging;
     using NLog.Extensions.Logging;
     using NuGet.Protocol;
+    using ProjectionEngine.EventHandling;
+    using ProjectionEngine.State;
     using Reconciliation.DomainEvents;
     using Settlement.DomainEvents;
+    using Shared.DomainDrivenDesign.EventSourcing;
     using Shared.EventStore.Aggregate;
+    using Shared.EventStore.EventHandling;
     using Shared.Extensions;
     using Shared.General;
     using Shared.Logger;
     using Transaction.DomainEvents;
     using TransactionProcessor.BusinessLogic.OperatorInterfaces;
+    using EventHandler = ProjectionEngine.EventHandling.EventHandler;
     using ILogger = Microsoft.Extensions.Logging.ILogger;
 
     /// <summary>
@@ -188,6 +198,19 @@ namespace TransactionProcessor
                                                                           null);
 
             ReconciliationHasStartedEvent r = new ReconciliationHasStartedEvent(Guid.NewGuid(), Guid.NewGuid(), Guid.NewGuid(), DateTime.Now);
+
+            EstateCreatedEvent c = new EstateCreatedEvent(Guid.NewGuid(), "");
+            MerchantCreatedEvent m = new MerchantCreatedEvent(Guid.NewGuid(), Guid.NewGuid(), "", DateTime.Now);
+            FileCreatedEvent f = new FileCreatedEvent(Guid.NewGuid(), Guid.NewGuid(), Guid.NewGuid(), Guid.NewGuid(), Guid.NewGuid(), Guid.NewGuid(), "", DateTime.Now);
+            FileAddedToImportLogEvent fi = new FileAddedToImportLogEvent(Guid.NewGuid(),
+                                                                         Guid.NewGuid(),
+                                                                         Guid.NewGuid(),
+                                                                         Guid.NewGuid(),
+                                                                         Guid.NewGuid(),
+                                                                         Guid.NewGuid(),
+                                                                         "",
+                                                                         "",
+                                                                         DateTime.Now);
 
             TypeProvider.LoadDomainEventsTypeDynamically();
         }

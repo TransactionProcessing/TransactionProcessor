@@ -8,18 +8,25 @@ namespace TransactionProcessor.BusinessLogic.Tests.Services
     using System.Threading;
     using System.Threading.Tasks;
     using BusinessLogic.Services;
+    using Microsoft.Extensions.Logging.Abstractions;
     using Models;
     using Moq;
     using Shared.DomainDrivenDesign.EventSourcing;
     using Shared.EventStore.Aggregate;
     using Shared.EventStore.EventStore;
+    using Shared.Logger;
     using Shouldly;
     using Testing;
     using TransactionAggregate;
     using Xunit;
+    using NullLogger = Shared.Logger.NullLogger;
 
     public class TransactionAggregateManagerTests
     {
+        public TransactionAggregateManagerTests() {
+            Logger.Initialise(new NullLogger());
+        }
+
         [Fact]
         public async Task TransactionAggregateManager_AuthoriseTransaction_TransactionAuthorised()
         {

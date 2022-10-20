@@ -1,3 +1,5 @@
+﻿
+
 fromCategory('MerchantArchive')
     .foreachStream()
     .when({
@@ -14,11 +16,10 @@ fromCategory('MerchantArchive')
                 totalAuthorisedSales: 0,
                 totalDeclinedSales: 0,
                 totalFees: 0,
-                emittedEvents:1
+                emittedEvents: 1
             }
         },
-        $any: function (s, e)
-        {
+        $any: function (s, e) {
             if (e === null || e.data === null || e.data.IsJson === false)
                 return;
 
@@ -60,16 +61,6 @@ var eventbus = {
         }
     }
 }
-
-function getStreamName(s) {
-    return "MerchantBalanceHistory-" + s.merchantId.replace(/-/gi, "");
-}
-
-function getEventTypeName() {
-    return 'EstateReporting.BusinessLogic.Events.' + getEventType() + ', EstateReporting.BusinessLogic.Events';
-}
-
-function getEventType() { return "MerchantBalanceChangedEvent"; }
 
 function addTwoNumbers(number1, number2) {
     return parseFloat((number1 + number2).toFixed(4));
@@ -128,44 +119,7 @@ var merchantCreatedEventHandler = function (s, e) {
     s.merchantName = e.data.merchantName;
 };
 
-var emitBalanceChangedEvent = function (aggregateId, eventId, s, changeAmount, dateTime, reference) {
 
-    if (s.initialised === true) {
-
-        // Emit an opening balance event
-        var openingBalanceEvent = {
-            $type: getEventTypeName(),
-            "merchantId": s.merchantId,
-            "estateId": s.estateId,
-            "balance": 0,
-            "changeAmount": 0,
-            "eventId": s.merchantId,
-            "eventCreatedDateTime": dateTime,
-            "reference": "Opening Balance",
-            "aggregateId": s.merchantId
-        }
-        emit(getStreamName(s), getEventType(), openingBalanceEvent);
-        s.emittedEvents++;
-        s.initialised = false;
-    }
-
-    var balanceChangedEvent = {
-        $type: getEventTypeName(),
-        "merchantId": s.merchantId,
-        "estateId": s.estateId,
-        "balance": s.balance,
-        "changeAmount": changeAmount,
-        "eventId": eventId,
-        "eventCreatedDateTime": dateTime,
-        "reference": reference,
-        "aggregateId": aggregateId
-    }
-
-    // emit an balance changed event here
-    emit(getStreamName(s), getEventType(), balanceChangedEvent);
-    s.emittedEvents++;
-    return s;
-};
 
 var depositMadeEventHandler = function (s, e) {
 
@@ -178,9 +132,6 @@ var depositMadeEventHandler = function (s, e) {
     }
 
     incrementBalanceFromDeposit(s, e.data.amount, e.data.depositDateTime);
-
-    // emit an balance changed event here
-    s = emitBalanceChangedEvent(e.data.merchantId, e.eventId, s, e.data.amount, e.data.depositDateTime, "Merchant Deposit");
 };
 
 var transactionHasStartedEventHandler = function (s, e) {
@@ -220,15 +171,10 @@ var transactionHasCompletedEventHandler = function (s, e) {
 
     if (e.data.isAuthorised) {
         decrementBalanceFromAuthorisedTransaction(s, amount, completedTime);
-
-        // emit an balance changed event here
-        if (amount > 0) {
-            s = emitBalanceChangedEvent(e.data.transactionId, e.eventId, s, amount * -1, completedTime, "Transaction Completed");
-        }
     }
     else {
-        incrementAvailableBalanceFromDeclinedTransaction(s, amount, completedTime);
-    }
+    incrementAvailableBalanceFromDeclinedTransaction(s, amount, completedTime);
+}
 };
 
 var merchantFeeAddedToTransactionEventHandler = function (s, e) {
@@ -243,7 +189,4 @@ var merchantFeeAddedToTransactionEventHandler = function (s, e) {
 
     // increment the balance now
     incrementBalanceFromMerchantFee(s, e.data.calculatedValue, e.data.feeCalculatedDateTime);
-
-    // emit an balance changed event here
-    s = emitBalanceChangedEvent(e.data.transactionId, e.eventId, s, e.data.calculatedValue, e.data.feeCalculatedDateTime, "Transaction Fee Processed");
 }

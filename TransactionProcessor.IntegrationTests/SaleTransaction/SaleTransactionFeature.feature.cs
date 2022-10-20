@@ -1445,7 +1445,7 @@ this.FeatureBackground();
                             "Test Merchant 1",
                             "1",
                             "1009",
-                            "Merchant [Test Merchant 1] does not have enough credit available [210.0] to perfo" +
+                            "Merchant [Test Merchant 1] does not have enough credit available [230.0] to perfo" +
                                 "rm transaction amount [300.00]"});
 #line 223
  testRunner.Then("transaction response should contain the following information", ((string)(null)), table73, "Then ");

@@ -105,7 +105,7 @@
 
         #region Methods
 
-        public async Task PopulateSubscriptionServiceConfiguration(String estateName, Boolean isSecureEventStore)
+        public async Task PopulateSubscriptionServiceConfigurationForEstate(String estateName, Boolean isSecureEventStore)
         {
             List<(String streamName, String groupName, Int32 maxRetries)> subscriptions = new List<(String streamName, String groupName, Int32 maxRetries)>();
             subscriptions.Add((estateName.Replace(" ", ""), "Reporting",2));
@@ -113,6 +113,14 @@
             subscriptions.Add(($"TransactionProcessorSubscriptionStream_{estateName.Replace(" ", "")}", "Transaction Processor",0));
             await this.PopulateSubscriptionServiceConfiguration(this.EventStoreHttpPort, subscriptions, isSecureEventStore);
         }
+        public async Task PopulateSubscriptionServiceConfigurationGeneric(Boolean isSecureEventStore)
+        {
+            List<(String streamName, String groupName, Int32 maxRetries)> subscriptions = new List<(String streamName, String groupName, Int32 maxRetries)>();
+            subscriptions.Add(($"$ce-MerchantArchive", "Transaction Processor - Ordered", 0));
+            subscriptions.Add(($"$et-EstateCreatedEvent", "Transaction Processor - Ordered", 2));
+            await this.PopulateSubscriptionServiceConfiguration(this.EventStoreHttpPort, subscriptions, isSecureEventStore);
+        }
+        
 
         protected override String GenerateEventStoreConnectionString()
         {
@@ -151,7 +159,7 @@
                 Boolean.TryParse(IsSecureEventStoreEnvVar, out Boolean isSecure);
                 this.IsSecureEventStore = isSecure;
             }
-
+            
             this.HostTraceFolder = FdOs.IsWindows() ? $"C:\\home\\txnproc\\trace\\{scenarioName}" : $"//home//txnproc//trace//{scenarioName}";
             this.SqlServerDetails = (Setup.SqlServerContainerName, Setup.SqlUserName, Setup.SqlPassword);
             Logging.Enabled();
@@ -191,6 +199,8 @@
             String internalSubscriptionServiceCacheDuration = "AppSettings:InternalSubscriptionServiceCacheDuration=0";
 
             String pataPawaConnectionString = $"ConnectionStrings:PataPawaReadModel=\"server={this.SqlServerDetails.sqlServerContainerName};user id=sa;password={this.SqlServerDetails.sqlServerPassword};database=PataPawaReadModel-{this.TestId:N}\"";
+
+            String transactionProcessorReadModelConnectionString = $"ConnectionStrings:TransactionProcessorReadModel=\"server={this.SqlServerDetails.sqlServerContainerName};user id=sa;password={this.SqlServerDetails.sqlServerPassword};database=TransactionProcessorReadModel\"";
 
             IContainerService testhostContainer = this.SetupTestHostContainer("stuartferguson/testhosts:master",
                                                                               new List<INetworkService>
@@ -242,9 +252,11 @@
 
             IContainerService transactionProcessorContainer = this.SetupTransactionProcessorContainer("transactionprocessor",
                                                                                                       new List<INetworkService> {
-                                                                                                          testNetwork
+                                                                                                          testNetwork,
+                                                                                                          Setup.DatabaseServerNetwork
                                                                                                       },
                                                                                                       additionalEnvironmentVariables:new List<String> {
+                                                                                                          transactionProcessorReadModelConnectionString,
                                                                                                           insecureEventStoreEnvironmentVariable,
                                                                                                           persistentSubscriptionPollingInSeconds,
                                                                                                           internalSubscriptionServiceCacheDuration,
@@ -309,8 +321,90 @@
             this.TestHostHttpClient.BaseAddress = new Uri($"http://127.0.0.1:{this.TestHostPort}");
 
             await this.LoadEventStoreProjections(this.EventStoreHttpPort, this.IsSecureEventStore).ConfigureAwait(false);
+            await this.LoadAdditionalEventStoreProjections(this.EventStoreHttpPort, this.IsSecureEventStore).ConfigureAwait(false);
+            await this.PopulateSubscriptionServiceConfigurationGeneric(this.IsSecureEventStore).ConfigureAwait(false);
         }
 
+        private static async Task<String> RemoveProjectionTestSetup(FileInfo file)
+        {
+            // Read the file
+            String[] projectionLines = await File.ReadAllLinesAsync(file.FullName);
+
+            // Find the end of the test setup code
+            Int32 index = Array.IndexOf(projectionLines, "//endtestsetup");
+            List<String> projectionLinesList = projectionLines.ToList();
+
+            // Remove the test setup code
+            projectionLinesList.RemoveRange(0, index + 1);
+            // Rebuild the string from the lines
+            String projection = String.Join(Environment.NewLine, projectionLinesList);
+
+            return projection;
+        }
+
+        protected virtual async Task LoadAdditionalEventStoreProjections(Int32 eventStoreHttpPort, Boolean isSecureEventStore = false)
+        {
+            //Start our Continous Projections - we might decide to do this at a different stage, but now lets try here
+            String projectionsFolder = "additionalprojections";
+            IPAddress[] ipAddresses = Dns.GetHostAddresses("127.0.0.1");
+
+            if (!String.IsNullOrWhiteSpace(projectionsFolder))
+            {
+                DirectoryInfo di = new DirectoryInfo(projectionsFolder);
+
+                if (di.Exists)
+                {
+                    FileInfo[] files = di.GetFiles();
+
+                    EventStoreProjectionManagementClient projectionClient =
+                        new EventStoreProjectionManagementClient(this.ConfigureEventStoreSettings(eventStoreHttpPort, isSecureEventStore));
+                    List<String> projectionNames = new List<String>();
+
+                    foreach (FileInfo file in files)
+                    {
+                        String projection = await DockerHelper.RemoveProjectionTestSetup(file);
+                        String projectionName = file.Name.Replace(".js", String.Empty);
+
+                        try
+                        {
+                            this.Logger.LogInformation($"Creating projection [{projectionName}] from file [{file.FullName}]");
+                            await projectionClient.CreateContinuousAsync(projectionName, projection, trackEmittedStreams: true).ConfigureAwait(false);
+
+                            projectionNames.Add(projectionName);
+                        }
+                        catch (Exception e)
+                        {
+                            this.Logger.LogError(new Exception($"Projection [{projectionName}] error", e));
+                        }
+                    }
+
+                    // Now check the create status of each
+                    foreach (String projectionName in projectionNames)
+                    {
+                        try
+                        {
+                            ProjectionDetails projectionDetails = await projectionClient.GetStatusAsync(projectionName);
+
+                            if (projectionDetails.Status == "Running")
+                            {
+                                this.Logger.LogInformation($"Projection [{projectionName}] is Running");
+                            }
+                            else
+                            {
+                                this.Logger.LogWarning($"Projection [{projectionName}] is {projectionDetails.Status}");
+                            }
+                        }
+                        catch (Exception e)
+                        {
+                            this.Logger.LogError(new Exception($"Error getting Projection [{projectionName}] status", e));
+                        }
+                    }
+                }
+            }
+
+            this.Logger.LogInformation("Loaded additional projections");
+        }
+        
         /// <summary>
         /// Stops the containers for scenario run.
         /// </summary>

@@ -12,6 +12,8 @@
     using EstateManagement.DataTransferObjects.Responses;
     using Models;
     using OperatorInterfaces;
+    using ProjectionEngine.Repository;
+    using ProjectionEngine.State;
     using ReconciliationAggregate;
     using SecurityService.Client;
     using SecurityService.DataTransferObjects.Responses;
@@ -44,6 +46,8 @@
         /// </summary>
         private readonly IAggregateRepository<ReconciliationAggregate, DomainEvent> ReconciliationAggregateRepository;
 
+        private readonly IProjectionStateRepository<MerchantBalanceState> MerchantBalanceStateRepository;
+
         /// <summary>
         /// The security service client
         /// </summary>
@@ -75,12 +79,14 @@
                                         IEstateClient estateClient,
                                         ISecurityServiceClient securityServiceClient,
                                         Func<String, IOperatorProxy> operatorProxyResolver,
-                                        IAggregateRepository<ReconciliationAggregate, DomainEvent> reconciliationAggregateRepository) {
+                                        IAggregateRepository<ReconciliationAggregate, DomainEvent> reconciliationAggregateRepository,
+                                        IProjectionStateRepository<MerchantBalanceState> merchantBalanceStateRepository) {
             this.TransactionAggregateManager = transactionAggregateManager;
             this.EstateClient = estateClient;
             this.SecurityServiceClient = securityServiceClient;
             this.OperatorProxyResolver = operatorProxyResolver;
             this.ReconciliationAggregateRepository = reconciliationAggregateRepository;
+            this.MerchantBalanceStateRepository = merchantBalanceStateRepository;
         }
 
         #endregion
@@ -670,10 +676,12 @@
                         throw new TransactionValidationException("Transaction Amount must be greater than 0", TransactionResponseCode.InvalidSaleTransactionAmount);
                     }
 
+                    MerchantBalanceState merchantBalanceState = await this.MerchantBalanceStateRepository.Load(estateId, merchantId, cancellationToken);
+
                     // Check the merchant has enough balance to perform the sale
-                    if (merchant.AvailableBalance < transactionAmount) {
+                    if (merchantBalanceState.AvailableBalance < transactionAmount) {
                         throw new
-                            TransactionValidationException($"Merchant [{merchant.MerchantName}] does not have enough credit available [{merchant.AvailableBalance}] to perform transaction amount [{transactionAmount}]",
+                            TransactionValidationException($"Merchant [{merchant.MerchantName}] does not have enough credit available [{merchantBalanceState.AvailableBalance}] to perform transaction amount [{transactionAmount}]",
                                                            TransactionResponseCode.MerchantDoesNotHaveEnoughCredit);
                     }
                 }

@@ -37,11 +37,15 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TransactionProcessor.Reconc
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TransactionProcessor.ReconciliationAggregate.Tests", "TransactionProcessor.ReconciliationAggregate.Tests\TransactionProcessor.ReconciliationAggregate.Tests.csproj", "{E71A7E6D-B320-40A1-BF86-C2857B472313}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TransactionProcessor.SettlementAggregates", "TransactionProcessor.SettlementAggregates\TransactionProcessor.SettlementAggregates.csproj", "{2FF2AE7B-21F8-4EEF-9B47-3FCDAA39885B}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TransactionProcessor.SettlementAggregates", "TransactionProcessor.SettlementAggregates\TransactionProcessor.SettlementAggregates.csproj", "{2FF2AE7B-21F8-4EEF-9B47-3FCDAA39885B}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TransactionProcessor.SettlementAggregates.Tests", "TransactionProcessor.SettlementAggregates.Tests\TransactionProcessor.SettlementAggregates.Tests.csproj", "{1FF2753E-6F90-400D-9A98-E5FE3F79518E}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TransactionProcessor.SettlementAggregates.Tests", "TransactionProcessor.SettlementAggregates.Tests\TransactionProcessor.SettlementAggregates.Tests.csproj", "{1FF2753E-6F90-400D-9A98-E5FE3F79518E}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TransactionProcessor.Settlement.DomainEvents", "TransactionProcessor.Settlement.DomainEvents\TransactionProcessor.Settlement.DomainEvents.csproj", "{1D6CF3B6-41D3-46B8-BD6B-03FD32483763}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TransactionProcessor.Settlement.DomainEvents", "TransactionProcessor.Settlement.DomainEvents\TransactionProcessor.Settlement.DomainEvents.csproj", "{1D6CF3B6-41D3-46B8-BD6B-03FD32483763}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TransactionProcessor.ProjectionEngine", "TransactionProcessor.ProjectionEngine\TransactionProcessor.ProjectionEngine.csproj", "{6AE953A8-6400-456B-858A-454F78A28436}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TransactionProcessor.ProjectionEngine.Tests", "TransactionProcessor.ProjectionEngine.Tests\TransactionProcessor.ProjectionEngine.Tests.csproj", "{7E770B14-0BF6-40B7-A36C-7AF403CE3C60}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -121,6 +125,14 @@ Global
 		{1D6CF3B6-41D3-46B8-BD6B-03FD32483763}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{1D6CF3B6-41D3-46B8-BD6B-03FD32483763}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{1D6CF3B6-41D3-46B8-BD6B-03FD32483763}.Release|Any CPU.Build.0 = Release|Any CPU
+		{6AE953A8-6400-456B-858A-454F78A28436}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{6AE953A8-6400-456B-858A-454F78A28436}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{6AE953A8-6400-456B-858A-454F78A28436}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{6AE953A8-6400-456B-858A-454F78A28436}.Release|Any CPU.Build.0 = Release|Any CPU
+		{7E770B14-0BF6-40B7-A36C-7AF403CE3C60}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{7E770B14-0BF6-40B7-A36C-7AF403CE3C60}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{7E770B14-0BF6-40B7-A36C-7AF403CE3C60}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{7E770B14-0BF6-40B7-A36C-7AF403CE3C60}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -144,6 +156,8 @@ Global
 		{2FF2AE7B-21F8-4EEF-9B47-3FCDAA39885B} = {749ADE74-A6F0-4469-A638-8FD7E82A8667}
 		{1FF2753E-6F90-400D-9A98-E5FE3F79518E} = {71B30DC4-AB27-4D30-8481-B4C326D074CB}
 		{1D6CF3B6-41D3-46B8-BD6B-03FD32483763} = {749ADE74-A6F0-4469-A638-8FD7E82A8667}
+		{6AE953A8-6400-456B-858A-454F78A28436} = {749ADE74-A6F0-4469-A638-8FD7E82A8667}
+		{7E770B14-0BF6-40B7-A36C-7AF403CE3C60} = {71B30DC4-AB27-4D30-8481-B4C326D074CB}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {193D13DE-424B-4D50-B674-01F9E4CC2CA9}

@@ -28,6 +28,11 @@
                                Guid transactionId,
                                CancellationToken cancellationToken);
 
+        Task<MerchantBalanceResponse> GetMerchantBalance(String accessToken,
+                                                         Guid estateId,
+                                                         Guid merchantId,
+                                                         CancellationToken cancellationToken);
+
         #endregion
     }
 }
