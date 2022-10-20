@@ -160,6 +160,18 @@
                 this.IsSecureEventStore = isSecure;
             }
 
+            var dir = "/home/runner/work/TransactionProcessor/TransactionProcessor/TransactionProcessor.IntegrationTests/bin/Debug/net6.0/";
+            var g = Directory.GetDirectories(dir);
+            foreach (String s in g) {
+                this.Logger.LogInformation($"[{s}]");
+            }
+            dir = "/home/runner/work/TransactionProcessor/TransactionProcessor/TransactionProcessor.IntegrationTests/bin/Debug/net6.0/projections";
+            g = Directory.GetDirectories(dir);
+            foreach (String s in g)
+            {
+                this.Logger.LogInformation($"[{s}]");
+            }
+
             await this.LoadEventStoreProjections(this.EventStoreHttpPort, this.IsSecureEventStore).ConfigureAwait(false);
 
             this.HostTraceFolder = FdOs.IsWindows() ? $"C:\\home\\txnproc\\trace\\{scenarioName}" : $"//home//txnproc//trace//{scenarioName}";
@@ -411,6 +423,7 @@
         {
             //Start our Continous Projections - we might decide to do this at a different stage, but now lets try here
             String projectionsFolder = "projections/continuous";
+            
             IPAddress[] ipAddresses = Dns.GetHostAddresses("127.0.0.1");
 
             if (!String.IsNullOrWhiteSpace(projectionsFolder))
