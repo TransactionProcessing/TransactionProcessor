@@ -160,17 +160,17 @@
                 this.IsSecureEventStore = isSecure;
             }
 
-            var dir = "/home/runner/work/TransactionProcessor/TransactionProcessor/TransactionProcessor.IntegrationTests/bin/Debug/net6.0/";
-            var g = Directory.GetDirectories(dir);
-            foreach (String s in g) {
-                this.Logger.LogInformation($"[{s}]");
-            }
-            dir = "/home/runner/work/TransactionProcessor/TransactionProcessor/TransactionProcessor.IntegrationTests/bin/Debug/net6.0/projections/**/";
-            g = Directory.GetDirectories(dir);
-            foreach (String s in g)
-            {
-                this.Logger.LogInformation($"[{s}]");
-            }
+            //var dir = "/home/runner/work/TransactionProcessor/TransactionProcessor/TransactionProcessor.IntegrationTests/bin/Debug/net6.0/";
+            //var g = Directory.GetDirectories(dir);
+            //foreach (String s in g) {
+            //    this.Logger.LogInformation($"[{s}]");
+            //}
+            //dir = "/home/runner/work/TransactionProcessor/TransactionProcessor/TransactionProcessor.IntegrationTests/bin/Debug/net6.0/projections/contin/";
+            //g = Directory.GetDirectories(dir);
+            //foreach (String s in g)
+            //{
+            //    this.Logger.LogInformation($"[{s}]");
+            //}
 
             this.HostTraceFolder = FdOs.IsWindows() ? $"C:\\home\\txnproc\\trace\\{scenarioName}" : $"//home//txnproc//trace//{scenarioName}";
             this.SqlServerDetails = (Setup.SqlServerContainerName, Setup.SqlUserName, Setup.SqlPassword);
@@ -420,7 +420,7 @@
         protected override async Task LoadEventStoreProjections(Int32 eventStoreHttpPort, Boolean isSecureEventStore = false)
         {
             //Start our Continous Projections - we might decide to do this at a different stage, but now lets try here
-            String projectionsFolder = "projections/**";
+            String projectionsFolder = "projections/continuous";
             
             IPAddress[] ipAddresses = Dns.GetHostAddresses("127.0.0.1");
 
