@@ -159,19 +159,7 @@
                 Boolean.TryParse(IsSecureEventStoreEnvVar, out Boolean isSecure);
                 this.IsSecureEventStore = isSecure;
             }
-
-            //var dir = "/home/runner/work/TransactionProcessor/TransactionProcessor/TransactionProcessor.IntegrationTests/bin/Debug/net6.0/";
-            //var g = Directory.GetDirectories(dir);
-            //foreach (String s in g) {
-            //    this.Logger.LogInformation($"[{s}]");
-            //}
-            //dir = "/home/runner/work/TransactionProcessor/TransactionProcessor/TransactionProcessor.IntegrationTests/bin/Debug/net6.0/projections/contin/";
-            //g = Directory.GetDirectories(dir);
-            //foreach (String s in g)
-            //{
-            //    this.Logger.LogInformation($"[{s}]");
-            //}
-
+            
             this.HostTraceFolder = FdOs.IsWindows() ? $"C:\\home\\txnproc\\trace\\{scenarioName}" : $"//home//txnproc//trace//{scenarioName}";
             this.SqlServerDetails = (Setup.SqlServerContainerName, Setup.SqlUserName, Setup.SqlPassword);
             Logging.Enabled();
@@ -416,74 +404,7 @@
 
             this.Logger.LogInformation("Loaded additional projections");
         }
-
-        protected override async Task LoadEventStoreProjections(Int32 eventStoreHttpPort, Boolean isSecureEventStore = false)
-        {
-            //Start our Continous Projections - we might decide to do this at a different stage, but now lets try here
-            String projectionsFolder = "projections/continuous";
-            
-            IPAddress[] ipAddresses = Dns.GetHostAddresses("127.0.0.1");
-
-            if (!String.IsNullOrWhiteSpace(projectionsFolder))
-            {
-                DirectoryInfo di = new DirectoryInfo(projectionsFolder);
-
-                if (di.Exists)
-                {
-                    FileInfo[] files = di.GetFiles();
-
-                    EventStoreProjectionManagementClient projectionClient =
-                        new EventStoreProjectionManagementClient(this.ConfigureEventStoreSettings(eventStoreHttpPort, isSecureEventStore));
-                    List<String> projectionNames = new List<String>();
-
-                    foreach (FileInfo file in files)
-                    {
-                        String projection = await DockerHelper.RemoveProjectionTestSetup(file);
-                        String projectionName = file.Name.Replace(".js", String.Empty);
-
-                        try
-                        {
-                            this.Logger.LogInformation($"Creating projection [{projectionName}] from file [{file.FullName}]");
-                            await projectionClient.CreateContinuousAsync(projectionName, projection, trackEmittedStreams: true).ConfigureAwait(false);
-
-                            projectionNames.Add(projectionName);
-                        }
-                        catch (Exception e)
-                        {
-                            this.Logger.LogError(new Exception($"Projection [{projectionName}] error", e));
-                        }
-                    }
-
-                    // Now check the create status of each
-                    foreach (String projectionName in projectionNames)
-                    {
-                        try
-                        {
-                            ProjectionDetails projectionDetails = await projectionClient.GetStatusAsync(projectionName);
-
-                            if (projectionDetails.Status == "Running")
-                            {
-                                this.Logger.LogInformation($"Projection [{projectionName}] is Running");
-                            }
-                            else
-                            {
-                                this.Logger.LogWarning($"Projection [{projectionName}] is {projectionDetails.Status}");
-                            }
-                        }
-                        catch (Exception e)
-                        {
-                            this.Logger.LogError(new Exception($"Error getting Projection [{projectionName}] status", e));
-                        }
-                    }
-                }
-                else {
-                    this.Logger.LogWarning($"Folder [{di.Name}] not found");
-                }
-            }
-
-            this.Logger.LogInformation("Loaded projections");
-        }
-
+        
         /// <summary>
         /// Stops the containers for scenario run.
         /// </summary>
