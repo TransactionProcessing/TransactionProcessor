@@ -160,6 +160,8 @@
                 this.IsSecureEventStore = isSecure;
             }
 
+            await this.LoadEventStoreProjections(this.EventStoreHttpPort, this.IsSecureEventStore).ConfigureAwait(false);
+
             this.HostTraceFolder = FdOs.IsWindows() ? $"C:\\home\\txnproc\\trace\\{scenarioName}" : $"//home//txnproc//trace//{scenarioName}";
             this.SqlServerDetails = (Setup.SqlServerContainerName, Setup.SqlUserName, Setup.SqlPassword);
             Logging.Enabled();
@@ -408,7 +410,7 @@
         protected override async Task LoadEventStoreProjections(Int32 eventStoreHttpPort, Boolean isSecureEventStore = false)
         {
             //Start our Continous Projections - we might decide to do this at a different stage, but now lets try here
-            String projectionsFolder = "projections\\continuous";
+            String projectionsFolder = "projections/continuous";
             IPAddress[] ipAddresses = Dns.GetHostAddresses("127.0.0.1");
 
             if (!String.IsNullOrWhiteSpace(projectionsFolder))
