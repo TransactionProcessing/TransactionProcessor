@@ -165,14 +165,12 @@
             foreach (String s in g) {
                 this.Logger.LogInformation($"[{s}]");
             }
-            dir = "/home/runner/work/TransactionProcessor/TransactionProcessor/TransactionProcessor.IntegrationTests/bin/Debug/net6.0/projections";
+            dir = "/home/runner/work/TransactionProcessor/TransactionProcessor/TransactionProcessor.IntegrationTests/bin/Debug/net6.0/projections/**/";
             g = Directory.GetDirectories(dir);
             foreach (String s in g)
             {
                 this.Logger.LogInformation($"[{s}]");
             }
-
-            await this.LoadEventStoreProjections(this.EventStoreHttpPort, this.IsSecureEventStore).ConfigureAwait(false);
 
             this.HostTraceFolder = FdOs.IsWindows() ? $"C:\\home\\txnproc\\trace\\{scenarioName}" : $"//home//txnproc//trace//{scenarioName}";
             this.SqlServerDetails = (Setup.SqlServerContainerName, Setup.SqlUserName, Setup.SqlPassword);
