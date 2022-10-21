@@ -39,9 +39,8 @@ public class MerchantBalanceStateDispatcher : IStateDispatcher<MerchantBalanceSt
                {
                    MerchantId = @event.MerchantId,
                    EstateId = @event.EstateId,
-                   Balance = state.Balance,
                    ChangeAmount = @event.CalculatedValue,
-                   DateTime = @event.FeeCalculatedDateTime,
+                   DateTime = @event.FeeCalculatedDateTime.AddSeconds(2),
                    Reference = "Transaction Fee Processed",
                    AggregateId = @event.TransactionId,
                    OriginalEventId = @event.EventId,
@@ -53,7 +52,7 @@ public class MerchantBalanceStateDispatcher : IStateDispatcher<MerchantBalanceSt
         if (@event.IsAuthorised == false)
             return null;
             
-        var transactionAmount = @event.TransactionAmount.GetValueOrDefault(0);
+        Decimal transactionAmount = @event.TransactionAmount.GetValueOrDefault(0);
 
         // Skip logons
         if (transactionAmount == 0)
@@ -66,9 +65,8 @@ public class MerchantBalanceStateDispatcher : IStateDispatcher<MerchantBalanceSt
                {
                    MerchantId = @event.MerchantId,
                    EstateId = @event.EstateId,
-                   Balance = state.Balance,
                    ChangeAmount = transactionAmount,
-                   DateTime = @event.CompletedDateTime.AddSeconds(2),
+                   DateTime = @event.CompletedDateTime,
                    Reference = "Transaction Completed",
                    AggregateId = @event.TransactionId,
                    OriginalEventId = @event.EventId,
@@ -80,7 +78,6 @@ public class MerchantBalanceStateDispatcher : IStateDispatcher<MerchantBalanceSt
         return new MerchantBalanceChangedEntry {
                                                    MerchantId = @event.MerchantId,
                                                    EstateId = @event.EstateId,
-                                                   Balance = state.Balance,
                                                    ChangeAmount = @event.Amount,
                                                    DateTime = @event.DepositDateTime,
                                                    Reference = "Merchant Deposit",
@@ -96,7 +93,6 @@ public class MerchantBalanceStateDispatcher : IStateDispatcher<MerchantBalanceSt
                {
                    MerchantId = @event.MerchantId,
                    EstateId = @event.EstateId,
-                   Balance = state.Balance,
                    ChangeAmount = @event.Amount,
                    DateTime = @event.DepositDateTime,
                    Reference = "Merchant Deposit",
@@ -111,9 +107,8 @@ public class MerchantBalanceStateDispatcher : IStateDispatcher<MerchantBalanceSt
                                                    MerchantId = @event.MerchantId,
                                                    EstateId = @event.EstateId,
                                                    CauseOfChangeId = @event.MerchantId,
-                                                   Balance = 0,
                                                    ChangeAmount = 0,
-                                                   DateTime = @event.DateCreated.AddMonths(-1),
+                                                   DateTime = @event.DateCreated,
                                                    Reference = "Opening Balance",
                                                    AggregateId = @event.MerchantId,
                                                    OriginalEventId = @event.EventId,

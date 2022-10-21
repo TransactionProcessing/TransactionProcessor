@@ -2,56 +2,55 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
-using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using TransactionProcessor.ProjectionEngine.Database;
 
 #nullable disable
 
-namespace TransactionProcessor.ProjectionEngine.Migrations
+namespace TransactionProcessor.ProjectionEngine.Migrations.TransactionProcessorMySql
 {
-    [DbContext(typeof(TransactionProcessorSqlServerContext))]
-    partial class TransactionProcessorSqlServerContextModelSnapshot : ModelSnapshot
+    [DbContext(typeof(TransactionProcessorMySqlContext))]
+    [Migration("20221021140255_removebalancefromentrytable")]
+    partial class removebalancefromentrytable
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
                 .HasAnnotation("ProductVersion", "6.0.5")
-                .HasAnnotation("Relational:MaxIdentifierLength", 128);
-
-            SqlServerModelBuilderExtensions.UseIdentityColumns(modelBuilder, 1L, 1);
+                .HasAnnotation("Relational:MaxIdentifierLength", 64);
 
             modelBuilder.Entity("TransactionProcessor.ProjectionEngine.Database.Entities.MerchantBalanceChangedEntry", b =>
                 {
                     b.Property<Guid>("AggregateId")
-                        .HasColumnType("uniqueidentifier");
+                        .HasColumnType("char(36)");
 
                     b.Property<Guid>("OriginalEventId")
-                        .HasColumnType("uniqueidentifier");
+                        .HasColumnType("char(36)");
 
                     b.Property<Guid>("CauseOfChangeId")
-                        .HasColumnType("uniqueidentifier");
+                        .HasColumnType("char(36)");
 
                     b.Property<decimal>("ChangeAmount")
-                        .HasColumnType("decimal(18,2)");
+                        .HasColumnType("decimal(65,30)");
 
                     b.Property<DateTime>("DateTime")
-                        .HasColumnType("datetime2");
+                        .HasColumnType("datetime(6)");
 
                     b.Property<string>("DebitOrCredit")
                         .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                        .HasColumnType("longtext");
 
                     b.Property<Guid>("EstateId")
-                        .HasColumnType("uniqueidentifier");
+                        .HasColumnType("char(36)");
 
                     b.Property<Guid>("MerchantId")
-                        .HasColumnType("uniqueidentifier");
+                        .HasColumnType("char(36)");
 
                     b.Property<string>("Reference")
                         .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                        .HasColumnType("longtext");
 
                     b.HasKey("AggregateId", "OriginalEventId");
 
@@ -61,25 +60,25 @@ namespace TransactionProcessor.ProjectionEngine.Migrations
             modelBuilder.Entity("TransactionProcessor.ProjectionEngine.Database.Entities.MerchantBalanceProjectionState", b =>
                 {
                     b.Property<Guid>("EstateId")
-                        .HasColumnType("uniqueidentifier");
+                        .HasColumnType("char(36)");
 
                     b.Property<Guid>("MerchantId")
-                        .HasColumnType("uniqueidentifier");
+                        .HasColumnType("char(36)");
 
                     b.Property<decimal>("AuthorisedSales")
-                        .HasColumnType("decimal(18,2)");
+                        .HasColumnType("decimal(65,30)");
 
                     b.Property<decimal>("AvailableBalance")
-                        .HasColumnType("decimal(18,2)");
+                        .HasColumnType("decimal(65,30)");
 
                     b.Property<decimal>("Balance")
-                        .HasColumnType("decimal(18,2)");
+                        .HasColumnType("decimal(65,30)");
 
                     b.Property<int>("CompletedTransactionCount")
                         .HasColumnType("int");
 
                     b.Property<decimal>("DeclinedSales")
-                        .HasColumnType("decimal(18,2)");
+                        .HasColumnType("decimal(65,30)");
 
                     b.Property<int>("DepositCount")
                         .HasColumnType("int");
@@ -88,17 +87,17 @@ namespace TransactionProcessor.ProjectionEngine.Migrations
                         .HasColumnType("int");
 
                     b.Property<DateTime>("LastDeposit")
-                        .HasColumnType("datetime2");
+                        .HasColumnType("datetime(6)");
 
                     b.Property<DateTime>("LastFee")
-                        .HasColumnType("datetime2");
+                        .HasColumnType("datetime(6)");
 
                     b.Property<DateTime>("LastSale")
-                        .HasColumnType("datetime2");
+                        .HasColumnType("datetime(6)");
 
                     b.Property<string>("MerchantName")
                         .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                        .HasColumnType("longtext");
 
                     b.Property<int>("SaleCount")
                         .HasColumnType("int");
@@ -106,17 +105,16 @@ namespace TransactionProcessor.ProjectionEngine.Migrations
                     b.Property<int>("StartedTransactionCount")
                         .HasColumnType("int");
 
-                    b.Property<byte[]>("Timestamp")
+                    b.Property<DateTime>("Timestamp")
                         .IsConcurrencyToken()
-                        .IsRequired()
                         .ValueGeneratedOnAddOrUpdate()
-                        .HasColumnType("rowversion");
+                        .HasColumnType("timestamp(6)");
 
                     b.Property<decimal>("TotalDeposited")
-                        .HasColumnType("decimal(18,2)");
+                        .HasColumnType("decimal(65,30)");
 
                     b.Property<decimal>("ValueOfFees")
-                        .HasColumnType("decimal(18,2)");
+                        .HasColumnType("decimal(65,30)");
 
                     b.HasKey("EstateId", "MerchantId");
 
