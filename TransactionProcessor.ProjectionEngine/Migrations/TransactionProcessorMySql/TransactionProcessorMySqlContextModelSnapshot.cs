@@ -27,9 +27,6 @@ namespace TransactionProcessor.ProjectionEngine.Migrations.TransactionProcessorM
                     b.Property<Guid>("OriginalEventId")
                         .HasColumnType("char(36)");
 
-                    b.Property<decimal>("Balance")
-                        .HasColumnType("decimal(65,30)");
-
                     b.Property<Guid>("CauseOfChangeId")
                         .HasColumnType("char(36)");
 

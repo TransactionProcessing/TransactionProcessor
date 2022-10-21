@@ -2,12 +2,12 @@
 
 using Database;
 using Dispatchers;
+using Microsoft.EntityFrameworkCore;
 using Models;
-using Shared.EntityFramework;
 
 public class TransactionProcessorReadRepository : ITransactionProcessorReadRepository
 {
-    private readonly IDbContextFactory<TransactionProcessorGenericContext> ContextFactory;
+    private readonly Shared.EntityFramework.IDbContextFactory<TransactionProcessorGenericContext> ContextFactory;
 
     public TransactionProcessorReadRepository(Shared.EntityFramework.IDbContextFactory<TransactionProcessorGenericContext> contextFactory) {
         this.ContextFactory = contextFactory;
@@ -17,7 +17,6 @@ public class TransactionProcessorReadRepository : ITransactionProcessorReadRepos
         await using TransactionProcessorGenericContext context = await this.ContextFactory.GetContext(entry.EstateId, cancellationToken);
 
         TransactionProcessor.ProjectionEngine.Database.Entities.MerchantBalanceChangedEntry entity = new() {
-                                                                                                               Balance = entry.Balance,
                                                                                                                ChangeAmount = entry.ChangeAmount,
                                                                                                                Reference = entry.Reference,
                                                                                                                AggregateId = entry.AggregateId,
@@ -26,9 +25,9 @@ public class TransactionProcessorReadRepository : ITransactionProcessorReadRepos
                                                                                                                CauseOfChangeId = entry.CauseOfChangeId,
                                                                                                                DateTime = entry.DateTime,
                                                                                                                EstateId = entry.EstateId,
-                                                                                                               MerchantId = @entry.MerchantId,
+                                                                                                               MerchantId = @entry.MerchantId
                                                                                                            };
-
+        
         await context.MerchantBalanceChangedEntry.AddAsync(entity, cancellationToken);
         await context.SaveChangesAsync(cancellationToken);
     }

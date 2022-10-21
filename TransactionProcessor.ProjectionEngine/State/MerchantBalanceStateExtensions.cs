@@ -1,6 +1,8 @@
 ﻿namespace TransactionProcessor.ProjectionEngine.State
 {
     using System.Diagnostics.Contracts;
+    using System.Net.Http.Headers;
+    using EstateManagement.Merchant.DomainEvents;
     using Transaction.DomainEvents;
 
     public static class MerchantBalanceStateExtensions
@@ -12,7 +14,47 @@
                 Balance = 0,
                 AvailableBalance = 0
             };
-        
+
+        [Pure]
+        public static MerchantBalanceState HandleMerchantCreated(this MerchantBalanceState state,
+                                                                MerchantCreatedEvent mce) =>
+            state.SetEstateId(mce.EstateId).SetMerchantId(mce.MerchantId).SetMerchantName(mce.MerchantName).InitialiseBalances();
+
+
+        [Pure]
+        public static MerchantBalanceState HandleManualDepositMadeEvent(this MerchantBalanceState state,
+                                                                        ManualDepositMadeEvent mdme) =>
+            state.IncrementAvailableBalance(mdme.Amount).IncrementBalance(mdme.Amount).RecordDeposit(mdme);
+
+        [Pure]
+        public static MerchantBalanceState HandleAutomaticDepositMadeEvent(this MerchantBalanceState state,
+                                                                           AutomaticDepositMadeEvent adme) =>
+            state.IncrementAvailableBalance(adme.Amount).IncrementBalance(adme.Amount).RecordDeposit(adme);
+
+        [Pure]
+        public static MerchantBalanceState HandleTransactionHasStartedEvent(this MerchantBalanceState state,
+                                                                            TransactionHasStartedEvent thse) =>
+            state.DecrementAvailableBalance(thse.TransactionAmount.GetValueOrDefault(0)).StartTransaction(thse);
+
+        [Pure]
+        public static MerchantBalanceState HandleTransactionHasBeenCompletedEvent(this MerchantBalanceState state,
+                                                                                  TransactionHasBeenCompletedEvent thbce) {
+
+            if (thbce.IsAuthorised)
+            {
+                state = state.DecrementBalance(thbce.TransactionAmount.GetValueOrDefault(0)).RecordAuthorisedSale(thbce.TransactionAmount.GetValueOrDefault(0));
+            }
+            else
+            {
+                state = state.IncrementAvailableBalance(thbce.TransactionAmount.GetValueOrDefault(0)).RecordDeclinedSale(thbce.TransactionAmount.GetValueOrDefault(0));
+            }
+            return state.CompleteTransaction(thbce);
+        }
+
+        [Pure]
+        public static MerchantBalanceState HandleMerchantFeeAddedToTransactionEvent(this MerchantBalanceState state,
+                                                                                    MerchantFeeAddedToTransactionEvent mfatte) =>
+            state.IncrementAvailableBalance(mfatte.CalculatedValue).IncrementBalance(mfatte.CalculatedValue).RecordMerchantFee(mfatte);
 
         [Pure]
         public static MerchantBalanceState SetEstateId(this MerchantBalanceState state,
@@ -50,8 +92,9 @@
                 return state;
 
             return state with {
-                           CompletedTransactionCount = state.CompletedTransactionCount + 1
-                       };
+                           CompletedTransactionCount = state.CompletedTransactionCount + 1,
+                           LastSale = domainEvent.CompletedDateTime > state.LastSale ? domainEvent.CompletedDateTime : state.LastSale,
+            };
         }
 
         [Pure]
@@ -79,11 +122,22 @@
 
         [Pure]
         public static MerchantBalanceState RecordDeposit(this MerchantBalanceState state,
-                                                               Decimal depositAmount) =>
+                                                               ManualDepositMadeEvent mdme) =>
             state with
             {
                 DepositCount = state.DepositCount + 1,
-                TotalDeposited = state.TotalDeposited+depositAmount
+                TotalDeposited = state.TotalDeposited+mdme.Amount,
+                LastDeposit = mdme.DepositDateTime > state.LastDeposit ? mdme.DepositDateTime : state.LastDeposit,
+            };
+
+        [Pure]
+        public static MerchantBalanceState RecordDeposit(this MerchantBalanceState state,
+                                                         AutomaticDepositMadeEvent adme) =>
+            state with
+            {
+                DepositCount = state.DepositCount + 1,
+                TotalDeposited = state.TotalDeposited + adme.Amount,
+                LastDeposit = adme.DepositDateTime > state.LastDeposit ? adme.DepositDateTime : state.LastDeposit,
             };
 
         [Pure]
@@ -106,11 +160,12 @@
 
         [Pure]
         public static MerchantBalanceState RecordMerchantFee(this MerchantBalanceState state,
-                                                             Decimal feeAmount) =>
+                                                             MerchantFeeAddedToTransactionEvent mfatte) =>
             state with
             {
                 FeeCount = state.FeeCount+1,
-                ValueOfFees = state.ValueOfFees+ feeAmount
+                ValueOfFees = state.ValueOfFees+ mfatte.CalculatedValue,
+                LastFee = mfatte.FeeCalculatedDateTime > state.LastFee ? mfatte.FeeCalculatedDateTime : state.LastFee,
             };
 
         [Pure]
