@@ -116,7 +116,7 @@
         public async Task PopulateSubscriptionServiceConfigurationGeneric(Boolean isSecureEventStore)
         {
             List<(String streamName, String groupName, Int32 maxRetries)> subscriptions = new List<(String streamName, String groupName, Int32 maxRetries)>();
-            subscriptions.Add(($"$ce-MerchantArchive", "Transaction Processor - Ordered", 0));
+            subscriptions.Add(($"$ce-MerchantBalanceArchive", "Transaction Processor - Ordered", 0));
             subscriptions.Add(($"$et-EstateCreatedEvent", "Transaction Processor - Ordered", 2));
             await this.PopulateSubscriptionServiceConfiguration(this.EventStoreHttpPort, subscriptions, isSecureEventStore);
         }
