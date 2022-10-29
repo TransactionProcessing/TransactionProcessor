@@ -53,7 +53,7 @@ namespace TransactionProcessor.IntegrationTests.Shared
                 // Setup the subscriptions for the estate
                 await Retry.For(async () => {
                                     await this.TestingContext.DockerHelper
-                                              .PopulateSubscriptionServiceConfigurationForEstate(estateName, this.TestingContext.DockerHelper.IsSecureEventStore)
+                                              .CreateEstateSubscriptions(estateName)
                                               .ConfigureAwait(false);
                                 },
                                 retryFor:TimeSpan.FromMinutes(2),

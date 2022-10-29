@@ -371,7 +371,6 @@
         public static MerchantResponse GetMerchantResponseWithOperator1 =>
             new MerchantResponse
             {
-                AvailableBalance = TestData.AvailableBalance,
                 EstateId = TestData.EstateId,
                 MerchantId = TestData.MerchantId,
                 MerchantName = TestData.MerchantName,
@@ -391,33 +390,10 @@
                             }
             };
 
-        public static MerchantResponse GetMerchantResponseWithZeroAvailableBalance =>
-            new MerchantResponse
-            {
-                AvailableBalance = TestData.ZeroAvailableBalance,
-                EstateId = TestData.EstateId,
-                MerchantId = TestData.MerchantId,
-                MerchantName = TestData.MerchantName,
-                Devices = new Dictionary<Guid, String>
-                          {
-                              {TestData.DeviceId, TestData.DeviceIdentifier}
-                          },
-                Operators = new List<MerchantOperatorResponse>
-                            {
-                                new MerchantOperatorResponse
-                                {
-                                    Name = TestData.OperatorIdentifier1,
-                                    OperatorId = TestData.OperatorId,
-                                    MerchantNumber = TestData.MerchantNumber,
-                                    TerminalNumber = TestData.TerminalNumber
-                                }
-                            }
-            };
 
         public static MerchantResponse GetMerchantResponseWithOperator2 =>
             new MerchantResponse
             {
-                AvailableBalance = TestData.AvailableBalance,
                 EstateId = TestData.EstateId,
                 MerchantId = TestData.MerchantId,
                 MerchantName = TestData.MerchantName,
@@ -440,7 +416,6 @@
         public static MerchantResponse GetMerchantResponseWithNoDevices =>
             new MerchantResponse
             {
-                AvailableBalance = TestData.AvailableBalance,
                 EstateId = TestData.EstateId,
                 MerchantId = TestData.MerchantId,
                 MerchantName = TestData.MerchantName,
@@ -460,7 +435,6 @@
         public static MerchantResponse GetMerchantResponseWithNullDevices =>
             new MerchantResponse
             {
-                AvailableBalance = TestData.AvailableBalance,
                 EstateId = TestData.EstateId,
                 MerchantId = TestData.MerchantId,
                 MerchantName = TestData.MerchantName,
@@ -480,7 +454,6 @@
         public static MerchantResponse GetMerchantResponseWithEmptyOperators =>
             new MerchantResponse
             {
-                AvailableBalance = TestData.AvailableBalance,
                 EstateId = TestData.EstateId,
                 MerchantId = TestData.MerchantId,
                 MerchantName = TestData.MerchantName,
@@ -494,7 +467,6 @@
         public static MerchantResponse GetMerchantResponseWithNullOperators =>
             new MerchantResponse
             {
-                AvailableBalance = TestData.AvailableBalance,
                 EstateId = TestData.EstateId,
                 MerchantId = TestData.MerchantId,
                 MerchantName = TestData.MerchantName,
