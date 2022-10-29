@@ -22,49 +22,38 @@ namespace TransactionProcessor.IntegrationTests.Common
     public class Setup
     {
         public static IContainerService DatabaseServerContainer;
-        private static String DbConnectionStringWithNoDatabase;
         public static INetworkService DatabaseServerNetwork;
-
-        public static String SqlServerContainerName = "shareddatabasesqlserver";
-
-        public const String SqlUserName = "sa";
-
-        public const String SqlPassword = "thisisalongpassword123!";
+        public static (String usename, String password) SqlCredentials = ("sa", "thisisalongpassword123!");
+        public static (String url, String username, String password) DockerCredentials = ("https://www.docker.com", "stuartferguson", "Sc0tland");
         [BeforeTestRun]
         protected static void GlobalSetup()
         {
             ShouldlyConfiguration.DefaultTaskTimeout = TimeSpan.FromMinutes(1);
 
-            (String, String, String) dockerCredentials = ("https://www.docker.com", "stuartferguson", "Sc0tland");
-
-            // Setup a network for the DB Server
-            DatabaseServerNetwork = global::Shared.IntegrationTesting.DockerHelper.SetupTestNetwork("sharednetwork", true);
+            DockerHelper dockerHelper = new DockerHelper();
 
             NlogLogger logger = new NlogLogger();
             logger.Initialise(LogManager.GetLogger("Specflow"), "Specflow");
             LogManager.AddHiddenAssembly(typeof(NlogLogger).Assembly);
+            dockerHelper.Logger = logger;
+            dockerHelper.SqlCredentials = Setup.SqlCredentials;
+            dockerHelper.DockerCredentials = Setup.DockerCredentials;
+            dockerHelper.SqlServerContainerName = "sharedsqlserver";
 
-            // Start the Database Server here
-            DatabaseServerContainer = global::Shared.IntegrationTesting.DockerHelper.StartSqlContainerWithOpenConnection(Setup.SqlServerContainerName,
-                                                                                       logger,
-                                                                                       "mcr.microsoft.com/mssql/server:2019-latest",
-                                                                                       Setup.DatabaseServerNetwork,
-                                                                                       "",
-                                                                                       dockerCredentials,
-                                                                                       Setup.SqlUserName,
-                                                                                       Setup.SqlPassword);
+            Setup.DatabaseServerNetwork = dockerHelper.SetupTestNetwork("sharednetwork", true);
+            Setup.DatabaseServerContainer = dockerHelper.SetupSqlServerContainer(Setup.DatabaseServerNetwork);
         }
 
         public static String GetConnectionString(String databaseName)
         {
-            return $"server={Setup.DatabaseServerContainer.Name};database={databaseName};user id={Setup.SqlUserName};password={Setup.SqlPassword}";
+            return $"server={Setup.DatabaseServerContainer.Name};database={databaseName};user id={Setup.SqlCredentials.usename};password={Setup.SqlCredentials.password}";
         }
 
         public static String GetLocalConnectionString(String databaseName)
         {
             Int32 databaseHostPort = Setup.DatabaseServerContainer.ToHostExposedEndpoint("1433/tcp").Port;
 
-            return $"server=localhost,{databaseHostPort};database={databaseName};user id={Setup.SqlUserName};password={Setup.SqlPassword}";
+            return $"server=localhost,{databaseHostPort};database={databaseName};user id={Setup.SqlCredentials.usename};password={Setup.SqlCredentials.password}";
         }
 
     }
