@@ -44,17 +44,6 @@
         /// The transaction processor client
         /// </summary>
         public ITransactionProcessorClient TransactionProcessorClient;
-        
-        
-
-        /// <summary>
-        /// The estate management API port
-        /// </summary>
-        protected Int32 EstateManagementApiPort;
-
-        
-        //protected Int32 TestHostPort;
-
 
         private readonly TestingContext TestingContext;
 
@@ -88,7 +77,7 @@
             
 
             // Setup the base address resolvers
-            String EstateManagementBaseAddressResolver(String api) => $"http://127.0.0.1:{this.EstateManagementApiPort}";
+            String EstateManagementBaseAddressResolver(String api) => $"http://127.0.0.1:{this.EstateManagementPort}";
             String SecurityServiceBaseAddressResolver(String api) => $"https://127.0.0.1:{this.SecurityServicePort}";
             String TransactionProcessorBaseAddressResolver(String api) => $"http://127.0.0.1:{this.TransactionProcessorPort}";
 
