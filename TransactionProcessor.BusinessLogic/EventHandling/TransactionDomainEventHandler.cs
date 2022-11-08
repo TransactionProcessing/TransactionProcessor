@@ -10,6 +10,7 @@
     using EstateManagement.Client;
     using EstateManagement.DataTransferObjects;
     using EstateManagement.DataTransferObjects.Responses;
+    using EstateManagement.Estate.DomainEvents;
     using Manager;
     using MessagingService.Client;
     using MessagingService.DataTransferObjects;
@@ -20,12 +21,14 @@
     using Services;
     using SettlementAggregates;
     using Shared.DomainDrivenDesign.EventSourcing;
+    using Shared.EntityFramework;
     using Shared.EventStore.Aggregate;
     using Shared.EventStore.EventHandling;
     using Shared.General;
     using Shared.Logger;
     using Transaction.DomainEvents;
     using TransactionAggregate;
+    using TransactionProcessor.ProjectionEngine.Database;
     using CalculationType = Models.CalculationType;
     using FeeType = Models.FeeType;
 
@@ -79,15 +82,6 @@
 
         #region Constructors
 
-        /// <summary>
-        /// Initializes a new instance of the <see cref="TransactionDomainEventHandler" /> class.
-        /// </summary>
-        /// <param name="transactionAggregateManager">The transaction aggregate manager.</param>
-        /// <param name="feeCalculationManager">The fee calculation manager.</param>
-        /// <param name="estateClient">The estate client.</param>
-        /// <param name="securityServiceClient">The security service client.</param>
-        /// <param name="transactionReceiptBuilder">The transaction receipt builder.</param>
-        /// <param name="messagingServiceClient">The messaging service client.</param>
         public TransactionDomainEventHandler(ITransactionAggregateManager transactionAggregateManager,
                                              IFeeCalculationManager feeCalculationManager,
                                              IEstateClient estateClient,
@@ -109,11 +103,6 @@
 
         #region Methods
 
-        /// <summary>
-        /// Handles the specified domain event.
-        /// </summary>
-        /// <param name="domainEvent">The domain event.</param>
-        /// <param name="cancellationToken">The cancellation token.</param>
         public async Task Handle(IDomainEvent domainEvent,
                                  CancellationToken cancellationToken)
         {
@@ -151,12 +140,7 @@
 
             return this.TokenResponse;
         }
-
-        /// <summary>
-        /// Handles the specific domain event.
-        /// </summary>
-        /// <param name="domainEvent">The domain event.</param>
-        /// <param name="cancellationToken">The cancellation token.</param>
+        
         private async Task HandleSpecificDomainEvent(TransactionHasBeenCompletedEvent domainEvent,
                                                      CancellationToken cancellationToken)
         {
@@ -272,11 +256,6 @@
             return completeDateTime.Date;
         }
 
-        /// <summary>
-        /// Handles the specific domain event.
-        /// </summary>
-        /// <param name="domainEvent">The domain event.</param>
-        /// <param name="cancellationToken">The cancellation token.</param>
         private async Task HandleSpecificDomainEvent(CustomerEmailReceiptRequestedEvent domainEvent,
                                                      CancellationToken cancellationToken)
         {
@@ -322,16 +301,6 @@
             await this.SettlementAggregateRepository.SaveChanges(pendingSettlementAggregate, cancellationToken);
         }
 
-        /// <summary>
-        /// Sends the email message.
-        /// </summary>
-        /// <param name="accessToken">The access token.</param>
-        /// <param name="messageId">The message identifier.</param>
-        /// <param name="estateId">The estate identifier.</param>
-        /// <param name="subject">The subject.</param>
-        /// <param name="body">The body.</param>
-        /// <param name="emailAddress">The email address.</param>
-        /// <param name="cancellationToken">The cancellation token.</param>
         private async Task SendEmailMessage(String accessToken, 
                                             Guid messageId,
                                             Guid estateId,
@@ -391,7 +360,6 @@
                     throw;
                 }
             }
-
         }
 
         #endregion

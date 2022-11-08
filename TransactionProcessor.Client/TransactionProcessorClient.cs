@@ -1,6 +1,7 @@
 ﻿namespace TransactionProcessor.Client
 {
     using System;
+    using System.Collections.Generic;
     using System.Net.Http;
     using System.Net.Http.Headers;
     using System.Text;
@@ -202,6 +203,40 @@
 
                 // call was successful so now deserialise the body to the response object
                 response = JsonConvert.DeserializeObject<MerchantBalanceResponse>(content);
+
+            }
+            catch (Exception ex)
+            {
+                // An exception has occurred, add some additional information to the message
+                Exception exception = new Exception("Error getting merchant balance.", ex);
+
+                throw exception;
+            }
+
+            return response;
+        }
+
+        public async Task<List<MerchantBalanceChangedEntryResponse>> GetMerchantBalanceHistory(String accessToken,
+                                                                                         Guid estateId,
+                                                                                         Guid merchantId,
+                                                                                         DateTime startDate,
+                                                                                         DateTime endDate,
+                                                                                         CancellationToken cancellationToken) {
+            String requestUri = $"{this.BaseAddress}/api/estates/{estateId}/merchants/{merchantId}/balancehistory?startDate={startDate:yyyy-MM-dd}&endDate={endDate:yyyy-MM-dd}";
+            List<MerchantBalanceChangedEntryResponse> response = null;
+            try
+            {
+                // Add the access token to the client headers
+                this.HttpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", accessToken);
+
+                // Make the Http Call here
+                HttpResponseMessage httpResponse = await this.HttpClient.GetAsync(requestUri, cancellationToken);
+
+                // Process the response
+                String content = await this.HandleResponse(httpResponse, cancellationToken);
+
+                // call was successful so now deserialise the body to the response object
+                response = JsonConvert.DeserializeObject<List<MerchantBalanceChangedEntryResponse>>(content);
 
             }
             catch (Exception ex)

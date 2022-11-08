@@ -59,8 +59,8 @@ Background:
 
 	When I add the following Transaction Fees
 	| EstateName    | OperatorName     | ContractDescription       | ProductName       | CalculationType | FeeDescription      | Value |
-	| Test Estate 1 | Safaricom        | Safaricom Contract        | Variable Topup    | Fixed           | Merchant Commission | 2.50  |
-	| Test Estate 1 | PataPawa PostPay | PataPawa PostPay Contract | Post Pay Bill Pay | Fixed           | Merchant Commission | 2.50  |
+	| Test Estate 1 | Safaricom        | Safaricom Contract        | Variable Topup    | Percentage           | Merchant Commission | 0.50  |
+	| Test Estate 1 | PataPawa PostPay | PataPawa PostPay Contract | Post Pay Bill Pay | Percentage           | Merchant Commission | 0.50  |
 	| Test Estate 2 | Safaricom        | Safaricom Contract        | Variable Topup    | Percentage      | Merchant Commission | 0.85  |
 	| Test Estate 2 | PataPawa PostPay | PataPawa PostPay Contract | Post Pay Bill Pay | Percentage      | Merchant Commission | 0.95  |
 
@@ -90,7 +90,7 @@ Background:
 
 	Given I make the following manual merchant deposits 
 	| Reference | Amount  | DateTime | MerchantName    | EstateName    |
-	| Deposit1  | 230.00 | Today    | Test Merchant 1 | Test Estate 1 |
+	| Deposit1  | 240.00 | Today    | Test Merchant 1 | Test Estate 1 |
 	| Deposit1  | 110.00 | Today    | Test Merchant 2 | Test Estate 1 |
 	| Deposit1  | 110.00 | Today    | Test Merchant 3 | Test Estate 2 |
 
@@ -103,15 +103,15 @@ Scenario: Sale Transactions
 
 	When I perform the following transactions
 	| DateTime | TransactionNumber | TransactionType | TransactionSource | MerchantName    | DeviceIdentifier | EstateName    | OperatorName     | TransactionAmount | CustomerAccountNumber | CustomerEmailAddress        | ContractDescription       | ProductName       | RecipientEmail       | RecipientMobile | MessageType   | AccountNumber | CustomerName     |
-	| Today    | 1                 | Sale            | 1                 | Test Merchant 1 | 123456780        | Test Estate 1 | Safaricom        | 100.00            | 123456789             |                             | Safaricom Contract        | Variable Topup    |                      |                 |               |               |                  |
+	| Today    | 1                 | Sale            | 1                 | Test Merchant 1 | 123456780        | Test Estate 1 | Safaricom        | 110.00            | 123456789             |                             | Safaricom Contract        | Variable Topup    |                      |                 |               |               |                  |
 	| Today    | 2                 | Sale            | 1                 | Test Merchant 2 | 123456781        | Test Estate 1 | Safaricom        | 100.00            | 123456789             |                             | Safaricom Contract        | Variable Topup    |                      |                 |               |               |                  |
 	| Today    | 3                 | Sale            | 2                 | Test Merchant 3 | 123456782        | Test Estate 2 | Safaricom        | 100.00            | 123456789             |                             | Safaricom Contract        | Variable Topup    |                      |                 |               |               |                  |
-	| Today    | 4                 | Sale            | 1                 | Test Merchant 1 | 123456780        | Test Estate 1 | Safaricom        | 100.00            | 123456789             | testcustomer@customer.co.uk | Safaricom Contract        | Variable Topup    |                      |                 |               |               |                  |
+	| Today    | 4                 | Sale            | 1                 | Test Merchant 1 | 123456780        | Test Estate 1 | Safaricom        | 90.00            | 123456789             | testcustomer@customer.co.uk | Safaricom Contract        | Variable Topup    |                      |                 |               |               |                  |
 	| Today    | 5                 | Sale            | 1                 | Test Merchant 1 | 123456780        | Test Estate 1 | Voucher          | 10.00             |                       |                             | Hospital 1 Contract       | 10 KES            | test@recipient.co.uk |                 |               |               |                  |
 	| Today    | 6                 | Sale            | 1                 | Test Merchant 2 | 123456781        | Test Estate 1 | Voucher          | 10.00             |                       |                             | Hospital 1 Contract       | 10 KES            |                      | 123456789       |               |               |                  |
 	| Today    | 7                 | Sale            | 2                 | Test Merchant 3 | 123456782        | Test Estate 2 | Voucher          | 10.00             |                       |                             | Hospital 1 Contract       | 10 KES            | test@recipient.co.uk |                 |               |               |                  |
 	| Today    | 8                 | Sale            | 2                 | Test Merchant 1 | 123456780        | Test Estate 1 | PataPawa PostPay | 0.00              |                       |                             | PataPawa PostPay Contract | Post Pay Bill Pay | test@recipient.co.uk |                 | VerifyAccount | 12345678        |                  |
-	| Today    | 9                 | Sale            | 2                 | Test Merchant 1 | 123456780        | Test Estate 1 | PataPawa PostPay | 10.00             |                       |                             | PataPawa PostPay Contract | Post Pay Bill Pay | test@recipient.co.uk | 123456789       | ProcessBill   | 12345678        | Mr Test Customer |
+	| Today    | 9                 | Sale            | 2                 | Test Merchant 1 | 123456780        | Test Estate 1 | PataPawa PostPay | 20.00             |                       |                             | PataPawa PostPay Contract | Post Pay Bill Pay | test@recipient.co.uk | 123456789       | ProcessBill   | 12345678        | Mr Test Customer |
 
 	
 	Then transaction response should contain the following information
@@ -126,6 +126,22 @@ Scenario: Sale Transactions
 	| Test Estate 1 | Test Merchant 1 | 8                 | 0000         | SUCCESS         |
 	| Test Estate 1 | Test Merchant 1 | 9                 | 0000         | SUCCESS         |
 
+	Then the following entries appear in the merchants balance history for estate 'Test Estate 1' and merchant 'Test Merchant 1'
+	| DateTime | Reference                 | EntryType | In     | Out    | ChangeAmount | Balance |
+	| Today    | Merchant Deposit          | C         | 240.00 | 0.00   | 240.00       | 230.00  |
+	| Today    | Transaction Completed     | D         | 0.00   | 120.00 | 110.00       | 130.00  |
+	| Today    | Transaction Completed     | D         | 0.00   | 90.00  | 90.00        | 30.00   |
+	| Today    | Transaction Completed     | D         | 0.00   | 10.00  | 10.00        | 20.00   |
+	| Today    | Transaction Completed     | D         | 0.00   | 20.00  | 20.00        | 20.00   |
+	| Today    | Transaction Fee Processed | C         | 0.00   | 0.55   | 0.55         | 20.00   |
+	| Today    | Transaction Fee Processed | C         | 0.00   | 0.45   | 0.45         | 20.00   |
+	| Today    | Transaction Fee Processed | C         | 0.00   | 0.01   | 0.10         | 20.00   |
+	| Today    | Opening Balance           | C         | 0.00   | 0.00   | 0.00         | 20.00   |
+
+
+	#Then the following entries appear in the merchants balance history for estate 'Test Estate 1' and merchant 'Test Merchant 2'
+
+	#Then the following entries appear in the merchants balance history for estate 'Test Estate 2' and merchant 'Test Merchant 3'
 @PRTest
 Scenario: Resend Transaction Receipt
 
@@ -222,4 +238,4 @@ Scenario: Sale Transaction with Not Enough Credit Available
 	
 	Then transaction response should contain the following information
 	| EstateName    | MerchantName    | TransactionNumber | ResponseCode | ResponseMessage                                                                                                    |
-	| Test Estate 1 | Test Merchant 1 | 1                 | 1009         | Merchant [Test Merchant 1] does not have enough credit available [230.00] to perform transaction amount [300.00] |
+	| Test Estate 1 | Test Merchant 1 | 1                 | 1009         | Merchant [Test Merchant 1] does not have enough credit available [240.00] to perform transaction amount [300.00] |
