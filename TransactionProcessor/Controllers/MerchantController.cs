@@ -1,6 +1,7 @@
 ﻿namespace TransactionProcessor.Controllers;
 
 using System;
+using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Threading;
 using System.Threading.Tasks;
@@ -8,6 +9,7 @@ using Common;
 using DataTransferObjects;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using ProjectionEngine.Models;
 using ProjectionEngine.Repository;
 using ProjectionEngine.State;
 using Shared.Exceptions;
@@ -21,8 +23,12 @@ public class MerchantController : ControllerBase
 {
     private readonly IProjectionStateRepository<MerchantBalanceState> MerchantBalanceStateRepository;
 
-    public MerchantController(IProjectionStateRepository<MerchantBalanceState> merchantBalanceStateRepository) {
+    private readonly ITransactionProcessorReadRepository TransactionProcessorReadRepository;
+
+    public MerchantController(IProjectionStateRepository<MerchantBalanceState> merchantBalanceStateRepository,
+                              ITransactionProcessorReadRepository transactionProcessorReadRepository) {
         this.MerchantBalanceStateRepository = merchantBalanceStateRepository;
+        this.TransactionProcessorReadRepository = transactionProcessorReadRepository;
     }
 
     #region Others
@@ -50,7 +56,7 @@ public class MerchantController : ControllerBase
     /// <exception cref="NotFoundException">Merchant Balance details not found with estate Id {estateId} and merchant Id {merchantId}</exception>
     [HttpGet]
     [Route("{merchantId}/balance")]
-    [SwaggerResponse(200, "Created", typeof(MerchantBalanceResponse))]
+    [SwaggerResponse(200, "OK", typeof(MerchantBalanceResponse))]
     public async Task<IActionResult> GetMerchantBalance([FromRoute] Guid estateId,
                                                         [FromRoute] Guid merchantId,
                                                         CancellationToken cancellationToken)
@@ -74,6 +80,35 @@ public class MerchantController : ControllerBase
                                                                           AvailableBalance = merchantBalance.AvailableBalance,
                                                                           EstateId = estateId
                                                                       };
+
+        return this.Ok(response);
+    }
+
+    [HttpGet]
+    [Route("{merchantId}/balancehistory")]
+    public async Task<IActionResult> GetMerchantBalanceHistory([FromRoute] Guid estateId,
+                                                               [FromRoute] Guid merchantId,
+                                                               [FromQuery] DateTime startDate,
+                                                               [FromQuery] DateTime enddate,
+                                                               CancellationToken cancellationToken) {
+        // Reject password tokens
+        if (ClaimsHelper.IsPasswordToken(this.User))
+        {
+            return this.Forbid();
+        }
+
+        List<MerchantBalanceChangedEntry> historyEntries = await this.TransactionProcessorReadRepository.GetMerchantBalanceHistory(estateId, merchantId, startDate, enddate, cancellationToken);
+        List<MerchantBalanceChangedEntryResponse> response = new List<MerchantBalanceChangedEntryResponse>();
+        historyEntries.ForEach(h => response.Add(new MerchantBalanceChangedEntryResponse {
+                                                                                             Balance = h.Balance,
+                                                                                             MerchantId = h.MerchantId,
+                                                                                             EstateId = h.EstateId,
+                                                                                             DateTime = h.DateTime,
+                                                                                             ChangeAmount = h.ChangeAmount,
+                                                                                             DebitOrCredit = h.DebitOrCredit,
+                                                                                             OriginalEventId = h.OriginalEventId,
+                                                                                             Reference = h.Reference,
+                                                                                         }));
 
         return this.Ok(response);
     }
