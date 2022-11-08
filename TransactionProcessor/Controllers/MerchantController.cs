@@ -91,7 +91,6 @@ public class MerchantController : ControllerBase
                                                                [FromQuery] DateTime startDate,
                                                                [FromQuery] DateTime enddate,
                                                                CancellationToken cancellationToken) {
-
         // Reject password tokens
         if (ClaimsHelper.IsPasswordToken(this.User))
         {
@@ -112,6 +111,5 @@ public class MerchantController : ControllerBase
                                                                                          }));
 
         return this.Ok(response);
-
     }
 }

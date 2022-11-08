@@ -185,9 +185,9 @@
         }
 
         public async Task<MerchantBalanceResponse> GetMerchantBalance(String accessToken,
-                                                                Guid estateId,
-                                                                Guid merchantId,
-                                                                CancellationToken cancellationToken) {
+                                                                      Guid estateId,
+                                                                      Guid merchantId,
+                                                                      CancellationToken cancellationToken) {
             String requestUri = $"{this.BaseAddress}/api/estates/{estateId}/merchants/{merchantId}/balance";
             MerchantBalanceResponse response = null;
             try
@@ -237,7 +237,6 @@
 
                 // call was successful so now deserialise the body to the response object
                 response = JsonConvert.DeserializeObject<List<MerchantBalanceChangedEntryResponse>>(content);
-
             }
             catch (Exception ex)
             {

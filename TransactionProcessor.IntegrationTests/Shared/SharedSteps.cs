@@ -701,9 +701,7 @@ namespace TransactionProcessor.IntegrationTests.Shared
 
                 balanceEntry.ShouldNotBeNull($"EntryDateTime [{entryDateTime.Date.ToString("yyyy-MM-dd")}] Ref [{reference}] DebitOrCredit [{debitOrCredit}] ChangeAmount [{changeAmount}]");
             }
-
         }
-
 
         [Then(@"transaction response should contain the following information")]
         public void ThenTransactionResponseShouldContainTheFollowingInformation(Table table)
@@ -1070,8 +1068,7 @@ namespace TransactionProcessor.IntegrationTests.Shared
                                 }, TimeSpan.FromMinutes(3));
             }
         }
-
-
+        
         [When(@"I get the pending settlements the following information should be returned")]
         public async Task WhenIGetThePendingSettlementsTheFollowingInformationShouldBeReturned(Table table)
         {

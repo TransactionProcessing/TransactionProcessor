@@ -129,7 +129,7 @@ Scenario: Sale Transactions
 	Then the following entries appear in the merchants balance history for estate 'Test Estate 1' and merchant 'Test Merchant 1'
 	| DateTime | Reference                 | EntryType | In     | Out    | ChangeAmount | Balance |
 	| Today    | Merchant Deposit          | C         | 240.00 | 0.00   | 240.00       | 230.00  |
-	| Today    | Transaction Completed     | D         | 0.00   | 120.00 | 110.00       | 130.00  |
+	| Today    | Transaction Completed     | D         | 0.00   | 110.00 | 110.00       | 130.00  |
 	| Today    | Transaction Completed     | D         | 0.00   | 90.00  | 90.00        | 30.00   |
 	| Today    | Transaction Completed     | D         | 0.00   | 10.00  | 10.00        | 20.00   |
 	| Today    | Transaction Completed     | D         | 0.00   | 20.00  | 20.00        | 20.00   |
@@ -139,9 +139,22 @@ Scenario: Sale Transactions
 	| Today    | Opening Balance           | C         | 0.00   | 0.00   | 0.00         | 20.00   |
 
 
-	#Then the following entries appear in the merchants balance history for estate 'Test Estate 1' and merchant 'Test Merchant 2'
+	Then the following entries appear in the merchants balance history for estate 'Test Estate 1' and merchant 'Test Merchant 2'
+	| DateTime | Reference                 | EntryType | In     | Out    | ChangeAmount | Balance |
+	| Today    | Merchant Deposit          | C         | 110.00 | 0.00   | 110.00       | 230.00  |
+	| Today    | Transaction Completed     | D         | 0.00   | 100.00 | 100.00       | 130.00  |
+	| Today    | Transaction Completed     | D         | 0.00   | 10.00  | 10.00        | 30.00   |
+	| Today    | Transaction Fee Processed | C         | 0.00   | 0.50   | 0.50         | 20.00   |
+	| Today    | Opening Balance           | C         | 0.00   | 0.00   | 0.00         | 20.00   |
 
-	#Then the following entries appear in the merchants balance history for estate 'Test Estate 2' and merchant 'Test Merchant 3'
+	Then the following entries appear in the merchants balance history for estate 'Test Estate 2' and merchant 'Test Merchant 3'
+	| DateTime | Reference                 | EntryType | In     | Out    | ChangeAmount | Balance |
+	| Today    | Merchant Deposit          | C         | 110.00 | 0.00   | 110.00       | 230.00  |
+	| Today    | Transaction Completed     | D         | 0.00   | 100.00 | 100.00       | 130.00  |
+	| Today    | Transaction Completed     | D         | 0.00   | 10.00  | 10.00        | 30.00   |
+	| Today    | Transaction Fee Processed | C         | 0.00   | 0.50   | 0.50         | 20.00   |
+	| Today    | Opening Balance           | C         | 0.00   | 0.00   | 0.00         | 20.00   |
+
 @PRTest
 Scenario: Resend Transaction Receipt
 
