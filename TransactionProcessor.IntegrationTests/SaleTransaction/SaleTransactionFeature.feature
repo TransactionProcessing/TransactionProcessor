@@ -152,7 +152,7 @@ Scenario: Sale Transactions
 	| Today    | Merchant Deposit          | C         | 110.00 | 0.00   | 110.00       | 230.00  |
 	| Today    | Transaction Completed     | D         | 0.00   | 100.00 | 100.00       | 130.00  |
 	| Today    | Transaction Completed     | D         | 0.00   | 10.00  | 10.00        | 30.00   |
-	| Today    | Transaction Fee Processed | C         | 0.00   | 0.50   | 0.50         | 20.00   |
+	| Today    | Transaction Fee Processed | C         | 0.00   | 0.85   | 0.85         | 20.00   |
 	| Today    | Opening Balance           | C         | 0.00   | 0.00   | 0.00         | 20.00   |
 
 @PRTest
