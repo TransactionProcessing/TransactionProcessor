@@ -38,7 +38,7 @@ public abstract class TransactionProcessorGenericContext : DbContext
     public DbSet<MerchantBalanceHistoryViewEntry> MerchantBalanceHistoryViewEntry { get; set; }
 
     public DbSet<MerchantBalanceProjectionState> MerchantBalanceProjectionState { get; set; }
-
+    public DbSet<Event> Events { get; set; }
     #endregion
 
     #region Methods
@@ -50,7 +50,14 @@ public abstract class TransactionProcessorGenericContext : DbContext
         if (this.Database.IsSqlServer() || this.Database.IsMySql()) {
             await this.Database.MigrateAsync(cancellationToken);
             await this.CreateViews(cancellationToken);
+            await this.SetIgnoreDuplicates(cancellationToken);
         }
+    }
+
+    protected virtual async Task SetIgnoreDuplicates(CancellationToken cancellationToken) {
+        TransactionProcessorGenericContext.TablesToIgnoreDuplicates = new List<String> {
+                                                                                           nameof(MerchantBalanceProjectionState),
+                                                                                       };
     }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder) {
@@ -66,11 +73,12 @@ public abstract class TransactionProcessorGenericContext : DbContext
 
         modelBuilder.Entity<MerchantBalanceHistoryViewEntry>().HasNoKey().ToView("uvwMerchantBalanceHistory");
 
-        base.OnModelCreating(modelBuilder);
-    }
+        modelBuilder.Entity<Event>().HasKey(t => new {
+                                                         t.EventId,
+                                                         t.Type
+                                                     }).IsClustered();
 
-    protected virtual async Task SetIgnoreDuplicates(CancellationToken cancellationToken) {
-        TransactionProcessorGenericContext.TablesToIgnoreDuplicates = new List<String>();
+        base.OnModelCreating(modelBuilder);
     }
 
     private async Task CreateViews(CancellationToken cancellationToken) {

@@ -16,6 +16,16 @@ public class MerchantBalanceStateRepository : IProjectionStateRepository<Merchan
         this.ContextFactory = contextFactory;
     }
 
+    public static Event Create(String type, IDomainEvent domainEvent)
+    {
+        return new()
+               {
+                   EventId = domainEvent.EventId,
+                   Date = domainEvent.EventTimestamp.Date.Date,
+                   Type = type
+               };
+    }
+
     private async Task<MerchantBalanceState> LoadHelper(Guid estateId,
                                                         Guid merchantId,
                                                         CancellationToken cancellationToken)
@@ -67,8 +77,9 @@ public class MerchantBalanceStateRepository : IProjectionStateRepository<Merchan
         return await this.LoadHelper(estateId, stateId, cancellationToken);
     }
 
-    public async Task<MerchantBalanceState> Save(MerchantBalanceState state, IDomainEvent @event, CancellationToken cancellationToken)
+    public async Task<MerchantBalanceState> Save(MerchantBalanceState state, IDomainEvent domainEvent, CancellationToken cancellationToken)
     {
+        
         await using TransactionProcessorGenericContext context = await this.ContextFactory.GetContext(state.EstateId, cancellationToken);
         // Note: we don't want to select the state again here....
         MerchantBalanceProjectionState entity = MerchantBalanceStateRepository.CreateMerchantBalanceProjectionState(state);
@@ -83,7 +94,24 @@ public class MerchantBalanceStateRepository : IProjectionStateRepository<Merchan
             await context.MerchantBalanceProjectionState.AddAsync(entity, cancellationToken);
         }
 
-        await context.SaveChangesAsync(cancellationToken);
+        Event @event = MerchantBalanceStateRepository.Create(state.GetType().Name,
+                                                   domainEvent);
+
+        await context.Events.AddAsync(@event, cancellationToken);
+
+        try
+        {
+            await context.SaveChangesAsync(cancellationToken);
+        }
+        catch (DbUpdateException)
+        {
+            //This lets the next component know no changes were persisted.
+            state = state with
+                    {
+                        ChangesApplied = false
+                    };
+        }
+        
         return state;
     }
 
