@@ -81,10 +81,6 @@ public abstract class TransactionProcessorGenericContext : DbContext
         base.OnModelCreating(modelBuilder);
     }
 
-    protected virtual async Task SetIgnoreDuplicates(CancellationToken cancellationToken) {
-        TransactionProcessorGenericContext.TablesToIgnoreDuplicates = new List<String>();
-    }
-
     private async Task CreateViews(CancellationToken cancellationToken) {
         String executingAssemblyLocation = Assembly.GetExecutingAssembly().Location;
         String executingAssemblyFolder = Path.GetDirectoryName(executingAssemblyLocation);
