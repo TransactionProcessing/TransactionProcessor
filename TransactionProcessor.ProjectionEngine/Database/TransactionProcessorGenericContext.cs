@@ -47,11 +47,13 @@ public abstract class TransactionProcessorGenericContext : DbContext
         if (this.Database.IsSqlServer() || this.Database.IsMySql())
         {
             await this.Database.MigrateAsync(cancellationToken);
+            await this.SetIgnoreDuplicates(cancellationToken);
         }
     }
 
     protected virtual async Task SetIgnoreDuplicates(CancellationToken cancellationToken) {
         TransactionProcessorGenericContext.TablesToIgnoreDuplicates = new List<String> {
+                                                                                           nameof(MerchantBalanceProjectionState),
                                                                                        };
     }
 
@@ -66,11 +68,18 @@ public abstract class TransactionProcessorGenericContext : DbContext
                                                                                c.OriginalEventId
                                                                            });
 
+        modelBuilder.Entity<Event>().HasKey(t => new {
+                                                         t.EventId,
+                                                         t.Type
+                                                     }).IsClustered();
+
         base.OnModelCreating(modelBuilder);
     }
 
     public DbSet<MerchantBalanceProjectionState> MerchantBalanceProjectionState { get; set; }
     public DbSet<MerchantBalanceChangedEntry> MerchantBalanceChangedEntry { get; set; }
+
+    public DbSet<Event> Events { get; set; }
 
 
 }

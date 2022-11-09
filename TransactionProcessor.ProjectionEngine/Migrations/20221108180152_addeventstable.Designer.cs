@@ -2,36 +2,42 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using TransactionProcessor.ProjectionEngine.Database;
 
 #nullable disable
 
-namespace TransactionProcessor.ProjectionEngine.Migrations.TransactionProcessorMySql
+namespace TransactionProcessor.ProjectionEngine.Migrations
 {
-    [DbContext(typeof(TransactionProcessorMySqlContext))]
-    partial class TransactionProcessorMySqlContextModelSnapshot : ModelSnapshot
+    [DbContext(typeof(TransactionProcessorSqlServerContext))]
+    [Migration("20221108180152_addeventstable")]
+    partial class addeventstable
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
                 .HasAnnotation("ProductVersion", "6.0.5")
-                .HasAnnotation("Relational:MaxIdentifierLength", 64);
+                .HasAnnotation("Relational:MaxIdentifierLength", 128);
+
+            SqlServerModelBuilderExtensions.UseIdentityColumns(modelBuilder, 1L, 1);
 
             modelBuilder.Entity("TransactionProcessor.ProjectionEngine.Database.Entities.Event", b =>
                 {
                     b.Property<Guid>("EventId")
-                        .HasColumnType("char(36)");
+                        .HasColumnType("uniqueidentifier");
 
                     b.Property<string>("Type")
-                        .HasColumnType("varchar(255)");
+                        .HasColumnType("nvarchar(450)");
 
                     b.Property<DateTime>("Date")
                         .HasColumnType("date");
 
-                    b.HasKey("EventId", "Type")
-                        .HasAnnotation("SqlServer:Clustered", true);
+                    b.HasKey("EventId", "Type");
+
+                    SqlServerKeyBuilderExtensions.IsClustered(b.HasKey("EventId", "Type"), false);
 
                     b.ToTable("Events");
                 });
@@ -39,33 +45,33 @@ namespace TransactionProcessor.ProjectionEngine.Migrations.TransactionProcessorM
             modelBuilder.Entity("TransactionProcessor.ProjectionEngine.Database.Entities.MerchantBalanceChangedEntry", b =>
                 {
                     b.Property<Guid>("AggregateId")
-                        .HasColumnType("char(36)");
+                        .HasColumnType("uniqueidentifier");
 
                     b.Property<Guid>("OriginalEventId")
-                        .HasColumnType("char(36)");
+                        .HasColumnType("uniqueidentifier");
 
                     b.Property<Guid>("CauseOfChangeId")
-                        .HasColumnType("char(36)");
+                        .HasColumnType("uniqueidentifier");
 
                     b.Property<decimal>("ChangeAmount")
-                        .HasColumnType("decimal(65,30)");
+                        .HasColumnType("decimal(18,2)");
 
                     b.Property<DateTime>("DateTime")
-                        .HasColumnType("datetime(6)");
+                        .HasColumnType("datetime2");
 
                     b.Property<string>("DebitOrCredit")
                         .IsRequired()
-                        .HasColumnType("longtext");
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<Guid>("EstateId")
-                        .HasColumnType("char(36)");
+                        .HasColumnType("uniqueidentifier");
 
                     b.Property<Guid>("MerchantId")
-                        .HasColumnType("char(36)");
+                        .HasColumnType("uniqueidentifier");
 
                     b.Property<string>("Reference")
                         .IsRequired()
-                        .HasColumnType("longtext");
+                        .HasColumnType("nvarchar(max)");
 
                     b.HasKey("AggregateId", "OriginalEventId");
 
@@ -75,25 +81,25 @@ namespace TransactionProcessor.ProjectionEngine.Migrations.TransactionProcessorM
             modelBuilder.Entity("TransactionProcessor.ProjectionEngine.Database.Entities.MerchantBalanceProjectionState", b =>
                 {
                     b.Property<Guid>("EstateId")
-                        .HasColumnType("char(36)");
+                        .HasColumnType("uniqueidentifier");
 
                     b.Property<Guid>("MerchantId")
-                        .HasColumnType("char(36)");
+                        .HasColumnType("uniqueidentifier");
 
                     b.Property<decimal>("AuthorisedSales")
-                        .HasColumnType("decimal(65,30)");
+                        .HasColumnType("decimal(18,2)");
 
                     b.Property<decimal>("AvailableBalance")
-                        .HasColumnType("decimal(65,30)");
+                        .HasColumnType("decimal(18,2)");
 
                     b.Property<decimal>("Balance")
-                        .HasColumnType("decimal(65,30)");
+                        .HasColumnType("decimal(18,2)");
 
                     b.Property<int>("CompletedTransactionCount")
                         .HasColumnType("int");
 
                     b.Property<decimal>("DeclinedSales")
-                        .HasColumnType("decimal(65,30)");
+                        .HasColumnType("decimal(18,2)");
 
                     b.Property<int>("DepositCount")
                         .HasColumnType("int");
@@ -102,17 +108,17 @@ namespace TransactionProcessor.ProjectionEngine.Migrations.TransactionProcessorM
                         .HasColumnType("int");
 
                     b.Property<DateTime>("LastDeposit")
-                        .HasColumnType("datetime(6)");
+                        .HasColumnType("datetime2");
 
                     b.Property<DateTime>("LastFee")
-                        .HasColumnType("datetime(6)");
+                        .HasColumnType("datetime2");
 
                     b.Property<DateTime>("LastSale")
-                        .HasColumnType("datetime(6)");
+                        .HasColumnType("datetime2");
 
                     b.Property<string>("MerchantName")
                         .IsRequired()
-                        .HasColumnType("longtext");
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<int>("SaleCount")
                         .HasColumnType("int");
@@ -120,16 +126,17 @@ namespace TransactionProcessor.ProjectionEngine.Migrations.TransactionProcessorM
                     b.Property<int>("StartedTransactionCount")
                         .HasColumnType("int");
 
-                    b.Property<DateTime>("Timestamp")
+                    b.Property<byte[]>("Timestamp")
                         .IsConcurrencyToken()
+                        .IsRequired()
                         .ValueGeneratedOnAddOrUpdate()
-                        .HasColumnType("timestamp(6)");
+                        .HasColumnType("rowversion");
 
                     b.Property<decimal>("TotalDeposited")
-                        .HasColumnType("decimal(65,30)");
+                        .HasColumnType("decimal(18,2)");
 
                     b.Property<decimal>("ValueOfFees")
-                        .HasColumnType("decimal(65,30)");
+                        .HasColumnType("decimal(18,2)");
 
                     b.HasKey("EstateId", "MerchantId");
 

@@ -76,18 +76,16 @@ public class ProjectionHandler<TState> : IProjectionHandler where TState : State
             newState = await this.ProjectionStateRepository.Save(newState, @event, cancellationToken);
 
             //Repo might have detected a duplicate event
-            if (newState.ChangesApplied)
+            builder.Append($"{stopwatch.ElapsedMilliseconds}ms After Save|");
+
+            if (this.StateDispatcher != null)
             {
-                builder.Append($"{stopwatch.ElapsedMilliseconds}ms After Save|");
+                //Send to anyone else interested
+                await this.StateDispatcher.Dispatch(newState, @event, cancellationToken);
 
-                if (this.StateDispatcher != null)
-                {
-                    //Send to anyone else interested
-                    await this.StateDispatcher.Dispatch(newState, @event, cancellationToken);
-
-                    builder.Append($"{stopwatch.ElapsedMilliseconds}ms After Dispatch|");
-                }
+                builder.Append($"{stopwatch.ElapsedMilliseconds}ms After Dispatch|");
             }
+            
         }
         else
         {

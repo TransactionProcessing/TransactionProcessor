@@ -27,7 +27,7 @@ public class TransactionProcessorSqlServerContext : TransactionProcessorGenericC
 
     protected override async Task SetIgnoreDuplicates(CancellationToken cancellationToken)
     {
-        base.SetIgnoreDuplicates(cancellationToken);
+        await base.SetIgnoreDuplicates(cancellationToken);
 
         TransactionProcessorGenericContext.TablesToIgnoreDuplicates = TransactionProcessorGenericContext.TablesToIgnoreDuplicates.Select(x => $"ALTER TABLE [{x}]  REBUILD WITH (IGNORE_DUP_KEY = ON)").ToList();
 

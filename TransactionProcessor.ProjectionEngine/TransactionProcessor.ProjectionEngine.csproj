@@ -28,7 +28,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Folder Include="Database\Entities\" />
     <Folder Include="Common\" />
     <Folder Include="Models\" />
     <Folder Include="State\" />

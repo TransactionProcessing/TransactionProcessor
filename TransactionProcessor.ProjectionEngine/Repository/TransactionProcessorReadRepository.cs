@@ -29,6 +29,18 @@ public class TransactionProcessorReadRepository : ITransactionProcessorReadRepos
                                                                                                            };
         
         await context.MerchantBalanceChangedEntry.AddAsync(entity, cancellationToken);
-        await context.SaveChangesAsync(cancellationToken);
+        
+        try
+        {
+            await context.SaveChangesAsync(cancellationToken);
+        }
+        catch (DbUpdateException)
+        {
+            // We have detected a duplicate, so lets try and update it
+            context.Entry(entity).State = EntityState.Modified;
+
+            await context.SaveChangesAsync(cancellationToken);
+        }
+
     }
 }

@@ -22,6 +22,24 @@ namespace TransactionProcessor.ProjectionEngine.Migrations
 
             SqlServerModelBuilderExtensions.UseIdentityColumns(modelBuilder, 1L, 1);
 
+            modelBuilder.Entity("TransactionProcessor.ProjectionEngine.Database.Entities.Event", b =>
+                {
+                    b.Property<Guid>("EventId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("Type")
+                        .HasColumnType("nvarchar(450)");
+
+                    b.Property<DateTime>("Date")
+                        .HasColumnType("date");
+
+                    b.HasKey("EventId", "Type");
+
+                    SqlServerKeyBuilderExtensions.IsClustered(b.HasKey("EventId", "Type"), false);
+
+                    b.ToTable("Events");
+                });
+
             modelBuilder.Entity("TransactionProcessor.ProjectionEngine.Database.Entities.MerchantBalanceChangedEntry", b =>
                 {
                     b.Property<Guid>("AggregateId")

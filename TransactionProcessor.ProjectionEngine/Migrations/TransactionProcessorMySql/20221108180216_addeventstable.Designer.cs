@@ -2,6 +2,7 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using TransactionProcessor.ProjectionEngine.Database;
 
@@ -10,9 +11,10 @@ using TransactionProcessor.ProjectionEngine.Database;
 namespace TransactionProcessor.ProjectionEngine.Migrations.TransactionProcessorMySql
 {
     [DbContext(typeof(TransactionProcessorMySqlContext))]
-    partial class TransactionProcessorMySqlContextModelSnapshot : ModelSnapshot
+    [Migration("20221108180216_addeventstable")]
+    partial class addeventstable
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -31,7 +33,7 @@ namespace TransactionProcessor.ProjectionEngine.Migrations.TransactionProcessorM
                         .HasColumnType("date");
 
                     b.HasKey("EventId", "Type")
-                        .HasAnnotation("SqlServer:Clustered", true);
+                        .HasAnnotation("SqlServer:Clustered", false);
 
                     b.ToTable("Events");
                 });
