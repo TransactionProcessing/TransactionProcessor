@@ -11,5 +11,6 @@
         public String Reference { get; set; }
         public Guid CauseOfChangeId { get; set; }
         public String DebitOrCredit { get; set; }
+        public Decimal Balance { get; set; }
     }
 }

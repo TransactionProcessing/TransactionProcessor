@@ -18,6 +18,7 @@ namespace TransactionProcessor.IntegrationTests.Shared
     using EstateManagement.DataTransferObjects.Requests;
     using EstateManagement.DataTransferObjects.Responses;
     using MessagingService.DataTransferObjects;
+    using Microsoft.EntityFrameworkCore.Metadata.Internal;
     using Microsoft.EntityFrameworkCore.ValueGeneration.Internal;
     using Microsoft.Extensions.Logging;
     using Newtonsoft.Json;
@@ -30,6 +31,7 @@ namespace TransactionProcessor.IntegrationTests.Shared
     using Xunit;
     using ClientDetails = Common.ClientDetails;
     using MerchantBalanceResponse = DataTransferObjects.MerchantBalanceResponse;
+    using Table = TechTalk.SpecFlow.Table;
 
     [Binding]
     [Scope(Tag = "shared")]
@@ -660,6 +662,47 @@ namespace TransactionProcessor.IntegrationTests.Shared
             return responseSerialisedMessage;
         }
 
+        [Then(@"the following entries appear in the merchants balance history for estate '([^']*)' and merchant '([^']*)'")]
+        public async Task ThenTheFollowingEntriesAppearInTheMerchantsBalanceHistoryForEstateAndMerchant(String estateName, String merchantName, Table table) {
+            var estate = this.TestingContext.GetEstateDetails(estateName);
+            var merchantId = estate.GetMerchantId(merchantName);
+
+            var startDate = SpecflowTableHelper.GetDateForDateString("Today", DateTime.UtcNow).AddDays(-1);
+            var endDate = SpecflowTableHelper.GetDateForDateString("Today", DateTime.UtcNow).AddDays(1);
+
+            List<MerchantBalanceChangedEntryResponse> balanceHistory = null;
+            await Retry.For(async () => {
+                                balanceHistory =
+                                    await this.TestingContext.DockerHelper.TransactionProcessorClient.GetMerchantBalanceHistory(this.TestingContext.AccessToken,
+                                        estate.EstateId,
+                                        merchantId,
+                                        startDate,
+                                        endDate,
+                                        CancellationToken.None);
+
+                                balanceHistory.ShouldNotBeNull();
+                                balanceHistory.ShouldNotBeEmpty();
+                                balanceHistory.Count.ShouldBe(table.RowCount);
+            });
+            foreach (TableRow tableRow in table.Rows) {
+                //| DateTime | Reference             | EntryType | In     | Out    | ChangeAmount | Balance |
+                var entryDateTime = SpecflowTableHelper.GetDateForDateString(tableRow["DateTime"], DateTime.UtcNow);
+                var reference = SpecflowTableHelper.GetStringRowValue(tableRow, "Reference");
+                var debitOrCredit = SpecflowTableHelper.GetStringRowValue(tableRow, "EntryType");
+                var changeAmount = SpecflowTableHelper.GetDecimalValue(tableRow, "ChangeAmount");
+                //var balance = SpecflowTableHelper.GetDecimalValue(tableRow, "Balance");
+
+                MerchantBalanceChangedEntryResponse balanceEntry =
+                    balanceHistory.SingleOrDefault(m => m.Reference == reference && 
+                                                        m.DateTime.Date == entryDateTime.Date && 
+                                                        m.DebitOrCredit == debitOrCredit &&
+                                                        m.ChangeAmount == changeAmount);
+                                                                                                      //&& m.Balance == balance);
+
+                balanceEntry.ShouldNotBeNull($"EntryDateTime [{entryDateTime.Date.ToString("yyyy-MM-dd")}] Ref [{reference}] DebitOrCredit [{debitOrCredit}] ChangeAmount [{changeAmount}]");
+            }
+        }
+
         [Then(@"transaction response should contain the following information")]
         public void ThenTransactionResponseShouldContainTheFollowingInformation(Table table)
         {
@@ -1025,8 +1068,7 @@ namespace TransactionProcessor.IntegrationTests.Shared
                                 }, TimeSpan.FromMinutes(3));
             }
         }
-
-
+        
         [When(@"I get the pending settlements the following information should be returned")]
         public async Task WhenIGetThePendingSettlementsTheFollowingInformationShouldBeReturned(Table table)
         {

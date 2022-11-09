@@ -1,9 +1,11 @@
 ﻿namespace TransactionProcessor.ProjectionEngine.Repository;
 
 using Database;
+using Database.ViewEntities;
 using Dispatchers;
 using Microsoft.EntityFrameworkCore;
 using Models;
+using static Grpc.Core.Metadata;
 
 public class TransactionProcessorReadRepository : ITransactionProcessorReadRepository
 {
@@ -42,5 +44,32 @@ public class TransactionProcessorReadRepository : ITransactionProcessorReadRepos
             await context.SaveChangesAsync(cancellationToken);
         }
 
+    }
+
+    public async Task<List<MerchantBalanceChangedEntry>> GetMerchantBalanceHistory(Guid estateId,
+                                                                                   Guid merchantId,
+                                                                                   DateTime startDate,
+                                                                                   DateTime endDate,
+                                                                                   CancellationToken cancellationToken) {
+        await using TransactionProcessorGenericContext context = await this.ContextFactory.GetContext(estateId, cancellationToken);
+
+        List<MerchantBalanceHistoryViewEntry> entries = await context.MerchantBalanceHistoryViewEntry
+                                                                     .Where(v => v.MerchantId == merchantId && v.EntryDateTime >= startDate && v.EntryDateTime <= endDate)
+                                                                     .OrderByDescending(e => e.EntryDateTime)
+                                                                     .ToListAsync(cancellationToken);
+
+        List<MerchantBalanceChangedEntry> result = new List<MerchantBalanceChangedEntry>();
+        entries.ForEach(e => {
+                            result.Add(new MerchantBalanceChangedEntry {
+                                                                           Balance = e.Balance,
+                                                                           MerchantId = e.MerchantId,
+                                                                           ChangeAmount = e.ChangeAmount,
+                                                                           DateTime = e.EntryDateTime,
+                                                                           DebitOrCredit = e.DebitOrCredit,
+                                                                           OriginalEventId = e.OriginalEventId,
+                                                                           Reference = e.Reference,
+                                                                       });
+                        });
+        return result;
     }
 }

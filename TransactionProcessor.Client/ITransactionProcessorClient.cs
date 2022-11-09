@@ -1,6 +1,7 @@
 ﻿namespace TransactionProcessor.Client
 {
     using System;
+    using System.Collections.Generic;
     using System.Threading;
     using System.Threading.Tasks;
     using DataTransferObjects;
@@ -32,6 +33,13 @@
                                                          Guid estateId,
                                                          Guid merchantId,
                                                          CancellationToken cancellationToken);
+
+        Task<List<MerchantBalanceChangedEntryResponse>> GetMerchantBalanceHistory(String accessToken,
+                                                                                  Guid estateId,
+                                                                                  Guid merchantId,
+                                                                                  DateTime startDate,
+                                                                                  DateTime endDate,
+                                                                                  CancellationToken cancellationToken);
 
         #endregion
     }

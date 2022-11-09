@@ -33,4 +33,13 @@
     <Folder Include="State\" />
   </ItemGroup>
 
+  <ItemGroup>
+    <None Update="Database\Views\SqlServer\Priority1\uvwMerchantBalanceHistory.View.sql">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="Database\Views\MySql\Priority1\uvwMerchantBalanceHistory.View.sql">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+  </ItemGroup>
+
 </Project>
