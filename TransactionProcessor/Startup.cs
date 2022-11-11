@@ -38,6 +38,7 @@ namespace TransactionProcessor
     using Shared.Logger;
     using Transaction.DomainEvents;
     using TransactionProcessor.BusinessLogic.OperatorInterfaces;
+    using Voucher.DomainEvents;
     using EventHandler = ProjectionEngine.EventHandling.EventHandler;
     using ILogger = Microsoft.Extensions.Logging.ILogger;
 
@@ -211,6 +212,15 @@ namespace TransactionProcessor
                                                                          "",
                                                                          "",
                                                                          DateTime.Now);
+            VoucherGeneratedEvent g = new VoucherGeneratedEvent(Guid.NewGuid(),
+                                                                Guid.NewGuid(),
+                                                                Guid.NewGuid(),
+                                                                DateTime.Now,
+                                                                String.Empty,
+                                                                0,
+                                                                String.Empty,
+                                                                DateTime.Now,
+                                                                String.Empty);
 
             TypeProvider.LoadDomainEventsTypeDynamically();
         }

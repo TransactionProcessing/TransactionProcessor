@@ -32,6 +32,7 @@
     using Shared.Repositories;
     using TransactionAggregate;
     using ConnectionStringType = Shared.Repositories.ConnectionStringType;
+    using EstateReporting.Database;
 
     /// <summary>
     /// 
@@ -98,6 +99,7 @@
                 AggregateRepository<ReconciliationAggregate, DomainEvent>>();
             this.AddSingleton<IAggregateRepository<SettlementAggregate, DomainEvent>,
                 AggregateRepository<SettlementAggregate, DomainEvent>>();
+            this.AddSingleton<IAggregateRepository<VoucherAggregate.VoucherAggregate, DomainEvent>, AggregateRepository<VoucherAggregate.VoucherAggregate, DomainEvent>>();
 
 
             this.AddSingleton<IProjectionStateRepository<MerchantBalanceState>, MerchantBalanceStateRepository>();
@@ -105,6 +107,7 @@
             this.AddSingleton<IProjection<MerchantBalanceState>, MerchantBalanceProjection>();
 
             this.AddSingleton<IDbContextFactory<TransactionProcessorGenericContext>, DbContextFactory<TransactionProcessorGenericContext>>();
+            this.AddSingleton<IDbContextFactory<EstateReportingGenericContext>, DbContextFactory<EstateReportingGenericContext>>();
 
             this.AddSingleton<Func<String, TransactionProcessorGenericContext>>(cont => connectionString =>
                                                                                    {
@@ -119,6 +122,19 @@
                                                                                                NotSupportedException($"Unsupported Database Engine {databaseEngine}")
                                                                                        };
                                                                                    });
+            this.AddSingleton<Func<String, EstateReportingGenericContext>>(cont => connectionString =>
+                                                                                   {
+                                                                                       String databaseEngine =
+                                                                                           ConfigurationReader.GetValue("AppSettings", "DatabaseEngine");
+
+                                                                                       return databaseEngine switch
+                                                                                       {
+                                                                                           "MySql" => new EstateReportingMySqlContext(connectionString),
+                                                                                           "SqlServer" => new EstateReportingSqlServerContext(connectionString),
+                                                                                           _ => throw new
+                                                                                               NotSupportedException($"Unsupported Database Engine {databaseEngine}")
+                                                                                       };
+                                                                                   });
         }
 
         #endregion
@@ -129,43 +145,23 @@
     {
         #region Methods
 
-        /// <summary>
-        /// Creates the connection string.
-        /// </summary>
-        /// <param name="externalIdentifier">The external identifier.</param>
-        /// <param name="connectionStringType">Type of the connection string.</param>
-        /// <param name="connectionString">The connection string.</param>
-        /// <param name="cancellationToken">The cancellation token.</param>
         public async Task CreateConnectionString(String externalIdentifier,
-                                                 ConnectionStringType connectionStringType,
+                                                 String connectionStringIdentifier,
                                                  String connectionString,
                                                  CancellationToken cancellationToken)
         {
             throw new NotImplementedException("This is only required to complete the interface");
         }
-
-        /// <summary>
-        /// Deletes the connection string configuration.
-        /// </summary>
-        /// <param name="externalIdentifier">The external identifier.</param>
-        /// <param name="connectionStringType">Type of the connection string.</param>
-        /// <param name="cancellationToken">The cancellation token.</param>
+        
         public async Task DeleteConnectionStringConfiguration(String externalIdentifier,
-                                                              ConnectionStringType connectionStringType,
+                                                              String connectionStringIdentifier,
                                                               CancellationToken cancellationToken)
         {
             throw new NotImplementedException("This is only required to complete the interface");
         }
 
-        /// <summary>
-        /// Gets the connection string.
-        /// </summary>
-        /// <param name="externalIdentifier">The external identifier.</param>
-        /// <param name="connectionStringType">Type of the connection string.</param>
-        /// <param name="cancellationToken">The cancellation token.</param>
-        /// <returns></returns>
         public async Task<String> GetConnectionString(String externalIdentifier,
-                                                      ConnectionStringType connectionStringType,
+                                                      String connectionStringIdentifier,
                                                       CancellationToken cancellationToken)
         {
             String connectionString = string.Empty;
@@ -173,15 +169,8 @@
 
             String databaseEngine = ConfigurationReader.GetValue("AppSettings", "DatabaseEngine");
 
-            switch (connectionStringType)
-            {
-                case ConnectionStringType.ReadModel:
-                    databaseName = "TransactionProcessorReadModel" + externalIdentifier;
-                    connectionString = ConfigurationReader.GetConnectionString("TransactionProcessorReadModel");
-                    break;
-                default:
-                    throw new NotSupportedException($"Connection String type [{connectionStringType}] is not supported");
-            }
+            databaseName = $"{connectionStringIdentifier}{externalIdentifier}";
+                    connectionString = ConfigurationReader.GetConnectionString(connectionStringIdentifier);
 
             DbConnectionStringBuilder builder = null;
 

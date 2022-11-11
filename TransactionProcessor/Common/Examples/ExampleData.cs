@@ -59,6 +59,34 @@
 
         internal static Guid TransactionId = Guid.Parse("612970B8-FDF1-4CAA-998A-D84632BD4DE0");
 
+        internal static Boolean IsGenerated = true;
+        
+        internal static Boolean IsIssued = true;
+        
+        internal static Boolean IsRedeemed = true;
+        
+        internal static DateTime? IssuedDateTime = new DateTime(2021, 3, 6);
+        
+        internal static DateTime? GeneratedDateTime = new DateTime(2021, 3, 7);
+        
+        internal static DateTime? RedeemedDateTime = new DateTime(2021, 3, 7);
+
+        internal static String RecipientMobile = "07777777777";
+        
+        internal static String RecipientEmail = "recipient@myvoucheremail.co.uk";
+        
+        internal static Decimal VoucherValue = 10.00m;
+        
+        internal static Decimal RemainingBalance = 0;
+        
+        internal static DateTime ExpiryDate = new DateTime(2021, 4, 6);
+        
+        internal static String Message = String.Empty;
+        
+        internal static String VoucherCode = "1234567890";
+        
+        internal static Guid VoucherId = Guid.Parse("AD3297AB-5484-4D5E-BBC2-B91815708920");
+
         #endregion
     }
 }

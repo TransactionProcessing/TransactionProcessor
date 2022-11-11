@@ -9,8 +9,7 @@
     using Microsoft.Extensions.DependencyInjection;
     using SecurityService.Client;
     using Shared.General;
-    using VoucherManagement.Client;
-
+    
     /// <summary>
     /// 
     /// </summary>
@@ -28,7 +27,6 @@
             this.AddSingleton<ISecurityServiceClient, SecurityServiceClient>();
             this.AddSingleton<IMessagingServiceClient, MessagingServiceClient>();
             this.AddSingleton<IEstateClient, EstateClient>();
-            this.AddSingleton<IVoucherManagementClient, VoucherManagementClient>();
 
             this.AddSingleton<Func<String, String>>(container => serviceName => { return ConfigurationReader.GetBaseServerUri(serviceName).OriginalString; });
 

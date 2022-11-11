@@ -9,8 +9,8 @@ namespace TransactionProcessor.Common
     using System.Security.Claims;
     using Shared.Exceptions;
 
-    [ExcludeFromCodeCoverage]
-    public class ClaimsHelper
+    //[ExcludeFromCodeCoverage]
+    /*public class ClaimsHelper
     {
         #region Methods
 
@@ -111,5 +111,5 @@ namespace TransactionProcessor.Common
         }
 
         #endregion
-    }
+    }*/
 }

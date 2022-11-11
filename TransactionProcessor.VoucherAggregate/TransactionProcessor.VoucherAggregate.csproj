@@ -1,0 +1,19 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net6.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+  </PropertyGroup>
+
+	<ItemGroup>
+		<PackageReference Include="Grpc.Net.Client" Version="2.47.0" />
+		<PackageReference Include="Shared.EventStore" Version="1.5.0-beta3" />
+	</ItemGroup>
+
+	<ItemGroup>
+		<ProjectReference Include="..\TransactionProcessor.Models\TransactionProcessor.Models.csproj" />
+		<ProjectReference Include="..\TransactionProcessor.Voucher.DomainEvents\TransactionProcessor.Voucher.DomainEvents.csproj" />
+	</ItemGroup>
+
+</Project>

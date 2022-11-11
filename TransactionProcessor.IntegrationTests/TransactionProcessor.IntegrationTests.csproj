@@ -7,8 +7,8 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="ClientProxyBase" Version="1.4.1" />
-    <PackageReference Include="Ductus.FluentDocker" Version="2.10.48" />
+    <PackageReference Include="ClientProxyBase" Version="1.5.0-beta3" />
+    <PackageReference Include="Ductus.FluentDocker" Version="2.10.57" />
     <PackageReference Include="EstateManagement.Client" Version="1.1.5" />
     <PackageReference Include="EstateReporting.Database" Version="1.1.7" />
     <PackageReference Include="EventStoreProjections" Version="1.0.13" />
@@ -16,7 +16,7 @@
     <PackageReference Include="Microsoft.EntityFrameworkCore.Relational" Version="6.0.5" />
     <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.2.0" />
     <PackageReference Include="SecurityService.Client" Version="1.1.1" />
-    <PackageReference Include="Shared.IntegrationTesting" Version="1.4.1" />
+    <PackageReference Include="Shared.IntegrationTesting" Version="1.5.0-beta3" />
     <PackageReference Include="Shouldly" Version="4.0.3" />
     <PackageReference Include="SpecFlow" Version="3.9.74" />
     <PackageReference Include="SpecFlow.Tools.MsBuild.Generation" Version="3.9.74" />
@@ -39,15 +39,15 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Compile Update="LogonTransaction\LogonTransaction.feature.cs">
+    <Compile Update="Features\LogonTransaction.feature.cs">
       <DesignTime>True</DesignTime>
       <AutoGen>True</AutoGen>
       <DependentUpon>LogonTransaction.feature</DependentUpon>
     </Compile>
-    <Compile Update="Reconciliation\ReconciliationFeature.feature.cs">
+    <Compile Update="Features\ReconciliationFeature.feature.cs">
       <DesignTime>True</DesignTime>
     </Compile>
-    <Compile Update="SaleTransaction\SaleTransactionFeature.feature.cs">
+    <Compile Update="Features\SaleTransactionFeature.feature.cs">
       <DesignTime>True</DesignTime>
     </Compile>
   </ItemGroup>
@@ -62,23 +62,19 @@
   </ItemGroup>
 
   <ItemGroup>
-    <SpecFlowFeatureFiles Update="LogonTransaction\LogonTransaction.feature">
+    <SpecFlowFeatureFiles Update="Features\LogonTransaction.feature">
       <Generator>SpecFlowSingleFileGenerator</Generator>
       <LastGenOutput>LogonTransaction.feature.cs</LastGenOutput>
     </SpecFlowFeatureFiles>
-    <SpecFlowFeatureFiles Update="Reconciliation\ReconciliationFeature.feature">
+    <SpecFlowFeatureFiles Update="Features\ReconciliationFeature.feature">
       <Generator>SpecFlowSingleFileGenerator</Generator>
       <LastGenOutput>ReconciliationFeature.feature.cs</LastGenOutput>
     </SpecFlowFeatureFiles>
-    <SpecFlowFeatureFiles Update="SaleTransaction\SaleTransactionFeature.feature">
+    <SpecFlowFeatureFiles Update="Features\SaleTransactionFeature.feature">
       <Generator>SpecFlowSingleFileGenerator</Generator>
       <LastGenOutput>SaleTransactionFeature.feature.cs</LastGenOutput>
       <Generator Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'"></Generator>
     </SpecFlowFeatureFiles>
-  </ItemGroup>
-
-  <ItemGroup>
-    <Folder Include="Settlement\" />
   </ItemGroup>
 
   <ItemGroup>
