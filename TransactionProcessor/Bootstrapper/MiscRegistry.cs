@@ -26,6 +26,7 @@
             this.AddSingleton<ITransactionReceiptBuilder, TransactionReceiptBuilder>();
             this.AddSingleton<IFileSystem, FileSystem>();
             this.AddSingleton<IFeeCalculationManager, FeeCalculationManager>();
+            this.AddSingleton<IVoucherManagementManager, VoucherManagementManager>();
         }
 
         #endregion

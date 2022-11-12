@@ -10,7 +10,7 @@ using State;
 public class MerchantBalanceStateRepository : IProjectionStateRepository<MerchantBalanceState>
 {
     private readonly Shared.EntityFramework.IDbContextFactory<TransactionProcessorGenericContext> ContextFactory;
-
+    private const String ConnectionStringIdentifier = "TransactionProcessorReadModel";
     public MerchantBalanceStateRepository(Shared.EntityFramework.IDbContextFactory<TransactionProcessorGenericContext> contextFactory)
     {
         this.ContextFactory = contextFactory;
@@ -30,7 +30,7 @@ public class MerchantBalanceStateRepository : IProjectionStateRepository<Merchan
                                                         Guid merchantId,
                                                         CancellationToken cancellationToken)
     {
-        await using TransactionProcessorGenericContext context = await this.ContextFactory.GetContext(estateId, cancellationToken);
+        await using TransactionProcessorGenericContext context = await this.ContextFactory.GetContext(estateId, ConnectionStringIdentifier, cancellationToken);
 
         MerchantBalanceProjectionState? entity =
             await EntityFrameworkQueryableExtensions.SingleOrDefaultAsync(context.MerchantBalanceProjectionState.Where(m => m.MerchantId == merchantId));
@@ -80,7 +80,7 @@ public class MerchantBalanceStateRepository : IProjectionStateRepository<Merchan
     public async Task<MerchantBalanceState> Save(MerchantBalanceState state, IDomainEvent domainEvent, CancellationToken cancellationToken)
     {
         
-        await using TransactionProcessorGenericContext context = await this.ContextFactory.GetContext(state.EstateId, cancellationToken);
+        await using TransactionProcessorGenericContext context = await this.ContextFactory.GetContext(state.EstateId, ConnectionStringIdentifier, cancellationToken);
         // Note: we don't want to select the state again here....
         MerchantBalanceProjectionState entity = MerchantBalanceStateRepository.CreateMerchantBalanceProjectionState(state);
 

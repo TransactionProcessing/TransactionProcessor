@@ -18,7 +18,8 @@
     using SettlementAggregates;
     using Transaction.DomainEvents;
     using TransactionAggregate;
-    using VoucherManagement.DataTransferObjects;
+    using TransactionProcessor.Voucher.DomainEvents;
+    using VoucherAggregate;
     using CalculationType = Models.CalculationType;
     using FeeType = Models.FeeType;
 
@@ -1127,7 +1128,74 @@
                                                                                                            }
                                                                   }
                                          };
+        
+        public static String Message = "Test Message";
 
+        public static DateTime ExpiryDate = new DateTime(2020, 12, 5);
+        
+        public static String OperatorIdentifier = "Operator 1";
+        
+        public static Decimal Value = 10.00m;
+
+        public static String RecipientEmail = "testrecipient@hotmail.co.uk";
+
+        public static String RecipientMobile = "123456789";
+
+        public static DateTime GeneratedDateTime = new DateTime(2020, 11, 5);
+
+        public static DateTime IssuedDateTime = new DateTime(2020, 11, 5);
+
+        public static IssueVoucherRequest IssueVoucherRequest = IssueVoucherRequest.Create(TestData.VoucherId,
+                                                                                           TestData.OperatorIdentifier,
+                                                                                           TestData.EstateId,
+                                                                                           TestData.TransactionId,
+                                                                                           TestData.IssuedDateTime,
+                                                                                           TestData.Value,
+                                                                                           TestData.RecipientEmail,
+                                                                                           TestData.RecipientMobile);
+
+        public static String Barcode = "1234567890";
+
+        public static VoucherIssuedEvent VoucherIssuedEvent = new VoucherIssuedEvent(TestData.VoucherId,
+                                                                                        TestData.EstateId,
+                                                                                        TestData.IssuedDateTime,
+                                                                                        TestData.RecipientEmail,
+                                                                                        TestData.RecipientMobile);
+
+        public static DateTime RedeemedDateTime = new DateTime(2020, 11, 5);
+
+        public static RedeemVoucherRequest RedeemVoucherRequest = RedeemVoucherRequest.Create(TestData.EstateId, TestData.VoucherCode, TestData.RedeemedDateTime);
+
+        private static Decimal RemainingBalance = 1.00m;
+        
+        public static RedeemVoucherResponse RedeemVoucherResponse =>
+            new RedeemVoucherResponse
+            {
+                ExpiryDate = TestData.ExpiryDate,
+                VoucherCode = TestData.VoucherCode,
+                RemainingBalance = TestData.RemainingBalance
+            };
+
+        public static VoucherAggregate GetVoucherAggregateWithRecipientEmail()
+        {
+            VoucherAggregate aggregate = VoucherAggregate.Create(TestData.VoucherId);
+            aggregate.Generate(TestData.OperatorIdentifier, TestData.EstateId, TestData.TransactionId, TestData.GeneratedDateTime, TestData.Value);
+            aggregate.AddBarcode(TestData.Barcode);
+            aggregate.Issue(TestData.RecipientEmail, null, TestData.IssuedDateTime);
+
+            return aggregate;
+        }
+
+        public static VoucherAggregate GetVoucherAggregateWithRecipientMobile()
+        {
+            VoucherAggregate aggregate = VoucherAggregate.Create(TestData.VoucherId);
+            aggregate.Generate(TestData.OperatorIdentifier, TestData.EstateId, TestData.TransactionId, TestData.GeneratedDateTime, TestData.Value);
+            aggregate.AddBarcode(TestData.Barcode);
+            aggregate.Issue(null, TestData.RecipientMobile, TestData.IssuedDateTime);
+
+            return aggregate;
+        }
+        
         #endregion
     }
 }

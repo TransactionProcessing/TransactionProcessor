@@ -41,7 +41,7 @@ public class StateProjectionEventHandler<TState> : IDomainEventHandler where TSt
     }
 
     private async Task MigrateDatabase(EstateCreatedEvent domainEvent, CancellationToken cancellationToken) {
-        var context = await this.ContextFactory.GetContext(domainEvent.EstateId, cancellationToken);
+        var context = await this.ContextFactory.GetContext(domainEvent.EstateId, "TransactionProcessorReadModel", cancellationToken);
         await context.MigrateAsync(cancellationToken);
     }
 

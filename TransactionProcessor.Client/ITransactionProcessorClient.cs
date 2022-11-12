@@ -41,6 +41,27 @@
                                                                                   DateTime endDate,
                                                                                   CancellationToken cancellationToken);
 
+        Task<GetVoucherResponse> GetVoucherByCode(String accessToken,
+                                            Guid estateId,
+                                            String voucherCode,
+                                            CancellationToken cancellationToken);
+
+        Task<GetVoucherResponse> GetVoucherByTransactionId(String accessToken,
+                                                  Guid estateId,
+                                                  Guid transactionId,
+                                                  CancellationToken cancellationToken);
+
+        /// <summary>
+        /// Redeems the voucher.
+        /// </summary>
+        /// <param name="accessToken">The access token.</param>
+        /// <param name="redeemVoucherRequest">The redeem voucher request.</param>
+        /// <param name="cancellationToken">The cancellation token.</param>
+        /// <returns></returns>
+        Task<RedeemVoucherResponse> RedeemVoucher(String accessToken,
+                                                  RedeemVoucherRequest redeemVoucherRequest,
+                                                  CancellationToken cancellationToken);
+
         #endregion
     }
 }

@@ -249,6 +249,118 @@
             return response;
         }
 
+        public async Task<GetVoucherResponse> GetVoucherByTransactionId(String accessToken,
+                                                               Guid estateId,
+                                                               Guid transactionId,
+                                                               CancellationToken cancellationToken)
+        {
+            GetVoucherResponse response = null;
+
+            String requestUri = $"{this.BaseAddress}/api/vouchers?estateId={estateId}&transactionId={transactionId}";
+
+            try
+            {
+                // Add the access token to the client headers
+                this.HttpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", accessToken);
+
+                // Make the Http Call here
+                HttpResponseMessage httpResponse = await this.HttpClient.GetAsync(requestUri, cancellationToken);
+
+                // Process the response
+                String content = await this.HandleResponse(httpResponse, cancellationToken);
+
+                // call was successful so now deserialise the body to the response object
+                response = JsonConvert.DeserializeObject<GetVoucherResponse>(content);
+            }
+            catch (Exception ex)
+            {
+                // An exception has occurred, add some additional information to the message
+                Exception exception = new Exception("Error getting voucher.", ex);
+
+                throw exception;
+            }
+
+            return response;
+        }
+
+        public async Task<GetVoucherResponse> GetVoucherByCode(String accessToken,
+                                                         Guid estateId,
+                                                         String voucherCode,
+                                                         CancellationToken cancellationToken)
+        {
+            GetVoucherResponse response = null;
+
+            String requestUri = $"{this.BaseAddress}/api/vouchers?estateId={estateId}&voucherCode={voucherCode}";
+
+            try
+            {
+                // Add the access token to the client headers
+                this.HttpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", accessToken);
+
+                // Make the Http Call here
+                HttpResponseMessage httpResponse = await this.HttpClient.GetAsync(requestUri, cancellationToken);
+
+                // Process the response
+                String content = await this.HandleResponse(httpResponse, cancellationToken);
+
+                // call was successful so now deserialise the body to the response object
+                response = JsonConvert.DeserializeObject<GetVoucherResponse>(content);
+            }
+            catch (Exception ex)
+            {
+                // An exception has occurred, add some additional information to the message
+                Exception exception = new Exception("Error getting voucher.", ex);
+
+                throw exception;
+            }
+
+            return response;
+        }
+
+        /// <summary>
+        /// Redeems the voucher.
+        /// </summary>
+        /// <param name="accessToken">The access token.</param>
+        /// <param name="redeemVoucherRequest">The redeem voucher request.</param>
+        /// <param name="cancellationToken">The cancellation token.</param>
+        /// <returns></returns>
+        public async Task<RedeemVoucherResponse> RedeemVoucher(String accessToken,
+                                                         RedeemVoucherRequest redeemVoucherRequest,
+                                                         CancellationToken cancellationToken)
+        {
+            RedeemVoucherResponse response = null;
+
+            String requestUri = $"{this.BaseAddress}/api/vouchers";
+
+            try
+            {
+                String requestSerialised = JsonConvert.SerializeObject(redeemVoucherRequest);
+
+                StringContent httpContent = new StringContent(requestSerialised, Encoding.UTF8, "application/json");
+
+                // Add the access token to the client headers
+                this.HttpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", accessToken);
+
+                // Make the Http Call here
+                HttpResponseMessage httpResponse = await this.HttpClient.PutAsync(requestUri, httpContent, cancellationToken);
+
+                // Process the response
+                String content = await this.HandleResponse(httpResponse, cancellationToken);
+
+                // call was successful so now deserialise the body to the response object
+                response = JsonConvert.DeserializeObject<RedeemVoucherResponse>(content);
+            }
+            catch (Exception ex)
+            {
+                // An exception has occurred, add some additional information to the message
+                Exception exception = new Exception("Error redeeming voucher.", ex);
+
+                throw exception;
+            }
+
+            return response;
+        }
+
         #endregion
     }
 }

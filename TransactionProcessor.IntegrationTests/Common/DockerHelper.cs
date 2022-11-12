@@ -10,8 +10,10 @@
     using System.Threading.Tasks;
     using Client;
     using Ductus.FluentDocker.Common;
+    using Ductus.FluentDocker.Model.Containers;
     using Ductus.FluentDocker.Services;
     using Ductus.FluentDocker.Services.Extensions;
+    using Ductus.FluentDocker.Services.Impl;
     using EstateManagement.Client;
     using EstateReporting.Database;
     using EventStore.Client;
@@ -63,9 +65,7 @@
         #endregion
 
         #region Methods
-
-       
-
+        
         /// <summary>
         /// Starts the containers for scenario run.
         /// </summary>
@@ -73,9 +73,7 @@
         public override async Task StartContainersForScenarioRun(String scenarioName)
         {
             await base.StartContainersForScenarioRun(scenarioName);
-
             
-
             // Setup the base address resolvers
             String EstateManagementBaseAddressResolver(String api) => $"http://127.0.0.1:{this.EstateManagementPort}";
             String SecurityServiceBaseAddressResolver(String api) => $"https://127.0.0.1:{this.SecurityServicePort}";

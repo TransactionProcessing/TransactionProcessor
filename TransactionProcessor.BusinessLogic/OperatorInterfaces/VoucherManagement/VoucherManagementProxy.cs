@@ -9,9 +9,12 @@ namespace TransactionProcessor.BusinessLogic.OperatorInterfaces.VoucherManagemen
     using System.Threading.Tasks;
     using Common;
     using EstateManagement.DataTransferObjects.Responses;
-    using global::VoucherManagement.Client;
-    using global::VoucherManagement.DataTransferObjects;
+    using MediatR;
+    //using global::VoucherManagement.Client;
+    //using global::VoucherManagement.DataTransferObjects;
     using Microsoft.EntityFrameworkCore.Storage.ValueConversion.Internal;
+    using Models;
+    using Requests;
 
     /// <summary>
     /// 
@@ -19,22 +22,15 @@ namespace TransactionProcessor.BusinessLogic.OperatorInterfaces.VoucherManagemen
     /// <seealso cref="TransactionProcessor.BusinessLogic.OperatorInterfaces.IOperatorProxy" />
     public class VoucherManagementProxy : IOperatorProxy
     {
-        /// <summary>
-        /// The voucher management client
-        /// </summary>
-        private readonly IVoucherManagementClient VoucherManagementClient;
-
-        /// <summary>
-        /// Initializes a new instance of the <see cref="VoucherManagementProxy"/> class.
-        /// </summary>
-        /// <param name="voucherManagementClient">The voucher management client.</param>
-        public VoucherManagementProxy(IVoucherManagementClient voucherManagementClient)
-        {
-            this.VoucherManagementClient = voucherManagementClient;
+        private readonly IMediator Mediator;
+        
+        public VoucherManagementProxy(IMediator mediator) {
+            this.Mediator = mediator;
         }
 
         public async Task<OperatorResponse> ProcessLogonMessage(String accessToken,
-                                                                CancellationToken cancellationToken) {
+                                                                CancellationToken cancellationToken)
+        {
             return null;
         }
 
@@ -80,34 +76,37 @@ namespace TransactionProcessor.BusinessLogic.OperatorInterfaces.VoucherManagemen
                 throw new Exception("Recipient details (either email or mobile) is a required field for this transaction type");
             }
 
-            IssueVoucherRequest apiRequest = new IssueVoucherRequest
-                                             {
-                                                 EstateId = merchant.EstateId,
-                                                 OperatorIdentifier = operatorIdentifier,
-                                                 RecipientEmail = recipientEmail,
-                                                 RecipientMobile = recipientMobile,
-                                                 TransactionId = transactionId,
-                                                 Value = amountAsDecimal
-                                             };
+            IssueVoucherRequest request = IssueVoucherRequest.Create(Guid.NewGuid(),
+                                                                     operatorIdentifier,
+                                                                     merchant.EstateId,
+                                                                     transactionId,
+                                                                     DateTime.Now,
+                                                                     amountAsDecimal,
+                                                                     recipientEmail,
+                                                                     recipientMobile);
+            IssueVoucherResponse response = await this.Mediator.Send(request, cancellationToken);
+            
+            if (response != null) {
+                // Build the response metadata
+                Dictionary<String, String> additionalTransactionResponseMetadata = new Dictionary<String, String>();
+                additionalTransactionResponseMetadata.Add("VoucherCode", response.VoucherCode);
+                additionalTransactionResponseMetadata.Add("VoucherMessage", response.Message);
+                additionalTransactionResponseMetadata.Add("VoucherExpiryDate", response.ExpiryDate.ToString("yyyy-MM-dd"));
 
-            IssueVoucherResponse apiResponse = await this.VoucherManagementClient.IssueVoucher(accessToken, apiRequest, cancellationToken);
+                return new OperatorResponse
+                {
+                    TransactionId = transactionId.ToString("N"),
+                    ResponseCode = "0000",
+                    ResponseMessage = "SUCCESS",
+                    // This may contain the voucher details to be logged with the transaction, and for possible receipt email/print
+                    AdditionalTransactionResponseMetadata = additionalTransactionResponseMetadata,
+                    AuthorisationCode = "ABCD1234",
+                    IsSuccessful = true
+                };
+            }
 
-            // Build the response metadata
-            Dictionary<String, String> additionalTransactionResponseMetadata = new Dictionary<String, String>();
-            additionalTransactionResponseMetadata.Add("VoucherCode", apiResponse.VoucherCode);
-            additionalTransactionResponseMetadata.Add("VoucherMessage", apiResponse.Message);
-            additionalTransactionResponseMetadata.Add("VoucherExpiryDate", apiResponse.ExpiryDate.ToString("yyyy-MM-dd"));
-
-            return new OperatorResponse
-                   {
-                       TransactionId = transactionId.ToString("N"),
-                       ResponseCode = "0000",
-                       ResponseMessage = "SUCCESS",
-                       // This may contain the voucher details to be logged with the transaction, and for possible receipt email/print
-                       AdditionalTransactionResponseMetadata = additionalTransactionResponseMetadata,
-                       AuthorisationCode = "ABCD1234",
-                       IsSuccessful = true
-                   };
+            // TODO: handle a failed issue case
+            return null;
         }
     }
 }

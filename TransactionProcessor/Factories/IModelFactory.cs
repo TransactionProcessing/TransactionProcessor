@@ -3,6 +3,8 @@
     using BusinessLogic.Requests;
     using DataTransferObjects;
     using Models;
+    using IssueVoucherResponse = DataTransferObjects.IssueVoucherResponse;
+    using RedeemVoucherResponse = DataTransferObjects.RedeemVoucherResponse;
 
     /// <summary>
     /// 
@@ -10,27 +12,18 @@
     public interface IModelFactory
     {
         #region Methods
-
-        /// <summary>
-        /// Converts from.
-        /// </summary>
-        /// <param name="processLogonTransactionResponse">The process logon transaction response.</param>
-        /// <returns></returns>
+        
         SerialisedMessage ConvertFrom(ProcessLogonTransactionResponse processLogonTransactionResponse);
 
-        /// <summary>
-        /// Converts from.
-        /// </summary>
-        /// <param name="processSaleTransactionResponse">The process sale transaction response.</param>
-        /// <returns></returns>
         SerialisedMessage ConvertFrom(ProcessSaleTransactionResponse processSaleTransactionResponse);
 
-        /// <summary>
-        /// Converts from.
-        /// </summary>
-        /// <param name="processReconciliationTransactionResponse">The process reconciliation transaction response.</param>
-        /// <returns></returns>
         SerialisedMessage ConvertFrom(ProcessReconciliationTransactionResponse processReconciliationTransactionResponse);
+
+        IssueVoucherResponse ConvertFrom(Models.IssueVoucherResponse issueVoucherResponse);
+
+        GetVoucherResponse ConvertFrom(Models.Voucher voucherModel);
+
+        RedeemVoucherResponse ConvertFrom(Models.RedeemVoucherResponse redeemVoucherResponse);
 
         #endregion
     }

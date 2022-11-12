@@ -68,6 +68,7 @@
 
             this.AddSingleton<TransactionProcessor.ProjectionEngine.EventHandling.EventHandler>();
             this.AddSingleton<TransactionDomainEventHandler>();
+            this.AddSingleton<VoucherDomainEventHandler>();
             this.AddSingleton<StateProjectionEventHandler<MerchantBalanceState>>();
 
             this.AddSingleton<ProjectionHandler<MerchantBalanceState>>();

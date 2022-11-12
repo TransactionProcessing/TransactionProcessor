@@ -11,12 +11,13 @@ public class TransactionProcessorReadRepository : ITransactionProcessorReadRepos
 {
     private readonly Shared.EntityFramework.IDbContextFactory<TransactionProcessorGenericContext> ContextFactory;
 
+    private const String ConnectionStringIdentifier = "TransactionProcessorReadModel";
     public TransactionProcessorReadRepository(Shared.EntityFramework.IDbContextFactory<TransactionProcessorGenericContext> contextFactory) {
         this.ContextFactory = contextFactory;
     }
     public async Task AddMerchantBalanceChangedEntry(MerchantBalanceChangedEntry entry,
                                                      CancellationToken cancellationToken) {
-        await using TransactionProcessorGenericContext context = await this.ContextFactory.GetContext(entry.EstateId, cancellationToken);
+        await using TransactionProcessorGenericContext context = await this.ContextFactory.GetContext(entry.EstateId, ConnectionStringIdentifier, cancellationToken);
 
         TransactionProcessor.ProjectionEngine.Database.Entities.MerchantBalanceChangedEntry entity = new() {
                                                                                                                ChangeAmount = entry.ChangeAmount,
@@ -51,7 +52,7 @@ public class TransactionProcessorReadRepository : ITransactionProcessorReadRepos
                                                                                    DateTime startDate,
                                                                                    DateTime endDate,
                                                                                    CancellationToken cancellationToken) {
-        await using TransactionProcessorGenericContext context = await this.ContextFactory.GetContext(estateId, cancellationToken);
+        await using TransactionProcessorGenericContext context = await this.ContextFactory.GetContext(estateId, ConnectionStringIdentifier, cancellationToken);
 
         List<MerchantBalanceHistoryViewEntry> entries = await context.MerchantBalanceHistoryViewEntry
                                                                      .Where(v => v.MerchantId == merchantId && v.EntryDateTime >= startDate && v.EntryDateTime <= endDate)

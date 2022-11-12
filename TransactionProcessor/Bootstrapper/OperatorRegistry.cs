@@ -15,7 +15,6 @@
     using Microsoft.Extensions.DependencyInjection;
     using Org.BouncyCastle.Security;
     using PataPawaPostPay;
-    using VoucherManagement.Client;
 
     /// <summary>
     /// 
@@ -50,36 +49,9 @@
             
 
             this.AddTransient<Func<String, IOperatorProxy>>(context => operatorIdentifier => {
-                                                                           //return context.GetInstance<IOperatorProxy>(operatorIdentifier);
                                                                            return Startup.Container.GetInstance<IOperatorProxy>(operatorIdentifier);
-                                                                           //if (string.Compare(operatorIdentifier.Replace(" ", ""),
-                                                                           //                   "Safaricom",
-                                                                           //                   StringComparison.CurrentCultureIgnoreCase) == 0)
-                                                                           //{
-                                                                           //    SafaricomConfiguration
-                                                                           //        configuration = context.GetRequiredService<SafaricomConfiguration>();
-                                                                           //    HttpClient client = context.GetRequiredService<HttpClient>();
-                                                                           //    return new SafaricomPinlessProxy(configuration, client);
-                                                                           //}
-
-                                                                           //if (string.Compare(operatorIdentifier.Replace(" ", ""),
-                                                                           //                   "PataPawaPostPay",
-                                                                           //                   StringComparison.CurrentCultureIgnoreCase) == 0)
-                                                                           //{
-                                                                           //    PataPawaPostPayServiceClient client = context.GetRequiredService<PataPawaPostPayServiceClient>();
-                                                                           //    PataPawaPostPaidConfiguration
-                                                                           //        configuration = context.GetRequiredService<PataPawaPostPaidConfiguration>();
-                                                                           //    IPataPawaPostPayService channel = client.ChannelFactory.CreateChannel(new EndpointAddress(configuration.Url));
-                                                                           //    IMemoryCache memoryCache = context.GetRequiredService<IMemoryCache>();
-                                                                           //    return new PataPawaPostPayProxy(channel, configuration, memoryCache);
-                                                                           //}
-
-                                                                           //// Voucher
-                                                                           //IVoucherManagementClient voucherManagementClient =
-                                                                           //    context.GetRequiredService<IVoucherManagementClient>();
-                                                                           //return new VoucherManagementProxy(voucherManagementClient);
+                                                                           
                                                                        });
-
         }
 
         private void ConfigureOperator<T>(String operatorId, IConfigurationSection operatorConfigurationSection) where T : class {

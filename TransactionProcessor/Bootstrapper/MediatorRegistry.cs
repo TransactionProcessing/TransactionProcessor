@@ -33,6 +33,9 @@
             this.AddSingleton<IRequestHandler<ResendTransactionReceiptRequest>, TransactionRequestHandler>();
 
             this.AddSingleton<IRequestHandler<ProcessSettlementRequest, ProcessSettlementResponse>, SettlementRequestHandler>();
+
+            this.AddSingleton<IRequestHandler<IssueVoucherRequest, IssueVoucherResponse>, VoucherManagementRequestHandler>();
+            this.AddSingleton<IRequestHandler<RedeemVoucherRequest, RedeemVoucherResponse>, VoucherManagementRequestHandler>();
         }
 
         #endregion

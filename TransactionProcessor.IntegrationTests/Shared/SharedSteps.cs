@@ -1064,7 +1064,7 @@ namespace TransactionProcessor.IntegrationTests.Shared
                                             estateDetails.EstateId,
                                             CancellationToken.None);
 
-                                    settlements.NumberOfFeesSettled.ShouldBe(numberOfFees, $"Settlment date {settlementDate}");
+                                    settlements.NumberOfFeesSettled.ShouldBe(numberOfFees, $"Settlement date {settlementDate}");
                                 }, TimeSpan.FromMinutes(3));
             }
         }
@@ -1117,6 +1117,27 @@ namespace TransactionProcessor.IntegrationTests.Shared
                                 settlement.NumberOfFeesSettled.ShouldBe(numberOfFeesSettled);
                                 settlement.SettlementCompleted.ShouldBeTrue();
                             }, TimeSpan.FromMinutes(2));
+        }
+
+        [When(@"I redeem the voucher for Estate '([^']*)' and Merchant '([^']*)' transaction number (.*) the voucher balance will be (.*)")]
+        public async Task WhenIRedeemTheVoucherForEstateAndMerchantTransactionNumberTheVoucherBalanceWillBe(string estateName, string merchantName, int transactionNumber, int balance)
+        {
+            var voucher = await this.TestingContext.GetVoucherByTransactionNumber(estateName, merchantName, transactionNumber);
+            var estate = this.TestingContext.GetEstateDetails(estateName);
+            RedeemVoucherRequest redeemVoucherRequest = new RedeemVoucherRequest
+                                                        {
+                                                            EstateId = estate.EstateId,
+                                                            RedeemedDateTime = DateTime.Now,
+                                                            VoucherCode = voucher.VoucherCode
+                                                        };
+            // Do the redeem
+            await Retry.For(async () =>
+                            {
+                                RedeemVoucherResponse response = await this.TestingContext.DockerHelper.TransactionProcessorClient
+                                                                           .RedeemVoucher(this.TestingContext.AccessToken, redeemVoucherRequest, CancellationToken.None)
+                                                                           .ConfigureAwait(false);
+                                response.RemainingBalance.ShouldBe(balance);
+                            });
         }
     }
 }
