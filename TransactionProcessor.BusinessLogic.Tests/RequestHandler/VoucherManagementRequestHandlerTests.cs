@@ -27,8 +27,7 @@ namespace TransactionProcessor.BusinessLogic.Tests.RequestHandler
                                                            It.IsAny<CancellationToken>())).ReturnsAsync(TestData.IssueVoucherResponse);
 
             VoucherManagementRequestHandler handler = new VoucherManagementRequestHandler(voucherDomainService.Object);
-
-
+            
             IssueVoucherRequest command = TestData.IssueVoucherRequest;
             Should.NotThrow(async () =>
             {

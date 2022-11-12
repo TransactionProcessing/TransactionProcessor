@@ -70,8 +70,7 @@ public record VoucherGeneratedEvent : DomainEvent
     /// The message.
     /// </value>
     public String Message { get; init; }
-
-
+    
     /// <summary>
     /// Initializes a new instance of the <see cref="VoucherGeneratedEvent" /> class.
     /// </summary>

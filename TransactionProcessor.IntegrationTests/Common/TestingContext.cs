@@ -195,7 +195,6 @@
                                                                                                                 transactionResponse.TransactionId,
                                                                                                                 CancellationToken.None);
             
-
             return voucher;
         }
     }
