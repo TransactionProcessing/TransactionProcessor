@@ -52,8 +52,8 @@ jobs:
         dotnet nuget push Nugets/TransactionProcessor.Reconciliation.DomainEvents.${{ steps.next_version.outputs.VERSION }}.nupkg --api-key ${{ secrets.MYGET_APIKEY }} --source https://www.myget.org/F/transactionprocessing/api/v2/package
         dotnet pack "TransactionProcessor.Settlement.DomainEvents\TransactionProcessor.Settlement.DomainEvents.csproj" /p:PackageVersion=${{ steps.next_version.outputs.VERSION }} --output Nugets
         dotnet nuget push Nugets/TransactionProcessor.Settlement.DomainEvents.${{ steps.next_version.outputs.VERSION }}.nupkg --api-key ${{ secrets.MYGET_APIKEY }} --source https://www.myget.org/F/transactionprocessing/api/v2/package
-        dotnet pack "TransactionProcessor.Voucher.DomainEvents\TransactionProcessor.Voucher.DomainEvents.csproj" /p:PackageVersion=${{ steps.get_version.outputs.VERSION }} --output Nugets
-        dotnet nuget push Nugets/TransactionProcessor.Voucher.DomainEvents.${{ steps.get_version.outputs.VERSION }}.nupkg --api-key ${{ secrets.MYGET_APIKEY }} --source https://www.myget.org/F/transactionprocessing/api/v2/package
+        dotnet pack "TransactionProcessor.Voucher.DomainEvents\TransactionProcessor.Voucher.DomainEvents.csproj" /p:PackageVersion=${{ steps.next_version.outputs.VERSION }} --output Nugets
+        dotnet nuget push Nugets/TransactionProcessor.Voucher.DomainEvents.${{ steps.next_version.outputs.VERSION }}.nupkg --api-key ${{ secrets.MYGET_APIKEY }} --source https://www.myget.org/F/transactionprocessing/api/v2/package
 
     - name: Publish Images to Docker Hub
       run: |
