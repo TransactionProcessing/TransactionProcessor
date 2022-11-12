@@ -91,7 +91,6 @@ using Xunit;
                                                       });
         }
 
-
         [Fact]
         public void VoucherAggregate_Issue_VoucherIsIssued()
         {

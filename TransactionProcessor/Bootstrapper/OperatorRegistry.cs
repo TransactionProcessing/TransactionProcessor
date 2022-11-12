@@ -52,7 +52,6 @@
                                                                            return Startup.Container.GetInstance<IOperatorProxy>(operatorIdentifier);
                                                                            
                                                                        });
-
         }
 
         private void ConfigureOperator<T>(String operatorId, IConfigurationSection operatorConfigurationSection) where T : class {

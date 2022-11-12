@@ -1129,11 +1129,9 @@
                                                                   }
                                          };
 
-
-        // START VOUCHER
-
         
         public static String Message = "Test Message";
+
         public static DateTime ExpiryDate = new DateTime(2020, 12, 5);
         
         public static String OperatorIdentifier = "Operator 1";

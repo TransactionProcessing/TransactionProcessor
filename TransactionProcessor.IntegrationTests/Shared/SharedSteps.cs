@@ -1139,6 +1139,5 @@ namespace TransactionProcessor.IntegrationTests.Shared
                                 response.RemainingBalance.ShouldBe(balance);
                             });
         }
-        
     }
 }

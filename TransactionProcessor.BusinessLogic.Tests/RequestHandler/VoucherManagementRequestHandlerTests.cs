@@ -34,7 +34,6 @@ namespace TransactionProcessor.BusinessLogic.Tests.RequestHandler
             {
                 await handler.Handle(command, CancellationToken.None);
             });
-
         }
 
         [Fact]
@@ -46,13 +45,11 @@ namespace TransactionProcessor.BusinessLogic.Tests.RequestHandler
 
             VoucherManagementRequestHandler handler = new VoucherManagementRequestHandler(voucherDomainService.Object);
 
-
             RedeemVoucherRequest command = TestData.RedeemVoucherRequest;
             Should.NotThrow(async () =>
             {
                 await handler.Handle(command, CancellationToken.None);
             });
-
         }
     }
 }
