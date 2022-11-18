@@ -19,6 +19,11 @@ jobs:
     - name: Set Up Variables
       run: echo "action_url=$GITHUB_SERVER_URL/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID" >> $GITHUB_ENV
 
+    - name: Install NET 7
+      uses: actions/setup-dotnet@v2
+      with:
+        dotnet-version: '7.0.x'
+
     - name: Restore Nuget Packages
       run: dotnet restore TransactionProcessor.sln --source https://api.nuget.org/v3/index.json --source https://www.myget.org/F/transactionprocessing/api/v3/index.json
 
@@ -40,11 +45,11 @@ jobs:
         npm i lcov-result-merger
         ./node_modules/lcov-result-merger/bin/lcov-result-merger.js '*.info' 'lcov.info' 
 
-    - name: Upload Code Coverage
-      uses: coverallsapp/github-action@master
-      with:
-          github-token: ${{ secrets.github_token }}
-          path-to-lcov: lcov.info    
+    #- name: Upload Code Coverage
+    #  uses: coverallsapp/github-action@master
+    #  with:
+    #      github-token: ${{ secrets.github_token }}
+    #      path-to-lcov: lcov.info    
         
     - name: Build Docker Image
       run: docker build . --file TransactionProcessor/Dockerfile --tag transactionprocessor:latest
@@ -58,11 +63,11 @@ jobs:
         name: tracelogs
         path: /home/txnproc/trace/   
 
-    - uses: nashmaniac/create-issue-action@v1.1
-      if: ${{ failure() }}
-      name: Create an issue on build failure
-      with:
-        title: Investigate Nightly Build Failure
-        token: ${{secrets.GITHUB_TOKEN}}
-        labels: nightlybuild
-        body: Url is ${{env.action_url}}
+    #- uses: nashmaniac/create-issue-action@v1.1
+    #  if: ${{ failure() }}
+    #  name: Create an issue on build failure
+    #  with:
+    #    title: Investigate Nightly Build Failure
+    #    token: ${{secrets.GITHUB_TOKEN}}
+    #    labels: nightlybuild
+    #    body: Url is ${{env.action_url}}
