@@ -1,23 +1,24 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-	  <TargetFramework>net6.0</TargetFramework>
+	  <TargetFramework>net7.0</TargetFramework>
   </PropertyGroup>
 
   <ItemGroup>
     <PackageReference Include="EstateManagement.Client" Version="1.1.5" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Relational" Version="7.0.0" />
     <PackageReference Include="EstateReporting.Database" Version="1.1.7" />
     <PackageReference Include="MessagingService.Client" Version="1.1.4" />
     <PackageReference Include="SecurityService.Client" Version="1.1.1" />
-    <PackageReference Include="Shared.DomainDrivenDesign" Version="1.5.0-beta3" />
-    <PackageReference Include="Shared.EventStore" Version="1.5.0-beta3" />
-    <PackageReference Include="MediatR" Version="10.0.1" />
-    <PackageReference Include="System.IO.Abstractions" Version="17.0.15" />
-    <PackageReference Include="System.ServiceModel.Duplex" Version="4.8.*" />
-    <PackageReference Include="System.ServiceModel.Federation" Version="4.8.*" />
-    <PackageReference Include="System.ServiceModel.Http" Version="4.8.*" />
-    <PackageReference Include="System.ServiceModel.NetTcp" Version="4.8.*" />
-    <PackageReference Include="System.ServiceModel.Security" Version="4.8.*" />
+    <PackageReference Include="Shared.DomainDrivenDesign" Version="1.5.1" />
+    <PackageReference Include="Shared.EventStore" Version="1.5.1" />
+    <PackageReference Include="MediatR" Version="11.0.0" />
+    <PackageReference Include="System.IO.Abstractions" Version="17.2.3" />
+    <PackageReference Include="System.ServiceModel.Duplex" Version="4.10.0" />
+    <PackageReference Include="System.ServiceModel.Federation" Version="4.10.0" />
+    <PackageReference Include="System.ServiceModel.Http" Version="4.10.0" />
+    <PackageReference Include="System.ServiceModel.NetTcp" Version="4.10.0" />
+    <PackageReference Include="System.ServiceModel.Security" Version="4.10.0" />
     <PackageReference Include="NetBarcode" Version="1.7.0" />
   </ItemGroup>
 
