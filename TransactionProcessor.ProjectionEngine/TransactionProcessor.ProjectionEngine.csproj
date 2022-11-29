@@ -19,9 +19,9 @@
     <PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" Version="7.0.0" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.Relational" Version="7.0.0" />
     <PackageReference Include="Pomelo.EntityFrameworkCore.MySql" Version="7.0.0-alpha.1" />
-    <PackageReference Include="Shared" Version="1.5.1" />
+    <PackageReference Include="Shared" Version="2022.12.0-beta2" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.Sqlite" Version="7.0.0" />
-    <PackageReference Include="Shared.EventStore" Version="1.5.1" />
+    <PackageReference Include="Shared.EventStore" Version="2022.12.0-beta2" />
   </ItemGroup>
 
   <ItemGroup>

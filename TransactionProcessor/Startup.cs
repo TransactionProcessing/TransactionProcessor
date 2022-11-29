@@ -130,7 +130,7 @@ namespace TransactionProcessor
 
             Logger.Initialise(logger);
 
-            Action<String> loggerAction = message => { Logger.LogInformation(message); };
+            Action<String> loggerAction = Logger.LogInformation;
             Startup.Configuration.LogConfiguration(loggerAction);
 
             foreach (KeyValuePair<Type, String> type in TypeMap.Map) {
