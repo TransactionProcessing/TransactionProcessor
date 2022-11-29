@@ -146,44 +146,6 @@ namespace TransactionProcessor
             return workers;
         }
 
-        //private static SubscriptionWorker ConfigureOrderedSubscriptions(ISubscriptionRepository subscriptionRepository, SubscriptionConfig ordered)
-        //{
-        //    IDomainEventHandlerResolver eventHandlerResolver = Startup.Container.GetInstance<IDomainEventHandlerResolver>("Ordered");
-            
-        //    Int32 persistentSubscriptionPollingInSeconds = Int32.Parse(ConfigurationReader.GetValue("AppSettings", "PersistentSubscriptionPollingInSeconds"));
-
-        //    SubscriptionWorker orderedSubscriptions =
-        //        SubscriptionWorker.CreateOrderedSubscriptionWorker(Startup.EventStoreClientSettings,
-        //                                                           eventHandlerResolver,
-        //                                                           subscriptionRepository,
-        //                                                           persistentSubscriptionPollingInSeconds);
-
-        //    orderedSubscriptions.Trace += (_, args) => Extensions.orderedLog(TraceEventType.Information, args.Message);
-        //    orderedSubscriptions.Warning += (_, args) => Extensions.orderedLog(TraceEventType.Warning, args.Message);
-        //    orderedSubscriptions.Error += (_, args) => Extensions.orderedLog(TraceEventType.Error, args.Message);
-
-        //    if (!String.IsNullOrEmpty(ordered.Ignore))
-        //    {
-        //        orderedSubscriptions = orderedSubscriptions.IgnoreSubscriptions(ordered.Ignore);
-        //    }
-
-        //    if (!String.IsNullOrEmpty(ordered.Filter))
-        //    {
-        //        //NOTE: Not overly happy with this design, but;
-        //        //the idea is if we supply a filter, this overrides ignore
-        //        orderedSubscriptions = orderedSubscriptions.FilterSubscriptions(ordered.Filter)
-        //                                                   .IgnoreSubscriptions(null);
-
-        //    }
-
-        //    if (!String.IsNullOrEmpty(ordered.StreamName))
-        //    {
-        //        orderedSubscriptions = orderedSubscriptions.FilterByStreamName(ordered.StreamName);
-        //    }
-
-        //    return orderedSubscriptions;
-        //}
-
         private static void OperatorLogon(String operatorId)
         {
             try {
