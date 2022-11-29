@@ -19,7 +19,6 @@ namespace TransactionProcessor
     using Settlement.DomainEvents;
     using Shared.EventStore.Aggregate;
     using Shared.EventStore.EventHandling;
-    using Shared.EventStore.Subscriptions;
     using Shared.Logger;
     using Transaction.DomainEvents;
 

@@ -44,7 +44,7 @@
                 }
 
                 //this.AddSingleton(eventHandlersConfiguration);
-                this.Use(eventHandlersConfiguration).Named("Concurrent");
+                this.Use(eventHandlersConfiguration).Named("EventHandlerConfiguration");
 
                 section = Startup.Configuration.GetSection("AppSettings:EventHandlerConfigurationOrdered");
 
@@ -52,8 +52,8 @@
                 {
                     Startup.Configuration.GetSection("AppSettings:EventHandlerConfigurationOrdered").Bind(eventHandlersConfigurationOrdered);
                 }
-                
-                this.Use(eventHandlersConfigurationOrdered).Named("Ordered");
+
+                this.Use(eventHandlersConfigurationOrdered).Named("EventHandlerConfigurationOrdered");
             }
 
             this.AddSingleton<Func<Type, IDomainEventHandler>>(container => type =>
@@ -75,7 +75,7 @@
             this.AddSingleton<IProjection<MerchantBalanceState>, MerchantBalanceProjection>();
             this.AddSingleton<IStateDispatcher<MerchantBalanceState>, MerchantBalanceStateDispatcher>();
 
-            this.For<IDomainEventHandlerResolver>().Use<DomainEventHandlerResolver>().Named("Concurrent")
+            this.For<IDomainEventHandlerResolver>().Use<DomainEventHandlerResolver>().Named("Main")
                 .Ctor<Dictionary<String, String[]>>().Is(eventHandlersConfiguration).Singleton();
             this.For<IDomainEventHandlerResolver>().Use<DomainEventHandlerResolver>().Named("Ordered")
                 .Ctor<Dictionary<String, String[]>>().Is(eventHandlersConfigurationOrdered).Singleton();
