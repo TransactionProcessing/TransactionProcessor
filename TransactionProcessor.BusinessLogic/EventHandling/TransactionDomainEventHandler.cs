@@ -10,25 +10,21 @@
     using EstateManagement.Client;
     using EstateManagement.DataTransferObjects;
     using EstateManagement.DataTransferObjects.Responses;
-    using EstateManagement.Estate.DomainEvents;
     using Manager;
     using MessagingService.Client;
     using MessagingService.DataTransferObjects;
     using Models;
-    using Newtonsoft.Json;
     using SecurityService.Client;
     using SecurityService.DataTransferObjects.Responses;
     using Services;
     using SettlementAggregates;
     using Shared.DomainDrivenDesign.EventSourcing;
-    using Shared.EntityFramework;
     using Shared.EventStore.Aggregate;
     using Shared.EventStore.EventHandling;
     using Shared.General;
     using Shared.Logger;
     using Transaction.DomainEvents;
     using TransactionAggregate;
-    using TransactionProcessor.ProjectionEngine.Database;
     using CalculationType = Models.CalculationType;
     using FeeType = Models.FeeType;
 
@@ -52,19 +48,14 @@
         private readonly IFeeCalculationManager FeeCalculationManager;
 
         /// <summary>
-        /// The security service client
-        /// </summary>
-        private readonly ISecurityServiceClient SecurityServiceClient;
-
-        /// <summary>
-        /// The transaction receipt builder
-        /// </summary>
-        private readonly ITransactionReceiptBuilder TransactionReceiptBuilder;
-
-        /// <summary>
         /// The messaging service client
         /// </summary>
         private readonly IMessagingServiceClient MessagingServiceClient;
+
+        /// <summary>
+        /// The security service client
+        /// </summary>
+        private readonly ISecurityServiceClient SecurityServiceClient;
 
         private readonly IAggregateRepository<SettlementAggregate, DomainEvent> SettlementAggregateRepository;
 
@@ -78,6 +69,11 @@
         /// </summary>
         private readonly ITransactionAggregateManager TransactionAggregateManager;
 
+        /// <summary>
+        /// The transaction receipt builder
+        /// </summary>
+        private readonly ITransactionReceiptBuilder TransactionReceiptBuilder;
+
         #endregion
 
         #region Constructors
@@ -88,8 +84,7 @@
                                              ISecurityServiceClient securityServiceClient,
                                              ITransactionReceiptBuilder transactionReceiptBuilder,
                                              IMessagingServiceClient messagingServiceClient,
-                                             IAggregateRepository<SettlementAggregate, DomainEvent> settlementAggregateRepository)
-        {
+                                             IAggregateRepository<SettlementAggregate, DomainEvent> settlementAggregateRepository) {
             this.TransactionAggregateManager = transactionAggregateManager;
             this.FeeCalculationManager = feeCalculationManager;
             this.EstateClient = estateClient;
@@ -104,9 +99,21 @@
         #region Methods
 
         public async Task Handle(IDomainEvent domainEvent,
-                                 CancellationToken cancellationToken)
-        {
+                                 CancellationToken cancellationToken) {
             await this.HandleSpecificDomainEvent((dynamic)domainEvent, cancellationToken);
+        }
+
+        private DateTime CalculateSettlementDate(SettlementSchedule merchantSettlementSchedule,
+                                                 DateTime completeDateTime) {
+            if (merchantSettlementSchedule == SettlementSchedule.Weekly) {
+                return completeDateTime.Date.AddDays(7).Date;
+            }
+
+            if (merchantSettlementSchedule == SettlementSchedule.Monthly) {
+                return completeDateTime.Date.AddMonths(1).Date;
+            }
+
+            return completeDateTime.Date;
         }
 
         /// <summary>
@@ -115,23 +122,20 @@
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns></returns>
         [ExcludeFromCodeCoverage]
-        private async Task<TokenResponse> GetToken(CancellationToken cancellationToken)
-        {
+        private async Task<TokenResponse> GetToken(CancellationToken cancellationToken) {
             // Get a token to talk to the estate service
             String clientId = ConfigurationReader.GetValue("AppSettings", "ClientId");
             String clientSecret = ConfigurationReader.GetValue("AppSettings", "ClientSecret");
             Logger.LogInformation($"Client Id is {clientId}");
             Logger.LogInformation($"Client Secret is {clientSecret}");
 
-            if (this.TokenResponse == null)
-            {
+            if (this.TokenResponse == null) {
                 TokenResponse token = await this.SecurityServiceClient.GetToken(clientId, clientSecret, cancellationToken);
                 Logger.LogInformation($"Token is {token.AccessToken}");
                 return token;
             }
 
-            if (this.TokenResponse.Expires.UtcDateTime.Subtract(DateTime.UtcNow) < TimeSpan.FromMinutes(2))
-            {
+            if (this.TokenResponse.Expires.UtcDateTime.Subtract(DateTime.UtcNow) < TimeSpan.FromMinutes(2)) {
                 Logger.LogInformation($"Token is about to expire at {this.TokenResponse.Expires.DateTime:O}");
                 TokenResponse token = await this.SecurityServiceClient.GetToken(clientId, clientSecret, cancellationToken);
                 Logger.LogInformation($"Token is {token.AccessToken}");
@@ -140,59 +144,55 @@
 
             return this.TokenResponse;
         }
-        
+
         private async Task HandleSpecificDomainEvent(TransactionHasBeenCompletedEvent domainEvent,
-                                                     CancellationToken cancellationToken)
-        {
+                                                     CancellationToken cancellationToken) {
             TransactionAggregate transactionAggregate =
                 await this.TransactionAggregateManager.GetAggregate(domainEvent.EstateId, domainEvent.TransactionId, cancellationToken);
 
-            if (transactionAggregate.IsAuthorised == false)
-            {
+            if (transactionAggregate.IsAuthorised == false) {
                 // Ignore not successful transactions
                 return;
             }
 
             if (transactionAggregate.IsCompleted == false || transactionAggregate.TransactionType == TransactionType.Logon ||
-                (transactionAggregate.ContractId == Guid.Empty || transactionAggregate.ProductId == Guid.Empty))
-            {
+                (transactionAggregate.ContractId == Guid.Empty || transactionAggregate.ProductId == Guid.Empty)) {
                 // These transactions cannot have fee values calculated so skip
                 return;
             }
 
             this.TokenResponse = await this.GetToken(cancellationToken);
-            
+
             // Ok we should have filtered out the not applicable transactions
             // Get the fees to be calculated
             List<ContractProductTransactionFee> feesForProduct = await this.EstateClient.GetTransactionFeesForProduct(this.TokenResponse.AccessToken,
-                                                                                                                      transactionAggregate.EstateId,
-                                                                                                                      transactionAggregate.MerchantId,
-                                                                                                                      transactionAggregate.ContractId,
-                                                                                                                      transactionAggregate.ProductId,
-                                                                                                                      cancellationToken);
+                transactionAggregate.EstateId,
+                transactionAggregate.MerchantId,
+                transactionAggregate.ContractId,
+                transactionAggregate.ProductId,
+                cancellationToken);
             List<TransactionFeeToCalculate> feesForCalculation = new List<TransactionFeeToCalculate>();
 
-            foreach (ContractProductTransactionFee contractProductTransactionFee in feesForProduct)
-            {
-                TransactionFeeToCalculate transactionFeeToCalculate = new TransactionFeeToCalculate
-                                                                      {
-                                                                          FeeId = contractProductTransactionFee.TransactionFeeId,
-                                                                          Value = contractProductTransactionFee.Value,
-                                                                          FeeType = (FeeType)contractProductTransactionFee.FeeType,
-                                                                          CalculationType = (CalculationType)contractProductTransactionFee.CalculationType
-                                                                      };
+            foreach (ContractProductTransactionFee contractProductTransactionFee in feesForProduct) {
+                TransactionFeeToCalculate transactionFeeToCalculate = new TransactionFeeToCalculate {
+                                                                                                        FeeId = contractProductTransactionFee.TransactionFeeId,
+                                                                                                        Value = contractProductTransactionFee.Value,
+                                                                                                        FeeType = (FeeType)contractProductTransactionFee.FeeType,
+                                                                                                        CalculationType =
+                                                                                                            (CalculationType)contractProductTransactionFee.CalculationType
+                                                                                                    };
 
                 feesForCalculation.Add(transactionFeeToCalculate);
             }
 
             // Do the fee calculation
-            List<CalculatedFee> resultFees = this.FeeCalculationManager.CalculateFees(feesForCalculation, transactionAggregate.TransactionAmount.Value, domainEvent.CompletedDateTime);
+            List<CalculatedFee> resultFees =
+                this.FeeCalculationManager.CalculateFees(feesForCalculation, transactionAggregate.TransactionAmount.Value, domainEvent.CompletedDateTime);
 
             // Process the non merchant fees
             IEnumerable<CalculatedFee> nonMerchantFees = resultFees.Where(f => f.FeeType == FeeType.ServiceProvider);
 
-            foreach (CalculatedFee calculatedFee in nonMerchantFees)
-            {
+            foreach (CalculatedFee calculatedFee in nonMerchantFees) {
                 // Add Fee to the Transaction 
                 await this.TransactionAggregateManager.AddFee(transactionAggregate.EstateId, transactionAggregate.AggregateId, calculatedFee, cancellationToken);
             }
@@ -202,20 +202,16 @@
 
             // get the merchant now to see the settlement schedule
             this.TokenResponse = await this.GetToken(cancellationToken);
-            MerchantResponse merchant = await this.EstateClient.GetMerchant(this.TokenResponse.AccessToken, domainEvent.EstateId, domainEvent.MerchantId, cancellationToken);
+            MerchantResponse merchant =
+                await this.EstateClient.GetMerchant(this.TokenResponse.AccessToken, domainEvent.EstateId, domainEvent.MerchantId, cancellationToken);
 
-            if (merchant.SettlementSchedule == SettlementSchedule.NotSet)
-            {
+            if (merchant.SettlementSchedule == SettlementSchedule.NotSet) {
                 throw new NotSupportedException($"Merchant {merchant.MerchantId} does not have a settlement schedule configured");
             }
 
             foreach (CalculatedFee calculatedFee in merchantFees) {
                 // Determine when the fee should be applied
-                DateTime settlementDate = CalculateSettlementDate(merchant.SettlementSchedule, domainEvent.CompletedDateTime);
-
-                Logger.LogDebug($"Completed Date {domainEvent.CompletedDateTime}");
-                Logger.LogDebug($"SettlementSchedule {merchant.SettlementSchedule}");
-                Logger.LogDebug($"Settlement Date {settlementDate}");
+                DateTime settlementDate = this.CalculateSettlementDate(merchant.SettlementSchedule, domainEvent.CompletedDateTime);
 
                 Guid aggregateId = Helpers.CalculateSettlementAggregateId(settlementDate, domainEvent.EstateId);
 
@@ -226,68 +222,63 @@
                     aggregate.Create(transactionAggregate.EstateId, settlementDate);
                 }
 
+                //Guid eventId = IdGenerationService.GenerateEventId(new {
+                //                                                           transactionAggregate.MerchantId,
+                //                                                           transactionAggregate.AggregateId,
+                //                                                           calculatedFee.FeeId
+                //                                                       });
+
                 aggregate.AddFee(transactionAggregate.MerchantId, transactionAggregate.AggregateId, calculatedFee);
 
-                if (merchant.SettlementSchedule == SettlementSchedule.Immediate)
-                {
+                if (merchant.SettlementSchedule == SettlementSchedule.Immediate) {
                     // Add fees to transaction now if settlement is immediate
-                    await this.TransactionAggregateManager.AddSettledFee(transactionAggregate.EstateId, transactionAggregate.AggregateId, calculatedFee, DateTime.Now.Date, DateTime.Now, cancellationToken);
-                    aggregate.MarkFeeAsSettled(transactionAggregate.MerchantId, transactionAggregate.AggregateId, calculatedFee.FeeId);
+                    await this.TransactionAggregateManager.AddSettledFee(transactionAggregate.EstateId,
+                                                                         transactionAggregate.AggregateId,
+                                                                         calculatedFee,
+                                                                         DateTime.Now.Date,
+                                                                         DateTime.Now,
+                                                                         cancellationToken);
+                    aggregate.ImmediatelyMarkFeeAsSettled(transactionAggregate.MerchantId, transactionAggregate.AggregateId, calculatedFee.FeeId);
                 }
 
                 await this.SettlementAggregateRepository.SaveChanges(aggregate, cancellationToken);
             }
         }
 
-        
-
-        private DateTime CalculateSettlementDate(SettlementSchedule merchantSettlementSchedule, DateTime completeDateTime)
-        {
-            if (merchantSettlementSchedule == SettlementSchedule.Weekly)
-            {
-                return completeDateTime.Date.AddDays(7).Date;
-            }
-            
-            if (merchantSettlementSchedule == SettlementSchedule.Monthly)
-            {
-                return completeDateTime.Date.AddMonths(1).Date;
-            }
-
-            return completeDateTime.Date;
-        }
-
         private async Task HandleSpecificDomainEvent(CustomerEmailReceiptRequestedEvent domainEvent,
-                                                     CancellationToken cancellationToken)
-        {
+                                                     CancellationToken cancellationToken) {
             this.TokenResponse = await this.GetToken(cancellationToken);
 
-            TransactionAggregate transactionAggregate = await this.TransactionAggregateManager.GetAggregate(domainEvent.EstateId, domainEvent.TransactionId, cancellationToken);
+            TransactionAggregate transactionAggregate =
+                await this.TransactionAggregateManager.GetAggregate(domainEvent.EstateId, domainEvent.TransactionId, cancellationToken);
 
-            MerchantResponse merchant = await this.EstateClient.GetMerchant(this.TokenResponse.AccessToken, domainEvent.EstateId, domainEvent.MerchantId, cancellationToken);
+            MerchantResponse merchant =
+                await this.EstateClient.GetMerchant(this.TokenResponse.AccessToken, domainEvent.EstateId, domainEvent.MerchantId, cancellationToken);
 
             // Determine the body of the email
             String receiptMessage = await this.TransactionReceiptBuilder.GetEmailReceiptMessage(transactionAggregate.GetTransaction(), merchant, cancellationToken);
 
             // Send the message
-            await this.SendEmailMessage(this.TokenResponse.AccessToken, domainEvent.EventId, domainEvent.EstateId, "Transaction Successful", receiptMessage, domainEvent.CustomerEmailAddress, cancellationToken);
-
+            await this.SendEmailMessage(this.TokenResponse.AccessToken,
+                                        domainEvent.EventId,
+                                        domainEvent.EstateId,
+                                        "Transaction Successful",
+                                        receiptMessage,
+                                        domainEvent.CustomerEmailAddress,
+                                        cancellationToken);
         }
 
         private async Task HandleSpecificDomainEvent(CustomerEmailReceiptResendRequestedEvent domainEvent,
-                                                     CancellationToken cancellationToken)
-        {
+                                                     CancellationToken cancellationToken) {
             this.TokenResponse = await this.GetToken(cancellationToken);
 
             // Send the message
             await this.ResendEmailMessage(this.TokenResponse.AccessToken, domainEvent.EventId, domainEvent.EstateId, cancellationToken);
-
         }
 
         private async Task HandleSpecificDomainEvent(MerchantFeeAddedToTransactionEvent domainEvent,
-                                                     CancellationToken cancellationToken)
-        {
-            if (domainEvent.SettlementDueDate == DateTime.MinValue)
-            {
+                                                     CancellationToken cancellationToken) {
+            if (domainEvent.SettlementDueDate == DateTime.MinValue) {
                 // Old event format before settlement
                 return;
             }
@@ -301,62 +292,54 @@
             await this.SettlementAggregateRepository.SaveChanges(pendingSettlementAggregate, cancellationToken);
         }
 
-        private async Task SendEmailMessage(String accessToken, 
+        private async Task ResendEmailMessage(String accessToken,
+                                              Guid messageId,
+                                              Guid estateId,
+                                              CancellationToken cancellationToken) {
+            ResendEmailRequest resendEmailRequest = new ResendEmailRequest {
+                                                                               ConnectionIdentifier = estateId,
+                                                                               MessageId = messageId
+                                                                           };
+            try {
+                await this.MessagingServiceClient.ResendEmail(accessToken, resendEmailRequest, cancellationToken);
+            }
+            catch(Exception ex) when(ex.InnerException != null && ex.InnerException.GetType() == typeof(InvalidOperationException)) {
+                // Only bubble up if not a duplicate message
+                if (ex.InnerException.Message.Contains("Cannot send a message to provider that has already been sent", StringComparison.InvariantCultureIgnoreCase) ==
+                    false) {
+                    throw;
+                }
+            }
+        }
+
+        private async Task SendEmailMessage(String accessToken,
                                             Guid messageId,
                                             Guid estateId,
                                             String subject,
                                             String body,
                                             String emailAddress,
-                                            CancellationToken cancellationToken)
-        {
-            SendEmailRequest sendEmailRequest = new SendEmailRequest
-                                                {
-                                                    MessageId = messageId,
-                                                    Body = body,
-                                                    ConnectionIdentifier = estateId,
-                                                    FromAddress = "golfhandicapping@btinternet.com", // TODO: lookup from config
-                                                    IsHtml = true,
-                                                    Subject = subject,
-                                                    ToAddresses = new List<String>
-                                                                  {
-                                                                      emailAddress
-                                                                  }
-                                                };
+                                            CancellationToken cancellationToken) {
+            SendEmailRequest sendEmailRequest = new SendEmailRequest {
+                                                                         MessageId = messageId,
+                                                                         Body = body,
+                                                                         ConnectionIdentifier = estateId,
+                                                                         FromAddress = "golfhandicapping@btinternet.com", // TODO: lookup from config
+                                                                         IsHtml = true,
+                                                                         Subject = subject,
+                                                                         ToAddresses = new List<String> {
+                                                                                                            emailAddress
+                                                                                                        }
+                                                                     };
 
             // TODO: may decide to record the message Id againsts the Transaction Aggregate in future, but for now
             // we wont do this...
-            try
-            {
+            try {
                 await this.MessagingServiceClient.SendEmail(accessToken, sendEmailRequest, cancellationToken);
             }
-            catch(Exception ex) when (ex.InnerException != null && ex.InnerException.GetType() == typeof(InvalidOperationException))
-            {
+            catch(Exception ex) when(ex.InnerException != null && ex.InnerException.GetType() == typeof(InvalidOperationException)) {
                 // Only bubble up if not a duplicate message
-                if (ex.InnerException.Message.Contains("Cannot send a message to provider that has already been sent", StringComparison.InvariantCultureIgnoreCase) == false)
-                {
-                    throw;
-                }
-            }
-            
-        }
-
-        private async Task ResendEmailMessage(String accessToken,
-                                            Guid messageId,
-                                            Guid estateId,
-                                            CancellationToken cancellationToken) {
-            ResendEmailRequest resendEmailRequest = new ResendEmailRequest {
-                                                                               ConnectionIdentifier = estateId,
-                                                                               MessageId = messageId
-                                                                           };
-            try
-            {
-                await this.MessagingServiceClient.ResendEmail(accessToken, resendEmailRequest, cancellationToken);
-            }
-            catch (Exception ex) when (ex.InnerException != null && ex.InnerException.GetType() == typeof(InvalidOperationException))
-            {
-                // Only bubble up if not a duplicate message
-                if (ex.InnerException.Message.Contains("Cannot send a message to provider that has already been sent", StringComparison.InvariantCultureIgnoreCase) == false)
-                {
+                if (ex.InnerException.Message.Contains("Cannot send a message to provider that has already been sent", StringComparison.InvariantCultureIgnoreCase) ==
+                    false) {
                     throw;
                 }
             }
