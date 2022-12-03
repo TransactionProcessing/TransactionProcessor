@@ -220,7 +220,8 @@
 
         private Boolean HasFeeAlreadyBeenAdded(Guid transactionId, CalculatedFee calculatedFee)
         {
-            return this.CalculatedFeesPendingSettlement.Any(c => c.calculatedFee.FeeId == calculatedFee.FeeId && c.transactionId == transactionId);
+            return this.CalculatedFeesPendingSettlement.Any(c => c.calculatedFee.FeeId == calculatedFee.FeeId && c.transactionId == transactionId) ||
+                   this.SettledCalculatedFees.Any(c => c.calculatedFee.FeeId == calculatedFee.FeeId && c.transactionId == transactionId);
         }
 
         private void CheckHasBeenCreated()

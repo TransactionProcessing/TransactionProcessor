@@ -7,6 +7,7 @@ namespace TransactionProcessor.Controllers
 {
     using System.Diagnostics.CodeAnalysis;
     using System.Threading;
+    using Microsoft.AspNetCore.Components.Web;
     using Microsoft.AspNetCore.Mvc;
     using Newtonsoft.Json;
     using Newtonsoft.Json.Linq;
@@ -57,15 +58,15 @@ namespace TransactionProcessor.Controllers
         public async Task<IActionResult> PostEventAsync([FromBody] Object request,
                                                         CancellationToken cancellationToken)
         {
-            var domainEvent = await this.GetDomainEvent(request);
+            IDomainEvent domainEvent = await this.GetDomainEvent(request);
+
+            List<IDomainEventHandler> eventHandlers = this.GetDomainEventHandlers(domainEvent);
 
             cancellationToken.Register(() => this.Callback(cancellationToken, domainEvent.EventId));
 
             try
             {
                 Logger.LogInformation($"Processing event - ID [{domainEvent.EventId}], Type[{domainEvent.GetType().Name}]");
-
-                List<IDomainEventHandler> eventHandlers = this.DomainEventHandlerResolver.GetDomainEventHandlers(domainEvent);
 
                 if (eventHandlers == null || eventHandlers.Any() == false)
                 {
@@ -103,6 +104,24 @@ namespace TransactionProcessor.Controllers
                 Logger.LogInformation($"Cancel request for EventId {eventId}");
                 cancellationToken.ThrowIfCancellationRequested();
             }
+        }
+
+        private List<IDomainEventHandler> GetDomainEventHandlers(IDomainEvent domainEvent) {
+
+            if (this.Request.Headers.ContainsKey("EventHandler")) {
+                var eventHandler = this.Request.Headers["EventHandler"];
+                var eventHandlerType = this.Request.Headers["EventHandlerType"];
+                var resolver = Startup.Container.GetInstance<IDomainEventHandlerResolver>(eventHandlerType);
+                // We are being told by the caller to use a specific handler
+                var allhandlers = resolver.GetDomainEventHandlers(domainEvent);
+                var handlers = allhandlers.Where(h => h.GetType().Name.Contains(eventHandler));
+                
+                return handlers.ToList();
+
+            }
+
+            List<IDomainEventHandler> eventHandlers = this.DomainEventHandlerResolver.GetDomainEventHandlers(domainEvent);
+            return eventHandlers;
         }
 
         private async Task<IDomainEvent> GetDomainEvent(Object domainEvent)
