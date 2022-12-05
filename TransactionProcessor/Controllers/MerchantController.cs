@@ -3,6 +3,7 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
+using System.Security.Claims;
 using System.Threading;
 using System.Threading.Tasks;
 using Common;
@@ -62,8 +63,42 @@ public class MerchantController : ControllerBase
                                                         [FromRoute] Guid merchantId,
                                                         CancellationToken cancellationToken)
     {
-        // Reject password tokens
-        if (ClaimsHelper.IsPasswordToken(this.User))
+        String estateRoleName = string.IsNullOrEmpty(Environment.GetEnvironmentVariable("EstateRoleName"))
+            ? "Estate"
+            : Environment.GetEnvironmentVariable("EstateRoleName");
+        String merchantRoleName = string.IsNullOrEmpty(Environment.GetEnvironmentVariable("MerchantRoleName"))
+            ? "Merchant"
+            : Environment.GetEnvironmentVariable("MerchantRoleName");
+
+        if (ClaimsHelper.IsUserRolesValid(this.User, new[] { estateRoleName, merchantRoleName }) == false)
+        {
+            return this.Forbid();
+        }
+
+        Claim estateIdClaim = null;
+        Claim merchantIdClaim = null;
+
+        // Determine the users role
+        if (this.User.IsInRole(estateRoleName))
+        {
+            // Estate user
+            // Get the Estate Id claim from the user
+            estateIdClaim = ClaimsHelper.GetUserClaim(this.User, "EstateId");
+        }
+
+        if (this.User.IsInRole(merchantRoleName))
+        {
+            // Get the merchant Id claim from the user
+            estateIdClaim = ClaimsHelper.GetUserClaim(this.User, "EstateId");
+            merchantIdClaim = ClaimsHelper.GetUserClaim(this.User, "MerchantId");
+        }
+
+        if (ClaimsHelper.ValidateRouteParameter(estateId, estateIdClaim) == false)
+        {
+            return this.Forbid();
+        }
+
+        if (ClaimsHelper.ValidateRouteParameter(merchantId, merchantIdClaim) == false)
         {
             return this.Forbid();
         }
@@ -92,8 +127,42 @@ public class MerchantController : ControllerBase
                                                                [FromQuery] DateTime startDate,
                                                                [FromQuery] DateTime enddate,
                                                                CancellationToken cancellationToken) {
-        // Reject password tokens
-        if (ClaimsHelper.IsPasswordToken(this.User))
+        String estateRoleName = string.IsNullOrEmpty(Environment.GetEnvironmentVariable("EstateRoleName"))
+            ? "Estate"
+            : Environment.GetEnvironmentVariable("EstateRoleName");
+        String merchantRoleName = string.IsNullOrEmpty(Environment.GetEnvironmentVariable("MerchantRoleName"))
+            ? "Merchant"
+            : Environment.GetEnvironmentVariable("MerchantRoleName");
+
+        if (ClaimsHelper.IsUserRolesValid(this.User, new[] { estateRoleName, merchantRoleName }) == false)
+        {
+            return this.Forbid();
+        }
+
+        Claim estateIdClaim = null;
+        Claim merchantIdClaim = null;
+
+        // Determine the users role
+        if (this.User.IsInRole(estateRoleName))
+        {
+            // Estate user
+            // Get the Estate Id claim from the user
+            estateIdClaim = ClaimsHelper.GetUserClaim(this.User, "EstateId");
+        }
+
+        if (this.User.IsInRole(merchantRoleName))
+        {
+            // Get the merchant Id claim from the user
+            estateIdClaim = ClaimsHelper.GetUserClaim(this.User, "EstateId");
+            merchantIdClaim = ClaimsHelper.GetUserClaim(this.User, "MerchantId");
+        }
+
+        if (ClaimsHelper.ValidateRouteParameter(estateId, estateIdClaim) == false)
+        {
+            return this.Forbid();
+        }
+
+        if (ClaimsHelper.ValidateRouteParameter(merchantId, merchantIdClaim) == false)
         {
             return this.Forbid();
         }
