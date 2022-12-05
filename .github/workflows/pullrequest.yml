@@ -33,7 +33,7 @@ jobs:
         dotnet test "TransactionProcessor.BusinessLogic.Tests\TransactionProcessor.BusinessLogic.Tests.csproj"
         dotnet test "TransactionProcessor.ProjectionEngine.Tests\TransactionProcessor.ProjectionEngine.Tests.csproj"
         dotnet test "TransactionProcessor.ReconciliationAggregate.Tests\TransactionProcessor.ReconciliationAggregate.Tests.csproj"
-        dotnet test "TransactionProcessor.SettlementAggregate.Tests\TransactionProcessor.SettlementAggregate.Tests.csproj"
+        dotnet test "TransactionProcessor.SettlementAggregates.Tests\TransactionProcessor.SettlementAggregates.Tests.csproj"
         dotnet test "TransactionProcessor.Tests\TransactionProcessor.Tests.csproj"
         dotnet test "TransactionProcessor.TransactionAggregate.Tests\TransactionProcessor.TransactionAggregate.Tests.csproj"
         dotnet test "TransactionProcessor.VoucherAggregate.Tests\TransactionProcessor.VoucherAggregate.Tests.csproj"
