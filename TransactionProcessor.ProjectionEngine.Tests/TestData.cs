@@ -22,11 +22,15 @@ namespace TransactionProcessor.ProjectionEngine.Tests
 
         public static DateTime AutomaticDepositDateTime = new DateTime(2022, 10, 13, 3, 2, 3);
 
+        public static DateTime WithdrawalDateTime = new DateTime(2022, 10, 13, 3, 2, 3);
+
         public static Guid AutomaticDepositId = Guid.Parse("520521a1f9504ec1bf1cc5a7fd4fd905");
 
         public static String AutomaticDepositReference = "Automatic Deposit 1";
 
         public static Decimal AutomaticDepositAmount = 200.00m;
+
+        public static Decimal WithdrawalAmount = 100.00m;
 
         public static Guid TransactionId = Guid.Parse("58306666-746C-4984-B264-4ECF15749BF5");
 
@@ -56,6 +60,8 @@ namespace TransactionProcessor.ProjectionEngine.Tests
 
         public static String ResponseCode = "ResponseCode";
         public static String ResponseMessage = "ResponseMessage";
+
+        public static Guid ManualWithdrawalId = Guid.Parse("4DCDA910-53E4-40F8-AF4B-FEEAC2338739");
 
         public static MerchantFeeAddedToTransactionEvent GetMerchantFeeAddedToTransactionEvent(Decimal calculatedFeeValue) =>
             new MerchantFeeAddedToTransactionEvent(TestData.TransactionId,
@@ -104,5 +110,10 @@ namespace TransactionProcessor.ProjectionEngine.Tests
             new AutomaticDepositMadeEvent(TestData.MerchantId, TestData.EstateId, TestData.AutomaticDepositId,
                                           TestData.AutomaticDepositReference, TestData.AutomaticDepositDateTime,
                                           TestData.AutomaticDepositAmount);
+
+        public static WithdrawalMadeEvent WithdrawalMadeEvent =>
+            new WithdrawalMadeEvent(TestData.MerchantId, TestData.EstateId, TestData.ManualWithdrawalId,
+                                    TestData.WithdrawalDateTime,
+                                    TestData.WithdrawalAmount);
     }
 }

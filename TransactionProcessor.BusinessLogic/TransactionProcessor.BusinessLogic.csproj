@@ -5,13 +5,13 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="EstateManagement.Client" Version="1.1.5" />
+    <PackageReference Include="EstateManagement.Client" Version="2022.12.1-build27" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.Relational" Version="7.0.0" />
     <PackageReference Include="EstateReporting.Database" Version="1.1.7" />
-    <PackageReference Include="MessagingService.Client" Version="1.1.4" />
-    <PackageReference Include="SecurityService.Client" Version="1.1.1" />
-    <PackageReference Include="Shared.DomainDrivenDesign" Version="2022.12.0-beta3" />
-    <PackageReference Include="Shared.EventStore" Version="2022.12.0-beta3" />
+    <PackageReference Include="MessagingService.Client" Version="2022.12.1-build31" />
+    <PackageReference Include="SecurityService.Client" Version="2022.11.2-build28" />
+    <PackageReference Include="Shared.DomainDrivenDesign" Version="2022.12.0" />
+    <PackageReference Include="Shared.EventStore" Version="2022.12.0" />
     <PackageReference Include="MediatR" Version="11.0.0" />
     <PackageReference Include="System.IO.Abstractions" Version="17.2.3" />
     <PackageReference Include="System.ServiceModel.Duplex" Version="4.10.0" />
