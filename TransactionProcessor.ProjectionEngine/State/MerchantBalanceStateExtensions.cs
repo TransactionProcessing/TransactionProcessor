@@ -27,6 +27,11 @@
             state.IncrementAvailableBalance(mdme.Amount).IncrementBalance(mdme.Amount).RecordDeposit(mdme);
 
         [Pure]
+        public static MerchantBalanceState HandleWithdrawalMadeEvent(this MerchantBalanceState state,
+                                                                     WithdrawalMadeEvent wme) =>
+            state.DecrementAvailableBalance(wme.Amount).DecrementBalance(wme.Amount).RecordWithdrawal(wme);
+
+        [Pure]
         public static MerchantBalanceState HandleAutomaticDepositMadeEvent(this MerchantBalanceState state,
                                                                            AutomaticDepositMadeEvent adme) =>
             state.IncrementAvailableBalance(adme.Amount).IncrementBalance(adme.Amount).RecordDeposit(adme);
@@ -138,6 +143,16 @@
                 DepositCount = state.DepositCount + 1,
                 TotalDeposited = state.TotalDeposited + adme.Amount,
                 LastDeposit = adme.DepositDateTime > state.LastDeposit ? adme.DepositDateTime : state.LastDeposit,
+            };
+
+        [Pure]
+        public static MerchantBalanceState RecordWithdrawal(this MerchantBalanceState state,
+                                                         WithdrawalMadeEvent wme) =>
+            state with
+            {
+                WithdrawalCount = state.WithdrawalCount + 1,
+                TotalWithdrawn = state.TotalWithdrawn + wme.Amount,
+                LastWithdrawal = wme.WithdrawalDateTime > state.LastWithdrawal ? wme.WithdrawalDateTime : state.LastWithdrawal
             };
 
         [Pure]

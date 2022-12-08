@@ -12,7 +12,9 @@ public class MerchantBalanceProjectionState
     public Decimal AvailableBalance { get; set; }
     public Decimal Balance { get; init; }
     public Int32 DepositCount { get; set; }
+    public Int32 WithdrawalCount { get; set; }
     public Decimal TotalDeposited { get; set; }
+    public Decimal TotalWithdrawn { get; set; }
 
     public Int32 SaleCount { get; set; }
     public Decimal AuthorisedSales { get; set; }
@@ -22,6 +24,7 @@ public class MerchantBalanceProjectionState
     public Decimal ValueOfFees { get; set; }
 
     public DateTime LastDeposit { get; set; }
+    public DateTime LastWithdrawal { get; set; }
     public DateTime LastSale { get; set; }
     public DateTime LastFee { get; set; }
 

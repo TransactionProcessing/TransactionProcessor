@@ -59,6 +59,34 @@ public class MerchantBalanceProjectionTests
     }
 
     [Fact]
+    public async Task MerchantBalanceProjection_Handle_WithdrawalMadeEvent_EventIsHandled()
+    {
+        MerchantBalanceProjection projection = new MerchantBalanceProjection();
+        MerchantBalanceState state = new MerchantBalanceState();
+        state = state with
+                {
+                    EstateId = TestData.EstateId,
+                    MerchantId = TestData.MerchantId,
+                    MerchantName = TestData.MerchantName,
+                    AvailableBalance = 100.00m,
+                    Balance = 100.00m,
+                    WithdrawalCount = 0,
+                    TotalWithdrawn = 0,
+                    LastWithdrawal = DateTime.MinValue
+                };
+
+        WithdrawalMadeEvent @event = TestData.WithdrawalMadeEvent;
+
+        MerchantBalanceState newState = await projection.Handle(state, @event, CancellationToken.None);
+
+        newState.AvailableBalance.ShouldBe(state.AvailableBalance - TestData.WithdrawalMadeEvent.Amount);
+        newState.Balance.ShouldBe(state.Balance - TestData.WithdrawalMadeEvent.Amount);
+        newState.WithdrawalCount.ShouldBe(1);
+        newState.TotalWithdrawn.ShouldBe(TestData.WithdrawalMadeEvent.Amount);
+        newState.LastWithdrawal.ShouldBe(TestData.WithdrawalMadeEvent.WithdrawalDateTime);
+    }
+
+    [Fact]
     public async Task MerchantBalanceProjection_Handle_ManualDepositMadeEvent_SecondDepositAfterFirst_EventIsHandled()
     {
         MerchantBalanceProjection projection = new MerchantBalanceProjection();

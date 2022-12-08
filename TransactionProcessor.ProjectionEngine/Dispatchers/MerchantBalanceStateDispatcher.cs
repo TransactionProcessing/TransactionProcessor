@@ -22,6 +22,7 @@ public class MerchantBalanceStateDispatcher : IStateDispatcher<MerchantBalanceSt
             MerchantCreatedEvent e => this.CreateOpeningBalanceEntry(e),
             ManualDepositMadeEvent e => this.CreateManualDepositBalanceEntry(state, e),
             AutomaticDepositMadeEvent e => this.CreateAutomaticDepositBalanceEntry(state, e),
+            WithdrawalMadeEvent e => this.CreateWithdrawalBalanceEntry(state, e),
             TransactionHasBeenCompletedEvent e => this.CreateTransactionBalanceEntry(state, e),
             MerchantFeeAddedToTransactionEvent e => this.CreateTransactionFeeBalanceEntry(state, e),
             _ => null
@@ -33,20 +34,31 @@ public class MerchantBalanceStateDispatcher : IStateDispatcher<MerchantBalanceSt
         await this.TransactionProcessorReadRepository.AddMerchantBalanceChangedEntry(entry, cancellationToken);
     }
 
-    private MerchantBalanceChangedEntry CreateTransactionFeeBalanceEntry(MerchantBalanceState state, MerchantFeeAddedToTransactionEvent @event)
-    {
-        return new MerchantBalanceChangedEntry
-               {
-                   MerchantId = @event.MerchantId,
-                   EstateId = @event.EstateId,
-                   ChangeAmount = @event.CalculatedValue,
-                   DateTime = @event.FeeCalculatedDateTime.AddSeconds(2),
-                   Reference = "Transaction Fee Processed",
-                   AggregateId = @event.TransactionId,
-                   OriginalEventId = @event.EventId,
-                   DebitOrCredit = "C"
-               };
-    }
+    private MerchantBalanceChangedEntry CreateTransactionFeeBalanceEntry(MerchantBalanceState state,
+                                                                         MerchantFeeAddedToTransactionEvent @event) =>
+        new MerchantBalanceChangedEntry {
+                                            MerchantId = @event.MerchantId,
+                                            EstateId = @event.EstateId,
+                                            ChangeAmount = @event.CalculatedValue,
+                                            DateTime = @event.FeeCalculatedDateTime.AddSeconds(2),
+                                            Reference = "Transaction Fee Processed",
+                                            AggregateId = @event.TransactionId,
+                                            OriginalEventId = @event.EventId,
+                                            DebitOrCredit = "C"
+                                        };
+
+    private MerchantBalanceChangedEntry CreateWithdrawalBalanceEntry(MerchantBalanceState state,
+                                                                         WithdrawalMadeEvent @event) =>
+        new MerchantBalanceChangedEntry {
+                                            MerchantId = @event.MerchantId,
+                                            EstateId = @event.EstateId,
+                                            ChangeAmount = @event.Amount,
+                                            DateTime = @event.WithdrawalDateTime,
+                                            Reference = "Merchant Withdrawal",
+                                            AggregateId = @event.MerchantId,
+                                            OriginalEventId = @event.EventId,
+                                            DebitOrCredit = "D"
+                                        };
 
     private MerchantBalanceChangedEntry CreateTransactionBalanceEntry(MerchantBalanceState state, TransactionHasBeenCompletedEvent @event) {
         if (@event.IsAuthorised == false)
@@ -74,36 +86,34 @@ public class MerchantBalanceStateDispatcher : IStateDispatcher<MerchantBalanceSt
                };
     }
 
-    private MerchantBalanceChangedEntry CreateManualDepositBalanceEntry(MerchantBalanceState state, ManualDepositMadeEvent @event) {
-        return new MerchantBalanceChangedEntry {
-                                                   MerchantId = @event.MerchantId,
-                                                   EstateId = @event.EstateId,
-                                                   ChangeAmount = @event.Amount,
-                                                   DateTime = @event.DepositDateTime,
-                                                   Reference = "Merchant Deposit",
-                                                   AggregateId = @event.MerchantId,
-                                                   OriginalEventId = @event.EventId,
-                                                   DebitOrCredit = "C"
-                                               };
-    }
+    private MerchantBalanceChangedEntry CreateManualDepositBalanceEntry(MerchantBalanceState state,
+                                                                        ManualDepositMadeEvent @event) =>
+        new MerchantBalanceChangedEntry {
+                                            MerchantId = @event.MerchantId,
+                                            EstateId = @event.EstateId,
+                                            ChangeAmount = @event.Amount,
+                                            DateTime = @event.DepositDateTime,
+                                            Reference = "Merchant Deposit",
+                                            AggregateId = @event.MerchantId,
+                                            OriginalEventId = @event.EventId,
+                                            DebitOrCredit = "C"
+                                        };
 
-    private MerchantBalanceChangedEntry CreateAutomaticDepositBalanceEntry(MerchantBalanceState state, AutomaticDepositMadeEvent @event)
-    {
-        return new MerchantBalanceChangedEntry
-               {
-                   MerchantId = @event.MerchantId,
-                   EstateId = @event.EstateId,
-                   ChangeAmount = @event.Amount,
-                   DateTime = @event.DepositDateTime,
-                   Reference = "Merchant Deposit",
-                   AggregateId = @event.MerchantId,
-                   OriginalEventId = @event.EventId,
-                   DebitOrCredit = "C"
-               };
-    }
+    private MerchantBalanceChangedEntry CreateAutomaticDepositBalanceEntry(MerchantBalanceState state,
+                                                                           AutomaticDepositMadeEvent @event) =>
+        new MerchantBalanceChangedEntry {
+                                            MerchantId = @event.MerchantId,
+                                            EstateId = @event.EstateId,
+                                            ChangeAmount = @event.Amount,
+                                            DateTime = @event.DepositDateTime,
+                                            Reference = "Merchant Deposit",
+                                            AggregateId = @event.MerchantId,
+                                            OriginalEventId = @event.EventId,
+                                            DebitOrCredit = "C"
+                                        };
 
-    private MerchantBalanceChangedEntry CreateOpeningBalanceEntry(MerchantCreatedEvent @event) {
-        return new MerchantBalanceChangedEntry {
+    private MerchantBalanceChangedEntry CreateOpeningBalanceEntry(MerchantCreatedEvent @event) => 
+        new MerchantBalanceChangedEntry {
                                                    MerchantId = @event.MerchantId,
                                                    EstateId = @event.EstateId,
                                                    CauseOfChangeId = @event.MerchantId,
@@ -114,5 +124,4 @@ public class MerchantBalanceStateDispatcher : IStateDispatcher<MerchantBalanceSt
                                                    OriginalEventId = @event.EventId,
                                                    DebitOrCredit = "C"
                                                };
-    }
 }

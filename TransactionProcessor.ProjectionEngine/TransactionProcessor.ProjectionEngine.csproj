@@ -7,10 +7,10 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="EstateManagement.Estate.DomainEvents" Version="1.1.5" />
-    <PackageReference Include="EstateManagement.Merchant.DomainEvents" Version="1.1.5" />
-    <PackageReference Include="FileProcessor.File.DomainEvents" Version="1.1.9" />
-    <PackageReference Include="FileProcessor.FileImportLog.DomainEvents" Version="1.1.9" />
+    <PackageReference Include="EstateManagement.Estate.DomainEvents" Version="2022.12.1-build27" />
+    <PackageReference Include="EstateManagement.Merchant.DomainEvents" Version="2022.12.1-build27" />
+    <PackageReference Include="FileProcessor.File.DomainEvents" Version="2022.12.1-build25" />
+    <PackageReference Include="FileProcessor.FileImportLog.DomainEvents" Version="2022.12.1-build25" />
     <PackageReference Include="Microsoft.EntityFrameworkCore" Version="7.0.0" />
 	  <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="7.0.0">
 		  <PrivateAssets>all</PrivateAssets>
@@ -19,9 +19,9 @@
     <PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" Version="7.0.0" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.Relational" Version="7.0.0" />
     <PackageReference Include="Pomelo.EntityFrameworkCore.MySql" Version="7.0.0-alpha.1" />
-    <PackageReference Include="Shared" Version="2022.12.0-beta3" />
+    <PackageReference Include="Shared" Version="2022.12.0" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.Sqlite" Version="7.0.0" />
-    <PackageReference Include="Shared.EventStore" Version="2022.12.0-beta3" />
+    <PackageReference Include="Shared.EventStore" Version="2022.12.0" />
   </ItemGroup>
 
   <ItemGroup>

@@ -14,6 +14,7 @@ public class MerchantBalanceProjection : IProjection<MerchantBalanceState>
         MerchantBalanceState newState = domainEvent switch {
             MerchantCreatedEvent mce => state.HandleMerchantCreated(mce),
             ManualDepositMadeEvent mdme => state.HandleManualDepositMadeEvent(mdme),
+            WithdrawalMadeEvent wme => state.HandleWithdrawalMadeEvent(wme),
             AutomaticDepositMadeEvent adme => state.HandleAutomaticDepositMadeEvent(adme),
             TransactionHasStartedEvent thse => state.HandleTransactionHasStartedEvent(thse),
             TransactionHasBeenCompletedEvent thbce => state.HandleTransactionHasBeenCompletedEvent(thbce),

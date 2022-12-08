@@ -17,10 +17,10 @@ namespace TransactionProcessor.ProjectionEngine.Migrations
         {
 #pragma warning disable 612, 618
             modelBuilder
-                .HasAnnotation("ProductVersion", "6.0.5")
+                .HasAnnotation("ProductVersion", "7.0.0")
                 .HasAnnotation("Relational:MaxIdentifierLength", 128);
 
-            SqlServerModelBuilderExtensions.UseIdentityColumns(modelBuilder, 1L, 1);
+            SqlServerModelBuilderExtensions.UseIdentityColumns(modelBuilder);
 
             modelBuilder.Entity("TransactionProcessor.ProjectionEngine.Database.Entities.Event", b =>
                 {
@@ -35,7 +35,7 @@ namespace TransactionProcessor.ProjectionEngine.Migrations
 
                     b.HasKey("EventId", "Type");
 
-                    SqlServerKeyBuilderExtensions.IsClustered(b.HasKey("EventId", "Type"), false);
+                    SqlServerKeyBuilderExtensions.IsClustered(b.HasKey("EventId", "Type"));
 
                     b.ToTable("Events");
                 });
@@ -114,6 +114,9 @@ namespace TransactionProcessor.ProjectionEngine.Migrations
                     b.Property<DateTime>("LastSale")
                         .HasColumnType("datetime2");
 
+                    b.Property<DateTime>("LastWithdrawal")
+                        .HasColumnType("datetime2");
+
                     b.Property<string>("MerchantName")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
@@ -133,12 +136,48 @@ namespace TransactionProcessor.ProjectionEngine.Migrations
                     b.Property<decimal>("TotalDeposited")
                         .HasColumnType("decimal(18,2)");
 
+                    b.Property<decimal>("TotalWithdrawn")
+                        .HasColumnType("decimal(18,2)");
+
                     b.Property<decimal>("ValueOfFees")
                         .HasColumnType("decimal(18,2)");
+
+                    b.Property<int>("WithdrawalCount")
+                        .HasColumnType("int");
 
                     b.HasKey("EstateId", "MerchantId");
 
                     b.ToTable("MerchantBalanceProjectionState");
+                });
+
+            modelBuilder.Entity("TransactionProcessor.ProjectionEngine.Database.ViewEntities.MerchantBalanceHistoryViewEntry", b =>
+                {
+                    b.Property<decimal>("Balance")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<decimal>("ChangeAmount")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<string>("DebitOrCredit")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime>("EntryDateTime")
+                        .HasColumnType("datetime2");
+
+                    b.Property<Guid>("MerchantId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<Guid>("OriginalEventId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("Reference")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.ToTable((string)null);
+
+                    b.ToView("uvwMerchantBalanceHistory", (string)null);
                 });
 #pragma warning restore 612, 618
         }
