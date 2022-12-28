@@ -22,7 +22,7 @@ jobs:
     - name: Install NET 7
       uses: actions/setup-dotnet@v2
       with:
-        dotnet-version: '7.0.x'
+        dotnet-version: '7.0.101'
 
     - name: Restore Nuget Packages
       run: dotnet restore TransactionProcessor.sln --source https://api.nuget.org/v3/index.json --source https://www.myget.org/F/transactionprocessing/api/v3/index.json
@@ -33,21 +33,13 @@ jobs:
     - name: Run Unit Tests
       run: |
         echo "ASPNETCORE_ENVIRONMENT are > ${ASPNETCORE_ENVIRONMENT}"
-        dotnet test "TransactionProcessor.BusinessLogic.Tests\TransactionProcessor.BusinessLogic.Tests.csproj" -e:CollectCoverage=true -e:Exclude="[xunit*]*" -e:CoverletOutput="../lcov1.info" /maxcpucount:1 -e:CoverletOutputFormat="lcov" -e:ExcludeByAttribute="Obsolete,GeneratedCodeAttribute,CompilerGeneratedAttribute,ExcludeFromCodeCoverageAttribute"
-        dotnet test "TransactionProcessor.ProjectionEngine.Tests\TransactionProcessor.ProjectionEngine.Tests.csproj" -e:CollectCoverage=true -e:Exclude="[xunit*]*" -e:CoverletOutput="../lcov2.info" /maxcpucount:1 -e:CoverletOutputFormat="lcov" -e:ExcludeByAttribute="Obsolete,GeneratedCodeAttribute,CompilerGeneratedAttribute,ExcludeFromCodeCoverageAttribute"
-        dotnet test "TransactionProcessor.ReconciliationAggregate.Tests\TransactionProcessor.ReconciliationAggregate.Tests.csproj" -e:CollectCoverage=true -e:Exclude="[xunit*]*" -e:CoverletOutput="../lcov3.info" /maxcpucount:1 -e:CoverletOutputFormat="lcov" -e:ExcludeByAttribute="Obsolete,GeneratedCodeAttribute,CompilerGeneratedAttribute,ExcludeFromCodeCoverageAttribute"
-        dotnet test "TransactionProcessor.SettlementAggregates.Tests\TransactionProcessor.SettlementAggregates.Tests.csproj" -e:CollectCoverage=true -e:Exclude="[xunit*]*" -e:CoverletOutput="../lcov4.info" /maxcpucount:1 -e:CoverletOutputFormat="lcov" -e:ExcludeByAttribute="Obsolete,GeneratedCodeAttribute,CompilerGeneratedAttribute,ExcludeFromCodeCoverageAttribute"
-        dotnet test "TransactionProcessor.Tests\TransactionProcessor.Tests.csproj" -e:CollectCoverage=true -e:Exclude="[xunit*]*" -e:CoverletOutput="../lcov5.info" /maxcpucount:1 -e:CoverletOutputFormat="lcov" -e:ExcludeByAttribute="Obsolete,GeneratedCodeAttribute,CompilerGeneratedAttribute,ExcludeFromCodeCoverageAttribute"
-        dotnet test "TransactionProcessor.TransactionAggregate.Tests\TransactionProcessor.TransactionAggregate.Tests.csproj" -e:CollectCoverage=true -e:Exclude="[xunit*]*" -e:CoverletOutput="../lcov6.info" /maxcpucount:1 -e:CoverletOutputFormat="lcov" -e:ExcludeByAttribute="Obsolete,GeneratedCodeAttribute,CompilerGeneratedAttribute,ExcludeFromCodeCoverageAttribute"
-        dotnet test "TransactionProcessor.VoucherAggregate.Tests\TransactionProcessor.VoucherAggregate.Tests.csproj" -e:CollectCoverage=true -e:Exclude="[xunit*]*" -e:CoverletOutput="../lcov7.info" /maxcpucount:1 -e:CoverletOutputFormat="lcov" -e:ExcludeByAttribute="Obsolete,GeneratedCodeAttribute,CompilerGeneratedAttribute,ExcludeFromCodeCoverageAttribute"
-
-    - name: Setup Node.js for use with actions
-      uses: actions/setup-node@v1.4.4
-    
-    - name: Combine Coverage
-      run: |
-        npm i lcov-result-merger
-        ./node_modules/lcov-result-merger/bin/lcov-result-merger.js '*.info' 'lcov.info' 
+        dotnet test "TransactionProcessor.BusinessLogic.Tests\TransactionProcessor.BusinessLogic.Tests.csproj" /p:CollectCoverage=true /p:Exclude="[xunit*]*" /p:ExcludeByAttribute="Obsolete" /p:ExcludeByAttribute="GeneratedCodeAttribute" /p:ExcludeByAttribute="CompilerGeneratedAttribute" /p:ExcludeByAttribute="ExcludeFromCodeCoverageAttribute" /p:CoverletOutput="../lcov1.info" /maxcpucount:1 /p:CoverletOutputFormat="lcov"
+        dotnet test "TransactionProcessor.ProjectionEngine.Tests\TransactionProcessor.ProjectionEngine.Tests.csproj" /p:CollectCoverage=true /p:Exclude="[xunit*]*" /p:ExcludeByAttribute="Obsolete" /p:ExcludeByAttribute="GeneratedCodeAttribute" /p:ExcludeByAttribute="CompilerGeneratedAttribute" /p:ExcludeByAttribute="ExcludeFromCodeCoverageAttribute" /p:CoverletOutput="../lcov2.info" /maxcpucount:1 /p:CoverletOutputFormat="lcov"
+        dotnet test "TransactionProcessor.ReconciliationAggregate.Tests\TransactionProcessor.ReconciliationAggregate.Tests.csproj" /p:CollectCoverage=true /p:Exclude="[xunit*]*" /p:ExcludeByAttribute="Obsolete" /p:ExcludeByAttribute="GeneratedCodeAttribute" /p:ExcludeByAttribute="CompilerGeneratedAttribute" /p:ExcludeByAttribute="ExcludeFromCodeCoverageAttribute" /p:CoverletOutput="../lcov3.info" /maxcpucount:1 /p:CoverletOutputFormat="lcov"
+        dotnet test "TransactionProcessor.SettlementAggregates.Tests\TransactionProcessor.SettlementAggregates.Tests.csproj" /p:CollectCoverage=true /p:Exclude="[xunit*]*" /p:ExcludeByAttribute="Obsolete" /p:ExcludeByAttribute="GeneratedCodeAttribute" /p:ExcludeByAttribute="CompilerGeneratedAttribute" /p:ExcludeByAttribute="ExcludeFromCodeCoverageAttribute" /p:CoverletOutput="../lcov4.info" /maxcpucount:1 /p:CoverletOutputFormat="lcov"
+        dotnet test "TransactionProcessor.Tests\TransactionProcessor.Tests.csproj" /p:CollectCoverage=true /p:Exclude="[xunit*]*" /p:ExcludeByAttribute="Obsolete" /p:ExcludeByAttribute="GeneratedCodeAttribute" /p:ExcludeByAttribute="CompilerGeneratedAttribute" /p:ExcludeByAttribute="ExcludeFromCodeCoverageAttribute" /p:CoverletOutput="../lcov5.info" /maxcpucount:1 /p:CoverletOutputFormat="lcov"
+        dotnet test "TransactionProcessor.TransactionAggregate.Tests\TransactionProcessor.TransactionAggregate.Tests.csproj" /p:CollectCoverage=true /p:Exclude="[xunit*]*" /p:ExcludeByAttribute="Obsolete" /p:ExcludeByAttribute="GeneratedCodeAttribute" /p:ExcludeByAttribute="CompilerGeneratedAttribute" /p:ExcludeByAttribute="ExcludeFromCodeCoverageAttribute" /p:CoverletOutput="../lcov6.info" /maxcpucount:1 /p:CoverletOutputFormat="lcov"
+        dotnet test "TransactionProcessor.VoucherAggregate.Tests\TransactionProcessor.VoucherAggregate.Tests.csproj" /p:CollectCoverage=true /p:Exclude="[xunit*]*" /p:ExcludeByAttribute="Obsolete" /p:ExcludeByAttribute="GeneratedCodeAttribute" /p:ExcludeByAttribute="CompilerGeneratedAttribute" /p:ExcludeByAttribute="ExcludeFromCodeCoverageAttribute" /p:CoverletOutput="../lcov7.info" /maxcpucount:1 /p:CoverletOutputFormat="lcov"
 
     - name: Upload coverage reports to Codecov
       uses: codecov/codecov-action@v3  
