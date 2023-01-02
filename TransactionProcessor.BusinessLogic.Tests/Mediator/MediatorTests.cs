@@ -13,11 +13,9 @@ using Xunit;
 
 namespace TransactionProcessor.BusinessLogic.Tests.Mediator
 {
-    using System.Threading;
     using BusinessLogic.Services;
     using Lamar;
     using Microsoft.Extensions.DependencyInjection;
-    using Models;
     using Testing;
 
     public class MediatorTests
@@ -96,83 +94,6 @@ namespace TransactionProcessor.BusinessLogic.Tests.Mediator
                                           s.AddSingleton<IVoucherDomainService, DummyVoucherDomainService>();
                                           s.AddSingleton<ITransactionDomainService, DummyTransactionDomainService>();
             });
-        }
-    }
-
-    public class DummySettlementDomainService : ISettlementDomainService
-    {
-        public async Task<ProcessSettlementResponse> ProcessSettlement(DateTime pendingSettlementDate,
-                                                                       Guid estateId,
-                                                                       CancellationToken cancellationToken) {
-            return new ProcessSettlementResponse();
-        }
-    }
-
-    public class DummyVoucherDomainService : IVoucherDomainService
-    {
-        public async Task<IssueVoucherResponse> IssueVoucher(Guid voucherId,
-                                                             String operatorId,
-                                                             Guid estateId,
-                                                             Guid transactionId,
-                                                             DateTime issuedDateTime,
-                                                             Decimal value,
-                                                             String recipientEmail,
-                                                             String recipientMobile,
-                                                             CancellationToken cancellationToken) {
-            return new IssueVoucherResponse();
-        }
-
-        public async Task<RedeemVoucherResponse> RedeemVoucher(Guid estateId,
-                                                               String voucherCode,
-                                                               DateTime redeemedDateTime,
-                                                               CancellationToken cancellationToken) {
-            return new RedeemVoucherResponse();
-        }
-    }
-
-    public class DummyTransactionDomainService : ITransactionDomainService
-    {
-        public async Task<ProcessLogonTransactionResponse> ProcessLogonTransaction(Guid transactionId,
-                                                                                   Guid estateId,
-                                                                                   Guid merchantId,
-                                                                                   DateTime transactionDateTime,
-                                                                                   String transactionNumber,
-                                                                                   String deviceIdentifier,
-                                                                                   CancellationToken cancellationToken) {
-            return new ProcessLogonTransactionResponse();
-        }
-
-        public async Task<ProcessSaleTransactionResponse> ProcessSaleTransaction(Guid transactionId,
-                                                                                 Guid estateId,
-                                                                                 Guid merchantId,
-                                                                                 DateTime transactionDateTime,
-                                                                                 String transactionNumber,
-                                                                                 String deviceIdentifier,
-                                                                                 String operatorId,
-                                                                                 String customerEmailAddress,
-                                                                                 Dictionary<String, String> additionalTransactionMetadata,
-                                                                                 Guid contractId,
-                                                                                 Guid productId,
-                                                                                 Int32 transactionSource,
-                                                                                 CancellationToken cancellationToken) {
-            return new ProcessSaleTransactionResponse();
-        }
-
-        public async Task<ProcessReconciliationTransactionResponse> ProcessReconciliationTransaction(Guid transactionId,
-                                                                                                     Guid estateId,
-                                                                                                     Guid merchantId,
-                                                                                                     String deviceIdentifier,
-                                                                                                     DateTime transactionDateTime,
-                                                                                                     Int32 transactionCount,
-                                                                                                     Decimal transactionValue,
-                                                                                                     CancellationToken cancellationToken) {
-            return new ProcessReconciliationTransactionResponse();
-        }
-
-        public async Task ResendTransactionReceipt(Guid transactionId,
-                                                   Guid estateId,
-                                                   CancellationToken cancellationToken) {
-            
         }
     }
 }
