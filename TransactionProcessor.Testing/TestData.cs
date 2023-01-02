@@ -299,7 +299,12 @@
             new Dictionary<String, String>
             {
                 ["AppSettings:ClientId"] = "clientId",
-                ["AppSettings:ClientSecret"] = "clientSecret"
+                ["AppSettings:ClientSecret"] = "clientSecret",
+                ["AppSettings:UseConnectionStringConfig"] = "false",
+                ["EventStoreSettings:ConnectionString"] = "https://127.0.0.1:2113",
+                ["SecurityConfiguration:Authority"] = "https://127.0.0.1",
+                ["AppSettings:EstateManagementApi"] = "http://127.0.0.1",
+                ["AppSettings:SecurityService"] = "http://127.0.0.1"
             };
 
         public static EstateResponse GetEmptyEstateResponse =>
