@@ -22,7 +22,7 @@
         /// <summary>
         /// Verifies the bootstrapper is valid.
         /// </summary>
-        [Fact(Skip="Needs investigated")]
+        [Fact]
         public void VerifyBootstrapperIsValid()
         {
             Mock<IWebHostEnvironment> hostingEnvironment = new Mock<IWebHostEnvironment>();
@@ -74,6 +74,7 @@
             services.AddSingleton(diagnosticSource);
             services.AddSingleton<IWebHostEnvironment>(hostingEnvironment);
             services.AddSingleton<IHostEnvironment>(hostingEnvironment);
+            services.AddSingleton<IConfiguration>(Startup.Configuration);
         }
 
         #endregion
