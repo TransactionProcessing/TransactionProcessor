@@ -48,7 +48,6 @@ public class DummyTransactionDomainService : ITransactionDomainService
 
     public async Task ResendTransactionReceipt(Guid transactionId,
                                                Guid estateId,
-                                               CancellationToken cancellationToken) {
-            
+                                               CancellationToken cancellationToken) {            
     }
 }
