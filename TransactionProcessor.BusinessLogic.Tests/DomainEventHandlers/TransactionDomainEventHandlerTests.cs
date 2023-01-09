@@ -97,17 +97,8 @@
                                                                         It.IsAny<CancellationToken>())).ReturnsAsync(TestData.ContractProductTransactionFees);
 
             this.SecurityServiceClient.Setup(s => s.GetToken(It.IsAny<String>(), It.IsAny<String>(), It.IsAny<CancellationToken>())).ReturnsAsync(TestData.TokenResponse);
-
-
-
-
+            
             await this.TransactionDomainEventHandler.Handle(TestData.TransactionHasBeenCompletedEvent, CancellationToken.None);
-
-            // TODO: way of verifying needed
-            //this.TransactionAggregateManager.Verify(t => t.AddFee(It.IsAny<Guid>(),
-            //                                                      It.IsAny<Guid>(),
-            //                                                      It.IsAny<CalculatedFee>(),
-            //                                                      It.IsAny<CancellationToken>()),Times.Once);
         }
 
         [Fact]
@@ -185,11 +176,6 @@
 
             await this.TransactionDomainEventHandler.Handle(TestData.TransactionHasBeenCompletedEvent, CancellationToken.None);
 
-            // TODO: way of verifying needed
-            //this.TransactionAggregateManager.Verify(t => t.AddFee(It.IsAny<Guid>(),
-            //                                                      It.IsAny<Guid>(),
-            //                                                      It.IsAny<CalculatedFee>(),
-            //                                                      It.IsAny<CancellationToken>()), Times.Once);
             this.SettlementAggregateRepository.Verify(p => p.GetLatestVersion(It.IsAny<Guid>(), It.IsAny<CancellationToken>()), Times.Once);
             this.SettlementAggregateRepository.Verify(p => p.SaveChanges(It.IsAny<SettlementAggregate>(), It.IsAny<CancellationToken>()), Times.Once);
             pendingSettlementAggregate.GetNumberOfFeesPendingSettlement().ShouldBe(1);

@@ -128,7 +128,6 @@
                                                   merchantId,
                                                   deviceIdentifier,
                                                   null); // Logon transaction has no amount
-                                                  
 
             (String responseMessage, TransactionResponseCode responseCode) validationResult =
                 await this.ValidateLogonTransaction(estateId, merchantId, deviceIdentifier, cancellationToken);
@@ -363,7 +362,6 @@
         public async Task ResendTransactionReceipt(Guid transactionId,
                                                    Guid estateId,
                                                    CancellationToken cancellationToken) {
-
             TransactionAggregate transactionAggregate = await this.TransactionAggregateRepository.GetLatestVersion(transactionId, cancellationToken);
 
             transactionAggregate.RequestEmailReceiptResend();
