@@ -18,8 +18,9 @@
         InvalidSaleTransactionAmount = 1011,
         InvalidContractIdValue = 1012,
         InvalidProductIdValue = 1013,
-        ContractNotValidForMerchant = 1014,
-        ProductNotValidForMerchant = 1015,
+        MerchantHasNoContractsConfigured = 1014,
+        ContractNotValidForMerchant = 1015,
+        ProductNotValidForMerchant = 1016,
 
         // A Catch All generic Error where reason has not been identified
         UnknownFailure = 9999

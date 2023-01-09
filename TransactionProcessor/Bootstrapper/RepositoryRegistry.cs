@@ -91,8 +91,7 @@
             }
 
             this.AddTransient<IEventStoreContext, EventStoreContext>();
-
-            this.AddSingleton<ITransactionAggregateManager, TransactionAggregateManager>();
+            
             this.AddSingleton<IAggregateRepository<TransactionAggregate, DomainEvent>,
                 AggregateRepository<TransactionAggregate, DomainEvent>>();
             this.AddSingleton<IAggregateRepository<ReconciliationAggregate, DomainEvent>,

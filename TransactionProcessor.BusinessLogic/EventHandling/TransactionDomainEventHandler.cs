@@ -59,15 +59,12 @@
 
         private readonly IAggregateRepository<SettlementAggregate, DomainEvent> SettlementAggregateRepository;
 
+        private readonly IAggregateRepository<TransactionAggregate, DomainEvent> TransactionAggregateRepository;
+
         /// <summary>
         /// The token response
         /// </summary>
         private TokenResponse TokenResponse;
-
-        /// <summary>
-        /// The transaction aggregate manager
-        /// </summary>
-        private readonly ITransactionAggregateManager TransactionAggregateManager;
 
         /// <summary>
         /// The transaction receipt builder
@@ -78,14 +75,14 @@
 
         #region Constructors
 
-        public TransactionDomainEventHandler(ITransactionAggregateManager transactionAggregateManager,
+        public TransactionDomainEventHandler(IAggregateRepository<TransactionAggregate, DomainEvent> transactionAggregateRepository,
                                              IFeeCalculationManager feeCalculationManager,
                                              IEstateClient estateClient,
                                              ISecurityServiceClient securityServiceClient,
                                              ITransactionReceiptBuilder transactionReceiptBuilder,
                                              IMessagingServiceClient messagingServiceClient,
                                              IAggregateRepository<SettlementAggregate, DomainEvent> settlementAggregateRepository) {
-            this.TransactionAggregateManager = transactionAggregateManager;
+            this.TransactionAggregateRepository = transactionAggregateRepository;
             this.FeeCalculationManager = feeCalculationManager;
             this.EstateClient = estateClient;
             this.SecurityServiceClient = securityServiceClient;
@@ -148,7 +145,7 @@
         private async Task HandleSpecificDomainEvent(TransactionHasBeenCompletedEvent domainEvent,
                                                      CancellationToken cancellationToken) {
             TransactionAggregate transactionAggregate =
-                await this.TransactionAggregateManager.GetAggregate(domainEvent.EstateId, domainEvent.TransactionId, cancellationToken);
+                await this.TransactionAggregateRepository.GetLatestVersion(domainEvent.TransactionId, cancellationToken);
 
             if (transactionAggregate.IsAuthorised == false) {
                 // Ignore not successful transactions
@@ -194,7 +191,7 @@
 
             foreach (CalculatedFee calculatedFee in nonMerchantFees) {
                 // Add Fee to the Transaction 
-                await this.TransactionAggregateManager.AddFee(transactionAggregate.EstateId, transactionAggregate.AggregateId, calculatedFee, cancellationToken);
+                transactionAggregate.AddFee(calculatedFee);
             }
 
             // Now deal with merchant fees 
@@ -232,15 +229,13 @@
 
                 if (merchant.SettlementSchedule == SettlementSchedule.Immediate) {
                     // Add fees to transaction now if settlement is immediate
-                    await this.TransactionAggregateManager.AddSettledFee(transactionAggregate.EstateId,
-                                                                         transactionAggregate.AggregateId,
-                                                                         calculatedFee,
-                                                                         DateTime.Now.Date,
-                                                                         DateTime.Now,
-                                                                         cancellationToken);
+                    transactionAggregate.AddSettledFee(calculatedFee,
+                                                       DateTime.Now.Date,
+                                                       DateTime.Now);
                     aggregate.ImmediatelyMarkFeeAsSettled(transactionAggregate.MerchantId, transactionAggregate.AggregateId, calculatedFee.FeeId);
                 }
 
+                await this.TransactionAggregateRepository.SaveChanges(transactionAggregate, cancellationToken);
                 await this.SettlementAggregateRepository.SaveChanges(aggregate, cancellationToken);
             }
         }
@@ -250,7 +245,7 @@
             this.TokenResponse = await this.GetToken(cancellationToken);
 
             TransactionAggregate transactionAggregate =
-                await this.TransactionAggregateManager.GetAggregate(domainEvent.EstateId, domainEvent.TransactionId, cancellationToken);
+                await this.TransactionAggregateRepository.GetLatestVersion(domainEvent.TransactionId, cancellationToken);
 
             MerchantResponse merchant =
                 await this.EstateClient.GetMerchant(this.TokenResponse.AccessToken, domainEvent.EstateId, domainEvent.MerchantId, cancellationToken);
