@@ -1600,7 +1600,6 @@ namespace TransactionProcessor.BusinessLogic.Tests.Services
 
         [Fact]
         public async Task TransactionDomainService_ValidateReconciliationTransaction_EstateClientGetEstateThrewOtherException_ResponseIsUnknownFailure() {
-
             securityServiceClient.Setup(s => s.GetToken(It.IsAny<String>(), It.IsAny<String>(), It.IsAny<CancellationToken>())).ReturnsAsync(TestData.TokenResponse);
 
             estateClient.Setup(e => e.GetEstate(It.IsAny<String>(), It.IsAny<Guid>(), It.IsAny<CancellationToken>())).ThrowsAsync(new Exception("Exception"));
