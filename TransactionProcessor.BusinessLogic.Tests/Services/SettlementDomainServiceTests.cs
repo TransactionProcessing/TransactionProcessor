@@ -26,7 +26,6 @@
         private SettlementDomainService settlementDomainService;
 
         public SettlementDomainServiceTests() {
-
             this.transactionAggregateRepository =
                 new Mock<IAggregateRepository<TransactionAggregate, DomainEvent>>();
             this.settlementAggregateRepository =

@@ -231,8 +231,7 @@
                                                                                                                      TestData.ProductId,
                                                                                                                      TestData.TransactionSource,
                                                                                                                      CancellationToken.None);
-            ;
-
+            
             response.EstateId.ShouldBe(TestData.EstateId);
             response.MerchantId.ShouldBe(TestData.MerchantId);
             response.ResponseCode.ShouldNotBe("0000");
@@ -287,8 +286,7 @@
                                                                                                                      TestData.ProductId,
                                                                                                                      TestData.TransactionSource,
                                                                                                                      CancellationToken.None);
-            ;
-
+            
             response.EstateId.ShouldBe(TestData.EstateId);
             response.MerchantId.ShouldBe(TestData.MerchantId);
             response.ResponseCode.ShouldNotBe("0000");
@@ -336,8 +334,7 @@
                                                                                                                      TestData.ProductId,
                                                                                                                      TestData.TransactionSource,
                                                                                                                      CancellationToken.None);
-            ;
-
+            
             response.EstateId.ShouldBe(TestData.EstateId);
             response.MerchantId.ShouldBe(TestData.MerchantId);
             response.ResponseCode.ShouldBe("0000");
@@ -392,8 +389,7 @@
                                                                                                                      TestData.ProductId,
                                                                                                                      TestData.TransactionSource,
                                                                                                                      CancellationToken.None);
-            ;
-
+            
             response.EstateId.ShouldBe(TestData.EstateId);
             response.MerchantId.ShouldBe(TestData.MerchantId);
             response.ResponseCode.ShouldBe("0000");
