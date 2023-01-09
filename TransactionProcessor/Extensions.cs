@@ -161,7 +161,8 @@ namespace TransactionProcessor
             }
         }
     }
-    
+
+    [ExcludeFromCodeCoverage]
     public class SubscriptionWorkersRoot
     {
         public Boolean InternalSubscriptionService { get; set; }
@@ -170,6 +171,7 @@ namespace TransactionProcessor
         public List<SubscriptionWorkerConfig> SubscriptionWorkers { get; set; }
     }
 
+    [ExcludeFromCodeCoverage]
     public class SubscriptionWorkerConfig
     {
         public String WorkerName { get; set; }

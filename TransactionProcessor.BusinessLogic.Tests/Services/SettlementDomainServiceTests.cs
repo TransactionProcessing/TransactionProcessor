@@ -14,26 +14,40 @@
     using Shared.Logger;
     using Shouldly;
     using Testing;
+    using TransactionAggregate;
     using Xunit;
 
     public class SettlementDomainServiceTests
     {
-        [Fact]
-        public async Task TransactionDomainService_ProcessSettlement_SettlementIsProcessed()
-        {
+        private Mock<IAggregateRepository<TransactionAggregate, DomainEvent>> transactionAggregateRepository;
+
+        private Mock<IAggregateRepository<SettlementAggregate, DomainEvent>> settlementAggregateRepository;
+
+        private SettlementDomainService settlementDomainService;
+
+        public SettlementDomainServiceTests() {
+
+            this.transactionAggregateRepository =
+                new Mock<IAggregateRepository<TransactionAggregate, DomainEvent>>();
+            this.settlementAggregateRepository =
+                new Mock<IAggregateRepository<SettlementAggregate, DomainEvent>>();
+            
+            this.settlementDomainService =
+                new SettlementDomainService(this.transactionAggregateRepository.Object, settlementAggregateRepository.Object);
+
             IConfigurationRoot configurationRoot = new ConfigurationBuilder().AddInMemoryCollection(TestData.DefaultAppSettings).Build();
             ConfigurationReader.Initialise(configurationRoot);
 
             Logger.Initialise(NullLogger.Instance);
+        }
 
-            Mock<ITransactionAggregateManager> transactionAggregateManager = new Mock<ITransactionAggregateManager>();
-            Mock<IAggregateRepository<SettlementAggregate, DomainEvent>> settlementAggregateRepository =
-                new Mock<IAggregateRepository<SettlementAggregate, DomainEvent>>();
+        [Fact]
+        public async Task TransactionDomainService_ProcessSettlement_SettlementIsProcessed()
+        {
             settlementAggregateRepository.Setup(s => s.GetLatestVersion(It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
                                          .ReturnsAsync(TestData.GetSettlementAggregateWithPendingMerchantFees(10));
-
-            SettlementDomainService settlementDomainService=
-                new SettlementDomainService(transactionAggregateManager.Object, settlementAggregateRepository.Object);
+            this.transactionAggregateRepository.Setup(s => s.GetLatestVersion(It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
+                .ReturnsAsync(TestData.GetCompletedAuthorisedSaleTransactionAggregate);
 
             ProcessSettlementResponse response = await settlementDomainService.ProcessSettlement(TestData.SettlementDate,
                                                                                                  TestData.EstateId,
@@ -48,21 +62,9 @@
         [Fact]
         public async Task TransactionDomainService_ProcessSettlement_SettlementAggregateNotCreated_NothingProcessed()
         {
-            IConfigurationRoot configurationRoot = new ConfigurationBuilder().AddInMemoryCollection(TestData.DefaultAppSettings).Build();
-            ConfigurationReader.Initialise(configurationRoot);
-
-            Logger.Initialise(NullLogger.Instance);
-
-            Mock<ITransactionAggregateManager> transactionAggregateManager = new Mock<ITransactionAggregateManager>();
-            Mock<IAggregateRepository<SettlementAggregate, DomainEvent>> settlementAggregateRepository =
-                new Mock<IAggregateRepository<SettlementAggregate, DomainEvent>>();
             settlementAggregateRepository.Setup(s => s.GetLatestVersion(It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
                                          .ReturnsAsync(TestData.GetEmptySettlementAggregate);
-
-            SettlementDomainService settlementDomainService =
-                new SettlementDomainService(transactionAggregateManager.Object,
-                                            settlementAggregateRepository.Object);
-
+            
             ProcessSettlementResponse response = await settlementDomainService.ProcessSettlement(TestData.SettlementDate,
                                                                                                  TestData.EstateId,
                                                                                                  CancellationToken.None);
@@ -76,20 +78,8 @@
         [Fact]
         public async Task TransactionDomainService_ProcessSettlement_SettlementAggregateNoFeesToSettles_NothingProcessed()
         {
-            IConfigurationRoot configurationRoot = new ConfigurationBuilder().AddInMemoryCollection(TestData.DefaultAppSettings).Build();
-            ConfigurationReader.Initialise(configurationRoot);
-
-            Logger.Initialise(NullLogger.Instance);
-
-            Mock<ITransactionAggregateManager> transactionAggregateManager = new Mock<ITransactionAggregateManager>();
-            Mock<IAggregateRepository<SettlementAggregate, DomainEvent>> settlementAggregateRepository =
-                new Mock<IAggregateRepository<SettlementAggregate, DomainEvent>>();
             settlementAggregateRepository.Setup(s => s.GetLatestVersion(It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
                                          .ReturnsAsync(TestData.GetCreatedSettlementAggregate);
-
-            SettlementDomainService settlementDomainService =
-                new SettlementDomainService(transactionAggregateManager.Object,
-                                            settlementAggregateRepository.Object);
 
             ProcessSettlementResponse response = await settlementDomainService.ProcessSettlement(TestData.SettlementDate,
                                                                                                  TestData.EstateId,
@@ -104,27 +94,8 @@
         [Fact]
         public async Task TransactionDomainService_ProcessSettlement_AddSettledFeeThrownException_SettlementProcessed()
         {
-            IConfigurationRoot configurationRoot = new ConfigurationBuilder().AddInMemoryCollection(TestData.DefaultAppSettings).Build();
-            ConfigurationReader.Initialise(configurationRoot);
-
-            Logger.Initialise(NullLogger.Instance);
-
-            Mock<ITransactionAggregateManager> transactionAggregateManager = new Mock<ITransactionAggregateManager>();
-            transactionAggregateManager.Setup(t => t.AddSettledFee(It.IsAny<Guid>(),
-                                                                   It.IsAny<Guid>(),
-                                                                   It.IsAny<CalculatedFee>(),
-                                                                   It.IsAny<DateTime>(),
-                                                                   It.IsAny<DateTime>(),
-                                                                   It.IsAny<CancellationToken>())).ThrowsAsync(new Exception());
-            
-            Mock<IAggregateRepository<SettlementAggregate, DomainEvent>> settlementAggregateRepository =
-                new Mock<IAggregateRepository<SettlementAggregate, DomainEvent>>();
             settlementAggregateRepository.Setup(s => s.GetLatestVersion(It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
                                          .ReturnsAsync(TestData.GetSettlementAggregateWithPendingMerchantFees(10));
-
-            SettlementDomainService settlementDomainService =
-                new SettlementDomainService(transactionAggregateManager.Object, 
-                                            settlementAggregateRepository.Object);
 
             ProcessSettlementResponse response = await settlementDomainService.ProcessSettlement(TestData.SettlementDate,
                                                                                                  TestData.EstateId,

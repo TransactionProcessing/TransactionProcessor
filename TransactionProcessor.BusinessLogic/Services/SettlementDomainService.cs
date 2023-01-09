@@ -1,6 +1,7 @@
 ﻿namespace TransactionProcessor.BusinessLogic.Services
 {
     using System;
+    using System.Collections.Generic;
     using System.Threading;
     using System.Threading.Tasks;
     using Common;
@@ -9,11 +10,11 @@
     using Shared.DomainDrivenDesign.EventSourcing;
     using Shared.EventStore.Aggregate;
     using Shared.Logger;
+    using TransactionAggregate;
 
     public class SettlementDomainService : ISettlementDomainService
     {
-        private readonly ITransactionAggregateManager TransactionAggregateManager;
-
+        private readonly IAggregateRepository<TransactionAggregate, DomainEvent> TransactionAggregateRepository;
         private readonly IAggregateRepository<SettlementAggregate, DomainEvent> SettlementAggregateRepository;
 
         public async Task<ProcessSettlementResponse> ProcessSettlement(DateTime settlementDate,
@@ -33,19 +34,20 @@
                 return response;
             }
 
-            var feesToBeSettled = settlementAggregate.GetFeesToBeSettled();
+            List<(Guid transactionId, Guid merchantId, CalculatedFee calculatedFee)> feesToBeSettled = settlementAggregate.GetFeesToBeSettled();
             response.NumberOfFeesPendingSettlement = feesToBeSettled.Count;
+
+            
 
             foreach ((Guid transactionId, Guid merchantId, CalculatedFee calculatedFee) feeToSettle in feesToBeSettled)
             {
                 try
                 {
-                    await this.TransactionAggregateManager.AddSettledFee(estateId,
-                                                                         feeToSettle.transactionId,
-                                                                         feeToSettle.calculatedFee,
-                                                                         settlementDate,
-                                                                         DateTime.Now,
-                                                                         cancellationToken);
+                    TransactionAggregate transactionAggregate = await this.TransactionAggregateRepository.GetLatestVersion(feeToSettle.transactionId, cancellationToken);
+                    transactionAggregate.AddSettledFee(feeToSettle.calculatedFee,
+                                                       settlementDate,
+                                                       DateTime.Now);
+                    await this.TransactionAggregateRepository.SaveChanges(transactionAggregate, cancellationToken);
                     response.NumberOfFeesSuccessfullySettled++;
                     response.NumberOfFeesPendingSettlement--;
                 }
@@ -61,10 +63,10 @@
             return response;
         }
 
-        public SettlementDomainService(ITransactionAggregateManager transactionAggregateManager,
+        public SettlementDomainService(IAggregateRepository<TransactionAggregate, DomainEvent> transactionAggregateRepository,
                                        IAggregateRepository<SettlementAggregate, DomainEvent> settlementAggregateRepository)
         {
-            this.TransactionAggregateManager = transactionAggregateManager;
+            this.TransactionAggregateRepository = transactionAggregateRepository;
             this.SettlementAggregateRepository = settlementAggregateRepository;
         }
     }

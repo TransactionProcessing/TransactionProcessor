@@ -2,7 +2,9 @@
 
 using DataTransferObjects;
 using Swashbuckle.AspNetCore.Filters;
+using System.Diagnostics.CodeAnalysis;
 
+[ExcludeFromCodeCoverage]
 public class GetVoucherResponseExample : IExamplesProvider<GetVoucherResponse>
 {
     /// <summary>

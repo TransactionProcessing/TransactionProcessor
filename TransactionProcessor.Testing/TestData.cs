@@ -42,8 +42,10 @@
         public static Guid EstateId = Guid.Parse("A522FA27-F9D0-470A-A88D-325DED3B62EE");
 
         public static Guid ContractId = Guid.Parse("97A9ED00-E522-428C-B3C3-5931092DBDCE");
+        public static Guid ContractId1 = Guid.Parse("9314DD8B-42A6-4C24-87FE-53CDC70BA48F");
 
         public static Guid ProductId = Guid.Parse("ABA0E536-4E43-4E26-8362-7FB549DDA534");
+        public static Guid ProductId1 = Guid.Parse("C758C21E-6BB2-4709-9F1D-5DA789FB6182");
 
         public static String EstateName = "Test Estate 1";
 
@@ -984,6 +986,11 @@
             new MerchantBalanceState {
                                          AvailableBalance = TestData.AvailableBalance,
                                      };
+        public static MerchantBalanceState MerchantBalanceProjectionStateNoCredit =>
+            new MerchantBalanceState
+            {
+                AvailableBalance = 0,
+            };
 
         public static ResendTransactionReceiptRequest ResendTransactionReceiptRequest => ResendTransactionReceiptRequest.Create(TestData.TransactionId,
                                                                                                                                 TestData.EstateId);
