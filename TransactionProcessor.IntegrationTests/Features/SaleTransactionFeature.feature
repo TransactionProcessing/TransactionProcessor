@@ -218,7 +218,7 @@ Scenario: Sale Transaction with Invalid Contract Id
 	
 	Then transaction response should contain the following information
 	| EstateName    | MerchantName    | TransactionNumber | ResponseCode | ResponseMessage                                                                             |
-	| Test Estate 1 | Test Merchant 1 | 1                 | 1014         | Contract Id [934d8164-f36a-448e-b27b-4d671d41d180] not valid for Merchant [Test Merchant 1] |
+	| Test Estate 1 | Test Merchant 1 | 1                 | 1015         | Contract Id [934d8164-f36a-448e-b27b-4d671d41d180] not valid for Merchant [Test Merchant 1] |
 
 Scenario: Sale Transaction with Empty Product Id
 
