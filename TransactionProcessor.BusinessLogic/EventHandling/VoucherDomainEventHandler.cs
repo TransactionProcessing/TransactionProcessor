@@ -7,8 +7,8 @@ using System.IO.Abstractions;
 using System.Reflection;
 using System.Threading;
 using System.Threading.Tasks;
-using EstateReporting.Database;
-using EstateReporting.Database.Entities;
+using EstateManagement.Database.Contexts;
+using EstateManagement.Database.Entities;
 using MessagingService.Client;
 using MessagingService.DataTransferObjects;
 using Microsoft.EntityFrameworkCore;
@@ -29,7 +29,7 @@ public class VoucherDomainEventHandler : IDomainEventHandler
     /// <summary>
     /// The database context factory
     /// </summary>
-    private readonly Shared.EntityFramework.IDbContextFactory<EstateReportingGenericContext> DbContextFactory;
+    private readonly Shared.EntityFramework.IDbContextFactory<EstateManagementGenericContext> DbContextFactory;
 
     /// <summary>
     /// The file system
@@ -72,7 +72,7 @@ public class VoucherDomainEventHandler : IDomainEventHandler
     /// <param name="fileSystem">The file system.</param>
     public VoucherDomainEventHandler(ISecurityServiceClient securityServiceClient,
                                      IAggregateRepository<VoucherAggregate, DomainEvent> voucherAggregateRepository,
-                                     Shared.EntityFramework.IDbContextFactory<EstateReportingGenericContext> dbContextFactory,
+                                     Shared.EntityFramework.IDbContextFactory<EstateManagementGenericContext> dbContextFactory,
                                      IMessagingServiceClient messagingServiceClient,
                                      IFileSystem fileSystem)
     {
@@ -167,7 +167,7 @@ public class VoucherDomainEventHandler : IDomainEventHandler
     private async Task<String> GetVoucherOperator(Models.Voucher voucherModel,
                                                   CancellationToken cancellationToken)
     {
-        EstateReportingGenericContext context = await this.DbContextFactory.GetContext(voucherModel.EstateId, ConnectionStringIdentifier, cancellationToken);
+        EstateManagementGenericContext context = await this.DbContextFactory.GetContext(voucherModel.EstateId, ConnectionStringIdentifier, cancellationToken);
 
         Transaction transaction = await context.Transactions.SingleOrDefaultAsync(t => t.TransactionId == voucherModel.TransactionId, cancellationToken);
         Contract contract = await context.Contracts.SingleOrDefaultAsync(c => c.ContractId == transaction.ContractId);

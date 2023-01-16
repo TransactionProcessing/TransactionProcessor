@@ -7,8 +7,8 @@ using System.IO.Abstractions.TestingHelpers;
 using System.Reflection;
 using System.Threading;
 using System.Threading.Tasks;
-using EstateReporting.Database;
-using EstateReporting.Database.Entities;
+using EstateManagement.Database.Contexts;
+using EstateManagement.Database.Entities;
 using EventHandling;
 using MessagingService.Client;
 using Microsoft.EntityFrameworkCore;
@@ -33,20 +33,20 @@ public enum TestDatabaseType
 
 public class VoucherDomainEventHandlerTests
 {
-    private Mock<Shared.EntityFramework.IDbContextFactory<EstateReportingGenericContext>> GetMockDbContextFactory()
+    private Mock<Shared.EntityFramework.IDbContextFactory<EstateManagementGenericContext>> GetMockDbContextFactory()
     {
-        return new Mock<Shared.EntityFramework.IDbContextFactory<EstateReportingGenericContext>>();
+        return new Mock<Shared.EntityFramework.IDbContextFactory<EstateManagementGenericContext>>();
     }
 
-    private async Task<EstateReportingGenericContext> GetContext(String databaseName, TestDatabaseType databaseType = TestDatabaseType.InMemory)
+    private async Task<EstateManagementGenericContext> GetContext(String databaseName, TestDatabaseType databaseType = TestDatabaseType.InMemory)
     {
-        EstateReportingGenericContext context = null;
+        EstateManagementGenericContext context = null;
         if (databaseType == TestDatabaseType.InMemory)
         {
-            DbContextOptionsBuilder<EstateReportingGenericContext> builder = new DbContextOptionsBuilder<EstateReportingGenericContext>()
-                                                                             .UseInMemoryDatabase(databaseName)
-                                                                             .ConfigureWarnings(w => w.Ignore(InMemoryEventId.TransactionIgnoredWarning));
-            context = new EstateReportingSqlServerContext(builder.Options);
+            DbContextOptionsBuilder<EstateManagementGenericContext> builder = new DbContextOptionsBuilder<EstateManagementGenericContext>()
+                                                                              .UseInMemoryDatabase(databaseName)
+                                                                              .ConfigureWarnings(w => w.Ignore(InMemoryEventId.TransactionIgnoredWarning));
+            context = new EstateManagementSqlServerContext(builder.Options);
         }
         else
         {
@@ -70,8 +70,8 @@ public class VoucherDomainEventHandlerTests
         voucherAggregateRepository.Setup(t => t.GetLatestVersion(It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
                                   .ReturnsAsync(TestData.GetVoucherAggregateWithRecipientEmail);
 
-        EstateReportingGenericContext context = await this.GetContext(Guid.NewGuid().ToString("N"), TestDatabaseType.InMemory);
-        context.Transactions.Add(new EstateReporting.Database.Entities.Transaction()
+        EstateManagementGenericContext context = await this.GetContext(Guid.NewGuid().ToString("N"), TestDatabaseType.InMemory);
+        context.Transactions.Add(new EstateManagement.Database.Entities.Transaction()
         {
                                      TransactionId = TestData.TransactionId,
                                      EstateId = TestData.EstateId,
@@ -119,8 +119,8 @@ public class VoucherDomainEventHandlerTests
         voucherAggregateRepository.Setup(t => t.GetLatestVersion(It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
                                   .ReturnsAsync(TestData.GetVoucherAggregateWithRecipientMobile);
 
-        EstateReportingGenericContext context = await this.GetContext(Guid.NewGuid().ToString("N"), TestDatabaseType.InMemory);
-        context.Transactions.Add(new EstateReporting.Database.Entities.Transaction()
+        EstateManagementGenericContext context = await this.GetContext(Guid.NewGuid().ToString("N"), TestDatabaseType.InMemory);
+        context.Transactions.Add(new EstateManagement.Database.Entities.Transaction()
                                  {
                                      TransactionId = TestData.TransactionId,
                                      EstateId = TestData.EstateId,
@@ -134,7 +134,7 @@ public class VoucherDomainEventHandlerTests
                               });
         await context.SaveChangesAsync(CancellationToken.None);
 
-        var dbContextFactory = this.GetMockDbContextFactory();
+        Mock<Shared.EntityFramework.IDbContextFactory<EstateManagementGenericContext>> dbContextFactory = this.GetMockDbContextFactory();
         dbContextFactory.Setup(d => d.GetContext(It.IsAny<Guid>(), It.IsAny<String>(), It.IsAny<CancellationToken>())).ReturnsAsync(context);
 
         Mock<IMessagingServiceClient> messagingServiceClient = new Mock<IMessagingServiceClient>();

@@ -2,16 +2,12 @@
 using Shared.EventStore.Aggregate;
 using Shared.Exceptions;
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
-using TransactionProcessor.Models;
 
 namespace TransactionProcessor.BusinessLogic.Manager
 {
-    using EstateReporting.Database;
+    using EstateManagement.Database.Contexts;
     using Microsoft.EntityFrameworkCore;
     using VoucherAggregate;
     using Voucher = Models.Voucher;
@@ -45,7 +41,7 @@ namespace TransactionProcessor.BusinessLogic.Manager
         /// <summary>
         /// The database context factory
         /// </summary>
-        private readonly Shared.EntityFramework.IDbContextFactory<EstateReportingGenericContext> DbContextFactory;
+        private readonly Shared.EntityFramework.IDbContextFactory<EstateManagementGenericContext> DbContextFactory;
 
         /// <summary>
         /// The voucher aggregate repository
@@ -63,7 +59,7 @@ namespace TransactionProcessor.BusinessLogic.Manager
         /// </summary>
         /// <param name="dbContextFactory">The database context factory.</param>
         /// <param name="voucherAggregateRepository">The voucher aggregate repository.</param>
-        public VoucherManagementManager(Shared.EntityFramework.IDbContextFactory<EstateReportingGenericContext> dbContextFactory,
+        public VoucherManagementManager(Shared.EntityFramework.IDbContextFactory<EstateManagementGenericContext> dbContextFactory,
                                         IAggregateRepository<VoucherAggregate, DomainEvent> voucherAggregateRepository)
         {
             this.DbContextFactory = dbContextFactory;
@@ -86,9 +82,9 @@ namespace TransactionProcessor.BusinessLogic.Manager
                                                     String voucherCode,
                                                     CancellationToken cancellationToken)
         {
-            EstateReportingGenericContext context = await this.DbContextFactory.GetContext(estateId,VoucherManagementManager.ConnectionStringIdentifier, cancellationToken);
+            EstateManagementGenericContext context = await this.DbContextFactory.GetContext(estateId,VoucherManagementManager.ConnectionStringIdentifier, cancellationToken);
 
-            EstateReporting.Database.Entities.Voucher voucher = await context.Vouchers.SingleOrDefaultAsync(v => v.VoucherCode == voucherCode, cancellationToken);
+            EstateManagement.Database.Entities.Voucher voucher = await context.Vouchers.SingleOrDefaultAsync(v => v.VoucherCode == voucherCode, cancellationToken);
 
             if (voucher == null)
             {
@@ -105,9 +101,9 @@ namespace TransactionProcessor.BusinessLogic.Manager
                                                     Guid transactionId,
                                                     CancellationToken cancellationToken)
         {
-            EstateReportingGenericContext context = await this.DbContextFactory.GetContext(estateId, ConnectionStringIdentifier, cancellationToken);
+            EstateManagementGenericContext context = await this.DbContextFactory.GetContext(estateId, ConnectionStringIdentifier, cancellationToken);
 
-            EstateReporting.Database.Entities.Voucher voucher = await context.Vouchers.SingleOrDefaultAsync(v => v.TransactionId == transactionId, cancellationToken);
+            EstateManagement.Database.Entities.Voucher voucher = await context.Vouchers.SingleOrDefaultAsync(v => v.TransactionId == transactionId, cancellationToken);
 
             if (voucher == null)
             {
