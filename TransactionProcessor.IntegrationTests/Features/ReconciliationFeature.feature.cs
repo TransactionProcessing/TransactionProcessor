@@ -190,21 +190,24 @@ namespace TransactionProcessor.IntegrationTests.Features
                         "ContractDescription",
                         "ProductName",
                         "DisplayText",
-                        "Value"});
+                        "Value",
+                        "ProductType"});
             table31.AddRow(new string[] {
                         "Test Estate 1",
                         "Safaricom",
                         "Safaricom Contract",
                         "Variable Topup",
                         "Custom",
-                        ""});
+                        "",
+                        "MobileTopup"});
             table31.AddRow(new string[] {
                         "Test Estate 2",
                         "Safaricom",
                         "Safaricom Contract",
                         "Variable Topup",
                         "Custom",
-                        ""});
+                        "",
+                        "MobileTopup"});
 #line 39
  testRunner.When("I create the following Products", ((string)(null)), table31, "When ");
 #line hidden

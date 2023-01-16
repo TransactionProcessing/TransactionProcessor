@@ -198,21 +198,24 @@ namespace TransactionProcessor.IntegrationTests.Features
                         "ContractDescription",
                         "ProductName",
                         "DisplayText",
-                        "Value"});
+                        "Value",
+                        "ProductType"});
             table97.AddRow(new string[] {
                         "Test Estate 1",
                         "Safaricom",
                         "Safaricom Contract",
                         "Variable Topup",
                         "Custom",
-                        ""});
+                        "",
+                        "MobileTopup"});
             table97.AddRow(new string[] {
                         "Test Estate 1",
                         "Voucher",
                         "Hospital 1 Contract",
                         "10 KES",
                         "10 KES",
-                        ""});
+                        "",
+                        "Voucher"});
 #line 40
  testRunner.When("I create the following Products", ((string)(null)), table97, "When ");
 #line hidden

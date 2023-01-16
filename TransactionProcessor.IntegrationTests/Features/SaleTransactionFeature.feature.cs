@@ -246,49 +246,56 @@ namespace TransactionProcessor.IntegrationTests.Features
                         "ContractDescription",
                         "ProductName",
                         "DisplayText",
-                        "Value"});
+                        "Value",
+                        "ProductType"});
             table59.AddRow(new string[] {
                         "Test Estate 1",
                         "Safaricom",
                         "Safaricom Contract",
                         "Variable Topup",
                         "Custom",
-                        ""});
+                        "",
+                        "MobileTopup"});
             table59.AddRow(new string[] {
                         "Test Estate 1",
                         "Voucher",
                         "Hospital 1 Contract",
                         "10 KES",
                         "10 KES",
-                        ""});
+                        "",
+                        "Voucher"});
             table59.AddRow(new string[] {
                         "Test Estate 1",
                         "PataPawa PostPay",
                         "PataPawa PostPay Contract",
                         "Post Pay Bill Pay",
                         "Bill Pay (Post)",
-                        ""});
+                        "",
+                        "BillPayment"});
             table59.AddRow(new string[] {
                         "Test Estate 2",
                         "Safaricom",
                         "Safaricom Contract",
                         "Variable Topup",
                         "Custom",
-                        ""});
+                        "",
+                        "MobileTopup"});
             table59.AddRow(new string[] {
                         "Test Estate 2",
                         "Voucher",
                         "Hospital 1 Contract",
                         "10 KES",
                         "10 KES",
-                        ""});
+                        "",
+                        "Voucher"});
             table59.AddRow(new string[] {
                         "Test Estate 2",
                         "PataPawa PostPay",
                         "PataPawa PostPay Contract",
                         "Post Pay Bill Pay",
                         "Bill Pay (Post)",
-                        ""});
+                        "",
+                        "BillPayment"});
 #line 51
  testRunner.When("I create the following Products", ((string)(null)), table59, "When ");
 #line hidden
@@ -1416,7 +1423,7 @@ this.FeatureBackground();
                             "Test Estate 1",
                             "Test Merchant 1",
                             "1",
-                            "1014",
+                            "1015",
                             "Contract Id [934d8164-f36a-448e-b27b-4d671d41d180] not valid for Merchant [Test M" +
                                 "erchant 1]"});
 #line 219
@@ -1560,7 +1567,7 @@ this.FeatureBackground();
                             "Test Estate 1",
                             "Test Merchant 1",
                             "1",
-                            "1015",
+                            "1016",
                             "Product Id [934d8164-f36a-448e-b27b-4d671d41d180] not valid for Merchant [Test Me" +
                                 "rchant 1]"});
 #line 239
@@ -1578,7 +1585,7 @@ this.FeatureBackground();
             string[] tagsOfScenario = ((string[])(null));
             System.Collections.Specialized.OrderedDictionary argumentsOfScenario = new System.Collections.Specialized.OrderedDictionary();
             TechTalk.SpecFlow.ScenarioInfo scenarioInfo = new TechTalk.SpecFlow.ScenarioInfo("Sale Transaction with Not Enough Credit Available", null, tagsOfScenario, argumentsOfScenario, featureTags);
-#line 245
+#line 243
 this.ScenarioInitialize(scenarioInfo);
 #line hidden
             if ((TagHelper.ContainsIgnoreTag(tagsOfScenario) || TagHelper.ContainsIgnoreTag(featureTags)))
@@ -1619,7 +1626,7 @@ this.FeatureBackground();
                             "testcustomer@customer.co.uk",
                             "Safaricom Contract",
                             "Variable Topup"});
-#line 247
+#line 245
  testRunner.When("I perform the following transactions", ((string)(null)), table88, "When ");
 #line hidden
                 TechTalk.SpecFlow.Table table89 = new TechTalk.SpecFlow.Table(new string[] {
@@ -1635,7 +1642,7 @@ this.FeatureBackground();
                             "1009",
                             "Merchant [Test Merchant 1] does not have enough credit available [240.00] to perf" +
                                 "orm transaction amount [300.00]"});
-#line 252
+#line 249
  testRunner.Then("transaction response should contain the following information", ((string)(null)), table89, "Then ");
 #line hidden
             }

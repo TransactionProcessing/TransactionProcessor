@@ -2,23 +2,12 @@
 {
     using System;
     using System.Collections.Generic;
-    using System.IO;
-    using System.Linq;
-    using System.Net;
     using System.Net.Http;
     using System.Threading;
     using System.Threading.Tasks;
     using Client;
-    using Ductus.FluentDocker.Common;
-    using Ductus.FluentDocker.Model.Containers;
-    using Ductus.FluentDocker.Services;
-    using Ductus.FluentDocker.Services.Extensions;
-    using Ductus.FluentDocker.Services.Impl;
     using EstateManagement.Client;
-    using EstateReporting.Database;
-    using EventStore.Client;
-    using global::Shared.Logger;
-    using MessagingService.Client;
+    using EstateManagement.Database.Contexts;
     using SecurityService.Client;
 
     /// <summary>
@@ -119,7 +108,7 @@
                                 {
                                     // Build the connection string (to master)
                                     String connectionString = Setup.GetLocalConnectionString(databaseName);
-                                    EstateReportingSqlServerContext context = new EstateReportingSqlServerContext(connectionString);
+                                    EstateManagementSqlServerContext context = new EstateManagementSqlServerContext(connectionString);
                                     await context.Database.EnsureDeletedAsync(CancellationToken.None);
                                 });
             }

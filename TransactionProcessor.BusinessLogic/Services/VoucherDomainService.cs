@@ -6,8 +6,8 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using EstateManagement.Client;
+using EstateManagement.Database.Contexts;
 using EstateManagement.DataTransferObjects.Responses;
-using EstateReporting.Database;
 using Microsoft.EntityFrameworkCore;
 using Models;
 using NetBarcode;
@@ -40,7 +40,7 @@ public class VoucherDomainService : IVoucherDomainService
     /// <summary>
     /// The database context factory
     /// </summary>
-    private readonly Shared.EntityFramework.IDbContextFactory<EstateReportingGenericContext> DbContextFactory;
+    private readonly Shared.EntityFramework.IDbContextFactory<EstateManagementGenericContext> DbContextFactory;
 
     private const String ConnectionStringIdentifier = "EstateReportingReadModel";
 
@@ -56,7 +56,7 @@ public class VoucherDomainService : IVoucherDomainService
     public VoucherDomainService(IAggregateRepository<VoucherAggregate, DomainEvent> voucherAggregateRepository,
                                 ISecurityServiceClient securityServiceClient,
                                 IEstateClient estateClient,
-                                Shared.EntityFramework.IDbContextFactory<EstateReportingGenericContext> dbContextFactory)
+                                Shared.EntityFramework.IDbContextFactory<EstateManagementGenericContext> dbContextFactory)
     {
         this.VoucherAggregateRepository = voucherAggregateRepository;
         this.SecurityServiceClient = securityServiceClient;
@@ -127,9 +127,9 @@ public class VoucherDomainService : IVoucherDomainService
         await this.ValidateVoucherRedemption(estateId, cancellationToken);
 
         // Find the voucher based on the voucher code
-        EstateReportingGenericContext context = await this.DbContextFactory.GetContext(estateId, VoucherDomainService.ConnectionStringIdentifier, cancellationToken);
+        EstateManagementGenericContext context = await this.DbContextFactory.GetContext(estateId, VoucherDomainService.ConnectionStringIdentifier, cancellationToken);
 
-        EstateReporting.Database.Entities.Voucher voucher = await context.Vouchers.SingleOrDefaultAsync(v => v.VoucherCode == voucherCode, cancellationToken);
+        EstateManagement.Database.Entities.Voucher voucher = await context.Vouchers.SingleOrDefaultAsync(v => v.VoucherCode == voucherCode, cancellationToken);
 
         if (voucher == null)
         {

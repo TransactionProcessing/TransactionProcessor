@@ -49,13 +49,13 @@ Background:
 	| Test Estate 2 | PataPawa PostPay | PataPawa PostPay Contract |
 
 	When I create the following Products
-	| EstateName    | OperatorName     | ContractDescription       | ProductName       | DisplayText     | Value |
-	| Test Estate 1 | Safaricom        | Safaricom Contract        | Variable Topup    | Custom          |       |
-	| Test Estate 1 | Voucher          | Hospital 1 Contract       | 10 KES            | 10 KES          |       |
-	| Test Estate 1 | PataPawa PostPay | PataPawa PostPay Contract | Post Pay Bill Pay | Bill Pay (Post) |       |
-	| Test Estate 2 | Safaricom        | Safaricom Contract        | Variable Topup    | Custom          |       |
-	| Test Estate 2 | Voucher          | Hospital 1 Contract       | 10 KES            | 10 KES          |       |
-	| Test Estate 2 | PataPawa PostPay | PataPawa PostPay Contract | Post Pay Bill Pay | Bill Pay (Post) |       |
+	| EstateName    | OperatorName     | ContractDescription       | ProductName       | DisplayText     | Value | ProductType |
+	| Test Estate 1 | Safaricom        | Safaricom Contract        | Variable Topup    | Custom          |       | MobileTopup |
+	| Test Estate 1 | Voucher          | Hospital 1 Contract       | 10 KES            | 10 KES          |       | Voucher     |
+	| Test Estate 1 | PataPawa PostPay | PataPawa PostPay Contract | Post Pay Bill Pay | Bill Pay (Post) |       | BillPayment |
+	| Test Estate 2 | Safaricom        | Safaricom Contract        | Variable Topup    | Custom          |       | MobileTopup |
+	| Test Estate 2 | Voucher          | Hospital 1 Contract       | 10 KES            | 10 KES          |       | Voucher     |
+	| Test Estate 2 | PataPawa PostPay | PataPawa PostPay Contract | Post Pay Bill Pay | Bill Pay (Post) |       | BillPayment |
 
 	When I add the following Transaction Fees
 	| EstateName    | OperatorName     | ContractDescription       | ProductName       | CalculationType | FeeDescription      | Value |

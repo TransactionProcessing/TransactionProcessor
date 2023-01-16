@@ -7,7 +7,7 @@
     using BusinessLogic.Services;
     using DomainEventHandlers;
     using EstateManagement.Client;
-    using EstateReporting.Database;
+    using EstateManagement.Database.Contexts;
     using Microsoft.EntityFrameworkCore;
     using Microsoft.EntityFrameworkCore.Diagnostics;
     using Microsoft.Extensions.Configuration;
@@ -23,7 +23,6 @@
     using Testing;
     using VoucherAggregate;
     using Xunit;
-    using Voucher = EstateReporting.Database.Entities.Voucher;
 
     public class VoucherDomainServiceTests
     {
@@ -44,7 +43,7 @@
             estateClient.Setup(e => e.GetEstate(It.IsAny<String>(), It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
                         .ReturnsAsync(TestData.GetEstateResponseWithEmptyOperators);
 
-            EstateReportingGenericContext context = await this.GetContext(Guid.NewGuid().ToString("N"));
+            EstateManagementGenericContext context = await this.GetContext(Guid.NewGuid().ToString("N"));
 
             var dbContextFactory = this.GetMockDbContextFactory();
             dbContextFactory.Setup(d => d.GetContext(It.IsAny<Guid>(), It.IsAny<String>(), It.IsAny<CancellationToken>())).ReturnsAsync(context);
@@ -82,7 +81,7 @@
             estateClient.Setup(e => e.GetEstate(It.IsAny<String>(), It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
                         .ReturnsAsync(TestData.GetEstateResponseWithNullOperators);
 
-            EstateReportingGenericContext context = await this.GetContext(Guid.NewGuid().ToString("N"));
+            EstateManagementGenericContext context = await this.GetContext(Guid.NewGuid().ToString("N"));
 
             var dbContextFactory = this.GetMockDbContextFactory();
             dbContextFactory.Setup(d => d.GetContext(It.IsAny<Guid>(), It.IsAny<String>(), It.IsAny<CancellationToken>())).ReturnsAsync(context);
@@ -120,7 +119,7 @@
             estateClient.Setup(e => e.GetEstate(It.IsAny<String>(), It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
                         .ThrowsAsync(new Exception("Exception", new KeyNotFoundException("Invalid Estate")));
 
-            EstateReportingGenericContext context = await this.GetContext(Guid.NewGuid().ToString("N"));
+            EstateManagementGenericContext context = await this.GetContext(Guid.NewGuid().ToString("N"));
 
             var dbContextFactory = this.GetMockDbContextFactory();
             dbContextFactory.Setup(d => d.GetContext(It.IsAny<Guid>(), It.IsAny<String>(), It.IsAny<CancellationToken>())).ReturnsAsync(context);
@@ -158,7 +157,7 @@
             estateClient.Setup(e => e.GetEstate(It.IsAny<String>(), It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
                         .ReturnsAsync(TestData.GetEstateResponseWithOperator2);
 
-            EstateReportingGenericContext context = await this.GetContext(Guid.NewGuid().ToString("N"));
+            EstateManagementGenericContext context = await this.GetContext(Guid.NewGuid().ToString("N"));
 
             var dbContextFactory = this.GetMockDbContextFactory();
             dbContextFactory.Setup(d => d.GetContext(It.IsAny<Guid>(), It.IsAny<String>(), It.IsAny<CancellationToken>())).ReturnsAsync(context);
@@ -196,7 +195,7 @@
             estateClient.Setup(e => e.GetEstate(It.IsAny<String>(), It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
                         .ReturnsAsync(TestData.GetEstateResponseWithOperator1);
 
-            EstateReportingGenericContext context = await this.GetContext(Guid.NewGuid().ToString("N"));
+            EstateManagementGenericContext context = await this.GetContext(Guid.NewGuid().ToString("N"));
 
             var dbContextFactory = this.GetMockDbContextFactory();
             dbContextFactory.Setup(d => d.GetContext(It.IsAny<Guid>(), It.IsAny<String>(), It.IsAny<CancellationToken>())).ReturnsAsync(context);
@@ -235,10 +234,11 @@
             estateClient.Setup(e => e.GetEstate(It.IsAny<String>(), It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
                         .ThrowsAsync(new Exception("Exception", new KeyNotFoundException("Invalid Estate")));
 
-            EstateReportingGenericContext context = await this.GetContext(Guid.NewGuid().ToString("N"));
-            context.Vouchers.Add(new Voucher {
+            EstateManagementGenericContext context = await this.GetContext(Guid.NewGuid().ToString("N"));
+            context.Vouchers.Add(new EstateManagement.Database.Entities.Voucher {
                                                  VoucherCode = TestData.VoucherCode,
-                                                 EstateId = TestData.EstateId
+                                                 EstateId = TestData.EstateId,
+                                                 OperatorIdentifier = TestData.OperatorIdentifier
                                              });
             await context.SaveChangesAsync();
             var dbContextFactory = this.GetMockDbContextFactory();
@@ -273,10 +273,11 @@
             estateClient.Setup(e => e.GetEstate(It.IsAny<String>(), It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
                         .ReturnsAsync(TestData.GetEstateResponseWithOperator1);
 
-            EstateReportingGenericContext context = await this.GetContext(Guid.NewGuid().ToString("N"));
-            context.Vouchers.Add(new Voucher {
+            EstateManagementGenericContext context = await this.GetContext(Guid.NewGuid().ToString("N"));
+            context.Vouchers.Add(new EstateManagement.Database.Entities.Voucher {
                                                  VoucherCode = TestData.VoucherCode,
-                                                 EstateId = TestData.EstateId
+                                                 EstateId = TestData.EstateId,
+                                                 OperatorIdentifier = TestData.OperatorIdentifier
                                              });
             await context.SaveChangesAsync();
             var dbContextFactory = this.GetMockDbContextFactory();
@@ -311,7 +312,7 @@
             estateClient.Setup(e => e.GetEstate(It.IsAny<String>(), It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
                         .ReturnsAsync(TestData.GetEstateResponseWithOperator1);
 
-            EstateReportingGenericContext context = await this.GetContext(Guid.NewGuid().ToString("N"));
+            EstateManagementGenericContext context = await this.GetContext(Guid.NewGuid().ToString("N"));
             var dbContextFactory = this.GetMockDbContextFactory();
             dbContextFactory.Setup(d => d.GetContext(It.IsAny<Guid>(), It.IsAny<String>(), It.IsAny<CancellationToken>())).ReturnsAsync(context);
 
@@ -328,14 +329,14 @@
                                             });
         }
 
-        private async Task<EstateReportingGenericContext> GetContext(String databaseName,
-                                                                     TestDatabaseType databaseType = TestDatabaseType.InMemory) {
-            EstateReportingGenericContext context = null;
+        private async Task<EstateManagementGenericContext> GetContext(String databaseName,
+                                                                      TestDatabaseType databaseType = TestDatabaseType.InMemory) {
+            EstateManagementGenericContext context = null;
             if (databaseType == TestDatabaseType.InMemory) {
-                DbContextOptionsBuilder<EstateReportingGenericContext> builder = new DbContextOptionsBuilder<EstateReportingGenericContext>()
-                                                                                 .UseInMemoryDatabase(databaseName)
-                                                                                 .ConfigureWarnings(w => w.Ignore(InMemoryEventId.TransactionIgnoredWarning));
-                context = new EstateReportingSqlServerContext(builder.Options);
+                DbContextOptionsBuilder<EstateManagementGenericContext> builder = new DbContextOptionsBuilder<EstateManagementGenericContext>()
+                                                                                  .UseInMemoryDatabase(databaseName)
+                                                                                  .ConfigureWarnings(w => w.Ignore(InMemoryEventId.TransactionIgnoredWarning));
+                context = new EstateManagementSqlServerContext(builder.Options);
             }
             else {
                 throw new NotSupportedException($"Database type [{databaseType}] not supported");
@@ -344,8 +345,8 @@
             return context;
         }
 
-        private Mock<Shared.EntityFramework.IDbContextFactory<EstateReportingGenericContext>> GetMockDbContextFactory() {
-            return new Mock<Shared.EntityFramework.IDbContextFactory<EstateReportingGenericContext>>();
+        private Mock<Shared.EntityFramework.IDbContextFactory<EstateManagementGenericContext>> GetMockDbContextFactory() {
+            return new Mock<Shared.EntityFramework.IDbContextFactory<EstateManagementGenericContext>>();
         }
 
         #endregion

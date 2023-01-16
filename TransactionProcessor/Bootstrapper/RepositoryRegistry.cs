@@ -32,7 +32,7 @@
     using Shared.Repositories;
     using TransactionAggregate;
     using ConnectionStringType = Shared.Repositories.ConnectionStringType;
-    using EstateReporting.Database;
+    using EstateManagement.Database.Contexts;
 
     /// <summary>
     /// 
@@ -106,7 +106,7 @@
             this.AddSingleton<IProjection<MerchantBalanceState>, MerchantBalanceProjection>();
 
             this.AddSingleton<IDbContextFactory<TransactionProcessorGenericContext>, DbContextFactory<TransactionProcessorGenericContext>>();
-            this.AddSingleton<IDbContextFactory<EstateReportingGenericContext>, DbContextFactory<EstateReportingGenericContext>>();
+            this.AddSingleton<IDbContextFactory<EstateManagementGenericContext>, DbContextFactory<EstateManagementGenericContext>>();
 
             this.AddSingleton<Func<String, TransactionProcessorGenericContext>>(cont => connectionString =>
                                                                                    {
@@ -121,19 +121,19 @@
                                                                                                NotSupportedException($"Unsupported Database Engine {databaseEngine}")
                                                                                        };
                                                                                    });
-            this.AddSingleton<Func<String, EstateReportingGenericContext>>(cont => connectionString =>
-                                                                                   {
-                                                                                       String databaseEngine =
-                                                                                           ConfigurationReader.GetValue("AppSettings", "DatabaseEngine");
+            this.AddSingleton<Func<String, EstateManagementGenericContext>>(cont => connectionString =>
+                                                                                    {
+                                                                                        String databaseEngine =
+                                                                                            ConfigurationReader.GetValue("AppSettings", "DatabaseEngine");
 
-                                                                                       return databaseEngine switch
-                                                                                       {
-                                                                                           "MySql" => new EstateReportingMySqlContext(connectionString),
-                                                                                           "SqlServer" => new EstateReportingSqlServerContext(connectionString),
-                                                                                           _ => throw new
-                                                                                               NotSupportedException($"Unsupported Database Engine {databaseEngine}")
-                                                                                       };
-                                                                                   });
+                                                                                        return databaseEngine switch
+                                                                                        {
+                                                                                            "MySql" => new EstateManagementMySqlContext(connectionString),
+                                                                                            "SqlServer" => new EstateManagementSqlServerContext(connectionString),
+                                                                                            _ => throw new
+                                                                                                NotSupportedException($"Unsupported Database Engine {databaseEngine}")
+                                                                                        };
+                                                                                    });
         }
 
         #endregion

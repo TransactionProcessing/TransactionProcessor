@@ -36,8 +36,8 @@ Background:
 	| Test Estate 1 | Voucher          | Hospital 1 Contract       |
 
 	When I create the following Products
-	| EstateName    | OperatorName     | ContractDescription       | ProductName       | DisplayText     | Value |
-	| Test Estate 1 | Voucher          | Hospital 1 Contract       | 10 KES            | 10 KES          |       |
+	| EstateName    | OperatorName | ContractDescription | ProductName | DisplayText | Value | ProductType |
+	| Test Estate 1 | Voucher      | Hospital 1 Contract | 10 KES      | 10 KES      |       | Voucher     |
 
 	Given I create the following merchants
 	| MerchantName    | AddressLine1   | Town     | Region      | Country        | ContactName    | EmailAddress                 | EstateName    |

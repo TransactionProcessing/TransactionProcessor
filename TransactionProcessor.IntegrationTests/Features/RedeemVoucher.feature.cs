@@ -181,14 +181,16 @@ namespace TransactionProcessor.IntegrationTests.Features
                         "ContractDescription",
                         "ProductName",
                         "DisplayText",
-                        "Value"});
+                        "Value",
+                        "ProductType"});
             table46.AddRow(new string[] {
                         "Test Estate 1",
                         "Voucher",
                         "Hospital 1 Contract",
                         "10 KES",
                         "10 KES",
-                        ""});
+                        "",
+                        "Voucher"});
 #line 38
  testRunner.When("I create the following Products", ((string)(null)), table46, "When ");
 #line hidden
