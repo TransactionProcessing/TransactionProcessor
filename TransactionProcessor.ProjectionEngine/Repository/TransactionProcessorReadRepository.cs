@@ -1,12 +1,12 @@
 ﻿namespace TransactionProcessor.ProjectionEngine.Repository;
 
-using Database;
-using Database.ViewEntities;
-using Dispatchers;
+using Database.Database;
 using Microsoft.EntityFrameworkCore;
 using Models;
-using static Grpc.Core.Metadata;
+using System.Diagnostics.CodeAnalysis;
+using TransactionProcessor.ProjectionEngine.Database.Database.ViewEntities;
 
+[ExcludeFromCodeCoverage]
 public class TransactionProcessorReadRepository : ITransactionProcessorReadRepository
 {
     private readonly Shared.EntityFramework.IDbContextFactory<TransactionProcessorGenericContext> ContextFactory;
@@ -17,19 +17,19 @@ public class TransactionProcessorReadRepository : ITransactionProcessorReadRepos
     }
     public async Task AddMerchantBalanceChangedEntry(MerchantBalanceChangedEntry entry,
                                                      CancellationToken cancellationToken) {
-        await using TransactionProcessorGenericContext context = await this.ContextFactory.GetContext(entry.EstateId, ConnectionStringIdentifier, cancellationToken);
+        await using TransactionProcessorGenericContext context = await this.ContextFactory.GetContext(entry.EstateId, TransactionProcessorReadRepository.ConnectionStringIdentifier, cancellationToken);
 
-        TransactionProcessor.ProjectionEngine.Database.Entities.MerchantBalanceChangedEntry entity = new() {
-                                                                                                               ChangeAmount = entry.ChangeAmount,
-                                                                                                               Reference = entry.Reference,
-                                                                                                               AggregateId = entry.AggregateId,
-                                                                                                               OriginalEventId = entry.OriginalEventId,
-                                                                                                               DebitOrCredit = entry.DebitOrCredit,
-                                                                                                               CauseOfChangeId = entry.CauseOfChangeId,
-                                                                                                               DateTime = entry.DateTime,
-                                                                                                               EstateId = entry.EstateId,
-                                                                                                               MerchantId = @entry.MerchantId
-                                                                                                           };
+        ProjectionEngine.Database.Database.Entities.MerchantBalanceChangedEntry entity = new() {
+                                                                                                   ChangeAmount = entry.ChangeAmount,
+                                                                                                   Reference = entry.Reference,
+                                                                                                   AggregateId = entry.AggregateId,
+                                                                                                   OriginalEventId = entry.OriginalEventId,
+                                                                                                   DebitOrCredit = entry.DebitOrCredit,
+                                                                                                   CauseOfChangeId = entry.CauseOfChangeId,
+                                                                                                   DateTime = entry.DateTime,
+                                                                                                   EstateId = entry.EstateId,
+                                                                                                   MerchantId = @entry.MerchantId
+                                                                                               };
         
         await context.MerchantBalanceChangedEntry.AddAsync(entity, cancellationToken);
         
@@ -52,7 +52,7 @@ public class TransactionProcessorReadRepository : ITransactionProcessorReadRepos
                                                                                    DateTime startDate,
                                                                                    DateTime endDate,
                                                                                    CancellationToken cancellationToken) {
-        await using TransactionProcessorGenericContext context = await this.ContextFactory.GetContext(estateId, ConnectionStringIdentifier, cancellationToken);
+        await using TransactionProcessorGenericContext context = await this.ContextFactory.GetContext(estateId, TransactionProcessorReadRepository.ConnectionStringIdentifier, cancellationToken);
 
         List<MerchantBalanceHistoryViewEntry> entries = await context.MerchantBalanceHistoryViewEntry
                                                                      .Where(v => v.MerchantId == merchantId && v.EntryDateTime >= startDate && v.EntryDateTime <= endDate)
@@ -62,7 +62,6 @@ public class TransactionProcessorReadRepository : ITransactionProcessorReadRepos
         List<MerchantBalanceChangedEntry> result = new List<MerchantBalanceChangedEntry>();
         entries.ForEach(e => {
                             result.Add(new MerchantBalanceChangedEntry {
-                                                                           Balance = e.Balance,
                                                                            MerchantId = e.MerchantId,
                                                                            ChangeAmount = e.ChangeAmount,
                                                                            DateTime = e.EntryDateTime,

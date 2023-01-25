@@ -1,5 +1,6 @@
 ﻿namespace TransactionProcessor.ProjectionEngine.Common
 {
+    using System.Diagnostics.CodeAnalysis;
     using Microsoft.EntityFrameworkCore;
     using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
@@ -14,6 +15,7 @@
         /// <param name="precision">The precision.</param>
         /// <param name="scale">The scale.</param>
         /// <returns></returns>
+        [ExcludeFromCodeCoverage]
         public static PropertyBuilder DecimalPrecision(this PropertyBuilder propertyBuilder,
                                                        Int32 precision,
         Int32 scale)

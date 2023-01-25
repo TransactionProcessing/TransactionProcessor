@@ -27,7 +27,6 @@ namespace TransactionProcessor
     using NLog.Extensions.Logging;
     using NuGet.Protocol;
     using ProjectionEngine.EventHandling;
-    using ProjectionEngine.State;
     using Reconciliation.DomainEvents;
     using Settlement.DomainEvents;
     using Shared.DomainDrivenDesign.EventSourcing;

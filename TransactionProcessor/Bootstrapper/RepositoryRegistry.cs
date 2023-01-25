@@ -15,11 +15,8 @@
     using MySqlConnector;
     using ProjectionEngine;
     using ProjectionEngine.Database;
-    using ProjectionEngine.Database.Entities;
     using ProjectionEngine.Dispatchers;
     using ProjectionEngine.Projections;
-    using ProjectionEngine.Repository;
-    using ProjectionEngine.State;
     using ReconciliationAggregate;
     using SettlementAggregates;
     using Shared.DomainDrivenDesign.EventSourcing;
@@ -33,6 +30,9 @@
     using TransactionAggregate;
     using ConnectionStringType = Shared.Repositories.ConnectionStringType;
     using EstateManagement.Database.Contexts;
+    using ProjectionEngine.Database.Database;
+    using ProjectionEngine.Repository;
+    using ProjectionEngine.State;
 
     /// <summary>
     /// 

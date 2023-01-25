@@ -1,6 +1,8 @@
 ﻿namespace TransactionProcessor.ProjectionEngine.EventHandling;
 
+using System.Diagnostics.CodeAnalysis;
 using Database;
+using Database.Database;
 using EstateManagement.Estate.DomainEvents;
 using ProjectionHandler;
 using Shared.DomainDrivenDesign.EventSourcing;
@@ -8,6 +10,7 @@ using Shared.EntityFramework;
 using Shared.EventStore.EventHandling;
 using State;
 
+[ExcludeFromCodeCoverage]
 public class StateProjectionEventHandler<TState> : IDomainEventHandler where TState : State
 {
     #region Fields

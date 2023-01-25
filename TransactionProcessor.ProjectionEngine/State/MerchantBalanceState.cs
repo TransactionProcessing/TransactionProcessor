@@ -1,7 +1,5 @@
 ﻿namespace TransactionProcessor.ProjectionEngine.State;
 
-using EstateManagement.Merchant.DomainEvents;
-
 public record MerchantBalanceState : State
 {
     public Guid EstateId { get; init; }

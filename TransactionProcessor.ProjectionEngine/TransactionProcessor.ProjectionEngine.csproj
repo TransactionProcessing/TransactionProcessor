@@ -11,36 +11,19 @@
     <PackageReference Include="EstateManagement.Merchant.DomainEvents" Version="2022.12.3-build32" />
     <PackageReference Include="FileProcessor.File.DomainEvents" Version="2022.12.3-build31" />
     <PackageReference Include="FileProcessor.FileImportLog.DomainEvents" Version="2022.12.3-build31" />
-    <PackageReference Include="Microsoft.EntityFrameworkCore" Version="7.0.0" />
-	  <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="7.0.0">
-		  <PrivateAssets>all</PrivateAssets>
-		  <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
-	  </PackageReference>
-    <PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" Version="7.0.0" />
-    <PackageReference Include="Microsoft.EntityFrameworkCore.Relational" Version="7.0.0" />
-    <PackageReference Include="Pomelo.EntityFrameworkCore.MySql" Version="7.0.0-alpha.1" />
+    
     <PackageReference Include="Shared" Version="2023.1.0" />
-    <PackageReference Include="Microsoft.EntityFrameworkCore.Sqlite" Version="7.0.0" />
     <PackageReference Include="Shared.EventStore" Version="2023.1.0" />
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\TransactionProcessor.ProjectionEngine.Database\TransactionProcessor.ProjectionEngine.Database.csproj" />
     <ProjectReference Include="..\TransactionProcessor.Transaction.DomainEvents\TransactionProcessor.Transaction.DomainEvents.csproj" />
   </ItemGroup>
 
   <ItemGroup>
     <Folder Include="Common\" />
     <Folder Include="Models\" />
-    <Folder Include="State\" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <None Update="Database\Views\SqlServer\Priority1\uvwMerchantBalanceHistory.View.sql">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </None>
-    <None Update="Database\Views\MySql\Priority1\uvwMerchantBalanceHistory.View.sql">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </None>
   </ItemGroup>
 
 </Project>
