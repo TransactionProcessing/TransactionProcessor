@@ -6,13 +6,16 @@ using System.Threading.Tasks;
 
 namespace TransactionProcessor.ProjectionEngine.EventHandling
 {
+    using System.Diagnostics.CodeAnalysis;
     using Shared.DomainDrivenDesign.EventSourcing;
     using Shared.EventStore.EventHandling;
     using System.Reflection;
+    using Database;
     using Microsoft.AspNetCore.Hosting;
     using Shared.General;
     using State;
 
+    [ExcludeFromCodeCoverage]
     public class EventHandler : IDomainEventHandler
     {
         private readonly Func<String, IDomainEventHandler> Resolver;

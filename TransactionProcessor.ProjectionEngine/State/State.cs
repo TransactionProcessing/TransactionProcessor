@@ -1,10 +1,13 @@
 ﻿namespace TransactionProcessor.ProjectionEngine.State;
 
+using System.Diagnostics.CodeAnalysis;
+
+[ExcludeFromCodeCoverage]
 public record State()
 {
-    public Byte[] Version { get; init; }
-    public Boolean IsInitialised => this.Version != null;
-    public Boolean IsNotInitialised => this.Version == null;
+    public byte[] Version { get; init; }
+    public bool IsInitialised => this.Version != null;
+    public bool IsNotInitialised => this.Version == null;
 
-    public Boolean ChangesApplied { get; init; }
+    public bool ChangesApplied { get; init; }
 }

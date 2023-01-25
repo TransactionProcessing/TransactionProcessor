@@ -2,12 +2,51 @@ namespace TransactionProcessor.ProjectionEngine.Tests;
 
 using EstateManagement.Merchant.DomainEvents;
 using Projections;
+using Shared.DomainDrivenDesign.EventSourcing;
 using Shouldly;
 using State;
 using Transaction.DomainEvents;
 
 public class MerchantBalanceProjectionTests
 {
+    [Theory]
+    [InlineData(typeof(MerchantCreatedEvent), true)]
+    [InlineData(typeof(ManualDepositMadeEvent), true)]
+    [InlineData(typeof(AutomaticDepositMadeEvent), true)]
+    [InlineData(typeof(TransactionHasStartedEvent), true)]
+    [InlineData(typeof(TransactionHasBeenCompletedEvent), true)]
+    [InlineData(typeof(MerchantFeeAddedToTransactionEvent), true)]
+    [InlineData(typeof(AddressAddedEvent), false)]
+    public void MerchantBalanceProjection_ShouldIHandleEvent_ReturnsExpectedValue(Type eventType, Boolean expectedResult){
+        MerchantBalanceProjection projection = new MerchantBalanceProjection();
+
+        IDomainEvent domainEvent = eventType switch
+        {
+            _ when eventType == typeof(MerchantCreatedEvent) => TestData.MerchantCreatedEvent,
+            _ when eventType == typeof(ManualDepositMadeEvent) => TestData.ManualDepositMadeEvent,
+        _ when eventType == typeof(AutomaticDepositMadeEvent) => TestData.AutomaticDepositMadeEvent,
+        _ when eventType == typeof(TransactionHasStartedEvent) => TestData.GetTransactionHasStartedEvent(),
+        _ when eventType == typeof(TransactionHasBeenCompletedEvent) => TestData.GetTransactionHasBeenCompletedEvent(),
+        _ when eventType == typeof(MerchantFeeAddedToTransactionEvent) => TestData.GetMerchantFeeAddedToTransactionEvent(),
+            _ => TestData.AddressAddedEvent
+        };
+
+        Boolean result = projection.ShouldIHandleEvent(domainEvent);
+        result.ShouldBe(expectedResult);
+    }
+
+    [Fact]
+    public async Task MerchantBalanceProjection_Handle_UnSupportedEvent_EventIsHandled()
+    {
+        MerchantBalanceProjection projection = new MerchantBalanceProjection();
+        MerchantBalanceState state = new MerchantBalanceState();
+        AddressAddedEvent @event = TestData.AddressAddedEvent;
+
+        MerchantBalanceState newState = await projection.Handle(state, @event, CancellationToken.None);
+
+        state.Equals(newState).ShouldBeTrue();
+    }
+
     [Fact]
     public async Task MerchantBalanceProjection_Handle_MerchantCreatedEvent_EventIsHandled() {
         MerchantBalanceProjection projection = new MerchantBalanceProjection();

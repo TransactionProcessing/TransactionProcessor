@@ -1,6 +1,6 @@
 ﻿namespace TransactionProcessor.ProjectionEngine.Repository;
 
-using Dispatchers;
+using System.Diagnostics.CodeAnalysis;
 using Models;
 
 public interface ITransactionProcessorReadRepository

@@ -1,12 +1,14 @@
 ﻿namespace TransactionProcessor.ProjectionEngine.Repository;
 
 using Common;
-using Database;
-using Database.Entities;
 using Microsoft.EntityFrameworkCore;
 using Shared.DomainDrivenDesign.EventSourcing;
 using State;
+using System.Diagnostics.CodeAnalysis;
+using TransactionProcessor.ProjectionEngine.Database.Database;
+using TransactionProcessor.ProjectionEngine.Database.Database.Entities;
 
+[ExcludeFromCodeCoverage]
 public class MerchantBalanceStateRepository : IProjectionStateRepository<MerchantBalanceState>
 {
     #region Fields

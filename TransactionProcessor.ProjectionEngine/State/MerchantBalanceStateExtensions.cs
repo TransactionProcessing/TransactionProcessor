@@ -1,7 +1,6 @@
 ﻿namespace TransactionProcessor.ProjectionEngine.State
 {
     using System.Diagnostics.Contracts;
-    using System.Net.Http.Headers;
     using EstateManagement.Merchant.DomainEvents;
     using Transaction.DomainEvents;
 
@@ -38,12 +37,20 @@
 
         [Pure]
         public static MerchantBalanceState HandleTransactionHasStartedEvent(this MerchantBalanceState state,
-                                                                            TransactionHasStartedEvent thse) =>
-            state.DecrementAvailableBalance(thse.TransactionAmount.GetValueOrDefault(0)).StartTransaction(thse);
+                                                                            TransactionHasStartedEvent thse){
+
+            if (thse.TransactionType == "Logon"){
+                return state;
+            }
+            state = state.DecrementAvailableBalance(thse.TransactionAmount.GetValueOrDefault(0)).StartTransaction();
+
+            return state;
+        }
 
         [Pure]
         public static MerchantBalanceState HandleTransactionHasBeenCompletedEvent(this MerchantBalanceState state,
-                                                                                  TransactionHasBeenCompletedEvent thbce) {
+                                                                                  TransactionHasBeenCompletedEvent thbce)
+        {
 
             if (thbce.IsAuthorised)
             {
@@ -64,9 +71,10 @@
         [Pure]
         public static MerchantBalanceState SetEstateId(this MerchantBalanceState state,
                                                        Guid estateId) =>
-            state with {
-                           EstateId = estateId
-                       };
+            state with
+            {
+                EstateId = estateId
+            };
 
         [Pure]
         public static MerchantBalanceState SetMerchantId(this MerchantBalanceState state,
@@ -77,34 +85,26 @@
             };
 
         [Pure]
-        public static MerchantBalanceState StartTransaction(this MerchantBalanceState state,
-                                                            TransactionHasStartedEvent domainEvent) {
-
-            if (domainEvent.TransactionType == "Logon")
-                return state;
-
-            return state with {
-                           StartedTransactionCount = state.StartedTransactionCount + 1
-                       };
-        }
-
+        public static MerchantBalanceState StartTransaction(this MerchantBalanceState state) =>
+        state with
+            {
+                StartedTransactionCount = state.StartedTransactionCount + 1
+            };
 
         [Pure]
         public static MerchantBalanceState CompleteTransaction(this MerchantBalanceState state,
-                                                               TransactionHasBeenCompletedEvent domainEvent) {
-
-            if (domainEvent.TransactionAmount.HasValue == false)
-                return state;
-
-            return state with {
-                           CompletedTransactionCount = state.CompletedTransactionCount + 1,
-                           LastSale = domainEvent.CompletedDateTime > state.LastSale ? domainEvent.CompletedDateTime : state.LastSale,
+                                                               TransactionHasBeenCompletedEvent domainEvent)
+        {
+            return state with
+            {
+                CompletedTransactionCount = state.CompletedTransactionCount + 1,
+                LastSale = domainEvent.CompletedDateTime > state.LastSale ? domainEvent.CompletedDateTime : state.LastSale,
             };
         }
 
         [Pure]
         public static MerchantBalanceState SetMerchantName(this MerchantBalanceState state,
-                                                         String merchantName) =>
+                                                         string merchantName) =>
             state with
             {
                 MerchantName = merchantName
@@ -112,14 +112,15 @@
 
         [Pure]
         public static MerchantBalanceState IncrementBalance(this MerchantBalanceState state,
-                                                            Decimal amount) =>
-            state with {
-                           Balance = state.Balance + amount
-                       };
+                                                            decimal amount) =>
+            state with
+            {
+                Balance = state.Balance + amount
+            };
 
         [Pure]
         public static MerchantBalanceState IncrementAvailableBalance(this MerchantBalanceState state,
-                                                            Decimal amount) =>
+                                                            decimal amount) =>
             state with
             {
                 AvailableBalance = state.AvailableBalance + amount
@@ -131,7 +132,7 @@
             state with
             {
                 DepositCount = state.DepositCount + 1,
-                TotalDeposited = state.TotalDeposited+mdme.Amount,
+                TotalDeposited = state.TotalDeposited + mdme.Amount,
                 LastDeposit = mdme.DepositDateTime > state.LastDeposit ? mdme.DepositDateTime : state.LastDeposit,
             };
 
@@ -157,19 +158,19 @@
 
         [Pure]
         public static MerchantBalanceState RecordAuthorisedSale(this MerchantBalanceState state,
-                                                         Decimal saleAmount) =>
+                                                         decimal saleAmount) =>
             state with
             {
-                SaleCount = state.SaleCount+1,
+                SaleCount = state.SaleCount + 1,
                 AuthorisedSales = state.AuthorisedSales + saleAmount
             };
 
         [Pure]
         public static MerchantBalanceState RecordDeclinedSale(this MerchantBalanceState state,
-                                                                Decimal saleAmount) =>
+                                                                decimal saleAmount) =>
             state with
             {
-                SaleCount = state.SaleCount+1,
+                SaleCount = state.SaleCount + 1,
                 DeclinedSales = state.DeclinedSales + saleAmount
             };
 
@@ -178,14 +179,14 @@
                                                              MerchantFeeAddedToTransactionEvent mfatte) =>
             state with
             {
-                FeeCount = state.FeeCount+1,
-                ValueOfFees = state.ValueOfFees+ mfatte.CalculatedValue,
+                FeeCount = state.FeeCount + 1,
+                ValueOfFees = state.ValueOfFees + mfatte.CalculatedValue,
                 LastFee = mfatte.FeeCalculatedDateTime > state.LastFee ? mfatte.FeeCalculatedDateTime : state.LastFee,
             };
 
         [Pure]
         public static MerchantBalanceState DecrementAvailableBalance(this MerchantBalanceState state,
-                                                                     Decimal amount) =>
+                                                                     decimal amount) =>
             state with
             {
                 AvailableBalance = state.AvailableBalance - amount
@@ -193,7 +194,8 @@
 
         [Pure]
         public static MerchantBalanceState DecrementBalance(this MerchantBalanceState state,
-                                                                     Decimal amount) =>
+                                                                     decimal amount) =>
+
             state with
             {
                 Balance = state.Balance - amount
