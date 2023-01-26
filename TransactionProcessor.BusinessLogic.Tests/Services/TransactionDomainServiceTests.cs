@@ -337,8 +337,8 @@
             
             response.EstateId.ShouldBe(TestData.EstateId);
             response.MerchantId.ShouldBe(TestData.MerchantId);
-            response.ResponseCode.ShouldBe("0000");
-            response.ResponseMessage.ShouldBe("SUCCESS");
+            response.ResponseCode.ShouldBe("1010");
+            response.ResponseMessage.ShouldBe("OPERATOR COMMS ERROR");
             response.TransactionId.ShouldBe(TestData.TransactionId);
         }
 
