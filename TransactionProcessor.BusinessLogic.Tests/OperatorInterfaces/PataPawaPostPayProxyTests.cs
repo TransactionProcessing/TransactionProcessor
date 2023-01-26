@@ -9,6 +9,7 @@ namespace TransactionProcessor.BusinessLogic.Tests.OperatorInterfaces
     using System.Threading;
     using BusinessLogic.OperatorInterfaces;
     using Common;
+    using Microsoft.Data.SqlClient;
     using Microsoft.Extensions.Caching.Memory;
     using Moq;
     using PataPawaPostPay;
@@ -17,24 +18,37 @@ namespace TransactionProcessor.BusinessLogic.Tests.OperatorInterfaces
     using TransactionProcessor.BusinessLogic.OperatorInterfaces.PataPawaPostPay;
     using Xunit;
 
-    public class PataPawaPostPayProxyTests
-    {
+    public class PataPawaPostPayProxyTests{
+        private readonly Mock<IPataPawaPostPayService> PataPawaPostPayService;
+
+        private readonly Mock<PataPawaPostPayServiceClient> PataPawaPostPayServiceClient;
+
+        private readonly Func<PataPawaPostPayServiceClient, String, String, IPataPawaPostPayService> ChannelResolver;
+
+        private readonly PataPawaPostPayProxy PataPawaPostPayProxy;
+
+        private readonly IMemoryCache MemoryCache;
+
+        public PataPawaPostPayProxyTests(){
+            PataPawaPostPayService = new Mock<IPataPawaPostPayService>();
+            PataPawaPostPayServiceClient = new Mock<PataPawaPostPayServiceClient>();
+
+            ChannelResolver = (client,
+                               clientName,
+                               s) => {
+                                  return PataPawaPostPayService.Object;
+                              };
+
+            MemoryCache = new MemoryCache(new MemoryCacheOptions());
+            PataPawaPostPayProxy = new PataPawaPostPayProxy(PataPawaPostPayServiceClient.Object, ChannelResolver, TestData.PataPawaPostPaidConfiguration, this.MemoryCache);
+        }
+
         [Fact]
         public async Task PataPawaPostPayProxy_ProcessLogonMessage_SuccessfulResponse_MessageIsProcessed() {
 
-            Mock< IPataPawaPostPayService> service = new Mock<IPataPawaPostPayService>();
-            service.Setup(s => s.getLoginRequestAsync(It.IsAny<String>(), It.IsAny<String>())).ReturnsAsync(TestData.PataPawaPostPaidSuccessfulLoginResponse);
-            Mock<PataPawaPostPayServiceClient> serviceClient = new Mock<PataPawaPostPayServiceClient>();
-            
-            Func<PataPawaPostPayServiceClient, String, IPataPawaPostPayService> channelResolver = (client,
-                                                                                                   s) => {
-                                                                                                      return service.Object;
-                                                                                                  };
-            PataPawaPostPaidConfiguration configuration = TestData.PataPawaPostPaidConfiguration;
-            IMemoryCache memoryCache = new MemoryCache(new MemoryCacheOptions());
-            PataPawaPostPayProxy proxy = new PataPawaPostPayProxy(serviceClient.Object, channelResolver, configuration, memoryCache);
+            PataPawaPostPayService.Setup(s => s.getLoginRequestAsync(It.IsAny<String>(), It.IsAny<String>())).ReturnsAsync(TestData.PataPawaPostPaidSuccessfulLoginResponse);
 
-            OperatorResponse logonResponse = await proxy.ProcessLogonMessage("", CancellationToken.None);
+            OperatorResponse logonResponse = await PataPawaPostPayProxy.ProcessLogonMessage("", CancellationToken.None);
 
             logonResponse.ShouldNotBeNull();
             logonResponse.IsSuccessful.ShouldBeTrue();
@@ -51,19 +65,9 @@ namespace TransactionProcessor.BusinessLogic.Tests.OperatorInterfaces
         [Fact]
         public async Task PataPawaPostPayProxy_ProcessLogonMessage_FailedResponse_MessageIsProcessed() {
 
-            Mock<IPataPawaPostPayService> service = new Mock<IPataPawaPostPayService>();
-            service.Setup(s => s.getLoginRequestAsync(It.IsAny<String>(), It.IsAny<String>())).ReturnsAsync(TestData.PataPawaPostPaidFailedLoginResponse);
-            Mock<PataPawaPostPayServiceClient> serviceClient = new Mock<PataPawaPostPayServiceClient>();
-
-            Func<PataPawaPostPayServiceClient, String, IPataPawaPostPayService> channelResolver = (client,
-                                                                                                   s) => {
-                                                                                                      return service.Object;
-                                                                                                  };
-            PataPawaPostPaidConfiguration configuration = TestData.PataPawaPostPaidConfiguration;
-            IMemoryCache memoryCache = new MemoryCache(new MemoryCacheOptions());
-            PataPawaPostPayProxy proxy = new PataPawaPostPayProxy(serviceClient.Object, channelResolver, configuration, memoryCache);
-
-            OperatorResponse logonResponse = await proxy.ProcessLogonMessage(TestData.TokenResponse().AccessToken, CancellationToken.None);
+            PataPawaPostPayService.Setup(s => s.getLoginRequestAsync(It.IsAny<String>(), It.IsAny<String>())).ReturnsAsync(TestData.PataPawaPostPaidFailedLoginResponse);
+            
+            OperatorResponse logonResponse = await this.PataPawaPostPayProxy.ProcessLogonMessage(TestData.TokenResponse().AccessToken, CancellationToken.None);
 
             logonResponse.ShouldNotBeNull();
             logonResponse.IsSuccessful.ShouldBeFalse();
@@ -77,29 +81,18 @@ namespace TransactionProcessor.BusinessLogic.Tests.OperatorInterfaces
         
         [Fact]
         public async Task PataPawaPostPayProxy_ProcessSaleMessage_VerifyAccount_SuccessfulResponse_MessageIsProcessed() {
-            Mock<IPataPawaPostPayService> service = new Mock<IPataPawaPostPayService>();
-            service.Setup(s => s.getVerifyRequestAsync(It.IsAny<String>(), It.IsAny<String>(), It.IsAny<String>()))
-                         .ReturnsAsync(TestData.PataPawaPostPaidSuccessfulVerifyAccountResponse);
-            Mock<PataPawaPostPayServiceClient> serviceClient = new Mock<PataPawaPostPayServiceClient>();
-
-            Func<PataPawaPostPayServiceClient, String, IPataPawaPostPayService> channelResolver = (client,
-                                                                                                   s) => {
-                                                                                                      return service.Object;
-                                                                                                  };
-            PataPawaPostPaidConfiguration configuration = TestData.PataPawaPostPaidConfiguration;
-            IMemoryCache memoryCache = new MemoryCache(new MemoryCacheOptions());
-            memoryCache.Set("PataPawaPostPayLogon", TestData.PataPawaPostPaidSuccessfulLoginOperatorResponse);
+            PataPawaPostPayService.Setup(s => s.getVerifyRequestAsync(It.IsAny<String>(), It.IsAny<String>(), It.IsAny<String>()))
+                                  .ReturnsAsync(TestData.PataPawaPostPaidSuccessfulVerifyAccountResponse);
+            MemoryCache.Set("PataPawaPostPayLogon", TestData.PataPawaPostPaidSuccessfulLoginOperatorResponse);
             
-            PataPawaPostPayProxy proxy = new PataPawaPostPayProxy(serviceClient.Object, channelResolver, configuration, memoryCache);
-
-            OperatorResponse saleResponse = await proxy.ProcessSaleMessage(TestData.TokenResponse().AccessToken,
-                                                                           TestData.TransactionId,
-                                                                           TestData.OperatorIdentifier1,
-                                                                           TestData.Merchant,
-                                                                           TestData.TransactionDateTime,
-                                                                           TestData.TransactionReference,
-                                                                           TestData.AdditionalTransactionMetaDataForPataPawaVerifyAccount(),
-                                                                           CancellationToken.None);
+            OperatorResponse saleResponse = await this.PataPawaPostPayProxy.ProcessSaleMessage(TestData.TokenResponse().AccessToken,
+                                                                                                TestData.TransactionId,
+                                                                                                TestData.OperatorIdentifier1,
+                                                                                                TestData.Merchant,
+                                                                                                TestData.TransactionDateTime,
+                                                                                                TestData.TransactionReference,
+                                                                                                TestData.AdditionalTransactionMetaDataForPataPawaVerifyAccount(),
+                                                                                                CancellationToken.None);
 
             saleResponse.ShouldNotBeNull();
             saleResponse.IsSuccessful.ShouldBeTrue();
@@ -116,58 +109,36 @@ namespace TransactionProcessor.BusinessLogic.Tests.OperatorInterfaces
         
         [Fact]
         public async Task PataPawaPostPayProxy_ProcessSaleMessage_VerifyAccount_FailedLogon_ErrorIsThrown() {
-            Mock<IPataPawaPostPayService> service = new Mock<IPataPawaPostPayService>();
-            service.Setup(s => s.getVerifyRequestAsync(It.IsAny<String>(), It.IsAny<String>(), It.IsAny<String>()))
-                         .ReturnsAsync(TestData.PataPawaPostPaidSuccessfulVerifyAccountResponse);
-            Mock<PataPawaPostPayServiceClient> serviceClient = new Mock<PataPawaPostPayServiceClient>();
-
-            Func<PataPawaPostPayServiceClient, String, IPataPawaPostPayService> channelResolver = (client,
-                                                                                                   s) => {
-                                                                                                      return service.Object;
-                                                                                                  };
-            PataPawaPostPaidConfiguration configuration = TestData.PataPawaPostPaidConfiguration;
-            IMemoryCache memoryCache = new MemoryCache(new MemoryCacheOptions());
-            memoryCache.Set("PataPawaPostPayLogon", TestData.PataPawaPostPaidFailedLoginOperatorResponse);
-
-            PataPawaPostPayProxy proxy = new PataPawaPostPayProxy(serviceClient.Object, channelResolver, configuration, memoryCache);
-
+            this.PataPawaPostPayService.Setup(s => s.getVerifyRequestAsync(It.IsAny<String>(), It.IsAny<String>(), It.IsAny<String>()))
+                .ReturnsAsync(TestData.PataPawaPostPaidSuccessfulVerifyAccountResponse);
+            MemoryCache.Set("PataPawaPostPayLogon", TestData.PataPawaPostPaidFailedLoginOperatorResponse);
+            
             ArgumentNullException ex = Should.Throw<ArgumentNullException>(async () => {
-                                                                               OperatorResponse saleResponse = await proxy.ProcessSaleMessage(TestData.TokenResponse().AccessToken,
-                                                                                   TestData.TransactionId,
-                                                                                   TestData.OperatorIdentifier1,
-                                                                                   TestData.Merchant,
-                                                                                   TestData.TransactionDateTime,
-                                                                                   TestData.TransactionReference,
-                                                                                   TestData.AdditionalTransactionMetaDataForPataPawaVerifyAccount(),
-                                                                                   CancellationToken.None);
+                                                                               OperatorResponse saleResponse = await this.PataPawaPostPayProxy.ProcessSaleMessage(TestData.TokenResponse().AccessToken,
+                                                                                                                                                                    TestData.TransactionId,
+                                                                                                                                                                    TestData.OperatorIdentifier1,
+                                                                                                                                                                    TestData.Merchant,
+                                                                                                                                                                    TestData.TransactionDateTime,
+                                                                                                                                                                    TestData.TransactionReference,
+                                                                                                                                                                    TestData.AdditionalTransactionMetaDataForPataPawaVerifyAccount(),
+                                                                                                                                                                    CancellationToken.None);
                                                                            });
             ex.ParamName.ShouldBe("PataPawaPostPaidAPIKey");
         }
         [Fact]
         public async Task PataPawaPostPayProxy_ProcessSaleMessage_VerifyAccount_MissingMessageTypeFromMetadata_ErrorIsThrown()
         {
-            Mock<IPataPawaPostPayService> service = new Mock<IPataPawaPostPayService>();
-            Mock<PataPawaPostPayServiceClient> serviceClient = new Mock<PataPawaPostPayServiceClient>();
-
-            Func<PataPawaPostPayServiceClient, String, IPataPawaPostPayService> channelResolver = (client,
-                                                                                                   s) => {
-                                                                                                      return service.Object;
-                                                                                                  };
-            PataPawaPostPaidConfiguration configuration = TestData.PataPawaPostPaidConfiguration;
-            IMemoryCache memoryCache = new MemoryCache(new MemoryCacheOptions());
-            memoryCache.Set("PataPawaPostPayLogon", TestData.PataPawaPostPaidSuccessfulLoginOperatorResponse);
-
-            PataPawaPostPayProxy proxy = new PataPawaPostPayProxy(serviceClient.Object, channelResolver, configuration, memoryCache);
+            MemoryCache.Set("PataPawaPostPayLogon", TestData.PataPawaPostPaidSuccessfulLoginOperatorResponse);
 
             ArgumentNullException ex = Should.Throw<ArgumentNullException>(async () => {
-                OperatorResponse saleResponse = await proxy.ProcessSaleMessage(TestData.TokenResponse().AccessToken,
-                    TestData.TransactionId,
-                    TestData.OperatorIdentifier1,
-                    TestData.Merchant,
-                    TestData.TransactionDateTime,
-                    TestData.TransactionReference,
-                    TestData.AdditionalTransactionMetaDataForPataPawaVerifyAccount_NoMessageType(),
-                    CancellationToken.None);
+                OperatorResponse saleResponse = await this.PataPawaPostPayProxy.ProcessSaleMessage(TestData.TokenResponse().AccessToken,
+                                                                                                    TestData.TransactionId,
+                                                                                                    TestData.OperatorIdentifier1,
+                                                                                                    TestData.Merchant,
+                                                                                                    TestData.TransactionDateTime,
+                                                                                                    TestData.TransactionReference,
+                                                                                                    TestData.AdditionalTransactionMetaDataForPataPawaVerifyAccount_NoMessageType(),
+                                                                                                    CancellationToken.None);
             });
             ex.ParamName.ShouldBe("PataPawaPostPaidMessageType");
         }
@@ -175,28 +146,18 @@ namespace TransactionProcessor.BusinessLogic.Tests.OperatorInterfaces
         [Fact]
         public async Task PataPawaPostPayProxy_ProcessSaleMessage_VerifyAccount_MissingCustomerAccountNumberFromMetadata_ErrorIsThrown()
         {
-            Mock<IPataPawaPostPayService> service = new Mock<IPataPawaPostPayService>();
-            Mock<PataPawaPostPayServiceClient> serviceClient = new Mock<PataPawaPostPayServiceClient>();
+           MemoryCache.Set("PataPawaPostPayLogon", TestData.PataPawaPostPaidSuccessfulLoginOperatorResponse);
 
-            Func<PataPawaPostPayServiceClient, String, IPataPawaPostPayService> channelResolver = (client,
-                                                                                                   s) => {
-                                                                                                      return service.Object;
-                                                                                                  };
-            PataPawaPostPaidConfiguration configuration = TestData.PataPawaPostPaidConfiguration;
-            IMemoryCache memoryCache = new MemoryCache(new MemoryCacheOptions());
-            memoryCache.Set("PataPawaPostPayLogon", TestData.PataPawaPostPaidSuccessfulLoginOperatorResponse);
-
-            PataPawaPostPayProxy proxy = new PataPawaPostPayProxy(serviceClient.Object, channelResolver, configuration, memoryCache);
-
+            
             ArgumentNullException ex = Should.Throw<ArgumentNullException>(async () => {
-                                                                               OperatorResponse saleResponse = await proxy.ProcessSaleMessage(TestData.TokenResponse().AccessToken,
-                                                                                   TestData.TransactionId,
-                                                                                   TestData.OperatorIdentifier1,
-                                                                                   TestData.Merchant,
-                                                                                   TestData.TransactionDateTime,
-                                                                                   TestData.TransactionReference,
-                                                                                   TestData.AdditionalTransactionMetaDataForPataPawaVerifyAccount_NoCustomerAccountNumber(),
-                                                                                   CancellationToken.None);
+                                                                               OperatorResponse saleResponse = await this.PataPawaPostPayProxy.ProcessSaleMessage(TestData.TokenResponse().AccessToken,
+                                                                                                                                                                    TestData.TransactionId,
+                                                                                                                                                                    TestData.OperatorIdentifier1,
+                                                                                                                                                                    TestData.Merchant,
+                                                                                                                                                                    TestData.TransactionDateTime,
+                                                                                                                                                                    TestData.TransactionReference,
+                                                                                                                                                                    TestData.AdditionalTransactionMetaDataForPataPawaVerifyAccount_NoCustomerAccountNumber(),
+                                                                                                                                                                    CancellationToken.None);
                                                                            });
             ex.ParamName.ShouldBe("CustomerAccountNumber");
         }
@@ -204,28 +165,17 @@ namespace TransactionProcessor.BusinessLogic.Tests.OperatorInterfaces
         [Fact]
         public async Task PataPawaPostPayProxy_ProcessSaleMessage_VerifyAccount_InvalidMessageType_ErrorIsThrown()
         {
-            Mock<IPataPawaPostPayService> service = new Mock<IPataPawaPostPayService>();
-            Mock<PataPawaPostPayServiceClient> serviceClient = new Mock<PataPawaPostPayServiceClient>();
-
-            Func<PataPawaPostPayServiceClient, String, IPataPawaPostPayService> channelResolver = (client,
-                                                                                                   s) => {
-                                                                                                      return service.Object;
-                                                                                                  };
-            PataPawaPostPaidConfiguration configuration = TestData.PataPawaPostPaidConfiguration;
-            IMemoryCache memoryCache = new MemoryCache(new MemoryCacheOptions());
-            memoryCache.Set("PataPawaPostPayLogon", TestData.PataPawaPostPaidSuccessfulLoginOperatorResponse);
-
-            PataPawaPostPayProxy proxy = new PataPawaPostPayProxy(serviceClient.Object, channelResolver, configuration, memoryCache);
+            MemoryCache.Set("PataPawaPostPayLogon", TestData.PataPawaPostPaidSuccessfulLoginOperatorResponse);
 
             ArgumentOutOfRangeException ex = Should.Throw<ArgumentOutOfRangeException>(async () => {
-                                                                                           OperatorResponse saleResponse = await proxy.ProcessSaleMessage(TestData.TokenResponse().AccessToken,
-                                                                                               TestData.TransactionId,
-                                                                                               TestData.OperatorIdentifier1,
-                                                                                               TestData.Merchant,
-                                                                                               TestData.TransactionDateTime,
-                                                                                               TestData.TransactionReference,
-                                                                                               TestData.AdditionalTransactionMetaDataForPataPawaVerifyAccount(pataPawaPostPaidMessageType:"Unknown"),
-                                                                                               CancellationToken.None);
+                                                                                           OperatorResponse saleResponse = await this.PataPawaPostPayProxy.ProcessSaleMessage(TestData.TokenResponse().AccessToken,
+                                                                                                                                                                                TestData.TransactionId,
+                                                                                                                                                                                TestData.OperatorIdentifier1,
+                                                                                                                                                                                TestData.Merchant,
+                                                                                                                                                                                TestData.TransactionDateTime,
+                                                                                                                                                                                TestData.TransactionReference,
+                                                                                                                                                                                TestData.AdditionalTransactionMetaDataForPataPawaVerifyAccount(pataPawaPostPaidMessageType:"Unknown"),
+                                                                                                                                                                                CancellationToken.None);
                                                                                        });
 
             ex.ParamName.ShouldBe("PataPawaPostPaidMessageType");
@@ -234,30 +184,19 @@ namespace TransactionProcessor.BusinessLogic.Tests.OperatorInterfaces
         [Fact]
         public async Task PataPawaPostPayProxy_ProcessSaleMessage_VerifyAccount_RequestFailedAtHost_ErrorIsThrown()
         {
-            Mock<IPataPawaPostPayService> service = new Mock<IPataPawaPostPayService>();
-            service.Setup(s => s.getVerifyRequestAsync(It.IsAny<String>(), It.IsAny<String>(), It.IsAny<String>()))
-                         .ReturnsAsync(TestData.PataPawaPostPaidFailedVerifyAccountResponse);
-            Mock<PataPawaPostPayServiceClient> serviceClient = new Mock<PataPawaPostPayServiceClient>();
-
-            Func<PataPawaPostPayServiceClient, String, IPataPawaPostPayService> channelResolver = (client,
-                                                                                                   s) => {
-                                                                                                      return service.Object;
-                                                                                                  };
-            PataPawaPostPaidConfiguration configuration = TestData.PataPawaPostPaidConfiguration;
-            IMemoryCache memoryCache = new MemoryCache(new MemoryCacheOptions());
-            memoryCache.Set("PataPawaPostPayLogon", TestData.PataPawaPostPaidSuccessfulLoginOperatorResponse);
-
-            PataPawaPostPayProxy proxy = new PataPawaPostPayProxy(serviceClient.Object, channelResolver, configuration, memoryCache);
-
+            this.PataPawaPostPayService.Setup(s => s.getVerifyRequestAsync(It.IsAny<String>(), It.IsAny<String>(), It.IsAny<String>()))
+                .ReturnsAsync(TestData.PataPawaPostPaidFailedVerifyAccountResponse);
+            MemoryCache.Set("PataPawaPostPayLogon", TestData.PataPawaPostPaidSuccessfulLoginOperatorResponse);
+            
             Exception ex = Should.Throw<Exception>(async () => {
-                                                       OperatorResponse saleResponse = await proxy.ProcessSaleMessage(TestData.TokenResponse().AccessToken,
-                                                           TestData.TransactionId,
-                                                           TestData.OperatorIdentifier1,
-                                                           TestData.Merchant,
-                                                           TestData.TransactionDateTime,
-                                                           TestData.TransactionReference,
-                                                           TestData.AdditionalTransactionMetaDataForPataPawaVerifyAccount(customerAccountNumber: TestData.PataPawaPostPaidAccountNumber),
-                                                           CancellationToken.None);
+                                                       OperatorResponse saleResponse = await this.PataPawaPostPayProxy.ProcessSaleMessage(TestData.TokenResponse().AccessToken,
+                                                                                                                                            TestData.TransactionId,
+                                                                                                                                            TestData.OperatorIdentifier1,
+                                                                                                                                            TestData.Merchant,
+                                                                                                                                            TestData.TransactionDateTime,
+                                                                                                                                            TestData.TransactionReference,
+                                                                                                                                            TestData.AdditionalTransactionMetaDataForPataPawaVerifyAccount(customerAccountNumber: TestData.PataPawaPostPaidAccountNumber),
+                                                                                                                                            CancellationToken.None);
                                                    });
             ex.Message.ShouldBe($"Error verifying account number {TestData.PataPawaPostPaidAccountNumber}");
         }
@@ -265,30 +204,19 @@ namespace TransactionProcessor.BusinessLogic.Tests.OperatorInterfaces
         [Fact]
         public async Task PataPawaPostPayProxy_ProcessSaleMessage_ProcessBill_SuccessfulResponse_MessageIsProcessed()
         {
-            Mock<IPataPawaPostPayService> service = new Mock<IPataPawaPostPayService>();
-            service.Setup(s => s.getPayBillRequestAsync(It.IsAny<String>(), It.IsAny<String>(), It.IsAny<String>(),
-                                                        It.IsAny<String>(), It.IsAny<String>(), It.IsAny<Decimal>()))
-                   .ReturnsAsync(TestData.PataPawaPostPaidSuccessfulProcessBillResponse);
-            Mock<PataPawaPostPayServiceClient> serviceClient = new Mock<PataPawaPostPayServiceClient>();
+            this.PataPawaPostPayService.Setup(s => s.getPayBillRequestAsync(It.IsAny<String>(), It.IsAny<String>(), It.IsAny<String>(),
+                                                                             It.IsAny<String>(), It.IsAny<String>(), It.IsAny<Decimal>()))
+                .ReturnsAsync(TestData.PataPawaPostPaidSuccessfulProcessBillResponse);
+            this.MemoryCache.Set("PataPawaPostPayLogon", TestData.PataPawaPostPaidSuccessfulLoginOperatorResponse);
 
-            Func<PataPawaPostPayServiceClient, String, IPataPawaPostPayService> channelResolver = (client,
-                                                                                                   s) => {
-                                                                                                      return service.Object;
-                                                                                                  };
-            PataPawaPostPaidConfiguration configuration = TestData.PataPawaPostPaidConfiguration;
-            IMemoryCache memoryCache = new MemoryCache(new MemoryCacheOptions());
-            memoryCache.Set("PataPawaPostPayLogon", TestData.PataPawaPostPaidSuccessfulLoginOperatorResponse);
-
-            PataPawaPostPayProxy proxy = new PataPawaPostPayProxy(serviceClient.Object, channelResolver, configuration, memoryCache);
-            
-            OperatorResponse saleResponse = await proxy.ProcessSaleMessage(TestData.TokenResponse().AccessToken,
-                                                                           TestData.TransactionId,
-                                                                           TestData.OperatorIdentifier1,
-                                                                           TestData.Merchant,
-                                                                           TestData.TransactionDateTime,
-                                                                           TestData.TransactionReference,
-                                                                           TestData.AdditionalTransactionMetaDataForPataPawaProcessBill(),
-                                                                           CancellationToken.None);
+            OperatorResponse saleResponse = await this.PataPawaPostPayProxy.ProcessSaleMessage(TestData.TokenResponse().AccessToken,
+                                                                                                TestData.TransactionId,
+                                                                                                TestData.OperatorIdentifier1,
+                                                                                                TestData.Merchant,
+                                                                                                TestData.TransactionDateTime,
+                                                                                                TestData.TransactionReference,
+                                                                                                TestData.AdditionalTransactionMetaDataForPataPawaProcessBill(),
+                                                                                                CancellationToken.None);
 
             saleResponse.ShouldNotBeNull();
             saleResponse.IsSuccessful.ShouldBeTrue();
@@ -300,56 +228,34 @@ namespace TransactionProcessor.BusinessLogic.Tests.OperatorInterfaces
         [Fact]
         public async Task PataPawaPostPayProxy_ProcessSaleMessage_ProcessBill_FailedLogon_ErrorIsThrown()
         {
-            Mock<IPataPawaPostPayService> service = new Mock<IPataPawaPostPayService>();
-            Mock<PataPawaPostPayServiceClient> serviceClient = new Mock<PataPawaPostPayServiceClient>();
-
-            Func<PataPawaPostPayServiceClient, String, IPataPawaPostPayService> channelResolver = (client,
-                                                                                                   s) => {
-                                                                                                      return service.Object;
-                                                                                                  };
-            PataPawaPostPaidConfiguration configuration = TestData.PataPawaPostPaidConfiguration;
-            IMemoryCache memoryCache = new MemoryCache(new MemoryCacheOptions());
-            memoryCache.Set("PataPawaPostPayLogon", TestData.PataPawaPostPaidFailedLoginOperatorResponse);
-
-            PataPawaPostPayProxy proxy = new PataPawaPostPayProxy(serviceClient.Object, channelResolver, configuration, memoryCache);
+            this.MemoryCache.Set("PataPawaPostPayLogon", TestData.PataPawaPostPaidFailedLoginOperatorResponse);
 
             ArgumentNullException ex = Should.Throw<ArgumentNullException>(async () => {
-                                                                               OperatorResponse saleResponse = await proxy.ProcessSaleMessage(TestData.TokenResponse().AccessToken,
-                                                                                   TestData.TransactionId,
-                                                                                   TestData.OperatorIdentifier1,
-                                                                                   TestData.Merchant,
-                                                                                   TestData.TransactionDateTime,
-                                                                                   TestData.TransactionReference,
-                                                                                   TestData.AdditionalTransactionMetaDataForPataPawaProcessBill(),
-                                                                                   CancellationToken.None);
+                                                                               OperatorResponse saleResponse = await this.PataPawaPostPayProxy.ProcessSaleMessage(TestData.TokenResponse().AccessToken,
+                                                                                                                                                                    TestData.TransactionId,
+                                                                                                                                                                    TestData.OperatorIdentifier1,
+                                                                                                                                                                    TestData.Merchant,
+                                                                                                                                                                    TestData.TransactionDateTime,
+                                                                                                                                                                    TestData.TransactionReference,
+                                                                                                                                                                    TestData.AdditionalTransactionMetaDataForPataPawaProcessBill(),
+                                                                                                                                                                    CancellationToken.None);
                                                                            });
             ex.ParamName.ShouldBe("PataPawaPostPaidAPIKey");
         }
         [Fact]
         public async Task PataPawaPostPayProxy_ProcessSaleMessage_ProcessBill_MissingMessageTypeFromMetadata_ErrorIsThrown()
         {
-            Mock<IPataPawaPostPayService> service = new Mock<IPataPawaPostPayService>();
-            Mock<PataPawaPostPayServiceClient> serviceClient = new Mock<PataPawaPostPayServiceClient>();
-
-            Func<PataPawaPostPayServiceClient, String, IPataPawaPostPayService> channelResolver = (client,
-                                                                                                   s) => {
-                                                                                                      return service.Object;
-                                                                                                  };
-            PataPawaPostPaidConfiguration configuration = TestData.PataPawaPostPaidConfiguration;
-            IMemoryCache memoryCache = new MemoryCache(new MemoryCacheOptions());
-            memoryCache.Set("PataPawaPostPayLogon", TestData.PataPawaPostPaidSuccessfulLoginOperatorResponse);
-
-            PataPawaPostPayProxy proxy = new PataPawaPostPayProxy(serviceClient.Object, channelResolver, configuration, memoryCache);
+            this.MemoryCache.Set("PataPawaPostPayLogon", TestData.PataPawaPostPaidSuccessfulLoginOperatorResponse);
 
             ArgumentNullException ex = Should.Throw<ArgumentNullException>(async () => {
-                                                                               OperatorResponse saleResponse = await proxy.ProcessSaleMessage(TestData.TokenResponse().AccessToken,
-                                                                                   TestData.TransactionId,
-                                                                                   TestData.OperatorIdentifier1,
-                                                                                   TestData.Merchant,
-                                                                                   TestData.TransactionDateTime,
-                                                                                   TestData.TransactionReference,
-                                                                                   TestData.AdditionalTransactionMetaDataForPataPawaProcessBill_NoMessageType(),
-                                                                                   CancellationToken.None);
+                                                                               OperatorResponse saleResponse = await PataPawaPostPayProxy.ProcessSaleMessage(TestData.TokenResponse().AccessToken,
+                                                                                                                                                             TestData.TransactionId,
+                                                                                                                                                             TestData.OperatorIdentifier1,
+                                                                                                                                                             TestData.Merchant,
+                                                                                                                                                             TestData.TransactionDateTime,
+                                                                                                                                                             TestData.TransactionReference,
+                                                                                                                                                             TestData.AdditionalTransactionMetaDataForPataPawaProcessBill_NoMessageType(),
+                                                                                                                                                             CancellationToken.None);
                                                                            });
             ex.ParamName.ShouldBe("PataPawaPostPaidMessageType");
         }
@@ -357,28 +263,17 @@ namespace TransactionProcessor.BusinessLogic.Tests.OperatorInterfaces
         [Fact]
         public async Task PataPawaPostPayProxy_ProcessSaleMessage_ProcessBill_MissingCustomerAccountNumberFromMetadata_ErrorIsThrown()
         {
-            Mock<IPataPawaPostPayService> service = new Mock<IPataPawaPostPayService>();
-            Mock<PataPawaPostPayServiceClient> serviceClient = new Mock<PataPawaPostPayServiceClient>();
-
-            Func<PataPawaPostPayServiceClient, String, IPataPawaPostPayService> channelResolver = (client,
-                                                                                                   s) => {
-                                                                                                      return service.Object;
-                                                                                                  };
-            PataPawaPostPaidConfiguration configuration = TestData.PataPawaPostPaidConfiguration;
-            IMemoryCache memoryCache = new MemoryCache(new MemoryCacheOptions());
-            memoryCache.Set("PataPawaPostPayLogon", TestData.PataPawaPostPaidSuccessfulLoginOperatorResponse);
-
-            PataPawaPostPayProxy proxy = new PataPawaPostPayProxy(serviceClient.Object, channelResolver, configuration, memoryCache);
+            MemoryCache.Set("PataPawaPostPayLogon", TestData.PataPawaPostPaidSuccessfulLoginOperatorResponse);
 
             ArgumentNullException ex = Should.Throw<ArgumentNullException>(async () => {
-                OperatorResponse saleResponse = await proxy.ProcessSaleMessage(TestData.TokenResponse().AccessToken,
-                    TestData.TransactionId,
-                    TestData.OperatorIdentifier1,
-                    TestData.Merchant,
-                    TestData.TransactionDateTime,
-                    TestData.TransactionReference,
-                    TestData.AdditionalTransactionMetaDataForPataPawaProcessBill_NoCustomerAccountNumber(),
-                    CancellationToken.None);
+                OperatorResponse saleResponse = await PataPawaPostPayProxy.ProcessSaleMessage(TestData.TokenResponse().AccessToken,
+                                                                                              TestData.TransactionId,
+                                                                                              TestData.OperatorIdentifier1,
+                                                                                              TestData.Merchant,
+                                                                                              TestData.TransactionDateTime,
+                                                                                              TestData.TransactionReference,
+                                                                                              TestData.AdditionalTransactionMetaDataForPataPawaProcessBill_NoCustomerAccountNumber(),
+                                                                                              CancellationToken.None);
             });
             ex.ParamName.ShouldBe("CustomerAccountNumber");
         }
@@ -386,28 +281,17 @@ namespace TransactionProcessor.BusinessLogic.Tests.OperatorInterfaces
         [Fact]
         public async Task PataPawaPostPayProxy_ProcessSaleMessage_ProcessBill_MissingMobileNumberFromMetadata_ErrorIsThrown()
         {
-            Mock<IPataPawaPostPayService> service = new Mock<IPataPawaPostPayService>();
-            Mock<PataPawaPostPayServiceClient> serviceClient = new Mock<PataPawaPostPayServiceClient>();
-
-            Func<PataPawaPostPayServiceClient, String, IPataPawaPostPayService> channelResolver = (client,
-                                                                                                   s) => {
-                                                                                                      return service.Object;
-                                                                                                  };
-            PataPawaPostPaidConfiguration configuration = TestData.PataPawaPostPaidConfiguration;
-            IMemoryCache memoryCache = new MemoryCache(new MemoryCacheOptions());
-            memoryCache.Set("PataPawaPostPayLogon", TestData.PataPawaPostPaidSuccessfulLoginOperatorResponse);
-
-            PataPawaPostPayProxy proxy = new PataPawaPostPayProxy(serviceClient.Object, channelResolver, configuration, memoryCache);
+            MemoryCache.Set("PataPawaPostPayLogon", TestData.PataPawaPostPaidSuccessfulLoginOperatorResponse);
 
             ArgumentNullException ex = Should.Throw<ArgumentNullException>(async () => {
-                                                                               OperatorResponse saleResponse = await proxy.ProcessSaleMessage(TestData.TokenResponse().AccessToken,
-                                                                                   TestData.TransactionId,
-                                                                                   TestData.OperatorIdentifier1,
-                                                                                   TestData.Merchant,
-                                                                                   TestData.TransactionDateTime,
-                                                                                   TestData.TransactionReference,
-                                                                                   TestData.AdditionalTransactionMetaDataForPataPawaProcessBill_NoMobileNumber(),
-                                                                                   CancellationToken.None);
+                                                                               OperatorResponse saleResponse = await PataPawaPostPayProxy.ProcessSaleMessage(TestData.TokenResponse().AccessToken,
+                                                                                                                                                             TestData.TransactionId,
+                                                                                                                                                             TestData.OperatorIdentifier1,
+                                                                                                                                                             TestData.Merchant,
+                                                                                                                                                             TestData.TransactionDateTime,
+                                                                                                                                                             TestData.TransactionReference,
+                                                                                                                                                             TestData.AdditionalTransactionMetaDataForPataPawaProcessBill_NoMobileNumber(),
+                                                                                                                                                             CancellationToken.None);
                                                                            });
             ex.ParamName.ShouldBe("MobileNumber");
         }
@@ -415,28 +299,17 @@ namespace TransactionProcessor.BusinessLogic.Tests.OperatorInterfaces
         [Fact]
         public async Task PataPawaPostPayProxy_ProcessSaleMessage_ProcessBill_MissingCustomerNameFromMetadata_ErrorIsThrown()
         {
-            Mock<IPataPawaPostPayService> service = new Mock<IPataPawaPostPayService>();
-            Mock<PataPawaPostPayServiceClient> serviceClient = new Mock<PataPawaPostPayServiceClient>();
-
-            Func<PataPawaPostPayServiceClient, String, IPataPawaPostPayService> channelResolver = (client,
-                                                                                                   s) => {
-                                                                                                      return service.Object;
-                                                                                                  };
-            PataPawaPostPaidConfiguration configuration = TestData.PataPawaPostPaidConfiguration;
-            IMemoryCache memoryCache = new MemoryCache(new MemoryCacheOptions());
-            memoryCache.Set("PataPawaPostPayLogon", TestData.PataPawaPostPaidSuccessfulLoginOperatorResponse);
-
-            PataPawaPostPayProxy proxy = new PataPawaPostPayProxy(serviceClient.Object, channelResolver, configuration, memoryCache);
+            MemoryCache.Set("PataPawaPostPayLogon", TestData.PataPawaPostPaidSuccessfulLoginOperatorResponse);
 
             ArgumentNullException ex = Should.Throw<ArgumentNullException>(async () => {
-                OperatorResponse saleResponse = await proxy.ProcessSaleMessage(TestData.TokenResponse().AccessToken,
-                    TestData.TransactionId,
-                    TestData.OperatorIdentifier1,
-                    TestData.Merchant,
-                    TestData.TransactionDateTime,
-                    TestData.TransactionReference,
-                    TestData.AdditionalTransactionMetaDataForPataPawaProcessBill_NoCustomerName(),
-                    CancellationToken.None);
+                OperatorResponse saleResponse = await PataPawaPostPayProxy.ProcessSaleMessage(TestData.TokenResponse().AccessToken,
+                                                                                              TestData.TransactionId,
+                                                                                              TestData.OperatorIdentifier1,
+                                                                                              TestData.Merchant,
+                                                                                              TestData.TransactionDateTime,
+                                                                                              TestData.TransactionReference,
+                                                                                              TestData.AdditionalTransactionMetaDataForPataPawaProcessBill_NoCustomerName(),
+                                                                                              CancellationToken.None);
             });
             ex.ParamName.ShouldBe("CustomerName");
         }
@@ -444,28 +317,17 @@ namespace TransactionProcessor.BusinessLogic.Tests.OperatorInterfaces
         [Fact]
         public async Task PataPawaPostPayProxy_ProcessSaleMessage_ProcessBill_MissingAmountFromMetadata_ErrorIsThrown()
         {
-            Mock<IPataPawaPostPayService> service = new Mock<IPataPawaPostPayService>();
-            Mock<PataPawaPostPayServiceClient> serviceClient = new Mock<PataPawaPostPayServiceClient>();
-
-            Func<PataPawaPostPayServiceClient, String, IPataPawaPostPayService> channelResolver = (client,
-                                                                                                   s) => {
-                                                                                                      return service.Object;
-                                                                                                  };
-            PataPawaPostPaidConfiguration configuration = TestData.PataPawaPostPaidConfiguration;
-            IMemoryCache memoryCache = new MemoryCache(new MemoryCacheOptions());
-            memoryCache.Set("PataPawaPostPayLogon", TestData.PataPawaPostPaidSuccessfulLoginOperatorResponse);
-
-            PataPawaPostPayProxy proxy = new PataPawaPostPayProxy(serviceClient.Object, channelResolver, configuration, memoryCache);
-
+            this.MemoryCache.Set("PataPawaPostPayLogon", TestData.PataPawaPostPaidSuccessfulLoginOperatorResponse);
+            
             ArgumentNullException ex = Should.Throw<ArgumentNullException>(async () => {
-                                                                               OperatorResponse saleResponse = await proxy.ProcessSaleMessage(TestData.TokenResponse().AccessToken,
-                                                                                   TestData.TransactionId,
-                                                                                   TestData.OperatorIdentifier1,
-                                                                                   TestData.Merchant,
-                                                                                   TestData.TransactionDateTime,
-                                                                                   TestData.TransactionReference,
-                                                                                   TestData.AdditionalTransactionMetaDataForPataPawaProcessBill_NoAmount(),
-                                                                                   CancellationToken.None);
+                                                                               OperatorResponse saleResponse = await PataPawaPostPayProxy.ProcessSaleMessage(TestData.TokenResponse().AccessToken,
+                                                                                                                                                             TestData.TransactionId,
+                                                                                                                                                             TestData.OperatorIdentifier1,
+                                                                                                                                                             TestData.Merchant,
+                                                                                                                                                             TestData.TransactionDateTime,
+                                                                                                                                                             TestData.TransactionReference,
+                                                                                                                                                             TestData.AdditionalTransactionMetaDataForPataPawaProcessBill_NoAmount(),
+                                                                                                                                                             CancellationToken.None);
                                                                            });
             ex.ParamName.ShouldBe("Amount");
         }
@@ -473,28 +335,17 @@ namespace TransactionProcessor.BusinessLogic.Tests.OperatorInterfaces
         [Fact]
         public async Task PataPawaPostPayProxy_ProcessSaleMessage_ProcessBill_InvalidAmountFromMetadata_ErrorIsThrown()
         {
-            Mock<IPataPawaPostPayService> service = new Mock<IPataPawaPostPayService>();
-            Mock<PataPawaPostPayServiceClient> serviceClient = new Mock<PataPawaPostPayServiceClient>();
-
-            Func<PataPawaPostPayServiceClient, String, IPataPawaPostPayService> channelResolver = (client,
-                                                                                                   s) => {
-                                                                                                      return service.Object;
-                                                                                                  };
-            PataPawaPostPaidConfiguration configuration = TestData.PataPawaPostPaidConfiguration;
-            IMemoryCache memoryCache = new MemoryCache(new MemoryCacheOptions());
-            memoryCache.Set("PataPawaPostPayLogon", TestData.PataPawaPostPaidSuccessfulLoginOperatorResponse);
-
-            PataPawaPostPayProxy proxy = new PataPawaPostPayProxy(serviceClient.Object, channelResolver, configuration, memoryCache);
+            MemoryCache.Set("PataPawaPostPayLogon", TestData.PataPawaPostPaidSuccessfulLoginOperatorResponse);
 
             ArgumentOutOfRangeException ex = Should.Throw<ArgumentOutOfRangeException>(async () => {
-                                                                                           OperatorResponse saleResponse = await proxy.ProcessSaleMessage(TestData.TokenResponse().AccessToken,
-                                                                                               TestData.TransactionId,
-                                                                                               TestData.OperatorIdentifier1,
-                                                                                               TestData.Merchant,
-                                                                                               TestData.TransactionDateTime,
-                                                                                               TestData.TransactionReference,
-                                                                                               TestData.AdditionalTransactionMetaDataForPataPawaProcessBill(pataPawaPostPaidAmount:"A1"),
-                                                                                               CancellationToken.None);
+                                                                                           OperatorResponse saleResponse = await PataPawaPostPayProxy.ProcessSaleMessage(TestData.TokenResponse().AccessToken,
+                                                                                                                                                                         TestData.TransactionId,
+                                                                                                                                                                         TestData.OperatorIdentifier1,
+                                                                                                                                                                         TestData.Merchant,
+                                                                                                                                                                         TestData.TransactionDateTime,
+                                                                                                                                                                         TestData.TransactionReference,
+                                                                                                                                                                         TestData.AdditionalTransactionMetaDataForPataPawaProcessBill(pataPawaPostPaidAmount:"A1"),
+                                                                                                                                                                         CancellationToken.None);
                                                                                        });
             ex.ParamName.ShouldBe("Amount");
         }
@@ -502,28 +353,17 @@ namespace TransactionProcessor.BusinessLogic.Tests.OperatorInterfaces
         [Fact]
         public async Task PataPawaPostPayProxy_ProcessSaleMessage_ProcessBill_InvalidMessageType_ErrorIsThrown()
         {
-            Mock<IPataPawaPostPayService> service = new Mock<IPataPawaPostPayService>();
-            Mock<PataPawaPostPayServiceClient> serviceClient = new Mock<PataPawaPostPayServiceClient>();
-
-            Func<PataPawaPostPayServiceClient, String, IPataPawaPostPayService> channelResolver = (client,
-                                                                                                   s) => {
-                                                                                                      return service.Object;
-                                                                                                  };
-            PataPawaPostPaidConfiguration configuration = TestData.PataPawaPostPaidConfiguration;
-            IMemoryCache memoryCache = new MemoryCache(new MemoryCacheOptions());
-            memoryCache.Set("PataPawaPostPayLogon", TestData.PataPawaPostPaidSuccessfulLoginOperatorResponse);
-
-            PataPawaPostPayProxy proxy = new PataPawaPostPayProxy(serviceClient.Object, channelResolver, configuration, memoryCache);
-
+            MemoryCache.Set("PataPawaPostPayLogon", TestData.PataPawaPostPaidSuccessfulLoginOperatorResponse);
+            
             ArgumentOutOfRangeException ex = Should.Throw<ArgumentOutOfRangeException>(async () => {
-                                                                                           OperatorResponse saleResponse = await proxy.ProcessSaleMessage(TestData.TokenResponse().AccessToken,
-                                                                                               TestData.TransactionId,
-                                                                                               TestData.OperatorIdentifier1,
-                                                                                               TestData.Merchant,
-                                                                                               TestData.TransactionDateTime,
-                                                                                               TestData.TransactionReference,
-                                                                                               TestData.AdditionalTransactionMetaDataForPataPawaProcessBill(pataPawaPostPaidMessageType: "Unknown"),
-                                                                                               CancellationToken.None);
+                                                                                           OperatorResponse saleResponse = await PataPawaPostPayProxy.ProcessSaleMessage(TestData.TokenResponse().AccessToken,
+                                                                                                                                                                         TestData.TransactionId,
+                                                                                                                                                                         TestData.OperatorIdentifier1,
+                                                                                                                                                                         TestData.Merchant,
+                                                                                                                                                                         TestData.TransactionDateTime,
+                                                                                                                                                                         TestData.TransactionReference,
+                                                                                                                                                                         TestData.AdditionalTransactionMetaDataForPataPawaProcessBill(pataPawaPostPaidMessageType: "Unknown"),
+                                                                                                                                                                         CancellationToken.None);
                                                                                        });
             ex.ParamName.ShouldBe("PataPawaPostPaidMessageType");
         }
@@ -531,32 +371,20 @@ namespace TransactionProcessor.BusinessLogic.Tests.OperatorInterfaces
         [Fact]
         public async Task PataPawaPostPayProxy_ProcessSaleMessage_ProcessBill_RequestFailedAtHost_ErrorThrown()
         {
-            Mock<IPataPawaPostPayService> service = new Mock<IPataPawaPostPayService>();
-            service.Setup(s => s.getPayBillRequestAsync(It.IsAny<String>(), It.IsAny<String>(), It.IsAny<String>(),
-                                                        It.IsAny<String>(), It.IsAny<String>(), It.IsAny<Decimal>()))
-                   .ReturnsAsync(TestData.PataPawaPostPaidFailedProcessBillResponse);
-            Mock<PataPawaPostPayServiceClient> serviceClient = new Mock<PataPawaPostPayServiceClient>();
-
-            Func<PataPawaPostPayServiceClient, String, IPataPawaPostPayService> channelResolver = (client,
-                                                                                                   s) => {
-                                                                                                      return service.Object;
-                                                                                                  };
-            PataPawaPostPaidConfiguration configuration = TestData.PataPawaPostPaidConfiguration;
-            IMemoryCache memoryCache = new MemoryCache(new MemoryCacheOptions());
-            memoryCache.Set("PataPawaPostPayLogon", TestData.PataPawaPostPaidSuccessfulLoginOperatorResponse);
-
-            PataPawaPostPayProxy proxy = new PataPawaPostPayProxy(serviceClient.Object, channelResolver, configuration, memoryCache);
-            
+            this.PataPawaPostPayService.Setup(s => s.getPayBillRequestAsync(It.IsAny<String>(), It.IsAny<String>(), It.IsAny<String>(),
+                                                                             It.IsAny<String>(), It.IsAny<String>(), It.IsAny<Decimal>()))
+                .ReturnsAsync(TestData.PataPawaPostPaidFailedProcessBillResponse);
+            MemoryCache.Set("PataPawaPostPayLogon", TestData.PataPawaPostPaidSuccessfulLoginOperatorResponse);
 
             Exception ex = Should.Throw<Exception>(async () => {
-                                                       await proxy.ProcessSaleMessage(TestData.TokenResponse().AccessToken,
-                                                                                      TestData.TransactionId,
-                                                                                      TestData.OperatorIdentifier1,
-                                                                                      TestData.Merchant,
-                                                                                      TestData.TransactionDateTime,
-                                                                                      TestData.TransactionReference,
-                                                                                      TestData.AdditionalTransactionMetaDataForPataPawaProcessBill(customerAccountNumber:TestData.PataPawaPostPaidAccountNumber),
-                                                                                      CancellationToken.None);
+                                                       await PataPawaPostPayProxy.ProcessSaleMessage(TestData.TokenResponse().AccessToken,
+                                                                                                     TestData.TransactionId,
+                                                                                                     TestData.OperatorIdentifier1,
+                                                                                                     TestData.Merchant,
+                                                                                                     TestData.TransactionDateTime,
+                                                                                                     TestData.TransactionReference,
+                                                                                                     TestData.AdditionalTransactionMetaDataForPataPawaProcessBill(customerAccountNumber:TestData.PataPawaPostPaidAccountNumber),
+                                                                                                     CancellationToken.None);
 
                                                    });
             ex.Message.ShouldBe($"Error paying bill for account number {TestData.PataPawaPostPaidAccountNumber}");

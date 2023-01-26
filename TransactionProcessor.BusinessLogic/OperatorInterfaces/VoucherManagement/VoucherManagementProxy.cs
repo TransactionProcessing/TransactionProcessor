@@ -9,10 +9,12 @@ namespace TransactionProcessor.BusinessLogic.OperatorInterfaces.VoucherManagemen
     using System.Threading.Tasks;
     using Common;
     using EstateManagement.DataTransferObjects.Responses;
+    using IdentityModel.Client;
     using MediatR;
     //using global::VoucherManagement.Client;
     //using global::VoucherManagement.DataTransferObjects;
     using Microsoft.EntityFrameworkCore.Storage.ValueConversion.Internal;
+    using Microsoft.Identity.Client;
     using Models;
     using Requests;
 
@@ -84,6 +86,7 @@ namespace TransactionProcessor.BusinessLogic.OperatorInterfaces.VoucherManagemen
                                                                      amountAsDecimal,
                                                                      recipientEmail,
                                                                      recipientMobile);
+
             IssueVoucherResponse response = await this.Mediator.Send(request, cancellationToken);
             
             if (response != null) {

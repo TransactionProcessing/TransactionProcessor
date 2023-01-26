@@ -302,7 +302,7 @@
                     TransactionResponseCode transactionResponseCode = TransactionResponseCode.OperatorCommsError;
                     String responseMessage = "OPERATOR COMMS ERROR";
 
-                    transactionAggregate.DeclineTransactionLocally(((Int32)validationResult.responseCode).ToString().PadLeft(4, '0'), validationResult.responseMessage);
+                    transactionAggregate.DeclineTransactionLocally(((Int32)transactionResponseCode).ToString().PadLeft(4, '0'), responseMessage);
                 }
                 else {
                     if (operatorResponse.IsSuccessful) {
