@@ -20,14 +20,14 @@
 
         private readonly PataPawaPostPayServiceClient ServiceClient;
 
-        private readonly Func<PataPawaPostPayServiceClient, String, IPataPawaPostPayService> ChannelResolver;
+        private readonly Func<PataPawaPostPayServiceClient, String,String, IPataPawaPostPayService> ChannelResolver;
 
         #endregion
 
         #region Constructors
 
         public PataPawaPostPayProxy(PataPawaPostPayServiceClient serviceClient,
-                                    Func<PataPawaPostPayServiceClient, String, IPataPawaPostPayService> channelResolver,
+                                    Func<PataPawaPostPayServiceClient, String, String, IPataPawaPostPayService> channelResolver,
                                     PataPawaPostPaidConfiguration configuration,
                                     IMemoryCache memoryCache) {
             this.ServiceClient = serviceClient;
@@ -42,7 +42,7 @@
 
         public async Task<OperatorResponse> ProcessLogonMessage(String accessToken,
                                                                 CancellationToken cancellationToken) {
-            IPataPawaPostPayService channel = this.ChannelResolver(this.ServiceClient, this.Configuration.Url);
+            IPataPawaPostPayService channel = this.ChannelResolver(this.ServiceClient, "PataPawaPostPay", this.Configuration.Url);
             login logonResponse = await channel.getLoginRequestAsync(this.Configuration.Username, this.Configuration.Password);
             if (logonResponse.status != 0) {
                 return new OperatorResponse {
@@ -146,13 +146,13 @@
             }
 
             Decimal operatorTransactionAmount = amountAsDecimal * 100;
-            IPataPawaPostPayService channel = this.ChannelResolver(this.ServiceClient, this.Configuration.Url);
+            IPataPawaPostPayService channel = this.ChannelResolver(this.ServiceClient, "PataPawaPostPay", this.Configuration.Url);
             paybill payBillResponse = await channel.getPayBillRequestAsync(this.Configuration.Username,
-                                                                                      apiKey,
-                                                                                      accountNumber,
-                                                                                      mobileNumber,
-                                                                                      customerName,
-                                                                                      operatorTransactionAmount);
+                                                                           apiKey,
+                                                                           accountNumber,
+                                                                           mobileNumber,
+                                                                           customerName,
+                                                                           operatorTransactionAmount);
 
             if (payBillResponse.status != 0) {
                 throw new Exception($"Error paying bill for account number {accountNumber}");
@@ -169,7 +169,7 @@
         private async Task<OperatorResponse> PerformVerifyAccountTransaction(String accountNumber,
                                                                              String apiKey) {
 
-            IPataPawaPostPayService channel = this.ChannelResolver(this.ServiceClient, this.Configuration.Url);
+            IPataPawaPostPayService channel = this.ChannelResolver(this.ServiceClient, "PataPawaPostPay", this.Configuration.Url);
             verify verifyResponse = await channel.getVerifyRequestAsync(this.Configuration.Username, apiKey, accountNumber);
 
             if (String.IsNullOrEmpty(verifyResponse.account_name)) {

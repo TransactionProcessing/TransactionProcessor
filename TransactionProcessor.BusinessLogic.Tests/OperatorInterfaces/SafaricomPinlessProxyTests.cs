@@ -12,12 +12,17 @@ namespace TransactionProcessor.BusinessLogic.Tests.OperatorInterfaces
     using BusinessLogic.OperatorInterfaces.SafaricomPinless;
     using Moq;
     using Moq.Protected;
+    using Shared.Logger;
     using Shouldly;
     using Testing;
     using Xunit;
 
     public class SafaricomPinlessProxyTests
     {
+        public SafaricomPinlessProxyTests(){
+            Logger.Initialise(NullLogger.Instance);
+        }
+
         [Fact]
         public async Task SafaricomPinlessProxy_ProcessLogonMessage_NullIsReturned() {
             HttpResponseMessage responseMessage = new HttpResponseMessage

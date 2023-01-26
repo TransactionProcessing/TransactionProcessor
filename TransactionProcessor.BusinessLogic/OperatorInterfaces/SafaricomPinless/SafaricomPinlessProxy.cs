@@ -12,6 +12,7 @@
     using System.Xml.Serialization;
     using Common;
     using EstateManagement.DataTransferObjects.Responses;
+    using Shared.Logger;
 
     /// <summary>
     /// 
@@ -104,6 +105,8 @@
             
             String requestUrl = this.BuildRequest(transactionDateTime, transactionReference, customerMsisdn, operatorTransactionAmount);
 
+            Logger.LogInformation($"Sending message to Safaricom [{requestUrl}]");
+
             // Concatenate the request message
             HttpRequestMessage requestMessage = new HttpRequestMessage(HttpMethod.Get, new Uri(requestUrl));
 
@@ -118,6 +121,8 @@
 
             // Get the response
             String responseContent = await responseMessage.Content.ReadAsStringAsync();
+
+            Logger.LogInformation($"Received response message from Safaricom [{responseContent}]");
 
             return this.CreateFrom(responseContent);
         }
