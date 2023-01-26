@@ -146,8 +146,7 @@ namespace TransactionProcessor.BusinessLogic.Tests.OperatorInterfaces
         [Fact]
         public async Task PataPawaPostPayProxy_ProcessSaleMessage_VerifyAccount_MissingCustomerAccountNumberFromMetadata_ErrorIsThrown()
         {
-           MemoryCache.Set("PataPawaPostPayLogon", TestData.PataPawaPostPaidSuccessfulLoginOperatorResponse);
-
+            MemoryCache.Set("PataPawaPostPayLogon", TestData.PataPawaPostPaidSuccessfulLoginOperatorResponse);
             
             ArgumentNullException ex = Should.Throw<ArgumentNullException>(async () => {
                                                                                OperatorResponse saleResponse = await this.PataPawaPostPayProxy.ProcessSaleMessage(TestData.TokenResponse().AccessToken,

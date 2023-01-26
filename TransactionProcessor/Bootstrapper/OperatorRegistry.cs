@@ -46,8 +46,7 @@
 
             this.AddTransient<Func<PataPawaPostPayServiceClient, String,String, IPataPawaPostPayService>>(context => (client,clientName,
                                                                                                                url) => {
-
-                                                                                                                  client.Endpoint.SetTraceLogging(clientName);
+                                                                                                                         client.Endpoint.SetTraceLogging(clientName);
                                                                                                                   IPataPawaPostPayService channel =
                                                                                                                       client.ChannelFactory.CreateChannel(new EndpointAddress(url));
                                                                                                                   return channel;
@@ -56,7 +55,6 @@
 
             this.AddTransient<Func<String, IOperatorProxy>>(context => operatorIdentifier => {
                                                                            return Startup.Container.GetInstance<IOperatorProxy>(operatorIdentifier);
-                                                                           
                                                                        });
         }
 
@@ -76,6 +74,4 @@
 
         #endregion
     }
-
-    
 }
