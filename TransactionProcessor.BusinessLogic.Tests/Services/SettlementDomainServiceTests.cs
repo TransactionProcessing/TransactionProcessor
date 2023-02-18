@@ -41,7 +41,7 @@
         }
 
         [Fact]
-        public async Task TransactionDomainService_ProcessSettlement_SettlementIsProcessed()
+        public async Task SettlementDomainService_ProcessSettlement_SettlementIsProcessed()
         {
             settlementAggregateRepository.Setup(s => s.GetLatestVersion(It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
                                          .ReturnsAsync(TestData.GetSettlementAggregateWithPendingMerchantFees(10));
@@ -59,7 +59,7 @@
         }
 
         [Fact]
-        public async Task TransactionDomainService_ProcessSettlement_SettlementAggregateNotCreated_NothingProcessed()
+        public async Task SettlementDomainService_ProcessSettlement_SettlementAggregateNotCreated_NothingProcessed()
         {
             settlementAggregateRepository.Setup(s => s.GetLatestVersion(It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
                                          .ReturnsAsync(TestData.GetEmptySettlementAggregate);
@@ -75,7 +75,7 @@
         }
 
         [Fact]
-        public async Task TransactionDomainService_ProcessSettlement_SettlementAggregateNoFeesToSettles_NothingProcessed()
+        public async Task SettlementDomainService_ProcessSettlement_SettlementAggregateNoFeesToSettles_NothingProcessed()
         {
             settlementAggregateRepository.Setup(s => s.GetLatestVersion(It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
                                          .ReturnsAsync(TestData.GetCreatedSettlementAggregate);
@@ -91,7 +91,7 @@
         }
 
         [Fact]
-        public async Task TransactionDomainService_ProcessSettlement_AddSettledFeeThrownException_SettlementProcessed()
+        public async Task SettlementDomainService_ProcessSettlement_AddSettledFeeThrownException_SettlementProcessed()
         {
             settlementAggregateRepository.Setup(s => s.GetLatestVersion(It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
                                          .ReturnsAsync(TestData.GetSettlementAggregateWithPendingMerchantFees(10));

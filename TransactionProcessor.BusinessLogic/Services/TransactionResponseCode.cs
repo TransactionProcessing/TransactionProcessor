@@ -3,7 +3,8 @@
     public enum TransactionResponseCode
     {
         Success = 0,
-        
+        SuccessNeedToAddDevice = 1,
+
         InvalidDeviceIdentifier = 1000,
         InvalidEstateId = 1001,
         InvalidMerchantId = 1002,
