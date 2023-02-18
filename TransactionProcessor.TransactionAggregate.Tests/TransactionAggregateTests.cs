@@ -135,7 +135,6 @@ namespace TransactionProcessor.TransactionAggregate.Tests
         [InlineData(true, "0001", TransactionType.Logon, "ABCDEFG", true, false, "A1234567890")]
         [InlineData(true, "0001", TransactionType.Logon, "ABCDEFG", true, true, "")]
         [InlineData(true, "0001", TransactionType.Logon, "ABCDEFG", true, true, null)]
-        [InlineData(true, "0001", TransactionType.Logon, "ABCDEFG", true, true, "A!234567890")]
         [InlineData(true, "0001", (TransactionType)99, "ABCDEFG", true, true, "A1234567890")]
         [InlineData(true, "0001", TransactionType.Logon, "", true, true, "A1234567890")]
         [InlineData(true, "0001", TransactionType.Logon, null, true, true, "A1234567890")]
@@ -147,7 +146,6 @@ namespace TransactionProcessor.TransactionAggregate.Tests
         [InlineData(true, "0001", TransactionType.Sale, "ABCDEFG", true, false, "A1234567890")]
         [InlineData(true, "0001", TransactionType.Sale, "ABCDEFG", true, true, "")]
         [InlineData(true, "0001", TransactionType.Sale, "ABCDEFG", true, true, null)]
-        [InlineData(true, "0001", TransactionType.Sale, "ABCDEFG", true, true, "A!234567890")]
         [InlineData(true, "0001", TransactionType.Sale, "", true, true, "A1234567890")]
         [InlineData(true, "0001", TransactionType.Sale, null, true, true, "A1234567890")]
         public void TransactionAggregate_StartTransaction_InvalidData_ErrorThrown(Boolean validTransactionDateTime, String transactionNumber, TransactionType transactionType, String transactionReference, Boolean validEstateId, Boolean validMerchantId, String deviceIdentifier)

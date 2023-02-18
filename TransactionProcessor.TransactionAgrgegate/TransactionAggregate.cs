@@ -382,12 +382,7 @@
             Guard.ThrowIfInvalidGuid(estateId, typeof(ArgumentException), $"Estate Id must not be [{Guid.Empty}]");
             Guard.ThrowIfInvalidGuid(merchantId, typeof(ArgumentException), $"Merchant Id must not be [{Guid.Empty}]");
             Guard.ThrowIfNullOrEmpty(deviceIdentifier, typeof(ArgumentException), "Device Identifier must not be null or empty");
-
-            Regex r = new Regex("^[a-zA-Z0-9]*$");
-            if (r.IsMatch(deviceIdentifier) == false) {
-                throw new ArgumentException("Device Identifier must be alphanumeric");
-            }
-
+            
             this.CheckTransactionNotAlreadyStarted();
             this.CheckTransactionNotAlreadyCompleted();
             TransactionHasStartedEvent transactionHasStartedEvent = new TransactionHasStartedEvent(this.AggregateId,
