@@ -22,6 +22,7 @@
             this.AddSingleton<ITransactionDomainService, TransactionDomainService>();
             this.AddSingleton<ISettlementDomainService, SettlementDomainService>();
             this.AddSingleton<IVoucherDomainService, VoucherDomainService>();
+            this.AddSingleton<ITransactionValidationService, TransactionValidationService>();
         }
 
         #endregion
