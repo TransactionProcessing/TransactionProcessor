@@ -18,12 +18,7 @@ jobs:
     - name: Get the version
       id: get_version
       run: echo ::set-output name=VERSION::${GITHUB_REF/refs\/tags\//}
-
-    - name: Install NET 7
-      uses: actions/setup-dotnet@v2
-      with:
-        dotnet-version: '7.0.x'
-
+      
     - name: Restore Nuget Packages
       run: dotnet restore TransactionProcessor.sln --source https://api.nuget.org/v3/index.json --source https://www.myget.org/F/transactionprocessing/api/v3/index.json
 
@@ -57,7 +52,7 @@ jobs:
 
     - name: Publish API
       if: ${{ github.event.release.prerelease == false }}
-      run: dotnet publish "TransactionProcessor\TransactionProcessor.csproj" --configuration Release --output publishOutput
+      run: dotnet publish "TransactionProcessor\TransactionProcessor.csproj" --configuration Release --output publishOutput -r win-x64 --self-contained
 
     - name: Install Octopus CLI
       if: ${{ github.event.release.prerelease == false }}
