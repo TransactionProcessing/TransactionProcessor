@@ -142,21 +142,25 @@
             return this.TokenResponse;
         }
 
+        private Boolean RequireFeeCalculation(TransactionAggregate transactionAggregate){
+            return transactionAggregate switch{
+                _ when transactionAggregate.IsAuthorised == false => false,
+                _ when transactionAggregate.IsCompleted == false => false,
+                _ when transactionAggregate.TransactionType == TransactionType.Logon => false,
+                _ when transactionAggregate.ContractId == Guid.Empty => false,
+                _ when transactionAggregate.ProductId == Guid.Empty => false,
+                _ when transactionAggregate.TransactionAmount == null => false,
+                _ => true
+            };
+        }
+
         private async Task HandleSpecificDomainEvent(TransactionHasBeenCompletedEvent domainEvent,
                                                      CancellationToken cancellationToken) {
             TransactionAggregate transactionAggregate =
                 await this.TransactionAggregateRepository.GetLatestVersion(domainEvent.TransactionId, cancellationToken);
 
-            if (transactionAggregate.IsAuthorised == false) {
-                // Ignore not successful transactions
+            if (RequireFeeCalculation(transactionAggregate) == false)
                 return;
-            }
-
-            if (transactionAggregate.IsCompleted == false || transactionAggregate.TransactionType == TransactionType.Logon ||
-                (transactionAggregate.ContractId == Guid.Empty || transactionAggregate.ProductId == Guid.Empty)) {
-                // These transactions cannot have fee values calculated so skip
-                return;
-            }
 
             this.TokenResponse = await this.GetToken(cancellationToken);
 
