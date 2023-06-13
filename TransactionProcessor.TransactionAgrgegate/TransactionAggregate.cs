@@ -103,10 +103,7 @@
                 throw new InvalidOperationException("Unsupported Fee Type");
             }
 
-            if (@event != null)
-            {
-                aggregate.ApplyAndAppend(@event);
-            }
+            aggregate.ApplyAndAppend(@event);
         }
 
         public static void AddProductDetails(this TransactionAggregate aggregate, Guid contractId,
@@ -160,11 +157,8 @@
             {
                 throw new InvalidOperationException("Unsupported Fee Type");
             }
-
-            if (@event != null)
-            {
-                aggregate.ApplyAndAppend(@event);
-            }
+            
+            aggregate.ApplyAndAppend(@event);
         }
 
         public static void AddTransactionSource(this TransactionAggregate aggregate, TransactionSource transactionSource)

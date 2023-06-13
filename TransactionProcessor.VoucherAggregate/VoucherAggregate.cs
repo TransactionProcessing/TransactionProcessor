@@ -150,8 +150,7 @@ public static class VoucherAggregateExtensions{
 
         return rdm.Next(min, max).ToString();
     }
-
-    //private static readonly Random _random = new Random();
+    
     private static readonly Random rdm = new Random();
     
     public static void PlayEvent(this VoucherAggregate aggregate, VoucherGeneratedEvent domainEvent)
