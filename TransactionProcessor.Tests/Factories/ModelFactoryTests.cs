@@ -9,6 +9,7 @@ namespace TransactionProcessor.Tests.Factories
     using Shouldly;
     using Testing;
     using TransactionProcessor.Factories;
+    using VoucherAggregate;
     using Xunit;
     using IssueVoucherResponse = Models.IssueVoucherResponse;
     using RedeemVoucherResponse = Models.RedeemVoucherResponse;

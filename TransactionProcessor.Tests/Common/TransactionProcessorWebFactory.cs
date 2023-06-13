@@ -15,7 +15,6 @@ namespace TransactionProcessor.Tests.Common
     using Models;
     using Moq;
     using Newtonsoft.Json;
-    using Shared.DomainDrivenDesign.CommandHandling;
     using Xunit;
 
     public class TransactionProcessorWebFactory<TStartup> : WebApplicationFactory<TStartup> where TStartup : class

@@ -3,7 +3,7 @@
 using System;
 using MediatR;
 
-public class ResendTransactionReceiptRequest : IRequest<Unit>
+public class ResendTransactionReceiptRequest : IRequest
 {
     #region Constructors
 
