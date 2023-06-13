@@ -13,11 +13,9 @@
     public static class SettlementAggregateExtensions{
         public static void MarkFeeAsSettled(this SettlementAggregate aggregate, Guid merchantId, Guid transactionId, Guid feeId)
         {
-            (Guid transactionId, Guid merchantId, CalculatedFee calculatedFee) pendingFee = aggregate.CalculatedFeesPendingSettlement
-                                                                                                     .SingleOrDefault(c => c.merchantId == merchantId && c.transactionId == transactionId && c.calculatedFee.FeeId == feeId);
+            (Guid transactionId, Guid merchantId, CalculatedFee calculatedFee) pendingFee = SettlementAggregateExtensions.GetPendingFee(aggregate, merchantId, transactionId, feeId);
 
-            (Guid transactionId, Guid merchantId, CalculatedFee calculatedFee) settledFee = aggregate.SettledCalculatedFees
-                                                                                                     .SingleOrDefault(c => c.merchantId == merchantId && c.transactionId == transactionId && c.calculatedFee.FeeId == feeId);
+            (Guid transactionId, Guid merchantId, CalculatedFee calculatedFee) settledFee = SettlementAggregateExtensions.GetSettledFee(aggregate, merchantId, transactionId, feeId);
 
             if (settledFee != default((Guid, Guid, CalculatedFee)))
             {
@@ -31,15 +29,7 @@
                 return;
             }
 
-            MerchantFeeSettledEvent merchantFeeSettledEvent = new MerchantFeeSettledEvent(aggregate.AggregateId,
-                                                                                          aggregate.EstateId,
-                                                                                          pendingFee.merchantId,
-                                                                                          pendingFee.transactionId,
-                                                                                          pendingFee.calculatedFee.CalculatedValue,
-                                                                                          (Int32)pendingFee.calculatedFee.FeeCalculationType,
-                                                                                          pendingFee.calculatedFee.FeeId,
-                                                                                          pendingFee.calculatedFee.FeeValue,
-                                                                                          pendingFee.calculatedFee.FeeCalculatedDateTime);
+            MerchantFeeSettledEvent merchantFeeSettledEvent = SettlementAggregateExtensions.CreateMerchantFeeSettledEvent(aggregate, pendingFee);
 
             aggregate.ApplyAndAppend(merchantFeeSettledEvent);
 
@@ -51,13 +41,30 @@
             }
         }
 
-        public static void ImmediatelyMarkFeeAsSettled(this SettlementAggregate aggregate, Guid merchantId, Guid transactionId, Guid feeId)
-        {
-            (Guid transactionId, Guid merchantId, CalculatedFee calculatedFee) pendingFee = aggregate.CalculatedFeesPendingSettlement
-                                                                                                     .SingleOrDefault(c => c.merchantId == merchantId && c.transactionId == transactionId && c.calculatedFee.FeeId == feeId);
-
+        private static (Guid transactionId, Guid merchantId, CalculatedFee calculatedFee) GetSettledFee(SettlementAggregate aggregate, Guid merchantId, Guid transactionId, Guid feeId){
             (Guid transactionId, Guid merchantId, CalculatedFee calculatedFee) settledFee = aggregate.SettledCalculatedFees
                                                                                                      .SingleOrDefault(c => c.merchantId == merchantId && c.transactionId == transactionId && c.calculatedFee.FeeId == feeId);
+            return settledFee;
+        }
+
+        private static MerchantFeeSettledEvent CreateMerchantFeeSettledEvent(SettlementAggregate aggregate, (Guid transactionId, Guid merchantId, CalculatedFee calculatedFee) feeDetails){
+            MerchantFeeSettledEvent merchantFeeSettledEvent = new MerchantFeeSettledEvent(aggregate.AggregateId,
+                                                                                          aggregate.EstateId,
+                                                                                          feeDetails.merchantId,
+                                                                                          feeDetails.transactionId,
+                                                                                          feeDetails.calculatedFee.CalculatedValue,
+                                                                                          (Int32)feeDetails.calculatedFee.FeeCalculationType,
+                                                                                          feeDetails.calculatedFee.FeeId,
+                                                                                          feeDetails.calculatedFee.FeeValue,
+                                                                                          feeDetails.calculatedFee.FeeCalculatedDateTime);
+            return merchantFeeSettledEvent;
+        }
+
+        public static void ImmediatelyMarkFeeAsSettled(this SettlementAggregate aggregate, Guid merchantId, Guid transactionId, Guid feeId)
+        {
+            (Guid transactionId, Guid merchantId, CalculatedFee calculatedFee) pendingFee = SettlementAggregateExtensions.GetPendingFee(aggregate, merchantId, transactionId, feeId);
+
+            (Guid transactionId, Guid merchantId, CalculatedFee calculatedFee) settledFee = SettlementAggregateExtensions.GetSettledFee(aggregate, merchantId, transactionId, feeId);
 
             if (settledFee != default((Guid, Guid, CalculatedFee)))
             {
@@ -71,23 +78,21 @@
                 return;
             }
 
-            MerchantFeeSettledEvent merchantFeeSettledEvent = new MerchantFeeSettledEvent(aggregate.AggregateId,
-                                                                                          aggregate.EstateId,
-                                                                                          pendingFee.merchantId,
-                                                                                          pendingFee.transactionId,
-                                                                                          pendingFee.calculatedFee.CalculatedValue,
-                                                                                          (Int32)pendingFee.calculatedFee.FeeCalculationType,
-                                                                                          pendingFee.calculatedFee.FeeId,
-                                                                                          pendingFee.calculatedFee.FeeValue,
-                                                                                          pendingFee.calculatedFee.FeeCalculatedDateTime);
+            MerchantFeeSettledEvent merchantFeeSettledEvent = SettlementAggregateExtensions.CreateMerchantFeeSettledEvent(aggregate, pendingFee);
 
             aggregate.ApplyAndAppend(merchantFeeSettledEvent);
         }
 
+        private static (Guid transactionId, Guid merchantId, CalculatedFee calculatedFee) GetPendingFee(SettlementAggregate aggregate, Guid merchantId, Guid transactionId, Guid feeId){
+            (Guid transactionId, Guid merchantId, CalculatedFee calculatedFee) pendingFee = aggregate.CalculatedFeesPendingSettlement
+                                                                                                     .SingleOrDefault(c => c.merchantId == merchantId && c.transactionId == transactionId && c.calculatedFee.FeeId == feeId);
+            return pendingFee;
+        }
+
         public static void AddFee(this SettlementAggregate aggregate,
-                           Guid merchantId,
-                           Guid transactionId,
-                           CalculatedFee calculatedFee)
+                                  Guid merchantId,
+                                  Guid transactionId,
+                                  CalculatedFee calculatedFee)
         {
             Guard.ThrowIfInvalidGuid(merchantId, nameof(merchantId));
             Guard.ThrowIfInvalidGuid(transactionId, nameof(merchantId));
