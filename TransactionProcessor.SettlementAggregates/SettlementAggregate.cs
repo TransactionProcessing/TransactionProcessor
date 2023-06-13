@@ -13,11 +13,11 @@
     public static class SettlementAggregateExtensions{
         public static void MarkFeeAsSettled(this SettlementAggregate aggregate, Guid merchantId, Guid transactionId, Guid feeId)
         {
-            (Guid transactionId, Guid merchantId, CalculatedFee calculatedFee) pendingFee = aggregate.CalculatedFeesPendingSettlement.Where(c => c.merchantId == merchantId && c.transactionId == transactionId && c.calculatedFee.FeeId == feeId)
-                                                                                                     .SingleOrDefault();
+            (Guid transactionId, Guid merchantId, CalculatedFee calculatedFee) pendingFee = aggregate.CalculatedFeesPendingSettlement
+                                                                                                     .SingleOrDefault(c => c.merchantId == merchantId && c.transactionId == transactionId && c.calculatedFee.FeeId == feeId);
 
-            (Guid transactionId, Guid merchantId, CalculatedFee calculatedFee) settledFee = aggregate.SettledCalculatedFees.Where(c => c.merchantId == merchantId && c.transactionId == transactionId && c.calculatedFee.FeeId == feeId)
-                                                                                                     .SingleOrDefault();
+            (Guid transactionId, Guid merchantId, CalculatedFee calculatedFee) settledFee = aggregate.SettledCalculatedFees
+                                                                                                     .SingleOrDefault(c => c.merchantId == merchantId && c.transactionId == transactionId && c.calculatedFee.FeeId == feeId);
 
             if (settledFee != default((Guid, Guid, CalculatedFee)))
             {
@@ -53,11 +53,11 @@
 
         public static void ImmediatelyMarkFeeAsSettled(this SettlementAggregate aggregate, Guid merchantId, Guid transactionId, Guid feeId)
         {
-            (Guid transactionId, Guid merchantId, CalculatedFee calculatedFee) pendingFee = aggregate.CalculatedFeesPendingSettlement.Where(c => c.merchantId == merchantId && c.transactionId == transactionId && c.calculatedFee.FeeId == feeId)
-                                                                                                     .SingleOrDefault();
+            (Guid transactionId, Guid merchantId, CalculatedFee calculatedFee) pendingFee = aggregate.CalculatedFeesPendingSettlement
+                                                                                                     .SingleOrDefault(c => c.merchantId == merchantId && c.transactionId == transactionId && c.calculatedFee.FeeId == feeId);
 
-            (Guid transactionId, Guid merchantId, CalculatedFee calculatedFee) settledFee = aggregate.SettledCalculatedFees.Where(c => c.merchantId == merchantId && c.transactionId == transactionId && c.calculatedFee.FeeId == feeId)
-                                                                                                     .SingleOrDefault();
+            (Guid transactionId, Guid merchantId, CalculatedFee calculatedFee) settledFee = aggregate.SettledCalculatedFees
+                                                                                                     .SingleOrDefault(c => c.merchantId == merchantId && c.transactionId == transactionId && c.calculatedFee.FeeId == feeId);
 
             if (settledFee != default((Guid, Guid, CalculatedFee)))
             {
