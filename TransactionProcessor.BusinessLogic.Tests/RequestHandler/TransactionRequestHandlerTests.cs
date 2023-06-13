@@ -8,7 +8,6 @@
     using RequestHandlers;
     using Requests;
     using Services;
-    using Shared.DomainDrivenDesign.CommandHandling;
     using Shouldly;
     using Testing;
     using Xunit;

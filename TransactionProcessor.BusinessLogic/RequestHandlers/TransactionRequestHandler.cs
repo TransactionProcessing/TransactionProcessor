@@ -120,11 +120,9 @@
 
         #endregion
 
-        public async Task<Unit> Handle(ResendTransactionReceiptRequest request,
+        public async Task Handle(ResendTransactionReceiptRequest request,
                                  CancellationToken cancellationToken) {
             await this.TransactionDomainService.ResendTransactionReceipt(request.TransactionId, request.EstateId, cancellationToken);
-
-            return Unit.Value;
         }
     }
 }

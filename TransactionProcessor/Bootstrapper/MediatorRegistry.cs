@@ -25,7 +25,6 @@
             this.AddTransient<IMediator, Mediator>();
 
             // request & notification handlers
-            this.AddTransient<ServiceFactory>(context => { return t => context.GetService(t); });
 
             this.AddSingleton<IRequestHandler<ProcessLogonTransactionRequest, ProcessLogonTransactionResponse>, TransactionRequestHandler>();
             this.AddSingleton<IRequestHandler<ProcessSaleTransactionRequest, ProcessSaleTransactionResponse>, TransactionRequestHandler>();
