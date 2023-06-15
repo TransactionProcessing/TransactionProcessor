@@ -18,3 +18,5 @@
 
 [![Codacy Badge](https://api.codacy.com/project/badge/Grade/5bcb33c3c68e473193a872f0d3375f61)](https://www.codacy.com/manual/stuart_ferguson1/TransactionProcessor?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=TransactionProcessing/TransactionProcessor&amp;utm_campaign=Badge_Grade)
 
+![Alt](https://repobeats.axiom.co/api/embed/c8050b599c102395709ec498b484adfa42c1d13d.svg "Repobeats analytics image")
+
