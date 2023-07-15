@@ -97,13 +97,13 @@ Scenario: Get Pending Settlement
 	| Test Estate 1 | Test Merchant 3 | 8                 | 0000         | SUCCESS         |
 		
 	When I get the pending settlements the following information should be returned
-	| SettlementDate | EstateName    | NumberOfFees |
-	| 2022-01-13     | Test Estate 1 | 1            |
-	| 2022-02-06     | Test Estate 1 | 1            |
+	| SettlementDate | EstateName    | MerchantName    | NumberOfFees |
+	| 2022-01-13     | Test Estate 1 | Test Merchant 2 | 1            |
+	| 2022-02-06     | Test Estate 1 | Test Merchant 3 | 1            |
 
 	When I get the completed settlements the following information should be returned
-	| SettlementDate | EstateName    | NumberOfFees |
-	| 2022-01-06     | Test Estate 1 | 2            |
+	| SettlementDate | EstateName    | MerchantName    | NumberOfFees |
+	| 2022-01-06     | Test Estate 1 | Test Merchant 1 | 2            |
 
 @PRTest
 Scenario: Process Settlement
@@ -146,9 +146,9 @@ Scenario: Process Settlement
 	| Test Estate 1 | Test Merchant 2 | 6                 | 0000         | SUCCESS         |
 
 	When I get the pending settlements the following information should be returned
-	| SettlementDate | EstateName    | NumberOfFees |
-	| 2022-01-13          | Test Estate 1 | 1            |
+	| SettlementDate | EstateName    | MerchantName    | NumberOfFees |
+	| 2022-01-13     | Test Estate 1 | Test Merchant 2 | 1            |
 
-	When I process the settlement for '2022-01-13' on Estate 'Test Estate 1' then 1 fees are marked as settled and the settlement is completed
+	When I process the settlement for '2022-01-13' on Estate 'Test Estate 1' for Merchant 'Test Merchant 2' then 1 fees are marked as settled and the settlement is completed
 
 

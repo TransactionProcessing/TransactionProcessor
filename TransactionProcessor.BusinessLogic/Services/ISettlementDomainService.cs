@@ -12,6 +12,7 @@
     {
         Task<ProcessSettlementResponse> ProcessSettlement(DateTime pendingSettlementDate,
                                                           Guid estateId,
+                                                          Guid merchantId,
                                                           CancellationToken cancellationToken);
     }
 }

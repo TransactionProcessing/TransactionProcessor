@@ -1,20 +1,13 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace TransactionProcessor.BusinessLogic.Requests
-{
+﻿namespace TransactionProcessor.BusinessLogic.Requests{
+    using System;
     using MediatR;
     using Models;
 
-    public class ProcessSettlementRequest : IRequest<ProcessSettlementResponse>
-    {
+    public class ProcessSettlementRequest : IRequest<ProcessSettlementResponse>{
         #region Constructors
 
-        private ProcessSettlementRequest(DateTime settlementDate, Guid estateId)
-        {
+        private ProcessSettlementRequest(DateTime settlementDate, Guid merchantId, Guid estateId){
+            this.MerchantId = merchantId;
             this.EstateId = estateId;
             this.SettlementDate = settlementDate;
         }
@@ -22,37 +15,21 @@ namespace TransactionProcessor.BusinessLogic.Requests
         #endregion
 
         #region Properties
-        
-        /// <summary>
-        /// Gets the estate identifier.
-        /// </summary>
-        /// <value>
-        /// The estate identifier.
-        /// </value>
-        public Guid EstateId { get; }
 
-        
-        public DateTime SettlementDate { get; }
-        
+        public Guid EstateId{ get; }
+
+        public Guid MerchantId{ get; }
+
+        public DateTime SettlementDate{ get; }
+
         #endregion
 
         #region Methods
 
-        /// <summary>
-        /// Creates the specified estate identifier.
-        /// </summary>
-        /// <param name="transactionId">The transaction identifier.</param>
-        /// <param name="estateId">The estate identifier.</param>
-        /// <param name="merchantId">The merchant identifier.</param>
-        /// <param name="deviceIdentifier">The device identifier.</param>
-        /// <param name="transactionType">Type of the transaction.</param>
-        /// <param name="transactionDateTime">The transaction date time.</param>
-        /// <param name="transactionNumber">The transaction number.</param>
-        /// <returns></returns>
         public static ProcessSettlementRequest Create(DateTime settlementDate,
-                                                      Guid estateId)
-        {
-            return new ProcessSettlementRequest(settlementDate, estateId);
+                                                      Guid merchantId,
+                                                      Guid estateId){
+            return new ProcessSettlementRequest(settlementDate, merchantId, estateId);
         }
 
         #endregion

@@ -607,14 +607,17 @@ this.FeatureBackground();
                 TechTalk.SpecFlow.Table table105 = new TechTalk.SpecFlow.Table(new string[] {
                             "SettlementDate",
                             "EstateName",
+                            "MerchantName",
                             "NumberOfFees"});
                 table105.AddRow(new string[] {
                             "2022-01-13",
                             "Test Estate 1",
+                            "Test Merchant 2",
                             "1"});
                 table105.AddRow(new string[] {
                             "2022-02-06",
                             "Test Estate 1",
+                            "Test Merchant 3",
                             "1"});
 #line 99
  testRunner.When("I get the pending settlements the following information should be returned", ((string)(null)), table105, "When ");
@@ -622,10 +625,12 @@ this.FeatureBackground();
                 TechTalk.SpecFlow.Table table106 = new TechTalk.SpecFlow.Table(new string[] {
                             "SettlementDate",
                             "EstateName",
+                            "MerchantName",
                             "NumberOfFees"});
                 table106.AddRow(new string[] {
                             "2022-01-06",
                             "Test Estate 1",
+                            "Test Merchant 1",
                             "2"});
 #line 104
  testRunner.When("I get the completed settlements the following information should be returned", ((string)(null)), table106, "When ");
@@ -900,17 +905,20 @@ this.FeatureBackground();
                 TechTalk.SpecFlow.Table table113 = new TechTalk.SpecFlow.Table(new string[] {
                             "SettlementDate",
                             "EstateName",
+                            "MerchantName",
                             "NumberOfFees"});
                 table113.AddRow(new string[] {
                             "2022-01-13",
                             "Test Estate 1",
+                            "Test Merchant 2",
                             "1"});
 #line 148
  testRunner.When("I get the pending settlements the following information should be returned", ((string)(null)), table113, "When ");
 #line hidden
 #line 152
- testRunner.When("I process the settlement for \'2022-01-13\' on Estate \'Test Estate 1\' then 1 fees a" +
-                        "re marked as settled and the settlement is completed", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "When ");
+ testRunner.When("I process the settlement for \'2022-01-13\' on Estate \'Test Estate 1\' for Merchant " +
+                        "\'Test Merchant 2\' then 1 fees are marked as settled and the settlement is comple" +
+                        "ted", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "When ");
 #line hidden
             }
             this.ScenarioCleanup();

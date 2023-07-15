@@ -13,9 +13,10 @@ namespace TransactionProcessor.BusinessLogic.Common
     public static class Helpers
     {
         public static Guid CalculateSettlementAggregateId(DateTime settlementDate,
+                                                    Guid merchantId, 
                                                     Guid estateId)
         {
-            Guid aggregateId = GuidCalculator.Combine(estateId, settlementDate.ToGuid());
+            Guid aggregateId = GuidCalculator.Combine(estateId,merchantId, settlementDate.ToGuid());
             return aggregateId;
         }
     }

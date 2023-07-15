@@ -17,11 +17,13 @@
         Task<SettlementResponse> GetSettlementByDate(String accessToken, 
                                                                    DateTime settlementDate,
                                                                    Guid estateId,
+                                                                   Guid merchantId,
                                                                    CancellationToken cancellationToken);
 
         Task ProcessSettlement(String accessToken,
                                DateTime settlementDate,
                                Guid estateId,
+                               Guid merchantId,
                                CancellationToken cancellationToken);
 
         Task ResendEmailReceipt(String accessToken,
@@ -51,13 +53,6 @@
                                                   Guid transactionId,
                                                   CancellationToken cancellationToken);
 
-        /// <summary>
-        /// Redeems the voucher.
-        /// </summary>
-        /// <param name="accessToken">The access token.</param>
-        /// <param name="redeemVoucherRequest">The redeem voucher request.</param>
-        /// <param name="cancellationToken">The cancellation token.</param>
-        /// <returns></returns>
         Task<RedeemVoucherResponse> RedeemVoucher(String accessToken,
                                                   RedeemVoucherRequest redeemVoucherRequest,
                                                   CancellationToken cancellationToken);

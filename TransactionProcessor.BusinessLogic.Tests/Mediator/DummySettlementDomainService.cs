@@ -10,6 +10,7 @@ public class DummySettlementDomainService : ISettlementDomainService
 {
     public async Task<ProcessSettlementResponse> ProcessSettlement(DateTime pendingSettlementDate,
                                                                    Guid estateId,
+                                                                   Guid merchantId,
                                                                    CancellationToken cancellationToken) {
         return new ProcessSettlementResponse();
     }

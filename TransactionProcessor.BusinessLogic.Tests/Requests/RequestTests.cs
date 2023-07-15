@@ -85,10 +85,13 @@
 
         [Fact]
         public void ProcessSettlementRequest_CanBeCreated_IsCreated() {
-            ProcessSettlementRequest processSettlementRequest = ProcessSettlementRequest.Create(TestData.SettlementDate, TestData.EstateId);
+            ProcessSettlementRequest processSettlementRequest = ProcessSettlementRequest.Create(TestData.SettlementDate, 
+                                                                                                TestData.MerchantId,
+                                                                                                TestData.EstateId);
 
             processSettlementRequest.ShouldNotBeNull();
             processSettlementRequest.EstateId.ShouldBe(TestData.EstateId);
+            processSettlementRequest.MerchantId.ShouldBe(TestData.MerchantId);
             processSettlementRequest.SettlementDate.ShouldBe(TestData.SettlementDate);
         }
 

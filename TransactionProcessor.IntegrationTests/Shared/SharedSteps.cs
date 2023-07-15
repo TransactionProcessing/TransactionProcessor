@@ -1053,17 +1053,19 @@ namespace TransactionProcessor.IntegrationTests.Shared
             {
                 // Get the merchant name
                 EstateDetails estateDetails = this.TestingContext.GetEstateDetails(tableRow);
+                Guid merchantId = estateDetails.GetMerchantId(SpecflowTableHelper.GetStringRowValue(tableRow, "MerchantName"));
                 String settlementDateString = SpecflowTableHelper.GetStringRowValue(tableRow, "SettlementDate");
                 Int32 numberOfFees = SpecflowTableHelper.GetIntValue(tableRow, "NumberOfFees");
                 DateTime settlementDate = SpecflowTableHelper.GetDateForDateString(settlementDateString, DateTime.UtcNow.Date);
 
-                Guid aggregateId = Helpers.CalculateSettlementAggregateId(settlementDate, estateDetails.EstateId);
+                Guid aggregateId = Helpers.CalculateSettlementAggregateId(settlementDate, merchantId, estateDetails.EstateId);
                 await Retry.For(async () =>
                                 {
                                     TransactionProcessor.DataTransferObjects.SettlementResponse settlements =
                                         await this.TestingContext.DockerHelper.TransactionProcessorClient.GetSettlementByDate(this.TestingContext.AccessToken,
                                             settlementDate,
                                             estateDetails.EstateId,
+                                            merchantId,
                                             CancellationToken.None);
 
                                     settlements.NumberOfFeesSettled.ShouldBe(numberOfFees, $"Settlement date {settlementDate}");
@@ -1078,17 +1080,19 @@ namespace TransactionProcessor.IntegrationTests.Shared
             {
                 // Get the merchant name
                 EstateDetails estateDetails = this.TestingContext.GetEstateDetails(tableRow);
+                Guid merchantId = estateDetails.GetMerchantId(SpecflowTableHelper.GetStringRowValue(tableRow, "MerchantName"));
                 String settlementDateString = SpecflowTableHelper.GetStringRowValue(tableRow, "SettlementDate");
                 Int32 numberOfFees = SpecflowTableHelper.GetIntValue(tableRow, "NumberOfFees");
                 DateTime settlementDate = SpecflowTableHelper.GetDateForDateString(settlementDateString, DateTime.UtcNow.Date);
                 
-                Guid aggregateid = Helpers.CalculateSettlementAggregateId(settlementDate, estateDetails.EstateId);
+                Guid aggregateid = Helpers.CalculateSettlementAggregateId(settlementDate,merchantId, estateDetails.EstateId);
                 await Retry.For(async () =>
                                 {
                                     TransactionProcessor.DataTransferObjects.SettlementResponse settlements =
                                         await this.TestingContext.DockerHelper.TransactionProcessorClient.GetSettlementByDate(this.TestingContext.AccessToken,
                                             settlementDate,
                                             estateDetails.EstateId,
+                                            merchantId,
                                             CancellationToken.None);
                                     
                                     settlements.NumberOfFeesPendingSettlement.ShouldBe(numberOfFees, $"Settlment date {settlementDate}");
@@ -1096,15 +1100,17 @@ namespace TransactionProcessor.IntegrationTests.Shared
             }
         }
 
-        [When(@"I process the settlement for '([^']*)' on Estate '([^']*)' then (.*) fees are marked as settled and the settlement is completed")]
-        public async Task WhenIProcessTheSettlementForOnEstateThenFeesAreMarkedAsSettledAndTheSettlementIsCompleted(String dateString, String estateName, Int32 numberOfFeesSettled)
+        [When(@"I process the settlement for '([^']*)' on Estate '([^']*)' for Merchant '([^']*)' then (.*) fees are marked as settled and the settlement is completed")]
+        public async Task WhenIProcessTheSettlementForOnEstateThenFeesAreMarkedAsSettledAndTheSettlementIsCompleted(String dateString, String estateName, String merchantName, Int32 numberOfFeesSettled)
         {
             DateTime settlementDate = SpecflowTableHelper.GetDateForDateString(dateString, DateTime.UtcNow.Date);
 
             EstateDetails estateDetails = this.TestingContext.GetEstateDetails(estateName);
+            Guid merchantId = estateDetails.GetMerchantId(merchantName);
             await this.TestingContext.DockerHelper.TransactionProcessorClient.ProcessSettlement(this.TestingContext.AccessToken,
                                                                                           settlementDate,
                                                                                           estateDetails.EstateId,
+                                                                                          merchantId,
                                                                                           CancellationToken.None);
 
             await Retry.For(async () =>
@@ -1113,6 +1119,7 @@ namespace TransactionProcessor.IntegrationTests.Shared
                                     await this.TestingContext.DockerHelper.TransactionProcessorClient.GetSettlementByDate(this.TestingContext.AccessToken,
                                         settlementDate,
                                         estateDetails.EstateId,
+                                        merchantId,
                                         CancellationToken.None);
 
                                 settlement.NumberOfFeesPendingSettlement.ShouldBe(0);

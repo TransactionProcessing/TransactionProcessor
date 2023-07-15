@@ -214,7 +214,7 @@
                 // Determine when the fee should be applied
                 DateTime settlementDate = this.CalculateSettlementDate(merchant.SettlementSchedule, domainEvent.CompletedDateTime);
 
-                Guid aggregateId = Helpers.CalculateSettlementAggregateId(settlementDate, domainEvent.EstateId);
+                Guid aggregateId = Helpers.CalculateSettlementAggregateId(settlementDate, domainEvent.MerchantId, domainEvent.EstateId);
 
                 // We need to add the fees to a pending settlement stream (for today)
                 SettlementAggregate aggregate = await this.SettlementAggregateRepository.GetLatestVersion(aggregateId, cancellationToken);
@@ -282,7 +282,7 @@
                 return;
             }
 
-            Guid aggregateId = Helpers.CalculateSettlementAggregateId(domainEvent.SettlementDueDate, domainEvent.EstateId);
+            Guid aggregateId = Helpers.CalculateSettlementAggregateId(domainEvent.SettlementDueDate, domainEvent.MerchantId, domainEvent.EstateId);
 
             SettlementAggregate pendingSettlementAggregate = await this.SettlementAggregateRepository.GetLatestVersion(aggregateId, cancellationToken);
 

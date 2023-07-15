@@ -51,7 +51,6 @@ namespace TransactionProcessor.BusinessLogic.Tests.Manager
             EstateManagementGenericContext context = await this.GetContext(Guid.NewGuid().ToString("N"), TestDatabaseType.InMemory);
             await context.Vouchers.AddAsync(new Voucher
             {
-                EstateId = TestData.EstateId,
                 VoucherId = TestData.VoucherId,
                 VoucherCode = TestData.VoucherCode,
                 OperatorIdentifier = TestData.OperatorIdentifier,

@@ -504,6 +504,7 @@
 
         public static ProcessSettlementRequest ProcessSettlementRequest =>
             ProcessSettlementRequest.Create(TestData.SettlementDate,
+                                            TestData.MerchantId,
                                             TestData.EstateId);
 
         public static ProcessLogonTransactionResponse ProcessLogonTransactionResponseModel =>
@@ -1179,7 +1180,13 @@
         public static RedeemVoucherRequest RedeemVoucherRequest = RedeemVoucherRequest.Create(TestData.EstateId, TestData.VoucherCode, TestData.RedeemedDateTime);
 
         private static Decimal RemainingBalance = 1.00m;
-        
+
+        public static Int32 MerchantReportingId = 1;
+
+        public static Int32 ContractReportingId = 1;
+
+        public static Int32 EstateReportingId = 1;
+
         public static RedeemVoucherResponse RedeemVoucherResponse =>
             new RedeemVoucherResponse
             {
