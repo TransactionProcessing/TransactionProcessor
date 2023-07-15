@@ -20,7 +20,7 @@ namespace TransactionProcessor.SettlementAggregates.Tests
         public void PendingSettlementAggregate_Create_AggregateIsCreated()
         {
             SettlementAggregate aggregate = SettlementAggregate.Create(TestData.SettlementAggregateId);
-            aggregate.Create(TestData.EstateId, TestData.SettlementDate);
+            aggregate.Create(TestData.EstateId,TestData.MerchantId, TestData.SettlementDate);
             aggregate.EstateId.ShouldBe(TestData.EstateId);
             aggregate.SettlementDate.ShouldBe(TestData.SettlementDate.Date);
             aggregate.IsCreated.ShouldBeTrue();
@@ -31,11 +31,11 @@ namespace TransactionProcessor.SettlementAggregates.Tests
         public void SettlementAggregate_Create_AlreadyCreated_ErrorThrown()
         {
             SettlementAggregate aggregate = SettlementAggregate.Create(TestData.SettlementAggregateId);
-            aggregate.Create(TestData.EstateId, TestData.SettlementDate);
+            aggregate.Create(TestData.EstateId, TestData.MerchantId, TestData.SettlementDate);
 
             Should.Throw<InvalidOperationException>(() =>
                                                     {
-                                                        aggregate.Create(TestData.EstateId, TestData.SettlementDate);
+                                                        aggregate.Create(TestData.EstateId, TestData.MerchantId, TestData.SettlementDate);
                                                     });
         }
 
@@ -43,7 +43,7 @@ namespace TransactionProcessor.SettlementAggregates.Tests
         public void SettlementAggregate_AddFee_FeeIsAdded()
         {
             SettlementAggregate aggregate = SettlementAggregate.Create(TestData.SettlementAggregateId);
-            aggregate.Create(TestData.EstateId, TestData.SettlementDate);
+            aggregate.Create(TestData.EstateId, TestData.MerchantId, TestData.SettlementDate);
             aggregate.AddFee(TestData.MerchantId, TestData.TransactionId, TestData.CalculatedFeeMerchantFee());
             
             aggregate.AggregateId.ShouldBe(TestData.SettlementAggregateId);
@@ -54,7 +54,7 @@ namespace TransactionProcessor.SettlementAggregates.Tests
         public void SettlementAggregate_AddFee_TwoFeesAdded_FeesAreAdded()
         {
             SettlementAggregate aggregate = SettlementAggregate.Create(TestData.SettlementAggregateId);
-            aggregate.Create(TestData.EstateId, TestData.SettlementDate);
+            aggregate.Create(TestData.EstateId, TestData.MerchantId, TestData.SettlementDate);
             aggregate.AddFee(TestData.MerchantId, TestData.TransactionId, TestData.CalculatedFeeMerchantFee());
             aggregate.AddFee(TestData.MerchantId, TestData.TransactionId, TestData.CalculatedFeeMerchantFee2);
 
@@ -66,7 +66,7 @@ namespace TransactionProcessor.SettlementAggregates.Tests
         public void SettlementAggregate_AddFee_TwoFeesAdded_SameFeeIdDifferentTransaction_FeesAreAdded()
         {
             SettlementAggregate aggregate = SettlementAggregate.Create(TestData.SettlementAggregateId);
-            aggregate.Create(TestData.EstateId, TestData.SettlementDate);
+            aggregate.Create(TestData.EstateId, TestData.MerchantId, TestData.SettlementDate);
             aggregate.AddFee(TestData.MerchantId, TestData.TransactionId, TestData.CalculatedFeeMerchantFee());
             aggregate.AddFee(TestData.MerchantId, TestData.TransactionId2, TestData.CalculatedFeeMerchantFee());
 
@@ -91,7 +91,7 @@ namespace TransactionProcessor.SettlementAggregates.Tests
         public void SettlementAggregate_AddFee_DuplicateFee_NoErrorThrown()
         {
             SettlementAggregate aggregate = SettlementAggregate.Create(TestData.SettlementAggregateId);
-            aggregate.Create(TestData.EstateId, TestData.SettlementDate);
+            aggregate.Create(TestData.EstateId, TestData.MerchantId, TestData.SettlementDate);
             aggregate.AddFee(TestData.MerchantId, TestData.TransactionId, TestData.CalculatedFeeMerchantFee());
 
             Should.NotThrow(() =>
@@ -105,7 +105,7 @@ namespace TransactionProcessor.SettlementAggregates.Tests
         public void SettlementAggregate_AddFee_InvalidFeeType_ErrorThrown()
         {
             SettlementAggregate aggregate = SettlementAggregate.Create(TestData.SettlementAggregateId);
-            aggregate.Create(TestData.EstateId, TestData.SettlementDate);
+            aggregate.Create(TestData.EstateId, TestData.MerchantId, TestData.SettlementDate);
             Should.Throw<InvalidOperationException>(() =>
                                                     {
                                                         aggregate.AddFee(TestData.MerchantId, TestData.TransactionId, TestData.CalculatedFeeServiceProviderFee);
@@ -116,7 +116,7 @@ namespace TransactionProcessor.SettlementAggregates.Tests
         public void SettlementAggregate_MarkFeeAsSettled_FeeIsSettledAndSettlementCompleted()
         {
             SettlementAggregate aggregate = SettlementAggregate.Create(TestData.SettlementAggregateId);
-            aggregate.Create(TestData.EstateId, TestData.SettlementDate);
+            aggregate.Create(TestData.EstateId, TestData.MerchantId, TestData.SettlementDate);
             aggregate.AddFee(TestData.MerchantId, TestData.TransactionId, TestData.CalculatedFeeMerchantFee());
 
             aggregate.GetNumberOfFeesPendingSettlement().ShouldBe(1);
@@ -132,7 +132,7 @@ namespace TransactionProcessor.SettlementAggregates.Tests
         public void SettlementAggregate_MarkFeeAsSettled_FeeIsSettled_SettlementNotCompleted()
         {
             SettlementAggregate aggregate = SettlementAggregate.Create(TestData.SettlementAggregateId);
-            aggregate.Create(TestData.EstateId, TestData.SettlementDate);
+            aggregate.Create(TestData.EstateId, TestData.MerchantId, TestData.SettlementDate);
             aggregate.AddFee(TestData.MerchantId, TestData.TransactionId, TestData.CalculatedFeeMerchantFee());
             aggregate.AddFee(TestData.MerchantId, TestData.TransactionId, TestData.CalculatedFeeMerchantFee2);
 
@@ -149,7 +149,7 @@ namespace TransactionProcessor.SettlementAggregates.Tests
         public void SettlementAggregate_MarkFeeAsSettled_PendingFeeNotFound_NoErrorThrown()
         {
             SettlementAggregate aggregate = SettlementAggregate.Create(TestData.SettlementAggregateId);
-            aggregate.Create(TestData.EstateId, TestData.SettlementDate);
+            aggregate.Create(TestData.EstateId, TestData.MerchantId, TestData.SettlementDate);
 
             aggregate.MarkFeeAsSettled(TestData.MerchantId, TestData.TransactionId, TestData.CalculatedFeeMerchantFee().FeeId);
 
@@ -161,7 +161,7 @@ namespace TransactionProcessor.SettlementAggregates.Tests
         public void SettlementAggregate_MarkFeeAsSettled_FeeAlreadySettled_NoErrorThrown()
         {
             SettlementAggregate aggregate = SettlementAggregate.Create(TestData.SettlementAggregateId);
-            aggregate.Create(TestData.EstateId, TestData.SettlementDate);
+            aggregate.Create(TestData.EstateId, TestData.MerchantId, TestData.SettlementDate);
             aggregate.AddFee(TestData.MerchantId, TestData.TransactionId, TestData.CalculatedFeeMerchantFee());
 
             aggregate.GetNumberOfFeesPendingSettlement().ShouldBe(1);
@@ -178,7 +178,7 @@ namespace TransactionProcessor.SettlementAggregates.Tests
         public void SettlementAggregate_ImmediatelyMarkFeeAsSettled_FeeIsSettledAndSettlementNotCompleted()
         {
             SettlementAggregate aggregate = SettlementAggregate.Create(TestData.SettlementAggregateId);
-            aggregate.Create(TestData.EstateId, TestData.SettlementDate);
+            aggregate.Create(TestData.EstateId, TestData.MerchantId, TestData.SettlementDate);
             aggregate.AddFee(TestData.MerchantId, TestData.TransactionId, TestData.CalculatedFeeMerchantFee());
 
             aggregate.GetNumberOfFeesPendingSettlement().ShouldBe(1);

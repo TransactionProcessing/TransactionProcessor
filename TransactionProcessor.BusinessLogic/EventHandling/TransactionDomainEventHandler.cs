@@ -220,7 +220,7 @@
                 SettlementAggregate aggregate = await this.SettlementAggregateRepository.GetLatestVersion(aggregateId, cancellationToken);
 
                 if (aggregate.IsCreated == false) {
-                    aggregate.Create(transactionAggregate.EstateId, settlementDate);
+                    aggregate.Create(transactionAggregate.EstateId, transactionAggregate.MerchantId, settlementDate);
                 }
 
                 //Guid eventId = IdGenerationService.GenerateEventId(new {

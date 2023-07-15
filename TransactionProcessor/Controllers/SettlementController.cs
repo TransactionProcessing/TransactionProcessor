@@ -70,6 +70,7 @@ namespace TransactionProcessor.Controllers
             var settlementResponse = new SettlementResponse
                                             {
                                                 EstateId = settlementAggregate.EstateId,
+                                                MerchantId = settlementAggregate.MerchantId,
                                                 NumberOfFeesPendingSettlement = settlementAggregate.GetNumberOfFeesPendingSettlement(),
                                                 NumberOfFeesSettled = settlementAggregate.GetNumberOfFeesSettled(),
                                                 SettlementDate = settlementAggregate.SettlementDate,

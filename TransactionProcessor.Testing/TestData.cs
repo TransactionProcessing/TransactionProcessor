@@ -1078,14 +1078,14 @@
         public static SettlementAggregate GetCreatedSettlementAggregate()
         {
             var aggregate = SettlementAggregate.Create(TestData.SettlementAggregateId);
-            aggregate.Create(TestData.EstateId, TestData.SettlementDate);
+            aggregate.Create(TestData.EstateId, TestData.MerchantId, TestData.SettlementDate);
             return aggregate;
         }
 
         public static SettlementAggregate GetSettlementAggregateWithPendingMerchantFees(Int32 numberOfFees)
         {
             var aggregate = SettlementAggregate.Create(TestData.SettlementAggregateId);
-            aggregate.Create(TestData.EstateId, TestData.SettlementDate);
+            aggregate.Create(TestData.EstateId, TestData.MerchantId, TestData.SettlementDate);
 
             for (int i = 0; i < numberOfFees; i++)
             {
@@ -1098,7 +1098,7 @@
         public static SettlementAggregate GetSettlementAggregateWithAllFeesSettled(Int32 numberOfFees)
         {
             var aggregate = SettlementAggregate.Create(TestData.SettlementAggregateId);
-            aggregate.Create(TestData.EstateId, TestData.SettlementDate);
+            aggregate.Create(TestData.EstateId, TestData.MerchantId, TestData.SettlementDate);
 
             for (int i = 0; i < numberOfFees; i++)
             {
@@ -1114,7 +1114,7 @@
         public static SettlementAggregate GetSettlementAggregateWithNotAllFeesSettled(Int32 numberOfFees)
         {
             var aggregate = SettlementAggregate.Create(TestData.SettlementAggregateId);
-            aggregate.Create(TestData.EstateId, TestData.SettlementDate);
+            aggregate.Create(TestData.EstateId, TestData.MerchantId, TestData.SettlementDate);
 
             for (int i = 0; i <= numberOfFees; i++)
             {

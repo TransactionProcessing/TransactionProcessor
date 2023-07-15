@@ -80,6 +80,7 @@ public class VoucherDomainEventHandlerTests
         context.Contracts.Add(new Contract
                               {
                                   ContractId = TestData.ContractId,
+                                  ContractReportingId = TestData.ContractReportingId,
                                   EstateReportingId = TestData.EstateReportingId,
                                   Description = TestData.OperatorIdentifier
                               });
@@ -129,6 +130,7 @@ public class VoucherDomainEventHandlerTests
         context.Contracts.Add(new Contract
                               {
                                   ContractId = TestData.ContractId,
+                                  ContractReportingId = TestData.ContractReportingId, 
                                   EstateReportingId = TestData.EstateReportingId,
                                   Description = TestData.OperatorIdentifier
                               });
