@@ -190,11 +190,15 @@
                                                                                                            {
                                                                                                                TypeNameHandling = TypeNameHandling.All
                                                                                                            });
-            GetVoucherResponse voucher = await this.DockerHelper.TransactionProcessorClient.GetVoucherByTransactionId(this.AccessToken,
-                                                                                                                estate.EstateId,
-                                                                                                                transactionResponse.TransactionId,
-                                                                                                                CancellationToken.None);
-            
+
+            GetVoucherResponse voucher = null;
+            await Retry.For(async () => {
+                voucher = await this.DockerHelper.TransactionProcessorClient.GetVoucherByTransactionId(this.AccessToken,
+                                                                                                                                          estate.EstateId,
+                                                                                                                                          transactionResponse.TransactionId,
+                                                                                                                                          CancellationToken.None);
+
+                            });
             return voucher;
         }
     }
