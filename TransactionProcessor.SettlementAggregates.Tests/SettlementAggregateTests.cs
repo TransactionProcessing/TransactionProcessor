@@ -190,5 +190,36 @@ namespace TransactionProcessor.SettlementAggregates.Tests
             aggregate.SettlementComplete.ShouldBeFalse();
         }
 
+        [Fact]
+       public void SettlementAggregate_StartProcessing_ProcessingStarted()
+        {
+            SettlementAggregate aggregate = SettlementAggregate.Create(TestData.SettlementAggregateId);
+            aggregate.Create(TestData.EstateId, TestData.MerchantId, TestData.SettlementDate);
+            aggregate.StartProcessing(TestData.SettlementProcessingStartedDateTime);
+
+            aggregate.ProcessingStarted.ShouldBeTrue();
+            aggregate.ProcessingStartedDateTime.ShouldBe(TestData.SettlementProcessingStartedDateTime);
+        }
+
+       [Fact]
+       public void SettlementAggregate_StartProcessing_CalledTwice_ProcessingStarted(){
+           SettlementAggregate aggregate = SettlementAggregate.Create(TestData.SettlementAggregateId);
+           aggregate.Create(TestData.EstateId, TestData.MerchantId, TestData.SettlementDate);
+           aggregate.StartProcessing(TestData.SettlementProcessingStartedDateTime);
+           aggregate.StartProcessing(TestData.SettlementProcessingStartedDateTimeSecondCall);
+
+            aggregate.ProcessingStarted.ShouldBeTrue();
+           aggregate.ProcessingStartedDateTime.ShouldBe(TestData.SettlementProcessingStartedDateTimeSecondCall);
+       }
+
+       [Fact]
+       public void SettlementAggregate_StartProcessing_SettlementNotCreated_ErrorThron()
+       {
+           SettlementAggregate aggregate = SettlementAggregate.Create(TestData.SettlementAggregateId);
+
+           Should.Throw<InvalidOperationException>(() => {
+                            aggregate.StartProcessing(TestData.SettlementProcessingStartedDateTime);
+                        });
+       }
     }
 }
