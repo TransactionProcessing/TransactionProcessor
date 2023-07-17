@@ -2,6 +2,7 @@
 {
     using System;
     using System.Collections.Generic;
+    using System.Linq;
     using System.Threading;
     using System.Threading.Tasks;
     using Common;
@@ -38,7 +39,12 @@
             List<(Guid transactionId, Guid merchantId, CalculatedFee calculatedFee)> feesToBeSettled = settlementAggregate.GetFeesToBeSettled();
             response.NumberOfFeesPendingSettlement = feesToBeSettled.Count;
 
-            
+            if (feesToBeSettled.Any()){
+                // Record the process call
+                settlementAggregate.StartProcessing(DateTime.Now);
+                await this.SettlementAggregateRepository.SaveChanges(settlementAggregate, cancellationToken);
+            }
+
 
             foreach ((Guid transactionId, Guid merchantId, CalculatedFee calculatedFee) feeToSettle in feesToBeSettled)
             {

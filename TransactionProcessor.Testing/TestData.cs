@@ -1187,6 +1187,9 @@
 
         public static Int32 EstateReportingId = 1;
 
+        public static DateTime SettlementProcessingStartedDateTime = new DateTime(2023,7,17,11,12,20);
+        public static DateTime SettlementProcessingStartedDateTimeSecondCall = new DateTime(2023, 7, 17, 11, 12, 40);
+
         public static RedeemVoucherResponse RedeemVoucherResponse =>
             new RedeemVoucherResponse
             {

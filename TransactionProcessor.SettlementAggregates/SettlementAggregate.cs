@@ -11,6 +11,17 @@
     using Shared.General;
 
     public static class SettlementAggregateExtensions{
+        public static void StartProcessing(this SettlementAggregate aggregate, DateTime dateTime){
+
+            aggregate.CheckHasBeenCreated();
+
+            SettlementProcessingStartedEvent startedEvent = new SettlementProcessingStartedEvent(aggregate.AggregateId,
+                                                                                                 aggregate.EstateId,
+                                                                                                 aggregate.MerchantId,
+                                                                                                 dateTime);
+            aggregate.ApplyAndAppend(startedEvent);
+        }
+
         public static void MarkFeeAsSettled(this SettlementAggregate aggregate, Guid merchantId, Guid transactionId, Guid feeId)
         {
             (Guid transactionId, Guid merchantId, CalculatedFee calculatedFee) pendingFee = SettlementAggregateExtensions.GetPendingFee(aggregate, merchantId, transactionId, feeId);
@@ -220,6 +231,11 @@
         {
             aggregate.SettlementComplete = true;
         }
+
+        public static void PlayEvent(this SettlementAggregate aggregate, SettlementProcessingStartedEvent domainEvent){
+            aggregate.ProcessingStarted= true;
+            aggregate.ProcessingStartedDateTime = domainEvent.ProcessingStartedDateTime;
+        }
     }
 
     public record SettlementAggregate : Aggregate
@@ -274,10 +290,13 @@
 
         public Boolean SettlementComplete { get; internal set; }
 
+        public Boolean ProcessingStarted { get; internal set; }
+
+        public DateTime ProcessingStartedDateTime { get; internal set; }
         #endregion
 
         #region Methods
-        
+
         /// <summary>
         /// Creates the specified aggregate identifier.
         /// </summary>
