@@ -504,6 +504,7 @@
 
         public static ProcessSettlementRequest ProcessSettlementRequest =>
             ProcessSettlementRequest.Create(TestData.SettlementDate,
+                                            TestData.MerchantId,
                                             TestData.EstateId);
 
         public static ProcessLogonTransactionResponse ProcessLogonTransactionResponseModel =>
@@ -1077,14 +1078,14 @@
         public static SettlementAggregate GetCreatedSettlementAggregate()
         {
             var aggregate = SettlementAggregate.Create(TestData.SettlementAggregateId);
-            aggregate.Create(TestData.EstateId, TestData.SettlementDate);
+            aggregate.Create(TestData.EstateId, TestData.MerchantId, TestData.SettlementDate);
             return aggregate;
         }
 
         public static SettlementAggregate GetSettlementAggregateWithPendingMerchantFees(Int32 numberOfFees)
         {
             var aggregate = SettlementAggregate.Create(TestData.SettlementAggregateId);
-            aggregate.Create(TestData.EstateId, TestData.SettlementDate);
+            aggregate.Create(TestData.EstateId, TestData.MerchantId, TestData.SettlementDate);
 
             for (int i = 0; i < numberOfFees; i++)
             {
@@ -1097,7 +1098,7 @@
         public static SettlementAggregate GetSettlementAggregateWithAllFeesSettled(Int32 numberOfFees)
         {
             var aggregate = SettlementAggregate.Create(TestData.SettlementAggregateId);
-            aggregate.Create(TestData.EstateId, TestData.SettlementDate);
+            aggregate.Create(TestData.EstateId, TestData.MerchantId, TestData.SettlementDate);
 
             for (int i = 0; i < numberOfFees; i++)
             {
@@ -1113,7 +1114,7 @@
         public static SettlementAggregate GetSettlementAggregateWithNotAllFeesSettled(Int32 numberOfFees)
         {
             var aggregate = SettlementAggregate.Create(TestData.SettlementAggregateId);
-            aggregate.Create(TestData.EstateId, TestData.SettlementDate);
+            aggregate.Create(TestData.EstateId, TestData.MerchantId, TestData.SettlementDate);
 
             for (int i = 0; i <= numberOfFees; i++)
             {
@@ -1179,7 +1180,13 @@
         public static RedeemVoucherRequest RedeemVoucherRequest = RedeemVoucherRequest.Create(TestData.EstateId, TestData.VoucherCode, TestData.RedeemedDateTime);
 
         private static Decimal RemainingBalance = 1.00m;
-        
+
+        public static Int32 MerchantReportingId = 1;
+
+        public static Int32 ContractReportingId = 1;
+
+        public static Int32 EstateReportingId = 1;
+
         public static RedeemVoucherResponse RedeemVoucherResponse =>
             new RedeemVoucherResponse
             {

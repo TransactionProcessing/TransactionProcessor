@@ -19,11 +19,12 @@
 
         public async Task<ProcessSettlementResponse> ProcessSettlement(DateTime settlementDate,
                                                                        Guid estateId,
+                                                                       Guid merchantId, 
                                                                        CancellationToken cancellationToken)
         {
             ProcessSettlementResponse response = new ProcessSettlementResponse();
 
-            Guid aggregateId = Helpers.CalculateSettlementAggregateId(settlementDate,estateId);
+            Guid aggregateId = Helpers.CalculateSettlementAggregateId(settlementDate, merchantId,estateId);
 
             SettlementAggregate settlementAggregate = await this.SettlementAggregateRepository.GetLatestVersion(aggregateId, cancellationToken);
 

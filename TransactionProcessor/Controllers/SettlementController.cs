@@ -13,6 +13,7 @@ namespace TransactionProcessor.Controllers
     using Factories;
     using MediatR;
     using Microsoft.AspNetCore.Authorization;
+    using Models;
     using SettlementAggregates;
     using Shared.DomainDrivenDesign.EventSourcing;
     using Shared.EventStore.Aggregate;
@@ -52,14 +53,15 @@ namespace TransactionProcessor.Controllers
         }
 
         [HttpGet]
-        [Route("{settlementDate}/estates/{estateId}/pending")]
+        [Route("{settlementDate}/estates/{estateId}/merchants/{merchantId}/pending")]
         public async Task<IActionResult> GetPendingSettlement([FromRoute] DateTime settlementDate,
                                                         [FromRoute] Guid estateId,
+                                                              [FromRoute] Guid merchantId,
                                                         CancellationToken cancellationToken)
         {
             // TODO: Convert to using a manager/model/factory
             // Convert the date passed in to a guid
-            Guid aggregateId = Helpers.CalculateSettlementAggregateId(settlementDate, estateId);
+            Guid aggregateId = Helpers.CalculateSettlementAggregateId(settlementDate, merchantId, estateId);
 
             Logger.LogInformation($"Settlement Aggregate Id {aggregateId}");
 
@@ -68,6 +70,7 @@ namespace TransactionProcessor.Controllers
             var settlementResponse = new SettlementResponse
                                             {
                                                 EstateId = settlementAggregate.EstateId,
+                                                MerchantId = settlementAggregate.MerchantId,
                                                 NumberOfFeesPendingSettlement = settlementAggregate.GetNumberOfFeesPendingSettlement(),
                                                 NumberOfFeesSettled = settlementAggregate.GetNumberOfFeesSettled(),
                                                 SettlementDate = settlementAggregate.SettlementDate,
@@ -79,14 +82,15 @@ namespace TransactionProcessor.Controllers
         }
 
         [HttpPost]
-        [Route("{settlementDate}/estates/{estateId}")]
+        [Route("{settlementDate}/estates/{estateId}/merchants/{merchantId}")]
         public async Task<IActionResult> ProcessSettlement([FromRoute] DateTime settlementDate,
                                                            [FromRoute] Guid estateId,
+                                                           [FromRoute] Guid merchantId,
                                                            CancellationToken cancellationToken)
         {
-            ProcessSettlementRequest command = ProcessSettlementRequest.Create(settlementDate, estateId);
+            ProcessSettlementRequest command = ProcessSettlementRequest.Create(settlementDate, merchantId, estateId);
 
-            var processSettlementResponse = await this.Mediator.Send(command, cancellationToken);
+            ProcessSettlementResponse processSettlementResponse = await this.Mediator.Send(command, cancellationToken);
 
             return this.Ok();
         }

@@ -237,7 +237,6 @@
             EstateManagementGenericContext context = await this.GetContext(Guid.NewGuid().ToString("N"));
             context.Vouchers.Add(new EstateManagement.Database.Entities.Voucher {
                                                  VoucherCode = TestData.VoucherCode,
-                                                 EstateId = TestData.EstateId,
                                                  OperatorIdentifier = TestData.OperatorIdentifier
                                              });
             await context.SaveChangesAsync();
@@ -276,7 +275,6 @@
             EstateManagementGenericContext context = await this.GetContext(Guid.NewGuid().ToString("N"));
             context.Vouchers.Add(new EstateManagement.Database.Entities.Voucher {
                                                  VoucherCode = TestData.VoucherCode,
-                                                 EstateId = TestData.EstateId,
                                                  OperatorIdentifier = TestData.OperatorIdentifier
                                              });
             await context.SaveChangesAsync();

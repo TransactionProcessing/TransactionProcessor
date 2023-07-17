@@ -9,6 +9,8 @@
     {
         public Guid EstateId { get; set; }
 
+        public Guid MerchantId { get; set; }
+
         public DateTime SettlementDate { get; set; }
 
         public Int32 NumberOfFeesPendingSettlement { get; set; }

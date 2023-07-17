@@ -18,13 +18,14 @@ namespace TransactionProcessor.SettlementAggregates.Tests
         public void SettlementCreatedForDateEvent_CanBeCreated_IsCreated()
         {
             SettlementCreatedForDateEvent settlementCreatedForDateEvent =
-                new SettlementCreatedForDateEvent(TestData.SettlementAggregateId, TestData.EstateId, TestData.SettlementDate);
+                new SettlementCreatedForDateEvent(TestData.SettlementAggregateId, TestData.EstateId,TestData.MerchantId, TestData.SettlementDate);
 
             settlementCreatedForDateEvent.ShouldNotBeNull();
             settlementCreatedForDateEvent.AggregateId.ShouldBe(TestData.SettlementAggregateId);
             settlementCreatedForDateEvent.EventId.ShouldNotBe(Guid.Empty);
             settlementCreatedForDateEvent.SettlementId.ShouldBe(TestData.SettlementAggregateId);
             settlementCreatedForDateEvent.EstateId.ShouldBe(TestData.EstateId);
+            settlementCreatedForDateEvent.MerchantId.ShouldBe(TestData.MerchantId);
             settlementCreatedForDateEvent.SettlementDate.ShouldBe(TestData.SettlementDate);
         }
 

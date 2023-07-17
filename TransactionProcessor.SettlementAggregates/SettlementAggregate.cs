@@ -129,13 +129,13 @@
             return aggregate.CalculatedFeesPendingSettlement;
         }
 
-        public static void Create(this SettlementAggregate aggregate, Guid estateId,
+        public static void Create(this SettlementAggregate aggregate, Guid estateId,Guid merchantId,
                            DateTime settlementDate)
         {
             aggregate.CheckHasNotAlreadyBeenCreated();
 
             SettlementCreatedForDateEvent pendingSettlementCreatedForDateEvent =
-                new SettlementCreatedForDateEvent(aggregate.AggregateId, estateId, settlementDate.Date);
+                new SettlementCreatedForDateEvent(aggregate.AggregateId, estateId,merchantId, settlementDate.Date);
 
             aggregate.ApplyAndAppend(pendingSettlementCreatedForDateEvent);
         }
@@ -211,6 +211,7 @@
         public static void PlayEvent(this SettlementAggregate aggregate, SettlementCreatedForDateEvent domainEvent)
         {
             aggregate.EstateId = domainEvent.EstateId;
+            aggregate.MerchantId = domainEvent.MerchantId;
             aggregate.SettlementDate = domainEvent.SettlementDate;
             aggregate.IsCreated = true;
         }
@@ -264,6 +265,8 @@
         #region Properties
 
         public Guid EstateId { get; internal set; }
+
+        public Guid MerchantId { get; internal set; }
 
         public Boolean IsCreated { get; internal set; }
 

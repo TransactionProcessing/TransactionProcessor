@@ -94,11 +94,12 @@
         public async Task<SettlementResponse> GetSettlementByDate(String accessToken,
                                                                                 DateTime settlementDate,
                                                                                 Guid estateId,
+                                                                                Guid merchantId,
                                                                                 CancellationToken cancellationToken)
         {
             SettlementResponse response = null;
 
-            String requestUri = $"{this.BaseAddress}/api/settlements/{settlementDate.Date:yyyy-MM-dd}/estates/{estateId}/pending";
+            String requestUri = $"{this.BaseAddress}/api/settlements/{settlementDate.Date:yyyy-MM-dd}/estates/{estateId}/merchants/{merchantId}/pending";
 
             try
             {
@@ -128,9 +129,10 @@
         public async Task ProcessSettlement(String accessToken,
                                             DateTime settlementDate,
                                             Guid estateId,
+                                            Guid merchantId,
                                             CancellationToken cancellationToken)
         {
-            String requestUri = $"{this.BaseAddress}/api/settlements/{settlementDate.Date:yyyy-MM-dd}/estates/{estateId}";
+            String requestUri = $"{this.BaseAddress}/api/settlements/{settlementDate.Date:yyyy-MM-dd}/estates/{estateId}/merchants/{merchantId}";
 
             try
             {

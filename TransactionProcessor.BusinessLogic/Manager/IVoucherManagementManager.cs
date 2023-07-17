@@ -102,8 +102,8 @@ namespace TransactionProcessor.BusinessLogic.Manager
                                                     CancellationToken cancellationToken)
         {
             EstateManagementGenericContext context = await this.DbContextFactory.GetContext(estateId, ConnectionStringIdentifier, cancellationToken);
-
-            EstateManagement.Database.Entities.Voucher voucher = await context.Vouchers.SingleOrDefaultAsync(v => v.TransactionId == transactionId, cancellationToken);
+            EstateManagement.Database.Entities.Transaction transaction = await context.Transactions.SingleOrDefaultAsync(t => t.TransactionId == transactionId, cancellationToken);  
+            EstateManagement.Database.Entities.Voucher voucher = await context.Vouchers.SingleOrDefaultAsync(v => v.TransactionReportingId == transaction.TransactionReportingId, cancellationToken);
 
             if (voucher == null)
             {

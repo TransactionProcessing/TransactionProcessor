@@ -50,6 +50,7 @@
 
             ProcessSettlementResponse response = await settlementDomainService.ProcessSettlement(TestData.SettlementDate,
                                                                                                  TestData.EstateId,
+                                                                                                 TestData.MerchantId,
                                                                                                  CancellationToken.None);
 
             response.ShouldNotBeNull();
@@ -66,6 +67,7 @@
             
             ProcessSettlementResponse response = await settlementDomainService.ProcessSettlement(TestData.SettlementDate,
                                                                                                  TestData.EstateId,
+                                                                                                 TestData.MerchantId,
                                                                                                  CancellationToken.None);
 
             response.ShouldNotBeNull();
@@ -82,6 +84,7 @@
 
             ProcessSettlementResponse response = await settlementDomainService.ProcessSettlement(TestData.SettlementDate,
                                                                                                  TestData.EstateId,
+                                                                                                 TestData.MerchantId,
                                                                                                  CancellationToken.None);
 
             response.ShouldNotBeNull();
@@ -98,6 +101,7 @@
 
             ProcessSettlementResponse response = await settlementDomainService.ProcessSettlement(TestData.SettlementDate,
                                                                                                  TestData.EstateId,
+                                                                                                 TestData.MerchantId,
                                                                                                  CancellationToken.None);
 
             response.ShouldNotBeNull();

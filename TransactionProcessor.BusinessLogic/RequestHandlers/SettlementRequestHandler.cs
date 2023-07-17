@@ -24,7 +24,7 @@ namespace TransactionProcessor.BusinessLogic.RequestHandlers
         public async Task<ProcessSettlementResponse> Handle(ProcessSettlementRequest request,
                                                             CancellationToken cancellationToken)
         {
-            ProcessSettlementResponse processSettlementResponse = await this.SettlementDomainService.ProcessSettlement(request.SettlementDate, request.EstateId, cancellationToken);
+            ProcessSettlementResponse processSettlementResponse = await this.SettlementDomainService.ProcessSettlement(request.SettlementDate, request.EstateId, request.MerchantId, cancellationToken);
 
             return processSettlementResponse;
         }
