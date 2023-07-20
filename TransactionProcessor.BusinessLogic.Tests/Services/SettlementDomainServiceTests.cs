@@ -4,9 +4,11 @@
     using System.Threading;
     using System.Threading.Tasks;
     using BusinessLogic.Services;
+    using EstateManagement.Client;
     using Microsoft.Extensions.Configuration;
     using Models;
     using Moq;
+    using SecurityService.Client;
     using SettlementAggregates;
     using Shared.DomainDrivenDesign.EventSourcing;
     using Shared.EventStore.Aggregate;
@@ -23,6 +25,10 @@
 
         private Mock<IAggregateRepository<SettlementAggregate, DomainEvent>> settlementAggregateRepository;
 
+        private Mock<ISecurityServiceClient> securityServiceClient;
+
+        private Mock<IEstateClient> estateClient;
+
         private SettlementDomainService settlementDomainService;
 
         public SettlementDomainServiceTests() {
@@ -30,9 +36,12 @@
                 new Mock<IAggregateRepository<TransactionAggregate, DomainEvent>>();
             this.settlementAggregateRepository =
                 new Mock<IAggregateRepository<SettlementAggregate, DomainEvent>>();
+            this.securityServiceClient = new Mock<ISecurityServiceClient>();
+            this.estateClient = new Mock<IEstateClient>();
             
             this.settlementDomainService =
-                new SettlementDomainService(this.transactionAggregateRepository.Object, settlementAggregateRepository.Object);
+                new SettlementDomainService(this.transactionAggregateRepository.Object, settlementAggregateRepository.Object,
+                                            this.securityServiceClient.Object, this.estateClient.Object);
 
             IConfigurationRoot configurationRoot = new ConfigurationBuilder().AddInMemoryCollection(TestData.DefaultAppSettings).Build();
             ConfigurationReader.Initialise(configurationRoot);
@@ -47,6 +56,11 @@
                                          .ReturnsAsync(TestData.GetSettlementAggregateWithPendingMerchantFees(10));
             this.transactionAggregateRepository.Setup(s => s.GetLatestVersion(It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
                 .ReturnsAsync(TestData.GetCompletedAuthorisedSaleTransactionAggregate);
+
+            this.securityServiceClient.Setup(s => s.GetToken(It.IsAny<String>(), It.IsAny<String>(), It.IsAny<CancellationToken>())).ReturnsAsync(TestData.TokenResponse);
+
+            this.estateClient.Setup(e => e.GetMerchant(It.IsAny<String>(), It.IsAny<Guid>(), It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
+                .ReturnsAsync(TestData.GetMerchantResponseWithOperator1);
 
             ProcessSettlementResponse response = await settlementDomainService.ProcessSettlement(TestData.SettlementDate,
                                                                                                  TestData.EstateId,
@@ -82,6 +96,11 @@
             settlementAggregateRepository.Setup(s => s.GetLatestVersion(It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
                                          .ReturnsAsync(TestData.GetCreatedSettlementAggregate);
 
+            this.securityServiceClient.Setup(s => s.GetToken(It.IsAny<String>(), It.IsAny<String>(), It.IsAny<CancellationToken>())).ReturnsAsync(TestData.TokenResponse);
+
+            this.estateClient.Setup(e => e.GetMerchant(It.IsAny<String>(), It.IsAny<Guid>(), It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
+                .ReturnsAsync(TestData.GetMerchantResponseWithOperator1);
+
             ProcessSettlementResponse response = await settlementDomainService.ProcessSettlement(TestData.SettlementDate,
                                                                                                  TestData.EstateId,
                                                                                                  TestData.MerchantId,
@@ -98,6 +117,11 @@
         {
             settlementAggregateRepository.Setup(s => s.GetLatestVersion(It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
                                          .ReturnsAsync(TestData.GetSettlementAggregateWithPendingMerchantFees(10));
+
+            this.securityServiceClient.Setup(s => s.GetToken(It.IsAny<String>(), It.IsAny<String>(), It.IsAny<CancellationToken>())).ReturnsAsync(TestData.TokenResponse);
+
+            this.estateClient.Setup(e => e.GetMerchant(It.IsAny<String>(), It.IsAny<Guid>(), It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
+                .ReturnsAsync(TestData.GetMerchantResponseWithOperator1);
 
             ProcessSettlementResponse response = await settlementDomainService.ProcessSettlement(TestData.SettlementDate,
                                                                                                  TestData.EstateId,
