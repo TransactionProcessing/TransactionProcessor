@@ -22,6 +22,11 @@
             aggregate.ApplyAndAppend(startedEvent);
         }
 
+        public static void ManuallyComplete(this SettlementAggregate aggregate){
+            SettlementCompletedEvent pendingSettlementCompletedEvent = new SettlementCompletedEvent(aggregate.AggregateId, aggregate.EstateId);
+            aggregate.ApplyAndAppend(pendingSettlementCompletedEvent);
+        }
+
         public static void MarkFeeAsSettled(this SettlementAggregate aggregate, Guid merchantId, Guid transactionId, Guid feeId)
         {
             (Guid transactionId, Guid merchantId, CalculatedFee calculatedFee) pendingFee = SettlementAggregateExtensions.GetPendingFee(aggregate, merchantId, transactionId, feeId);
