@@ -22,6 +22,17 @@
             aggregate.ApplyAndAppend(startedEvent);
         }
 
+        public static void ManuallyComplete(this SettlementAggregate aggregate){
+            
+            aggregate.CheckHasBeenCreated();
+
+            if (aggregate.SettlementComplete)
+                return;
+
+            SettlementCompletedEvent pendingSettlementCompletedEvent = new SettlementCompletedEvent(aggregate.AggregateId, aggregate.EstateId);
+            aggregate.ApplyAndAppend(pendingSettlementCompletedEvent);
+        }
+
         public static void MarkFeeAsSettled(this SettlementAggregate aggregate, Guid merchantId, Guid transactionId, Guid feeId)
         {
             (Guid transactionId, Guid merchantId, CalculatedFee calculatedFee) pendingFee = SettlementAggregateExtensions.GetPendingFee(aggregate, merchantId, transactionId, feeId);
@@ -182,7 +193,7 @@
                 throw new InvalidOperationException($"Pending Settlement already created for this date {aggregate.SettlementDate}");
             }
         }
-
+        
         public static void PlayEvent(this SettlementAggregate aggregate, MerchantFeeSettledEvent domainEvent)
         {
             // Add to the settled fees list

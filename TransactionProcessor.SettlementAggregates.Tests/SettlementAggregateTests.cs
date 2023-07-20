@@ -209,7 +209,7 @@ namespace TransactionProcessor.SettlementAggregates.Tests
            aggregate.StartProcessing(TestData.SettlementProcessingStartedDateTimeSecondCall);
 
             aggregate.ProcessingStarted.ShouldBeTrue();
-           aggregate.ProcessingStartedDateTime.ShouldBe(TestData.SettlementProcessingStartedDateTimeSecondCall);
+            aggregate.ProcessingStartedDateTime.ShouldBe(TestData.SettlementProcessingStartedDateTimeSecondCall);
        }
 
        [Fact]
@@ -220,6 +220,39 @@ namespace TransactionProcessor.SettlementAggregates.Tests
            Should.Throw<InvalidOperationException>(() => {
                             aggregate.StartProcessing(TestData.SettlementProcessingStartedDateTime);
                         });
+       }
+
+       [Fact]
+       public void SettlementAggregate_ManuallyComplete_SettlementCompleted()
+       {
+           SettlementAggregate aggregate = SettlementAggregate.Create(TestData.SettlementAggregateId);
+           aggregate.Create(TestData.EstateId, TestData.MerchantId, TestData.SettlementDate);
+           aggregate.StartProcessing(TestData.SettlementProcessingStartedDateTime);
+           aggregate.ManuallyComplete();
+
+            aggregate.SettlementComplete.ShouldBeTrue();
+       }
+
+       [Fact]
+       public void SettlementAggregate_ManuallyComplete_CalledTwice_SettlementCompleted()
+       {
+           SettlementAggregate aggregate = SettlementAggregate.Create(TestData.SettlementAggregateId);
+           aggregate.Create(TestData.EstateId, TestData.MerchantId, TestData.SettlementDate);
+           aggregate.StartProcessing(TestData.SettlementProcessingStartedDateTime);
+           aggregate.ManuallyComplete();
+           aggregate.ManuallyComplete();
+
+            aggregate.SettlementComplete.ShouldBeTrue();
+       }
+
+       [Fact]
+       public void SettlementAggregate_ManuallyComplete_SettlementNotCreated_ErrorThron()
+       {
+           SettlementAggregate aggregate = SettlementAggregate.Create(TestData.SettlementAggregateId);
+
+           Should.Throw<InvalidOperationException>(() => {
+                                                       aggregate.ManuallyComplete();
+                                                   });
        }
     }
 }

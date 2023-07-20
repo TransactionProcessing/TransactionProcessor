@@ -2,14 +2,21 @@
 {
     using System;
     using System.Collections.Generic;
+    using System.Diagnostics.CodeAnalysis;
     using System.Linq;
     using System.Threading;
     using System.Threading.Tasks;
     using Common;
+    using EstateManagement.Client;
+    using EstateManagement.DataTransferObjects;
+    using EstateManagement.DataTransferObjects.Responses;
     using Models;
+    using SecurityService.Client;
+    using SecurityService.DataTransferObjects.Responses;
     using SettlementAggregates;
     using Shared.DomainDrivenDesign.EventSourcing;
     using Shared.EventStore.Aggregate;
+    using Shared.General;
     using Shared.Logger;
     using TransactionAggregate;
 
@@ -17,6 +24,10 @@
     {
         private readonly IAggregateRepository<TransactionAggregate, DomainEvent> TransactionAggregateRepository;
         private readonly IAggregateRepository<SettlementAggregate, DomainEvent> SettlementAggregateRepository;
+
+        private readonly ISecurityServiceClient SecurityServiceClient;
+
+        private readonly IEstateClient EstateClient;
 
         public async Task<ProcessSettlementResponse> ProcessSettlement(DateTime settlementDate,
                                                                        Guid estateId,
@@ -33,6 +44,21 @@
             {
                 Logger.LogInformation($"No pending settlement for {settlementDate.ToString("yyyy-MM-dd")}");
                 // Not pending settlement for this date
+                return response;
+            }
+
+            this.TokenResponse = await this.GetToken(cancellationToken);
+
+            MerchantResponse merchant = await this.EstateClient.GetMerchant(this.TokenResponse.AccessToken,
+                                                                            estateId,
+                                                                            merchantId,
+                                                                            cancellationToken);
+
+            if (merchant.SettlementSchedule == SettlementSchedule.Immediate){
+                // Mark the settlement as completed
+                settlementAggregate.StartProcessing(DateTime.Now);
+                settlementAggregate.ManuallyComplete();
+                await this.SettlementAggregateRepository.SaveChanges(settlementAggregate, cancellationToken);
                 return response;
             }
 
@@ -71,10 +97,43 @@
         }
 
         public SettlementDomainService(IAggregateRepository<TransactionAggregate, DomainEvent> transactionAggregateRepository,
-                                       IAggregateRepository<SettlementAggregate, DomainEvent> settlementAggregateRepository)
+                                       IAggregateRepository<SettlementAggregate, DomainEvent> settlementAggregateRepository,
+                                       ISecurityServiceClient securityServiceClient,
+                                       IEstateClient estateClient)
         {
             this.TransactionAggregateRepository = transactionAggregateRepository;
             this.SettlementAggregateRepository = settlementAggregateRepository;
+            this.SecurityServiceClient = securityServiceClient;
+            this.EstateClient = estateClient;
+        }
+
+        private TokenResponse TokenResponse;
+
+        [ExcludeFromCodeCoverage]
+        private async Task<TokenResponse> GetToken(CancellationToken cancellationToken)
+        {
+            // Get a token to talk to the estate service
+            String clientId = ConfigurationReader.GetValue("AppSettings", "ClientId");
+            String clientSecret = ConfigurationReader.GetValue("AppSettings", "ClientSecret");
+            Logger.LogInformation($"Client Id is {clientId}");
+            Logger.LogInformation($"Client Secret is {clientSecret}");
+
+            if (this.TokenResponse == null)
+            {
+                TokenResponse token = await this.SecurityServiceClient.GetToken(clientId, clientSecret, cancellationToken);
+                Logger.LogInformation($"Token is {token.AccessToken}");
+                return token;
+            }
+
+            if (this.TokenResponse.Expires.UtcDateTime.Subtract(DateTime.UtcNow) < TimeSpan.FromMinutes(2))
+            {
+                Logger.LogInformation($"Token is about to expire at {this.TokenResponse.Expires.DateTime:O}");
+                TokenResponse token = await this.SecurityServiceClient.GetToken(clientId, clientSecret, cancellationToken);
+                Logger.LogInformation($"Token is {token.AccessToken}");
+                return token;
+            }
+
+            return this.TokenResponse;
         }
     }
 }
