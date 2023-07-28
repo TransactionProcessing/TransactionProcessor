@@ -20,7 +20,7 @@ jobs:
       run: echo ::set-output name=VERSION::${GITHUB_REF/refs\/tags\//}
       
     - name: Restore Nuget Packages
-      run: dotnet restore TransactionProcessor.sln --source https://api.nuget.org/v3/index.json --source https://www.myget.org/F/transactionprocessing/api/v3/index.json
+      run: dotnet restore TransactionProcessor.sln --source ${{ secrets.PUBLICFEEDURL }} --source ${{ secrets.PRIVATEFEED_URL }}
 
     - name: Build Code
       run: dotnet build TransactionProcessor.sln --configuration Release
@@ -118,12 +118,12 @@ jobs:
       if: ${{ github.event.release.prerelease == false }}
       run: |
         dotnet pack "TransactionProcessor.Client\TransactionProcessor.Client.csproj" /p:PackageVersion=${{ steps.get_version.outputs.VERSION }} --output Nugets
-        dotnet nuget push Nugets/TransactionProcessor.Client.${{ steps.get_version.outputs.VERSION }}.nupkg --api-key ${{ secrets.MYGET_APIKEY }} --source https://www.myget.org/F/transactionprocessing/api/v2/package
+        dotnet nuget push Nugets/TransactionProcessor.Client.${{ steps.get_version.outputs.VERSION }}.nupkg --api-key ${{ secrets.PRIVATEFEED_APIKEY }} --source ${{ secrets.PRIVATEFEED_URL }}
         dotnet pack "TransactionProcessor.Transaction.DomainEvents\TransactionProcessor.Transaction.DomainEvents.csproj" /p:PackageVersion=${{ steps.get_version.outputs.VERSION }} --output Nugets
-        dotnet nuget push Nugets/TransactionProcessor.Transaction.DomainEvents.${{ steps.get_version.outputs.VERSION }}.nupkg --api-key ${{ secrets.MYGET_APIKEY }} --source https://www.myget.org/F/transactionprocessing/api/v2/package
+        dotnet nuget push Nugets/TransactionProcessor.Transaction.DomainEvents.${{ steps.get_version.outputs.VERSION }}.nupkg --api-key ${{ secrets.PRIVATEFEED_APIKEY }} --source ${{ secrets.PRIVATEFEED_URL }}
         dotnet pack "TransactionProcessor.Reconciliation.DomainEvents\TransactionProcessor.Reconciliation.DomainEvents.csproj" /p:PackageVersion=${{ steps.get_version.outputs.VERSION }} --output Nugets
-        dotnet nuget push Nugets/TransactionProcessor.Reconciliation.DomainEvents.${{ steps.get_version.outputs.VERSION }}.nupkg --api-key ${{ secrets.MYGET_APIKEY }} --source https://www.myget.org/F/transactionprocessing/api/v2/package
+        dotnet nuget push Nugets/TransactionProcessor.Reconciliation.DomainEvents.${{ steps.get_version.outputs.VERSION }}.nupkg --api-key ${{ secrets.PRIVATEFEED_APIKEY }} --source ${{ secrets.PRIVATEFEED_URL }}
         dotnet pack "TransactionProcessor.Settlement.DomainEvents\TransactionProcessor.Settlement.DomainEvents.csproj" /p:PackageVersion=${{ steps.get_version.outputs.VERSION }} --output Nugets
-        dotnet nuget push Nugets/TransactionProcessor.Settlement.DomainEvents.${{ steps.get_version.outputs.VERSION }}.nupkg --api-key ${{ secrets.MYGET_APIKEY }} --source https://www.myget.org/F/transactionprocessing/api/v2/package       
+        dotnet nuget push Nugets/TransactionProcessor.Settlement.DomainEvents.${{ steps.get_version.outputs.VERSION }}.nupkg --api-key ${{ secrets.PRIVATEFEED_APIKEY }} --source ${{ secrets.PRIVATEFEED_URL }}
         dotnet pack "TransactionProcessor.Voucher.DomainEvents\TransactionProcessor.Voucher.DomainEvents.csproj" /p:PackageVersion=${{ steps.get_version.outputs.VERSION }} --output Nugets
-        dotnet nuget push Nugets/TransactionProcessor.Voucher.DomainEvents.${{ steps.get_version.outputs.VERSION }}.nupkg --api-key ${{ secrets.MYGET_APIKEY }} --source https://www.myget.org/F/transactionprocessing/api/v2/package
+        dotnet nuget push Nugets/TransactionProcessor.Voucher.DomainEvents.${{ steps.get_version.outputs.VERSION }}.nupkg --api-key ${{ secrets.PRIVATEFEED_APIKEY }} --source ${{ secrets.PRIVATEFEED_URL }}
