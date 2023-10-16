@@ -6,10 +6,12 @@ using System.Threading.Tasks;
 
 namespace TransactionProcessor.BusinessLogic.Services
 {
+    using System.Diagnostics.CodeAnalysis;
     using System.Security.Cryptography;
     using Newtonsoft.Json;
     using Shared.Serialisation;
 
+    [ExcludeFromCodeCoverage]
     public class IdGenerationService
     {
         internal delegate Guid GenerateUniqueIdFromObject(Object payload);
@@ -36,5 +38,12 @@ namespace TransactionProcessor.BusinessLogic.Services
                                                                                     };
 
         public static Guid GenerateEventId(Object o) => IdGenerationService.GenerateUniqueId(o);
+
+        public static Guid GenerateFloatAggregateId(Guid estateId, Guid contractId, Guid productId) =>
+            IdGenerationService.GenerateUniqueId(new{
+                                                        estateId,
+                                                        contractId,
+                                                        productId
+                                                    });
     }
 }

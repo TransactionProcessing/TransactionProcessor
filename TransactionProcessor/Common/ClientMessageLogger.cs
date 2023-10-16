@@ -1,11 +1,13 @@
 ﻿namespace TransactionProcessor.Common;
 
 using System;
+using System.Diagnostics.CodeAnalysis;
 using System.ServiceModel;
 using System.ServiceModel.Channels;
 using System.ServiceModel.Dispatcher;
 using Shared.Logger;
 
+[ExcludeFromCodeCoverage]
 internal sealed class ClientMessageLogger :
     IClientMessageInspector{
     #region Fields

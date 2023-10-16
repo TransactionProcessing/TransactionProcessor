@@ -23,6 +23,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\TransactionProcessor.FloatAggregate\TransactionProcessor.FloatAggregate.csproj" />
     <ProjectReference Include="..\TransactionProcessor.Models\TransactionProcessor.Models.csproj" />
     <ProjectReference Include="..\TransactionProcessor.ProjectionEngine\TransactionProcessor.ProjectionEngine.csproj" />
     <ProjectReference Include="..\TransactionProcessor.ReconciliationAggregate\TransactionProcessor.ReconciliationAggregate.csproj" />
