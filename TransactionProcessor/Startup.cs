@@ -14,6 +14,7 @@ namespace TransactionProcessor
     using EventStore.Client;
     using FileProcessor.File.DomainEvents;
     using FileProcessor.FileImportLog.DomainEvents;
+    using Float.DomainEvents;
     using HealthChecks.UI.Client;
     using Lamar;
     using Microsoft.AspNetCore.Builder;
@@ -226,6 +227,7 @@ namespace TransactionProcessor
                                                                 String.Empty,
                                                                 DateTime.Now,
                                                                 String.Empty);
+            FloatCreatedForContractProductEvent fl = new FloatCreatedForContractProductEvent(Guid.NewGuid(), Guid.NewGuid(), Guid.NewGuid(), Guid.NewGuid(), DateTime.Now);
 
             TypeProvider.LoadDomainEventsTypeDynamically();
         }

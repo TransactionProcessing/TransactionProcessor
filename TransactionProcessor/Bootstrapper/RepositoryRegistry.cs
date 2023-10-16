@@ -99,6 +99,7 @@
             this.AddSingleton<IAggregateRepository<SettlementAggregate, DomainEvent>,
                 AggregateRepository<SettlementAggregate, DomainEvent>>();
             this.AddSingleton<IAggregateRepository<VoucherAggregate.VoucherAggregate, DomainEvent>, AggregateRepository<VoucherAggregate.VoucherAggregate, DomainEvent>>();
+            this.AddSingleton<IAggregateRepository<FloatAggregate.FloatAggregate, DomainEvent>, AggregateRepository<FloatAggregate.FloatAggregate, DomainEvent>>();
 
 
             this.AddSingleton<IProjectionStateRepository<MerchantBalanceState>, MerchantBalanceStateRepository>();

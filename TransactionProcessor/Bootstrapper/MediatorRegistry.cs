@@ -35,6 +35,9 @@
 
             this.AddSingleton<IRequestHandler<IssueVoucherRequest, IssueVoucherResponse>, VoucherManagementRequestHandler>();
             this.AddSingleton<IRequestHandler<RedeemVoucherRequest, RedeemVoucherResponse>, VoucherManagementRequestHandler>();
+
+            this.AddSingleton<IRequestHandler<CreateFloatForContractProductRequest, CreateFloatForContractProductResponse>, FloatRequestHandler>();
+            this.AddSingleton<IRequestHandler<RecordCreditPurchaseForFloatRequest>, FloatRequestHandler>();
         }
 
         #endregion

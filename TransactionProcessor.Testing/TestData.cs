@@ -78,12 +78,15 @@
             "<COMMAND xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\" xmlns:xsd=\"http://www.w3.org/2001/XMLSchema\"><TYPE>EXRCTRFRESP</TYPE><TXNSTATUS>200</TXNSTATUS><DATE>02-JUL-2018</DATE><EXTREFNUM>100022814</EXTREFNUM><TXNID>20200314231322847</TXNID><MESSAGE>Topup Successful</MESSAGE></COMMAND>";
 
         public static DateTime TransactionDateTime = DateTime.Now;
+        public static DateTime FloatCreatedDateTime = DateTime.Now;
 
         public static Guid TransactionId = Guid.Parse("AE89B2F6-307B-46F4-A8E7-CEF27097D766");
 
         public static Guid TransactionId2 = Guid.Parse("760E702C-682E-41B1-A582-3D4ECA0F38C3");
 
         public static Guid SettlementAggregateId = Guid.Parse("BAEBA232-CD7F-46F5-AE2E-3204FE69A441");
+
+        public static Guid FloatAggregateId = Guid.Parse("C6E632B5-DA04-4676-BEBB-3C91D34A7580");
 
         public static String TransactionNumber = "0001";
 
@@ -1189,6 +1192,16 @@
 
         public static DateTime SettlementProcessingStartedDateTime = new DateTime(2023,7,17,11,12,20);
         public static DateTime SettlementProcessingStartedDateTimeSecondCall = new DateTime(2023, 7, 17, 11, 12, 40);
+
+        public static DateTime CreditPurchasedDateTime = DateTime.Now;
+
+        public static Decimal FloatCreditAmount = 100m;
+
+        public static Decimal FloatCreditCostPrice = 90m;
+
+        public static RecordCreditPurchaseForFloatRequest RecordCreditPurchaseForFloatRequest => RecordCreditPurchaseForFloatRequest.Create(TestData.EstateId, TestData.FloatAggregateId, TestData.FloatCreditAmount, TestData.FloatCreditCostPrice, TestData.CreditPurchasedDateTime);
+
+        public static CreateFloatForContractProductRequest CreateFloatForContractProductRequest => CreateFloatForContractProductRequest.Create(TestData.EstateId, TestData.ContractId, TestData.ProductId, TestData.FloatCreatedDateTime);
 
         public static RedeemVoucherResponse RedeemVoucherResponse =>
             new RedeemVoucherResponse

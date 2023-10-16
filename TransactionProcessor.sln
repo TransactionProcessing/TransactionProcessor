@@ -53,7 +53,13 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TransactionProcessor.Vouche
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TransactionProcessor.VoucherAggregate.Tests", "TransactionProcessor.VoucherAggregate.Tests\TransactionProcessor.VoucherAggregate.Tests.csproj", "{7A31BE33-D9CC-41C7-837E-72FC14333212}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TransactionProcessor.ProjectionEngine.Database", "TransactionProcessor.ProjectionEngine.Database\TransactionProcessor.ProjectionEngine.Database.csproj", "{410F1B15-7932-41E9-847E-0476EFCDB0F3}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TransactionProcessor.ProjectionEngine.Database", "TransactionProcessor.ProjectionEngine.Database\TransactionProcessor.ProjectionEngine.Database.csproj", "{410F1B15-7932-41E9-847E-0476EFCDB0F3}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TransactionProcessor.FloatAggregate", "TransactionProcessor.FloatAggregate\TransactionProcessor.FloatAggregate.csproj", "{9741A43E-B4EC-4EB7-B8E8-3820EF61977D}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TransactionProcessor.Float.DomainEvents", "TransactionProcessor.Float.DomainEvents\TransactionProcessor.Float.DomainEvents.csproj", "{6AE1D95B-4CBA-40F8-8414-3A2E15DFA729}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TransactionProcessor.FloatAggregate.Tests", "TransactionProcessor.FloatAggregate.Tests\TransactionProcessor.FloatAggregate.Tests.csproj", "{F486A766-A35D-4795-AC97-0A728AEFDBB9}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -157,6 +163,18 @@ Global
 		{410F1B15-7932-41E9-847E-0476EFCDB0F3}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{410F1B15-7932-41E9-847E-0476EFCDB0F3}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{410F1B15-7932-41E9-847E-0476EFCDB0F3}.Release|Any CPU.Build.0 = Release|Any CPU
+		{9741A43E-B4EC-4EB7-B8E8-3820EF61977D}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{9741A43E-B4EC-4EB7-B8E8-3820EF61977D}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{9741A43E-B4EC-4EB7-B8E8-3820EF61977D}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{9741A43E-B4EC-4EB7-B8E8-3820EF61977D}.Release|Any CPU.Build.0 = Release|Any CPU
+		{6AE1D95B-4CBA-40F8-8414-3A2E15DFA729}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{6AE1D95B-4CBA-40F8-8414-3A2E15DFA729}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{6AE1D95B-4CBA-40F8-8414-3A2E15DFA729}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{6AE1D95B-4CBA-40F8-8414-3A2E15DFA729}.Release|Any CPU.Build.0 = Release|Any CPU
+		{F486A766-A35D-4795-AC97-0A728AEFDBB9}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{F486A766-A35D-4795-AC97-0A728AEFDBB9}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{F486A766-A35D-4795-AC97-0A728AEFDBB9}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{F486A766-A35D-4795-AC97-0A728AEFDBB9}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -186,6 +204,9 @@ Global
 		{2491108E-FF42-4A01-A9AE-07DD6D710345} = {749ADE74-A6F0-4469-A638-8FD7E82A8667}
 		{7A31BE33-D9CC-41C7-837E-72FC14333212} = {71B30DC4-AB27-4D30-8481-B4C326D074CB}
 		{410F1B15-7932-41E9-847E-0476EFCDB0F3} = {749ADE74-A6F0-4469-A638-8FD7E82A8667}
+		{9741A43E-B4EC-4EB7-B8E8-3820EF61977D} = {749ADE74-A6F0-4469-A638-8FD7E82A8667}
+		{6AE1D95B-4CBA-40F8-8414-3A2E15DFA729} = {749ADE74-A6F0-4469-A638-8FD7E82A8667}
+		{F486A766-A35D-4795-AC97-0A728AEFDBB9} = {71B30DC4-AB27-4D30-8481-B4C326D074CB}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {193D13DE-424B-4D50-B674-01F9E4CC2CA9}

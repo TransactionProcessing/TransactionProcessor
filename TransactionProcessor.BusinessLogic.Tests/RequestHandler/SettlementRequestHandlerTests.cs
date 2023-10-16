@@ -12,7 +12,7 @@ using Xunit;
 public class SettlementRequestHandlerTests
 {
     [Fact]
-    public void TransactionRequestHandler_ProcessLogonTransactionRequest_IsHandled()
+    public void SettlementRequestHandler_ProcessSettlementRequest_IsHandled()
     {
         Mock<ISettlementDomainService> settlementDomainService = new Mock<ISettlementDomainService>();
         SettlementRequestHandler handler = new SettlementRequestHandler(settlementDomainService.Object);

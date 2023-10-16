@@ -94,5 +94,23 @@ namespace TransactionProcessor.SettlementAggregates.Tests
             settlementCompletedEvent.SettlementId.ShouldBe(TestData.SettlementAggregateId);
             settlementCompletedEvent.EstateId.ShouldBe(TestData.EstateId);
         }
+
+        [Fact]
+        public void SettlementProcessingStartedEvent_CanBeCreated_IsCreated()
+        {
+            SettlementProcessingStartedEvent settlementProcessingStartedEvent = new SettlementProcessingStartedEvent(TestData.SettlementAggregateId,
+                                                                                                                     TestData.EstateId,
+                                                                                                                     TestData.MerchantId,
+                                                                                                                     TestData.SettlementProcessingStartedDateTime);
+
+            settlementProcessingStartedEvent.ShouldNotBeNull();
+            settlementProcessingStartedEvent.AggregateId.ShouldBe(TestData.SettlementAggregateId);
+            settlementProcessingStartedEvent.EventId.ShouldNotBe(Guid.Empty);
+            settlementProcessingStartedEvent.SettlementId.ShouldBe(TestData.SettlementAggregateId);
+            settlementProcessingStartedEvent.EstateId.ShouldBe(TestData.EstateId);
+            settlementProcessingStartedEvent.MerchantId.ShouldBe(TestData.MerchantId);
+            settlementProcessingStartedEvent.ProcessingStartedDateTime.ShouldBe(TestData.SettlementProcessingStartedDateTime);
+
+        }
     }
 }

@@ -23,6 +23,7 @@
             this.AddSingleton<ISettlementDomainService, SettlementDomainService>();
             this.AddSingleton<IVoucherDomainService, VoucherDomainService>();
             this.AddSingleton<ITransactionValidationService, TransactionValidationService>();
+            this.AddSingleton<IFloatDomainService, FloatDomainService>();
         }
 
         #endregion

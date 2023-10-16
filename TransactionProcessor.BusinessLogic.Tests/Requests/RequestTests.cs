@@ -139,6 +139,34 @@
             redeemVoucherRequest.EstateId.ShouldBe(TestData.EstateId);
         }
 
+        [Fact]
+        public void CreateFloatForContractProductRequest_CanBeCreated_IsCreated(){
+            CreateFloatForContractProductRequest createFloatForContractProductRequest = CreateFloatForContractProductRequest.Create(TestData.EstateId, TestData.ContractId, TestData.ProductId,
+                                                                                                      TestData.FloatCreatedDateTime);
+
+            createFloatForContractProductRequest.ShouldNotBeNull();
+            createFloatForContractProductRequest.ContractId.ShouldBe(TestData.ContractId);
+            createFloatForContractProductRequest.ProductId.ShouldBe(TestData.ProductId);
+            createFloatForContractProductRequest.CreateDateTime.ShouldBe(TestData.FloatCreatedDateTime);
+            createFloatForContractProductRequest.EstateId.ShouldBe(TestData.EstateId);
+        }
+
+        [Fact]
+        public void RecordCreditPurchaseForFloatRequest_CanBeCreated_IsCreated(){
+            RecordCreditPurchaseForFloatRequest recordCreditPurchaseForFloatRequest = RecordCreditPurchaseForFloatRequest.Create(TestData.EstateId,
+                                                                                                                                 TestData.FloatAggregateId,
+                                                                                                                                 TestData.FloatCreditAmount,
+                                                                                                                                 TestData.FloatCreditCostPrice,
+                                                                                                                                 TestData.CreditPurchasedDateTime);
+            recordCreditPurchaseForFloatRequest.ShouldNotBeNull();
+            recordCreditPurchaseForFloatRequest.CostPrice.ShouldBe(TestData.FloatCreditCostPrice);
+            recordCreditPurchaseForFloatRequest.CreditAmount.ShouldBe(TestData.FloatCreditAmount);
+            recordCreditPurchaseForFloatRequest.EstateId.ShouldBe(TestData.EstateId);
+            recordCreditPurchaseForFloatRequest.FloatId.ShouldBe(TestData.FloatAggregateId);
+            recordCreditPurchaseForFloatRequest.PurchaseDateTime.ShouldBe(TestData.CreditPurchasedDateTime);
+
+        }
+
         #endregion
     }
 }
