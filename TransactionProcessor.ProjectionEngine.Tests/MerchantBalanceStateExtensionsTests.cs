@@ -182,8 +182,8 @@ namespace TransactionProcessor.ProjectionEngine.Tests
             state.AvailableBalance.ShouldBe(0);
             state.Balance.ShouldBe(0);
 
-            MerchantFeeAddedToTransactionEvent merchantFeeAddedToTransactionEvent = TestData.GetMerchantFeeAddedToTransactionEvent(1.00m);
-            state = state.HandleMerchantFeeAddedToTransactionEvent(merchantFeeAddedToTransactionEvent);
+            SettledMerchantFeeAddedToTransactionEvent merchantFeeAddedToTransactionEvent = TestData.GetSettledMerchantFeeAddedToTransactionEvent(1.00m);
+            state = state.HandleSettledMerchantFeeAddedToTransactionEvent(merchantFeeAddedToTransactionEvent);
 
             state.Balance.ShouldBe(merchantFeeAddedToTransactionEvent.CalculatedValue);
             state.AvailableBalance.ShouldBe(merchantFeeAddedToTransactionEvent.CalculatedValue);

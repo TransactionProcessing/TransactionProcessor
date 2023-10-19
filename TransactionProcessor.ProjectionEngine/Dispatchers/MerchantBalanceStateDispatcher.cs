@@ -24,7 +24,7 @@ public class MerchantBalanceStateDispatcher : IStateDispatcher<MerchantBalanceSt
             AutomaticDepositMadeEvent e => this.CreateAutomaticDepositBalanceEntry(state, e),
             WithdrawalMadeEvent e => this.CreateWithdrawalBalanceEntry(state, e),
             TransactionHasBeenCompletedEvent e => this.CreateTransactionBalanceEntry(state, e),
-            MerchantFeeAddedToTransactionEvent e => this.CreateTransactionFeeBalanceEntry(state, e),
+            SettledMerchantFeeAddedToTransactionEvent e => this.CreateTransactionFeeBalanceEntry(state, e),
             _ => null
         };
 
@@ -35,7 +35,7 @@ public class MerchantBalanceStateDispatcher : IStateDispatcher<MerchantBalanceSt
     }
 
     private MerchantBalanceChangedEntry CreateTransactionFeeBalanceEntry(MerchantBalanceState state,
-                                                                         MerchantFeeAddedToTransactionEvent @event) =>
+                                                                         SettledMerchantFeeAddedToTransactionEvent @event) =>
         new MerchantBalanceChangedEntry {
                                             MerchantId = @event.MerchantId,
                                             EstateId = @event.EstateId,

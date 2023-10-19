@@ -122,9 +122,8 @@
             aggregate.ApplyAndAppend(productDetailsAddedToTransactionEvent);
         }
 
-        public static void AddSettledFee(this TransactionAggregate aggregate, CalculatedFee calculatedFee,
-                                         DateTime settlementDueDate,
-                                         DateTime settledDateTime)
+        public static void AddFeePendingSettlement(this TransactionAggregate aggregate, CalculatedFee calculatedFee,
+                                             DateTime settlementDueDate)
         {
             if (calculatedFee == null)
             {
@@ -139,10 +138,45 @@
             aggregate.CheckTransactionCanAttractFees();
 
             DomainEvent @event = null;
+            if (calculatedFee.FeeType == FeeType.Merchant){
+                @event = new MerchantFeePendingSettlementAddedToTransactionEvent(aggregate.AggregateId,
+                                                                      aggregate.EstateId,
+                                                                      aggregate.MerchantId,
+                                                                      calculatedFee.CalculatedValue,
+                                                                      (Int32)calculatedFee.FeeCalculationType,
+                                                                      calculatedFee.FeeId,
+                                                                      calculatedFee.FeeValue,
+                                                                      calculatedFee.FeeCalculatedDateTime,
+                                                                      settlementDueDate);
+            }
+            else
+            {
+                throw new InvalidOperationException("Unsupported Fee Type");
+            }
+
+            aggregate.ApplyAndAppend(@event);
+        }
+
+        public static void AddSettledFee(this TransactionAggregate aggregate, CalculatedFee calculatedFee,
+                                         DateTime settledDateTime)
+        {
+            if (calculatedFee == null)
+            {
+                throw new ArgumentNullException(nameof(calculatedFee));
+            }
+
+            aggregate.CheckTransactionHasBeenAuthorised();
+            aggregate.CheckTransactionHasBeenCompleted();
+            aggregate.CheckTransactionCanAttractFees();
+
+            if (aggregate.HasFeeAlreadyBeenAdded(calculatedFee) == false)
+                return;
+
+            DomainEvent @event = null;
             if (calculatedFee.FeeType == FeeType.Merchant)
             {
                 // This is a merchant fee
-                @event = new MerchantFeeAddedToTransactionEvent(aggregate.AggregateId,
+                @event = new SettledMerchantFeeAddedToTransactionEvent(aggregate.AggregateId,
                                                                 aggregate.EstateId,
                                                                 aggregate.MerchantId,
                                                                 calculatedFee.CalculatedValue,
@@ -150,7 +184,6 @@
                                                                 calculatedFee.FeeId,
                                                                 calculatedFee.FeeValue,
                                                                 calculatedFee.FeeCalculatedDateTime,
-                                                                settlementDueDate,
                                                                 settledDateTime);
             }
             else
@@ -541,7 +574,22 @@
             aggregate.TransactionSource = (TransactionSource)domainEvent.TransactionSource;
         }
 
-        public static void PlayEvent(this TransactionAggregate aggregate, MerchantFeeAddedToTransactionEvent domainEvent)
+        public static void PlayEvent(this TransactionAggregate aggregate, SettledMerchantFeeAddedToTransactionEvent domainEvent)
+        {
+            //aggregate.CalculatedFees.Add(new CalculatedFee
+            //                             {
+            //                                 CalculatedValue = domainEvent.CalculatedValue,
+            //                                 FeeId = domainEvent.FeeId,
+            //                                 FeeType = FeeType.Merchant,
+            //                                 FeeValue = domainEvent.FeeValue,
+            //                                 FeeCalculationType = (CalculationType)domainEvent.FeeCalculationType,
+            //                                 IsSettled = true
+            //                             });
+            CalculatedFee fee = aggregate.CalculatedFees.SingleOrDefault(c => c.FeeId == domainEvent.FeeId);
+            fee.IsSettled = true;
+        }
+
+        public static void PlayEvent(this TransactionAggregate aggregate, MerchantFeePendingSettlementAddedToTransactionEvent domainEvent)
         {
             aggregate.CalculatedFees.Add(new CalculatedFee
                                          {
@@ -549,7 +597,9 @@
                                              FeeId = domainEvent.FeeId,
                                              FeeType = FeeType.Merchant,
                                              FeeValue = domainEvent.FeeValue,
-                                             FeeCalculationType = (CalculationType)domainEvent.FeeCalculationType
+                                             FeeCalculationType = (CalculationType)domainEvent.FeeCalculationType,
+                                             IsSettled = false,
+                                             SettlementDueDate = domainEvent.SettlementDueDate,
                                          });
         }
 

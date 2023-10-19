@@ -259,32 +259,30 @@ namespace TransactionProcessor.TransactionAggregate.Tests
         }
 
         [Fact]
-        public void MerchantFeeAddedToTransactionEvent_CanBeCreated_IsCreated()
+        public void SettledMerchantFeeAddedToTransactionEvent_CanBeCreated_IsCreated()
         {
-            MerchantFeeAddedToTransactionEvent merchantFeeAddedToTransactionEvent = new MerchantFeeAddedToTransactionEvent(TestData.TransactionId,
-                TestData.EstateId,
-                TestData.MerchantId,
-                TestData.CalculatedFeeValue,
-                (Int32)CalculationType.Fixed,
-                TestData.TransactionFeeId,
-                TestData.TransactionFeeValue,
-                TestData.TransactionFeeCalculateDateTime,
-                TestData.TransactionFeeSettlementDueDate,
-                TestData.TransactionFeeSettledDateTime);
+            SettledMerchantFeeAddedToTransactionEvent settledMerchantFeeAddedToTransactionEvent = new SettledMerchantFeeAddedToTransactionEvent(TestData.TransactionId,
+                                                                                                                                         TestData.EstateId,
+                                                                                                                                         TestData.MerchantId,
+                                                                                                                                         TestData.CalculatedFeeValue,
+                                                                                                                                         (Int32)CalculationType.Fixed,
+                                                                                                                                         TestData.TransactionFeeId,
+                                                                                                                                         TestData.TransactionFeeValue,
+                                                                                                                                         TestData.TransactionFeeCalculateDateTime,
+                                                                                                                                         TestData.TransactionFeeSettledDateTime);
 
-            merchantFeeAddedToTransactionEvent.ShouldNotBeNull();
-            merchantFeeAddedToTransactionEvent.AggregateId.ShouldBe(TestData.TransactionId);
-            merchantFeeAddedToTransactionEvent.EventId.ShouldNotBe(Guid.Empty);
-            merchantFeeAddedToTransactionEvent.TransactionId.ShouldBe(TestData.TransactionId);
-            merchantFeeAddedToTransactionEvent.EstateId.ShouldBe(TestData.EstateId);
-            merchantFeeAddedToTransactionEvent.MerchantId.ShouldBe(TestData.MerchantId);
-            merchantFeeAddedToTransactionEvent.CalculatedValue.ShouldBe(TestData.CalculatedFeeValue);
-            merchantFeeAddedToTransactionEvent.FeeCalculationType.ShouldBe((Int32)CalculationType.Fixed);
-            merchantFeeAddedToTransactionEvent.FeeId.ShouldBe(TestData.TransactionFeeId);
-            merchantFeeAddedToTransactionEvent.FeeValue.ShouldBe(TestData.TransactionFeeValue);
-            merchantFeeAddedToTransactionEvent.FeeCalculatedDateTime.ShouldBe(TestData.TransactionFeeCalculateDateTime);
-            merchantFeeAddedToTransactionEvent.SettlementDueDate.ShouldBe(TestData.TransactionFeeSettlementDueDate);
-            merchantFeeAddedToTransactionEvent.SettledDateTime.ShouldBe(TestData.TransactionFeeSettledDateTime);
+            settledMerchantFeeAddedToTransactionEvent.ShouldNotBeNull();
+            settledMerchantFeeAddedToTransactionEvent.AggregateId.ShouldBe(TestData.TransactionId);
+            settledMerchantFeeAddedToTransactionEvent.EventId.ShouldNotBe(Guid.Empty);
+            settledMerchantFeeAddedToTransactionEvent.TransactionId.ShouldBe(TestData.TransactionId);
+            settledMerchantFeeAddedToTransactionEvent.EstateId.ShouldBe(TestData.EstateId);
+            settledMerchantFeeAddedToTransactionEvent.MerchantId.ShouldBe(TestData.MerchantId);
+            settledMerchantFeeAddedToTransactionEvent.CalculatedValue.ShouldBe(TestData.CalculatedFeeValue);
+            settledMerchantFeeAddedToTransactionEvent.FeeCalculationType.ShouldBe((Int32)CalculationType.Fixed);
+            settledMerchantFeeAddedToTransactionEvent.FeeId.ShouldBe(TestData.TransactionFeeId);
+            settledMerchantFeeAddedToTransactionEvent.FeeValue.ShouldBe(TestData.TransactionFeeValue);
+            settledMerchantFeeAddedToTransactionEvent.FeeCalculatedDateTime.ShouldBe(TestData.TransactionFeeCalculateDateTime);
+            settledMerchantFeeAddedToTransactionEvent.SettledDateTime.ShouldBe(TestData.TransactionFeeSettledDateTime);
 
         }
 
@@ -328,6 +326,33 @@ namespace TransactionProcessor.TransactionAggregate.Tests
             transactionSourceAddedToTransactionEvent.EstateId.ShouldBe(TestData.EstateId);
             transactionSourceAddedToTransactionEvent.MerchantId.ShouldBe(TestData.MerchantId);
             transactionSourceAddedToTransactionEvent.TransactionSource.ShouldBe(TestData.TransactionSource);
+        }
+
+        [Fact]
+        public void MerchantFeePendingSettlementAddedToTransactionEvent_CanBeCreated_IsCreated()
+        {
+            MerchantFeePendingSettlementAddedToTransactionEvent merchantFeePendingSettlementAddedToTransactionEvent = new MerchantFeePendingSettlementAddedToTransactionEvent(TestData.TransactionId,
+                                                                                                                                                                   TestData.EstateId,
+                                                                                                                                                                   TestData.MerchantId,
+                                                                                                                                                                   TestData.CalculatedFeeValue,
+                                                                                                                                                                   (Int32)CalculationType.Fixed,
+                                                                                                                                                                   TestData.TransactionFeeId,
+                                                                                                                                                                   TestData.TransactionFeeValue,
+                                                                                                                                                                   TestData.TransactionFeeCalculateDateTime,
+                                                                                                                                                                   TestData.TransactionFeeSettlementDueDate);
+
+            merchantFeePendingSettlementAddedToTransactionEvent.ShouldNotBeNull();
+            merchantFeePendingSettlementAddedToTransactionEvent.AggregateId.ShouldBe(TestData.TransactionId);
+            merchantFeePendingSettlementAddedToTransactionEvent.EventId.ShouldNotBe(Guid.Empty);
+            merchantFeePendingSettlementAddedToTransactionEvent.TransactionId.ShouldBe(TestData.TransactionId);
+            merchantFeePendingSettlementAddedToTransactionEvent.EstateId.ShouldBe(TestData.EstateId);
+            merchantFeePendingSettlementAddedToTransactionEvent.MerchantId.ShouldBe(TestData.MerchantId);
+            merchantFeePendingSettlementAddedToTransactionEvent.CalculatedValue.ShouldBe(TestData.CalculatedFeeValue);
+            merchantFeePendingSettlementAddedToTransactionEvent.FeeCalculationType.ShouldBe((Int32)CalculationType.Fixed);
+            merchantFeePendingSettlementAddedToTransactionEvent.FeeId.ShouldBe(TestData.TransactionFeeId);
+            merchantFeePendingSettlementAddedToTransactionEvent.FeeValue.ShouldBe(TestData.TransactionFeeValue);
+            merchantFeePendingSettlementAddedToTransactionEvent.FeeCalculatedDateTime.ShouldBe(TestData.TransactionFeeCalculateDateTime);
+            merchantFeePendingSettlementAddedToTransactionEvent.SettlementDueDate.ShouldBe(TestData.TransactionFeeSettlementDueDate);
         }
     }
 }

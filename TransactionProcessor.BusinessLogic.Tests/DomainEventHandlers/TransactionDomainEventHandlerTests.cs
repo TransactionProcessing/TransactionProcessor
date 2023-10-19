@@ -2,6 +2,7 @@
 {
     using System;
     using System.Collections.Generic;
+    using System.Linq;
     using System.Threading;
     using System.Threading.Tasks;
     using BusinessLogic.Manager;
@@ -69,25 +70,75 @@
                                                                                                             this.SettlementAggregateRepository.Object);
         }
         
-        [Fact]
-        public async Task TransactionDomainEventHandler_Handle_TransactionHasBeenCompletedEvent_SuccessfulSale_MerchantWithImmediateSettlement_EventIsHandled()
+        [Theory]
+        [InlineData(SettlementSchedule.Immediate)]
+        [InlineData(SettlementSchedule.Weekly)]
+        [InlineData(SettlementSchedule.Monthly)]
+        public async Task TransactionDomainEventHandler_Handle_TransactionHasBeenCompletedEvent_SuccessfulSale_EventIsHandled(SettlementSchedule settlementSchedule)
         {
+            TransactionAggregate transactionAggregate = TestData.GetCompletedAuthorisedSaleTransactionAggregate();
             this.TransactionAggregateRepository.Setup(t => t.GetLatestVersion(It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
-                .ReturnsAsync(TestData.GetCompletedAuthorisedSaleTransactionAggregate);
-
-            this.SettlementAggregateRepository.Setup(s => s.GetLatestVersion(It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
-                .ReturnsAsync(TestData.GetEmptySettlementAggregate);
+                .ReturnsAsync(transactionAggregate);
 
             this.FeeCalculationManager.Setup(f => f.CalculateFees(It.IsAny<List<TransactionFeeToCalculate>>(), It.IsAny<Decimal>(), It.IsAny<DateTime>())).Returns(new List<CalculatedFee>
                 {
-                    TestData.CalculatedFeeMerchantFee(),
-                    TestData.CalculatedFeeServiceProviderFee
+                    TestData.CalculatedFeeMerchantFee(TestData.TransactionFeeId),
+                    TestData.CalculatedFeeServiceProviderFee(TestData.TransactionFeeId2)
                 });
 
             this.EstateClient.Setup(e => e.GetMerchant(It.IsAny<String>(), It.IsAny<Guid>(), It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
                 .ReturnsAsync(new MerchantResponse
+                {
+                    SettlementSchedule = settlementSchedule,
+                });
+            this.EstateClient.Setup(e => e.GetTransactionFeesForProduct(It.IsAny<String>(),
+                                                                        It.IsAny<Guid>(),
+                                                                        It.IsAny<Guid>(),
+                                                                        It.IsAny<Guid>(),
+                                                                        It.IsAny<Guid>(),
+                                                                        It.IsAny<CancellationToken>())).ReturnsAsync(TestData.ContractProductTransactionFees);
+
+            this.SecurityServiceClient.Setup(s => s.GetToken(It.IsAny<String>(), It.IsAny<String>(), It.IsAny<CancellationToken>())).ReturnsAsync(TestData.TokenResponse);
+
+            await this.TransactionDomainEventHandler.Handle(TestData.TransactionHasBeenCompletedEvent, CancellationToken.None);
+
+            CalculatedFee merchantFee = transactionAggregate.GetFees().SingleOrDefault(f => f.FeeId == TestData.TransactionFeeId);
+            merchantFee.ShouldNotBeNull();
+            if (settlementSchedule == SettlementSchedule.Immediate){
+                merchantFee.IsSettled.ShouldBeTrue();
+            }
+            else{
+                merchantFee.IsSettled.ShouldBeFalse();
+            }
+
+            var expectedSettlementDate = settlementSchedule switch{
+                SettlementSchedule.Monthly => transactionAggregate.TransactionDateTime.Date.AddMonths(1),
+                SettlementSchedule.Weekly => transactionAggregate.TransactionDateTime.Date.AddDays(7),
+                _ => transactionAggregate.TransactionDateTime.Date
+            };
+            merchantFee.SettlementDueDate.ShouldBe(expectedSettlementDate);
+            
+            CalculatedFee nonMerchantFee = transactionAggregate.GetFees().SingleOrDefault(f => f.FeeId == TestData.TransactionFeeId2);
+            nonMerchantFee.ShouldNotBeNull();
+        }
+
+        [Fact]
+        public async Task TransactionDomainEventHandler_Handle_TransactionHasBeenCompletedEvent_SuccessfulSale_MerchantWithNotSetSettlementSchedule_ErrorThrown()
+        {
+            TransactionAggregate transactionAggregate = TestData.GetCompletedAuthorisedSaleTransactionAggregate();
+            this.TransactionAggregateRepository.Setup(t => t.GetLatestVersion(It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
+                .ReturnsAsync(transactionAggregate);
+
+            this.FeeCalculationManager.Setup(f => f.CalculateFees(It.IsAny<List<TransactionFeeToCalculate>>(), It.IsAny<Decimal>(), It.IsAny<DateTime>())).Returns(new List<CalculatedFee>
+                                                                                                                                                                   {
+                                                                                                                                                                       TestData.CalculatedFeeMerchantFee(TestData.TransactionFeeId),
+                                                                                                                                                                       TestData.CalculatedFeeServiceProviderFee(TestData.TransactionFeeId2)
+                                                                                                                                                                   });
+
+            this.EstateClient.Setup(e => e.GetMerchant(It.IsAny<String>(), It.IsAny<Guid>(), It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
+                .ReturnsAsync(new MerchantResponse
                               {
-                                  SettlementSchedule = SettlementSchedule.Immediate,
+                                  SettlementSchedule = SettlementSchedule.NotSet,
                               });
             this.EstateClient.Setup(e => e.GetTransactionFeesForProduct(It.IsAny<String>(),
                                                                         It.IsAny<Guid>(),
@@ -97,117 +148,7 @@
                                                                         It.IsAny<CancellationToken>())).ReturnsAsync(TestData.ContractProductTransactionFees);
 
             this.SecurityServiceClient.Setup(s => s.GetToken(It.IsAny<String>(), It.IsAny<String>(), It.IsAny<CancellationToken>())).ReturnsAsync(TestData.TokenResponse);
-            
-            await this.TransactionDomainEventHandler.Handle(TestData.TransactionHasBeenCompletedEvent, CancellationToken.None);
-        }
 
-        [Fact]
-        public async Task TransactionDomainEventHandler_Handle_TransactionHasBeenCompletedEvent_SuccessfulSale_MerchantWithWeeklySettlement_EventIsHandled()
-        {
-            this.TransactionAggregateRepository.Setup(t => t.GetLatestVersion(It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
-                .ReturnsAsync(TestData.GetCompletedAuthorisedSaleTransactionAggregate);
-            SettlementAggregate pendingSettlementAggregate = new SettlementAggregate();
-            this.SettlementAggregateRepository.Setup(p => p.GetLatestVersion(It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
-                .ReturnsAsync(pendingSettlementAggregate);
-
-            this.FeeCalculationManager.Setup(f => f.CalculateFees(It.IsAny<List<TransactionFeeToCalculate>>(), It.IsAny<Decimal>(), It.IsAny<DateTime>())).Returns(new List<CalculatedFee>
-                {
-                    TestData.CalculatedFeeMerchantFee(),
-                    TestData.CalculatedFeeServiceProviderFee
-                });
-            var merchant = new MerchantResponse
-                           {
-                               SettlementSchedule = SettlementSchedule.Weekly,
-                           };
-            this.EstateClient.Setup(e => e.GetMerchant(It.IsAny<String>(), It.IsAny<Guid>(), It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
-                .ReturnsAsync(merchant);
-            this.EstateClient.Setup(e => e.GetTransactionFeesForProduct(It.IsAny<String>(),
-                                                                        It.IsAny<Guid>(),
-                                                                        It.IsAny<Guid>(),
-                                                                        It.IsAny<Guid>(),
-                                                                        It.IsAny<Guid>(),
-                                                                        It.IsAny<CancellationToken>())).ReturnsAsync(TestData.ContractProductTransactionFees);
-
-            this.SecurityServiceClient.Setup(s => s.GetToken(It.IsAny<String>(), It.IsAny<String>(), It.IsAny<CancellationToken>())).ReturnsAsync(TestData.TokenResponse);
-
-
-            await this.TransactionDomainEventHandler.Handle(TestData.TransactionHasBeenCompletedEvent, CancellationToken.None);
-
-            // TODO: way of verifying needed
-            //this.TransactionAggregateManager.Verify(t => t.AddFee(It.IsAny<Guid>(),
-            //                                                      It.IsAny<Guid>(),
-            //                                                      It.IsAny<CalculatedFee>(),
-            //                                                      It.IsAny<CancellationToken>()), Times.Once);
-            this.SettlementAggregateRepository.Verify(p => p.GetLatestVersion(It.IsAny<Guid>(), It.IsAny<CancellationToken>()),Times.Once);
-            this.SettlementAggregateRepository.Verify(p => p.SaveChanges(It.IsAny<SettlementAggregate>(), It.IsAny<CancellationToken>()), Times.Once);
-            pendingSettlementAggregate.GetNumberOfFeesPendingSettlement().ShouldBe(1);
-            pendingSettlementAggregate.GetNumberOfFeesSettled().ShouldBe(0);
-        }
-
-        [Fact]
-        public async Task TransactionDomainEventHandler_Handle_TransactionHasBeenCompletedEvent_SuccessfulSale_MerchantWithMonthlySettlement_EventIsHandled()
-        {
-            this.TransactionAggregateRepository.Setup(t => t.GetLatestVersion(It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
-                .ReturnsAsync(TestData.GetCompletedAuthorisedSaleTransactionAggregate);
-            SettlementAggregate pendingSettlementAggregate = new SettlementAggregate();
-            this.SettlementAggregateRepository.Setup(p => p.GetLatestVersion(It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
-                .ReturnsAsync(pendingSettlementAggregate);
-
-            this.FeeCalculationManager.Setup(f => f.CalculateFees(It.IsAny<List<TransactionFeeToCalculate>>(), It.IsAny<Decimal>(), It.IsAny<DateTime>())).Returns(new List<CalculatedFee>
-                {
-                    TestData.CalculatedFeeMerchantFee(),
-                    TestData.CalculatedFeeServiceProviderFee
-                });
-            var merchant = new MerchantResponse
-            {
-                SettlementSchedule = SettlementSchedule.Monthly,
-            };
-            this.EstateClient.Setup(e => e.GetMerchant(It.IsAny<String>(), It.IsAny<Guid>(), It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
-                .ReturnsAsync(merchant);
-            this.EstateClient.Setup(e => e.GetTransactionFeesForProduct(It.IsAny<String>(),
-                                                                        It.IsAny<Guid>(),
-                                                                        It.IsAny<Guid>(),
-                                                                        It.IsAny<Guid>(),
-                                                                        It.IsAny<Guid>(),
-                                                                        It.IsAny<CancellationToken>())).ReturnsAsync(TestData.ContractProductTransactionFees);
-
-            this.SecurityServiceClient.Setup(s => s.GetToken(It.IsAny<String>(), It.IsAny<String>(), It.IsAny<CancellationToken>())).ReturnsAsync(TestData.TokenResponse);
-
-
-            await this.TransactionDomainEventHandler.Handle(TestData.TransactionHasBeenCompletedEvent, CancellationToken.None);
-
-            this.SettlementAggregateRepository.Verify(p => p.GetLatestVersion(It.IsAny<Guid>(), It.IsAny<CancellationToken>()), Times.Once);
-            this.SettlementAggregateRepository.Verify(p => p.SaveChanges(It.IsAny<SettlementAggregate>(), It.IsAny<CancellationToken>()), Times.Once);
-            pendingSettlementAggregate.GetNumberOfFeesPendingSettlement().ShouldBe(1);
-            pendingSettlementAggregate.GetNumberOfFeesSettled().ShouldBe(0);
-        }
-
-        [Fact]
-        public async Task TransactionDomainEventHandler_Handle_TransactionHasBeenCompletedEvent_SuccessfulSale_MerchantWithNotSetSettlementSchedule_ErrorThrown()
-        {
-            this.TransactionAggregateRepository.Setup(t => t.GetLatestVersion(It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
-                .ReturnsAsync(TestData.GetCompletedAuthorisedSaleTransactionAggregate);
-
-            this.FeeCalculationManager.Setup(f => f.CalculateFees(It.IsAny<List<TransactionFeeToCalculate>>(), It.IsAny<Decimal>(), It.IsAny<DateTime>())).Returns(new List<CalculatedFee>
-                {
-                    TestData.CalculatedFeeMerchantFee(),
-                    TestData.CalculatedFeeServiceProviderFee
-                });
-
-            this.EstateClient.Setup(e => e.GetMerchant(It.IsAny<String>(), It.IsAny<Guid>(), It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
-                .ReturnsAsync(new MerchantResponse
-                {
-                    SettlementSchedule = SettlementSchedule.NotSet,
-                });
-            this.EstateClient.Setup(e => e.GetTransactionFeesForProduct(It.IsAny<String>(),
-                                                                        It.IsAny<Guid>(),
-                                                                        It.IsAny<Guid>(),
-                                                                        It.IsAny<Guid>(),
-                                                                        It.IsAny<Guid>(),
-                                                                        It.IsAny<CancellationToken>())).ReturnsAsync(TestData.ContractProductTransactionFees);
-
-            this.SecurityServiceClient.Setup(s => s.GetToken(It.IsAny<String>(), It.IsAny<String>(), It.IsAny<CancellationToken>())).ReturnsAsync(TestData.TokenResponse);
-            
             Should.Throw<NotSupportedException>(async () =>
                                                 {
                                                     await this.TransactionDomainEventHandler.Handle(TestData.TransactionHasBeenCompletedEvent, CancellationToken.None);
@@ -273,19 +214,19 @@
         }
 
 
-        [Fact]
-        public async Task TransactionDomainEventHandler_Handle_MerchantFeeAddedToTransactionEvent_EventIsHandled()
-        {
-            this.SettlementAggregateRepository.Setup(s => s.GetLatestVersion(It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
-                .ReturnsAsync(TestData.GetSettlementAggregateWithPendingMerchantFees(1));
+        //[Fact]
+        //public async Task TransactionDomainEventHandler_Handle_MerchantFeeAddedToTransactionEvent_EventIsHandled()
+        //{
+        //    this.SettlementAggregateRepository.Setup(s => s.GetLatestVersion(It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
+        //        .ReturnsAsync(TestData.GetSettlementAggregateWithPendingMerchantFees(1));
 
-            await this.TransactionDomainEventHandler.Handle(TestData.MerchantFeeAddedToTransactionEvent(TestData.TransactionFeeSettlementDueDate), CancellationToken.None);
-        }
+        //    await this.TransactionDomainEventHandler.Handle(TestData.SettledMerchantFeeAddedToTransactionEvent(TestData.TransactionFeeSettlementDueDate), CancellationToken.None);
+        //}
 
-        [Fact]
-        public async Task TransactionDomainEventHandler_Handle_MerchantFeeAddedToTransactionEvent_EventHasNoSettlementDueDate_EventIsHandled()
-        {
-            await this.TransactionDomainEventHandler.Handle(TestData.MerchantFeeAddedToTransactionEvent(DateTime.MinValue), CancellationToken.None);
-        }
+        //[Fact]
+        //public async Task TransactionDomainEventHandler_Handle_MerchantFeeAddedToTransactionEvent_EventHasNoSettlementDueDate_EventIsHandled()
+        //{
+        //    await this.TransactionDomainEventHandler.Handle(TestData.SettledMerchantFeeAddedToTransactionEvent(DateTime.MinValue), CancellationToken.None);
+        //}
     }
 }

@@ -78,7 +78,6 @@
                 {
                     TransactionAggregate transactionAggregate = await this.TransactionAggregateRepository.GetLatestVersion(feeToSettle.transactionId, cancellationToken);
                     transactionAggregate.AddSettledFee(feeToSettle.calculatedFee,
-                                                       settlementDate,
                                                        DateTime.Now);
                     await this.TransactionAggregateRepository.SaveChanges(transactionAggregate, cancellationToken);
                     response.NumberOfFeesSuccessfullySettled++;
