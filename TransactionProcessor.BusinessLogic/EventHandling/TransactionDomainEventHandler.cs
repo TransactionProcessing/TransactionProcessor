@@ -241,10 +241,18 @@
                                                      CancellationToken cancellationToken){
             Guid aggregateId = Helpers.CalculateSettlementAggregateId(domainEvent.SettledDateTime.Date, domainEvent.MerchantId, domainEvent.EstateId);
 
+            MerchantResponse merchant = await this.EstateClient.GetMerchant(this.TokenResponse.AccessToken, domainEvent.EstateId, domainEvent.MerchantId, cancellationToken);
+
             // We need to add the fees to a pending settlement stream
             SettlementAggregate aggregate = await this.SettlementAggregateRepository.GetLatestVersion(aggregateId, cancellationToken);
 
-            aggregate.MarkFeeAsSettled(domainEvent.MerchantId, domainEvent.TransactionId, domainEvent.FeeId, domainEvent.SettledDateTime.Date);
+
+            if (merchant.SettlementSchedule == SettlementSchedule.Immediate){
+                aggregate.ImmediatelyMarkFeeAsSettled(domainEvent.MerchantId, domainEvent.TransactionId, domainEvent.FeeId);
+            }
+            else {
+                aggregate.MarkFeeAsSettled(domainEvent.MerchantId, domainEvent.TransactionId, domainEvent.FeeId, domainEvent.SettledDateTime.Date);
+            }
 
             await this.SettlementAggregateRepository.SaveChanges(aggregate, cancellationToken);
         }

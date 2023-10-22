@@ -84,28 +84,28 @@
             return merchantFeeSettledEvent;
         }
 
-        //public static void ImmediatelyMarkFeeAsSettled(this SettlementAggregate aggregate, Guid merchantId, Guid transactionId, Guid feeId)
-        //{
-        //    (Guid transactionId, Guid merchantId, CalculatedFee calculatedFee) pendingFee = SettlementAggregateExtensions.GetPendingFee(aggregate, merchantId, transactionId, feeId);
+        public static void ImmediatelyMarkFeeAsSettled(this SettlementAggregate aggregate, Guid merchantId, Guid transactionId, Guid feeId)
+        {
+            (Guid transactionId, Guid merchantId, CalculatedFee calculatedFee) pendingFee = SettlementAggregateExtensions.GetPendingFee(aggregate, merchantId, transactionId, feeId);
 
-        //    (Guid transactionId, Guid merchantId, CalculatedFee calculatedFee) settledFee = SettlementAggregateExtensions.GetSettledFee(aggregate, merchantId, transactionId, feeId);
+            (Guid transactionId, Guid merchantId, CalculatedFee calculatedFee) settledFee = SettlementAggregateExtensions.GetSettledFee(aggregate, merchantId, transactionId, feeId);
 
-        //    if (settledFee != default((Guid, Guid, CalculatedFee)))
-        //    {
-        //        // Fee already settled....
-        //        return;
-        //    }
+            if (settledFee != default((Guid, Guid, CalculatedFee)))
+            {
+                // Fee already settled....
+                return;
+            }
 
-        //    if (pendingFee == default((Guid, Guid, CalculatedFee)))
-        //    {
-        //        // Fee not found....
-        //        return;
-        //    }
+            if (pendingFee == default((Guid, Guid, CalculatedFee)))
+            {
+                // Fee not found....
+                return;
+            }
 
-        //    MerchantFeeSettledEvent merchantFeeSettledEvent = SettlementAggregateExtensions.CreateMerchantFeeSettledEvent(aggregate, pendingFee);
+            MerchantFeeSettledEvent merchantFeeSettledEvent = SettlementAggregateExtensions.CreateMerchantFeeSettledEvent(aggregate, pendingFee,DateTime.Now);
 
-        //    aggregate.ApplyAndAppend(merchantFeeSettledEvent);
-        //}
+            aggregate.ApplyAndAppend(merchantFeeSettledEvent);
+        }
 
         private static (Guid transactionId, Guid merchantId, CalculatedFee calculatedFee) GetPendingFee(SettlementAggregate aggregate, Guid merchantId, Guid transactionId, Guid feeId){
             (Guid transactionId, Guid merchantId, CalculatedFee calculatedFee) pendingFee = aggregate.CalculatedFeesPendingSettlement
