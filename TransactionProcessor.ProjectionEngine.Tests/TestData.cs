@@ -94,17 +94,16 @@ namespace TransactionProcessor.ProjectionEngine.Tests
 
         public static String Country = "Country";
 
-        public static MerchantFeeAddedToTransactionEvent GetMerchantFeeAddedToTransactionEvent(Decimal? calculatedFeeValue = 1.25m) =>
-            new MerchantFeeAddedToTransactionEvent(TestData.TransactionId,
-                                                   TestData.EstateId,
-                                                   TestData.MerchantId,
-                                                   calculatedFeeValue.Value,
-                                                   TestData.FeeCalculationType,
-                                                   TestData.FeeId,
-                                                   TestData.FeeValue,
-                                                   TestData.FeeCalculatedDateTime,
-                                                   TestData.SettlementDueDate,
-                                                   TestData.SettledDateTime);
+        public static SettledMerchantFeeAddedToTransactionEvent GetSettledMerchantFeeAddedToTransactionEvent(Decimal? calculatedFeeValue = 1.25m) =>
+            new SettledMerchantFeeAddedToTransactionEvent(TestData.TransactionId,
+                                                          TestData.EstateId,
+                                                          TestData.MerchantId,
+                                                          calculatedFeeValue.Value,
+                                                          TestData.FeeCalculationType,
+                                                          TestData.FeeId,
+                                                          TestData.FeeValue,
+                                                          TestData.FeeCalculatedDateTime,
+                                                          TestData.SettledDateTime);
         
         public static TransactionHasBeenCompletedEvent GetTransactionHasBeenCompletedEvent(Boolean? isAuthorised = true,
                                                                                            Decimal? amount = null){

@@ -66,7 +66,8 @@ namespace TransactionProcessor.SettlementAggregates.Tests
                                             (Int32)CalculationType.Fixed,
                                             TestData.TransactionFeeId,
                                             TestData.TransactionFeeValue,
-                                            TestData.TransactionFeeCalculateDateTime);
+                                            TestData.TransactionFeeCalculateDateTime,
+                                            TestData.SettlementDate);
 
             merchantFeeSettledEvent.ShouldNotBeNull();
             merchantFeeSettledEvent.AggregateId.ShouldBe(TestData.SettlementAggregateId);
@@ -80,6 +81,7 @@ namespace TransactionProcessor.SettlementAggregates.Tests
             merchantFeeSettledEvent.FeeId.ShouldBe(TestData.TransactionFeeId);
             merchantFeeSettledEvent.FeeValue.ShouldBe(TestData.TransactionFeeValue);
             merchantFeeSettledEvent.FeeCalculatedDateTime.ShouldBe(TestData.TransactionFeeCalculateDateTime);
+            merchantFeeSettledEvent.SettledDateTime.ShouldBe(TestData.SettlementDate);
         }
 
         [Fact]

@@ -15,7 +15,7 @@ public class MerchantBalanceProjectionTests
     [InlineData(typeof(AutomaticDepositMadeEvent), true)]
     [InlineData(typeof(TransactionHasStartedEvent), true)]
     [InlineData(typeof(TransactionHasBeenCompletedEvent), true)]
-    [InlineData(typeof(MerchantFeeAddedToTransactionEvent), true)]
+    [InlineData(typeof(SettledMerchantFeeAddedToTransactionEvent), true)]
     [InlineData(typeof(AddressAddedEvent), false)]
     public void MerchantBalanceProjection_ShouldIHandleEvent_ReturnsExpectedValue(Type eventType, Boolean expectedResult){
         MerchantBalanceProjection projection = new MerchantBalanceProjection();
@@ -27,7 +27,7 @@ public class MerchantBalanceProjectionTests
         _ when eventType == typeof(AutomaticDepositMadeEvent) => TestData.AutomaticDepositMadeEvent,
         _ when eventType == typeof(TransactionHasStartedEvent) => TestData.GetTransactionHasStartedEvent(),
         _ when eventType == typeof(TransactionHasBeenCompletedEvent) => TestData.GetTransactionHasBeenCompletedEvent(),
-        _ when eventType == typeof(MerchantFeeAddedToTransactionEvent) => TestData.GetMerchantFeeAddedToTransactionEvent(),
+        _ when eventType == typeof(SettledMerchantFeeAddedToTransactionEvent) => TestData.GetSettledMerchantFeeAddedToTransactionEvent(),
             _ => TestData.AddressAddedEvent
         };
 
@@ -476,7 +476,7 @@ public class MerchantBalanceProjectionTests
                     AvailableBalance = 75.00m,
                     Balance = 75.00m
                 };
-        MerchantFeeAddedToTransactionEvent @event = TestData.GetMerchantFeeAddedToTransactionEvent(0.25m);
+        SettledMerchantFeeAddedToTransactionEvent @event = TestData.GetSettledMerchantFeeAddedToTransactionEvent(0.25m);
 
         MerchantBalanceState newState = await projection.Handle(state, @event, CancellationToken.None);
 
@@ -492,7 +492,7 @@ public class MerchantBalanceProjectionTests
     {
         MerchantBalanceProjection projection = new MerchantBalanceProjection();
         MerchantBalanceState state = new MerchantBalanceState();
-        MerchantFeeAddedToTransactionEvent @event = TestData.GetMerchantFeeAddedToTransactionEvent(0.25m);
+        SettledMerchantFeeAddedToTransactionEvent @event = TestData.GetSettledMerchantFeeAddedToTransactionEvent(0.25m);
         state = state with
                 {
                     EstateId = TestData.EstateId,
@@ -519,7 +519,7 @@ public class MerchantBalanceProjectionTests
     {
         MerchantBalanceProjection projection = new MerchantBalanceProjection();
         MerchantBalanceState state = new MerchantBalanceState();
-        MerchantFeeAddedToTransactionEvent @event = TestData.GetMerchantFeeAddedToTransactionEvent(0.25m);
+        SettledMerchantFeeAddedToTransactionEvent @event = TestData.GetSettledMerchantFeeAddedToTransactionEvent(0.25m);
         state = state with
                 {
                     EstateId = TestData.EstateId,
@@ -551,7 +551,7 @@ public class MerchantBalanceProjectionTests
         ManualDepositMadeEvent manualDepositMadeEvent = TestData.ManualDepositMadeEvent;
         TransactionHasStartedEvent transactionHasStartedEvent = TestData.GetTransactionHasStartedEvent(TestData.TransactionAmount);
         TransactionHasBeenCompletedEvent transactionHasBeenCompleteEvent = TestData.GetTransactionHasBeenCompletedEvent(true, TestData.TransactionAmount);
-        MerchantFeeAddedToTransactionEvent merchantFeeAddedToTransactionEvent = TestData.GetMerchantFeeAddedToTransactionEvent(0.25m);
+        SettledMerchantFeeAddedToTransactionEvent merchantFeeAddedToTransactionEvent = TestData.GetSettledMerchantFeeAddedToTransactionEvent(0.25m);
 
         MerchantBalanceState newState = await projection.Handle(state,merchantCreatedEvent , CancellationToken.None);
         newState = await projection.Handle(newState, merchantFeeAddedToTransactionEvent, CancellationToken.None);

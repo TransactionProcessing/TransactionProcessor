@@ -18,7 +18,7 @@ public class MerchantBalanceProjection : IProjection<MerchantBalanceState>
             AutomaticDepositMadeEvent adme => state.HandleAutomaticDepositMadeEvent(adme),
             TransactionHasStartedEvent thse => state.HandleTransactionHasStartedEvent(thse),
             TransactionHasBeenCompletedEvent thbce => state.HandleTransactionHasBeenCompletedEvent(thbce),
-            MerchantFeeAddedToTransactionEvent mfatte => state.HandleMerchantFeeAddedToTransactionEvent(mfatte),
+            SettledMerchantFeeAddedToTransactionEvent mfatte => state.HandleSettledMerchantFeeAddedToTransactionEvent(mfatte),
             _ => state
         };
 
@@ -34,7 +34,7 @@ public class MerchantBalanceProjection : IProjection<MerchantBalanceState>
             AutomaticDepositMadeEvent _ => true,
             TransactionHasStartedEvent _ => true,
             TransactionHasBeenCompletedEvent _ => true,
-            MerchantFeeAddedToTransactionEvent _ => true,
+            SettledMerchantFeeAddedToTransactionEvent _ => true,
             _ => false
         };
     }

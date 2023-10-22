@@ -17,6 +17,7 @@
     using SecurityService.Client;
     using SecurityService.DataTransferObjects.Responses;
     using Services;
+    using Settlement.DomainEvents;
     using SettlementAggregates;
     using Shared.DomainDrivenDesign.EventSourcing;
     using Shared.EventStore.Aggregate;
@@ -155,7 +156,8 @@
         }
 
         private async Task HandleSpecificDomainEvent(TransactionHasBeenCompletedEvent domainEvent,
-                                                     CancellationToken cancellationToken) {
+                                                     CancellationToken cancellationToken){
+
             TransactionAggregate transactionAggregate =
                 await this.TransactionAggregateRepository.GetLatestVersion(domainEvent.TransactionId, cancellationToken);
 
@@ -164,27 +166,7 @@
 
             this.TokenResponse = await this.GetToken(cancellationToken);
 
-            // Ok we should have filtered out the not applicable transactions
-            // Get the fees to be calculated
-            List<ContractProductTransactionFee> feesForProduct = await this.EstateClient.GetTransactionFeesForProduct(this.TokenResponse.AccessToken,
-                transactionAggregate.EstateId,
-                transactionAggregate.MerchantId,
-                transactionAggregate.ContractId,
-                transactionAggregate.ProductId,
-                cancellationToken);
-            List<TransactionFeeToCalculate> feesForCalculation = new List<TransactionFeeToCalculate>();
-
-            foreach (ContractProductTransactionFee contractProductTransactionFee in feesForProduct) {
-                TransactionFeeToCalculate transactionFeeToCalculate = new TransactionFeeToCalculate {
-                                                                                                        FeeId = contractProductTransactionFee.TransactionFeeId,
-                                                                                                        Value = contractProductTransactionFee.Value,
-                                                                                                        FeeType = (FeeType)contractProductTransactionFee.FeeType,
-                                                                                                        CalculationType =
-                                                                                                            (CalculationType)contractProductTransactionFee.CalculationType
-                                                                                                    };
-
-                feesForCalculation.Add(transactionFeeToCalculate);
-            }
+            List<TransactionFeeToCalculate> feesForCalculation = await this.GetTransactionFeesForCalculation(transactionAggregate, cancellationToken);
 
             // Do the fee calculation
             List<CalculatedFee> resultFees =
@@ -193,57 +175,138 @@
             // Process the non merchant fees
             IEnumerable<CalculatedFee> nonMerchantFees = resultFees.Where(f => f.FeeType == FeeType.ServiceProvider);
 
-            foreach (CalculatedFee calculatedFee in nonMerchantFees) {
+            foreach (CalculatedFee calculatedFee in nonMerchantFees){
                 // Add Fee to the Transaction 
                 transactionAggregate.AddFee(calculatedFee);
             }
 
             // Now deal with merchant fees 
-            IEnumerable<CalculatedFee> merchantFees = resultFees.Where(f => f.FeeType == FeeType.Merchant);
+            List<CalculatedFee> merchantFees = resultFees.Where(f => f.FeeType == FeeType.Merchant).ToList();
 
-            // get the merchant now to see the settlement schedule
-            this.TokenResponse = await this.GetToken(cancellationToken);
-            MerchantResponse merchant =
-                await this.EstateClient.GetMerchant(this.TokenResponse.AccessToken, domainEvent.EstateId, domainEvent.MerchantId, cancellationToken);
+            if (merchantFees.Any()){
+                MerchantResponse merchant =
+                    await this.EstateClient.GetMerchant(this.TokenResponse.AccessToken, domainEvent.EstateId, domainEvent.MerchantId, cancellationToken);
 
-            if (merchant.SettlementSchedule == SettlementSchedule.NotSet) {
-                throw new NotSupportedException($"Merchant {merchant.MerchantId} does not have a settlement schedule configured");
-            }
-
-            foreach (CalculatedFee calculatedFee in merchantFees) {
-                // Determine when the fee should be applied
-                DateTime settlementDate = this.CalculateSettlementDate(merchant.SettlementSchedule, domainEvent.CompletedDateTime);
-
-                Guid aggregateId = Helpers.CalculateSettlementAggregateId(settlementDate, domainEvent.MerchantId, domainEvent.EstateId);
-
-                // We need to add the fees to a pending settlement stream (for today)
-                SettlementAggregate aggregate = await this.SettlementAggregateRepository.GetLatestVersion(aggregateId, cancellationToken);
-
-                if (aggregate.IsCreated == false) {
-                    aggregate.Create(transactionAggregate.EstateId, transactionAggregate.MerchantId, settlementDate);
+                if (merchant.SettlementSchedule == SettlementSchedule.NotSet){
+                    throw new NotSupportedException($"Merchant {merchant.MerchantId} does not have a settlement schedule configured");
                 }
 
-                //Guid eventId = IdGenerationService.GenerateEventId(new {
-                //                                                           transactionAggregate.MerchantId,
-                //                                                           transactionAggregate.AggregateId,
-                //                                                           calculatedFee.FeeId
-                //                                                       });
+                foreach (CalculatedFee calculatedFee in merchantFees){
+                    // Determine when the fee should be applied
+                    DateTime settlementDate = this.CalculateSettlementDate(merchant.SettlementSchedule, domainEvent.CompletedDateTime);
 
-                aggregate.AddFee(transactionAggregate.MerchantId, transactionAggregate.AggregateId, calculatedFee);
+                    transactionAggregate.AddFeePendingSettlement(calculatedFee, settlementDate);
 
-                if (merchant.SettlementSchedule == SettlementSchedule.Immediate) {
-                    // Add fees to transaction now if settlement is immediate
-                    transactionAggregate.AddSettledFee(calculatedFee,
-                                                       DateTime.Now.Date,
-                                                       DateTime.Now);
-                    aggregate.ImmediatelyMarkFeeAsSettled(transactionAggregate.MerchantId, transactionAggregate.AggregateId, calculatedFee.FeeId);
+
+                    if (merchant.SettlementSchedule == SettlementSchedule.Immediate){
+                        // Add fees to transaction now if settlement is immediate
+                        transactionAggregate.AddSettledFee(calculatedFee,
+                                                           settlementDate);
+                    }
                 }
-
-                await this.TransactionAggregateRepository.SaveChanges(transactionAggregate, cancellationToken);
-                await this.SettlementAggregateRepository.SaveChanges(aggregate, cancellationToken);
             }
+
+            await this.TransactionAggregateRepository.SaveChanges(transactionAggregate, cancellationToken);
         }
 
+        private async Task HandleSpecificDomainEvent(MerchantFeePendingSettlementAddedToTransactionEvent domainEvent,
+                                                     CancellationToken cancellationToken){
+
+            Guid aggregateId = Helpers.CalculateSettlementAggregateId(domainEvent.SettlementDueDate.Date, domainEvent.MerchantId, domainEvent.EstateId);
+
+            // We need to add the fees to a pending settlement stream
+            SettlementAggregate aggregate = await this.SettlementAggregateRepository.GetLatestVersion(aggregateId, cancellationToken);
+
+            if (aggregate.IsCreated == false) {
+                aggregate.Create(domainEvent.EstateId, domainEvent.MerchantId, domainEvent.SettlementDueDate.Date);
+            }
+
+            // Create Calculated Fee from the domain event
+            CalculatedFee calculatedFee = new CalculatedFee{
+                                                               CalculatedValue = domainEvent.CalculatedValue,
+                                                               FeeCalculatedDateTime = domainEvent.FeeCalculatedDateTime,
+                                                               FeeCalculationType = (CalculationType)domainEvent.FeeCalculationType,
+                                                               FeeId = domainEvent.FeeId,
+                                                               FeeType = FeeType.Merchant,
+                                                               FeeValue = domainEvent.FeeValue,
+                                                               SettlementDueDate = domainEvent.SettlementDueDate
+                                                           };
+
+            aggregate.AddFee(domainEvent.MerchantId, domainEvent.TransactionId, calculatedFee);
+
+            await this.SettlementAggregateRepository.SaveChanges(aggregate, cancellationToken);
+        }
+
+        private async Task HandleSpecificDomainEvent(SettledMerchantFeeAddedToTransactionEvent domainEvent,
+                                                     CancellationToken cancellationToken){
+            Guid aggregateId = Helpers.CalculateSettlementAggregateId(domainEvent.SettledDateTime.Date, domainEvent.MerchantId, domainEvent.EstateId);
+
+            MerchantResponse merchant = await this.EstateClient.GetMerchant(this.TokenResponse.AccessToken, domainEvent.EstateId, domainEvent.MerchantId, cancellationToken);
+
+            // We need to add the fees to a pending settlement stream
+            SettlementAggregate aggregate = await this.SettlementAggregateRepository.GetLatestVersion(aggregateId, cancellationToken);
+
+
+            if (merchant.SettlementSchedule == SettlementSchedule.Immediate){
+                aggregate.ImmediatelyMarkFeeAsSettled(domainEvent.MerchantId, domainEvent.TransactionId, domainEvent.FeeId);
+            }
+            else {
+                aggregate.MarkFeeAsSettled(domainEvent.MerchantId, domainEvent.TransactionId, domainEvent.FeeId, domainEvent.SettledDateTime.Date);
+            }
+
+            await this.SettlementAggregateRepository.SaveChanges(aggregate, cancellationToken);
+        }
+
+        private async Task HandleSpecificDomainEvent(MerchantFeeSettledEvent domainEvent,
+                                                     CancellationToken cancellationToken)
+        {
+            TransactionAggregate aggregate = await this.TransactionAggregateRepository.GetLatestVersion(domainEvent.TransactionId, cancellationToken);
+
+            CalculatedFee calculatedFee = new CalculatedFee
+                                          {
+                                              CalculatedValue = domainEvent.CalculatedValue,
+                                              FeeCalculatedDateTime = domainEvent.FeeCalculatedDateTime,
+                                              FeeCalculationType = (CalculationType)domainEvent.FeeCalculationType,
+                                              FeeId = domainEvent.FeeId,
+                                              FeeType = FeeType.Merchant,
+                                              FeeValue = domainEvent.FeeValue,
+                                              IsSettled = true
+                                          };
+
+            aggregate.AddSettledFee(calculatedFee, domainEvent.SettledDateTime);
+
+            await this.TransactionAggregateRepository.SaveChanges(aggregate, cancellationToken);
+        }
+
+        private async Task<List<TransactionFeeToCalculate>> GetTransactionFeesForCalculation(TransactionAggregate transactionAggregate, CancellationToken cancellationToken)
+        {
+            // Ok we should have filtered out the not applicable transactions
+            // Get the fees to be calculated
+            List<ContractProductTransactionFee> feesForProduct = await this.EstateClient.GetTransactionFeesForProduct(this.TokenResponse.AccessToken,
+                                                                                                                      transactionAggregate.EstateId,
+                                                                                                                      transactionAggregate.MerchantId,
+                                                                                                                      transactionAggregate.ContractId,
+                                                                                                                      transactionAggregate.ProductId,
+                                                                                                                      cancellationToken);
+            List<TransactionFeeToCalculate> feesForCalculation = new List<TransactionFeeToCalculate>();
+
+            foreach (ContractProductTransactionFee contractProductTransactionFee in feesForProduct)
+            {
+                TransactionFeeToCalculate transactionFeeToCalculate = new TransactionFeeToCalculate
+                                                                      {
+                                                                          FeeId = contractProductTransactionFee.TransactionFeeId,
+                                                                          Value = contractProductTransactionFee.Value,
+                                                                          FeeType = (FeeType)contractProductTransactionFee.FeeType,
+                                                                          CalculationType =
+                                                                              (CalculationType)contractProductTransactionFee.CalculationType
+                                                                      };
+
+                feesForCalculation.Add(transactionFeeToCalculate);
+            }
+
+            return feesForCalculation;
+        }
+        
         private async Task HandleSpecificDomainEvent(CustomerEmailReceiptRequestedEvent domainEvent,
                                                      CancellationToken cancellationToken) {
             this.TokenResponse = await this.GetToken(cancellationToken);
@@ -275,21 +338,22 @@
             await this.ResendEmailMessage(this.TokenResponse.AccessToken, domainEvent.EventId, domainEvent.EstateId, cancellationToken);
         }
 
-        private async Task HandleSpecificDomainEvent(MerchantFeeAddedToTransactionEvent domainEvent,
-                                                     CancellationToken cancellationToken) {
-            if (domainEvent.SettlementDueDate == DateTime.MinValue) {
-                // Old event format before settlement
-                return;
-            }
+        //private async Task HandleSpecificDomainEvent(SettledMerchantFeeAddedToTransactionEvent domainEvent,
+        //                                             CancellationToken cancellationToken){
+        //    throw new NotImplementedException();
+        //    //if (domainEvent.SettlementDueDate == DateTime.MinValue) {
+        //    //    // Old event format before settlement
+        //    //    return;
+        //    //}
 
-            Guid aggregateId = Helpers.CalculateSettlementAggregateId(domainEvent.SettlementDueDate, domainEvent.MerchantId, domainEvent.EstateId);
+        //    Guid aggregateId = Helpers.CalculateSettlementAggregateId(domainEvent.SettlementDueDate, domainEvent.MerchantId, domainEvent.EstateId);
 
-            SettlementAggregate pendingSettlementAggregate = await this.SettlementAggregateRepository.GetLatestVersion(aggregateId, cancellationToken);
+        //    SettlementAggregate pendingSettlementAggregate = await this.SettlementAggregateRepository.GetLatestVersion(aggregateId, cancellationToken);
 
-            pendingSettlementAggregate.MarkFeeAsSettled(domainEvent.MerchantId, domainEvent.TransactionId, domainEvent.FeeId);
+        //    //pendingSettlementAggregate.MarkFeeAsSettled(domainEvent.MerchantId, domainEvent.TransactionId, domainEvent.FeeId);
 
-            await this.SettlementAggregateRepository.SaveChanges(pendingSettlementAggregate, cancellationToken);
-        }
+        //    //await this.SettlementAggregateRepository.SaveChanges(pendingSettlementAggregate, cancellationToken);
+        //}
 
         private async Task ResendEmailMessage(String accessToken,
                                               Guid messageId,

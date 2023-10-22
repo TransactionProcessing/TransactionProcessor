@@ -59,6 +59,10 @@
         /// </value>
         public Decimal FeeValue { get; set; }
 
+        public Boolean IsSettled{ get; set; }
+
+        public DateTime SettlementDueDate { get; set; }
+
         #endregion
     }
 }

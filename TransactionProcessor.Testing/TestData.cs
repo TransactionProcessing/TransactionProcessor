@@ -845,16 +845,15 @@
         public static CustomerEmailReceiptResendRequestedEvent CustomerEmailReceiptResendRequestedEvent =
             new CustomerEmailReceiptResendRequestedEvent(TestData.TransactionId, TestData.EstateId, TestData.MerchantId);
         
-        public static MerchantFeeAddedToTransactionEvent MerchantFeeAddedToTransactionEvent(DateTime settlementDueDate) => new MerchantFeeAddedToTransactionEvent(TestData.SettlementAggregateId,
-            TestData.EstateId,
-            TestData.MerchantId,
-            TestData.CalculatedFeeValue,
-            (Int32)CalculationType.Fixed,
-            TestData.TransactionFeeId,
-            TestData.CalculatedFeeValue,
-            TestData.TransactionFeeCalculateDateTime,
-            settlementDueDate,
-            TestData.SettlementDate);
+        public static SettledMerchantFeeAddedToTransactionEvent SettledMerchantFeeAddedToTransactionEvent(DateTime settlementDueDate) => new SettledMerchantFeeAddedToTransactionEvent(TestData.SettlementAggregateId,
+                                                                                                                                                                                       TestData.EstateId,
+                                                                                                                                                                                       TestData.MerchantId,
+                                                                                                                                                                                       TestData.CalculatedFeeValue,
+                                                                                                                                                                                       (Int32)CalculationType.Fixed,
+                                                                                                                                                                                       TestData.TransactionFeeId,
+                                                                                                                                                                                       TestData.CalculatedFeeValue,
+                                                                                                                                                                                       TestData.TransactionFeeCalculateDateTime,
+                                                                                                                                                                                       TestData.SettlementDate);
 
         public static TransactionHasBeenCompletedEvent TransactionHasBeenCompletedEvent = new TransactionHasBeenCompletedEvent(TestData.TransactionId,
                                                                                                                                   TestData.EstateId,
@@ -1004,8 +1003,17 @@
             {
                 new ContractProductTransactionFee
                 {
+                    FeeType = EstateManagement.DataTransferObjects.FeeType.ServiceProvider,
                     Value = TestData.TransactionFeeValue,
                     TransactionFeeId = TestData.TransactionFeeId,
+                    Description = TestData.TransactionFeeDescription,
+                    CalculationType = (EstateManagement.DataTransferObjects.CalculationType)CalculationType.Fixed
+                },
+                new ContractProductTransactionFee
+                {
+                    FeeType = EstateManagement.DataTransferObjects.FeeType.Merchant,
+                    Value = TestData.TransactionFeeValue,
+                    TransactionFeeId = TestData.TransactionFeeId2,
                     Description = TestData.TransactionFeeDescription,
                     CalculationType = (EstateManagement.DataTransferObjects.CalculationType)CalculationType.Fixed
                 }
@@ -1041,12 +1049,22 @@
                 FeeType = FeeType.Merchant
             };
 
-        public static CalculatedFee CalculatedFeeServiceProviderFee =>
+        public static CalculatedFee CalculatedFeeServiceProviderFee() =>
             new CalculatedFee
             {
                 CalculatedValue = TestData.CalculatedFeeValue,
                 FeeCalculationType = CalculationType.Fixed,
-                FeeId = TestData.TransactionFeeId,
+                FeeId = TestData.TransactionFeeId2,
+                FeeValue = TestData.TransactionFeeValue,
+                FeeType = FeeType.ServiceProvider
+            };
+
+        public static CalculatedFee CalculatedFeeServiceProviderFee(Guid transactionFeeId) =>
+            new CalculatedFee
+            {
+                CalculatedValue = TestData.CalculatedFeeValue,
+                FeeCalculationType = CalculationType.Fixed,
+                FeeId = transactionFeeId,
                 FeeValue = TestData.TransactionFeeValue,
                 FeeType = FeeType.ServiceProvider
             };
@@ -1070,7 +1088,7 @@
         public static List<CalculatedFee> CalculatedServiceProviderFees =>
             new List<CalculatedFee>
             {
-                TestData.CalculatedFeeServiceProviderFee
+                TestData.CalculatedFeeServiceProviderFee()
             };
 
         public static SettlementAggregate GetEmptySettlementAggregate()
@@ -1108,7 +1126,7 @@
                 Guid transactionId = Guid.NewGuid();
                 Guid transactionFeeId = Guid.NewGuid();
                 aggregate.AddFee(TestData.MerchantId, transactionId, CalculatedFeeMerchantFee(transactionFeeId));
-                aggregate.MarkFeeAsSettled(TestData.MerchantId, transactionId, transactionFeeId);
+                aggregate.MarkFeeAsSettled(TestData.MerchantId, transactionId, transactionFeeId, TestData.SettlementDate);
             }
 
             return aggregate;
@@ -1126,7 +1144,7 @@
                 aggregate.AddFee(TestData.MerchantId, transactionId, CalculatedFeeMerchantFee(transactionFeeId));
                 if (i < numberOfFees)
                 {
-                    aggregate.MarkFeeAsSettled(TestData.MerchantId, transactionId, transactionFeeId);
+                    aggregate.MarkFeeAsSettled(TestData.MerchantId, transactionId, transactionFeeId, TestData.SettlementDate);
                 }
             }
 

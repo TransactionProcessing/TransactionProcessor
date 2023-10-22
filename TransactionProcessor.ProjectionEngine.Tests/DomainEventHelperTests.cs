@@ -62,7 +62,7 @@ namespace TransactionProcessor.ProjectionEngine.Tests
         [InlineData(typeof(WithdrawalMadeEvent))]
         [InlineData(typeof(TransactionHasStartedEvent))]
         [InlineData(typeof(TransactionHasBeenCompletedEvent))]
-        [InlineData(typeof(MerchantFeeAddedToTransactionEvent))]
+        [InlineData(typeof(SettledMerchantFeeAddedToTransactionEvent))]
         [InlineData(typeof(AddressAddedEvent))]
         public async Task MerchantBalanceStateDispatcher_Dispatch_EventHandled(Type eventType)
         {
@@ -78,7 +78,7 @@ namespace TransactionProcessor.ProjectionEngine.Tests
                 _ when eventType == typeof(AutomaticDepositMadeEvent) => TestData.AutomaticDepositMadeEvent,
                 _ when eventType == typeof(TransactionHasStartedEvent) => TestData.GetTransactionHasStartedEvent(),
                 _ when eventType == typeof(TransactionHasBeenCompletedEvent) => TestData.GetTransactionHasBeenCompletedEvent(),
-                _ when eventType == typeof(MerchantFeeAddedToTransactionEvent) => TestData.GetMerchantFeeAddedToTransactionEvent(),
+                _ when eventType == typeof(SettledMerchantFeeAddedToTransactionEvent) => TestData.GetSettledMerchantFeeAddedToTransactionEvent(),
                 _ => TestData.AddressAddedEvent
             };
 

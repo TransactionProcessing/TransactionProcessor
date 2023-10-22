@@ -64,8 +64,8 @@
         }
 
         [Pure]
-        public static MerchantBalanceState HandleMerchantFeeAddedToTransactionEvent(this MerchantBalanceState state,
-                                                                                    MerchantFeeAddedToTransactionEvent mfatte) =>
+        public static MerchantBalanceState HandleSettledMerchantFeeAddedToTransactionEvent(this MerchantBalanceState state,
+                                                                                           SettledMerchantFeeAddedToTransactionEvent mfatte) =>
             state.IncrementAvailableBalance(mfatte.CalculatedValue).IncrementBalance(mfatte.CalculatedValue).RecordMerchantFee(mfatte);
 
         [Pure]
@@ -176,7 +176,7 @@
 
         [Pure]
         public static MerchantBalanceState RecordMerchantFee(this MerchantBalanceState state,
-                                                             MerchantFeeAddedToTransactionEvent mfatte) =>
+                                                             SettledMerchantFeeAddedToTransactionEvent mfatte) =>
             state with
             {
                 FeeCount = state.FeeCount + 1,
