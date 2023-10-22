@@ -576,16 +576,7 @@
 
         public static void PlayEvent(this TransactionAggregate aggregate, SettledMerchantFeeAddedToTransactionEvent domainEvent)
         {
-            //aggregate.CalculatedFees.Add(new CalculatedFee
-            //                             {
-            //                                 CalculatedValue = domainEvent.CalculatedValue,
-            //                                 FeeId = domainEvent.FeeId,
-            //                                 FeeType = FeeType.Merchant,
-            //                                 FeeValue = domainEvent.FeeValue,
-            //                                 FeeCalculationType = (CalculationType)domainEvent.FeeCalculationType,
-            //                                 IsSettled = true
-            //                             });
-            CalculatedFee fee = aggregate.CalculatedFees.SingleOrDefault(c => c.FeeId == domainEvent.FeeId);
+            CalculatedFee fee = aggregate.CalculatedFees.Single(c => c.FeeId == domainEvent.FeeId);
             fee.IsSettled = true;
         }
 
