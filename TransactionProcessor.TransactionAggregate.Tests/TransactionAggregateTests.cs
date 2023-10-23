@@ -1670,21 +1670,25 @@ namespace TransactionProcessor.TransactionAggregate.Tests{
 
             transactionAggregate.RecordCostPrice(unitCost, totalCost);
 
-            //if (expectedUnitCost == -1){
-            //    transactionAggregate.UnitCost.ShouldBeNull();
-            //}
-            //else{
-                transactionAggregate.UnitCost.ShouldBe(expectedUnitCost);
-            //}
+            transactionAggregate.UnitCost.ShouldBe(expectedUnitCost);
+            transactionAggregate.TotalCost.ShouldBe(expectedTotalCost);
+        }
 
-            //if (expectedTotalCost == -1)
-            //{
-            //    transactionAggregate.TotalCost.ShouldBeNull();
-            //}
-            //else
-            //{
-                transactionAggregate.TotalCost.ShouldBe(expectedTotalCost);
-            //}
+        [Fact]
+        public void TransactionAggregate_RecordCostPrice_SaleTransaction_CostAlreadyRecorded(){
+            TransactionAggregate transactionAggregate = TransactionAggregate.Create(TestData.TransactionId);
+            transactionAggregate.StartTransaction(TestData.TransactionDateTime,
+                                                  TestData.TransactionNumber,
+                                                  TransactionType.Logon,
+                                                  TestData.TransactionReference,
+                                                  TestData.EstateId,
+                                                  TestData.MerchantId,
+                                                  TestData.DeviceIdentifier,
+                                                  TestData.TransactionAmount);
+
+            transactionAggregate.RecordCostPrice(TestData.UnitCostPrice, TestData.TotalCostPrice);
+
+            Should.Throw<InvalidOperationException>(() => { transactionAggregate.RecordCostPrice(TestData.UnitCostPrice, TestData.TotalCostPrice); });
         }
 
         [Fact]

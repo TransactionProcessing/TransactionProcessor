@@ -357,7 +357,7 @@
 
         public static void RecordCostPrice(this TransactionAggregate aggregate, Decimal unitCost, Decimal totalCost){
             aggregate.CheckTransactionHasBeenStarted();
-            //aggregate.CheckAdditionalResponseDataNotAlreadyRecorded();
+            aggregate.CheckCostValuesNotAlreadyRecorded();
 
             // Dont emit an event when no cost
             if (unitCost == 0 || totalCost == 0)
@@ -385,6 +385,14 @@
             if (aggregate.AdditionalTransactionResponseMetadata != null)
             {
                 throw new InvalidOperationException("Additional Response Data already recorded");
+            }
+        }
+
+        private static void CheckCostValuesNotAlreadyRecorded(this TransactionAggregate aggregate)
+        {
+            if (aggregate.UnitCost != null && aggregate.TotalCost != null)
+            {
+                throw new InvalidOperationException("Cost information already recorded");
             }
         }
 
