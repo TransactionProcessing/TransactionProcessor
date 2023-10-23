@@ -8,6 +8,7 @@
     using EstateManagement.Client;
     using EstateManagement.DataTransferObjects.Requests;
     using EstateManagement.DataTransferObjects.Responses;
+    using FloatAggregate;
     using Models;
     using OperatorInterfaces;
     using ReconciliationAggregate;
@@ -43,6 +44,8 @@
 
         private readonly ISecurityServiceClient SecurityServiceClient;
 
+        private readonly IAggregateRepository<FloatAggregate, DomainEvent> FloatAggregateRepository;
+
         private TokenResponse TokenResponse;
 
         private readonly IAggregateRepository<TransactionAggregate, DomainEvent> TransactionAggregateRepository;
@@ -58,13 +61,15 @@
                                         Func<String, IOperatorProxy> operatorProxyResolver,
                                         IAggregateRepository<ReconciliationAggregate, DomainEvent> reconciliationAggregateRepository,
                                         ITransactionValidationService transactionValidationService,
-                                        ISecurityServiceClient securityServiceClient){
+                                        ISecurityServiceClient securityServiceClient,
+                                        IAggregateRepository<FloatAggregate, DomainEvent> floatAggregateRepository){
             this.TransactionAggregateRepository = transactionAggregateRepository;
             this.EstateClient = estateClient;
             this.OperatorProxyResolver = operatorProxyResolver;
             this.ReconciliationAggregateRepository = reconciliationAggregateRepository;
             this.TransactionValidationService = transactionValidationService;
             this.SecurityServiceClient = securityServiceClient;
+            this.FloatAggregateRepository = floatAggregateRepository;
         }
 
         #endregion
@@ -205,6 +210,13 @@
 
             TransactionAggregate transactionAggregate = await this.TransactionAggregateRepository.GetLatestVersion(transactionId, cancellationToken);
 
+            Guid floatAggregateId = IdGenerationService.GenerateFloatAggregateId(estateId, contractId, productId);
+            FloatAggregate floatAggregate= await this.FloatAggregateRepository.GetLatestVersion(floatAggregateId, cancellationToken);
+            
+            // TODO: Move calculation to float
+            Decimal unitCost = floatAggregate.GetUnitCostPrice();
+            Decimal totalCost = transactionAmount.GetValueOrDefault() * unitCost;
+
             transactionAggregate.StartTransaction(transactionDateTime,
                                                   transactionNumber,
                                                   transactionType,
@@ -222,6 +234,8 @@
                 validationResult.responseCode != TransactionResponseCode.ProductNotValidForMerchant){
                 transactionAggregate.AddProductDetails(contractId, productId);
             }
+
+            transactionAggregate.RecordCostPrice(unitCost, totalCost);
 
             // Add the transaction source
             transactionAggregate.AddTransactionSource(transactionSourceValue);

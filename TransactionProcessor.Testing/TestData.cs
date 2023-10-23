@@ -10,6 +10,7 @@
     using BusinessLogic.Services;
     using EstateManagement.DataTransferObjects;
     using EstateManagement.DataTransferObjects.Responses;
+    using FloatAggregate;
     using Models;
     using PataPawaPostPay;
     using ProjectionEngine.State;
@@ -27,6 +28,19 @@
     {
         #region Fields
 
+        public static Dictionary<Int32, Guid> FeeIds = new Dictionary<Int32, Guid>(){
+                                                                                        { 1, Guid.Parse("A30C47A4-C5D1-4225-B8D4-334365A606F7") },
+                                                                                        { 2, Guid.Parse("A53B7325-BB47-43DE-9166-B1F822D2FDAE") },
+                                                                                        { 3, Guid.Parse("8E7B7C48-B4B1-47A2-A832-184E04CB227F") },
+                                                                                        { 4, Guid.Parse("36DF32D6-CE7E-43F2-B122-F25406071476") },
+                                                                                        { 5, Guid.Parse("4E80428F-F052-4765-8084-9BF8A3A5A2A7") },
+                                                                                        { 6, Guid.Parse("FDC9C5BA-408C-4853-8BD8-82A89ACC8326") },
+                                                                                        { 7, Guid.Parse("12AFB4F6-E242-4C84-9146-F5A2CD39EB9E") },
+                                                                                        { 8, Guid.Parse("B0CBF15F-845C-4597-BCE9-7DE66A4E35D5") },
+                                                                                        { 9, Guid.Parse("A886ECB9-BE80-4AA9-BFD7-77768200B346") },
+                                                                                        { 10, Guid.Parse("2AAB29CE-5D17-4164-90B2-0AACBF2BA47A") },
+                                                                                    };
+    
         public static String AuthorisationCode = "ABCD1234";
 
         public static String DeclinedResponseCode = "0001";
@@ -86,7 +100,7 @@
 
         public static Guid SettlementAggregateId = Guid.Parse("BAEBA232-CD7F-46F5-AE2E-3204FE69A441");
 
-        public static Guid FloatAggregateId = Guid.Parse("C6E632B5-DA04-4676-BEBB-3C91D34A7580");
+        public static Guid FloatAggregateId = Guid.Parse("ffaaea3f-2f39-857a-3da6-61cc7793e03b");
 
         public static String TransactionNumber = "0001";
 
@@ -157,7 +171,7 @@
         /// <value>
         /// The additional transaction meta data.
         /// </value>
-        public static Dictionary<String, String> AdditionalTransactionMetaDataForMobileTopup(String amountName = "Amount", String customerAccountNumberName = "CustomerAccountNumber", String amount="100.00", String customerAccountNumber = "123456789") =>
+        public static Dictionary<String, String> AdditionalTransactionMetaDataForMobileTopup(String amountName = "Amount", String customerAccountNumberName = "CustomerAccountNumber", String amount="1000.00", String customerAccountNumber = "123456789") =>
             new Dictionary<String, String>
             {
                 {amountName, amount},
@@ -616,6 +630,35 @@
             return transactionAggregate;
         }
 
+        public static TransactionAggregate GetCompletedAuthorisedSaleTransactionAggregateWithPendingFee(Guid feeId)
+        {
+            TransactionAggregate transactionAggregate = TransactionAggregate.Create(TestData.TransactionId);
+
+            transactionAggregate.StartTransaction(TestData.TransactionDateTime,
+                                                  TestData.TransactionNumber,
+                                                  TestData.TransactionTypeSale,
+                                                  TestData.TransactionReference,
+                                                  TestData.EstateId,
+                                                  TestData.MerchantId,
+                                                  TestData.DeviceIdentifier,
+                                                  TestData.TransactionAmount);
+
+            transactionAggregate.AddProductDetails(TestData.ContractId, TestData.ProductId);
+
+            transactionAggregate.AuthoriseTransaction(TestData.OperatorIdentifier1,
+                                                      TestData.AuthorisationCode,
+                                                      TestData.OperatorResponseCode,
+                                                      TestData.OperatorResponseMessage,
+                                                      TestData.OperatorTransactionId,
+                                                      TestData.ResponseCode,
+                                                      TestData.ResponseMessage);
+
+            transactionAggregate.CompleteTransaction();
+            var calculatedFee = TestData.CalculatedFeeMerchantFee(feeId);
+            transactionAggregate.AddFeePendingSettlement(calculatedFee, TestData.TransactionFeeSettlementDueDate);
+            return transactionAggregate;
+        }
+
         public static TransactionAggregate GetCompletedAuthorisedSaleTransactionWithReceiptRequestedAggregate()
         {
             TransactionAggregate transactionAggregate = TransactionAggregate.Create(TestData.TransactionId);
@@ -744,6 +787,19 @@
             return transactionAggregate;
         }
 
+        public static FloatAggregate GetEmptyFloatAggregate()
+        {
+            return FloatAggregate.Create(TestData.FloatAggregateId);
+        }
+
+        public static FloatAggregate GetFloatAggregateWithCostValues(){
+            
+            FloatAggregate floatAggregate = FloatAggregate.Create(TestData.FloatAggregateId);
+            floatAggregate.CreateFloat(TestData.EstateId, TestData.ContractId, TestData.ProductId, TestData.FloatCreatedDateTime);
+            floatAggregate.RecordCreditPurchase(DateTime.Now, TestData.FloatCreditAmount, TestData.FloatCreditCostPrice);
+            return floatAggregate;
+        }
+
         public static TransactionAggregate GetEmptyTransactionAggregate()
         {
             return TransactionAggregate.Create(TestData.TransactionId);
@@ -867,6 +923,7 @@
         public static Guid TransactionFeeId = Guid.Parse("B83FCCCE-0D45-4FC2-8952-ED277A124BDB");
 
         public static Guid TransactionFeeId2 = Guid.Parse("CA2D5119-1232-41D6-B6FD-9D84B9B5460C");
+        public static Guid TransactionFeeId3 = Guid.Parse("791EF321-24C7-4B90-86D3-2D8ECE3D629F");
 
         public static String TransactionFeeDescription = "Commission for Merchant";
 
@@ -1074,7 +1131,7 @@
             {
                 CalculatedValue = TestData.CalculatedFeeValue,
                 FeeCalculationType = CalculationType.Fixed,
-                FeeId = TestData.TransactionFeeId,
+                FeeId = TestData.TransactionFeeId3,
                 FeeValue = TestData.TransactionFeeValue,
                 FeeType = (FeeType)99
             };
@@ -1110,7 +1167,7 @@
 
             for (int i = 0; i < numberOfFees; i++)
             {
-                aggregate.AddFee(TestData.MerchantId, Guid.NewGuid(), CalculatedFeeMerchantFee(Guid.NewGuid()));
+                aggregate.AddFee(TestData.MerchantId, Guid.NewGuid(), CalculatedFeeMerchantFee(TestData.FeeIds.GetValueOrDefault(i)));
             }
 
             return aggregate;
@@ -1216,6 +1273,9 @@
         public static Decimal FloatCreditAmount = 100m;
 
         public static Decimal FloatCreditCostPrice = 90m;
+
+        public static Decimal UnitCostPrice = 0.9m;
+        public static Decimal TotalCostPrice = 9.0m;
 
         public static RecordCreditPurchaseForFloatRequest RecordCreditPurchaseForFloatRequest => RecordCreditPurchaseForFloatRequest.Create(TestData.EstateId, TestData.FloatAggregateId, TestData.FloatCreditAmount, TestData.FloatCreditCostPrice, TestData.CreditPurchasedDateTime);
 
