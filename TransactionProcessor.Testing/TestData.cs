@@ -10,6 +10,7 @@
     using BusinessLogic.Services;
     using EstateManagement.DataTransferObjects;
     using EstateManagement.DataTransferObjects.Responses;
+    using FloatAggregate;
     using Models;
     using PataPawaPostPay;
     using ProjectionEngine.State;
@@ -86,7 +87,7 @@
 
         public static Guid SettlementAggregateId = Guid.Parse("BAEBA232-CD7F-46F5-AE2E-3204FE69A441");
 
-        public static Guid FloatAggregateId = Guid.Parse("C6E632B5-DA04-4676-BEBB-3C91D34A7580");
+        public static Guid FloatAggregateId = Guid.Parse("ffaaea3f-2f39-857a-3da6-61cc7793e03b");
 
         public static String TransactionNumber = "0001";
 
@@ -157,7 +158,7 @@
         /// <value>
         /// The additional transaction meta data.
         /// </value>
-        public static Dictionary<String, String> AdditionalTransactionMetaDataForMobileTopup(String amountName = "Amount", String customerAccountNumberName = "CustomerAccountNumber", String amount="100.00", String customerAccountNumber = "123456789") =>
+        public static Dictionary<String, String> AdditionalTransactionMetaDataForMobileTopup(String amountName = "Amount", String customerAccountNumberName = "CustomerAccountNumber", String amount="1000.00", String customerAccountNumber = "123456789") =>
             new Dictionary<String, String>
             {
                 {amountName, amount},
@@ -744,6 +745,19 @@
             return transactionAggregate;
         }
 
+        public static FloatAggregate GetEmptyFloatAggregate()
+        {
+            return FloatAggregate.Create(TestData.FloatAggregateId);
+        }
+
+        public static FloatAggregate GetFloatAggregateWithCostValues(){
+            
+            FloatAggregate floatAggregate = FloatAggregate.Create(TestData.FloatAggregateId);
+            floatAggregate.CreateFloat(TestData.EstateId, TestData.ContractId, TestData.ProductId, TestData.FloatCreatedDateTime);
+            floatAggregate.RecordCreditPurchase(DateTime.Now, TestData.FloatCreditAmount, TestData.FloatCreditCostPrice);
+            return floatAggregate;
+        }
+
         public static TransactionAggregate GetEmptyTransactionAggregate()
         {
             return TransactionAggregate.Create(TestData.TransactionId);
@@ -867,6 +881,7 @@
         public static Guid TransactionFeeId = Guid.Parse("B83FCCCE-0D45-4FC2-8952-ED277A124BDB");
 
         public static Guid TransactionFeeId2 = Guid.Parse("CA2D5119-1232-41D6-B6FD-9D84B9B5460C");
+        public static Guid TransactionFeeId3 = Guid.Parse("791EF321-24C7-4B90-86D3-2D8ECE3D629F");
 
         public static String TransactionFeeDescription = "Commission for Merchant";
 
@@ -1074,7 +1089,7 @@
             {
                 CalculatedValue = TestData.CalculatedFeeValue,
                 FeeCalculationType = CalculationType.Fixed,
-                FeeId = TestData.TransactionFeeId,
+                FeeId = TestData.TransactionFeeId3,
                 FeeValue = TestData.TransactionFeeValue,
                 FeeType = (FeeType)99
             };
@@ -1216,6 +1231,9 @@
         public static Decimal FloatCreditAmount = 100m;
 
         public static Decimal FloatCreditCostPrice = 90m;
+
+        public static Decimal UnitCostPrice = 0.9m;
+        public static Decimal TotalCostPrice = 9.0m;
 
         public static RecordCreditPurchaseForFloatRequest RecordCreditPurchaseForFloatRequest => RecordCreditPurchaseForFloatRequest.Create(TestData.EstateId, TestData.FloatAggregateId, TestData.FloatCreditAmount, TestData.FloatCreditCostPrice, TestData.CreditPurchasedDateTime);
 

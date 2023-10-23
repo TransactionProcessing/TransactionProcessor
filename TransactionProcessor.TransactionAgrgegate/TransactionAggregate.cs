@@ -169,7 +169,7 @@
             aggregate.CheckTransactionHasBeenCompleted();
             aggregate.CheckTransactionCanAttractFees();
 
-            if (aggregate.HasFeeAlreadyBeenAdded(calculatedFee) == false)
+            if (aggregate.HasFeeAlreadyBeenSettled(calculatedFee) == true)
                 return;
 
             DomainEvent @event = null;
@@ -355,6 +355,23 @@
             aggregate.ApplyAndAppend(transactionHasStartedEvent);
         }
 
+        public static void RecordCostPrice(this TransactionAggregate aggregate, Decimal unitCost, Decimal totalCost){
+            aggregate.CheckTransactionHasBeenStarted();
+            //aggregate.CheckAdditionalResponseDataNotAlreadyRecorded();
+
+            // Dont emit an event when no cost
+            if (unitCost == 0 || totalCost == 0)
+                return;
+
+            TransactionCostInformationRecordedEvent transactionCostInformationRecordedEvent = new TransactionCostInformationRecordedEvent(aggregate.AggregateId,
+                                                                                                              aggregate.EstateId,
+                                                                                                              aggregate.MerchantId,
+                                                                                                              unitCost,
+                                                                                                              totalCost);
+            
+            aggregate.ApplyAndAppend(transactionCostInformationRecordedEvent);
+        }
+
         private static void CheckAdditionalRequestDataNotAlreadyRecorded(this TransactionAggregate aggregate)
         {
             if (aggregate.AdditionalTransactionRequestMetadata != null)
@@ -477,6 +494,11 @@
             }
         }
 
+        private static Boolean HasFeeAlreadyBeenSettled(this TransactionAggregate aggregate, CalculatedFee calculatedFee)
+        {
+            return aggregate.CalculatedFees.Any(c => c.FeeId == calculatedFee.FeeId && c.IsSettled);
+        }
+
         private static Boolean HasFeeAlreadyBeenAdded(this TransactionAggregate aggregate, CalculatedFee calculatedFee)
         {
             return aggregate.CalculatedFees.Any(c => c.FeeId == calculatedFee.FeeId);
@@ -572,6 +594,11 @@
         public static void PlayEvent(this TransactionAggregate aggregate, TransactionSourceAddedToTransactionEvent domainEvent)
         {
             aggregate.TransactionSource = (TransactionSource)domainEvent.TransactionSource;
+        }
+
+        public static void PlayEvent(this TransactionAggregate aggregate, TransactionCostInformationRecordedEvent domainEvent){
+            aggregate.UnitCost = domainEvent.UnitCostValue;
+            aggregate.TotalCost = domainEvent.TotalCostValue;
         }
 
         public static void PlayEvent(this TransactionAggregate aggregate, SettledMerchantFeeAddedToTransactionEvent domainEvent)
@@ -680,6 +707,10 @@
         public String ResponseMessage { get; internal set; }
 
         public Decimal? TransactionAmount { get; internal set; }
+
+        public Decimal? UnitCost { get; internal set; }
+
+        public Decimal? TotalCost { get; internal set; }
 
         public DateTime TransactionDateTime { get; internal set; }
 
