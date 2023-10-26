@@ -1349,7 +1349,7 @@ namespace TransactionProcessor.TransactionAggregate.Tests{
 
             CalculatedFee calculatedFee = this.GetCalculatedFeeToAdd(feeType);
             transactionAggregate.AddFeePendingSettlement(calculatedFee, TestData.TransactionFeeSettlementDueDate);
-            transactionAggregate.AddSettledFee(calculatedFee, TestData.SettlementDate);
+            transactionAggregate.AddSettledFee(calculatedFee, TestData.SettlementDate,TestData.SettlementAggregateId);
 
             List<CalculatedFee> fees = transactionAggregate.GetFees();
 
@@ -1380,7 +1380,7 @@ namespace TransactionProcessor.TransactionAggregate.Tests{
             transactionAggregate.AuthoriseTransaction(TestData.OperatorIdentifier1, TestData.OperatorAuthorisationCode, TestData.OperatorResponseCode, TestData.OperatorResponseMessage, TestData.OperatorTransactionId, TestData.ResponseCode, TestData.ResponseMessage);
             transactionAggregate.CompleteTransaction();
 
-            Should.Throw<ArgumentNullException>(() => { transactionAggregate.AddSettledFee(null, TestData.SettlementDate); });
+            Should.Throw<ArgumentNullException>(() => { transactionAggregate.AddSettledFee(null, TestData.SettlementDate, TestData.SettlementAggregateId); });
         }
 
         [Theory]
@@ -1400,7 +1400,7 @@ namespace TransactionProcessor.TransactionAggregate.Tests{
             transactionAggregate.DeclineTransaction(TestData.OperatorIdentifier1, TestData.OperatorResponseCode, TestData.OperatorResponseMessage, TestData.ResponseCode, TestData.ResponseMessage);
             transactionAggregate.CompleteTransaction();
 
-            Should.Throw<InvalidOperationException>(() => { transactionAggregate.AddSettledFee(this.GetCalculatedFeeToAdd(feeType), TestData.SettlementDate); });
+            Should.Throw<InvalidOperationException>(() => { transactionAggregate.AddSettledFee(this.GetCalculatedFeeToAdd(feeType), TestData.SettlementDate, TestData.SettlementAggregateId); });
         }
 
         [Theory]
@@ -1419,7 +1419,7 @@ namespace TransactionProcessor.TransactionAggregate.Tests{
             transactionAggregate.AddProductDetails(TestData.ContractId, TestData.ProductId);
             transactionAggregate.AuthoriseTransaction(TestData.OperatorIdentifier1, TestData.OperatorAuthorisationCode, TestData.OperatorResponseCode, TestData.OperatorResponseMessage, TestData.OperatorTransactionId, TestData.ResponseCode, TestData.ResponseMessage);
 
-            Should.Throw<InvalidOperationException>(() => { transactionAggregate.AddSettledFee(this.GetCalculatedFeeToAdd(feeType), TestData.SettlementDate); });
+            Should.Throw<InvalidOperationException>(() => { transactionAggregate.AddSettledFee(this.GetCalculatedFeeToAdd(feeType), TestData.SettlementDate, TestData.SettlementAggregateId); });
         }
 
         [Theory]
@@ -1440,9 +1440,9 @@ namespace TransactionProcessor.TransactionAggregate.Tests{
             transactionAggregate.CompleteTransaction();
             CalculatedFee feeDetails = this.GetCalculatedFeeToAdd(feeType);
             transactionAggregate.AddFeePendingSettlement(feeDetails, TestData.TransactionFeeSettlementDueDate);
-            transactionAggregate.AddSettledFee(feeDetails, TestData.SettlementDate);
+            transactionAggregate.AddSettledFee(feeDetails, TestData.SettlementDate, TestData.SettlementAggregateId);
 
-            Should.NotThrow(() => { transactionAggregate.AddSettledFee(feeDetails, TestData.SettlementDate); });
+            Should.NotThrow(() => { transactionAggregate.AddSettledFee(feeDetails, TestData.SettlementDate, TestData.SettlementAggregateId); });
 
             transactionAggregate.GetFees().Count.ShouldBe(1);
         }
@@ -1467,7 +1467,7 @@ namespace TransactionProcessor.TransactionAggregate.Tests{
             transactionAggregate.AddFeePendingSettlement(feeDetails, TestData.TransactionFeeSettlementDueDate);
             
             Should.Throw<InvalidOperationException>(() => {
-                                                        transactionAggregate.AddSettledFee(TestData.CalculatedFeeUnsupportedFee, TestData.SettlementDate);
+                                                        transactionAggregate.AddSettledFee(TestData.CalculatedFeeUnsupportedFee, TestData.SettlementDate, TestData.SettlementAggregateId);
                                                     });
         }
 
@@ -1487,7 +1487,7 @@ namespace TransactionProcessor.TransactionAggregate.Tests{
             transactionAggregate.AuthoriseTransactionLocally(TestData.AuthorisationCode, TestData.ResponseCode, TestData.ResponseMessage);
             transactionAggregate.CompleteTransaction();
 
-            Should.Throw<NotSupportedException>(() => { transactionAggregate.AddSettledFee(this.GetCalculatedFeeToAdd(feeType), TestData.SettlementDate); });
+            Should.Throw<NotSupportedException>(() => { transactionAggregate.AddSettledFee(this.GetCalculatedFeeToAdd(feeType), TestData.SettlementDate, TestData.SettlementAggregateId); });
         }
 
         [Theory]

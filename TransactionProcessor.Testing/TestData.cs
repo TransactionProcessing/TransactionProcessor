@@ -909,7 +909,8 @@
                                                                                                                                                                                        TestData.TransactionFeeId,
                                                                                                                                                                                        TestData.CalculatedFeeValue,
                                                                                                                                                                                        TestData.TransactionFeeCalculateDateTime,
-                                                                                                                                                                                       TestData.SettlementDate);
+                                                                                                                                                                                       TestData.SettlementDate,
+                                                                                                                                                                                       TestData.SettlementAggregateId);
 
         public static TransactionHasBeenCompletedEvent TransactionHasBeenCompletedEvent = new TransactionHasBeenCompletedEvent(TestData.TransactionId,
                                                                                                                                   TestData.EstateId,

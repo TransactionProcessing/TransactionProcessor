@@ -34,6 +34,8 @@ namespace TransactionProcessor.ProjectionEngine.Tests
 
         public static Guid TransactionId = Guid.Parse("58306666-746C-4984-B264-4ECF15749BF5");
 
+        public static Guid SettlementId = Guid.Parse("7C06C009-4069-48B7-8E9E-789CE17FFAF7");
+
         public static DateTime TransactionDateTime = new DateTime(2022, 10, 13, 7, 30, 0);
 
         public static String TransactionNumber = "1";
@@ -103,7 +105,8 @@ namespace TransactionProcessor.ProjectionEngine.Tests
                                                           TestData.FeeId,
                                                           TestData.FeeValue,
                                                           TestData.FeeCalculatedDateTime,
-                                                          TestData.SettledDateTime);
+                                                          TestData.SettledDateTime,
+                                                          TestData.SettlementId);
         
         public static TransactionHasBeenCompletedEvent GetTransactionHasBeenCompletedEvent(Boolean? isAuthorised = true,
                                                                                            Decimal? amount = null){
