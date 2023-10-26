@@ -158,7 +158,7 @@
         }
 
         public static void AddSettledFee(this TransactionAggregate aggregate, CalculatedFee calculatedFee,
-                                         DateTime settledDateTime)
+                                         DateTime settledDateTime, Guid settlementId)
         {
             if (calculatedFee == null)
             {
@@ -177,14 +177,15 @@
             {
                 // This is a merchant fee
                 @event = new SettledMerchantFeeAddedToTransactionEvent(aggregate.AggregateId,
-                                                                aggregate.EstateId,
-                                                                aggregate.MerchantId,
-                                                                calculatedFee.CalculatedValue,
-                                                                (Int32)calculatedFee.FeeCalculationType,
-                                                                calculatedFee.FeeId,
-                                                                calculatedFee.FeeValue,
-                                                                calculatedFee.FeeCalculatedDateTime,
-                                                                settledDateTime);
+                                                                       aggregate.EstateId,
+                                                                       aggregate.MerchantId,
+                                                                       calculatedFee.CalculatedValue,
+                                                                       (Int32)calculatedFee.FeeCalculationType,
+                                                                       calculatedFee.FeeId,
+                                                                       calculatedFee.FeeValue,
+                                                                       calculatedFee.FeeCalculatedDateTime,
+                                                                       settledDateTime,
+                                                                       settlementId);
             }
             else
             {

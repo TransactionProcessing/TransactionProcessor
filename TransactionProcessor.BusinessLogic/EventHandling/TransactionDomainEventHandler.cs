@@ -199,9 +199,12 @@
 
 
                     if (merchant.SettlementSchedule == SettlementSchedule.Immediate){
+                        Guid settlementId = Helpers.CalculateSettlementAggregateId(settlementDate, domainEvent.MerchantId, domainEvent.EstateId);
+                        
                         // Add fees to transaction now if settlement is immediate
                         transactionAggregate.AddSettledFee(calculatedFee,
-                                                           settlementDate);
+                                                           settlementDate,
+                                                           settlementId);
                     }
                 }
             }
@@ -273,7 +276,7 @@
                                               IsSettled = true
                                           };
 
-            aggregate.AddSettledFee(calculatedFee, domainEvent.SettledDateTime);
+            aggregate.AddSettledFee(calculatedFee, domainEvent.SettledDateTime, domainEvent.SettlementId);
 
             await this.TransactionAggregateRepository.SaveChanges(aggregate, cancellationToken);
         }
@@ -337,24 +340,7 @@
             // Send the message
             await this.ResendEmailMessage(this.TokenResponse.AccessToken, domainEvent.EventId, domainEvent.EstateId, cancellationToken);
         }
-
-        //private async Task HandleSpecificDomainEvent(SettledMerchantFeeAddedToTransactionEvent domainEvent,
-        //                                             CancellationToken cancellationToken){
-        //    throw new NotImplementedException();
-        //    //if (domainEvent.SettlementDueDate == DateTime.MinValue) {
-        //    //    // Old event format before settlement
-        //    //    return;
-        //    //}
-
-        //    Guid aggregateId = Helpers.CalculateSettlementAggregateId(domainEvent.SettlementDueDate, domainEvent.MerchantId, domainEvent.EstateId);
-
-        //    SettlementAggregate pendingSettlementAggregate = await this.SettlementAggregateRepository.GetLatestVersion(aggregateId, cancellationToken);
-
-        //    //pendingSettlementAggregate.MarkFeeAsSettled(domainEvent.MerchantId, domainEvent.TransactionId, domainEvent.FeeId);
-
-        //    //await this.SettlementAggregateRepository.SaveChanges(pendingSettlementAggregate, cancellationToken);
-        //}
-
+        
         private async Task ResendEmailMessage(String accessToken,
                                               Guid messageId,
                                               Guid estateId,

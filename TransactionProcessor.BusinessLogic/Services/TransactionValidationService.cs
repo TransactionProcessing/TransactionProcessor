@@ -291,7 +291,7 @@ public class TransactionValidationService : ITransactionValidationService{
         catch(Exception ex) when(ex.InnerException != null && ex.InnerException.GetType() == typeof(KeyNotFoundException)){
             throw new TransactionValidationException($"Estate Id [{estateId}] is not a valid estate", TransactionResponseCode.InvalidEstateId);
         }
-        catch(Exception e){
+        catch (Exception e){
             throw new TransactionValidationException($"Exception occurred while getting Estate Id [{estateId}] Exception [{e.Message}]", TransactionResponseCode.UnknownFailure);
         }
 

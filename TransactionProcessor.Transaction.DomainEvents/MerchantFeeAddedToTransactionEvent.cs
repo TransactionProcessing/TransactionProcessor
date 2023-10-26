@@ -19,7 +19,8 @@
                                                   Guid feeId,
                                                   Decimal feeValue,
                                                   DateTime feeCalculatedDateTime,
-                                                  DateTime settledDateTime) : base(aggregateId, Guid.NewGuid())
+                                                  DateTime settledDateTime, 
+                                                  Guid settlementId) : base(aggregateId, Guid.NewGuid())
         {
             this.TransactionId = aggregateId;
             this.EstateId = estateId;
@@ -30,6 +31,7 @@
             this.FeeValue = feeValue;
             this.FeeCalculatedDateTime = feeCalculatedDateTime;
             this.SettledDateTime = settledDateTime;
+            this.SettlementId = settlementId;
         }
 
         #endregion
@@ -41,6 +43,8 @@
         public DateTime FeeCalculatedDateTime { get; init; }
        
         public DateTime SettledDateTime { get; init; }
+
+        public Guid SettlementId{ get; init; }
 
         public Guid EstateId { get; init; }
 

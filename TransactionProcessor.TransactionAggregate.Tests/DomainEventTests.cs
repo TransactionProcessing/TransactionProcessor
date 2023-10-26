@@ -269,7 +269,8 @@ namespace TransactionProcessor.TransactionAggregate.Tests
                                                                                                                                          TestData.TransactionFeeId,
                                                                                                                                          TestData.TransactionFeeValue,
                                                                                                                                          TestData.TransactionFeeCalculateDateTime,
-                                                                                                                                         TestData.TransactionFeeSettledDateTime);
+                                                                                                                                         TestData.TransactionFeeSettledDateTime,
+                                                                                                                                                TestData.SettlementAggregateId);
 
             settledMerchantFeeAddedToTransactionEvent.ShouldNotBeNull();
             settledMerchantFeeAddedToTransactionEvent.AggregateId.ShouldBe(TestData.TransactionId);
