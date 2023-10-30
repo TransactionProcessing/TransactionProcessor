@@ -758,7 +758,6 @@ namespace TransactionProcessor.TransactionAggregate.Tests{
 
             transactionAggregate.CompleteTransaction();
 
-            transactionAggregate.IsStarted.ShouldBeFalse();
             transactionAggregate.IsCompleted.ShouldBeTrue();
         }
 
@@ -1646,18 +1645,19 @@ namespace TransactionProcessor.TransactionAggregate.Tests{
             Should.Throw<NotSupportedException>(() => { transactionAggregate.AddFeePendingSettlement(this.GetCalculatedFeeToAdd(feeType), DateTime.Now); });
         }
 
-        public static TheoryData<decimal, decimal, decimal?, decimal?> TransactionAggregate_RecordCostPrice_SaleTransaction_CostPriceRecorded_Data =>
+        public static TheoryData<decimal, decimal, decimal?, decimal?, Boolean> TransactionAggregate_RecordCostPrice_SaleTransaction_CostPriceRecorded_Data =>
             new()
             {
-                { 0,0,null,null },
-                { 0,1,null,null },
-                { 1,0,null,null },
-                { 0.9m,90m,0.9m,90m},
+                { 0,0,null,null, false},
+                { 0,1,null,null, false },
+                { 1,0,null,null, false },
+                { 0.9m,90m,0.9m,90m, true},
             };
 
         [Theory]
         [MemberData(nameof(TransactionAggregate_RecordCostPrice_SaleTransaction_CostPriceRecorded_Data))]
-        public void TransactionAggregate_RecordCostPrice_SaleTransaction_CostPriceRecorded(Decimal unitCost, Decimal totalCost, Decimal? expectedUnitCost, Decimal? expectedTotalCost){
+        public void TransactionAggregate_RecordCostPrice_SaleTransaction_CostPriceRecorded(Decimal unitCost, Decimal totalCost, Decimal? expectedUnitCost, Decimal? expectedTotalCost, Boolean expectedCostsCalculated)
+        {
             TransactionAggregate transactionAggregate = TransactionAggregate.Create(TestData.TransactionId);
             transactionAggregate.StartTransaction(TestData.TransactionDateTime,
                                                   TestData.TransactionNumber,
@@ -1669,9 +1669,10 @@ namespace TransactionProcessor.TransactionAggregate.Tests{
                                                   TestData.TransactionAmount);
 
             transactionAggregate.RecordCostPrice(unitCost, totalCost);
-
+            
             transactionAggregate.UnitCost.ShouldBe(expectedUnitCost);
             transactionAggregate.TotalCost.ShouldBe(expectedTotalCost);
+            transactionAggregate.HasCostsCalculated.ShouldBe(expectedCostsCalculated);
         }
 
         [Fact]

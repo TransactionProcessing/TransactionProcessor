@@ -12,6 +12,7 @@
     using EstateManagement.DataTransferObjects;
     using EstateManagement.DataTransferObjects.Responses;
     using EventHandling;
+    using FloatAggregate;
     using MessagingService.Client;
     using MessagingService.DataTransferObjects;
     using Microsoft.Extensions.Configuration;
@@ -45,12 +46,15 @@
 
         private Mock<IMessagingServiceClient> MessagingServiceClient;
 
+        private Mock<IAggregateRepository<FloatAggregate, DomainEvent>> FloatAggregateRepository;
+
         private TransactionDomainEventHandler TransactionDomainEventHandler;
 
         public TransactionDomainEventHandlerTests()
         {
             this.SettlementAggregateRepository = new Mock<IAggregateRepository<SettlementAggregate, DomainEvent>>();
             this.TransactionAggregateRepository = new Mock<IAggregateRepository<TransactionAggregate, DomainEvent>>();
+            this.FloatAggregateRepository = new Mock<IAggregateRepository<FloatAggregate, DomainEvent>>();
             this.FeeCalculationManager = new Mock<IFeeCalculationManager>();
             this.EstateClient = new Mock<IEstateClient>();
             this.SecurityServiceClient = new Mock<ISecurityServiceClient>();
@@ -62,12 +66,13 @@
             Logger.Initialise(NullLogger.Instance);
 
             this.TransactionDomainEventHandler = new TransactionDomainEventHandler(this.TransactionAggregateRepository.Object,
-                                                                                                            this.FeeCalculationManager.Object,
-                                                                                                            this.EstateClient.Object,
-                                                                                                            this.SecurityServiceClient.Object,
-                                                                                                            this.TransactionReceiptBuilder.Object,
-                                                                                                            this.MessagingServiceClient.Object,
-                                                                                                            this.SettlementAggregateRepository.Object);
+                                                                                   this.FeeCalculationManager.Object,
+                                                                                   this.EstateClient.Object,
+                                                                                   this.SecurityServiceClient.Object,
+                                                                                   this.TransactionReceiptBuilder.Object,
+                                                                                   this.MessagingServiceClient.Object,
+                                                                                   this.SettlementAggregateRepository.Object,
+                                                                                   this.FloatAggregateRepository.Object);
         }
         
         [Theory]
@@ -76,6 +81,8 @@
         [InlineData(SettlementSchedule.Monthly)]
         public async Task TransactionDomainEventHandler_Handle_TransactionHasBeenCompletedEvent_SuccessfulSale_EventIsHandled(SettlementSchedule settlementSchedule)
         {
+            this.FloatAggregateRepository.Setup(f => f.GetLatestVersion(It.IsAny<Guid>(), It.IsAny<CancellationToken>())).ReturnsAsync(TestData.GetFloatAggregateWithCostValues);
+
             TransactionAggregate transactionAggregate = TestData.GetCompletedAuthorisedSaleTransactionAggregate();
             this.TransactionAggregateRepository.Setup(t => t.GetLatestVersion(It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
                 .ReturnsAsync(transactionAggregate);
@@ -125,6 +132,8 @@
         [Fact]
         public async Task TransactionDomainEventHandler_Handle_TransactionHasBeenCompletedEvent_SuccessfulSale_MerchantWithNotSetSettlementSchedule_ErrorThrown()
         {
+            this.FloatAggregateRepository.Setup(f => f.GetLatestVersion(It.IsAny<Guid>(), It.IsAny<CancellationToken>())).ReturnsAsync(TestData.GetFloatAggregateWithCostValues);
+
             TransactionAggregate transactionAggregate = TestData.GetCompletedAuthorisedSaleTransactionAggregate();
             this.TransactionAggregateRepository.Setup(t => t.GetLatestVersion(It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
                 .ReturnsAsync(transactionAggregate);
@@ -158,6 +167,8 @@
         [Fact]
         public async Task TransactionDomainEventHandler_Handle_TransactionHasBeenCompletedEvent_UnsuccessfulSale_EventIsHandled()
         {
+            this.FloatAggregateRepository.Setup(f => f.GetLatestVersion(It.IsAny<Guid>(), It.IsAny<CancellationToken>())).ReturnsAsync(TestData.GetFloatAggregateWithCostValues);
+
             this.TransactionAggregateRepository.Setup(t => t.GetLatestVersion(It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
                 .ReturnsAsync(TestData.GetCompletedDeclinedSaleTransactionAggregate);
 
@@ -167,6 +178,8 @@
         [Fact]
         public async Task TransactionDomainEventHandler_Handle_TransactionHasBeenCompletedEvent_IncompleteSale_EventIsHandled()
         {
+            this.FloatAggregateRepository.Setup(f => f.GetLatestVersion(It.IsAny<Guid>(), It.IsAny<CancellationToken>())).ReturnsAsync(TestData.GetFloatAggregateWithCostValues);
+
             this.TransactionAggregateRepository.Setup(t => t.GetLatestVersion(It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
                 .ReturnsAsync(TestData.GetIncompleteAuthorisedSaleTransactionAggregate);
             await this.TransactionDomainEventHandler.Handle(TestData.TransactionHasBeenCompletedEvent, CancellationToken.None);
@@ -175,6 +188,8 @@
         [Fact]
         public async Task TransactionDomainEventHandler_Handle_TransactionHasBeenCompletedEvent_SaleWithNoProductDetails_EventIsHandled()
         {
+            this.FloatAggregateRepository.Setup(f => f.GetLatestVersion(It.IsAny<Guid>(), It.IsAny<CancellationToken>())).ReturnsAsync(TestData.GetFloatAggregateWithCostValues);
+
             this.TransactionAggregateRepository.Setup(t => t.GetLatestVersion(It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
                 .ReturnsAsync(TestData.GetCompletedAuthorisedSaleWithNoProductDetailsTransactionAggregate);
 
@@ -182,8 +197,9 @@
         }
 
         [Fact]
-        public async Task TransactionDomainEventHandler_Handle_TransactionHasBeenCompletedEvent_AuthorisedLogon_EventIsHandled()
-        {
+        public async Task TransactionDomainEventHandler_Handle_TransactionHasBeenCompletedEvent_AuthorisedLogon_EventIsHandled(){
+            this.FloatAggregateRepository.Setup(f => f.GetLatestVersion(It.IsAny<Guid>(), It.IsAny<CancellationToken>())).ReturnsAsync(TestData.GetFloatAggregateWithCostValues);
+
             this.TransactionAggregateRepository.Setup(t => t.GetLatestVersion(It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
                 .ReturnsAsync(TestData.GetCompletedAuthorisedLogonTransactionAggregate);
 
@@ -213,6 +229,43 @@
                                                                   It.IsAny<CancellationToken>()), Times.Once);
         }
 
+        [Fact]
+        public async Task TransactionDomainEventHandler_Handle_TransactionCostInformationRecordedEvent_EventIsHandled(){
+            this.TransactionAggregateRepository.Setup(t => t.GetLatestVersion(It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
+                .ReturnsAsync(TestData.GetCompletedAuthorisedSaleTransactionAggregate);
+
+            this.FloatAggregateRepository.Setup(f => f.GetLatestVersion(It.IsAny<Guid>(), It.IsAny<CancellationToken>())).ReturnsAsync(TestData.GetFloatAggregateWithCostValues);
+
+            await this.TransactionDomainEventHandler.Handle(TestData.TransactionCostInformationRecordedEvent, CancellationToken.None);
+
+            this.FloatAggregateRepository.Verify(f => f.SaveChanges(It.IsAny<FloatAggregate>(), It.IsAny<CancellationToken>()), Times.Once);
+        }
+
+        [Fact]
+        public async Task TransactionDomainEventHandler_Handle_TransactionCostInformationRecordedEvent_TransactionNotAuthorised_EventIsHandled()
+        {
+            this.TransactionAggregateRepository.Setup(t => t.GetLatestVersion(It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
+                .ReturnsAsync(TestData.GetCompletedDeclinedSaleTransactionAggregate);
+
+            this.FloatAggregateRepository.Setup(f => f.GetLatestVersion(It.IsAny<Guid>(), It.IsAny<CancellationToken>())).ReturnsAsync(TestData.GetFloatAggregateWithCostValues);
+
+            await this.TransactionDomainEventHandler.Handle(TestData.TransactionCostInformationRecordedEvent, CancellationToken.None);
+
+            this.FloatAggregateRepository.Verify(f => f.SaveChanges(It.IsAny<FloatAggregate>(), It.IsAny<CancellationToken>()), Times.Never);
+        }
+
+        [Fact]
+        public async Task TransactionDomainEventHandler_Handle_TransactionCostInformationRecordedEvent_TransactionNotCompleted_EventIsHandled()
+        {
+            this.TransactionAggregateRepository.Setup(t => t.GetLatestVersion(It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
+                .ReturnsAsync(TestData.GetIncompleteAuthorisedSaleTransactionAggregate);
+
+            this.FloatAggregateRepository.Setup(f => f.GetLatestVersion(It.IsAny<Guid>(), It.IsAny<CancellationToken>())).ReturnsAsync(TestData.GetFloatAggregateWithCostValues);
+
+            await this.TransactionDomainEventHandler.Handle(TestData.TransactionCostInformationRecordedEvent, CancellationToken.None);
+
+            this.FloatAggregateRepository.Verify(f => f.SaveChanges(It.IsAny<FloatAggregate>(), It.IsAny<CancellationToken>()), Times.Never);
+        }
 
         //[Fact]
         //public async Task TransactionDomainEventHandler_Handle_MerchantFeeAddedToTransactionEvent_EventIsHandled()

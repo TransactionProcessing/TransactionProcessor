@@ -8,7 +8,6 @@ namespace TransactionProcessor.ReconciliationAggregate
     using Shared.EventStore.Aggregate;
     using Shared.EventStore.EventStore;
     using Shared.General;
-    using Transaction.DomainEvents;
 
     public static class ReconciliationAggregateExtensions{
         public static void PlayEvent(this ReconciliationAggregate aggregate, ReconciliationHasStartedEvent domainEvent)

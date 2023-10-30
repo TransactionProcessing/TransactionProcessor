@@ -8,8 +8,10 @@
     using System.Threading.Tasks;
     using Common;
     using EstateManagement.Client;
+    using EstateManagement.Database.Entities;
     using EstateManagement.DataTransferObjects;
     using EstateManagement.DataTransferObjects.Responses;
+    using FloatAggregate;
     using Manager;
     using MessagingService.Client;
     using MessagingService.DataTransferObjects;
@@ -27,6 +29,7 @@
     using Transaction.DomainEvents;
     using TransactionAggregate;
     using CalculationType = Models.CalculationType;
+    using ContractProductTransactionFee = EstateManagement.DataTransferObjects.Responses.ContractProductTransactionFee;
     using FeeType = Models.FeeType;
 
     /// <summary>
@@ -60,6 +63,8 @@
 
         private readonly IAggregateRepository<SettlementAggregate, DomainEvent> SettlementAggregateRepository;
 
+        private readonly IAggregateRepository<FloatAggregate, DomainEvent> FloatAggregateRepository;
+
         private readonly IAggregateRepository<TransactionAggregate, DomainEvent> TransactionAggregateRepository;
 
         /// <summary>
@@ -82,7 +87,8 @@
                                              ISecurityServiceClient securityServiceClient,
                                              ITransactionReceiptBuilder transactionReceiptBuilder,
                                              IMessagingServiceClient messagingServiceClient,
-                                             IAggregateRepository<SettlementAggregate, DomainEvent> settlementAggregateRepository) {
+                                             IAggregateRepository<SettlementAggregate, DomainEvent> settlementAggregateRepository,
+                                             IAggregateRepository<FloatAggregate, DomainEvent> floatAggregateRepository) {
             this.TransactionAggregateRepository = transactionAggregateRepository;
             this.FeeCalculationManager = feeCalculationManager;
             this.EstateClient = estateClient;
@@ -90,6 +96,7 @@
             this.TransactionReceiptBuilder = transactionReceiptBuilder;
             this.MessagingServiceClient = messagingServiceClient;
             this.SettlementAggregateRepository = settlementAggregateRepository;
+            this.FloatAggregateRepository = floatAggregateRepository;
         }
 
         #endregion
@@ -155,12 +162,38 @@
             };
         }
 
+        private async Task HandleSpecificDomainEvent(TransactionCostInformationRecordedEvent domainEvent, CancellationToken cancellationToken){
+            TransactionAggregate transactionAggregate =
+                await this.TransactionAggregateRepository.GetLatestVersion(domainEvent.TransactionId, cancellationToken);
+
+            if (transactionAggregate.IsAuthorised == false || transactionAggregate.IsCompleted == false)
+                return;
+
+            Guid floatAggregateId = IdGenerationService.GenerateFloatAggregateId(transactionAggregate.EstateId, transactionAggregate.ContractId, transactionAggregate.ProductId);
+            FloatAggregate floatAggregate = await this.FloatAggregateRepository.GetLatestVersion(floatAggregateId, cancellationToken);
+
+            floatAggregate.RecordTransactionAgainstFloat(transactionAggregate.AggregateId, transactionAggregate.TransactionAmount.GetValueOrDefault());
+            
+            await this.FloatAggregateRepository.SaveChanges(floatAggregate, cancellationToken);
+        }
+
         private async Task HandleSpecificDomainEvent(TransactionHasBeenCompletedEvent domainEvent,
                                                      CancellationToken cancellationToken){
 
             TransactionAggregate transactionAggregate =
                 await this.TransactionAggregateRepository.GetLatestVersion(domainEvent.TransactionId, cancellationToken);
 
+            if (transactionAggregate.HasCostsCalculated == false){
+                // Calculate the costs
+                Guid floatAggregateId = IdGenerationService.GenerateFloatAggregateId(transactionAggregate.EstateId, transactionAggregate.ContractId, transactionAggregate.ProductId);
+                FloatAggregate floatAggregate = await this.FloatAggregateRepository.GetLatestVersion(floatAggregateId, cancellationToken);
+
+                Decimal unitCost = floatAggregate.GetUnitCostPrice();
+                Decimal totalCost = transactionAggregate.TransactionAmount.GetValueOrDefault() * unitCost;
+
+                transactionAggregate.RecordCostPrice(unitCost,totalCost);
+            }
+            
             if (RequireFeeCalculation(transactionAggregate) == false)
                 return;
 
