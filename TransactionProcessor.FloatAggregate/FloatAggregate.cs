@@ -27,6 +27,13 @@
             aggregate.Credits.Add((domainEvent.CreditPurchasedDateTime, domainEvent.Amount,domainEvent.CostPrice));
         }
 
+        public static void PlayEvent(this FloatAggregate aggregate, FloatDecreasedByTransactionEvent domainEvent){
+            aggregate.Balance -= domainEvent.Amount;
+            aggregate.NumberOfTransactions++;
+            aggregate.TotalTransactions += domainEvent.Amount;
+            aggregate.Transactions.Add((domainEvent.TransactionId, domainEvent.Amount));
+        }
+
         public static void CreateFloat(this FloatAggregate aggregate, 
                                                Guid estateId,
                                                Guid contractId,
@@ -53,6 +60,15 @@
             aggregate.ApplyAndAppend(floatCreditPurchasedEvent);
         }
 
+        public static void RecordTransactionAgainstFloat(this FloatAggregate aggregate, Guid transactionId, Decimal transactionAmount){
+            aggregate.ValidateFloatIsAlreadyCreated();
+            aggregate.ValidateTransactionIsNotADuplicate(transactionId);
+
+            FloatDecreasedByTransactionEvent floatDecreasedByTransactionEvent = new FloatDecreasedByTransactionEvent(aggregate.AggregateId, aggregate.EstateId, transactionId, transactionAmount);
+
+            aggregate.ApplyAndAppend(floatDecreasedByTransactionEvent);
+        }
+
         public static Decimal GetUnitCostPrice(this FloatAggregate aggregate)
         {
             return Math.Round(aggregate.UnitCostPrice, 4);
@@ -76,6 +92,15 @@
                 throw new InvalidOperationException($"Float Aggregate Id {aggregate.AggregateId} already has a credit with this information recorded");
             }
         }
+
+        public static void ValidateTransactionIsNotADuplicate(this FloatAggregate aggregate, Guid transactionId)
+        {
+            Boolean isDuplicate = aggregate.Transactions.Any(c => c.transactionId == transactionId);
+            if (isDuplicate == true)
+            {
+                throw new InvalidOperationException($"Float Aggregate Id {aggregate.AggregateId} already has a transaction with this Id {transactionId} recorded");
+            }
+        }
     }
 
     public record FloatAggregate : Aggregate
@@ -93,8 +118,8 @@
 
 
         [ExcludeFromCodeCoverage]
-        public FloatAggregate()
-        {
+        public FloatAggregate(){
+            this.Transactions = new List<(Guid transactionId, Decimal amount)>();
             this.Credits = new List<(DateTime creditPurchasedDate, Decimal amount, Decimal costPrice)>();
         }
 
@@ -104,9 +129,11 @@
 
             this.AggregateId = aggregateId;
             this.Credits = new List<(DateTime creditPurchasedDate, Decimal amount, Decimal costPrice)>();
+            this.Transactions = new List<(Guid transactionId, Decimal amount)>();
         }
 
         internal List<(DateTime creditPurchasedDate, Decimal amount, Decimal costPrice)> Credits;
+        internal List<(Guid transactionId, Decimal amount)> Transactions;
 
         public Boolean IsCreated { get; internal set; }
 
@@ -117,8 +144,10 @@
         public DateTime CreatedDateTime { get; internal set; }
 
         public Int32 NumberOfCreditPurchases { get; internal set; }
+        public Int32 NumberOfTransactions { get; internal set; }
         public Decimal Balance { get; internal set; }
         public Decimal TotalCreditPurchases { get; internal set; }
+        public Decimal TotalTransactions { get; internal set; }
 
         public Decimal TotalCostPrice { get; internal set; }
         public Decimal UnitCostPrice { get; internal set; }

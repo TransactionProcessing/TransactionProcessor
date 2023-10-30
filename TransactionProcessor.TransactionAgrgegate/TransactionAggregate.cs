@@ -569,7 +569,7 @@
 
         public static void PlayEvent(this TransactionAggregate aggregate, TransactionHasBeenCompletedEvent domainEvent)
         {
-            aggregate.IsStarted = false; // Transaction has reached its final state
+            //aggregate.IsStarted = false; // Transaction has reached its final state
             aggregate.IsCompleted = true;
         }
 
@@ -608,6 +608,7 @@
         public static void PlayEvent(this TransactionAggregate aggregate, TransactionCostInformationRecordedEvent domainEvent){
             aggregate.UnitCost = domainEvent.UnitCostValue;
             aggregate.TotalCost = domainEvent.TotalCostValue;
+            aggregate.HasCostsCalculated= true;
         }
 
         public static void PlayEvent(this TransactionAggregate aggregate, SettledMerchantFeeAddedToTransactionEvent domainEvent)
@@ -733,10 +734,11 @@
 
         public Int32 ReceiptResendCount { get; internal set; }
 
+        public Boolean HasCostsCalculated{ get; internal set; }
+
         #endregion
 
         #region Methods
-        
 
         public static TransactionAggregate Create(Guid aggregateId) {
             return new TransactionAggregate(aggregateId);
@@ -750,10 +752,6 @@
                            this.EstateId
                        };
         }
-
-        
-
-        
 
         #endregion
     }

@@ -111,6 +111,57 @@ namespace TransactionProcessor.FloatAggregate.Tests
                                                     });
         }
 
+        [Fact]
+        public void FloatAggregate_RecordTransactionAgainstFloat_FloatBalanceDecremented_And_TransactionAdded(){
+            FloatAggregate aggregate = FloatAggregate.Create(TestData.FloatAggregateId);
+            aggregate.CreateFloat(TestData.EstateId, TestData.ContractId, TestData.ProductId, TestData.FloatCreatedDateTime);
+            DateTime purchaseDateTime = DateTime.Now;
+            aggregate.RecordCreditPurchase(purchaseDateTime, 1000, 900);
 
+            aggregate.Balance.ShouldBe(1000);
+
+            aggregate.RecordTransactionAgainstFloat(TestData.TransactionId, 100);
+
+            aggregate.Balance.ShouldBe(900);
+            aggregate.NumberOfTransactions.ShouldBe(1);
+            aggregate.TotalTransactions.ShouldBe(100);
+        }
+
+        [Fact]
+        public void FloatAggregate_RecordTransactionAgainstFloat_NoBalance_FloatBalanceDecremented_And_TransactionAdded()
+        {
+            FloatAggregate aggregate = FloatAggregate.Create(TestData.FloatAggregateId);
+            aggregate.CreateFloat(TestData.EstateId, TestData.ContractId, TestData.ProductId, TestData.FloatCreatedDateTime);
+            aggregate.Balance.ShouldBe(0);
+
+            aggregate.RecordTransactionAgainstFloat(TestData.TransactionId, 100);
+
+            aggregate.Balance.ShouldBe(-100);
+            aggregate.NumberOfTransactions.ShouldBe(1);
+            aggregate.TotalTransactions.ShouldBe(100);
+        }
+
+        [Fact]
+        public void FloatAggregate_RecordTransactionAgainstFloat_FloatNotCreated_ErrorThrown()
+        {
+            FloatAggregate aggregate = FloatAggregate.Create(TestData.FloatAggregateId);
+
+            Should.Throw<InvalidOperationException>(() => {
+                                                        aggregate.RecordTransactionAgainstFloat(TestData.TransactionId, 100);
+                                                    });
+        }
+
+        [Fact]
+        public void FloatAggregate_RecordTransactionAgainstFloat_DuplicateTransaction_ErrorThrown()
+        {
+            FloatAggregate aggregate = FloatAggregate.Create(TestData.FloatAggregateId);
+            aggregate.CreateFloat(TestData.EstateId, TestData.ContractId, TestData.ProductId, TestData.FloatCreatedDateTime);
+            DateTime purchaseDateTime = DateTime.Now;
+            aggregate.RecordCreditPurchase(purchaseDateTime, 1000, 900);
+            aggregate.RecordTransactionAgainstFloat(TestData.TransactionId, 100);
+            Should.Throw<InvalidOperationException>(() => {
+                                                        aggregate.RecordTransactionAgainstFloat(TestData.TransactionId, 100);
+                                                    });
+        }
     }
 }

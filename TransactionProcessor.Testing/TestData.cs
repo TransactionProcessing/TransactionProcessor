@@ -17,6 +17,7 @@
     using ReconciliationAggregate;
     using SecurityService.DataTransferObjects.Responses;
     using SettlementAggregates;
+    using Shared.DomainDrivenDesign.EventSourcing;
     using Transaction.DomainEvents;
     using TransactionAggregate;
     using TransactionProcessor.Voucher.DomainEvents;
@@ -1277,6 +1278,13 @@
 
         public static Decimal UnitCostPrice = 0.9m;
         public static Decimal TotalCostPrice = 9.0m;
+
+        public static TransactionCostInformationRecordedEvent TransactionCostInformationRecordedEvent =>
+            new TransactionCostInformationRecordedEvent(TestData.TransactionId,
+                                                        TestData.EstateId,
+                                                        TestData.MerchantId,
+                                                        TestData.UnitCostPrice,
+                                                        TestData.TotalCostPrice);
 
         public static RecordCreditPurchaseForFloatRequest RecordCreditPurchaseForFloatRequest => RecordCreditPurchaseForFloatRequest.Create(TestData.EstateId, TestData.FloatAggregateId, TestData.FloatCreditAmount, TestData.FloatCreditCostPrice, TestData.CreditPurchasedDateTime);
 
