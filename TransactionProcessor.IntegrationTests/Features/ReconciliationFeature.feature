@@ -71,7 +71,7 @@ Background:
 	| Deposit1  | 100.00 | Today    | Test Merchant 3 | Test Estate 2 |
 
 @PRTest
-Scenario: Sale Transactions
+Scenario: Reconciliation Transactions
 
 	When I perform the following reconciliations
 	| DateTime | MerchantName    | DeviceIdentifier | EstateName    | TransactionCount | TransactionValue |
