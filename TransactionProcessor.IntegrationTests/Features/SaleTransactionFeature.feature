@@ -99,11 +99,11 @@ Scenario: Sale Transactions
 	| DateTime | TransactionNumber | TransactionType | TransactionSource | MerchantName    | DeviceIdentifier | EstateName    | OperatorName     | TransactionAmount | CustomerAccountNumber | CustomerEmailAddress        | ContractDescription       | ProductName       | RecipientEmail       | RecipientMobile | MessageType   | AccountNumber | CustomerName     |
 	| Today    | 1                 | Sale            | 1                 | Test Merchant 1 | 123456780        | Test Estate 1 | Safaricom        | 110.00            | 123456789             |                             | Safaricom Contract        | Variable Topup    |                      |                 |               |               |                  |
 	| Today    | 2                 | Sale            | 1                 | Test Merchant 2 | 123456781        | Test Estate 1 | Safaricom        | 100.00            | 123456789             |                             | Safaricom Contract        | Variable Topup    |                      |                 |               |               |                  |
-	| Today    | 3                 | Sale            | 2                 | Test Merchant 3 | 123456782        | Test Estate 2 | Safaricom        | 100.00            | 123456789             |                             | Safaricom Contract        | Variable Topup    |                      |                 |               |               |                  |
+	| Today    | 3                 | Sale            | 2                 | Test Merchant 3 | 123456782        | Test Estate 1 | Safaricom        | 100.00            | 123456789             |                             | Safaricom Contract        | Variable Topup    |                      |                 |               |               |                  |
 	| Today    | 4                 | Sale            | 1                 | Test Merchant 1 | 123456780        | Test Estate 1 | Safaricom        | 90.00            | 123456789             | testcustomer@customer.co.uk | Safaricom Contract        | Variable Topup    |                      |                 |               |               |                  |
 	| Today    | 5                 | Sale            | 1                 | Test Merchant 1 | 123456780        | Test Estate 1 | Voucher          | 10.00             |                       |                             | Hospital 1 Contract       | 10 KES            | test@recipient.co.uk |                 |               |               |                  |
 	| Today    | 6                 | Sale            | 1                 | Test Merchant 2 | 123456781        | Test Estate 1 | Voucher          | 10.00             |                       |                             | Hospital 1 Contract       | 10 KES            |                      | 123456789       |               |               |                  |
-	| Today    | 7                 | Sale            | 2                 | Test Merchant 3 | 123456782        | Test Estate 2 | Voucher          | 10.00             |                       |                             | Hospital 1 Contract       | 10 KES            | test@recipient.co.uk |                 |               |               |                  |
+	| Today    | 7                 | Sale            | 2                 | Test Merchant 3 | 123456782        | Test Estate 1 | Voucher          | 10.00             |                       |                             | Hospital 1 Contract       | 10 KES            | test@recipient.co.uk |                 |               |               |                  |
 	| Today    | 8                 | Sale            | 2                 | Test Merchant 1 | 123456780        | Test Estate 1 | PataPawa PostPay | 0.00              |                       |                             | PataPawa PostPay Contract | Post Pay Bill Pay | test@recipient.co.uk |                 | VerifyAccount | 12345678        |                  |
 	| Today    | 9                 | Sale            | 2                 | Test Merchant 1 | 123456780        | Test Estate 1 | PataPawa PostPay | 20.00             |                       |                             | PataPawa PostPay Contract | Post Pay Bill Pay | test@recipient.co.uk | 123456789       | ProcessBill   | 12345678        | Mr Test Customer |
 		
@@ -111,11 +111,11 @@ Scenario: Sale Transactions
 	| EstateName    | MerchantName    | TransactionNumber | ResponseCode | ResponseMessage |
 	| Test Estate 1 | Test Merchant 1 | 1                 | 0000         | SUCCESS         |
 	| Test Estate 1 | Test Merchant 2 | 2                 | 0000         | SUCCESS         |
-	| Test Estate 2 | Test Merchant 3 | 3                 | 0000         | SUCCESS         |
+	| Test Estate 1 | Test Merchant 3 | 3                 | 0000         | SUCCESS         |
 	| Test Estate 1 | Test Merchant 1 | 4                 | 0000         | SUCCESS         |
 	| Test Estate 1 | Test Merchant 1 | 5                 | 0000         | SUCCESS         |
 	| Test Estate 1 | Test Merchant 2 | 6                 | 0000         | SUCCESS         |
-	| Test Estate 2 | Test Merchant 3 | 7                 | 0000         | SUCCESS         |
+	| Test Estate 1 | Test Merchant 3 | 7                 | 0000         | SUCCESS         |
 	| Test Estate 1 | Test Merchant 1 | 8                 | 0000         | SUCCESS         |
 	| Test Estate 1 | Test Merchant 1 | 9                 | 0000         | SUCCESS         |
 
