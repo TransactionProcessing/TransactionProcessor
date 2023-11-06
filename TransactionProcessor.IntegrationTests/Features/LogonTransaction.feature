@@ -36,6 +36,8 @@ Background:
 	| Test Merchant 3 | Address Line 1 | TestTown | Test Region | United Kingdom | Test Contact 3 | testcontact3@merchant2.co.uk | Test Estate 1 |
 	| Test Merchant 4 | Address Line 1 | TestTown | Test Region | United Kingdom | Test Contact 4 | testcontact4@merchant2.co.uk | Test Estate 1 |
 	| Test Merchant 5 | Address Line 1 | TestTown | Test Region | United Kingdom | Test Contact 5 | testcontact5@merchant2.co.uk | Test Estate 1 |
+	| Test Merchant 6 | Address Line 1 | TestTown | Test Region | United Kingdom | Test Contact 6 | testcontact6@merchant2.co.uk | Test Estate 1 |
+	| Test Merchant 7 | Address Line 1 | TestTown | Test Region | United Kingdom | Test Contact 7 | testcontact7@merchant2.co.uk | Test Estate 1 |
 
 	Given I have assigned the following  operator to the merchants
 	| OperatorName    | MerchantName    | MerchantNumber | TerminalNumber | EstateName    |
@@ -44,6 +46,8 @@ Background:
 	| Test Operator 1 | Test Merchant 3 | 00000001       | 10000001       | Test Estate 1 |
 	| Test Operator 1 | Test Merchant 4 | 00000001       | 10000001       | Test Estate 1 |
 	| Test Operator 1 | Test Merchant 5 | 00000001       | 10000001       | Test Estate 1 |
+	| Test Operator 1 | Test Merchant 6 | 00000001       | 10000001       | Test Estate 1 |
+	| Test Operator 1 | Test Merchant 7 | 00000001       | 10000001       | Test Estate 1 |
 
 	Given I make the following manual merchant deposits 
 	| Reference | Amount  | DateTime | MerchantName    | EstateName    |
@@ -69,47 +73,35 @@ Scenario: Logon Transactions
 
 	Given I have assigned the following devices to the merchants
 	| DeviceIdentifier | MerchantName    | MerchantNumber | EstateName    |
-	| 123456780        | Test Merchant 4 | 00000001       | Test Estate 1 |
+	| 123456783        | Test Merchant 4 | 00000001       | Test Estate 1 |
 
 	When I perform the following transactions
 	| DateTime | TransactionNumber | TransactionType | MerchantName    | DeviceIdentifier | EstateName    |
-	| Today    | 4                 | Logon           | Test Merchant 4 | 123456780        | Test Estate 1 |
+	| Today    | 4                 | Logon           | Test Merchant 4 | 123456783        | Test Estate 1 |
 	
 	Then transaction response should contain the following information
 	| EstateName    | MerchantName    | TransactionNumber | ResponseCode | ResponseMessage |
 	| Test Estate 1 | Test Merchant 4 | 4                 | 0000         | SUCCESS         |
 
-	Given I have assigned the following devices to the merchants
-	| DeviceIdentifier | MerchantName    | MerchantNumber | EstateName    |
-	| 123456780        | Test Merchant 5 | 00000001       | Test Estate 1 |
-
 	When I perform the following transactions
 	| DateTime | TransactionNumber | TransactionType | MerchantName    | DeviceIdentifier | EstateName    |
-	| Today    | 5                 | Logon           | Test Merchant 5 | 123456781        | Test Estate 1 |
+	| Today    | 5                 | Logon           | Test Merchant 1 | 13579135         | Test Estate 1 |
 
 	Then transaction response should contain the following information
 	| EstateName    | MerchantName    | TransactionNumber | ResponseCode | ResponseMessage                                                    |
-	| Test Estate 1 | Test Merchant 5 | 5                 | 1000         | Device Identifier 123456781 not valid for Merchant Test Merchant 5 |
-
-	Given I have assigned the following devices to the merchants
-	| DeviceIdentifier | MerchantName    | MerchantNumber | EstateName    |
-	| 123456780        | Test Merchant 6 | 00000001       | Test Estate 1 |
+	| Test Estate 1 | Test Merchant 1 | 5                 | 1000         | Device Identifier 13579135 not valid for Merchant Test Merchant 1 |
 
 	When I perform the following transactions
 	| DateTime | TransactionNumber | TransactionType | MerchantName    | DeviceIdentifier | EstateName    |
-	| Today    | 6                 | Logon           | Test Merchant 6 | 123456781        | InvalidEstate |
+	| Today    | 6                 | Logon           | Test Merchant 1 | 123456785       | InvalidEstate |
 	
 	Then transaction response should contain the following information
 	| EstateName    | MerchantName    | TransactionNumber | ResponseCode | ResponseMessage                                                        |
 	| InvalidEstate | Test Merchant 1 | 6                 | 1001         | Estate Id [79902550-64df-4491-b0c1-4e78943928a3] is not a valid estate |
 
-	Given I have assigned the following devices to the merchants
-	| DeviceIdentifier | MerchantName    | MerchantNumber | EstateName    |
-	| 123456780        | Test Merchant 7 | 00000001       | Test Estate 1 |
-
 	When I perform the following transactions
 	| DateTime | TransactionNumber | TransactionType | MerchantName    | DeviceIdentifier | EstateName    |
-	| Today    | 7                 | Logon           | InvalidMerchant | 123456781        | Test Estate 1 |
+	| Today    | 7                 | Logon           | InvalidMerchant | 123456786        | Test Estate 1 |
 	
 	Then transaction response should contain the following information
 	| EstateName    | MerchantName    | TransactionNumber | ResponseCode | ResponseMessage                                                                                       |

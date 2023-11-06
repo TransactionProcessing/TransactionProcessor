@@ -159,28 +159,12 @@ public class TransactionValidationService : ITransactionValidationService{
                 }
             }
 
-            // Check the amount
-            if (transactionAmount.HasValue){
-                if (transactionAmount <= 0){
-                    throw new TransactionValidationException("Transaction Amount must be greater than 0", TransactionResponseCode.InvalidSaleTransactionAmount);
-                }
-
-                MerchantBalanceState merchantBalanceState = await this.MerchantBalanceStateRepository.Load(estateId, merchantId, cancellationToken);
-
-                // Check the merchant has enough balance to perform the sale
-                if (merchantBalanceState.AvailableBalance < transactionAmount){
-                    throw new
-                        TransactionValidationException($"Merchant [{merchant.MerchantName}] does not have enough credit available [{merchantBalanceState.AvailableBalance}] to perform transaction amount [{transactionAmount}]",
-                                                       TransactionResponseCode.MerchantDoesNotHaveEnoughCredit);
-                }
-            }
-
             // Contract and Product Validation
             if (contractId == Guid.Empty){
                 throw new TransactionValidationException($"Contract Id [{contractId}] must be set for a sale transaction",
                                                          TransactionResponseCode.InvalidContractIdValue);
             }
-
+            
             List<ContractResponse> merchantContracts = null;
             try{
                 merchantContracts = await this.GetMerchantContracts(estateId, merchantId, cancellationToken);
@@ -215,6 +199,22 @@ public class TransactionValidationService : ITransactionValidationService{
             if (contractProduct == null){
                 throw new TransactionValidationException($"Product Id [{productId}] not valid for Merchant [{merchant.MerchantName}]",
                                                          TransactionResponseCode.ProductNotValidForMerchant);
+            }
+
+            // Check the amount
+            if (transactionAmount.HasValue){
+                if (transactionAmount <= 0){
+                    throw new TransactionValidationException("Transaction Amount must be greater than 0", TransactionResponseCode.InvalidSaleTransactionAmount);
+                }
+
+                MerchantBalanceState merchantBalanceState = await this.MerchantBalanceStateRepository.Load(estateId, merchantId, cancellationToken);
+
+                // Check the merchant has enough balance to perform the sale
+                if (merchantBalanceState.AvailableBalance < transactionAmount){
+                    throw new
+                        TransactionValidationException($"Merchant [{merchant.MerchantName}] does not have enough credit available [{merchantBalanceState.AvailableBalance}] to perform transaction amount [{transactionAmount}]",
+                                                       TransactionResponseCode.MerchantDoesNotHaveEnoughCredit);
+                }
             }
 
             // If we get here everything is good
