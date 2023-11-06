@@ -49,12 +49,12 @@ Background:
 	| Test Operator 1 | Test Merchant 6 | 00000001       | 10000001       | Test Estate 1 |
 	| Test Operator 1 | Test Merchant 7 | 00000001       | 10000001       | Test Estate 1 |
 
-	Given I make the following manual merchant deposits 
-	| Reference | Amount  | DateTime | MerchantName    | EstateName    |
-	| Deposit1  | 2000.00 | Today    | Test Merchant 1 | Test Estate 1 |
-	| Deposit1  | 1000.00 | Today    | Test Merchant 2 | Test Estate 1 |
-	| Deposit1  | 1000.00 | Today    | Test Merchant 3 | Test Estate 1 |
-	| Deposit1  | 1000.00 | Today    | Test Merchant 4 | Test Estate 1 |
+	#Given I make the following manual merchant deposits 
+	#| Reference | Amount  | DateTime | MerchantName    | EstateName    |
+	#| Deposit1  | 2000.00 | Today    | Test Merchant 1 | Test Estate 1 |
+	#| Deposit1  | 1000.00 | Today    | Test Merchant 2 | Test Estate 1 |
+	#| Deposit1  | 1000.00 | Today    | Test Merchant 3 | Test Estate 1 |
+	#| Deposit1  | 1000.00 | Today    | Test Merchant 4 | Test Estate 1 |
 
 @PRTest
 Scenario: Logon Transactions
