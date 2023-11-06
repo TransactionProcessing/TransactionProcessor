@@ -686,6 +686,7 @@ namespace TransactionProcessor.IntegrationTests.Shared
                                 balanceHistory.ShouldNotBeEmpty();
                                 balanceHistory.Count.ShouldBe(table.RowCount);
             }, TimeSpan.FromMinutes(3), TimeSpan.FromSeconds(30));
+
             foreach (TableRow tableRow in table.Rows) {
                 //| DateTime | Reference             | EntryType | In     | Out    | ChangeAmount | Balance |
                 var entryDateTime = SpecflowTableHelper.GetDateForDateString(tableRow["DateTime"], DateTime.UtcNow);
