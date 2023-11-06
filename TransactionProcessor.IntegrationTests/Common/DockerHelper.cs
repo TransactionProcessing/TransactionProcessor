@@ -8,7 +8,9 @@
     using Client;
     using EstateManagement.Client;
     using EstateManagement.Database.Contexts;
+    using global::Shared.IntegrationTesting;
     using SecurityService.Client;
+    using Retry = IntegrationTests.Retry;
 
     /// <summary>
     /// 
@@ -59,9 +61,9 @@
         /// Starts the containers for scenario run.
         /// </summary>
         /// <param name="scenarioName">Name of the scenario.</param>
-        public override async Task StartContainersForScenarioRun(String scenarioName)
+        public override async Task StartContainersForScenarioRun(String scenarioName, DockerServices dockerServices)
         {
-            await base.StartContainersForScenarioRun(scenarioName);
+            await base.StartContainersForScenarioRun(scenarioName, dockerServices);
             
             // Setup the base address resolvers
             String EstateManagementBaseAddressResolver(String api) => $"http://127.0.0.1:{this.EstateManagementPort}";
