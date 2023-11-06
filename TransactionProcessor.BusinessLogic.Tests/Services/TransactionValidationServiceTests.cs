@@ -517,6 +517,8 @@ public class TransactionValidationServiceTests{
             .ReturnsAsync(TestData.GetEstateResponseWithOperator1);
         this.EstateClient.Setup(e => e.GetMerchant(It.IsAny<String>(), It.IsAny<Guid>(), It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(TestData.GetMerchantResponseWithOperator1);
+        this.EstateClient.Setup(e => e.GetMerchantContracts(It.IsAny<String>(), It.IsAny<Guid>(), It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(TestData.MerchantContractResponses);
 
         (String responseMessage, TransactionResponseCode responseCode) response = await this.TransactionValidationService.ValidateSaleTransaction(TestData.EstateId,
                                                                                                                                                   TestData.MerchantId,
@@ -659,7 +661,8 @@ public class TransactionValidationServiceTests{
             .ReturnsAsync(TestData.GetEstateResponseWithOperator1);
         this.EstateClient.Setup(e => e.GetMerchant(It.IsAny<String>(), It.IsAny<Guid>(), It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(TestData.GetMerchantResponseWithOperator1);
-
+        this.EstateClient.Setup(e => e.GetMerchantContracts(It.IsAny<String>(), It.IsAny<Guid>(), It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(TestData.MerchantContractResponses);
         this.StateRepository.Setup(p => p.Load(It.IsAny<Guid>(), It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(TestData.MerchantBalanceProjectionStateNoCredit);
 
