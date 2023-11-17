@@ -78,11 +78,15 @@ namespace TransactionProcessor
                                                                                         {"Ordered", orderedEventHandlerResolver}
                                                                                     };
 
+
+            Func<String, Int32, ISubscriptionRepository> subscriptionRepositoryResolver = Startup.Container.GetInstance<Func<String, Int32, ISubscriptionRepository>>();
+
             applicationBuilder.ConfigureSubscriptionService(subscriptionWorkersRoot,
                                                             eventStoreConnectionString,
                                                             Startup.EventStoreClientSettings,
                                                             eventHandlerResolvers,
                                                             Extensions.log,
+                                                            subscriptionRepositoryResolver,
                                                             CancellationToken.None).Wait(CancellationToken.None);
 
             if (Startup.AutoApiLogonOperators.Any()) {
