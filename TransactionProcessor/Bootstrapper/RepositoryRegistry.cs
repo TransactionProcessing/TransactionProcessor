@@ -33,6 +33,7 @@
     using ProjectionEngine.Database.Database;
     using ProjectionEngine.Repository;
     using ProjectionEngine.State;
+    using Shared.EventStore.SubscriptionWorker;
 
     /// <summary>
     /// 
@@ -75,7 +76,7 @@
                                                                                            }
                                                                           };
 
-                this.AddEventStoreProjectionManagerClient(Startup.ConfigureEventStoreSettings);
+                this.AddEventStoreProjectionManagementClient(Startup.ConfigureEventStoreSettings);
                 this.AddEventStorePersistentSubscriptionsClient(Startup.ConfigureEventStoreSettings);
 
                 if (insecureES)
@@ -135,6 +136,10 @@
                                                                                                 NotSupportedException($"Unsupported Database Engine {databaseEngine}")
                                                                                         };
                                                                                     });
+
+            this.AddSingleton<Func<String, Int32, ISubscriptionRepository>>(cont => (esConnString, cacheDuration) => {
+                                                                                       return SubscriptionRepository.Create(esConnString, cacheDuration);
+                                                                                   });
         }
 
         #endregion

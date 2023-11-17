@@ -146,7 +146,7 @@ public class VoucherDomainService : IVoucherDomainService
         await this.VoucherAggregateRepository.SaveChanges(voucherAggregate, cancellationToken);
 
         Voucher voucherModel = voucherAggregate.GetVoucher();
-
+        
         return new RedeemVoucherResponse
                {
                    RemainingBalance = voucherModel.Balance,

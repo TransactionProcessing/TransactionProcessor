@@ -36,10 +36,14 @@ public class MerchantBalanceStateRepository : IProjectionStateRepository<Merchan
                      };
     }
 
+    public static Guid GetEstateId(IDomainEvent domainEvent) => DomainEventHelper.GetProperty<Guid>(domainEvent, "EstateId");
+
+    public static Guid GetMerchantId(IDomainEvent domainEvent) => DomainEventHelper.GetProperty<Guid>(domainEvent, "MerchantId");
+
     public async Task<MerchantBalanceState> Load(IDomainEvent @event,
                                                  CancellationToken cancellationToken) {
-        Guid estateId = DomainEventHelper.GetEstateId(@event);
-        Guid merchantId = DomainEventHelper.GetMerchantId(@event);
+        Guid estateId = GetEstateId(@event);
+        Guid merchantId = GetMerchantId(@event);
 
         return await this.LoadHelper(estateId, merchantId, cancellationToken);
     }
