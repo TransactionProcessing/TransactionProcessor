@@ -99,7 +99,7 @@ namespace TransactionProcessor.IntegrationTests.Features
  testRunner.Given("I create the following api scopes", ((string)(null)), table35, "Given ");
 #line hidden
             TechTalk.SpecFlow.Table table36 = new TechTalk.SpecFlow.Table(new string[] {
-                        "ResourceName",
+                        "Name",
                         "DisplayName",
                         "Secret",
                         "Scopes",
@@ -123,8 +123,8 @@ namespace TransactionProcessor.IntegrationTests.Features
                         "ClientId",
                         "ClientName",
                         "Secret",
-                        "AllowedScopes",
-                        "AllowedGrantTypes"});
+                        "Scopes",
+                        "GrantTypes"});
             table37.AddRow(new string[] {
                         "serviceClient",
                         "Service Client",

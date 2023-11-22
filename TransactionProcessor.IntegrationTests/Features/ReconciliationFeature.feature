@@ -9,12 +9,12 @@ Background:
 	| transactionProcessor | Transaction Processor REST  Scope | A scope for Transaction Processor REST |
 
 	Given the following api resources exist
-	| ResourceName     | DisplayName            | Secret  | Scopes           | UserClaims                 |
+	| Name     | DisplayName            | Secret  | Scopes           | UserClaims                 |
 	| estateManagement | Estate Managememt REST | Secret1 | estateManagement | MerchantId, EstateId, role |
 	| transactionProcessor | Transaction Processor REST | Secret1 | transactionProcessor |  |
 
 	Given the following clients exist
-	| ClientId      | ClientName     | Secret  | AllowedScopes    | AllowedGrantTypes  |
+	| ClientId      | ClientName     | Secret  | Scopes    | GrantTypes  |
 	| serviceClient | Service Client | Secret1 | estateManagement,transactionProcessor | client_credentials |
 
 	Given I have a token to access the estate management and transaction processor resources
@@ -74,10 +74,10 @@ Background:
 Scenario: Reconciliation Transactions
 
 	When I perform the following reconciliations
-	| DateTime | MerchantName    | DeviceIdentifier | EstateName    | TransactionCount | TransactionValue |
-	| Today    | Test Merchant 1 | 123456780        | Test Estate 1 | 1                | 100.00           |
-	| Today    | Test Merchant 2 | 123456781        | Test Estate 1 | 2                | 200.00           |
-	| Today    | Test Merchant 3 | 123456782        | Test Estate 2 | 3                | 300.00           |
+	| DateTime | MerchantName    | DeviceIdentifier | EstateName    | TransactionCount | TransactionValue | TransactionType |
+	| Today    | Test Merchant 1 | 123456780        | Test Estate 1 | 1                | 100.00           | Reconciliation  |
+	| Today    | Test Merchant 2 | 123456781        | Test Estate 1 | 2                | 200.00           | Reconciliation  |
+	| Today    | Test Merchant 3 | 123456782        | Test Estate 2 | 3                | 300.00           | Reconciliation  |
 	
 	Then reconciliation response should contain the following information
 	| EstateName    | MerchantName    | ResponseCode | ResponseMessage |

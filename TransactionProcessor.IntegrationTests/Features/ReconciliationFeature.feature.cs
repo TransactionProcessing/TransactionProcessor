@@ -99,7 +99,7 @@ namespace TransactionProcessor.IntegrationTests.Features
  testRunner.Given("I create the following api scopes", ((string)(null)), table20, "Given ");
 #line hidden
             TechTalk.SpecFlow.Table table21 = new TechTalk.SpecFlow.Table(new string[] {
-                        "ResourceName",
+                        "Name",
                         "DisplayName",
                         "Secret",
                         "Scopes",
@@ -123,8 +123,8 @@ namespace TransactionProcessor.IntegrationTests.Features
                         "ClientId",
                         "ClientName",
                         "Secret",
-                        "AllowedScopes",
-                        "AllowedGrantTypes"});
+                        "Scopes",
+                        "GrantTypes"});
             table22.AddRow(new string[] {
                         "serviceClient",
                         "Service Client",
@@ -386,28 +386,32 @@ this.FeatureBackground();
                             "DeviceIdentifier",
                             "EstateName",
                             "TransactionCount",
-                            "TransactionValue"});
+                            "TransactionValue",
+                            "TransactionType"});
                 table33.AddRow(new string[] {
                             "Today",
                             "Test Merchant 1",
                             "123456780",
                             "Test Estate 1",
                             "1",
-                            "100.00"});
+                            "100.00",
+                            "Reconciliation"});
                 table33.AddRow(new string[] {
                             "Today",
                             "Test Merchant 2",
                             "123456781",
                             "Test Estate 1",
                             "2",
-                            "200.00"});
+                            "200.00",
+                            "Reconciliation"});
                 table33.AddRow(new string[] {
                             "Today",
                             "Test Merchant 3",
                             "123456782",
                             "Test Estate 2",
                             "3",
-                            "300.00"});
+                            "300.00",
+                            "Reconciliation"});
 #line 76
  testRunner.When("I perform the following reconciliations", ((string)(null)), table33, "When ");
 #line hidden
