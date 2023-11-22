@@ -4,11 +4,12 @@
     using System.Collections.Generic;
     using System.Linq;
     using DataTransferObjects;
+    using EstateManagement.IntegrationTesting.Helpers;
 
     /// <summary>
     /// 
     /// </summary>
-    public class EstateDetails
+    public class EstateDetails1
     {
         #region Fields
 
@@ -46,7 +47,7 @@
         /// </summary>
         /// <param name="estateId">The estate identifier.</param>
         /// <param name="estateName">Name of the estate.</param>
-        private EstateDetails(Guid estateId,
+        private EstateDetails1(Guid estateId,
                               String estateName)
         {
             this.EstateId = estateId;
@@ -240,10 +241,10 @@
         /// <param name="estateId">The estate identifier.</param>
         /// <param name="estateName">Name of the estate.</param>
         /// <returns></returns>
-        public static EstateDetails Create(Guid estateId,
+        public static EstateDetails1 Create(Guid estateId,
                                            String estateName)
         {
-            return new EstateDetails(estateId, estateName);
+            return new EstateDetails1(estateId, estateName);
         }
 
         /// <summary>

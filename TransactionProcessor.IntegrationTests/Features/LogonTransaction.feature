@@ -9,12 +9,12 @@ Background:
 	| transactionProcessor | Transaction Processor REST  Scope | A scope for Transaction Processor REST |
 
 	Given the following api resources exist
-	| ResourceName     | DisplayName            | Secret  | Scopes           | UserClaims                 |
+	| Name     | DisplayName            | Secret  | Scopes           | UserClaims                 |
 	| estateManagement | Estate Managememt REST | Secret1 | estateManagement | MerchantId, EstateId, role |
 	| transactionProcessor | Transaction Processor REST | Secret1 | transactionProcessor |  |
 
 	Given the following clients exist
-	| ClientId      | ClientName     | Secret  | AllowedScopes    | AllowedGrantTypes  |
+	| ClientId      | ClientName     | Secret  | Scopes    | GrantTypes  |
 	| serviceClient | Service Client | Secret1 | estateManagement,transactionProcessor | client_credentials |
 
 	Given I have a token to access the estate management and transaction processor resources
@@ -48,13 +48,6 @@ Background:
 	| Test Operator 1 | Test Merchant 5 | 00000001       | 10000001       | Test Estate 1 |
 	| Test Operator 1 | Test Merchant 6 | 00000001       | 10000001       | Test Estate 1 |
 	| Test Operator 1 | Test Merchant 7 | 00000001       | 10000001       | Test Estate 1 |
-
-	#Given I make the following manual merchant deposits 
-	#| Reference | Amount  | DateTime | MerchantName    | EstateName    |
-	#| Deposit1  | 2000.00 | Today    | Test Merchant 1 | Test Estate 1 |
-	#| Deposit1  | 1000.00 | Today    | Test Merchant 2 | Test Estate 1 |
-	#| Deposit1  | 1000.00 | Today    | Test Merchant 3 | Test Estate 1 |
-	#| Deposit1  | 1000.00 | Today    | Test Merchant 4 | Test Estate 1 |
 
 @PRTest
 Scenario: Logon Transactions

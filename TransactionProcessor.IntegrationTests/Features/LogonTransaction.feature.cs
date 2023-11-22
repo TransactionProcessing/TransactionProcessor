@@ -99,7 +99,7 @@ namespace TransactionProcessor.IntegrationTests.Features
  testRunner.Given("I create the following api scopes", ((string)(null)), table1, "Given ");
 #line hidden
             TechTalk.SpecFlow.Table table2 = new TechTalk.SpecFlow.Table(new string[] {
-                        "ResourceName",
+                        "Name",
                         "DisplayName",
                         "Secret",
                         "Scopes",
@@ -123,8 +123,8 @@ namespace TransactionProcessor.IntegrationTests.Features
                         "ClientId",
                         "ClientName",
                         "Secret",
-                        "AllowedScopes",
-                        "AllowedGrantTypes"});
+                        "Scopes",
+                        "GrantTypes"});
             table3.AddRow(new string[] {
                         "serviceClient",
                         "Service Client",
@@ -305,7 +305,7 @@ namespace TransactionProcessor.IntegrationTests.Features
                     "PRTest"};
             System.Collections.Specialized.OrderedDictionary argumentsOfScenario = new System.Collections.Specialized.OrderedDictionary();
             TechTalk.SpecFlow.ScenarioInfo scenarioInfo = new TechTalk.SpecFlow.ScenarioInfo("Logon Transactions", null, tagsOfScenario, argumentsOfScenario, featureTags);
-#line 60
+#line 53
 this.ScenarioInitialize(scenarioInfo);
 #line hidden
             if ((TagHelper.ContainsIgnoreTag(tagsOfScenario) || TagHelper.ContainsIgnoreTag(featureTags)))
@@ -346,7 +346,7 @@ this.FeatureBackground();
                             "Test Merchant 3",
                             "123456782",
                             "Test Estate 1"});
-#line 62
+#line 55
  testRunner.When("I perform the following transactions", ((string)(null)), table9, "When ");
 #line hidden
                 TechTalk.SpecFlow.Table table10 = new TechTalk.SpecFlow.Table(new string[] {
@@ -373,7 +373,7 @@ this.FeatureBackground();
                             "3",
                             "0001",
                             "SUCCESS"});
-#line 68
+#line 61
  testRunner.Then("transaction response should contain the following information", ((string)(null)), table10, "Then ");
 #line hidden
                 TechTalk.SpecFlow.Table table11 = new TechTalk.SpecFlow.Table(new string[] {
@@ -386,7 +386,7 @@ this.FeatureBackground();
                             "Test Merchant 4",
                             "00000001",
                             "Test Estate 1"});
-#line 74
+#line 67
  testRunner.Given("I have assigned the following devices to the merchants", ((string)(null)), table11, "Given ");
 #line hidden
                 TechTalk.SpecFlow.Table table12 = new TechTalk.SpecFlow.Table(new string[] {
@@ -403,7 +403,7 @@ this.FeatureBackground();
                             "Test Merchant 4",
                             "123456783",
                             "Test Estate 1"});
-#line 78
+#line 71
  testRunner.When("I perform the following transactions", ((string)(null)), table12, "When ");
 #line hidden
                 TechTalk.SpecFlow.Table table13 = new TechTalk.SpecFlow.Table(new string[] {
@@ -418,7 +418,7 @@ this.FeatureBackground();
                             "4",
                             "0000",
                             "SUCCESS"});
-#line 82
+#line 75
  testRunner.Then("transaction response should contain the following information", ((string)(null)), table13, "Then ");
 #line hidden
                 TechTalk.SpecFlow.Table table14 = new TechTalk.SpecFlow.Table(new string[] {
@@ -435,7 +435,7 @@ this.FeatureBackground();
                             "Test Merchant 1",
                             "13579135",
                             "Test Estate 1"});
-#line 86
+#line 79
  testRunner.When("I perform the following transactions", ((string)(null)), table14, "When ");
 #line hidden
                 TechTalk.SpecFlow.Table table15 = new TechTalk.SpecFlow.Table(new string[] {
@@ -450,7 +450,7 @@ this.FeatureBackground();
                             "5",
                             "1000",
                             "Device Identifier 13579135 not valid for Merchant Test Merchant 1"});
-#line 90
+#line 83
  testRunner.Then("transaction response should contain the following information", ((string)(null)), table15, "Then ");
 #line hidden
                 TechTalk.SpecFlow.Table table16 = new TechTalk.SpecFlow.Table(new string[] {
@@ -467,7 +467,7 @@ this.FeatureBackground();
                             "Test Merchant 1",
                             "123456785",
                             "InvalidEstate"});
-#line 94
+#line 87
  testRunner.When("I perform the following transactions", ((string)(null)), table16, "When ");
 #line hidden
                 TechTalk.SpecFlow.Table table17 = new TechTalk.SpecFlow.Table(new string[] {
@@ -482,7 +482,7 @@ this.FeatureBackground();
                             "6",
                             "1001",
                             "Estate Id [79902550-64df-4491-b0c1-4e78943928a3] is not a valid estate"});
-#line 98
+#line 91
  testRunner.Then("transaction response should contain the following information", ((string)(null)), table17, "Then ");
 #line hidden
                 TechTalk.SpecFlow.Table table18 = new TechTalk.SpecFlow.Table(new string[] {
@@ -499,7 +499,7 @@ this.FeatureBackground();
                             "InvalidMerchant",
                             "123456786",
                             "Test Estate 1"});
-#line 102
+#line 95
  testRunner.When("I perform the following transactions", ((string)(null)), table18, "When ");
 #line hidden
                 TechTalk.SpecFlow.Table table19 = new TechTalk.SpecFlow.Table(new string[] {
@@ -515,7 +515,7 @@ this.FeatureBackground();
                             "1002",
                             "Merchant Id [d59320fa-4c3e-4900-a999-483f6a10c69a] is not a valid merchant for es" +
                                 "tate [Test Estate 1]"});
-#line 106
+#line 99
  testRunner.Then("transaction response should contain the following information", ((string)(null)), table19, "Then ");
 #line hidden
             }

@@ -10,12 +10,12 @@ Background:
 	| voucherManagement | Voucher Management REST  Scope | A scope for Voucher Management REST |
 
 	Given the following api resources exist
-	| ResourceName     | DisplayName            | Secret  | Scopes           | UserClaims                 |
+	| Name     | DisplayName            | Secret  | Scopes           | UserClaims                 |
 	| estateManagement | Estate Managememt REST | Secret1 | estateManagement | MerchantId, EstateId, role |
 	| voucherManagement | Voucher Management REST | Secret1 | voucherManagement |  |
 
 	Given the following clients exist
-	| ClientId      | ClientName     | Secret  | AllowedScopes    | AllowedGrantTypes  |
+	| ClientId      | ClientName     | Secret  | Scopes    | GrantTypes  |
 	| serviceClient | Service Client | Secret1 | estateManagement,voucherManagement | client_credentials |
 
 	Given I have a token to access the estate management and transaction processor resources

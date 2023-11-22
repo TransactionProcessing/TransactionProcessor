@@ -1,0 +1,25 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net7.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="EstateManagement.Client" Version="2023.10.2-build60" />
+    <PackageReference Include="EstateManagement.IntegrationTesting.Helpers" Version="2023.11.1" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\TransactionProcessor.Client\TransactionProcessor.Client.csproj"  PrivateAssets="All" />
+    <ProjectReference Include="..\TransactionProcessor.DataTransferObjects\TransactionProcessor.DataTransferObjects.csproj"  PrivateAssets="All" />
+  </ItemGroup>
+
+	<Target Name="IncludeP2PAssets">
+		<ItemGroup>
+			<BuildOutputInPackage Include="$(OutputPath)TransactionProcessor.DataTransferObjects.dll" />
+			<BuildOutputInPackage Include="$(OutputPath)TransactionProcessor.Client.dll" />
+		</ItemGroup>
+	</Target>
+</Project>
