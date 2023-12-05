@@ -57,6 +57,16 @@
                                                   RedeemVoucherRequest redeemVoucherRequest,
                                                   CancellationToken cancellationToken);
 
+        Task<CreateFloatForContractProductResponse> CreateFloatForContractProduct(String accessToken,
+                                                                                  Guid estateId,
+                         CreateFloatForContractProductRequest createFloatForContractProductRequest,
+                         CancellationToken cancellationToken);
+
+        Task RecordFloatCreditPurchase(String accessToken,
+                                       Guid estateId,
+                                       RecordFloatCreditPurchaseRequest recordFloatCreditPurchaseRequest,
+                                       CancellationToken cancellationToken);
+
         #endregion
     }
 }
