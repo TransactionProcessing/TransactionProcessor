@@ -7,13 +7,13 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="EstateManagement.Client" Version="2023.10.2-build60" />
+    <PackageReference Include="EstateManagement.Client" Version="2023.11.1" />
     <PackageReference Include="EstateManagement.IntegrationTesting.Helpers" Version="2023.11.1" />
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\TransactionProcessor.Client\TransactionProcessor.Client.csproj"  PrivateAssets="All" />
-    <ProjectReference Include="..\TransactionProcessor.DataTransferObjects\TransactionProcessor.DataTransferObjects.csproj"  PrivateAssets="All" />
+    <ProjectReference Include="..\TransactionProcessor.Client\TransactionProcessor.Client.csproj" PrivateAssets="All" />
+    <ProjectReference Include="..\TransactionProcessor.DataTransferObjects\TransactionProcessor.DataTransferObjects.csproj" PrivateAssets="All" />
   </ItemGroup>
 
 	<Target Name="IncludeP2PAssets">
