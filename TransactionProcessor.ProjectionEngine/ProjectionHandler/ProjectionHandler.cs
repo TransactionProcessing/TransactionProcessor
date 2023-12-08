@@ -46,7 +46,7 @@ public class ProjectionHandler<TState> : IProjectionHandler where TState : State
 
         builder.Append($"{stopwatch.ElapsedMilliseconds}ms After Load|");
 
-        builder.Append($"{stopwatch.ElapsedMilliseconds}ms Handling {@event.EventType} for state {state.GetType().Name}|");
+        builder.Append($"{stopwatch.ElapsedMilliseconds}ms Handling {@event.EventType} Id [{@event.EventId}] for state {state.GetType().Name}|");
 
         TState newState = await this.Projection.Handle(state, @event, cancellationToken);
 
