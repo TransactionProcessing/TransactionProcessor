@@ -10,8 +10,8 @@
     <PackageReference Include="Microsoft.EntityFrameworkCore.Relational" Version="7.0.7" />
     <PackageReference Include="MessagingService.Client" Version="2023.11.1" />
     <PackageReference Include="SecurityService.Client" Version="2023.12.1" />
-    <PackageReference Include="Shared.DomainDrivenDesign" Version="2023.12.1" />
-    <PackageReference Include="Shared.EventStore" Version="2023.12.1" />
+    <PackageReference Include="Shared.DomainDrivenDesign" Version="2023.12.2" />
+    <PackageReference Include="Shared.EventStore" Version="2023.12.2" />
     <PackageReference Include="MediatR" Version="12.0.1" />
     <PackageReference Include="System.IO.Abstractions" Version="19.2.29" />
     <PackageReference Include="System.ServiceModel.Duplex" Version="6.0.0" />
