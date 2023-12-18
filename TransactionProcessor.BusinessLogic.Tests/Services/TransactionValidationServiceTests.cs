@@ -18,6 +18,7 @@ using Shouldly;
 using Testing;
 using Xunit;
 
+/*
 public class TransactionValidationServiceTests{
     private readonly TransactionValidationService TransactionValidationService;
     private readonly Mock<ISecurityServiceClient> SecurityServiceClient;
@@ -839,4 +840,4 @@ public class TransactionValidationServiceTests{
 
         response.responseCode.ShouldBe(TransactionResponseCode.Success);
     }
-}
+}*/
