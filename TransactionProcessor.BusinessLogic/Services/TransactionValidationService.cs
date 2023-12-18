@@ -8,10 +8,13 @@ using System.Threading;
 using System.Threading.Tasks;
 using EstateManagement.Client;
 using EstateManagement.DataTransferObjects.Responses;
+using EventStore.Client;
+using Newtonsoft.Json;
 using ProjectionEngine.Repository;
 using ProjectionEngine.State;
 using SecurityService.Client;
 using SecurityService.DataTransferObjects.Responses;
+using Shared.EventStore.EventStore;
 using Shared.General;
 using Shared.Logger;
 
@@ -25,6 +28,9 @@ public class TransactionValidationService : ITransactionValidationService{
 
     private readonly IProjectionStateRepository<MerchantBalanceState> MerchantBalanceStateRepository;
 
+    private readonly IEventStoreContext EventStoreContext;
+
+
     /// <summary>
     /// The security service client
     /// </summary>
@@ -36,10 +42,13 @@ public class TransactionValidationService : ITransactionValidationService{
 
     public TransactionValidationService(IEstateClient estateClient,
                                         ISecurityServiceClient securityServiceClient,
-                                        IProjectionStateRepository<MerchantBalanceState> merchantBalanceStateRepository){
+                                        IProjectionStateRepository<MerchantBalanceState> merchantBalanceStateRepository,
+                                        IEventStoreContext eventStoreContext)
+    {
         this.EstateClient = estateClient;
         this.SecurityServiceClient = securityServiceClient;
         this.MerchantBalanceStateRepository = merchantBalanceStateRepository;
+        this.EventStoreContext = eventStoreContext;
     }
 
     #region Methods
@@ -207,12 +216,13 @@ public class TransactionValidationService : ITransactionValidationService{
                     throw new TransactionValidationException("Transaction Amount must be greater than 0", TransactionResponseCode.InvalidSaleTransactionAmount);
                 }
 
-                MerchantBalanceState merchantBalanceState = await this.MerchantBalanceStateRepository.Load(estateId, merchantId, cancellationToken);
-
+                String state = await this.EventStoreContext.GetPartitionStateFromProjection("MerchantBalanceProjection", $"MerchantBalance-{merchantId:N}", cancellationToken);
+                MerchantBalanceProjectionState1 projectionState = JsonConvert.DeserializeObject<MerchantBalanceProjectionState1>(state);
+                
                 // Check the merchant has enough balance to perform the sale
-                if (merchantBalanceState.AvailableBalance < transactionAmount){
+                if (projectionState.merchant.balance < transactionAmount){
                     throw new
-                        TransactionValidationException($"Merchant [{merchant.MerchantName}] does not have enough credit available [{merchantBalanceState.AvailableBalance}] to perform transaction amount [{transactionAmount}]",
+                        TransactionValidationException($"Merchant [{merchant.MerchantName}] does not have enough credit available [{projectionState.merchant.balance:0.00}] to perform transaction amount [{transactionAmount}]",
                                                        TransactionResponseCode.MerchantDoesNotHaveEnoughCredit);
                 }
             }

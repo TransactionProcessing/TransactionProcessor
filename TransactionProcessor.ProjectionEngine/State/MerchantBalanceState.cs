@@ -29,3 +29,20 @@ public record MerchantBalanceState : State
     public Int32 StartedTransactionCount { get; init; }
     public Int32 CompletedTransactionCount { get; init; }
 }
+
+public record AuthorisedSales(int count, decimal value, DateTime? lastSale);
+
+public record DeclinedSales(int count, decimal value, DateTime? lastSale);
+
+public record Deposits(int count, decimal value, DateTime? lastDeposit);
+
+public record Fees(int count, decimal value);
+
+public record Merchant(string Id, string Name, int numberOfEventsProcessed, decimal balance, 
+                       Deposits deposits, Withdrawals withdrawals, AuthorisedSales authorisedSales, 
+                       DeclinedSales declinedSales, Fees fees);
+
+public record MerchantBalanceProjectionState1(Merchant merchant);
+
+public record Withdrawals(int count, decimal value, DateTime? lastWithdrawal);
+

@@ -7,6 +7,7 @@ using State;
 using System.Diagnostics.CodeAnalysis;
 using TransactionProcessor.ProjectionEngine.Database.Database;
 using TransactionProcessor.ProjectionEngine.Database.Database.Entities;
+using MerchantBalanceProjectionState = Database.Database.Entities.MerchantBalanceProjectionState;
 
 [ExcludeFromCodeCoverage]
 public class MerchantBalanceStateRepository : IProjectionStateRepository<MerchantBalanceState>
