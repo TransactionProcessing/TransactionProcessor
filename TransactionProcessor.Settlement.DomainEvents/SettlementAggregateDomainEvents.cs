@@ -28,7 +28,8 @@
 
     [ExcludeFromCodeCoverage]
     public record SettlementCompletedEvent(Guid SettlementId,
-                                           Guid EstateId) : DomainEvent(SettlementId, Guid.NewGuid());
+                                           Guid EstateId,
+                                           Guid MerchantId) : DomainEvent(SettlementId, Guid.NewGuid());
 
     [ExcludeFromCodeCoverage]
     public record SettlementCreatedForDateEvent(Guid SettlementId,
