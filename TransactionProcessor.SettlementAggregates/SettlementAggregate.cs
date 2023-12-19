@@ -29,7 +29,7 @@
             if (aggregate.SettlementComplete)
                 return;
 
-            SettlementCompletedEvent pendingSettlementCompletedEvent = new SettlementCompletedEvent(aggregate.AggregateId, aggregate.EstateId);
+            SettlementCompletedEvent pendingSettlementCompletedEvent = new SettlementCompletedEvent(aggregate.AggregateId, aggregate.EstateId, aggregate.MerchantId);
             aggregate.ApplyAndAppend(pendingSettlementCompletedEvent);
         }
 
@@ -58,7 +58,7 @@
             if (aggregate.CalculatedFeesPendingSettlement.Any() == false)
             {
                 // Settlement is completed
-                SettlementCompletedEvent pendingSettlementCompletedEvent = new SettlementCompletedEvent(aggregate.AggregateId, aggregate.EstateId);
+                SettlementCompletedEvent pendingSettlementCompletedEvent = new SettlementCompletedEvent(aggregate.AggregateId, aggregate.EstateId, aggregate.MerchantId);
                 aggregate.ApplyAndAppend(pendingSettlementCompletedEvent);
             }
         }
