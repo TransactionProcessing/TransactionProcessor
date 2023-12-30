@@ -262,6 +262,13 @@ namespace TransactionProcessor.IntegrationTests.Shared
             }
         }
 
+        [When(@"I add the following contracts to the following merchants")]
+        public async Task WhenIAddTheFollowingContractsToTheFollowingMerchants(Table table)
+        {
+            List<(EstateDetails, Guid, Guid)> requests = table.Rows.ToAddContractToMerchantRequests(this.TestingContext.Estates);
+            await this.EstateManagementSteps.WhenIAddTheFollowingContractsToTheFollowingMerchants(this.TestingContext.AccessToken, requests);
+        }
+
         [Given(@"I make the following manual merchant deposits")]
         public async Task GivenIMakeTheFollowingManualMerchantDeposits(Table table)
         {

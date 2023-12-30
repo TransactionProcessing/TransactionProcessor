@@ -59,8 +59,6 @@ namespace TransactionProcessor.BusinessLogic.Tests.Services
             this.EstateClient.Setup(e => e.GetContract(It.IsAny<String>(),
                                                        It.IsAny<Guid>(),
                                                        It.IsAny<Guid>(),
-                                                       It.IsAny<Boolean>(),
-                                                       It.IsAny<Boolean>(),
                                                        It.IsAny<CancellationToken>())).ReturnsAsync(new ContractResponse{
                                                                                                                             EstateId = TestData.EstateId,
                                                                                                                             ContractId = TestData.ContractId,
@@ -90,8 +88,6 @@ namespace TransactionProcessor.BusinessLogic.Tests.Services
             this.EstateClient.Setup(e => e.GetContract(It.IsAny<String>(),
                                                        It.IsAny<Guid>(),
                                                        It.IsAny<Guid>(),
-                                                       It.IsAny<Boolean>(),
-                                                       It.IsAny<Boolean>(),
                                                        It.IsAny<CancellationToken>())).ReturnsAsync(new ContractResponse
                                                        {
                                                            EstateId = TestData.EstateId,
@@ -146,8 +142,6 @@ namespace TransactionProcessor.BusinessLogic.Tests.Services
             this.EstateClient.Setup(e => e.GetContract(It.IsAny<String>(),
                                                        It.IsAny<Guid>(),
                                                        It.IsAny<Guid>(),
-                                                       It.IsAny<Boolean>(),
-                                                       It.IsAny<Boolean>(),
                                                        It.IsAny<CancellationToken>())).ReturnsAsync(new ContractResponse
                                                        {
                                                            EstateId = TestData.EstateId,

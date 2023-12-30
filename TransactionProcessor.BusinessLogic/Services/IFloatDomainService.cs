@@ -91,7 +91,7 @@ namespace TransactionProcessor.BusinessLogic.Services
             this.TokenResponse = await this.GetToken(cancellationToken);
 
             // TODO: validate the estate, contract and product
-            ContractResponse contract = await this.EstateClient.GetContract(this.TokenResponse.AccessToken, estateId, contractId, true, false, cancellationToken);
+            ContractResponse contract = await this.EstateClient.GetContract(this.TokenResponse.AccessToken, estateId, contractId, cancellationToken);
 
             if (contract == null)
             {

@@ -173,8 +173,8 @@ public class TransactionValidationService : ITransactionValidationService{
                 throw new TransactionValidationException($"Contract Id [{contractId}] must be set for a sale transaction",
                                                          TransactionResponseCode.InvalidContractIdValue);
             }
-            
-            List<ContractResponse> merchantContracts = null;
+
+            List<MerchantContractResponse> merchantContracts = null;
             try{
                 merchantContracts = await this.GetMerchantContracts(estateId, merchantId, cancellationToken);
             }
@@ -191,7 +191,7 @@ public class TransactionValidationService : ITransactionValidationService{
             }
 
             // Check the contract and product id against the merchant
-            ContractResponse contract = merchantContracts.SingleOrDefault(c => c.ContractId == contractId);
+            MerchantContractResponse contract = merchantContracts.SingleOrDefault(c => c.ContractId == contractId);
 
             if (contract == null){
                 throw new TransactionValidationException($"Contract Id [{contractId}] not valid for Merchant [{merchant.MerchantName}]",
@@ -203,9 +203,9 @@ public class TransactionValidationService : ITransactionValidationService{
                                                          TransactionResponseCode.InvalidProductIdValue);
             }
 
-            ContractProduct contractProduct = contract.Products.SingleOrDefault(p => p.ProductId == productId);
+            Guid contractProduct = contract.ContractProducts.SingleOrDefault(p => p == productId);
 
-            if (contractProduct == null){
+            if (contractProduct == Guid.Empty){
                 throw new TransactionValidationException($"Product Id [{productId}] not valid for Merchant [{merchant.MerchantName}]",
                                                          TransactionResponseCode.ProductNotValidForMerchant);
             }
@@ -250,18 +250,19 @@ public class TransactionValidationService : ITransactionValidationService{
         this.TokenResponse = await this.GetToken(cancellationToken);
 
         MerchantResponse merchant = await this.EstateClient.GetMerchant(this.TokenResponse.AccessToken, estateId, merchantId, cancellationToken);
-
+        
         return merchant;
     }
 
-    private async Task<List<ContractResponse>> GetMerchantContracts(Guid estateId,
+    private async Task<List<MerchantContractResponse>> GetMerchantContracts(Guid estateId,
                                                                     Guid merchantId,
-                                                                    CancellationToken cancellationToken){
+                                                                    CancellationToken cancellationToken)
+    {
         this.TokenResponse = await this.GetToken(cancellationToken);
 
-        List<ContractResponse> merchantContracts = await this.EstateClient.GetMerchantContracts(this.TokenResponse.AccessToken, estateId, merchantId, cancellationToken);
+        MerchantResponse merchant = await this.EstateClient.GetMerchant(this.TokenResponse.AccessToken, estateId, merchantId, cancellationToken);
 
-        return merchantContracts;
+        return merchant.Contracts;
     }
 
     [ExcludeFromCodeCoverage]

@@ -88,6 +88,21 @@ Background:
 	| Deposit1  | 110.00 | Today    | Test Merchant 3 | Test Estate 1 |
 	| Deposit1  | 100.00 | Today    | Test Merchant 4 | Test Estate 1 |
 
+	When I add the following contracts to the following merchants
+	| EstateName    | MerchantName    | ContractDescription       |
+	| Test Estate 1 | Test Merchant 1 | Safaricom Contract        |
+	| Test Estate 1 | Test Merchant 1 | Hospital 1 Contract       |
+	| Test Estate 1 | Test Merchant 1 | PataPawa PostPay Contract |
+	| Test Estate 1 | Test Merchant 2 | Safaricom Contract        |
+	| Test Estate 1 | Test Merchant 2 | Hospital 1 Contract       |
+	| Test Estate 1 | Test Merchant 2 | PataPawa PostPay Contract |
+	| Test Estate 1 | Test Merchant 3 | Safaricom Contract        |
+	| Test Estate 1 | Test Merchant 3 | Hospital 1 Contract       |
+	| Test Estate 1 | Test Merchant 3 | PataPawa PostPay Contract |
+	| Test Estate 1 | Test Merchant 4 | Safaricom Contract        |
+	| Test Estate 1 | Test Merchant 4 | Hospital 1 Contract       |
+	| Test Estate 1 | Test Merchant 4 | PataPawa PostPay Contract |
+
 	Given the following bills are available at the PataPawa PostPaid Host
 	| AccountNumber | AccountName    | DueDate | Amount |
 	| 12345678      | Test Account 1 | Today   | 100.00 |
