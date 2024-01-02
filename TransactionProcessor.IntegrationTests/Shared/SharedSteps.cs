@@ -131,8 +131,6 @@ namespace TransactionProcessor.IntegrationTests.Shared
             {
                 this.TestingContext.AddEstateDetails(verifiedEstate.EstateId, verifiedEstate.EstateName, verifiedEstate.EstateReference);
                 this.TestingContext.Logger.LogInformation($"Estate {verifiedEstate.EstateName} created with Id {verifiedEstate.EstateId}");
-
-
             }
         }
 

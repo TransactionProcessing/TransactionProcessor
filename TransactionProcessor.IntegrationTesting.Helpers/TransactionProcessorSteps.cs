@@ -38,7 +38,9 @@ public class TransactionProcessorSteps
                             MerchantBalanceResponse response = await this.TransactionProcessorClient.GetMerchantBalance(accessToken, estateId, merchantId, CancellationToken.None);
 
                             response.ShouldNotBeNull();
-                        });
+                        }, 
+                        TimeSpan.FromMinutes(2), 
+                        TimeSpan.FromSeconds(30));
     }
 
     public void ValidateTransactions(List<(SerialisedMessage, String, String, String)> transactions)
