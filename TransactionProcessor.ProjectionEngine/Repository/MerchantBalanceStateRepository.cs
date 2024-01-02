@@ -129,9 +129,7 @@ public class MerchantBalanceStateRepository : IProjectionStateRepository<Merchan
         if (entity == null) {
             return new MerchantBalanceState();
         }
-
-        Logger.LogWarning($"Entity Estate Id [{entity.EstateId}]");
-
+        
         // We have located a state record so we need to translate to the Model type
         return new MerchantBalanceState {
                                             Version = entity.Timestamp,
