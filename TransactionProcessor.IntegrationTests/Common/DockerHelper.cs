@@ -8,6 +8,7 @@
     using Client;
     using EstateManagement.Client;
     using EstateManagement.Database.Contexts;
+    using EventStore.Client;
     using global::Shared.IntegrationTesting;
     using SecurityService.Client;
     using Retry = IntegrationTests.Retry;
@@ -39,6 +40,8 @@
         public ITransactionProcessorClient TransactionProcessorClient;
 
         private readonly TestingContext TestingContext;
+
+        public EventStoreProjectionManagementClient ProjectionManagementClient;
 
         #endregion
 
@@ -86,6 +89,8 @@
             this.TransactionProcessorClient = new TransactionProcessorClient(TransactionProcessorBaseAddressResolver, httpClient);
             this.TestHostHttpClient= new HttpClient(clientHandler);
             this.TestHostHttpClient.BaseAddress = new Uri($"http://127.0.0.1:{this.TestHostServicePort}");
+
+            this.ProjectionManagementClient = new EventStoreProjectionManagementClient(ConfigureEventStoreSettings());
         }
 
         /// <summary>
@@ -113,6 +118,18 @@
                                     EstateManagementSqlServerContext context = new EstateManagementSqlServerContext(connectionString);
                                     await context.Database.EnsureDeletedAsync(CancellationToken.None);
                                 });
+            }
+        }
+
+        public override async Task CreateGenericSubscriptions(){
+            List<(String streamName, String groupName, Int32 maxRetries)> subscriptions = new List<(String streamName, String groupName, Int32 maxRetries)>
+                                                                                          {
+                                                                                              ($"$ce-MerchantBalanceArchive", "Transaction Processor - Ordered", 2),
+                                                                                              ($"$et-EstateCreatedEvent", "Transaction Processor - Ordered", 2)
+                                                                                          };
+            foreach ((String streamName, String groupName, Int32 maxRetries) subscription in subscriptions)
+            {
+                await this.CreatePersistentSubscription(subscription);
             }
         }
 

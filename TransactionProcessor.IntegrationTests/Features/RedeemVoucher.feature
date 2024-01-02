@@ -55,6 +55,10 @@ Background:
 	| Reference | Amount  | DateTime | MerchantName    | EstateName    |
 	| Deposit1  | 20.00 | Today    | Test Merchant 1 | Test Estate 1 |
 
+	When I add the following contracts to the following merchants
+	| EstateName    | MerchantName    | ContractDescription       |
+	| Test Estate 1 | Test Merchant 1 | Hospital 1 Contract       |
+
 	When I perform the following transactions
 	| DateTime | TransactionNumber | TransactionType | TransactionSource | MerchantName    | DeviceIdentifier | EstateName    | OperatorName     | TransactionAmount | CustomerAccountNumber | CustomerEmailAddress        | ContractDescription       | ProductName       | RecipientEmail       | RecipientMobile | MessageType   | AccountNumber | CustomerName     |
 	| Today    | 1                 | Sale            | 1                 | Test Merchant 1 | 123456780        | Test Estate 1 | Voucher          | 10.00             |                       |                             | Hospital 1 Contract       | 10 KES            | test@recipient.co.uk |                 |               |               |                  |

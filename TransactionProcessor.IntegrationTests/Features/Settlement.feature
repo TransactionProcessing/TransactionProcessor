@@ -74,6 +74,15 @@ Scenario: Get Pending Settlement
 	| Deposit1  | 110.00 | Today    | Test Merchant 2 | Test Estate 1 |
 	| Deposit1  | 120.00 | Today    | Test Merchant 3 | Test Estate 1 |
 
+	When I add the following contracts to the following merchants
+	| EstateName    | MerchantName    | ContractDescription       |
+	| Test Estate 1 | Test Merchant 1 | Safaricom Contract        |
+	| Test Estate 1 | Test Merchant 1 | Hospital 1 Contract       |
+	| Test Estate 1 | Test Merchant 2 | Safaricom Contract        |
+	| Test Estate 1 | Test Merchant 2 | Hospital 1 Contract       |
+	| Test Estate 1 | Test Merchant 3 | Safaricom Contract        |
+	| Test Estate 1 | Test Merchant 3 | Hospital 1 Contract       |
+
 	When I perform the following transactions
 	| DateTime   | TransactionNumber | TransactionType | TransactionSource | MerchantName    | DeviceIdentifier | EstateName    | OperatorName | TransactionAmount | CustomerAccountNumber | CustomerEmailAddress        | ContractDescription | ProductName    | RecipientEmail       | RecipientMobile |
 	| 2022-01-06 | 1                 | Sale            | 1                  | Test Merchant 1 | 123456780        | Test Estate 1 | Safaricom    | 100.00            | 123456789             |                             | Safaricom Contract  | Variable Topup |                      |                 |
@@ -123,6 +132,13 @@ Scenario: Process Settlement
 	| DeviceIdentifier | MerchantName    | EstateName    |
 	| 123456780        | Test Merchant 1 | Test Estate 1 |
 	| 123456781        | Test Merchant 2 | Test Estate 1 |
+
+	When I add the following contracts to the following merchants
+	| EstateName    | MerchantName    | ContractDescription       |
+	| Test Estate 1 | Test Merchant 1 | Safaricom Contract        |
+	| Test Estate 1 | Test Merchant 1 | Hospital 1 Contract       |
+	| Test Estate 1 | Test Merchant 2 | Safaricom Contract        |
+	| Test Estate 1 | Test Merchant 2 | Hospital 1 Contract       |
 
 	Given I make the following manual merchant deposits 
 	| Reference | Amount | DateTime | MerchantName    | EstateName    |

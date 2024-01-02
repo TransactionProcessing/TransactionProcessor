@@ -3,6 +3,7 @@
 using System.Diagnostics;
 using System.Text;
 using Dispatchers;
+using Newtonsoft.Json;
 using Projections;
 using Repository;
 using Shared.DomainDrivenDesign.EventSourcing;
@@ -27,12 +28,12 @@ public class ProjectionHandler<TState> : IProjectionHandler where TState : State
     public async Task Handle(IDomainEvent @event, CancellationToken cancellationToken)
     {
         if (@event == null) return;
-
+        
         if (this.Projection.ShouldIHandleEvent(@event) == false)
         {
             return;
         }
-        
+
         Stopwatch stopwatch = Stopwatch.StartNew();
         StringBuilder builder = new();
 
@@ -49,7 +50,7 @@ public class ProjectionHandler<TState> : IProjectionHandler where TState : State
         builder.Append($"{stopwatch.ElapsedMilliseconds}ms Handling {@event.EventType} Id [{@event.EventId}] for state {state.GetType().Name}|");
 
         TState newState = await this.Projection.Handle(state, @event, cancellationToken);
-
+        
         builder.Append($"{stopwatch.ElapsedMilliseconds}ms After Handle|");
 
         if (newState != state)
@@ -58,7 +59,7 @@ public class ProjectionHandler<TState> : IProjectionHandler where TState : State
                        {
                            ChangesApplied = true
                        };
-
+            
             // save state
             newState = await this.ProjectionStateRepository.Save(newState, @event, cancellationToken);
 
@@ -67,7 +68,7 @@ public class ProjectionHandler<TState> : IProjectionHandler where TState : State
 
             if (this.StateDispatcher != null)
             {
-                //Send to anyone else interested
+                // Send to anyone else interested
                 await this.StateDispatcher.Dispatch(newState, @event, cancellationToken);
 
                 builder.Append($"{stopwatch.ElapsedMilliseconds}ms After Dispatch|");
@@ -83,6 +84,7 @@ public class ProjectionHandler<TState> : IProjectionHandler where TState : State
 
         builder.Insert(0, $"Total time: {stopwatch.ElapsedMilliseconds}ms|");
         Logger.LogWarning(builder.ToString());
+        Logger.LogInformation($"Event Type {@event.EventType} Id [{@event.EventId}] for state {state.GetType().Name} took {stopwatch.ElapsedMilliseconds}ms to process");
 
     }
 }

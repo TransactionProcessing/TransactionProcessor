@@ -257,6 +257,17 @@ namespace TransactionProcessor.IntegrationTests.Features
  testRunner.Given("I make the following manual merchant deposits", ((string)(null)), table46, "Given ");
 #line hidden
             TechTalk.SpecFlow.Table table47 = new TechTalk.SpecFlow.Table(new string[] {
+                        "EstateName",
+                        "MerchantName",
+                        "ContractDescription"});
+            table47.AddRow(new string[] {
+                        "Test Estate 1",
+                        "Test Merchant 1",
+                        "Hospital 1 Contract"});
+#line 58
+ testRunner.When("I add the following contracts to the following merchants", ((string)(null)), table47, "When ");
+#line hidden
+            TechTalk.SpecFlow.Table table48 = new TechTalk.SpecFlow.Table(new string[] {
                         "DateTime",
                         "TransactionNumber",
                         "TransactionType",
@@ -275,7 +286,7 @@ namespace TransactionProcessor.IntegrationTests.Features
                         "MessageType",
                         "AccountNumber",
                         "CustomerName"});
-            table47.AddRow(new string[] {
+            table48.AddRow(new string[] {
                         "Today",
                         "1",
                         "Sale",
@@ -294,8 +305,8 @@ namespace TransactionProcessor.IntegrationTests.Features
                         "",
                         "",
                         ""});
-#line 58
- testRunner.When("I perform the following transactions", ((string)(null)), table47, "When ");
+#line 62
+ testRunner.When("I perform the following transactions", ((string)(null)), table48, "When ");
 #line hidden
         }
         
@@ -314,7 +325,7 @@ namespace TransactionProcessor.IntegrationTests.Features
                     "PRTest"};
             System.Collections.Specialized.OrderedDictionary argumentsOfScenario = new System.Collections.Specialized.OrderedDictionary();
             TechTalk.SpecFlow.ScenarioInfo scenarioInfo = new TechTalk.SpecFlow.ScenarioInfo("Redeem Vouchers", null, tagsOfScenario, argumentsOfScenario, featureTags);
-#line 64
+#line 68
 this.ScenarioInitialize(scenarioInfo);
 #line hidden
             if ((TagHelper.ContainsIgnoreTag(tagsOfScenario) || TagHelper.ContainsIgnoreTag(featureTags)))
@@ -327,7 +338,7 @@ this.ScenarioInitialize(scenarioInfo);
 #line 5
 this.FeatureBackground();
 #line hidden
-#line 65
+#line 69
  testRunner.When("I redeem the voucher for Estate \'Test Estate 1\' and Merchant \'Test Merchant 1\' tr" +
                         "ansaction number 1 the voucher balance will be 0", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "When ");
 #line hidden

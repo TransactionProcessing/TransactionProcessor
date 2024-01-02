@@ -88,6 +88,21 @@ Background:
 	| Deposit1  | 110.00 | Today    | Test Merchant 3 | Test Estate 1 |
 	| Deposit1  | 100.00 | Today    | Test Merchant 4 | Test Estate 1 |
 
+	When I add the following contracts to the following merchants
+	| EstateName    | MerchantName    | ContractDescription       |
+	| Test Estate 1 | Test Merchant 1 | Safaricom Contract        |
+	| Test Estate 1 | Test Merchant 1 | Hospital 1 Contract       |
+	| Test Estate 1 | Test Merchant 1 | PataPawa PostPay Contract |
+	| Test Estate 1 | Test Merchant 2 | Safaricom Contract        |
+	| Test Estate 1 | Test Merchant 2 | Hospital 1 Contract       |
+	| Test Estate 1 | Test Merchant 2 | PataPawa PostPay Contract |
+	| Test Estate 1 | Test Merchant 3 | Safaricom Contract        |
+	| Test Estate 1 | Test Merchant 3 | Hospital 1 Contract       |
+	| Test Estate 1 | Test Merchant 3 | PataPawa PostPay Contract |
+	| Test Estate 1 | Test Merchant 4 | Safaricom Contract        |
+	| Test Estate 1 | Test Merchant 4 | Hospital 1 Contract       |
+	| Test Estate 1 | Test Merchant 4 | PataPawa PostPay Contract |
+
 	Given the following bills are available at the PataPawa PostPaid Host
 	| AccountNumber | AccountName    | DueDate | Amount |
 	| 12345678      | Test Account 1 | Today   | 100.00 |
@@ -119,6 +134,34 @@ Scenario: Sale Transactions
 	| Test Estate 1 | Test Merchant 1 | 8                 | 0000         | SUCCESS         |
 	| Test Estate 1 | Test Merchant 1 | 9                 | 0000         | SUCCESS         |
 	
+	Then the following entries appear in the merchants balance history for estate 'Test Estate 1' and merchant 'Test Merchant 1'
+	| DateTime | Reference                 | EntryType | In     | Out    | ChangeAmount | Balance |
+	| Today    | Merchant Deposit          | C         | 240.00 | 0.00   | 240.00       | 230.00  |
+	| Today    | Transaction Completed     | D         | 0.00   | 110.00 | 110.00       | 130.00  |
+	| Today    | Transaction Completed     | D         | 0.00   | 90.00  | 90.00        | 30.00   |
+	| Today    | Transaction Completed     | D         | 0.00   | 10.00  | 10.00        | 20.00   |
+	| Today    | Transaction Completed     | D         | 0.00   | 20.00  | 20.00        | 20.00   |
+	| Today    | Transaction Fee Processed | C         | 0.00   | 0.55   | 0.55         | 20.00   |
+	| Today    | Transaction Fee Processed | C         | 0.00   | 0.45   | 0.45         | 20.00   |
+	| Today    | Transaction Fee Processed | C         | 0.00   | 0.01   | 0.10         | 20.00   |
+	| Today    | Opening Balance           | C         | 0.00   | 0.00   | 0.00         | 20.00   |
+
+	Then the following entries appear in the merchants balance history for estate 'Test Estate 1' and merchant 'Test Merchant 2'
+	| DateTime | Reference                 | EntryType | In     | Out    | ChangeAmount | Balance |
+	| Today    | Merchant Deposit          | C         | 110.00 | 0.00   | 110.00       | 230.00  |
+	| Today    | Transaction Completed     | D         | 0.00   | 100.00 | 100.00       | 130.00  |
+	| Today    | Transaction Completed     | D         | 0.00   | 10.00  | 10.00        | 30.00   |
+	| Today    | Transaction Fee Processed | C         | 0.00   | 0.50   | 0.50         | 20.00   |
+	| Today    | Opening Balance           | C         | 0.00   | 0.00   | 0.00         | 20.00   |
+
+	Then the following entries appear in the merchants balance history for estate 'Test Estate 1' and merchant 'Test Merchant 3'
+	| DateTime | Reference                 | EntryType | In     | Out    | ChangeAmount | Balance |
+	| Today    | Merchant Deposit          | C         | 110.00 | 0.00   | 110.00       | 230.00  |
+	| Today    | Transaction Completed     | D         | 0.00   | 100.00 | 100.00       | 130.00  |
+	| Today    | Transaction Completed     | D         | 0.00   | 10.00  | 10.00        | 30.00   |
+	| Today    | Transaction Fee Processed | C         | 0.00   | 0.85   | 0.50         | 20.00   |
+	| Today    | Opening Balance           | C         | 0.00   | 0.00   | 0.00         | 20.00   |
+
 	When I request the receipt is resent
 	| EstateName    | MerchantName    | TransactionNumber | 
 	| Test Estate 1 | Test Merchant 1 | 1                 | 
@@ -187,30 +230,4 @@ Scenario: Sale Transactions
 	| EstateName    | MerchantName    | TransactionNumber | ResponseCode | ResponseMessage                                                                                                    |
 	| Test Estate 1 | Test Merchant 4 | 17                 | 1009         | Merchant [Test Merchant 4] does not have enough credit available [100.00] to perform transaction amount [300.00] |
 
-	Then the following entries appear in the merchants balance history for estate 'Test Estate 1' and merchant 'Test Merchant 1'
-	| DateTime | Reference                 | EntryType | In     | Out    | ChangeAmount | Balance |
-	| Today    | Merchant Deposit          | C         | 240.00 | 0.00   | 240.00       | 230.00  |
-	| Today    | Transaction Completed     | D         | 0.00   | 110.00 | 110.00       | 130.00  |
-	| Today    | Transaction Completed     | D         | 0.00   | 90.00  | 90.00        | 30.00   |
-	| Today    | Transaction Completed     | D         | 0.00   | 10.00  | 10.00        | 20.00   |
-	| Today    | Transaction Completed     | D         | 0.00   | 20.00  | 20.00        | 20.00   |
-	| Today    | Transaction Fee Processed | C         | 0.00   | 0.55   | 0.55         | 20.00   |
-	| Today    | Transaction Fee Processed | C         | 0.00   | 0.45   | 0.45         | 20.00   |
-	| Today    | Transaction Fee Processed | C         | 0.00   | 0.01   | 0.10         | 20.00   |
-	| Today    | Opening Balance           | C         | 0.00   | 0.00   | 0.00         | 20.00   |
-
-	Then the following entries appear in the merchants balance history for estate 'Test Estate 1' and merchant 'Test Merchant 2'
-	| DateTime | Reference                 | EntryType | In     | Out    | ChangeAmount | Balance |
-	| Today    | Merchant Deposit          | C         | 110.00 | 0.00   | 110.00       | 230.00  |
-	| Today    | Transaction Completed     | D         | 0.00   | 100.00 | 100.00       | 130.00  |
-	| Today    | Transaction Completed     | D         | 0.00   | 10.00  | 10.00        | 30.00   |
-	| Today    | Transaction Fee Processed | C         | 0.00   | 0.50   | 0.50         | 20.00   |
-	| Today    | Opening Balance           | C         | 0.00   | 0.00   | 0.00         | 20.00   |
-
-	Then the following entries appear in the merchants balance history for estate 'Test Estate 1' and merchant 'Test Merchant 3'
-	| DateTime | Reference                 | EntryType | In     | Out    | ChangeAmount | Balance |
-	| Today    | Merchant Deposit          | C         | 110.00 | 0.00   | 110.00       | 230.00  |
-	| Today    | Transaction Completed     | D         | 0.00   | 100.00 | 100.00       | 130.00  |
-	| Today    | Transaction Completed     | D         | 0.00   | 10.00  | 10.00        | 30.00   |
-	| Today    | Transaction Fee Processed | C         | 0.00   | 0.85   | 0.50         | 20.00   |
-	| Today    | Opening Balance           | C         | 0.00   | 0.00   | 0.00         | 20.00   |
+	

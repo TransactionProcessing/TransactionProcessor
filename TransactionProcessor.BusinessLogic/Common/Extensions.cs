@@ -10,6 +10,10 @@ namespace TransactionProcessor.BusinessLogic.Common
     using System.Diagnostics.CodeAnalysis;
     using Shared.General;
     using Type = System.Type;
+    using System.Threading;
+    using SecurityService.Client;
+    using SecurityService.DataTransferObjects.Responses;
+    using Shared.Logger;
 
     public static class Helpers
     {
@@ -19,6 +23,32 @@ namespace TransactionProcessor.BusinessLogic.Common
         {
             Guid aggregateId = GuidCalculator.Combine(estateId,merchantId, settlementDate.ToGuid());
             return aggregateId;
+        }
+
+        public static async Task<TokenResponse> GetToken(TokenResponse currentToken, ISecurityServiceClient securityServiceClient, CancellationToken cancellationToken)
+        {
+            // Get a token to talk to the estate service
+            String clientId = ConfigurationReader.GetValue("AppSettings", "ClientId");
+            String clientSecret = ConfigurationReader.GetValue("AppSettings", "ClientSecret");
+            Logger.LogDebug($"Client Id is {clientId}");
+            Logger.LogDebug($"Client Secret is {clientSecret}");
+
+            if (currentToken == null)
+            {
+                TokenResponse token = await securityServiceClient.GetToken(clientId, clientSecret, cancellationToken);
+                Logger.LogDebug($"Token is {token.AccessToken}");
+                return token;
+            }
+
+            if (currentToken.Expires.UtcDateTime.Subtract(DateTime.UtcNow) < TimeSpan.FromMinutes(2))
+            {
+                Logger.LogDebug($"Token is about to expire at {currentToken.Expires.DateTime:O}");
+                TokenResponse token = await securityServiceClient.GetToken(clientId, clientSecret, cancellationToken);
+                Logger.LogDebug($"Token is {token.AccessToken}");
+                return token;
+            }
+
+            return currentToken;
         }
     }
     

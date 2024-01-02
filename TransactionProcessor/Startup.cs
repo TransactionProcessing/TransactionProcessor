@@ -6,6 +6,7 @@ namespace TransactionProcessor
     using System.IO;
     using System.Linq;
     using System.Net.Http;
+    using System.Reflection;
     using System.Runtime.InteropServices.ComTypes;
     using System.Threading;
     using Bootstrapper;
@@ -25,6 +26,7 @@ namespace TransactionProcessor
     using Microsoft.Extensions.DependencyInjection;
     using Microsoft.Extensions.Hosting;
     using Microsoft.Extensions.Logging;
+    using NLog;
     using NLog.Extensions.Logging;
     using NuGet.Protocol;
     using ProjectionEngine.EventHandling;
@@ -35,12 +37,13 @@ namespace TransactionProcessor
     using Shared.EventStore.EventHandling;
     using Shared.Extensions;
     using Shared.General;
-    using Shared.Logger;
     using Transaction.DomainEvents;
     using TransactionProcessor.BusinessLogic.OperatorInterfaces;
     using Voucher.DomainEvents;
     using EventHandler = ProjectionEngine.EventHandling.EventHandler;
     using ILogger = Microsoft.Extensions.Logging.ILogger;
+    using Logger = Shared.Logger.Logger;
+    using SetupBuilderExtensions = NLog.SetupBuilderExtensions;
 
     /// <summary>
     /// 
@@ -123,6 +126,10 @@ namespace TransactionProcessor
                 app.UseDeveloperExceptionPage();
             }
 
+            string directoryPath = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location);
+
+            LogManager.AddHiddenAssembly(Assembly.LoadFrom($"{directoryPath}\\Shared.dll"));
+            
             loggerFactory.ConfigureNLog(Path.Combine(env.ContentRootPath, nlogConfigFilename));
             loggerFactory.AddNLog();
 

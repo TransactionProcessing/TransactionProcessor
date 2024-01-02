@@ -6,6 +6,7 @@ using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using Common;
 using EstateManagement.Client;
 using EstateManagement.DataTransferObjects.Responses;
 using EventStore.Client;
@@ -173,8 +174,8 @@ public class TransactionValidationService : ITransactionValidationService{
                 throw new TransactionValidationException($"Contract Id [{contractId}] must be set for a sale transaction",
                                                          TransactionResponseCode.InvalidContractIdValue);
             }
-            
-            List<ContractResponse> merchantContracts = null;
+
+            List<MerchantContractResponse> merchantContracts = null;
             try{
                 merchantContracts = await this.GetMerchantContracts(estateId, merchantId, cancellationToken);
             }
@@ -191,7 +192,7 @@ public class TransactionValidationService : ITransactionValidationService{
             }
 
             // Check the contract and product id against the merchant
-            ContractResponse contract = merchantContracts.SingleOrDefault(c => c.ContractId == contractId);
+            MerchantContractResponse contract = merchantContracts.SingleOrDefault(c => c.ContractId == contractId);
 
             if (contract == null){
                 throw new TransactionValidationException($"Contract Id [{contractId}] not valid for Merchant [{merchant.MerchantName}]",
@@ -203,9 +204,9 @@ public class TransactionValidationService : ITransactionValidationService{
                                                          TransactionResponseCode.InvalidProductIdValue);
             }
 
-            ContractProduct contractProduct = contract.Products.SingleOrDefault(p => p.ProductId == productId);
+            Guid contractProduct = contract.ContractProducts.SingleOrDefault(p => p == productId);
 
-            if (contractProduct == null){
+            if (contractProduct == Guid.Empty){
                 throw new TransactionValidationException($"Product Id [{productId}] not valid for Merchant [{merchant.MerchantName}]",
                                                          TransactionResponseCode.ProductNotValidForMerchant);
             }
@@ -237,7 +238,7 @@ public class TransactionValidationService : ITransactionValidationService{
 
     private async Task<EstateResponse> GetEstate(Guid estateId,
                                                  CancellationToken cancellationToken){
-        this.TokenResponse = await this.GetToken(cancellationToken);
+        this.TokenResponse = await Helpers.GetToken(this.TokenResponse, this.SecurityServiceClient, cancellationToken);
 
         EstateResponse estate = await this.EstateClient.GetEstate(this.TokenResponse.AccessToken, estateId, cancellationToken);
 
@@ -247,47 +248,24 @@ public class TransactionValidationService : ITransactionValidationService{
     private async Task<MerchantResponse> GetMerchant(Guid estateId,
                                                      Guid merchantId,
                                                      CancellationToken cancellationToken){
-        this.TokenResponse = await this.GetToken(cancellationToken);
+        this.TokenResponse = await Helpers.GetToken(this.TokenResponse, this.SecurityServiceClient, cancellationToken);
 
         MerchantResponse merchant = await this.EstateClient.GetMerchant(this.TokenResponse.AccessToken, estateId, merchantId, cancellationToken);
-
+        
         return merchant;
     }
 
-    private async Task<List<ContractResponse>> GetMerchantContracts(Guid estateId,
+    private async Task<List<MerchantContractResponse>> GetMerchantContracts(Guid estateId,
                                                                     Guid merchantId,
-                                                                    CancellationToken cancellationToken){
-        this.TokenResponse = await this.GetToken(cancellationToken);
+                                                                    CancellationToken cancellationToken)
+    {
+        this.TokenResponse = await Helpers.GetToken(this.TokenResponse, this.SecurityServiceClient, cancellationToken);
 
-        List<ContractResponse> merchantContracts = await this.EstateClient.GetMerchantContracts(this.TokenResponse.AccessToken, estateId, merchantId, cancellationToken);
+        MerchantResponse merchant = await this.EstateClient.GetMerchant(this.TokenResponse.AccessToken, estateId, merchantId, cancellationToken);
 
-        return merchantContracts;
+        return merchant.Contracts;
     }
-
-    [ExcludeFromCodeCoverage]
-    private async Task<TokenResponse> GetToken(CancellationToken cancellationToken){
-        // Get a token to talk to the estate service
-        String clientId = ConfigurationReader.GetValue("AppSettings", "ClientId");
-        String clientSecret = ConfigurationReader.GetValue("AppSettings", "ClientSecret");
-        Logger.LogInformation($"Client Id is {clientId}");
-        Logger.LogInformation($"Client Secret is {clientSecret}");
-
-        if (this.TokenResponse == null){
-            TokenResponse token = await this.SecurityServiceClient.GetToken(clientId, clientSecret, cancellationToken);
-            Logger.LogInformation($"Token is {token.AccessToken}");
-            return token;
-        }
-
-        if (this.TokenResponse.Expires.UtcDateTime.Subtract(DateTime.UtcNow) < TimeSpan.FromMinutes(2)){
-            Logger.LogInformation($"Token is about to expire at {this.TokenResponse.Expires.DateTime:O}");
-            TokenResponse token = await this.SecurityServiceClient.GetToken(clientId, clientSecret, cancellationToken);
-            Logger.LogInformation($"Token is {token.AccessToken}");
-            return token;
-        }
-
-        return this.TokenResponse;
-    }
-
+    
     private async Task<(EstateResponse estate, MerchantResponse merchant)> ValidateMerchant(Guid estateId,
                                                                                             Guid merchantId,
                                                                                             CancellationToken cancellationToken){
