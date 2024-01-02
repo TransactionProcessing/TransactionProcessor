@@ -9,6 +9,7 @@ namespace TransactionProcessor.BusinessLogic.Services
     using System.Diagnostics.CodeAnalysis;
     using System.Runtime.InteropServices;
     using System.Threading;
+    using Common;
     using EstateManagement.Client;
     using EstateManagement.Database.Entities;
     using EstateManagement.DataTransferObjects.Responses;
@@ -48,36 +49,10 @@ namespace TransactionProcessor.BusinessLogic.Services
         
         private TokenResponse TokenResponse;
 
-        [ExcludeFromCodeCoverage]
-        private async Task<TokenResponse> GetToken(CancellationToken cancellationToken)
-        {
-            // Get a token to talk to the estate service
-            String clientId = ConfigurationReader.GetValue("AppSettings", "ClientId");
-            String clientSecret = ConfigurationReader.GetValue("AppSettings", "ClientSecret");
-            Logger.LogInformation($"Client Id is {clientId}");
-            Logger.LogInformation($"Client Secret is {clientSecret}");
-
-            if (this.TokenResponse == null)
-            {
-                TokenResponse token = await this.SecurityServiceClient.GetToken(clientId, clientSecret, cancellationToken);
-                Logger.LogInformation($"Token is {token.AccessToken}");
-                return token;
-            }
-
-            if (this.TokenResponse.Expires.UtcDateTime.Subtract(DateTime.UtcNow) < TimeSpan.FromMinutes(2))
-            {
-                Logger.LogInformation($"Token is about to expire at {this.TokenResponse.Expires.DateTime:O}");
-                TokenResponse token = await this.SecurityServiceClient.GetToken(clientId, clientSecret, cancellationToken);
-                Logger.LogInformation($"Token is {token.AccessToken}");
-                return token;
-            }
-
-            return this.TokenResponse;
-        }
 
         private async Task ValidateEstate(Guid estateId, CancellationToken cancellationToken)
         {
-            this.TokenResponse = await this.GetToken(cancellationToken);
+            this.TokenResponse = await Helpers.GetToken(this.TokenResponse, this.SecurityServiceClient, cancellationToken);
 
             EstateResponse estate = await this.EstateClient.GetEstate(this.TokenResponse.AccessToken, estateId, cancellationToken);
 
@@ -88,7 +63,7 @@ namespace TransactionProcessor.BusinessLogic.Services
 
         private async Task ValidateContractProduct(Guid estateId, Guid contractId, Guid productId, CancellationToken cancellationToken)
         {
-            this.TokenResponse = await this.GetToken(cancellationToken);
+            this.TokenResponse = await Helpers.GetToken(this.TokenResponse, this.SecurityServiceClient, cancellationToken);
 
             // TODO: validate the estate, contract and product
             ContractResponse contract = await this.EstateClient.GetContract(this.TokenResponse.AccessToken, estateId, contractId, cancellationToken);

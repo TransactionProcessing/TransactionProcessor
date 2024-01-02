@@ -7,6 +7,7 @@ using System.IO.Abstractions;
 using System.Reflection;
 using System.Threading;
 using System.Threading.Tasks;
+using Common;
 using EstateManagement.Database.Contexts;
 using EstateManagement.Database.Entities;
 using MessagingService.Client;
@@ -125,39 +126,7 @@ public class VoucherDomainEventHandler : IDomainEventHandler
     {
         await this.HandleSpecificDomainEvent((dynamic)domainEvent, cancellationToken);
     }
-
-    /// <summary>
-    /// Gets the token.
-    /// </summary>
-    /// <param name="cancellationToken">The cancellation token.</param>
-    /// <returns></returns>
-    [ExcludeFromCodeCoverage]
-    private async Task<TokenResponse> GetToken(CancellationToken cancellationToken)
-    {
-        // Get a token to talk to the estate service
-        String clientId = ConfigurationReader.GetValue("AppSettings", "ClientId");
-        String clientSecret = ConfigurationReader.GetValue("AppSettings", "ClientSecret");
-        Logger.LogInformation($"Client Id is {clientId}");
-        Logger.LogInformation($"Client Secret is {clientSecret}");
-
-        if (this.TokenResponse == null)
-        {
-            TokenResponse token = await this.SecurityServiceClient.GetToken(clientId, clientSecret, cancellationToken);
-            Logger.LogInformation($"Token is {token.AccessToken}");
-            return token;
-        }
-
-        if (this.TokenResponse.Expires.UtcDateTime.Subtract(DateTime.UtcNow) < TimeSpan.FromMinutes(2))
-        {
-            Logger.LogInformation($"Token is about to expire at {this.TokenResponse.Expires.DateTime:O}");
-            TokenResponse token = await this.SecurityServiceClient.GetToken(clientId, clientSecret, cancellationToken);
-            Logger.LogInformation($"Token is {token.AccessToken}");
-            return token;
-        }
-
-        return this.TokenResponse;
-    }
-
+    
     /// <summary>
     /// Gets the voucher operator.
     /// </summary>
@@ -186,7 +155,7 @@ public class VoucherDomainEventHandler : IDomainEventHandler
         // Get the voucher aggregate
         VoucherAggregate voucherAggregate = await this.VoucherAggregateRepository.GetLatestVersion(domainEvent.AggregateId, cancellationToken);
         Models.Voucher voucherModel = voucherAggregate.GetVoucher();
-        this.TokenResponse = await this.GetToken(cancellationToken);
+        this.TokenResponse = await Helpers.GetToken(this.TokenResponse, this.SecurityServiceClient, cancellationToken);
         if (string.IsNullOrEmpty(voucherModel.RecipientEmail) == false)
         {
             String message = await this.GetEmailVoucherMessage(voucherModel, cancellationToken);

@@ -33,6 +33,14 @@ public class TransactionProcessorSteps
         }
     }
 
+    public async Task WhenICreateTheFollowingMerchants(String accessToken, Guid estateId, Guid merchantId){
+        await Retry.For(async () => {
+                            MerchantBalanceResponse response = await this.TransactionProcessorClient.GetMerchantBalance(accessToken, estateId, merchantId, CancellationToken.None);
+
+                            response.ShouldNotBeNull();
+                        });
+    }
+
     public void ValidateTransactions(List<(SerialisedMessage, String, String, String)> transactions)
     {
         foreach ((SerialisedMessage, String, String, String) transaction in transactions)

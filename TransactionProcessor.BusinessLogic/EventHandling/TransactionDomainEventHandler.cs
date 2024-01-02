@@ -120,36 +120,7 @@
 
             return completeDateTime.Date;
         }
-
-        /// <summary>
-        /// Gets the token.
-        /// </summary>
-        /// <param name="cancellationToken">The cancellation token.</param>
-        /// <returns></returns>
-        [ExcludeFromCodeCoverage]
-        private async Task<TokenResponse> GetToken(CancellationToken cancellationToken) {
-            // Get a token to talk to the estate service
-            String clientId = ConfigurationReader.GetValue("AppSettings", "ClientId");
-            String clientSecret = ConfigurationReader.GetValue("AppSettings", "ClientSecret");
-            Logger.LogInformation($"Client Id is {clientId}");
-            Logger.LogInformation($"Client Secret is {clientSecret}");
-
-            if (this.TokenResponse == null) {
-                TokenResponse token = await this.SecurityServiceClient.GetToken(clientId, clientSecret, cancellationToken);
-                Logger.LogInformation($"Token is {token.AccessToken}");
-                return token;
-            }
-
-            if (this.TokenResponse.Expires.UtcDateTime.Subtract(DateTime.UtcNow) < TimeSpan.FromMinutes(2)) {
-                Logger.LogInformation($"Token is about to expire at {this.TokenResponse.Expires.DateTime:O}");
-                TokenResponse token = await this.SecurityServiceClient.GetToken(clientId, clientSecret, cancellationToken);
-                Logger.LogInformation($"Token is {token.AccessToken}");
-                return token;
-            }
-
-            return this.TokenResponse;
-        }
-
+        
         private Boolean RequireFeeCalculation(TransactionAggregate transactionAggregate){
             return transactionAggregate switch{
                 _ when transactionAggregate.IsAuthorised == false => false,
@@ -197,7 +168,7 @@
             if (RequireFeeCalculation(transactionAggregate) == false)
                 return;
 
-            this.TokenResponse = await this.GetToken(cancellationToken);
+            this.TokenResponse = await Helpers.GetToken(this.TokenResponse, this.SecurityServiceClient, cancellationToken);
 
             List<TransactionFeeToCalculate> feesForCalculation = await this.GetTransactionFeesForCalculation(transactionAggregate, cancellationToken);
 
@@ -345,7 +316,7 @@
         
         private async Task HandleSpecificDomainEvent(CustomerEmailReceiptRequestedEvent domainEvent,
                                                      CancellationToken cancellationToken) {
-            this.TokenResponse = await this.GetToken(cancellationToken);
+            this.TokenResponse = await Helpers.GetToken(this.TokenResponse, this.SecurityServiceClient, cancellationToken);
 
             TransactionAggregate transactionAggregate =
                 await this.TransactionAggregateRepository.GetLatestVersion(domainEvent.TransactionId, cancellationToken);
@@ -368,7 +339,7 @@
 
         private async Task HandleSpecificDomainEvent(CustomerEmailReceiptResendRequestedEvent domainEvent,
                                                      CancellationToken cancellationToken) {
-            this.TokenResponse = await this.GetToken(cancellationToken);
+            this.TokenResponse = await Helpers.GetToken(this.TokenResponse, this.SecurityServiceClient, cancellationToken);
 
             // Send the message
             await this.ResendEmailMessage(this.TokenResponse.AccessToken, domainEvent.EventId, domainEvent.EstateId, cancellationToken);

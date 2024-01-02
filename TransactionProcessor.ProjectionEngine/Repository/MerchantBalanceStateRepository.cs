@@ -5,6 +5,8 @@ using Microsoft.EntityFrameworkCore;
 using Shared.DomainDrivenDesign.EventSourcing;
 using State;
 using System.Diagnostics.CodeAnalysis;
+using Newtonsoft.Json;
+using Shared.Logger;
 using TransactionProcessor.ProjectionEngine.Database.Database;
 using TransactionProcessor.ProjectionEngine.Database.Database.Entities;
 using MerchantBalanceProjectionState = Database.Database.Entities.MerchantBalanceProjectionState;
@@ -58,6 +60,7 @@ public class MerchantBalanceStateRepository : IProjectionStateRepository<Merchan
     public async Task<MerchantBalanceState> Save(MerchantBalanceState state,
                                                  IDomainEvent domainEvent,
                                                  CancellationToken cancellationToken) {
+
         await using TransactionProcessorGenericContext context =
             await this.ContextFactory.GetContext(state.EstateId, MerchantBalanceStateRepository.ConnectionStringIdentifier, cancellationToken);
         // Note: we don't want to select the state again here....
@@ -126,6 +129,8 @@ public class MerchantBalanceStateRepository : IProjectionStateRepository<Merchan
         if (entity == null) {
             return new MerchantBalanceState();
         }
+
+        Logger.LogWarning($"Entity Estate Id [{entity.EstateId}]");
 
         // We have located a state record so we need to translate to the Model type
         return new MerchantBalanceState {
