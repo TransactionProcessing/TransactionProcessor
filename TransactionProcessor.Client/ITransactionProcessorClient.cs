@@ -34,7 +34,8 @@
         Task<MerchantBalanceResponse> GetMerchantBalance(String accessToken,
                                                          Guid estateId,
                                                          Guid merchantId,
-                                                         CancellationToken cancellationToken);
+                                                         CancellationToken cancellationToken,
+                                                         Boolean liveBalance = true);
 
         Task<List<MerchantBalanceChangedEntryResponse>> GetMerchantBalanceHistory(String accessToken,
                                                                                   Guid estateId,

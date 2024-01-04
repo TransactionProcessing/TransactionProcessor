@@ -189,8 +189,16 @@
         public async Task<MerchantBalanceResponse> GetMerchantBalance(String accessToken,
                                                                       Guid estateId,
                                                                       Guid merchantId,
-                                                                      CancellationToken cancellationToken) {
+                                                                      CancellationToken cancellationToken,
+                                                                      Boolean liveBalance = true){
+
+
             String requestUri = $"{this.BaseAddress}/api/estates/{estateId}/merchants/{merchantId}/balance";
+
+            if (liveBalance){
+                requestUri = $"{this.BaseAddress}/api/estates/{estateId}/merchants/{merchantId}/livebalance";
+            }
+                
             MerchantBalanceResponse response = null;
             try
             {
