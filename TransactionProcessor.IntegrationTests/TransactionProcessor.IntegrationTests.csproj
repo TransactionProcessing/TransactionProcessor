@@ -9,7 +9,7 @@
   <ItemGroup>
     <PackageReference Include="ClientProxyBase" Version="2023.12.2" />
     <PackageReference Include="Ductus.FluentDocker" Version="2.10.59" />
-    <PackageReference Include="EstateManagement.Client" Version="2023.11.2-build65" />
+    <PackageReference Include="EstateManagement.Client" Version="2023.12.2-build66" />
     <PackageReference Include="EstateManagement.IntegrationTesting.Helpers" Version="2023.11.2-build65" />
     <PackageReference Include="EventStoreProjections" Version="2023.12.2" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" Version="7.0.7" />
