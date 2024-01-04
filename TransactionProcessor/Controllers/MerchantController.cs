@@ -10,9 +10,11 @@ using Common;
 using DataTransferObjects;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Newtonsoft.Json;
 using ProjectionEngine.Models;
 using ProjectionEngine.Repository;
 using ProjectionEngine.State;
+using Shared.EventStore.EventStore;
 using Shared.Exceptions;
 using Shared.General;
 using Swashbuckle.AspNetCore.Annotations;
@@ -25,12 +27,16 @@ public class MerchantController : ControllerBase
 {
     private readonly IProjectionStateRepository<MerchantBalanceState> MerchantBalanceStateRepository;
 
+    private readonly IEventStoreContext EventStoreContext;
+
     private readonly ITransactionProcessorReadRepository TransactionProcessorReadRepository;
 
     public MerchantController(IProjectionStateRepository<MerchantBalanceState> merchantBalanceStateRepository,
-                              ITransactionProcessorReadRepository transactionProcessorReadRepository) {
+                              ITransactionProcessorReadRepository transactionProcessorReadRepository,
+                              IEventStoreContext eventStoreContext) {
         this.MerchantBalanceStateRepository = merchantBalanceStateRepository;
         this.TransactionProcessorReadRepository = transactionProcessorReadRepository;
+        this.EventStoreContext = eventStoreContext;
     }
 
     #region Others
@@ -110,12 +116,74 @@ public class MerchantController : ControllerBase
             throw new NotFoundException($"Merchant Balance details not found with estate Id {estateId} and merchant Id {merchantId}");
         }
 
-        MerchantBalanceResponse response= new MerchantBalanceResponse {
-                                                                          Balance = merchantBalance.Balance,
-                                                                          MerchantId = merchantId,
-                                                                          AvailableBalance = merchantBalance.AvailableBalance,
-                                                                          EstateId = estateId
-                                                                      };
+        MerchantBalanceResponse response = new MerchantBalanceResponse
+        {
+            Balance = merchantBalance.Balance,
+            MerchantId = merchantId,
+            AvailableBalance = merchantBalance.AvailableBalance,
+            EstateId = estateId
+        };
+
+        return this.Ok(response);
+    }
+
+    [HttpGet]
+    [Route("{merchantId}/livebalance")]
+    [SwaggerResponse(200, "OK", typeof(MerchantBalanceResponse))]
+    public async Task<IActionResult> GetMerchantBalanceLive([FromRoute] Guid estateId,
+                                                        [FromRoute] Guid merchantId,
+                                                        CancellationToken cancellationToken)
+    {
+        String estateRoleName = string.IsNullOrEmpty(Environment.GetEnvironmentVariable("EstateRoleName"))
+            ? "Estate"
+            : Environment.GetEnvironmentVariable("EstateRoleName");
+        String merchantRoleName = string.IsNullOrEmpty(Environment.GetEnvironmentVariable("MerchantRoleName"))
+            ? "Merchant"
+            : Environment.GetEnvironmentVariable("MerchantRoleName");
+
+        if (ClaimsHelper.IsUserRolesValid(this.User, new[] { estateRoleName, merchantRoleName }) == false)
+        {
+            return this.Forbid();
+        }
+
+        Claim estateIdClaim = null;
+        Claim merchantIdClaim = null;
+
+        // Determine the users role
+        if (this.User.IsInRole(estateRoleName))
+        {
+            // Estate user
+            // Get the Estate Id claim from the user
+            estateIdClaim = ClaimsHelper.GetUserClaim(this.User, "EstateId");
+        }
+
+        if (this.User.IsInRole(merchantRoleName))
+        {
+            // Get the merchant Id claim from the user
+            estateIdClaim = ClaimsHelper.GetUserClaim(this.User, "EstateId");
+            merchantIdClaim = ClaimsHelper.GetUserClaim(this.User, "MerchantId");
+        }
+
+        if (ClaimsHelper.ValidateRouteParameter(estateId, estateIdClaim) == false)
+        {
+            return this.Forbid();
+        }
+
+        if (ClaimsHelper.ValidateRouteParameter(merchantId, merchantIdClaim) == false)
+        {
+            return this.Forbid();
+        }
+
+        String state = await this.EventStoreContext.GetPartitionStateFromProjection("MerchantBalanceProjection", $"MerchantBalance-{merchantId:N}", cancellationToken);
+        MerchantBalanceProjectionState1 projectionState = JsonConvert.DeserializeObject<MerchantBalanceProjectionState1>(state);
+        
+        MerchantBalanceResponse response = new MerchantBalanceResponse
+        {
+            Balance = projectionState.merchant.balance,
+            MerchantId = merchantId,
+            AvailableBalance = projectionState.merchant.balance,
+            EstateId = estateId
+        };
 
         return this.Ok(response);
     }
