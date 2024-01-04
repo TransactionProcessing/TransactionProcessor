@@ -7,7 +7,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="EstateManagement.Client" Version="2023.11.2-build65" />
+    <PackageReference Include="EstateManagement.Client" Version="2023.12.2-build66" />
     <PackageReference Include="EstateManagement.IntegrationTesting.Helpers" Version="2023.11.1" />
   </ItemGroup>
 
