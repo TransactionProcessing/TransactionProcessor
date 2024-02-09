@@ -6,6 +6,7 @@
     using System.Threading;
     using System.Threading.Tasks;
     using Client;
+    using Ductus.FluentDocker.Builders;
     using EstateManagement.Client;
     using EstateManagement.Database.Contexts;
     using EventStore.Client;
@@ -59,13 +60,24 @@
         #endregion
 
         #region Methods
-        
+
+        public override ContainerBuilder SetupTransactionProcessorContainer(){
+
+            List<String> variables = new List<String>();
+            variables.Add($"OperatorConfiguration:PataPawaPrePay:Url=http://{this.TestHostContainerName}:{DockerPorts.TestHostPort}/api/patapawaprepay");
+
+            this.AdditionalVariables.Add(ContainerType.FileProcessor, variables);
+            //this.SetAdditionalVariables(ContainerType.FileProcessor, variables);
+
+            return base.SetupTransactionProcessorContainer();
+        }
+
         /// <summary>
         /// Starts the containers for scenario run.
         /// </summary>
         /// <param name="scenarioName">Name of the scenario.</param>
-        public override async Task StartContainersForScenarioRun(String scenarioName, DockerServices dockerServices)
-        {
+        public override async Task StartContainersForScenarioRun(String scenarioName, DockerServices dockerServices){
+            
             await base.StartContainersForScenarioRun(scenarioName, dockerServices);
             
             // Setup the base address resolvers

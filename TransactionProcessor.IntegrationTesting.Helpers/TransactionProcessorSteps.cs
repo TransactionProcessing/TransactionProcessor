@@ -139,7 +139,7 @@ public class TransactionProcessorSteps
                                 }
 
                             },
-                            TimeSpan.FromMinutes(3),
+                            TimeSpan.FromMinutes(4),
                             TimeSpan.FromSeconds(30));
         }
     }
@@ -151,6 +151,32 @@ public class TransactionProcessorSteps
             HttpRequestMessage httpRequestMessage = new HttpRequestMessage(HttpMethod.Post, "/api/developer/patapawapostpay/createbill");
 
             httpRequestMessage.Content = new StringContent(JsonConvert.SerializeObject(bill), Encoding.UTF8, "application/json");
+
+            HttpResponseMessage response = await this.TestHostHttpClient.SendAsync(httpRequestMessage);
+            response.StatusCode.ShouldBe(HttpStatusCode.OK);
+        }
+    }
+
+    public async Task GivenTheFollowingMetersAreAvailableAtThePataPawaPrePaidHost(List<SpecflowExtensions.PataPawaMeter> meters)
+    {
+        foreach (SpecflowExtensions.PataPawaMeter meter in meters)
+        {
+            HttpRequestMessage httpRequestMessage = new HttpRequestMessage(HttpMethod.Post, "/api/developer/patapawaprepay/createmeter");
+
+            httpRequestMessage.Content = new StringContent(JsonConvert.SerializeObject(meter), Encoding.UTF8, "application/json");
+
+            HttpResponseMessage response = await this.TestHostHttpClient.SendAsync(httpRequestMessage);
+            response.StatusCode.ShouldBe(HttpStatusCode.OK);
+        }
+    }
+
+    public async Task GivenTheFollowingUsersAreAvailableAtThePataPawaPrePaidHost(List<SpecflowExtensions.PataPawaUser> users)
+    {
+        foreach (SpecflowExtensions.PataPawaUser user in users)
+        {
+            HttpRequestMessage httpRequestMessage = new HttpRequestMessage(HttpMethod.Post, "/api/developer/patapawaprepay/createuser");
+
+            httpRequestMessage.Content = new StringContent(JsonConvert.SerializeObject(user), Encoding.UTF8, "application/json");
 
             HttpResponseMessage response = await this.TestHostHttpClient.SendAsync(httpRequestMessage);
             response.StatusCode.ShouldBe(HttpStatusCode.OK);

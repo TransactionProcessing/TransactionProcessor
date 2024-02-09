@@ -42,6 +42,13 @@
 
         public async Task<OperatorResponse> ProcessLogonMessage(String accessToken,
                                                                 CancellationToken cancellationToken) {
+
+            // Check if we need to do a logon with the operator
+            OperatorResponse operatorResponse = this.MemoryCache.Get<OperatorResponse>("PataPawaPostPayLogon");
+            if (operatorResponse != null){
+                return operatorResponse;
+            }
+
             IPataPawaPostPayService channel = this.ChannelResolver(this.ServiceClient, "PataPawaPostPay", this.Configuration.Url);
             login logonResponse = await channel.getLoginRequestAsync(this.Configuration.Username, this.Configuration.Password);
             if (logonResponse.status != 0) {
@@ -53,7 +60,7 @@
                 };
             }
 
-            OperatorResponse operatorResponse = new OperatorResponse {
+            operatorResponse = new OperatorResponse {
                                                                          IsSuccessful = true,
                                                                          ResponseCode = "0000",
                                                                          ResponseMessage = logonResponse.message,
