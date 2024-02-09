@@ -161,7 +161,7 @@ public class TransactionProcessorSteps
     }
 
     public async Task GivenTheFollowingMetersAreAvailableAtThePataPawaPrePaidHost(List<SpecflowExtensions.PataPawaMeter> meters){
-        await this.SendRequestToTestHost<SpecflowExtensions.PataPawaMeter>(meters, "/api/developer/patapawapostpay/createmeter");
+        await this.SendRequestToTestHost<SpecflowExtensions.PataPawaMeter>(meters, "/api/developer/patapawaprepay/createmeter");
     }
 
     public async Task GivenTheFollowingUsersAreAvailableAtThePataPawaPrePaidHost(List<SpecflowExtensions.PataPawaUser> users){
