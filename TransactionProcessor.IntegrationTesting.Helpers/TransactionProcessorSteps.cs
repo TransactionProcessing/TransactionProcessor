@@ -165,7 +165,7 @@ public class TransactionProcessorSteps
     }
 
     public async Task GivenTheFollowingUsersAreAvailableAtThePataPawaPrePaidHost(List<SpecflowExtensions.PataPawaUser> users){
-        await this.SendRequestToTestHost<SpecflowExtensions.PataPawaUser>(users, "//api/developer/patapawaprepay/createuser");
+        await this.SendRequestToTestHost<SpecflowExtensions.PataPawaUser>(users, "/api/developer/patapawaprepay/createuser");
     }
 
     public async Task<GetVoucherResponse> GetVoucherByTransactionNumber(String accessToken, EstateDetails estate, SaleTransactionResponse transactionResponse)
