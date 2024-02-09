@@ -1,5 +1,6 @@
 ﻿namespace TransactionProcessor.IntegrationTesting.Helpers;
 
+using System.Diagnostics.Metrics;
 using System.Net;
 using System.Text;
 using Client;
@@ -144,43 +145,27 @@ public class TransactionProcessorSteps
         }
     }
 
-    public async Task GivenTheFollowingBillsAreAvailableAtThePataPawaPostPaidHost(List<SpecflowExtensions.PataPawaBill> bills)
-    {
-        foreach (SpecflowExtensions.PataPawaBill bill in bills)
-        {
-            HttpRequestMessage httpRequestMessage = new HttpRequestMessage(HttpMethod.Post, "/api/developer/patapawapostpay/createbill");
+    public async Task SendRequestToTestHost<T>(List<T> objects, String url){
+        foreach (T o in objects){
+            HttpRequestMessage httpRequestMessage = new HttpRequestMessage(HttpMethod.Post, url);
 
-            httpRequestMessage.Content = new StringContent(JsonConvert.SerializeObject(bill), Encoding.UTF8, "application/json");
+            httpRequestMessage.Content = new StringContent(JsonConvert.SerializeObject(o), Encoding.UTF8, "application/json");
 
             HttpResponseMessage response = await this.TestHostHttpClient.SendAsync(httpRequestMessage);
             response.StatusCode.ShouldBe(HttpStatusCode.OK);
         }
     }
 
-    public async Task GivenTheFollowingMetersAreAvailableAtThePataPawaPrePaidHost(List<SpecflowExtensions.PataPawaMeter> meters)
-    {
-        foreach (SpecflowExtensions.PataPawaMeter meter in meters)
-        {
-            HttpRequestMessage httpRequestMessage = new HttpRequestMessage(HttpMethod.Post, "/api/developer/patapawaprepay/createmeter");
-
-            httpRequestMessage.Content = new StringContent(JsonConvert.SerializeObject(meter), Encoding.UTF8, "application/json");
-
-            HttpResponseMessage response = await this.TestHostHttpClient.SendAsync(httpRequestMessage);
-            response.StatusCode.ShouldBe(HttpStatusCode.OK);
-        }
+    public async Task GivenTheFollowingBillsAreAvailableAtThePataPawaPostPaidHost(List<SpecflowExtensions.PataPawaBill> bills){
+        await this.SendRequestToTestHost<SpecflowExtensions.PataPawaBill>(bills, "/api/developer/patapawapostpay/createbill");
     }
 
-    public async Task GivenTheFollowingUsersAreAvailableAtThePataPawaPrePaidHost(List<SpecflowExtensions.PataPawaUser> users)
-    {
-        foreach (SpecflowExtensions.PataPawaUser user in users)
-        {
-            HttpRequestMessage httpRequestMessage = new HttpRequestMessage(HttpMethod.Post, "/api/developer/patapawaprepay/createuser");
+    public async Task GivenTheFollowingMetersAreAvailableAtThePataPawaPrePaidHost(List<SpecflowExtensions.PataPawaMeter> meters){
+        await this.SendRequestToTestHost<SpecflowExtensions.PataPawaMeter>(meters, "/api/developer/patapawapostpay/createmeter");
+    }
 
-            httpRequestMessage.Content = new StringContent(JsonConvert.SerializeObject(user), Encoding.UTF8, "application/json");
-
-            HttpResponseMessage response = await this.TestHostHttpClient.SendAsync(httpRequestMessage);
-            response.StatusCode.ShouldBe(HttpStatusCode.OK);
-        }
+    public async Task GivenTheFollowingUsersAreAvailableAtThePataPawaPrePaidHost(List<SpecflowExtensions.PataPawaUser> users){
+        await this.SendRequestToTestHost<SpecflowExtensions.PataPawaUser>(users, "//api/developer/patapawaprepay/createuser");
     }
 
     public async Task<GetVoucherResponse> GetVoucherByTransactionNumber(String accessToken, EstateDetails estate, SaleTransactionResponse transactionResponse)
