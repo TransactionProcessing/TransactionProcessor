@@ -7,6 +7,7 @@ namespace TransactionProcessor
     using System.Linq;
     using System.Net.Http;
     using System.Threading;
+    using System.Threading.Tasks;
     using EventStore.Client;
     using Microsoft.AspNetCore.Builder;
     using Microsoft.CodeAnalysis.CSharp.Syntax;
@@ -14,6 +15,7 @@ namespace TransactionProcessor
     using Microsoft.Extensions.Caching.Memory;
     using Microsoft.Extensions.Configuration;
     using Microsoft.Extensions.DependencyInjection;
+    using Microsoft.Extensions.Hosting;
     using Newtonsoft.Json;
     using Shared.EventStore.EventHandling;
     using Shared.EventStore.Extensions;
@@ -89,16 +91,55 @@ namespace TransactionProcessor
                                                             subscriptionRepositoryResolver,
                                                             CancellationToken.None).Wait(CancellationToken.None);
 
-            if (Startup.AutoApiLogonOperators.Any()) {
-                foreach (String autoApiLogonOperator in Startup.AutoApiLogonOperators) {
-                    OperatorLogon(autoApiLogonOperator);
-                }
-            }
+            //if (Startup.AutoApiLogonOperators.Any()) {
+            //    foreach (String autoApiLogonOperator in Startup.AutoApiLogonOperators) {
+            //        OperatorLogon(autoApiLogonOperator);
+            //    }
+            //}
         }
         
+        //private static void OperatorLogon(String operatorId)
+        //{
+        //    try {
+        //        Logger.LogInformation($"About to do auto logon for operator Id [{operatorId}]");
+        //        Func<String, IOperatorProxy> resolver = Startup.ServiceProvider.GetService<Func<String, IOperatorProxy>>();
+        //        IOperatorProxy proxy = resolver(operatorId);
+
+        //        OperatorResponse logonResult = proxy.ProcessLogonMessage(null, CancellationToken.None).Result;
+        //        Logger.LogInformation($"Auto logon for operator Id [{operatorId}] status [{logonResult.IsSuccessful}]");
+        //    }
+        //    catch(Exception ex) {
+        //        Logger.LogWarning($"Auto logon for operator Id [{operatorId}] failed.");
+        //        Logger.LogWarning(ex.ToString());
+        //    }
+        //}
+    }
+
+    public class AutoLogonWorkerService : BackgroundService{
+        protected override async Task ExecuteAsync(CancellationToken stoppingToken){
+
+            while (stoppingToken.IsCancellationRequested == false){
+                
+                if (Startup.AutoApiLogonOperators.Any()){
+                    foreach (String autoApiLogonOperator in Startup.AutoApiLogonOperators){
+                        OperatorLogon(autoApiLogonOperator);
+                    }
+                }
+
+                //String fileProfilePollingWindowInSeconds = ConfigurationReader.GetValue("AppSettings", "FileProfilePollingWindowInSeconds");
+                //if (string.IsNullOrEmpty(fileProfilePollingWindowInSeconds)){
+                //    fileProfilePollingWindowInSeconds = "5";
+                //}
+                String fileProfilePollingWindowInSeconds ="5";
+                // Delay for configured seconds before polling for files again
+                await Task.Delay(TimeSpan.FromSeconds(int.Parse(fileProfilePollingWindowInSeconds)), stoppingToken);
+            }
+        }
+
         private static void OperatorLogon(String operatorId)
         {
-            try {
+            try
+            {
                 Logger.LogInformation($"About to do auto logon for operator Id [{operatorId}]");
                 Func<String, IOperatorProxy> resolver = Startup.ServiceProvider.GetService<Func<String, IOperatorProxy>>();
                 IOperatorProxy proxy = resolver(operatorId);
@@ -106,8 +147,10 @@ namespace TransactionProcessor
                 OperatorResponse logonResult = proxy.ProcessLogonMessage(null, CancellationToken.None).Result;
                 Logger.LogInformation($"Auto logon for operator Id [{operatorId}] status [{logonResult.IsSuccessful}]");
             }
-            catch(Exception ex) {
+            catch (Exception ex)
+            {
                 Logger.LogWarning($"Auto logon for operator Id [{operatorId}] failed.");
+                Logger.LogWarning(ex.ToString());
             }
         }
     }

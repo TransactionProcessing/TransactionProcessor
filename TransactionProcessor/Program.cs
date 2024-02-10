@@ -49,6 +49,15 @@ namespace TransactionProcessor
                                                      webBuilder.UseConfiguration(config);
                                                      webBuilder.UseKestrel();
                                                  });
+
+            hostBuilder.ConfigureServices(services =>
+                                          {
+                                              services.AddHostedService<AutoLogonWorkerService>(provider =>
+                                                                                                    {
+                                                                                                        AutoLogonWorkerService worker = new AutoLogonWorkerService();
+                                                                                                        return worker;
+                                                                                                    });
+                                          });
             return hostBuilder;
         }
     }

@@ -107,6 +107,19 @@ namespace TransactionProcessor.IntegrationTests.Shared
             await this.TransactionProcessorSteps.GivenTheFollowingBillsAreAvailableAtThePataPawaPostPaidHost(bills);
         }
 
+        [Given(@"the following users are available at the PataPawa PrePay Host")]
+        public async Task GivenTheFollowingUsersAreAvailableAtThePataPawaPrePayHost(Table table)
+        {
+            List<SpecflowExtensions.PataPawaUser> users = table.Rows.ToPataPawaUsers();
+            await this.TransactionProcessorSteps.GivenTheFollowingUsersAreAvailableAtThePataPawaPrePaidHost(users);
+        }
+
+        [Given(@"the following meters are available at the PataPawa PrePay Host")]
+        public async Task GivenTheFollowingMetersAreAvailableAtThePataPawaPrePayHost(Table table){
+            List<SpecflowExtensions.PataPawaMeter> meters = table.Rows.ToPataPawaMeters();
+            await this.TransactionProcessorSteps.GivenTheFollowingMetersAreAvailableAtThePataPawaPrePaidHost(meters);
+        }
+        
         [Given(@"I have created the following estates")]
         [When(@"I create the following estates")]
         public async Task WhenICreateTheFollowingEstates(Table table)

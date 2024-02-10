@@ -9,6 +9,7 @@
     using System.ServiceModel.Dispatcher;
     using BusinessLogic.OperatorInterfaces;
     using BusinessLogic.OperatorInterfaces.PataPawaPostPay;
+    using BusinessLogic.OperatorInterfaces.PataPawaPrePay;
     using BusinessLogic.OperatorInterfaces.SafaricomPinless;
     using BusinessLogic.OperatorInterfaces.VoucherManagement;
     using Common;
@@ -38,10 +39,12 @@
 
             this.ConfigureOperator<SafaricomConfiguration>("Safaricom", section);
             this.ConfigureOperator<PataPawaPostPaidConfiguration>("PataPawaPostPay", section);
+            this.ConfigureOperator<PataPawaPrePaidConfiguration>("PataPawaPrePay", section);
             this.AddSingleton(new PataPawaPostPayServiceClient(PataPawaPostPayServiceClient.EndpointConfiguration.BasicHttpBinding_IPataPawaPostPayService));
 
             this.For<IOperatorProxy>().Add<SafaricomPinlessProxy>().Named("Safaricom").Singleton();
             this.For<IOperatorProxy>().Add<PataPawaPostPayProxy>().Named("PataPawaPostPay").Singleton();
+            this.For<IOperatorProxy>().Add<PataPawaPrePayProxy>().Named("PataPawaPrePay").Singleton();
             this.For<IOperatorProxy>().Add<VoucherManagementProxy>().Named("Voucher").Singleton();
 
             this.AddTransient<Func<PataPawaPostPayServiceClient, String,String, IPataPawaPostPayService>>(context => (client,clientName,

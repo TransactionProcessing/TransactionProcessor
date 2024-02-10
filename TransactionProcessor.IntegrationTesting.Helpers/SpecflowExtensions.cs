@@ -87,6 +87,7 @@ public static class SpecflowExtensions
                 String messageType = SpecflowTableHelper.GetStringRowValue(tableRow, "MessageType");
                 String accountNumber = SpecflowTableHelper.GetStringRowValue(tableRow, "AccountNumber");
                 String customerName = SpecflowTableHelper.GetStringRowValue(tableRow, "CustomerName");
+                String meterNumber = SpecflowTableHelper.GetStringRowValue(tableRow, "MeterNumber");
 
                 Guid contractId = Guid.Empty;
                 Guid productId = Guid.Empty;
@@ -150,7 +151,8 @@ public static class SpecflowExtensions
                 saleTransactionRequest.AdditionalTransactionMetadata = operatorName switch
                 {
                     "Voucher" => SpecflowExtensions.BuildVoucherTransactionMetaData(recipientEmail, recipientMobile, transactionAmount),
-                    "PataPawa PostPay" => SpecflowExtensions.BuildPataPawaMetaData(messageType, accountNumber, recipientMobile, customerName, transactionAmount),
+                    "PataPawa PostPay" => SpecflowExtensions.BuildPataPawaPostPayMetaData(messageType, accountNumber, recipientMobile, customerName, transactionAmount),
+                    "PataPawa PrePay" => SpecflowExtensions.BuildPataPawaPrePayMetaData(messageType, meterNumber, customerName, transactionAmount),
                     _ => SpecflowExtensions.BuildMobileTopupMetaData(transactionAmount, customerAccountNumber)
                 };
                 serialisedData = JsonConvert.SerializeObject(saleTransactionRequest,
@@ -261,6 +263,36 @@ public static class SpecflowExtensions
         return bills;
     }
 
+    public static List<PataPawaUser> ToPataPawaUsers(this TableRows tableRows)
+    {
+        List<PataPawaUser> users = new List<PataPawaUser>();
+        foreach (TableRow tableRow in tableRows)
+        {
+            PataPawaUser user = new PataPawaUser
+            {
+                                     user_name = SpecflowTableHelper.GetStringRowValue(tableRow, "Username"),
+                                     password = SpecflowTableHelper.GetStringRowValue(tableRow, "Password")
+                                 };
+            users.Add(user);
+        }
+        return users;
+    }
+
+    public static List<PataPawaMeter> ToPataPawaMeters(this TableRows tableRows)
+    {
+        List<PataPawaMeter> meters = new List<PataPawaMeter>();
+        foreach (TableRow tableRow in tableRows)
+        {
+            PataPawaMeter meter = new PataPawaMeter
+            {
+                                     meter_number = SpecflowTableHelper.GetStringRowValue(tableRow, "MeterNumber"),
+                                     customer_name = SpecflowTableHelper.GetStringRowValue(tableRow, "CustomerName")
+                                 };
+            meters.Add(meter);
+        }
+        return meters;
+    }
+
     private static Dictionary<String, String> BuildMobileTopupMetaData(Decimal transactionAmount, String customerAccountNumber)
     {
         return new Dictionary<String, String>
@@ -270,7 +302,7 @@ public static class SpecflowExtensions
                };
     }
 
-    private static Dictionary<String, String> BuildPataPawaMetaData(String messageType, String accountNumber, String recipientMobile,
+    private static Dictionary<String, String> BuildPataPawaPostPayMetaData(String messageType, String accountNumber, String recipientMobile,
                                                                     String customerName, Decimal transactionAmount)
     {
         return messageType switch
@@ -281,12 +313,43 @@ public static class SpecflowExtensions
         };
     }
 
+    private static Dictionary<String, String> BuildPataPawaPrePayMetaData(String messageType, String meterNumber,
+                                                                           String customerName, Decimal transactionAmount)
+    {
+        return messageType switch
+        {
+            "meter" => SpecflowExtensions.BuildPataPawaMetaDataForMeter(meterNumber),
+            "vend" => SpecflowExtensions.BuildPataPawaMetaDataForVend(meterNumber,transactionAmount, customerName),
+            _ => throw new Exception($"Unsupported message type [{messageType}]")
+        };
+    }
+
     private static Dictionary<String, String> BuildPataPawaMetaDataForVerifyAccount(String accountNumber)
     {
         return new Dictionary<String, String>
                {
                    {"PataPawaPostPaidMessageType", "VerifyAccount"},
                    {"CustomerAccountNumber", accountNumber}
+               };
+    }
+
+    private static Dictionary<String, String> BuildPataPawaMetaDataForMeter(String meterNumber)
+    {
+        return new Dictionary<String, String>
+               {
+                   {"PataPawaPrePayMessageType", "meter"},
+                   {"MeterNumber", meterNumber}
+               };
+    }
+
+    private static Dictionary<String, String> BuildPataPawaMetaDataForVend(String meterNumber, Decimal transactionAmount, String customerName)
+    {
+        return new Dictionary<String, String>
+               {
+                   {"PataPawaPrePayMessageType", "vend"},
+                   {"MeterNumber", meterNumber},
+                   {"Amount", transactionAmount.ToString()},
+                   {"CustomerName", customerName}
                };
     }
 
@@ -435,6 +498,18 @@ public static class SpecflowExtensions
         public Decimal amount { get; set; }
         public String account_number { get; set; }
         public String account_name { get; set; }
+    }
+
+    public class PataPawaUser
+    {
+        public String user_name { get; set; }
+        public String password { get; set; }
+    }
+
+    public class PataPawaMeter
+    {
+        public String meter_number { get; set; }
+        public String customer_name { get; set; }
     }
 
     public class ProcessSettlementRequest
