@@ -138,5 +138,7 @@ jobs:
         dotnet nuget push Nugets/TransactionProcessor.Settlement.DomainEvents.${{ steps.get_version.outputs.VERSION }}.nupkg --api-key ${{ secrets.PRIVATEFEED_APIKEY }} --source ${{ secrets.PRIVATEFEED_URL }}
         dotnet pack "TransactionProcessor.Voucher.DomainEvents\TransactionProcessor.Voucher.DomainEvents.csproj" /p:PackageVersion=${{ steps.get_version.outputs.VERSION }} --output Nugets
         dotnet nuget push Nugets/TransactionProcessor.Voucher.DomainEvents.${{ steps.get_version.outputs.VERSION }}.nupkg --api-key ${{ secrets.PRIVATEFEED_APIKEY }} --source ${{ secrets.PRIVATEFEED_URL }}
+        dotnet pack "TransactionProcessor.Float.DomainEvents\TransactionProcessor.Voucher.DomainEvents.csproj" /p:PackageVersion=${{ steps.get_version.outputs.VERSION }} --output Nugets
+        dotnet nuget push Nugets/TransactionProcessor.Float.DomainEvents.${{ steps.get_version.outputs.VERSION }}.nupkg --api-key ${{ secrets.PRIVATEFEED_APIKEY }} --source ${{ secrets.PRIVATEFEED_URL }}       
         dotnet pack "TransactionProcessor.IntegrationTesting.Helpers\TransactionProcessor.IntegrationTesting.Helpers.csproj" /p:PackageVersion=${{ steps.get_version.outputs.VERSION }} --output Nugets
         dotnet nuget push Nugets/TransactionProcessor.IntegrationTesting.Helpers.${{ steps.get_version.outputs.VERSION }}.nupkg --api-key ${{ secrets.PRIVATEFEED_APIKEY }} --source ${{ secrets.PRIVATEFEED_URL }}
