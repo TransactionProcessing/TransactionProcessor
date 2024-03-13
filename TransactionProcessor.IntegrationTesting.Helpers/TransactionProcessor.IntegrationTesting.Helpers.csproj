@@ -7,8 +7,8 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="EstateManagement.Client" Version="2023.12.2-build66" />
-    <PackageReference Include="EstateManagement.IntegrationTesting.Helpers" Version="2023.11.1" />
+    <PackageReference Include="EstateManagement.Client" Version="2024.3.4-build74" />
+    <PackageReference Include="EstateManagement.IntegrationTesting.Helpers" Version="2024.3.4-build74" />
   </ItemGroup>
 
   <ItemGroup>
