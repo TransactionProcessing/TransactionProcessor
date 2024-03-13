@@ -20,7 +20,8 @@ namespace TransactionProcessor.BusinessLogic.Services
 
 
         private static readonly JsonSerialiser JsonSerialiser = new(() => new JsonSerializerSettings {
-                                                                                                         Formatting = Formatting.None
+                                                                                                         Formatting = Formatting.None,
+                                                                                                         TypeNameHandling = TypeNameHandling.None
                                                                                                      });
 
         private static readonly GenerateUniqueIdFromObject GenerateUniqueId =
