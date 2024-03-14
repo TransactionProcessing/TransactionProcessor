@@ -63,17 +63,24 @@
                                                                             });
 
             this.AddSingleton<Func<String, IDomainEventHandler>>(container => type => {
-                                                                                  return container.GetService<StateProjectionEventHandler<MerchantBalanceState>>();
+                                                                                  return type switch{
+                                                                                      "VoucherState" => container.GetService<StateProjectionEventHandler<VoucherState>>(),
+                                                                                      _ => container.GetService<StateProjectionEventHandler<MerchantBalanceState>>()
+                                                                                  };
                                                                               });
 
             this.AddSingleton<TransactionProcessor.ProjectionEngine.EventHandling.EventHandler>();
             this.AddSingleton<TransactionDomainEventHandler>();
             this.AddSingleton<VoucherDomainEventHandler>();
             this.AddSingleton<StateProjectionEventHandler<MerchantBalanceState>>();
+            this.AddSingleton<StateProjectionEventHandler<VoucherState>>();
 
             this.AddSingleton<ProjectionHandler<MerchantBalanceState>>();
+            this.AddSingleton<ProjectionHandler<VoucherState>>();
             this.AddSingleton<IProjection<MerchantBalanceState>, MerchantBalanceProjection>();
+            this.AddSingleton<IProjection<VoucherState>, VoucherProjection>();
             this.AddSingleton<IStateDispatcher<MerchantBalanceState>, MerchantBalanceStateDispatcher>();
+            this.AddSingleton<IStateDispatcher<VoucherState>, VoucherStateDispatcher>();
 
             this.For<IDomainEventHandlerResolver>().Use<DomainEventHandlerResolver>().Named("Main")
                 .Ctor<Dictionary<String, String[]>>().Is(eventHandlersConfiguration).Singleton();

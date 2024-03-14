@@ -19,6 +19,7 @@
   <ItemGroup>
     <ProjectReference Include="..\TransactionProcessor.ProjectionEngine.Database\TransactionProcessor.ProjectionEngine.Database.csproj" />
     <ProjectReference Include="..\TransactionProcessor.Transaction.DomainEvents\TransactionProcessor.Transaction.DomainEvents.csproj" />
+    <ProjectReference Include="..\TransactionProcessor.Voucher.DomainEvents\TransactionProcessor.Voucher.DomainEvents.csproj" />
   </ItemGroup>
 
   <ItemGroup>

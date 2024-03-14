@@ -39,7 +39,12 @@ public class TransactionProcessorSteps
                             MerchantBalanceResponse response = await this.TransactionProcessorClient.GetMerchantBalance(accessToken, estateId, merchantId, CancellationToken.None);
 
                             response.ShouldNotBeNull();
-                        }, 
+                            
+                            // Force a read model database hit
+                            MerchantBalanceResponse response2 = await this.TransactionProcessorClient.GetMerchantBalance(accessToken, estateId, merchantId, CancellationToken.None, liveBalance:false);
+
+                            response2.ShouldNotBeNull();
+        }, 
                         TimeSpan.FromMinutes(2), 
                         TimeSpan.FromSeconds(30));
     }

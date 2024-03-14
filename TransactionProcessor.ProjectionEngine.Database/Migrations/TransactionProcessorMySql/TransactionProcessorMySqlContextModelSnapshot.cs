@@ -3,14 +3,12 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
-using TransactionProcessor.ProjectionEngine.Database;
+using TransactionProcessor.ProjectionEngine.Database.Database;
 
 #nullable disable
 
 namespace TransactionProcessor.ProjectionEngine.Migrations.TransactionProcessorMySql
 {
-    using Database.Database;
-
     [DbContext(typeof(TransactionProcessorMySqlContext))]
     partial class TransactionProcessorMySqlContextModelSnapshot : ModelSnapshot
     {
@@ -18,10 +16,10 @@ namespace TransactionProcessor.ProjectionEngine.Migrations.TransactionProcessorM
         {
 #pragma warning disable 612, 618
             modelBuilder
-                .HasAnnotation("ProductVersion", "7.0.0")
+                .HasAnnotation("ProductVersion", "7.0.7")
                 .HasAnnotation("Relational:MaxIdentifierLength", 64);
 
-            modelBuilder.Entity("TransactionProcessor.ProjectionEngine.Database.Entities.Event", b =>
+            modelBuilder.Entity("TransactionProcessor.ProjectionEngine.Database.Database.Entities.Event", b =>
                 {
                     b.Property<Guid>("EventId")
                         .HasColumnType("char(36)");
@@ -38,7 +36,7 @@ namespace TransactionProcessor.ProjectionEngine.Migrations.TransactionProcessorM
                     b.ToTable("Events");
                 });
 
-            modelBuilder.Entity("TransactionProcessor.ProjectionEngine.Database.Entities.MerchantBalanceChangedEntry", b =>
+            modelBuilder.Entity("TransactionProcessor.ProjectionEngine.Database.Database.Entities.MerchantBalanceChangedEntry", b =>
                 {
                     b.Property<Guid>("AggregateId")
                         .HasColumnType("char(36)");
@@ -74,7 +72,7 @@ namespace TransactionProcessor.ProjectionEngine.Migrations.TransactionProcessorM
                     b.ToTable("MerchantBalanceChangedEntry");
                 });
 
-            modelBuilder.Entity("TransactionProcessor.ProjectionEngine.Database.Entities.MerchantBalanceProjectionState", b =>
+            modelBuilder.Entity("TransactionProcessor.ProjectionEngine.Database.Database.Entities.MerchantBalanceProjectionState", b =>
                 {
                     b.Property<Guid>("EstateId")
                         .HasColumnType("char(36)");
@@ -147,7 +145,37 @@ namespace TransactionProcessor.ProjectionEngine.Migrations.TransactionProcessorM
                     b.ToTable("MerchantBalanceProjectionState");
                 });
 
-            modelBuilder.Entity("TransactionProcessor.ProjectionEngine.Database.ViewEntities.MerchantBalanceHistoryViewEntry", b =>
+            modelBuilder.Entity("TransactionProcessor.ProjectionEngine.Database.Database.Entities.VoucherProjectionState", b =>
+                {
+                    b.Property<Guid>("VoucherId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("char(36)");
+
+                    b.Property<string>("Barcode")
+                        .IsRequired()
+                        .HasColumnType("longtext");
+
+                    b.Property<Guid>("EstateId")
+                        .HasColumnType("char(36)");
+
+                    b.Property<DateTime>("Timestamp")
+                        .IsConcurrencyToken()
+                        .ValueGeneratedOnAddOrUpdate()
+                        .HasColumnType("timestamp(6)");
+
+                    b.Property<Guid>("TransactionId")
+                        .HasColumnType("char(36)");
+
+                    b.Property<string>("VoucherCode")
+                        .IsRequired()
+                        .HasColumnType("longtext");
+
+                    b.HasKey("VoucherId");
+
+                    b.ToTable("VoucherProjectionState");
+                });
+
+            modelBuilder.Entity("TransactionProcessor.ProjectionEngine.Database.Database.ViewEntities.MerchantBalanceHistoryViewEntry", b =>
                 {
                     b.Property<decimal>("Balance")
                         .HasColumnType("decimal(65,30)");
