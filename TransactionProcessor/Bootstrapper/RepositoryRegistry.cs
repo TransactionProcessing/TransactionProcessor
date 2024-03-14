@@ -104,6 +104,7 @@
 
 
             this.AddSingleton<IProjectionStateRepository<MerchantBalanceState>, MerchantBalanceStateRepository>();
+            this.AddSingleton<IProjectionStateRepository<VoucherState>, VoucherStateRepository>();
             this.AddSingleton<ITransactionProcessorReadRepository, TransactionProcessorReadRepository>();
             this.AddSingleton<IProjection<MerchantBalanceState>, MerchantBalanceProjection>();
 

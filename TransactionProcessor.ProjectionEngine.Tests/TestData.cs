@@ -2,6 +2,7 @@ namespace TransactionProcessor.ProjectionEngine.Tests
 {
     using EstateManagement.Merchant.DomainEvents;
     using Transaction.DomainEvents;
+    using Voucher.DomainEvents;
 
     public class TestData{
         public static Guid MerchantId = Guid.Parse("1FDEF549-4BDA-4DA3-823B-79684CD93F88");
@@ -175,5 +176,40 @@ namespace TransactionProcessor.ProjectionEngine.Tests
                 ["AppSettings:SecurityService"] = "http://127.0.0.1",
                 ["ConnectionStrings:TransactionProcessorReadModel"] = "TransactionProcessorReadModel"
             };
+
+        public static Guid VoucherId = Guid.Parse("31642A02-5F06-47DF-A4D3-6079999292E1");
+
+        public static DateTime GeneratedDateTime = new DateTime(2024, 3, 13);
+        public static DateTime IssuedDateTime = new DateTime(2024, 3, 13);
+        public static DateTime RedeemedDateTime = new DateTime(2024, 3, 16);
+        public static DateTime ExpiryDateTime = new DateTime(2024, 4, 13);
+
+        public static String OperatorIdentifier = "Operator 1";
+
+        public static Decimal VoucherValue = 10.00m;
+
+        public static String VoucherCode = "12345678";
+
+        public static String Message = "Voucher Message";
+        public static String Barcode = "1111111";
+        public static String RecipientEmail = "testrecipient@email.com";
+        public static String RecipientMobile = "07777777775";
+
+        public static VoucherGeneratedEvent VoucherGeneratedEvent =>
+            new VoucherGeneratedEvent(TestData.VoucherId,
+                                      TestData.EstateId,
+                                      TestData.TransactionId,
+                                      TestData.GeneratedDateTime,
+                                      TestData.OperatorIdentifier,
+                                      TestData.VoucherValue,
+                                      TestData.VoucherCode,
+                                      TestData.ExpiryDateTime,
+                                      TestData.Message);
+
+        public static BarcodeAddedEvent BarcodeAddedEvent => new BarcodeAddedEvent(TestData.VoucherId, TestData.EstateId, TestData.Barcode);
+
+        public static VoucherIssuedEvent VoucherIssuedEvent => new VoucherIssuedEvent(TestData.VoucherId,TestData.EstateId, TestData.IssuedDateTime, TestData.RecipientEmail, TestData.RecipientMobile);
+
+        public static VoucherFullyRedeemedEvent VoucherFullyRedeemedEvent => new VoucherFullyRedeemedEvent(TestData.VoucherId, TestData.EstateId, TestData.RedeemedDateTime);
     }
 }
