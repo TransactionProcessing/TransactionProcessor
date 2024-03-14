@@ -136,6 +136,7 @@
         public override async Task CreateGenericSubscriptions(){
             List<(String streamName, String groupName, Int32 maxRetries)> subscriptions = new List<(String streamName, String groupName, Int32 maxRetries)>
                                                                                           {
+                                                                                              ($"$ce-VoucherAggregate", "Transaction Processor - Ordered", 2),
                                                                                               ($"$ce-MerchantBalanceArchive", "Transaction Processor - Ordered", 2),
                                                                                               ($"$et-EstateCreatedEvent", "Transaction Processor - Ordered", 2)
                                                                                           };
