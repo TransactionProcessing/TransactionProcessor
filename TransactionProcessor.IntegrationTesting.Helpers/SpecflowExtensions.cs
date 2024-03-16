@@ -633,7 +633,7 @@ public static class ReqnrollExtensions{
 
             String estateName = ReqnrollTableHelper.GetStringRowValue(tableRow, "EstateName");
 
-            EstateDetails estateDetails = SpecflowExtensions.GetEstateDetails(estateDetailsList, estateName);
+            EstateDetails estateDetails = GetEstateDetails(estateDetailsList, estateName);
 
             String merchantName = ReqnrollTableHelper.GetStringRowValue(tableRow, "MerchantName");
             Guid merchantId = estateDetails.GetMerchantId(merchantName);
@@ -722,10 +722,10 @@ public static class ReqnrollExtensions{
                                                                                           };
 
                 saleTransactionRequest.AdditionalTransactionMetadata = operatorName switch{
-                    "Voucher" => SpecflowExtensions.BuildVoucherTransactionMetaData(recipientEmail, recipientMobile, transactionAmount),
-                    "PataPawa PostPay" => SpecflowExtensions.BuildPataPawaPostPayMetaData(messageType, accountNumber, recipientMobile, customerName, transactionAmount),
-                    "PataPawa PrePay" => SpecflowExtensions.BuildPataPawaPrePayMetaData(messageType, meterNumber, customerName, transactionAmount),
-                    _ => SpecflowExtensions.BuildMobileTopupMetaData(transactionAmount, customerAccountNumber)
+                    "Voucher" => BuildVoucherTransactionMetaData(recipientEmail, recipientMobile, transactionAmount),
+                    "PataPawa PostPay" => BuildPataPawaPostPayMetaData(messageType, accountNumber, recipientMobile, customerName, transactionAmount),
+                    "PataPawa PrePay" => BuildPataPawaPrePayMetaData(messageType, meterNumber, customerName, transactionAmount),
+                    _ => BuildMobileTopupMetaData(transactionAmount, customerAccountNumber)
                 };
                 serialisedData = JsonConvert.SerializeObject(saleTransactionRequest,
                                                              new JsonSerializerSettings{
@@ -804,5 +804,100 @@ public static class ReqnrollExtensions{
         }
 
         return estateDetails;
+    }
+
+    private static Dictionary<String, String> BuildMobileTopupMetaData(Decimal transactionAmount, String customerAccountNumber)
+    {
+        return new Dictionary<String, String>
+               {
+                   {"Amount", transactionAmount.ToString()},
+                   {"CustomerAccountNumber", customerAccountNumber}
+               };
+    }
+
+    private static Dictionary<String, String> BuildPataPawaPostPayMetaData(String messageType, String accountNumber, String recipientMobile,
+                                                                    String customerName, Decimal transactionAmount)
+    {
+        return messageType switch
+        {
+            "VerifyAccount" => BuildPataPawaMetaDataForVerifyAccount(accountNumber),
+            "ProcessBill" => BuildPataPawaMetaDataForProcessBill(accountNumber, recipientMobile, customerName, transactionAmount),
+            _ => throw new Exception($"Unsupported message type [{messageType}]")
+        };
+    }
+
+    private static Dictionary<String, String> BuildPataPawaPrePayMetaData(String messageType, String meterNumber,
+                                                                           String customerName, Decimal transactionAmount)
+    {
+        return messageType switch
+        {
+            "meter" => BuildPataPawaMetaDataForMeter(meterNumber),
+            "vend" => BuildPataPawaMetaDataForVend(meterNumber, transactionAmount, customerName),
+            _ => throw new Exception($"Unsupported message type [{messageType}]")
+        };
+    }
+
+    private static Dictionary<String, String> BuildPataPawaMetaDataForVerifyAccount(String accountNumber)
+    {
+        return new Dictionary<String, String>
+               {
+                   {"PataPawaPostPaidMessageType", "VerifyAccount"},
+                   {"CustomerAccountNumber", accountNumber}
+               };
+    }
+
+    private static Dictionary<String, String> BuildPataPawaMetaDataForMeter(String meterNumber)
+    {
+        return new Dictionary<String, String>
+               {
+                   {"PataPawaPrePayMessageType", "meter"},
+                   {"MeterNumber", meterNumber}
+               };
+    }
+
+    private static Dictionary<String, String> BuildPataPawaMetaDataForVend(String meterNumber, Decimal transactionAmount, String customerName)
+    {
+        return new Dictionary<String, String>
+               {
+                   {"PataPawaPrePayMessageType", "vend"},
+                   {"MeterNumber", meterNumber},
+                   {"Amount", transactionAmount.ToString()},
+                   {"CustomerName", customerName}
+               };
+    }
+
+    private static Dictionary<String, String> BuildVoucherTransactionMetaData(String recipientEmail,
+                                                                              String recipientMobile,
+                                                                              Decimal transactionAmount)
+    {
+        Dictionary<String, String> additionalTransactionMetadata = new Dictionary<String, String>{
+                                                                                                     { "Amount", transactionAmount.ToString() },
+                                                                                                 };
+
+        if (String.IsNullOrEmpty(recipientEmail) == false)
+        {
+            additionalTransactionMetadata.Add("RecipientEmail", recipientEmail);
+        }
+
+        if (String.IsNullOrEmpty(recipientMobile) == false)
+        {
+            additionalTransactionMetadata.Add("RecipientMobile", recipientMobile);
+        }
+
+        return additionalTransactionMetadata;
+    }
+    private static Dictionary<String, String> BuildPataPawaMetaDataForProcessBill(String accountNumber,
+                                                                                  String recipientMobile,
+                                                                                  String customerName,
+                                                                                  Decimal transactionAmount)
+    {
+        return new Dictionary<String, String>
+               {
+                   {"PataPawaPostPaidMessageType", "ProcessBill"},
+                   {"Amount", transactionAmount.ToString()},
+                   {"CustomerAccountNumber", accountNumber},
+                   {"MobileNumber", recipientMobile},
+                   {"CustomerName", customerName},
+               };
     }
 }
