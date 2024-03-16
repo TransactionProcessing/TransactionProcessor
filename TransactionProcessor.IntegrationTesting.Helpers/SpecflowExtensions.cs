@@ -4,12 +4,216 @@ using DataTransferObjects;
 using EstateManagement.DataTransferObjects.Responses;
 using EstateManagement.IntegrationTesting.Helpers;
 using Newtonsoft.Json;
+using Reqnroll;
 using Shared.IntegrationTesting;
 using Shouldly;
 using TechTalk.SpecFlow;
 
 public static class SpecflowExtensions
 {
+    public static List<(EstateDetails, Guid, DateTime, Int32)> ToPendingSettlementRequests(this DataTableRows tableRows, List<EstateDetails> estateDetailsList)
+    {
+        List<(EstateDetails, Guid, DateTime, Int32)> results = new List<(EstateDetails, Guid, DateTime, Int32)>();
+        foreach (DataTableRow tableRow in tableRows)
+        {
+            // Get the merchant name
+            String estateName = ReqnrollTableHelper.GetStringRowValue(tableRow, "EstateName");
+            EstateDetails estateDetails = SpecflowExtensions.GetEstateDetails(estateDetailsList, estateName);
+
+            Guid merchantId = estateDetails.GetMerchantId(ReqnrollTableHelper.GetStringRowValue(tableRow, "MerchantName"));
+            String settlementDateString = ReqnrollTableHelper.GetStringRowValue(tableRow, "SettlementDate");
+            Int32 numberOfFees = ReqnrollTableHelper.GetIntValue(tableRow, "NumberOfFees");
+            DateTime settlementDate = ReqnrollTableHelper.GetDateForDateString(settlementDateString, DateTime.UtcNow.Date);
+
+            results.Add((estateDetails, merchantId, settlementDate, numberOfFees));
+        }
+
+        return results;
+    }
+
+    public static List<(EstateDetails, Guid, String, SerialisedMessage)> ToSerialisedMessages(this DataTableRows tableRows, List<EstateDetails> estateDetailsList)
+    {
+        List<(EstateDetails, Guid, String, SerialisedMessage)> messages = new List<(EstateDetails, Guid, String, SerialisedMessage)>();
+        foreach (DataTableRow tableRow in tableRows)
+        {
+            String transactionType = ReqnrollTableHelper.GetStringRowValue(tableRow, "TransactionType");
+            String dateString = ReqnrollTableHelper.GetStringRowValue(tableRow, "DateTime");
+            DateTime transactionDateTime = ReqnrollTableHelper.GetDateForDateString(dateString, DateTime.UtcNow);
+            String transactionNumber = ReqnrollTableHelper.GetStringRowValue(tableRow, "TransactionNumber");
+            String deviceIdentifier = ReqnrollTableHelper.GetStringRowValue(tableRow, "DeviceIdentifier");
+
+            String estateName = ReqnrollTableHelper.GetStringRowValue(tableRow, "EstateName");
+
+            EstateDetails estateDetails = SpecflowExtensions.GetEstateDetails(estateDetailsList, estateName);
+
+            String merchantName = ReqnrollTableHelper.GetStringRowValue(tableRow, "MerchantName");
+            Guid merchantId = estateDetails.GetMerchantId(merchantName);
+
+            String serialisedData = null;
+            if (transactionType == "Logon")
+            {
+                LogonTransactionRequest logonTransactionRequest = new LogonTransactionRequest
+                {
+                    MerchantId = merchantId,
+                    EstateId = estateDetails.EstateId,
+                    TransactionDateTime = transactionDateTime,
+                    TransactionNumber = transactionNumber,
+                    DeviceIdentifier = deviceIdentifier,
+                    TransactionType = transactionType
+                };
+                serialisedData = JsonConvert.SerializeObject(logonTransactionRequest,
+                                                             new JsonSerializerSettings
+                                                             {
+                                                                 TypeNameHandling = TypeNameHandling.All
+                                                             });
+
+            }
+
+            if (transactionType == "Sale")
+            {
+                // Get specific sale fields
+                String operatorName = ReqnrollTableHelper.GetStringRowValue(tableRow, "OperatorName");
+                Decimal transactionAmount = ReqnrollTableHelper.GetDecimalValue(tableRow, "TransactionAmount");
+                String customerAccountNumber = ReqnrollTableHelper.GetStringRowValue(tableRow, "CustomerAccountNumber");
+                String customerEmailAddress = ReqnrollTableHelper.GetStringRowValue(tableRow, "CustomerEmailAddress");
+                String contractDescription = ReqnrollTableHelper.GetStringRowValue(tableRow, "ContractDescription");
+                String productName = ReqnrollTableHelper.GetStringRowValue(tableRow, "ProductName");
+                Int32 transactionSource = ReqnrollTableHelper.GetIntValue(tableRow, "TransactionSource");
+                String recipientEmail = ReqnrollTableHelper.GetStringRowValue(tableRow, "RecipientEmail");
+                String recipientMobile = ReqnrollTableHelper.GetStringRowValue(tableRow, "RecipientMobile");
+                String messageType = ReqnrollTableHelper.GetStringRowValue(tableRow, "MessageType");
+                String accountNumber = ReqnrollTableHelper.GetStringRowValue(tableRow, "AccountNumber");
+                String customerName = ReqnrollTableHelper.GetStringRowValue(tableRow, "CustomerName");
+                String meterNumber = ReqnrollTableHelper.GetStringRowValue(tableRow, "MeterNumber");
+
+                Guid contractId = Guid.Empty;
+                Guid productId = Guid.Empty;
+                EstateManagement.IntegrationTesting.Helpers.Contract contract = null;
+                EstateManagement.IntegrationTesting.Helpers.Product product = null;
+                try
+                {
+                    contract = estateDetails.GetContract(contractDescription);
+                }
+                catch (Exception ex)
+                {
+
+                }
+
+                if (contract != null)
+                {
+                    contractId = contract.ContractId;
+                    product = contract.GetProduct(productName);
+                    if (product != null)
+                    {
+                        productId = product.ProductId;
+                    }
+                    else
+                    {
+                        productId = productName switch
+                        {
+                            "EmptyProduct" => Guid.Empty,
+                            "InvalidProduct" => Guid.Parse("934d8164-f36a-448e-b27b-4d671d41d180"),
+                            _ => Guid.NewGuid(),
+                        };
+                    }
+                }
+                else
+                {
+                    // This is a nasty hack atm...
+                    contractId = contractDescription switch
+                    {
+                        "EmptyContract" => Guid.Empty,
+                        "InvalidContract" => Guid.Parse("934d8164-f36a-448e-b27b-4d671d41d180"),
+                        _ => Guid.NewGuid(),
+                    };
+
+
+                }
+
+                SaleTransactionRequest saleTransactionRequest = new SaleTransactionRequest
+                {
+                    MerchantId = merchantId,
+                    EstateId = estateDetails.EstateId,
+                    TransactionDateTime = transactionDateTime,
+                    TransactionNumber = transactionNumber,
+                    DeviceIdentifier = deviceIdentifier,
+                    TransactionType = transactionType,
+                    OperatorIdentifier = operatorName,
+                    CustomerEmailAddress = customerEmailAddress,
+                    ProductId = productId,
+                    ContractId = contractId,
+                    TransactionSource = transactionSource
+                };
+
+                saleTransactionRequest.AdditionalTransactionMetadata = operatorName switch
+                {
+                    "Voucher" => SpecflowExtensions.BuildVoucherTransactionMetaData(recipientEmail, recipientMobile, transactionAmount),
+                    "PataPawa PostPay" => SpecflowExtensions.BuildPataPawaPostPayMetaData(messageType, accountNumber, recipientMobile, customerName, transactionAmount),
+                    "PataPawa PrePay" => SpecflowExtensions.BuildPataPawaPrePayMetaData(messageType, meterNumber, customerName, transactionAmount),
+                    _ => SpecflowExtensions.BuildMobileTopupMetaData(transactionAmount, customerAccountNumber)
+                };
+                serialisedData = JsonConvert.SerializeObject(saleTransactionRequest,
+                                                             new JsonSerializerSettings
+                                                             {
+                                                                 TypeNameHandling = TypeNameHandling.All
+                                                             });
+            }
+
+            if (transactionType == "Reconciliation")
+            {
+                Int32 transactionCount = ReqnrollTableHelper.GetIntValue(tableRow, "TransactionCount");
+                Decimal transactionValue = ReqnrollTableHelper.GetDecimalValue(tableRow, "TransactionValue");
+
+                ReconciliationRequest reconciliationRequest = new ReconciliationRequest
+                {
+                    MerchantId = merchantId,
+                    EstateId = estateDetails.EstateId,
+                    TransactionDateTime = transactionDateTime,
+                    DeviceIdentifier = deviceIdentifier,
+                    TransactionValue = transactionValue,
+                    TransactionCount = transactionCount,
+                };
+
+                serialisedData = JsonConvert.SerializeObject(reconciliationRequest,
+                                                             new JsonSerializerSettings
+                                                             {
+                                                                 TypeNameHandling = TypeNameHandling.All
+                                                             });
+            }
+
+            SerialisedMessage serialisedMessage = new SerialisedMessage();
+            serialisedMessage.Metadata.Add(MetadataContants.KeyNameEstateId, estateDetails.EstateId.ToString());
+            serialisedMessage.Metadata.Add(MetadataContants.KeyNameMerchantId, merchantId.ToString());
+            serialisedMessage.SerialisedData = serialisedData;
+            messages.Add((estateDetails, merchantId, transactionNumber, serialisedMessage));
+        }
+
+        return messages;
+    }
+
+    public static List<(SerialisedMessage, String, String, String)> GetTransactionDetails(this DataTableRows tableRows, List<EstateDetails> estateDetailsList)
+    {
+        List<(SerialisedMessage, String, String, String)> expectedValuesForTransaction = new List<(SerialisedMessage, String, String, String)>();
+
+        foreach (DataTableRow tableRow in tableRows)
+        {
+            String estateName = ReqnrollTableHelper.GetStringRowValue(tableRow, "EstateName");
+            EstateDetails estateDetails = SpecflowExtensions.GetEstateDetails(estateDetailsList, estateName);
+
+            String merchantName = ReqnrollTableHelper.GetStringRowValue(tableRow, "MerchantName");
+            Guid merchantId = estateDetails.GetMerchantId(merchantName);
+
+            String transactionNumber = ReqnrollTableHelper.GetStringRowValue(tableRow, "TransactionNumber");
+            String expectedResponseCode = ReqnrollTableHelper.GetStringRowValue(tableRow, "ResponseCode");
+            String expectedResponseMessage = ReqnrollTableHelper.GetStringRowValue(tableRow, "ResponseMessage");
+
+            var message = estateDetails.GetTransactionResponse(merchantId, transactionNumber);
+            var serialisedMessage = JsonConvert.DeserializeObject<SerialisedMessage>(message);
+            expectedValuesForTransaction.Add((serialisedMessage, transactionNumber, expectedResponseCode, expectedResponseMessage));
+        }
+
+        return expectedValuesForTransaction;
+    }
 
     private static EstateDetails GetEstateDetails(List<EstateDetails> estateDetailsList, String estateName)
     {
@@ -518,4 +722,87 @@ public static class SpecflowExtensions
         public EstateDetails EstateDetails { get; set; }
         public Guid MerchantId { get; set; }
     }
+}
+
+
+public static class ReqnrollTableHelper
+{
+    #region Methods
+
+    public static Boolean GetBooleanValue(DataTableRow row,
+                                          String key)
+    {
+        String field = ReqnrollTableHelper.GetStringRowValue(row, key);
+
+        return bool.TryParse(field, out Boolean value) && value;
+    }
+
+    public static DateTime GetDateForDateString(String dateString,
+                                                DateTime today)
+    {
+        switch (dateString.ToUpper())
+        {
+            case "TODAY":
+                return today.Date;
+            case "YESTERDAY":
+                return today.AddDays(-1).Date;
+            case "LASTWEEK":
+                return today.AddDays(-7).Date;
+            case "LASTMONTH":
+                return today.AddMonths(-1).Date;
+            case "LASTYEAR":
+                return today.AddYears(-1).Date;
+            case "TOMORROW":
+                return today.AddDays(1).Date;
+            default:
+                return DateTime.Parse(dateString);
+        }
+    }
+
+    public static Decimal GetDecimalValue(DataTableRow row,
+                                          String key)
+    {
+        String field = ReqnrollTableHelper.GetStringRowValue(row, key);
+
+        return decimal.TryParse(field, out Decimal value) ? value : -1;
+    }
+
+    public static Int32 GetIntValue(DataTableRow row,
+                                    String key)
+    {
+        String field = ReqnrollTableHelper.GetStringRowValue(row, key);
+
+        return int.TryParse(field, out Int32 value) ? value : -1;
+    }
+
+    public static Int16 GetShortValue(DataTableRow row,
+                                      String key)
+    {
+        String field = ReqnrollTableHelper.GetStringRowValue(row, key);
+
+        if (short.TryParse(field, out Int16 value))
+        {
+            return value;
+        }
+
+        return -1;
+    }
+
+    /// <returns></returns>
+    public static String GetStringRowValue(DataTableRow row,
+                                           String key)
+    {
+        return row.TryGetValue(key, out String value) ? value : "";
+    }
+
+    public static T GetEnumValue<T>(DataTableRow row,
+                                    String key) where T : struct
+    {
+        String field = ReqnrollTableHelper.GetStringRowValue(row, key);
+
+        return Enum.Parse<T>(field, true);
+    }
+
+
+    #endregion
 }
