@@ -900,4 +900,19 @@ public static class ReqnrollExtensions{
                    {"CustomerName", customerName},
                };
     }
+
+    public static SpecflowExtensions.ProcessSettlementRequest ToProcessSettlementRequest(String dateString, String estateName, String merchantName, List<EstateDetails> estateDetailsList)
+    {
+        DateTime settlementDate = ReqnrollTableHelper.GetDateForDateString(dateString, DateTime.UtcNow.Date);
+
+        EstateDetails estateDetails = ReqnrollExtensions.GetEstateDetails(estateDetailsList, estateName);
+        Guid merchantId = estateDetails.GetMerchantId(merchantName);
+
+        return new SpecflowExtensions.ProcessSettlementRequest
+               {
+                   MerchantId = merchantId,
+                   EstateDetails = estateDetails,
+                   SettlementDate = settlementDate,
+               };
+    }
 }
