@@ -145,7 +145,7 @@ public class TransactionProcessorSteps
                                 }
 
                             },
-                            TimeSpan.FromMinutes(5),
+                            TimeSpan.FromMinutes(10),
                             TimeSpan.FromSeconds(30));
         }
     }
