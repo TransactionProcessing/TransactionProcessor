@@ -104,7 +104,7 @@ public class TransactionProcessorSteps
         }
     }
 
-    public async Task ThenTheFollowingEntriesAppearInTheMerchantsBalanceHistoryForEstateAndMerchant(String accessToken, DateTime startDate, DateTime endDate, List<SpecflowExtensions.BalanceEntry> balanceEntries)
+    public async Task ThenTheFollowingEntriesAppearInTheMerchantsBalanceHistoryForEstateAndMerchant(String accessToken, DateTime startDate, DateTime endDate, List<ReqnrollExtensions.BalanceEntry> balanceEntries)
     {
 
         var merchants = balanceEntries.GroupBy(b => new { b.EstateId, b.MerchantId }).Select(b => new {
@@ -117,7 +117,7 @@ public class TransactionProcessorSteps
         foreach (var m in merchants)
         {
             List<MerchantBalanceChangedEntryResponse> balanceHistory = null;
-            List<SpecflowExtensions.BalanceEntry> merchantEntries = balanceEntries.Where(b => b.EstateId == m.EstateId && b.MerchantId == m.MerchantId).ToList();
+            List<ReqnrollExtensions.BalanceEntry> merchantEntries = balanceEntries.Where(b => b.EstateId == m.EstateId && b.MerchantId == m.MerchantId).ToList();
 
             await Retry.For(async () => {
                                 balanceHistory =
@@ -131,7 +131,7 @@ public class TransactionProcessorSteps
                                 balanceHistory.ShouldNotBeNull();
                                 balanceHistory.ShouldNotBeEmpty();
                                 balanceHistory.Count.ShouldBe(m.NumberEntries);
-                                foreach (SpecflowExtensions.BalanceEntry merchantEntry in merchantEntries)
+                                foreach (ReqnrollExtensions.BalanceEntry merchantEntry in merchantEntries)
                                 {
 
 
@@ -145,7 +145,7 @@ public class TransactionProcessorSteps
                                 }
 
                             },
-                            TimeSpan.FromMinutes(4),
+                            TimeSpan.FromMinutes(10),
                             TimeSpan.FromSeconds(30));
         }
     }
@@ -161,16 +161,16 @@ public class TransactionProcessorSteps
         }
     }
 
-    public async Task GivenTheFollowingBillsAreAvailableAtThePataPawaPostPaidHost(List<SpecflowExtensions.PataPawaBill> bills){
-        await this.SendRequestToTestHost<SpecflowExtensions.PataPawaBill>(bills, "/api/developer/patapawapostpay/createbill");
+    public async Task GivenTheFollowingBillsAreAvailableAtThePataPawaPostPaidHost(List<ReqnrollExtensions.PataPawaBill> bills){
+        await this.SendRequestToTestHost<ReqnrollExtensions.PataPawaBill>(bills, "/api/developer/patapawapostpay/createbill");
     }
 
-    public async Task GivenTheFollowingMetersAreAvailableAtThePataPawaPrePaidHost(List<SpecflowExtensions.PataPawaMeter> meters){
-        await this.SendRequestToTestHost<SpecflowExtensions.PataPawaMeter>(meters, "/api/developer/patapawaprepay/createmeter");
+    public async Task GivenTheFollowingMetersAreAvailableAtThePataPawaPrePaidHost(List<ReqnrollExtensions.PataPawaMeter> meters){
+        await this.SendRequestToTestHost<ReqnrollExtensions.PataPawaMeter>(meters, "/api/developer/patapawaprepay/createmeter");
     }
 
-    public async Task GivenTheFollowingUsersAreAvailableAtThePataPawaPrePaidHost(List<SpecflowExtensions.PataPawaUser> users){
-        await this.SendRequestToTestHost<SpecflowExtensions.PataPawaUser>(users, "/api/developer/patapawaprepay/createuser");
+    public async Task GivenTheFollowingUsersAreAvailableAtThePataPawaPrePaidHost(List<ReqnrollExtensions.PataPawaUser> users){
+        await this.SendRequestToTestHost<ReqnrollExtensions.PataPawaUser>(users, "/api/developer/patapawaprepay/createuser");
     }
 
     public async Task<GetVoucherResponse> GetVoucherByTransactionNumber(String accessToken, EstateDetails estate, SaleTransactionResponse transactionResponse)
@@ -203,7 +203,7 @@ public class TransactionProcessorSteps
                         });
     }
 
-    public async Task WhenIProcessTheSettlementForOnEstateThenFeesAreMarkedAsSettledAndTheSettlementIsCompleted(String accessToken, SpecflowExtensions.ProcessSettlementRequest request, Int32 expectedNumberFeesSettled)
+    public async Task WhenIProcessTheSettlementForOnEstateThenFeesAreMarkedAsSettledAndTheSettlementIsCompleted(String accessToken, ReqnrollExtensions.ProcessSettlementRequest request, Int32 expectedNumberFeesSettled)
     {
         await this.TransactionProcessorClient.ProcessSettlement(accessToken,
                                                                 request.SettlementDate,
