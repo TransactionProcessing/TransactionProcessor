@@ -72,6 +72,20 @@
             return base.SetupTransactionProcessorContainer();
         }
 
+        public override async Task CreateSubscriptions(){
+            List<(String streamName, String groupName, Int32 maxRetries)> subscriptions = new();
+            subscriptions.AddRange(MessagingService.IntegrationTesting.Helpers.SubscriptionsHelper.GetSubscriptions());
+            subscriptions.AddRange(EstateManagement.IntegrationTesting.Helpers.SubscriptionsHelper.GetSubscriptions());
+            subscriptions.AddRange(TransactionProcessor.IntegrationTesting.Helpers.SubscriptionsHelper.GetSubscriptions());
+
+            foreach ((String streamName, String groupName, Int32 maxRetries) subscription in subscriptions)
+            {
+                var x = subscription;
+                x.maxRetries = 2;
+                await this.CreatePersistentSubscription(x);
+            }
+        }
+
         /// <summary>
         /// Starts the containers for scenario run.
         /// </summary>
@@ -108,11 +122,11 @@
         /// <summary>
         /// Stops the containers for scenario run.
         /// </summary>
-        public override async Task StopContainersForScenarioRun()
+        public override async Task StopContainersForScenarioRun(DockerServices dockerServices)
         {
             await this.RemoveEstateReadModel().ConfigureAwait(false);
 
-            await base.StopContainersForScenarioRun();
+            await base.StopContainersForScenarioRun(dockerServices);
         }
         
         private async Task RemoveEstateReadModel()
@@ -130,19 +144,6 @@
                                     EstateManagementSqlServerContext context = new EstateManagementSqlServerContext(connectionString);
                                     await context.Database.EnsureDeletedAsync(CancellationToken.None);
                                 });
-            }
-        }
-
-        public override async Task CreateGenericSubscriptions(){
-            List<(String streamName, String groupName, Int32 maxRetries)> subscriptions = new List<(String streamName, String groupName, Int32 maxRetries)>
-                                                                                          {
-                                                                                              ($"$ce-VoucherAggregate", "Transaction Processor - Ordered", 2),
-                                                                                              ($"$ce-MerchantBalanceArchive", "Transaction Processor - Ordered", 2),
-                                                                                              ($"$et-EstateCreatedEvent", "Transaction Processor - Ordered", 2)
-                                                                                          };
-            foreach ((String streamName, String groupName, Int32 maxRetries) subscription in subscriptions)
-            {
-                await this.CreatePersistentSubscription(subscription);
             }
         }
 

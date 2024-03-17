@@ -14,18 +14,16 @@ namespace TransactionProcessor.IntegrationTests.Shared
     using EstateManagement.IntegrationTesting.Helpers;
     using IntegrationTesting.Helpers;
     using Newtonsoft.Json.Linq;
+    using Reqnroll;
     using SecurityService.DataTransferObjects.Requests;
     using SecurityService.IntegrationTesting.Helpers;
     using Shouldly;
-    using TechTalk.SpecFlow;
     using ClientDetails = Common.ClientDetails;
     using Contract = Common.Contract;
     using MerchantBalanceResponse = DataTransferObjects.MerchantBalanceResponse;
     using Product = Common.Product;
-    using SpecflowExtensions = IntegrationTesting.Helpers.SpecflowExtensions;
-    using Table = TechTalk.SpecFlow.Table;
-
-    [Binding]
+    using ReqnrollExtensions = IntegrationTesting.Helpers.ReqnrollExtensions;
+    
     [Scope(Tag = "shared")]
     public partial class SharedSteps
     {
@@ -48,10 +46,10 @@ namespace TransactionProcessor.IntegrationTests.Shared
         }
         
         [Given(@"I have a token to access the estate management and transaction processor resources")]
-        public async Task GivenIHaveATokenToAccessTheEstateManagementAndTransactionProcessorResources(Table table)
+        public async Task GivenIHaveATokenToAccessTheEstateManagementAndTransactionProcessorResources(DataTable table)
         {
-            TableRow firstRow = table.Rows.First();
-            String clientId = SpecflowTableHelper.GetStringRowValue(firstRow, "ClientId");
+            DataTableRow firstRow = table.Rows.First();
+            String clientId = ReqnrollTableHelper.GetStringRowValue(firstRow, "ClientId");
             ClientDetails clientDetails = this.TestingContext.GetClientDetails(clientId);
 
             this.TestingContext.AccessToken = await this.SecurityServiceSteps.GetClientToken(clientDetails.ClientId, clientDetails.ClientSecret, CancellationToken.None);
@@ -60,19 +58,19 @@ namespace TransactionProcessor.IntegrationTests.Shared
         
     }
 
-    //[Binding]
+    [Binding]
     [Scope(Tag = "shared")]
     public partial class SharedSteps{
 
         [When(@"I get the completed settlements the following information should be returned")]
-        public async Task WhenIGetTheCompletedSettlementsTheFollowingInformationShouldBeReturned(Table table)
+        public async Task WhenIGetTheCompletedSettlementsTheFollowingInformationShouldBeReturned(DataTable table)
         {
             List<(EstateDetails, Guid, DateTime, Int32)> requests = table.Rows.ToCompletedSettlementRequests(this.TestingContext.Estates);
             await this.TransactionProcessorSteps.WhenIGetTheCompletedSettlementsTheFollowingInformationShouldBeReturned(this.TestingContext.AccessToken, requests);
         }
 
         [When(@"I get the pending settlements the following information should be returned")]
-        public async Task WhenIGetThePendingSettlementsTheFollowingInformationShouldBeReturned(Table table)
+        public async Task WhenIGetThePendingSettlementsTheFollowingInformationShouldBeReturned(DataTable table)
         {
             List<(EstateDetails, Guid, DateTime, Int32)> requests = table.Rows.ToPendingSettlementRequests(this.TestingContext.Estates);
             await this.TransactionProcessorSteps.WhenIGetThePendingSettlementsTheFollowingInformationShouldBeReturned(this.TestingContext.AccessToken, requests);
@@ -81,19 +79,19 @@ namespace TransactionProcessor.IntegrationTests.Shared
         [When(@"I process the settlement for '([^']*)' on Estate '([^']*)' for Merchant '([^']*)' then (.*) fees are marked as settled and the settlement is completed")]
         public async Task WhenIProcessTheSettlementForOnEstateThenFeesAreMarkedAsSettledAndTheSettlementIsCompleted(String dateString, String estateName, String merchantName, Int32 numberOfFeesSettled)
         {
-            DateTime settlementDate = SpecflowTableHelper.GetDateForDateString(dateString, DateTime.UtcNow.Date);
+            DateTime settlementDate = ReqnrollTableHelper.GetDateForDateString(dateString, DateTime.UtcNow.Date);
 
             EstateDetails estateDetails = this.TestingContext.GetEstateDetails(estateName);
             Guid merchantId = estateDetails.GetMerchantId(merchantName);
 
-            SpecflowExtensions.ProcessSettlementRequest processSettlementRequest = SpecflowExtensions.ToProcessSettlementRequest(dateString, estateName, merchantName, this.TestingContext.Estates);
+            ReqnrollExtensions.ProcessSettlementRequest processSettlementRequest = ReqnrollExtensions.ToProcessSettlementRequest(dateString, estateName, merchantName, this.TestingContext.Estates);
             await this.TransactionProcessorSteps.WhenIProcessTheSettlementForOnEstateThenFeesAreMarkedAsSettledAndTheSettlementIsCompleted(this.TestingContext.AccessToken, processSettlementRequest, numberOfFeesSettled);
         }
 
         [When(@"I redeem the voucher for Estate '([^']*)' and Merchant '([^']*)' transaction number (.*) the voucher balance will be (.*)")]
         public async Task WhenIRedeemTheVoucherForEstateAndMerchantTransactionNumberTheVoucherBalanceWillBe(string estateName, string merchantName, int transactionNumber, int balance)
         {
-            (EstateDetails, SaleTransactionResponse) saleResponse = SpecflowExtensions.GetVoucherByTransactionNumber(estateName, merchantName, transactionNumber, this.TestingContext.Estates);
+            (EstateDetails, SaleTransactionResponse) saleResponse = ReqnrollExtensions.GetVoucherByTransactionNumber(estateName, merchantName, transactionNumber, this.TestingContext.Estates);
 
             GetVoucherResponse voucher = await this.TransactionProcessorSteps.GetVoucherByTransactionNumber(this.TestingContext.AccessToken, saleResponse.Item1, saleResponse.Item2);
 
@@ -101,42 +99,30 @@ namespace TransactionProcessor.IntegrationTests.Shared
         }
 
         [Given(@"the following bills are available at the PataPawa PostPaid Host")]
-        public async Task GivenTheFollowingBillsAreAvailableAtThePataPawaPostPaidHost(Table table)
+        public async Task GivenTheFollowingBillsAreAvailableAtThePataPawaPostPaidHost(DataTable table)
         {
-            List<SpecflowExtensions.PataPawaBill> bills = table.Rows.ToPataPawaBills();
+            List<ReqnrollExtensions.PataPawaBill> bills = table.Rows.ToPataPawaBills();
             await this.TransactionProcessorSteps.GivenTheFollowingBillsAreAvailableAtThePataPawaPostPaidHost(bills);
         }
 
         [Given(@"the following users are available at the PataPawa PrePay Host")]
-        public async Task GivenTheFollowingUsersAreAvailableAtThePataPawaPrePayHost(Table table)
+        public async Task GivenTheFollowingUsersAreAvailableAtThePataPawaPrePayHost(DataTable table)
         {
-            List<SpecflowExtensions.PataPawaUser> users = table.Rows.ToPataPawaUsers();
+            List<ReqnrollExtensions.PataPawaUser> users = table.Rows.ToPataPawaUsers();
             await this.TransactionProcessorSteps.GivenTheFollowingUsersAreAvailableAtThePataPawaPrePaidHost(users);
         }
 
         [Given(@"the following meters are available at the PataPawa PrePay Host")]
-        public async Task GivenTheFollowingMetersAreAvailableAtThePataPawaPrePayHost(Table table){
-            List<SpecflowExtensions.PataPawaMeter> meters = table.Rows.ToPataPawaMeters();
+        public async Task GivenTheFollowingMetersAreAvailableAtThePataPawaPrePayHost(DataTable table){
+            List<ReqnrollExtensions.PataPawaMeter> meters = table.Rows.ToPataPawaMeters();
             await this.TransactionProcessorSteps.GivenTheFollowingMetersAreAvailableAtThePataPawaPrePaidHost(meters);
         }
         
         [Given(@"I have created the following estates")]
         [When(@"I create the following estates")]
-        public async Task WhenICreateTheFollowingEstates(Table table)
+        public async Task WhenICreateTheFollowingEstates(DataTable table)
         {
             List<CreateEstateRequest> requests = table.Rows.ToCreateEstateRequests();
-
-            foreach (CreateEstateRequest request in requests)
-            {
-                // Setup the subscriptions for the estate
-                await Retry.For(async () => {
-                    await this.TestingContext.DockerHelper
-                              .CreateEstateSubscriptions(request.EstateName)
-                              .ConfigureAwait(false);
-                },
-                                retryFor: TimeSpan.FromMinutes(2),
-                                retryInterval: TimeSpan.FromSeconds(30));
-            }
 
             List<EstateResponse> verifiedEstates = await this.EstateManagementSteps.WhenICreateTheFollowingEstates(this.TestingContext.AccessToken, requests);
 
@@ -148,7 +134,7 @@ namespace TransactionProcessor.IntegrationTests.Shared
         }
 
         [Given(@"I create the following api scopes")]
-        public async Task GivenICreateTheFollowingApiScopes(Table table)
+        public async Task GivenICreateTheFollowingApiScopes(DataTable table)
         {
             List<CreateApiScopeRequest> requests = table.Rows.ToCreateApiScopeRequests();
             await this.SecurityServiceSteps.GivenICreateTheFollowingApiScopes(requests);
@@ -156,7 +142,7 @@ namespace TransactionProcessor.IntegrationTests.Shared
 
         [Given(@"I have assigned the following  operator to the merchants")]
         [When(@"I assign the following  operator to the merchants")]
-        public async Task WhenIAssignTheFollowingOperatorToTheMerchants(Table table)
+        public async Task WhenIAssignTheFollowingOperatorToTheMerchants(DataTable table)
         {
             List<(EstateDetails, Guid, AssignOperatorRequest)> requests = table.Rows.ToAssignOperatorRequests(this.TestingContext.Estates);
 
@@ -171,7 +157,7 @@ namespace TransactionProcessor.IntegrationTests.Shared
 
         [Given(@"I have created the following operators")]
         [When(@"I create the following operators")]
-        public async Task WhenICreateTheFollowingOperators(Table table)
+        public async Task WhenICreateTheFollowingOperators(DataTable table)
         {
 
             List<(EstateDetails estate, CreateOperatorRequest request)> requests = table.Rows.ToCreateOperatorRequests(this.TestingContext.Estates);
@@ -186,7 +172,7 @@ namespace TransactionProcessor.IntegrationTests.Shared
 
         [Given("I create the following merchants")]
         [When(@"I create the following merchants")]
-        public async Task WhenICreateTheFollowingMerchants(Table table)
+        public async Task WhenICreateTheFollowingMerchants(DataTable table)
         {
             List<(EstateDetails estate, CreateMerchantRequest)> requests = table.Rows.ToCreateMerchantRequests(this.TestingContext.Estates);
 
@@ -202,7 +188,7 @@ namespace TransactionProcessor.IntegrationTests.Shared
         }
 
         [When(@"I perform the following transactions")]
-        public async Task WhenIPerformTheFollowingTransactions(Table table)
+        public async Task WhenIPerformTheFollowingTransactions(DataTable table)
         {
             List<(EstateDetails, Guid, String, SerialisedMessage)> serialisedMessages = table.Rows.ToSerialisedMessages(this.TestingContext.Estates);
 
@@ -210,7 +196,7 @@ namespace TransactionProcessor.IntegrationTests.Shared
         }
 
         [Given(@"I create a contract with the following values")]
-        public async Task GivenICreateAContractWithTheFollowingValues(Table table)
+        public async Task GivenICreateAContractWithTheFollowingValues(DataTable table)
         {
 
             List<(EstateDetails, CreateContractRequest)> requests = table.Rows.ToCreateContractRequests(this.TestingContext.Estates);
@@ -218,42 +204,42 @@ namespace TransactionProcessor.IntegrationTests.Shared
         }
 
         [When(@"I create the following Products")]
-        public async Task WhenICreateTheFollowingProducts(Table table)
+        public async Task WhenICreateTheFollowingProducts(DataTable table)
         {
             List<(EstateDetails, EstateManagement.IntegrationTesting.Helpers.Contract, AddProductToContractRequest)> requests = table.Rows.ToAddProductToContractRequest(this.TestingContext.Estates);
             await this.EstateManagementSteps.WhenICreateTheFollowingProducts(this.TestingContext.AccessToken, requests);
         }
 
         [When(@"I add the following Transaction Fees")]
-        public async Task WhenIAddTheFollowingTransactionFees(Table table)
+        public async Task WhenIAddTheFollowingTransactionFees(DataTable table)
         {
             List<(EstateDetails, EstateManagement.IntegrationTesting.Helpers.Contract, EstateManagement.IntegrationTesting.Helpers.Product, AddTransactionFeeForProductToContractRequest)> requests = table.Rows.ToAddTransactionFeeForProductToContractRequests(this.TestingContext.Estates);
             await this.EstateManagementSteps.WhenIAddTheFollowingTransactionFees(this.TestingContext.AccessToken, requests);
         }
 
         [Then(@"transaction response should contain the following information")]
-        public void ThenTransactionResponseShouldContainTheFollowingInformation(Table table)
+        public void ThenTransactionResponseShouldContainTheFollowingInformation(DataTable table)
         {
             List<(SerialisedMessage, String, String, String)> transactions = table.Rows.GetTransactionDetails(this.TestingContext.Estates);
             this.TransactionProcessorSteps.ValidateTransactions(transactions);
         }
 
         [When(@"I request the receipt is resent")]
-        public async Task WhenIRequestTheReceiptIsResent(Table table)
+        public async Task WhenIRequestTheReceiptIsResent(DataTable table)
         {
             List<SerialisedMessage> transactions = table.Rows.GetTransactionResendDetails(this.TestingContext.Estates);
             await this.TransactionProcessorSteps.WhenIRequestTheReceiptIsResent(this.TestingContext.AccessToken, transactions);
         }
 
         [Given(@"the following api resources exist")]
-        public async Task GivenTheFollowingApiResourcesExist(Table table)
+        public async Task GivenTheFollowingApiResourcesExist(DataTable table)
         {
             List<CreateApiResourceRequest> requests = table.Rows.ToCreateApiResourceRequests();
             await this.SecurityServiceSteps.GivenTheFollowingApiResourcesExist(requests);
         }
 
         [Given(@"the following clients exist")]
-        public async Task GivenTheFollowingClientsExist(Table table)
+        public async Task GivenTheFollowingClientsExist(DataTable table)
         {
             List<CreateClientRequest> requests = table.Rows.ToCreateClientRequests();
             List<(String clientId, String secret, List<String> allowedGrantTypes)> clients = await this.SecurityServiceSteps.GivenTheFollowingClientsExist(requests);
@@ -264,7 +250,7 @@ namespace TransactionProcessor.IntegrationTests.Shared
         }
 
         [Given(@"I have assigned the following devices to the merchants")]
-        public async Task GivenIHaveAssignedTheFollowingDevicesToTheMerchants(Table table)
+        public async Task GivenIHaveAssignedTheFollowingDevicesToTheMerchants(DataTable table)
         {
 
             List<(EstateDetails, Guid, AddMerchantDeviceRequest)> requests = table.Rows.ToAddMerchantDeviceRequests(this.TestingContext.Estates);
@@ -277,7 +263,7 @@ namespace TransactionProcessor.IntegrationTests.Shared
         }
 
         [When(@"I add the following contracts to the following merchants")]
-        public async Task WhenIAddTheFollowingContractsToTheFollowingMerchants(Table table)
+        public async Task WhenIAddTheFollowingContractsToTheFollowingMerchants(DataTable table)
         {
             List<(EstateDetails, Guid, Guid)> requests = table.Rows.ToAddContractToMerchantRequests(this.TestingContext.Estates);
             await this.EstateManagementSteps.WhenIAddTheFollowingContractsToTheFollowingMerchants(this.TestingContext.AccessToken, requests);
@@ -292,7 +278,7 @@ namespace TransactionProcessor.IntegrationTests.Shared
         }
 
         [Given(@"I make the following manual merchant deposits")]
-        public async Task GivenIMakeTheFollowingManualMerchantDeposits(Table table)
+        public async Task GivenIMakeTheFollowingManualMerchantDeposits(DataTable table)
         {
             List<(EstateDetails, Guid, MakeMerchantDepositRequest)> requests = table.Rows.ToMakeMerchantDepositRequest(this.TestingContext.Estates);
 
@@ -313,7 +299,7 @@ namespace TransactionProcessor.IntegrationTests.Shared
         }
 
         [When(@"I perform the following reconciliations")]
-        public async Task WhenIPerformTheFollowingReconciliations(Table table)
+        public async Task WhenIPerformTheFollowingReconciliations(DataTable table)
         {
             List<(EstateDetails, Guid, String, SerialisedMessage)> serialisedMessages = table.Rows.ToSerialisedMessages(this.TestingContext.Estates);
 
@@ -321,18 +307,18 @@ namespace TransactionProcessor.IntegrationTests.Shared
         }
 
         [Then(@"reconciliation response should contain the following information")]
-        public void ThenReconciliationResponseShouldContainTheFollowingInformation(Table table)
+        public void ThenReconciliationResponseShouldContainTheFollowingInformation(DataTable table)
         {
             List<(SerialisedMessage, String, String, String)> transactions = table.Rows.GetTransactionDetails(this.TestingContext.Estates);
             this.TransactionProcessorSteps.ValidateTransactions(transactions);
         }
 
         [Then(@"the following entries appear in the merchants balance history for estate '([^']*)' and merchant '([^']*)'")]
-        public async Task ThenTheFollowingEntriesAppearInTheMerchantsBalanceHistoryForEstateAndMerchant(String estateName, String merchantName, Table table)
+        public async Task ThenTheFollowingEntriesAppearInTheMerchantsBalanceHistoryForEstateAndMerchant(String estateName, String merchantName, DataTable table)
         {
-            DateTime startDate = SpecflowTableHelper.GetDateForDateString("Today", DateTime.UtcNow).AddDays(-1);
-            DateTime endDate = SpecflowTableHelper.GetDateForDateString("Today", DateTime.UtcNow).AddDays(1);
-            List<SpecflowExtensions.BalanceEntry> balanceEntries = table.Rows.ToBalanceEntries(estateName, merchantName, this.TestingContext.Estates);
+            DateTime startDate = ReqnrollTableHelper.GetDateForDateString("Today", DateTime.UtcNow).AddDays(-1);
+            DateTime endDate = ReqnrollTableHelper.GetDateForDateString("Today", DateTime.UtcNow).AddDays(1);
+            List<ReqnrollExtensions.BalanceEntry> balanceEntries = table.Rows.ToBalanceEntries(estateName, merchantName, this.TestingContext.Estates);
 
             await this.TransactionProcessorSteps.ThenTheFollowingEntriesAppearInTheMerchantsBalanceHistoryForEstateAndMerchant(this.TestingContext.AccessToken,
                                                                                                                                startDate,
