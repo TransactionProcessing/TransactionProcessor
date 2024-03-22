@@ -167,6 +167,7 @@ namespace TransactionProcessor.ProjectionEngine.Tests
         public static IReadOnlyDictionary<String, String> DefaultAppSettings =>
             new Dictionary<String, String>
             {
+                ["AppSettings:ProjectionTraceThresholdInSeconds"] = "1",
                 ["AppSettings:ClientId"] = "clientId",
                 ["AppSettings:ClientSecret"] = "clientSecret",
                 ["AppSettings:UseConnectionStringConfig"] = "false",

@@ -1,14 +1,22 @@
 ﻿namespace TransactionProcessor.ProjectionEngine.Tests;
 
 using Dispatchers;
+using Microsoft.Extensions.Configuration;
 using Moq;
 using Projections;
 using Repository;
 using Shared.DomainDrivenDesign.EventSourcing;
+using Shared.General;
 using Shouldly;
 using State;
 
 public class ProjectionHandlerTests{
+
+    public ProjectionHandlerTests(){
+        Shared.Logger.Logger.Initialise(Shared.Logger.NullLogger.Instance);
+        IConfigurationRoot configurationRoot = new ConfigurationBuilder().AddInMemoryCollection(TestData.DefaultAppSettings).Build();
+        ConfigurationReader.Initialise(configurationRoot);
+    }
 
     [Fact]
     public async Task ProjectionHandler_Handle_NullEvent_EventHandled(){
@@ -57,8 +65,6 @@ public class ProjectionHandlerTests{
     [Fact]
     public async Task ProjectionHandler_Handle_StateFoundInRepository_NoChanges_EventHandled()
     {
-        Shared.Logger.Logger.Initialise(Shared.Logger.NullLogger.Instance);
-
         Mock<IProjectionStateRepository<MerchantBalanceState>> repo = new Mock<IProjectionStateRepository<MerchantBalanceState>>();
         Mock<IProjection<MerchantBalanceState>> projection = new Mock<IProjection<MerchantBalanceState>>();
         Mock<IStateDispatcher<MerchantBalanceState>> stateDispatcher = new Mock<IStateDispatcher<MerchantBalanceState>>();
@@ -80,8 +86,6 @@ public class ProjectionHandlerTests{
     [Fact]
     public async Task ProjectionHandler_Handle_StateFoundInRepository_ChangesMade_EventHandled()
     {
-        Shared.Logger.Logger.Initialise(Shared.Logger.NullLogger.Instance);
-
         Mock<IProjectionStateRepository<MerchantBalanceState>> repo = new Mock<IProjectionStateRepository<MerchantBalanceState>>();
         Mock<IProjection<MerchantBalanceState>> projection = new Mock<IProjection<MerchantBalanceState>>();
         Mock<IStateDispatcher<MerchantBalanceState>> stateDispatcher = new Mock<IStateDispatcher<MerchantBalanceState>>();
