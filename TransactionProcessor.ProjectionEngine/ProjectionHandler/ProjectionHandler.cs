@@ -84,6 +84,4 @@ public class ProjectionHandler<TState> : IProjectionHandler where TState : State
             Logger.LogInformation($"Event Type {@event.EventType} Id [{@event.EventId}] for state {state.GetType().Name} took {stopwatch.ElapsedMilliseconds}ms to process");
         }
     }
-
-}
 }
