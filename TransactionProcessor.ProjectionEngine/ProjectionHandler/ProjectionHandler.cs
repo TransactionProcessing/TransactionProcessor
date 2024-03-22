@@ -7,6 +7,7 @@ using Newtonsoft.Json;
 using Projections;
 using Repository;
 using Shared.DomainDrivenDesign.EventSourcing;
+using Shared.General;
 using Shared.Logger;
 using State;
 
@@ -25,12 +26,10 @@ public class ProjectionHandler<TState> : IProjectionHandler where TState : State
         this.StateDispatcher = stateDispatcher;
     }
 
-    public async Task Handle(IDomainEvent @event, CancellationToken cancellationToken)
-    {
+    public async Task Handle(IDomainEvent @event, CancellationToken cancellationToken){
         if (@event == null) return;
-        
-        if (this.Projection.ShouldIHandleEvent(@event) == false)
-        {
+
+        if (this.Projection.ShouldIHandleEvent(@event) == false){
             return;
         }
 
@@ -40,8 +39,7 @@ public class ProjectionHandler<TState> : IProjectionHandler where TState : State
         //Load the state from persistence
         TState state = await this.ProjectionStateRepository.Load(@event, cancellationToken);
 
-        if (state == null)
-        {
+        if (state == null){
             return;
         }
 
@@ -50,41 +48,42 @@ public class ProjectionHandler<TState> : IProjectionHandler where TState : State
         builder.Append($"{stopwatch.ElapsedMilliseconds}ms Handling {@event.EventType} Id [{@event.EventId}] for state {state.GetType().Name}|");
 
         TState newState = await this.Projection.Handle(state, @event, cancellationToken);
-        
+
         builder.Append($"{stopwatch.ElapsedMilliseconds}ms After Handle|");
 
-        if (newState != state)
-        {
-            newState = newState with
-                       {
-                           ChangesApplied = true
-                       };
-            
+        if (newState != state){
+            newState = newState with{
+                                        ChangesApplied = true
+                                    };
+
             // save state
             newState = await this.ProjectionStateRepository.Save(newState, @event, cancellationToken);
 
             //Repo might have detected a duplicate event
             builder.Append($"{stopwatch.ElapsedMilliseconds}ms After Save|");
 
-            if (this.StateDispatcher != null)
-            {
+            if (this.StateDispatcher != null){
                 // Send to anyone else interested
                 await this.StateDispatcher.Dispatch(newState, @event, cancellationToken);
 
                 builder.Append($"{stopwatch.ElapsedMilliseconds}ms After Dispatch|");
             }
-            
+
         }
-        else
-        {
+        else{
             builder.Append($"{stopwatch.ElapsedMilliseconds}ms No Save required|");
         }
 
         stopwatch.Stop();
 
         builder.Insert(0, $"Total time: {stopwatch.ElapsedMilliseconds}ms|");
-        Logger.LogWarning(builder.ToString());
-        Logger.LogInformation($"Event Type {@event.EventType} Id [{@event.EventId}] for state {state.GetType().Name} took {stopwatch.ElapsedMilliseconds}ms to process");
 
+        Int32 projectionTraceThresholdInSeconds = Int32.Parse(ConfigurationReader.GetValue("AppSettings", "ProjectionTraceThresholdInSeconds"));
+        if (stopwatch.Elapsed.Seconds > projectionTraceThresholdInSeconds){
+            Logger.LogWarning(builder.ToString());
+            Logger.LogInformation($"Event Type {@event.EventType} Id [{@event.EventId}] for state {state.GetType().Name} took {stopwatch.ElapsedMilliseconds}ms to process");
+        }
     }
+
+}
 }
