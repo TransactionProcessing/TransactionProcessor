@@ -45,7 +45,7 @@
 
             IConfigurationBuilder builder = new ConfigurationBuilder();
 
-            configuration.Add("EventStoreSettings:ConnectionString", "https://127.0.0.1:2113");
+            configuration.Add("EventStoreSettings:ConnectionString", "esdb://127.0.0.1:2113");
             configuration.Add("EventStoreSettings:ConnectionName", "UnitTestConnection");
             configuration.Add("AppSettings:UseConnectionStringConfig", "false");
             configuration.Add("AppSettings:ClientId", "clientId");

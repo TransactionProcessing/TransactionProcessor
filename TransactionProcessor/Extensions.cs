@@ -17,6 +17,7 @@ namespace TransactionProcessor
     using Microsoft.Extensions.DependencyInjection;
     using Microsoft.Extensions.Hosting;
     using Newtonsoft.Json;
+    using Shared.EventStore.Aggregate;
     using Shared.EventStore.EventHandling;
     using Shared.EventStore.Extensions;
     using Shared.EventStore.SubscriptionWorker;
@@ -27,17 +28,6 @@ namespace TransactionProcessor
     [ExcludeFromCodeCoverage]
     public static class Extensions
     {
-        public static IServiceCollection AddInSecureEventStoreClient(this IServiceCollection services,
-                                                                     Uri address,
-                                                                     Func<HttpMessageHandler>? createHttpMessageHandler = null)
-        {
-            return services.AddEventStoreClient((Action<EventStoreClientSettings>)(options => {
-                                                                                       options.ConnectivitySettings.Address = address;
-                                                                                       options.ConnectivitySettings.Insecure = true;
-                                                                                       options.CreateHttpMessageHandler = createHttpMessageHandler;
-                                                                                   }));
-        }
-
         static Action<TraceEventType, String, String> log = (tt, subType, message) => {
                                                                 String logMessage = $"{subType} - {message}";
                                                                 switch (tt)
@@ -64,7 +54,7 @@ namespace TransactionProcessor
         static Action<TraceEventType, String> orderedLog = (tt, message) => Extensions.log(tt, "ORDERED", message);
 
         public static void PreWarm(this IApplicationBuilder applicationBuilder) {
-            Startup.LoadTypes();
+            TypeProvider.LoadDomainEventsTypeDynamically();
 
             IConfigurationSection subscriptionConfigSection = Startup.Configuration.GetSection("AppSettings:SubscriptionConfiguration");
             SubscriptionWorkersRoot subscriptionWorkersRoot = new SubscriptionWorkersRoot();
@@ -83,9 +73,12 @@ namespace TransactionProcessor
 
             Func<String, Int32, ISubscriptionRepository> subscriptionRepositoryResolver = Startup.Container.GetInstance<Func<String, Int32, ISubscriptionRepository>>();
 
+            String connectionString = Startup.Configuration.GetValue<String>("EventStoreSettings:ConnectionString");
+            EventStoreClientSettings eventStoreClientSettings = EventStoreClientSettings.Create(connectionString);
+
             applicationBuilder.ConfigureSubscriptionService(subscriptionWorkersRoot,
                                                             eventStoreConnectionString,
-                                                            Startup.EventStoreClientSettings,
+                                                            eventStoreClientSettings,
                                                             eventHandlerResolvers,
                                                             Extensions.log,
                                                             subscriptionRepositoryResolver,

@@ -164,7 +164,7 @@ namespace TransactionProcessor.ProjectionEngine.Tests
                                     TestData.WithdrawalDateTime.AddDays(1),
                                     TestData.WithdrawalAmount);
 
-        public static IReadOnlyDictionary<String, String> DefaultAppSettings =>
+        public static Dictionary<String, String> DefaultAppSettings =>
             new Dictionary<String, String>
             {
                 ["AppSettings:ProjectionTraceThresholdInSeconds"] = "1",
