@@ -55,11 +55,6 @@ namespace TransactionProcessor
 
         public static Container Container;
 
-        /// <summary>
-        /// The event store client settings
-        /// </summary>
-        internal static EventStoreClientSettings EventStoreClientSettings;
-
         public static List<String> AutoApiLogonOperators = new List<String>();
 
         #endregion
@@ -126,9 +121,9 @@ namespace TransactionProcessor
                 app.UseDeveloperExceptionPage();
             }
 
-            string directoryPath = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location);
+            //string directoryPath = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location);
 
-            LogManager.AddHiddenAssembly(Assembly.LoadFrom($"{directoryPath}\\Shared.dll"));
+            LogManager.AddHiddenAssembly(Assembly.LoadFrom(Path.Combine(env.ContentRootPath, "Shared.dll")));
             
             loggerFactory.ConfigureNLog(Path.Combine(env.ContentRootPath, nlogConfigFilename));
             loggerFactory.AddNLog();
@@ -190,67 +185,11 @@ namespace TransactionProcessor
             services.IncludeRegistry<MiscRegistry>();
             services.AddMemoryCache();
 
-            Startup.LoadTypes();
+            TypeProvider.LoadDomainEventsTypeDynamically();
 
             Startup.Container = new Container(services);
 
             Startup.ServiceProvider = services.BuildServiceProvider();
-        }
-
-        public static void LoadTypes() {
-            SettlementCreatedForDateEvent s =
-                new SettlementCreatedForDateEvent(Guid.Parse("62CA5BF0-D138-4A19-9970-A4F7D52DE292"), Guid.Parse("3E42516B-6C6F-4F86-BF08-3EF0ACDDDD55"),Guid.Parse("9948C956-2769-40A1-9903-2D31B4D3EEEF"), DateTime.Now);
-
-            TransactionHasStartedEvent t = new TransactionHasStartedEvent(Guid.Parse("2AA2D43B-5E24-4327-8029-1135B20F35CE"),
-                                                                          Guid.NewGuid(),
-                                                                          Guid.NewGuid(),
-                                                                          DateTime.Now,
-                                                                          "",
-                                                                          "",
-                                                                          "",
-                                                                          "",
-                                                                          null);
-
-            ReconciliationHasStartedEvent r = new ReconciliationHasStartedEvent(Guid.NewGuid(), Guid.NewGuid(), Guid.NewGuid(), DateTime.Now);
-
-            EstateCreatedEvent c = new EstateCreatedEvent(Guid.NewGuid(), "");
-            MerchantCreatedEvent m = new MerchantCreatedEvent(Guid.NewGuid(), Guid.NewGuid(), "", DateTime.Now);
-            FileCreatedEvent f = new FileCreatedEvent(Guid.NewGuid(), Guid.NewGuid(), Guid.NewGuid(), Guid.NewGuid(), Guid.NewGuid(), Guid.NewGuid(), "", DateTime.Now);
-            FileAddedToImportLogEvent fi = new FileAddedToImportLogEvent(Guid.NewGuid(),
-                                                                         Guid.NewGuid(),
-                                                                         Guid.NewGuid(),
-                                                                         Guid.NewGuid(),
-                                                                         Guid.NewGuid(),
-                                                                         Guid.NewGuid(),
-                                                                         "",
-                                                                         "",
-                                                                         DateTime.Now);
-            VoucherGeneratedEvent g = new VoucherGeneratedEvent(Guid.NewGuid(),
-                                                                Guid.NewGuid(),
-                                                                Guid.NewGuid(),
-                                                                DateTime.Now,
-                                                                String.Empty,
-                                                                0,
-                                                                String.Empty,
-                                                                DateTime.Now,
-                                                                String.Empty);
-            FloatCreatedForContractProductEvent fl = new FloatCreatedForContractProductEvent(Guid.NewGuid(), Guid.NewGuid(), Guid.NewGuid(), Guid.NewGuid(), DateTime.Now);
-
-            TypeProvider.LoadDomainEventsTypeDynamically();
-        }
-
-        /// <summary>
-        /// Configures the event store settings.
-        /// </summary>
-        /// <param name="settings">The settings.</param>
-        internal static void ConfigureEventStoreSettings(EventStoreClientSettings settings) {
-            settings.ConnectivitySettings = EventStoreClientConnectivitySettings.Default;
-            settings.ConnectivitySettings.Address = new Uri(Startup.Configuration.GetValue<String>("EventStoreSettings:ConnectionString"));
-            settings.ConnectivitySettings.Insecure = Startup.Configuration.GetValue<Boolean>("EventStoreSettings:Insecure");
-
-            settings.DefaultCredentials = new UserCredentials(Startup.Configuration.GetValue<String>("EventStoreSettings:UserName"),
-                                                              Startup.Configuration.GetValue<String>("EventStoreSettings:Password"));
-            Startup.EventStoreClientSettings = settings;
         }
     }
 

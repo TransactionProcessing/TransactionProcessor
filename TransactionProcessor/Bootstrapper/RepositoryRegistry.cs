@@ -61,32 +61,12 @@
             }
             else
             {
-                Boolean insecureES = Startup.Configuration.GetValue<Boolean>("EventStoreSettings:Insecure");
+                String connectionString = Startup.Configuration.GetValue<String>("EventStoreSettings:ConnectionString");
 
-                Func<SocketsHttpHandler> CreateHttpMessageHandler = () => new SocketsHttpHandler
-                                                                          {
-                                                                              SslOptions = new SslClientAuthenticationOptions
-                                                                                           {
-                                                                                               RemoteCertificateValidationCallback = (sender,
-                                                                                                   certificate,
-                                                                                                   chain,
-                                                                                                   errors) => {
-                                                                                                   return true;
-                                                                                               }
-                                                                                           }
-                                                                          };
+                this.AddEventStoreProjectionManagementClient(connectionString);
+                this.AddEventStorePersistentSubscriptionsClient(connectionString);
 
-                this.AddEventStoreProjectionManagementClient(Startup.ConfigureEventStoreSettings);
-                this.AddEventStorePersistentSubscriptionsClient(Startup.ConfigureEventStoreSettings);
-
-                if (insecureES)
-                {
-                    this.AddInSecureEventStoreClient(Startup.EventStoreClientSettings.ConnectivitySettings.Address, CreateHttpMessageHandler);
-                }
-                else
-                {
-                    this.AddEventStoreClient(Startup.EventStoreClientSettings.ConnectivitySettings.Address, CreateHttpMessageHandler);
-                }
+                this.AddEventStoreClient(connectionString);
 
                 this.AddSingleton<IConnectionStringConfigurationRepository, ConfigurationReaderConnectionStringRepository>();
             }
