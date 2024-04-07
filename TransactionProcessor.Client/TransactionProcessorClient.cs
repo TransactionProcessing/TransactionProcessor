@@ -263,7 +263,7 @@
         }
 
         private async Task Post(String requestUri, String accessToken, CancellationToken cancellationToken){
-            StringContent httpContent = new("");
+            StringContent httpContent = new StringContent("");
 
             // Add the access token to the client headers
             this.HttpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", accessToken);
@@ -280,7 +280,7 @@
 
             String requestSerialised = JsonConvert.SerializeObject(requestObject);
 
-            StringContent httpContent = new(requestSerialised, Encoding.UTF8, "application/json");
+            StringContent httpContent = new StringContent(requestSerialised, Encoding.UTF8, "application/json");
 
             // Add the access token to the client headers
             this.HttpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", accessToken);
@@ -298,7 +298,7 @@
         private async Task Put<TRequest>(String requestUri, TRequest requestObject, String accessToken, CancellationToken cancellationToken){
             String requestSerialised = JsonConvert.SerializeObject(requestObject);
 
-            StringContent httpContent = new(requestSerialised, Encoding.UTF8, "application/json");
+            StringContent httpContent = new StringContent(requestSerialised, Encoding.UTF8, "application/json");
 
             // Add the access token to the client headers
             this.HttpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", accessToken);
