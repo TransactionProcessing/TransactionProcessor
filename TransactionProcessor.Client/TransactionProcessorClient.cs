@@ -219,7 +219,7 @@
             String requestUri = $"{this.BaseAddress}/api/vouchers";
 
             try{
-                response = await this.Post<RedeemVoucherRequest, RedeemVoucherResponse>(requestUri, redeemVoucherRequest, accessToken, cancellationToken);
+                response = await this.Put<RedeemVoucherRequest, RedeemVoucherResponse>(requestUri, redeemVoucherRequest, accessToken, cancellationToken);
             }
             catch(Exception ex){
                 // An exception has occurred, add some additional information to the message
@@ -311,5 +311,26 @@
         }
 
         #endregion
+
+
+        private async Task<TResponse> Put<TRequest, TResponse>(String requestUri, TRequest requestObject, String accessToken, CancellationToken cancellationToken){
+            HttpRequestMessage requestMessage = new HttpRequestMessage(HttpMethod.Post, requestUri);
+
+            String requestSerialised = JsonConvert.SerializeObject(requestObject);
+
+            StringContent httpContent = new StringContent(requestSerialised, Encoding.UTF8, "application/json");
+
+            // Add the access token to the client headers
+            this.HttpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", accessToken);
+
+            // Make the Http Call here
+            HttpResponseMessage httpResponse = await this.HttpClient.PutAsync(requestUri, httpContent, cancellationToken);
+
+            // Process the response
+            String content = await this.HandleResponse(httpResponse, cancellationToken);
+
+            // call was successful so now deserialise the body to the response object
+            return JsonConvert.DeserializeObject<TResponse>(content);
+        }
     }
 }
