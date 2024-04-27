@@ -10,7 +10,13 @@ namespace TransactionProcessor.IntegrationTests.Shared
     using Common;
     using DataTransferObjects;
     using EstateManagement.DataTransferObjects.Requests;
+    using EstateManagement.DataTransferObjects.Requests.Contract;
+    using EstateManagement.DataTransferObjects.Requests.Estate;
+    using EstateManagement.DataTransferObjects.Requests.Merchant;
+    using EstateManagement.DataTransferObjects.Requests.Operator;
     using EstateManagement.DataTransferObjects.Responses;
+    using EstateManagement.DataTransferObjects.Responses.Contract;
+    using EstateManagement.DataTransferObjects.Responses.Estate;
     using EstateManagement.IntegrationTesting.Helpers;
     using IntegrationTesting.Helpers;
     using Newtonsoft.Json.Linq;
@@ -18,9 +24,12 @@ namespace TransactionProcessor.IntegrationTests.Shared
     using SecurityService.DataTransferObjects.Requests;
     using SecurityService.IntegrationTesting.Helpers;
     using Shouldly;
+    using AssignOperatorRequest = EstateManagement.DataTransferObjects.Requests.Estate.AssignOperatorRequest;
     using ClientDetails = Common.ClientDetails;
     using Contract = Common.Contract;
     using MerchantBalanceResponse = DataTransferObjects.MerchantBalanceResponse;
+    using MerchantOperatorResponse = EstateManagement.DataTransferObjects.Responses.Merchant.MerchantOperatorResponse;
+    using MerchantResponse = EstateManagement.DataTransferObjects.Responses.Merchant.MerchantResponse;
     using Product = Common.Product;
     using ReqnrollExtensions = IntegrationTesting.Helpers.ReqnrollExtensions;
     
@@ -144,9 +153,9 @@ namespace TransactionProcessor.IntegrationTests.Shared
         [When(@"I assign the following  operator to the merchants")]
         public async Task WhenIAssignTheFollowingOperatorToTheMerchants(DataTable table)
         {
-            List<(EstateDetails, Guid, AssignOperatorRequest)> requests = table.Rows.ToAssignOperatorRequests(this.TestingContext.Estates);
+            List<(EstateDetails, Guid, EstateManagement.DataTransferObjects.Requests.Merchant.AssignOperatorRequest)> requests = table.Rows.ToAssignOperatorRequests(this.TestingContext.Estates);
 
-            List<(EstateDetails, MerchantOperatorResponse)> results = await this.EstateManagementSteps.WhenIAssignTheFollowingOperatorToTheMerchants(this.TestingContext.AccessToken, requests);
+            List<(EstateDetails, EstateManagement.DataTransferObjects.Responses.Merchant.MerchantOperatorResponse)> results = await this.EstateManagementSteps.WhenIAssignTheFollowingOperatorToTheMerchants(this.TestingContext.AccessToken, requests);
 
             foreach ((EstateDetails, MerchantOperatorResponse) result in results)
             {
@@ -170,15 +179,25 @@ namespace TransactionProcessor.IntegrationTests.Shared
             }
         }
 
+        [Given("I have assigned the following operators to the estates")]
+        public async Task GivenIHaveAssignedTheFollowingOperatorsToTheEstates(DataTable dataTable)
+        {
+            List<(EstateDetails estate, AssignOperatorRequest request)> requests = dataTable.Rows.ToAssignOperatorToEstateRequests(this.TestingContext.Estates);
+
+            await this.EstateManagementSteps.GivenIHaveAssignedTheFollowingOperatorsToTheEstates(this.TestingContext.AccessToken, requests);
+
+            // TODO Verify
+        }
+
         [Given("I create the following merchants")]
         [When(@"I create the following merchants")]
         public async Task WhenICreateTheFollowingMerchants(DataTable table)
         {
             List<(EstateDetails estate, CreateMerchantRequest)> requests = table.Rows.ToCreateMerchantRequests(this.TestingContext.Estates);
 
-            List<MerchantResponse> verifiedMerchants = await this.EstateManagementSteps.WhenICreateTheFollowingMerchants(this.TestingContext.AccessToken, requests);
+            List<EstateManagement.DataTransferObjects.Responses.Merchant.MerchantResponse> verifiedMerchants = await this.EstateManagementSteps.WhenICreateTheFollowingMerchants(this.TestingContext.AccessToken, requests);
 
-            foreach (MerchantResponse verifiedMerchant in verifiedMerchants){
+            foreach (EstateManagement.DataTransferObjects.Responses.Merchant.MerchantResponse verifiedMerchant in verifiedMerchants){
                 await this.TransactionProcessorSteps.WhenICreateTheFollowingMerchants(this.TestingContext.AccessToken, verifiedMerchant.EstateId, verifiedMerchant.MerchantId);
 
                 EstateDetails estateDetails = this.TestingContext.GetEstateDetails(verifiedMerchant.EstateId);
@@ -255,7 +274,7 @@ namespace TransactionProcessor.IntegrationTests.Shared
 
             List<(EstateDetails, Guid, AddMerchantDeviceRequest)> requests = table.Rows.ToAddMerchantDeviceRequests(this.TestingContext.Estates);
 
-            List<(EstateDetails, MerchantResponse, String)> results = await this.EstateManagementSteps.GivenIHaveAssignedTheFollowingDevicesToTheMerchants(this.TestingContext.AccessToken, requests);
+            List<(EstateDetails, EstateManagement.DataTransferObjects.Responses.Merchant.MerchantResponse, String)> results = await this.EstateManagementSteps.GivenIHaveAssignedTheFollowingDevicesToTheMerchants(this.TestingContext.AccessToken, requests);
             foreach ((EstateDetails, MerchantResponse, String) result in results)
             {
                 this.TestingContext.Logger.LogInformation($"Device {result.Item3} assigned to Merchant {result.Item2.MerchantName} Estate {result.Item1.EstateName}");

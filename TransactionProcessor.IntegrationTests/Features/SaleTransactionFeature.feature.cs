@@ -19,46 +19,43 @@ namespace TransactionProcessor.IntegrationTests.Features
     
     [System.CodeDom.Compiler.GeneratedCodeAttribute("Reqnroll", "1.0.0.0")]
     [System.Runtime.CompilerServices.CompilerGeneratedAttribute()]
-    [Xunit.TraitAttribute("Category", "base")]
-    [Xunit.TraitAttribute("Category", "shared")]
-    public partial class SaleTransactionFeature : object, Xunit.IClassFixture<SaleTransactionFeature.FixtureData>, Xunit.IAsyncLifetime
+    [NUnit.Framework.TestFixtureAttribute()]
+    [NUnit.Framework.DescriptionAttribute("SaleTransaction")]
+    [NUnit.Framework.CategoryAttribute("base")]
+    [NUnit.Framework.CategoryAttribute("shared")]
+    public partial class SaleTransactionFeature
     {
         
-        private static Reqnroll.ITestRunner testRunner;
+        private Reqnroll.ITestRunner testRunner;
         
         private static string[] featureTags = new string[] {
                 "base",
                 "shared"};
         
-        private Xunit.Abstractions.ITestOutputHelper _testOutputHelper;
-        
 #line 1 "SaleTransactionFeature.feature"
 #line hidden
         
-        public SaleTransactionFeature(SaleTransactionFeature.FixtureData fixtureData, Xunit.Abstractions.ITestOutputHelper testOutputHelper)
+        [NUnit.Framework.OneTimeSetUpAttribute()]
+        public virtual async System.Threading.Tasks.Task FeatureSetupAsync()
         {
-            this._testOutputHelper = testOutputHelper;
-        }
-        
-        public static async System.Threading.Tasks.Task FeatureSetupAsync()
-        {
-            testRunner = Reqnroll.TestRunnerManager.GetTestRunnerForAssembly(null, Reqnroll.xUnit.ReqnrollPlugin.XUnitParallelWorkerTracker.Instance.GetWorkerId());
+            testRunner = Reqnroll.TestRunnerManager.GetTestRunnerForAssembly(null, NUnit.Framework.TestContext.CurrentContext.WorkerId);
             Reqnroll.FeatureInfo featureInfo = new Reqnroll.FeatureInfo(new System.Globalization.CultureInfo("en-US"), "Features", "SaleTransaction", null, ProgrammingLanguage.CSharp, featureTags);
             await testRunner.OnFeatureStartAsync(featureInfo);
         }
         
-        public static async System.Threading.Tasks.Task FeatureTearDownAsync()
+        [NUnit.Framework.OneTimeTearDownAttribute()]
+        public virtual async System.Threading.Tasks.Task FeatureTearDownAsync()
         {
-            string testWorkerId = testRunner.TestWorkerId;
             await testRunner.OnFeatureEndAsync();
             testRunner = null;
-            Reqnroll.xUnit.ReqnrollPlugin.XUnitParallelWorkerTracker.Instance.ReleaseWorker(testWorkerId);
         }
         
+        [NUnit.Framework.SetUpAttribute()]
         public async System.Threading.Tasks.Task TestInitializeAsync()
         {
         }
         
+        [NUnit.Framework.TearDownAttribute()]
         public async System.Threading.Tasks.Task TestTearDownAsync()
         {
             await testRunner.OnScenarioEndAsync();
@@ -67,7 +64,7 @@ namespace TransactionProcessor.IntegrationTests.Features
         public void ScenarioInitialize(Reqnroll.ScenarioInfo scenarioInfo)
         {
             testRunner.OnScenarioInitialize(scenarioInfo);
-            testRunner.ScenarioContext.ScenarioContainer.RegisterInstanceAs<Xunit.Abstractions.ITestOutputHelper>(_testOutputHelper);
+            testRunner.ScenarioContext.ScenarioContainer.RegisterInstanceAs<NUnit.Framework.TestContext>(NUnit.Framework.TestContext.CurrentContext);
         }
         
         public async System.Threading.Tasks.Task ScenarioStartAsync()
@@ -84,181 +81,199 @@ namespace TransactionProcessor.IntegrationTests.Features
         {
 #line 4
 #line hidden
-            Reqnroll.Table table49 = new Reqnroll.Table(new string[] {
+            Reqnroll.Table table52 = new Reqnroll.Table(new string[] {
                         "Name",
                         "DisplayName",
                         "Description"});
-            table49.AddRow(new string[] {
+            table52.AddRow(new string[] {
                         "estateManagement",
                         "Estate Managememt REST Scope",
                         "A scope for Estate Managememt REST"});
-            table49.AddRow(new string[] {
+            table52.AddRow(new string[] {
                         "transactionProcessor",
                         "Transaction Processor REST  Scope",
                         "A scope for Transaction Processor REST"});
-            table49.AddRow(new string[] {
+            table52.AddRow(new string[] {
                         "voucherManagement",
                         "Voucher Management REST  Scope",
                         "A scope for Voucher Management REST"});
-            table49.AddRow(new string[] {
+            table52.AddRow(new string[] {
                         "messagingService",
                         "Scope for Messaging REST",
                         "Scope for Messaging REST"});
 #line 6
- await testRunner.GivenAsync("I create the following api scopes", ((string)(null)), table49, "Given ");
+ await testRunner.GivenAsync("I create the following api scopes", ((string)(null)), table52, "Given ");
 #line hidden
-            Reqnroll.Table table50 = new Reqnroll.Table(new string[] {
+            Reqnroll.Table table53 = new Reqnroll.Table(new string[] {
                         "Name",
                         "DisplayName",
                         "Secret",
                         "Scopes",
                         "UserClaims"});
-            table50.AddRow(new string[] {
+            table53.AddRow(new string[] {
                         "estateManagement",
                         "Estate Managememt REST",
                         "Secret1",
                         "estateManagement",
                         "MerchantId, EstateId, role"});
-            table50.AddRow(new string[] {
+            table53.AddRow(new string[] {
                         "transactionProcessor",
                         "Transaction Processor REST",
                         "Secret1",
                         "transactionProcessor",
                         ""});
-            table50.AddRow(new string[] {
+            table53.AddRow(new string[] {
                         "voucherManagement",
                         "Voucher Management REST",
                         "Secret1",
                         "voucherManagement",
                         ""});
-            table50.AddRow(new string[] {
+            table53.AddRow(new string[] {
                         "messagingService",
                         "Messaging REST",
                         "Secret",
                         "messagingService",
                         ""});
 #line 13
- await testRunner.GivenAsync("the following api resources exist", ((string)(null)), table50, "Given ");
+ await testRunner.GivenAsync("the following api resources exist", ((string)(null)), table53, "Given ");
 #line hidden
-            Reqnroll.Table table51 = new Reqnroll.Table(new string[] {
+            Reqnroll.Table table54 = new Reqnroll.Table(new string[] {
                         "ClientId",
                         "ClientName",
                         "Secret",
                         "Scopes",
                         "GrantTypes"});
-            table51.AddRow(new string[] {
+            table54.AddRow(new string[] {
                         "serviceClient",
                         "Service Client",
                         "Secret1",
                         "estateManagement,transactionProcessor,voucherManagement,messagingService",
                         "client_credentials"});
 #line 20
- await testRunner.GivenAsync("the following clients exist", ((string)(null)), table51, "Given ");
+ await testRunner.GivenAsync("the following clients exist", ((string)(null)), table54, "Given ");
 #line hidden
-            Reqnroll.Table table52 = new Reqnroll.Table(new string[] {
+            Reqnroll.Table table55 = new Reqnroll.Table(new string[] {
                         "ClientId"});
-            table52.AddRow(new string[] {
+            table55.AddRow(new string[] {
                         "serviceClient"});
 #line 24
  await testRunner.GivenAsync("I have a token to access the estate management and transaction processor resource" +
-                    "s", ((string)(null)), table52, "Given ");
+                    "s", ((string)(null)), table55, "Given ");
 #line hidden
-            Reqnroll.Table table53 = new Reqnroll.Table(new string[] {
+            Reqnroll.Table table56 = new Reqnroll.Table(new string[] {
                         "AccountNumber",
                         "AccountName",
                         "DueDate",
                         "Amount"});
-            table53.AddRow(new string[] {
+            table56.AddRow(new string[] {
                         "12345678",
                         "Test Account 1",
                         "Today",
                         "100.00"});
 #line 28
- await testRunner.GivenAsync("the following bills are available at the PataPawa PostPaid Host", ((string)(null)), table53, "Given ");
+ await testRunner.GivenAsync("the following bills are available at the PataPawa PostPaid Host", ((string)(null)), table56, "Given ");
 #line hidden
-            Reqnroll.Table table54 = new Reqnroll.Table(new string[] {
+            Reqnroll.Table table57 = new Reqnroll.Table(new string[] {
                         "Username",
                         "Password"});
-            table54.AddRow(new string[] {
+            table57.AddRow(new string[] {
                         "operatora",
                         "1234567898"});
 #line 32
- await testRunner.GivenAsync("the following users are available at the PataPawa PrePay Host", ((string)(null)), table54, "Given ");
+ await testRunner.GivenAsync("the following users are available at the PataPawa PrePay Host", ((string)(null)), table57, "Given ");
 #line hidden
-            Reqnroll.Table table55 = new Reqnroll.Table(new string[] {
+            Reqnroll.Table table58 = new Reqnroll.Table(new string[] {
                         "MeterNumber",
                         "CustomerName"});
-            table55.AddRow(new string[] {
+            table58.AddRow(new string[] {
                         "00000001",
                         "Customer 1"});
-            table55.AddRow(new string[] {
+            table58.AddRow(new string[] {
                         "00000002",
                         "Customer 2"});
-            table55.AddRow(new string[] {
+            table58.AddRow(new string[] {
                         "00000003",
                         "Customer 3"});
 #line 36
- await testRunner.GivenAsync("the following meters are available at the PataPawa PrePay Host", ((string)(null)), table55, "Given ");
+ await testRunner.GivenAsync("the following meters are available at the PataPawa PrePay Host", ((string)(null)), table58, "Given ");
 #line hidden
-            Reqnroll.Table table56 = new Reqnroll.Table(new string[] {
+            Reqnroll.Table table59 = new Reqnroll.Table(new string[] {
                         "EstateName"});
-            table56.AddRow(new string[] {
+            table59.AddRow(new string[] {
                         "Test Estate 1"});
 #line 42
- await testRunner.GivenAsync("I have created the following estates", ((string)(null)), table56, "Given ");
+ await testRunner.GivenAsync("I have created the following estates", ((string)(null)), table59, "Given ");
 #line hidden
-            Reqnroll.Table table57 = new Reqnroll.Table(new string[] {
+            Reqnroll.Table table60 = new Reqnroll.Table(new string[] {
                         "EstateName",
                         "OperatorName",
                         "RequireCustomMerchantNumber",
                         "RequireCustomTerminalNumber"});
-            table57.AddRow(new string[] {
+            table60.AddRow(new string[] {
                         "Test Estate 1",
                         "Safaricom",
                         "True",
                         "True"});
-            table57.AddRow(new string[] {
+            table60.AddRow(new string[] {
                         "Test Estate 1",
                         "Voucher",
                         "True",
                         "True"});
-            table57.AddRow(new string[] {
+            table60.AddRow(new string[] {
                         "Test Estate 1",
                         "PataPawa PostPay",
                         "True",
                         "True"});
-            table57.AddRow(new string[] {
+            table60.AddRow(new string[] {
                         "Test Estate 1",
                         "PataPawa PrePay",
                         "True",
                         "True"});
 #line 46
- await testRunner.GivenAsync("I have created the following operators", ((string)(null)), table57, "Given ");
+ await testRunner.GivenAsync("I have created the following operators", ((string)(null)), table60, "Given ");
 #line hidden
-            Reqnroll.Table table58 = new Reqnroll.Table(new string[] {
+            Reqnroll.Table table61 = new Reqnroll.Table(new string[] {
+                        "EstateName",
+                        "OperatorName"});
+            table61.AddRow(new string[] {
+                        "Test Estate 1",
+                        "Safaricom"});
+            table61.AddRow(new string[] {
+                        "Test Estate 1",
+                        "Voucher"});
+            table61.AddRow(new string[] {
+                        "Test Estate 1",
+                        "PataPawa PostPay"});
+            table61.AddRow(new string[] {
+                        "Test Estate 1",
+                        "PataPawa PrePay"});
+#line 53
+ await testRunner.AndAsync("I have assigned the following operators to the estates", ((string)(null)), table61, "And ");
+#line hidden
+            Reqnroll.Table table62 = new Reqnroll.Table(new string[] {
                         "EstateName",
                         "OperatorName",
                         "ContractDescription"});
-            table58.AddRow(new string[] {
+            table62.AddRow(new string[] {
                         "Test Estate 1",
                         "Safaricom",
                         "Safaricom Contract"});
-            table58.AddRow(new string[] {
+            table62.AddRow(new string[] {
                         "Test Estate 1",
                         "Voucher",
                         "Hospital 1 Contract"});
-            table58.AddRow(new string[] {
+            table62.AddRow(new string[] {
                         "Test Estate 1",
                         "PataPawa PostPay",
                         "PataPawa PostPay Contract"});
-            table58.AddRow(new string[] {
+            table62.AddRow(new string[] {
                         "Test Estate 1",
                         "PataPawa PrePay",
                         "PataPawa PrePay Contract"});
-#line 53
- await testRunner.GivenAsync("I create a contract with the following values", ((string)(null)), table58, "Given ");
+#line 60
+ await testRunner.GivenAsync("I create a contract with the following values", ((string)(null)), table62, "Given ");
 #line hidden
-            Reqnroll.Table table59 = new Reqnroll.Table(new string[] {
+            Reqnroll.Table table63 = new Reqnroll.Table(new string[] {
                         "EstateName",
                         "OperatorName",
                         "ContractDescription",
@@ -266,7 +281,7 @@ namespace TransactionProcessor.IntegrationTests.Features
                         "DisplayText",
                         "Value",
                         "ProductType"});
-            table59.AddRow(new string[] {
+            table63.AddRow(new string[] {
                         "Test Estate 1",
                         "Safaricom",
                         "Safaricom Contract",
@@ -274,7 +289,7 @@ namespace TransactionProcessor.IntegrationTests.Features
                         "Custom",
                         "",
                         "MobileTopup"});
-            table59.AddRow(new string[] {
+            table63.AddRow(new string[] {
                         "Test Estate 1",
                         "Voucher",
                         "Hospital 1 Contract",
@@ -282,7 +297,7 @@ namespace TransactionProcessor.IntegrationTests.Features
                         "10 KES",
                         "",
                         "Voucher"});
-            table59.AddRow(new string[] {
+            table63.AddRow(new string[] {
                         "Test Estate 1",
                         "PataPawa PostPay",
                         "PataPawa PostPay Contract",
@@ -290,7 +305,7 @@ namespace TransactionProcessor.IntegrationTests.Features
                         "Bill Pay (Post)",
                         "",
                         "BillPayment"});
-            table59.AddRow(new string[] {
+            table63.AddRow(new string[] {
                         "Test Estate 1",
                         "PataPawa PrePay",
                         "PataPawa PrePay Contract",
@@ -298,10 +313,10 @@ namespace TransactionProcessor.IntegrationTests.Features
                         "Bill Pay (Pre)",
                         "",
                         "BillPayment"});
-#line 60
- await testRunner.WhenAsync("I create the following Products", ((string)(null)), table59, "When ");
+#line 67
+ await testRunner.WhenAsync("I create the following Products", ((string)(null)), table63, "When ");
 #line hidden
-            Reqnroll.Table table60 = new Reqnroll.Table(new string[] {
+            Reqnroll.Table table64 = new Reqnroll.Table(new string[] {
                         "EstateName",
                         "OperatorName",
                         "ContractDescription",
@@ -309,7 +324,7 @@ namespace TransactionProcessor.IntegrationTests.Features
                         "CalculationType",
                         "FeeDescription",
                         "Value"});
-            table60.AddRow(new string[] {
+            table64.AddRow(new string[] {
                         "Test Estate 1",
                         "Safaricom",
                         "Safaricom Contract",
@@ -317,7 +332,7 @@ namespace TransactionProcessor.IntegrationTests.Features
                         "Percentage",
                         "Merchant Commission",
                         "0.50"});
-            table60.AddRow(new string[] {
+            table64.AddRow(new string[] {
                         "Test Estate 1",
                         "PataPawa PostPay",
                         "PataPawa PostPay Contract",
@@ -325,7 +340,7 @@ namespace TransactionProcessor.IntegrationTests.Features
                         "Percentage",
                         "Merchant Commission",
                         "0.50"});
-            table60.AddRow(new string[] {
+            table64.AddRow(new string[] {
                         "Test Estate 1",
                         "PataPawa PrePay",
                         "PataPawa PrePay Contract",
@@ -333,10 +348,10 @@ namespace TransactionProcessor.IntegrationTests.Features
                         "Percentage",
                         "Merchant Commission",
                         "0.50"});
-#line 67
- await testRunner.WhenAsync("I add the following Transaction Fees", ((string)(null)), table60, "When ");
+#line 74
+ await testRunner.WhenAsync("I add the following Transaction Fees", ((string)(null)), table64, "When ");
 #line hidden
-            Reqnroll.Table table61 = new Reqnroll.Table(new string[] {
+            Reqnroll.Table table65 = new Reqnroll.Table(new string[] {
                         "MerchantName",
                         "AddressLine1",
                         "Town",
@@ -345,7 +360,7 @@ namespace TransactionProcessor.IntegrationTests.Features
                         "ContactName",
                         "EmailAddress",
                         "EstateName"});
-            table61.AddRow(new string[] {
+            table65.AddRow(new string[] {
                         "Test Merchant 1",
                         "Address Line 1",
                         "TestTown",
@@ -354,7 +369,7 @@ namespace TransactionProcessor.IntegrationTests.Features
                         "Test Contact 1",
                         "testcontact1@merchant1.co.uk",
                         "Test Estate 1"});
-            table61.AddRow(new string[] {
+            table65.AddRow(new string[] {
                         "Test Merchant 2",
                         "Address Line 1",
                         "TestTown",
@@ -363,7 +378,7 @@ namespace TransactionProcessor.IntegrationTests.Features
                         "Test Contact 2",
                         "testcontact2@merchant2.co.uk",
                         "Test Estate 1"});
-            table61.AddRow(new string[] {
+            table65.AddRow(new string[] {
                         "Test Merchant 3",
                         "Address Line 1",
                         "TestTown",
@@ -372,7 +387,7 @@ namespace TransactionProcessor.IntegrationTests.Features
                         "Test Contact 3",
                         "testcontact3@merchant3.co.uk",
                         "Test Estate 1"});
-            table61.AddRow(new string[] {
+            table65.AddRow(new string[] {
                         "Test Merchant 4",
                         "Address Line 1",
                         "TestTown",
@@ -381,264 +396,253 @@ namespace TransactionProcessor.IntegrationTests.Features
                         "Test Contact 4",
                         "testcontact4@merchant4.co.uk",
                         "Test Estate 1"});
-#line 73
- await testRunner.GivenAsync("I create the following merchants", ((string)(null)), table61, "Given ");
+#line 80
+ await testRunner.GivenAsync("I create the following merchants", ((string)(null)), table65, "Given ");
 #line hidden
-            Reqnroll.Table table62 = new Reqnroll.Table(new string[] {
+            Reqnroll.Table table66 = new Reqnroll.Table(new string[] {
                         "OperatorName",
                         "MerchantName",
                         "MerchantNumber",
                         "TerminalNumber",
                         "EstateName"});
-            table62.AddRow(new string[] {
+            table66.AddRow(new string[] {
                         "Safaricom",
                         "Test Merchant 1",
                         "00000001",
                         "10000001",
                         "Test Estate 1"});
-            table62.AddRow(new string[] {
+            table66.AddRow(new string[] {
                         "Voucher",
                         "Test Merchant 1",
                         "00000001",
                         "10000001",
                         "Test Estate 1"});
-            table62.AddRow(new string[] {
+            table66.AddRow(new string[] {
                         "PataPawa PostPay",
                         "Test Merchant 1",
                         "00000001",
                         "10000001",
                         "Test Estate 1"});
-            table62.AddRow(new string[] {
+            table66.AddRow(new string[] {
                         "PataPawa PrePay",
                         "Test Merchant 1",
                         "00000001",
                         "10000001",
                         "Test Estate 1"});
-            table62.AddRow(new string[] {
+            table66.AddRow(new string[] {
                         "Safaricom",
                         "Test Merchant 2",
                         "00000002",
                         "10000002",
                         "Test Estate 1"});
-            table62.AddRow(new string[] {
+            table66.AddRow(new string[] {
                         "Voucher",
                         "Test Merchant 2",
                         "00000002",
                         "10000002",
                         "Test Estate 1"});
-            table62.AddRow(new string[] {
+            table66.AddRow(new string[] {
                         "PataPawa PostPay",
                         "Test Merchant 2",
                         "00000002",
                         "10000002",
                         "Test Estate 1"});
-            table62.AddRow(new string[] {
+            table66.AddRow(new string[] {
                         "PataPawa PrePay",
                         "Test Merchant 2",
                         "00000001",
                         "10000001",
                         "Test Estate 1"});
-            table62.AddRow(new string[] {
+            table66.AddRow(new string[] {
                         "Safaricom",
                         "Test Merchant 3",
                         "00000003",
                         "10000003",
                         "Test Estate 1"});
-            table62.AddRow(new string[] {
+            table66.AddRow(new string[] {
                         "Voucher",
                         "Test Merchant 3",
                         "00000003",
                         "10000003",
                         "Test Estate 1"});
-            table62.AddRow(new string[] {
+            table66.AddRow(new string[] {
                         "PataPawa PostPay",
                         "Test Merchant 3",
                         "00000003",
                         "10000003",
                         "Test Estate 1"});
-            table62.AddRow(new string[] {
+            table66.AddRow(new string[] {
                         "PataPawa PrePay",
                         "Test Merchant 3",
                         "00000001",
                         "10000001",
                         "Test Estate 1"});
-            table62.AddRow(new string[] {
+            table66.AddRow(new string[] {
                         "Safaricom",
                         "Test Merchant 4",
                         "00000004",
                         "10000004",
                         "Test Estate 1"});
-            table62.AddRow(new string[] {
+            table66.AddRow(new string[] {
                         "Voucher",
                         "Test Merchant 4",
                         "00000004",
                         "10000004",
                         "Test Estate 1"});
-            table62.AddRow(new string[] {
+            table66.AddRow(new string[] {
                         "PataPawa PostPay",
                         "Test Merchant 4",
                         "00000004",
                         "10000004",
                         "Test Estate 1"});
-            table62.AddRow(new string[] {
+            table66.AddRow(new string[] {
                         "PataPawa PrePay",
                         "Test Merchant 4",
                         "00000001",
                         "10000001",
                         "Test Estate 1"});
-#line 80
- await testRunner.GivenAsync("I have assigned the following  operator to the merchants", ((string)(null)), table62, "Given ");
+#line 87
+ await testRunner.GivenAsync("I have assigned the following  operator to the merchants", ((string)(null)), table66, "Given ");
 #line hidden
-            Reqnroll.Table table63 = new Reqnroll.Table(new string[] {
+            Reqnroll.Table table67 = new Reqnroll.Table(new string[] {
                         "DeviceIdentifier",
                         "MerchantName",
                         "EstateName"});
-            table63.AddRow(new string[] {
+            table67.AddRow(new string[] {
                         "123456780",
                         "Test Merchant 1",
                         "Test Estate 1"});
-            table63.AddRow(new string[] {
+            table67.AddRow(new string[] {
                         "123456781",
                         "Test Merchant 2",
                         "Test Estate 1"});
-            table63.AddRow(new string[] {
+            table67.AddRow(new string[] {
                         "123456782",
                         "Test Merchant 3",
                         "Test Estate 1"});
-            table63.AddRow(new string[] {
+            table67.AddRow(new string[] {
                         "123456783",
                         "Test Merchant 4",
                         "Test Estate 1"});
-#line 99
- await testRunner.GivenAsync("I have assigned the following devices to the merchants", ((string)(null)), table63, "Given ");
+#line 106
+ await testRunner.GivenAsync("I have assigned the following devices to the merchants", ((string)(null)), table67, "Given ");
 #line hidden
-            Reqnroll.Table table64 = new Reqnroll.Table(new string[] {
+            Reqnroll.Table table68 = new Reqnroll.Table(new string[] {
                         "Reference",
                         "Amount",
                         "DateTime",
                         "MerchantName",
                         "EstateName"});
-            table64.AddRow(new string[] {
+            table68.AddRow(new string[] {
                         "Deposit1",
                         "265.00",
                         "Today",
                         "Test Merchant 1",
                         "Test Estate 1"});
-            table64.AddRow(new string[] {
+            table68.AddRow(new string[] {
                         "Deposit1",
                         "110.00",
                         "Today",
                         "Test Merchant 2",
                         "Test Estate 1"});
-            table64.AddRow(new string[] {
+            table68.AddRow(new string[] {
                         "Deposit1",
                         "110.00",
                         "Today",
                         "Test Merchant 3",
                         "Test Estate 1"});
-            table64.AddRow(new string[] {
+            table68.AddRow(new string[] {
                         "Deposit1",
                         "100.00",
                         "Today",
                         "Test Merchant 4",
                         "Test Estate 1"});
-#line 106
- await testRunner.GivenAsync("I make the following manual merchant deposits", ((string)(null)), table64, "Given ");
+#line 113
+ await testRunner.GivenAsync("I make the following manual merchant deposits", ((string)(null)), table68, "Given ");
 #line hidden
-            Reqnroll.Table table65 = new Reqnroll.Table(new string[] {
+            Reqnroll.Table table69 = new Reqnroll.Table(new string[] {
                         "EstateName",
                         "MerchantName",
                         "ContractDescription"});
-            table65.AddRow(new string[] {
+            table69.AddRow(new string[] {
                         "Test Estate 1",
                         "Test Merchant 1",
                         "Safaricom Contract"});
-            table65.AddRow(new string[] {
+            table69.AddRow(new string[] {
                         "Test Estate 1",
                         "Test Merchant 1",
                         "Hospital 1 Contract"});
-            table65.AddRow(new string[] {
+            table69.AddRow(new string[] {
                         "Test Estate 1",
                         "Test Merchant 1",
                         "PataPawa PostPay Contract"});
-            table65.AddRow(new string[] {
+            table69.AddRow(new string[] {
                         "Test Estate 1",
                         "Test Merchant 1",
                         "PataPawa PrePay Contract"});
-            table65.AddRow(new string[] {
+            table69.AddRow(new string[] {
                         "Test Estate 1",
                         "Test Merchant 2",
                         "Safaricom Contract"});
-            table65.AddRow(new string[] {
+            table69.AddRow(new string[] {
                         "Test Estate 1",
                         "Test Merchant 2",
                         "Hospital 1 Contract"});
-            table65.AddRow(new string[] {
+            table69.AddRow(new string[] {
                         "Test Estate 1",
                         "Test Merchant 2",
                         "PataPawa PostPay Contract"});
-            table65.AddRow(new string[] {
+            table69.AddRow(new string[] {
                         "Test Estate 1",
                         "Test Merchant 2",
                         "PataPawa PrePay Contract"});
-            table65.AddRow(new string[] {
+            table69.AddRow(new string[] {
                         "Test Estate 1",
                         "Test Merchant 3",
                         "Safaricom Contract"});
-            table65.AddRow(new string[] {
+            table69.AddRow(new string[] {
                         "Test Estate 1",
                         "Test Merchant 3",
                         "Hospital 1 Contract"});
-            table65.AddRow(new string[] {
+            table69.AddRow(new string[] {
                         "Test Estate 1",
                         "Test Merchant 3",
                         "PataPawa PostPay Contract"});
-            table65.AddRow(new string[] {
+            table69.AddRow(new string[] {
                         "Test Estate 1",
                         "Test Merchant 3",
                         "PataPawa PrePay Contract"});
-            table65.AddRow(new string[] {
+            table69.AddRow(new string[] {
                         "Test Estate 1",
                         "Test Merchant 4",
                         "Safaricom Contract"});
-            table65.AddRow(new string[] {
+            table69.AddRow(new string[] {
                         "Test Estate 1",
                         "Test Merchant 4",
                         "Hospital 1 Contract"});
-            table65.AddRow(new string[] {
+            table69.AddRow(new string[] {
                         "Test Estate 1",
                         "Test Merchant 4",
                         "PataPawa PostPay Contract"});
-            table65.AddRow(new string[] {
+            table69.AddRow(new string[] {
                         "Test Estate 1",
                         "Test Merchant 4",
                         "PataPawa PrePay Contract"});
-#line 113
- await testRunner.WhenAsync("I add the following contracts to the following merchants", ((string)(null)), table65, "When ");
+#line 120
+ await testRunner.WhenAsync("I add the following contracts to the following merchants", ((string)(null)), table69, "When ");
 #line hidden
         }
         
-        async System.Threading.Tasks.Task Xunit.IAsyncLifetime.InitializeAsync()
-        {
-            await this.TestInitializeAsync();
-        }
-        
-        async System.Threading.Tasks.Task Xunit.IAsyncLifetime.DisposeAsync()
-        {
-            await this.TestTearDownAsync();
-        }
-        
-        [Xunit.SkippableFactAttribute(DisplayName="Sale Transactions")]
-        [Xunit.TraitAttribute("FeatureTitle", "SaleTransaction")]
-        [Xunit.TraitAttribute("Description", "Sale Transactions")]
-        [Xunit.TraitAttribute("Category", "PRTest")]
+        [NUnit.Framework.TestAttribute()]
+        [NUnit.Framework.DescriptionAttribute("Sale Transactions")]
+        [NUnit.Framework.CategoryAttribute("PRTest")]
         public async System.Threading.Tasks.Task SaleTransactions()
         {
             string[] tagsOfScenario = new string[] {
                     "PRTest"};
             System.Collections.Specialized.OrderedDictionary argumentsOfScenario = new System.Collections.Specialized.OrderedDictionary();
             Reqnroll.ScenarioInfo scenarioInfo = new Reqnroll.ScenarioInfo("Sale Transactions", null, tagsOfScenario, argumentsOfScenario, featureTags);
-#line 133
+#line 140
 this.ScenarioInitialize(scenarioInfo);
 #line hidden
             if ((TagHelper.ContainsIgnoreTag(tagsOfScenario) || TagHelper.ContainsIgnoreTag(featureTags)))
@@ -651,7 +655,7 @@ this.ScenarioInitialize(scenarioInfo);
 #line 4
 await this.FeatureBackgroundAsync();
 #line hidden
-                Reqnroll.Table table66 = new Reqnroll.Table(new string[] {
+                Reqnroll.Table table70 = new Reqnroll.Table(new string[] {
                             "DateTime",
                             "TransactionNumber",
                             "TransactionType",
@@ -671,7 +675,7 @@ await this.FeatureBackgroundAsync();
                             "AccountNumber",
                             "CustomerName",
                             "MeterNumber"});
-                table66.AddRow(new string[] {
+                table70.AddRow(new string[] {
                             "Today",
                             "1",
                             "Sale",
@@ -691,7 +695,7 @@ await this.FeatureBackgroundAsync();
                             "",
                             "",
                             ""});
-                table66.AddRow(new string[] {
+                table70.AddRow(new string[] {
                             "Today",
                             "2",
                             "Sale",
@@ -711,7 +715,7 @@ await this.FeatureBackgroundAsync();
                             "",
                             "",
                             ""});
-                table66.AddRow(new string[] {
+                table70.AddRow(new string[] {
                             "Today",
                             "3",
                             "Sale",
@@ -731,7 +735,7 @@ await this.FeatureBackgroundAsync();
                             "",
                             "",
                             ""});
-                table66.AddRow(new string[] {
+                table70.AddRow(new string[] {
                             "Today",
                             "4",
                             "Sale",
@@ -751,7 +755,7 @@ await this.FeatureBackgroundAsync();
                             "",
                             "",
                             ""});
-                table66.AddRow(new string[] {
+                table70.AddRow(new string[] {
                             "Today",
                             "5",
                             "Sale",
@@ -771,7 +775,7 @@ await this.FeatureBackgroundAsync();
                             "",
                             "",
                             ""});
-                table66.AddRow(new string[] {
+                table70.AddRow(new string[] {
                             "Today",
                             "6",
                             "Sale",
@@ -791,7 +795,7 @@ await this.FeatureBackgroundAsync();
                             "",
                             "",
                             ""});
-                table66.AddRow(new string[] {
+                table70.AddRow(new string[] {
                             "Today",
                             "7",
                             "Sale",
@@ -811,7 +815,7 @@ await this.FeatureBackgroundAsync();
                             "",
                             "",
                             ""});
-                table66.AddRow(new string[] {
+                table70.AddRow(new string[] {
                             "Today",
                             "8",
                             "Sale",
@@ -831,7 +835,7 @@ await this.FeatureBackgroundAsync();
                             "12345678",
                             "",
                             ""});
-                table66.AddRow(new string[] {
+                table70.AddRow(new string[] {
                             "Today",
                             "9",
                             "Sale",
@@ -851,7 +855,7 @@ await this.FeatureBackgroundAsync();
                             "12345678",
                             "Mr Test Customer",
                             ""});
-                table66.AddRow(new string[] {
+                table70.AddRow(new string[] {
                             "Today",
                             "10",
                             "Sale",
@@ -871,7 +875,7 @@ await this.FeatureBackgroundAsync();
                             "",
                             "",
                             "00000001"});
-                table66.AddRow(new string[] {
+                table70.AddRow(new string[] {
                             "Today",
                             "11",
                             "Sale",
@@ -891,85 +895,85 @@ await this.FeatureBackgroundAsync();
                             "00000001",
                             "Customer 1",
                             "00000001"});
-#line 135
- await testRunner.WhenAsync("I perform the following transactions", ((string)(null)), table66, "When ");
+#line 142
+ await testRunner.WhenAsync("I perform the following transactions", ((string)(null)), table70, "When ");
 #line hidden
-                Reqnroll.Table table67 = new Reqnroll.Table(new string[] {
+                Reqnroll.Table table71 = new Reqnroll.Table(new string[] {
                             "EstateName",
                             "MerchantName",
                             "TransactionNumber",
                             "ResponseCode",
                             "ResponseMessage"});
-                table67.AddRow(new string[] {
+                table71.AddRow(new string[] {
                             "Test Estate 1",
                             "Test Merchant 1",
                             "1",
                             "0000",
                             "SUCCESS"});
-                table67.AddRow(new string[] {
+                table71.AddRow(new string[] {
                             "Test Estate 1",
                             "Test Merchant 2",
                             "2",
                             "0000",
                             "SUCCESS"});
-                table67.AddRow(new string[] {
+                table71.AddRow(new string[] {
                             "Test Estate 1",
                             "Test Merchant 3",
                             "3",
                             "0000",
                             "SUCCESS"});
-                table67.AddRow(new string[] {
+                table71.AddRow(new string[] {
                             "Test Estate 1",
                             "Test Merchant 1",
                             "4",
                             "0000",
                             "SUCCESS"});
-                table67.AddRow(new string[] {
+                table71.AddRow(new string[] {
                             "Test Estate 1",
                             "Test Merchant 1",
                             "5",
                             "0000",
                             "SUCCESS"});
-                table67.AddRow(new string[] {
+                table71.AddRow(new string[] {
                             "Test Estate 1",
                             "Test Merchant 2",
                             "6",
                             "0000",
                             "SUCCESS"});
-                table67.AddRow(new string[] {
+                table71.AddRow(new string[] {
                             "Test Estate 1",
                             "Test Merchant 3",
                             "7",
                             "0000",
                             "SUCCESS"});
-                table67.AddRow(new string[] {
+                table71.AddRow(new string[] {
                             "Test Estate 1",
                             "Test Merchant 1",
                             "8",
                             "0000",
                             "SUCCESS"});
-                table67.AddRow(new string[] {
+                table71.AddRow(new string[] {
                             "Test Estate 1",
                             "Test Merchant 1",
                             "9",
                             "0000",
                             "SUCCESS"});
-                table67.AddRow(new string[] {
+                table71.AddRow(new string[] {
                             "Test Estate 1",
                             "Test Merchant 1",
                             "10",
                             "0000",
                             "SUCCESS"});
-                table67.AddRow(new string[] {
+                table71.AddRow(new string[] {
                             "Test Estate 1",
                             "Test Merchant 1",
                             "11",
                             "0000",
                             "SUCCESS"});
-#line 149
- await testRunner.ThenAsync("transaction response should contain the following information", ((string)(null)), table67, "Then ");
+#line 156
+ await testRunner.ThenAsync("transaction response should contain the following information", ((string)(null)), table71, "Then ");
 #line hidden
-                Reqnroll.Table table68 = new Reqnroll.Table(new string[] {
+                Reqnroll.Table table72 = new Reqnroll.Table(new string[] {
                             "DateTime",
                             "Reference",
                             "EntryType",
@@ -977,7 +981,7 @@ await this.FeatureBackgroundAsync();
                             "Out",
                             "ChangeAmount",
                             "Balance"});
-                table68.AddRow(new string[] {
+                table72.AddRow(new string[] {
                             "Today",
                             "Merchant Deposit",
                             "C",
@@ -985,7 +989,7 @@ await this.FeatureBackgroundAsync();
                             "0.00",
                             "265.00",
                             "230.00"});
-                table68.AddRow(new string[] {
+                table72.AddRow(new string[] {
                             "Today",
                             "Transaction Completed",
                             "D",
@@ -993,7 +997,7 @@ await this.FeatureBackgroundAsync();
                             "110.00",
                             "110.00",
                             "130.00"});
-                table68.AddRow(new string[] {
+                table72.AddRow(new string[] {
                             "Today",
                             "Transaction Completed",
                             "D",
@@ -1001,7 +1005,7 @@ await this.FeatureBackgroundAsync();
                             "90.00",
                             "90.00",
                             "30.00"});
-                table68.AddRow(new string[] {
+                table72.AddRow(new string[] {
                             "Today",
                             "Transaction Completed",
                             "D",
@@ -1009,7 +1013,7 @@ await this.FeatureBackgroundAsync();
                             "10.00",
                             "10.00",
                             "20.00"});
-                table68.AddRow(new string[] {
+                table72.AddRow(new string[] {
                             "Today",
                             "Transaction Completed",
                             "D",
@@ -1017,7 +1021,7 @@ await this.FeatureBackgroundAsync();
                             "20.00",
                             "20.00",
                             "20.00"});
-                table68.AddRow(new string[] {
+                table72.AddRow(new string[] {
                             "Today",
                             "Transaction Completed",
                             "D",
@@ -1025,7 +1029,7 @@ await this.FeatureBackgroundAsync();
                             "20.00",
                             "25.00",
                             "20.00"});
-                table68.AddRow(new string[] {
+                table72.AddRow(new string[] {
                             "Today",
                             "Transaction Fee Processed",
                             "C",
@@ -1033,7 +1037,7 @@ await this.FeatureBackgroundAsync();
                             "0.55",
                             "0.55",
                             "20.00"});
-                table68.AddRow(new string[] {
+                table72.AddRow(new string[] {
                             "Today",
                             "Transaction Fee Processed",
                             "C",
@@ -1041,7 +1045,7 @@ await this.FeatureBackgroundAsync();
                             "0.45",
                             "0.45",
                             "20.00"});
-                table68.AddRow(new string[] {
+                table72.AddRow(new string[] {
                             "Today",
                             "Transaction Fee Processed",
                             "C",
@@ -1049,7 +1053,7 @@ await this.FeatureBackgroundAsync();
                             "0.01",
                             "0.10",
                             "20.00"});
-                table68.AddRow(new string[] {
+                table72.AddRow(new string[] {
                             "Today",
                             "Transaction Fee Processed",
                             "C",
@@ -1057,7 +1061,7 @@ await this.FeatureBackgroundAsync();
                             "0.01",
                             "0.10",
                             "20.00"});
-                table68.AddRow(new string[] {
+                table72.AddRow(new string[] {
                             "Today",
                             "Opening Balance",
                             "C",
@@ -1065,11 +1069,11 @@ await this.FeatureBackgroundAsync();
                             "0.00",
                             "0.00",
                             "20.00"});
-#line 163
+#line 170
 await testRunner.ThenAsync("the following entries appear in the merchants balance history for estate \'Test Es" +
-                        "tate 1\' and merchant \'Test Merchant 1\'", ((string)(null)), table68, "Then ");
+                        "tate 1\' and merchant \'Test Merchant 1\'", ((string)(null)), table72, "Then ");
 #line hidden
-                Reqnroll.Table table69 = new Reqnroll.Table(new string[] {
+                Reqnroll.Table table73 = new Reqnroll.Table(new string[] {
                             "DateTime",
                             "Reference",
                             "EntryType",
@@ -1077,7 +1081,7 @@ await testRunner.ThenAsync("the following entries appear in the merchants balanc
                             "Out",
                             "ChangeAmount",
                             "Balance"});
-                table69.AddRow(new string[] {
+                table73.AddRow(new string[] {
                             "Today",
                             "Merchant Deposit",
                             "C",
@@ -1085,7 +1089,7 @@ await testRunner.ThenAsync("the following entries appear in the merchants balanc
                             "0.00",
                             "110.00",
                             "230.00"});
-                table69.AddRow(new string[] {
+                table73.AddRow(new string[] {
                             "Today",
                             "Transaction Completed",
                             "D",
@@ -1093,7 +1097,7 @@ await testRunner.ThenAsync("the following entries appear in the merchants balanc
                             "100.00",
                             "100.00",
                             "130.00"});
-                table69.AddRow(new string[] {
+                table73.AddRow(new string[] {
                             "Today",
                             "Transaction Completed",
                             "D",
@@ -1101,7 +1105,7 @@ await testRunner.ThenAsync("the following entries appear in the merchants balanc
                             "10.00",
                             "10.00",
                             "30.00"});
-                table69.AddRow(new string[] {
+                table73.AddRow(new string[] {
                             "Today",
                             "Transaction Fee Processed",
                             "C",
@@ -1109,7 +1113,7 @@ await testRunner.ThenAsync("the following entries appear in the merchants balanc
                             "0.50",
                             "0.50",
                             "20.00"});
-                table69.AddRow(new string[] {
+                table73.AddRow(new string[] {
                             "Today",
                             "Opening Balance",
                             "C",
@@ -1117,11 +1121,11 @@ await testRunner.ThenAsync("the following entries appear in the merchants balanc
                             "0.00",
                             "0.00",
                             "20.00"});
-#line 177
+#line 184
  await testRunner.ThenAsync("the following entries appear in the merchants balance history for estate \'Test Es" +
-                        "tate 1\' and merchant \'Test Merchant 2\'", ((string)(null)), table69, "Then ");
+                        "tate 1\' and merchant \'Test Merchant 2\'", ((string)(null)), table73, "Then ");
 #line hidden
-                Reqnroll.Table table70 = new Reqnroll.Table(new string[] {
+                Reqnroll.Table table74 = new Reqnroll.Table(new string[] {
                             "DateTime",
                             "Reference",
                             "EntryType",
@@ -1129,7 +1133,7 @@ await testRunner.ThenAsync("the following entries appear in the merchants balanc
                             "Out",
                             "ChangeAmount",
                             "Balance"});
-                table70.AddRow(new string[] {
+                table74.AddRow(new string[] {
                             "Today",
                             "Merchant Deposit",
                             "C",
@@ -1137,7 +1141,7 @@ await testRunner.ThenAsync("the following entries appear in the merchants balanc
                             "0.00",
                             "110.00",
                             "230.00"});
-                table70.AddRow(new string[] {
+                table74.AddRow(new string[] {
                             "Today",
                             "Transaction Completed",
                             "D",
@@ -1145,7 +1149,7 @@ await testRunner.ThenAsync("the following entries appear in the merchants balanc
                             "100.00",
                             "100.00",
                             "130.00"});
-                table70.AddRow(new string[] {
+                table74.AddRow(new string[] {
                             "Today",
                             "Transaction Completed",
                             "D",
@@ -1153,7 +1157,7 @@ await testRunner.ThenAsync("the following entries appear in the merchants balanc
                             "10.00",
                             "10.00",
                             "30.00"});
-                table70.AddRow(new string[] {
+                table74.AddRow(new string[] {
                             "Today",
                             "Transaction Fee Processed",
                             "C",
@@ -1161,7 +1165,7 @@ await testRunner.ThenAsync("the following entries appear in the merchants balanc
                             "0.85",
                             "0.50",
                             "20.00"});
-                table70.AddRow(new string[] {
+                table74.AddRow(new string[] {
                             "Today",
                             "Opening Balance",
                             "C",
@@ -1169,112 +1173,20 @@ await testRunner.ThenAsync("the following entries appear in the merchants balanc
                             "0.00",
                             "0.00",
                             "20.00"});
-#line 185
+#line 192
  await testRunner.ThenAsync("the following entries appear in the merchants balance history for estate \'Test Es" +
-                        "tate 1\' and merchant \'Test Merchant 3\'", ((string)(null)), table70, "Then ");
-#line hidden
-                Reqnroll.Table table71 = new Reqnroll.Table(new string[] {
-                            "EstateName",
-                            "MerchantName",
-                            "TransactionNumber"});
-                table71.AddRow(new string[] {
-                            "Test Estate 1",
-                            "Test Merchant 1",
-                            "1"});
-#line 193
- await testRunner.WhenAsync("I request the receipt is resent", ((string)(null)), table71, "When ");
-#line hidden
-                Reqnroll.Table table72 = new Reqnroll.Table(new string[] {
-                            "DateTime",
-                            "TransactionNumber",
-                            "TransactionType",
-                            "TransactionSource",
-                            "MerchantName",
-                            "DeviceIdentifier",
-                            "EstateName",
-                            "OperatorName",
-                            "TransactionAmount",
-                            "CustomerAccountNumber",
-                            "CustomerEmailAddress",
-                            "ContractDescription",
-                            "ProductName"});
-                table72.AddRow(new string[] {
-                            "Today",
-                            "12",
-                            "Sale",
-                            "1",
-                            "Test Merchant 1",
-                            "123456781",
-                            "Test Estate 1",
-                            "Safaricom",
-                            "100.00",
-                            "123456789",
-                            "testcustomer@customer.co.uk",
-                            "Safaricom Contract",
-                            "Variable Topup"});
-#line 197
- await testRunner.WhenAsync("I perform the following transactions", ((string)(null)), table72, "When ");
-#line hidden
-                Reqnroll.Table table73 = new Reqnroll.Table(new string[] {
-                            "EstateName",
-                            "MerchantName",
-                            "TransactionNumber",
-                            "ResponseCode",
-                            "ResponseMessage"});
-                table73.AddRow(new string[] {
-                            "Test Estate 1",
-                            "Test Merchant 1",
-                            "12",
-                            "1000",
-                            "Device Identifier 123456781 not valid for Merchant Test Merchant 1"});
-#line 201
- await testRunner.ThenAsync("transaction response should contain the following information", ((string)(null)), table73, "Then ");
-#line hidden
-                Reqnroll.Table table74 = new Reqnroll.Table(new string[] {
-                            "DateTime",
-                            "TransactionNumber",
-                            "TransactionType",
-                            "TransactionSource",
-                            "MerchantName",
-                            "DeviceIdentifier",
-                            "EstateName",
-                            "OperatorName",
-                            "TransactionAmount",
-                            "CustomerAccountNumber",
-                            "CustomerEmailAddress",
-                            "ContractDescription",
-                            "ProductName"});
-                table74.AddRow(new string[] {
-                            "Today",
-                            "13",
-                            "Sale",
-                            "1",
-                            "Test Merchant 1",
-                            "123456780",
-                            "InvalidEstate",
-                            "Safaricom",
-                            "100.00",
-                            "123456789",
-                            "testcustomer@customer.co.uk",
-                            "Safaricom Contract",
-                            "Variable Topup"});
-#line 205
- await testRunner.WhenAsync("I perform the following transactions", ((string)(null)), table74, "When ");
+                        "tate 1\' and merchant \'Test Merchant 3\'", ((string)(null)), table74, "Then ");
 #line hidden
                 Reqnroll.Table table75 = new Reqnroll.Table(new string[] {
                             "EstateName",
                             "MerchantName",
-                            "TransactionNumber",
-                            "ResponseCode",
-                            "ResponseMessage"});
+                            "TransactionNumber"});
                 table75.AddRow(new string[] {
-                            "InvalidEstate",
+                            "Test Estate 1",
                             "Test Merchant 1",
-                            "13",
-                            "1001",
-                            "Estate Id [79902550-64df-4491-b0c1-4e78943928a3] is not a valid estate"});
-#line 209
- await testRunner.ThenAsync("transaction response should contain the following information", ((string)(null)), table75, "Then ");
+                            "1"});
+#line 200
+ await testRunner.WhenAsync("I request the receipt is resent", ((string)(null)), table75, "When ");
 #line hidden
                 Reqnroll.Table table76 = new Reqnroll.Table(new string[] {
                             "DateTime",
@@ -1292,11 +1204,11 @@ await testRunner.ThenAsync("the following entries appear in the merchants balanc
                             "ProductName"});
                 table76.AddRow(new string[] {
                             "Today",
-                            "14",
+                            "12",
                             "Sale",
                             "1",
-                            "InvalidMerchant",
-                            "123456780",
+                            "Test Merchant 1",
+                            "123456781",
                             "Test Estate 1",
                             "Safaricom",
                             "100.00",
@@ -1304,7 +1216,7 @@ await testRunner.ThenAsync("the following entries appear in the merchants balanc
                             "testcustomer@customer.co.uk",
                             "Safaricom Contract",
                             "Variable Topup"});
-#line 213
+#line 204
  await testRunner.WhenAsync("I perform the following transactions", ((string)(null)), table76, "When ");
 #line hidden
                 Reqnroll.Table table77 = new Reqnroll.Table(new string[] {
@@ -1315,12 +1227,11 @@ await testRunner.ThenAsync("the following entries appear in the merchants balanc
                             "ResponseMessage"});
                 table77.AddRow(new string[] {
                             "Test Estate 1",
-                            "InvalidMerchant",
-                            "14",
-                            "1002",
-                            "Merchant Id [d59320fa-4c3e-4900-a999-483f6a10c69a] is not a valid merchant for es" +
-                                "tate [Test Estate 1]"});
-#line 217
+                            "Test Merchant 1",
+                            "12",
+                            "1000",
+                            "Device Identifier 123456781 not valid for Merchant Test Merchant 1"});
+#line 208
  await testRunner.ThenAsync("transaction response should contain the following information", ((string)(null)), table77, "Then ");
 #line hidden
                 Reqnroll.Table table78 = new Reqnroll.Table(new string[] {
@@ -1339,19 +1250,19 @@ await testRunner.ThenAsync("the following entries appear in the merchants balanc
                             "ProductName"});
                 table78.AddRow(new string[] {
                             "Today",
-                            "15",
+                            "13",
                             "Sale",
                             "1",
                             "Test Merchant 1",
                             "123456780",
-                            "Test Estate 1",
+                            "InvalidEstate",
                             "Safaricom",
                             "100.00",
                             "123456789",
                             "testcustomer@customer.co.uk",
-                            "EmptyContract",
+                            "Safaricom Contract",
                             "Variable Topup"});
-#line 221
+#line 212
  await testRunner.WhenAsync("I perform the following transactions", ((string)(null)), table78, "When ");
 #line hidden
                 Reqnroll.Table table79 = new Reqnroll.Table(new string[] {
@@ -1361,13 +1272,12 @@ await testRunner.ThenAsync("the following entries appear in the merchants balanc
                             "ResponseCode",
                             "ResponseMessage"});
                 table79.AddRow(new string[] {
-                            "Test Estate 1",
+                            "InvalidEstate",
                             "Test Merchant 1",
-                            "15",
-                            "1012",
-                            "Contract Id [00000000-0000-0000-0000-000000000000] must be set for a sale transac" +
-                                "tion"});
-#line 225
+                            "13",
+                            "1001",
+                            "Estate Id [79902550-64df-4491-b0c1-4e78943928a3] is not a valid estate"});
+#line 216
  await testRunner.ThenAsync("transaction response should contain the following information", ((string)(null)), table79, "Then ");
 #line hidden
                 Reqnroll.Table table80 = new Reqnroll.Table(new string[] {
@@ -1386,19 +1296,19 @@ await testRunner.ThenAsync("the following entries appear in the merchants balanc
                             "ProductName"});
                 table80.AddRow(new string[] {
                             "Today",
-                            "16",
+                            "14",
                             "Sale",
                             "1",
-                            "Test Merchant 1",
+                            "InvalidMerchant",
                             "123456780",
                             "Test Estate 1",
                             "Safaricom",
                             "100.00",
                             "123456789",
                             "testcustomer@customer.co.uk",
-                            "InvalidContract",
+                            "Safaricom Contract",
                             "Variable Topup"});
-#line 229
+#line 220
  await testRunner.WhenAsync("I perform the following transactions", ((string)(null)), table80, "When ");
 #line hidden
                 Reqnroll.Table table81 = new Reqnroll.Table(new string[] {
@@ -1409,12 +1319,12 @@ await testRunner.ThenAsync("the following entries appear in the merchants balanc
                             "ResponseMessage"});
                 table81.AddRow(new string[] {
                             "Test Estate 1",
-                            "Test Merchant 1",
-                            "16",
-                            "1015",
-                            "Contract Id [934d8164-f36a-448e-b27b-4d671d41d180] not valid for Merchant [Test M" +
-                                "erchant 1]"});
-#line 233
+                            "InvalidMerchant",
+                            "14",
+                            "1002",
+                            "Merchant Id [d59320fa-4c3e-4900-a999-483f6a10c69a] is not a valid merchant for es" +
+                                "tate [Test Estate 1]"});
+#line 224
  await testRunner.ThenAsync("transaction response should contain the following information", ((string)(null)), table81, "Then ");
 #line hidden
                 Reqnroll.Table table82 = new Reqnroll.Table(new string[] {
@@ -1433,7 +1343,7 @@ await testRunner.ThenAsync("the following entries appear in the merchants balanc
                             "ProductName"});
                 table82.AddRow(new string[] {
                             "Today",
-                            "17",
+                            "15",
                             "Sale",
                             "1",
                             "Test Merchant 1",
@@ -1443,9 +1353,9 @@ await testRunner.ThenAsync("the following entries appear in the merchants balanc
                             "100.00",
                             "123456789",
                             "testcustomer@customer.co.uk",
-                            "Safaricom Contract",
-                            "EmptyProduct"});
-#line 237
+                            "EmptyContract",
+                            "Variable Topup"});
+#line 228
  await testRunner.WhenAsync("I perform the following transactions", ((string)(null)), table82, "When ");
 #line hidden
                 Reqnroll.Table table83 = new Reqnroll.Table(new string[] {
@@ -1457,11 +1367,11 @@ await testRunner.ThenAsync("the following entries appear in the merchants balanc
                 table83.AddRow(new string[] {
                             "Test Estate 1",
                             "Test Merchant 1",
-                            "17",
-                            "1013",
-                            "Product Id [00000000-0000-0000-0000-000000000000] must be set for a sale transact" +
-                                "ion"});
-#line 241
+                            "15",
+                            "1012",
+                            "Contract Id [00000000-0000-0000-0000-000000000000] must be set for a sale transac" +
+                                "tion"});
+#line 232
  await testRunner.ThenAsync("transaction response should contain the following information", ((string)(null)), table83, "Then ");
 #line hidden
                 Reqnroll.Table table84 = new Reqnroll.Table(new string[] {
@@ -1480,7 +1390,7 @@ await testRunner.ThenAsync("the following entries appear in the merchants balanc
                             "ProductName"});
                 table84.AddRow(new string[] {
                             "Today",
-                            "18",
+                            "16",
                             "Sale",
                             "1",
                             "Test Merchant 1",
@@ -1490,9 +1400,9 @@ await testRunner.ThenAsync("the following entries appear in the merchants balanc
                             "100.00",
                             "123456789",
                             "testcustomer@customer.co.uk",
-                            "Safaricom Contract",
-                            "InvalidProduct"});
-#line 245
+                            "InvalidContract",
+                            "Variable Topup"});
+#line 236
  await testRunner.WhenAsync("I perform the following transactions", ((string)(null)), table84, "When ");
 #line hidden
                 Reqnroll.Table table85 = new Reqnroll.Table(new string[] {
@@ -1504,11 +1414,11 @@ await testRunner.ThenAsync("the following entries appear in the merchants balanc
                 table85.AddRow(new string[] {
                             "Test Estate 1",
                             "Test Merchant 1",
-                            "18",
-                            "1016",
-                            "Product Id [934d8164-f36a-448e-b27b-4d671d41d180] not valid for Merchant [Test Me" +
-                                "rchant 1]"});
-#line 249
+                            "16",
+                            "1015",
+                            "Contract Id [934d8164-f36a-448e-b27b-4d671d41d180] not valid for Merchant [Test M" +
+                                "erchant 1]"});
+#line 240
  await testRunner.ThenAsync("transaction response should contain the following information", ((string)(null)), table85, "Then ");
 #line hidden
                 Reqnroll.Table table86 = new Reqnroll.Table(new string[] {
@@ -1527,6 +1437,100 @@ await testRunner.ThenAsync("the following entries appear in the merchants balanc
                             "ProductName"});
                 table86.AddRow(new string[] {
                             "Today",
+                            "17",
+                            "Sale",
+                            "1",
+                            "Test Merchant 1",
+                            "123456780",
+                            "Test Estate 1",
+                            "Safaricom",
+                            "100.00",
+                            "123456789",
+                            "testcustomer@customer.co.uk",
+                            "Safaricom Contract",
+                            "EmptyProduct"});
+#line 244
+ await testRunner.WhenAsync("I perform the following transactions", ((string)(null)), table86, "When ");
+#line hidden
+                Reqnroll.Table table87 = new Reqnroll.Table(new string[] {
+                            "EstateName",
+                            "MerchantName",
+                            "TransactionNumber",
+                            "ResponseCode",
+                            "ResponseMessage"});
+                table87.AddRow(new string[] {
+                            "Test Estate 1",
+                            "Test Merchant 1",
+                            "17",
+                            "1013",
+                            "Product Id [00000000-0000-0000-0000-000000000000] must be set for a sale transact" +
+                                "ion"});
+#line 248
+ await testRunner.ThenAsync("transaction response should contain the following information", ((string)(null)), table87, "Then ");
+#line hidden
+                Reqnroll.Table table88 = new Reqnroll.Table(new string[] {
+                            "DateTime",
+                            "TransactionNumber",
+                            "TransactionType",
+                            "TransactionSource",
+                            "MerchantName",
+                            "DeviceIdentifier",
+                            "EstateName",
+                            "OperatorName",
+                            "TransactionAmount",
+                            "CustomerAccountNumber",
+                            "CustomerEmailAddress",
+                            "ContractDescription",
+                            "ProductName"});
+                table88.AddRow(new string[] {
+                            "Today",
+                            "18",
+                            "Sale",
+                            "1",
+                            "Test Merchant 1",
+                            "123456780",
+                            "Test Estate 1",
+                            "Safaricom",
+                            "100.00",
+                            "123456789",
+                            "testcustomer@customer.co.uk",
+                            "Safaricom Contract",
+                            "InvalidProduct"});
+#line 252
+ await testRunner.WhenAsync("I perform the following transactions", ((string)(null)), table88, "When ");
+#line hidden
+                Reqnroll.Table table89 = new Reqnroll.Table(new string[] {
+                            "EstateName",
+                            "MerchantName",
+                            "TransactionNumber",
+                            "ResponseCode",
+                            "ResponseMessage"});
+                table89.AddRow(new string[] {
+                            "Test Estate 1",
+                            "Test Merchant 1",
+                            "18",
+                            "1016",
+                            "Product Id [934d8164-f36a-448e-b27b-4d671d41d180] not valid for Merchant [Test Me" +
+                                "rchant 1]"});
+#line 256
+ await testRunner.ThenAsync("transaction response should contain the following information", ((string)(null)), table89, "Then ");
+#line hidden
+                Reqnroll.Table table90 = new Reqnroll.Table(new string[] {
+                            "DateTime",
+                            "TransactionNumber",
+                            "TransactionType",
+                            "TransactionSource",
+                            "MerchantName",
+                            "DeviceIdentifier",
+                            "EstateName",
+                            "OperatorName",
+                            "TransactionAmount",
+                            "CustomerAccountNumber",
+                            "CustomerEmailAddress",
+                            "ContractDescription",
+                            "ProductName"});
+                table90.AddRow(new string[] {
+                            "Today",
                             "19",
                             "Sale",
                             "1",
@@ -1539,43 +1543,27 @@ await testRunner.ThenAsync("the following entries appear in the merchants balanc
                             "testcustomer@customer.co.uk",
                             "Safaricom Contract",
                             "Variable Topup"});
-#line 253
- await testRunner.WhenAsync("I perform the following transactions", ((string)(null)), table86, "When ");
+#line 260
+ await testRunner.WhenAsync("I perform the following transactions", ((string)(null)), table90, "When ");
 #line hidden
-                Reqnroll.Table table87 = new Reqnroll.Table(new string[] {
+                Reqnroll.Table table91 = new Reqnroll.Table(new string[] {
                             "EstateName",
                             "MerchantName",
                             "TransactionNumber",
                             "ResponseCode",
                             "ResponseMessage"});
-                table87.AddRow(new string[] {
+                table91.AddRow(new string[] {
                             "Test Estate 1",
                             "Test Merchant 4",
                             "19",
                             "1009",
                             "Merchant [Test Merchant 4] does not have enough credit available [100.00] to perf" +
                                 "orm transaction amount [300.00]"});
-#line 257
- await testRunner.ThenAsync("transaction response should contain the following information", ((string)(null)), table87, "Then ");
+#line 264
+ await testRunner.ThenAsync("transaction response should contain the following information", ((string)(null)), table91, "Then ");
 #line hidden
             }
             await this.ScenarioCleanupAsync();
-        }
-        
-        [System.CodeDom.Compiler.GeneratedCodeAttribute("Reqnroll", "1.0.0.0")]
-        [System.Runtime.CompilerServices.CompilerGeneratedAttribute()]
-        public class FixtureData : object, Xunit.IAsyncLifetime
-        {
-            
-            async System.Threading.Tasks.Task Xunit.IAsyncLifetime.InitializeAsync()
-            {
-                await SaleTransactionFeature.FeatureSetupAsync();
-            }
-            
-            async System.Threading.Tasks.Task Xunit.IAsyncLifetime.DisposeAsync()
-            {
-                await SaleTransactionFeature.FeatureTearDownAsync();
-            }
         }
     }
 }
