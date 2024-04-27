@@ -2,6 +2,7 @@
 {
     using System;
     using EstateManagement.DataTransferObjects;
+    using Models;
 
     /// <summary>
     /// 

@@ -31,6 +31,10 @@ Background:
 	| EstateName    | OperatorName     | RequireCustomMerchantNumber | RequireCustomTerminalNumber |
 	| Test Estate 1 | Voucher          | True                        | True                        |
 
+	And I have assigned the following operators to the estates
+	| EstateName    | OperatorName    | 
+	| Test Estate 1 | Voucher |
+
 	Given I create a contract with the following values
 	| EstateName    | OperatorName     | ContractDescription       |
 	| Test Estate 1 | Voucher          | Hospital 1 Contract       |

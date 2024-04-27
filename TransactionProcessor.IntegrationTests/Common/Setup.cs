@@ -26,7 +26,9 @@ namespace TransactionProcessor.IntegrationTests.Common
         public static INetworkService DatabaseServerNetwork;
         public static (String usename, String password) SqlCredentials = ("sa", "thisisalongpassword123!");
         public static (String url, String username, String password) DockerCredentials = ("https://www.docker.com", "stuartferguson", "Sc0tland");
-        
+
+        static object padLock = new object(); // Object to lock on
+
         public static async Task GlobalSetup(DockerHelper dockerHelper)
         {
             ShouldlyConfiguration.DefaultTaskTimeout = TimeSpan.FromMinutes(1);
@@ -34,10 +36,13 @@ namespace TransactionProcessor.IntegrationTests.Common
             dockerHelper.DockerCredentials = Setup.DockerCredentials;
             dockerHelper.SqlServerContainerName = "sharedsqlserver";
 
-            await Retry.For(async () => {
-                                Setup.DatabaseServerNetwork = dockerHelper.SetupTestNetwork("sharednetwork", true);
-                                Setup.DatabaseServerContainer = await dockerHelper.SetupSqlServerContainer(Setup.DatabaseServerNetwork);
-                            }, TimeSpan.FromSeconds(60));
+            lock (Setup.padLock)
+            {
+                Setup.DatabaseServerNetwork = dockerHelper.SetupTestNetwork("sharednetwork");
+
+                dockerHelper.Logger.LogInformation("in start SetupSqlServerContainer");
+                Setup.DatabaseServerContainer = dockerHelper.SetupSqlServerContainer(Setup.DatabaseServerNetwork).Result;
+            }
         }
 
         public static String GetConnectionString(String databaseName)
