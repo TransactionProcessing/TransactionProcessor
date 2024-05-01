@@ -120,7 +120,7 @@ public class TransactionValidationService : ITransactionValidationService{
                                                                                                               Guid contractId,
                                                                                                               Guid productId,
                                                                                                               String deviceIdentifier,
-                                                                                                              String operatorIdentifier,
+                                                                                                              Guid operatorId,
                                                                                                               Decimal? transactionAmount,
                                                                                                               CancellationToken cancellationToken){
         try{
@@ -134,9 +134,9 @@ public class TransactionValidationService : ITransactionValidationService{
             }
 
             // Operators have been configured for the estate
-            EstateOperatorResponse estateOperatorRecord = estate.Operators.SingleOrDefault(o => o.Name == operatorIdentifier);
+            EstateOperatorResponse estateOperatorRecord = estate.Operators.SingleOrDefault(o => o.OperatorId == operatorId);
             if (estateOperatorRecord == null){
-                throw new TransactionValidationException($"Operator {operatorIdentifier} not configured for Estate [{estate.EstateName}]",
+                throw new TransactionValidationException($"Operator {operatorId} not configured for Estate [{estate.EstateName}]",
                                                          TransactionResponseCode.OperatorNotValidForEstate);
             }
 
@@ -162,9 +162,9 @@ public class TransactionValidationService : ITransactionValidationService{
 
             {
                 // Operators have been configured for the estate
-                MerchantOperatorResponse merchantOperatorRecord = merchant.Operators.SingleOrDefault(o => o.Name == operatorIdentifier);
+                MerchantOperatorResponse merchantOperatorRecord = merchant.Operators.SingleOrDefault(o => o.OperatorId == operatorId);
                 if (merchantOperatorRecord == null){
-                    throw new TransactionValidationException($"Operator {operatorIdentifier} not configured for Merchant [{merchant.MerchantName}]",
+                    throw new TransactionValidationException($"Operator {operatorId} not configured for Merchant [{merchant.MerchantName}]",
                                                              TransactionResponseCode.OperatorNotValidForMerchant);
                 }
             }

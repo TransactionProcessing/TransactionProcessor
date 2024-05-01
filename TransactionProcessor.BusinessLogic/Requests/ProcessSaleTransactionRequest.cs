@@ -16,7 +16,7 @@
                                               String transactionType,
                                               DateTime transactionDateTime,
                                               String transactionNumber,
-                                              String operatorIdentifier,
+                                              Guid operatorId,
                                               String customerEmailAddress,
                                               Dictionary<String, String> additionalTransactionMetadata,
                                               Guid contractId,
@@ -29,7 +29,7 @@
             this.MerchantId = merchantId;
             this.TransactionDateTime = transactionDateTime;
             this.TransactionNumber = transactionNumber;
-            this.OperatorIdentifier = operatorIdentifier;
+            this.OperatorId = operatorId;
             this.CustomerEmailAddress = customerEmailAddress;
             this.AdditionalTransactionMetadata = additionalTransactionMetadata;
             this.ContractId = contractId;
@@ -88,7 +88,7 @@
         /// <value>
         /// The operator identifier.
         /// </value>
-        public String OperatorIdentifier { get; }
+        public Guid OperatorId { get; }
 
         /// <summary>
         /// Gets the transaction date time.
@@ -151,7 +151,7 @@
                                                            String transactionType,
                                                            DateTime transactionDateTime,
                                                            String transactionNumber,
-                                                           String operatorIdentifier,
+                                                           Guid operatorId,
                                                            String customerEmailAddress,
                                                            Dictionary<String, String> additionalTransactionMetadata,
                                                            Guid contractId,
@@ -165,7 +165,7 @@
                                                      transactionType,
                                                      transactionDateTime,
                                                      transactionNumber,
-                                                     operatorIdentifier,
+                                                     operatorId,
                                                      customerEmailAddress,
                                                      additionalTransactionMetadata,
                                                      contractId,

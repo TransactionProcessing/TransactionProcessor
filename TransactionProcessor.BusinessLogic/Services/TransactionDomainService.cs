@@ -2,6 +2,7 @@
     using System;
     using System.Collections.Generic;
     using System.Diagnostics.CodeAnalysis;
+    using System.Linq;
     using System.Threading;
     using System.Threading.Tasks;
     using Common;
@@ -180,7 +181,7 @@
                                                                                  DateTime transactionDateTime,
                                                                                  String transactionNumber,
                                                                                  String deviceIdentifier,
-                                                                                 String operatorIdentifier,
+                                                                                 Guid operatorId,
                                                                                  String customerEmailAddress,
                                                                                  Dictionary<String, String> additionalTransactionMetadata,
                                                                                  Guid contractId,
@@ -202,7 +203,7 @@
                                                                                 contractId,
                                                                                 productId,
                                                                                 deviceIdentifier,
-                                                                                operatorIdentifier,
+                                                                                operatorId,
                                                                                 transactionAmount,
                                                                                 cancellationToken);
 
@@ -242,14 +243,14 @@
 
             if (validationResult.responseCode == TransactionResponseCode.Success){
                 // Record any additional request metadata
-                transactionAggregate.RecordAdditionalRequestData(operatorIdentifier, additionalTransactionMetadata);
+                transactionAggregate.RecordAdditionalRequestData(operatorId, additionalTransactionMetadata);
 
                 // Do the online processing with the operator here
                 MerchantResponse merchant = await this.GetMerchant(estateId, merchantId, cancellationToken);
                 OperatorResponse operatorResponse = await this.ProcessMessageWithOperator(merchant,
                                                                                           transactionId,
                                                                                           transactionDateTime,
-                                                                                          operatorIdentifier,
+                                                                                          operatorId,
                                                                                           additionalTransactionMetadata,
                                                                                           transactionReference,
                                                                                           cancellationToken);
@@ -267,7 +268,7 @@
                         TransactionResponseCode transactionResponseCode = TransactionResponseCode.Success;
                         String responseMessage = "SUCCESS";
 
-                        transactionAggregate.AuthoriseTransaction(operatorIdentifier,
+                        transactionAggregate.AuthoriseTransaction(operatorId,
                                                                   operatorResponse.AuthorisationCode,
                                                                   operatorResponse.ResponseCode,
                                                                   operatorResponse.ResponseMessage,
@@ -279,7 +280,7 @@
                         TransactionResponseCode transactionResponseCode = TransactionResponseCode.TransactionDeclinedByOperator;
                         String responseMessage = "DECLINED BY OPERATOR";
 
-                        transactionAggregate.DeclineTransaction(operatorIdentifier,
+                        transactionAggregate.DeclineTransaction(operatorId,
                                                                 operatorResponse.ResponseCode,
                                                                 operatorResponse.ResponseMessage,
                                                                 ((Int32)transactionResponseCode).ToString().PadLeft(4, '0'),
@@ -287,7 +288,7 @@
                     }
 
                     // Record any additional operator response metadata
-                    transactionAggregate.RecordAdditionalResponseData(operatorIdentifier, operatorResponse.AdditionalTransactionResponseMetadata);
+                    transactionAggregate.RecordAdditionalResponseData(operatorId, operatorResponse.AdditionalTransactionResponseMetadata);
                 }
             }
             else{
@@ -377,16 +378,22 @@
         private async Task<OperatorResponse> ProcessMessageWithOperator(MerchantResponse merchant,
                                                                         Guid transactionId,
                                                                         DateTime transactionDateTime,
-                                                                        String operatorIdentifier,
+                                                                        Guid operatorId,
                                                                         Dictionary<String, String> additionalTransactionMetadata,
                                                                         String transactionReference,
                                                                         CancellationToken cancellationToken){
-            IOperatorProxy operatorProxy = this.OperatorProxyResolver(operatorIdentifier.Replace(" ", ""));
+
+            // TODO: introduce some kind of mapping in here to link operator id to the name
+            // Get Operators from the Estate Management API
+            EstateResponse estateRecord = await this.EstateClient.GetEstate(this.TokenResponse.AccessToken, merchant.EstateId, cancellationToken);
+            EstateOperatorResponse @operator = estateRecord.Operators.Single(e => e.OperatorId == operatorId);
+            
+            IOperatorProxy operatorProxy = this.OperatorProxyResolver(@operator.Name.Replace(" ", ""));
             OperatorResponse operatorResponse = null;
             try{
                 operatorResponse = await operatorProxy.ProcessSaleMessage(this.TokenResponse.AccessToken,
                                                                           transactionId,
-                                                                          operatorIdentifier,
+                                                                          operatorId,
                                                                           merchant,
                                                                           transactionDateTime,
                                                                           transactionReference,

@@ -87,7 +87,7 @@ namespace TransactionProcessor.BusinessLogic.Tests.OperatorInterfaces
             
             OperatorResponse saleResponse = await this.PataPawaPostPayProxy.ProcessSaleMessage(TestData.TokenResponse().AccessToken,
                                                                                                 TestData.TransactionId,
-                                                                                                TestData.OperatorIdentifier1,
+                                                                                                TestData.OperatorId,
                                                                                                 TestData.Merchant,
                                                                                                 TestData.TransactionDateTime,
                                                                                                 TestData.TransactionReference,
@@ -116,7 +116,7 @@ namespace TransactionProcessor.BusinessLogic.Tests.OperatorInterfaces
             ArgumentNullException ex = Should.Throw<ArgumentNullException>(async () => {
                                                                                OperatorResponse saleResponse = await this.PataPawaPostPayProxy.ProcessSaleMessage(TestData.TokenResponse().AccessToken,
                                                                                                                                                                     TestData.TransactionId,
-                                                                                                                                                                    TestData.OperatorIdentifier1,
+                                                                                                                                                                    TestData.OperatorId,
                                                                                                                                                                     TestData.Merchant,
                                                                                                                                                                     TestData.TransactionDateTime,
                                                                                                                                                                     TestData.TransactionReference,
@@ -133,7 +133,7 @@ namespace TransactionProcessor.BusinessLogic.Tests.OperatorInterfaces
             ArgumentNullException ex = Should.Throw<ArgumentNullException>(async () => {
                 OperatorResponse saleResponse = await this.PataPawaPostPayProxy.ProcessSaleMessage(TestData.TokenResponse().AccessToken,
                                                                                                     TestData.TransactionId,
-                                                                                                    TestData.OperatorIdentifier1,
+                                                                                                    TestData.OperatorId,
                                                                                                     TestData.Merchant,
                                                                                                     TestData.TransactionDateTime,
                                                                                                     TestData.TransactionReference,
@@ -151,7 +151,7 @@ namespace TransactionProcessor.BusinessLogic.Tests.OperatorInterfaces
             ArgumentNullException ex = Should.Throw<ArgumentNullException>(async () => {
                                                                                OperatorResponse saleResponse = await this.PataPawaPostPayProxy.ProcessSaleMessage(TestData.TokenResponse().AccessToken,
                                                                                                                                                                     TestData.TransactionId,
-                                                                                                                                                                    TestData.OperatorIdentifier1,
+                                                                                                                                                                    TestData.OperatorId,
                                                                                                                                                                     TestData.Merchant,
                                                                                                                                                                     TestData.TransactionDateTime,
                                                                                                                                                                     TestData.TransactionReference,
@@ -169,7 +169,7 @@ namespace TransactionProcessor.BusinessLogic.Tests.OperatorInterfaces
             ArgumentOutOfRangeException ex = Should.Throw<ArgumentOutOfRangeException>(async () => {
                                                                                            OperatorResponse saleResponse = await this.PataPawaPostPayProxy.ProcessSaleMessage(TestData.TokenResponse().AccessToken,
                                                                                                                                                                                 TestData.TransactionId,
-                                                                                                                                                                                TestData.OperatorIdentifier1,
+                                                                                                                                                                                TestData.OperatorId,
                                                                                                                                                                                 TestData.Merchant,
                                                                                                                                                                                 TestData.TransactionDateTime,
                                                                                                                                                                                 TestData.TransactionReference,
@@ -190,7 +190,7 @@ namespace TransactionProcessor.BusinessLogic.Tests.OperatorInterfaces
             Exception ex = Should.Throw<Exception>(async () => {
                                                        OperatorResponse saleResponse = await this.PataPawaPostPayProxy.ProcessSaleMessage(TestData.TokenResponse().AccessToken,
                                                                                                                                             TestData.TransactionId,
-                                                                                                                                            TestData.OperatorIdentifier1,
+                                                                                                                                            TestData.OperatorId,
                                                                                                                                             TestData.Merchant,
                                                                                                                                             TestData.TransactionDateTime,
                                                                                                                                             TestData.TransactionReference,
@@ -210,7 +210,7 @@ namespace TransactionProcessor.BusinessLogic.Tests.OperatorInterfaces
 
             OperatorResponse saleResponse = await this.PataPawaPostPayProxy.ProcessSaleMessage(TestData.TokenResponse().AccessToken,
                                                                                                 TestData.TransactionId,
-                                                                                                TestData.OperatorIdentifier1,
+                                                                                                TestData.OperatorId,
                                                                                                 TestData.Merchant,
                                                                                                 TestData.TransactionDateTime,
                                                                                                 TestData.TransactionReference,
@@ -232,7 +232,7 @@ namespace TransactionProcessor.BusinessLogic.Tests.OperatorInterfaces
             ArgumentNullException ex = Should.Throw<ArgumentNullException>(async () => {
                                                                                OperatorResponse saleResponse = await this.PataPawaPostPayProxy.ProcessSaleMessage(TestData.TokenResponse().AccessToken,
                                                                                                                                                                     TestData.TransactionId,
-                                                                                                                                                                    TestData.OperatorIdentifier1,
+                                                                                                                                                                    TestData.OperatorId,
                                                                                                                                                                     TestData.Merchant,
                                                                                                                                                                     TestData.TransactionDateTime,
                                                                                                                                                                     TestData.TransactionReference,
@@ -249,7 +249,7 @@ namespace TransactionProcessor.BusinessLogic.Tests.OperatorInterfaces
             ArgumentNullException ex = Should.Throw<ArgumentNullException>(async () => {
                                                                                OperatorResponse saleResponse = await PataPawaPostPayProxy.ProcessSaleMessage(TestData.TokenResponse().AccessToken,
                                                                                                                                                              TestData.TransactionId,
-                                                                                                                                                             TestData.OperatorIdentifier1,
+                                                                                                                                                             TestData.OperatorId,
                                                                                                                                                              TestData.Merchant,
                                                                                                                                                              TestData.TransactionDateTime,
                                                                                                                                                              TestData.TransactionReference,
@@ -267,7 +267,7 @@ namespace TransactionProcessor.BusinessLogic.Tests.OperatorInterfaces
             ArgumentNullException ex = Should.Throw<ArgumentNullException>(async () => {
                 OperatorResponse saleResponse = await PataPawaPostPayProxy.ProcessSaleMessage(TestData.TokenResponse().AccessToken,
                                                                                               TestData.TransactionId,
-                                                                                              TestData.OperatorIdentifier1,
+                                                                                              TestData.OperatorId,
                                                                                               TestData.Merchant,
                                                                                               TestData.TransactionDateTime,
                                                                                               TestData.TransactionReference,
@@ -285,7 +285,7 @@ namespace TransactionProcessor.BusinessLogic.Tests.OperatorInterfaces
             ArgumentNullException ex = Should.Throw<ArgumentNullException>(async () => {
                                                                                OperatorResponse saleResponse = await PataPawaPostPayProxy.ProcessSaleMessage(TestData.TokenResponse().AccessToken,
                                                                                                                                                              TestData.TransactionId,
-                                                                                                                                                             TestData.OperatorIdentifier1,
+                                                                                                                                                             TestData.OperatorId,
                                                                                                                                                              TestData.Merchant,
                                                                                                                                                              TestData.TransactionDateTime,
                                                                                                                                                              TestData.TransactionReference,
@@ -303,7 +303,7 @@ namespace TransactionProcessor.BusinessLogic.Tests.OperatorInterfaces
             ArgumentNullException ex = Should.Throw<ArgumentNullException>(async () => {
                 OperatorResponse saleResponse = await PataPawaPostPayProxy.ProcessSaleMessage(TestData.TokenResponse().AccessToken,
                                                                                               TestData.TransactionId,
-                                                                                              TestData.OperatorIdentifier1,
+                                                                                              TestData.OperatorId,
                                                                                               TestData.Merchant,
                                                                                               TestData.TransactionDateTime,
                                                                                               TestData.TransactionReference,
@@ -321,7 +321,7 @@ namespace TransactionProcessor.BusinessLogic.Tests.OperatorInterfaces
             ArgumentNullException ex = Should.Throw<ArgumentNullException>(async () => {
                                                                                OperatorResponse saleResponse = await PataPawaPostPayProxy.ProcessSaleMessage(TestData.TokenResponse().AccessToken,
                                                                                                                                                              TestData.TransactionId,
-                                                                                                                                                             TestData.OperatorIdentifier1,
+                                                                                                                                                             TestData.OperatorId,
                                                                                                                                                              TestData.Merchant,
                                                                                                                                                              TestData.TransactionDateTime,
                                                                                                                                                              TestData.TransactionReference,
@@ -339,7 +339,7 @@ namespace TransactionProcessor.BusinessLogic.Tests.OperatorInterfaces
             ArgumentOutOfRangeException ex = Should.Throw<ArgumentOutOfRangeException>(async () => {
                                                                                            OperatorResponse saleResponse = await PataPawaPostPayProxy.ProcessSaleMessage(TestData.TokenResponse().AccessToken,
                                                                                                                                                                          TestData.TransactionId,
-                                                                                                                                                                         TestData.OperatorIdentifier1,
+                                                                                                                                                                         TestData.OperatorId,
                                                                                                                                                                          TestData.Merchant,
                                                                                                                                                                          TestData.TransactionDateTime,
                                                                                                                                                                          TestData.TransactionReference,
@@ -357,7 +357,7 @@ namespace TransactionProcessor.BusinessLogic.Tests.OperatorInterfaces
             ArgumentOutOfRangeException ex = Should.Throw<ArgumentOutOfRangeException>(async () => {
                                                                                            OperatorResponse saleResponse = await PataPawaPostPayProxy.ProcessSaleMessage(TestData.TokenResponse().AccessToken,
                                                                                                                                                                          TestData.TransactionId,
-                                                                                                                                                                         TestData.OperatorIdentifier1,
+                                                                                                                                                                         TestData.OperatorId,
                                                                                                                                                                          TestData.Merchant,
                                                                                                                                                                          TestData.TransactionDateTime,
                                                                                                                                                                          TestData.TransactionReference,
@@ -378,7 +378,7 @@ namespace TransactionProcessor.BusinessLogic.Tests.OperatorInterfaces
             Exception ex = Should.Throw<Exception>(async () => {
                                                        await PataPawaPostPayProxy.ProcessSaleMessage(TestData.TokenResponse().AccessToken,
                                                                                                      TestData.TransactionId,
-                                                                                                     TestData.OperatorIdentifier1,
+                                                                                                     TestData.OperatorId,
                                                                                                      TestData.Merchant,
                                                                                                      TestData.TransactionDateTime,
                                                                                                      TestData.TransactionReference,

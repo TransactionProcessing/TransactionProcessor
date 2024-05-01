@@ -25,7 +25,7 @@ namespace TransactionProcessor.BusinessLogic.Services
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns></returns>
         Task<IssueVoucherResponse> IssueVoucher(Guid voucherId,
-                                                String operatorId,
+                                                Guid operatorId,
                                                 Guid estateId,
                                                 Guid transactionId,
                                                 DateTime issuedDateTime,

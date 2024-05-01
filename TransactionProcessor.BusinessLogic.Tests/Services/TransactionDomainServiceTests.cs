@@ -222,6 +222,8 @@
 
             this.EstateClient.Setup(e => e.GetMerchant(It.IsAny<String>(), It.IsAny<Guid>(), It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
                 .ReturnsAsync(TestData.GetMerchantResponseWithOperator1);
+            this.EstateClient.Setup(e => e.GetEstate(It.IsAny<String>(), It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
+                .ReturnsAsync(TestData.GetEstateResponseWithOperator1);
 
             this.TransactionAggregateRepository.Setup(t => t.GetLatestVersion(It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
                 .ReturnsAsync(TestData.GetEmptyTransactionAggregate);
@@ -233,13 +235,13 @@
                                                                                    It.IsAny<Guid>(),
                                                                                    It.IsAny<Guid>(),
                                                                                    It.IsAny<String>(),
-                                                                                   It.IsAny<String>(),
+                                                                                   It.IsAny<Guid>(),
                                                                                    It.IsAny<Decimal>(),
                                                                                    It.IsAny<CancellationToken>())).ReturnsAsync(("SUCCESS", TransactionResponseCode.Success));
 
             this.OperatorProxy.Setup(o => o.ProcessSaleMessage(It.IsAny<String>(),
                                                                It.IsAny<Guid>(),
-                                                               It.IsAny<String>(),
+                                                               It.IsAny<Guid>(),
                                                                It.IsAny<MerchantResponse>(),
                                                                It.IsAny<DateTime>(),
                                                                It.IsAny<String>(),
@@ -259,7 +261,7 @@
                                                                                                                  TestData.TransactionDateTime,
                                                                                                                  TestData.TransactionNumber,
                                                                                                                  TestData.DeviceIdentifier,
-                                                                                                                 TestData.OperatorIdentifier1,
+                                                                                                                 TestData.OperatorId,
                                                                                                                  TestData.CustomerEmailAddress,
                                                                                                                  TestData
                                                                                                                      .AdditionalTransactionMetaDataForMobileTopup(),
@@ -280,13 +282,17 @@
 
             this.TransactionAggregateRepository.Setup(t => t.GetLatestVersion(It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
                 .ReturnsAsync(TestData.GetEmptyTransactionAggregate);
+            this.EstateClient.Setup(e => e.GetMerchant(It.IsAny<String>(), It.IsAny<Guid>(), It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
+                .ReturnsAsync(TestData.GetMerchantResponseWithOperator1);
+            this.EstateClient.Setup(e => e.GetEstate(It.IsAny<String>(), It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
+                .ReturnsAsync(TestData.GetEstateResponseWithOperator1);
 
             this.TransactionValidationService.Setup(t => t.ValidateSaleTransaction(It.IsAny<Guid>(),
                                                                                    It.IsAny<Guid>(),
                                                                                    It.IsAny<Guid>(),
                                                                                    It.IsAny<Guid>(),
                                                                                    It.IsAny<String>(),
-                                                                                   It.IsAny<String>(),
+                                                                                   It.IsAny<Guid>(),
                                                                                    It.IsAny<Decimal>(),
                                                                                    It.IsAny<CancellationToken>())).ReturnsAsync(("SUCCESS", TransactionResponseCode.Success));
 
@@ -294,7 +300,7 @@
 
             this.OperatorProxy.Setup(o => o.ProcessSaleMessage(It.IsAny<String>(),
                                                                It.IsAny<Guid>(),
-                                                               It.IsAny<String>(),
+                                                               It.IsAny<Guid>(),
                                                                It.IsAny<MerchantResponse>(),
                                                                It.IsAny<DateTime>(),
                                                                It.IsAny<String>(),
@@ -307,7 +313,7 @@
                                                                                                                  TestData.TransactionDateTime,
                                                                                                                  TestData.TransactionNumber,
                                                                                                                  TestData.DeviceIdentifier,
-                                                                                                                 TestData.OperatorIdentifier1,
+                                                                                                                 TestData.OperatorId,
                                                                                                                  TestData.CustomerEmailAddress,
                                                                                                                  TestData
                                                                                                                      .AdditionalTransactionMetaDataForMobileTopup(),
@@ -328,13 +334,17 @@
 
             this.TransactionAggregateRepository.Setup(t => t.GetLatestVersion(It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
                 .ReturnsAsync(TestData.GetEmptyTransactionAggregate);
+            this.EstateClient.Setup(e => e.GetMerchant(It.IsAny<String>(), It.IsAny<Guid>(), It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
+                .ReturnsAsync(TestData.GetMerchantResponseWithOperator1);
+            this.EstateClient.Setup(e => e.GetEstate(It.IsAny<String>(), It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
+                .ReturnsAsync(TestData.GetEstateResponseWithOperator1);
 
             this.TransactionValidationService.Setup(t => t.ValidateSaleTransaction(It.IsAny<Guid>(),
                                                                                    It.IsAny<Guid>(),
                                                                                    It.IsAny<Guid>(),
                                                                                    It.IsAny<Guid>(),
                                                                                    It.IsAny<String>(),
-                                                                                   It.IsAny<String>(),
+                                                                                   It.IsAny<Guid>(),
                                                                                    It.IsAny<Decimal>(),
                                                                                    It.IsAny<CancellationToken>())).ReturnsAsync(("SUCCESS", TransactionResponseCode.Success));
 
@@ -346,7 +356,7 @@
                                                                                                                  TestData.TransactionDateTime,
                                                                                                                  TestData.TransactionNumber,
                                                                                                                  TestData.DeviceIdentifier,
-                                                                                                                 TestData.OperatorIdentifier1,
+                                                                                                                 TestData.OperatorId,
                                                                                                                  TestData.CustomerEmailAddress,
                                                                                                                  TestData
                                                                                                                      .AdditionalTransactionMetaDataForMobileTopup(),
@@ -367,6 +377,8 @@
 
             this.EstateClient.Setup(e => e.GetMerchant(It.IsAny<String>(), It.IsAny<Guid>(), It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
                 .ReturnsAsync(TestData.GetMerchantResponseWithOperator1);
+            this.EstateClient.Setup(e => e.GetEstate(It.IsAny<String>(), It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
+                .ReturnsAsync(TestData.GetEstateResponseWithOperator1);
 
             TransactionAggregate transactionAggregate = TestData.GetEmptyTransactionAggregate();
             FloatAggregate floatAggregate = TestData.GetFloatAggregateWithCostValues();
@@ -381,13 +393,13 @@
                                                                                    It.IsAny<Guid>(),
                                                                                    It.IsAny<Guid>(),
                                                                                    It.IsAny<String>(),
-                                                                                   It.IsAny<String>(),
+                                                                                   It.IsAny<Guid>(),
                                                                                    It.IsAny<Decimal>(),
                                                                                    It.IsAny<CancellationToken>())).ReturnsAsync(("SUCCESS", TransactionResponseCode.Success));
 
             this.OperatorProxy.Setup(o => o.ProcessSaleMessage(It.IsAny<String>(),
                                                                It.IsAny<Guid>(),
-                                                               It.IsAny<String>(),
+                                                               It.IsAny<Guid>(),
                                                                It.IsAny<MerchantResponse>(),
                                                                It.IsAny<DateTime>(),
                                                                It.IsAny<String>(),
@@ -407,7 +419,7 @@
                                                                                                                  TestData.TransactionDateTime,
                                                                                                                  TestData.TransactionNumber,
                                                                                                                  TestData.DeviceIdentifier,
-                                                                                                                 TestData.OperatorIdentifier1,
+                                                                                                                 TestData.OperatorId,
                                                                                                                  TestData.CustomerEmailAddress,
                                                                                                                  TestData
                                                                                                                      .AdditionalTransactionMetaDataForMobileTopup(),
@@ -433,6 +445,8 @@
 
             this.EstateClient.Setup(e => e.GetMerchant(It.IsAny<String>(), It.IsAny<Guid>(), It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
                 .ReturnsAsync(TestData.GetMerchantResponseWithOperator1);
+            this.EstateClient.Setup(e => e.GetEstate(It.IsAny<String>(), It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
+                .ReturnsAsync(TestData.GetEstateResponseWithOperator1);
 
             TransactionAggregate transactionAggregate = TestData.GetEmptyTransactionAggregate();
             FloatAggregate floatAggregate = TestData.GetFloatAggregateWithCostValues();
@@ -447,13 +461,13 @@
                                                                                    It.IsAny<Guid>(),
                                                                                    It.IsAny<Guid>(),
                                                                                    It.IsAny<String>(),
-                                                                                   It.IsAny<String>(),
+                                                                                   It.IsAny<Guid>(),
                                                                                    It.IsAny<Decimal>(),
                                                                                    It.IsAny<CancellationToken>())).ReturnsAsync(("SUCCESS", TransactionResponseCode.Success));
 
             this.OperatorProxy.Setup(o => o.ProcessSaleMessage(It.IsAny<String>(),
                                                                It.IsAny<Guid>(),
-                                                               It.IsAny<String>(),
+                                                               It.IsAny<Guid>(),
                                                                It.IsAny<MerchantResponse>(),
                                                                It.IsAny<DateTime>(),
                                                                It.IsAny<String>(),
@@ -474,7 +488,7 @@
                                                                                                                  TestData.TransactionDateTime,
                                                                                                                  TestData.TransactionNumber,
                                                                                                                  TestData.DeviceIdentifier,
-                                                                                                                 TestData.OperatorIdentifier1,
+                                                                                                                 TestData.OperatorId,
                                                                                                                  TestData.CustomerEmailAddress,
                                                                                                                  TestData
                                                                                                                      .AdditionalTransactionMetaDataForMobileTopup(),
@@ -508,7 +522,7 @@
                                                                                    It.IsAny<Guid>(),
                                                                                    It.IsAny<Guid>(),
                                                                                    It.IsAny<String>(),
-                                                                                   It.IsAny<String>(),
+                                                                                   It.IsAny<Guid>(),
                                                                                    It.IsAny<Decimal>(),
                                                                                    It.IsAny<CancellationToken>())).ReturnsAsync((responseCode.ToString(), responseCode));
 
@@ -520,7 +534,7 @@
                                                                                                                  TestData.TransactionDateTime,
                                                                                                                  TestData.TransactionNumber,
                                                                                                                  TestData.DeviceIdentifier,
-                                                                                                                 TestData.OperatorIdentifier1,
+                                                                                                                 TestData.OperatorId,
                                                                                                                  TestData.CustomerEmailAddress,
                                                                                                                  TestData
                                                                                                                      .AdditionalTransactionMetaDataForMobileTopup(),

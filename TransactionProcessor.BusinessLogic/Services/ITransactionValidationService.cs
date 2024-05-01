@@ -22,7 +22,7 @@ public interface ITransactionValidationService{
                                                                                                  Guid contractId,
                                                                                                  Guid productId,
                                                                                                  String deviceIdentifier,
-                                                                                                 String operatorIdentifier,
+                                                                                                 Guid operatorId,
                                                                                                  Decimal? transactionAmount,
                                                                                                  CancellationToken cancellationToken);
 

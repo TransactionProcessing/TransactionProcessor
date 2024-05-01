@@ -194,6 +194,8 @@ public static class ReqnrollExtensions{
 
                 }
 
+                Guid operatorId = estateDetails.GetOperatorId(operatorName);
+
                 SaleTransactionRequest saleTransactionRequest = new SaleTransactionRequest{
                                                                                               MerchantId = merchantId,
                                                                                               EstateId = estateDetails.EstateId,
@@ -201,7 +203,7 @@ public static class ReqnrollExtensions{
                                                                                               TransactionNumber = transactionNumber,
                                                                                               DeviceIdentifier = deviceIdentifier,
                                                                                               TransactionType = transactionType,
-                                                                                              OperatorIdentifier = operatorName,
+                                                                                              OperatorId = operatorId,
                                                                                               CustomerEmailAddress = customerEmailAddress,
                                                                                               ProductId = productId,
                                                                                               ContractId = contractId,
@@ -281,6 +283,8 @@ public static class ReqnrollExtensions{
                                                                                                        MerchantName = "Test Merchant 1"
                                                                                                    };
             estateDetails.AddMerchant(response);
+            estateDetails.AddOperator(Guid.Parse("122C4A07-79B3-4223-B3FE-C1580EB38B0C"), "Safaricom");
+            estateDetails.AddAssignedOperator(Guid.Parse("122C4A07-79B3-4223-B3FE-C1580EB38B0C"));
             estateDetailsList.Add(estateDetails);
         }
         else{

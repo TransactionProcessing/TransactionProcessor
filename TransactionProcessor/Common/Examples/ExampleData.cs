@@ -29,7 +29,7 @@
 
         internal static String MerchantIdMetadataName = "MerchantId";
 
-        internal static String OperatorIdentifier = "Safaricom";
+        internal static Guid OperatorId = Guid.Parse("70881EB5-2892-47FE-BE0B-B23E004C342F");
 
         internal static Guid ProductId = Guid.Parse("C0AEC683-587E-4F6A-BB20-B36312D9F712");
 

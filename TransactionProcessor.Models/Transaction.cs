@@ -60,7 +60,7 @@
         /// <value>
         /// The operator identifier.
         /// </value>
-        public String OperatorIdentifier { get; set; }
+        public Guid OperatorId { get; set; }
 
         /// <summary>
         /// Gets or sets the operator transaction identifier.

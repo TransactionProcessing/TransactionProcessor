@@ -320,12 +320,16 @@
 
             TransactionAggregate transactionAggregate =
                 await this.TransactionAggregateRepository.GetLatestVersion(domainEvent.TransactionId, cancellationToken);
+            var transaction = transactionAggregate.GetTransaction();
 
             MerchantResponse merchant =
                 await this.EstateClient.GetMerchant(this.TokenResponse.AccessToken, domainEvent.EstateId, domainEvent.MerchantId, cancellationToken);
 
+            var estate = await this.EstateClient.GetEstate(this.TokenResponse.AccessToken, domainEvent.EstateId, cancellationToken);
+            var @operator = estate.Operators.Single(o => o.OperatorId == transaction.OperatorId);
+
             // Determine the body of the email
-            String receiptMessage = await this.TransactionReceiptBuilder.GetEmailReceiptMessage(transactionAggregate.GetTransaction(), merchant, cancellationToken);
+            String receiptMessage = await this.TransactionReceiptBuilder.GetEmailReceiptMessage(transactionAggregate.GetTransaction(), merchant, @operator.Name, cancellationToken);
 
             // Send the message
             await this.SendEmailMessage(this.TokenResponse.AccessToken,

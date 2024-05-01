@@ -36,7 +36,7 @@
 
             OperatorResponse operatorResponse = await voucherManagementProxy.ProcessSaleMessage(TestData.TokenResponse().AccessToken,
                                                                                                 TestData.TransactionId,
-                                                                                                TestData.OperatorIdentifier1,
+                                                                                                TestData.OperatorId,
                                                                                                 TestData.Merchant,
                                                                                                 TestData.TransactionDateTime,
                                                                                                 TestData.TransactionReference,
@@ -68,7 +68,7 @@
                                     {
                                         await voucherManagementProxy.ProcessSaleMessage(TestData.TokenResponse().AccessToken,
                                                                                         TestData.TransactionId,
-                                                                                        TestData.OperatorIdentifier1,
+                                                                                        TestData.OperatorId,
                                                                                         TestData.Merchant,
                                                                                         TestData.TransactionDateTime,
                                                                                         TestData.TransactionReference,
@@ -102,7 +102,7 @@
                                     {
                                         await voucherManagementProxy.ProcessSaleMessage(TestData.TokenResponse().AccessToken,
                                                                                         TestData.TransactionId,
-                                                                                        TestData.OperatorIdentifier1,
+                                                                                        TestData.OperatorId,
                                                                                         TestData.Merchant,
                                                                                         TestData.TransactionDateTime,
                                                                                         TestData.TransactionReference,

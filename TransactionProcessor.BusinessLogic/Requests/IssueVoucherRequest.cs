@@ -20,7 +20,7 @@ public class IssueVoucherRequest : IRequest<IssueVoucherResponse>
     /// <value>
     /// The operator identifier.
     /// </value>
-    public String OperatorIdentifier { get; }
+    public Guid OperatorId { get; }
 
     /// <summary>
     /// Gets the estate identifier.
@@ -82,7 +82,7 @@ public class IssueVoucherRequest : IRequest<IssueVoucherResponse>
     /// <param name="recipientEmail">The recipient email.</param>
     /// <param name="recipientMobile">The recipient mobile.</param>
     private IssueVoucherRequest(Guid voucherId,
-                                String operatorIdentifier,
+                                Guid operatorId,
                                 Guid estateId,
                                 Guid transactionId,
                                 DateTime issuedDateTime,
@@ -91,7 +91,7 @@ public class IssueVoucherRequest : IRequest<IssueVoucherResponse>
                                 String recipientMobile)
     {
         this.VoucherId = voucherId;
-        this.OperatorIdentifier = operatorIdentifier;
+        this.OperatorId = operatorId;
         this.EstateId = estateId;
         this.TransactionId = transactionId;
         this.Value = value;
@@ -113,7 +113,7 @@ public class IssueVoucherRequest : IRequest<IssueVoucherResponse>
     /// <param name="recipientMobile">The recipient mobile.</param>
     /// <returns></returns>
     public static IssueVoucherRequest Create(Guid voucherId,
-                                             String operatorIdentifier,
+                                             Guid operatorId,
                                              Guid estateId,
                                              Guid transactionId,
                                              DateTime issuedDateTime,
@@ -121,6 +121,6 @@ public class IssueVoucherRequest : IRequest<IssueVoucherResponse>
                                              String recipientEmail,
                                              String recipientMobile)
     {
-        return new IssueVoucherRequest(voucherId, operatorIdentifier, estateId, transactionId, issuedDateTime, value, recipientEmail, recipientMobile);
+        return new IssueVoucherRequest(voucherId, operatorId, estateId, transactionId, issuedDateTime, value, recipientEmail, recipientMobile);
     }
 }

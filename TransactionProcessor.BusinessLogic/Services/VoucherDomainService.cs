@@ -81,7 +81,7 @@ public class VoucherDomainService : IVoucherDomainService
     /// <param name="recipientMobile">The recipient mobile.</param>
     /// <param name="cancellationToken">The cancellation token.</param>
     /// <returns></returns>
-    public async Task<IssueVoucherResponse> IssueVoucher(Guid voucherId, String operatorId, Guid estateId,
+    public async Task<IssueVoucherResponse> IssueVoucher(Guid voucherId, Guid operatorId, Guid estateId,
                                                          Guid transactionId,
                                                          DateTime issuedDateTime,
                                                          Decimal value,
@@ -173,7 +173,7 @@ public class VoucherDomainService : IVoucherDomainService
     /// <exception cref="System.Exception">Estate Id [{estateId}] is not a valid estate
     /// or
     /// Operator Identifier [{operatorIdentifier}] is not a valid for estate [{estate.EstateName}]</exception>
-    private async Task<EstateResponse> ValidateVoucherIssue(Guid estateId, String operatorIdentifier, CancellationToken cancellationToken)
+    private async Task<EstateResponse> ValidateVoucherIssue(Guid estateId, Guid operatorId, CancellationToken cancellationToken)
     {
         EstateResponse estate = null;
 
@@ -192,10 +192,10 @@ public class VoucherDomainService : IVoucherDomainService
             throw new NotFoundException($"Estate {estate.EstateName} has no operators defined");
         }
 
-        EstateOperatorResponse estateOperator = estate.Operators.SingleOrDefault(o => o.Name == operatorIdentifier);
+        EstateOperatorResponse estateOperator = estate.Operators.SingleOrDefault(o => o.OperatorId == operatorId);
         if (estateOperator == null)
         {
-            throw new NotFoundException($"Operator Identifier [{operatorIdentifier}] is not a valid for estate [{estate.EstateName}]");
+            throw new NotFoundException($"Operator Identifier [{operatorId}] is not a valid for estate [{estate.EstateName}]");
         }
 
         return estate;

@@ -14,7 +14,7 @@
     public static class TransactionAggregateExtensions{
 
         public static void DeclineTransaction(this TransactionAggregate aggregate,
-            String operatorIdentifier,
+            Guid operatorId,
                                        String operatorResponseCode,
                                        String operatorResponseMessage,
                                        String responseCode,
@@ -28,7 +28,7 @@
                 new TransactionDeclinedByOperatorEvent(aggregate.AggregateId,
                                                        aggregate.EstateId,
                                                        aggregate.MerchantId,
-                                                       operatorIdentifier,
+                                                       operatorId,
                                                        operatorResponseCode,
                                                        operatorResponseMessage,
                                                        responseCode,
@@ -66,7 +66,7 @@
                 TransactionDateTime = aggregate.TransactionDateTime,
                 TransactionNumber = aggregate.TransactionNumber,
                 TransactionReference = aggregate.TransactionReference,
-                OperatorIdentifier = aggregate.OperatorIdentifier,
+                OperatorId = aggregate.OperatorId,
                 AdditionalRequestMetadata = aggregate.AdditionalTransactionRequestMetadata,
                 AdditionalResponseMetadata = aggregate.AdditionalTransactionResponseMetadata,
                 ResponseCode = aggregate.ResponseCode,
@@ -209,7 +209,7 @@
         }
 
         public static void AuthoriseTransaction(this TransactionAggregate aggregate, 
-                                                String operatorIdentifier,
+                                                Guid operatorId,
                                                 String authorisationCode,
                                                 String operatorResponseCode,
                                                 String operatorResponseMessage,
@@ -223,7 +223,7 @@
             TransactionAuthorisedByOperatorEvent transactionAuthorisedByOperatorEvent = new TransactionAuthorisedByOperatorEvent(aggregate.AggregateId,
                                                                                                                                  aggregate.EstateId,
                                                                                                                                  aggregate.MerchantId,
-                                                                                                                                 operatorIdentifier,
+                                                                                                                                 operatorId,
                                                                                                                                  authorisationCode,
                                                                                                                                  operatorResponseCode,
                                                                                                                                  operatorResponseMessage,
@@ -267,7 +267,7 @@
         }
 
         public static void RecordAdditionalRequestData(this TransactionAggregate aggregate, 
-                                                       String operatorIdentifier,
+                                                       Guid operatorId,
                                                        Dictionary<String, String> additionalTransactionRequestMetadata)
         {
             aggregate.CheckTransactionNotAlreadyCompleted();
@@ -277,20 +277,20 @@
             aggregate.CheckAdditionalRequestDataNotAlreadyRecorded();
 
             AdditionalRequestDataRecordedEvent additionalRequestDataRecordedEvent =
-                new AdditionalRequestDataRecordedEvent(aggregate.AggregateId, aggregate.EstateId, aggregate.MerchantId, operatorIdentifier, additionalTransactionRequestMetadata);
+                new AdditionalRequestDataRecordedEvent(aggregate.AggregateId, aggregate.EstateId, aggregate.MerchantId, operatorId, additionalTransactionRequestMetadata);
 
             aggregate.ApplyAndAppend(additionalRequestDataRecordedEvent);
         }
 
-        public static void RecordAdditionalResponseData(this TransactionAggregate aggregate, 
-                                                        String operatorIdentifier,
+        public static void RecordAdditionalResponseData(this TransactionAggregate aggregate,
+                                                        Guid operatorId,
                                                         Dictionary<String, String> additionalTransactionResponseMetadata)
         {
             aggregate.CheckTransactionHasBeenStarted();
             aggregate.CheckAdditionalResponseDataNotAlreadyRecorded();
 
             AdditionalResponseDataRecordedEvent additionalResponseDataRecordedEvent =
-                new AdditionalResponseDataRecordedEvent(aggregate.AggregateId, aggregate.EstateId, aggregate.MerchantId, operatorIdentifier, additionalTransactionResponseMetadata);
+                new AdditionalResponseDataRecordedEvent(aggregate.AggregateId, aggregate.EstateId, aggregate.MerchantId, operatorId, additionalTransactionResponseMetadata);
 
             aggregate.ApplyAndAppend(additionalResponseDataRecordedEvent);
         }
@@ -527,7 +527,7 @@
         public static void PlayEvent(this TransactionAggregate aggregate, AdditionalRequestDataRecordedEvent domainEvent)
         {
             aggregate.AdditionalTransactionRequestMetadata = domainEvent.AdditionalTransactionRequestMetadata;
-            aggregate.OperatorIdentifier = domainEvent.OperatorIdentifier;
+            aggregate.OperatorId = domainEvent.OperatorId;
         }
 
         public static void PlayEvent(this TransactionAggregate aggregate, AdditionalResponseDataRecordedEvent domainEvent)
@@ -576,6 +576,7 @@
         public static void PlayEvent(this TransactionAggregate aggregate, TransactionAuthorisedByOperatorEvent domainEvent)
         {
             aggregate.IsAuthorised = true;
+            aggregate.OperatorId = domainEvent.OperatorId;
             aggregate.OperatorResponseCode = domainEvent.OperatorResponseCode;
             aggregate.OperatorResponseMessage = domainEvent.OperatorResponseMessage;
             aggregate.OperatorTransactionId = domainEvent.OperatorTransactionId;
@@ -587,6 +588,7 @@
         public static void PlayEvent(this TransactionAggregate aggregate, TransactionDeclinedByOperatorEvent domainEvent)
         {
             aggregate.IsDeclined = true;
+            aggregate.OperatorId = domainEvent.OperatorId;
             aggregate.OperatorResponseCode = domainEvent.OperatorResponseCode;
             aggregate.OperatorResponseMessage = domainEvent.OperatorResponseMessage;
             aggregate.ResponseCode = domainEvent.ResponseCode;
@@ -702,7 +704,7 @@
 
         public Guid MerchantId { get; internal set; }
 
-        public String OperatorIdentifier { get; internal set; }
+        public Guid OperatorId { get; internal set; }
 
         public String OperatorResponseCode { get; internal set; }
 

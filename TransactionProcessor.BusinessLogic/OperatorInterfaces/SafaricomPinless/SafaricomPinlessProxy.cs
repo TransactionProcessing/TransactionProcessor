@@ -73,7 +73,7 @@
         /// Error sending request [{requestUrl}] to Safaricom.  Status Code [{responseMessage.StatusCode}]</exception>
         public async Task<OperatorResponse> ProcessSaleMessage(String accessToken,
                                                                Guid transactionId,
-                                                               String operatorIdentifier,
+                                                               Guid operatorId,
                                                                MerchantResponse merchant,
                                                                DateTime transactionDateTime,
                                                                String transactionReference,

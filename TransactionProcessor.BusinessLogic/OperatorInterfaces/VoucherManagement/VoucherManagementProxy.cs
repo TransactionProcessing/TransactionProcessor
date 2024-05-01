@@ -55,7 +55,7 @@ namespace TransactionProcessor.BusinessLogic.OperatorInterfaces.VoucherManagemen
         /// </exception>
         public async Task<OperatorResponse> ProcessSaleMessage(String accessToken,
                                                                Guid transactionId,
-                                                               String operatorIdentifier,
+                                                               Guid operatorId,
                                                                MerchantResponse merchant,
                                                                DateTime transactionDateTime,
                                                                String transactionReference,
@@ -79,7 +79,7 @@ namespace TransactionProcessor.BusinessLogic.OperatorInterfaces.VoucherManagemen
             }
 
             IssueVoucherRequest request = IssueVoucherRequest.Create(Guid.NewGuid(),
-                                                                     operatorIdentifier,
+                                                                     operatorId,
                                                                      merchant.EstateId,
                                                                      transactionId,
                                                                      DateTime.Now,

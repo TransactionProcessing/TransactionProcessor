@@ -74,12 +74,13 @@
         public static Int32 TransactionSource = 1;
 
         public static Guid OperatorId = Guid.Parse("804E9D8D-C6FE-4A46-9E55-6A04EA3E1AE5");
+        public static Guid OperatorId2 = Guid.Parse("C2A216E8-345F-4E45-B564-16821FFC524F");
 
         public static String CustomerEmailAddress = "testcustomer1@customer.co.uk";
 
-        public static String OperatorIdentifier1 = "Safaricom";
+        //public static Guid OperatorIdentifier1 = Guid.Parse("590C07CF-500C-4F85-A5D4-A90A8021D0A1");
 
-        public static String OperatorIdentifier2 = "NotSupported";
+        //public static String OperatorIdentifier2 = "NotSupported";
 
         public static Boolean RequireCustomMerchantNumber = true;
 
@@ -353,7 +354,7 @@
                             {
                                 new EstateOperatorResponse
                                 {
-                                    Name = TestData.OperatorIdentifier1,
+                                    Name = "Safaricom",
                                     OperatorId = TestData.OperatorId,
                                     RequireCustomMerchantNumber = TestData.RequireCustomMerchantNumber,
                                     RequireCustomTerminalNumber = TestData.RequireCustomTerminalNumber
@@ -370,8 +371,7 @@
                             {
                                 new EstateOperatorResponse
                                 {
-                                    Name = TestData.OperatorIdentifier1,
-                                    OperatorId = TestData.OperatorId,
+                                    OperatorId = TestData.OperatorId2,
                                     RequireCustomMerchantNumber = TestData.RequireCustomMerchantNumber,
                                     RequireCustomTerminalNumber = TestData.RequireCustomTerminalNumber
                                 }
@@ -408,7 +408,6 @@
                             {
                                 new MerchantOperatorResponse
                                 {
-                                    Name = TestData.OperatorIdentifier1,
                                     OperatorId = TestData.OperatorId,
                                     MerchantNumber = TestData.MerchantNumber,
                                     TerminalNumber = TestData.TerminalNumber
@@ -431,8 +430,7 @@
                             {
                                 new MerchantOperatorResponse
                                 {
-                                    Name = TestData.OperatorIdentifier2,
-                                    OperatorId = TestData.OperatorId,
+                                    OperatorId = TestData.OperatorId2,
                                     MerchantNumber = TestData.MerchantNumber,
                                     TerminalNumber = TestData.TerminalNumber
                                 }
@@ -450,7 +448,6 @@
                             {
                                 new MerchantOperatorResponse
                                 {
-                                    Name = TestData.OperatorIdentifier1,
                                     OperatorId = TestData.OperatorId,
                                     MerchantNumber = TestData.MerchantNumber,
                                     TerminalNumber = TestData.TerminalNumber
@@ -469,7 +466,6 @@
                             {
                                 new MerchantOperatorResponse
                                 {
-                                    Name = TestData.OperatorIdentifier1,
                                     OperatorId = TestData.OperatorId,
                                     MerchantNumber = TestData.MerchantNumber,
                                     TerminalNumber = TestData.TerminalNumber
@@ -540,7 +536,7 @@
                                                  TestData.TransactionTypeLogon.ToString(),
                                                  TestData.TransactionDateTime,
                                                  TestData.TransactionNumber,
-                                                 TestData.OperatorIdentifier1,
+                                                 TestData.OperatorId,
                                                  TestData.CustomerEmailAddress,
                                                  TestData.AdditionalTransactionMetaDataForMobileTopup(),
                                                  TestData.ContractId,
@@ -618,7 +614,7 @@
 
             transactionAggregate.AddProductDetails(TestData.ContractId, TestData.ProductId);
 
-            transactionAggregate.AuthoriseTransaction(TestData.OperatorIdentifier1,
+            transactionAggregate.AuthoriseTransaction(TestData.OperatorId,
                                                       TestData.AuthorisationCode,
                                                       TestData.OperatorResponseCode,
                                                       TestData.OperatorResponseMessage,
@@ -646,7 +642,7 @@
 
             transactionAggregate.AddProductDetails(TestData.ContractId, TestData.ProductId);
 
-            transactionAggregate.AuthoriseTransaction(TestData.OperatorIdentifier1,
+            transactionAggregate.AuthoriseTransaction(TestData.OperatorId,
                                                       TestData.AuthorisationCode,
                                                       TestData.OperatorResponseCode,
                                                       TestData.OperatorResponseMessage,
@@ -675,7 +671,7 @@
 
             transactionAggregate.AddProductDetails(TestData.ContractId, TestData.ProductId);
 
-            transactionAggregate.AuthoriseTransaction(TestData.OperatorIdentifier1,
+            transactionAggregate.AuthoriseTransaction(TestData.OperatorId,
                                                       TestData.AuthorisationCode,
                                                       TestData.OperatorResponseCode,
                                                       TestData.OperatorResponseMessage,
@@ -705,7 +701,7 @@
 
             transactionAggregate.AddProductDetails(TestData.ContractId, TestData.ProductId);
 
-            transactionAggregate.DeclineTransaction(TestData.OperatorIdentifier1,
+            transactionAggregate.DeclineTransaction(TestData.OperatorId,
                                                       TestData.OperatorResponseCode,
                                                       TestData.OperatorResponseMessage,
                                                       TestData.ResponseCode,
@@ -731,7 +727,7 @@
 
             transactionAggregate.AddProductDetails(TestData.ContractId, TestData.ProductId);
 
-            transactionAggregate.DeclineTransaction(TestData.OperatorIdentifier1,
+            transactionAggregate.DeclineTransaction(TestData.OperatorId,
                                                     TestData.OperatorResponseCode,
                                                     TestData.OperatorResponseMessage,
                                                     TestData.ResponseCode,
@@ -775,7 +771,7 @@
                                                   TestData.DeviceIdentifier,
                                                   TestData.TransactionAmount);
             
-            transactionAggregate.AuthoriseTransaction(TestData.OperatorIdentifier1,
+            transactionAggregate.AuthoriseTransaction(TestData.OperatorId,
                                                       TestData.AuthorisationCode,
                                                       TestData.OperatorResponseCode,
                                                       TestData.OperatorResponseMessage,
@@ -856,7 +852,7 @@
                                                   TestData.DeviceIdentifier,
                                                   TestData.TransactionAmount);
 
-            transactionAggregate.DeclineTransaction(TestData.OperatorIdentifier1, 
+            transactionAggregate.DeclineTransaction(TestData.OperatorId, 
                                                     TestData.DeclinedOperatorResponseCode,
                                                     TestData.DeclinedOperatorResponseMessage,
                                                     TestData.GetResponseCodeAsString(transactionResponseCode),
@@ -1239,7 +1235,7 @@
         public static DateTime IssuedDateTime = new DateTime(2020, 11, 5);
 
         public static IssueVoucherRequest IssueVoucherRequest = IssueVoucherRequest.Create(TestData.VoucherId,
-                                                                                           TestData.OperatorIdentifier,
+                                                                                           TestData.OperatorId,
                                                                                            TestData.EstateId,
                                                                                            TestData.TransactionId,
                                                                                            TestData.IssuedDateTime,
@@ -1301,7 +1297,7 @@
         public static VoucherAggregate GetVoucherAggregateWithRecipientEmail()
         {
             VoucherAggregate aggregate = VoucherAggregate.Create(TestData.VoucherId);
-            aggregate.Generate(TestData.OperatorIdentifier, TestData.EstateId, TestData.TransactionId, TestData.GeneratedDateTime, TestData.Value);
+            aggregate.Generate(TestData.OperatorId, TestData.EstateId, TestData.TransactionId, TestData.GeneratedDateTime, TestData.Value);
             aggregate.AddBarcode(TestData.Barcode);
             aggregate.Issue(TestData.RecipientEmail, null, TestData.IssuedDateTime);
 
@@ -1311,7 +1307,7 @@
         public static VoucherAggregate GetVoucherAggregateWithRecipientMobile()
         {
             VoucherAggregate aggregate = VoucherAggregate.Create(TestData.VoucherId);
-            aggregate.Generate(TestData.OperatorIdentifier, TestData.EstateId, TestData.TransactionId, TestData.GeneratedDateTime, TestData.Value);
+            aggregate.Generate(TestData.OperatorId, TestData.EstateId, TestData.TransactionId, TestData.GeneratedDateTime, TestData.Value);
             aggregate.AddBarcode(TestData.Barcode);
             aggregate.Issue(null, TestData.RecipientMobile, TestData.IssuedDateTime);
 

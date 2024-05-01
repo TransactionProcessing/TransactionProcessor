@@ -17,7 +17,7 @@
                                         Guid EstateId,
                                         Guid TransactionId,
                                         DateTime GeneratedDateTime,
-                                        String OperatorIdentifier,
+                                        Guid OperatorId,
                                         Decimal Value,
                                         String VoucherCode,
                                         DateTime ExpiryDateTime,

@@ -55,7 +55,7 @@ public class PataPawaPrePayProxy : IOperatorProxy{
         return this.CreateFromLogon(responseContent);
     }
 
-    public async Task<OperatorResponse> ProcessSaleMessage(String accessToken, Guid transactionId, String operatorIdentifier, MerchantResponse merchant, DateTime transactionDateTime, String transactionReference, Dictionary<String, String> additionalTransactionMetadata, CancellationToken cancellationToken){
+    public async Task<OperatorResponse> ProcessSaleMessage(String accessToken, Guid transactionId, Guid operatorId, MerchantResponse merchant, DateTime transactionDateTime, String transactionReference, Dictionary<String, String> additionalTransactionMetadata, CancellationToken cancellationToken){
         // Get the logon response for the operator
         OperatorResponse logonResponse = this.MemoryCache.Get<OperatorResponse>("PataPawaPrePayLogon");
         if (logonResponse == null)

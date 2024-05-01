@@ -21,7 +21,7 @@ namespace TransactionProcessor.BusinessLogic.Tests.RequestHandler
         public async Task VoucherManagementRequestHandler_IssueVoucherRequest_IsHandled()
         {
             Mock<IVoucherDomainService> voucherDomainService = new Mock<IVoucherDomainService>();
-            voucherDomainService.Setup(v => v.IssueVoucher(It.IsAny<Guid>(), It.IsAny<String>(), It.IsAny<Guid>(),
+            voucherDomainService.Setup(v => v.IssueVoucher(It.IsAny<Guid>(), It.IsAny<Guid>(), It.IsAny<Guid>(),
                                                            It.IsAny<Guid>(), It.IsAny<DateTime>(),
                                                            It.IsAny<Decimal>(), It.IsAny<String>(), It.IsAny<String>(),
                                                            It.IsAny<CancellationToken>())).ReturnsAsync(TestData.IssueVoucherResponse);

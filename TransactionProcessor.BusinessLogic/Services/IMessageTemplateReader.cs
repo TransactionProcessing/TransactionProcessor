@@ -22,6 +22,7 @@
         /// <returns></returns>
         Task<String> GetEmailReceiptMessage(Transaction transaction,
                                             MerchantResponse merchant,
+                                            String operatorName, 
                                             CancellationToken cancellationToken);
 
         #endregion

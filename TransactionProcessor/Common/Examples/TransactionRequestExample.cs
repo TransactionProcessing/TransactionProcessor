@@ -67,7 +67,7 @@
                                                                      new OperatorTotalRequest
                                                                      {
                                                                          ContractId = ExampleData.ContractId,
-                                                                         OperatorIdentifier = ExampleData.OperatorIdentifier,
+                                                                         OperatorId = ExampleData.OperatorId,
                                                                          TransactionCount = ExampleData.TransactionCount,
                                                                          TransactionValue = ExampleData.TransactionValue
                                                                      }
@@ -104,7 +104,7 @@
                                                  AdditionalTransactionMetadata = new Dictionary<String, String>(),
                                                  ContractId = ExampleData.ContractId,
                                                  CustomerEmailAddress = ExampleData.CustomerEmailAddress,
-                                                 OperatorIdentifier = ExampleData.OperatorIdentifier,
+                                                 OperatorId = ExampleData.OperatorId,
                                                  ProductId = ExampleData.ProductId,
                                                  TransactionSource = ExampleData.OnlineSaleTransactionSource
                                              };
@@ -137,7 +137,7 @@
                 AdditionalTransactionMetadata = new Dictionary<String, String>(),
                 ContractId = ExampleData.ContractId,
                 CustomerEmailAddress = ExampleData.CustomerEmailAddress,
-                OperatorIdentifier = ExampleData.OperatorIdentifier,
+                OperatorId = ExampleData.OperatorId,
                 ProductId = ExampleData.ProductId,
                 TransactionSource = ExampleData.FileBasedSaleTransactionSource
             };

@@ -163,7 +163,7 @@
                                                                                          saleTransactionRequest.TransactionType,
                                                                                          saleTransactionRequest.TransactionDateTime,
                                                                                          saleTransactionRequest.TransactionNumber,
-                                                                                         saleTransactionRequest.OperatorIdentifier,
+                                                                                         saleTransactionRequest.OperatorId,
                                                                                          saleTransactionRequest.CustomerEmailAddress,
                                                                                          saleTransactionRequest.AdditionalTransactionMetadata,
                                                                                          saleTransactionRequest.ContractId,

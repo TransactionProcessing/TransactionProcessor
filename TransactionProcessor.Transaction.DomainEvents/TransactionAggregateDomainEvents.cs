@@ -19,14 +19,14 @@
     public record AdditionalRequestDataRecordedEvent(Guid TransactionId,
                                                      Guid EstateId,
                                                      Guid MerchantId,
-                                                     String OperatorIdentifier,
+                                                     Guid OperatorId,
                                                      Dictionary<String, String> AdditionalTransactionRequestMetadata) : DomainEvent(TransactionId, Guid.NewGuid());
 
     [ExcludeFromCodeCoverage]
     public record AdditionalResponseDataRecordedEvent(Guid TransactionId,
                                                       Guid EstateId,
                                                       Guid MerchantId,
-                                                      String OperatorIdentifier,
+                                                      Guid OperatorId,
                                                       Dictionary<String, String> AdditionalTransactionResponseMetadata) : DomainEvent(TransactionId, Guid.NewGuid());
 
     [ExcludeFromCodeCoverage]
@@ -73,7 +73,7 @@
     public record TransactionAuthorisedByOperatorEvent(Guid TransactionId,
                                                        Guid EstateId,
                                                        Guid MerchantId,
-                                                       String OperatorIdentifier,
+                                                       Guid OperatorId,
                                                        String AuthorisationCode,
                                                        String OperatorResponseCode,
                                                        String OperatorResponseMessage,
@@ -92,7 +92,7 @@
     public record TransactionDeclinedByOperatorEvent(Guid TransactionId,
                                                      Guid EstateId,
                                                      Guid MerchantId,
-                                                     String OperatorIdentifier,
+                                                     Guid OperatorId,
                                                      String OperatorResponseCode,
                                                      String OperatorResponseMessage,
                                                      String ResponseCode,
