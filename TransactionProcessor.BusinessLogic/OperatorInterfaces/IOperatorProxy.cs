@@ -18,7 +18,7 @@
         Task<OperatorResponse> ProcessSaleMessage(String accessToken,
                                                   Guid transactionId,
                                                   Guid operatorId,
-                                                  MerchantResponse merchant,
+                                                  EstateManagement.DataTransferObjects.Responses.Merchant.MerchantResponse merchant,
                                                   DateTime transactionDateTime,
                                                   String transactionReference,
                                                   Dictionary<String, String> additionalTransactionMetadata,

@@ -10,6 +10,8 @@
     using BusinessLogic.Services;
     using EstateManagement.DataTransferObjects;
     using EstateManagement.DataTransferObjects.Responses;
+    using EstateManagement.DataTransferObjects.Responses.Contract;
+    using EstateManagement.DataTransferObjects.Responses.Estate;
     using FloatAggregate;
     using Models;
     using PataPawaPostPay;
@@ -394,8 +396,8 @@
                 Operators = new List<EstateOperatorResponse>()
             };
 
-        public static MerchantResponse GetMerchantResponseWithOperator1 =>
-            new MerchantResponse
+        public static EstateManagement.DataTransferObjects.Responses.Merchant.MerchantResponse GetMerchantResponseWithOperator1 =>
+            new EstateManagement.DataTransferObjects.Responses.Merchant.MerchantResponse
             {
                 EstateId = TestData.EstateId,
                 MerchantId = TestData.MerchantId,
@@ -404,9 +406,9 @@
                           {
                               {TestData.DeviceId, TestData.DeviceIdentifier}
                           },
-                Operators = new List<MerchantOperatorResponse>
+                Operators = new List<EstateManagement.DataTransferObjects.Responses.Merchant.MerchantOperatorResponse>
                             {
-                                new MerchantOperatorResponse
+                                new EstateManagement.DataTransferObjects.Responses.Merchant.MerchantOperatorResponse
                                 {
                                     OperatorId = TestData.OperatorId,
                                     MerchantNumber = TestData.MerchantNumber,
@@ -499,8 +501,8 @@
                 Operators = null
             };
 
-        public static MerchantResponse Merchant =>
-            new MerchantResponse
+        public static EstateManagement.DataTransferObjects.Responses.Merchant.MerchantResponse Merchant =>
+            new EstateManagement.DataTransferObjects.Responses.Merchant.MerchantResponse
             {
                 EstateId = TestData.EstateId,
                 MerchantId = TestData.MerchantId,
@@ -1058,19 +1060,19 @@
             {
                 new ContractProductTransactionFee
                 {
-                    FeeType = EstateManagement.DataTransferObjects.FeeType.ServiceProvider,
+                    FeeType = EstateManagement.DataTransferObjects.Responses.Contract.FeeType.ServiceProvider,
                     Value = TestData.TransactionFeeValue,
                     TransactionFeeId = TestData.TransactionFeeId,
                     Description = TestData.TransactionFeeDescription,
-                    CalculationType = (EstateManagement.DataTransferObjects.CalculationType)CalculationType.Fixed
+                    CalculationType = (EstateManagement.DataTransferObjects.Responses.Contract.CalculationType)CalculationType.Fixed
                 },
                 new ContractProductTransactionFee
                 {
-                    FeeType = EstateManagement.DataTransferObjects.FeeType.Merchant,
+                    FeeType = EstateManagement.DataTransferObjects.Responses.Contract.FeeType.Merchant,
                     Value = TestData.TransactionFeeValue,
                     TransactionFeeId = TestData.TransactionFeeId2,
                     Description = TestData.TransactionFeeDescription,
-                    CalculationType = (EstateManagement.DataTransferObjects.CalculationType)CalculationType.Fixed
+                    CalculationType = (EstateManagement.DataTransferObjects.Responses.Contract.CalculationType)CalculationType.Fixed
                 }
             };
 

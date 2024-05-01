@@ -13,6 +13,8 @@ namespace TransactionProcessor.BusinessLogic.Services
     using EstateManagement.Client;
     using EstateManagement.Database.Entities;
     using EstateManagement.DataTransferObjects.Responses;
+    using EstateManagement.DataTransferObjects.Responses.Contract;
+    using EstateManagement.DataTransferObjects.Responses.Estate;
     using FloatAggregate;
     using Models;
     using SecurityService.Client;

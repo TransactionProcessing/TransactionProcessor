@@ -8,7 +8,9 @@
     using Common;
     using EstateManagement.Client;
     using EstateManagement.DataTransferObjects.Requests;
+    using EstateManagement.DataTransferObjects.Requests.Merchant;
     using EstateManagement.DataTransferObjects.Responses;
+    using EstateManagement.DataTransferObjects.Responses.Estate;
     using FloatAggregate;
     using Models;
     using OperatorInterfaces;
@@ -246,7 +248,7 @@
                 transactionAggregate.RecordAdditionalRequestData(operatorId, additionalTransactionMetadata);
 
                 // Do the online processing with the operator here
-                MerchantResponse merchant = await this.GetMerchant(estateId, merchantId, cancellationToken);
+                EstateManagement.DataTransferObjects.Responses.Merchant.MerchantResponse merchant = await this.GetMerchant(estateId, merchantId, cancellationToken);
                 OperatorResponse operatorResponse = await this.ProcessMessageWithOperator(merchant,
                                                                                           transactionId,
                                                                                           transactionDateTime,
@@ -365,17 +367,17 @@
             return $"{i - DateTime.Now.Ticks:x}";
         }
 
-        private async Task<MerchantResponse> GetMerchant(Guid estateId,
-                                                         Guid merchantId,
-                                                         CancellationToken cancellationToken){
+        private async Task<EstateManagement.DataTransferObjects.Responses.Merchant.MerchantResponse> GetMerchant(Guid estateId,
+                                                                                                                                   Guid merchantId,
+                                                                                                                                   CancellationToken cancellationToken){
             this.TokenResponse = await Helpers.GetToken(this.TokenResponse, this.SecurityServiceClient, cancellationToken);
 
-            MerchantResponse merchant = await this.EstateClient.GetMerchant(this.TokenResponse.AccessToken, estateId, merchantId, cancellationToken);
+            EstateManagement.DataTransferObjects.Responses.Merchant.MerchantResponse merchant = await this.EstateClient.GetMerchant(this.TokenResponse.AccessToken, estateId, merchantId, cancellationToken);
 
             return merchant;
         }
         
-        private async Task<OperatorResponse> ProcessMessageWithOperator(MerchantResponse merchant,
+        private async Task<OperatorResponse> ProcessMessageWithOperator(EstateManagement.DataTransferObjects.Responses.Merchant.MerchantResponse merchant,
                                                                         Guid transactionId,
                                                                         DateTime transactionDateTime,
                                                                         Guid operatorId,

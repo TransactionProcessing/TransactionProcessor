@@ -46,7 +46,7 @@
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns></returns>
         public async Task<String> GetEmailReceiptMessage(Transaction transaction,
-                                                         MerchantResponse merchant,
+                                                         EstateManagement.DataTransferObjects.Responses.Merchant.MerchantResponse merchant,
                                                          String operatorName,
                                                          CancellationToken cancellationToken)
         {

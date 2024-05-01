@@ -9,6 +9,7 @@ namespace TransactionProcessor.BusinessLogic.Tests.Services
     using System.Threading;
     using EstateManagement.Client;
     using EstateManagement.DataTransferObjects.Responses;
+    using EstateManagement.DataTransferObjects.Responses.Contract;
     using FloatAggregate;
     using Microsoft.Extensions.Configuration;
     using Models;

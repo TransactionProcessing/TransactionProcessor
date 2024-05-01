@@ -11,6 +11,7 @@
     using EstateManagement.Database.Entities;
     using EstateManagement.DataTransferObjects;
     using EstateManagement.DataTransferObjects.Responses;
+    using EstateManagement.DataTransferObjects.Responses.Estate;
     using FloatAggregate;
     using Manager;
     using MessagingService.Client;
@@ -29,8 +30,10 @@
     using Transaction.DomainEvents;
     using TransactionAggregate;
     using CalculationType = Models.CalculationType;
-    using ContractProductTransactionFee = EstateManagement.DataTransferObjects.Responses.ContractProductTransactionFee;
+    using ContractProductTransactionFee = EstateManagement.DataTransferObjects.Responses.Contract.ContractProductTransactionFee;
     using FeeType = Models.FeeType;
+    using MerchantResponse = EstateManagement.DataTransferObjects.Responses.Merchant.MerchantResponse;
+    using Transaction = Models.Transaction;
 
     /// <summary>
     /// 
@@ -108,13 +111,13 @@
             await this.HandleSpecificDomainEvent((dynamic)domainEvent, cancellationToken);
         }
 
-        private DateTime CalculateSettlementDate(SettlementSchedule merchantSettlementSchedule,
+        private DateTime CalculateSettlementDate(EstateManagement.DataTransferObjects.Responses.Merchant.SettlementSchedule merchantSettlementSchedule,
                                                  DateTime completeDateTime) {
-            if (merchantSettlementSchedule == SettlementSchedule.Weekly) {
+            if (merchantSettlementSchedule == EstateManagement.DataTransferObjects.Responses.Merchant.SettlementSchedule.Weekly) {
                 return completeDateTime.Date.AddDays(7).Date;
             }
 
-            if (merchantSettlementSchedule == SettlementSchedule.Monthly) {
+            if (merchantSettlementSchedule == EstateManagement.DataTransferObjects.Responses.Merchant.SettlementSchedule.Monthly) {
                 return completeDateTime.Date.AddMonths(1).Date;
             }
 
@@ -188,10 +191,10 @@
             List<CalculatedFee> merchantFees = resultFees.Where(f => f.FeeType == FeeType.Merchant).ToList();
 
             if (merchantFees.Any()){
-                MerchantResponse merchant =
+                EstateManagement.DataTransferObjects.Responses.Merchant.MerchantResponse merchant =
                     await this.EstateClient.GetMerchant(this.TokenResponse.AccessToken, domainEvent.EstateId, domainEvent.MerchantId, cancellationToken);
 
-                if (merchant.SettlementSchedule == SettlementSchedule.NotSet){
+                if (merchant.SettlementSchedule == EstateManagement.DataTransferObjects.Responses.Merchant.SettlementSchedule.NotSet){
                     throw new NotSupportedException($"Merchant {merchant.MerchantId} does not have a settlement schedule configured");
                 }
 
@@ -202,7 +205,7 @@
                     transactionAggregate.AddFeePendingSettlement(calculatedFee, settlementDate);
 
 
-                    if (merchant.SettlementSchedule == SettlementSchedule.Immediate){
+                    if (merchant.SettlementSchedule == EstateManagement.DataTransferObjects.Responses.Merchant.SettlementSchedule.Immediate){
                         Guid settlementId = Helpers.CalculateSettlementAggregateId(settlementDate, domainEvent.MerchantId, domainEvent.EstateId);
                         
                         // Add fees to transaction now if settlement is immediate
@@ -248,13 +251,13 @@
                                                      CancellationToken cancellationToken){
             Guid aggregateId = Helpers.CalculateSettlementAggregateId(domainEvent.SettledDateTime.Date, domainEvent.MerchantId, domainEvent.EstateId);
 
-            MerchantResponse merchant = await this.EstateClient.GetMerchant(this.TokenResponse.AccessToken, domainEvent.EstateId, domainEvent.MerchantId, cancellationToken);
+            EstateManagement.DataTransferObjects.Responses.Merchant.MerchantResponse merchant = await this.EstateClient.GetMerchant(this.TokenResponse.AccessToken, domainEvent.EstateId, domainEvent.MerchantId, cancellationToken);
 
             // We need to add the fees to a pending settlement stream
             SettlementAggregate aggregate = await this.SettlementAggregateRepository.GetLatestVersion(aggregateId, cancellationToken);
 
 
-            if (merchant.SettlementSchedule == SettlementSchedule.Immediate){
+            if (merchant.SettlementSchedule == EstateManagement.DataTransferObjects.Responses.Merchant.SettlementSchedule.Immediate){
                 aggregate.ImmediatelyMarkFeeAsSettled(domainEvent.MerchantId, domainEvent.TransactionId, domainEvent.FeeId);
             }
             else {
@@ -320,13 +323,13 @@
 
             TransactionAggregate transactionAggregate =
                 await this.TransactionAggregateRepository.GetLatestVersion(domainEvent.TransactionId, cancellationToken);
-            var transaction = transactionAggregate.GetTransaction();
+            Transaction transaction = transactionAggregate.GetTransaction();
 
             MerchantResponse merchant =
                 await this.EstateClient.GetMerchant(this.TokenResponse.AccessToken, domainEvent.EstateId, domainEvent.MerchantId, cancellationToken);
 
-            var estate = await this.EstateClient.GetEstate(this.TokenResponse.AccessToken, domainEvent.EstateId, cancellationToken);
-            var @operator = estate.Operators.Single(o => o.OperatorId == transaction.OperatorId);
+            EstateResponse estate = await this.EstateClient.GetEstate(this.TokenResponse.AccessToken, domainEvent.EstateId, cancellationToken);
+            EstateOperatorResponse @operator = estate.Operators.Single(o => o.OperatorId == transaction.OperatorId);
 
             // Determine the body of the email
             String receiptMessage = await this.TransactionReceiptBuilder.GetEmailReceiptMessage(transactionAggregate.GetTransaction(), merchant, @operator.Name, cancellationToken);

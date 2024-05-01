@@ -9,6 +9,7 @@ using Common;
 using EstateManagement.Client;
 using EstateManagement.Database.Contexts;
 using EstateManagement.DataTransferObjects.Responses;
+using EstateManagement.DataTransferObjects.Responses.Estate;
 using Microsoft.EntityFrameworkCore;
 using Models;
 using NetBarcode;

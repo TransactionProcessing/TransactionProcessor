@@ -7,7 +7,8 @@
     using BusinessLogic.Services;
     using EstateManagement.Client;
     using EstateManagement.DataTransferObjects.Requests;
-    using EstateManagement.DataTransferObjects.Responses;
+    using EstateManagement.DataTransferObjects.Requests.Merchant;
+    using EstateManagement.DataTransferObjects.Responses.Merchant;
     using FloatAggregate;
     using Microsoft.Extensions.Configuration;
     using Models;
@@ -22,6 +23,7 @@
     using Testing;
     using TransactionAggregate;
     using Xunit;
+    using MerchantResponse = EstateManagement.DataTransferObjects.Responses.MerchantResponse;
 
     public class TransactionDomainServiceTests{
         #region Fields
@@ -82,11 +84,7 @@
                                                                It.IsAny<Guid>(),
                                                                It.IsAny<AddMerchantDeviceRequest>(),
                                                                It.IsAny<CancellationToken>()))
-                .ReturnsAsync(new AddMerchantDeviceResponse{
-                                                               DeviceId = TestData.DeviceId,
-                                                               MerchantId = TestData.MerchantId,
-                                                               EstateId = TestData.TransactionId,
-                                                           });
+                .Returns(Task.CompletedTask);
 
             this.SecurityServiceClient.Setup(s => s.GetToken(It.IsAny<String>(), It.IsAny<String>(), It.IsAny<CancellationToken>())).ReturnsAsync(TestData.TokenResponse);
 
@@ -242,7 +240,7 @@
             this.OperatorProxy.Setup(o => o.ProcessSaleMessage(It.IsAny<String>(),
                                                                It.IsAny<Guid>(),
                                                                It.IsAny<Guid>(),
-                                                               It.IsAny<MerchantResponse>(),
+                                                               It.IsAny<EstateManagement.DataTransferObjects.Responses.Merchant.MerchantResponse>(),
                                                                It.IsAny<DateTime>(),
                                                                It.IsAny<String>(),
                                                                It.IsAny<Dictionary<String, String>>(),
@@ -301,7 +299,7 @@
             this.OperatorProxy.Setup(o => o.ProcessSaleMessage(It.IsAny<String>(),
                                                                It.IsAny<Guid>(),
                                                                It.IsAny<Guid>(),
-                                                               It.IsAny<MerchantResponse>(),
+                                                               It.IsAny<EstateManagement.DataTransferObjects.Responses.Merchant.MerchantResponse>(),
                                                                It.IsAny<DateTime>(),
                                                                It.IsAny<String>(),
                                                                It.IsAny<Dictionary<String, String>>(),
@@ -400,7 +398,7 @@
             this.OperatorProxy.Setup(o => o.ProcessSaleMessage(It.IsAny<String>(),
                                                                It.IsAny<Guid>(),
                                                                It.IsAny<Guid>(),
-                                                               It.IsAny<MerchantResponse>(),
+                                                               It.IsAny<EstateManagement.DataTransferObjects.Responses.Merchant.MerchantResponse>(),
                                                                It.IsAny<DateTime>(),
                                                                It.IsAny<String>(),
                                                                It.IsAny<Dictionary<String, String>>(),
@@ -468,7 +466,7 @@
             this.OperatorProxy.Setup(o => o.ProcessSaleMessage(It.IsAny<String>(),
                                                                It.IsAny<Guid>(),
                                                                It.IsAny<Guid>(),
-                                                               It.IsAny<MerchantResponse>(),
+                                                               It.IsAny<EstateManagement.DataTransferObjects.Responses.Merchant.MerchantResponse>(),
                                                                It.IsAny<DateTime>(),
                                                                It.IsAny<String>(),
                                                                It.IsAny<Dictionary<String, String>>(),
