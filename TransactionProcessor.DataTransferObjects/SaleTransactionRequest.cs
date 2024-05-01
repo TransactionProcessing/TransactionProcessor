@@ -22,8 +22,8 @@
         [JsonProperty("device_identifier")]
         public String DeviceIdentifier { get; set; }
 
-        [JsonProperty("operator_identifier")]
-        public String OperatorIdentifier { get; set; }
+        [JsonProperty("operator_id")]
+        public Guid OperatorId { get; set; }
 
         [JsonProperty("product_id")]
         public Guid ProductId { get; set; }

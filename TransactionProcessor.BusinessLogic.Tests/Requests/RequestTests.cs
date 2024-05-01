@@ -59,7 +59,7 @@
                                                                                                                TestData.TransactionTypeLogon.ToString(),
                                                                                                                TestData.TransactionDateTime,
                                                                                                                TestData.TransactionNumber,
-                                                                                                               TestData.OperatorIdentifier1,
+                                                                                                               TestData.OperatorId,
                                                                                                                TestData.CustomerEmailAddress,
                                                                                                                TestData.AdditionalTransactionMetaDataForMobileTopup(),
                                                                                                                TestData.ContractId,
@@ -74,7 +74,7 @@
             processSaleTransactionRequest.TransactionDateTime.ShouldBe(TestData.TransactionDateTime);
             processSaleTransactionRequest.TransactionNumber.ShouldBe(TestData.TransactionNumber);
             processSaleTransactionRequest.TransactionId.ShouldBe(TestData.TransactionId);
-            processSaleTransactionRequest.OperatorIdentifier.ShouldBe(TestData.OperatorIdentifier1);
+            processSaleTransactionRequest.OperatorId.ShouldBe(TestData.OperatorId);
             processSaleTransactionRequest.CustomerEmailAddress.ShouldBe(TestData.CustomerEmailAddress);
             processSaleTransactionRequest.AdditionalTransactionMetadata.ShouldNotBeNull();
             processSaleTransactionRequest.AdditionalTransactionMetadata.Count.ShouldBe(TestData.AdditionalTransactionMetaDataForMobileTopup().Count);
@@ -109,7 +109,7 @@
         public void IssueVoucherRequest_CanBeCreated_IsCreated()
         {
             IssueVoucherRequest issueVoucherRequest = IssueVoucherRequest.Create(TestData.VoucherId,
-                                                                                 TestData.OperatorIdentifier,
+                                                                                 TestData.OperatorId,
                                                                                  TestData.EstateId,
                                                                                  TestData.TransactionId,
                                                                                  TestData.IssuedDateTime,
@@ -119,7 +119,7 @@
 
             issueVoucherRequest.ShouldNotBeNull();
             issueVoucherRequest.VoucherId.ShouldBe(TestData.VoucherId);
-            issueVoucherRequest.OperatorIdentifier.ShouldBe(TestData.OperatorIdentifier);
+            issueVoucherRequest.OperatorId.ShouldBe(TestData.OperatorId);
             issueVoucherRequest.EstateId.ShouldBe(TestData.EstateId);
             issueVoucherRequest.TransactionId.ShouldBe(TestData.TransactionId);
             issueVoucherRequest.Value.ShouldBe(TestData.Value);

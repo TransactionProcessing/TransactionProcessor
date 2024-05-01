@@ -9,7 +9,7 @@ using Models;
 public class DummyVoucherDomainService : IVoucherDomainService
 {
     public async Task<IssueVoucherResponse> IssueVoucher(Guid voucherId,
-                                                         String operatorId,
+                                                         Guid operatorId,
                                                          Guid estateId,
                                                          Guid transactionId,
                                                          DateTime issuedDateTime,

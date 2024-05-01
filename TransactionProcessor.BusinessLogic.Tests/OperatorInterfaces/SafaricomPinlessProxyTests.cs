@@ -55,7 +55,7 @@ namespace TransactionProcessor.BusinessLogic.Tests.OperatorInterfaces
 
             OperatorResponse operatorResponse = await  safaricomPinlessproxy.ProcessSaleMessage(TestData.TokenResponse().AccessToken,
                                                                                                 TestData.TransactionId,
-                                                                                                TestData.OperatorIdentifier1,
+                                                                                                TestData.OperatorId,
                                                                                                 TestData.Merchant,
                                                                                                 TestData.TransactionDateTime,
                                                                                                 TestData.TransactionReference,
@@ -87,7 +87,7 @@ namespace TransactionProcessor.BusinessLogic.Tests.OperatorInterfaces
 
             OperatorResponse operatorResponse = await safaricomPinlessproxy.ProcessSaleMessage(TestData.TokenResponse().AccessToken,
                                                                                                 TestData.TransactionId,
-                                                                                                TestData.OperatorIdentifier1,
+                                                                                                TestData.OperatorId,
                                                                                                 TestData.Merchant,
                                                                                                 TestData.TransactionDateTime,
                                                                                                 TestData.TransactionReference,
@@ -120,7 +120,7 @@ namespace TransactionProcessor.BusinessLogic.Tests.OperatorInterfaces
 
             OperatorResponse operatorResponse = await safaricomPinlessproxy.ProcessSaleMessage(TestData.TokenResponse().AccessToken,
                                                                                                 TestData.TransactionId,
-                                                                                                TestData.OperatorIdentifier1,
+                                                                                                TestData.OperatorId,
                                                                                                 TestData.Merchant,
                                                                                                 TestData.TransactionDateTime,
                                                                                                 TestData.TransactionReference,
@@ -149,7 +149,7 @@ namespace TransactionProcessor.BusinessLogic.Tests.OperatorInterfaces
 
             OperatorResponse operatorResponse = await safaricomPinlessproxy.ProcessSaleMessage(TestData.TokenResponse().AccessToken, 
                                                                                                TestData.TransactionId,
-                                                                                               TestData.OperatorIdentifier1,
+                                                                                               TestData.OperatorId,
                                                                                                TestData.Merchant,
                                                                                                TestData.TransactionDateTime,
                                                                                                TestData.TransactionReference,
@@ -179,7 +179,7 @@ namespace TransactionProcessor.BusinessLogic.Tests.OperatorInterfaces
                                     {
                                         await safaricomPinlessproxy.ProcessSaleMessage(TestData.TokenResponse().AccessToken, 
                                                                                        TestData.TransactionId,
-                                                                                       TestData.OperatorIdentifier1,
+                                                                                       TestData.OperatorId,
                                                                                        TestData.Merchant,
                                                                                        TestData.TransactionDateTime,
                                                                                        TestData.TransactionReference,
@@ -217,7 +217,7 @@ namespace TransactionProcessor.BusinessLogic.Tests.OperatorInterfaces
                                     {
                                         await safaricomPinlessproxy.ProcessSaleMessage(TestData.TokenResponse().AccessToken, 
                                                                                        TestData.TransactionId,
-                                                                                       TestData.OperatorIdentifier1,
+                                                                                       TestData.OperatorId,
                                                                                        TestData.Merchant,
                                                                                        TestData.TransactionDateTime,
                                                                                        TestData.TransactionReference,

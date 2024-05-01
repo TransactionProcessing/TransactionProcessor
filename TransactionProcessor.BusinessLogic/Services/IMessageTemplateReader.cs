@@ -21,7 +21,8 @@
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns></returns>
         Task<String> GetEmailReceiptMessage(Transaction transaction,
-                                            MerchantResponse merchant,
+                                            EstateManagement.DataTransferObjects.Responses.Merchant.MerchantResponse merchant,
+                                            String operatorName, 
                                             CancellationToken cancellationToken);
 
         #endregion

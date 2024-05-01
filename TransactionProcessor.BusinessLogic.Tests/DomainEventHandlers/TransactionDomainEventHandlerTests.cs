@@ -76,10 +76,10 @@
         }
         
         [Theory]
-        [InlineData(SettlementSchedule.Immediate)]
-        [InlineData(SettlementSchedule.Weekly)]
-        [InlineData(SettlementSchedule.Monthly)]
-        public async Task TransactionDomainEventHandler_Handle_TransactionHasBeenCompletedEvent_SuccessfulSale_EventIsHandled(SettlementSchedule settlementSchedule)
+        [InlineData(EstateManagement.DataTransferObjects.Responses.Merchant.SettlementSchedule.Immediate)]
+        [InlineData(EstateManagement.DataTransferObjects.Responses.Merchant.SettlementSchedule.Weekly)]
+        [InlineData(EstateManagement.DataTransferObjects.Responses.Merchant.SettlementSchedule.Monthly)]
+        public async Task TransactionDomainEventHandler_Handle_TransactionHasBeenCompletedEvent_SuccessfulSale_EventIsHandled(EstateManagement.DataTransferObjects.Responses.Merchant.SettlementSchedule settlementSchedule)
         {
             this.FloatAggregateRepository.Setup(f => f.GetLatestVersion(It.IsAny<Guid>(), It.IsAny<CancellationToken>())).ReturnsAsync(TestData.GetFloatAggregateWithCostValues);
 
@@ -94,7 +94,7 @@
                 });
 
             this.EstateClient.Setup(e => e.GetMerchant(It.IsAny<String>(), It.IsAny<Guid>(), It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
-                .ReturnsAsync(new MerchantResponse
+                .ReturnsAsync(new EstateManagement.DataTransferObjects.Responses.Merchant.MerchantResponse
                 {
                     SettlementSchedule = settlementSchedule,
                 });
@@ -111,7 +111,7 @@
 
             CalculatedFee merchantFee = transactionAggregate.GetFees().SingleOrDefault(f => f.FeeId == TestData.TransactionFeeId);
             merchantFee.ShouldNotBeNull();
-            if (settlementSchedule == SettlementSchedule.Immediate){
+            if (settlementSchedule == EstateManagement.DataTransferObjects.Responses.Merchant.SettlementSchedule.Immediate){
                 merchantFee.IsSettled.ShouldBeTrue();
             }
             else{
@@ -119,8 +119,8 @@
             }
 
             var expectedSettlementDate = settlementSchedule switch{
-                SettlementSchedule.Monthly => transactionAggregate.TransactionDateTime.Date.AddMonths(1),
-                SettlementSchedule.Weekly => transactionAggregate.TransactionDateTime.Date.AddDays(7),
+                EstateManagement.DataTransferObjects.Responses.Merchant.SettlementSchedule.Monthly => transactionAggregate.TransactionDateTime.Date.AddMonths(1),
+                EstateManagement.DataTransferObjects.Responses.Merchant.SettlementSchedule.Weekly => transactionAggregate.TransactionDateTime.Date.AddDays(7),
                 _ => transactionAggregate.TransactionDateTime.Date
             };
             merchantFee.SettlementDueDate.ShouldBe(expectedSettlementDate);
@@ -145,9 +145,9 @@
                                                                                                                                                                    });
 
             this.EstateClient.Setup(e => e.GetMerchant(It.IsAny<String>(), It.IsAny<Guid>(), It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
-                .ReturnsAsync(new MerchantResponse
+                .ReturnsAsync(new EstateManagement.DataTransferObjects.Responses.Merchant.MerchantResponse
                               {
-                                  SettlementSchedule = SettlementSchedule.NotSet,
+                                  SettlementSchedule = EstateManagement.DataTransferObjects.Responses.Merchant.SettlementSchedule.NotSet,
                               });
             this.EstateClient.Setup(e => e.GetTransactionFeesForProduct(It.IsAny<String>(),
                                                                         It.IsAny<Guid>(),
@@ -211,6 +211,7 @@
         {
             this.TransactionAggregateRepository.Setup(t => t.GetLatestVersion(It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
                 .ReturnsAsync(TestData.GetCompletedAuthorisedSaleTransactionAggregate);
+            this.EstateClient.Setup(e => e.GetEstate(It.IsAny<String>(), It.IsAny<Guid>(), It.IsAny<CancellationToken>())).ReturnsAsync(TestData.GetEstateResponseWithOperator1);
 
             this.SecurityServiceClient.Setup(s => s.GetToken(It.IsAny<String>(), It.IsAny<String>(), It.IsAny<CancellationToken>())).ReturnsAsync(TestData.TokenResponse);
 

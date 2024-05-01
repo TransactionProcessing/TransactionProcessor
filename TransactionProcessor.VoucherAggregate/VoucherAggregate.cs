@@ -21,14 +21,14 @@ public static class VoucherAggregateExtensions{
     }
 
     public static void Generate(this VoucherAggregate aggregate,
-                        String operatorIdentifier,
+                        Guid operatorId,
                          Guid estateId,
                          Guid transactionId,
                          DateTime generatedDateTime,
                          Decimal value)
     {
         Guard.ThrowIfInvalidDate(generatedDateTime, nameof(generatedDateTime));
-        Guard.ThrowIfNullOrEmpty(operatorIdentifier, nameof(operatorIdentifier));
+        Guard.ThrowIfInvalidGuid(operatorId, nameof(operatorId));
         Guard.ThrowIfInvalidGuid(transactionId, nameof(transactionId));
         Guard.ThrowIfInvalidGuid(estateId, nameof(estateId));
         Guard.ThrowIfNegative(value, nameof(value));
@@ -41,7 +41,7 @@ public static class VoucherAggregateExtensions{
         String message = string.Empty;
 
         VoucherGeneratedEvent voucherGeneratedEvent =
-            new VoucherGeneratedEvent(aggregate.AggregateId, estateId, transactionId, generatedDateTime, operatorIdentifier, value, voucherCode, expiryDateTime, message);
+            new VoucherGeneratedEvent(aggregate.AggregateId, estateId, transactionId, generatedDateTime, operatorId, value, voucherCode, expiryDateTime, message);
 
         aggregate.ApplyAndAppend(voucherGeneratedEvent);
     }

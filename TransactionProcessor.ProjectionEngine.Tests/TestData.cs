@@ -185,7 +185,7 @@ namespace TransactionProcessor.ProjectionEngine.Tests
         public static DateTime RedeemedDateTime = new DateTime(2024, 3, 16);
         public static DateTime ExpiryDateTime = new DateTime(2024, 4, 13);
 
-        public static String OperatorIdentifier = "Operator 1";
+        public static Guid OperatorId = Guid.Parse("3021CBDD-F2B6-4D22-B7A6-7FC4A489BBD4");
 
         public static Decimal VoucherValue = 10.00m;
 
@@ -201,7 +201,7 @@ namespace TransactionProcessor.ProjectionEngine.Tests
                                       TestData.EstateId,
                                       TestData.TransactionId,
                                       TestData.GeneratedDateTime,
-                                      TestData.OperatorIdentifier,
+                                      TestData.OperatorId,
                                       TestData.VoucherValue,
                                       TestData.VoucherCode,
                                       TestData.ExpiryDateTime,

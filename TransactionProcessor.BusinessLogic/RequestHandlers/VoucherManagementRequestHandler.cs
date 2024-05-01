@@ -51,7 +51,7 @@ namespace TransactionProcessor.BusinessLogic.RequestHandlers
                                                        CancellationToken cancellationToken)
         {
             return await this.VoucherDomainService.IssueVoucher(request.VoucherId,
-                                                                request.OperatorIdentifier,
+                                                                request.OperatorId,
                                                                 request.EstateId,
                                                                 request.TransactionId,
                                                                 request.IssuedDateTime,

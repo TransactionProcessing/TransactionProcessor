@@ -9,6 +9,7 @@ using System.Threading.Tasks;
 using Common;
 using EstateManagement.Client;
 using EstateManagement.DataTransferObjects.Responses;
+using EstateManagement.DataTransferObjects.Responses.Estate;
 using EventStore.Client;
 using Newtonsoft.Json;
 using ProjectionEngine.Repository;
@@ -59,8 +60,8 @@ public class TransactionValidationService : ITransactionValidationService{
                                                                                                                String deviceIdentifier,
                                                                                                                CancellationToken cancellationToken){
         try{
-            (EstateResponse estate, MerchantResponse merchant) validateTransactionResponse = await this.ValidateMerchant(estateId, merchantId, cancellationToken);
-            MerchantResponse merchant = validateTransactionResponse.merchant;
+            (EstateResponse estate, EstateManagement.DataTransferObjects.Responses.Merchant.MerchantResponse merchant) validateTransactionResponse = await this.ValidateMerchant(estateId, merchantId, cancellationToken);
+            EstateManagement.DataTransferObjects.Responses.Merchant.MerchantResponse merchant = validateTransactionResponse.merchant;
 
             // Device Validation
             if (merchant.Devices == null || merchant.Devices.Any() == false){
@@ -89,8 +90,8 @@ public class TransactionValidationService : ITransactionValidationService{
                                                                                                                         String deviceIdentifier,
                                                                                                                         CancellationToken cancellationToken){
         try{
-            (EstateResponse estate, MerchantResponse merchant) validateTransactionResponse = await this.ValidateMerchant(estateId, merchantId, cancellationToken);
-            MerchantResponse merchant = validateTransactionResponse.merchant;
+            (EstateResponse estate, EstateManagement.DataTransferObjects.Responses.Merchant.MerchantResponse merchant) validateTransactionResponse = await this.ValidateMerchant(estateId, merchantId, cancellationToken);
+            EstateManagement.DataTransferObjects.Responses.Merchant.MerchantResponse merchant = validateTransactionResponse.merchant;
 
             // Device Validation
             if (merchant.Devices == null || merchant.Devices.Any() == false){
@@ -120,13 +121,13 @@ public class TransactionValidationService : ITransactionValidationService{
                                                                                                               Guid contractId,
                                                                                                               Guid productId,
                                                                                                               String deviceIdentifier,
-                                                                                                              String operatorIdentifier,
+                                                                                                              Guid operatorId,
                                                                                                               Decimal? transactionAmount,
                                                                                                               CancellationToken cancellationToken){
         try{
-            (EstateResponse estate, MerchantResponse merchant) validateTransactionResponse = await this.ValidateMerchant(estateId, merchantId, cancellationToken);
+            (EstateResponse estate, EstateManagement.DataTransferObjects.Responses.Merchant.MerchantResponse merchant) validateTransactionResponse = await this.ValidateMerchant(estateId, merchantId, cancellationToken);
             EstateResponse estate = validateTransactionResponse.estate;
-            MerchantResponse merchant = validateTransactionResponse.merchant;
+            EstateManagement.DataTransferObjects.Responses.Merchant.MerchantResponse merchant = validateTransactionResponse.merchant;
 
             // Operator Validation (Estate)
             if (estate.Operators == null || estate.Operators.Any() == false){
@@ -134,9 +135,9 @@ public class TransactionValidationService : ITransactionValidationService{
             }
 
             // Operators have been configured for the estate
-            EstateOperatorResponse estateOperatorRecord = estate.Operators.SingleOrDefault(o => o.Name == operatorIdentifier);
+            EstateOperatorResponse estateOperatorRecord = estate.Operators.SingleOrDefault(o => o.OperatorId == operatorId);
             if (estateOperatorRecord == null){
-                throw new TransactionValidationException($"Operator {operatorIdentifier} not configured for Estate [{estate.EstateName}]",
+                throw new TransactionValidationException($"Operator {operatorId} not configured for Estate [{estate.EstateName}]",
                                                          TransactionResponseCode.OperatorNotValidForEstate);
             }
 
@@ -162,9 +163,9 @@ public class TransactionValidationService : ITransactionValidationService{
 
             {
                 // Operators have been configured for the estate
-                MerchantOperatorResponse merchantOperatorRecord = merchant.Operators.SingleOrDefault(o => o.Name == operatorIdentifier);
+                EstateManagement.DataTransferObjects.Responses.Merchant.MerchantOperatorResponse merchantOperatorRecord = merchant.Operators.SingleOrDefault(o => o.OperatorId == operatorId);
                 if (merchantOperatorRecord == null){
-                    throw new TransactionValidationException($"Operator {operatorIdentifier} not configured for Merchant [{merchant.MerchantName}]",
+                    throw new TransactionValidationException($"Operator {operatorId} not configured for Merchant [{merchant.MerchantName}]",
                                                              TransactionResponseCode.OperatorNotValidForMerchant);
                 }
             }
@@ -175,7 +176,7 @@ public class TransactionValidationService : ITransactionValidationService{
                                                          TransactionResponseCode.InvalidContractIdValue);
             }
 
-            List<MerchantContractResponse> merchantContracts = null;
+            List<EstateManagement.DataTransferObjects.Responses.Merchant.MerchantContractResponse> merchantContracts = null;
             try{
                 merchantContracts = await this.GetMerchantContracts(estateId, merchantId, cancellationToken);
             }
@@ -192,7 +193,7 @@ public class TransactionValidationService : ITransactionValidationService{
             }
 
             // Check the contract and product id against the merchant
-            MerchantContractResponse contract = merchantContracts.SingleOrDefault(c => c.ContractId == contractId);
+            EstateManagement.DataTransferObjects.Responses.Merchant.MerchantContractResponse contract = merchantContracts.SingleOrDefault(c => c.ContractId == contractId);
 
             if (contract == null){
                 throw new TransactionValidationException($"Contract Id [{contractId}] not valid for Merchant [{merchant.MerchantName}]",
@@ -245,32 +246,32 @@ public class TransactionValidationService : ITransactionValidationService{
         return estate;
     }
 
-    private async Task<MerchantResponse> GetMerchant(Guid estateId,
-                                                     Guid merchantId,
-                                                     CancellationToken cancellationToken){
+    private async Task<EstateManagement.DataTransferObjects.Responses.Merchant.MerchantResponse> GetMerchant(Guid estateId,
+                                                                                                             Guid merchantId,
+                                                                                                             CancellationToken cancellationToken){
         this.TokenResponse = await Helpers.GetToken(this.TokenResponse, this.SecurityServiceClient, cancellationToken);
 
-        MerchantResponse merchant = await this.EstateClient.GetMerchant(this.TokenResponse.AccessToken, estateId, merchantId, cancellationToken);
+        EstateManagement.DataTransferObjects.Responses.Merchant.MerchantResponse merchant = await this.EstateClient.GetMerchant(this.TokenResponse.AccessToken, estateId, merchantId, cancellationToken);
         
         return merchant;
     }
 
-    private async Task<List<MerchantContractResponse>> GetMerchantContracts(Guid estateId,
-                                                                    Guid merchantId,
-                                                                    CancellationToken cancellationToken)
+    private async Task<List<EstateManagement.DataTransferObjects.Responses.Merchant.MerchantContractResponse>> GetMerchantContracts(Guid estateId,
+                                                                                                                                    Guid merchantId,
+                                                                                                                                    CancellationToken cancellationToken)
     {
         this.TokenResponse = await Helpers.GetToken(this.TokenResponse, this.SecurityServiceClient, cancellationToken);
 
-        MerchantResponse merchant = await this.EstateClient.GetMerchant(this.TokenResponse.AccessToken, estateId, merchantId, cancellationToken);
+        EstateManagement.DataTransferObjects.Responses.Merchant.MerchantResponse merchant = await this.EstateClient.GetMerchant(this.TokenResponse.AccessToken, estateId, merchantId, cancellationToken);
 
         return merchant.Contracts;
     }
     
-    private async Task<(EstateResponse estate, MerchantResponse merchant)> ValidateMerchant(Guid estateId,
-                                                                                            Guid merchantId,
-                                                                                            CancellationToken cancellationToken){
+    private async Task<(EstateResponse estate, EstateManagement.DataTransferObjects.Responses.Merchant.MerchantResponse merchant)> ValidateMerchant(Guid estateId,
+                                                                                                                                                    Guid merchantId,
+                                                                                                                                                    CancellationToken cancellationToken){
         EstateResponse estate = null;
-        MerchantResponse merchant = null;
+        EstateManagement.DataTransferObjects.Responses.Merchant.MerchantResponse merchant = null;
 
         // Validate the Estate Record is a valid estate
         try{

@@ -14,6 +14,7 @@ namespace TransactionProcessor.BusinessLogic.Tests.Services
     using EstateManagement.DataTransferObjects.Responses;
     using Models;
     using Shouldly;
+    using Testing;
     using Xunit;
 
     public class TransactionReceiptBuilderTests
@@ -23,7 +24,7 @@ namespace TransactionProcessor.BusinessLogic.Tests.Services
         {
             Transaction transaction = new Transaction
                                       {
-                                          OperatorIdentifier = "Safaricom",
+                                          OperatorId = TestData.OperatorId,
                                           TransactionNumber = "12345"
                                       };
 
@@ -31,12 +32,12 @@ namespace TransactionProcessor.BusinessLogic.Tests.Services
 
             var fileSystem = new MockFileSystem(new Dictionary<string, MockFileData>
                                                 {
-                                                    { $"{path}/Receipts/Email/{transaction.OperatorIdentifier}/TransactionAuthorised.html", new MockFileData("Transaction Number: [TransactionNumber]") }
+                                                    { $"{path}/Receipts/Email/OperatorName/TransactionAuthorised.html", new MockFileData("Transaction Number: [TransactionNumber]") }
                                                 });
 
             TransactionReceiptBuilder receiptBuilder = new TransactionReceiptBuilder(fileSystem);
 
-            String receiptMessage = await receiptBuilder.GetEmailReceiptMessage(transaction, new MerchantResponse(), CancellationToken.None);
+            String receiptMessage = await receiptBuilder.GetEmailReceiptMessage(transaction, new EstateManagement.DataTransferObjects.Responses.Merchant.MerchantResponse(),"OperatorName", CancellationToken.None);
 
             receiptMessage.ShouldBe("Transaction Number: 12345");
 

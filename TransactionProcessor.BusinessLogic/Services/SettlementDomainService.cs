@@ -49,12 +49,12 @@
 
             this.TokenResponse = await Helpers.GetToken(this.TokenResponse, this.SecurityServiceClient, cancellationToken);
 
-            MerchantResponse merchant = await this.EstateClient.GetMerchant(this.TokenResponse.AccessToken,
-                                                                            estateId,
-                                                                            merchantId,
-                                                                            cancellationToken);
+            EstateManagement.DataTransferObjects.Responses.Merchant.MerchantResponse merchant = await this.EstateClient.GetMerchant(this.TokenResponse.AccessToken,
+                                                                                                                                    estateId,
+                                                                                                                                    merchantId,
+                                                                                                                                    cancellationToken);
 
-            if (merchant.SettlementSchedule == SettlementSchedule.Immediate){
+            if (merchant.SettlementSchedule == EstateManagement.DataTransferObjects.Responses.Merchant.SettlementSchedule.Immediate){
                 // Mark the settlement as completed
                 settlementAggregate.StartProcessing(DateTime.Now);
                 settlementAggregate.ManuallyComplete();

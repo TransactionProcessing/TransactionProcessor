@@ -27,8 +27,8 @@
         /// <value>
         /// The operator identifier.
         /// </value>
-        [JsonProperty("operator_identifier")]
-        public String OperatorIdentifier { get; set; }
+        [JsonProperty("operator_id")]
+        public Guid OperatorId { get; set; }
 
         /// <summary>
         /// Gets or sets the transaction count.

@@ -55,7 +55,7 @@
 
             Should.Throw<NotFoundException>(async () => {
                                                 await domainService.IssueVoucher(TestData.VoucherId,
-                                                                                 TestData.OperatorIdentifier,
+                                                                                 TestData.OperatorId,
                                                                                  TestData.EstateId,
                                                                                  TestData.TransactionId,
                                                                                  TestData.IssuedDateTime,
@@ -93,7 +93,7 @@
 
             Should.Throw<NotFoundException>(async () => {
                                                 await domainService.IssueVoucher(TestData.VoucherId,
-                                                                                 TestData.OperatorIdentifier,
+                                                                                 TestData.OperatorId,
                                                                                  TestData.EstateId,
                                                                                  TestData.TransactionId,
                                                                                  TestData.IssuedDateTime,
@@ -131,7 +131,7 @@
 
             Should.Throw<NotFoundException>(async () => {
                                                 await domainService.IssueVoucher(TestData.VoucherId,
-                                                                                 TestData.OperatorIdentifier,
+                                                                                 TestData.OperatorId,
                                                                                  TestData.EstateId,
                                                                                  TestData.TransactionId,
                                                                                  TestData.IssuedDateTime,
@@ -169,7 +169,7 @@
 
             Should.Throw<NotFoundException>(async () => {
                                                 await domainService.IssueVoucher(TestData.VoucherId,
-                                                                                 TestData.OperatorIdentifier,
+                                                                                 TestData.OperatorId,
                                                                                  TestData.EstateId,
                                                                                  TestData.TransactionId,
                                                                                  TestData.IssuedDateTime,
@@ -206,7 +206,7 @@
                                                                           dbContextFactory.Object);
 
             IssueVoucherResponse issueVoucherResponse = await domainService.IssueVoucher(TestData.VoucherId,
-                                                                                         TestData.OperatorIdentifier1,
+                                                                                         TestData.OperatorId,
                                                                                          TestData.EstateId,
                                                                                          TestData.TransactionId,
                                                                                          TestData.IssuedDateTime,

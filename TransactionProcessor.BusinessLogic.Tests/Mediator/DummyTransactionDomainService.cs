@@ -25,7 +25,7 @@ public class DummyTransactionDomainService : ITransactionDomainService
                                                                              DateTime transactionDateTime,
                                                                              String transactionNumber,
                                                                              String deviceIdentifier,
-                                                                             String operatorId,
+                                                                             Guid operatorId,
                                                                              String customerEmailAddress,
                                                                              Dictionary<String, String> additionalTransactionMetadata,
                                                                              Guid contractId,
