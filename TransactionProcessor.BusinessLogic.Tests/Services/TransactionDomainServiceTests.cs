@@ -23,7 +23,6 @@
     using Testing;
     using TransactionAggregate;
     using Xunit;
-    using MerchantResponse = EstateManagement.DataTransferObjects.Responses.MerchantResponse;
 
     public class TransactionDomainServiceTests{
         #region Fields

@@ -8,11 +8,9 @@ namespace TransactionProcessor.BusinessLogic.OperatorInterfaces.VoucherManagemen
     using System.Threading;
     using System.Threading.Tasks;
     using Common;
-    using EstateManagement.DataTransferObjects.Responses;
+    using EstateManagement.DataTransferObjects.Responses.Merchant;
     using IdentityModel.Client;
     using MediatR;
-    //using global::VoucherManagement.Client;
-    //using global::VoucherManagement.DataTransferObjects;
     using Microsoft.EntityFrameworkCore.Storage.ValueConversion.Internal;
     using Microsoft.Identity.Client;
     using Models;
@@ -56,7 +54,7 @@ namespace TransactionProcessor.BusinessLogic.OperatorInterfaces.VoucherManagemen
         public async Task<OperatorResponse> ProcessSaleMessage(String accessToken,
                                                                Guid transactionId,
                                                                Guid operatorId,
-                                                               EstateManagement.DataTransferObjects.Responses.Merchant.MerchantResponse merchant,
+                                                               MerchantResponse merchant,
                                                                DateTime transactionDateTime,
                                                                String transactionReference,
                                                                Dictionary<String, String> additionalTransactionMetadata,

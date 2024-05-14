@@ -8,8 +8,7 @@
     using BusinessLogic.OperatorInterfaces.SafaricomPinless;
     using BusinessLogic.Requests;
     using BusinessLogic.Services;
-    using EstateManagement.DataTransferObjects;
-    using EstateManagement.DataTransferObjects.Responses;
+    using EstateManagement.DataTransferObjects.Responses.Merchant;
     using EstateManagement.DataTransferObjects.Responses.Contract;
     using EstateManagement.DataTransferObjects.Responses.Estate;
     using FloatAggregate;
@@ -364,6 +363,24 @@
                             }
             };
 
+        public static EstateResponse GetEstateResponseWithOperator1Deleted =>
+            new EstateResponse
+            {
+                EstateName = TestData.EstateName,
+                EstateId = TestData.EstateId,
+                Operators = new List<EstateOperatorResponse>
+                            {
+                                new EstateOperatorResponse
+                                {
+                                    Name = "Safaricom",
+                                    OperatorId = TestData.OperatorId,
+                                    RequireCustomMerchantNumber = TestData.RequireCustomMerchantNumber,
+                                    RequireCustomTerminalNumber = TestData.RequireCustomTerminalNumber,
+                                    IsDeleted = true
+                                }
+                            }
+            };
+
         public static EstateResponse GetEstateResponseWithOperator2 =>
             new EstateResponse
             {
@@ -414,7 +431,59 @@
                                     MerchantNumber = TestData.MerchantNumber,
                                     TerminalNumber = TestData.TerminalNumber
                                 }
-                            }
+                            },
+                Contracts = new List<MerchantContractResponse>{
+                                                                  new MerchantContractResponse{
+                                                                                                  ContractId = TestData.ContractId,
+                                                                                                  ContractProducts = new List<Guid>(){
+                                                                                                                                         TestData.ProductId
+                                                                                                                                     }
+                                                                                              }
+                                                              }
+            };
+
+        public static EstateManagement.DataTransferObjects.Responses.Merchant.MerchantResponse GetMerchantResponseWithOperator1AndNullContracts =>
+            new EstateManagement.DataTransferObjects.Responses.Merchant.MerchantResponse
+            {
+                EstateId = TestData.EstateId,
+                MerchantId = TestData.MerchantId,
+                MerchantName = TestData.MerchantName,
+                Devices = new Dictionary<Guid, String>
+                          {
+                              {TestData.DeviceId, TestData.DeviceIdentifier}
+                          },
+                Operators = new List<EstateManagement.DataTransferObjects.Responses.Merchant.MerchantOperatorResponse>
+                            {
+                                new EstateManagement.DataTransferObjects.Responses.Merchant.MerchantOperatorResponse
+                                {
+                                    OperatorId = TestData.OperatorId,
+                                    MerchantNumber = TestData.MerchantNumber,
+                                    TerminalNumber = TestData.TerminalNumber
+                                }
+                            },
+                Contracts = null
+            };
+
+        public static EstateManagement.DataTransferObjects.Responses.Merchant.MerchantResponse GetMerchantResponseWithOperator1AndEmptyContracts =>
+            new EstateManagement.DataTransferObjects.Responses.Merchant.MerchantResponse
+            {
+                EstateId = TestData.EstateId,
+                MerchantId = TestData.MerchantId,
+                MerchantName = TestData.MerchantName,
+                Devices = new Dictionary<Guid, String>
+                          {
+                              {TestData.DeviceId, TestData.DeviceIdentifier}
+                          },
+                Operators = new List<EstateManagement.DataTransferObjects.Responses.Merchant.MerchantOperatorResponse>
+                            {
+                                new EstateManagement.DataTransferObjects.Responses.Merchant.MerchantOperatorResponse
+                                {
+                                    OperatorId = TestData.OperatorId,
+                                    MerchantNumber = TestData.MerchantNumber,
+                                    TerminalNumber = TestData.TerminalNumber
+                                }
+                            },
+                Contracts = new List<MerchantContractResponse>()
             };
 
 
@@ -437,6 +506,37 @@
                                     TerminalNumber = TestData.TerminalNumber
                                 }
                             }
+            };
+
+        public static MerchantResponse GetMerchantResponseWithOperator1Deleted =>
+            new MerchantResponse
+            {
+                EstateId = TestData.EstateId,
+                MerchantId = TestData.MerchantId,
+                MerchantName = TestData.MerchantName,
+                Devices = new Dictionary<Guid, String>
+                          {
+                              {TestData.DeviceId, TestData.DeviceIdentifier}
+                          },
+                Operators = new List<EstateManagement.DataTransferObjects.Responses.Merchant.MerchantOperatorResponse>
+                            {
+                                new EstateManagement.DataTransferObjects.Responses.Merchant.MerchantOperatorResponse
+                                {
+                                    OperatorId = TestData.OperatorId,
+                                    MerchantNumber = TestData.MerchantNumber,
+                                    TerminalNumber = TestData.TerminalNumber,
+                                    IsDeleted = true
+
+                                }
+                            },
+                Contracts = new List<MerchantContractResponse>{
+                                                                  new MerchantContractResponse{
+                                                                                                  ContractId = TestData.ContractId,
+                                                                                                  ContractProducts = new List<Guid>(){
+                                                                                                                                         TestData.ProductId
+                                                                                                                                     }
+                                                                                              }
+                                                              }
             };
 
         public static MerchantResponse GetMerchantResponseWithNoDevices =>
@@ -1042,16 +1142,32 @@
                                                                                                                   new Dictionary<String, String>()
                                                                                                           };
 
-        public static MerchantBalanceState MerchantBalanceProjectionState =>
-            new MerchantBalanceState {
-                                         AvailableBalance = TestData.AvailableBalance,
-                                     };
-        public static MerchantBalanceState MerchantBalanceProjectionStateNoCredit =>
-            new MerchantBalanceState
-            {
-                AvailableBalance = 0,
-            };
+        public static String MerchantStateId = "Merchant1";
 
+        public static Merchant MerchantState = new Merchant(TestData.MerchantStateId,
+                                                            TestData.MerchantName,
+                                                            1,
+                                                            TestData.AvailableBalance,
+                                                            new Deposits(1, 100.00m, DateTime.Now.AddDays(-1)),
+                                                            new Withdrawals(0, 0, null),
+                                                            new AuthorisedSales(1, 55.0m, DateTime.Now),
+                                                            new DeclinedSales(0, 0, null),
+                                                            new Fees(0, 0));
+
+        public static Merchant MerchantStateNoCredit = new Merchant(TestData.MerchantStateId,
+                                                            TestData.MerchantName,
+                                                            1,
+                                                            0,
+                                                            new Deposits(1, 100.00m, DateTime.Now.AddDays(-1)),
+                                                            new Withdrawals(0, 0, null),
+                                                            new AuthorisedSales(1, 55.0m, DateTime.Now),
+                                                            new DeclinedSales(0, 0, null),
+                                                            new Fees(0, 0));
+
+        public static MerchantBalanceProjectionState1 MerchantBalanceProjectionState => new MerchantBalanceProjectionState1(TestData.MerchantState);
+
+        public static MerchantBalanceProjectionState1 MerchantBalanceProjectionStateNoCredit => new MerchantBalanceProjectionState1(TestData.MerchantStateNoCredit);
+        
         public static ResendTransactionReceiptRequest ResendTransactionReceiptRequest => ResendTransactionReceiptRequest.Create(TestData.TransactionId,
                                                                                                                                 TestData.EstateId);
 

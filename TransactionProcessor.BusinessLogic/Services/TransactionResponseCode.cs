@@ -22,6 +22,8 @@
         MerchantHasNoContractsConfigured = 1014,
         ContractNotValidForMerchant = 1015,
         ProductNotValidForMerchant = 1016,
+        OperatorNotEnabledForEstate = 1017,
+        OperatorNotEnabledForMerchant = 1018,
 
         // A Catch All generic Error where reason has not been identified
         UnknownFailure = 9999

@@ -4,7 +4,7 @@
     using System.Collections.Generic;
     using System.Threading;
     using System.Threading.Tasks;
-    using EstateManagement.DataTransferObjects.Responses;
+    using EstateManagement.DataTransferObjects.Responses.Merchant;
 
     /// <summary>
     /// 
@@ -18,7 +18,7 @@
         Task<OperatorResponse> ProcessSaleMessage(String accessToken,
                                                   Guid transactionId,
                                                   Guid operatorId,
-                                                  EstateManagement.DataTransferObjects.Responses.Merchant.MerchantResponse merchant,
+                                                  MerchantResponse merchant,
                                                   DateTime transactionDateTime,
                                                   String transactionReference,
                                                   Dictionary<String, String> additionalTransactionMetadata,

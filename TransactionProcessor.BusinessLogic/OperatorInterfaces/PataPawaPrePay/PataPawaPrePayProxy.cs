@@ -6,7 +6,7 @@ using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
 using Common;
-using EstateManagement.DataTransferObjects.Responses;
+using EstateManagement.DataTransferObjects.Responses.Merchant;
 using Microsoft.Extensions.Caching.Memory;
 using Newtonsoft.Json;
 using Shared.Logger;
@@ -56,7 +56,7 @@ public class PataPawaPrePayProxy : IOperatorProxy{
     }
 
     public async Task<OperatorResponse> ProcessSaleMessage(String accessToken, Guid transactionId, Guid operatorId,
-                                                           EstateManagement.DataTransferObjects.Responses.Merchant.MerchantResponse merchant, DateTime transactionDateTime, String transactionReference, Dictionary<String, String> additionalTransactionMetadata, CancellationToken cancellationToken){
+                                                           MerchantResponse merchant, DateTime transactionDateTime, String transactionReference, Dictionary<String, String> additionalTransactionMetadata, CancellationToken cancellationToken){
         // Get the logon response for the operator
         OperatorResponse logonResponse = this.MemoryCache.Get<OperatorResponse>("PataPawaPrePayLogon");
         if (logonResponse == null)
