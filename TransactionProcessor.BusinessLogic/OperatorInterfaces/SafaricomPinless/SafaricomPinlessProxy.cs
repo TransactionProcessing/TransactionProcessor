@@ -11,7 +11,7 @@
     using System.Xml;
     using System.Xml.Serialization;
     using Common;
-    using EstateManagement.DataTransferObjects.Responses;
+    using EstateManagement.DataTransferObjects.Responses.Merchant;
     using Shared.Logger;
 
     /// <summary>
@@ -74,7 +74,7 @@
         public async Task<OperatorResponse> ProcessSaleMessage(String accessToken,
                                                                Guid transactionId,
                                                                Guid operatorId,
-                                                               EstateManagement.DataTransferObjects.Responses.Merchant.MerchantResponse merchant,
+                                                               MerchantResponse merchant,
                                                                DateTime transactionDateTime,
                                                                String transactionReference,
                                                                Dictionary<String, String> additionalTransactionMetadata,

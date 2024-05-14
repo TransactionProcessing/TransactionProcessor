@@ -7,6 +7,7 @@
     using System.Threading.Tasks;
     using DataTransferObjects;
     using EstateManagement.DataTransferObjects.Responses;
+    using EstateManagement.DataTransferObjects.Responses.Merchant;
     using EstateManagement.IntegrationTesting.Helpers;
     using global::Shared.IntegrationTesting;
     using global::Shared.Logger;

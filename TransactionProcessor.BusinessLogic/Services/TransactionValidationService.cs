@@ -141,6 +141,12 @@ public class TransactionValidationService : ITransactionValidationService{
                                                          TransactionResponseCode.OperatorNotValidForEstate);
             }
 
+            // Check the operator is enabled and not deleted
+            if (estateOperatorRecord.IsDeleted){
+                throw new TransactionValidationException($"Operator {operatorId} not enabled for Estate [{estate.EstateName}]",
+                                                         TransactionResponseCode.OperatorNotEnabledForEstate);
+            }
+
             // Device Validation
             if (merchant.Devices == null || merchant.Devices.Any() == false){
                 throw new TransactionValidationException($"Merchant {merchant.MerchantName} has no valid Devices for this transaction.",
@@ -168,8 +174,15 @@ public class TransactionValidationService : ITransactionValidationService{
                     throw new TransactionValidationException($"Operator {operatorId} not configured for Merchant [{merchant.MerchantName}]",
                                                              TransactionResponseCode.OperatorNotValidForMerchant);
                 }
-            }
 
+                // Check the operator is enabled and not deleted
+                if (merchantOperatorRecord.IsDeleted)
+                {
+                    throw new TransactionValidationException($"Operator {operatorId} not enabled for Merchant [{merchant.MerchantName}]",
+                                                             TransactionResponseCode.OperatorNotEnabledForMerchant);
+                }
+            }
+            
             // Contract and Product Validation
             if (contractId == Guid.Empty){
                 throw new TransactionValidationException($"Contract Id [{contractId}] must be set for a sale transaction",

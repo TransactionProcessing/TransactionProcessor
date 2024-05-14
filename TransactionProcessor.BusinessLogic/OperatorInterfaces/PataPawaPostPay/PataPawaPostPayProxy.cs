@@ -5,7 +5,6 @@
     using System.Threading;
     using System.Threading.Tasks;
     using Common;
-    using EstateManagement.DataTransferObjects.Responses;
     using global::PataPawaPostPay;
     using Microsoft.Extensions.Caching.Memory;
     using Shared.Logger;
