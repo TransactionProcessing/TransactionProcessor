@@ -16,6 +16,7 @@
     using Manager;
     using MessagingService.Client;
     using MessagingService.DataTransferObjects;
+    using Microsoft.Extensions.Caching.Memory;
     using Models;
     using SecurityService.Client;
     using SecurityService.DataTransferObjects.Responses;
@@ -68,6 +69,8 @@
 
         private readonly IAggregateRepository<FloatAggregate, DomainEvent> FloatAggregateRepository;
 
+        private readonly IMemoryCache MemoryCache;
+
         private readonly IAggregateRepository<TransactionAggregate, DomainEvent> TransactionAggregateRepository;
 
         /// <summary>
@@ -91,7 +94,8 @@
                                              ITransactionReceiptBuilder transactionReceiptBuilder,
                                              IMessagingServiceClient messagingServiceClient,
                                              IAggregateRepository<SettlementAggregate, DomainEvent> settlementAggregateRepository,
-                                             IAggregateRepository<FloatAggregate, DomainEvent> floatAggregateRepository) {
+                                             IAggregateRepository<FloatAggregate, DomainEvent> floatAggregateRepository,
+                                             IMemoryCache memoryCache) {
             this.TransactionAggregateRepository = transactionAggregateRepository;
             this.FeeCalculationManager = feeCalculationManager;
             this.EstateClient = estateClient;
@@ -100,6 +104,7 @@
             this.MessagingServiceClient = messagingServiceClient;
             this.SettlementAggregateRepository = settlementAggregateRepository;
             this.FloatAggregateRepository = floatAggregateRepository;
+            this.MemoryCache = memoryCache;
         }
 
         #endregion
@@ -156,17 +161,6 @@
 
             TransactionAggregate transactionAggregate =
                 await this.TransactionAggregateRepository.GetLatestVersion(domainEvent.TransactionId, cancellationToken);
-
-            if (transactionAggregate.HasCostsCalculated == false){
-                // Calculate the costs
-                Guid floatAggregateId = IdGenerationService.GenerateFloatAggregateId(transactionAggregate.EstateId, transactionAggregate.ContractId, transactionAggregate.ProductId);
-                FloatAggregate floatAggregate = await this.FloatAggregateRepository.GetLatestVersion(floatAggregateId, cancellationToken);
-
-                Decimal unitCost = floatAggregate.GetUnitCostPrice();
-                Decimal totalCost = transactionAggregate.TransactionAmount.GetValueOrDefault() * unitCost;
-
-                transactionAggregate.RecordCostPrice(unitCost,totalCost);
-            }
             
             if (RequireFeeCalculation(transactionAggregate) == false)
                 return;
@@ -288,16 +282,42 @@
             await this.TransactionAggregateRepository.SaveChanges(aggregate, cancellationToken);
         }
 
-        private async Task<List<TransactionFeeToCalculate>> GetTransactionFeesForCalculation(TransactionAggregate transactionAggregate, CancellationToken cancellationToken)
-        {
+        private async Task<List<TransactionFeeToCalculate>> GetTransactionFeesForCalculation(TransactionAggregate transactionAggregate, CancellationToken cancellationToken){
+
             // Ok we should have filtered out the not applicable transactions
-            // Get the fees to be calculated
-            List<ContractProductTransactionFee> feesForProduct = await this.EstateClient.GetTransactionFeesForProduct(this.TokenResponse.AccessToken,
-                                                                                                                      transactionAggregate.EstateId,
-                                                                                                                      transactionAggregate.MerchantId,
-                                                                                                                      transactionAggregate.ContractId,
-                                                                                                                      transactionAggregate.ProductId,
-                                                                                                                      cancellationToken);
+            // Check if we have fees for this product in the cache
+            Boolean feesInCache = this.MemoryCache.TryGetValue((transactionAggregate.EstateId, transactionAggregate.ContractId, transactionAggregate.ProductId),
+                                                               out List<ContractProductTransactionFee> feesForProduct);
+
+            if (feesInCache == false){
+                Logger.LogInformation($"Fees for Key: Estate Id {transactionAggregate.EstateId} Contract Id {transactionAggregate.ContractId} ProductId {transactionAggregate.ProductId} not found in the cache");
+
+                // Nothing in cache so we need to make a remote call
+                // Get the fees to be calculated
+                feesForProduct = await this.EstateClient.GetTransactionFeesForProduct(this.TokenResponse.AccessToken,
+                                                                                      transactionAggregate.EstateId,
+                                                                                      transactionAggregate.MerchantId,
+                                                                                      transactionAggregate.ContractId,
+                                                                                      transactionAggregate.ProductId,
+                                                                                      cancellationToken);
+                // Now add this the result to the cache
+                String contractProductFeeCacheExpiryInHours = ConfigurationReader.GetValue("ContractProductFeeCacheExpiryInHours");
+                if (String.IsNullOrEmpty(contractProductFeeCacheExpiryInHours)){
+                    contractProductFeeCacheExpiryInHours = "168"; // 7 Days default
+                }
+                this.MemoryCache.Set((transactionAggregate.EstateId, transactionAggregate.ContractId, transactionAggregate.ProductId),
+                                     feesForProduct,
+                                     new MemoryCacheEntryOptions(){
+                                                                      AbsoluteExpirationRelativeToNow = TimeSpan.FromHours(Int32.Parse(contractProductFeeCacheExpiryInHours))
+                                                                  });
+                Logger.LogInformation($"Fees for Key: Estate Id {transactionAggregate.EstateId} Contract Id {transactionAggregate.ContractId} ProductId {transactionAggregate.ProductId} added to cache");
+
+            }
+            else
+            {
+                Logger.LogInformation($"Fees for Key: Estate Id {transactionAggregate.EstateId} Contract Id {transactionAggregate.ContractId} ProductId {transactionAggregate.ProductId} found in the cache");
+            }
+            
             List<TransactionFeeToCalculate> feesForCalculation = new List<TransactionFeeToCalculate>();
 
             foreach (ContractProductTransactionFee contractProductTransactionFee in feesForProduct)
