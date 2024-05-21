@@ -115,15 +115,22 @@ namespace TransactionProcessor
         public void Configure(IApplicationBuilder app,
                               IWebHostEnvironment env,
                               ILoggerFactory loggerFactory) {
+            ConfigurationReader.Initialise(Startup.Configuration);
+
             String nlogConfigFilename = "nlog.config";
 
             if (env.IsDevelopment()) {
                 app.UseDeveloperExceptionPage();
+                string directoryPath = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location);
+                LogManager.AddHiddenAssembly(Assembly.LoadFrom(Path.Combine(directoryPath, "Shared.dll")));
+            }
+            else{
+                LogManager.AddHiddenAssembly(Assembly.LoadFrom(Path.Combine(env.ContentRootPath, "Shared.dll")));
             }
 
-            //string directoryPath = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location);
 
-            LogManager.AddHiddenAssembly(Assembly.LoadFrom(Path.Combine(env.ContentRootPath, "Shared.dll")));
+
+            
             
             loggerFactory.ConfigureNLog(Path.Combine(env.ContentRootPath, nlogConfigFilename));
             loggerFactory.AddNLog();

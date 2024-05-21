@@ -8,6 +8,8 @@ namespace TransactionProcessor
     using System.Net.Http;
     using System.Threading;
     using System.Threading.Tasks;
+    using EstateManagement.Client;
+    using EstateManagement.DataTransferObjects.Responses.Contract;
     using EventStore.Client;
     using Microsoft.AspNetCore.Builder;
     using Microsoft.CodeAnalysis.CSharp.Syntax;
@@ -17,8 +19,10 @@ namespace TransactionProcessor
     using Microsoft.Extensions.DependencyInjection;
     using Microsoft.Extensions.Hosting;
     using Newtonsoft.Json;
+    using SecurityService.Client;
     using Shared.EventStore.Aggregate;
     using Shared.EventStore.EventHandling;
+    using Shared.EventStore.EventStore;
     using Shared.EventStore.Extensions;
     using Shared.EventStore.SubscriptionWorker;
     using Shared.General;
@@ -84,28 +88,58 @@ namespace TransactionProcessor
                                                             subscriptionRepositoryResolver,
                                                             CancellationToken.None).Wait(CancellationToken.None);
 
-            //if (Startup.AutoApiLogonOperators.Any()) {
-            //    foreach (String autoApiLogonOperator in Startup.AutoApiLogonOperators) {
-            //        OperatorLogon(autoApiLogonOperator);
-            //    }
-            //}
+            //LoadContractData(CancellationToken.None).Wait(CancellationToken.None);
+            
         }
-        
-        //private static void OperatorLogon(String operatorId)
-        //{
-        //    try {
-        //        Logger.LogInformation($"About to do auto logon for operator Id [{operatorId}]");
-        //        Func<String, IOperatorProxy> resolver = Startup.ServiceProvider.GetService<Func<String, IOperatorProxy>>();
-        //        IOperatorProxy proxy = resolver(operatorId);
 
-        //        OperatorResponse logonResult = proxy.ProcessLogonMessage(null, CancellationToken.None).Result;
-        //        Logger.LogInformation($"Auto logon for operator Id [{operatorId}] status [{logonResult.IsSuccessful}]");
-        //    }
-        //    catch(Exception ex) {
-        //        Logger.LogWarning($"Auto logon for operator Id [{operatorId}] failed.");
-        //        Logger.LogWarning(ex.ToString());
-        //    }
-        //}
+        private static async Task LoadContractData(CancellationToken cancellationToken){
+            IEstateClient estateClient = Startup.Container.GetRequiredService<IEstateClient>();
+            ISecurityServiceClient securityServiceClient = Startup.Container.GetRequiredService<ISecurityServiceClient>();
+            IEventStoreContext eventStoreContext = Startup.Container.GetRequiredService<IEventStoreContext>();
+
+            var clientId = ConfigurationReader.GetValue("AppSettings", "ClientId");
+            var clientSecret = ConfigurationReader.GetValue("AppSettings", "ClientSecret");
+            var token = await securityServiceClient.GetToken(clientId, clientSecret, cancellationToken);
+
+            List<ContractResponse> contractResponses = new List<ContractResponse>();
+
+            Stopwatch sw = Stopwatch.StartNew();
+            // get a list of the contracts from ES projection
+            String state = await eventStoreContext.GetStateFromProjection("ContractList",cancellationToken);
+            ContractList contractList = JsonConvert.DeserializeObject<ContractList>(state);
+            contractList.Contracts.AddRange(contractList.Contracts);
+            contractList.Contracts.AddRange(contractList.Contracts);
+            contractList.Contracts.AddRange(contractList.Contracts);
+            contractList.Contracts.AddRange(contractList.Contracts);
+            contractList.Contracts.AddRange(contractList.Contracts);
+            contractList.Contracts.AddRange(contractList.Contracts);
+
+            List<Task<ContractResponse>> tasks = new ();
+            foreach (var contract in contractList.Contracts){
+                //ContractResponse contractResponse = await estateClient.GetContract(token.AccessToken, contract.EstateId, contract.ContractId, cancellationToken);
+                //contractResponses.Add(contractResponse);
+                tasks.Add(estateClient.GetContract(token.AccessToken, contract.EstateId, contract.ContractId, cancellationToken));
+            }
+
+            ContractResponse[] t = await Task.WhenAll(tasks);
+
+            contractResponses = t.ToList();
+            if (contractResponses.Any()){
+                IMemoryCache memoryCache = Startup.Container.GetRequiredService<IMemoryCache>();
+                //    // Build up the cache
+                Dictionary<(Guid, Guid), List<ContractProductTransactionFee>> productfees = contractResponses
+                                                                                            .SelectMany(contractResponse => contractResponse.Products.Select(contractResponseProduct =>
+                                                                                                                                                                 new{
+                                                                                                                                                                        //Key = (contractResponse.EstateId, contractResponseProduct.ProductId),
+                                                                                                                                                                        Key = (Guid.NewGuid(),Guid.NewGuid()),
+                                                                                                                                                                        Value = contractResponseProduct.TransactionFees
+                                                                                                                                                                    }))
+                                                                                            .ToDictionary(x => x.Key, x => x.Value);
+                memoryCache.Set("TransactionFeeCache", productfees);
+            }
+            sw.Stop();
+            Logger.LogWarning($"Contract Data loaded an cached [{sw.ElapsedMilliseconds} ms");
+        }
     }
 
     public class AutoLogonWorkerService : BackgroundService{
@@ -119,10 +153,6 @@ namespace TransactionProcessor
                     }
                 }
 
-                //String fileProfilePollingWindowInSeconds = ConfigurationReader.GetValue("AppSettings", "FileProfilePollingWindowInSeconds");
-                //if (string.IsNullOrEmpty(fileProfilePollingWindowInSeconds)){
-                //    fileProfilePollingWindowInSeconds = "5";
-                //}
                 String fileProfilePollingWindowInSeconds ="5";
                 // Delay for configured seconds before polling for files again
                 await Task.Delay(TimeSpan.FromSeconds(int.Parse(fileProfilePollingWindowInSeconds)), stoppingToken);
@@ -146,5 +176,16 @@ namespace TransactionProcessor
                 Logger.LogWarning(ex.ToString());
             }
         }
+    }
+
+    public class Contract
+    {
+        public Guid EstateId { get; set; }
+        public Guid ContractId { get; set; }
+    }
+
+    public class ContractList
+    {
+        public List<Contract> Contracts { get; set; }
     }
 }
