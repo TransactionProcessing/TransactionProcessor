@@ -2,6 +2,7 @@
 {
     using System.Diagnostics.CodeAnalysis;
     using System.IO.Abstractions;
+    using BusinessLogic.Common;
     using BusinessLogic.Manager;
     using BusinessLogic.Services;
     using Factories;
@@ -27,6 +28,7 @@
             this.AddSingleton<IFileSystem, FileSystem>();
             this.AddSingleton<IFeeCalculationManager, FeeCalculationManager>();
             this.AddSingleton<IVoucherManagementManager, VoucherManagementManager>();
+            this.AddSingleton<IMemoryCacheWrapper, MemoryCacheWrapper>();
         }
 
         #endregion

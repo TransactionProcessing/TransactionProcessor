@@ -69,7 +69,7 @@
 
         private readonly IAggregateRepository<FloatAggregate, DomainEvent> FloatAggregateRepository;
 
-        private readonly IMemoryCache MemoryCache;
+        private readonly IMemoryCacheWrapper MemoryCache;
 
         private readonly IAggregateRepository<TransactionAggregate, DomainEvent> TransactionAggregateRepository;
 
@@ -95,7 +95,7 @@
                                              IMessagingServiceClient messagingServiceClient,
                                              IAggregateRepository<SettlementAggregate, DomainEvent> settlementAggregateRepository,
                                              IAggregateRepository<FloatAggregate, DomainEvent> floatAggregateRepository,
-                                             IMemoryCache memoryCache) {
+                                             IMemoryCacheWrapper memoryCache) {
             this.TransactionAggregateRepository = transactionAggregateRepository;
             this.FeeCalculationManager = feeCalculationManager;
             this.EstateClient = estateClient;
@@ -116,8 +116,8 @@
             await this.HandleSpecificDomainEvent((dynamic)domainEvent, cancellationToken);
         }
 
-        private DateTime CalculateSettlementDate(EstateManagement.DataTransferObjects.Responses.Merchant.SettlementSchedule merchantSettlementSchedule,
-                                                 DateTime completeDateTime) {
+        internal static DateTime CalculateSettlementDate(EstateManagement.DataTransferObjects.Responses.Merchant.SettlementSchedule merchantSettlementSchedule,
+                                                         DateTime completeDateTime) {
             if (merchantSettlementSchedule == EstateManagement.DataTransferObjects.Responses.Merchant.SettlementSchedule.Weekly) {
                 return completeDateTime.Date.AddDays(7).Date;
             }
@@ -129,13 +129,12 @@
             return completeDateTime.Date;
         }
         
-        private Boolean RequireFeeCalculation(TransactionAggregate transactionAggregate){
+        internal static Boolean RequireFeeCalculation(TransactionAggregate transactionAggregate){
             return transactionAggregate switch{
+                _ when transactionAggregate.TransactionType == TransactionType.Logon => false,
                 _ when transactionAggregate.IsAuthorised == false => false,
                 _ when transactionAggregate.IsCompleted == false => false,
-                _ when transactionAggregate.TransactionType == TransactionType.Logon => false,
                 _ when transactionAggregate.ContractId == Guid.Empty => false,
-                _ when transactionAggregate.ProductId == Guid.Empty => false,
                 _ when transactionAggregate.TransactionAmount == null => false,
                 _ => true
             };
@@ -194,7 +193,7 @@
 
                 foreach (CalculatedFee calculatedFee in merchantFees){
                     // Determine when the fee should be applied
-                    DateTime settlementDate = this.CalculateSettlementDate(merchant.SettlementSchedule, domainEvent.CompletedDateTime);
+                    DateTime settlementDate = TransactionDomainEventHandler.CalculateSettlementDate(merchant.SettlementSchedule, domainEvent.CompletedDateTime);
 
                     transactionAggregate.AddFeePendingSettlement(calculatedFee, settlementDate);
 
@@ -287,7 +286,7 @@
             // Ok we should have filtered out the not applicable transactions
             // Check if we have fees for this product in the cache
             Boolean feesInCache = this.MemoryCache.TryGetValue((transactionAggregate.EstateId, transactionAggregate.ContractId, transactionAggregate.ProductId),
-                                                               out List<ContractProductTransactionFee> feesForProduct);
+                                                                                                    out List<ContractProductTransactionFee> feesForProduct);
 
             if (feesInCache == false){
                 Logger.LogInformation($"Fees for Key: Estate Id {transactionAggregate.EstateId} Contract Id {transactionAggregate.ContractId} ProductId {transactionAggregate.ProductId} not found in the cache");
