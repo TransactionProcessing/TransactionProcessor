@@ -52,7 +52,9 @@
         {
             aggregate.ValidateFloatIsAlreadyCreated();
 
-            aggregate.ValidateCreditIsNotADuplicate(creditPurchasedDate,amount,costPrice);
+            Boolean isCreditADuplicate = aggregate.IsCreditADuplicate(creditPurchasedDate,amount,costPrice);
+            if (isCreditADuplicate)
+                return;
 
             FloatCreditPurchasedEvent floatCreditPurchasedEvent = new FloatCreditPurchasedEvent(aggregate.AggregateId, aggregate.EstateId,
                                                                                                 creditPurchasedDate, amount, costPrice);
@@ -86,11 +88,9 @@
             }
         }
 
-        public static void ValidateCreditIsNotADuplicate(this FloatAggregate aggregate, DateTime creditPurchasedDate, Decimal amount, Decimal costPrice){
+        public static Boolean IsCreditADuplicate(this FloatAggregate aggregate, DateTime creditPurchasedDate, Decimal amount, Decimal costPrice){
             Boolean isDuplicate = aggregate.Credits.Any(c => c.costPrice == costPrice && c.amount == amount && c.creditPurchasedDate == creditPurchasedDate);
-            if (isDuplicate == true){
-                throw new InvalidOperationException($"Float Aggregate Id {aggregate.AggregateId} already has a credit with this information recorded");
-            }
+            return isDuplicate;
         }
 
         public static void ValidateTransactionIsNotADuplicate(this FloatAggregate aggregate, Guid transactionId)
