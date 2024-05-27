@@ -242,6 +242,8 @@
 
         private async Task HandleSpecificDomainEvent(SettledMerchantFeeAddedToTransactionEvent domainEvent,
                                                      CancellationToken cancellationToken){
+            this.TokenResponse = await Helpers.GetToken(this.TokenResponse, this.SecurityServiceClient, cancellationToken);
+
             Guid aggregateId = Helpers.CalculateSettlementAggregateId(domainEvent.SettledDateTime.Date, domainEvent.MerchantId, domainEvent.EstateId);
 
             EstateManagement.DataTransferObjects.Responses.Merchant.MerchantResponse merchant = await this.EstateClient.GetMerchant(this.TokenResponse.AccessToken, domainEvent.EstateId, domainEvent.MerchantId, cancellationToken);
