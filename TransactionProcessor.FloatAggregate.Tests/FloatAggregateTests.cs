@@ -99,14 +99,14 @@ namespace TransactionProcessor.FloatAggregate.Tests
         }
 
         [Fact]
-        public void FloatAggregate_RecordCreditPurchase_DuplicateCreditPurchase_NoErrorThrown()
+        public void FloatAggregate_RecordCreditPurchase_DuplicateCreditPurchase_ErrorThrown()
         {
             FloatAggregate aggregate = FloatAggregate.Create(TestData.FloatAggregateId);
             aggregate.CreateFloat(TestData.EstateId, TestData.ContractId, TestData.ProductId, TestData.FloatCreatedDateTime);
             DateTime purchaseDateTime = DateTime.Now;
             aggregate.RecordCreditPurchase(purchaseDateTime, 1000, 900);
 
-            Should.NotThrow(() => {
+            Should.Throw<InvalidOperationException>(() => {
                                 aggregate.RecordCreditPurchase(purchaseDateTime, 1000, 900);
                             });
         }
@@ -152,14 +152,14 @@ namespace TransactionProcessor.FloatAggregate.Tests
         }
 
         [Fact]
-        public void FloatAggregate_RecordTransactionAgainstFloat_DuplicateTransaction_ErrorThrown()
+        public void FloatAggregate_RecordTransactionAgainstFloat_DuplicateTransaction_NoErrorThrown()
         {
             FloatAggregate aggregate = FloatAggregate.Create(TestData.FloatAggregateId);
             aggregate.CreateFloat(TestData.EstateId, TestData.ContractId, TestData.ProductId, TestData.FloatCreatedDateTime);
             DateTime purchaseDateTime = DateTime.Now;
             aggregate.RecordCreditPurchase(purchaseDateTime, 1000, 900);
             aggregate.RecordTransactionAgainstFloat(TestData.TransactionId, 100);
-            Should.Throw<InvalidOperationException>(() => {
+            Should.NotThrow(() => {
                                                         aggregate.RecordTransactionAgainstFloat(TestData.TransactionId, 100);
                                                     });
         }

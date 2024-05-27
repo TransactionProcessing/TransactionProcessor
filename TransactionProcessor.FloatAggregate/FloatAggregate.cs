@@ -51,11 +51,8 @@
         public static void RecordCreditPurchase(this FloatAggregate aggregate, DateTime creditPurchasedDate, Decimal amount, Decimal costPrice)
         {
             aggregate.ValidateFloatIsAlreadyCreated();
-
-            Boolean isCreditADuplicate = aggregate.IsCreditADuplicate(creditPurchasedDate,amount,costPrice);
-            if (isCreditADuplicate)
-                return;
-
+            aggregate.ValidateCreditIsNotADuplicate(creditPurchasedDate, amount, costPrice);
+            
             FloatCreditPurchasedEvent floatCreditPurchasedEvent = new FloatCreditPurchasedEvent(aggregate.AggregateId, aggregate.EstateId,
                                                                                                 creditPurchasedDate, amount, costPrice);
 
@@ -64,7 +61,10 @@
 
         public static void RecordTransactionAgainstFloat(this FloatAggregate aggregate, Guid transactionId, Decimal transactionAmount){
             aggregate.ValidateFloatIsAlreadyCreated();
-            aggregate.ValidateTransactionIsNotADuplicate(transactionId);
+
+            Boolean isTransactionADuplicate = aggregate.IsTransactionADuplicate(transactionId);
+            if (isTransactionADuplicate)
+                return;
 
             FloatDecreasedByTransactionEvent floatDecreasedByTransactionEvent = new FloatDecreasedByTransactionEvent(aggregate.AggregateId, aggregate.EstateId, transactionId, transactionAmount);
 
@@ -88,18 +88,19 @@
             }
         }
 
-        public static Boolean IsCreditADuplicate(this FloatAggregate aggregate, DateTime creditPurchasedDate, Decimal amount, Decimal costPrice){
-            Boolean isDuplicate = aggregate.Credits.Any(c => c.costPrice == costPrice && c.amount == amount && c.creditPurchasedDate == creditPurchasedDate);
-            return isDuplicate;
-        }
-
-        public static void ValidateTransactionIsNotADuplicate(this FloatAggregate aggregate, Guid transactionId)
+        public static void ValidateCreditIsNotADuplicate(this FloatAggregate aggregate, DateTime creditPurchasedDate, Decimal amount, Decimal costPrice)
         {
-            Boolean isDuplicate = aggregate.Transactions.Any(c => c.transactionId == transactionId);
+            Boolean isDuplicate = aggregate.Credits.Any(c => c.costPrice == costPrice && c.amount == amount && c.creditPurchasedDate == creditPurchasedDate);
             if (isDuplicate == true)
             {
-                throw new InvalidOperationException($"Float Aggregate Id {aggregate.AggregateId} already has a transaction with this Id {transactionId} recorded");
+                throw new InvalidOperationException($"Float Aggregate Id {aggregate.AggregateId} already has a credit with this information recorded");
             }
+        }
+
+        public static Boolean IsTransactionADuplicate(this FloatAggregate aggregate, Guid transactionId)
+        {
+            Boolean isDuplicate = aggregate.Transactions.Any(c => c.transactionId == transactionId);
+            return isDuplicate;
         }
     }
 
