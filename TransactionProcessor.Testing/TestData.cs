@@ -327,7 +327,8 @@
                 ["SecurityConfiguration:Authority"] = "https://127.0.0.1",
                 ["AppSettings:EstateManagementApi"] = "http://127.0.0.1",
                 ["AppSettings:SecurityService"] = "http://127.0.0.1",
-                ["AppSettings:ContractProductFeeCacheExpiryInHours"] = ""
+                ["AppSettings:ContractProductFeeCacheExpiryInHours"] = "",
+                ["AppSettings:ContractProductFeeCacheEnabled"] = ""
             };
 
         public static EstateResponse GetEmptyEstateResponse =>
