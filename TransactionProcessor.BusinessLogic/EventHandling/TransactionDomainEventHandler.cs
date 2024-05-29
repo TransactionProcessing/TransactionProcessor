@@ -284,11 +284,26 @@
         }
 
         private async Task<List<TransactionFeeToCalculate>> GetTransactionFeesForCalculation(TransactionAggregate transactionAggregate, CancellationToken cancellationToken){
+            Boolean contractProductFeeCacheEnabled;
+            String contractProductFeeCacheEnabledValue = ConfigurationReader.GetValue("ContractProductFeeCacheEnabled");
+            if (String.IsNullOrEmpty(contractProductFeeCacheEnabledValue)){
+                contractProductFeeCacheEnabled = false;
+            }
+            else{
+                contractProductFeeCacheEnabled = Boolean.Parse(contractProductFeeCacheEnabledValue);
+            }
 
-            // Ok we should have filtered out the not applicable transactions
-            // Check if we have fees for this product in the cache
-            Boolean feesInCache = this.MemoryCache.TryGetValue((transactionAggregate.EstateId, transactionAggregate.ContractId, transactionAggregate.ProductId),
-                                                                                                    out List<ContractProductTransactionFee> feesForProduct);
+            Boolean feesInCache;
+            List<ContractProductTransactionFee> feesForProduct = null;
+            if (contractProductFeeCacheEnabled == false){
+                feesInCache = false;
+            }
+            else{
+                // Ok we should have filtered out the not applicable transactions
+                // Check if we have fees for this product in the cache
+                feesInCache = this.MemoryCache.TryGetValue((transactionAggregate.EstateId, transactionAggregate.ContractId, transactionAggregate.ProductId),
+                                                                   out feesForProduct);
+            }
 
             if (feesInCache == false){
                 Logger.LogInformation($"Fees for Key: Estate Id {transactionAggregate.EstateId} Contract Id {transactionAggregate.ContractId} ProductId {transactionAggregate.ProductId} not found in the cache");
@@ -301,18 +316,21 @@
                                                                                       transactionAggregate.ContractId,
                                                                                       transactionAggregate.ProductId,
                                                                                       cancellationToken);
-                // Now add this the result to the cache
-                String contractProductFeeCacheExpiryInHours = ConfigurationReader.GetValue("ContractProductFeeCacheExpiryInHours");
-                if (String.IsNullOrEmpty(contractProductFeeCacheExpiryInHours)){
-                    contractProductFeeCacheExpiryInHours = "168"; // 7 Days default
-                }
-                this.MemoryCache.Set((transactionAggregate.EstateId, transactionAggregate.ContractId, transactionAggregate.ProductId),
-                                     feesForProduct,
-                                     new MemoryCacheEntryOptions(){
-                                                                      AbsoluteExpirationRelativeToNow = TimeSpan.FromHours(Int32.Parse(contractProductFeeCacheExpiryInHours))
-                                                                  });
-                Logger.LogInformation($"Fees for Key: Estate Id {transactionAggregate.EstateId} Contract Id {transactionAggregate.ContractId} ProductId {transactionAggregate.ProductId} added to cache");
 
+                if (contractProductFeeCacheEnabled == true){
+                    // Now add this the result to the cache
+                    String contractProductFeeCacheExpiryInHours = ConfigurationReader.GetValue("ContractProductFeeCacheExpiryInHours");
+                    if (String.IsNullOrEmpty(contractProductFeeCacheExpiryInHours)){
+                        contractProductFeeCacheExpiryInHours = "168"; // 7 Days default
+                    }
+
+                    this.MemoryCache.Set((transactionAggregate.EstateId, transactionAggregate.ContractId, transactionAggregate.ProductId),
+                                         feesForProduct,
+                                         new MemoryCacheEntryOptions(){
+                                                                          AbsoluteExpirationRelativeToNow = TimeSpan.FromHours(Int32.Parse(contractProductFeeCacheExpiryInHours))
+                                                                      });
+                    Logger.LogInformation($"Fees for Key: Estate Id {transactionAggregate.EstateId} Contract Id {transactionAggregate.ContractId} ProductId {transactionAggregate.ProductId} added to cache");
+                }
             }
             else
             {
