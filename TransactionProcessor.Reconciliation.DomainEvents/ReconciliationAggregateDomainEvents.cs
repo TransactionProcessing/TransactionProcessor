@@ -10,26 +10,30 @@
                                              Guid EstateId,
                                              Guid MerchantId,
                                              Int32 TransactionCount,
-                                             Decimal TransactionValue) : DomainEvent(TransactionId, Guid.NewGuid());
+                                             Decimal TransactionValue,
+                                             DateTime TransactionDateTime) : DomainEvent(TransactionId, Guid.NewGuid());
 
     [ExcludeFromCodeCoverage]
     public record ReconciliationHasBeenLocallyAuthorisedEvent(Guid TransactionId,
                                                               Guid EstateId,
                                                               Guid MerchantId,
                                                               String ResponseCode,
-                                                              String ResponseMessage) : DomainEvent(TransactionId, Guid.NewGuid());
+                                                              String ResponseMessage,
+                                                              DateTime TransactionDateTime) : DomainEvent(TransactionId, Guid.NewGuid());
 
     [ExcludeFromCodeCoverage]
     public record ReconciliationHasBeenLocallyDeclinedEvent(Guid TransactionId,
                                                             Guid EstateId,
                                                             Guid MerchantId,
                                                             String ResponseCode,
-                                                            String ResponseMessage) : DomainEvent(TransactionId, Guid.NewGuid());
+                                                            String ResponseMessage,
+                                                            DateTime TransactionDateTime) : DomainEvent(TransactionId, Guid.NewGuid());
 
     [ExcludeFromCodeCoverage]
     public record ReconciliationHasCompletedEvent(Guid TransactionId,
                                                   Guid EstateId,
-                                                  Guid MerchantId) : DomainEvent(TransactionId, Guid.NewGuid());
+                                                  Guid MerchantId,
+                                                  DateTime TransactionDateTime) : DomainEvent(TransactionId, Guid.NewGuid());
 
     [ExcludeFromCodeCoverage]
     public record ReconciliationHasStartedEvent(Guid TransactionId,
