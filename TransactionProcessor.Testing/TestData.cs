@@ -997,10 +997,10 @@
         }
 
         public static CustomerEmailReceiptRequestedEvent CustomerEmailReceiptRequestedEvent =
-            new CustomerEmailReceiptRequestedEvent(TestData.TransactionId, TestData.EstateId, TestData.MerchantId, TestData.CustomerEmailAddress);
+            new CustomerEmailReceiptRequestedEvent(TestData.TransactionId, TestData.EstateId, TestData.MerchantId, TestData.CustomerEmailAddress, TestData.TransactionDateTime);
 
         public static CustomerEmailReceiptResendRequestedEvent CustomerEmailReceiptResendRequestedEvent =
-            new CustomerEmailReceiptResendRequestedEvent(TestData.TransactionId, TestData.EstateId, TestData.MerchantId);
+            new CustomerEmailReceiptResendRequestedEvent(TestData.TransactionId, TestData.EstateId, TestData.MerchantId, TestData.TransactionDateTime);
         
         public static SettledMerchantFeeAddedToTransactionEvent SettledMerchantFeeAddedToTransactionEvent(DateTime settlementDueDate) => new SettledMerchantFeeAddedToTransactionEvent(TestData.SettlementAggregateId,
                                                                                                                                                                                        TestData.EstateId,
@@ -1011,7 +1011,8 @@
                                                                                                                                                                                        TestData.CalculatedFeeValue,
                                                                                                                                                                                        TestData.TransactionFeeCalculateDateTime,
                                                                                                                                                                                        TestData.SettlementDate,
-                                                                                                                                                                                       TestData.SettlementAggregateId);
+                                                                                                                                                                                       TestData.SettlementAggregateId,
+                                                                                                                                                                                       TestData.TransactionDateTime);
 
         public static TransactionHasBeenCompletedEvent TransactionHasBeenCompletedEvent = new TransactionHasBeenCompletedEvent(TestData.TransactionId,
                                                                                                                                   TestData.EstateId,
@@ -1020,7 +1021,8 @@
                                                                                                                                   TestData.ResponseMessage,
                                                                                                                                   TestData.IsAuthorised,
                                                                                                                                   TestData.TransactionDateTime,
-                                                                                                                                  TestData.TransactionAmount);
+                                                                                                                                  TestData.TransactionAmount,
+                                                                                                                                  TestData.TransactionDateTime);
 
         public static Guid TransactionFeeId = Guid.Parse("B83FCCCE-0D45-4FC2-8952-ED277A124BDB");
 
@@ -1400,7 +1402,8 @@
                                                         TestData.EstateId,
                                                         TestData.MerchantId,
                                                         TestData.UnitCostPrice,
-                                                        TestData.TotalCostPrice);
+                                                        TestData.TotalCostPrice,
+                                                        TestData.TransactionDateTime);
 
         public static RecordCreditPurchaseForFloatRequest RecordCreditPurchaseForFloatRequest => RecordCreditPurchaseForFloatRequest.Create(TestData.EstateId, TestData.FloatAggregateId, TestData.FloatCreditAmount, TestData.FloatCreditCostPrice, TestData.CreditPurchasedDateTime);
 

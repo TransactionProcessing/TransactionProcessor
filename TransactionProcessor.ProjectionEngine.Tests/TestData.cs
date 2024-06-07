@@ -107,7 +107,8 @@ namespace TransactionProcessor.ProjectionEngine.Tests
                                                           TestData.FeeValue,
                                                           TestData.FeeCalculatedDateTime,
                                                           TestData.SettledDateTime,
-                                                          TestData.SettlementId);
+                                                          TestData.SettlementId,
+                                                          TestData.TransactionDateTime);
         
         public static TransactionHasBeenCompletedEvent GetTransactionHasBeenCompletedEvent(Boolean? isAuthorised = true,
                                                                                            Decimal? amount = null){
@@ -121,7 +122,8 @@ namespace TransactionProcessor.ProjectionEngine.Tests
                                                  TestData.ResponseMessage,
                                                  isAuthorised.Value,
                                                  TestData.TransactionDateTime,
-                                                 amount);
+                                                 amount,
+                                                 TestData.TransactionDateTime);
         }
 
         public static TransactionHasStartedEvent GetTransactionHasStartedEvent(Decimal? amount = null, String type = null){

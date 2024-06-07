@@ -32,7 +32,8 @@
                                                        operatorResponseCode,
                                                        operatorResponseMessage,
                                                        responseCode,
-                                                       responseMessage);
+                                                       responseMessage, 
+                                                       aggregate.TransactionDateTime);
             aggregate.ApplyAndAppend(transactionDeclinedByOperatorEvent);
         }
 
@@ -44,7 +45,8 @@
             aggregate.CheckTransactionNotAlreadyAuthorised();
             aggregate.CheckTransactionNotAlreadyDeclined();
             TransactionHasBeenLocallyDeclinedEvent transactionHasBeenLocallyDeclinedEvent =
-                new TransactionHasBeenLocallyDeclinedEvent(aggregate.AggregateId, aggregate.EstateId, aggregate.MerchantId, responseCode, responseMessage);
+                new TransactionHasBeenLocallyDeclinedEvent(aggregate.AggregateId, aggregate.EstateId, aggregate.MerchantId, responseCode, responseMessage,
+                    aggregate.TransactionDateTime);
 
             aggregate.ApplyAndAppend(transactionHasBeenLocallyDeclinedEvent);
         }
@@ -96,7 +98,8 @@
                                                                        (Int32)calculatedFee.FeeCalculationType,
                                                                        calculatedFee.FeeId,
                                                                        calculatedFee.FeeValue,
-                                                                       calculatedFee.FeeCalculatedDateTime);
+                                                                       calculatedFee.FeeCalculatedDateTime,
+                                                                       aggregate.TransactionDateTime);
             }
             else
             {
@@ -117,7 +120,8 @@
             aggregate.CheckProductDetailsNotAlreadyAdded();
 
             ProductDetailsAddedToTransactionEvent productDetailsAddedToTransactionEvent =
-                new ProductDetailsAddedToTransactionEvent(aggregate.AggregateId, aggregate.EstateId, aggregate.MerchantId, contractId, productId);
+                new ProductDetailsAddedToTransactionEvent(aggregate.AggregateId, aggregate.EstateId, aggregate.MerchantId, contractId, productId,
+                    aggregate.TransactionDateTime);
 
             aggregate.ApplyAndAppend(productDetailsAddedToTransactionEvent);
         }
@@ -147,7 +151,8 @@
                                                                       calculatedFee.FeeId,
                                                                       calculatedFee.FeeValue,
                                                                       calculatedFee.FeeCalculatedDateTime,
-                                                                      settlementDueDate);
+                                                                      settlementDueDate,
+                                                                      aggregate.TransactionDateTime);
             }
             else
             {
@@ -185,7 +190,8 @@
                                                                        calculatedFee.FeeValue,
                                                                        calculatedFee.FeeCalculatedDateTime,
                                                                        settledDateTime,
-                                                                       settlementId);
+                                                                       settlementId,
+                                                                       aggregate.TransactionDateTime);
             }
             else
             {
@@ -203,7 +209,8 @@
                 return;
 
             TransactionSourceAddedToTransactionEvent transactionSourceAddedToTransactionEvent =
-                new TransactionSourceAddedToTransactionEvent(aggregate.AggregateId, aggregate.EstateId, aggregate.MerchantId, (Int32)transactionSource);
+                new TransactionSourceAddedToTransactionEvent(aggregate.AggregateId, aggregate.EstateId, aggregate.MerchantId, (Int32)transactionSource,
+                    aggregate.TransactionDateTime);
 
             aggregate.ApplyAndAppend(transactionSourceAddedToTransactionEvent);
         }
@@ -229,7 +236,8 @@
                                                                                                                                  operatorResponseMessage,
                                                                                                                                  operatorTransactionId,
                                                                                                                                  responseCode,
-                                                                                                                                 responseMessage);
+                                                                                                                                 responseMessage,
+                                                                                                                                 aggregate.TransactionDateTime);
             aggregate.ApplyAndAppend(transactionAuthorisedByOperatorEvent);
         }
 
@@ -242,7 +250,8 @@
             aggregate.CheckTransactionNotAlreadyAuthorised();
             aggregate.CheckTransactionCanBeLocallyAuthorised();
             TransactionHasBeenLocallyAuthorisedEvent transactionHasBeenLocallyAuthorisedEvent =
-                new TransactionHasBeenLocallyAuthorisedEvent(aggregate.AggregateId, aggregate.EstateId, aggregate.MerchantId, authorisationCode, responseCode, responseMessage);
+                new TransactionHasBeenLocallyAuthorisedEvent(aggregate.AggregateId, aggregate.EstateId, aggregate.MerchantId, authorisationCode, responseCode, responseMessage,
+                    aggregate.TransactionDateTime);
 
             aggregate.ApplyAndAppend(transactionHasBeenLocallyAuthorisedEvent);
         }
@@ -261,7 +270,8 @@
                                                      aggregate.ResponseMessage,
                                                      aggregate.IsAuthorised || aggregate.IsLocallyAuthorised,
                                                      aggregate.TransactionDateTime,
-                                                     aggregate.TransactionType != TransactionType.Logon ? aggregate.TransactionAmount : null);
+                                                     aggregate.TransactionType != TransactionType.Logon ? aggregate.TransactionAmount : null,
+                                                     aggregate.TransactionDateTime);
 
             aggregate.ApplyAndAppend(transactionHasBeenCompletedEvent);
         }
@@ -277,7 +287,8 @@
             aggregate.CheckAdditionalRequestDataNotAlreadyRecorded();
 
             AdditionalRequestDataRecordedEvent additionalRequestDataRecordedEvent =
-                new AdditionalRequestDataRecordedEvent(aggregate.AggregateId, aggregate.EstateId, aggregate.MerchantId, operatorId, additionalTransactionRequestMetadata);
+                new AdditionalRequestDataRecordedEvent(aggregate.AggregateId, aggregate.EstateId, aggregate.MerchantId, operatorId, additionalTransactionRequestMetadata,
+                    aggregate.TransactionDateTime);
 
             aggregate.ApplyAndAppend(additionalRequestDataRecordedEvent);
         }
@@ -290,7 +301,8 @@
             aggregate.CheckAdditionalResponseDataNotAlreadyRecorded();
 
             AdditionalResponseDataRecordedEvent additionalResponseDataRecordedEvent =
-                new AdditionalResponseDataRecordedEvent(aggregate.AggregateId, aggregate.EstateId, aggregate.MerchantId, operatorId, additionalTransactionResponseMetadata);
+                new AdditionalResponseDataRecordedEvent(aggregate.AggregateId, aggregate.EstateId, aggregate.MerchantId, operatorId, additionalTransactionResponseMetadata,
+                    aggregate.TransactionDateTime);
 
             aggregate.ApplyAndAppend(additionalResponseDataRecordedEvent);
         }
@@ -301,7 +313,8 @@
             aggregate.CheckCustomerHasNotAlreadyRequestedEmailReceipt();
 
             CustomerEmailReceiptRequestedEvent customerEmailReceiptRequestedEvent =
-                new CustomerEmailReceiptRequestedEvent(aggregate.AggregateId, aggregate.EstateId, aggregate.MerchantId, customerEmailAddress);
+                new CustomerEmailReceiptRequestedEvent(aggregate.AggregateId, aggregate.EstateId, aggregate.MerchantId, customerEmailAddress,
+                    aggregate.TransactionDateTime);
 
             aggregate.ApplyAndAppend(customerEmailReceiptRequestedEvent);
         }
@@ -311,7 +324,8 @@
             aggregate.CheckCustomerHasAlreadyRequestedEmailReceipt();
 
             CustomerEmailReceiptResendRequestedEvent customerEmailReceiptResendRequestedEvent =
-                new CustomerEmailReceiptResendRequestedEvent(aggregate.AggregateId, aggregate.EstateId, aggregate.MerchantId);
+                new CustomerEmailReceiptResendRequestedEvent(aggregate.AggregateId, aggregate.EstateId, aggregate.MerchantId,
+                    aggregate.TransactionDateTime);
 
             aggregate.ApplyAndAppend(customerEmailReceiptResendRequestedEvent);
         }
@@ -368,7 +382,8 @@
                                                                                                               aggregate.EstateId,
                                                                                                               aggregate.MerchantId,
                                                                                                               unitCost,
-                                                                                                              totalCost);
+                                                                                                              totalCost,
+                                                                                                              aggregate.TransactionDateTime);
             
             aggregate.ApplyAndAppend(transactionCostInformationRecordedEvent);
         }

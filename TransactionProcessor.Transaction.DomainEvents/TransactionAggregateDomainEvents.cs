@@ -7,27 +7,31 @@
     [ExcludeFromCodeCoverage]
     public record CustomerEmailReceiptResendRequestedEvent(Guid TransactionId,
                                                            Guid EstateId,
-                                                           Guid MerchantId) : DomainEvent(TransactionId, Guid.NewGuid());
+                                                           Guid MerchantId,
+                                                           DateTime TransactionDateTime) : DomainEvent(TransactionId, Guid.NewGuid());
 
     [ExcludeFromCodeCoverage]
     public record CustomerEmailReceiptRequestedEvent(Guid TransactionId,
                                                      Guid EstateId,
                                                      Guid MerchantId,
-                                                     String CustomerEmailAddress) : DomainEvent(TransactionId, Guid.NewGuid());
+                                                     String CustomerEmailAddress,
+                                                     DateTime TransactionDateTime) : DomainEvent(TransactionId, Guid.NewGuid());
 
     [ExcludeFromCodeCoverage]
     public record AdditionalRequestDataRecordedEvent(Guid TransactionId,
                                                      Guid EstateId,
                                                      Guid MerchantId,
                                                      Guid OperatorId,
-                                                     Dictionary<String, String> AdditionalTransactionRequestMetadata) : DomainEvent(TransactionId, Guid.NewGuid());
+                                                     Dictionary<String, String> AdditionalTransactionRequestMetadata,
+                                                     DateTime TransactionDateTime) : DomainEvent(TransactionId, Guid.NewGuid());
 
     [ExcludeFromCodeCoverage]
     public record AdditionalResponseDataRecordedEvent(Guid TransactionId,
                                                       Guid EstateId,
                                                       Guid MerchantId,
                                                       Guid OperatorId,
-                                                      Dictionary<String, String> AdditionalTransactionResponseMetadata) : DomainEvent(TransactionId, Guid.NewGuid());
+                                                      Dictionary<String, String> AdditionalTransactionResponseMetadata,
+                                                      DateTime TransactionDateTime) : DomainEvent(TransactionId, Guid.NewGuid());
 
     [ExcludeFromCodeCoverage]
     public record SettledMerchantFeeAddedToTransactionEvent(Guid TransactionId,
@@ -39,7 +43,8 @@
                                                             Decimal FeeValue,
                                                             DateTime FeeCalculatedDateTime,
                                                             DateTime SettledDateTime,
-                                                            Guid SettlementId) : DomainEvent(TransactionId, Guid.NewGuid());
+                                                            Guid SettlementId,
+                                                            DateTime TransactionDateTime) : DomainEvent(TransactionId, Guid.NewGuid());
 
     [ExcludeFromCodeCoverage]
     public record MerchantFeePendingSettlementAddedToTransactionEvent(Guid TransactionId,
@@ -50,14 +55,16 @@
                                                                       Guid FeeId,
                                                                       Decimal FeeValue,
                                                                       DateTime FeeCalculatedDateTime,
-                                                                      DateTime SettlementDueDate) : DomainEvent(TransactionId, Guid.NewGuid());
+                                                                      DateTime SettlementDueDate,
+                                                                      DateTime TransactionDateTime) : DomainEvent(TransactionId, Guid.NewGuid());
 
     [ExcludeFromCodeCoverage]
     public record ProductDetailsAddedToTransactionEvent(Guid TransactionId,
                                                         Guid EstateId,
                                                         Guid MerchantId,
                                                         Guid ContractId,
-                                                        Guid ProductId) : DomainEvent(TransactionId, Guid.NewGuid());
+                                                        Guid ProductId,
+                                                        DateTime TransactionDateTime) : DomainEvent(TransactionId, Guid.NewGuid());
 
     [ExcludeFromCodeCoverage]
     public record ServiceProviderFeeAddedToTransactionEvent(Guid TransactionId,
@@ -67,7 +74,8 @@
                                                             Int32 FeeCalculationType,
                                                             Guid FeeId,
                                                             Decimal FeeValue,
-                                                            DateTime FeeCalculatedDateTime) : DomainEvent(TransactionId, Guid.NewGuid());
+                                                            DateTime FeeCalculatedDateTime,
+                                                            DateTime TransactionDateTime) : DomainEvent(TransactionId, Guid.NewGuid());
 
     [ExcludeFromCodeCoverage]
     public record TransactionAuthorisedByOperatorEvent(Guid TransactionId,
@@ -79,14 +87,16 @@
                                                        String OperatorResponseMessage,
                                                        String OperatorTransactionId,
                                                        String ResponseCode,
-                                                       String ResponseMessage) : DomainEvent(TransactionId, Guid.NewGuid());
+                                                       String ResponseMessage,
+                                                       DateTime TransactionDateTime) : DomainEvent(TransactionId, Guid.NewGuid());
 
     [ExcludeFromCodeCoverage]
     public record TransactionCostInformationRecordedEvent(Guid TransactionId,
                                                           Guid EstateId,
                                                           Guid MerchantId,
                                                           Decimal? UnitCostValue,
-                                                          Decimal? TotalCostValue) : DomainEvent(TransactionId, Guid.NewGuid());
+                                                          Decimal? TotalCostValue,
+                                                          DateTime TransactionDateTime) : DomainEvent(TransactionId, Guid.NewGuid());
 
     [ExcludeFromCodeCoverage]
     public record TransactionDeclinedByOperatorEvent(Guid TransactionId,
@@ -96,7 +106,8 @@
                                                      String OperatorResponseCode,
                                                      String OperatorResponseMessage,
                                                      String ResponseCode,
-                                                     String ResponseMessage) : DomainEvent(TransactionId, Guid.NewGuid());
+                                                     String ResponseMessage,
+                                                     DateTime TransactionDateTime) : DomainEvent(TransactionId, Guid.NewGuid());
 
     [ExcludeFromCodeCoverage]
     public record TransactionHasBeenCompletedEvent(Guid TransactionId,
@@ -106,7 +117,8 @@
                                                    String ResponseMessage,
                                                    Boolean IsAuthorised,
                                                    DateTime CompletedDateTime,
-                                                   Decimal? TransactionAmount) : DomainEvent(TransactionId, Guid.NewGuid());
+                                                   Decimal? TransactionAmount,
+                                                   DateTime TransactionDateTime) : DomainEvent(TransactionId, Guid.NewGuid());
 
     [ExcludeFromCodeCoverage]
     public record TransactionHasBeenLocallyAuthorisedEvent(Guid TransactionId,
@@ -114,14 +126,16 @@
                                                            Guid MerchantId,
                                                            String AuthorisationCode,
                                                            String ResponseCode,
-                                                           String ResponseMessage) : DomainEvent(TransactionId, Guid.NewGuid());
+                                                           String ResponseMessage,
+                                                           DateTime TransactionDateTime) : DomainEvent(TransactionId, Guid.NewGuid());
 
     [ExcludeFromCodeCoverage]
     public record TransactionHasBeenLocallyDeclinedEvent(Guid TransactionId,
                                                          Guid EstateId,
                                                          Guid MerchantId,
                                                          String ResponseCode,
-                                                         String ResponseMessage) : DomainEvent(TransactionId, Guid.NewGuid());
+                                                         String ResponseMessage,
+                                                         DateTime TransactionDateTime) : DomainEvent(TransactionId, Guid.NewGuid());
 
     [ExcludeFromCodeCoverage]
     public record TransactionHasStartedEvent(Guid TransactionId,
@@ -138,5 +152,6 @@
     public record TransactionSourceAddedToTransactionEvent(Guid TransactionId,
                                                            Guid EstateId,
                                                            Guid MerchantId,
-                                                           Int32 TransactionSource) : DomainEvent(TransactionId, Guid.NewGuid());
+                                                           Int32 TransactionSource,
+                                                           DateTime TransactionDateTime) : DomainEvent(TransactionId, Guid.NewGuid());
 }

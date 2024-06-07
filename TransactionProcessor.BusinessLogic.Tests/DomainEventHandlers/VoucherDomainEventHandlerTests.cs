@@ -74,14 +74,13 @@ public class VoucherDomainEventHandlerTests
         context.Transactions.Add(new EstateManagement.Database.Entities.Transaction()
         {
                                      TransactionId = TestData.TransactionId,
-                                     MerchantReportingId = TestData.MerchantReportingId,
-                                     ContractReportingId = TestData.ContractReportingId
+                                     MerchantId = TestData.MerchantId,
+                                     ContractId = TestData.ContractId
                                  });
         context.Contracts.Add(new Contract
                               {
                                   ContractId = TestData.ContractId,
-                                  ContractReportingId = TestData.ContractReportingId,
-                                  EstateReportingId = TestData.EstateReportingId,
+                                  EstateId = TestData.EstateId,
                                   Description = TestData.OperatorIdentifier
                               });
         await context.SaveChangesAsync(CancellationToken.None);
@@ -124,14 +123,13 @@ public class VoucherDomainEventHandlerTests
         context.Transactions.Add(new EstateManagement.Database.Entities.Transaction()
                                  {
                                      TransactionId = TestData.TransactionId,
-                                     MerchantReportingId = TestData.MerchantReportingId,
-                                     ContractReportingId = TestData.ContractReportingId
+                                     MerchantId = TestData.MerchantId,
+                                     ContractId = TestData.ContractId
         });
         context.Contracts.Add(new Contract
                               {
                                   ContractId = TestData.ContractId,
-                                  ContractReportingId = TestData.ContractReportingId, 
-                                  EstateReportingId = TestData.EstateReportingId,
+                                  EstateId = TestData.EstateId,
                                   Description = TestData.OperatorIdentifier
                               });
         await context.SaveChangesAsync(CancellationToken.None);

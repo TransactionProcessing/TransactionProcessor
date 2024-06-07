@@ -15,6 +15,7 @@ namespace TransactionProcessor.ReconciliationAggregate
             aggregate.EstateId = domainEvent.EstateId;
             aggregate.MerchantId = domainEvent.MerchantId;
             aggregate.IsStarted = true;
+            aggregate.TransactionDateTime = domainEvent.TransactionDateTime;
         }
 
         public static void PlayEvent(this ReconciliationAggregate aggregate, OverallTotalsRecordedEvent domainEvent)
@@ -91,7 +92,7 @@ namespace TransactionProcessor.ReconciliationAggregate
             aggregate.CheckReconciliationHasBeenStarted();
             aggregate.CheckReconciliationNotAlreadyCompleted();
 
-            OverallTotalsRecordedEvent overallTotalsRecordedEvent = new OverallTotalsRecordedEvent(aggregate.AggregateId, aggregate.EstateId, aggregate.MerchantId, totalCount, totalValue);
+            OverallTotalsRecordedEvent overallTotalsRecordedEvent = new OverallTotalsRecordedEvent(aggregate.AggregateId, aggregate.EstateId, aggregate.MerchantId, totalCount, totalValue, aggregate.TransactionDateTime);
             aggregate.ApplyAndAppend(overallTotalsRecordedEvent);
         }
 
@@ -103,7 +104,7 @@ namespace TransactionProcessor.ReconciliationAggregate
             aggregate.CheckReconciliationNotAlreadyDeclined();
 
             ReconciliationHasBeenLocallyAuthorisedEvent reconciliationHasBeenLocallyAuthorisedEvent = new ReconciliationHasBeenLocallyAuthorisedEvent(aggregate.AggregateId, aggregate.EstateId, aggregate.MerchantId,
-                                                                                                                                                      responseCode, responseMessage);
+                                                                                                                                                      responseCode, responseMessage, aggregate.TransactionDateTime);
 
             aggregate.ApplyAndAppend(reconciliationHasBeenLocallyAuthorisedEvent);
         }
@@ -140,7 +141,7 @@ namespace TransactionProcessor.ReconciliationAggregate
             aggregate.CheckReconciliationNotAlreadyDeclined();
 
             ReconciliationHasBeenLocallyDeclinedEvent reconciliationHasBeenLocallyDeclinedEvent = new ReconciliationHasBeenLocallyDeclinedEvent(aggregate.AggregateId, aggregate.EstateId, aggregate.MerchantId,
-                                                                                                                                                responseCode, responseMessage);
+                                                                                                                                                responseCode, responseMessage, aggregate.TransactionDateTime);
 
             aggregate.ApplyAndAppend(reconciliationHasBeenLocallyDeclinedEvent);
         }
@@ -152,7 +153,7 @@ namespace TransactionProcessor.ReconciliationAggregate
             aggregate.CheckReconciliationHasBeenAuthorisedOrDeclined();
 
             ReconciliationHasCompletedEvent reconciliationHasCompletedEvent =
-                new ReconciliationHasCompletedEvent(aggregate.AggregateId, aggregate.EstateId, aggregate.MerchantId);
+                new ReconciliationHasCompletedEvent(aggregate.AggregateId, aggregate.EstateId, aggregate.MerchantId, aggregate.TransactionDateTime);
 
             aggregate.ApplyAndAppend(reconciliationHasCompletedEvent);
 
@@ -207,6 +208,8 @@ namespace TransactionProcessor.ReconciliationAggregate
         public Int32 TransactionCount { get; internal set; }
 
         public Decimal TransactionValue { get; internal set; }
+
+        public DateTime TransactionDateTime { get; internal set; }
 
         public static ReconciliationAggregate Create(Guid aggregateId)
         {
