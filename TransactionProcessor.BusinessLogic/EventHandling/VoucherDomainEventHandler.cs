@@ -139,7 +139,7 @@ public class VoucherDomainEventHandler : IDomainEventHandler
         EstateManagementGenericContext context = await this.DbContextFactory.GetContext(voucherModel.EstateId, ConnectionStringIdentifier, cancellationToken);
 
         Transaction transaction = await context.Transactions.SingleOrDefaultAsync(t => t.TransactionId == voucherModel.TransactionId, cancellationToken);
-        Contract contract = await context.Contracts.SingleOrDefaultAsync(c => c.ContractReportingId == transaction.ContractReportingId);
+        Contract contract = await context.Contracts.SingleOrDefaultAsync(c => c.ContractId == transaction.ContractId, cancellationToken);
 
         return contract.Description;
     }
