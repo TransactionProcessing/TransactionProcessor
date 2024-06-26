@@ -1,4 +1,7 @@
-﻿namespace TransactionProcessor.Bootstrapper
+﻿using Shared.DomainDrivenDesign.EventSourcing;
+using Shared.EventStore.Aggregate;
+
+namespace TransactionProcessor.Bootstrapper
 {
     using System;
     using System.Collections.Generic;
@@ -86,6 +89,8 @@
                 .Ctor<Dictionary<String, String[]>>().Is(eventHandlersConfiguration).Singleton();
             this.For<IDomainEventHandlerResolver>().Use<DomainEventHandlerResolver>().Named("Ordered")
                 .Ctor<Dictionary<String, String[]>>().Is(eventHandlersConfigurationOrdered).Singleton();
+
+            this.AddSingleton<IDomainEventFactory<IDomainEvent>, DomainEventFactory>();
         }
 
         #endregion

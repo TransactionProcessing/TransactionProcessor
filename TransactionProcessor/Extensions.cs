@@ -82,11 +82,9 @@ namespace TransactionProcessor
 
             applicationBuilder.ConfigureSubscriptionService(subscriptionWorkersRoot,
                                                             eventStoreConnectionString,
-                                                            eventStoreClientSettings,
                                                             eventHandlerResolvers,
                                                             Extensions.log,
-                                                            subscriptionRepositoryResolver,
-                                                            CancellationToken.None).Wait(CancellationToken.None);
+                                                            subscriptionRepositoryResolver).Wait(CancellationToken.None);
 
             //LoadContractData(CancellationToken.None).Wait(CancellationToken.None);
             
