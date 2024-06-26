@@ -21,7 +21,7 @@ namespace TransactionProcessor.BusinessLogic.Common
                                                     Guid merchantId, 
                                                     Guid estateId)
         {
-            Guid aggregateId = GuidCalculator.Combine(estateId,merchantId, settlementDate.ToGuid());
+            Guid aggregateId = GuidCalculator.Combine(estateId, merchantId, settlementDate.ToGuid());
             return aggregateId;
         }
 
