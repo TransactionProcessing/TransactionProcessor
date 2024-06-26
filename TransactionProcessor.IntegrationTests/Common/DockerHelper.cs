@@ -2,6 +2,9 @@
 {
     using System;
     using System.Collections.Generic;
+    using System.IO;
+    using System.Linq;
+    using System.Net;
     using System.Net.Http;
     using System.Threading;
     using System.Threading.Tasks;
@@ -12,6 +15,7 @@
     using EventStore.Client;
     using global::Shared.IntegrationTesting;
     using SecurityService.Client;
+    using Shouldly;
     using Retry = IntegrationTests.Retry;
 
     /// <summary>
@@ -147,6 +151,19 @@
             }
         }
 
+        protected override List<String> GetRequiredProjections()
+        {
+            List<String> requiredProjections = new List<String>();
+
+            requiredProjections.Add("CallbackHandlerEnricher.js");
+            requiredProjections.Add("EstateAggregator.js");
+            requiredProjections.Add("MerchantAggregator.js");
+            requiredProjections.Add("MerchantBalanceCalculator.js");
+            requiredProjections.Add("MerchantBalanceProjection.js");
+
+            return requiredProjections;
+        }
+        
         #endregion
     }
 }
