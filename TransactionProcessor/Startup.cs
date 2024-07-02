@@ -4,46 +4,24 @@ namespace TransactionProcessor
     using System.Collections.Generic;
     using System.Diagnostics.CodeAnalysis;
     using System.IO;
-    using System.Linq;
-    using System.Net.Http;
     using System.Reflection;
-    using System.Runtime.InteropServices.ComTypes;
-    using System.Threading;
     using Bootstrapper;
-    using EstateManagement.Estate.DomainEvents;
-    using EstateManagement.Merchant.DomainEvents;
-    using EventStore.Client;
-    using FileProcessor.File.DomainEvents;
-    using FileProcessor.FileImportLog.DomainEvents;
-    using Float.DomainEvents;
     using HealthChecks.UI.Client;
     using Lamar;
     using Microsoft.AspNetCore.Builder;
     using Microsoft.AspNetCore.Diagnostics.HealthChecks;
     using Microsoft.AspNetCore.Hosting;
-    using Microsoft.Extensions.Caching.Memory;
     using Microsoft.Extensions.Configuration;
     using Microsoft.Extensions.DependencyInjection;
     using Microsoft.Extensions.Hosting;
     using Microsoft.Extensions.Logging;
     using NLog;
     using NLog.Extensions.Logging;
-    using NuGet.Protocol;
-    using ProjectionEngine.EventHandling;
-    using Reconciliation.DomainEvents;
-    using Settlement.DomainEvents;
-    using Shared.DomainDrivenDesign.EventSourcing;
     using Shared.EventStore.Aggregate;
-    using Shared.EventStore.EventHandling;
     using Shared.Extensions;
     using Shared.General;
-    using Transaction.DomainEvents;
-    using TransactionProcessor.BusinessLogic.OperatorInterfaces;
-    using Voucher.DomainEvents;
-    using EventHandler = ProjectionEngine.EventHandling.EventHandler;
     using ILogger = Microsoft.Extensions.Logging.ILogger;
     using Logger = Shared.Logger.Logger;
-    using SetupBuilderExtensions = NLog.SetupBuilderExtensions;
 
     /// <summary>
     /// 
@@ -123,14 +101,16 @@ namespace TransactionProcessor
                 app.UseDeveloperExceptionPage();
                 string directoryPath = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location);
                 LogManager.AddHiddenAssembly(Assembly.LoadFrom(Path.Combine(directoryPath, "Shared.dll")));
+
+                var developmentNlogConfigFilename = "nlog.development.config";
+                if (File.Exists(Path.Combine(env.ContentRootPath, developmentNlogConfigFilename)))
+                {
+                    nlogConfigFilename = developmentNlogConfigFilename;
+                }
             }
             else{
                 LogManager.AddHiddenAssembly(Assembly.LoadFrom(Path.Combine(env.ContentRootPath, "Shared.dll")));
             }
-
-
-
-            
             
             loggerFactory.ConfigureNLog(Path.Combine(env.ContentRootPath, nlogConfigFilename));
             loggerFactory.AddNLog();
@@ -139,8 +119,7 @@ namespace TransactionProcessor
 
             Logger.Initialise(logger);
 
-            Action<String> loggerAction = Logger.LogInformation;
-            Startup.Configuration.LogConfiguration(loggerAction);
+            Startup.Configuration.LogConfiguration(Logger.LogWarning);
 
             foreach (KeyValuePair<Type, String> type in TypeMap.Map) {
                 Logger.LogInformation($"Type name {type.Value} mapped to {type.Key.Name}");

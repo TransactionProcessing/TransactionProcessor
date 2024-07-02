@@ -1,4 +1,6 @@
-﻿namespace TransactionProcessor.Common;
+﻿using Shared.Middleware;
+
+namespace TransactionProcessor.Common;
 
 using System;
 using System.ServiceModel.Channels;
@@ -10,13 +12,16 @@ internal sealed class ClientMessageLoggingBehavior :
     #region Fields
 
     private readonly String ClientName;
+    private readonly RequestResponseMiddlewareLoggingConfig Config;
 
     #endregion
 
     #region Constructors
 
-    public ClientMessageLoggingBehavior(String clientName){
+    public ClientMessageLoggingBehavior(String clientName, RequestResponseMiddlewareLoggingConfig config)
+    {
         this.ClientName = clientName;
+        Config = config;
     }
 
     #endregion
@@ -27,7 +32,7 @@ internal sealed class ClientMessageLoggingBehavior :
     }
 
     public void ApplyClientBehavior(ServiceEndpoint endpoint, ClientRuntime clientRuntime){
-        clientRuntime.ClientMessageInspectors.Add(new ClientMessageLogger(this.ClientName));
+        clientRuntime.ClientMessageInspectors.Add(new ClientMessageLogger(this.ClientName, this.Config));
     }
 
     public void ApplyDispatchBehavior(ServiceEndpoint endpoint, EndpointDispatcher endpointDispatcher){
