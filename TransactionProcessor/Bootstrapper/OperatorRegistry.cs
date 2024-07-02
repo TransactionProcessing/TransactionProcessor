@@ -49,14 +49,17 @@ namespace TransactionProcessor.Bootstrapper
             this.For<IOperatorProxy>().Add<PataPawaPrePayProxy>().Named("PataPawaPrePay").Singleton();
             this.For<IOperatorProxy>().Add<VoucherManagementProxy>().Named("Voucher").Singleton();
 
-            var loggingConfig = Startup.Container.GetInstance<RequestResponseMiddlewareLoggingConfig>();
-            this.AddTransient<Func<PataPawaPostPayServiceClient, String,String, IPataPawaPostPayService>>(context => (client,clientName,
-                                                                                                               url) => {
-                                                                                                                         client.Endpoint.SetTraceLogging(clientName, loggingConfig);
-                                                                                                                  IPataPawaPostPayService channel =
-                                                                                                                      client.ChannelFactory.CreateChannel(new EndpointAddress(url));
-                                                                                                                  return channel;
-                                                                                                              });
+
+            this.AddTransient<Func<PataPawaPostPayServiceClient, String, String, IPataPawaPostPayService>>(context =>
+                (client, clientName,
+                    url) =>
+                {
+                    var loggingConfig = Startup.Container.GetInstance<RequestResponseMiddlewareLoggingConfig>();
+                    client.Endpoint.SetTraceLogging(clientName, loggingConfig);
+                    IPataPawaPostPayService channel =
+                        client.ChannelFactory.CreateChannel(new EndpointAddress(url));
+                    return channel;
+                });
             
 
             this.AddTransient<Func<String, IOperatorProxy>>(context => operatorIdentifier => {

@@ -161,6 +161,7 @@ namespace TransactionProcessor
 
             ConfigurationReader.Initialise(Startup.Configuration);
 
+            services.IncludeRegistry<MiscRegistry>();
             services.IncludeRegistry<MediatorRegistry>();
             services.IncludeRegistry<RepositoryRegistry>();
             services.IncludeRegistry<MiddlewareRegistry>();
@@ -168,7 +169,7 @@ namespace TransactionProcessor
             services.IncludeRegistry<OperatorRegistry>();
             services.IncludeRegistry<ClientRegistry>();
             services.IncludeRegistry<DomainEventHandlerRegistry>();
-            services.IncludeRegistry<MiscRegistry>();
+            
             services.AddMemoryCache();
 
             TypeProvider.LoadDomainEventsTypeDynamically();
