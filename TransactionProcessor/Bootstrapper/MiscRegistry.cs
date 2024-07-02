@@ -1,5 +1,9 @@
-﻿namespace TransactionProcessor.Bootstrapper
+﻿using Microsoft.Extensions.Logging;
+
+namespace TransactionProcessor.Bootstrapper
 {
+    using System.Collections.Generic;
+    using System;
     using System.Diagnostics.CodeAnalysis;
     using System.IO.Abstractions;
     using BusinessLogic.Common;
@@ -8,6 +12,9 @@
     using Factories;
     using Lamar;
     using Microsoft.Extensions.DependencyInjection;
+    using NuGet.Protocol.Plugins;
+    using Shared.General;
+    using Shared.Middleware;
 
     /// <summary>
     /// 
@@ -29,8 +36,39 @@
             this.AddSingleton<IFeeCalculationManager, FeeCalculationManager>();
             this.AddSingleton<IVoucherManagementManager, VoucherManagementManager>();
             this.AddSingleton<IMemoryCacheWrapper, MemoryCacheWrapper>();
+
+            bool logRequests = ConfigurationReaderExtensions.GetValueOrDefault<Boolean>("MiddlewareLogging", "LogRequests", true);
+            bool logResponses = ConfigurationReaderExtensions.GetValueOrDefault<Boolean>("MiddlewareLogging", "LogResponses", true);
+            LogLevel middlewareLogLevel = ConfigurationReaderExtensions.GetValueOrDefault<LogLevel>("MiddlewareLogging", "MiddlewareLogLevel", LogLevel.Warning);
+
+            RequestResponseMiddlewareLoggingConfig config =
+            new RequestResponseMiddlewareLoggingConfig(middlewareLogLevel, logRequests, logResponses);
+
+            this.AddSingleton(config);
         }
 
         #endregion
+    }
+
+    public static class ConfigurationReaderExtensions
+    {
+        public static T GetValueOrDefault<T>(String sectionName, String keyName, T defaultValue)
+        {
+            try
+            {
+                var value = ConfigurationReader.GetValue(sectionName, keyName);
+
+                if (String.IsNullOrEmpty(value))
+                {
+                    return defaultValue;
+                }
+
+                return (T)Convert.ChangeType(value, typeof(T));
+            }
+            catch (KeyNotFoundException kex)
+            {
+                return defaultValue;
+            }
+        }
     }
 }

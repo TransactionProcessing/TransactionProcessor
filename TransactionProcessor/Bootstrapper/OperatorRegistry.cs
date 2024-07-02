@@ -1,4 +1,6 @@
-﻿namespace TransactionProcessor.Bootstrapper
+﻿using Shared.Middleware;
+
+namespace TransactionProcessor.Bootstrapper
 {
     using System;
     using System.Diagnostics.CodeAnalysis;
@@ -47,13 +49,17 @@
             this.For<IOperatorProxy>().Add<PataPawaPrePayProxy>().Named("PataPawaPrePay").Singleton();
             this.For<IOperatorProxy>().Add<VoucherManagementProxy>().Named("Voucher").Singleton();
 
-            this.AddTransient<Func<PataPawaPostPayServiceClient, String,String, IPataPawaPostPayService>>(context => (client,clientName,
-                                                                                                               url) => {
-                                                                                                                         client.Endpoint.SetTraceLogging(clientName);
-                                                                                                                  IPataPawaPostPayService channel =
-                                                                                                                      client.ChannelFactory.CreateChannel(new EndpointAddress(url));
-                                                                                                                  return channel;
-                                                                                                              });
+
+            this.AddTransient<Func<PataPawaPostPayServiceClient, String, String, IPataPawaPostPayService>>(context =>
+                (client, clientName,
+                    url) =>
+                {
+                    var loggingConfig = Startup.Container.GetInstance<RequestResponseMiddlewareLoggingConfig>();
+                    client.Endpoint.SetTraceLogging(clientName, loggingConfig);
+                    IPataPawaPostPayService channel =
+                        client.ChannelFactory.CreateChannel(new EndpointAddress(url));
+                    return channel;
+                });
             
 
             this.AddTransient<Func<String, IOperatorProxy>>(context => operatorIdentifier => {
