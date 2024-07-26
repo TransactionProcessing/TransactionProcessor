@@ -49,7 +49,7 @@
 
         private Mock<IMessagingServiceClient> MessagingServiceClient;
 
-        private Mock<IAggregateRepository<FloatAggregate, DomainEvent>> FloatAggregateRepository;
+        private Mock<IAggregateRepository<FloatActivityAggregate, DomainEvent>> FloatActivityAggregateRepository;
 
         private Mock<IMemoryCacheWrapper> MemoryCache;
 
@@ -59,7 +59,7 @@
         {
             this.SettlementAggregateRepository = new Mock<IAggregateRepository<SettlementAggregate, DomainEvent>>();
             this.TransactionAggregateRepository = new Mock<IAggregateRepository<TransactionAggregate, DomainEvent>>();
-            this.FloatAggregateRepository = new Mock<IAggregateRepository<FloatAggregate, DomainEvent>>();
+            this.FloatActivityAggregateRepository = new Mock<IAggregateRepository<FloatActivityAggregate, DomainEvent>>();
             this.FeeCalculationManager = new Mock<IFeeCalculationManager>();
             this.EstateClient = new Mock<IEstateClient>();
             this.SecurityServiceClient = new Mock<ISecurityServiceClient>();
@@ -78,7 +78,7 @@
                                                                                    this.TransactionReceiptBuilder.Object,
                                                                                    this.MessagingServiceClient.Object,
                                                                                    this.SettlementAggregateRepository.Object,
-                                                                                   this.FloatAggregateRepository.Object,
+                                                                                   this.FloatActivityAggregateRepository.Object,
                                                                                    this.MemoryCache.Object);
         }
         
@@ -88,7 +88,7 @@
         [InlineData(EstateManagement.DataTransferObjects.Responses.Merchant.SettlementSchedule.Monthly)]
         public async Task TransactionDomainEventHandler_Handle_TransactionHasBeenCompletedEvent_SuccessfulSale_EventIsHandled(EstateManagement.DataTransferObjects.Responses.Merchant.SettlementSchedule settlementSchedule)
         {
-            this.FloatAggregateRepository.Setup(f => f.GetLatestVersion(It.IsAny<Guid>(), It.IsAny<CancellationToken>())).ReturnsAsync(TestData.GetFloatAggregateWithCostValues);
+            this.FloatActivityAggregateRepository.Setup(f => f.GetLatestVersionFromLastEvent(It.IsAny<Guid>(), It.IsAny<CancellationToken>())).ReturnsAsync(TestData.GetEmptyFloatActivityAggregate);
 
             TransactionAggregate transactionAggregate = TestData.GetCompletedAuthorisedSaleTransactionAggregate();
             this.TransactionAggregateRepository.Setup(t => t.GetLatestVersion(It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
@@ -144,7 +144,7 @@
         [InlineData(EstateManagement.DataTransferObjects.Responses.Merchant.SettlementSchedule.Monthly)]
         public async Task TransactionDomainEventHandler_Handle_TransactionHasBeenCompletedEvent_SuccessfulSale_FeesAlreadyCached_EventIsHandled(EstateManagement.DataTransferObjects.Responses.Merchant.SettlementSchedule settlementSchedule)
         {
-            this.FloatAggregateRepository.Setup(f => f.GetLatestVersion(It.IsAny<Guid>(), It.IsAny<CancellationToken>())).ReturnsAsync(TestData.GetFloatAggregateWithCostValues);
+            this.FloatActivityAggregateRepository.Setup(f => f.GetLatestVersionFromLastEvent(It.IsAny<Guid>(), It.IsAny<CancellationToken>())).ReturnsAsync(TestData.GetEmptyFloatActivityAggregate);
 
             TransactionAggregate transactionAggregate = TestData.GetCompletedAuthorisedSaleTransactionAggregate();
             this.TransactionAggregateRepository.Setup(t => t.GetLatestVersion(It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
@@ -201,7 +201,7 @@
         [Fact]
         public async Task TransactionDomainEventHandler_Handle_TransactionHasBeenCompletedEvent_SuccessfulSale_MerchantWithNotSetSettlementSchedule_ErrorThrown()
         {
-            this.FloatAggregateRepository.Setup(f => f.GetLatestVersion(It.IsAny<Guid>(), It.IsAny<CancellationToken>())).ReturnsAsync(TestData.GetFloatAggregateWithCostValues);
+            this.FloatActivityAggregateRepository.Setup(f => f.GetLatestVersionFromLastEvent(It.IsAny<Guid>(), It.IsAny<CancellationToken>())).ReturnsAsync(TestData.GetEmptyFloatActivityAggregate);
 
             TransactionAggregate transactionAggregate = TestData.GetCompletedAuthorisedSaleTransactionAggregate();
             this.TransactionAggregateRepository.Setup(t => t.GetLatestVersion(It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
@@ -238,7 +238,7 @@
         [Fact]
         public async Task TransactionDomainEventHandler_Handle_TransactionHasBeenCompletedEvent_UnsuccessfulSale_EventIsHandled()
         {
-            this.FloatAggregateRepository.Setup(f => f.GetLatestVersion(It.IsAny<Guid>(), It.IsAny<CancellationToken>())).ReturnsAsync(TestData.GetFloatAggregateWithCostValues);
+            this.FloatActivityAggregateRepository.Setup(f => f.GetLatestVersionFromLastEvent(It.IsAny<Guid>(), It.IsAny<CancellationToken>())).ReturnsAsync(TestData.GetEmptyFloatActivityAggregate);
 
             this.TransactionAggregateRepository.Setup(t => t.GetLatestVersion(It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
                 .ReturnsAsync(TestData.GetCompletedDeclinedSaleTransactionAggregate);
@@ -249,7 +249,7 @@
         [Fact]
         public async Task TransactionDomainEventHandler_Handle_TransactionHasBeenCompletedEvent_IncompleteSale_EventIsHandled()
         {
-            this.FloatAggregateRepository.Setup(f => f.GetLatestVersion(It.IsAny<Guid>(), It.IsAny<CancellationToken>())).ReturnsAsync(TestData.GetFloatAggregateWithCostValues);
+            this.FloatActivityAggregateRepository.Setup(f => f.GetLatestVersionFromLastEvent(It.IsAny<Guid>(), It.IsAny<CancellationToken>())).ReturnsAsync(TestData.GetEmptyFloatActivityAggregate);
 
             this.TransactionAggregateRepository.Setup(t => t.GetLatestVersion(It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
                 .ReturnsAsync(TestData.GetIncompleteAuthorisedSaleTransactionAggregate);
@@ -259,7 +259,7 @@
         [Fact]
         public async Task TransactionDomainEventHandler_Handle_TransactionHasBeenCompletedEvent_SaleWithNoProductDetails_EventIsHandled()
         {
-            this.FloatAggregateRepository.Setup(f => f.GetLatestVersion(It.IsAny<Guid>(), It.IsAny<CancellationToken>())).ReturnsAsync(TestData.GetFloatAggregateWithCostValues);
+            this.FloatActivityAggregateRepository.Setup(f => f.GetLatestVersionFromLastEvent(It.IsAny<Guid>(), It.IsAny<CancellationToken>())).ReturnsAsync(TestData.GetEmptyFloatActivityAggregate);
 
             this.TransactionAggregateRepository.Setup(t => t.GetLatestVersion(It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
                 .ReturnsAsync(TestData.GetCompletedAuthorisedSaleWithNoProductDetailsTransactionAggregate);
@@ -269,7 +269,7 @@
 
         [Fact]
         public async Task TransactionDomainEventHandler_Handle_TransactionHasBeenCompletedEvent_AuthorisedLogon_EventIsHandled(){
-            this.FloatAggregateRepository.Setup(f => f.GetLatestVersion(It.IsAny<Guid>(), It.IsAny<CancellationToken>())).ReturnsAsync(TestData.GetFloatAggregateWithCostValues);
+            this.FloatActivityAggregateRepository.Setup(f => f.GetLatestVersionFromLastEvent(It.IsAny<Guid>(), It.IsAny<CancellationToken>())).ReturnsAsync(TestData.GetEmptyFloatActivityAggregate);
 
             this.TransactionAggregateRepository.Setup(t => t.GetLatestVersion(It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
                 .ReturnsAsync(TestData.GetCompletedAuthorisedLogonTransactionAggregate);
@@ -306,11 +306,11 @@
             this.TransactionAggregateRepository.Setup(t => t.GetLatestVersion(It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
                 .ReturnsAsync(TestData.GetCompletedAuthorisedSaleTransactionAggregate);
 
-            this.FloatAggregateRepository.Setup(f => f.GetLatestVersion(It.IsAny<Guid>(), It.IsAny<CancellationToken>())).ReturnsAsync(TestData.GetFloatAggregateWithCostValues);
+            this.FloatActivityAggregateRepository.Setup(f => f.GetLatestVersionFromLastEvent(It.IsAny<Guid>(), It.IsAny<CancellationToken>())).ReturnsAsync(TestData.GetEmptyFloatActivityAggregate);
 
             await this.TransactionDomainEventHandler.Handle(TestData.TransactionCostInformationRecordedEvent, CancellationToken.None);
 
-            this.FloatAggregateRepository.Verify(f => f.SaveChanges(It.IsAny<FloatAggregate>(), It.IsAny<CancellationToken>()), Times.Once);
+            this.FloatActivityAggregateRepository.Verify(f => f.SaveChanges(It.IsAny<FloatActivityAggregate>(), It.IsAny<CancellationToken>()), Times.Once);
         }
 
         [Fact]
@@ -319,11 +319,11 @@
             this.TransactionAggregateRepository.Setup(t => t.GetLatestVersion(It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
                 .ReturnsAsync(TestData.GetCompletedDeclinedSaleTransactionAggregate);
 
-            this.FloatAggregateRepository.Setup(f => f.GetLatestVersion(It.IsAny<Guid>(), It.IsAny<CancellationToken>())).ReturnsAsync(TestData.GetFloatAggregateWithCostValues);
+            this.FloatActivityAggregateRepository.Setup(f => f.GetLatestVersionFromLastEvent(It.IsAny<Guid>(), It.IsAny<CancellationToken>())).ReturnsAsync(TestData.GetEmptyFloatActivityAggregate);
 
             await this.TransactionDomainEventHandler.Handle(TestData.TransactionCostInformationRecordedEvent, CancellationToken.None);
 
-            this.FloatAggregateRepository.Verify(f => f.SaveChanges(It.IsAny<FloatAggregate>(), It.IsAny<CancellationToken>()), Times.Never);
+            this.FloatActivityAggregateRepository.Verify(f => f.SaveChanges(It.IsAny<FloatActivityAggregate>(), It.IsAny<CancellationToken>()), Times.Never);
         }
 
         [Fact]
@@ -332,11 +332,11 @@
             this.TransactionAggregateRepository.Setup(t => t.GetLatestVersion(It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
                 .ReturnsAsync(TestData.GetIncompleteAuthorisedSaleTransactionAggregate);
 
-            this.FloatAggregateRepository.Setup(f => f.GetLatestVersion(It.IsAny<Guid>(), It.IsAny<CancellationToken>())).ReturnsAsync(TestData.GetFloatAggregateWithCostValues);
+            this.FloatActivityAggregateRepository.Setup(f => f.GetLatestVersionFromLastEvent(It.IsAny<Guid>(), It.IsAny<CancellationToken>())).ReturnsAsync(TestData.GetEmptyFloatActivityAggregate);
 
             await this.TransactionDomainEventHandler.Handle(TestData.TransactionCostInformationRecordedEvent, CancellationToken.None);
 
-            this.FloatAggregateRepository.Verify(f => f.SaveChanges(It.IsAny<FloatAggregate>(), It.IsAny<CancellationToken>()), Times.Never);
+            this.FloatActivityAggregateRepository.Verify(f => f.SaveChanges(It.IsAny<FloatActivityAggregate>(), It.IsAny<CancellationToken>()), Times.Never);
         }
 
         //[Fact]
