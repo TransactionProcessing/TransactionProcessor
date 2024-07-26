@@ -1,4 +1,6 @@
-﻿namespace TransactionProcessor.BusinessLogic.EventHandling
+﻿using TransactionProcessor.Float.DomainEvents;
+
+namespace TransactionProcessor.BusinessLogic.EventHandling
 {
     using System;
     using System.Collections.Generic;
@@ -45,42 +47,24 @@
     {
         #region Fields
 
-        /// <summary>
-        /// The estate client
-        /// </summary>
         private readonly IEstateClient EstateClient;
 
-        /// <summary>
-        /// The fee calculation manager
-        /// </summary>
         private readonly IFeeCalculationManager FeeCalculationManager;
 
-        /// <summary>
-        /// The messaging service client
-        /// </summary>
         private readonly IMessagingServiceClient MessagingServiceClient;
 
-        /// <summary>
-        /// The security service client
-        /// </summary>
         private readonly ISecurityServiceClient SecurityServiceClient;
 
         private readonly IAggregateRepository<SettlementAggregate, DomainEvent> SettlementAggregateRepository;
 
-        private readonly IAggregateRepository<FloatAggregate, DomainEvent> FloatAggregateRepository;
+        private readonly IAggregateRepository<FloatActivityAggregate, DomainEvent> FloatActivityAggregateRepository;
 
         private readonly IMemoryCacheWrapper MemoryCache;
 
         private readonly IAggregateRepository<TransactionAggregate, DomainEvent> TransactionAggregateRepository;
 
-        /// <summary>
-        /// The token response
-        /// </summary>
         private TokenResponse TokenResponse;
 
-        /// <summary>
-        /// The transaction receipt builder
-        /// </summary>
         private readonly ITransactionReceiptBuilder TransactionReceiptBuilder;
 
         #endregion
@@ -94,7 +78,7 @@
                                              ITransactionReceiptBuilder transactionReceiptBuilder,
                                              IMessagingServiceClient messagingServiceClient,
                                              IAggregateRepository<SettlementAggregate, DomainEvent> settlementAggregateRepository,
-                                             IAggregateRepository<FloatAggregate, DomainEvent> floatAggregateRepository,
+                                             IAggregateRepository<FloatActivityAggregate, DomainEvent> floatActivityAggregateRepository,
                                              IMemoryCacheWrapper memoryCache) {
             this.TransactionAggregateRepository = transactionAggregateRepository;
             this.FeeCalculationManager = feeCalculationManager;
@@ -103,7 +87,7 @@
             this.TransactionReceiptBuilder = transactionReceiptBuilder;
             this.MessagingServiceClient = messagingServiceClient;
             this.SettlementAggregateRepository = settlementAggregateRepository;
-            this.FloatAggregateRepository = floatAggregateRepository;
+            this.FloatActivityAggregateRepository = floatActivityAggregateRepository;
             this.MemoryCache = memoryCache;
         }
 
@@ -140,6 +124,16 @@
             };
         }
 
+        private async Task HandleSpecificDomainEvent(FloatCreditPurchasedEvent domainEvent,
+                                                     CancellationToken cancellationToken) {
+
+            FloatActivityAggregate floatAggregate = await this.FloatActivityAggregateRepository.GetLatestVersionFromLastEvent(domainEvent.FloatId, cancellationToken);
+
+            floatAggregate.RecordCreditPurchase(domainEvent.EstateId, domainEvent.CreditPurchasedDateTime, domainEvent.Amount);
+
+            await this.FloatActivityAggregateRepository.SaveChanges(floatAggregate, cancellationToken);
+        }
+
         private async Task HandleSpecificDomainEvent(TransactionCostInformationRecordedEvent domainEvent, CancellationToken cancellationToken){
             TransactionAggregate transactionAggregate =
                 await this.TransactionAggregateRepository.GetLatestVersion(domainEvent.TransactionId, cancellationToken);
@@ -148,11 +142,11 @@
                 return;
 
             Guid floatAggregateId = IdGenerationService.GenerateFloatAggregateId(transactionAggregate.EstateId, transactionAggregate.ContractId, transactionAggregate.ProductId);
-            FloatAggregate floatAggregate = await this.FloatAggregateRepository.GetLatestVersion(floatAggregateId, cancellationToken);
+            FloatActivityAggregate floatAggregate = await this.FloatActivityAggregateRepository.GetLatestVersionFromLastEvent(floatAggregateId, cancellationToken);
 
-            floatAggregate.RecordTransactionAgainstFloat(transactionAggregate.AggregateId, transactionAggregate.TransactionAmount.GetValueOrDefault());
+            floatAggregate.RecordTransactionAgainstFloat(transactionAggregate.EstateId, transactionAggregate.TransactionDateTime, transactionAggregate.TransactionAmount.GetValueOrDefault());
             
-            await this.FloatAggregateRepository.SaveChanges(floatAggregate, cancellationToken);
+            await this.FloatActivityAggregateRepository.SaveChanges(floatAggregate, cancellationToken);
         }
 
         private async Task HandleSpecificDomainEvent(TransactionHasBeenCompletedEvent domainEvent,

@@ -2,6 +2,7 @@ namespace TransactionProcessor.FloatAggregate.Tests
 {
     using Shouldly;
     using Testing;
+    using TransactionProcessor.Float.DomainEvents;
     using TransactionProcessor.Settlement.DomainEvents;
     using Xunit;
 
@@ -50,7 +51,6 @@ namespace TransactionProcessor.FloatAggregate.Tests
             aggregate.TotalCostPrice.ShouldBe(900);
             aggregate.UnitCostPrice.ShouldBe(0.9m);
             aggregate.TotalCreditPurchases.ShouldBe(1000);
-            aggregate.Balance.ShouldBe(1000);
         }
 
         [Fact]
@@ -74,7 +74,7 @@ namespace TransactionProcessor.FloatAggregate.Tests
             aggregate.TotalCostPrice.ShouldBe(900);
             aggregate.UnitCostPrice.ShouldBe(0.9m);
             aggregate.TotalCreditPurchases.ShouldBe(1000);
-            aggregate.Balance.ShouldBe(1000);
+
             Decimal roundedUnitCostPrice= aggregate.GetUnitCostPrice();
             roundedUnitCostPrice.ShouldBe(0.900m);
             aggregate.RecordCreditPurchase(DateTime.Now, 2000, 1750);
@@ -85,7 +85,6 @@ namespace TransactionProcessor.FloatAggregate.Tests
             roundedUnitCostPrice = aggregate.GetUnitCostPrice();
             roundedUnitCostPrice.ShouldBe(0.8833m);
             aggregate.TotalCreditPurchases.ShouldBe(3000);
-            aggregate.Balance.ShouldBe(3000);
 
             aggregate.RecordCreditPurchase(DateTime.Now, 20000, 16000);
 
@@ -95,7 +94,6 @@ namespace TransactionProcessor.FloatAggregate.Tests
             roundedUnitCostPrice = aggregate.GetUnitCostPrice();
             roundedUnitCostPrice.ShouldBe(0.8109m);
             aggregate.TotalCreditPurchases.ShouldBe(23000);
-            aggregate.Balance.ShouldBe(23000);
         }
 
         [Fact]
@@ -109,59 +107,6 @@ namespace TransactionProcessor.FloatAggregate.Tests
             Should.Throw<InvalidOperationException>(() => {
                                 aggregate.RecordCreditPurchase(purchaseDateTime, 1000, 900);
                             });
-        }
-
-        [Fact]
-        public void FloatAggregate_RecordTransactionAgainstFloat_FloatBalanceDecremented_And_TransactionAdded(){
-            FloatAggregate aggregate = FloatAggregate.Create(TestData.FloatAggregateId);
-            aggregate.CreateFloat(TestData.EstateId, TestData.ContractId, TestData.ProductId, TestData.FloatCreatedDateTime);
-            DateTime purchaseDateTime = DateTime.Now;
-            aggregate.RecordCreditPurchase(purchaseDateTime, 1000, 900);
-
-            aggregate.Balance.ShouldBe(1000);
-
-            aggregate.RecordTransactionAgainstFloat(TestData.TransactionId, 100);
-
-            aggregate.Balance.ShouldBe(900);
-            aggregate.NumberOfTransactions.ShouldBe(1);
-            aggregate.TotalTransactions.ShouldBe(100);
-        }
-
-        [Fact]
-        public void FloatAggregate_RecordTransactionAgainstFloat_NoBalance_FloatBalanceDecremented_And_TransactionAdded()
-        {
-            FloatAggregate aggregate = FloatAggregate.Create(TestData.FloatAggregateId);
-            aggregate.CreateFloat(TestData.EstateId, TestData.ContractId, TestData.ProductId, TestData.FloatCreatedDateTime);
-            aggregate.Balance.ShouldBe(0);
-
-            aggregate.RecordTransactionAgainstFloat(TestData.TransactionId, 100);
-
-            aggregate.Balance.ShouldBe(-100);
-            aggregate.NumberOfTransactions.ShouldBe(1);
-            aggregate.TotalTransactions.ShouldBe(100);
-        }
-
-        [Fact]
-        public void FloatAggregate_RecordTransactionAgainstFloat_FloatNotCreated_ErrorThrown()
-        {
-            FloatAggregate aggregate = FloatAggregate.Create(TestData.FloatAggregateId);
-
-            Should.Throw<InvalidOperationException>(() => {
-                                                        aggregate.RecordTransactionAgainstFloat(TestData.TransactionId, 100);
-                                                    });
-        }
-
-        [Fact]
-        public void FloatAggregate_RecordTransactionAgainstFloat_DuplicateTransaction_NoErrorThrown()
-        {
-            FloatAggregate aggregate = FloatAggregate.Create(TestData.FloatAggregateId);
-            aggregate.CreateFloat(TestData.EstateId, TestData.ContractId, TestData.ProductId, TestData.FloatCreatedDateTime);
-            DateTime purchaseDateTime = DateTime.Now;
-            aggregate.RecordCreditPurchase(purchaseDateTime, 1000, 900);
-            aggregate.RecordTransactionAgainstFloat(TestData.TransactionId, 100);
-            Should.NotThrow(() => {
-                                                        aggregate.RecordTransactionAgainstFloat(TestData.TransactionId, 100);
-                                                    });
         }
     }
 }

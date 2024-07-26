@@ -1,4 +1,6 @@
-﻿namespace TransactionProcessor.Bootstrapper
+﻿using TransactionProcessor.FloatAggregate;
+
+namespace TransactionProcessor.Bootstrapper
 {
     using System;
     using System.Data.Common;
@@ -81,6 +83,7 @@
                 AggregateRepository<SettlementAggregate, DomainEvent>>();
             this.AddSingleton<IAggregateRepository<VoucherAggregate.VoucherAggregate, DomainEvent>, AggregateRepository<VoucherAggregate.VoucherAggregate, DomainEvent>>();
             this.AddSingleton<IAggregateRepository<FloatAggregate.FloatAggregate, DomainEvent>, AggregateRepository<FloatAggregate.FloatAggregate, DomainEvent>>();
+            this.AddSingleton<IAggregateRepository<FloatActivityAggregate, DomainEvent>, AggregateRepository<FloatActivityAggregate, DomainEvent>>();
 
 
             this.AddSingleton<IProjectionStateRepository<MerchantBalanceState>, MerchantBalanceStateRepository>();

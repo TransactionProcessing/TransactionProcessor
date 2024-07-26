@@ -893,6 +893,11 @@
             return FloatAggregate.Create(TestData.FloatAggregateId);
         }
 
+        public static FloatActivityAggregate GetEmptyFloatActivityAggregate()
+        {
+            return FloatActivityAggregate.Create(TestData.FloatAggregateId);
+        }
+
         public static FloatAggregate GetFloatAggregateWithCostValues(){
             
             FloatAggregate floatAggregate = FloatAggregate.Create(TestData.FloatAggregateId);
