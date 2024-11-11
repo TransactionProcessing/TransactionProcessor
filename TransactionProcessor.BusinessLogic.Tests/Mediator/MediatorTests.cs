@@ -24,10 +24,10 @@ namespace TransactionProcessor.BusinessLogic.Tests.Mediator
 
         public MediatorTests()
         {
-            this.Requests.Add(TestData.ProcessLogonTransactionRequest);
-            this.Requests.Add(TestData.ProcessReconciliationRequest);
-            this.Requests.Add(TestData.ProcessSaleTransactionRequest);
-            this.Requests.Add(TestData.ProcessSettlementRequest);
+            this.Requests.Add(TestData.ProcessLogonTransactionCommand);
+            this.Requests.Add(TestData.ProcessReconciliationCommand);
+            this.Requests.Add(TestData.ProcessSaleTransactionCommand);
+            this.Requests.Add(TestData.ProcessSettlementCommand);
         }
 
         [Fact]

@@ -1,4 +1,7 @@
-﻿namespace TransactionProcessor.BusinessLogic.Tests.OperatorInterfaces
+﻿using SimpleResults;
+using TransactionProcessor.DataTransferObjects;
+
+namespace TransactionProcessor.BusinessLogic.Tests.OperatorInterfaces
 {
     using System;
     using System.Collections.Generic;
@@ -31,10 +34,10 @@
         [Fact]
         public async Task VoucherManagementProxy_ProcessSaleMessage_VoucherIssueSuccessful_SaleMessageIsProcessed() {
             Mock<IMediator> mediator = new Mock<IMediator>();
-            mediator.Setup(m => m.Send<IssueVoucherResponse>(It.IsAny<IssueVoucherRequest>(), It.IsAny<CancellationToken>())).ReturnsAsync(TestData.IssueVoucherResponse);
+            mediator.Setup(m => m.Send(It.IsAny<VoucherCommands.IssueVoucherCommand>(), It.IsAny<CancellationToken>())).ReturnsAsync(Result.Success(TestData.IssueVoucherResponse));
             IOperatorProxy voucherManagementProxy = new VoucherManagementProxy(mediator.Object);
 
-            OperatorResponse operatorResponse = await voucherManagementProxy.ProcessSaleMessage(TestData.TokenResponse().AccessToken,
+            var result = await voucherManagementProxy.ProcessSaleMessage(TestData.TokenResponse().AccessToken,
                                                                                                 TestData.TransactionId,
                                                                                                 TestData.OperatorId,
                                                                                                 TestData.Merchant,
@@ -42,7 +45,8 @@
                                                                                                 TestData.TransactionReference,
                                                                                                 TestData.AdditionalTransactionMetaDataForVoucher(),
                                                                                                 CancellationToken.None);
-
+            result.IsSuccess.ShouldBeTrue();
+            var operatorResponse = result.Data;
             operatorResponse.ShouldNotBeNull();
             operatorResponse.IsSuccessful.ShouldBeTrue();
             operatorResponse.ResponseCode.ShouldBe("0000");
@@ -64,9 +68,7 @@
 
             IOperatorProxy voucherManagementProxy = new VoucherManagementProxy(mediator.Object);
 
-            Should.Throw<Exception>(async () =>
-                                    {
-                                        await voucherManagementProxy.ProcessSaleMessage(TestData.TokenResponse().AccessToken,
+            var result = await voucherManagementProxy.ProcessSaleMessage(TestData.TokenResponse().AccessToken,
                                                                                         TestData.TransactionId,
                                                                                         TestData.OperatorId,
                                                                                         TestData.Merchant,
@@ -76,7 +78,8 @@
                                                                                         CancellationToken.None);
 
 
-                                    });
+                                        result.IsFailed.ShouldBeTrue();
+                                        result.Status.ShouldBe(ResultStatus.Invalid);
         }
 
         [Theory]
@@ -98,9 +101,7 @@
 
             IOperatorProxy voucherManagementProxy = new VoucherManagementProxy(mediator.Object);
 
-            Should.Throw<Exception>(async () =>
-                                    {
-                                        await voucherManagementProxy.ProcessSaleMessage(TestData.TokenResponse().AccessToken,
+            var result = await voucherManagementProxy.ProcessSaleMessage(TestData.TokenResponse().AccessToken,
                                                                                         TestData.TransactionId,
                                                                                         TestData.OperatorId,
                                                                                         TestData.Merchant,
@@ -108,9 +109,8 @@
                                                                                         TestData.TransactionReference,
                                                                                         additionalMetatdata,
                                                                                         CancellationToken.None);
-
-
-                                    });
+            result.IsFailed.ShouldBeTrue();
+            result.Status.ShouldBe(ResultStatus.Invalid);
         }
     }
 }

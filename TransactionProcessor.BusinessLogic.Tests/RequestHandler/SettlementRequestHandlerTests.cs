@@ -1,28 +1,32 @@
-﻿namespace TransactionProcessor.BusinessLogic.Tests.CommandHandler;
-
-using System.Threading;
-using BusinessLogic.Services;
+﻿using System.Threading;
+using System.Threading.Tasks;
 using Moq;
-using RequestHandlers;
-using Requests;
+using Shared.DomainDrivenDesign.EventSourcing;
+using Shared.EventStore.Aggregate;
 using Shouldly;
-using Testing;
+using SimpleResults;
+using TransactionProcessor.BusinessLogic.RequestHandlers;
+using TransactionProcessor.BusinessLogic.Requests;
+using TransactionProcessor.BusinessLogic.Services;
+using TransactionProcessor.SettlementAggregates;
+using TransactionProcessor.Testing;
 using Xunit;
+
+namespace TransactionProcessor.BusinessLogic.Tests.RequestHandler;
 
 public class SettlementRequestHandlerTests
 {
     [Fact]
-    public void SettlementRequestHandler_ProcessSettlementRequest_IsHandled()
+    public async Task SettlementRequestHandler_ProcessSettlementRequest_IsHandled()
     {
         Mock<ISettlementDomainService> settlementDomainService = new Mock<ISettlementDomainService>();
-        SettlementRequestHandler handler = new SettlementRequestHandler(settlementDomainService.Object);
+        Mock<IAggregateRepository<SettlementAggregate, DomainEvent>> settlementAggregateRepository = new();
+        SettlementRequestHandler handler = new SettlementRequestHandler(settlementDomainService.Object, settlementAggregateRepository.Object);
+        settlementDomainService
+            .Setup(s => s.ProcessSettlement(It.IsAny<SettlementCommands.ProcessSettlementCommand>(), It.IsAny<CancellationToken>())).ReturnsAsync(Result.Success());
+        var command = TestData.ProcessSettlementCommand;
 
-        ProcessSettlementRequest command = TestData.ProcessSettlementRequest;
-
-        Should.NotThrow(async () =>
-                        {
-                            await handler.Handle(command, CancellationToken.None);
-                        });
-
+        var result = await handler.Handle(command, CancellationToken.None);
+        result.IsSuccess.ShouldBeTrue();
     }
 }

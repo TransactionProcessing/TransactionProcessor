@@ -611,8 +611,8 @@
                 MerchantName = TestData.MerchantName
             };
 
-        public static ProcessLogonTransactionRequest ProcessLogonTransactionRequest =>
-            ProcessLogonTransactionRequest.Create(TestData.TransactionId,
+        public static TransactionCommands.ProcessLogonTransactionCommand ProcessLogonTransactionCommand =>
+            new(TestData.TransactionId,
                                                   TestData.EstateId,
                                                   TestData.MerchantId,
                                                   TestData.DeviceIdentifier,
@@ -620,8 +620,8 @@
                                                   TestData.TransactionDateTime,
                                                   TestData.TransactionNumber);
 
-        public static ProcessSettlementRequest ProcessSettlementRequest =>
-            ProcessSettlementRequest.Create(TestData.SettlementDate,
+        public static SettlementCommands.ProcessSettlementCommand ProcessSettlementCommand =>
+            new(TestData.SettlementDate,
                                             TestData.MerchantId,
                                             TestData.EstateId);
 
@@ -632,8 +632,8 @@
                 ResponseCode = TestData.ResponseCode
             };
 
-        public static ProcessSaleTransactionRequest ProcessSaleTransactionRequest =>
-            ProcessSaleTransactionRequest.Create(TestData.TransactionId,
+        public static TransactionCommands.ProcessSaleTransactionCommand ProcessSaleTransactionCommand =>
+            new(TestData.TransactionId,
                                                  TestData.EstateId,
                                                  TestData.MerchantId,
                                                  TestData.DeviceIdentifier,
@@ -669,8 +669,8 @@
                 Pin = "1234"
             };
 
-        public static ProcessReconciliationRequest ProcessReconciliationRequest =>
-            ProcessReconciliationRequest.Create(TestData.TransactionId, TestData.EstateId, TestData.MerchantId, TestData.DeviceIdentifier, TestData.TransactionDateTime, TestData.ReconciliationTransactionCount, TestData.ReconciliationTransactionValue);
+        public static TransactionCommands.ProcessReconciliationCommand ProcessReconciliationCommand =>
+            new(TestData.TransactionId, TestData.EstateId, TestData.MerchantId, TestData.DeviceIdentifier, TestData.TransactionDateTime, TestData.ReconciliationTransactionCount, TestData.ReconciliationTransactionValue);
 
         public static ProcessReconciliationTransactionResponse ProcessReconciliationTransactionResponseModel =>
             new ProcessReconciliationTransactionResponse
@@ -1078,7 +1078,7 @@
         public static String PataPawaPostPaidApiKey = "PataPawaApiKey1";
         public static Decimal PataPawaPostPaidBalance = 100.00m;
         public static String PataPawaPostPaidSuccessMessage = "Successful Logon";
-        public static String PataPawaPostPaidFailedMessage = "Error logging on with PataPawa Post Paid API";
+        public static String PataPawaPostPaidFailedMessage = "Error logging on with PataPawa Post Paid API, Response is -1";
         public static Int32 PataPawaPostPaidSuccessStatus = 0;
         public static Int32 PataPawaPostPaidFailedStatus = -1;
 
@@ -1177,7 +1177,7 @@
 
         public static MerchantBalanceProjectionState1 MerchantBalanceProjectionStateNoCredit => new MerchantBalanceProjectionState1(TestData.MerchantStateNoCredit);
         
-        public static ResendTransactionReceiptRequest ResendTransactionReceiptRequest => ResendTransactionReceiptRequest.Create(TestData.TransactionId,
+        public static TransactionCommands.ResendTransactionReceiptCommand ResendTransactionReceiptCommand => new(TestData.TransactionId,
                                                                                                                                 TestData.EstateId);
 
         public static List<ContractProductTransactionFee> ContractProductTransactionFees =>
@@ -1361,7 +1361,7 @@
 
         public static DateTime IssuedDateTime = new DateTime(2020, 11, 5);
 
-        public static IssueVoucherRequest IssueVoucherRequest = IssueVoucherRequest.Create(TestData.VoucherId,
+        public static VoucherCommands.IssueVoucherCommand IssueVoucherCommand => new(TestData.VoucherId,
                                                                                            TestData.OperatorId,
                                                                                            TestData.EstateId,
                                                                                            TestData.TransactionId,
@@ -1380,7 +1380,7 @@
 
         public static DateTime RedeemedDateTime = new DateTime(2020, 11, 5);
 
-        public static RedeemVoucherRequest RedeemVoucherRequest = RedeemVoucherRequest.Create(TestData.EstateId, TestData.VoucherCode, TestData.RedeemedDateTime);
+        public static VoucherCommands.RedeemVoucherCommand RedeemVoucherCommand => new(TestData.EstateId, TestData.VoucherCode, TestData.RedeemedDateTime);
 
         private static Decimal RemainingBalance = 1.00m;
 
@@ -1410,9 +1410,9 @@
                                                         TestData.TotalCostPrice,
                                                         TestData.TransactionDateTime);
 
-        public static RecordCreditPurchaseForFloatRequest RecordCreditPurchaseForFloatRequest => RecordCreditPurchaseForFloatRequest.Create(TestData.EstateId, TestData.FloatAggregateId, TestData.FloatCreditAmount, TestData.FloatCreditCostPrice, TestData.CreditPurchasedDateTime);
+        public static FloatCommands.RecordCreditPurchaseForFloatCommand RecordCreditPurchaseForFloatCommand => new(TestData.EstateId, TestData.FloatAggregateId, TestData.FloatCreditAmount, TestData.FloatCreditCostPrice, TestData.CreditPurchasedDateTime);
 
-        public static CreateFloatForContractProductRequest CreateFloatForContractProductRequest => CreateFloatForContractProductRequest.Create(TestData.EstateId, TestData.ContractId, TestData.ProductId, TestData.FloatCreatedDateTime);
+        public static FloatCommands.CreateFloatForContractProductCommand CreateFloatForContractProductCommand => new(TestData.EstateId, TestData.ContractId, TestData.ProductId, TestData.FloatCreatedDateTime);
 
         public static RedeemVoucherResponse RedeemVoucherResponse =>
             new RedeemVoucherResponse

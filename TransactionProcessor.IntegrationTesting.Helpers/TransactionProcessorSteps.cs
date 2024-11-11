@@ -1,8 +1,11 @@
-﻿namespace TransactionProcessor.IntegrationTesting.Helpers;
+﻿using EventStore.Client;
+
+namespace TransactionProcessor.IntegrationTesting.Helpers;
 
 using System.Diagnostics.Metrics;
 using System.Net;
 using System.Text;
+using System.Text.Json;
 using Client;
 using DataTransferObjects;
 using EstateManagement.IntegrationTesting.Helpers;
@@ -15,11 +18,13 @@ public class TransactionProcessorSteps
     private readonly ITransactionProcessorClient TransactionProcessorClient;
 
     private readonly HttpClient TestHostHttpClient;
+    private readonly EventStoreProjectionManagementClient ProjectionManagementClient;
 
-    public TransactionProcessorSteps(ITransactionProcessorClient transactionProcessorClient, HttpClient testHostHttpClient)
+    public TransactionProcessorSteps(ITransactionProcessorClient transactionProcessorClient, HttpClient testHostHttpClient, EventStoreProjectionManagementClient projectionManagementClient)
     {
         this.TransactionProcessorClient = transactionProcessorClient;
         this.TestHostHttpClient = testHostHttpClient;
+        this.ProjectionManagementClient = projectionManagementClient;
     }
 
     public async Task WhenIPerformTheFollowingTransactions(String accessToken, List<(EstateDetails, Guid, String, SerialisedMessage)> serialisedMessages)
@@ -36,7 +41,14 @@ public class TransactionProcessorSteps
 
     public async Task WhenICreateTheFollowingMerchants(String accessToken, Guid estateId, Guid merchantId){
         await Retry.For(async () => {
-                            MerchantBalanceResponse response = await this.TransactionProcessorClient.GetMerchantBalance(accessToken, estateId, merchantId, CancellationToken.None);
+                string projectionName = "MerchantBalanceProjection";
+                String partitionId = $"MerchantBalance-{merchantId:N}";
+
+            dynamic gg = await this.ProjectionManagementClient.GetStateAsync<dynamic>(
+                projectionName, partitionId);
+            JsonElement x = (JsonElement)gg;
+
+            MerchantBalanceResponse response = await this.TransactionProcessorClient.GetMerchantBalance(accessToken, estateId, merchantId, CancellationToken.None);
 
                             response.ShouldNotBeNull();
                             

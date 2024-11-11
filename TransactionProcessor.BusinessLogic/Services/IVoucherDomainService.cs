@@ -2,6 +2,7 @@
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using SimpleResults;
 
 namespace TransactionProcessor.BusinessLogic.Services
 {
@@ -24,15 +25,15 @@ namespace TransactionProcessor.BusinessLogic.Services
         /// <param name="recipientMobile">The recipient mobile.</param>
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns></returns>
-        Task<IssueVoucherResponse> IssueVoucher(Guid voucherId,
-                                                Guid operatorId,
-                                                Guid estateId,
-                                                Guid transactionId,
-                                                DateTime issuedDateTime,
-                                                Decimal value,
-                                                String recipientEmail,
-                                                String recipientMobile,
-                                                CancellationToken cancellationToken);
+        Task<Result<IssueVoucherResponse>> IssueVoucher(Guid voucherId,
+                                                        Guid operatorId,
+                                                        Guid estateId,
+                                                        Guid transactionId,
+                                                        DateTime issuedDateTime,
+                                                        Decimal value,
+                                                        String recipientEmail,
+                                                        String recipientMobile,
+                                                        CancellationToken cancellationToken);
 
         /// <summary>
         /// Redeems the voucher.
@@ -42,7 +43,7 @@ namespace TransactionProcessor.BusinessLogic.Services
         /// <param name="redeemedDateTime">The redeemed date time.</param>
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns></returns>
-        Task<RedeemVoucherResponse> RedeemVoucher(Guid estateId,
+        Task<Result<RedeemVoucherResponse>> RedeemVoucher(Guid estateId,
                                                   String voucherCode,
                                                   DateTime redeemedDateTime,
                                                   CancellationToken cancellationToken);

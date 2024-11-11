@@ -26,9 +26,13 @@
         {
             this.AddSingleton<ISecurityServiceClient, SecurityServiceClient>();
             this.AddSingleton<IMessagingServiceClient, MessagingServiceClient>();
-            this.AddSingleton<IEstateClient, EstateClient>();
+            //this.AddSingleton<IEstateClient, EstateClient>();
+            
 
-            this.AddSingleton<Func<String, String>>(container => serviceName => { return ConfigurationReader.GetBaseServerUri(serviceName).OriginalString; });
+            Func<String, String> resolver(IServiceProvider container) => serviceName => { return ConfigurationReader.GetBaseServerUri(serviceName).OriginalString; };
+            Func<String, String> resolver1() => serviceName => { return ConfigurationReader.GetBaseServerUri(serviceName).OriginalString; };
+
+            this.AddSingleton<Func<String, String>>(resolver);
 
             var httpMessageHandler = new SocketsHttpHandler
                                      {
@@ -42,6 +46,8 @@
                                      };
             HttpClient httpClient = new HttpClient(httpMessageHandler);
             this.AddSingleton(httpClient);
+
+            this.AddSingleton<IEstateClient>(new EstateClient(resolver1(), httpClient, 2));
         }
 
         #endregion

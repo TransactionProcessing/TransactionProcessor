@@ -1,4 +1,6 @@
-﻿namespace TransactionProcessor.BusinessLogic.Tests.Services
+﻿using SimpleResults;
+
+namespace TransactionProcessor.BusinessLogic.Tests.Services
 {
     using System;
     using System.Collections.Generic;
@@ -53,8 +55,7 @@
                                                                           estateClient.Object,
                                                                           dbContextFactory.Object);
 
-            Should.Throw<NotFoundException>(async () => {
-                                                await domainService.IssueVoucher(TestData.VoucherId,
+            var result = await domainService.IssueVoucher(TestData.VoucherId,
                                                                                  TestData.OperatorId,
                                                                                  TestData.EstateId,
                                                                                  TestData.TransactionId,
@@ -63,7 +64,7 @@
                                                                                  TestData.RecipientEmail,
                                                                                  TestData.RecipientMobile,
                                                                                  CancellationToken.None);
-                                            });
+            result.IsFailed.ShouldBeTrue();
         }
 
         [Fact]
@@ -91,8 +92,7 @@
                                                                           estateClient.Object,
                                                                           dbContextFactory.Object);
 
-            Should.Throw<NotFoundException>(async () => {
-                                                await domainService.IssueVoucher(TestData.VoucherId,
+            var result = await domainService.IssueVoucher(TestData.VoucherId,
                                                                                  TestData.OperatorId,
                                                                                  TestData.EstateId,
                                                                                  TestData.TransactionId,
@@ -101,7 +101,7 @@
                                                                                  TestData.RecipientEmail,
                                                                                  TestData.RecipientMobile,
                                                                                  CancellationToken.None);
-                                            });
+            result.IsFailed.ShouldBeTrue();
         }
 
         [Fact]
@@ -129,8 +129,7 @@
                                                                           estateClient.Object,
                                                                           dbContextFactory.Object);
 
-            Should.Throw<NotFoundException>(async () => {
-                                                await domainService.IssueVoucher(TestData.VoucherId,
+            var result = await domainService.IssueVoucher(TestData.VoucherId,
                                                                                  TestData.OperatorId,
                                                                                  TestData.EstateId,
                                                                                  TestData.TransactionId,
@@ -139,7 +138,7 @@
                                                                                  TestData.RecipientEmail,
                                                                                  TestData.RecipientMobile,
                                                                                  CancellationToken.None);
-                                            });
+            result.IsFailed.ShouldBeTrue();
         }
 
         [Fact]
@@ -167,8 +166,7 @@
                                                                           estateClient.Object,
                                                                           dbContextFactory.Object);
 
-            Should.Throw<NotFoundException>(async () => {
-                                                await domainService.IssueVoucher(TestData.VoucherId,
+            var result = await domainService.IssueVoucher(TestData.VoucherId,
                                                                                  TestData.OperatorId,
                                                                                  TestData.EstateId,
                                                                                  TestData.TransactionId,
@@ -177,7 +175,7 @@
                                                                                  TestData.RecipientEmail,
                                                                                  TestData.RecipientMobile,
                                                                                  CancellationToken.None);
-                                            });
+            result.IsFailed.ShouldBeTrue();
         }
 
         [Fact]
@@ -191,6 +189,7 @@
             Mock<ISecurityServiceClient> securityServiceClient = new Mock<ISecurityServiceClient>();
             Mock<IAggregateRepository<VoucherAggregate, DomainEvent>> voucherAggregateRepository = new Mock<IAggregateRepository<VoucherAggregate, DomainEvent>>();
             voucherAggregateRepository.Setup(v => v.GetLatestVersion(It.IsAny<Guid>(), It.IsAny<CancellationToken>())).ReturnsAsync(new VoucherAggregate());
+            voucherAggregateRepository.Setup(v => v.SaveChanges(It.IsAny<VoucherAggregate>(), It.IsAny<CancellationToken>())).ReturnsAsync(Result.Success);
             securityServiceClient.Setup(s => s.GetToken(It.IsAny<String>(), It.IsAny<String>(), It.IsAny<CancellationToken>())).ReturnsAsync(TestData.TokenResponse);
             estateClient.Setup(e => e.GetEstate(It.IsAny<String>(), It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
                         .ReturnsAsync(TestData.GetEstateResponseWithOperator1);
@@ -205,7 +204,7 @@
                                                                           estateClient.Object,
                                                                           dbContextFactory.Object);
 
-            IssueVoucherResponse issueVoucherResponse = await domainService.IssueVoucher(TestData.VoucherId,
+            var result = await domainService.IssueVoucher(TestData.VoucherId,
                                                                                          TestData.OperatorId,
                                                                                          TestData.EstateId,
                                                                                          TestData.TransactionId,
@@ -215,7 +214,8 @@
                                                                                          TestData.RecipientMobile,
                                                                                          CancellationToken.None);
 
-            issueVoucherResponse.ShouldNotBeNull();
+            result.IsSuccess.ShouldBeTrue();
+            result.Data.ShouldNotBeNull();
         }
 
         [Fact]
@@ -229,7 +229,7 @@
             Mock<ISecurityServiceClient> securityServiceClient = new Mock<ISecurityServiceClient>();
             Mock<IAggregateRepository<VoucherAggregate, DomainEvent>> voucherAggregateRepository = new Mock<IAggregateRepository<VoucherAggregate, DomainEvent>>();
             voucherAggregateRepository.Setup(v => v.GetLatestVersion(It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
-                                      .ReturnsAsync(TestData.GetVoucherAggregateWithRecipientMobile);
+                                      .ReturnsAsync(Result.Success(TestData.GetVoucherAggregateWithRecipientMobile()));
             securityServiceClient.Setup(s => s.GetToken(It.IsAny<String>(), It.IsAny<String>(), It.IsAny<CancellationToken>())).ReturnsAsync(TestData.TokenResponse);
             estateClient.Setup(e => e.GetEstate(It.IsAny<String>(), It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
                         .ThrowsAsync(new Exception("Exception", new KeyNotFoundException("Invalid Estate")));
@@ -248,16 +248,15 @@
                                                                           estateClient.Object,
                                                                           dbContextFactory.Object);
 
-            Should.Throw<NotFoundException>(async () => {
-                                                await domainService.RedeemVoucher(TestData.EstateId,
+            var result = await domainService.RedeemVoucher(TestData.EstateId,
                                                                                   TestData.VoucherCode,
                                                                                   TestData.RedeemedDateTime,
                                                                                   CancellationToken.None);
-                                            });
+            result.IsFailed.ShouldBeTrue();
         }
 
         [Fact]
-        public async Task VoucherDomainService_RedeemVoucher_VoucherIssued() {
+        public async Task VoucherDomainService_RedeemVoucher_VoucherRedeemed() {
             IConfigurationRoot configurationRoot = new ConfigurationBuilder().AddInMemoryCollection(TestData.DefaultAppSettings).Build();
             ConfigurationReader.Initialise(configurationRoot);
 
@@ -267,7 +266,9 @@
             Mock<ISecurityServiceClient> securityServiceClient = new Mock<ISecurityServiceClient>();
             Mock<IAggregateRepository<VoucherAggregate, DomainEvent>> voucherAggregateRepository = new Mock<IAggregateRepository<VoucherAggregate, DomainEvent>>();
             voucherAggregateRepository.Setup(v => v.GetLatestVersion(It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
-                                      .ReturnsAsync(TestData.GetVoucherAggregateWithRecipientMobile);
+                                      .ReturnsAsync(Result.Success(TestData.GetVoucherAggregateWithRecipientMobile()));
+            voucherAggregateRepository.Setup(v => v.SaveChanges(It.IsAny<VoucherAggregate>(), It.IsAny<CancellationToken>()))
+                .ReturnsAsync(Result.Success);
             securityServiceClient.Setup(s => s.GetToken(It.IsAny<String>(), It.IsAny<String>(), It.IsAny<CancellationToken>())).ReturnsAsync(TestData.TokenResponse);
             estateClient.Setup(e => e.GetEstate(It.IsAny<String>(), It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
                         .ReturnsAsync(TestData.GetEstateResponseWithOperator1);
@@ -286,12 +287,13 @@
                                                                           estateClient.Object,
                                                                           dbContextFactory.Object);
 
-            RedeemVoucherResponse redeemVoucherResponse = await domainService.RedeemVoucher(TestData.EstateId,
+            var result = await domainService.RedeemVoucher(TestData.EstateId,
                                                                                             TestData.VoucherCode,
                                                                                             TestData.RedeemedDateTime,
                                                                                             CancellationToken.None);
 
-            redeemVoucherResponse.ShouldNotBeNull();
+            result.IsSuccess.ShouldBeTrue();
+            result.Data.ShouldNotBeNull();
         }
 
         [Fact]
@@ -305,7 +307,7 @@
             Mock<ISecurityServiceClient> securityServiceClient = new Mock<ISecurityServiceClient>();
             Mock<IAggregateRepository<VoucherAggregate, DomainEvent>> voucherAggregateRepository = new Mock<IAggregateRepository<VoucherAggregate, DomainEvent>>();
             voucherAggregateRepository.Setup(v => v.GetLatestVersion(It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
-                                      .ReturnsAsync(TestData.GetVoucherAggregateWithRecipientMobile);
+                                      .ReturnsAsync(Result.Success(TestData.GetVoucherAggregateWithRecipientMobile()));
             securityServiceClient.Setup(s => s.GetToken(It.IsAny<String>(), It.IsAny<String>(), It.IsAny<CancellationToken>())).ReturnsAsync(TestData.TokenResponse);
             estateClient.Setup(e => e.GetEstate(It.IsAny<String>(), It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
                         .ReturnsAsync(TestData.GetEstateResponseWithOperator1);
@@ -319,12 +321,11 @@
                                                                           estateClient.Object,
                                                                           dbContextFactory.Object);
 
-            Should.Throw<NotFoundException>(async () => {
-                                                await domainService.RedeemVoucher(TestData.EstateId,
+            var result = await domainService.RedeemVoucher(TestData.EstateId,
                                                                                   TestData.VoucherCode,
                                                                                   TestData.RedeemedDateTime,
                                                                                   CancellationToken.None);
-                                            });
+            result.IsFailed.ShouldBeTrue();
         }
 
         private async Task<EstateManagementGenericContext> GetContext(String databaseName,

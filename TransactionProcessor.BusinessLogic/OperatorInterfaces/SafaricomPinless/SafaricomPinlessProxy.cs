@@ -1,4 +1,6 @@
-﻿namespace TransactionProcessor.BusinessLogic.OperatorInterfaces.SafaricomPinless
+﻿using SimpleResults;
+
+namespace TransactionProcessor.BusinessLogic.OperatorInterfaces.SafaricomPinless
 {
     using System;
     using System.Collections.Generic;
@@ -49,9 +51,9 @@
 
         #region Methods
 
-        public async Task<OperatorResponse> ProcessLogonMessage(String accessToken,
-                                                          CancellationToken cancellationToken) {
-            return null;
+        public async Task<Result<OperatorResponse>> ProcessLogonMessage(String accessToken,
+                                                                        CancellationToken cancellationToken) {
+            return Result.Success();
         }
 
         /// <summary>
@@ -71,14 +73,14 @@
         /// CustomerAccountNumber is a required field for this transaction type
         /// or
         /// Error sending request [{requestUrl}] to Safaricom.  Status Code [{responseMessage.StatusCode}]</exception>
-        public async Task<OperatorResponse> ProcessSaleMessage(String accessToken,
-                                                               Guid transactionId,
-                                                               Guid operatorId,
-                                                               MerchantResponse merchant,
-                                                               DateTime transactionDateTime,
-                                                               String transactionReference,
-                                                               Dictionary<String, String> additionalTransactionMetadata,
-                                                               CancellationToken cancellationToken)
+        public async Task<Result<OperatorResponse>> ProcessSaleMessage(String accessToken,
+                                                                       Guid transactionId,
+                                                                       Guid operatorId,
+                                                                       MerchantResponse merchant,
+                                                                       DateTime transactionDateTime,
+                                                                       String transactionReference,
+                                                                       Dictionary<String, String> additionalTransactionMetadata,
+                                                                       CancellationToken cancellationToken)
         {
             // Extract the required fields
             String transactionAmount = additionalTransactionMetadata.ExtractFieldFromMetadata<String>("Amount");
@@ -86,19 +88,19 @@
 
             if (String.IsNullOrEmpty(transactionAmount))
             {
-                throw new Exception("Amount is a required field for this transaction type");
+                return Result.Invalid("Amount is a required field for this transaction type");
             }
 
             if (String.IsNullOrEmpty(customerMsisdn))
             {
-                throw new Exception("CustomerAccountNumber is a required field for this transaction type");
+                return Result.Invalid("CustomerAccountNumber is a required field for this transaction type");
             }
 
             // Multiply amount before sending
             // Covert the transaction amount to Decimal and remove decimal places
             if (Decimal.TryParse(transactionAmount, out Decimal amountAsDecimal) == false)
             {
-                throw new Exception("Transaction Amount is not a valid decimal value");
+                return Result.Invalid("Transaction Amount is not a valid decimal value");
             }
 
             Decimal operatorTransactionAmount = amountAsDecimal * 100;
@@ -116,7 +118,7 @@
             // Check the send was successful
             if (responseMessage.IsSuccessStatusCode == false)
             {
-                throw new Exception($"Error sending request [{requestUrl}] to Safaricom.  Status Code [{responseMessage.StatusCode}]");
+                return Result.Failure($"Error sending request [{requestUrl}] to Safaricom.  Status Code [{responseMessage.StatusCode}]");
             }
 
             // Get the response
@@ -171,20 +173,24 @@
         /// </summary>
         /// <param name="responseContent">Content of the response.</param>
         /// <returns></returns>
-        private OperatorResponse CreateFrom(String responseContent)
+        private Result<OperatorResponse> CreateFrom(String responseContent)
         {
             XmlDocument doc = new XmlDocument();
             doc.LoadXml(responseContent);
             XmlSerializer xs = new XmlSerializer(typeof(SafaricomResponse));
             SafaricomResponse cl = (SafaricomResponse)xs.Deserialize(new StringReader(doc.OuterXml));
 
-            return new OperatorResponse
+            if (cl.TransactionStatus != 200) {
+                return Result.Failure(cl.Message);
+            }
+
+            return Result.Success(new OperatorResponse
                    {
                        AuthorisationCode = "ABCD1234",
                        ResponseCode = cl.TransactionStatus.ToString(),
                        ResponseMessage = cl.Message,
                        IsSuccessful = cl.TransactionStatus == 200,
-                   };
+                   });
         }
 
         #endregion

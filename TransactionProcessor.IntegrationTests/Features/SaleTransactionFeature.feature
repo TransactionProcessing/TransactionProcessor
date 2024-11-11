@@ -167,7 +167,7 @@ Scenario: Sale Transactions
 	| Test Estate 1 | Test Merchant 1 | 10                 | 0000         | SUCCESS         |
 	| Test Estate 1 | Test Merchant 1 | 11                 | 0000         | SUCCESS         |
 
-Then the following entries appear in the merchants balance history for estate 'Test Estate 1' and merchant 'Test Merchant 1'
+ Then the following entries appear in the merchants balance history for estate 'Test Estate 1' and merchant 'Test Merchant 1'
 	| DateTime | Reference                 | EntryType | In     | Out    | ChangeAmount | Balance |
 	| Today    | Merchant Deposit          | C         | 240.00 | 0.00   | 265.00       | 230.00  |
 	| Today    | Transaction Completed     | D         | 0.00   | 110.00 | 110.00       | 130.00  |

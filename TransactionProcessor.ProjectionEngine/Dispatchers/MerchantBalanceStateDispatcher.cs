@@ -1,4 +1,7 @@
-﻿namespace TransactionProcessor.ProjectionEngine.Dispatchers;
+﻿using Shared.Logger;
+using SimpleResults;
+
+namespace TransactionProcessor.ProjectionEngine.Dispatchers;
 
 using EstateManagement.Merchant.DomainEvents;
 using Models;
@@ -14,9 +17,9 @@ public class MerchantBalanceStateDispatcher : IStateDispatcher<MerchantBalanceSt
     public MerchantBalanceStateDispatcher(ITransactionProcessorReadRepository transactionProcessorReadRepository) {
         this.TransactionProcessorReadRepository = transactionProcessorReadRepository;
     }
-    public async Task Dispatch(MerchantBalanceState state,
-                               IDomainEvent @event,
-                               CancellationToken cancellationToken) {
+    public async Task<Result> Dispatch(MerchantBalanceState state,
+                                       IDomainEvent @event,
+                                       CancellationToken cancellationToken) {
 
         MerchantBalanceChangedEntry entry = @event switch {
             MerchantCreatedEvent e => this.CreateOpeningBalanceEntry(e),
@@ -28,10 +31,12 @@ public class MerchantBalanceStateDispatcher : IStateDispatcher<MerchantBalanceSt
             _ => null
         };
 
-        if (entry == null) 
-            return;
+        if (entry == null) {
+            Logger.LogInformation($"Entry is null for event {@event.EventType}");
+            return Result.Success();
+        }
 
-        await this.TransactionProcessorReadRepository.AddMerchantBalanceChangedEntry(entry, cancellationToken);
+        return await this.TransactionProcessorReadRepository.AddMerchantBalanceChangedEntry(entry, cancellationToken);
     }
 
     private MerchantBalanceChangedEntry CreateTransactionFeeBalanceEntry(MerchantBalanceState state,

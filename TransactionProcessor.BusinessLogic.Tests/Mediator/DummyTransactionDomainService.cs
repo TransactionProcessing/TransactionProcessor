@@ -1,4 +1,7 @@
-﻿namespace TransactionProcessor.BusinessLogic.Tests.Mediator;
+﻿using SimpleResults;
+using TransactionProcessor.BusinessLogic.Requests;
+
+namespace TransactionProcessor.BusinessLogic.Tests.Mediator;
 
 using System;
 using System.Collections.Generic;
@@ -9,45 +12,30 @@ using Models;
 
 public class DummyTransactionDomainService : ITransactionDomainService
 {
-    public async Task<ProcessLogonTransactionResponse> ProcessLogonTransaction(Guid transactionId,
-                                                                               Guid estateId,
-                                                                               Guid merchantId,
-                                                                               DateTime transactionDateTime,
-                                                                               String transactionNumber,
-                                                                               String deviceIdentifier,
-                                                                               CancellationToken cancellationToken) {
-        return new ProcessLogonTransactionResponse();
+    public async Task<Result<ProcessLogonTransactionResponse>> ProcessLogonTransaction(TransactionCommands.ProcessLogonTransactionCommand command,
+                                                                                       CancellationToken cancellationToken) {
+        return Result.Success(new ProcessLogonTransactionResponse());
     }
 
-    public async Task<ProcessSaleTransactionResponse> ProcessSaleTransaction(Guid transactionId,
-                                                                             Guid estateId,
-                                                                             Guid merchantId,
-                                                                             DateTime transactionDateTime,
-                                                                             String transactionNumber,
-                                                                             String deviceIdentifier,
-                                                                             Guid operatorId,
-                                                                             String customerEmailAddress,
-                                                                             Dictionary<String, String> additionalTransactionMetadata,
-                                                                             Guid contractId,
-                                                                             Guid productId,
-                                                                             Int32 transactionSource,
-                                                                             CancellationToken cancellationToken) {
-        return new ProcessSaleTransactionResponse();
+    public async Task<Result<ProcessSaleTransactionResponse>> ProcessSaleTransaction(TransactionCommands.ProcessSaleTransactionCommand command,
+                                                                                     CancellationToken cancellationToken) {
+        return Result.Success(new ProcessSaleTransactionResponse());
     }
 
-    public async Task<ProcessReconciliationTransactionResponse> ProcessReconciliationTransaction(Guid transactionId,
-                                                                                                 Guid estateId,
-                                                                                                 Guid merchantId,
-                                                                                                 String deviceIdentifier,
-                                                                                                 DateTime transactionDateTime,
-                                                                                                 Int32 transactionCount,
-                                                                                                 Decimal transactionValue,
-                                                                                                 CancellationToken cancellationToken) {
-        return new ProcessReconciliationTransactionResponse();
+    public async Task<Result<ProcessReconciliationTransactionResponse>> ProcessReconciliationTransaction(TransactionCommands.ProcessReconciliationCommand command,
+                                                                                                         CancellationToken cancellationToken) {
+        return Result.Success(new ProcessReconciliationTransactionResponse());
     }
 
-    public async Task ResendTransactionReceipt(Guid transactionId,
-                                               Guid estateId,
-                                               CancellationToken cancellationToken) {            
-    }
+    public async Task<Result> ResendTransactionReceipt(TransactionCommands.ResendTransactionReceiptCommand command,
+                                                           CancellationToken cancellationToken) =>
+        Result.Success();
+
+    public async Task<Result> CalculateFeesForTransaction(TransactionCommands.CalculateFeesForTransactionCommand command,
+                                                          CancellationToken cancellationToken) =>
+        Result.Success();
+
+    public async Task<Result> AddSettledMerchantFee(TransactionCommands.AddSettledMerchantFeeCommand command,
+                                                    CancellationToken cancellationToken) =>
+        Result.Success();
 }

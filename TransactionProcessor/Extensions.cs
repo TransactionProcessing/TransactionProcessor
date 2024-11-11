@@ -1,3 +1,5 @@
+using SimpleResults;
+
 namespace TransactionProcessor
 {
     using System;
@@ -90,7 +92,7 @@ namespace TransactionProcessor
             
         }
 
-        private static async Task LoadContractData(CancellationToken cancellationToken){
+        /*private static async Task LoadContractData(CancellationToken cancellationToken){
             IEstateClient estateClient = Startup.Container.GetRequiredService<IEstateClient>();
             ISecurityServiceClient securityServiceClient = Startup.Container.GetRequiredService<ISecurityServiceClient>();
             IEventStoreContext eventStoreContext = Startup.Container.GetRequiredService<IEventStoreContext>();
@@ -99,7 +101,7 @@ namespace TransactionProcessor
             var clientSecret = ConfigurationReader.GetValue("AppSettings", "ClientSecret");
             var token = await securityServiceClient.GetToken(clientId, clientSecret, cancellationToken);
 
-            List<ContractResponse> contractResponses = new List<ContractResponse>();
+            List<Result<ContractResponse>> contractResponses = new();
 
             Stopwatch sw = Stopwatch.StartNew();
             // get a list of the contracts from ES projection
@@ -112,20 +114,20 @@ namespace TransactionProcessor
             contractList.Contracts.AddRange(contractList.Contracts);
             contractList.Contracts.AddRange(contractList.Contracts);
 
-            List<Task<ContractResponse>> tasks = new ();
+            List<Task<Result<ContractResponse>>> tasks = new ();
             foreach (var contract in contractList.Contracts){
                 //ContractResponse contractResponse = await estateClient.GetContract(token.AccessToken, contract.EstateId, contract.ContractId, cancellationToken);
                 //contractResponses.Add(contractResponse);
                 tasks.Add(estateClient.GetContract(token.AccessToken, contract.EstateId, contract.ContractId, cancellationToken));
             }
 
-            ContractResponse[] t = await Task.WhenAll(tasks);
+            Result<ContractResponse>[] t = await Task.WhenAll(tasks);
 
             contractResponses = t.ToList();
-            if (contractResponses.Any()){
+            if (contractResponses.Any(c => c.IsSuccess)){
                 IMemoryCache memoryCache = Startup.Container.GetRequiredService<IMemoryCache>();
                 //    // Build up the cache
-                Dictionary<(Guid, Guid), List<ContractProductTransactionFee>> productfees = contractResponses
+                Dictionary<(Guid, Guid), List<ContractProductTransactionFee>> productfees = contractResponses.Select(c => c.Data)
                                                                                             .SelectMany(contractResponse => contractResponse.Products.Select(contractResponseProduct =>
                                                                                                                                                                  new{
                                                                                                                                                                         //Key = (contractResponse.EstateId, contractResponseProduct.ProductId),
@@ -137,7 +139,7 @@ namespace TransactionProcessor
             }
             sw.Stop();
             Logger.LogWarning($"Contract Data loaded an cached [{sw.ElapsedMilliseconds} ms");
-        }
+        }*/
     }
 
     public class AutoLogonWorkerService : BackgroundService{
@@ -165,8 +167,17 @@ namespace TransactionProcessor
                 Func<String, IOperatorProxy> resolver = Startup.ServiceProvider.GetService<Func<String, IOperatorProxy>>();
                 IOperatorProxy proxy = resolver(operatorId);
 
-                OperatorResponse logonResult = proxy.ProcessLogonMessage(null, CancellationToken.None).Result;
-                Logger.LogInformation($"Auto logon for operator Id [{operatorId}] status [{logonResult.IsSuccessful}]");
+                Result<OperatorResponse> logonResult = proxy.ProcessLogonMessage(null, CancellationToken.None).Result;
+
+                if (logonResult.IsSuccess) {
+                    Logger.LogInformation(
+                        $"Auto logon for operator Id [{operatorId}] status [{logonResult.Data.IsSuccessful}]");
+                }
+                if (logonResult.IsFailed)
+                {
+                    Logger.LogWarning(
+                        $"Auto logon for operator Id [{operatorId}] status [{logonResult.Message}]");
+                }
             }
             catch (Exception ex)
             {

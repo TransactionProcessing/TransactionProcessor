@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using SimpleResults;
 
 namespace TransactionProcessor.Controllers
 {
@@ -55,29 +56,38 @@ namespace TransactionProcessor.Controllers
         [HttpGet]
         [Route("{settlementDate}/estates/{estateId}/merchants/{merchantId}/pending")]
         public async Task<IActionResult> GetPendingSettlement([FromRoute] DateTime settlementDate,
-                                                        [FromRoute] Guid estateId,
+                                                              [FromRoute] Guid estateId,
                                                               [FromRoute] Guid merchantId,
-                                                        CancellationToken cancellationToken)
+                                                              CancellationToken cancellationToken)
         {
-            // TODO: Convert to using a manager/model/factory
-            // Convert the date passed in to a guid
-            Guid aggregateId = Helpers.CalculateSettlementAggregateId(settlementDate, merchantId, estateId);
+            //// TODO: Convert to using a manager/model/factory
+            //// Convert the date passed in to a guid
+            //Guid aggregateId = Helpers.CalculateSettlementAggregateId(settlementDate, merchantId, estateId);
 
-            Logger.LogInformation($"Settlement Aggregate Id {aggregateId}");
+            //Logger.LogInformation($"Settlement Aggregate Id {aggregateId}");
 
-            var settlementAggregate = await this.SettlmentAggregateRepository.GetLatestVersion(aggregateId, cancellationToken);
+            //var getSettlementResult = await this.SettlmentAggregateRepository.GetLatestVersion(aggregateId, cancellationToken);
+            //if (getSettlementResult.IsFailed)
+            //    return ResultHelpers.CreateFailure(getSettlementResult).ToActionResultX();
+
+            //var settlementAggregate = getSettlementResult.Data;
+            SettlementQueries.GetPendingSettlementQuery query = new(settlementDate, merchantId, estateId);
+
+            Result<SettlementAggregate> getPendingSettlementResult = await this.Mediator.Send(query, cancellationToken);
+            if (getPendingSettlementResult.IsFailed)
+                return getPendingSettlementResult.ToActionResultX();
 
             var settlementResponse = new SettlementResponse
                                             {
-                                                EstateId = settlementAggregate.EstateId,
-                                                MerchantId = settlementAggregate.MerchantId,
-                                                NumberOfFeesPendingSettlement = settlementAggregate.GetNumberOfFeesPendingSettlement(),
-                                                NumberOfFeesSettled = settlementAggregate.GetNumberOfFeesSettled(),
-                                                SettlementDate = settlementAggregate.SettlementDate,
-                                                SettlementCompleted = settlementAggregate.SettlementComplete
+                                                EstateId = getPendingSettlementResult.Data.EstateId,
+                                                MerchantId = getPendingSettlementResult.Data.MerchantId,
+                                                NumberOfFeesPendingSettlement = getPendingSettlementResult.Data.GetNumberOfFeesPendingSettlement(),
+                                                NumberOfFeesSettled = getPendingSettlementResult.Data.GetNumberOfFeesSettled(),
+                                                SettlementDate = getPendingSettlementResult.Data.SettlementDate,
+                                                SettlementCompleted = getPendingSettlementResult.Data.SettlementComplete
                                             };
 
-            return this.Ok(settlementResponse);
+            return Result.Success(settlementResponse).ToActionResultX();
 
         }
 
@@ -88,11 +98,11 @@ namespace TransactionProcessor.Controllers
                                                            [FromRoute] Guid merchantId,
                                                            CancellationToken cancellationToken)
         {
-            ProcessSettlementRequest command = ProcessSettlementRequest.Create(settlementDate, merchantId, estateId);
+            SettlementCommands.ProcessSettlementCommand command = new(settlementDate, merchantId, estateId);
 
-            ProcessSettlementResponse processSettlementResponse = await this.Mediator.Send(command, cancellationToken);
+            Result<Guid> result = await this.Mediator.Send(command, cancellationToken);
 
-            return this.Ok();
+            return result.ToActionResultX();
         }
 
         #endregion

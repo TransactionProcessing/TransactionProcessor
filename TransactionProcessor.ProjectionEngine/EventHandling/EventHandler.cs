@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using SimpleResults;
 
 namespace TransactionProcessor.ProjectionEngine.EventHandling
 {
@@ -33,15 +34,14 @@ namespace TransactionProcessor.ProjectionEngine.EventHandling
             }
         }
         
-        public async Task Handle(IDomainEvent domainEvent,
-                           CancellationToken cancellationToken) {
+        public async Task<Result> Handle(IDomainEvent domainEvent,
+                                         CancellationToken cancellationToken) {
             // Lookup the event type in the config
-            var gimp  = ConfigurationReader.GetValue("AppSettings:EventStateConfig", domainEvent.GetType().Name);
+            String? eventType  = ConfigurationReader.GetValue("AppSettings:EventStateConfig", domainEvent.GetType().Name);
 
-            var handler = this.Resolver(gimp);
+            IDomainEventHandler handler = this.Resolver(eventType);
 
-            await handler.Handle(domainEvent, cancellationToken);
-
+            return await handler.Handle(domainEvent, cancellationToken);
         }
     }
 }

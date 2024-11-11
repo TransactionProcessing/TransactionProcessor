@@ -1,4 +1,9 @@
-﻿namespace TransactionProcessor.Bootstrapper
+﻿using System;
+using SimpleResults;
+using TransactionProcessor.DataTransferObjects;
+using TransactionProcessor.ProjectionEngine.Models;
+
+namespace TransactionProcessor.Bootstrapper
 {
     using BusinessLogic.RequestHandlers;
     using BusinessLogic.Requests;
@@ -6,7 +11,10 @@
     using MediatR;
     using Microsoft.Extensions.DependencyInjection;
     using Models;
+    using System.Collections.Generic;
     using System.Diagnostics.CodeAnalysis;
+    using TransactionProcessor.ProjectionEngine.State;
+    using TransactionProcessor.SettlementAggregates;
 
     /// <summary>
     /// 
@@ -26,18 +34,29 @@
 
             // request & notification handlers
 
-            this.AddSingleton<IRequestHandler<ProcessLogonTransactionRequest, ProcessLogonTransactionResponse>, TransactionRequestHandler>();
-            this.AddSingleton<IRequestHandler<ProcessSaleTransactionRequest, ProcessSaleTransactionResponse>, TransactionRequestHandler>();
-            this.AddSingleton<IRequestHandler<ProcessReconciliationRequest, ProcessReconciliationTransactionResponse>, TransactionRequestHandler>();
-            this.AddSingleton<IRequestHandler<ResendTransactionReceiptRequest>, TransactionRequestHandler>();
+            this.AddSingleton<IRequestHandler<TransactionCommands.ProcessLogonTransactionCommand, Result<ProcessLogonTransactionResponse>>, TransactionRequestHandler>();
+            this.AddSingleton<IRequestHandler<TransactionCommands.ProcessSaleTransactionCommand, Result<ProcessSaleTransactionResponse>>, TransactionRequestHandler>();
+            this.AddSingleton<IRequestHandler<TransactionCommands.ProcessReconciliationCommand, Result<ProcessReconciliationTransactionResponse>>, TransactionRequestHandler>();
+            this.AddSingleton<IRequestHandler<TransactionCommands.ResendTransactionReceiptCommand, Result>, TransactionRequestHandler>();
+            this.AddSingleton<IRequestHandler<TransactionCommands.AddSettledMerchantFeeCommand, Result>, TransactionRequestHandler>();
+            this.AddSingleton<IRequestHandler<TransactionCommands.CalculateFeesForTransactionCommand, Result>, TransactionRequestHandler>();
 
-            this.AddSingleton<IRequestHandler<ProcessSettlementRequest, ProcessSettlementResponse>, SettlementRequestHandler>();
+            this.AddSingleton<IRequestHandler<SettlementCommands.ProcessSettlementCommand, Result<Guid>>, SettlementRequestHandler>();
+            this.AddSingleton<IRequestHandler<SettlementCommands.AddMerchantFeePendingSettlementCommand, Result>, SettlementRequestHandler>();
+            this.AddSingleton<IRequestHandler<SettlementCommands.AddSettledFeeToSettlementCommand, Result>, SettlementRequestHandler>();
+            this.AddSingleton<IRequestHandler<SettlementQueries.GetPendingSettlementQuery, Result<SettlementAggregate>>, SettlementRequestHandler>();
 
-            this.AddSingleton<IRequestHandler<IssueVoucherRequest, IssueVoucherResponse>, VoucherManagementRequestHandler>();
-            this.AddSingleton<IRequestHandler<RedeemVoucherRequest, RedeemVoucherResponse>, VoucherManagementRequestHandler>();
+            this.AddSingleton<IRequestHandler<VoucherCommands.IssueVoucherCommand, Result<IssueVoucherResponse>>, VoucherManagementRequestHandler>();
+            this.AddSingleton<IRequestHandler<VoucherCommands.RedeemVoucherCommand, Result<RedeemVoucherResponse>>, VoucherManagementRequestHandler>();
+            this.AddSingleton<IRequestHandler<VoucherQueries.GetVoucherByVoucherCodeQuery, Result<Voucher>>, VoucherManagementRequestHandler>();
+            this.AddSingleton<IRequestHandler<VoucherQueries.GetVoucherByTransactionIdQuery, Result<Voucher>>, VoucherManagementRequestHandler>();
 
-            this.AddSingleton<IRequestHandler<CreateFloatForContractProductRequest, CreateFloatForContractProductResponse>, FloatRequestHandler>();
-            this.AddSingleton<IRequestHandler<RecordCreditPurchaseForFloatRequest>, FloatRequestHandler>();
+            this.AddSingleton<IRequestHandler<FloatCommands.CreateFloatForContractProductCommand, Result>, FloatRequestHandler>();
+            this.AddSingleton<IRequestHandler<FloatCommands.RecordCreditPurchaseForFloatCommand, Result>, FloatRequestHandler>();
+            
+            this.AddSingleton<IRequestHandler<MerchantQueries.GetMerchantLiveBalanceQuery, Result<MerchantBalanceProjectionState1>>, MerchantRequestHandler>();
+            this.AddSingleton<IRequestHandler<MerchantQueries.GetMerchantBalanceQuery, Result<MerchantBalanceState>>, MerchantRequestHandler>();
+            this.AddSingleton<IRequestHandler<MerchantQueries.GetMerchantBalanceHistoryQuery, Result<List<MerchantBalanceChangedEntry>>>, MerchantRequestHandler>();
         }
 
         #endregion

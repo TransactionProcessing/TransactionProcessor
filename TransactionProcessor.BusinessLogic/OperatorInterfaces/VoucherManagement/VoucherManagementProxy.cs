@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Text;
+using SimpleResults;
 
 namespace TransactionProcessor.BusinessLogic.OperatorInterfaces.VoucherManagement
 {
@@ -28,37 +29,20 @@ namespace TransactionProcessor.BusinessLogic.OperatorInterfaces.VoucherManagemen
             this.Mediator = mediator;
         }
 
-        public async Task<OperatorResponse> ProcessLogonMessage(String accessToken,
-                                                                CancellationToken cancellationToken)
+        public async Task<Result<OperatorResponse>> ProcessLogonMessage(String accessToken,
+                                                                        CancellationToken cancellationToken)
         {
-            return null;
+            return Result.Success();
         }
 
-        /// <summary>
-        /// Processes the sale message.
-        /// </summary>
-        /// <param name="accessToken">The access token.</param>
-        /// <param name="transactionId">The transaction identifier.</param>
-        /// <param name="operatorIdentifier">The operator identifier.</param>
-        /// <param name="merchant">The merchant.</param>
-        /// <param name="transactionDateTime">The transaction date time.</param>
-        /// <param name="transactionReference">The transaction reference.</param>
-        /// <param name="additionalTransactionMetadata">The additional transaction metadata.</param>
-        /// <param name="cancellationToken">The cancellation token.</param>
-        /// <returns></returns>
-        /// <exception cref="Exception">
-        /// Transaction Amount is not a valid decimal value
-        /// or
-        /// Recipient details (either email or mobile) is a required field for this transaction type
-        /// </exception>
-        public async Task<OperatorResponse> ProcessSaleMessage(String accessToken,
-                                                               Guid transactionId,
-                                                               Guid operatorId,
-                                                               MerchantResponse merchant,
-                                                               DateTime transactionDateTime,
-                                                               String transactionReference,
-                                                               Dictionary<String, String> additionalTransactionMetadata,
-                                                               CancellationToken cancellationToken)
+        public async Task<Result<OperatorResponse>> ProcessSaleMessage(String accessToken,
+                                                                       Guid transactionId,
+                                                                       Guid operatorId,
+                                                                       MerchantResponse merchant,
+                                                                       DateTime transactionDateTime,
+                                                                       String transactionReference,
+                                                                       Dictionary<String, String> additionalTransactionMetadata,
+                                                                       CancellationToken cancellationToken)
         {
             // Extract the required fields
             String recipientEmail = additionalTransactionMetadata.ExtractFieldFromMetadata<String>("RecipientEmail");
@@ -68,15 +52,15 @@ namespace TransactionProcessor.BusinessLogic.OperatorInterfaces.VoucherManagemen
             // Covert the transaction amount to Decimal and remove decimal places
             if (Decimal.TryParse(transactionAmount, out Decimal amountAsDecimal) == false)
             {
-                throw new Exception("Transaction Amount is not a valid decimal value");
+                return Result.Invalid("Transaction Amount is not a valid decimal value");
             }
 
             if (String.IsNullOrEmpty(recipientEmail) && String.IsNullOrEmpty(recipientMobile))
             {
-                throw new Exception("Recipient details (either email or mobile) is a required field for this transaction type");
+                return Result.Invalid("Recipient details (either email or mobile) is a required field for this transaction type");
             }
 
-            IssueVoucherRequest request = IssueVoucherRequest.Create(Guid.NewGuid(),
+            VoucherCommands.IssueVoucherCommand command = new(Guid.NewGuid(),
                                                                      operatorId,
                                                                      merchant.EstateId,
                                                                      transactionId,
@@ -85,16 +69,16 @@ namespace TransactionProcessor.BusinessLogic.OperatorInterfaces.VoucherManagemen
                                                                      recipientEmail,
                                                                      recipientMobile);
 
-            IssueVoucherResponse response = await this.Mediator.Send(request, cancellationToken);
+            Result<IssueVoucherResponse> result= await this.Mediator.Send(command, cancellationToken);
             
-            if (response != null) {
+            if (result.IsSuccess) {
                 // Build the response metadata
                 Dictionary<String, String> additionalTransactionResponseMetadata = new Dictionary<String, String>();
-                additionalTransactionResponseMetadata.Add("VoucherCode", response.VoucherCode);
-                additionalTransactionResponseMetadata.Add("VoucherMessage", response.Message);
-                additionalTransactionResponseMetadata.Add("VoucherExpiryDate", response.ExpiryDate.ToString("yyyy-MM-dd"));
+                additionalTransactionResponseMetadata.Add("VoucherCode", result.Data.VoucherCode);
+                additionalTransactionResponseMetadata.Add("VoucherMessage", result.Data.Message);
+                additionalTransactionResponseMetadata.Add("VoucherExpiryDate", result.Data.ExpiryDate.ToString("yyyy-MM-dd"));
 
-                return new OperatorResponse
+                return Result.Success(new OperatorResponse
                 {
                     TransactionId = transactionId.ToString("N"),
                     ResponseCode = "0000",
@@ -103,7 +87,7 @@ namespace TransactionProcessor.BusinessLogic.OperatorInterfaces.VoucherManagemen
                     AdditionalTransactionResponseMetadata = additionalTransactionResponseMetadata,
                     AuthorisationCode = "ABCD1234",
                     IsSuccessful = true
-                };
+                });
             }
 
             // TODO: handle a failed issue case

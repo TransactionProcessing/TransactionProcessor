@@ -51,7 +51,8 @@ namespace TransactionProcessor.IntegrationTests.Shared
             this.TestingContext = testingContext;
             this.SecurityServiceSteps = new SecurityServiceSteps(testingContext.DockerHelper.SecurityServiceClient);
             this.EstateManagementSteps = new EstateManagementSteps(testingContext.DockerHelper.EstateClient, testingContext.DockerHelper.TestHostHttpClient);
-            this.TransactionProcessorSteps = new TransactionProcessorSteps(testingContext.DockerHelper.TransactionProcessorClient, testingContext.DockerHelper.TestHostHttpClient);
+            this.TransactionProcessorSteps = new TransactionProcessorSteps(testingContext.DockerHelper.TransactionProcessorClient, testingContext.DockerHelper.TestHostHttpClient,
+                testingContext.DockerHelper.ProjectionManagementClient);
         }
         
         [Given(@"I have a token to access the estate management and transaction processor resources")]
@@ -220,6 +221,10 @@ namespace TransactionProcessor.IntegrationTests.Shared
 
             List<(EstateDetails, CreateContractRequest)> requests = table.Rows.ToCreateContractRequests(this.TestingContext.Estates);
             List<ContractResponse> responses = await this.EstateManagementSteps.GivenICreateAContractWithTheFollowingValues(this.TestingContext.AccessToken, requests);
+            foreach (ContractResponse contractResponse in responses) {
+                EstateDetails estate = this.TestingContext.Estates.Single(e => e.EstateId == contractResponse.EstateId);
+                estate.AddContract(contractResponse.ContractId, contractResponse.Description, contractResponse.OperatorId);
+            }
         }
 
         [When(@"I create the following Products")]

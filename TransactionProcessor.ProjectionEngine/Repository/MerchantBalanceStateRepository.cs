@@ -1,4 +1,7 @@
-﻿namespace TransactionProcessor.ProjectionEngine.Repository;
+﻿using Shared.Exceptions;
+using SimpleResults;
+
+namespace TransactionProcessor.ProjectionEngine.Repository;
 
 using Common;
 using Microsoft.EntityFrameworkCore;
@@ -43,26 +46,27 @@ public class MerchantBalanceStateRepository : IProjectionStateRepository<Merchan
 
     public static Guid GetMerchantId(IDomainEvent domainEvent) => DomainEventHelper.GetProperty<Guid>(domainEvent, "MerchantId");
 
-    public async Task<MerchantBalanceState> Load(IDomainEvent @event,
-                                                 CancellationToken cancellationToken) {
+    public async Task<Result<MerchantBalanceState>> Load(IDomainEvent @event,
+                                                         CancellationToken cancellationToken) {
         Guid estateId = GetEstateId(@event);
         Guid merchantId = GetMerchantId(@event);
 
         return await this.LoadHelper(estateId, merchantId, cancellationToken);
     }
 
-    public async Task<MerchantBalanceState> Load(Guid estateId,
+    public async Task<Result<MerchantBalanceState>> Load(Guid estateId,
                                                  Guid stateId,
                                                  CancellationToken cancellationToken) {
         return await this.LoadHelper(estateId, stateId, cancellationToken);
     }
 
-    public async Task<MerchantBalanceState> Save(MerchantBalanceState state,
+    public async Task<Result<MerchantBalanceState>> Save(MerchantBalanceState state,
                                                  IDomainEvent domainEvent,
                                                  CancellationToken cancellationToken) {
 
+        var estateId = GetEstateId(domainEvent);
         await using TransactionProcessorGenericContext context =
-            await this.ContextFactory.GetContext(state.EstateId, MerchantBalanceStateRepository.ConnectionStringIdentifier, cancellationToken);
+            await this.ContextFactory.GetContext(estateId, MerchantBalanceStateRepository.ConnectionStringIdentifier, cancellationToken);
         // Note: we don't want to select the state again here....
         MerchantBalanceProjectionState entity = MerchantBalanceStateRepository.CreateMerchantBalanceProjectionState(state);
 
@@ -74,21 +78,22 @@ public class MerchantBalanceStateRepository : IProjectionStateRepository<Merchan
             await context.MerchantBalanceProjectionState.AddAsync(entity, cancellationToken);
         }
 
-        Event @event = MerchantBalanceStateRepository.Create(state.GetType().Name, domainEvent);
+        Event @event = Create(state.GetType().Name, domainEvent);
 
         await context.Events.AddAsync(@event, cancellationToken);
 
         try {
             await context.SaveChangesAsync(cancellationToken);
         }
-        catch(DbUpdateException) {
+        catch (DbUpdateException) {
             //This lets the next component know no changes were persisted.
-            state = state with {
-                                   ChangesApplied = false
-                               };
+            state = state with { ChangesApplied = false };
+        }
+        catch (Exception ex) {
+            return Result.Failure(ex.GetExceptionMessages());
         }
 
-        return state;
+        return Result.Success(state);
     }
 
     private static MerchantBalanceProjectionState CreateMerchantBalanceProjectionState(MerchantBalanceState state) {
@@ -118,20 +123,20 @@ public class MerchantBalanceStateRepository : IProjectionStateRepository<Merchan
         return entity;
     }
 
-    private async Task<MerchantBalanceState> LoadHelper(Guid estateId,
+    private async Task<Result<MerchantBalanceState>> LoadHelper(Guid estateId,
                                                         Guid merchantId,
                                                         CancellationToken cancellationToken) {
         await using TransactionProcessorGenericContext context =
             await this.ContextFactory.GetContext(estateId, MerchantBalanceStateRepository.ConnectionStringIdentifier, cancellationToken);
 
-        MerchantBalanceProjectionState? entity = await context.MerchantBalanceProjectionState.Where(m => m.MerchantId == merchantId).SingleOrDefaultAsync();
+        MerchantBalanceProjectionState? entity = await context.MerchantBalanceProjectionState.Where(m => m.MerchantId == merchantId).SingleOrDefaultAsync(cancellationToken: cancellationToken);
 
         if (entity == null) {
-            return new MerchantBalanceState();
+            return Result.Success(new MerchantBalanceState());
         }
         
         // We have located a state record so we need to translate to the Model type
-        return new MerchantBalanceState {
+        return Result.Success(new MerchantBalanceState {
                                             Version = entity.Timestamp,
                                             Balance = entity.Balance,
                                             MerchantId = merchantId,
@@ -153,7 +158,7 @@ public class MerchantBalanceStateRepository : IProjectionStateRepository<Merchan
                                             LastWithdrawal = entity.LastWithdrawal,
                                             TotalWithdrawn = entity.TotalWithdrawn,
                                             WithdrawalCount = entity.WithdrawalCount,
-                                        };
+                                        });
     }
 
     #endregion

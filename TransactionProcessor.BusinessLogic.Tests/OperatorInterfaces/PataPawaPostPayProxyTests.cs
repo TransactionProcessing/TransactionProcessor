@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using SimpleResults;
 
 namespace TransactionProcessor.BusinessLogic.Tests.OperatorInterfaces
 {
@@ -67,16 +68,11 @@ namespace TransactionProcessor.BusinessLogic.Tests.OperatorInterfaces
 
             PataPawaPostPayService.Setup(s => s.getLoginRequestAsync(It.IsAny<String>(), It.IsAny<String>())).ReturnsAsync(TestData.PataPawaPostPaidFailedLoginResponse);
             
-            OperatorResponse logonResponse = await this.PataPawaPostPayProxy.ProcessLogonMessage(TestData.TokenResponse().AccessToken, CancellationToken.None);
+            var result = await this.PataPawaPostPayProxy.ProcessLogonMessage(TestData.TokenResponse().AccessToken, CancellationToken.None);
 
-            logonResponse.ShouldNotBeNull();
-            logonResponse.IsSuccessful.ShouldBeFalse();
-            logonResponse.ResponseMessage.ShouldBe(TestData.PataPawaPostPaidFailedLoginResponse.message);
-            logonResponse.ResponseCode.ShouldBe(TestData.PataPawaPostPaidFailedLoginResponse.status.ToString());
-            String apiKey = logonResponse.AdditionalTransactionResponseMetadata.ExtractFieldFromMetadata<String>("PataPawaPostPaidAPIKey");
-            apiKey.ShouldBeNull();
-            Decimal balance = logonResponse.AdditionalTransactionResponseMetadata.ExtractFieldFromMetadata<Decimal>("PataPawaPostPaidBalance");
-            balance.ShouldBe(0);
+            result.IsFailed.ShouldBeTrue();
+            result.Status.ShouldBe(ResultStatus.Failure);
+            result.Message.ShouldBe(TestData.PataPawaPostPaidFailedLoginResponse.message);
         }
         
         [Fact]
@@ -113,8 +109,7 @@ namespace TransactionProcessor.BusinessLogic.Tests.OperatorInterfaces
                 .ReturnsAsync(TestData.PataPawaPostPaidSuccessfulVerifyAccountResponse);
             MemoryCache.Set("PataPawaPostPayLogon", TestData.PataPawaPostPaidFailedLoginOperatorResponse);
             
-            ArgumentNullException ex = Should.Throw<ArgumentNullException>(async () => {
-                                                                               OperatorResponse saleResponse = await this.PataPawaPostPayProxy.ProcessSaleMessage(TestData.TokenResponse().AccessToken,
+            var result = await this.PataPawaPostPayProxy.ProcessSaleMessage(TestData.TokenResponse().AccessToken,
                                                                                                                                                                     TestData.TransactionId,
                                                                                                                                                                     TestData.OperatorId,
                                                                                                                                                                     TestData.Merchant,
@@ -122,16 +117,16 @@ namespace TransactionProcessor.BusinessLogic.Tests.OperatorInterfaces
                                                                                                                                                                     TestData.TransactionReference,
                                                                                                                                                                     TestData.AdditionalTransactionMetaDataForPataPawaVerifyAccount(),
                                                                                                                                                                     CancellationToken.None);
-                                                                           });
-            ex.ParamName.ShouldBe("PataPawaPostPaidAPIKey");
+            result.IsFailed.ShouldBeTrue();
+            result.Status.ShouldBe(ResultStatus.Invalid);
+            result.Message.Contains("PataPawaPostPaidAPIKey");
         }
         [Fact]
         public async Task PataPawaPostPayProxy_ProcessSaleMessage_VerifyAccount_MissingMessageTypeFromMetadata_ErrorIsThrown()
         {
             MemoryCache.Set("PataPawaPostPayLogon", TestData.PataPawaPostPaidSuccessfulLoginOperatorResponse);
 
-            ArgumentNullException ex = Should.Throw<ArgumentNullException>(async () => {
-                OperatorResponse saleResponse = await this.PataPawaPostPayProxy.ProcessSaleMessage(TestData.TokenResponse().AccessToken,
+            var result= await this.PataPawaPostPayProxy.ProcessSaleMessage(TestData.TokenResponse().AccessToken,
                                                                                                     TestData.TransactionId,
                                                                                                     TestData.OperatorId,
                                                                                                     TestData.Merchant,
@@ -139,8 +134,9 @@ namespace TransactionProcessor.BusinessLogic.Tests.OperatorInterfaces
                                                                                                     TestData.TransactionReference,
                                                                                                     TestData.AdditionalTransactionMetaDataForPataPawaVerifyAccount_NoMessageType(),
                                                                                                     CancellationToken.None);
-            });
-            ex.ParamName.ShouldBe("PataPawaPostPaidMessageType");
+            result.IsFailed.ShouldBeTrue();
+            result.Status.ShouldBe(ResultStatus.Invalid);
+            result.Message.Contains("PataPawaPostPaidMessageType");
         }
         
         [Fact]
@@ -148,8 +144,7 @@ namespace TransactionProcessor.BusinessLogic.Tests.OperatorInterfaces
         {
             MemoryCache.Set("PataPawaPostPayLogon", TestData.PataPawaPostPaidSuccessfulLoginOperatorResponse);
             
-            ArgumentNullException ex = Should.Throw<ArgumentNullException>(async () => {
-                                                                               OperatorResponse saleResponse = await this.PataPawaPostPayProxy.ProcessSaleMessage(TestData.TokenResponse().AccessToken,
+            var result= await this.PataPawaPostPayProxy.ProcessSaleMessage(TestData.TokenResponse().AccessToken,
                                                                                                                                                                     TestData.TransactionId,
                                                                                                                                                                     TestData.OperatorId,
                                                                                                                                                                     TestData.Merchant,
@@ -157,8 +152,9 @@ namespace TransactionProcessor.BusinessLogic.Tests.OperatorInterfaces
                                                                                                                                                                     TestData.TransactionReference,
                                                                                                                                                                     TestData.AdditionalTransactionMetaDataForPataPawaVerifyAccount_NoCustomerAccountNumber(),
                                                                                                                                                                     CancellationToken.None);
-                                                                           });
-            ex.ParamName.ShouldBe("CustomerAccountNumber");
+            result.IsFailed.ShouldBeTrue();
+            result.Status.ShouldBe(ResultStatus.Invalid);
+            result.Message.Contains("CustomerAccountNumber");
         }
 
         [Fact]
@@ -166,8 +162,7 @@ namespace TransactionProcessor.BusinessLogic.Tests.OperatorInterfaces
         {
             MemoryCache.Set("PataPawaPostPayLogon", TestData.PataPawaPostPaidSuccessfulLoginOperatorResponse);
 
-            ArgumentOutOfRangeException ex = Should.Throw<ArgumentOutOfRangeException>(async () => {
-                                                                                           OperatorResponse saleResponse = await this.PataPawaPostPayProxy.ProcessSaleMessage(TestData.TokenResponse().AccessToken,
+            var result= await this.PataPawaPostPayProxy.ProcessSaleMessage(TestData.TokenResponse().AccessToken,
                                                                                                                                                                                 TestData.TransactionId,
                                                                                                                                                                                 TestData.OperatorId,
                                                                                                                                                                                 TestData.Merchant,
@@ -175,9 +170,11 @@ namespace TransactionProcessor.BusinessLogic.Tests.OperatorInterfaces
                                                                                                                                                                                 TestData.TransactionReference,
                                                                                                                                                                                 TestData.AdditionalTransactionMetaDataForPataPawaVerifyAccount(pataPawaPostPaidMessageType:"Unknown"),
                                                                                                                                                                                 CancellationToken.None);
-                                                                                       });
 
-            ex.ParamName.ShouldBe("PataPawaPostPaidMessageType");
+
+            result.IsFailed.ShouldBeTrue();
+            result.Status.ShouldBe(ResultStatus.Invalid);
+            result.Message.Contains("PataPawaPostPaidMessageType");
         }
       
         [Fact]
@@ -187,8 +184,7 @@ namespace TransactionProcessor.BusinessLogic.Tests.OperatorInterfaces
                 .ReturnsAsync(TestData.PataPawaPostPaidFailedVerifyAccountResponse);
             MemoryCache.Set("PataPawaPostPayLogon", TestData.PataPawaPostPaidSuccessfulLoginOperatorResponse);
             
-            Exception ex = Should.Throw<Exception>(async () => {
-                                                       OperatorResponse saleResponse = await this.PataPawaPostPayProxy.ProcessSaleMessage(TestData.TokenResponse().AccessToken,
+            var result= await this.PataPawaPostPayProxy.ProcessSaleMessage(TestData.TokenResponse().AccessToken,
                                                                                                                                             TestData.TransactionId,
                                                                                                                                             TestData.OperatorId,
                                                                                                                                             TestData.Merchant,
@@ -196,8 +192,9 @@ namespace TransactionProcessor.BusinessLogic.Tests.OperatorInterfaces
                                                                                                                                             TestData.TransactionReference,
                                                                                                                                             TestData.AdditionalTransactionMetaDataForPataPawaVerifyAccount(customerAccountNumber: TestData.PataPawaPostPaidAccountNumber),
                                                                                                                                             CancellationToken.None);
-                                                   });
-            ex.Message.ShouldBe($"Error verifying account number {TestData.PataPawaPostPaidAccountNumber}");
+            result.IsFailed.ShouldBeTrue();
+            result.Status.ShouldBe(ResultStatus.NotFound);
+            result.Message.Contains($"Error verifying account number {TestData.PataPawaPostPaidAccountNumber}");
         }
         
         [Fact]
@@ -229,25 +226,21 @@ namespace TransactionProcessor.BusinessLogic.Tests.OperatorInterfaces
         {
             this.MemoryCache.Set("PataPawaPostPayLogon", TestData.PataPawaPostPaidFailedLoginOperatorResponse);
 
-            ArgumentNullException ex = Should.Throw<ArgumentNullException>(async () => {
-                                                                               OperatorResponse saleResponse = await this.PataPawaPostPayProxy.ProcessSaleMessage(TestData.TokenResponse().AccessToken,
-                                                                                                                                                                    TestData.TransactionId,
-                                                                                                                                                                    TestData.OperatorId,
-                                                                                                                                                                    TestData.Merchant,
-                                                                                                                                                                    TestData.TransactionDateTime,
-                                                                                                                                                                    TestData.TransactionReference,
-                                                                                                                                                                    TestData.AdditionalTransactionMetaDataForPataPawaProcessBill(),
-                                                                                                                                                                    CancellationToken.None);
-                                                                           });
-            ex.ParamName.ShouldBe("PataPawaPostPaidAPIKey");
+            var result = await this.PataPawaPostPayProxy.ProcessSaleMessage(TestData.TokenResponse().AccessToken,
+                TestData.TransactionId, TestData.OperatorId, TestData.Merchant, TestData.TransactionDateTime,
+                TestData.TransactionReference, TestData.AdditionalTransactionMetaDataForPataPawaProcessBill(),
+                CancellationToken.None);
+            
+            result.IsFailed.ShouldBeTrue();
+            result.Status.ShouldBe(ResultStatus.Invalid);
+            result.Message.Contains("PataPawaPostPaidAPIKey");
         }
         [Fact]
         public async Task PataPawaPostPayProxy_ProcessSaleMessage_ProcessBill_MissingMessageTypeFromMetadata_ErrorIsThrown()
         {
             this.MemoryCache.Set("PataPawaPostPayLogon", TestData.PataPawaPostPaidSuccessfulLoginOperatorResponse);
 
-            ArgumentNullException ex = Should.Throw<ArgumentNullException>(async () => {
-                                                                               OperatorResponse saleResponse = await PataPawaPostPayProxy.ProcessSaleMessage(TestData.TokenResponse().AccessToken,
+            var result = await PataPawaPostPayProxy.ProcessSaleMessage(TestData.TokenResponse().AccessToken,
                                                                                                                                                              TestData.TransactionId,
                                                                                                                                                              TestData.OperatorId,
                                                                                                                                                              TestData.Merchant,
@@ -255,8 +248,9 @@ namespace TransactionProcessor.BusinessLogic.Tests.OperatorInterfaces
                                                                                                                                                              TestData.TransactionReference,
                                                                                                                                                              TestData.AdditionalTransactionMetaDataForPataPawaProcessBill_NoMessageType(),
                                                                                                                                                              CancellationToken.None);
-                                                                           });
-            ex.ParamName.ShouldBe("PataPawaPostPaidMessageType");
+            result.IsFailed.ShouldBeTrue();
+            result.Status.ShouldBe(ResultStatus.Invalid);
+            result.Message.Contains("PataPawaPostPaidAPIKey");
         }
 
         [Fact]
@@ -264,8 +258,7 @@ namespace TransactionProcessor.BusinessLogic.Tests.OperatorInterfaces
         {
             MemoryCache.Set("PataPawaPostPayLogon", TestData.PataPawaPostPaidSuccessfulLoginOperatorResponse);
 
-            ArgumentNullException ex = Should.Throw<ArgumentNullException>(async () => {
-                OperatorResponse saleResponse = await PataPawaPostPayProxy.ProcessSaleMessage(TestData.TokenResponse().AccessToken,
+            var result = await PataPawaPostPayProxy.ProcessSaleMessage(TestData.TokenResponse().AccessToken,
                                                                                               TestData.TransactionId,
                                                                                               TestData.OperatorId,
                                                                                               TestData.Merchant,
@@ -273,8 +266,10 @@ namespace TransactionProcessor.BusinessLogic.Tests.OperatorInterfaces
                                                                                               TestData.TransactionReference,
                                                                                               TestData.AdditionalTransactionMetaDataForPataPawaProcessBill_NoCustomerAccountNumber(),
                                                                                               CancellationToken.None);
-            });
-            ex.ParamName.ShouldBe("CustomerAccountNumber");
+
+            result.IsFailed.ShouldBeTrue();
+            result.Status.ShouldBe(ResultStatus.Invalid);
+            result.Message.Contains("CustomerAccountNumber");
         }
 
         [Fact]
@@ -282,8 +277,7 @@ namespace TransactionProcessor.BusinessLogic.Tests.OperatorInterfaces
         {
             MemoryCache.Set("PataPawaPostPayLogon", TestData.PataPawaPostPaidSuccessfulLoginOperatorResponse);
 
-            ArgumentNullException ex = Should.Throw<ArgumentNullException>(async () => {
-                                                                               OperatorResponse saleResponse = await PataPawaPostPayProxy.ProcessSaleMessage(TestData.TokenResponse().AccessToken,
+            var result = await PataPawaPostPayProxy.ProcessSaleMessage(TestData.TokenResponse().AccessToken,
                                                                                                                                                              TestData.TransactionId,
                                                                                                                                                              TestData.OperatorId,
                                                                                                                                                              TestData.Merchant,
@@ -291,8 +285,9 @@ namespace TransactionProcessor.BusinessLogic.Tests.OperatorInterfaces
                                                                                                                                                              TestData.TransactionReference,
                                                                                                                                                              TestData.AdditionalTransactionMetaDataForPataPawaProcessBill_NoMobileNumber(),
                                                                                                                                                              CancellationToken.None);
-                                                                           });
-            ex.ParamName.ShouldBe("MobileNumber");
+            result.IsFailed.ShouldBeTrue();
+            result.Status.ShouldBe(ResultStatus.Invalid);
+            result.Message.Contains("MobileNumber");
         }
 
         [Fact]
@@ -300,8 +295,7 @@ namespace TransactionProcessor.BusinessLogic.Tests.OperatorInterfaces
         {
             MemoryCache.Set("PataPawaPostPayLogon", TestData.PataPawaPostPaidSuccessfulLoginOperatorResponse);
 
-            ArgumentNullException ex = Should.Throw<ArgumentNullException>(async () => {
-                OperatorResponse saleResponse = await PataPawaPostPayProxy.ProcessSaleMessage(TestData.TokenResponse().AccessToken,
+            var result = await PataPawaPostPayProxy.ProcessSaleMessage(TestData.TokenResponse().AccessToken,
                                                                                               TestData.TransactionId,
                                                                                               TestData.OperatorId,
                                                                                               TestData.Merchant,
@@ -309,8 +303,9 @@ namespace TransactionProcessor.BusinessLogic.Tests.OperatorInterfaces
                                                                                               TestData.TransactionReference,
                                                                                               TestData.AdditionalTransactionMetaDataForPataPawaProcessBill_NoCustomerName(),
                                                                                               CancellationToken.None);
-            });
-            ex.ParamName.ShouldBe("CustomerName");
+            result.IsFailed.ShouldBeTrue();
+            result.Status.ShouldBe(ResultStatus.Invalid);
+            result.Message.Contains("CustomerName");
         }
 
         [Fact]
@@ -318,8 +313,7 @@ namespace TransactionProcessor.BusinessLogic.Tests.OperatorInterfaces
         {
             this.MemoryCache.Set("PataPawaPostPayLogon", TestData.PataPawaPostPaidSuccessfulLoginOperatorResponse);
             
-            ArgumentNullException ex = Should.Throw<ArgumentNullException>(async () => {
-                                                                               OperatorResponse saleResponse = await PataPawaPostPayProxy.ProcessSaleMessage(TestData.TokenResponse().AccessToken,
+            var result = await PataPawaPostPayProxy.ProcessSaleMessage(TestData.TokenResponse().AccessToken,
                                                                                                                                                              TestData.TransactionId,
                                                                                                                                                              TestData.OperatorId,
                                                                                                                                                              TestData.Merchant,
@@ -327,8 +321,9 @@ namespace TransactionProcessor.BusinessLogic.Tests.OperatorInterfaces
                                                                                                                                                              TestData.TransactionReference,
                                                                                                                                                              TestData.AdditionalTransactionMetaDataForPataPawaProcessBill_NoAmount(),
                                                                                                                                                              CancellationToken.None);
-                                                                           });
-            ex.ParamName.ShouldBe("Amount");
+            result.IsFailed.ShouldBeTrue();
+            result.Status.ShouldBe(ResultStatus.Invalid);
+            result.Message.Contains("Amount");
         }
 
         [Fact]
@@ -336,8 +331,7 @@ namespace TransactionProcessor.BusinessLogic.Tests.OperatorInterfaces
         {
             MemoryCache.Set("PataPawaPostPayLogon", TestData.PataPawaPostPaidSuccessfulLoginOperatorResponse);
 
-            ArgumentOutOfRangeException ex = Should.Throw<ArgumentOutOfRangeException>(async () => {
-                                                                                           OperatorResponse saleResponse = await PataPawaPostPayProxy.ProcessSaleMessage(TestData.TokenResponse().AccessToken,
+            var result= await PataPawaPostPayProxy.ProcessSaleMessage(TestData.TokenResponse().AccessToken,
                                                                                                                                                                          TestData.TransactionId,
                                                                                                                                                                          TestData.OperatorId,
                                                                                                                                                                          TestData.Merchant,
@@ -345,8 +339,9 @@ namespace TransactionProcessor.BusinessLogic.Tests.OperatorInterfaces
                                                                                                                                                                          TestData.TransactionReference,
                                                                                                                                                                          TestData.AdditionalTransactionMetaDataForPataPawaProcessBill(pataPawaPostPaidAmount:"A1"),
                                                                                                                                                                          CancellationToken.None);
-                                                                                       });
-            ex.ParamName.ShouldBe("Amount");
+            result.IsFailed.ShouldBeTrue();
+            result.Status.ShouldBe(ResultStatus.Invalid);
+            result.Message.Contains("Amount");
         }
 
         [Fact]
@@ -354,8 +349,7 @@ namespace TransactionProcessor.BusinessLogic.Tests.OperatorInterfaces
         {
             MemoryCache.Set("PataPawaPostPayLogon", TestData.PataPawaPostPaidSuccessfulLoginOperatorResponse);
             
-            ArgumentOutOfRangeException ex = Should.Throw<ArgumentOutOfRangeException>(async () => {
-                                                                                           OperatorResponse saleResponse = await PataPawaPostPayProxy.ProcessSaleMessage(TestData.TokenResponse().AccessToken,
+            var result= await PataPawaPostPayProxy.ProcessSaleMessage(TestData.TokenResponse().AccessToken,
                                                                                                                                                                          TestData.TransactionId,
                                                                                                                                                                          TestData.OperatorId,
                                                                                                                                                                          TestData.Merchant,
@@ -363,8 +357,9 @@ namespace TransactionProcessor.BusinessLogic.Tests.OperatorInterfaces
                                                                                                                                                                          TestData.TransactionReference,
                                                                                                                                                                          TestData.AdditionalTransactionMetaDataForPataPawaProcessBill(pataPawaPostPaidMessageType: "Unknown"),
                                                                                                                                                                          CancellationToken.None);
-                                                                                       });
-            ex.ParamName.ShouldBe("PataPawaPostPaidMessageType");
+            result.IsFailed.ShouldBeTrue();
+            result.Status.ShouldBe(ResultStatus.Invalid);
+            result.Message.Contains("PataPawaPostPaidMessageType");
         }
 
         [Fact]
@@ -375,8 +370,7 @@ namespace TransactionProcessor.BusinessLogic.Tests.OperatorInterfaces
                 .ReturnsAsync(TestData.PataPawaPostPaidFailedProcessBillResponse);
             MemoryCache.Set("PataPawaPostPayLogon", TestData.PataPawaPostPaidSuccessfulLoginOperatorResponse);
 
-            Exception ex = Should.Throw<Exception>(async () => {
-                                                       await PataPawaPostPayProxy.ProcessSaleMessage(TestData.TokenResponse().AccessToken,
+            var result = await PataPawaPostPayProxy.ProcessSaleMessage(TestData.TokenResponse().AccessToken,
                                                                                                      TestData.TransactionId,
                                                                                                      TestData.OperatorId,
                                                                                                      TestData.Merchant,
@@ -385,8 +379,9 @@ namespace TransactionProcessor.BusinessLogic.Tests.OperatorInterfaces
                                                                                                      TestData.AdditionalTransactionMetaDataForPataPawaProcessBill(customerAccountNumber:TestData.PataPawaPostPaidAccountNumber),
                                                                                                      CancellationToken.None);
 
-                                                   });
-            ex.Message.ShouldBe($"Error paying bill for account number {TestData.PataPawaPostPaidAccountNumber}");
+            result.IsFailed.ShouldBeTrue();
+            result.Status.ShouldBe(ResultStatus.Failure);
+            result.Message.Contains($"Error paying bill for account number {TestData.PataPawaPostPaidAccountNumber}");
         }
     }
 }

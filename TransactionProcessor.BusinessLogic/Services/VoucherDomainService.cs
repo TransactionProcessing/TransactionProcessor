@@ -8,8 +8,10 @@ using System.Threading.Tasks;
 using Common;
 using EstateManagement.Client;
 using EstateManagement.Database.Contexts;
+using EstateManagement.Database.Entities;
 using EstateManagement.DataTransferObjects.Responses;
 using EstateManagement.DataTransferObjects.Responses.Estate;
+using Google.Protobuf.WellKnownTypes;
 using Microsoft.EntityFrameworkCore;
 using Models;
 using NetBarcode;
@@ -20,6 +22,7 @@ using Shared.EventStore.Aggregate;
 using Shared.Exceptions;
 using Shared.General;
 using Shared.Logger;
+using SimpleResults;
 using VoucherAggregate;
 
 public class VoucherDomainService : IVoucherDomainService
@@ -69,47 +72,65 @@ public class VoucherDomainService : IVoucherDomainService
 
     #region Methods
 
-    /// <summary>
-    /// Issues the voucher.
-    /// </summary>
-    /// <param name="voucherId">The voucher identifier.</param>
-    /// <param name="operatorId">The operator identifier.</param>
-    /// <param name="estateId">The estate identifier.</param>
-    /// <param name="transactionId">The transaction identifier.</param>
-    /// <param name="issuedDateTime">The issued date time.</param>
-    /// <param name="value">The value.</param>
-    /// <param name="recipientEmail">The recipient email.</param>
-    /// <param name="recipientMobile">The recipient mobile.</param>
-    /// <param name="cancellationToken">The cancellation token.</param>
-    /// <returns></returns>
-    public async Task<IssueVoucherResponse> IssueVoucher(Guid voucherId, Guid operatorId, Guid estateId,
+    private async Task<Result<T>> ApplyUpdates<T>(Func<VoucherAggregate, Task<Result<T>>> action,
+                                                  Guid voucherId,
+                                                  CancellationToken cancellationToken,
+                                                  Boolean isNotFoundError = true)
+    {
+        try
+        {
+            Result<VoucherAggregate> getVoucherResult = await this.VoucherAggregateRepository.GetLatestVersion(voucherId, cancellationToken);
+            Result<VoucherAggregate> voucherAggregateResult =
+                DomainServiceHelper.HandleGetAggregateResult(getVoucherResult, voucherId, isNotFoundError);
+
+            VoucherAggregate voucherAggregate = voucherAggregateResult.Data;
+            Result<T> result = await action(voucherAggregate);
+            if (result.IsFailed)
+                return Shared.EventStore.Aggregate.ResultHelpers.CreateFailure(result);
+
+            Result saveResult = await this.VoucherAggregateRepository.SaveChanges(voucherAggregate, cancellationToken);
+            if (saveResult.IsFailed)
+                return Shared.EventStore.Aggregate.ResultHelpers.CreateFailure(saveResult);
+            return Result.Success(result.Data);
+        }
+        catch (Exception ex)
+        {
+            return Result.Failure(ex.GetExceptionMessages());
+        }
+    }
+
+    public async Task<Result<IssueVoucherResponse>> IssueVoucher(Guid voucherId, Guid operatorId, Guid estateId,
                                                          Guid transactionId,
                                                          DateTime issuedDateTime,
                                                          Decimal value,
-                                                         String recipientEmail, String recipientMobile, CancellationToken cancellationToken)
-    {
-        await this.ValidateVoucherIssue(estateId, operatorId, cancellationToken);
+                                                         String recipientEmail, String recipientMobile, CancellationToken cancellationToken) {
+        Result<IssueVoucherResponse> result = await ApplyUpdates<IssueVoucherResponse>(
+            async (VoucherAggregate voucherAggregate) => {
 
-        VoucherAggregate voucher = await this.VoucherAggregateRepository.GetLatestVersion(voucherId, cancellationToken);
+                Result<EstateResponse> validateResult = await this.ValidateVoucherIssue(estateId, operatorId, cancellationToken);
+                if (validateResult.IsFailed)
+                    return Shared.EventStore.Aggregate.ResultHelpers.CreateFailure(validateResult);
 
-        voucher.Generate(operatorId, estateId, transactionId, issuedDateTime, value);
+                voucherAggregate.Generate(operatorId, estateId, transactionId, issuedDateTime, value);
 
-        Voucher voucherModel = voucher.GetVoucher();
+                Models.Voucher voucherModel = voucherAggregate.GetVoucher();
 
-        // Generate the barcode
-        Barcode barcode = new Barcode(voucherModel.VoucherCode);
-        voucher.AddBarcode(barcode.GetBase64Image());
-        voucher.Issue(recipientEmail, recipientMobile, issuedDateTime);
+                // Generate the barcode
+                Barcode barcode = new Barcode(voucherModel.VoucherCode);
+                voucherAggregate.AddBarcode(barcode.GetBase64Image());
+                voucherAggregate.Issue(recipientEmail, recipientMobile, issuedDateTime);
 
-        await this.VoucherAggregateRepository.SaveChanges(voucher, cancellationToken);
+                return Result.Success(new IssueVoucherResponse
+                {
+                    ExpiryDate = voucherModel.ExpiryDate,
+                    Message = voucherModel.Message,
+                    VoucherCode = voucherModel.VoucherCode,
+                    VoucherId = voucherId
+                });
 
-        return new IssueVoucherResponse
-               {
-                   ExpiryDate = voucherModel.ExpiryDate,
-                   Message = voucherModel.Message,
-                   VoucherCode = voucherModel.VoucherCode,
-                   VoucherId = voucherId
-               };
+            }, voucherId, cancellationToken, false);
+
+        return result;
     }
 
     /// <summary>
@@ -121,13 +142,11 @@ public class VoucherDomainService : IVoucherDomainService
     /// <param name="cancellationToken">The cancellation token.</param>
     /// <returns></returns>
     /// <exception cref="NotFoundException">No voucher found with voucher code [{voucherCode}]</exception>
-    public async Task<RedeemVoucherResponse> RedeemVoucher(Guid estateId,
+    public async Task<Result<RedeemVoucherResponse>> RedeemVoucher(Guid estateId,
                                                            String voucherCode,
                                                            DateTime redeemedDateTime,
                                                            CancellationToken cancellationToken)
     {
-        await this.ValidateVoucherRedemption(estateId, cancellationToken);
-
         // Find the voucher based on the voucher code
         EstateManagementGenericContext context = await this.DbContextFactory.GetContext(estateId, VoucherDomainService.ConnectionStringIdentifier, cancellationToken);
 
@@ -135,95 +154,68 @@ public class VoucherDomainService : IVoucherDomainService
 
         if (voucher == null)
         {
-            throw new NotFoundException($"No voucher found with voucher code [{voucherCode}]");
+            return Result.NotFound($"No voucher found with voucher code [{voucherCode}]");
         }
 
-        // Now get the aggregate
-        VoucherAggregate voucherAggregate = await this.VoucherAggregateRepository.GetLatestVersion(voucher.VoucherId, cancellationToken);
+        Result<RedeemVoucherResponse> result = await ApplyUpdates<RedeemVoucherResponse>(
+        async (VoucherAggregate voucherAggregate) => {
+            Result<EstateResponse> validateResult = await this.ValidateVoucherRedemption(estateId, cancellationToken);
+            if (validateResult.IsFailed)
+                return Shared.EventStore.Aggregate.ResultHelpers.CreateFailure(validateResult);
+            
+            // Redeem the voucher
+            voucherAggregate.Redeem(redeemedDateTime);
 
-        // Redeem the voucher
-        voucherAggregate.Redeem(redeemedDateTime);
+            // Save the changes
+            await this.VoucherAggregateRepository.SaveChanges(voucherAggregate, cancellationToken);
 
-        // Save the changes
-        await this.VoucherAggregateRepository.SaveChanges(voucherAggregate, cancellationToken);
+            Models.Voucher voucherModel = voucherAggregate.GetVoucher();
 
-        Voucher voucherModel = voucherAggregate.GetVoucher();
-        
-        return new RedeemVoucherResponse
-               {
-                   RemainingBalance = voucherModel.Balance,
-                   ExpiryDate = voucherModel.ExpiryDate,
-                   VoucherCode = voucherModel.VoucherCode
-               };
+            return Result.Success(new RedeemVoucherResponse
+            {
+                RemainingBalance = voucherModel.Balance,
+                ExpiryDate = voucherModel.ExpiryDate,
+                VoucherCode = voucherModel.VoucherCode
+            });
+
+        }, voucher.VoucherId, cancellationToken);
+
+        return result;
     }
 
-    /// <summary>
-    /// Validates the voucher issue.
-    /// </summary>
-    /// <param name="estateId">The estate identifier.</param>
-    /// <param name="operatorIdentifier">The operator identifier.</param>
-    /// <param name="cancellationToken">The cancellation token.</param>
-    /// <returns></returns>
-    /// <exception cref="NotFoundException">
-    /// Estate Id [{estateId}] is not a valid estate
-    /// or
-    /// Estate {estate.EstateName} has no operators defined
-    /// or
-    /// Operator Identifier [{operatorIdentifier}] is not a valid for estate [{estate.EstateName}]
-    /// </exception>
-    /// <exception cref="System.Exception">Estate Id [{estateId}] is not a valid estate
-    /// or
-    /// Operator Identifier [{operatorIdentifier}] is not a valid for estate [{estate.EstateName}]</exception>
-    private async Task<EstateResponse> ValidateVoucherIssue(Guid estateId, Guid operatorId, CancellationToken cancellationToken)
+    
+    private async Task<Result<EstateResponse>> ValidateVoucherIssue(Guid estateId, Guid operatorId, CancellationToken cancellationToken)
     {
         EstateResponse estate = null;
 
         // Validate the Estate Record is a valid estate
-        try
-        {
-            estate = await this.GetEstate(estateId, cancellationToken);
-        }
-        catch (Exception ex) when (ex.InnerException != null && ex.InnerException.GetType() == typeof(KeyNotFoundException))
-        {
-            throw new NotFoundException($"Estate Id [{estateId}] is not a valid estate");
-        }
+        Result<EstateResponse> getEstateResult = await this.GetEstate(estateId, cancellationToken);
+        if (getEstateResult.IsFailed)
+            return Shared.EventStore.Aggregate.ResultHelpers.CreateFailure(getEstateResult);
 
+        estate = getEstateResult.Data;
         if (estate.Operators == null || estate.Operators.Any() == false)
         {
-            throw new NotFoundException($"Estate {estate.EstateName} has no operators defined");
+            return Result.NotFound($"Estate {estate.EstateName} has no operators defined");
         }
 
         EstateOperatorResponse estateOperator = estate.Operators.SingleOrDefault(o => o.OperatorId == operatorId);
         if (estateOperator == null)
         {
-            throw new NotFoundException($"Operator Identifier [{operatorId}] is not a valid for estate [{estate.EstateName}]");
+            return Result.NotFound($"Operator Identifier [{operatorId}] is not a valid for estate [{estate.EstateName}]");
         }
 
-        return estate;
+        return getEstateResult;
     }
 
-    /// <summary>
-    /// Validates the voucher redemption.
-    /// </summary>
-    /// <param name="estateId">The estate identifier.</param>
-    /// <param name="cancellationToken">The cancellation token.</param>
-    /// <returns></returns>
-    /// <exception cref="NotFoundException">Estate Id [{estateId}] is not a valid estate</exception>
-    private async Task<EstateResponse> ValidateVoucherRedemption(Guid estateId, CancellationToken cancellationToken)
+    private async Task<Result<EstateResponse>> ValidateVoucherRedemption(Guid estateId, CancellationToken cancellationToken)
     {
-        EstateResponse estate = null;
-
         // Validate the Estate Record is a valid estate
-        try
-        {
-            estate = await this.GetEstate(estateId, cancellationToken);
-        }
-        catch (Exception ex) when (ex.InnerException != null && ex.InnerException.GetType() == typeof(KeyNotFoundException))
-        {
-            throw new NotFoundException($"Estate Id [{estateId}] is not a valid estate");
-        }
+        Result<EstateResponse> getEstateResult = await this.GetEstate(estateId, cancellationToken);
+        if (getEstateResult.IsFailed)
+            return Shared.EventStore.Aggregate.ResultHelpers.CreateFailure(getEstateResult);
 
-        return estate;
+        return getEstateResult;
     }
 
     /// <summary>
@@ -237,14 +229,12 @@ public class VoucherDomainService : IVoucherDomainService
     /// <param name="estateId">The estate identifier.</param>
     /// <param name="cancellationToken">The cancellation token.</param>
     /// <returns></returns>
-    private async Task<EstateResponse> GetEstate(Guid estateId,
+    private async Task<Result<EstateResponse>> GetEstate(Guid estateId,
                                                  CancellationToken cancellationToken)
     {
         this.TokenResponse = await Helpers.GetToken(this.TokenResponse, this.SecurityServiceClient, cancellationToken);
 
-        EstateResponse estate = await this.EstateClient.GetEstate(this.TokenResponse.AccessToken, estateId, cancellationToken);
-
-        return estate;
+        return await this.EstateClient.GetEstate(this.TokenResponse.AccessToken, estateId, cancellationToken);
     }
     
     #endregion

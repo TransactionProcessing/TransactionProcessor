@@ -1,4 +1,6 @@
-﻿namespace TransactionProcessor.BusinessLogic.EventHandling;
+﻿using SimpleResults;
+
+namespace TransactionProcessor.BusinessLogic.EventHandling;
 
 using System;
 using System.Collections.Generic;
@@ -121,10 +123,10 @@ public class VoucherDomainEventHandler : IDomainEventHandler
     /// </summary>
     /// <param name="domainEvent">The domain event.</param>
     /// <param name="cancellationToken">The cancellation token.</param>
-    public async Task Handle(IDomainEvent domainEvent,
-                             CancellationToken cancellationToken)
+    public async Task<Result> Handle(IDomainEvent domainEvent,
+                                     CancellationToken cancellationToken)
     {
-        await this.HandleSpecificDomainEvent((dynamic)domainEvent, cancellationToken);
+        return await this.HandleSpecificDomainEvent((dynamic)domainEvent, cancellationToken);
     }
     
     /// <summary>
@@ -136,6 +138,8 @@ public class VoucherDomainEventHandler : IDomainEventHandler
     private async Task<String> GetVoucherOperator(Models.Voucher voucherModel,
                                                   CancellationToken cancellationToken)
     {
+        // TODO: Can this be done in a better way than direct db access ?
+
         EstateManagementGenericContext context = await this.DbContextFactory.GetContext(voucherModel.EstateId, ConnectionStringIdentifier, cancellationToken);
 
         Transaction transaction = await context.Transactions.SingleOrDefaultAsync(t => t.TransactionId == voucherModel.TransactionId, cancellationToken);
@@ -149,12 +153,15 @@ public class VoucherDomainEventHandler : IDomainEventHandler
     /// </summary>
     /// <param name="domainEvent">The domain event.</param>
     /// <param name="cancellationToken">The cancellation token.</param>
-    private async Task HandleSpecificDomainEvent(VoucherIssuedEvent domainEvent,
-                                                 CancellationToken cancellationToken)
+    private async Task<Result> HandleSpecificDomainEvent(VoucherIssuedEvent domainEvent,
+                                                         CancellationToken cancellationToken)
     {
         // Get the voucher aggregate
-        VoucherAggregate voucherAggregate = await this.VoucherAggregateRepository.GetLatestVersion(domainEvent.AggregateId, cancellationToken);
-        Models.Voucher voucherModel = voucherAggregate.GetVoucher();
+        Result<VoucherAggregate> voucherAggregateResult = await this.VoucherAggregateRepository.GetLatestVersion(domainEvent.AggregateId, cancellationToken);
+        if (voucherAggregateResult.IsFailed)
+            return ResultHelpers.CreateFailure(voucherAggregateResult);
+
+        Models.Voucher voucherModel = voucherAggregateResult.Data.GetVoucher();
         this.TokenResponse = await Helpers.GetToken(this.TokenResponse, this.SecurityServiceClient, cancellationToken);
         if (string.IsNullOrEmpty(voucherModel.RecipientEmail) == false)
         {
@@ -174,7 +181,7 @@ public class VoucherDomainEventHandler : IDomainEventHandler
                                                          }
                                        };
 
-            await this.MessagingServiceClient.SendEmail(this.TokenResponse.AccessToken, request, cancellationToken);
+            return await this.MessagingServiceClient.SendEmail(this.TokenResponse.AccessToken, request, cancellationToken);
         }
 
         if (String.IsNullOrEmpty(voucherModel.RecipientMobile) == false)
@@ -190,8 +197,10 @@ public class VoucherDomainEventHandler : IDomainEventHandler
                                          Sender = "Your Voucher"
                                      };
 
-            await this.MessagingServiceClient.SendSMS(this.TokenResponse.AccessToken, request, cancellationToken);
+            return await this.MessagingServiceClient.SendSMS(this.TokenResponse.AccessToken, request, cancellationToken);
         }
+        // No messages to be sent
+        return Result.Success();
     }
 
     /// <summary>
