@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Text;
+using SimpleResults;
 
 namespace TransactionProcessor.BusinessLogic.Tests.OperatorInterfaces
 {
@@ -53,7 +54,7 @@ namespace TransactionProcessor.BusinessLogic.Tests.OperatorInterfaces
 
             IOperatorProxy safaricomPinlessproxy = new SafaricomPinlessProxy(safaricomConfiguration, httpClient);
 
-            OperatorResponse operatorResponse = await  safaricomPinlessproxy.ProcessSaleMessage(TestData.TokenResponse().AccessToken,
+            var result= await  safaricomPinlessproxy.ProcessSaleMessage(TestData.TokenResponse().AccessToken,
                                                                                                 TestData.TransactionId,
                                                                                                 TestData.OperatorId,
                                                                                                 TestData.Merchant,
@@ -61,11 +62,11 @@ namespace TransactionProcessor.BusinessLogic.Tests.OperatorInterfaces
                                                                                                 TestData.TransactionReference,
                                                                                                 TestData.AdditionalTransactionMetaDataForMobileTopup(),
                                                                                                 CancellationToken.None);
-
-            operatorResponse.ShouldNotBeNull();
-            operatorResponse.IsSuccessful.ShouldBeTrue();
-            operatorResponse.ResponseCode.ShouldBe("200");
-            operatorResponse.ResponseMessage.ShouldBe("Topup Successful");
+            result.IsSuccess.ShouldBeTrue();
+            result.Data.ShouldNotBeNull();
+            result.Data.IsSuccessful.ShouldBeTrue();
+            result.Data.ResponseCode.ShouldBe("200");
+            result.Data.ResponseMessage.ShouldBe("Topup Successful");
         }
 
         [Theory]
@@ -85,7 +86,7 @@ namespace TransactionProcessor.BusinessLogic.Tests.OperatorInterfaces
 
             IOperatorProxy safaricomPinlessproxy = new SafaricomPinlessProxy(safaricomConfiguration, httpClient);
 
-            OperatorResponse operatorResponse = await safaricomPinlessproxy.ProcessSaleMessage(TestData.TokenResponse().AccessToken,
+            var result = await safaricomPinlessproxy.ProcessSaleMessage(TestData.TokenResponse().AccessToken,
                                                                                                 TestData.TransactionId,
                                                                                                 TestData.OperatorId,
                                                                                                 TestData.Merchant,
@@ -94,10 +95,11 @@ namespace TransactionProcessor.BusinessLogic.Tests.OperatorInterfaces
                                                                                                 TestData.AdditionalTransactionMetaDataForMobileTopup(amountName: amountFieldName),
                                                                                                 CancellationToken.None);
 
-            operatorResponse.ShouldNotBeNull();
-            operatorResponse.IsSuccessful.ShouldBeTrue();
-            operatorResponse.ResponseCode.ShouldBe("200");
-            operatorResponse.ResponseMessage.ShouldBe("Topup Successful");
+            result.IsSuccess.ShouldBeTrue();
+            result.Data.ShouldNotBeNull();
+            result.Data.IsSuccessful.ShouldBeTrue();
+            result.Data.ResponseCode.ShouldBe("200");
+            result.Data.ResponseMessage.ShouldBe("Topup Successful");
         }
 
         [Theory]
@@ -118,7 +120,7 @@ namespace TransactionProcessor.BusinessLogic.Tests.OperatorInterfaces
 
             IOperatorProxy safaricomPinlessproxy = new SafaricomPinlessProxy(safaricomConfiguration, httpClient);
 
-            OperatorResponse operatorResponse = await safaricomPinlessproxy.ProcessSaleMessage(TestData.TokenResponse().AccessToken,
+            var result= await safaricomPinlessproxy.ProcessSaleMessage(TestData.TokenResponse().AccessToken,
                                                                                                 TestData.TransactionId,
                                                                                                 TestData.OperatorId,
                                                                                                 TestData.Merchant,
@@ -127,10 +129,11 @@ namespace TransactionProcessor.BusinessLogic.Tests.OperatorInterfaces
                                                                                                 TestData.AdditionalTransactionMetaDataForMobileTopup(customerAccountNumberName: customerAccountNumberFieldName),
                                                                                                 CancellationToken.None);
 
-            operatorResponse.ShouldNotBeNull();
-            operatorResponse.IsSuccessful.ShouldBeTrue();
-            operatorResponse.ResponseCode.ShouldBe("200");
-            operatorResponse.ResponseMessage.ShouldBe("Topup Successful");
+            result.IsSuccess.ShouldBeTrue();
+            result.Data.ShouldNotBeNull();
+            result.Data.IsSuccessful.ShouldBeTrue();
+            result.Data.ResponseCode.ShouldBe("200");
+            result.Data.ResponseMessage.ShouldBe("Topup Successful");
         }
 
         [Fact]
@@ -147,7 +150,7 @@ namespace TransactionProcessor.BusinessLogic.Tests.OperatorInterfaces
 
             IOperatorProxy safaricomPinlessproxy = new SafaricomPinlessProxy(safaricomConfiguration, httpClient);
 
-            OperatorResponse operatorResponse = await safaricomPinlessproxy.ProcessSaleMessage(TestData.TokenResponse().AccessToken, 
+            var result =  await safaricomPinlessproxy.ProcessSaleMessage(TestData.TokenResponse().AccessToken, 
                                                                                                TestData.TransactionId,
                                                                                                TestData.OperatorId,
                                                                                                TestData.Merchant,
@@ -156,10 +159,8 @@ namespace TransactionProcessor.BusinessLogic.Tests.OperatorInterfaces
                                                                                                TestData.AdditionalTransactionMetaDataForMobileTopup(),
                                                                                                CancellationToken.None);
 
-            operatorResponse.ShouldNotBeNull();
-            operatorResponse.IsSuccessful.ShouldBeFalse();
-            operatorResponse.ResponseCode.ShouldBe("500");
-            operatorResponse.ResponseMessage.ShouldBe("Topup failed");
+            result.IsFailed.ShouldBeTrue();
+            result.Status.ShouldBe(ResultStatus.Failure);
         }
 
         [Fact]
@@ -175,9 +176,7 @@ namespace TransactionProcessor.BusinessLogic.Tests.OperatorInterfaces
 
             IOperatorProxy safaricomPinlessproxy = new SafaricomPinlessProxy(safaricomConfiguration, httpClient);
 
-            Should.Throw<Exception>(async () =>
-                                    {
-                                        await safaricomPinlessproxy.ProcessSaleMessage(TestData.TokenResponse().AccessToken, 
+            var result = await safaricomPinlessproxy.ProcessSaleMessage(TestData.TokenResponse().AccessToken, 
                                                                                        TestData.TransactionId,
                                                                                        TestData.OperatorId,
                                                                                        TestData.Merchant,
@@ -185,7 +184,9 @@ namespace TransactionProcessor.BusinessLogic.Tests.OperatorInterfaces
                                                                                        TestData.TransactionReference,
                                                                                        TestData.AdditionalTransactionMetaDataForMobileTopup(),
                                                                                        CancellationToken.None);
-                                    });
+
+            result.IsFailed.ShouldBeTrue();
+            result.Status.ShouldBe(ResultStatus.Failure);
         }
 
         [Theory]
@@ -213,9 +214,7 @@ namespace TransactionProcessor.BusinessLogic.Tests.OperatorInterfaces
                                                                 {"CustomerAccountNumber",customerAccountNumber }
                                                             };
 
-            Should.Throw<Exception>(async () =>
-                                    {
-                                        await safaricomPinlessproxy.ProcessSaleMessage(TestData.TokenResponse().AccessToken, 
+            var result = await safaricomPinlessproxy.ProcessSaleMessage(TestData.TokenResponse().AccessToken, 
                                                                                        TestData.TransactionId,
                                                                                        TestData.OperatorId,
                                                                                        TestData.Merchant,
@@ -223,7 +222,8 @@ namespace TransactionProcessor.BusinessLogic.Tests.OperatorInterfaces
                                                                                        TestData.TransactionReference,
                                                                                        additionalMetatdata,
                                                                                        CancellationToken.None);
-                                    });
+            result.IsFailed.ShouldBeTrue();
+            result.Status.ShouldBe(ResultStatus.Invalid);
         }
 
         private HttpClient SetupMockHttpClient(HttpResponseMessage responseMessage)

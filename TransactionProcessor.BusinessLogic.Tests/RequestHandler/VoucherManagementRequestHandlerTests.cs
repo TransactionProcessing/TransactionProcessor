@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using TransactionProcessor.BusinessLogic.Manager;
 using TransactionProcessor.BusinessLogic.RequestHandlers;
 using TransactionProcessor.BusinessLogic.Services;
 using Xunit;
@@ -21,34 +22,32 @@ namespace TransactionProcessor.BusinessLogic.Tests.RequestHandler
         public async Task VoucherManagementRequestHandler_IssueVoucherRequest_IsHandled()
         {
             Mock<IVoucherDomainService> voucherDomainService = new Mock<IVoucherDomainService>();
+            Mock<IVoucherManagementManager> voucherManagementManager = new Mock<IVoucherManagementManager>();
             voucherDomainService.Setup(v => v.IssueVoucher(It.IsAny<Guid>(), It.IsAny<Guid>(), It.IsAny<Guid>(),
                                                            It.IsAny<Guid>(), It.IsAny<DateTime>(),
                                                            It.IsAny<Decimal>(), It.IsAny<String>(), It.IsAny<String>(),
                                                            It.IsAny<CancellationToken>())).ReturnsAsync(TestData.IssueVoucherResponse);
 
-            VoucherManagementRequestHandler handler = new VoucherManagementRequestHandler(voucherDomainService.Object);
+            VoucherManagementRequestHandler handler = new VoucherManagementRequestHandler(voucherDomainService.Object, voucherManagementManager.Object);
             
-            IssueVoucherRequest command = TestData.IssueVoucherRequest;
-            Should.NotThrow(async () =>
-            {
-                await handler.Handle(command, CancellationToken.None);
-            });
+            var command = TestData.IssueVoucherCommand;
+            var result = await handler.Handle(command, CancellationToken.None);
+            result.IsSuccess.ShouldBeTrue();
         }
 
         [Fact]
         public async Task VoucherManagementRequestHandler_RedeemVoucherRequest_IsHandled()
         {
             Mock<IVoucherDomainService> voucherDomainService = new Mock<IVoucherDomainService>();
+            Mock<IVoucherManagementManager> voucherManagementManager = new Mock<IVoucherManagementManager>();
             voucherDomainService.Setup(v => v.RedeemVoucher(It.IsAny<Guid>(), It.IsAny<String>(), It.IsAny<DateTime>(),
                                                            It.IsAny<CancellationToken>())).ReturnsAsync(TestData.RedeemVoucherResponse);
 
-            VoucherManagementRequestHandler handler = new VoucherManagementRequestHandler(voucherDomainService.Object);
+            VoucherManagementRequestHandler handler = new VoucherManagementRequestHandler(voucherDomainService.Object, voucherManagementManager.Object);
 
-            RedeemVoucherRequest command = TestData.RedeemVoucherRequest;
-            Should.NotThrow(async () =>
-            {
-                await handler.Handle(command, CancellationToken.None);
-            });
+            var command = TestData.RedeemVoucherCommand;
+            var result = await handler.Handle(command, CancellationToken.None);
+            result.IsSuccess.ShouldBeTrue();
         }
     }
 }

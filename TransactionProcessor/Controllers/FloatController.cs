@@ -1,4 +1,5 @@
 ﻿using Microsoft.AspNetCore.Mvc;
+using SimpleResults;
 
 namespace TransactionProcessor.Controllers
 {
@@ -39,24 +40,21 @@ namespace TransactionProcessor.Controllers
 
         [HttpPost]
         public async Task<IActionResult> CreateFloatForContractProduct([FromRoute] Guid estateId, [FromBody] DataTransferObjects.CreateFloatForContractProductRequest createFloatRequest, CancellationToken cancellationToken){
-            CreateFloatForContractProductRequest request = CreateFloatForContractProductRequest.Create(estateId, createFloatRequest.ContractId, createFloatRequest.ProductId,
+            FloatCommands.CreateFloatForContractProductCommand command = new(estateId, createFloatRequest.ContractId, createFloatRequest.ProductId,
                                                                                                        createFloatRequest.CreateDateTime);
 
-            CreateFloatForContractProductResponse response = await this.Mediator.Send(request, cancellationToken);
+            Result result= await this.Mediator.Send(command, cancellationToken);
 
-            return this.Created("",
-                                new DataTransferObjects.CreateFloatForContractProductResponse{
-                                                                                                 FloatId = response.FloatId,
-                                                                                             });
+            return result.ToActionResultX();
         }
 
         [HttpPut]
         public async Task<IActionResult> RecordFloatCreditPurchase([FromRoute] Guid estateId, [FromBody] DataTransferObjects.RecordFloatCreditPurchaseRequest recordFloatCreditPurchaseRequest, CancellationToken cancellationToken){
-            RecordCreditPurchaseForFloatRequest request = RecordCreditPurchaseForFloatRequest.Create(estateId, recordFloatCreditPurchaseRequest.FloatId, recordFloatCreditPurchaseRequest.CreditAmount, recordFloatCreditPurchaseRequest.CostPrice, recordFloatCreditPurchaseRequest.PurchaseDateTime);
+            FloatCommands.RecordCreditPurchaseForFloatCommand command = new(estateId, recordFloatCreditPurchaseRequest.FloatId, recordFloatCreditPurchaseRequest.CreditAmount, recordFloatCreditPurchaseRequest.CostPrice, recordFloatCreditPurchaseRequest.PurchaseDateTime);
 
-            await this.Mediator.Send(request, cancellationToken);
+            Result result = await this.Mediator.Send(command, cancellationToken);
 
-            return this.Ok();
+            return result.ToActionResultX();
         }
     }
 }

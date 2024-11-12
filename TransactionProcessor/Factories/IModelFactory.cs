@@ -1,4 +1,6 @@
-﻿namespace TransactionProcessor.Factories
+﻿using SimpleResults;
+
+namespace TransactionProcessor.Factories
 {
     using BusinessLogic.Requests;
     using DataTransferObjects;
@@ -12,18 +14,18 @@
     public interface IModelFactory
     {
         #region Methods
-        
-        SerialisedMessage ConvertFrom(ProcessLogonTransactionResponse processLogonTransactionResponse);
 
-        SerialisedMessage ConvertFrom(ProcessSaleTransactionResponse processSaleTransactionResponse);
+        Result<SerialisedMessage> ConvertFrom(ProcessLogonTransactionResponse processLogonTransactionResponse);
 
-        SerialisedMessage ConvertFrom(ProcessReconciliationTransactionResponse processReconciliationTransactionResponse);
+        Result<SerialisedMessage> ConvertFrom(ProcessSaleTransactionResponse processSaleTransactionResponse);
+
+        Result<SerialisedMessage> ConvertFrom(ProcessReconciliationTransactionResponse processReconciliationTransactionResponse);
 
         IssueVoucherResponse ConvertFrom(Models.IssueVoucherResponse issueVoucherResponse);
 
-        GetVoucherResponse ConvertFrom(Models.Voucher voucherModel);
+        Result<GetVoucherResponse> ConvertFrom(Models.Voucher voucherModel);
 
-        RedeemVoucherResponse ConvertFrom(Models.RedeemVoucherResponse redeemVoucherResponse);
+        Result<RedeemVoucherResponse> ConvertFrom(Models.RedeemVoucherResponse redeemVoucherResponse);
 
         #endregion
     }

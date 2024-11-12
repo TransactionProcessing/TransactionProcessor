@@ -4,6 +4,7 @@ using Shared.Exceptions;
 using System;
 using System.Threading;
 using System.Threading.Tasks;
+using SimpleResults;
 
 namespace TransactionProcessor.BusinessLogic.Manager
 {
@@ -25,13 +26,13 @@ namespace TransactionProcessor.BusinessLogic.Manager
         /// <param name="voucherCode">The voucher code.</param>
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns></returns>
-        Task<Voucher> GetVoucherByCode(Guid estateId,
-                                       String voucherCode,
-                                       CancellationToken cancellationToken);
+        Task<Result<Voucher>> GetVoucherByCode(Guid estateId,
+                                               String voucherCode,
+                                               CancellationToken cancellationToken);
 
-        Task<Voucher> GetVoucherByTransactionId(Guid estateId,
-                                       Guid transactionId,
-                                       CancellationToken cancellationToken);
+        Task<Result<Voucher>> GetVoucherByTransactionId(Guid estateId,
+                                                        Guid transactionId,
+                                                        CancellationToken cancellationToken);
 
         #endregion
     }
@@ -80,9 +81,9 @@ namespace TransactionProcessor.BusinessLogic.Manager
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns></returns>
         /// <exception cref="NotFoundException">Voucher not found with Voucher Code [{voucherCode}]</exception>
-        public async Task<Voucher> GetVoucherByCode(Guid estateId,
-                                                    String voucherCode,
-                                                    CancellationToken cancellationToken)
+        public async Task<Result<Voucher>> GetVoucherByCode(Guid estateId,
+                                                            String voucherCode,
+                                                            CancellationToken cancellationToken)
         {
             TransactionProcessorGenericContext context = await this.DbContextFactory.GetContext(estateId,VoucherManagementManager.ConnectionStringIdentifier, cancellationToken);
 
@@ -99,9 +100,9 @@ namespace TransactionProcessor.BusinessLogic.Manager
             return voucherAggregate.GetVoucher();
         }
 
-        public async Task<Voucher> GetVoucherByTransactionId(Guid estateId,
-                                                    Guid transactionId,
-                                                    CancellationToken cancellationToken)
+        public async Task<Result<Voucher>> GetVoucherByTransactionId(Guid estateId,
+                                                                     Guid transactionId,
+                                                                     CancellationToken cancellationToken)
         {
             TransactionProcessorGenericContext context = await this.DbContextFactory.GetContext(estateId, ConnectionStringIdentifier, cancellationToken);
             VoucherProjectionState voucher = await context.VoucherProjectionState.SingleOrDefaultAsync(v => v.TransactionId == transactionId, cancellationToken);

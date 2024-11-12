@@ -1,4 +1,8 @@
-﻿namespace TransactionProcessor.ProjectionEngine.Repository;
+﻿using Shared.Exceptions;
+using Shared.Logger;
+using SimpleResults;
+
+namespace TransactionProcessor.ProjectionEngine.Repository;
 
 using Database.Database;
 using Microsoft.EntityFrameworkCore;
@@ -15,8 +19,10 @@ public class TransactionProcessorReadRepository : ITransactionProcessorReadRepos
     public TransactionProcessorReadRepository(Shared.EntityFramework.IDbContextFactory<TransactionProcessorGenericContext> contextFactory) {
         this.ContextFactory = contextFactory;
     }
-    public async Task AddMerchantBalanceChangedEntry(MerchantBalanceChangedEntry entry,
-                                                     CancellationToken cancellationToken) {
+    public async Task<Result> AddMerchantBalanceChangedEntry(MerchantBalanceChangedEntry entry,
+                                                             CancellationToken cancellationToken) {
+
+        Logger.LogInformation($"About to add entry {entry.Reference}");
         await using TransactionProcessorGenericContext context = await this.ContextFactory.GetContext(entry.EstateId, TransactionProcessorReadRepository.ConnectionStringIdentifier, cancellationToken);
 
         ProjectionEngine.Database.Database.Entities.MerchantBalanceChangedEntry entity = new() {
@@ -32,22 +38,28 @@ public class TransactionProcessorReadRepository : ITransactionProcessorReadRepos
                                                                                                };
         
         await context.MerchantBalanceChangedEntry.AddAsync(entity, cancellationToken);
-        
-        try
-        {
+
+        try {
             await context.SaveChangesAsync(cancellationToken);
+
+            Logger.LogInformation($"Entry added {entry.Reference} new entry");
         }
-        catch (DbUpdateException)
-        {
+        catch (DbUpdateException) {
             // We have detected a duplicate, so lets try and update it
             context.Entry(entity).State = EntityState.Modified;
-
+            
             await context.SaveChangesAsync(cancellationToken);
-        }
 
+            Logger.LogInformation($"Entry added {entry.Reference} update");
+        }
+        catch (Exception ex) {
+            Logger.LogInformation($"Entry failed {entry.Reference}");
+            return Result.Failure(ex.GetExceptionMessages());
+        }
+        return Result.Success();
     }
 
-    public async Task<List<MerchantBalanceChangedEntry>> GetMerchantBalanceHistory(Guid estateId,
+    public async Task<Result<List<MerchantBalanceChangedEntry>>> GetMerchantBalanceHistory(Guid estateId,
                                                                                    Guid merchantId,
                                                                                    DateTime startDate,
                                                                                    DateTime endDate,
@@ -70,6 +82,6 @@ public class TransactionProcessorReadRepository : ITransactionProcessorReadRepos
                                                                            Reference = e.Reference,
                                                                        });
                         });
-        return result;
+        return Result.Success(result);
     }
 }

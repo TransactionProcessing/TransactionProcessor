@@ -1,4 +1,7 @@
-﻿namespace TransactionProcessor.BusinessLogic.Services
+﻿using SimpleResults;
+using TransactionProcessor.BusinessLogic.Requests;
+
+namespace TransactionProcessor.BusinessLogic.Services
 {
     using System;
     using System.Collections.Generic;
@@ -10,64 +13,24 @@
     {
         #region Methods
 
-        /// <summary>
-        /// Processes the logon transaction.
-        /// </summary>
-        /// <param name="transactionId">The transaction identifier.</param>
-        /// <param name="estateId">The estate identifier.</param>
-        /// <param name="merchantId">The merchant identifier.</param>
-        /// <param name="transactionDateTime">The transaction date time.</param>
-        /// <param name="transactionNumber">The transaction number.</param>
-        /// <param name="deviceIdentifier">The device identifier.</param>
-        /// <param name="cancellationToken">The cancellation token.</param>
-        /// <returns></returns>
-        Task<ProcessLogonTransactionResponse> ProcessLogonTransaction(Guid transactionId,
-                                                                      Guid estateId,
-                                                                      Guid merchantId,
-                                                                      DateTime transactionDateTime,
-                                                                      String transactionNumber,
-                                                                      String deviceIdentifier,
-                                                                      CancellationToken cancellationToken);
+        Task<Result<ProcessLogonTransactionResponse>> ProcessLogonTransaction(TransactionCommands.ProcessLogonTransactionCommand command,
+                                                                                  CancellationToken cancellationToken);
         
-        Task<ProcessSaleTransactionResponse> ProcessSaleTransaction(Guid transactionId,
-                                                                    Guid estateId,
-                                                                    Guid merchantId,
-                                                                    DateTime transactionDateTime,
-                                                                    String transactionNumber,
-                                                                    String deviceIdentifier,
-                                                                    Guid operatorId,
-                                                                    String customerEmailAddress,
-                                                                    Dictionary<String, String> additionalTransactionMetadata,
-                                                                    Guid contractId,
-                                                                    Guid productId,
-                                                                    Int32 transactionSource,
-                                                                    CancellationToken cancellationToken);
+        Task<Result<ProcessSaleTransactionResponse>> ProcessSaleTransaction(TransactionCommands.ProcessSaleTransactionCommand command,
+                                                                            CancellationToken cancellationToken);
 
-        /// <summary>
-        /// Processes the reconciliation transaction.
-        /// </summary>
-        /// <param name="transactionId">The transaction identifier.</param>
-        /// <param name="estateId">The estate identifier.</param>
-        /// <param name="merchantId">The merchant identifier.</param>
-        /// <param name="deviceIdentifier">The device identifier.</param>
-        /// <param name="transactionDateTime">The transaction date time.</param>
-        /// <param name="transactionCount">The transaction count.</param>
-        /// <param name="transactionValue">The transaction value.</param>
-        /// <param name="cancellationToken">The cancellation token.</param>
-        /// <returns></returns>
-        Task<ProcessReconciliationTransactionResponse> ProcessReconciliationTransaction(Guid transactionId,
-                                                                                        Guid estateId,
-                                                                                        Guid merchantId,
-                                                                                        String deviceIdentifier,
-                                                                                        DateTime transactionDateTime,
-                                                                                        Int32 transactionCount,
-                                                                                        Decimal transactionValue,
+        Task<Result<ProcessReconciliationTransactionResponse>> ProcessReconciliationTransaction(TransactionCommands.ProcessReconciliationCommand command,
                                                                                         CancellationToken cancellationToken);
 
-        Task ResendTransactionReceipt(Guid transactionId,
-                                      Guid estateId,
-                                      CancellationToken cancellationToken);
+        Task<Result> ResendTransactionReceipt(TransactionCommands.ResendTransactionReceiptCommand command,
+                                              CancellationToken cancellationToken);
+
+        Task<Result> CalculateFeesForTransaction(TransactionCommands.CalculateFeesForTransactionCommand command,
+                                                 CancellationToken cancellationToken);
 
         #endregion
+
+        Task<Result> AddSettledMerchantFee(TransactionCommands.AddSettledMerchantFeeCommand command,
+                                           CancellationToken cancellationToken);
     }
 }

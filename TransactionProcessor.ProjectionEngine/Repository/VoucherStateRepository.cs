@@ -1,4 +1,6 @@
-﻿namespace TransactionProcessor.ProjectionEngine.Repository;
+﻿using SimpleResults;
+
+namespace TransactionProcessor.ProjectionEngine.Repository;
 
 using System.Diagnostics.CodeAnalysis;
 using Database.Database;
@@ -42,8 +44,8 @@ public class VoucherStateRepository : IProjectionStateRepository<VoucherState>
 
     public static Guid GetVoucherId(IDomainEvent domainEvent) => DomainEventHelper.GetProperty<Guid>(domainEvent, "VoucherId");
 
-    public async Task<VoucherState> Load(IDomainEvent @event,
-                                         CancellationToken cancellationToken)
+    public async Task<Result<VoucherState>> Load(IDomainEvent @event,
+                                                 CancellationToken cancellationToken)
     {
         Guid estateId = VoucherStateRepository.GetEstateId(@event);
         Guid voucherId = GetVoucherId(@event);
@@ -51,16 +53,16 @@ public class VoucherStateRepository : IProjectionStateRepository<VoucherState>
         return await this.LoadHelper(estateId, voucherId, cancellationToken);
     }
 
-    public async Task<VoucherState> Load(Guid estateId,
-                                         Guid stateId,
-                                         CancellationToken cancellationToken)
+    public async Task<Result<VoucherState>> Load(Guid estateId,
+                                                 Guid stateId,
+                                                 CancellationToken cancellationToken)
     {
         return await this.LoadHelper(estateId, stateId, cancellationToken);
     }
 
-    public async Task<VoucherState> Save(VoucherState state,
-                                         IDomainEvent domainEvent,
-                                         CancellationToken cancellationToken)
+    public async Task<Result<VoucherState>> Save(VoucherState state,
+                                                 IDomainEvent domainEvent,
+                                                 CancellationToken cancellationToken)
     {
 
         await using TransactionProcessorGenericContext context =

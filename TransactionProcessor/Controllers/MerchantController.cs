@@ -1,4 +1,9 @@
-﻿namespace TransactionProcessor.Controllers;
+﻿using MediatR;
+using Microsoft.CodeAnalysis.Elfie.Diagnostics;
+using SimpleResults;
+using TransactionProcessor.BusinessLogic.Requests;
+
+namespace TransactionProcessor.Controllers;
 
 using System;
 using System.Collections.Generic;
@@ -8,6 +13,8 @@ using System.Threading;
 using System.Threading.Tasks;
 using Common;
 using DataTransferObjects;
+using EstateManagement.Database.Entities;
+using EventStore.Client;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Newtonsoft.Json;
@@ -28,15 +35,18 @@ public class MerchantController : ControllerBase
     private readonly IProjectionStateRepository<MerchantBalanceState> MerchantBalanceStateRepository;
 
     private readonly IEventStoreContext EventStoreContext;
+    private readonly IMediator Mediator;
 
     private readonly ITransactionProcessorReadRepository TransactionProcessorReadRepository;
 
     public MerchantController(IProjectionStateRepository<MerchantBalanceState> merchantBalanceStateRepository,
                               ITransactionProcessorReadRepository transactionProcessorReadRepository,
-                              IEventStoreContext eventStoreContext) {
+                              IEventStoreContext eventStoreContext,
+                              IMediator mediator) {
         this.MerchantBalanceStateRepository = merchantBalanceStateRepository;
         this.TransactionProcessorReadRepository = transactionProcessorReadRepository;
         this.EventStoreContext = eventStoreContext;
+        this.Mediator = mediator;
     }
 
     #region Others
@@ -53,6 +63,47 @@ public class MerchantController : ControllerBase
 
     #endregion
 
+    private Result PerformSecurityChecks(Guid estateId,Guid merchantId) {
+        String estateRoleName = string.IsNullOrEmpty(Environment.GetEnvironmentVariable("EstateRoleName"))
+            ? "Estate"
+            : Environment.GetEnvironmentVariable("EstateRoleName");
+        String merchantRoleName = string.IsNullOrEmpty(Environment.GetEnvironmentVariable("MerchantRoleName"))
+            ? "Merchant"
+            : Environment.GetEnvironmentVariable("MerchantRoleName");
+
+        if (ClaimsHelper.IsUserRolesValid(this.User, new[] { estateRoleName, merchantRoleName }) == false) {
+            return Result.Forbidden();
+        }
+
+        Claim estateIdClaim = null;
+        Claim merchantIdClaim = null;
+
+        // Determine the users role
+        if (this.User.IsInRole(estateRoleName))
+        {
+            // Estate user
+            // Get the Estate Id claim from the user
+            estateIdClaim = ClaimsHelper.GetUserClaim(this.User, "EstateId");
+        }
+
+        if (this.User.IsInRole(merchantRoleName))
+        {
+            // Get the merchant Id claim from the user
+            estateIdClaim = ClaimsHelper.GetUserClaim(this.User, "EstateId");
+            merchantIdClaim = ClaimsHelper.GetUserClaim(this.User, "MerchantId");
+        }
+
+        if (ClaimsHelper.ValidateRouteParameter(estateId, estateIdClaim) == false) {
+            return Result.Forbidden();
+        }
+
+        if (ClaimsHelper.ValidateRouteParameter(merchantId, merchantIdClaim) == false) {
+            return Result.Forbidden();
+        }
+
+        return Result.Success();
+    }
+
     /// <summary>
     /// Gets the merchant balance.
     /// </summary>
@@ -67,64 +118,29 @@ public class MerchantController : ControllerBase
     [SwaggerResponse(200, "OK", typeof(MerchantBalanceResponse))]
     public async Task<IActionResult> GetMerchantBalance([FromRoute] Guid estateId,
                                                         [FromRoute] Guid merchantId,
-                                                        CancellationToken cancellationToken)
-    {
-        String estateRoleName = string.IsNullOrEmpty(Environment.GetEnvironmentVariable("EstateRoleName"))
-            ? "Estate"
-            : Environment.GetEnvironmentVariable("EstateRoleName");
-        String merchantRoleName = string.IsNullOrEmpty(Environment.GetEnvironmentVariable("MerchantRoleName"))
-            ? "Merchant"
-            : Environment.GetEnvironmentVariable("MerchantRoleName");
+                                                        CancellationToken cancellationToken) {
 
-        if (ClaimsHelper.IsUserRolesValid(this.User, new[] { estateRoleName, merchantRoleName }) == false)
-        {
+        Result securityChecksResult = PerformSecurityChecks(estateId, merchantId);
+        if (securityChecksResult.Status == ResultStatus.Forbidden){
             return this.Forbid();
         }
 
-        Claim estateIdClaim = null;
-        Claim merchantIdClaim = null;
+        MerchantQueries.GetMerchantBalanceQuery query = new(estateId, merchantId);
+        Result<MerchantBalanceState> getMerchantBalanceResult = await this.Mediator.Send(query, cancellationToken);
 
-        // Determine the users role
-        if (this.User.IsInRole(estateRoleName))
-        {
-            // Estate user
-            // Get the Estate Id claim from the user
-            estateIdClaim = ClaimsHelper.GetUserClaim(this.User, "EstateId");
+        if (getMerchantBalanceResult.IsFailed) {
+            return getMerchantBalanceResult.ToActionResultX();
         }
-
-        if (this.User.IsInRole(merchantRoleName))
+        
+        Result<MerchantBalanceResponse> result = Result.Success(new MerchantBalanceResponse
         {
-            // Get the merchant Id claim from the user
-            estateIdClaim = ClaimsHelper.GetUserClaim(this.User, "EstateId");
-            merchantIdClaim = ClaimsHelper.GetUserClaim(this.User, "MerchantId");
-        }
-
-        if (ClaimsHelper.ValidateRouteParameter(estateId, estateIdClaim) == false)
-        {
-            return this.Forbid();
-        }
-
-        if (ClaimsHelper.ValidateRouteParameter(merchantId, merchantIdClaim) == false)
-        {
-            return this.Forbid();
-        }
-
-        MerchantBalanceState merchantBalance = await this.MerchantBalanceStateRepository.Load(estateId, merchantId, cancellationToken);
-
-        if (merchantBalance == null)
-        {
-            throw new NotFoundException($"Merchant Balance details not found with estate Id {estateId} and merchant Id {merchantId}");
-        }
-
-        MerchantBalanceResponse response = new MerchantBalanceResponse
-        {
-            Balance = merchantBalance.Balance,
+            Balance = getMerchantBalanceResult.Data.Balance,
             MerchantId = merchantId,
-            AvailableBalance = merchantBalance.AvailableBalance,
+            AvailableBalance = getMerchantBalanceResult.Data.AvailableBalance,
             EstateId = estateId
-        };
+        });
 
-        return this.Ok(response);
+        return result.ToActionResultX();
     }
 
     [HttpGet]
@@ -134,58 +150,29 @@ public class MerchantController : ControllerBase
                                                         [FromRoute] Guid merchantId,
                                                         CancellationToken cancellationToken)
     {
-        String estateRoleName = string.IsNullOrEmpty(Environment.GetEnvironmentVariable("EstateRoleName"))
-            ? "Estate"
-            : Environment.GetEnvironmentVariable("EstateRoleName");
-        String merchantRoleName = string.IsNullOrEmpty(Environment.GetEnvironmentVariable("MerchantRoleName"))
-            ? "Merchant"
-            : Environment.GetEnvironmentVariable("MerchantRoleName");
-
-        if (ClaimsHelper.IsUserRolesValid(this.User, new[] { estateRoleName, merchantRoleName }) == false)
-        {
+        Result securityChecksResult = PerformSecurityChecks(estateId, merchantId);
+        if (securityChecksResult.Status == ResultStatus.Forbidden) {
             return this.Forbid();
         }
 
-        Claim estateIdClaim = null;
-        Claim merchantIdClaim = null;
+        MerchantQueries.GetMerchantLiveBalanceQuery query = new MerchantQueries.GetMerchantLiveBalanceQuery(merchantId);
 
-        // Determine the users role
-        if (this.User.IsInRole(estateRoleName))
+        Result<MerchantBalanceProjectionState1> getLiveMerchantBalanceResult = await this.Mediator.Send(query, cancellationToken);
+
+        if (getLiveMerchantBalanceResult.IsFailed)
         {
-            // Estate user
-            // Get the Estate Id claim from the user
-            estateIdClaim = ClaimsHelper.GetUserClaim(this.User, "EstateId");
+            return getLiveMerchantBalanceResult.ToActionResultX();
         }
 
-        if (this.User.IsInRole(merchantRoleName))
+        Result<MerchantBalanceResponse> result = Result.Success(new MerchantBalanceResponse
         {
-            // Get the merchant Id claim from the user
-            estateIdClaim = ClaimsHelper.GetUserClaim(this.User, "EstateId");
-            merchantIdClaim = ClaimsHelper.GetUserClaim(this.User, "MerchantId");
-        }
-
-        if (ClaimsHelper.ValidateRouteParameter(estateId, estateIdClaim) == false)
-        {
-            return this.Forbid();
-        }
-
-        if (ClaimsHelper.ValidateRouteParameter(merchantId, merchantIdClaim) == false)
-        {
-            return this.Forbid();
-        }
-
-        String state = await this.EventStoreContext.GetPartitionStateFromProjection("MerchantBalanceProjection", $"MerchantBalance-{merchantId:N}", cancellationToken);
-        MerchantBalanceProjectionState1 projectionState = JsonConvert.DeserializeObject<MerchantBalanceProjectionState1>(state);
-        
-        MerchantBalanceResponse response = new MerchantBalanceResponse
-        {
-            Balance = projectionState.merchant.balance,
+            Balance = getLiveMerchantBalanceResult.Data.merchant.balance,
             MerchantId = merchantId,
-            AvailableBalance = projectionState.merchant.balance,
+            AvailableBalance = getLiveMerchantBalanceResult.Data.merchant.balance,
             EstateId = estateId
-        };
+        });
 
-        return this.Ok(response);
+        return result.ToActionResultX();
     }
 
     [HttpGet]
@@ -193,51 +180,26 @@ public class MerchantController : ControllerBase
     public async Task<IActionResult> GetMerchantBalanceHistory([FromRoute] Guid estateId,
                                                                [FromRoute] Guid merchantId,
                                                                [FromQuery] DateTime startDate,
-                                                               [FromQuery] DateTime enddate,
+                                                               [FromQuery] DateTime endDate,
                                                                CancellationToken cancellationToken) {
-        String estateRoleName = string.IsNullOrEmpty(Environment.GetEnvironmentVariable("EstateRoleName"))
-            ? "Estate"
-            : Environment.GetEnvironmentVariable("EstateRoleName");
-        String merchantRoleName = string.IsNullOrEmpty(Environment.GetEnvironmentVariable("MerchantRoleName"))
-            ? "Merchant"
-            : Environment.GetEnvironmentVariable("MerchantRoleName");
-
-        if (ClaimsHelper.IsUserRolesValid(this.User, new[] { estateRoleName, merchantRoleName }) == false)
+        Result securityChecksResult = PerformSecurityChecks(estateId, merchantId);
+        if (securityChecksResult.Status == ResultStatus.Forbidden)
         {
             return this.Forbid();
         }
 
-        Claim estateIdClaim = null;
-        Claim merchantIdClaim = null;
+        MerchantQueries.GetMerchantBalanceHistoryQuery query =
+            new MerchantQueries.GetMerchantBalanceHistoryQuery(estateId, merchantId, startDate, endDate); 
 
-        // Determine the users role
-        if (this.User.IsInRole(estateRoleName))
+        Result<List<MerchantBalanceChangedEntry>> getMerchantBalanceHistoryResult = await this.Mediator.Send(query, cancellationToken);
+        if (getMerchantBalanceHistoryResult.IsFailed)
         {
-            // Estate user
-            // Get the Estate Id claim from the user
-            estateIdClaim = ClaimsHelper.GetUserClaim(this.User, "EstateId");
+            return getMerchantBalanceHistoryResult.ToActionResultX();
         }
 
-        if (this.User.IsInRole(merchantRoleName))
-        {
-            // Get the merchant Id claim from the user
-            estateIdClaim = ClaimsHelper.GetUserClaim(this.User, "EstateId");
-            merchantIdClaim = ClaimsHelper.GetUserClaim(this.User, "MerchantId");
-        }
 
-        if (ClaimsHelper.ValidateRouteParameter(estateId, estateIdClaim) == false)
-        {
-            return this.Forbid();
-        }
-
-        if (ClaimsHelper.ValidateRouteParameter(merchantId, merchantIdClaim) == false)
-        {
-            return this.Forbid();
-        }
-
-        List<MerchantBalanceChangedEntry> historyEntries = await this.TransactionProcessorReadRepository.GetMerchantBalanceHistory(estateId, merchantId, startDate, enddate, cancellationToken);
         List<MerchantBalanceChangedEntryResponse> response = new List<MerchantBalanceChangedEntryResponse>();
-        historyEntries.ForEach(h => response.Add(new MerchantBalanceChangedEntryResponse {
+        getMerchantBalanceHistoryResult.Data.ForEach(h => response.Add(new MerchantBalanceChangedEntryResponse {
                                                                                              Balance = h.Balance,
                                                                                              MerchantId = h.MerchantId,
                                                                                              EstateId = h.EstateId,
@@ -248,6 +210,8 @@ public class MerchantController : ControllerBase
                                                                                              Reference = h.Reference,
                                                                                          }));
 
-        return this.Ok(response);
+        Result<List<MerchantBalanceChangedEntryResponse>> result = Result.Success(response);
+
+        return result.ToActionResultX();
     }
 }

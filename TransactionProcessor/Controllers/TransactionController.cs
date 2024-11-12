@@ -1,4 +1,7 @@
-﻿namespace TransactionProcessor.Controllers
+﻿using Shared.EventStore.Aggregate;
+using SimpleResults;
+
+namespace TransactionProcessor.Controllers
 {
     using System;
     using System.Collections.Generic;
@@ -79,8 +82,7 @@
                                                             CancellationToken cancellationToken)
         {
             // Reject password tokens
-            if (ClaimsHelper.IsPasswordToken(this.User))
-            {
+            if (ClaimsHelper.IsPasswordToken(this.User)) {
                 return this.Forbid();
             }
 
@@ -95,10 +97,15 @@
             dto.MerchantId = merchantId;
             dto.EstateId = estateId;
 
-            SerialisedMessage transactionResponse = await this.ProcessSpecificMessage((dynamic)dto, cancellationToken);
+            Result<SerialisedMessage> transactionResult = dto switch {
+                LogonTransactionRequest ltr => await this.ProcessSpecificMessage(ltr, cancellationToken),
+                SaleTransactionRequest str => await this.ProcessSpecificMessage(str, cancellationToken),
+                ReconciliationRequest rr => await this.ProcessSpecificMessage(rr, cancellationToken),
+                _ => Result.Invalid($"DTO Type {dto.GetType().Name} not supported)")
+            };
+            
 
-            // TODO: Populate the GET route
-            return this.Created("", transactionResponse);
+            return transactionResult.ToActionResultX();
         }
 
         [HttpPost]
@@ -108,17 +115,15 @@
                                                                   CancellationToken cancellationToken)
         {
             // Reject password tokens
-            if (ClaimsHelper.IsPasswordToken(this.User))
-            {
+            if (ClaimsHelper.IsPasswordToken(this.User)) {
                 return this.Forbid();
             }
 
-            ResendTransactionReceiptRequest resendTransactionReceiptRequest = ResendTransactionReceiptRequest.Create(transactionId,estateId);
+            TransactionCommands.ResendTransactionReceiptCommand command= new(transactionId,estateId);
 
-            await this.Mediator.Send(resendTransactionReceiptRequest, cancellationToken);
+            var result = await this.Mediator.Send(command, cancellationToken);
 
-            // TODO: Populate the GET route
-            return this.Accepted();
+            return result.ToActionResultX();
         }
 
         /// <summary>
@@ -127,12 +132,12 @@
         /// <param name="logonTransactionRequest">The logon transaction request.</param>
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns></returns>
-        private async Task<SerialisedMessage> ProcessSpecificMessage(LogonTransactionRequest logonTransactionRequest,
-                                                                     CancellationToken cancellationToken)
+        private async Task<Result<SerialisedMessage>> ProcessSpecificMessage(LogonTransactionRequest logonTransactionRequest,
+                                                                             CancellationToken cancellationToken)
         {
             Guid transactionId = Guid.NewGuid();
 
-            ProcessLogonTransactionRequest request = ProcessLogonTransactionRequest.Create(transactionId,
+            TransactionCommands.ProcessLogonTransactionCommand command = new(transactionId,
                                                                                                        logonTransactionRequest.EstateId,
                                                                                                        logonTransactionRequest.MerchantId,
                                                                                                        logonTransactionRequest.DeviceIdentifier,
@@ -140,9 +145,11 @@
                                                                                                        logonTransactionRequest.TransactionDateTime,
                                                                                                        logonTransactionRequest.TransactionNumber);
 
-            ProcessLogonTransactionResponse response = await this.Mediator.Send(request, cancellationToken);
+            var result =  await this.Mediator.Send(command, cancellationToken);
+            if (result.IsFailed)
+                return ResultHelpers.CreateFailure(result);
 
-            return this.ModelFactory.ConvertFrom(response);
+            return this.ModelFactory.ConvertFrom(result.Data);
         }
 
         /// <summary>
@@ -151,12 +158,12 @@
         /// <param name="saleTransactionRequest">The sale transaction request.</param>
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns></returns>
-        private async Task<SerialisedMessage> ProcessSpecificMessage(SaleTransactionRequest saleTransactionRequest,
-                                                                     CancellationToken cancellationToken)
+        private async Task<Result<SerialisedMessage>> ProcessSpecificMessage(SaleTransactionRequest saleTransactionRequest,
+                                                                             CancellationToken cancellationToken)
         {
             Guid transactionId = Guid.NewGuid();
             
-            ProcessSaleTransactionRequest request = ProcessSaleTransactionRequest.Create(transactionId,
+            TransactionCommands.ProcessSaleTransactionCommand command =new(transactionId,
                                                                                          saleTransactionRequest.EstateId,
                                                                                          saleTransactionRequest.MerchantId,
                                                                                          saleTransactionRequest.DeviceIdentifier,
@@ -171,23 +178,19 @@
                                                                                          // Default to an online sale
                                                                                          saleTransactionRequest.TransactionSource.GetValueOrDefault(1));
 
-            ProcessSaleTransactionResponse response = await this.Mediator.Send(request, cancellationToken);
+            var result= await this.Mediator.Send(command, cancellationToken);
+            if (result.IsFailed)
+                return ResultHelpers.CreateFailure(result);
 
-            return this.ModelFactory.ConvertFrom(response);
+            return this.ModelFactory.ConvertFrom(result.Data);
         }
 
-        /// <summary>
-        /// Processes the specific message.
-        /// </summary>
-        /// <param name="reconciliationRequest">The reconciliation request.</param>
-        /// <param name="cancellationToken">The cancellation token.</param>
-        /// <returns></returns>
-        private async Task<SerialisedMessage> ProcessSpecificMessage(ReconciliationRequest reconciliationRequest,
+        private async Task<Result<SerialisedMessage>> ProcessSpecificMessage(ReconciliationRequest reconciliationRequest,
                                                                      CancellationToken cancellationToken)
         {
             Guid transactionId = Guid.NewGuid();
 
-            ProcessReconciliationRequest request = ProcessReconciliationRequest.Create(transactionId,
+            TransactionCommands.ProcessReconciliationCommand command = new(transactionId,
                                                                                        reconciliationRequest.EstateId,
                                                                                        reconciliationRequest.MerchantId,
                                                                                        reconciliationRequest.DeviceIdentifier,
@@ -195,9 +198,12 @@
                                                                                        reconciliationRequest.TransactionCount,
                                                                                        reconciliationRequest.TransactionValue);
 
-            ProcessReconciliationTransactionResponse response = await this.Mediator.Send(request, cancellationToken);
+            Result<ProcessReconciliationTransactionResponse> result = await this.Mediator.Send(command, cancellationToken);
 
-            return this.ModelFactory.ConvertFrom(response);
+            if (result.IsFailed)
+                return ResultHelpers.CreateFailure(result);
+
+            return this.ModelFactory.ConvertFrom(result.Data);
         }
 
         #endregion

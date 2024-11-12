@@ -1,4 +1,6 @@
-﻿namespace TransactionProcessor.BusinessLogic.OperatorInterfaces
+﻿using SimpleResults;
+
+namespace TransactionProcessor.BusinessLogic.OperatorInterfaces
 {
     using System;
     using System.Collections.Generic;
@@ -12,17 +14,17 @@
     public interface IOperatorProxy
     {
         #region Methods
-        Task<OperatorResponse> ProcessLogonMessage(String accessToken, 
-                                                   CancellationToken cancellationToken);
+        Task<Result<OperatorResponse>> ProcessLogonMessage(String accessToken, 
+                                                           CancellationToken cancellationToken);
 
-        Task<OperatorResponse> ProcessSaleMessage(String accessToken,
-                                                  Guid transactionId,
-                                                  Guid operatorId,
-                                                  MerchantResponse merchant,
-                                                  DateTime transactionDateTime,
-                                                  String transactionReference,
-                                                  Dictionary<String, String> additionalTransactionMetadata,
-                                                  CancellationToken cancellationToken);
+        Task<Result<OperatorResponse>> ProcessSaleMessage(String accessToken,
+                                                          Guid transactionId,
+                                                          Guid operatorId,
+                                                          MerchantResponse merchant,
+                                                          DateTime transactionDateTime,
+                                                          String transactionReference,
+                                                          Dictionary<String, String> additionalTransactionMetadata,
+                                                          CancellationToken cancellationToken);
 
         #endregion
     }

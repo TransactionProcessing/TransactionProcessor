@@ -1,4 +1,7 @@
-﻿namespace TransactionProcessor.BusinessLogic.Services
+﻿using SimpleResults;
+using TransactionProcessor.BusinessLogic.Requests;
+
+namespace TransactionProcessor.BusinessLogic.Services
 {
     using System;
     using System.Threading;
@@ -10,9 +13,12 @@
     /// </summary>
     public interface ISettlementDomainService
     {
-        Task<ProcessSettlementResponse> ProcessSettlement(DateTime pendingSettlementDate,
-                                                          Guid estateId,
-                                                          Guid merchantId,
-                                                          CancellationToken cancellationToken);
+        Task<Result<Guid>> ProcessSettlement(SettlementCommands.ProcessSettlementCommand command, CancellationToken cancellationToken);
+
+        Task<Result> AddMerchantFeePendingSettlement(SettlementCommands.AddMerchantFeePendingSettlementCommand command,
+                                                     CancellationToken cancellationToken);
+
+        Task<Result> AddSettledFeeToSettlement(SettlementCommands.AddSettledFeeToSettlementCommand command,
+                                               CancellationToken cancellationToken);
     }
 }

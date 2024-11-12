@@ -1,4 +1,9 @@
-﻿using TransactionProcessor.Float.DomainEvents;
+﻿using System.Diagnostics;
+using MediatR;
+using Shared.Exceptions;
+using SimpleResults;
+using TransactionProcessor.BusinessLogic.Requests;
+using TransactionProcessor.Float.DomainEvents;
 
 namespace TransactionProcessor.BusinessLogic.EventHandling
 {
@@ -32,6 +37,8 @@ namespace TransactionProcessor.BusinessLogic.EventHandling
     using Shared.Logger;
     using Transaction.DomainEvents;
     using TransactionAggregate;
+    using static TransactionProcessor.BusinessLogic.Requests.SettlementCommands;
+    using static TransactionProcessor.BusinessLogic.Requests.TransactionCommands;
     using CalculationType = Models.CalculationType;
     using ContractProductTransactionFee = EstateManagement.DataTransferObjects.Responses.Contract.ContractProductTransactionFee;
     using FeeType = Models.FeeType;
@@ -60,6 +67,7 @@ namespace TransactionProcessor.BusinessLogic.EventHandling
         private readonly IAggregateRepository<FloatActivityAggregate, DomainEvent> FloatActivityAggregateRepository;
 
         private readonly IMemoryCacheWrapper MemoryCache;
+        private readonly IMediator Mediator;
 
         private readonly IAggregateRepository<TransactionAggregate, DomainEvent> TransactionAggregateRepository;
 
@@ -79,7 +87,8 @@ namespace TransactionProcessor.BusinessLogic.EventHandling
                                              IMessagingServiceClient messagingServiceClient,
                                              IAggregateRepository<SettlementAggregate, DomainEvent> settlementAggregateRepository,
                                              IAggregateRepository<FloatActivityAggregate, DomainEvent> floatActivityAggregateRepository,
-                                             IMemoryCacheWrapper memoryCache) {
+                                             IMemoryCacheWrapper memoryCache,
+                                             IMediator mediator) {
             this.TransactionAggregateRepository = transactionAggregateRepository;
             this.FeeCalculationManager = feeCalculationManager;
             this.EstateClient = estateClient;
@@ -89,269 +98,80 @@ namespace TransactionProcessor.BusinessLogic.EventHandling
             this.SettlementAggregateRepository = settlementAggregateRepository;
             this.FloatActivityAggregateRepository = floatActivityAggregateRepository;
             this.MemoryCache = memoryCache;
+            this.Mediator = mediator;
         }
 
         #endregion
 
         #region Methods
 
-        public async Task Handle(IDomainEvent domainEvent,
-                                 CancellationToken cancellationToken) {
-            await this.HandleSpecificDomainEvent((dynamic)domainEvent, cancellationToken);
+        public async Task<Result> Handle(IDomainEvent domainEvent,
+                                         CancellationToken cancellationToken) {
+
+            Logger.LogWarning($"|{domainEvent.EventId}|Transaction Domain Event Handler - Inside Handle {domainEvent.EventType}");
+            Stopwatch sw = Stopwatch.StartNew();
+            var result = await this.HandleSpecificDomainEvent((dynamic)domainEvent, cancellationToken);
+            sw.Stop();
+            Logger.LogWarning($"|{domainEvent.EventId}|Transaction Domain Event Handler - after HandleSpecificDomainEvent {domainEvent.EventType} time {sw.ElapsedMilliseconds}ms");
+
+            return result;
         }
 
-        internal static DateTime CalculateSettlementDate(EstateManagement.DataTransferObjects.Responses.Merchant.SettlementSchedule merchantSettlementSchedule,
-                                                         DateTime completeDateTime) {
-            if (merchantSettlementSchedule == EstateManagement.DataTransferObjects.Responses.Merchant.SettlementSchedule.Weekly) {
-                return completeDateTime.Date.AddDays(7).Date;
-            }
-
-            if (merchantSettlementSchedule == EstateManagement.DataTransferObjects.Responses.Merchant.SettlementSchedule.Monthly) {
-                return completeDateTime.Date.AddMonths(1).Date;
-            }
-
-            return completeDateTime.Date;
-        }
-        
-        internal static Boolean RequireFeeCalculation(TransactionAggregate transactionAggregate){
-            return transactionAggregate switch{
-                _ when transactionAggregate.TransactionType == TransactionType.Logon => false,
-                _ when transactionAggregate.IsAuthorised == false => false,
-                _ when transactionAggregate.IsCompleted == false => false,
-                _ when transactionAggregate.ContractId == Guid.Empty => false,
-                _ when transactionAggregate.TransactionAmount == null => false,
-                _ => true
-            };
-        }
-
-        private async Task HandleSpecificDomainEvent(FloatCreditPurchasedEvent domainEvent,
+        private async Task<Result> HandleSpecificDomainEvent(FloatCreditPurchasedEvent domainEvent,
                                                      CancellationToken cancellationToken) {
+            FloatActivityCommands.RecordCreditPurchaseCommand command =
+                new(domainEvent.EstateId, domainEvent.FloatId,
+                    domainEvent.CreditPurchasedDateTime, domainEvent.Amount);
 
-            FloatActivityAggregate floatAggregate = await this.FloatActivityAggregateRepository.GetLatestVersionFromLastEvent(domainEvent.FloatId, cancellationToken);
-
-            floatAggregate.RecordCreditPurchase(domainEvent.EstateId, domainEvent.CreditPurchasedDateTime, domainEvent.Amount);
-
-            await this.FloatActivityAggregateRepository.SaveChanges(floatAggregate, cancellationToken);
+            return await this.Mediator.Send(command, cancellationToken);
         }
 
-        private async Task HandleSpecificDomainEvent(TransactionCostInformationRecordedEvent domainEvent, CancellationToken cancellationToken){
-            TransactionAggregate transactionAggregate =
-                await this.TransactionAggregateRepository.GetLatestVersion(domainEvent.TransactionId, cancellationToken);
+        private async Task<Result> HandleSpecificDomainEvent(TransactionCostInformationRecordedEvent domainEvent, CancellationToken cancellationToken){
+            FloatActivityCommands.RecordTransactionCommand command = new(domainEvent.EstateId,
+                domainEvent.TransactionId);
 
-            if (transactionAggregate.IsAuthorised == false || transactionAggregate.IsCompleted == false)
-                return;
-
-            Guid floatAggregateId = IdGenerationService.GenerateFloatAggregateId(transactionAggregate.EstateId, transactionAggregate.ContractId, transactionAggregate.ProductId);
-            FloatActivityAggregate floatAggregate = await this.FloatActivityAggregateRepository.GetLatestVersionFromLastEvent(floatAggregateId, cancellationToken);
-
-            floatAggregate.RecordTransactionAgainstFloat(transactionAggregate.EstateId, transactionAggregate.TransactionDateTime, transactionAggregate.TransactionAmount.GetValueOrDefault());
-            
-            await this.FloatActivityAggregateRepository.SaveChanges(floatAggregate, cancellationToken);
+            return await this.Mediator.Send(command, cancellationToken);
         }
 
-        private async Task HandleSpecificDomainEvent(TransactionHasBeenCompletedEvent domainEvent,
-                                                     CancellationToken cancellationToken){
+        private async Task<Result> HandleSpecificDomainEvent(TransactionHasBeenCompletedEvent domainEvent,
+                                                             CancellationToken cancellationToken) {
+            CalculateFeesForTransactionCommand command = new(domainEvent.TransactionId, domainEvent.CompletedDateTime, domainEvent.EstateId, domainEvent.MerchantId);
 
-            TransactionAggregate transactionAggregate =
-                await this.TransactionAggregateRepository.GetLatestVersion(domainEvent.TransactionId, cancellationToken);
-            
-            if (RequireFeeCalculation(transactionAggregate) == false)
-                return;
-
-            this.TokenResponse = await Helpers.GetToken(this.TokenResponse, this.SecurityServiceClient, cancellationToken);
-
-            List<TransactionFeeToCalculate> feesForCalculation = await this.GetTransactionFeesForCalculation(transactionAggregate, cancellationToken);
-
-            // Do the fee calculation
-            List<CalculatedFee> resultFees =
-                this.FeeCalculationManager.CalculateFees(feesForCalculation, transactionAggregate.TransactionAmount.Value, domainEvent.CompletedDateTime);
-
-            // Process the non merchant fees
-            IEnumerable<CalculatedFee> nonMerchantFees = resultFees.Where(f => f.FeeType == FeeType.ServiceProvider);
-
-            foreach (CalculatedFee calculatedFee in nonMerchantFees){
-                // Add Fee to the Transaction 
-                transactionAggregate.AddFee(calculatedFee);
-            }
-
-            // Now deal with merchant fees 
-            List<CalculatedFee> merchantFees = resultFees.Where(f => f.FeeType == FeeType.Merchant).ToList();
-
-            if (merchantFees.Any()){
-                EstateManagement.DataTransferObjects.Responses.Merchant.MerchantResponse merchant =
-                    await this.EstateClient.GetMerchant(this.TokenResponse.AccessToken, domainEvent.EstateId, domainEvent.MerchantId, cancellationToken);
-
-                if (merchant.SettlementSchedule == EstateManagement.DataTransferObjects.Responses.Merchant.SettlementSchedule.NotSet){
-                    throw new NotSupportedException($"Merchant {merchant.MerchantId} does not have a settlement schedule configured");
-                }
-
-                foreach (CalculatedFee calculatedFee in merchantFees){
-                    // Determine when the fee should be applied
-                    DateTime settlementDate = TransactionDomainEventHandler.CalculateSettlementDate(merchant.SettlementSchedule, domainEvent.CompletedDateTime);
-
-                    transactionAggregate.AddFeePendingSettlement(calculatedFee, settlementDate);
-
-
-                    if (merchant.SettlementSchedule == EstateManagement.DataTransferObjects.Responses.Merchant.SettlementSchedule.Immediate){
-                        Guid settlementId = Helpers.CalculateSettlementAggregateId(settlementDate, domainEvent.MerchantId, domainEvent.EstateId);
-                        
-                        // Add fees to transaction now if settlement is immediate
-                        transactionAggregate.AddSettledFee(calculatedFee,
-                                                           settlementDate,
-                                                           settlementId);
-                    }
-                }
-            }
-
-            await this.TransactionAggregateRepository.SaveChanges(transactionAggregate, cancellationToken);
+            return await this.Mediator.Send(command, cancellationToken);
         }
 
-        private async Task HandleSpecificDomainEvent(MerchantFeePendingSettlementAddedToTransactionEvent domainEvent,
-                                                     CancellationToken cancellationToken){
+        private async Task<Result> HandleSpecificDomainEvent(MerchantFeePendingSettlementAddedToTransactionEvent domainEvent,
+                                                             CancellationToken cancellationToken) {
 
-            Guid aggregateId = Helpers.CalculateSettlementAggregateId(domainEvent.SettlementDueDate.Date, domainEvent.MerchantId, domainEvent.EstateId);
-
-            // We need to add the fees to a pending settlement stream
-            SettlementAggregate aggregate = await this.SettlementAggregateRepository.GetLatestVersion(aggregateId, cancellationToken);
-
-            if (aggregate.IsCreated == false) {
-                aggregate.Create(domainEvent.EstateId, domainEvent.MerchantId, domainEvent.SettlementDueDate.Date);
-            }
-
-            // Create Calculated Fee from the domain event
-            CalculatedFee calculatedFee = new CalculatedFee{
-                                                               CalculatedValue = domainEvent.CalculatedValue,
-                                                               FeeCalculatedDateTime = domainEvent.FeeCalculatedDateTime,
-                                                               FeeCalculationType = (CalculationType)domainEvent.FeeCalculationType,
-                                                               FeeId = domainEvent.FeeId,
-                                                               FeeType = FeeType.Merchant,
-                                                               FeeValue = domainEvent.FeeValue,
-                                                               SettlementDueDate = domainEvent.SettlementDueDate
-                                                           };
-
-            aggregate.AddFee(domainEvent.MerchantId, domainEvent.TransactionId, calculatedFee);
-
-            await this.SettlementAggregateRepository.SaveChanges(aggregate, cancellationToken);
+            SettlementCommands.AddMerchantFeePendingSettlementCommand command =
+                new SettlementCommands.AddMerchantFeePendingSettlementCommand(domainEvent.TransactionId,
+                    domainEvent.CalculatedValue, domainEvent.FeeCalculatedDateTime,
+                    (CalculationType)domainEvent.FeeCalculationType, domainEvent.FeeId, domainEvent.FeeValue,
+                    domainEvent.SettlementDueDate, domainEvent.MerchantId, domainEvent.EstateId);
+            return await this.Mediator.Send(command, cancellationToken);
         }
 
-        private async Task HandleSpecificDomainEvent(SettledMerchantFeeAddedToTransactionEvent domainEvent,
-                                                     CancellationToken cancellationToken){
-            this.TokenResponse = await Helpers.GetToken(this.TokenResponse, this.SecurityServiceClient, cancellationToken);
+        private async Task<Result> HandleSpecificDomainEvent(SettledMerchantFeeAddedToTransactionEvent domainEvent,
+                                                             CancellationToken cancellationToken) {
+            AddSettledFeeToSettlementCommand command = new AddSettledFeeToSettlementCommand(
+                domainEvent.SettledDateTime.Date, domainEvent.MerchantId, domainEvent.EstateId, domainEvent.FeeId, domainEvent.TransactionId);
+            return await this.Mediator.Send(command, cancellationToken);
 
-            Guid aggregateId = Helpers.CalculateSettlementAggregateId(domainEvent.SettledDateTime.Date, domainEvent.MerchantId, domainEvent.EstateId);
-
-            EstateManagement.DataTransferObjects.Responses.Merchant.MerchantResponse merchant = await this.EstateClient.GetMerchant(this.TokenResponse.AccessToken, domainEvent.EstateId, domainEvent.MerchantId, cancellationToken);
-
-            // We need to add the fees to a pending settlement stream
-            SettlementAggregate aggregate = await this.SettlementAggregateRepository.GetLatestVersion(aggregateId, cancellationToken);
-
-
-            if (merchant.SettlementSchedule == EstateManagement.DataTransferObjects.Responses.Merchant.SettlementSchedule.Immediate){
-                aggregate.ImmediatelyMarkFeeAsSettled(domainEvent.MerchantId, domainEvent.TransactionId, domainEvent.FeeId);
-            }
-            else {
-                aggregate.MarkFeeAsSettled(domainEvent.MerchantId, domainEvent.TransactionId, domainEvent.FeeId, domainEvent.SettledDateTime.Date);
-            }
-
-            await this.SettlementAggregateRepository.SaveChanges(aggregate, cancellationToken);
         }
 
-        private async Task HandleSpecificDomainEvent(MerchantFeeSettledEvent domainEvent,
-                                                     CancellationToken cancellationToken)
+        private async Task<Result> HandleSpecificDomainEvent(MerchantFeeSettledEvent domainEvent,
+                                                             CancellationToken cancellationToken)
         {
-            TransactionAggregate aggregate = await this.TransactionAggregateRepository.GetLatestVersion(domainEvent.TransactionId, cancellationToken);
-
-            CalculatedFee calculatedFee = new CalculatedFee
-                                          {
-                                              CalculatedValue = domainEvent.CalculatedValue,
-                                              FeeCalculatedDateTime = domainEvent.FeeCalculatedDateTime,
-                                              FeeCalculationType = (CalculationType)domainEvent.FeeCalculationType,
-                                              FeeId = domainEvent.FeeId,
-                                              FeeType = FeeType.Merchant,
-                                              FeeValue = domainEvent.FeeValue,
-                                              IsSettled = true
-                                          };
-
-            aggregate.AddSettledFee(calculatedFee, domainEvent.SettledDateTime, domainEvent.SettlementId);
-
-            await this.TransactionAggregateRepository.SaveChanges(aggregate, cancellationToken);
+            AddSettledMerchantFeeCommand command = new(domainEvent.TransactionId, domainEvent.CalculatedValue,
+                domainEvent.FeeCalculatedDateTime, (CalculationType)domainEvent.FeeCalculationType, domainEvent.FeeId,
+                domainEvent.FeeValue, domainEvent.SettledDateTime, domainEvent.SettlementId);
+            return await this.Mediator.Send(command, cancellationToken);
         }
 
-        private async Task<List<TransactionFeeToCalculate>> GetTransactionFeesForCalculation(TransactionAggregate transactionAggregate, CancellationToken cancellationToken){
-            Boolean contractProductFeeCacheEnabled;
-            String contractProductFeeCacheEnabledValue = ConfigurationReader.GetValue("ContractProductFeeCacheEnabled");
-            if (String.IsNullOrEmpty(contractProductFeeCacheEnabledValue)){
-                contractProductFeeCacheEnabled = false;
-            }
-            else{
-                contractProductFeeCacheEnabled = Boolean.Parse(contractProductFeeCacheEnabledValue);
-            }
+        private async Task<Result> HandleSpecificDomainEvent(CustomerEmailReceiptRequestedEvent domainEvent,
+                                                             CancellationToken cancellationToken) {
+            return Result.Success();
 
-            Boolean feesInCache;
-            List<ContractProductTransactionFee> feesForProduct = null;
-            if (contractProductFeeCacheEnabled == false){
-                feesInCache = false;
-            }
-            else{
-                // Ok we should have filtered out the not applicable transactions
-                // Check if we have fees for this product in the cache
-                feesInCache = this.MemoryCache.TryGetValue((transactionAggregate.EstateId, transactionAggregate.ContractId, transactionAggregate.ProductId),
-                                                                   out feesForProduct);
-            }
-
-            if (feesInCache == false){
-                Logger.LogInformation($"Fees for Key: Estate Id {transactionAggregate.EstateId} Contract Id {transactionAggregate.ContractId} ProductId {transactionAggregate.ProductId} not found in the cache");
-
-                // Nothing in cache so we need to make a remote call
-                // Get the fees to be calculated
-                feesForProduct = await this.EstateClient.GetTransactionFeesForProduct(this.TokenResponse.AccessToken,
-                                                                                      transactionAggregate.EstateId,
-                                                                                      transactionAggregate.MerchantId,
-                                                                                      transactionAggregate.ContractId,
-                                                                                      transactionAggregate.ProductId,
-                                                                                      cancellationToken);
-
-                if (contractProductFeeCacheEnabled == true){
-                    // Now add this the result to the cache
-                    String contractProductFeeCacheExpiryInHours = ConfigurationReader.GetValue("ContractProductFeeCacheExpiryInHours");
-                    if (String.IsNullOrEmpty(contractProductFeeCacheExpiryInHours)){
-                        contractProductFeeCacheExpiryInHours = "168"; // 7 Days default
-                    }
-
-                    this.MemoryCache.Set((transactionAggregate.EstateId, transactionAggregate.ContractId, transactionAggregate.ProductId),
-                                         feesForProduct,
-                                         new MemoryCacheEntryOptions(){
-                                                                          AbsoluteExpirationRelativeToNow = TimeSpan.FromHours(Int32.Parse(contractProductFeeCacheExpiryInHours))
-                                                                      });
-                    Logger.LogInformation($"Fees for Key: Estate Id {transactionAggregate.EstateId} Contract Id {transactionAggregate.ContractId} ProductId {transactionAggregate.ProductId} added to cache");
-                }
-            }
-            else
-            {
-                Logger.LogInformation($"Fees for Key: Estate Id {transactionAggregate.EstateId} Contract Id {transactionAggregate.ContractId} ProductId {transactionAggregate.ProductId} found in the cache");
-            }
-            
-            List<TransactionFeeToCalculate> feesForCalculation = new List<TransactionFeeToCalculate>();
-
-            foreach (ContractProductTransactionFee contractProductTransactionFee in feesForProduct)
-            {
-                TransactionFeeToCalculate transactionFeeToCalculate = new TransactionFeeToCalculate
-                                                                      {
-                                                                          FeeId = contractProductTransactionFee.TransactionFeeId,
-                                                                          Value = contractProductTransactionFee.Value,
-                                                                          FeeType = (FeeType)contractProductTransactionFee.FeeType,
-                                                                          CalculationType =
-                                                                              (CalculationType)contractProductTransactionFee.CalculationType
-                                                                      };
-
-                feesForCalculation.Add(transactionFeeToCalculate);
-            }
-
-            return feesForCalculation;
-        }
-        
-        private async Task HandleSpecificDomainEvent(CustomerEmailReceiptRequestedEvent domainEvent,
-                                                     CancellationToken cancellationToken) {
             this.TokenResponse = await Helpers.GetToken(this.TokenResponse, this.SecurityServiceClient, cancellationToken);
 
             TransactionAggregate transactionAggregate =
@@ -368,7 +188,7 @@ namespace TransactionProcessor.BusinessLogic.EventHandling
             String receiptMessage = await this.TransactionReceiptBuilder.GetEmailReceiptMessage(transactionAggregate.GetTransaction(), merchant, @operator.Name, cancellationToken);
 
             // Send the message
-            await this.SendEmailMessage(this.TokenResponse.AccessToken,
+            return await this.SendEmailMessage(this.TokenResponse.AccessToken,
                                         domainEvent.EventId,
                                         domainEvent.EstateId,
                                         "Transaction Successful",
@@ -377,41 +197,43 @@ namespace TransactionProcessor.BusinessLogic.EventHandling
                                         cancellationToken);
         }
 
-        private async Task HandleSpecificDomainEvent(CustomerEmailReceiptResendRequestedEvent domainEvent,
-                                                     CancellationToken cancellationToken) {
+        private async Task<Result> HandleSpecificDomainEvent(CustomerEmailReceiptResendRequestedEvent domainEvent,
+                                                             CancellationToken cancellationToken) {
             this.TokenResponse = await Helpers.GetToken(this.TokenResponse, this.SecurityServiceClient, cancellationToken);
 
             // Send the message
-            await this.ResendEmailMessage(this.TokenResponse.AccessToken, domainEvent.EventId, domainEvent.EstateId, cancellationToken);
+            return await this.ResendEmailMessage(this.TokenResponse.AccessToken, domainEvent.EventId, domainEvent.EstateId, cancellationToken);
         }
         
-        private async Task ResendEmailMessage(String accessToken,
-                                              Guid messageId,
-                                              Guid estateId,
-                                              CancellationToken cancellationToken) {
+        private async Task<Result> ResendEmailMessage(String accessToken,
+                                                      Guid messageId,
+                                                      Guid estateId,
+                                                      CancellationToken cancellationToken) {
             ResendEmailRequest resendEmailRequest = new ResendEmailRequest {
                                                                                ConnectionIdentifier = estateId,
                                                                                MessageId = messageId
                                                                            };
             try {
-                await this.MessagingServiceClient.ResendEmail(accessToken, resendEmailRequest, cancellationToken);
+                return await this.MessagingServiceClient.ResendEmail(accessToken, resendEmailRequest, cancellationToken);
             }
             catch(Exception ex) when(ex.InnerException != null && ex.InnerException.GetType() == typeof(InvalidOperationException)) {
                 // Only bubble up if not a duplicate message
                 if (ex.InnerException.Message.Contains("Cannot send a message to provider that has already been sent", StringComparison.InvariantCultureIgnoreCase) ==
                     false) {
-                    throw;
+                    return Result.Failure(ex.GetExceptionMessages());
                 }
+                return Result.Success("Duplicate message send");
             }
+            
         }
 
-        private async Task SendEmailMessage(String accessToken,
-                                            Guid messageId,
-                                            Guid estateId,
-                                            String subject,
-                                            String body,
-                                            String emailAddress,
-                                            CancellationToken cancellationToken) {
+        private async Task<Result> SendEmailMessage(String accessToken,
+                                                    Guid messageId,
+                                                    Guid estateId,
+                                                    String subject,
+                                                    String body,
+                                                    String emailAddress,
+                                                    CancellationToken cancellationToken) {
             SendEmailRequest sendEmailRequest = new SendEmailRequest {
                                                                          MessageId = messageId,
                                                                          Body = body,
@@ -427,14 +249,15 @@ namespace TransactionProcessor.BusinessLogic.EventHandling
             // TODO: may decide to record the message Id againsts the Transaction Aggregate in future, but for now
             // we wont do this...
             try {
-                await this.MessagingServiceClient.SendEmail(accessToken, sendEmailRequest, cancellationToken);
+                return await this.MessagingServiceClient.SendEmail(accessToken, sendEmailRequest, cancellationToken);
             }
             catch(Exception ex) when(ex.InnerException != null && ex.InnerException.GetType() == typeof(InvalidOperationException)) {
-                // Only bubble up if not a duplicate message
                 if (ex.InnerException.Message.Contains("Cannot send a message to provider that has already been sent", StringComparison.InvariantCultureIgnoreCase) ==
-                    false) {
-                    throw;
+                    false)
+                {
+                    return Result.Failure(ex.GetExceptionMessages());
                 }
+                return Result.Success("Duplicate message send");
             }
         }
 

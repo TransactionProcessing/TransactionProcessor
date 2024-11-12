@@ -1,77 +1,74 @@
-﻿namespace TransactionProcessor.BusinessLogic.Tests.CommandHandler
-{
-    using System.Threading;
-    using BusinessLogic.Services;
-    using Commands;
-    using MediatR;
-    using Moq;
-    using RequestHandlers;
-    using Requests;
-    using Services;
-    using Shouldly;
-    using Testing;
-    using Xunit;
+﻿using System;
+using System.Collections.Generic;
+using System.Threading;
+using System.Threading.Tasks;
+using Moq;
+using Shouldly;
+using SimpleResults;
+using TransactionProcessor.BusinessLogic.RequestHandlers;
+using TransactionProcessor.BusinessLogic.Requests;
+using TransactionProcessor.BusinessLogic.Services;
+using TransactionProcessor.Testing;
+using Xunit;
 
+namespace TransactionProcessor.BusinessLogic.Tests.RequestHandler
+{
     public class TransactionRequestHandlerTests
     {
         [Fact]
-        public void TransactionRequestHandler_ProcessLogonTransactionRequest_IsHandled()
+        public async Task TransactionRequestHandler_ProcessLogonTransactionRequest_IsHandled()
         {
             Mock<ITransactionDomainService> transactionDomainService = new Mock<ITransactionDomainService>();
             TransactionRequestHandler handler = new TransactionRequestHandler(transactionDomainService.Object);
+            transactionDomainService.Setup(t => t.ProcessLogonTransaction(It.IsAny<TransactionCommands.ProcessLogonTransactionCommand>(),
+                It.IsAny<CancellationToken>())).ReturnsAsync(Result.Success());
+            TransactionCommands.ProcessLogonTransactionCommand command = TestData.ProcessLogonTransactionCommand;
 
-            ProcessLogonTransactionRequest command = TestData.ProcessLogonTransactionRequest;
-
-            Should.NotThrow(async () =>
-                            {
-                                await handler.Handle(command, CancellationToken.None);
-                            });
+            var result = await handler.Handle(command, CancellationToken.None);
+            result.IsSuccess.ShouldBeTrue();
 
         }
 
         [Fact]
-        public void TransactionRequestHandler_ProcessSaleTransactionRequest_IsHandled()
+        public async Task TransactionRequestHandler_ProcessSaleTransactionRequest_IsHandled()
         {
             Mock<ITransactionDomainService> transactionDomainService = new Mock<ITransactionDomainService>();
             TransactionRequestHandler handler = new TransactionRequestHandler(transactionDomainService.Object);
+            transactionDomainService.Setup(t => t.ProcessSaleTransaction(It.IsAny<TransactionCommands.ProcessSaleTransactionCommand>(),
+                It.IsAny<CancellationToken>())).ReturnsAsync(Result.Success());
+            TransactionCommands.ProcessSaleTransactionCommand command = TestData.ProcessSaleTransactionCommand;
 
-            ProcessSaleTransactionRequest command = TestData.ProcessSaleTransactionRequest;
-
-            Should.NotThrow(async () =>
-                            {
-                                await handler.Handle(command, CancellationToken.None);
-                            });
+            var result = await handler.Handle(command, CancellationToken.None);
+            result.IsSuccess.ShouldBeTrue();
 
         }
 
         [Fact]
-        public void TransactionRequestHandler_ProcessReconciliationRequest_IsHandled()
+        public async Task TransactionRequestHandler_ProcessReconciliationRequest_IsHandled()
         {
             Mock<ITransactionDomainService> transactionDomainService = new Mock<ITransactionDomainService>();
             TransactionRequestHandler handler = new TransactionRequestHandler(transactionDomainService.Object);
+            transactionDomainService.Setup(t => t.ProcessReconciliationTransaction(It.IsAny<TransactionCommands.ProcessReconciliationCommand>(),
+                It.IsAny<CancellationToken>())).ReturnsAsync(Result.Success());
+            TransactionCommands.ProcessReconciliationCommand command = TestData.ProcessReconciliationCommand;
 
-            ProcessReconciliationRequest command = TestData.ProcessReconciliationRequest;
-
-            Should.NotThrow(async () =>
-                            {
-                                await handler.Handle(command, CancellationToken.None);
-                            });
+            var result = await handler.Handle(command, CancellationToken.None);
+            result.IsSuccess.ShouldBeTrue();
 
         }
 
         [Fact]
-        public void TransactionRequestHandler_ResendTransactionReceiptRequest_IsHandled()
+        public async Task TransactionRequestHandler_ResendTransactionReceiptRequest_IsHandled()
         {
             Mock<ITransactionDomainService> transactionDomainService = new Mock<ITransactionDomainService>();
             TransactionRequestHandler handler = new TransactionRequestHandler(transactionDomainService.Object);
+            transactionDomainService
+                .Setup(t => t.ResendTransactionReceipt(It.IsAny<TransactionCommands.ResendTransactionReceiptCommand>(),
+                    It.IsAny<CancellationToken>())).ReturnsAsync(Result.Success());
+            TransactionCommands.ResendTransactionReceiptCommand command = TestData.ResendTransactionReceiptCommand;
 
-            ResendTransactionReceiptRequest command = TestData.ResendTransactionReceiptRequest;
-
-            Should.NotThrow(async () =>
-                            {
-                                await handler.Handle(command, CancellationToken.None);
-                            });
-
+            var result = await handler.Handle(command, CancellationToken.None);
+            result.IsSuccess.ShouldBeTrue();
         }
     }
 }

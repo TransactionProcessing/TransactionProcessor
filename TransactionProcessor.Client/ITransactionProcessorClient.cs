@@ -1,4 +1,6 @@
-﻿namespace TransactionProcessor.Client
+﻿using SimpleResults;
+
+namespace TransactionProcessor.Client
 {
     using System;
     using System.Collections.Generic;
@@ -10,60 +12,60 @@
     {
         #region Methods
         
-        Task<SerialisedMessage> PerformTransaction(String accessToken, 
-                                                   SerialisedMessage transactionRequest,
-                                                   CancellationToken cancellationToken);
+        Task<Result<SerialisedMessage>> PerformTransaction(String accessToken, 
+                                                           SerialisedMessage transactionRequest,
+                                                           CancellationToken cancellationToken);
 
-        Task<SettlementResponse> GetSettlementByDate(String accessToken, 
+        Task<Result<SettlementResponse>> GetSettlementByDate(String accessToken, 
                                                                    DateTime settlementDate,
                                                                    Guid estateId,
                                                                    Guid merchantId,
                                                                    CancellationToken cancellationToken);
 
-        Task ProcessSettlement(String accessToken,
+        Task<Result> ProcessSettlement(String accessToken,
                                DateTime settlementDate,
                                Guid estateId,
                                Guid merchantId,
                                CancellationToken cancellationToken);
 
-        Task ResendEmailReceipt(String accessToken,
-                               Guid estateId,
-                               Guid transactionId,
-                               CancellationToken cancellationToken);
+        Task<Result> ResendEmailReceipt(String accessToken,
+                                        Guid estateId,
+                                        Guid transactionId,
+                                        CancellationToken cancellationToken);
 
-        Task<MerchantBalanceResponse> GetMerchantBalance(String accessToken,
+        Task<Result<MerchantBalanceResponse>> GetMerchantBalance(String accessToken,
                                                          Guid estateId,
                                                          Guid merchantId,
                                                          CancellationToken cancellationToken,
                                                          Boolean liveBalance = true);
 
-        Task<List<MerchantBalanceChangedEntryResponse>> GetMerchantBalanceHistory(String accessToken,
+        Task<Result<List<MerchantBalanceChangedEntryResponse>>> GetMerchantBalanceHistory(String accessToken,
                                                                                   Guid estateId,
                                                                                   Guid merchantId,
                                                                                   DateTime startDate,
                                                                                   DateTime endDate,
                                                                                   CancellationToken cancellationToken);
 
-        Task<GetVoucherResponse> GetVoucherByCode(String accessToken,
+        Task<Result<GetVoucherResponse>> GetVoucherByCode(String accessToken,
                                             Guid estateId,
                                             String voucherCode,
                                             CancellationToken cancellationToken);
 
-        Task<GetVoucherResponse> GetVoucherByTransactionId(String accessToken,
+        Task<Result<GetVoucherResponse>> GetVoucherByTransactionId(String accessToken,
                                                   Guid estateId,
                                                   Guid transactionId,
                                                   CancellationToken cancellationToken);
 
-        Task<RedeemVoucherResponse> RedeemVoucher(String accessToken,
+        Task<Result<RedeemVoucherResponse>> RedeemVoucher(String accessToken,
                                                   RedeemVoucherRequest redeemVoucherRequest,
                                                   CancellationToken cancellationToken);
 
-        Task<CreateFloatForContractProductResponse> CreateFloatForContractProduct(String accessToken,
+        Task<Result> CreateFloatForContractProduct(String accessToken,
                                                                                   Guid estateId,
                          CreateFloatForContractProductRequest createFloatForContractProductRequest,
                          CancellationToken cancellationToken);
 
-        Task RecordFloatCreditPurchase(String accessToken,
+        Task<Result> RecordFloatCreditPurchase(String accessToken,
                                        Guid estateId,
                                        RecordFloatCreditPurchaseRequest recordFloatCreditPurchaseRequest,
                                        CancellationToken cancellationToken);

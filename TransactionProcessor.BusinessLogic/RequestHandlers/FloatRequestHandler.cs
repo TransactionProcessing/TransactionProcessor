@@ -1,37 +1,41 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
+﻿using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using SimpleResults;
 
 namespace TransactionProcessor.BusinessLogic.RequestHandlers
 {
     using System.Threading;
+    using EstateManagement.Database.Entities;
     using MediatR;
     using Models;
     using Requests;
+    using Shared.Exceptions;
     using TransactionProcessor.BusinessLogic.Services;
+    using static Microsoft.EntityFrameworkCore.DbLoggerCategory.Database;
 
-    public class FloatRequestHandler :IRequestHandler<CreateFloatForContractProductRequest, CreateFloatForContractProductResponse>,
-                                      IRequestHandler<RecordCreditPurchaseForFloatRequest>{
+    public class FloatRequestHandler :IRequestHandler<FloatCommands.CreateFloatForContractProductCommand, Result>,
+                                      IRequestHandler<FloatCommands.RecordCreditPurchaseForFloatCommand, Result>,
+    IRequestHandler<FloatActivityCommands.RecordCreditPurchaseCommand, Result> {
         private readonly IFloatDomainService FloatDomainService;
 
         public FloatRequestHandler(IFloatDomainService floatDomainService){
             this.FloatDomainService = floatDomainService;
         }
 
-        public async Task<CreateFloatForContractProductResponse> Handle(CreateFloatForContractProductRequest request, CancellationToken cancellationToken){
-            CreateFloatForContractProductResponse response = await this.FloatDomainService.CreateFloatForContractProduct(request.EstateId,
-                                                                                                                         request.ContractId,
-                                                                                                                         request.ProductId,
-                                                                                                                         request.CreateDateTime,
-                                                                                                                         cancellationToken);
+        
 
-            return response;
+        public async Task<Result> Handle(FloatCommands.CreateFloatForContractProductCommand command, CancellationToken cancellationToken){
+            return await this.FloatDomainService.CreateFloatForContractProduct(command, cancellationToken);
         }
 
-        public async Task Handle(RecordCreditPurchaseForFloatRequest request, CancellationToken cancellationToken){
-            await this.FloatDomainService.RecordCreditPurchase(request.EstateId, request.FloatId, request.CreditAmount, request.CostPrice, request.PurchaseDateTime, cancellationToken);
+        public async Task<Result> Handle(FloatCommands.RecordCreditPurchaseForFloatCommand command, CancellationToken cancellationToken){
+            return await this.FloatDomainService.RecordCreditPurchase(command, cancellationToken);
+        }
+
+        public async Task<Result> Handle(FloatActivityCommands.RecordCreditPurchaseCommand command,
+                                         CancellationToken cancellationToken) {
+            return await this.FloatDomainService.RecordCreditPurchase(command, cancellationToken);
         }
     }
 }

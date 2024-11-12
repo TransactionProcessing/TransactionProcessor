@@ -1,4 +1,8 @@
-﻿namespace TransactionProcessor.ProjectionEngine.ProjectionHandler;
+﻿using Microsoft.EntityFrameworkCore.Storage;
+using Shared.EventStore.Aggregate;
+using SimpleResults;
+
+namespace TransactionProcessor.ProjectionEngine.ProjectionHandler;
 
 using System.Diagnostics;
 using System.Text;
@@ -26,29 +30,33 @@ public class ProjectionHandler<TState> : IProjectionHandler where TState : State
         this.StateDispatcher = stateDispatcher;
     }
 
-    public async Task Handle(IDomainEvent @event, CancellationToken cancellationToken){
-        if (@event == null) return;
+    public async Task<Result> Handle(IDomainEvent @event, CancellationToken cancellationToken){
+        if (@event == null) return Result.Success();
+
+        Logger.LogInformation($"{@event.EventId}|In ProjectionHandler for {@event.EventType}");
 
         if (this.Projection.ShouldIHandleEvent(@event) == false){
-            return;
+            Logger.LogInformation($"{@event.EventId}|Silent Handle {@event.EventType}");
+            return Result.Success();
         }
 
         Stopwatch stopwatch = Stopwatch.StartNew();
         StringBuilder builder = new();
 
         //Load the state from persistence
-        TState state = await this.ProjectionStateRepository.Load(@event, cancellationToken);
+        Result<TState> loadResult = await this.ProjectionStateRepository.Load(@event, cancellationToken);
 
-        if (state == null){
-            return;
+        if (loadResult.IsFailed) {
+            return ResultHelpers.CreateFailure(loadResult);
         }
-
+        Logger.LogInformation($"{@event.EventId}|State loaded for {@event.EventType}");
+        var state = loadResult.Data;
         builder.Append($"{stopwatch.ElapsedMilliseconds}ms After Load|");
 
         builder.Append($"{stopwatch.ElapsedMilliseconds}ms Handling {@event.EventType} Id [{@event.EventId}] for state {state.GetType().Name}|");
 
         TState newState = await this.Projection.Handle(state, @event, cancellationToken);
-
+        Logger.LogInformation($"{@event.EventId}|Event handled {@event.EventType}");
         builder.Append($"{stopwatch.ElapsedMilliseconds}ms After Handle|");
 
         if (newState != state){
@@ -57,31 +65,39 @@ public class ProjectionHandler<TState> : IProjectionHandler where TState : State
                                     };
 
             // save state
-            newState = await this.ProjectionStateRepository.Save(newState, @event, cancellationToken);
-
+            var saveResult = await this.ProjectionStateRepository.Save(newState, @event, cancellationToken);
+            if (saveResult.IsFailed) {
+                return ResultHelpers.CreateFailure(saveResult);
+            }
+            Logger.LogInformation($"{@event.EventId}|Event changes saved {@event.EventType}");
             //Repo might have detected a duplicate event
             builder.Append($"{stopwatch.ElapsedMilliseconds}ms After Save|");
 
             if (this.StateDispatcher != null){
                 // Send to anyone else interested
-                await this.StateDispatcher.Dispatch(newState, @event, cancellationToken);
+                Result dispatchResult = await this.StateDispatcher.Dispatch(newState, @event, cancellationToken);
+                if (dispatchResult.IsFailed) {
+                    return ResultHelpers.CreateFailure(dispatchResult);
+                }
 
+                Logger.LogInformation($"{@event.EventId}|Event changes dispatched {@event.EventType}");
                 builder.Append($"{stopwatch.ElapsedMilliseconds}ms After Dispatch|");
             }
 
         }
         else{
-            builder.Append($"{stopwatch.ElapsedMilliseconds}ms No Save required|");
+            builder.Append($"{@event.EventId}|{stopwatch.ElapsedMilliseconds}ms No Save required|");
         }
 
         stopwatch.Stop();
 
         builder.Insert(0, $"Total time: {stopwatch.ElapsedMilliseconds}ms|");
 
-        Int32 projectionTraceThresholdInSeconds = Int32.Parse(ConfigurationReader.GetValue("AppSettings", "ProjectionTraceThresholdInSeconds"));
-        if (stopwatch.Elapsed.Seconds > projectionTraceThresholdInSeconds){
+        //Int32 projectionTraceThresholdInSeconds = Int32.Parse(ConfigurationReader.GetValue("AppSettings", "ProjectionTraceThresholdInSeconds"));
+        //if (stopwatch.Elapsed.Seconds > projectionTraceThresholdInSeconds){
             Logger.LogWarning(builder.ToString());
-            Logger.LogInformation($"Event Type {@event.EventType} Id [{@event.EventId}] for state {state.GetType().Name} took {stopwatch.ElapsedMilliseconds}ms to process");
-        }
+            Logger.LogInformation($"{@event.EventId}|Event Type {@event.EventType} Id [{@event.EventId}] for state {state.GetType().Name} took {stopwatch.ElapsedMilliseconds}ms to process");
+        //}
+        return Result.Success();
     }
 }

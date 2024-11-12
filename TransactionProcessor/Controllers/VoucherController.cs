@@ -1,4 +1,8 @@
-﻿namespace TransactionProcessor.Controllers
+﻿using Shared.EventStore.Aggregate;
+using SimpleResults;
+using TransactionProcessor.BusinessLogic.Requests;
+
+namespace TransactionProcessor.Controllers
 {
     using System;
     using System.Diagnostics.CodeAnalysis;
@@ -15,6 +19,7 @@
     using Shared.General;
     using Swashbuckle.AspNetCore.Annotations;
     using Swashbuckle.AspNetCore.Filters;
+    using static Microsoft.EntityFrameworkCore.DbLoggerCategory.Database;
     using IssueVoucherResponse = Models.IssueVoucherResponse;
     using RedeemVoucherResponse = Models.RedeemVoucherResponse;
 
@@ -59,7 +64,7 @@
         [SwaggerResponse(200, "OK", typeof(RedeemVoucherResponse))]
         [SwaggerResponseExample(200, typeof(RedeemVoucherResponseExample))]
         public async Task<IActionResult> RedeemVoucher(RedeemVoucherRequest redeemVoucherRequest,
-                                                      CancellationToken cancellationToken)
+                                                       CancellationToken cancellationToken)
         {
             // Reject password tokens
             if (ClaimsHelper.IsPasswordToken(this.User))
@@ -68,11 +73,13 @@
             }
 
             DateTime redeemedDateTime = redeemVoucherRequest.RedeemedDateTime.HasValue ? redeemVoucherRequest.RedeemedDateTime.Value : DateTime.Now;
-            BusinessLogic.Requests.RedeemVoucherRequest request = BusinessLogic.Requests.RedeemVoucherRequest.Create(redeemVoucherRequest.EstateId, redeemVoucherRequest.VoucherCode, redeemedDateTime);
+            VoucherCommands.RedeemVoucherCommand command = new(redeemVoucherRequest.EstateId, redeemVoucherRequest.VoucherCode, redeemedDateTime);
 
-            RedeemVoucherResponse response = await this.Mediator.Send(request, cancellationToken);
+            Result<RedeemVoucherResponse> result = await this.Mediator.Send(command, cancellationToken);
+            if (result.IsFailed)
+                ResultHelpers.CreateFailure(result).ToActionResultX();
 
-            return this.Ok(this.ModelFactory.ConvertFrom(response));
+            return this.ModelFactory.ConvertFrom(result.Data).ToActionResultX();
         }
 
         /// <summary>
@@ -94,22 +101,27 @@
                 return this.Forbid();
             }
 
-            Voucher voucherModel = null;
             if (String.IsNullOrEmpty(voucherCode) == false) {
-                {
-                    // By code is priority
-                    voucherModel = await this.VoucherManagementManager.GetVoucherByCode(estateId, voucherCode, cancellationToken);
-                    return this.Ok(this.ModelFactory.ConvertFrom(voucherModel));
-                }
+                VoucherQueries.GetVoucherByVoucherCodeQuery queryByVoucherCode = new(estateId, voucherCode);
+                // By code is priority
+                Result<Voucher> getVoucherByCodeResult = await this.Mediator.Send(queryByVoucherCode, cancellationToken);
+                if (getVoucherByCodeResult.IsFailed)
+                    ResultHelpers.CreateFailure(getVoucherByCodeResult).ToActionResultX();
+
+                return this.ModelFactory.ConvertFrom(getVoucherByCodeResult.Data).ToActionResultX();
             }
 
             if (transactionId != Guid.Empty) {
                 // By transaction id is an additional filter
-                voucherModel = await this.VoucherManagementManager.GetVoucherByTransactionId(estateId, transactionId, cancellationToken);
-                return this.Ok(this.ModelFactory.ConvertFrom(voucherModel));
+                VoucherQueries.GetVoucherByTransactionIdQuery queryByTransactionId = new(estateId, transactionId);
+                Result<Voucher> getVoucherByTransactionIdResult = await this.Mediator.Send(queryByTransactionId, cancellationToken);
+                if (getVoucherByTransactionIdResult.IsFailed)
+                    ResultHelpers.CreateFailure(getVoucherByTransactionIdResult).ToActionResultX();
+
+                return this.ModelFactory.ConvertFrom(getVoucherByTransactionIdResult.Data).ToActionResultX();
             }
 
-            return this.NoContent();
+            return Result.Invalid().ToActionResultX();
         }
         #endregion
 

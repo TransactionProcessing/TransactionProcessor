@@ -1070,7 +1070,7 @@ await this.FeatureBackgroundAsync();
                             "0.00",
                             "20.00"});
 #line 170
-await testRunner.ThenAsync("the following entries appear in the merchants balance history for estate \'Test Es" +
+ await testRunner.ThenAsync("the following entries appear in the merchants balance history for estate \'Test Es" +
                         "tate 1\' and merchant \'Test Merchant 1\'", ((string)(null)), table72, "Then ");
 #line hidden
                 Reqnroll.Table table73 = new Reqnroll.Table(new string[] {

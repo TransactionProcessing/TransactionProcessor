@@ -1,4 +1,6 @@
-﻿namespace TransactionProcessor.BusinessLogic.RequestHandlers
+﻿using SimpleResults;
+
+namespace TransactionProcessor.BusinessLogic.RequestHandlers
 {
     using System.Threading;
     using System.Threading.Tasks;
@@ -6,6 +8,7 @@
     using Models;
     using Requests;
     using Services;
+    using static Microsoft.EntityFrameworkCore.DbLoggerCategory.Database;
 
     /// <summary>
     /// 
@@ -15,10 +18,12 @@
     /// <seealso cref="MediatR.IRequestHandler{TransactionProcessor.BusinessLogic.Requests.ProcessReconciliationRequest, TransactionProcessor.BusinessLogic.Requests.ProcessReconciliationResponse}" />
     /// <seealso cref="MediatR.IRequestHandler{ProcessLogonTransactionRequest, ProcessLogonTransactionResponse}" />
     /// <seealso cref="" />
-    public class TransactionRequestHandler : IRequestHandler<ProcessLogonTransactionRequest, ProcessLogonTransactionResponse>,
-                                             IRequestHandler<ProcessSaleTransactionRequest, ProcessSaleTransactionResponse>,
-                                             IRequestHandler<ProcessReconciliationRequest, ProcessReconciliationTransactionResponse>,
-                                             IRequestHandler<ResendTransactionReceiptRequest>
+    public class TransactionRequestHandler : IRequestHandler<TransactionCommands.ProcessLogonTransactionCommand, Result<ProcessLogonTransactionResponse>>,
+                                             IRequestHandler<TransactionCommands.ProcessSaleTransactionCommand, Result<ProcessSaleTransactionResponse>>,
+                                             IRequestHandler<TransactionCommands.ProcessReconciliationCommand, Result<ProcessReconciliationTransactionResponse>>,
+                                             IRequestHandler<TransactionCommands.ResendTransactionReceiptCommand,Result>,
+                                             IRequestHandler<TransactionCommands.CalculateFeesForTransactionCommand, Result>,
+                                             IRequestHandler<TransactionCommands.AddSettledMerchantFeeCommand, Result>
     {
         #region Fields
 
@@ -44,85 +49,39 @@
 
         #region Methods
 
-        /// <summary>
-        /// Handles the specified request.
-        /// </summary>
-        /// <param name="request">The request.</param>
-        /// <param name="cancellationToken">The cancellation token.</param>
-        /// <returns>
-        /// Response from the request
-        /// </returns>
-        public async Task<ProcessLogonTransactionResponse> Handle(ProcessLogonTransactionRequest request,
-                                                                  CancellationToken cancellationToken)
-        {
-            ProcessLogonTransactionResponse logonResponse =
-                await this.TransactionDomainService.ProcessLogonTransaction(request.TransactionId,
-                                                                            request.EstateId,
-                                                                            request.MerchantId,
-                                                                            request.TransactionDateTime,
-                                                                            request.TransactionNumber,
-                                                                            request.DeviceIdentifier,
-                                                                            cancellationToken);
-
-            return logonResponse;
+        public async Task<Result<ProcessLogonTransactionResponse>> Handle(TransactionCommands.ProcessLogonTransactionCommand command,
+                                                                  CancellationToken cancellationToken) {
+            return await this.TransactionDomainService.ProcessLogonTransaction(
+                command, cancellationToken);
         }
 
-        /// <summary>
-        /// Handles the specified request.
-        /// </summary>
-        /// <param name="request">The request.</param>
-        /// <param name="cancellationToken">The cancellation token.</param>
-        /// <returns>
-        /// Response from the request
-        /// </returns>
-        public async Task<ProcessSaleTransactionResponse> Handle(ProcessSaleTransactionRequest request,
+        public async Task<Result<ProcessSaleTransactionResponse>> Handle(TransactionCommands.ProcessSaleTransactionCommand command,
                                                                  CancellationToken cancellationToken)
         {
-            ProcessSaleTransactionResponse saleResponse = await this.TransactionDomainService.ProcessSaleTransaction(request.TransactionId,
-                request.EstateId,
-                request.MerchantId,
-                request.TransactionDateTime,
-                request.TransactionNumber,
-                request.DeviceIdentifier,
-                request.OperatorId,
-                request.CustomerEmailAddress,
-                request.AdditionalTransactionMetadata,
-                request.ContractId,
-                request.ProductId,
-                request.TransactionSource,
-                cancellationToken);
-
-            return saleResponse;
+            return await this.TransactionDomainService.ProcessSaleTransaction(command, cancellationToken);
         }
 
-        /// <summary>
-        /// Handles a request
-        /// </summary>
-        /// <param name="request">The request</param>
-        /// <param name="cancellationToken">Cancellation token</param>
-        /// <returns>
-        /// Response from the request
-        /// </returns>
-        public async Task<ProcessReconciliationTransactionResponse> Handle(ProcessReconciliationRequest request,
+        public async Task<Result<ProcessReconciliationTransactionResponse>> Handle(TransactionCommands.ProcessReconciliationCommand command,
                                                                            CancellationToken cancellationToken)
         {
-            ProcessReconciliationTransactionResponse reconciliationResponse= await this.TransactionDomainService.ProcessReconciliationTransaction(request.TransactionId,
-                                                                                         request.EstateId,
-                                                                                         request.MerchantId,
-                                                                                         request.DeviceIdentifier,
-                                                                                         request.TransactionDateTime,
-                                                                                         request.TransactionCount,
-                                                                                         request.TransactionValue,
-                                                                                         cancellationToken);
-
-            return reconciliationResponse;
+            return await this.TransactionDomainService.ProcessReconciliationTransaction(command, cancellationToken);
         }
 
         #endregion
 
-        public async Task Handle(ResendTransactionReceiptRequest request,
+        public async Task<Result> Handle(TransactionCommands.ResendTransactionReceiptCommand command,
                                  CancellationToken cancellationToken) {
-            await this.TransactionDomainService.ResendTransactionReceipt(request.TransactionId, request.EstateId, cancellationToken);
+            return await this.TransactionDomainService.ResendTransactionReceipt(command, cancellationToken);
+        }
+
+        public async Task<Result> Handle(TransactionCommands.CalculateFeesForTransactionCommand command,
+                                         CancellationToken cancellationToken) {
+            return await this.TransactionDomainService.CalculateFeesForTransaction(command, cancellationToken);
+        }
+
+        public async Task<Result> Handle(TransactionCommands.AddSettledMerchantFeeCommand command,
+                                         CancellationToken cancellationToken) {
+            return await this.TransactionDomainService.AddSettledMerchantFee(command, cancellationToken);
         }
     }
 }

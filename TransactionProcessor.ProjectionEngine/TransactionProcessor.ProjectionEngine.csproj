@@ -7,13 +7,13 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="EstateManagement.Estate.DomainEvents" Version="2024.6.5" />
-    <PackageReference Include="EstateManagement.Merchant.DomainEvents" Version="2024.6.5" />
-    <PackageReference Include="FileProcessor.File.DomainEvents" Version="2024.5.2" />
-    <PackageReference Include="FileProcessor.FileImportLog.DomainEvents" Version="2024.5.2" />
+    <PackageReference Include="EstateManagement.Estate.DomainEvents" Version="2024.8.2-build123" />
+    <PackageReference Include="EstateManagement.Merchant.DomainEvents" Version="2024.8.2-build123" />
+    <PackageReference Include="FileProcessor.File.DomainEvents" Version="2024.8.2-build67" />
+    <PackageReference Include="FileProcessor.FileImportLog.DomainEvents" Version="2024.8.2-build67" />
     
-    <PackageReference Include="Shared" Version="2024.7.1" />
-    <PackageReference Include="Shared.EventStore" Version="2024.7.1" />
+    <PackageReference Include="Shared" Version="2024.11.2" />
+    <PackageReference Include="Shared.EventStore" Version="2024.11.2" />
   </ItemGroup>
 
   <ItemGroup>

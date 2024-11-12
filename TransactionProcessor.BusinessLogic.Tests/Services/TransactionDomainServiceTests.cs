@@ -1,4 +1,10 @@
-﻿namespace TransactionProcessor.BusinessLogic.Tests.Services{
+﻿using Microsoft.Extensions.Caching.Memory;
+using SimpleResults;
+using TransactionProcessor.BusinessLogic.Common;
+using TransactionProcessor.BusinessLogic.Manager;
+using TransactionProcessor.BusinessLogic.Requests;
+
+namespace TransactionProcessor.BusinessLogic.Tests.Services{
     using System;
     using System.Collections.Generic;
     using System.Threading;
@@ -42,6 +48,8 @@
         private readonly Mock<ITransactionValidationService> TransactionValidationService;
 
         private readonly Mock<IAggregateRepository<FloatAggregate, DomainEvent>> FloatAggregateRepository;
+        private readonly Mock<IMemoryCacheWrapper> MemoryCacheWrapper;
+        private readonly Mock<IFeeCalculationManager> FeeCalculationManager;
         #endregion
 
         #region Constructors
@@ -60,13 +68,18 @@
             Func<String, IOperatorProxy> operatorProxyResolver = operatorName => { return this.OperatorProxy.Object; };
             this.TransactionValidationService = new Mock<ITransactionValidationService>();
             this.FloatAggregateRepository = new Mock<IAggregateRepository<FloatAggregate, DomainEvent>>();
+            this.MemoryCacheWrapper = new Mock<IMemoryCacheWrapper>();
+            this.FeeCalculationManager = new Mock<IFeeCalculationManager>();
+
             this.TransactionDomainService = new TransactionDomainService(this.TransactionAggregateRepository.Object,
                                                                          this.EstateClient.Object,
                                                                          operatorProxyResolver,
                                                                          this.ReconciliationAggregateRepository.Object,
                                                                          this.TransactionValidationService.Object,
                                                                          this.SecurityServiceClient.Object,
-                                                                         this.FloatAggregateRepository.Object);
+                                                                         this.FloatAggregateRepository.Object,
+                                                                         this.MemoryCacheWrapper.Object,
+                                                                         this.FeeCalculationManager.Object);
         }
 
         #endregion
@@ -76,58 +89,68 @@
         [Fact]
         public async Task TransactionDomainService_ProcessLogonTransaction_DeviceNeedsAdded_TransactionIsProcessed(){
             this.TransactionAggregateRepository.Setup(t => t.GetLatestVersion(It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
-                .ReturnsAsync(TestData.GetEmptyTransactionAggregate);
+                .ReturnsAsync(Result.Success(TestData.GetEmptyTransactionAggregate()));
+            this.TransactionAggregateRepository.Setup(t => t.SaveChanges(It.IsAny<TransactionAggregate>(), It.IsAny<CancellationToken>()))
+                .ReturnsAsync(Result.Success());
 
             this.EstateClient.Setup(e => e.AddDeviceToMerchant(It.IsAny<String>(),
                                                                It.IsAny<Guid>(),
                                                                It.IsAny<Guid>(),
                                                                It.IsAny<AddMerchantDeviceRequest>(),
                                                                It.IsAny<CancellationToken>()))
-                .Returns(Task.CompletedTask);
+                .ReturnsAsync(Result.Success());
 
             this.SecurityServiceClient.Setup(s => s.GetToken(It.IsAny<String>(), It.IsAny<String>(), It.IsAny<CancellationToken>())).ReturnsAsync(TestData.TokenResponse);
 
-            this.TransactionValidationService.Setup(t => t.ValidateLogonTransaction(It.IsAny<Guid>(),
+            this.TransactionValidationService.Setup(t => t.ValidateLogonTransactionX(It.IsAny<Guid>(),
                                                                                     It.IsAny<Guid>(),
                                                                                     It.IsAny<String>(),
-                                                                                    It.IsAny<CancellationToken>())).ReturnsAsync(("SUCCESS", TransactionResponseCode.SuccessNeedToAddDevice));
+                                                                                    It.IsAny<CancellationToken>())).ReturnsAsync(Result.Success(new TransactionValidationResult(TransactionResponseCode.SuccessNeedToAddDevice, "SUCCESS")));
 
-            ProcessLogonTransactionResponse response = await this.TransactionDomainService.ProcessLogonTransaction(TestData.TransactionId,
-                                                                                                                   TestData.EstateId,
-                                                                                                                   TestData.MerchantId,
-                                                                                                                   TestData.TransactionDateTime,
-                                                                                                                   TestData.TransactionNumber,
-                                                                                                                   TestData.DeviceIdentifier,
-                                                                                                                   CancellationToken.None);
-
-            response.EstateId.ShouldBe(TestData.EstateId);
-            response.MerchantId.ShouldBe(TestData.MerchantId);
-            response.ResponseCode.ShouldBe("0001");
-            response.TransactionId.ShouldBe(TestData.TransactionId);
+            TransactionCommands.ProcessLogonTransactionCommand command = new(TestData.TransactionId,
+                TestData.EstateId,
+                TestData.MerchantId,
+                TestData.DeviceIdentifier,
+                TestData.TransactionTypeLogon.ToString(),
+                TestData.TransactionDateTime,
+                TestData.TransactionNumber);
+            
+            var result = await this.TransactionDomainService.ProcessLogonTransaction(command, CancellationToken.None);
+            
+            result.IsSuccess.ShouldBeTrue();
+            result.Data.EstateId.ShouldBe(TestData.EstateId);
+            result.Data.MerchantId.ShouldBe(TestData.MerchantId);
+            result.Data.ResponseCode.ShouldBe("0001");
+            result.Data.TransactionId.ShouldBe(TestData.TransactionId);
         }
 
         [Fact]
         public async Task TransactionDomainService_ProcessLogonTransaction_TransactionIsProcessed(){
             this.TransactionAggregateRepository.Setup(t => t.GetLatestVersion(It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
-                .ReturnsAsync(TestData.GetEmptyTransactionAggregate);
+                .ReturnsAsync(Result.Success(TestData.GetEmptyTransactionAggregate()));
+            this.TransactionAggregateRepository.Setup(t => t.SaveChanges(It.IsAny<TransactionAggregate>(), It.IsAny<CancellationToken>()))
+                .ReturnsAsync(Result.Success());
 
-            this.TransactionValidationService.Setup(t => t.ValidateLogonTransaction(It.IsAny<Guid>(),
+            this.TransactionValidationService.Setup(t => t.ValidateLogonTransactionX(It.IsAny<Guid>(),
                                                                                     It.IsAny<Guid>(),
                                                                                     It.IsAny<String>(),
-                                                                                    It.IsAny<CancellationToken>())).ReturnsAsync(("SUCCESS", TransactionResponseCode.Success));
+                                                                                    It.IsAny<CancellationToken>())).ReturnsAsync(Result.Success(new TransactionValidationResult(TransactionResponseCode.Success, "SUCCESS")));
 
-            ProcessLogonTransactionResponse response = await this.TransactionDomainService.ProcessLogonTransaction(TestData.TransactionId,
-                                                                                                                   TestData.EstateId,
-                                                                                                                   TestData.MerchantId,
-                                                                                                                   TestData.TransactionDateTime,
-                                                                                                                   TestData.TransactionNumber,
-                                                                                                                   TestData.DeviceIdentifier,
-                                                                                                                   CancellationToken.None);
+            TransactionCommands.ProcessLogonTransactionCommand command = new(TestData.TransactionId,
+                TestData.EstateId,
+                TestData.MerchantId,
+                TestData.DeviceIdentifier,
+                TestData.TransactionTypeLogon.ToString(),
+                TestData.TransactionDateTime,
+                TestData.TransactionNumber);
 
-            response.EstateId.ShouldBe(TestData.EstateId);
-            response.MerchantId.ShouldBe(TestData.MerchantId);
-            response.ResponseCode.ShouldBe("0000");
-            response.TransactionId.ShouldBe(TestData.TransactionId);
+            var result = await this.TransactionDomainService.ProcessLogonTransaction(command, CancellationToken.None);
+
+            result.IsSuccess.ShouldBeTrue();
+            result.Data.EstateId.ShouldBe(TestData.EstateId);
+            result.Data.MerchantId.ShouldBe(TestData.MerchantId);
+            result.Data.ResponseCode.ShouldBe("0000");
+            result.Data.TransactionId.ShouldBe(TestData.TransactionId);
         }
 
         [Theory]
@@ -136,45 +159,48 @@
         [InlineData(TransactionResponseCode.InvalidDeviceIdentifier)]
         public async Task TransactionDomainService_ProcessLogonTransaction_ValidationFailed_TransactionIsProcessed(TransactionResponseCode responseCode){
             this.TransactionAggregateRepository.Setup(t => t.GetLatestVersion(It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
-                .ReturnsAsync(TestData.GetEmptyTransactionAggregate);
-
-            this.TransactionValidationService.Setup(t => t.ValidateLogonTransaction(It.IsAny<Guid>(),
+                .ReturnsAsync(Result.Success(TestData.GetEmptyTransactionAggregate()));
+            this.TransactionAggregateRepository.Setup(t => t.SaveChanges(It.IsAny<TransactionAggregate>(), It.IsAny<CancellationToken>()))
+                .ReturnsAsync(Result.Success());
+            this.TransactionValidationService.Setup(t => t.ValidateLogonTransactionX(It.IsAny<Guid>(),
                                                                                     It.IsAny<Guid>(),
                                                                                     It.IsAny<String>(),
-                                                                                    It.IsAny<CancellationToken>())).ReturnsAsync((responseCode.ToString(), responseCode));
+                                                                                    It.IsAny<CancellationToken>())).ReturnsAsync(Result.Success(new TransactionValidationResult(responseCode, responseCode.ToString())));
 
-            ProcessLogonTransactionResponse response = await this.TransactionDomainService.ProcessLogonTransaction(TestData.TransactionId,
-                                                                                                                   TestData.EstateId,
-                                                                                                                   TestData.MerchantId,
-                                                                                                                   TestData.TransactionDateTime,
-                                                                                                                   TestData.TransactionNumber,
-                                                                                                                   TestData.DeviceIdentifier,
-                                                                                                                   CancellationToken.None);
+            TransactionCommands.ProcessLogonTransactionCommand command = new(TestData.TransactionId,
+                TestData.EstateId,
+                TestData.MerchantId,
+                TestData.DeviceIdentifier,
+                TestData.TransactionTypeLogon.ToString(),
+                TestData.TransactionDateTime,
+                TestData.TransactionNumber);
 
-            response.EstateId.ShouldBe(TestData.EstateId);
-            response.MerchantId.ShouldBe(TestData.MerchantId);
-            response.ResponseCode.ShouldBe(((Int32)responseCode).ToString().PadLeft(4, '0'));
-            response.TransactionId.ShouldBe(TestData.TransactionId);
+            Result<ProcessLogonTransactionResponse> result = await this.TransactionDomainService.ProcessLogonTransaction(command, CancellationToken.None);
+
+            result.IsSuccess.ShouldBeTrue();
+            result.Data.EstateId.ShouldBe(TestData.EstateId);
+            result.Data.MerchantId.ShouldBe(TestData.MerchantId);
+            result.Data.ResponseCode.ShouldBe(((Int32)responseCode).ToString().PadLeft(4, '0'));
+            result.Data.TransactionId.ShouldBe(TestData.TransactionId);
         }
 
         [Fact]
         public async Task TransactionDomainService_ProcessReconciliationTransaction_ReconciliationIsProcessed(){
             this.ReconciliationAggregateRepository.Setup(r => r.GetLatestVersion(It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
                 .ReturnsAsync(new ReconciliationAggregate());
-
-            this.TransactionValidationService.Setup(t => t.ValidateReconciliationTransaction(It.IsAny<Guid>(),
+            this.ReconciliationAggregateRepository.Setup(t => t.SaveChanges(It.IsAny<ReconciliationAggregate>(), It.IsAny<CancellationToken>()))
+                .ReturnsAsync(Result.Success());
+            this.TransactionValidationService.Setup(t => t.ValidateReconciliationTransactionX(It.IsAny<Guid>(),
                                                                                              It.IsAny<Guid>(),
                                                                                              It.IsAny<String>(),
-                                                                                             It.IsAny<CancellationToken>())).ReturnsAsync(("SUCCESS", TransactionResponseCode.Success));
+                                                                                             It.IsAny<CancellationToken>())).ReturnsAsync(Result.Success(new TransactionValidationResult(TransactionResponseCode.Success, "SUCCESS")));
 
-            ProcessReconciliationTransactionResponse response = await this.TransactionDomainService.ProcessReconciliationTransaction(TestData.TransactionId,
-                                                                                                                                     TestData.EstateId,
-                                                                                                                                     TestData.MerchantId,
-                                                                                                                                     TestData.DeviceIdentifier,
-                                                                                                                                     TestData.TransactionDateTime,
-                                                                                                                                     TestData.ReconciliationTransactionCount,
-                                                                                                                                     TestData.ReconciliationTransactionValue,
-                                                                                                                                     CancellationToken.None);
+            TransactionCommands.ProcessReconciliationCommand command =
+                new(TestData.TransactionId, TestData.EstateId,
+                    TestData.MerchantId, TestData.DeviceIdentifier, TestData.TransactionDateTime,
+                    TestData.ReconciliationTransactionCount, TestData.ReconciliationTransactionValue);
+
+            ProcessReconciliationTransactionResponse response = await this.TransactionDomainService.ProcessReconciliationTransaction(command, CancellationToken.None);
             ;
 
             response.EstateId.ShouldBe(TestData.EstateId);
@@ -191,20 +217,19 @@
         public async Task TransactionDomainService_ProcessReconciliationTransaction_ValidationFailed_ReconciliationIsProcessed(TransactionResponseCode responseCode){
             this.ReconciliationAggregateRepository.Setup(r => r.GetLatestVersion(It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
                 .ReturnsAsync(new ReconciliationAggregate());
-
-            this.TransactionValidationService.Setup(t => t.ValidateReconciliationTransaction(It.IsAny<Guid>(),
+            this.ReconciliationAggregateRepository.Setup(t => t.SaveChanges(It.IsAny<ReconciliationAggregate>(), It.IsAny<CancellationToken>()))
+                .ReturnsAsync(Result.Success());
+            this.TransactionValidationService.Setup(t => t.ValidateReconciliationTransactionX(It.IsAny<Guid>(),
                                                                                              It.IsAny<Guid>(),
                                                                                              It.IsAny<String>(),
-                                                                                             It.IsAny<CancellationToken>())).ReturnsAsync((responseCode.ToString(), responseCode));
+                                                                                             It.IsAny<CancellationToken>())).ReturnsAsync(Result.Success(new TransactionValidationResult(responseCode, responseCode.ToString())));
 
-            ProcessReconciliationTransactionResponse response = await this.TransactionDomainService.ProcessReconciliationTransaction(TestData.TransactionId,
-                                                                                                                                     TestData.EstateId,
-                                                                                                                                     TestData.MerchantId,
-                                                                                                                                     TestData.DeviceIdentifier,
-                                                                                                                                     TestData.TransactionDateTime,
-                                                                                                                                     TestData.ReconciliationTransactionCount,
-                                                                                                                                     TestData.ReconciliationTransactionValue,
-                                                                                                                                     CancellationToken.None);
+            TransactionCommands.ProcessReconciliationCommand command =
+                new(TestData.TransactionId, TestData.EstateId,
+                    TestData.MerchantId, TestData.DeviceIdentifier, TestData.TransactionDateTime,
+                    TestData.ReconciliationTransactionCount, TestData.ReconciliationTransactionValue);
+
+            ProcessReconciliationTransactionResponse response = await this.TransactionDomainService.ProcessReconciliationTransaction(command, CancellationToken.None);
             ;
 
             response.EstateId.ShouldBe(TestData.EstateId);
@@ -223,18 +248,20 @@
                 .ReturnsAsync(TestData.GetEstateResponseWithOperator1);
 
             this.TransactionAggregateRepository.Setup(t => t.GetLatestVersion(It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
-                .ReturnsAsync(TestData.GetEmptyTransactionAggregate);
+                .ReturnsAsync(Result.Success(TestData.GetEmptyTransactionAggregate()));
+            this.TransactionAggregateRepository.Setup(t => t.SaveChanges(It.IsAny<TransactionAggregate>(), It.IsAny<CancellationToken>()))
+                .ReturnsAsync(Result.Success());
 
-            this.FloatAggregateRepository.Setup(f => f.GetLatestVersion(It.IsAny<Guid>(), It.IsAny<CancellationToken>())).ReturnsAsync(TestData.GetEmptyFloatAggregate);
+            this.FloatAggregateRepository.Setup(f => f.GetLatestVersion(It.IsAny<Guid>(), It.IsAny<CancellationToken>())).ReturnsAsync(Result.Success(TestData.GetEmptyFloatAggregate()));
 
-            this.TransactionValidationService.Setup(t => t.ValidateSaleTransaction(It.IsAny<Guid>(),
+            this.TransactionValidationService.Setup(t => t.ValidateSaleTransactionX(It.IsAny<Guid>(),
                                                                                    It.IsAny<Guid>(),
                                                                                    It.IsAny<Guid>(),
                                                                                    It.IsAny<Guid>(),
                                                                                    It.IsAny<String>(),
                                                                                    It.IsAny<Guid>(),
                                                                                    It.IsAny<Decimal>(),
-                                                                                   It.IsAny<CancellationToken>())).ReturnsAsync(("SUCCESS", TransactionResponseCode.Success));
+                                                                                   It.IsAny<CancellationToken>())).ReturnsAsync(Result.Success(new TransactionValidationResult(TransactionResponseCode.Success, "SUCCESS")));
 
             this.OperatorProxy.Setup(o => o.ProcessSaleMessage(It.IsAny<String>(),
                                                                It.IsAny<Guid>(),
@@ -243,131 +270,29 @@
                                                                It.IsAny<DateTime>(),
                                                                It.IsAny<String>(),
                                                                It.IsAny<Dictionary<String, String>>(),
-                                                               It.IsAny<CancellationToken>())).ReturnsAsync(new OperatorResponse{
+                                                               It.IsAny<CancellationToken>())).ReturnsAsync(new Result<OperatorResponse>{Data = new OperatorResponse{
                                                                                                                                     ResponseMessage = TestData.OperatorResponseMessage,
                                                                                                                                     IsSuccessful = false,
                                                                                                                                     AuthorisationCode =
                                                                                                                                         TestData.OperatorAuthorisationCode,
                                                                                                                                     TransactionId = TestData.OperatorTransactionId,
-                                                                                                                                    ResponseCode = TestData.ResponseCode
-                                                                                                                                });
+                                                                                                                                    ResponseCode = TestData.ResponseCode}, IsSuccess = false});
 
-            ProcessSaleTransactionResponse response = await this.TransactionDomainService.ProcessSaleTransaction(TestData.TransactionId,
-                                                                                                                 TestData.EstateId,
-                                                                                                                 TestData.MerchantId,
-                                                                                                                 TestData.TransactionDateTime,
-                                                                                                                 TestData.TransactionNumber,
-                                                                                                                 TestData.DeviceIdentifier,
-                                                                                                                 TestData.OperatorId,
-                                                                                                                 TestData.CustomerEmailAddress,
-                                                                                                                 TestData
-                                                                                                                     .AdditionalTransactionMetaDataForMobileTopup(),
-                                                                                                                 TestData.ContractId,
-                                                                                                                 TestData.ProductId,
-                                                                                                                 TestData.TransactionSource,
-                                                                                                                 CancellationToken.None);
+            TransactionCommands.ProcessSaleTransactionCommand command =
+                new TransactionCommands.ProcessSaleTransactionCommand(TestData.TransactionId, TestData.EstateId,
+                    TestData.MerchantId, TestData.DeviceIdentifier, TestData.TransactionTypeSale.ToString(),
+                    TestData.TransactionDateTime, TestData.TransactionNumber, TestData.OperatorId,
+                    TestData.CustomerEmailAddress, TestData.AdditionalTransactionMetaDataForMobileTopup(),
+                    TestData.ContractId, TestData.ProductId, TestData.TransactionSource);
+            
+            ProcessSaleTransactionResponse response = await this.TransactionDomainService.ProcessSaleTransaction(command, CancellationToken.None);
 
             response.EstateId.ShouldBe(TestData.EstateId);
             response.MerchantId.ShouldBe(TestData.MerchantId);
             response.ResponseCode.ShouldBe("1008");
             response.TransactionId.ShouldBe(TestData.TransactionId);
         }
-
-        [Fact]
-        public async Task TransactionDomainService_ProcessSaleTransaction_ExceptionInOperatorProxy_TransactionIsProcessed(){
-            this.SecurityServiceClient.Setup(s => s.GetToken(It.IsAny<String>(), It.IsAny<String>(), It.IsAny<CancellationToken>())).ReturnsAsync(TestData.TokenResponse);
-
-            this.TransactionAggregateRepository.Setup(t => t.GetLatestVersion(It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
-                .ReturnsAsync(TestData.GetEmptyTransactionAggregate);
-            this.EstateClient.Setup(e => e.GetMerchant(It.IsAny<String>(), It.IsAny<Guid>(), It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
-                .ReturnsAsync(TestData.GetMerchantResponseWithOperator1);
-            this.EstateClient.Setup(e => e.GetEstate(It.IsAny<String>(), It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
-                .ReturnsAsync(TestData.GetEstateResponseWithOperator1);
-
-            this.TransactionValidationService.Setup(t => t.ValidateSaleTransaction(It.IsAny<Guid>(),
-                                                                                   It.IsAny<Guid>(),
-                                                                                   It.IsAny<Guid>(),
-                                                                                   It.IsAny<Guid>(),
-                                                                                   It.IsAny<String>(),
-                                                                                   It.IsAny<Guid>(),
-                                                                                   It.IsAny<Decimal>(),
-                                                                                   It.IsAny<CancellationToken>())).ReturnsAsync(("SUCCESS", TransactionResponseCode.Success));
-
-            this.FloatAggregateRepository.Setup(f => f.GetLatestVersion(It.IsAny<Guid>(), It.IsAny<CancellationToken>())).ReturnsAsync(TestData.GetEmptyFloatAggregate);
-
-            this.OperatorProxy.Setup(o => o.ProcessSaleMessage(It.IsAny<String>(),
-                                                               It.IsAny<Guid>(),
-                                                               It.IsAny<Guid>(),
-                                                               It.IsAny<EstateManagement.DataTransferObjects.Responses.Merchant.MerchantResponse>(),
-                                                               It.IsAny<DateTime>(),
-                                                               It.IsAny<String>(),
-                                                               It.IsAny<Dictionary<String, String>>(),
-                                                               It.IsAny<CancellationToken>())).ThrowsAsync(new Exception());
-
-            ProcessSaleTransactionResponse response = await this.TransactionDomainService.ProcessSaleTransaction(TestData.TransactionId,
-                                                                                                                 TestData.EstateId,
-                                                                                                                 TestData.MerchantId,
-                                                                                                                 TestData.TransactionDateTime,
-                                                                                                                 TestData.TransactionNumber,
-                                                                                                                 TestData.DeviceIdentifier,
-                                                                                                                 TestData.OperatorId,
-                                                                                                                 TestData.CustomerEmailAddress,
-                                                                                                                 TestData
-                                                                                                                     .AdditionalTransactionMetaDataForMobileTopup(),
-                                                                                                                 TestData.ContractId,
-                                                                                                                 TestData.ProductId,
-                                                                                                                 TestData.TransactionSource,
-                                                                                                                 CancellationToken.None);
-
-            response.EstateId.ShouldBe(TestData.EstateId);
-            response.MerchantId.ShouldBe(TestData.MerchantId);
-            response.ResponseCode.ShouldBe("1010");
-            response.TransactionId.ShouldBe(TestData.TransactionId);
-        }
-
-        [Fact]
-        public async Task TransactionDomainService_ProcessSaleTransaction_NullOperatorResponse_TransactionIsProcessed(){
-            this.SecurityServiceClient.Setup(s => s.GetToken(It.IsAny<String>(), It.IsAny<String>(), It.IsAny<CancellationToken>())).ReturnsAsync(TestData.TokenResponse);
-
-            this.TransactionAggregateRepository.Setup(t => t.GetLatestVersion(It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
-                .ReturnsAsync(TestData.GetEmptyTransactionAggregate);
-            this.EstateClient.Setup(e => e.GetMerchant(It.IsAny<String>(), It.IsAny<Guid>(), It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
-                .ReturnsAsync(TestData.GetMerchantResponseWithOperator1);
-            this.EstateClient.Setup(e => e.GetEstate(It.IsAny<String>(), It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
-                .ReturnsAsync(TestData.GetEstateResponseWithOperator1);
-
-            this.TransactionValidationService.Setup(t => t.ValidateSaleTransaction(It.IsAny<Guid>(),
-                                                                                   It.IsAny<Guid>(),
-                                                                                   It.IsAny<Guid>(),
-                                                                                   It.IsAny<Guid>(),
-                                                                                   It.IsAny<String>(),
-                                                                                   It.IsAny<Guid>(),
-                                                                                   It.IsAny<Decimal>(),
-                                                                                   It.IsAny<CancellationToken>())).ReturnsAsync(("SUCCESS", TransactionResponseCode.Success));
-
-            this.FloatAggregateRepository.Setup(f => f.GetLatestVersion(It.IsAny<Guid>(), It.IsAny<CancellationToken>())).ReturnsAsync(TestData.GetEmptyFloatAggregate);
-
-            ProcessSaleTransactionResponse response = await this.TransactionDomainService.ProcessSaleTransaction(TestData.TransactionId,
-                                                                                                                 TestData.EstateId,
-                                                                                                                 TestData.MerchantId,
-                                                                                                                 TestData.TransactionDateTime,
-                                                                                                                 TestData.TransactionNumber,
-                                                                                                                 TestData.DeviceIdentifier,
-                                                                                                                 TestData.OperatorId,
-                                                                                                                 TestData.CustomerEmailAddress,
-                                                                                                                 TestData
-                                                                                                                     .AdditionalTransactionMetaDataForMobileTopup(),
-                                                                                                                 TestData.ContractId,
-                                                                                                                 TestData.ProductId,
-                                                                                                                 TestData.TransactionSource,
-                                                                                                                 CancellationToken.None);
-
-            response.EstateId.ShouldBe(TestData.EstateId);
-            response.MerchantId.ShouldBe(TestData.MerchantId);
-            response.ResponseCode.ShouldBe("1010");
-            response.TransactionId.ShouldBe(TestData.TransactionId);
-        }
-
+        
         [Fact]
         public async Task TransactionDomainService_ProcessSaleTransaction_TransactionIsProcessed(){
             this.SecurityServiceClient.Setup(s => s.GetToken(It.IsAny<String>(), It.IsAny<String>(), It.IsAny<CancellationToken>())).ReturnsAsync(TestData.TokenResponse);
@@ -382,17 +307,19 @@
 
             this.TransactionAggregateRepository.Setup(t => t.GetLatestVersion(It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
                 .ReturnsAsync(transactionAggregate);
+            this.TransactionAggregateRepository.Setup(t => t.SaveChanges(It.IsAny<TransactionAggregate>(), It.IsAny<CancellationToken>()))
+                .ReturnsAsync(Result.Success());
 
             this.FloatAggregateRepository.Setup(f => f.GetLatestVersion(It.IsAny<Guid>(), It.IsAny<CancellationToken>())).ReturnsAsync(floatAggregate);
 
-            this.TransactionValidationService.Setup(t => t.ValidateSaleTransaction(It.IsAny<Guid>(),
+            this.TransactionValidationService.Setup(t => t.ValidateSaleTransactionX(It.IsAny<Guid>(),
                                                                                    It.IsAny<Guid>(),
                                                                                    It.IsAny<Guid>(),
                                                                                    It.IsAny<Guid>(),
                                                                                    It.IsAny<String>(),
                                                                                    It.IsAny<Guid>(),
                                                                                    It.IsAny<Decimal>(),
-                                                                                   It.IsAny<CancellationToken>())).ReturnsAsync(("SUCCESS", TransactionResponseCode.Success));
+                                                                                   It.IsAny<CancellationToken>())).ReturnsAsync(Result.Success(new TransactionValidationResult(TransactionResponseCode.Success, "SUCCESS")));
 
             this.OperatorProxy.Setup(o => o.ProcessSaleMessage(It.IsAny<String>(),
                                                                It.IsAny<Guid>(),
@@ -410,20 +337,14 @@
                                                                                                                                     ResponseCode = TestData.ResponseCode
                                                                                                                                 });
 
-            ProcessSaleTransactionResponse response = await this.TransactionDomainService.ProcessSaleTransaction(TestData.TransactionId,
-                                                                                                                 TestData.EstateId,
-                                                                                                                 TestData.MerchantId,
-                                                                                                                 TestData.TransactionDateTime,
-                                                                                                                 TestData.TransactionNumber,
-                                                                                                                 TestData.DeviceIdentifier,
-                                                                                                                 TestData.OperatorId,
-                                                                                                                 TestData.CustomerEmailAddress,
-                                                                                                                 TestData
-                                                                                                                     .AdditionalTransactionMetaDataForMobileTopup(),
-                                                                                                                 TestData.ContractId,
-                                                                                                                 TestData.ProductId,
-                                                                                                                 TestData.TransactionSource,
-                                                                                                                 CancellationToken.None);
+            TransactionCommands.ProcessSaleTransactionCommand command =
+                new TransactionCommands.ProcessSaleTransactionCommand(TestData.TransactionId, TestData.EstateId,
+                    TestData.MerchantId, TestData.DeviceIdentifier, TestData.TransactionTypeSale.ToString(),
+                    TestData.TransactionDateTime, TestData.TransactionNumber, TestData.OperatorId,
+                    TestData.CustomerEmailAddress, TestData.AdditionalTransactionMetaDataForMobileTopup(),
+                    TestData.ContractId, TestData.ProductId, TestData.TransactionSource);
+
+            ProcessSaleTransactionResponse response = await this.TransactionDomainService.ProcessSaleTransaction(command, CancellationToken.None);
 
             response.EstateId.ShouldBe(TestData.EstateId);
             response.MerchantId.ShouldBe(TestData.MerchantId);
@@ -450,17 +371,19 @@
 
             this.TransactionAggregateRepository.Setup(t => t.GetLatestVersion(It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
                 .ReturnsAsync(transactionAggregate);
+            this.TransactionAggregateRepository.Setup(t => t.SaveChanges(It.IsAny<TransactionAggregate>(), It.IsAny<CancellationToken>()))
+                .ReturnsAsync(Result.Success());
 
-            this.FloatAggregateRepository.Setup(f => f.GetLatestVersion(It.IsAny<Guid>(), It.IsAny<CancellationToken>())).ReturnsAsync(TestData.GetEmptyFloatAggregate);
+            this.FloatAggregateRepository.Setup(f => f.GetLatestVersion(It.IsAny<Guid>(), It.IsAny<CancellationToken>())).ReturnsAsync(Result.Success(TestData.GetEmptyFloatAggregate()));
 
-            this.TransactionValidationService.Setup(t => t.ValidateSaleTransaction(It.IsAny<Guid>(),
+            this.TransactionValidationService.Setup(t => t.ValidateSaleTransactionX(It.IsAny<Guid>(),
                                                                                    It.IsAny<Guid>(),
                                                                                    It.IsAny<Guid>(),
                                                                                    It.IsAny<Guid>(),
                                                                                    It.IsAny<String>(),
                                                                                    It.IsAny<Guid>(),
                                                                                    It.IsAny<Decimal>(),
-                                                                                   It.IsAny<CancellationToken>())).ReturnsAsync(("SUCCESS", TransactionResponseCode.Success));
+                                                                                   It.IsAny<CancellationToken>())).ReturnsAsync(Result.Success(new TransactionValidationResult(TransactionResponseCode.Success, "SUCCESS")));
 
             this.OperatorProxy.Setup(o => o.ProcessSaleMessage(It.IsAny<String>(),
                                                                It.IsAny<Guid>(),
@@ -479,20 +402,14 @@
                                                                    ResponseCode = TestData.ResponseCode
                                                                });
 
-            ProcessSaleTransactionResponse response = await this.TransactionDomainService.ProcessSaleTransaction(TestData.TransactionId,
-                                                                                                                 TestData.EstateId,
-                                                                                                                 TestData.MerchantId,
-                                                                                                                 TestData.TransactionDateTime,
-                                                                                                                 TestData.TransactionNumber,
-                                                                                                                 TestData.DeviceIdentifier,
-                                                                                                                 TestData.OperatorId,
-                                                                                                                 TestData.CustomerEmailAddress,
-                                                                                                                 TestData
-                                                                                                                     .AdditionalTransactionMetaDataForMobileTopup(),
-                                                                                                                 TestData.ContractId,
-                                                                                                                 TestData.ProductId,
-                                                                                                                 TestData.TransactionSource,
-                                                                                                                 CancellationToken.None);
+            TransactionCommands.ProcessSaleTransactionCommand command =
+                new TransactionCommands.ProcessSaleTransactionCommand(TestData.TransactionId, TestData.EstateId,
+                    TestData.MerchantId, TestData.DeviceIdentifier, TestData.TransactionTypeSale.ToString(),
+                    TestData.TransactionDateTime, TestData.TransactionNumber, TestData.OperatorId,
+                    TestData.CustomerEmailAddress, TestData.AdditionalTransactionMetaDataForMobileTopup(),
+                    TestData.ContractId, TestData.ProductId, TestData.TransactionSource);
+
+            ProcessSaleTransactionResponse response = await this.TransactionDomainService.ProcessSaleTransaction(command, CancellationToken.None);
 
             response.EstateId.ShouldBe(TestData.EstateId);
             response.MerchantId.ShouldBe(TestData.MerchantId);
@@ -512,33 +429,29 @@
         [InlineData(TransactionResponseCode.ProductNotValidForMerchant)]
         public async Task TransactionDomainService_ProcessSaleTransaction_ValidationFailed_TransactionIsProcessed(TransactionResponseCode responseCode){
             this.TransactionAggregateRepository.Setup(t => t.GetLatestVersion(It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
-                .ReturnsAsync(TestData.GetEmptyTransactionAggregate);
+                .ReturnsAsync(Result.Success(TestData.GetEmptyTransactionAggregate()));
+            this.TransactionAggregateRepository.Setup(t => t.SaveChanges(It.IsAny<TransactionAggregate>(), It.IsAny<CancellationToken>()))
+                .ReturnsAsync(Result.Success());
 
-            this.TransactionValidationService.Setup(t => t.ValidateSaleTransaction(It.IsAny<Guid>(),
+            this.TransactionValidationService.Setup(t => t.ValidateSaleTransactionX(It.IsAny<Guid>(),
                                                                                    It.IsAny<Guid>(),
                                                                                    It.IsAny<Guid>(),
                                                                                    It.IsAny<Guid>(),
                                                                                    It.IsAny<String>(),
                                                                                    It.IsAny<Guid>(),
                                                                                    It.IsAny<Decimal>(),
-                                                                                   It.IsAny<CancellationToken>())).ReturnsAsync((responseCode.ToString(), responseCode));
+                                                                                   It.IsAny<CancellationToken>())).ReturnsAsync(Result.Success(new TransactionValidationResult(responseCode, responseCode.ToString())));
 
-            this.FloatAggregateRepository.Setup(f => f.GetLatestVersion(It.IsAny<Guid>(), It.IsAny<CancellationToken>())).ReturnsAsync(TestData.GetEmptyFloatAggregate);
+            this.FloatAggregateRepository.Setup(f => f.GetLatestVersion(It.IsAny<Guid>(), It.IsAny<CancellationToken>())).ReturnsAsync(Result.Success(TestData.GetEmptyFloatAggregate()));
 
-            ProcessSaleTransactionResponse response = await this.TransactionDomainService.ProcessSaleTransaction(TestData.TransactionId,
-                                                                                                                 TestData.EstateId,
-                                                                                                                 TestData.MerchantId,
-                                                                                                                 TestData.TransactionDateTime,
-                                                                                                                 TestData.TransactionNumber,
-                                                                                                                 TestData.DeviceIdentifier,
-                                                                                                                 TestData.OperatorId,
-                                                                                                                 TestData.CustomerEmailAddress,
-                                                                                                                 TestData
-                                                                                                                     .AdditionalTransactionMetaDataForMobileTopup(),
-                                                                                                                 TestData.ContractId,
-                                                                                                                 TestData.ProductId,
-                                                                                                                 TestData.TransactionSource,
-                                                                                                                 CancellationToken.None);
+            TransactionCommands.ProcessSaleTransactionCommand command =
+                new TransactionCommands.ProcessSaleTransactionCommand(TestData.TransactionId, TestData.EstateId,
+                    TestData.MerchantId, TestData.DeviceIdentifier, TestData.TransactionTypeSale.ToString(),
+                    TestData.TransactionDateTime, TestData.TransactionNumber, TestData.OperatorId,
+                    TestData.CustomerEmailAddress, TestData.AdditionalTransactionMetaDataForMobileTopup(),
+                    TestData.ContractId, TestData.ProductId, TestData.TransactionSource);
+
+            ProcessSaleTransactionResponse response = await this.TransactionDomainService.ProcessSaleTransaction(command, CancellationToken.None);
 
             response.EstateId.ShouldBe(TestData.EstateId);
             response.MerchantId.ShouldBe(TestData.MerchantId);
@@ -549,9 +462,12 @@
         [Fact]
         public async Task TransactionDomainService_ResendTransactionReceipt_TransactionReceiptResendIsRequested(){
             this.TransactionAggregateRepository.Setup(t => t.GetLatestVersion(It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
-                .ReturnsAsync(TestData.GetCompletedAuthorisedSaleTransactionWithReceiptRequestedAggregate);
-
-            Should.NotThrow(async () => { await this.TransactionDomainService.ResendTransactionReceipt(TestData.TransactionId, TestData.EstateId, CancellationToken.None); });
+                .ReturnsAsync(Result.Success(TestData.GetCompletedAuthorisedSaleTransactionWithReceiptRequestedAggregate()));
+            this.TransactionAggregateRepository.Setup(t => t.SaveChanges(It.IsAny<TransactionAggregate>(), It.IsAny<CancellationToken>()))
+                .ReturnsAsync(Result.Success());
+            TransactionCommands.ResendTransactionReceiptCommand command = new(TestData.TransactionId, TestData.EstateId);
+            var result = await this.TransactionDomainService.ResendTransactionReceipt(command, CancellationToken.None);
+            result.IsSuccess.ShouldBeTrue();
         }
 
         #endregion

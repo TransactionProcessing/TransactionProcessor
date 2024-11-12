@@ -1,4 +1,6 @@
-﻿namespace TransactionProcessor.Factories
+﻿using SimpleResults;
+
+namespace TransactionProcessor.Factories
 {
     using System;
     using System.Collections.Generic;
@@ -17,11 +19,11 @@
     {
         #region Methods
 
-        public SerialisedMessage ConvertFrom(ProcessLogonTransactionResponse processLogonTransactionResponse)
+        public Result<SerialisedMessage> ConvertFrom(ProcessLogonTransactionResponse processLogonTransactionResponse)
         {
             if (processLogonTransactionResponse == null)
             {
-                return null;
+                return Result.Invalid("processLogonTransactionResponse cannot be null");
             }
 
             LogonTransactionResponse logonTransactionResponse = new LogonTransactionResponse
@@ -33,7 +35,7 @@
                                                                     TransactionId = processLogonTransactionResponse.TransactionId
                                                                 };
 
-            return new SerialisedMessage
+            return Result.Success(new SerialisedMessage
                    {
                        Metadata = new Dictionary<String, String>()
                                   {
@@ -44,14 +46,14 @@
                                                                                                      {
                                                                                                          TypeNameHandling = TypeNameHandling.All
                                                                                                      })
-                   };
+                   });
         }
 
-        public SerialisedMessage ConvertFrom(ProcessSaleTransactionResponse processSaleTransactionResponse)
+        public Result<SerialisedMessage> ConvertFrom(ProcessSaleTransactionResponse processSaleTransactionResponse)
         {
             if (processSaleTransactionResponse == null)
             {
-                return null;
+                return Result.Invalid("processSaleTransactionResponse cannot be null");
             }
 
             SaleTransactionResponse saleTransactionResponse = new SaleTransactionResponse
@@ -64,8 +66,8 @@
                                                                     TransactionId = processSaleTransactionResponse.TransactionId
                                                                 };
 
-            return new SerialisedMessage
-                   {
+            return Result.Success(new SerialisedMessage
+            {
                        Metadata = new Dictionary<String, String>()
                                   {
                                       {MetadataContants.KeyNameEstateId, processSaleTransactionResponse.EstateId.ToString()},
@@ -75,14 +77,14 @@
                                                                                              {
                                                                                                  TypeNameHandling = TypeNameHandling.All
                                                                                              })
-                   };
+                   });
         }
 
-        public SerialisedMessage ConvertFrom(ProcessReconciliationTransactionResponse processReconciliationTransactionResponse)
+        public Result<SerialisedMessage> ConvertFrom(ProcessReconciliationTransactionResponse processReconciliationTransactionResponse)
         {
             if (processReconciliationTransactionResponse == null)
             {
-                return null;
+                return Result.Invalid("processReconciliationTransactionResponse cannot be null");
             }
 
             ReconciliationResponse reconciliationTransactionResponse = new ReconciliationResponse
@@ -94,8 +96,8 @@
                                                                            TransactionId = processReconciliationTransactionResponse.TransactionId
                                                                        };
 
-            return new SerialisedMessage
-                   {
+            return Result.Success(new SerialisedMessage
+            {
                        Metadata = new Dictionary<String, String>()
                                   {
                                       {MetadataContants.KeyNameEstateId, processReconciliationTransactionResponse.EstateId.ToString()},
@@ -105,7 +107,7 @@
                                                                                                        {
                                                                                                            TypeNameHandling = TypeNameHandling.All
                                                                                                        })
-                   };
+                   });
         }
 
         public IssueVoucherResponse ConvertFrom(Models.IssueVoucherResponse issueVoucherResponse)
@@ -125,11 +127,11 @@
 
             return response;
         }
-        public GetVoucherResponse ConvertFrom(Voucher voucherModel)
+        public Result<GetVoucherResponse> ConvertFrom(Voucher voucherModel)
         {
             if (voucherModel == null)
             {
-                return null;
+                return Result.Invalid("voucherModel cannot be null");
             }
 
             GetVoucherResponse response = new GetVoucherResponse
@@ -148,13 +150,13 @@
                 VoucherId = voucherModel.VoucherId
             };
 
-            return response;
+            return Result.Success(response);
         }
-        public RedeemVoucherResponse ConvertFrom(Models.RedeemVoucherResponse redeemVoucherResponse)
+        public Result<RedeemVoucherResponse> ConvertFrom(Models.RedeemVoucherResponse redeemVoucherResponse)
         {
             if (redeemVoucherResponse == null)
             {
-                return null;
+                return Result.Invalid("redeemVoucherResponse cannot be null");
             }
 
             RedeemVoucherResponse response = new RedeemVoucherResponse
@@ -164,7 +166,7 @@
                 RemainingBalance = redeemVoucherResponse.RemainingBalance
             };
 
-            return response;
+            return Result.Success(response);
         }
 
         #endregion

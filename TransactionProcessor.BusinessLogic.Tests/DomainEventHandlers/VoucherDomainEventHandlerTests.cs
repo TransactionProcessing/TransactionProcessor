@@ -1,4 +1,6 @@
-﻿namespace TransactionProcessor.BusinessLogic.Tests.DomainEventHandlers;
+﻿using SimpleResults;
+
+namespace TransactionProcessor.BusinessLogic.Tests.DomainEventHandlers;
 
 using System;
 using System.Collections.Generic;
@@ -68,7 +70,7 @@ public class VoucherDomainEventHandlerTests
 
         Mock<IAggregateRepository<VoucherAggregate, DomainEvent>> voucherAggregateRepository = new Mock<IAggregateRepository<VoucherAggregate, DomainEvent>>();
         voucherAggregateRepository.Setup(t => t.GetLatestVersion(It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
-                                  .ReturnsAsync(TestData.GetVoucherAggregateWithRecipientEmail);
+                                  .ReturnsAsync(Result.Success(TestData.GetVoucherAggregateWithRecipientEmail()));
 
         EstateManagementGenericContext context = await this.GetContext(Guid.NewGuid().ToString("N"), TestDatabaseType.InMemory);
         context.Transactions.Add(new EstateManagement.Database.Entities.Transaction()
@@ -117,7 +119,7 @@ public class VoucherDomainEventHandlerTests
 
         Mock<IAggregateRepository<VoucherAggregate, DomainEvent>> voucherAggregateRepository = new Mock<IAggregateRepository<VoucherAggregate, DomainEvent>>();
         voucherAggregateRepository.Setup(t => t.GetLatestVersion(It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
-                                  .ReturnsAsync(TestData.GetVoucherAggregateWithRecipientMobile);
+                                  .ReturnsAsync(Result.Success(TestData.GetVoucherAggregateWithRecipientMobile()));
 
         EstateManagementGenericContext context = await this.GetContext(Guid.NewGuid().ToString("N"), TestDatabaseType.InMemory);
         context.Transactions.Add(new EstateManagement.Database.Entities.Transaction()
