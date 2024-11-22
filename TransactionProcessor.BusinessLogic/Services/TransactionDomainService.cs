@@ -1,6 +1,7 @@
 ﻿using EstateManagement.DataTransferObjects.Responses.Contract;
 using Newtonsoft.Json;
 using Shared.Exceptions;
+using Shared.Results;
 using SimpleResults;
 
 namespace TransactionProcessor.BusinessLogic.Services{
@@ -107,11 +108,11 @@ namespace TransactionProcessor.BusinessLogic.Services{
                 TransactionAggregate transactionAggregate = transactionAggregateResult.Data;
                 Result<T> result = await action(transactionAggregate);
                 if (result.IsFailed)
-                    return Shared.EventStore.Aggregate.ResultHelpers.CreateFailure(result);
+                    return ResultHelpers.CreateFailure(result);
 
                 Result saveResult = await this.TransactionAggregateRepository.SaveChanges(transactionAggregate, cancellationToken);
                 if (saveResult.IsFailed)
-                    return Shared.EventStore.Aggregate.ResultHelpers.CreateFailure(saveResult);
+                    return ResultHelpers.CreateFailure(saveResult);
                 return Result.Success(result.Data);
             }
             catch (Exception ex)
@@ -135,11 +136,11 @@ namespace TransactionProcessor.BusinessLogic.Services{
                 TransactionAggregate transactionAggregate = transactionAggregateResult.Data;
                 Result result = await action(transactionAggregate);
                 if (result.IsFailed)
-                    return Shared.EventStore.Aggregate.ResultHelpers.CreateFailure(result);
+                    return ResultHelpers.CreateFailure(result);
 
                 Result saveResult = await this.TransactionAggregateRepository.SaveChanges(transactionAggregate, cancellationToken);
                 if (saveResult.IsFailed)
-                    return Shared.EventStore.Aggregate.ResultHelpers.CreateFailure(saveResult);
+                    return ResultHelpers.CreateFailure(saveResult);
                 return Result.Success();
             }
             catch (Exception ex)
@@ -163,11 +164,11 @@ namespace TransactionProcessor.BusinessLogic.Services{
                 ReconciliationAggregate reconciliationAggregate = reconciliationAggregateResult.Data;
                 Result<T> result = await action(reconciliationAggregate);
                 if (result.IsFailed)
-                    return Shared.EventStore.Aggregate.ResultHelpers.CreateFailure(result);
+                    return ResultHelpers.CreateFailure(result);
 
                 Result saveResult = await this.ReconciliationAggregateRepository.SaveChanges(reconciliationAggregate, cancellationToken);
                 if (saveResult.IsFailed)
-                    return Shared.EventStore.Aggregate.ResultHelpers.CreateFailure(saveResult);
+                    return ResultHelpers.CreateFailure(saveResult);
                 return Result.Success(result.Data);
             }
             catch (Exception ex)
@@ -269,12 +270,14 @@ namespace TransactionProcessor.BusinessLogic.Services{
 
             Result<ProcessSaleTransactionResponse> result = await ApplyUpdates<ProcessSaleTransactionResponse>(
                 async (TransactionAggregate transactionAggregate) => {
+
+                    Logger.LogWarning("Step 1");
                     TransactionType transactionType = TransactionType.Sale;
                     TransactionSource transactionSourceValue = (TransactionSource)command.TransactionSource;
 
                     // Generate a transaction reference
                     String transactionReference = this.GenerateTransactionReference();
-
+                    Logger.LogWarning("Step 2");
                     // Extract the transaction amount from the metadata
                     Decimal? transactionAmount =
                         command.AdditionalTransactionMetadata.ExtractFieldFromMetadata<Decimal?>("Amount");
@@ -282,7 +285,7 @@ namespace TransactionProcessor.BusinessLogic.Services{
                     Result<TransactionValidationResult> validationResult =
                         await this.TransactionValidationService.ValidateSaleTransactionX(command.EstateId, command.MerchantId,
                             command.ContractId, command.ProductId, command.DeviceIdentifier, command.OperatorId, transactionAmount, cancellationToken);
-
+                    Logger.LogWarning("Step 3");
                     Logger.LogInformation($"Validation response is [{JsonConvert.SerializeObject(validationResult)}]");
 
                     Guid floatAggregateId =
@@ -297,7 +300,7 @@ namespace TransactionProcessor.BusinessLogic.Services{
                         unitCost = floatAggregate.GetUnitCostPrice();
                         totalCost = transactionAmount.GetValueOrDefault() * unitCost;
                     }
-
+                    Logger.LogWarning("Step 4");
                     transactionAggregate.StartTransaction(command.TransactionDateTime, command.TransactionNumber, transactionType,
                         transactionReference, command.EstateId, command.MerchantId, command.DeviceIdentifier, transactionAmount);
 
@@ -309,12 +312,12 @@ namespace TransactionProcessor.BusinessLogic.Services{
                         validationResult.Data.ResponseCode != TransactionResponseCode.ProductNotValidForMerchant) {
                         transactionAggregate.AddProductDetails(command.ContractId, command.ProductId);
                     }
-
+                    Logger.LogWarning("Step 5");
                     transactionAggregate.RecordCostPrice(unitCost, totalCost);
 
                     // Add the transaction source
                     transactionAggregate.AddTransactionSource(transactionSourceValue);
-
+                    Logger.LogWarning("Step 6");
                     if (validationResult.Data.ResponseCode == TransactionResponseCode.Success) {
                         // Record any additional request metadata
                         transactionAggregate.RecordAdditionalRequestData(command.OperatorId, command.AdditionalTransactionMetadata);
@@ -325,7 +328,7 @@ namespace TransactionProcessor.BusinessLogic.Services{
                         Result<OperatorResponse> operatorResult = await this.ProcessMessageWithOperator(merchant,
                             command.TransactionId, command.TransactionDateTime, command.OperatorId, command.AdditionalTransactionMetadata,
                             transactionReference, cancellationToken);
-
+                        Logger.LogWarning("Step 7");
                         // Act on the operator response
                         // TODO: see if we still need this case...
                         //if (operatorResult.IsFailed) {
@@ -338,7 +341,9 @@ namespace TransactionProcessor.BusinessLogic.Services{
                         //        ((Int32)transactionResponseCode).ToString().PadLeft(4, '0'), responseMessage);
                         //}
                         //else {
-                            if (operatorResult.IsSuccess) {
+
+                        Logger.LogWarning("Step 8");
+                        if (operatorResult.IsSuccess) {
                                 TransactionResponseCode transactionResponseCode = TransactionResponseCode.Success;
                                 String responseMessage = "SUCCESS";
 
@@ -363,6 +368,7 @@ namespace TransactionProcessor.BusinessLogic.Services{
                         //}
                     }
                     else {
+                        Logger.LogWarning("Step 9");
                         // Record the failure
                         transactionAggregate.DeclineTransactionLocally(
                             ((Int32)validationResult.Data.ResponseCode).ToString().PadLeft(4, '0'),
@@ -370,7 +376,7 @@ namespace TransactionProcessor.BusinessLogic.Services{
                     }
 
                     transactionAggregate.CompleteTransaction();
-
+                    Logger.LogWarning("Step 10");
                     // Determine if the email receipt is required
                     if (String.IsNullOrEmpty(command.CustomerEmailAddress) == false) {
                         transactionAggregate.RequestEmailReceipt(command.CustomerEmailAddress);
@@ -378,7 +384,7 @@ namespace TransactionProcessor.BusinessLogic.Services{
 
                     // Get the model from the aggregate
                     Transaction transaction = transactionAggregate.GetTransaction();
-
+                    Logger.LogWarning("Step 11");
                     return Result.Success(new ProcessSaleTransactionResponse {
                         ResponseMessage = transaction.ResponseMessage,
                         ResponseCode = transaction.ResponseCode,

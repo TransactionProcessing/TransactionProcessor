@@ -1,5 +1,6 @@
 ﻿using Microsoft.EntityFrameworkCore.Storage;
 using Shared.EventStore.Aggregate;
+using Shared.Results;
 using SimpleResults;
 
 namespace TransactionProcessor.ProjectionEngine.ProjectionHandler;

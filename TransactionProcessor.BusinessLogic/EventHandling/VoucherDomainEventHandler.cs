@@ -1,4 +1,5 @@
-﻿using SimpleResults;
+﻿using Shared.Results;
+using SimpleResults;
 
 namespace TransactionProcessor.BusinessLogic.EventHandling;
 

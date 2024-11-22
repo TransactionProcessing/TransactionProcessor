@@ -1,5 +1,6 @@
 ﻿using System.Runtime.CompilerServices;
 using EstateManagement.DataTransferObjects.Responses.Merchant;
+using Shared.Results;
 using SimpleResults;
 
 namespace TransactionProcessor.BusinessLogic.Services;
@@ -512,7 +513,7 @@ public class TransactionValidationService : ITransactionValidationService{
             if (getBalanceResult.IsFailed) {
                 return CreateFailedResult(new TransactionValidationResult(TransactionResponseCode.UnknownFailure, $"Error getting balance for Merchant [{merchant.MerchantName}]"));
             }
-            MerchantBalanceProjectionState1 projectionState = JsonConvert.DeserializeObject<MerchantBalanceProjectionState1>(getBalanceResult.Message);
+            MerchantBalanceProjectionState1 projectionState = JsonConvert.DeserializeObject<MerchantBalanceProjectionState1>(getBalanceResult.Data);
 
             // Check the merchant has enough balance to perform the sale
             if (projectionState.merchant.balance < transactionAmount)

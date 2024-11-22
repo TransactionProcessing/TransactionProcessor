@@ -1,4 +1,5 @@
-﻿using SimpleResults;
+﻿using Shared.Results;
+using SimpleResults;
 using TransactionProcessor.BusinessLogic.Requests;
 
 namespace TransactionProcessor.BusinessLogic.Services
@@ -48,11 +49,11 @@ namespace TransactionProcessor.BusinessLogic.Services
                 SettlementAggregate settlementAggregate = settlementAggregateResult.Data;
                 Result result = await action(settlementAggregate);
                 if (result.IsFailed)
-                    return Shared.EventStore.Aggregate.ResultHelpers.CreateFailure(result);
+                    return ResultHelpers.CreateFailure(result);
                 Logger.LogInformation("In ApplySettlementUpdates - action successful");
                 Result saveResult = await this.SettlementAggregateRepository.SaveChanges(settlementAggregate, cancellationToken);
                 if (saveResult.IsFailed)
-                    return Shared.EventStore.Aggregate.ResultHelpers.CreateFailure(saveResult);
+                    return ResultHelpers.CreateFailure(saveResult);
                 Logger.LogInformation("In ApplySettlementUpdates - save successful");
                 return Result.Success();
             }
@@ -78,11 +79,11 @@ namespace TransactionProcessor.BusinessLogic.Services
                 TransactionAggregate transactionAggregate = transactionAggregateResult.Data;
                 Result result = await action(transactionAggregate);
                 if (result.IsFailed)
-                    return Shared.EventStore.Aggregate.ResultHelpers.CreateFailure(result);
+                    return ResultHelpers.CreateFailure(result);
 
                 Result saveResult = await this.TransactionAggregateRepository.SaveChanges(transactionAggregate, cancellationToken);
                 if (saveResult.IsFailed)
-                    return Shared.EventStore.Aggregate.ResultHelpers.CreateFailure(saveResult);
+                    return ResultHelpers.CreateFailure(saveResult);
                 return Result.Success();
             }
             catch (Exception ex)

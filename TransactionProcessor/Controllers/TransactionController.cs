@@ -1,4 +1,5 @@
 ﻿using Shared.EventStore.Aggregate;
+using Shared.Results;
 using SimpleResults;
 
 namespace TransactionProcessor.Controllers
