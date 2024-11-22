@@ -1,4 +1,6 @@
-﻿namespace TransactionProcessor.BusinessLogic.Services;
+﻿using Shared.Results;
+
+namespace TransactionProcessor.BusinessLogic.Services;
 
 using System;
 using System.Collections.Generic;
@@ -86,11 +88,11 @@ public class VoucherDomainService : IVoucherDomainService
             VoucherAggregate voucherAggregate = voucherAggregateResult.Data;
             Result<T> result = await action(voucherAggregate);
             if (result.IsFailed)
-                return Shared.EventStore.Aggregate.ResultHelpers.CreateFailure(result);
+                return ResultHelpers.CreateFailure(result);
 
             Result saveResult = await this.VoucherAggregateRepository.SaveChanges(voucherAggregate, cancellationToken);
             if (saveResult.IsFailed)
-                return Shared.EventStore.Aggregate.ResultHelpers.CreateFailure(saveResult);
+                return ResultHelpers.CreateFailure(saveResult);
             return Result.Success(result.Data);
         }
         catch (Exception ex)
@@ -109,7 +111,7 @@ public class VoucherDomainService : IVoucherDomainService
 
                 Result<EstateResponse> validateResult = await this.ValidateVoucherIssue(estateId, operatorId, cancellationToken);
                 if (validateResult.IsFailed)
-                    return Shared.EventStore.Aggregate.ResultHelpers.CreateFailure(validateResult);
+                    return ResultHelpers.CreateFailure(validateResult);
 
                 voucherAggregate.Generate(operatorId, estateId, transactionId, issuedDateTime, value);
 
@@ -161,7 +163,7 @@ public class VoucherDomainService : IVoucherDomainService
         async (VoucherAggregate voucherAggregate) => {
             Result<EstateResponse> validateResult = await this.ValidateVoucherRedemption(estateId, cancellationToken);
             if (validateResult.IsFailed)
-                return Shared.EventStore.Aggregate.ResultHelpers.CreateFailure(validateResult);
+                return ResultHelpers.CreateFailure(validateResult);
             
             // Redeem the voucher
             voucherAggregate.Redeem(redeemedDateTime);
@@ -191,7 +193,7 @@ public class VoucherDomainService : IVoucherDomainService
         // Validate the Estate Record is a valid estate
         Result<EstateResponse> getEstateResult = await this.GetEstate(estateId, cancellationToken);
         if (getEstateResult.IsFailed)
-            return Shared.EventStore.Aggregate.ResultHelpers.CreateFailure(getEstateResult);
+            return ResultHelpers.CreateFailure(getEstateResult);
 
         estate = getEstateResult.Data;
         if (estate.Operators == null || estate.Operators.Any() == false)
@@ -213,7 +215,7 @@ public class VoucherDomainService : IVoucherDomainService
         // Validate the Estate Record is a valid estate
         Result<EstateResponse> getEstateResult = await this.GetEstate(estateId, cancellationToken);
         if (getEstateResult.IsFailed)
-            return Shared.EventStore.Aggregate.ResultHelpers.CreateFailure(getEstateResult);
+            return ResultHelpers.CreateFailure(getEstateResult);
 
         return getEstateResult;
     }

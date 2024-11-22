@@ -41,10 +41,8 @@ public class MerchantRequestHandler :
         if (result.IsFailed)
             return Result.NotFound(
                 $"Merchant Balance not found for Merchant {query.MerchantId} on MerchantBalanceProjection");
-
-        // For now the data is coming back in the message on a success result :|
-        // https://github.com/TransactionProcessing/Shared/issues/294
-        MerchantBalanceProjectionState1 projectionState = JsonConvert.DeserializeObject<MerchantBalanceProjectionState1>(result.Message);
+        
+        MerchantBalanceProjectionState1 projectionState = JsonConvert.DeserializeObject<MerchantBalanceProjectionState1>(result.Data);
 
         return Result.Success(projectionState);
     }

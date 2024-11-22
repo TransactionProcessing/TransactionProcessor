@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using IdentityModel.Client;
+using Shared.Results;
 using SimpleResults;
 using TransactionProcessor.BusinessLogic.Requests;
 
@@ -71,11 +72,11 @@ namespace TransactionProcessor.BusinessLogic.Services
                 
                 Result result = action(floatAggregate);
                 if (result.IsFailed)
-                    return Shared.EventStore.Aggregate.ResultHelpers.CreateFailure(result);
+                    return ResultHelpers.CreateFailure(result);
 
                 Result saveResult = await this.FloatAggregateRepository.SaveChanges(floatAggregate, cancellationToken);
                 if (saveResult.IsFailed)
-                    return Shared.EventStore.Aggregate.ResultHelpers.CreateFailure(saveResult);
+                    return ResultHelpers.CreateFailure(saveResult);
 
                 return Result.Success();
             }
@@ -96,11 +97,11 @@ namespace TransactionProcessor.BusinessLogic.Services
 
                 Result result = action(floatActivityAggregate);
                 if (result.IsFailed)
-                    return Shared.EventStore.Aggregate.ResultHelpers.CreateFailure(result);
+                    return ResultHelpers.CreateFailure(result);
 
                 Result saveResult = await this.FloatActivityAggregateRepository.SaveChanges(floatActivityAggregate, cancellationToken);
                 if (saveResult.IsFailed)
-                    return Shared.EventStore.Aggregate.ResultHelpers.CreateFailure(saveResult);
+                    return ResultHelpers.CreateFailure(saveResult);
 
                 return Result.Success();
             }
@@ -118,7 +119,7 @@ namespace TransactionProcessor.BusinessLogic.Services
             Result<EstateResponse> result= await this.EstateClient.GetEstate(this.TokenResponse.AccessToken, estateId, cancellationToken);
 
             if (result.IsFailed) {
-                return Shared.EventStore.Aggregate.ResultHelpers.CreateFailure(result);
+                return ResultHelpers.CreateFailure(result);
             }
             return Result.Success();
         }
@@ -131,7 +132,7 @@ namespace TransactionProcessor.BusinessLogic.Services
             Result<ContractResponse> contractResult = await this.EstateClient.GetContract(this.TokenResponse.AccessToken, estateId, contractId, cancellationToken);
             if (contractResult.IsFailed)
             {
-                return Shared.EventStore.Aggregate.ResultHelpers.CreateFailure(contractResult);
+                return ResultHelpers.CreateFailure(contractResult);
             }
 
             ContractResponse contract = contractResult.Data;
@@ -149,12 +150,12 @@ namespace TransactionProcessor.BusinessLogic.Services
             
             Result validateEstateResult = await this.ValidateEstate(command.EstateId, cancellationToken);
             if (validateEstateResult.IsFailed) {
-                return Shared.EventStore.Aggregate.ResultHelpers.CreateFailure(validateEstateResult);
+                return ResultHelpers.CreateFailure(validateEstateResult);
             }
 
             Result validateProductResult = await this.ValidateContractProduct(command.EstateId, command.ContractId, command.ProductId, cancellationToken);
             if (validateProductResult.IsFailed) {
-                return Shared.EventStore.Aggregate.ResultHelpers.CreateFailure(validateProductResult);
+                return ResultHelpers.CreateFailure(validateProductResult);
             }
 
             // Generate the float id
@@ -194,12 +195,12 @@ namespace TransactionProcessor.BusinessLogic.Services
         {
             if (result.IsFailed && result.Status != ResultStatus.NotFound)
             {
-                return Shared.EventStore.Aggregate.ResultHelpers.CreateFailure(result);
+                return ResultHelpers.CreateFailure(result);
             }
 
             if (result.Status == ResultStatus.NotFound && isNotFoundError)
             {
-                return Shared.EventStore.Aggregate.ResultHelpers.CreateFailure(result);
+                return ResultHelpers.CreateFailure(result);
             }
 
             T aggregate = result.Status switch
