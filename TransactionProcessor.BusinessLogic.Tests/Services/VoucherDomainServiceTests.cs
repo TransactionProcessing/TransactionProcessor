@@ -117,7 +117,8 @@ namespace TransactionProcessor.BusinessLogic.Tests.Services
             voucherAggregateRepository.Setup(v => v.GetLatestVersion(It.IsAny<Guid>(), It.IsAny<CancellationToken>())).ReturnsAsync(new VoucherAggregate());
             securityServiceClient.Setup(s => s.GetToken(It.IsAny<String>(), It.IsAny<String>(), It.IsAny<CancellationToken>())).ReturnsAsync(Result.Success(TestData.TokenResponse()));
             estateClient.Setup(e => e.GetEstate(It.IsAny<String>(), It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
-                        .ThrowsAsync(new Exception("Exception", new KeyNotFoundException("Invalid Estate")));
+                //.ThrowsAsync(new Exception("Exception", new KeyNotFoundException("Invalid Estate")));
+                .ReturnsAsync(Result.Failure());
 
             EstateManagementGenericContext context = await this.GetContext(Guid.NewGuid().ToString("N"));
 
@@ -232,7 +233,8 @@ namespace TransactionProcessor.BusinessLogic.Tests.Services
                                       .ReturnsAsync(Result.Success(TestData.GetVoucherAggregateWithRecipientMobile()));
             securityServiceClient.Setup(s => s.GetToken(It.IsAny<String>(), It.IsAny<String>(), It.IsAny<CancellationToken>())).ReturnsAsync(Result.Success(TestData.TokenResponse()));
             estateClient.Setup(e => e.GetEstate(It.IsAny<String>(), It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
-                        .ThrowsAsync(new Exception("Exception", new KeyNotFoundException("Invalid Estate")));
+                //.ThrowsAsync(new Exception("Exception", new KeyNotFoundException("Invalid Estate")));
+                .ReturnsAsync(Result.Failure());
 
             EstateManagementGenericContext context = await this.GetContext(Guid.NewGuid().ToString("N"));
             context.Vouchers.Add(new EstateManagement.Database.Entities.Voucher {

@@ -42,7 +42,7 @@ public record FloatActivityAggregate : Aggregate {
     {
         return new
         {
-            this.EstateId
+            
         };
     }
 
@@ -64,8 +64,4 @@ public record FloatActivityAggregate : Aggregate {
     {
         return new FloatActivityAggregate(aggregateId);
     }
-
-    public Guid EstateId { get; internal set; }
-
-    public Decimal Balance { get; internal set; }
 }

@@ -193,9 +193,9 @@ namespace TransactionProcessor.BusinessLogic.Services{
                         null); // Logon transaction has no amount
 
                     Result<TransactionValidationResult> validationResult =
-                        await this.TransactionValidationService.ValidateLogonTransactionX(command.EstateId, command.MerchantId, command.DeviceIdentifier, cancellationToken);
+                        await this.TransactionValidationService.ValidateLogonTransaction(command.EstateId, command.MerchantId, command.DeviceIdentifier, cancellationToken);
 
-                    if (validationResult.IsSuccess) {
+                    if (validationResult.IsSuccess && (validationResult.Data.ResponseCode == TransactionResponseCode.Success || validationResult.Data.ResponseCode == TransactionResponseCode.SuccessNeedToAddDevice)) {
                         if (validationResult.Data.ResponseCode == TransactionResponseCode.SuccessNeedToAddDevice) {
                             await this.AddDeviceToMerchant(command.EstateId, command.MerchantId, command.DeviceIdentifier, cancellationToken);
                         }
@@ -234,13 +234,13 @@ namespace TransactionProcessor.BusinessLogic.Services{
             Result<ProcessReconciliationTransactionResponse> result = await ApplyUpdates<ProcessReconciliationTransactionResponse>(
                 async (ReconciliationAggregate reconciliationAggregate) => {
                     Result<TransactionValidationResult> validationResult =
-                        await this.TransactionValidationService.ValidateReconciliationTransactionX(command.EstateId, command.MerchantId, command.DeviceIdentifier, cancellationToken);
+                        await this.TransactionValidationService.ValidateReconciliationTransaction(command.EstateId, command.MerchantId, command.DeviceIdentifier, cancellationToken);
 
                     reconciliationAggregate.StartReconciliation(command.TransactionDateTime, command.EstateId, command.MerchantId);
 
                     reconciliationAggregate.RecordOverallTotals(command.TransactionCount, command.TransactionValue);
 
-                    if (validationResult.IsSuccess)
+                    if (validationResult.IsSuccess && validationResult.Data.ResponseCode == TransactionResponseCode.Success)
                     {
                         // Record the successful validation
                         reconciliationAggregate.Authorise(((Int32)validationResult.Data.ResponseCode).ToString().PadLeft(4, '0'), validationResult.Data.ResponseMessage);
@@ -282,7 +282,7 @@ namespace TransactionProcessor.BusinessLogic.Services{
                         command.AdditionalTransactionMetadata.ExtractFieldFromMetadata<Decimal?>("Amount");
 
                     Result<TransactionValidationResult> validationResult =
-                        await this.TransactionValidationService.ValidateSaleTransactionX(command.EstateId, command.MerchantId,
+                        await this.TransactionValidationService.ValidateSaleTransaction(command.EstateId, command.MerchantId,
                             command.ContractId, command.ProductId, command.DeviceIdentifier, command.OperatorId, transactionAmount, cancellationToken);
                     
                     Logger.LogInformation($"Validation response is [{JsonConvert.SerializeObject(validationResult)}]");

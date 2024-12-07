@@ -88,7 +88,21 @@ namespace TransactionProcessor.SettlementAggregates.Tests
         }
 
         [Fact]
-        public void SettlementAggregate_AddFee_DuplicateFee_NoErrorThrown()
+        public void SettlementAggregate_AddFee_DuplicateFee_SettledFee_NoErrorThrown()
+        {
+            SettlementAggregate aggregate = SettlementAggregate.Create(TestData.SettlementAggregateId);
+            aggregate.Create(TestData.EstateId, TestData.MerchantId, TestData.SettlementDate);
+            aggregate.AddFee(TestData.MerchantId, TestData.TransactionId, TestData.CalculatedFeeMerchantFee());
+            aggregate.MarkFeeAsSettled(TestData.MerchantId, TestData.TransactionId, TestData.CalculatedFeeMerchantFee().FeeId, TestData.SettlementDate);
+            Should.NotThrow(() =>
+            {
+                aggregate.AddFee(TestData.MerchantId, TestData.TransactionId, TestData.CalculatedFeeMerchantFee());
+            });
+            aggregate.GetNumberOfFeesSettled().ShouldBe(1);
+        }
+
+        [Fact]
+        public void SettlementAggregate_AddFee_DuplicateFee_PendingSettlement_NoErrorThrown()
         {
             SettlementAggregate aggregate = SettlementAggregate.Create(TestData.SettlementAggregateId);
             aggregate.Create(TestData.EstateId, TestData.MerchantId, TestData.SettlementDate);
@@ -174,21 +188,37 @@ namespace TransactionProcessor.SettlementAggregates.Tests
             aggregate.MarkFeeAsSettled(TestData.MerchantId, TestData.TransactionId, TestData.CalculatedFeeMerchantFee().FeeId, TestData.SettlementDate);
         }
 
-        //[Fact]
-        //public void SettlementAggregate_ImmediatelyMarkFeeAsSettled_FeeIsSettledAndSettlementNotCompleted()
-        //{
-        //    SettlementAggregate aggregate = SettlementAggregate.Create(TestData.SettlementAggregateId);
-        //    aggregate.Create(TestData.EstateId, TestData.MerchantId, TestData.SettlementDate);
-        //    aggregate.AddFee(TestData.MerchantId, TestData.TransactionId, TestData.CalculatedFeeMerchantFee());
+        [Fact]
+        public void SettlementAggregate_ImmediatelyMarkFeeAsSettled_FeeIsSettledAndSettlementNotCompleted()
+        {
+            SettlementAggregate aggregate = SettlementAggregate.Create(TestData.SettlementAggregateId);
+            aggregate.Create(TestData.EstateId, TestData.MerchantId, TestData.SettlementDate);
+            aggregate.AddFee(TestData.MerchantId, TestData.TransactionId, TestData.CalculatedFeeMerchantFee());
 
-        //    aggregate.GetNumberOfFeesPendingSettlement().ShouldBe(1);
+            aggregate.GetNumberOfFeesPendingSettlement().ShouldBe(1);
 
-        //    aggregate.ImmediatelyMarkFeeAsSettled(TestData.MerchantId, TestData.TransactionId, TestData.CalculatedFeeMerchantFee().FeeId);
+            aggregate.ImmediatelyMarkFeeAsSettled(TestData.MerchantId, TestData.TransactionId, TestData.CalculatedFeeMerchantFee().FeeId);
 
-        //    aggregate.GetNumberOfFeesPendingSettlement().ShouldBe(0);
-        //    aggregate.GetNumberOfFeesSettled().ShouldBe(1);
-        //    aggregate.SettlementComplete.ShouldBeFalse();
-        //}
+            aggregate.GetNumberOfFeesPendingSettlement().ShouldBe(0);
+            aggregate.GetNumberOfFeesSettled().ShouldBe(1);
+            aggregate.SettlementComplete.ShouldBeFalse();
+        }
+
+        [Fact]
+        public void SettlementAggregate_ImmediatelyMarkFeeAsSettled_FeeIsAlreadySettled()
+        {
+            SettlementAggregate aggregate = SettlementAggregate.Create(TestData.SettlementAggregateId);
+            aggregate.Create(TestData.EstateId, TestData.MerchantId, TestData.SettlementDate);
+            aggregate.AddFee(TestData.MerchantId, TestData.TransactionId, TestData.CalculatedFeeMerchantFee());
+
+            aggregate.GetNumberOfFeesPendingSettlement().ShouldBe(1);
+
+            aggregate.ImmediatelyMarkFeeAsSettled(TestData.MerchantId, TestData.TransactionId, TestData.CalculatedFeeMerchantFee().FeeId);
+            
+            aggregate.GetNumberOfFeesPendingSettlement().ShouldBe(0);
+            aggregate.GetNumberOfFeesSettled().ShouldBe(1);
+            aggregate.SettlementComplete.ShouldBeFalse();
+        }
 
         [Fact]
        public void SettlementAggregate_StartProcessing_ProcessingStarted()
@@ -253,6 +283,15 @@ namespace TransactionProcessor.SettlementAggregates.Tests
            Should.Throw<InvalidOperationException>(() => {
                                                        aggregate.ManuallyComplete();
                                                    });
+       }
+
+       [Fact]
+       public void SettlementAggregate_GetFeesToBeSettled_ListIsEmpty()
+       {
+           SettlementAggregate aggregate = SettlementAggregate.Create(TestData.SettlementAggregateId);
+           aggregate.Create(TestData.EstateId, TestData.MerchantId, TestData.SettlementDate);
+           var fees = aggregate.GetFeesToBeSettled();
+           fees.ShouldBeEmpty();
        }
     }
 }

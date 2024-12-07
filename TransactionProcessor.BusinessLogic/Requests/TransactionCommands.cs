@@ -1,11 +1,13 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using MediatR;
 using SimpleResults;
 using TransactionProcessor.Models;
 
 namespace TransactionProcessor.BusinessLogic.Requests;
 
+[ExcludeFromCodeCoverage]
 public record TransactionCommands {
     public record ProcessLogonTransactionCommand(Guid TransactionId,
                                                  Guid EstateId,

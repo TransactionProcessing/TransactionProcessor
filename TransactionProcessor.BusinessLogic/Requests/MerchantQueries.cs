@@ -1,12 +1,13 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using MediatR;
 using SimpleResults;
 using TransactionProcessor.ProjectionEngine.Models;
 using TransactionProcessor.ProjectionEngine.State;
 
 namespace TransactionProcessor.BusinessLogic.Requests;
-
+[ExcludeFromCodeCoverage]
 public record MerchantQueries {
     public record GetMerchantBalanceQuery(Guid EstateId, Guid MerchantId) : IRequest<Result<MerchantBalanceState>>;
 

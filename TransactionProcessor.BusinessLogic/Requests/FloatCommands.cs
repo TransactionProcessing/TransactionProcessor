@@ -1,9 +1,11 @@
 ﻿using System;
+using System.Diagnostics.CodeAnalysis;
 using MediatR;
 using SimpleResults;
 
 namespace TransactionProcessor.BusinessLogic.Requests;
 
+[ExcludeFromCodeCoverage]
 public record FloatCommands {
     public record CreateFloatForContractProductCommand(Guid EstateId,
                                                        Guid ContractId,

@@ -9,6 +9,8 @@ using System.Diagnostics;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Shared.EventStore.EventStore;
+using TransactionProcessor.ProjectionEngine.Repository;
 using Xunit;
 
 namespace TransactionProcessor.BusinessLogic.Tests.Mediator
@@ -17,6 +19,7 @@ namespace TransactionProcessor.BusinessLogic.Tests.Mediator
     using Lamar;
     using Microsoft.Extensions.DependencyInjection;
     using Testing;
+    using TransactionProcessor.ProjectionEngine.State;
 
     public class MediatorTests
     {
@@ -28,6 +31,20 @@ namespace TransactionProcessor.BusinessLogic.Tests.Mediator
             this.Requests.Add(TestData.ProcessReconciliationCommand);
             this.Requests.Add(TestData.ProcessSaleTransactionCommand);
             this.Requests.Add(TestData.ProcessSettlementCommand);
+            this.Requests.Add(TestData.GetMerchantBalanceQuery);
+            this.Requests.Add(TestData.GetMerchantLiveBalanceQuery);
+            this.Requests.Add(TestData.GetMerchantBalanceHistoryQuery);
+            this.Requests.Add(TestData.AddMerchantFeePendingSettlementCommand);
+            this.Requests.Add(TestData.AddSettledFeeToSettlementCommand);
+            this.Requests.Add(TestData.GetPendingSettlementQuery);
+            this.Requests.Add(TestData.RecordCreditPurchaseCommand);
+            this.Requests.Add(TestData.CalculateFeesForTransactionCommand);
+            this.Requests.Add(TestData.AddSettledMerchantFeeCommand);
+            // TODO: this needs the query handling function refactoring to use a repository not the context direct
+            //this.Requests.Add(TestData.GetVoucherByVoucherCodeQuery);
+            //this.Requests.Add(TestData.GetVoucherByTransactionIdQuery);
+
+
         }
 
         [Fact]
@@ -56,7 +73,7 @@ namespace TransactionProcessor.BusinessLogic.Tests.Mediator
                 }
                 catch (Exception ex)
                 {
-                    errors.Add(ex.Message);
+                    errors.Add($"Command: {baseRequest.GetType().Name} Exception: {ex.Message}");
                 }
             }
 
@@ -70,7 +87,7 @@ namespace TransactionProcessor.BusinessLogic.Tests.Mediator
         private IConfigurationRoot SetupMemoryConfiguration()
         {
             Dictionary<String, String> configuration = new Dictionary<String, String>();
-
+            
             IConfigurationBuilder builder = new ConfigurationBuilder();
             
             builder.AddInMemoryCollection(TestData.DefaultAppSettings);
@@ -93,6 +110,9 @@ namespace TransactionProcessor.BusinessLogic.Tests.Mediator
                                           s.AddSingleton<ISettlementDomainService, DummySettlementDomainService>();
                                           s.AddSingleton<IVoucherDomainService, DummyVoucherDomainService>();
                                           s.AddSingleton<ITransactionDomainService, DummyTransactionDomainService>();
+                                          s.AddSingleton<IProjectionStateRepository<MerchantBalanceState>, DummyMerchantBalanceStateRepository>();
+                                          s.AddSingleton<ITransactionProcessorReadRepository, DummyTransactionProcessorReadRepository>();
+                                          s.AddSingleton<IEventStoreContext, DummyEventStoreContext>();
             });
         }
     }

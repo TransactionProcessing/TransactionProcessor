@@ -35,6 +35,27 @@ namespace TransactionProcessor.BusinessLogic.Tests.Manager
         }
 
         [Fact]
+        public void FeeCalculationManager_CalculateFees_SingleFixedFee_ServiceFee_WithCalculationDate_FeesAreCalculated()
+        {
+            IFeeCalculationManager manager = new FeeCalculationManager();
+
+            List<TransactionFeeToCalculate> feesList = new List<TransactionFeeToCalculate>
+            {
+                FeeCalculationManagerTestData.FixedServiceFee5
+            };
+
+            List<CalculatedFee> calculatedFees = manager.CalculateFees(feesList, FeeCalculationManagerTestData.TransactionAmount100, DateTime.Now);
+
+            calculatedFees.ShouldHaveSingleItem();
+            CalculatedFee calculatedFee = calculatedFees.Single();
+            calculatedFee.CalculatedValue.ShouldBe(5.0m);
+            calculatedFee.FeeType.ShouldBe(FeeCalculationManagerTestData.FixedServiceFee5.FeeType);
+            calculatedFee.FeeCalculationType.ShouldBe(FeeCalculationManagerTestData.FixedServiceFee5.CalculationType);
+            calculatedFee.FeeId.ShouldBe(FeeCalculationManagerTestData.FixedServiceFee5.FeeId);
+            calculatedFee.FeeValue.ShouldBe(FeeCalculationManagerTestData.FixedServiceFee5.Value);
+        }
+
+        [Fact]
         public void FeeCalculationManager_CalculateFees_MultipleFixedFees_ServiceFee_FeesAreCalculated()
         {
             IFeeCalculationManager manager = new FeeCalculationManager();
@@ -73,6 +94,27 @@ namespace TransactionProcessor.BusinessLogic.Tests.Manager
                                                        };
 
             List<CalculatedFee> calculatedFees = manager.CalculateFees(feesList, FeeCalculationManagerTestData.TransactionAmount100);
+
+            calculatedFees.ShouldHaveSingleItem();
+            CalculatedFee calculatedFee = calculatedFees.Single();
+            calculatedFee.CalculatedValue.ShouldBe(0.25m);
+            calculatedFee.FeeType.ShouldBe(FeeCalculationManagerTestData.PercentageServiceFeeQuarterPercent.FeeType);
+            calculatedFee.FeeCalculationType.ShouldBe(FeeCalculationManagerTestData.PercentageServiceFeeQuarterPercent.CalculationType);
+            calculatedFee.FeeId.ShouldBe(FeeCalculationManagerTestData.PercentageServiceFeeQuarterPercent.FeeId);
+            calculatedFee.FeeValue.ShouldBe(FeeCalculationManagerTestData.PercentageServiceFeeQuarterPercent.Value);
+        }
+
+        [Fact]
+        public void FeeCalculationManager_CalculateFees_SinglePercentageFee_ServiceFee_WithFixedDate_FeesAreCalculated()
+        {
+            IFeeCalculationManager manager = new FeeCalculationManager();
+
+            List<TransactionFeeToCalculate> feesList = new List<TransactionFeeToCalculate>
+            {
+                FeeCalculationManagerTestData.PercentageServiceFeeQuarterPercent
+            };
+
+            List<CalculatedFee> calculatedFees = manager.CalculateFees(feesList, FeeCalculationManagerTestData.TransactionAmount100, DateTime.Now);
 
             calculatedFees.ShouldHaveSingleItem();
             CalculatedFee calculatedFee = calculatedFees.Single();
