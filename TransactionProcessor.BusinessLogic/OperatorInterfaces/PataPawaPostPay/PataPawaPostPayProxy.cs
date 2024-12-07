@@ -1,4 +1,5 @@
-﻿using SimpleResults;
+﻿using System.Diagnostics.CodeAnalysis;
+using SimpleResults;
 
 namespace TransactionProcessor.BusinessLogic.OperatorInterfaces.PataPawaPostPay
 {
@@ -75,6 +76,7 @@ namespace TransactionProcessor.BusinessLogic.OperatorInterfaces.PataPawaPostPay
             new MemoryCacheEntryOptions().SetPriority(CacheItemPriority.NeverRemove).SetSlidingExpiration(TimeSpan.FromHours(1))
                                          .RegisterPostEvictionCallback(PostEvictionCallback);
 
+        [ExcludeFromCodeCoverage]
         private void PostEvictionCallback(Object key,
                                           Object value,
                                           EvictionReason reason,

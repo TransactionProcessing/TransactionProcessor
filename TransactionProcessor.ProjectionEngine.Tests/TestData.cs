@@ -1,3 +1,5 @@
+using TransactionProcessor.Models;
+
 namespace TransactionProcessor.ProjectionEngine.Tests
 {
     using EstateManagement.Merchant.DomainEvents;
@@ -214,5 +216,34 @@ namespace TransactionProcessor.ProjectionEngine.Tests
         public static VoucherIssuedEvent VoucherIssuedEvent => new VoucherIssuedEvent(TestData.VoucherId,TestData.EstateId, TestData.IssuedDateTime, TestData.RecipientEmail, TestData.RecipientMobile);
 
         public static VoucherFullyRedeemedEvent VoucherFullyRedeemedEvent => new VoucherFullyRedeemedEvent(TestData.VoucherId, TestData.EstateId, TestData.RedeemedDateTime);
+
+        public static TransactionHasBeenCompletedEvent TransactionHasBeenCompletedEvent => new TransactionHasBeenCompletedEvent(TestData.TransactionId,
+            TestData.EstateId,
+            TestData.MerchantId,
+            TestData.ResponseCode,
+            TestData.ResponseMessage,
+            TestData.IsAuthorised,
+            TestData.TransactionDateTime,
+            TestData.TransactionAmount,
+            TestData.TransactionDateTime);
+
+        public static Guid SettlementAggregateId = Guid.Parse("BAEBA232-CD7F-46F5-AE2E-3204FE69A441");
+        public static Guid TransactionFeeId = Guid.Parse("B83FCCCE-0D45-4FC2-8952-ED277A124BDB");
+        public static DateTime TransactionFeeCalculateDateTime = new DateTime(2021, 3, 18);
+        public static DateTime SettlementDate = new DateTime(2021, 9, 22, 1, 2, 3);
+        public static Decimal CalculatedFeeValue = 0.5m;
+        public static SettledMerchantFeeAddedToTransactionEvent SettledMerchantFeeAddedToTransactionEvent(DateTime settlementDueDate) => new(TestData.SettlementAggregateId,
+                                                                                                                                                                                       TestData.EstateId,
+                                                                                                                                                                                       TestData.MerchantId,
+                                                                                                                                                                                       TestData.CalculatedFeeValue,
+                                                                                                                                                                                       (Int32)CalculationType.Fixed,
+                                                                                                                                                                                       TestData.TransactionFeeId,
+                                                                                                                                                                                       TestData.CalculatedFeeValue,
+                                                                                                                                                                                       TestData.TransactionFeeCalculateDateTime,
+                                                                                                                                                                                       TestData.SettlementDate,
+                                                                                                                                                                                       TestData.SettlementAggregateId,
+                                                                                                                                                                                       TestData.TransactionDateTime);
+
+        public static Boolean IsAuthorised = true;
     }
 }

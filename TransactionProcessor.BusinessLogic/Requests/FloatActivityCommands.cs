@@ -1,9 +1,11 @@
 ﻿using System;
+using System.Diagnostics.CodeAnalysis;
 using MediatR;
 using SimpleResults;
 
 namespace TransactionProcessor.BusinessLogic.Requests;
 
+[ExcludeFromCodeCoverage]
 public record FloatActivityCommands {
     public record RecordCreditPurchaseCommand(Guid EstateId, Guid FloatId, DateTime CreditPurchasedDateTime, Decimal Amount) : IRequest<Result>;
 

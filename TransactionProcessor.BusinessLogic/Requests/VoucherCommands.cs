@@ -1,10 +1,12 @@
 ﻿using System;
+using System.Diagnostics.CodeAnalysis;
 using MediatR;
 using SimpleResults;
 using TransactionProcessor.Models;
 
 namespace TransactionProcessor.BusinessLogic.Requests;
 
+[ExcludeFromCodeCoverage]
 public record VoucherCommands {
     public record IssueVoucherCommand(Guid VoucherId,
                                       Guid OperatorId,
@@ -17,9 +19,4 @@ public record VoucherCommands {
 
     public record RedeemVoucherCommand(Guid EstateId, String VoucherCode, DateTime RedeemedDateTime)
         : IRequest<Result<RedeemVoucherResponse>>;
-}
-
-public record VoucherQueries {
-    public record GetVoucherByVoucherCodeQuery(Guid EstateId,String VoucherCode) : IRequest<Result<Models.Voucher>>;
-    public record GetVoucherByTransactionIdQuery(Guid EstateId, Guid TransactionId) : IRequest<Result<Models.Voucher>>;
 }

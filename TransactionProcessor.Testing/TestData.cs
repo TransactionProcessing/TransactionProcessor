@@ -328,7 +328,11 @@
                 ["AppSettings:EstateManagementApi"] = "http://127.0.0.1",
                 ["AppSettings:SecurityService"] = "http://127.0.0.1",
                 ["AppSettings:ContractProductFeeCacheExpiryInHours"] = "",
-                ["AppSettings:ContractProductFeeCacheEnabled"] = ""
+                ["AppSettings:ContractProductFeeCacheEnabled"] = "",
+                ["AppSettings:DatabaseEngine"] = "SqlServer",
+                ["ConnectionStrings:HealthCheck"] = "HealthCheck",
+                ["ConnectionStrings:EstateReportingReadModel"] = "",
+                ["ConnectionStrings:TransactionProcessorReadModel"] = ""
             };
 
         public static EstateResponse GetEmptyEstateResponse =>
@@ -441,7 +445,38 @@
                                                                                                                                          TestData.ProductId
                                                                                                                                      }
                                                                                               }
-                                                              }
+                                                              },
+                SettlementSchedule = SettlementSchedule.Monthly
+            };
+
+        public static EstateManagement.DataTransferObjects.Responses.Merchant.MerchantResponse GetMerchantResponseWithOperator1ImmediateSettlement =>
+            new EstateManagement.DataTransferObjects.Responses.Merchant.MerchantResponse
+            {
+                EstateId = TestData.EstateId,
+                MerchantId = TestData.MerchantId,
+                MerchantName = TestData.MerchantName,
+                Devices = new Dictionary<Guid, String>
+                {
+                    {TestData.DeviceId, TestData.DeviceIdentifier}
+                },
+                Operators = new List<EstateManagement.DataTransferObjects.Responses.Merchant.MerchantOperatorResponse>
+                {
+                    new EstateManagement.DataTransferObjects.Responses.Merchant.MerchantOperatorResponse
+                    {
+                        OperatorId = TestData.OperatorId,
+                        MerchantNumber = TestData.MerchantNumber,
+                        TerminalNumber = TestData.TerminalNumber
+                    }
+                },
+                Contracts = new List<MerchantContractResponse>{
+                    new MerchantContractResponse{
+                        ContractId = TestData.ContractId,
+                        ContractProducts = new List<Guid>(){
+                            TestData.ProductId
+                        }
+                    }
+                },
+                SettlementSchedule = SettlementSchedule.Immediate
             };
 
         public static EstateManagement.DataTransferObjects.Responses.Merchant.MerchantResponse GetMerchantResponseWithOperator1AndNullContracts =>
@@ -608,7 +643,17 @@
             {
                 EstateId = TestData.EstateId,
                 MerchantId = TestData.MerchantId,
-                MerchantName = TestData.MerchantName
+                MerchantName = TestData.MerchantName,
+                SettlementSchedule = SettlementSchedule.Monthly
+            };
+
+        public static EstateManagement.DataTransferObjects.Responses.Merchant.MerchantResponse MerchantWithImmediateSettlement =>
+            new EstateManagement.DataTransferObjects.Responses.Merchant.MerchantResponse
+            {
+                EstateId = TestData.EstateId,
+                MerchantId = TestData.MerchantId,
+                MerchantName = TestData.MerchantName,
+                SettlementSchedule = SettlementSchedule.Immediate
             };
 
         public static TransactionCommands.ProcessLogonTransactionCommand ProcessLogonTransactionCommand =>
@@ -632,6 +677,25 @@
                 ResponseCode = TestData.ResponseCode
             };
 
+        public static MerchantQueries.GetMerchantBalanceQuery GetMerchantBalanceQuery => new(EstateId, MerchantId);
+
+        public static MerchantQueries.GetMerchantLiveBalanceQuery GetMerchantLiveBalanceQuery => new(MerchantId);
+
+        public static MerchantQueries.GetMerchantBalanceHistoryQuery GetMerchantBalanceHistoryQuery => new MerchantQueries.GetMerchantBalanceHistoryQuery(EstateId, MerchantId, DateTime.MinValue, DateTime.MaxValue);
+
+        public static SettlementCommands.AddMerchantFeePendingSettlementCommand AddMerchantFeePendingSettlementCommand => new(TransactionId, CalculatedFeeValue, TransactionFeeCalculateDateTime, CalculationType.Fixed, TransactionFeeId, CalculatedFeeValue, TransactionFeeSettlementDueDate, MerchantId, EstateId);
+        public static SettlementCommands.AddSettledFeeToSettlementCommand AddSettledFeeToSettlementCommand => new(SettlementDate,MerchantId,EstateId,TransactionFeeId, TransactionId);
+
+        public static FloatActivityCommands.RecordCreditPurchaseCommand RecordCreditPurchaseCommand => new(EstateId, FloatAggregateId, CreditPurchasedDateTime, FloatCreditAmount);
+
+        public static TransactionCommands.CalculateFeesForTransactionCommand CalculateFeesForTransactionCommand => new(TransactionId, TransactionDateTime, EstateId, MerchantId);
+
+        public static TransactionCommands.AddSettledMerchantFeeCommand AddSettledMerchantFeeCommand => new(TransactionId, CalculatedFeeValue, TransactionFeeCalculateDateTime, CalculationType.Percentage, TransactionFeeId, TransactionFeeValue, SettlementDate, SettlementAggregateId);
+
+        public static VoucherQueries.GetVoucherByVoucherCodeQuery GetVoucherByVoucherCodeQuery => new(EstateId, VoucherCode);
+        public static VoucherQueries.GetVoucherByTransactionIdQuery GetVoucherByTransactionIdQuery => new(EstateId, TransactionId);
+
+        public static SettlementQueries.GetPendingSettlementQuery GetPendingSettlementQuery => new(SettlementDate, MerchantId, EstateId);
         public static TransactionCommands.ProcessSaleTransactionCommand ProcessSaleTransactionCommand =>
             new(TestData.TransactionId,
                                                  TestData.EstateId,

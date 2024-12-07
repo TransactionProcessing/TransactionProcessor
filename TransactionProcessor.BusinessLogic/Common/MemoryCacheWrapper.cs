@@ -1,6 +1,7 @@
 ﻿using Microsoft.Extensions.Caching.Memory;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -13,6 +14,7 @@ namespace TransactionProcessor.BusinessLogic.Common
         void Set<T>(Object key, T cache, MemoryCacheEntryOptions entryOptions);
     }
 
+    [ExcludeFromCodeCoverage]
     public class MemoryCacheWrapper : IMemoryCacheWrapper
     {
         private readonly IMemoryCache MemoryCache;

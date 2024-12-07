@@ -1,5 +1,6 @@
 ﻿using MediatR;
 using Microsoft.CodeAnalysis.Elfie.Diagnostics;
+using Shared.Results;
 using SimpleResults;
 using TransactionProcessor.BusinessLogic.Requests;
 

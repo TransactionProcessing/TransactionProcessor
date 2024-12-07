@@ -41,8 +41,7 @@
                                            FeeCalculatedDateTime = calculationDateTime == DateTime.MinValue ? DateTime.Now : calculationDateTime
                                        });
                 }
-
-                if (transactionFeeToCalculate.CalculationType == CalculationType.Fixed)
+                else if (transactionFeeToCalculate.CalculationType == CalculationType.Fixed)
                 {
                     // fixed value fee
                     calculatedFees.Add(new CalculatedFee

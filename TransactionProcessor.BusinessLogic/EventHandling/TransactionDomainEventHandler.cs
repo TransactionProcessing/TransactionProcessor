@@ -170,7 +170,7 @@ namespace TransactionProcessor.BusinessLogic.EventHandling
 
         private async Task<Result> HandleSpecificDomainEvent(CustomerEmailReceiptRequestedEvent domainEvent,
                                                              CancellationToken cancellationToken) {
-            return Result.Success();
+            return Result.Failure("Not Implemented");
 
             this.TokenResponse = await Helpers.GetToken(this.TokenResponse, this.SecurityServiceClient, cancellationToken);
 

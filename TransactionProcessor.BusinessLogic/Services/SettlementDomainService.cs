@@ -206,14 +206,10 @@ namespace TransactionProcessor.BusinessLogic.Services
 
             Guid aggregateId = Helpers.CalculateSettlementAggregateId(command.SettledDate.Date, command.MerchantId, command.EstateId);
             Result result = await ApplySettlementUpdates(async (SettlementAggregate settlementAggregate) => {
-
-                if (settlementAggregate == null) {
-                    Logger.LogInformation("Settlement aggregate is null");
-                }
-
+                
                 var getMerchantResult = await this.EstateClient.GetMerchant(this.TokenResponse.AccessToken, command.EstateId, command.MerchantId, cancellationToken);
                 if (getMerchantResult.IsFailed) {
-                    Logger.LogInformation("getMerchantResult.IsFailed");
+                    return ResultHelpers.CreateFailure(getMerchantResult);
                 }
 
                 var merchant = getMerchantResult.Data;

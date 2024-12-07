@@ -1,10 +1,11 @@
 ﻿using System;
+using System.Diagnostics.CodeAnalysis;
 using MediatR;
 using SimpleResults;
 using TransactionProcessor.Models;
 
 namespace TransactionProcessor.BusinessLogic.Requests;
-
+[ExcludeFromCodeCoverage]
 public record SettlementCommands {
     public record ProcessSettlementCommand(DateTime SettlementDate, Guid MerchantId, Guid EstateId)
         : IRequest<Result<Guid>>;

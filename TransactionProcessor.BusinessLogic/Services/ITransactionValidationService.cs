@@ -1,4 +1,5 @@
-﻿using SimpleResults;
+﻿using System.Diagnostics.CodeAnalysis;
+using SimpleResults;
 
 namespace TransactionProcessor.BusinessLogic.Services;
 
@@ -8,37 +9,17 @@ using System.Threading.Tasks;
 
 public interface ITransactionValidationService{
     #region Methods
-
-    Task<(String responseMessage, TransactionResponseCode responseCode)> ValidateLogonTransaction(Guid estateId,
-                                                                                                  Guid merchantId,
-                                                                                                  String deviceIdentifier,
-                                                                                                  CancellationToken cancellationToken);
-
-    Task<Result<TransactionValidationResult>> ValidateLogonTransactionX(Guid estateId,
+    
+    Task<Result<TransactionValidationResult>> ValidateLogonTransaction(Guid estateId,
                                                                         Guid merchantId,
                                                                         String deviceIdentifier,
                                                                         CancellationToken cancellationToken);
-
-    Task<(String responseMessage, TransactionResponseCode responseCode)> ValidateReconciliationTransaction(Guid estateId,
-                                                                                                           Guid merchantId,
-                                                                                                           String deviceIdentifier,
-                                                                                                           CancellationToken cancellationToken);
-
-    Task<Result<TransactionValidationResult>> ValidateReconciliationTransactionX(Guid estateId,
+    Task<Result<TransactionValidationResult>> ValidateReconciliationTransaction(Guid estateId,
         Guid merchantId,
         String deviceIdentifier,
         CancellationToken cancellationToken);
 
-    Task<(String responseMessage, TransactionResponseCode responseCode)> ValidateSaleTransaction(Guid estateId,
-                                                                                                 Guid merchantId,
-                                                                                                 Guid contractId,
-                                                                                                 Guid productId,
-                                                                                                 String deviceIdentifier,
-                                                                                                 Guid operatorId,
-                                                                                                 Decimal? transactionAmount,
-                                                                                                 CancellationToken cancellationToken);
-
-    Task<Result<TransactionValidationResult>> ValidateSaleTransactionX(Guid estateId,
+    Task<Result<TransactionValidationResult>> ValidateSaleTransaction(Guid estateId,
                                                                        Guid merchantId,
                                                                        Guid contractId,
                                                                        Guid productId,
@@ -50,4 +31,5 @@ public interface ITransactionValidationService{
     #endregion
 }
 
+[ExcludeFromCodeCoverage]
 public record TransactionValidationResult(TransactionResponseCode ResponseCode, String ResponseMessage);

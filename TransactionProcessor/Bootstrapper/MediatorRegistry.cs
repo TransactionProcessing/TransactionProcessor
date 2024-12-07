@@ -53,6 +53,7 @@ namespace TransactionProcessor.Bootstrapper
 
             this.AddSingleton<IRequestHandler<FloatCommands.CreateFloatForContractProductCommand, Result>, FloatRequestHandler>();
             this.AddSingleton<IRequestHandler<FloatCommands.RecordCreditPurchaseForFloatCommand, Result>, FloatRequestHandler>();
+            this.AddSingleton<IRequestHandler<FloatActivityCommands.RecordCreditPurchaseCommand, Result>, FloatRequestHandler>();
             
             this.AddSingleton<IRequestHandler<MerchantQueries.GetMerchantLiveBalanceQuery, Result<MerchantBalanceProjectionState1>>, MerchantRequestHandler>();
             this.AddSingleton<IRequestHandler<MerchantQueries.GetMerchantBalanceQuery, Result<MerchantBalanceState>>, MerchantRequestHandler>();
