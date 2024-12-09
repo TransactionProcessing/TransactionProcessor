@@ -1,4 +1,5 @@
-﻿using System.Reflection.Metadata.Ecma335;
+﻿using System.Diagnostics.CodeAnalysis;
+using System.Reflection.Metadata.Ecma335;
 using SimpleResults;
 
 namespace TransactionProcessor.BusinessLogic.OperatorInterfaces.PataPawaPrePay;
@@ -126,7 +127,7 @@ public class PataPawaPrePayProxy : IOperatorProxy{
 
         String amount = additionalTransactionMetadata.ExtractFieldFromMetadata<String>("Amount");
 
-        if (String.IsNullOrEmpty(meterNumber))
+        if (String.IsNullOrEmpty(amount))
         {
             return Result.Invalid("Amount - Amount is a required field for this transaction type");
         }
@@ -232,6 +233,7 @@ public class PataPawaPrePayProxy : IOperatorProxy{
         new MemoryCacheEntryOptions().SetPriority(CacheItemPriority.NeverRemove).SetSlidingExpiration(TimeSpan.FromHours(1))
                                      .RegisterPostEvictionCallback(this.PostEvictionCallback);
 
+    [ExcludeFromCodeCoverage]
     private void PostEvictionCallback(Object key,
                                       Object value,
                                       EvictionReason reason,
