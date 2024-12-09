@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -8,11 +7,12 @@ using SimpleResults;
 namespace TransactionProcessor.BusinessLogic.Tests.OperatorInterfaces
 {
     using System.Threading;
-    using BusinessLogic.OperatorInterfaces;
     using Common;
+    using EstateManagement.DataTransferObjects.Responses.Operator;
     using Microsoft.Data.SqlClient;
     using Microsoft.Extensions.Caching.Memory;
     using Moq;
+    using NuGet.Protocol.Plugins;
     using PataPawaPostPay;
     using Shouldly;
     using Testing;
@@ -49,7 +49,7 @@ namespace TransactionProcessor.BusinessLogic.Tests.OperatorInterfaces
 
             PataPawaPostPayService.Setup(s => s.getLoginRequestAsync(It.IsAny<String>(), It.IsAny<String>())).ReturnsAsync(TestData.PataPawaPostPaidSuccessfulLoginResponse);
 
-            OperatorResponse logonResponse = await PataPawaPostPayProxy.ProcessLogonMessage("", CancellationToken.None);
+            BusinessLogic.OperatorInterfaces.OperatorResponse logonResponse = await PataPawaPostPayProxy.ProcessLogonMessage("", CancellationToken.None);
 
             logonResponse.ShouldNotBeNull();
             logonResponse.IsSuccessful.ShouldBeTrue();
@@ -62,7 +62,19 @@ namespace TransactionProcessor.BusinessLogic.Tests.OperatorInterfaces
             balance.ShouldBe(TestData.PataPawaPostPaidSuccessfulLoginResponse.balance);
         }
 
-        
+        [Fact]
+        public async Task PataPawaPostPayProxy_ProcessLogonMessage_LogonCached_SuccessfulResponse_MessageIsProcessed()
+        {
+            BusinessLogic.OperatorInterfaces.OperatorResponse operatorResponse = new() { TransactionId = Guid.Parse("2D9D6BBA-BDF4-4248-9B27-6B68374AC037").ToString() };
+
+            this.MemoryCache.Set("PataPawaPostPayLogon", operatorResponse, new MemoryCacheEntryOptions());
+
+            var result = await PataPawaPostPayProxy.ProcessLogonMessage("", CancellationToken.None);
+
+            result.IsSuccess.ShouldBeTrue();
+            result.Data.TransactionId.ShouldBe(operatorResponse.TransactionId);
+        }
+
         [Fact]
         public async Task PataPawaPostPayProxy_ProcessLogonMessage_FailedResponse_MessageIsProcessed() {
 
@@ -81,7 +93,7 @@ namespace TransactionProcessor.BusinessLogic.Tests.OperatorInterfaces
                                   .ReturnsAsync(TestData.PataPawaPostPaidSuccessfulVerifyAccountResponse);
             MemoryCache.Set("PataPawaPostPayLogon", TestData.PataPawaPostPaidSuccessfulLoginOperatorResponse);
             
-            OperatorResponse saleResponse = await this.PataPawaPostPayProxy.ProcessSaleMessage(TestData.TokenResponse().AccessToken,
+            BusinessLogic.OperatorInterfaces.OperatorResponse saleResponse = await this.PataPawaPostPayProxy.ProcessSaleMessage(TestData.TokenResponse().AccessToken,
                                                                                                 TestData.TransactionId,
                                                                                                 TestData.OperatorId,
                                                                                                 TestData.Merchant,
@@ -205,7 +217,7 @@ namespace TransactionProcessor.BusinessLogic.Tests.OperatorInterfaces
                 .ReturnsAsync(TestData.PataPawaPostPaidSuccessfulProcessBillResponse);
             this.MemoryCache.Set("PataPawaPostPayLogon", TestData.PataPawaPostPaidSuccessfulLoginOperatorResponse);
 
-            OperatorResponse saleResponse = await this.PataPawaPostPayProxy.ProcessSaleMessage(TestData.TokenResponse().AccessToken,
+            BusinessLogic.OperatorInterfaces.OperatorResponse saleResponse = await this.PataPawaPostPayProxy.ProcessSaleMessage(TestData.TokenResponse().AccessToken,
                                                                                                 TestData.TransactionId,
                                                                                                 TestData.OperatorId,
                                                                                                 TestData.Merchant,
