@@ -105,6 +105,9 @@ namespace TransactionProcessor.BusinessLogic.Services{
                 Result<TransactionAggregate> transactionAggregateResult =
                     DomainServiceHelper.HandleGetAggregateResult(getTransactionResult, transactionId, isNotFoundError);
 
+                if (transactionAggregateResult.IsFailed)
+                    return ResultHelpers.CreateFailure(transactionAggregateResult);
+
                 TransactionAggregate transactionAggregate = transactionAggregateResult.Data;
                 Result<T> result = await action(transactionAggregate);
                 if (result.IsFailed)
@@ -132,6 +135,9 @@ namespace TransactionProcessor.BusinessLogic.Services{
                 Result<TransactionAggregate> getTransactionResult = await this.TransactionAggregateRepository.GetLatestVersion(transactionId, cancellationToken);
                 Result<TransactionAggregate> transactionAggregateResult =
                     DomainServiceHelper.HandleGetAggregateResult(getTransactionResult, transactionId, isNotFoundError);
+
+                if (transactionAggregateResult.IsFailed)
+                    return ResultHelpers.CreateFailure(transactionAggregateResult);
 
                 TransactionAggregate transactionAggregate = transactionAggregateResult.Data;
                 Result result = await action(transactionAggregate);

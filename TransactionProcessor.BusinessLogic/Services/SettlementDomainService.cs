@@ -45,6 +45,10 @@ namespace TransactionProcessor.BusinessLogic.Services
                 Result<SettlementAggregate> getSettlementResult = await this.SettlementAggregateRepository.GetLatestVersion(settlementId, cancellationToken);
                 Result<SettlementAggregate> settlementAggregateResult =
                     DomainServiceHelper.HandleGetAggregateResult(getSettlementResult, settlementId, isNotFoundError);
+
+                if (settlementAggregateResult.IsFailed)
+                    return ResultHelpers.CreateFailure(settlementAggregateResult);
+
                 Logger.LogInformation("In ApplySettlementUpdates - got aggregate");
                 SettlementAggregate settlementAggregate = settlementAggregateResult.Data;
                 Result result = await action(settlementAggregate);

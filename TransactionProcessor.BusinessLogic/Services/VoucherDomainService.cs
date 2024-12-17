@@ -85,6 +85,9 @@ public class VoucherDomainService : IVoucherDomainService
             Result<VoucherAggregate> voucherAggregateResult =
                 DomainServiceHelper.HandleGetAggregateResult(getVoucherResult, voucherId, isNotFoundError);
 
+            if (voucherAggregateResult.IsFailed)
+                return ResultHelpers.CreateFailure(voucherAggregateResult);
+
             VoucherAggregate voucherAggregate = voucherAggregateResult.Data;
             Result<T> result = await action(voucherAggregate);
             if (result.IsFailed)

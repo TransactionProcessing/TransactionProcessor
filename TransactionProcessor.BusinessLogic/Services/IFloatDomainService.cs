@@ -66,9 +66,12 @@ namespace TransactionProcessor.BusinessLogic.Services
             try
             {
                 Result<FloatAggregate> getFloatResult = await this.FloatAggregateRepository.GetLatestVersion(floatId, cancellationToken);
-                DomainServiceHelper.HandleGetAggregateResult(getFloatResult, floatId, isNotFoundError);
+                Result<FloatAggregate> floatAggregateResult = DomainServiceHelper.HandleGetAggregateResult(getFloatResult, floatId, isNotFoundError);
 
-                FloatAggregate floatAggregate = getFloatResult.Data;
+                if (floatAggregateResult.IsFailed)
+                    return ResultHelpers.CreateFailure(floatAggregateResult);
+
+                FloatAggregate floatAggregate = floatAggregateResult.Data;
                 
                 Result result = action(floatAggregate);
                 if (result.IsFailed)
@@ -91,7 +94,10 @@ namespace TransactionProcessor.BusinessLogic.Services
             try
             {
                 Result<FloatActivityAggregate> getFloatResult = await this.FloatActivityAggregateRepository.GetLatestVersionFromLastEvent(floatId, cancellationToken);
-                DomainServiceHelper.HandleGetAggregateResult(getFloatResult, floatId, isNotFoundError);
+                Result<FloatActivityAggregate> floatActivityAggregateResult = DomainServiceHelper.HandleGetAggregateResult(getFloatResult, floatId, isNotFoundError);
+
+                if (floatActivityAggregateResult.IsFailed)
+                    return ResultHelpers.CreateFailure(floatActivityAggregateResult);
 
                 FloatActivityAggregate floatActivityAggregate = getFloatResult.Data;
 
