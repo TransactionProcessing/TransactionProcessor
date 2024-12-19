@@ -80,7 +80,7 @@ public class TransactionValidationService : ITransactionValidationService{
         if (estateValidationResult.IsFailed) return CreateFailedResult(estateValidationResult.Data.validationResult);
 
         // Validate Merchant
-        Result<TransactionValidationResult<MerchantResponse>> merchantValidationResult = await ValidateMerchant(estateId, merchantId, cancellationToken);
+        Result<TransactionValidationResult<MerchantResponse>> merchantValidationResult = await ValidateMerchant(estateId, estateValidationResult.Data.additionalData.EstateName, merchantId, cancellationToken);
         if (merchantValidationResult.IsFailed) return CreateFailedResult(merchantValidationResult.Data.validationResult); ;
 
         MerchantResponse merchant = merchantValidationResult.Data.additionalData;
@@ -105,7 +105,7 @@ public class TransactionValidationService : ITransactionValidationService{
         EstateResponse estate = estateValidationResult.Data.additionalData;
 
         // Validate Merchant
-        Result<TransactionValidationResult<MerchantResponse>> merchantValidationResult = await ValidateMerchant(estateId, merchantId, cancellationToken);
+        Result<TransactionValidationResult<MerchantResponse>> merchantValidationResult = await ValidateMerchant(estateId, estateValidationResult.Data.additionalData.EstateName, merchantId, cancellationToken);
         if (merchantValidationResult.IsFailed) return CreateFailedResult(merchantValidationResult.Data.validationResult); ;
 
         MerchantResponse merchant = merchantValidationResult.Data.additionalData;
@@ -167,7 +167,7 @@ public class TransactionValidationService : ITransactionValidationService{
         if (estateOperatorValidationResult.IsFailed) return estateOperatorValidationResult;
 
         // Validate Merchant
-        Result<TransactionValidationResult<MerchantResponse>> merchantValidationResult = await ValidateMerchant(estateId, merchantId, cancellationToken);
+        Result<TransactionValidationResult<MerchantResponse>> merchantValidationResult = await ValidateMerchant(estateId, estateValidationResult.Data.additionalData.EstateName, merchantId, cancellationToken);
         if (merchantValidationResult.IsFailed) return CreateFailedResult(merchantValidationResult.Data.validationResult); ;
 
         MerchantResponse merchant = merchantValidationResult.Data.additionalData;
@@ -181,7 +181,7 @@ public class TransactionValidationService : ITransactionValidationService{
         if (merchantOperatorValidationResult.IsFailed) return merchantOperatorValidationResult;
 
         // Validate Contract and Product
-        Result<TransactionValidationResult> contractProductValidationResult = await ValidateContractAndProduct(estateId, merchantId, contractId, productId, cancellationToken);
+        Result<TransactionValidationResult> contractProductValidationResult = await ValidateContractAndProduct(estateId, estate.EstateName, merchantId, merchant.MerchantName, contractId, productId, cancellationToken);
         if (contractProductValidationResult.IsFailed) return contractProductValidationResult;
 
         // Validate Transaction Amount
@@ -223,14 +223,14 @@ public class TransactionValidationService : ITransactionValidationService{
         return result;
     }
 
-    private async Task<Result<TransactionValidationResult<MerchantResponse>>> ValidateMerchant(Guid estateId, Guid merchantId, CancellationToken cancellationToken)
+    private async Task<Result<TransactionValidationResult<MerchantResponse>>> ValidateMerchant(Guid estateId, String estateName, Guid merchantId, CancellationToken cancellationToken)
     {
         Result<MerchantResponse> getMerchantResult = await this.GetMerchant(estateId, merchantId, cancellationToken);
         if (getMerchantResult.IsFailed)
         {
             TransactionValidationResult transactionValidationResult = getMerchantResult.Status switch
             {
-                ResultStatus.NotFound => new TransactionValidationResult(TransactionResponseCode.InvalidMerchantId, $"Merchant Id [{merchantId}] is not a valid merchant for estate [{estateId}]"),
+                ResultStatus.NotFound => new TransactionValidationResult(TransactionResponseCode.InvalidMerchantId, $"Merchant Id [{merchantId}] is not a valid merchant for estate [{estateName}]"),
                 _ => new TransactionValidationResult(TransactionResponseCode.UnknownFailure, $"An error occurred while getting Merchant Id [{merchantId}] Message: [{getMerchantResult.Message}]")
             };
 
@@ -289,7 +289,7 @@ public class TransactionValidationService : ITransactionValidationService{
         return result;
     }
 
-    private async Task<Result<TransactionValidationResult>> ValidateContractAndProduct(Guid estateId, Guid merchantId, Guid contractId, Guid productId, CancellationToken cancellationToken)
+    private async Task<Result<TransactionValidationResult>> ValidateContractAndProduct(Guid estateId, String estateName, Guid merchantId, String merchantName, Guid contractId, Guid productId, CancellationToken cancellationToken)
     {
         if (contractId == Guid.Empty)
         {
@@ -300,7 +300,7 @@ public class TransactionValidationService : ITransactionValidationService{
         if (getMerchantContractsResult.IsFailed)
         {
             return getMerchantContractsResult.Status == ResultStatus.NotFound
-                ? CreateFailedResult(new TransactionValidationResult(TransactionResponseCode.InvalidMerchantId, $"Merchant Id [{merchantId}] is not a valid merchant for estate [{estateId}]"))
+                ? CreateFailedResult(new TransactionValidationResult(TransactionResponseCode.InvalidMerchantId, $"Merchant Id [{merchantId}] is not a valid merchant for estate [{estateName}]"))
                 : CreateFailedResult(new TransactionValidationResult(TransactionResponseCode.UnknownFailure, $"An error occurred while getting Merchant Id [{merchantId}] Contracts Message: [{getMerchantContractsResult.Message}]"));
         }
 
@@ -313,7 +313,7 @@ public class TransactionValidationService : ITransactionValidationService{
         var contract = merchantContracts.SingleOrDefault(c => c.ContractId == contractId);
         if (contract == null)
         {
-            return CreateFailedResult(new TransactionValidationResult(TransactionResponseCode.ContractNotValidForMerchant, $"Contract Id [{contractId}] not valid for Merchant [{merchantId}]"));
+            return CreateFailedResult(new TransactionValidationResult(TransactionResponseCode.ContractNotValidForMerchant, $"Contract Id [{contractId}] not valid for Merchant [{merchantName}]"));
         }
 
         if (productId == Guid.Empty)
@@ -324,7 +324,7 @@ public class TransactionValidationService : ITransactionValidationService{
         var contractProduct = contract.ContractProducts.SingleOrDefault(p => p == productId);
         if (contractProduct == Guid.Empty)
         {
-            return CreateFailedResult(new TransactionValidationResult(TransactionResponseCode.ProductNotValidForMerchant, $"Product Id [{productId}] not valid for Merchant [{merchantId}]"));
+            return CreateFailedResult(new TransactionValidationResult(TransactionResponseCode.ProductNotValidForMerchant, $"Product Id [{productId}] not valid for Merchant [{merchantName}]"));
         }
 
         return Result.Success(new TransactionValidationResult(TransactionResponseCode.Success, "SUCCESS"));
