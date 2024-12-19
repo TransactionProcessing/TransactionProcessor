@@ -107,7 +107,7 @@ public class TransactionValidationServiceTests {
     public async Task ValidateLogonTransactionX_FailureWhileGettingMerchant_CorrectResponseReturned()
     {
         this.EstateClient.Setup(e => e.GetEstate(It.IsAny<String>(), It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
-            .ReturnsAsync(Result.Success());
+            .ReturnsAsync(Result.Success(TestData.GetEstateResponseWithOperator1));
         this.EstateClient.Setup(e => e.GetMerchant(It.IsAny<String>(), It.IsAny<Guid>(), It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(Result.Failure("Merchant Not Found"));
 
@@ -223,7 +223,7 @@ public class TransactionValidationServiceTests {
     public async Task ValidateReconciliationTransactionX_FailureWhileGettingMerchant_CorrectResponseReturned()
     {
         this.EstateClient.Setup(e => e.GetEstate(It.IsAny<String>(), It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
-            .ReturnsAsync(Result.Success());
+            .ReturnsAsync(Result.Success(TestData.GetEstateResponseWithOperator1));
         this.EstateClient.Setup(e => e.GetMerchant(It.IsAny<String>(), It.IsAny<Guid>(), It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(Result.Failure("Merchant Not Found"));
 
