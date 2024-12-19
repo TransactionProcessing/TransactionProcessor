@@ -26,7 +26,7 @@ namespace TransactionProcessor.ProjectionEngine.EventHandling
         public EventHandler(Func<String, IDomainEventHandler> resolver)
         {
             this.Resolver = resolver;
-            List<Type> subclassTypes = Assembly.GetAssembly(typeof(State))?.GetTypes().Where(t => t.IsSubclassOf(typeof(State))).ToList();
+            List<Type> subclassTypes = Assembly.GetAssembly(typeof(Shared.EventStore.ProjectionEngine.State))?.GetTypes().Where(t => t.IsSubclassOf(typeof(Shared.EventStore.ProjectionEngine.State))).ToList();
 
             if (subclassTypes != null)
             {
