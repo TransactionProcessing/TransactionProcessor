@@ -33,3 +33,6 @@ public interface ITransactionValidationService{
 
 [ExcludeFromCodeCoverage]
 public record TransactionValidationResult(TransactionResponseCode ResponseCode, String ResponseMessage);
+
+[ExcludeFromCodeCoverage]
+public record TransactionValidationResult<T>(TransactionValidationResult validationResult, T additionalData = default);

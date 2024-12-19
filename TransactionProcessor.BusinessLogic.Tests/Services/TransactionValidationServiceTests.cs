@@ -23,246 +23,14 @@ using Shouldly;
 using Testing;
 using Xunit;
 
-/*
-public class TransactionValidationServiceTests{
+public class TransactionValidationServiceTests {
     private readonly TransactionValidationService TransactionValidationService;
     private readonly Mock<ISecurityServiceClient> SecurityServiceClient;
 
     private readonly Mock<IProjectionStateRepository<MerchantBalanceState>> StateRepository;
     private readonly Mock<IEstateClient> EstateClient;
     private readonly Mock<IEventStoreContext> EventStoreContext;
-
-    public TransactionValidationServiceTests(){
-        IConfigurationRoot configurationRoot = new ConfigurationBuilder().AddInMemoryCollection(TestData.DefaultAppSettings).Build();
-        ConfigurationReader.Initialise(configurationRoot);
-
-        Logger.Initialise(NullLogger.Instance);
-
-        this.EstateClient = new Mock<IEstateClient>();
-        this.SecurityServiceClient = new Mock<ISecurityServiceClient>();
-        this.StateRepository = new Mock<IProjectionStateRepository<MerchantBalanceState>>();
-        this.EventStoreContext = new Mock<IEventStoreContext>();
-
-        this.TransactionValidationService = new TransactionValidationService(this.EstateClient.Object,
-                                                                             this.SecurityServiceClient.Object,
-                                                                             this.StateRepository.Object,
-                                                                             this.EventStoreContext.Object);
-    }
-    
-    [Fact]
-    public async Task TransactionValidationService_ValidateLogonTransaction_DeviceNotRegisteredToMerchant_ResponseIsInvalidDeviceIdentifier() {
-        this.SecurityServiceClient.Setup(s => s.GetToken(It.IsAny<String>(), It.IsAny<String>(), It.IsAny<CancellationToken>())).ReturnsAsync(Result.Success(TestData.TokenResponse()));
-
-        this.EstateClient.Setup(e => e.GetEstate(It.IsAny<String>(), It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
-            .ReturnsAsync(TestData.GetEstateResponseWithOperator1);
-        this.EstateClient.Setup(e => e.GetMerchant(It.IsAny<String>(), It.IsAny<Guid>(), It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
-            .ReturnsAsync(TestData.GetMerchantResponseWithOperator1);
-
-        Result<TransactionValidationResult> result=
-            await this.TransactionValidationService.ValidateLogonTransaction(TestData.EstateId, TestData.MerchantId, TestData.DeviceIdentifier1, CancellationToken.None);
-        result.IsFailed.ShouldBeTrue();
-        result.Data.ResponseCode.ShouldBe(TransactionResponseCode.InvalidDeviceIdentifier);
-    }
-    
-    [Fact]
-    public async Task TransactionValidationService_ValidateLogonTransaction_EstateNotFound_ResponseIsInvalidEstateId() {
-        this.SecurityServiceClient.Setup(s => s.GetToken(It.IsAny<String>(), It.IsAny<String>(), It.IsAny<CancellationToken>())).ReturnsAsync(Result.Success(TestData.TokenResponse()));
-
-        this.EstateClient.Setup(e => e.GetEstate(It.IsAny<String>(), It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
-            .ReturnsAsync(Result.NotFound());
-
-        Result<TransactionValidationResult> result =
-            await this.TransactionValidationService.ValidateLogonTransaction(TestData.EstateId, TestData.MerchantId, TestData.DeviceIdentifier, CancellationToken.None);
-        result.IsFailed.ShouldBeTrue();
-        result.Data.ResponseCode.ShouldBe(TransactionResponseCode.InvalidEstateId);
-    }
-
-    [Fact]
-    public async Task TransactionValidationService_ValidateLogonTransaction_MerchantDeviceListEmpty_SuccessfulLogon() {
-        this.SecurityServiceClient.Setup(s => s.GetToken(It.IsAny<String>(), It.IsAny<String>(), It.IsAny<CancellationToken>())).ReturnsAsync(Result.Success(TestData.TokenResponse()));
-
-        this.EstateClient.Setup(e => e.GetEstate(It.IsAny<String>(), It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
-            .ReturnsAsync(TestData.GetEstateResponseWithOperator1);
-        this.EstateClient.Setup(e => e.GetMerchant(It.IsAny<String>(), It.IsAny<Guid>(), It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
-            .ReturnsAsync(TestData.GetMerchantResponseWithNoDevices);
-
-        var result =
-            await this.TransactionValidationService.ValidateLogonTransaction(TestData.EstateId, TestData.MerchantId, TestData.DeviceIdentifier, CancellationToken.None);
-
-        result.IsSuccess.ShouldBeTrue();
-        result.Data.ResponseCode.ShouldBe(TransactionResponseCode.SuccessNeedToAddDevice);
-    }
-
-    [Fact]
-    public async Task TransactionValidationService_ValidateLogonTransaction_MerchantDeviceListNull_SuccessfulLogon() {
-        this.SecurityServiceClient.Setup(s => s.GetToken(It.IsAny<String>(), It.IsAny<String>(), It.IsAny<CancellationToken>())).ReturnsAsync(Result.Success(TestData.TokenResponse()));
-
-        this.EstateClient.Setup(e => e.GetEstate(It.IsAny<String>(), It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
-            .ReturnsAsync(TestData.GetEstateResponseWithOperator1);
-        this.EstateClient.Setup(e => e.GetMerchant(It.IsAny<String>(), It.IsAny<Guid>(), It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
-            .ReturnsAsync(TestData.GetMerchantResponseWithNullDevices);
-        // TODO: Verify device was added...
-
-        var result =
-            await this.TransactionValidationService.ValidateLogonTransaction(TestData.EstateId, TestData.MerchantId, TestData.DeviceIdentifier, CancellationToken.None);
-
-        result.IsSuccess.ShouldBeTrue();
-        result.Data.ResponseCode.ShouldBe(TransactionResponseCode.SuccessNeedToAddDevice);
-    }
-
-    [Fact]
-    public async Task TransactionValidationService_ValidateLogonTransaction_MerchantNotFound_ResponseIsInvalidMerchantId() {
-        this.SecurityServiceClient.Setup(s => s.GetToken(It.IsAny<String>(), It.IsAny<String>(), It.IsAny<CancellationToken>())).ReturnsAsync(Result.Success(TestData.TokenResponse()));
-
-        this.EstateClient.Setup(e => e.GetEstate(It.IsAny<String>(), It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
-            .ReturnsAsync(TestData.GetEstateResponseWithOperator1);
-        this.EstateClient
-            .Setup(e => e.GetMerchant(It.IsAny<String>(), It.IsAny<Guid>(), It.IsAny<Guid>(),
-                It.IsAny<CancellationToken>())).ReturnsAsync(Result.NotFound());
-
-        var result =
-            await this.TransactionValidationService.ValidateLogonTransaction(TestData.EstateId, TestData.MerchantId, TestData.DeviceIdentifier, CancellationToken.None);
-
-            result.IsFailed.ShouldBeTrue();
-            result.Data.ResponseCode.ShouldBe(TransactionResponseCode.InvalidMerchantId);
-    }
-
-    [Fact]
-    public async Task TransactionValidationService_ValidateLogonTransaction_SuccessfulLogon() {
-        this.SecurityServiceClient.Setup(s => s.GetToken(It.IsAny<String>(), It.IsAny<String>(), It.IsAny<CancellationToken>())).ReturnsAsync(Result.Success(TestData.TokenResponse()));
-
-        this.EstateClient.Setup(e => e.GetEstate(It.IsAny<String>(), It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
-            .ReturnsAsync(TestData.GetEstateResponseWithOperator1);
-        this.EstateClient.Setup(e => e.GetMerchant(It.IsAny<String>(), It.IsAny<Guid>(), It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
-            .ReturnsAsync(TestData.GetMerchantResponseWithOperator1);
-
-        var result =
-            await this.TransactionValidationService.ValidateLogonTransaction(TestData.EstateId, TestData.MerchantId, TestData.DeviceIdentifier, CancellationToken.None);
-
-        result.IsSuccess.ShouldBeTrue();
-        result.Data.ResponseCode.ShouldBe(TransactionResponseCode.Success);
-    }
-
-    [Fact]
-    public async Task TransactionValidationService_ValidateReconciliationTransaction_DeviceNotRegisteredToMerchant_ResponseIsInvalidDeviceIdentifier() {
-        this.SecurityServiceClient.Setup(s => s.GetToken(It.IsAny<String>(), It.IsAny<String>(), It.IsAny<CancellationToken>())).ReturnsAsync(Result.Success(TestData.TokenResponse()));
-
-        this.EstateClient.Setup(e => e.GetEstate(It.IsAny<String>(), It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
-            .ReturnsAsync(TestData.GetEstateResponseWithOperator1);
-        this.EstateClient.Setup(e => e.GetMerchant(It.IsAny<String>(), It.IsAny<Guid>(), It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
-            .ReturnsAsync(TestData.GetMerchantResponseWithOperator1);
-
-        var result =
-            await this.TransactionValidationService.ValidateReconciliationTransaction(TestData.EstateId,
-                                                                                      TestData.MerchantId,
-                                                                                      TestData.DeviceIdentifier1,
-                                                                                      CancellationToken.None);
-        result.IsFailed.ShouldBeTrue();
-        result.Data.ResponseCode.ShouldBe(TransactionResponseCode.InvalidDeviceIdentifier);
-    }
-
-    [Fact]
-    public async Task TransactionValidationService_ValidateReconciliationTransaction_EstateNotFound_ResponseIsInvalidEstateId() {
-        this.SecurityServiceClient.Setup(s => s.GetToken(It.IsAny<String>(), It.IsAny<String>(), It.IsAny<CancellationToken>())).ReturnsAsync(Result.Success(TestData.TokenResponse()));
-
-        this.EstateClient.Setup(e => e.GetEstate(It.IsAny<String>(), It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
-            .ReturnsAsync(Result.NotFound());
-
-        var result =
-            await this.TransactionValidationService.ValidateReconciliationTransaction(TestData.EstateId,
-                                                                                      TestData.MerchantId,
-                                                                                      TestData.DeviceIdentifier,
-                                                                                      CancellationToken.None);
-
-        result.IsFailed.ShouldBeTrue();
-        result.Data.ResponseCode.ShouldBe(TransactionResponseCode.InvalidEstateId);
-    }
-
-    [Fact]
-    public async Task TransactionValidationService_ValidateReconciliationTransaction_MerchantDeviceListEmpty_ResponseIsResponseIsNoValidDevices() {
-        this.SecurityServiceClient.Setup(s => s.GetToken(It.IsAny<String>(), It.IsAny<String>(), It.IsAny<CancellationToken>())).ReturnsAsync(Result.Success(TestData.TokenResponse()));
-
-        this.EstateClient.Setup(e => e.GetEstate(It.IsAny<String>(), It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
-            .ReturnsAsync(TestData.GetEstateResponseWithOperator1);
-        this.EstateClient.Setup(e => e.GetMerchant(It.IsAny<String>(), It.IsAny<Guid>(), It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
-            .ReturnsAsync(TestData.GetMerchantResponseWithNoDevices);
-
-        var result =
-            await this.TransactionValidationService.ValidateReconciliationTransaction(TestData.EstateId,
-                                                                                      TestData.MerchantId,
-                                                                                      TestData.DeviceIdentifier,
-                                                                                      CancellationToken.None);
-
-        result.IsFailed.ShouldBeTrue();
-        result.Data.ResponseCode.ShouldBe(TransactionResponseCode.NoValidDevices);
-    }
-
-    [Fact]
-    public async Task TransactionValidationService_ValidateReconciliationTransaction_MerchantDeviceListNull_ResponseIsResponseIsNoValidDevices() {
-        this.SecurityServiceClient.Setup(s => s.GetToken(It.IsAny<String>(), It.IsAny<String>(), It.IsAny<CancellationToken>())).ReturnsAsync(Result.Success(TestData.TokenResponse()));
-
-        this.EstateClient.Setup(e => e.GetEstate(It.IsAny<String>(), It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
-            .ReturnsAsync(TestData.GetEstateResponseWithOperator1);
-        this.EstateClient.Setup(e => e.GetMerchant(It.IsAny<String>(), It.IsAny<Guid>(), It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
-            .ReturnsAsync(TestData.GetMerchantResponseWithNullDevices);
-
-        var response =
-            await this.TransactionValidationService.ValidateReconciliationTransaction(TestData.EstateId,
-                                                                                      TestData.MerchantId,
-                                                                                      TestData.DeviceIdentifier,
-                                                                                      CancellationToken.None);
-
-        response.responseCode.ShouldBe(TransactionResponseCode.NoValidDevices);
-    }
-
-    [Fact]
-    public async Task TransactionValidationService_ValidateReconciliationTransaction_MerchantNotFound_ResponseIsInvalidMerchantId() {
-        this.SecurityServiceClient.Setup(s => s.GetToken(It.IsAny<String>(), It.IsAny<String>(), It.IsAny<CancellationToken>())).ReturnsAsync(Result.Success(TestData.TokenResponse()));
-
-        this.EstateClient.Setup(e => e.GetEstate(It.IsAny<String>(), It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
-            .ReturnsAsync(TestData.GetEstateResponseWithOperator1);
-        this.EstateClient
-            .Setup(e => e.GetMerchant(It.IsAny<String>(), It.IsAny<Guid>(), It.IsAny<Guid>(),
-                It.IsAny<CancellationToken>())).ReturnsAsync(Result.NotFound());
-
-        (String responseMessage, TransactionResponseCode responseCode) response =
-            await this.TransactionValidationService.ValidateReconciliationTransaction(TestData.EstateId,
-                                                                                      TestData.MerchantId,
-                                                                                      TestData.DeviceIdentifier,
-                                                                                      CancellationToken.None);
-
-        response.responseCode.ShouldBe(TransactionResponseCode.InvalidMerchantId);
-    }
-
-    [Fact]
-    public async Task TransactionValidationService_ValidateReconciliationTransaction_SuccessfulReconciliation() {
-        this.SecurityServiceClient.Setup(s => s.GetToken(It.IsAny<String>(), It.IsAny<String>(), It.IsAny<CancellationToken>())).ReturnsAsync(Result.Success(TestData.TokenResponse()));
-
-        this.EstateClient.Setup(e => e.GetEstate(It.IsAny<String>(), It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
-            .ReturnsAsync(TestData.GetEstateResponseWithOperator1);
-        this.EstateClient.Setup(e => e.GetMerchant(It.IsAny<String>(), It.IsAny<Guid>(), It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
-            .ReturnsAsync(TestData.GetMerchantResponseWithOperator1);
-
-        (String responseMessage, TransactionResponseCode responseCode) response =
-            await this.TransactionValidationService.ValidateReconciliationTransaction(TestData.EstateId,
-                                                                                      TestData.MerchantId,
-                                                                                      TestData.DeviceIdentifier,
-                                                                                      CancellationToken.None);
-
-        response.responseCode.ShouldBe(TransactionResponseCode.Success);
-    }
-
-    
-}*/
-
-public class TransactionValidationServiceTests_New {
-    private readonly TransactionValidationService TransactionValidationService;
-    private readonly Mock<ISecurityServiceClient> SecurityServiceClient;
-
-    private readonly Mock<IProjectionStateRepository<MerchantBalanceState>> StateRepository;
-    private readonly Mock<IEstateClient> EstateClient;
-    private readonly Mock<IEventStoreContext> EventStoreContext;
-    public TransactionValidationServiceTests_New() {
+    public TransactionValidationServiceTests() {
         IConfigurationRoot configurationRoot = new ConfigurationBuilder().AddInMemoryCollection(TestData.DefaultAppSettings).Build();
         ConfigurationReader.Initialise(configurationRoot);
 
@@ -339,7 +107,7 @@ public class TransactionValidationServiceTests_New {
     public async Task ValidateLogonTransactionX_FailureWhileGettingMerchant_CorrectResponseReturned()
     {
         this.EstateClient.Setup(e => e.GetEstate(It.IsAny<String>(), It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
-            .ReturnsAsync(Result.Success());
+            .ReturnsAsync(Result.Success(TestData.GetEstateResponseWithOperator1));
         this.EstateClient.Setup(e => e.GetMerchant(It.IsAny<String>(), It.IsAny<Guid>(), It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(Result.Failure("Merchant Not Found"));
 
@@ -455,7 +223,7 @@ public class TransactionValidationServiceTests_New {
     public async Task ValidateReconciliationTransactionX_FailureWhileGettingMerchant_CorrectResponseReturned()
     {
         this.EstateClient.Setup(e => e.GetEstate(It.IsAny<String>(), It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
-            .ReturnsAsync(Result.Success());
+            .ReturnsAsync(Result.Success(TestData.GetEstateResponseWithOperator1));
         this.EstateClient.Setup(e => e.GetMerchant(It.IsAny<String>(), It.IsAny<Guid>(), It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(Result.Failure("Merchant Not Found"));
 

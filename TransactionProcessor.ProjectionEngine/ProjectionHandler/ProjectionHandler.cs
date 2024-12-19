@@ -1,5 +1,6 @@
 ﻿using Microsoft.EntityFrameworkCore.Storage;
 using Shared.EventStore.Aggregate;
+using Shared.EventStore.ProjectionEngine;
 using Shared.Results;
 using SimpleResults;
 
@@ -16,7 +17,7 @@ using Shared.General;
 using Shared.Logger;
 using State;
 
-public class ProjectionHandler<TState> : IProjectionHandler where TState : State
+public class ProjectionHandler<TState> : IProjectionHandler where TState : Shared.EventStore.ProjectionEngine.State
 {
     private readonly IProjectionStateRepository<TState> ProjectionStateRepository;
     private readonly IProjection<TState> Projection;

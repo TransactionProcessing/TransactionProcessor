@@ -5,7 +5,7 @@ namespace TransactionProcessor.ProjectionEngine.Repository;
 using Shared.DomainDrivenDesign.EventSourcing;
 using State;
 
-public interface IProjectionStateRepository<TState> where TState : State
+public interface IProjectionStateRepository<TState> where TState : Shared.EventStore.ProjectionEngine.State
 {
     Task<Result<TState>> Load(IDomainEvent @event, CancellationToken cancellationToken);
 

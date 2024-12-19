@@ -16,7 +16,7 @@ using Shared.EventStore.EventHandling;
 using State;
 
 [ExcludeFromCodeCoverage]
-public class StateProjectionEventHandler<TState> : IDomainEventHandler where TState : State
+public class StateProjectionEventHandler<TState> : IDomainEventHandler where TState : Shared.EventStore.ProjectionEngine.State
 {
     #region Fields
 
