@@ -32,5 +32,10 @@ namespace TransactionProcessor.BusinessLogic.Services
 
         Task<Result> AddSettledMerchantFee(TransactionCommands.AddSettledMerchantFeeCommand command,
                                            CancellationToken cancellationToken);
+
+        Task<Result> SendCustomerEmailReceipt(TransactionCommands.SendCustomerEmailReceiptCommand command,
+                                              CancellationToken cancellationToken);
+        Task<Result> ResendCustomerEmailReceipt(TransactionCommands.ResendCustomerEmailReceiptCommand command,
+                                              CancellationToken cancellationToken);
     }
 }

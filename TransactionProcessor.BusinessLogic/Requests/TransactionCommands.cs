@@ -47,4 +47,7 @@ public record TransactionCommands {
     public record CalculateFeesForTransactionCommand(Guid TransactionId, DateTime CompletedDateTime, Guid EstateId, Guid MerchantId) : IRequest<Result>;
 
     public record AddSettledMerchantFeeCommand(Guid TransactionId, Decimal CalculatedValue, DateTime FeeCalculatedDateTime, CalculationType FeeCalculationType, Guid FeeId, Decimal FeeValue, DateTime SettledDateTime, Guid SettlementId) : IRequest<Result>;
+
+    public record SendCustomerEmailReceiptCommand(Guid EstateId, Guid TransactionId, Guid EventId, String CustomerEmailAddress) : IRequest<Result>;
+    public record ResendCustomerEmailReceiptCommand(Guid EstateId, Guid TransactionId) : IRequest<Result>;
 }

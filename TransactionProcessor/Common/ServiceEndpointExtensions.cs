@@ -3,8 +3,10 @@
 namespace TransactionProcessor.Common;
 
 using System;
+using System.Diagnostics.CodeAnalysis;
 using System.ServiceModel.Description;
 
+[ExcludeFromCodeCoverage]
 public static class ServiceEndpointExtensions{
     #region Methods
 

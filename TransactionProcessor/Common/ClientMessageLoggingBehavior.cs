@@ -1,4 +1,5 @@
-﻿using Shared.Middleware;
+﻿using System.Diagnostics.CodeAnalysis;
+using Shared.Middleware;
 
 namespace TransactionProcessor.Common;
 
@@ -7,6 +8,7 @@ using System.ServiceModel.Channels;
 using System.ServiceModel.Description;
 using System.ServiceModel.Dispatcher;
 
+[ExcludeFromCodeCoverage]
 internal sealed class ClientMessageLoggingBehavior :
     IEndpointBehavior{
     #region Fields

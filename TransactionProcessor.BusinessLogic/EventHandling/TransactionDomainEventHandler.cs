@@ -53,51 +53,17 @@ namespace TransactionProcessor.BusinessLogic.EventHandling
     public class TransactionDomainEventHandler : IDomainEventHandler
     {
         #region Fields
-
-        private readonly IEstateClient EstateClient;
-
-        private readonly IFeeCalculationManager FeeCalculationManager;
-
-        private readonly IMessagingServiceClient MessagingServiceClient;
-
-        private readonly ISecurityServiceClient SecurityServiceClient;
-
-        private readonly IAggregateRepository<SettlementAggregate, DomainEvent> SettlementAggregateRepository;
-
-        private readonly IAggregateRepository<FloatActivityAggregate, DomainEvent> FloatActivityAggregateRepository;
-
-        private readonly IMemoryCacheWrapper MemoryCache;
+        
         private readonly IMediator Mediator;
-
-        private readonly IAggregateRepository<TransactionAggregate, DomainEvent> TransactionAggregateRepository;
 
         private TokenResponse TokenResponse;
 
-        private readonly ITransactionReceiptBuilder TransactionReceiptBuilder;
 
         #endregion
 
         #region Constructors
 
-        public TransactionDomainEventHandler(IAggregateRepository<TransactionAggregate, DomainEvent> transactionAggregateRepository,
-                                             IFeeCalculationManager feeCalculationManager,
-                                             IEstateClient estateClient,
-                                             ISecurityServiceClient securityServiceClient,
-                                             ITransactionReceiptBuilder transactionReceiptBuilder,
-                                             IMessagingServiceClient messagingServiceClient,
-                                             IAggregateRepository<SettlementAggregate, DomainEvent> settlementAggregateRepository,
-                                             IAggregateRepository<FloatActivityAggregate, DomainEvent> floatActivityAggregateRepository,
-                                             IMemoryCacheWrapper memoryCache,
-                                             IMediator mediator) {
-            this.TransactionAggregateRepository = transactionAggregateRepository;
-            this.FeeCalculationManager = feeCalculationManager;
-            this.EstateClient = estateClient;
-            this.SecurityServiceClient = securityServiceClient;
-            this.TransactionReceiptBuilder = transactionReceiptBuilder;
-            this.MessagingServiceClient = messagingServiceClient;
-            this.SettlementAggregateRepository = settlementAggregateRepository;
-            this.FloatActivityAggregateRepository = floatActivityAggregateRepository;
-            this.MemoryCache = memoryCache;
+        public TransactionDomainEventHandler(IMediator mediator) {
             this.Mediator = mediator;
         }
 
@@ -170,97 +136,18 @@ namespace TransactionProcessor.BusinessLogic.EventHandling
 
         private async Task<Result> HandleSpecificDomainEvent(CustomerEmailReceiptRequestedEvent domainEvent,
                                                              CancellationToken cancellationToken) {
-            return Result.Failure("Not Implemented");
+            SendCustomerEmailReceiptCommand command = new(domainEvent.EstateId, domainEvent.TransactionId, domainEvent.EventId, domainEvent.CustomerEmailAddress);
 
-            this.TokenResponse = await Helpers.GetToken(this.TokenResponse, this.SecurityServiceClient, cancellationToken);
-
-            TransactionAggregate transactionAggregate =
-                await this.TransactionAggregateRepository.GetLatestVersion(domainEvent.TransactionId, cancellationToken);
-            Transaction transaction = transactionAggregate.GetTransaction();
-
-            MerchantResponse merchant =
-                await this.EstateClient.GetMerchant(this.TokenResponse.AccessToken, domainEvent.EstateId, domainEvent.MerchantId, cancellationToken);
-
-            EstateResponse estate = await this.EstateClient.GetEstate(this.TokenResponse.AccessToken, domainEvent.EstateId, cancellationToken);
-            EstateOperatorResponse @operator = estate.Operators.Single(o => o.OperatorId == transaction.OperatorId);
-
-            // Determine the body of the email
-            String receiptMessage = await this.TransactionReceiptBuilder.GetEmailReceiptMessage(transactionAggregate.GetTransaction(), merchant, @operator.Name, cancellationToken);
-
-            // Send the message
-            return await this.SendEmailMessage(this.TokenResponse.AccessToken,
-                                        domainEvent.EventId,
-                                        domainEvent.EstateId,
-                                        "Transaction Successful",
-                                        receiptMessage,
-                                        domainEvent.CustomerEmailAddress,
-                                        cancellationToken);
+            return await this.Mediator.Send(command, cancellationToken);
         }
 
         private async Task<Result> HandleSpecificDomainEvent(CustomerEmailReceiptResendRequestedEvent domainEvent,
                                                              CancellationToken cancellationToken) {
-            this.TokenResponse = await Helpers.GetToken(this.TokenResponse, this.SecurityServiceClient, cancellationToken);
+            TransactionCommands.ResendCustomerEmailReceiptCommand command = new(domainEvent.EstateId, domainEvent.TransactionId);
 
-            // Send the message
-            return await this.ResendEmailMessage(this.TokenResponse.AccessToken, domainEvent.EventId, domainEvent.EstateId, cancellationToken);
+            return await this.Mediator.Send(command, cancellationToken);
         }
         
-        private async Task<Result> ResendEmailMessage(String accessToken,
-                                                      Guid messageId,
-                                                      Guid estateId,
-                                                      CancellationToken cancellationToken) {
-            ResendEmailRequest resendEmailRequest = new ResendEmailRequest {
-                                                                               ConnectionIdentifier = estateId,
-                                                                               MessageId = messageId
-                                                                           };
-            try {
-                return await this.MessagingServiceClient.ResendEmail(accessToken, resendEmailRequest, cancellationToken);
-            }
-            catch(Exception ex) when(ex.InnerException != null && ex.InnerException.GetType() == typeof(InvalidOperationException)) {
-                // Only bubble up if not a duplicate message
-                if (ex.InnerException.Message.Contains("Cannot send a message to provider that has already been sent", StringComparison.InvariantCultureIgnoreCase) ==
-                    false) {
-                    return Result.Failure(ex.GetExceptionMessages());
-                }
-                return Result.Success("Duplicate message send");
-            }
-            
-        }
-
-        private async Task<Result> SendEmailMessage(String accessToken,
-                                                    Guid messageId,
-                                                    Guid estateId,
-                                                    String subject,
-                                                    String body,
-                                                    String emailAddress,
-                                                    CancellationToken cancellationToken) {
-            SendEmailRequest sendEmailRequest = new SendEmailRequest {
-                                                                         MessageId = messageId,
-                                                                         Body = body,
-                                                                         ConnectionIdentifier = estateId,
-                                                                         FromAddress = "golfhandicapping@btinternet.com", // TODO: lookup from config
-                                                                         IsHtml = true,
-                                                                         Subject = subject,
-                                                                         ToAddresses = new List<String> {
-                                                                                                            emailAddress
-                                                                                                        }
-                                                                     };
-
-            // TODO: may decide to record the message Id againsts the Transaction Aggregate in future, but for now
-            // we wont do this...
-            try {
-                return await this.MessagingServiceClient.SendEmail(accessToken, sendEmailRequest, cancellationToken);
-            }
-            catch(Exception ex) when(ex.InnerException != null && ex.InnerException.GetType() == typeof(InvalidOperationException)) {
-                if (ex.InnerException.Message.Contains("Cannot send a message to provider that has already been sent", StringComparison.InvariantCultureIgnoreCase) ==
-                    false)
-                {
-                    return Result.Failure(ex.GetExceptionMessages());
-                }
-                return Result.Success("Duplicate message send");
-            }
-        }
-
         #endregion
     }
 }

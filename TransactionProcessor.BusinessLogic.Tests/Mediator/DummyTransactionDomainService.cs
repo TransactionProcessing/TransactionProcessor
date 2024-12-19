@@ -45,6 +45,12 @@ public class DummyTransactionDomainService : ITransactionDomainService
     public async Task<Result> AddSettledMerchantFee(TransactionCommands.AddSettledMerchantFeeCommand command,
                                                     CancellationToken cancellationToken) =>
         Result.Success();
+
+    public async Task<Result> SendCustomerEmailReceipt(TransactionCommands.SendCustomerEmailReceiptCommand command,
+                                                       CancellationToken cancellationToken) => Result.Success();
+
+    public async Task<Result> ResendCustomerEmailReceipt(TransactionCommands.ResendCustomerEmailReceiptCommand command,
+                                                         CancellationToken cancellationToken) => Result.Success();
 }
 
 public class DummyMerchantBalanceStateRepository : IProjectionStateRepository<MerchantBalanceState>
