@@ -39,7 +39,7 @@ public static class VoucherStateExtension{
                   };
 }
 
-public record VoucherState : State
+public record VoucherState : Shared.EventStore.ProjectionEngine.State
     {
         public Guid EstateId { get; set; }
         public Guid VoucherId { get; set; }
