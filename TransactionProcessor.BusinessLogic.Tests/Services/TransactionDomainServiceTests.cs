@@ -54,8 +54,8 @@ namespace TransactionProcessor.BusinessLogic.Tests.Services{
         private readonly Mock<IAggregateRepository<FloatAggregate, DomainEvent>> FloatAggregateRepository;
         private readonly Mock<IMemoryCacheWrapper> MemoryCacheWrapper;
         private readonly Mock<IFeeCalculationManager> FeeCalculationManager;
-        private Mock<ITransactionReceiptBuilder> TransactionReceiptBuilder;
-        private Mock<IMessagingServiceClient> MessagingServiceClient;
+        private readonly Mock<ITransactionReceiptBuilder> TransactionReceiptBuilder;
+        private readonly Mock<IMessagingServiceClient> MessagingServiceClient;
         #endregion
 
         #region Constructors
@@ -760,12 +760,7 @@ namespace TransactionProcessor.BusinessLogic.Tests.Services{
         {
             this.SecurityServiceClient.Setup(s => s.GetToken(It.IsAny<String>(), It.IsAny<String>(), It.IsAny<CancellationToken>())).ReturnsAsync(Result.Success(TestData.TokenResponse()));
             this.TransactionAggregateRepository.Setup(t => t.GetLatestVersion(It.IsAny<Guid>(), It.IsAny<CancellationToken>())).ReturnsAsync(Result.Failure());
-            //this.EstateClient.Setup(e => e.GetMerchant(It.IsAny<String>(), It.IsAny<Guid>(), It.IsAny<Guid>(), It.IsAny<CancellationToken>())).ReturnsAsync(Result.Success(TestData.GetMerchantResponseWithOperator1));
-            //this.EstateClient.Setup(e => e.GetEstate(It.IsAny<String>(), It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
-            //    .ReturnsAsync(TestData.GetEstateResponseWithOperator1);
-
-            //this.TransactionReceiptBuilder.Setup(r => r.GetEmailReceiptMessage(It.IsAny<Models.Transaction>(), It.IsAny<MerchantResponse>(), It.IsAny<String>(), It.IsAny<CancellationToken>())).ReturnsAsync("EmailMessage");
-            //this.MessagingServiceClient.Setup(m => m.SendEmail(It.IsAny<String>(), It.IsAny<SendEmailRequest>(), It.IsAny<CancellationToken>())).ReturnsAsync(Result.Success);
+            
             TransactionCommands.SendCustomerEmailReceiptCommand command = new(TestData.EstateId, TestData.TransactionId, Guid.NewGuid(), TestData.CustomerEmailAddress);
             var result = await this.TransactionDomainService.SendCustomerEmailReceipt(command, CancellationToken.None);
             result.IsFailed.ShouldBeTrue();
@@ -789,7 +784,6 @@ namespace TransactionProcessor.BusinessLogic.Tests.Services{
             this.SecurityServiceClient.Setup(s => s.GetToken(It.IsAny<String>(), It.IsAny<String>(), It.IsAny<CancellationToken>())).ReturnsAsync(Result.Success(TestData.TokenResponse()));
             this.TransactionAggregateRepository.Setup(t => t.GetLatestVersion(It.IsAny<Guid>(), It.IsAny<CancellationToken>())).ReturnsAsync(Result.Failure());
 
-            //this.MessagingServiceClient.Setup(m => m.SendEmail(It.IsAny<String>(), It.IsAny<SendEmailRequest>(), It.IsAny<CancellationToken>())).ReturnsAsync(Result.Success);
             TransactionCommands.ResendCustomerEmailReceiptCommand command = new(TestData.EstateId, TestData.TransactionId);
             var result = await this.TransactionDomainService.ResendCustomerEmailReceipt(command, CancellationToken.None);
             result.IsFailed.ShouldBeTrue();
