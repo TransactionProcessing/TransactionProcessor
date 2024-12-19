@@ -532,6 +532,7 @@
         {
             aggregate.CustomerEmailAddress = domainEvent.CustomerEmailAddress;
             aggregate.CustomerEmailReceiptHasBeenRequested = true;
+            aggregate.ReceiptMessageId = domainEvent.EventId;
         }
 
         public static void PlayEvent(this TransactionAggregate aggregate, CustomerEmailReceiptResendRequestedEvent domainEvent)
@@ -694,6 +695,7 @@
         public String AuthorisationCode { get; internal set; }
 
         public Guid ContractId { get; internal set; }
+        public Guid ReceiptMessageId { get; internal set; }
 
         public Boolean CustomerEmailReceiptHasBeenRequested { get; internal set; }
 

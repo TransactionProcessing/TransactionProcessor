@@ -42,53 +42,18 @@ namespace TransactionProcessor.BusinessLogic.Tests.DomainEventHandlers
     
     public class TransactionDomainEventHandlerTests
     {
-        private Mock<IAggregateRepository<SettlementAggregate, DomainEvent>> SettlementAggregateRepository;
-        private Mock<IAggregateRepository<TransactionAggregate, DomainEvent>> TransactionAggregateRepository;
-
-        private Mock<IFeeCalculationManager> FeeCalculationManager;
-
-        private Mock<IEstateClient> EstateClient;
-
-        private Mock<ISecurityServiceClient> SecurityServiceClient;
-
-        private Mock<ITransactionReceiptBuilder> TransactionReceiptBuilder;
-
-        private Mock<IMessagingServiceClient> MessagingServiceClient;
-
-        private Mock<IAggregateRepository<FloatActivityAggregate, DomainEvent>> FloatActivityAggregateRepository;
-
-        private Mock<IMemoryCacheWrapper> MemoryCache;
-
         private TransactionDomainEventHandler TransactionDomainEventHandler;
         private Mock<IMediator> Mediator;
 
         public TransactionDomainEventHandlerTests()
         {
-            this.SettlementAggregateRepository = new Mock<IAggregateRepository<SettlementAggregate, DomainEvent>>();
-            this.TransactionAggregateRepository = new Mock<IAggregateRepository<TransactionAggregate, DomainEvent>>();
-            this.FloatActivityAggregateRepository = new Mock<IAggregateRepository<FloatActivityAggregate, DomainEvent>>();
-            this.FeeCalculationManager = new Mock<IFeeCalculationManager>();
-            this.EstateClient = new Mock<IEstateClient>();
-            this.SecurityServiceClient = new Mock<ISecurityServiceClient>();
-            this.TransactionReceiptBuilder = new Mock<ITransactionReceiptBuilder>();
-            this.MessagingServiceClient = new Mock<IMessagingServiceClient>();
-            this.MemoryCache = new Mock<IMemoryCacheWrapper>();
             this.Mediator= new Mock<IMediator>();
 
             IConfigurationRoot configurationRoot = new ConfigurationBuilder().AddInMemoryCollection(TestData.DefaultAppSettings).Build();
             ConfigurationReader.Initialise(configurationRoot);
             Logger.Initialise(NullLogger.Instance);
 
-            this.TransactionDomainEventHandler = new TransactionDomainEventHandler(this.TransactionAggregateRepository.Object,
-                                                                                   this.FeeCalculationManager.Object,
-                                                                                   this.EstateClient.Object,
-                                                                                   this.SecurityServiceClient.Object,
-                                                                                   this.TransactionReceiptBuilder.Object,
-                                                                                   this.MessagingServiceClient.Object,
-                                                                                   this.SettlementAggregateRepository.Object,
-                                                                                   this.FloatActivityAggregateRepository.Object,
-                                                                                   this.MemoryCache.Object,
-                                                                                   this.Mediator.Object);
+            this.TransactionDomainEventHandler = new TransactionDomainEventHandler(this.Mediator.Object);
 
             this.Mediator.Setup(s => s.Send(It.IsAny<IRequest<Result>>(), It.IsAny<CancellationToken>())).ReturnsAsync(Result.Success());
         }

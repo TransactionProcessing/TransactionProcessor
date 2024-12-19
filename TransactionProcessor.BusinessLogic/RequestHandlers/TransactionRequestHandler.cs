@@ -10,21 +10,13 @@ namespace TransactionProcessor.BusinessLogic.RequestHandlers
     using Services;
     using static Microsoft.EntityFrameworkCore.DbLoggerCategory.Database;
 
-    /// <summary>
-    /// 
-    /// </summary>
-    /// <seealso cref="MediatR.IRequestHandler{TransactionProcessor.BusinessLogic.Requests.ProcessLogonTransactionRequest, TransactionProcessor.Models.ProcessLogonTransactionResponse}" />
-    /// <seealso cref="MediatR.IRequestHandler{TransactionProcessor.BusinessLogic.Requests.ProcessSaleTransactionRequest, TransactionProcessor.Models.ProcessSaleTransactionResponse}" />
-    /// <seealso cref="MediatR.IRequestHandler{TransactionProcessor.BusinessLogic.Requests.ProcessReconciliationRequest, TransactionProcessor.BusinessLogic.Requests.ProcessReconciliationResponse}" />
-    /// <seealso cref="MediatR.IRequestHandler{ProcessLogonTransactionRequest, ProcessLogonTransactionResponse}" />
-    /// <seealso cref="" />
     public class TransactionRequestHandler : IRequestHandler<TransactionCommands.ProcessLogonTransactionCommand, Result<ProcessLogonTransactionResponse>>,
                                              IRequestHandler<TransactionCommands.ProcessSaleTransactionCommand, Result<ProcessSaleTransactionResponse>>,
                                              IRequestHandler<TransactionCommands.ProcessReconciliationCommand, Result<ProcessReconciliationTransactionResponse>>,
                                              IRequestHandler<TransactionCommands.ResendTransactionReceiptCommand,Result>,
                                              IRequestHandler<TransactionCommands.CalculateFeesForTransactionCommand, Result>,
-                                             IRequestHandler<TransactionCommands.AddSettledMerchantFeeCommand, Result>
-    {
+                                             IRequestHandler<TransactionCommands.AddSettledMerchantFeeCommand, Result>,
+                                             IRequestHandler<TransactionCommands.SendCustomerEmailReceiptCommand, Result> {
         #region Fields
 
         /// <summary>
@@ -82,6 +74,11 @@ namespace TransactionProcessor.BusinessLogic.RequestHandlers
         public async Task<Result> Handle(TransactionCommands.AddSettledMerchantFeeCommand command,
                                          CancellationToken cancellationToken) {
             return await this.TransactionDomainService.AddSettledMerchantFee(command, cancellationToken);
+        }
+
+        public async Task<Result> Handle(TransactionCommands.SendCustomerEmailReceiptCommand command,
+                                         CancellationToken cancellationToken) {
+            return await this.TransactionDomainService.SendCustomerEmailReceipt(command, cancellationToken);
         }
     }
 }

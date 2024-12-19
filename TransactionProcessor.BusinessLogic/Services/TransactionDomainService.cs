@@ -1,4 +1,5 @@
 ﻿using EstateManagement.DataTransferObjects.Responses.Contract;
+using EstateManagement.DataTransferObjects.Responses.Merchant;
 using Newtonsoft.Json;
 using Shared.Exceptions;
 using Shared.Results;
@@ -18,6 +19,8 @@ namespace TransactionProcessor.BusinessLogic.Services{
     using EstateManagement.DataTransferObjects.Responses;
     using EstateManagement.DataTransferObjects.Responses.Estate;
     using FloatAggregate;
+    using MessagingService.Client;
+    using MessagingService.DataTransferObjects;
     using Microsoft.Extensions.Caching.Memory;
     using Models;
     using OperatorInterfaces;
@@ -59,6 +62,8 @@ namespace TransactionProcessor.BusinessLogic.Services{
         private readonly IAggregateRepository<FloatAggregate, DomainEvent> FloatAggregateRepository;
         private readonly IMemoryCacheWrapper MemoryCache;
         private readonly IFeeCalculationManager FeeCalculationManager;
+        private readonly ITransactionReceiptBuilder TransactionReceiptBuilder;
+        private readonly IMessagingServiceClient MessagingServiceClient;
 
         private TokenResponse TokenResponse;
 
@@ -78,7 +83,9 @@ namespace TransactionProcessor.BusinessLogic.Services{
                                         ISecurityServiceClient securityServiceClient,
                                         IAggregateRepository<FloatAggregate, DomainEvent> floatAggregateRepository,
                                         IMemoryCacheWrapper memoryCache,
-                                        IFeeCalculationManager feeCalculationManager)
+                                        IFeeCalculationManager feeCalculationManager,
+                                        ITransactionReceiptBuilder transactionReceiptBuilder,
+                                        IMessagingServiceClient messagingServiceClient)
         {
             this.TransactionAggregateRepository = transactionAggregateRepository;
             this.EstateClient = estateClient;
@@ -89,6 +96,8 @@ namespace TransactionProcessor.BusinessLogic.Services{
             this.FloatAggregateRepository = floatAggregateRepository;
             this.MemoryCache = memoryCache;
             this.FeeCalculationManager = feeCalculationManager;
+            this.TransactionReceiptBuilder = transactionReceiptBuilder;
+            this.MessagingServiceClient = messagingServiceClient;
         }
 
         #endregion
@@ -508,6 +517,50 @@ namespace TransactionProcessor.BusinessLogic.Services{
             return result;
         }
 
+        public async Task<Result> SendCustomerEmailReceipt(TransactionCommands.SendCustomerEmailReceiptCommand command,
+                                                           CancellationToken cancellationToken) {
+            this.TokenResponse = await Helpers.GetToken(this.TokenResponse, this.SecurityServiceClient, cancellationToken);
+
+            Result<TransactionAggregate> transactionAggregateResult =
+                await this.TransactionAggregateRepository.GetLatestVersion(command.TransactionId, cancellationToken);
+
+            if (transactionAggregateResult.IsFailed)
+                return ResultHelpers.CreateFailure(transactionAggregateResult);
+            
+            Transaction transaction = transactionAggregateResult.Data.GetTransaction();
+
+            MerchantResponse merchant =
+                await this.EstateClient.GetMerchant(this.TokenResponse.AccessToken, command.EstateId, transaction.MerchantId, cancellationToken);
+
+            EstateResponse estate = await this.EstateClient.GetEstate(this.TokenResponse.AccessToken, command.EstateId, cancellationToken);
+            EstateOperatorResponse @operator = estate.Operators.Single(o => o.OperatorId == transaction.OperatorId);
+
+            // Determine the body of the email
+            String receiptMessage = await this.TransactionReceiptBuilder.GetEmailReceiptMessage(transaction, merchant, @operator.Name, cancellationToken);
+
+            // Send the message
+            return await this.SendEmailMessage(this.TokenResponse.AccessToken,
+                command.EventId,
+                command.EstateId,
+                "Transaction Successful",
+                receiptMessage,
+                command.CustomerEmailAddress,
+                cancellationToken);
+        }
+
+        public async Task<Result> ResendCustomerEmailReceipt(TransactionCommands.ResendCustomerEmailReceiptCommand command,
+                                                             CancellationToken cancellationToken) {
+            this.TokenResponse = await Helpers.GetToken(this.TokenResponse, this.SecurityServiceClient, cancellationToken);
+
+            Result<TransactionAggregate> transactionAggregateResult =
+                await this.TransactionAggregateRepository.GetLatestVersion(command.TransactionId, cancellationToken);
+
+            if (transactionAggregateResult.IsFailed)
+                return ResultHelpers.CreateFailure(transactionAggregateResult);
+            
+            return await this.ResendEmailMessage(this.TokenResponse.AccessToken, transactionAggregateResult.Data.ReceiptMessageId, command.EstateId, cancellationToken);
+        }
+
         internal static DateTime CalculateSettlementDate(EstateManagement.DataTransferObjects.Responses.Merchant.SettlementSchedule merchantSettlementSchedule,
                                                          DateTime completeDateTime)
         {
@@ -716,5 +769,73 @@ namespace TransactionProcessor.BusinessLogic.Services{
                 Data = resultData
             };
         }
+
+        [ExcludeFromCodeCoverage]
+        private async Task<Result> SendEmailMessage(String accessToken,
+                                                    Guid messageId,
+                                                    Guid estateId,
+                                                    String subject,
+                                                    String body,
+                                                    String emailAddress,
+                                                    CancellationToken cancellationToken)
+        {
+            SendEmailRequest sendEmailRequest = new SendEmailRequest
+            {
+                MessageId = messageId,
+                Body = body,
+                ConnectionIdentifier = estateId,
+                FromAddress = "golfhandicapping@btinternet.com", // TODO: lookup from config
+                IsHtml = true,
+                Subject = subject,
+                ToAddresses = new List<String> {
+                                                                                                            emailAddress
+                                                                                                        }
+            };
+
+            // TODO: may decide to record the message Id againsts the Transaction Aggregate in future, but for now
+            // we wont do this...
+            try
+            {
+                return await this.MessagingServiceClient.SendEmail(accessToken, sendEmailRequest, cancellationToken);
+            }
+            catch (Exception ex) when (ex.InnerException != null && ex.InnerException.GetType() == typeof(InvalidOperationException))
+            {
+                if (ex.InnerException.Message.Contains("Cannot send a message to provider that has already been sent", StringComparison.InvariantCultureIgnoreCase) ==
+                    false)
+                {
+                    return Result.Failure(ex.GetExceptionMessages());
+                }
+                return Result.Success("Duplicate message send");
+            }
+        }
+
+        [ExcludeFromCodeCoverage]
+        private async Task<Result> ResendEmailMessage(String accessToken,
+                                                      Guid messageId,
+                                                      Guid estateId,
+                                                      CancellationToken cancellationToken)
+        {
+            ResendEmailRequest resendEmailRequest = new ResendEmailRequest
+            {
+                ConnectionIdentifier = estateId,
+                MessageId = messageId
+            };
+            try
+            {
+                return await this.MessagingServiceClient.ResendEmail(accessToken, resendEmailRequest, cancellationToken);
+            }
+            catch (Exception ex) when (ex.InnerException != null && ex.InnerException.GetType() == typeof(InvalidOperationException))
+            {
+                // Only bubble up if not a duplicate message
+                if (ex.InnerException.Message.Contains("Cannot send a message to provider that has already been sent", StringComparison.InvariantCultureIgnoreCase) ==
+                    false)
+                {
+                    return Result.Failure(ex.GetExceptionMessages());
+                }
+                return Result.Success("Duplicate message send");
+            }
+
+        }
     }
+
 }
