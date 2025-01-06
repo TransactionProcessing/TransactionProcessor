@@ -687,7 +687,7 @@
         public static SettlementCommands.AddSettledFeeToSettlementCommand AddSettledFeeToSettlementCommand => new(SettlementDate,MerchantId,EstateId,TransactionFeeId, TransactionId);
 
         public static FloatActivityCommands.RecordCreditPurchaseCommand RecordCreditPurchaseCommand => new(EstateId, FloatAggregateId, CreditPurchasedDateTime, FloatCreditAmount);
-
+        public static FloatActivityCommands.RecordTransactionCommand RecordTransactionCommand => new(EstateId, TransactionId);
         public static TransactionCommands.CalculateFeesForTransactionCommand CalculateFeesForTransactionCommand => new(TransactionId, TransactionDateTime, EstateId, MerchantId);
 
         public static TransactionCommands.AddSettledMerchantFeeCommand AddSettledMerchantFeeCommand => new(TransactionId, CalculatedFeeValue, TransactionFeeCalculateDateTime, CalculationType.Percentage, TransactionFeeId, TransactionFeeValue, SettlementDate, SettlementAggregateId);

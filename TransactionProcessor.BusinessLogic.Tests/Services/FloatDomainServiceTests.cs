@@ -32,6 +32,7 @@ namespace TransactionProcessor.BusinessLogic.Tests.Services
         private readonly Mock<ISecurityServiceClient> SecurityServiceClient;
         private readonly Mock<IAggregateRepository<FloatAggregate, DomainEvent>> FloatAggregateRepository;
         private readonly Mock<IAggregateRepository<FloatActivityAggregate, DomainEvent>> FloatActivityAggregateRepository;
+        private readonly Mock<IAggregateRepository<TransactionAggregate.TransactionAggregate, DomainEvent>> TransactionAggregateRepository;
 
         private readonly FloatDomainService FloatDomainService;
 
@@ -46,8 +47,10 @@ namespace TransactionProcessor.BusinessLogic.Tests.Services
             this.SecurityServiceClient = new Mock<ISecurityServiceClient>();
             this.FloatAggregateRepository = new Mock<IAggregateRepository<FloatAggregate, DomainEvent>>();
             this.FloatActivityAggregateRepository = new Mock<IAggregateRepository<FloatActivityAggregate, DomainEvent>>();
+            this.TransactionAggregateRepository = new Mock<IAggregateRepository<TransactionAggregate.TransactionAggregate, DomainEvent>>();
             this.FloatDomainService = new FloatDomainService(this.FloatAggregateRepository.Object,
                 this.FloatActivityAggregateRepository.Object,
+                this.TransactionAggregateRepository.Object,
                                                              this.EstateClient.Object,
                                                              this.SecurityServiceClient.Object);
         }
