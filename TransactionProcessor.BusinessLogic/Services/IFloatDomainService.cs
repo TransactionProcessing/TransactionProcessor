@@ -194,7 +194,7 @@ namespace TransactionProcessor.BusinessLogic.Services
             Result result = await ApplyFloatActivityUpdates((floatAggregate) => {
                 floatAggregate.RecordCreditPurchase(command.EstateId, command.CreditPurchasedDateTime, command.Amount);
                 return Result.Success();
-            }, command.FloatId, cancellationToken);
+            }, command.FloatId, cancellationToken,false);
             return result;
         }
 
@@ -209,7 +209,7 @@ namespace TransactionProcessor.BusinessLogic.Services
             Result result = await ApplyFloatActivityUpdates((floatAggregate) => {
                 floatAggregate.RecordTransactionAgainstFloat(command.EstateId, getTransactionResult.Data.TransactionDateTime, getTransactionResult.Data.TransactionAmount.GetValueOrDefault());
                 return Result.Success();
-            }, floatId, cancellationToken);
+            }, floatId, cancellationToken, false);
             return result;
         }
     }
