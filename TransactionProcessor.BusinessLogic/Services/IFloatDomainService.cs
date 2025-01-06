@@ -39,22 +39,27 @@ namespace TransactionProcessor.BusinessLogic.Services
 
         Task<Result> RecordCreditPurchase(FloatActivityCommands.RecordCreditPurchaseCommand command,
                                           CancellationToken cancellationToken);
+        Task<Result> RecordTransaction(FloatActivityCommands.RecordTransactionCommand command,
+                                          CancellationToken cancellationToken);
     }
 
     public class FloatDomainService : IFloatDomainService{
         private readonly IAggregateRepository<FloatAggregate, DomainEvent> FloatAggregateRepository;
         private readonly IAggregateRepository<FloatActivityAggregate, DomainEvent> FloatActivityAggregateRepository;
+        private readonly IAggregateRepository<TransactionAggregate.TransactionAggregate, DomainEvent> TransactionAggregateRepository;
 
         private readonly IEstateClient EstateClient;
         private readonly ISecurityServiceClient SecurityServiceClient;
 
         public FloatDomainService(IAggregateRepository<FloatAggregate, DomainEvent> floatAggregateRepository,
                                   IAggregateRepository<FloatActivityAggregate, DomainEvent> floatActivityAggregateRepository,
+                                  IAggregateRepository<TransactionAggregate.TransactionAggregate,DomainEvent> transactionAggregateRepository,
                                   IEstateClient estateClient,
                                   ISecurityServiceClient securityServiceClient)
         {
             this.FloatAggregateRepository = floatAggregateRepository;
             this.FloatActivityAggregateRepository = floatActivityAggregateRepository;
+            this.TransactionAggregateRepository = transactionAggregateRepository;
             this.EstateClient = estateClient;
             this.SecurityServiceClient = securityServiceClient;
         }
@@ -190,6 +195,21 @@ namespace TransactionProcessor.BusinessLogic.Services
                 floatAggregate.RecordCreditPurchase(command.EstateId, command.CreditPurchasedDateTime, command.Amount);
                 return Result.Success();
             }, command.FloatId, cancellationToken);
+            return result;
+        }
+
+        public async Task<Result> RecordTransaction(FloatActivityCommands.RecordTransactionCommand command,
+                                                    CancellationToken cancellationToken) {
+            Result<TransactionAggregate.TransactionAggregate> getTransactionResult = await this.TransactionAggregateRepository.GetLatestVersion(command.TransactionId, cancellationToken);
+            if (getTransactionResult.IsFailed)
+                return ResultHelpers.CreateFailure(getTransactionResult);
+
+            Guid floatId = IdGenerationService.GenerateFloatAggregateId(command.EstateId, getTransactionResult.Data.ContractId, getTransactionResult.Data.ProductId);
+
+            Result result = await ApplyFloatActivityUpdates((floatAggregate) => {
+                floatAggregate.RecordTransactionAgainstFloat(command.EstateId, getTransactionResult.Data.TransactionDateTime, getTransactionResult.Data.TransactionAmount.GetValueOrDefault());
+                return Result.Success();
+            }, floatId, cancellationToken);
             return result;
         }
     }

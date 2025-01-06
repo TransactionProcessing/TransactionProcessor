@@ -31,8 +31,7 @@ public class FloatRequestHandlerTests
     {
         Mock<IFloatDomainService> floatDomainService = new Mock<IFloatDomainService>();
         FloatRequestHandler handler = new FloatRequestHandler(floatDomainService.Object);
-
-
+        
         floatDomainService.Setup(f => f.RecordCreditPurchase(It.IsAny<FloatCommands.RecordCreditPurchaseForFloatCommand>(), It.IsAny<CancellationToken>())).ReturnsAsync(Result.Success());
 
         var command = TestData.RecordCreditPurchaseForFloatCommand;
