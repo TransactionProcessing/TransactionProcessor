@@ -6,6 +6,11 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <PackageReference Include="ClientProxyBase" Version="2025.1.1" />
+    <PackageReference Include="SecurityService.Client" Version="2025.1.1" />
+  </ItemGroup>
+
+  <ItemGroup>
     <ProjectReference Include="..\TransactionProcessor.BusinessLogic\TransactionProcessor.BusinessLogic.csproj" />
     <ProjectReference Include="..\TransactionProcessor.Models\TransactionProcessor.Models.csproj" />
     <ProjectReference Include="..\TransactionProcessor.TransactionAgrgegate\TransactionProcessor.TransactionAggregate.csproj" />
