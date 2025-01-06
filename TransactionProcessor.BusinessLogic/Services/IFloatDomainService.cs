@@ -104,7 +104,7 @@ namespace TransactionProcessor.BusinessLogic.Services
                 if (floatActivityAggregateResult.IsFailed)
                     return ResultHelpers.CreateFailure(floatActivityAggregateResult);
 
-                FloatActivityAggregate floatActivityAggregate = getFloatResult.Data;
+                FloatActivityAggregate floatActivityAggregate = floatActivityAggregateResult.Data;
 
                 Result result = action(floatActivityAggregate);
                 if (result.IsFailed)
