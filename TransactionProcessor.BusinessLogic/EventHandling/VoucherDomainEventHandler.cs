@@ -158,7 +158,7 @@ public class VoucherDomainEventHandler : IDomainEventHandler
                                                          CancellationToken cancellationToken)
     {
         // Get the voucher aggregate
-        Result<VoucherAggregate> voucherAggregateResult = await this.VoucherAggregateRepository.GetLatestVersion(domainEvent.AggregateId, cancellationToken);
+        Result<VoucherAggregate> voucherAggregateResult = await this.VoucherAggregateRepository.GetLatestVersion(domainEvent.VoucherId, cancellationToken);
         if (voucherAggregateResult.IsFailed)
             return ResultHelpers.CreateFailure(voucherAggregateResult);
 
