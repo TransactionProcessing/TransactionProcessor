@@ -212,7 +212,7 @@ namespace TransactionProcessor.BusinessLogic.Tests.Services
             this.FloatActivityAggregateRepository.Setup(f => f.SaveChanges(It.IsAny<FloatActivityAggregate>(), It.IsAny<CancellationToken>())).ReturnsAsync(Result.Success);
 
             var command = new FloatActivityCommands.RecordCreditPurchaseCommand(TestData.EstateId,
-                TestData.FloatAggregateId, TestData.CreditPurchasedDateTime, TestData.FloatCreditAmount);
+                TestData.FloatAggregateId, TestData.CreditPurchasedDateTime, TestData.FloatCreditAmount, TestData.FloatCreditId);
             var result = await this.FloatDomainService.RecordCreditPurchase(command, CancellationToken.None);
             result.IsSuccess.ShouldBeTrue();
         }
@@ -225,7 +225,7 @@ namespace TransactionProcessor.BusinessLogic.Tests.Services
             this.FloatActivityAggregateRepository.Setup(f => f.SaveChanges(It.IsAny<FloatActivityAggregate>(), It.IsAny<CancellationToken>())).ReturnsAsync(Result.Failure);
 
             var command = new FloatActivityCommands.RecordCreditPurchaseCommand(TestData.EstateId,
-                TestData.FloatAggregateId, TestData.CreditPurchasedDateTime, TestData.FloatCreditAmount);
+                TestData.FloatAggregateId, TestData.CreditPurchasedDateTime, TestData.FloatCreditAmount, TestData.FloatCreditId);
             var result = await this.FloatDomainService.RecordCreditPurchase(command, CancellationToken.None);
             result.IsFailed.ShouldBeTrue();
         }
@@ -238,7 +238,7 @@ namespace TransactionProcessor.BusinessLogic.Tests.Services
             this.FloatActivityAggregateRepository.Setup(f => f.SaveChanges(It.IsAny<FloatActivityAggregate>(), It.IsAny<CancellationToken>())).ThrowsAsync(new Exception());
 
             var command = new FloatActivityCommands.RecordCreditPurchaseCommand(TestData.EstateId,
-                TestData.FloatAggregateId, TestData.CreditPurchasedDateTime, TestData.FloatCreditAmount);
+                TestData.FloatAggregateId, TestData.CreditPurchasedDateTime, TestData.FloatCreditAmount, TestData.FloatCreditId);
             var result = await this.FloatDomainService.RecordCreditPurchase(command, CancellationToken.None);
             result.IsFailed.ShouldBeTrue();
         }

@@ -7,7 +7,7 @@ namespace TransactionProcessor.BusinessLogic.Requests;
 
 [ExcludeFromCodeCoverage]
 public record FloatActivityCommands {
-    public record RecordCreditPurchaseCommand(Guid EstateId, Guid FloatId, DateTime CreditPurchasedDateTime, Decimal Amount) : IRequest<Result>;
+    public record RecordCreditPurchaseCommand(Guid EstateId, Guid FloatId, DateTime CreditPurchasedDateTime, Decimal Amount, Guid CreditId) : IRequest<Result>;
 
     public record RecordTransactionCommand(Guid EstateId, Guid TransactionId) : IRequest<Result>;
 }

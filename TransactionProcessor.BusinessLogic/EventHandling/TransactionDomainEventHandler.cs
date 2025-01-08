@@ -87,7 +87,7 @@ namespace TransactionProcessor.BusinessLogic.EventHandling
                                                      CancellationToken cancellationToken) {
             FloatActivityCommands.RecordCreditPurchaseCommand command =
                 new(domainEvent.EstateId, domainEvent.FloatId,
-                    domainEvent.CreditPurchasedDateTime, domainEvent.Amount);
+                    domainEvent.CreditPurchasedDateTime, domainEvent.Amount, domainEvent.EventId);
 
             return await this.Mediator.Send(command, cancellationToken);
         }
