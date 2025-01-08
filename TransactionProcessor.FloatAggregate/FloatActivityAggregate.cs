@@ -1,4 +1,5 @@
 ﻿using System.Diagnostics.CodeAnalysis;
+using System.Runtime.CompilerServices;
 using Shared.DomainDrivenDesign.EventSourcing;
 using Shared.EventStore.Aggregate;
 using Shared.General;
@@ -6,29 +7,42 @@ using TransactionProcessor.Float.DomainEvents;
 
 namespace TransactionProcessor.FloatAggregate;
 
-public static class FloatActivityAggregateExtensions
-{
-    public static void PlayEvent(this FloatActivityAggregate aggregate, FloatAggregateCreditedEvent domainEvent)
-    {
+public static class FloatActivityAggregateExtensions {
+
+    public static void PlayEvent(this FloatActivityAggregate aggregate,
+                                 FloatAggregateCreditedEvent domainEvent) {
+        aggregate.CreditCount++;
+        aggregate.Credits.Add(domainEvent.CreditId);
     }
 
-    public static void PlayEvent(this FloatActivityAggregate aggregate, FloatAggregateDebitedEvent domainEvent)
-    {
+    public static void PlayEvent(this FloatActivityAggregate aggregate,
+                                 FloatAggregateDebitedEvent domainEvent) {
+        aggregate.DebitCount++;
+        aggregate.Debits.Add(domainEvent.DebitId);
     }
 
     public static void RecordCreditPurchase(this FloatActivityAggregate aggregate,
                                             Guid estateId,
                                             DateTime activityDateTime,
-                                            Decimal creditAmount) {
-        FloatAggregateCreditedEvent floatAggregateCreditedEvent =
-            new (aggregate.AggregateId, estateId, activityDateTime, creditAmount);
+                                            Decimal creditAmount,
+                                            Guid creditId) {
+
+        if (aggregate.Credits.Any(c => c == creditId))
+            return;
+
+        FloatAggregateCreditedEvent floatAggregateCreditedEvent = new(aggregate.AggregateId, estateId, activityDateTime, creditAmount, creditId);
         aggregate.ApplyAndAppend(floatAggregateCreditedEvent);
     }
 
-    public static void RecordTransactionAgainstFloat(this FloatActivityAggregate aggregate, Guid estateId, DateTime activityDateTime, Decimal transactionAmount)
-    {
-        FloatAggregateDebitedEvent floatAggregateCreditedEvent =
-            new (aggregate.AggregateId, estateId, activityDateTime, transactionAmount);
+    public static void RecordTransactionAgainstFloat(this FloatActivityAggregate aggregate,
+                                                     Guid estateId,
+                                                     DateTime activityDateTime,
+                                                     Decimal transactionAmount,
+                                                     Guid transactionId) {
+        if (aggregate.Debits.Any(c => c == transactionId))
+            return;
+
+        FloatAggregateDebitedEvent floatAggregateCreditedEvent = new(aggregate.AggregateId, estateId, activityDateTime, transactionAmount, transactionId);
         aggregate.ApplyAndAppend(floatAggregateCreditedEvent);
     }
 }
@@ -36,6 +50,10 @@ public static class FloatActivityAggregateExtensions
 public record FloatActivityAggregate : Aggregate {
     public override void PlayEvent(IDomainEvent domainEvent) => FloatActivityAggregateExtensions.PlayEvent(this, (dynamic)domainEvent);
 
+    public Int32 CreditCount { get; internal set; }
+    public Int32 DebitCount { get; internal set; }
+    public List<Guid> Credits { get; internal set; }
+    public List<Guid> Debits { get; internal set; }
     [ExcludeFromCodeCoverage]
     protected override Object GetMetadata()
     {
@@ -49,7 +67,8 @@ public record FloatActivityAggregate : Aggregate {
     [ExcludeFromCodeCoverage]
     public FloatActivityAggregate()
     {
-        
+        this.Credits = new List<Guid>();
+        this.Debits = new List<Guid>();
     }
 
     private FloatActivityAggregate(Guid aggregateId)
@@ -57,6 +76,8 @@ public record FloatActivityAggregate : Aggregate {
         Guard.ThrowIfInvalidGuid(aggregateId, "Aggregate Id cannot be an Empty Guid");
 
         this.AggregateId = aggregateId;
+        this.Credits = new List<Guid>();
+        this.Debits = new List<Guid>();
     }
 
     public static FloatActivityAggregate Create(Guid aggregateId)

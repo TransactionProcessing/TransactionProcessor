@@ -98,7 +98,7 @@ namespace TransactionProcessor.BusinessLogic.Services
         {
             try
             {
-                Result<FloatActivityAggregate> getFloatResult = await this.FloatActivityAggregateRepository.GetLatestVersionFromLastEvent(floatId, cancellationToken);
+                Result<FloatActivityAggregate> getFloatResult = await this.FloatActivityAggregateRepository.GetLatestVersion(floatId, cancellationToken);
                 Result<FloatActivityAggregate> floatActivityAggregateResult = DomainServiceHelper.HandleGetAggregateResult(getFloatResult, floatId, isNotFoundError);
 
                 if (floatActivityAggregateResult.IsFailed)
@@ -192,7 +192,7 @@ namespace TransactionProcessor.BusinessLogic.Services
         public async Task<Result> RecordCreditPurchase(FloatActivityCommands.RecordCreditPurchaseCommand command,
                                                        CancellationToken cancellationToken) {
             Result result = await ApplyFloatActivityUpdates((floatAggregate) => {
-                floatAggregate.RecordCreditPurchase(command.EstateId, command.CreditPurchasedDateTime, command.Amount);
+                floatAggregate.RecordCreditPurchase(command.EstateId, command.CreditPurchasedDateTime, command.Amount, command.CreditId);
                 return Result.Success();
             }, command.FloatId, cancellationToken,false);
             return result;
@@ -207,7 +207,7 @@ namespace TransactionProcessor.BusinessLogic.Services
             Guid floatId = IdGenerationService.GenerateFloatAggregateId(command.EstateId, getTransactionResult.Data.ContractId, getTransactionResult.Data.ProductId);
 
             Result result = await ApplyFloatActivityUpdates((floatAggregate) => {
-                floatAggregate.RecordTransactionAgainstFloat(command.EstateId, getTransactionResult.Data.TransactionDateTime, getTransactionResult.Data.TransactionAmount.GetValueOrDefault());
+                floatAggregate.RecordTransactionAgainstFloat(command.EstateId, getTransactionResult.Data.TransactionDateTime, getTransactionResult.Data.TransactionAmount.GetValueOrDefault(), command.TransactionId);
                 return Result.Success();
             }, floatId, cancellationToken, false);
             return result;

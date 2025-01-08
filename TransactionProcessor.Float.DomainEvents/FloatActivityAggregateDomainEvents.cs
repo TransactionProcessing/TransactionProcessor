@@ -12,11 +12,11 @@ namespace TransactionProcessor.Float.DomainEvents
     public record FloatAggregateCreditedEvent(Guid FloatId,
                        Guid EstateId,
                        DateTime ActivityDateTime,
-                       Decimal Amount) : DomainEvent(FloatId, Guid.NewGuid());
+                       Decimal Amount, Guid CreditId) : DomainEvent(FloatId, Guid.NewGuid());
 
     [ExcludeFromCodeCoverage]
     public record FloatAggregateDebitedEvent(Guid FloatId,
                                               Guid EstateId,
                                               DateTime ActivityDateTime,
-                                              Decimal Amount) : DomainEvent(FloatId, Guid.NewGuid());
+                                              Decimal Amount, Guid DebitId) : DomainEvent(FloatId, Guid.NewGuid());
 }

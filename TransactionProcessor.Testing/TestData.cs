@@ -686,7 +686,7 @@
         public static SettlementCommands.AddMerchantFeePendingSettlementCommand AddMerchantFeePendingSettlementCommand => new(TransactionId, CalculatedFeeValue, TransactionFeeCalculateDateTime, CalculationType.Fixed, TransactionFeeId, CalculatedFeeValue, TransactionFeeSettlementDueDate, MerchantId, EstateId);
         public static SettlementCommands.AddSettledFeeToSettlementCommand AddSettledFeeToSettlementCommand => new(SettlementDate,MerchantId,EstateId,TransactionFeeId, TransactionId);
 
-        public static FloatActivityCommands.RecordCreditPurchaseCommand RecordCreditPurchaseCommand => new(EstateId, FloatAggregateId, CreditPurchasedDateTime, FloatCreditAmount);
+        public static FloatActivityCommands.RecordCreditPurchaseCommand RecordCreditPurchaseCommand => new(EstateId, FloatAggregateId, CreditPurchasedDateTime, FloatCreditAmount, FloatCreditId);
         public static FloatActivityCommands.RecordTransactionCommand RecordTransactionCommand => new(EstateId, TransactionId);
         public static TransactionCommands.CalculateFeesForTransactionCommand CalculateFeesForTransactionCommand => new(TransactionId, TransactionDateTime, EstateId, MerchantId);
 
@@ -1459,6 +1459,7 @@
 
         public static DateTime CreditPurchasedDateTime = DateTime.Now;
 
+        public static Guid FloatCreditId = Guid.Parse("97CAFCB1-B9BF-47FA-9438-422ABFCCD790");
         public static Decimal FloatCreditAmount = 100m;
 
         public static Decimal FloatCreditCostPrice = 90m;
