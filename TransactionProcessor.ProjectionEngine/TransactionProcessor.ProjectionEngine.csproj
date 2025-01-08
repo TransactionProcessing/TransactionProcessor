@@ -12,8 +12,8 @@
     <PackageReference Include="FileProcessor.File.DomainEvents" Version="2024.8.2-build68" />
     <PackageReference Include="FileProcessor.FileImportLog.DomainEvents" Version="2024.8.2-build68" />
     
-    <PackageReference Include="Shared" Version="2024.11.4" />
-    <PackageReference Include="Shared.EventStore" Version="2024.11.4" />
+    <PackageReference Include="Shared" Version="2025.1.2" />
+    <PackageReference Include="Shared.EventStore" Version="2025.1.2" />
   </ItemGroup>
 
   <ItemGroup>

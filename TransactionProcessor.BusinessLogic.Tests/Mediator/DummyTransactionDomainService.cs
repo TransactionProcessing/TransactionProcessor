@@ -135,6 +135,11 @@ public class DummyEventStoreContext : IEventStoreContext {
         return Result.Success();
     }
 
+    public async Task<Result<List<ResolvedEvent>>> ReadLastEventsFromAll(Int64 numberEvents,
+                                                                         CancellationToken cancellationToken) {
+        return Result.Success();
+    }
+
     public async Task<Result<String>> RunTransientQuery(String query,
                                                         CancellationToken cancellationToken) {
         return Result.Success();
