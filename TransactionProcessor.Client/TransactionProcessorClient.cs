@@ -89,9 +89,8 @@ namespace TransactionProcessor.Client{
                 if (result.IsFailed)
                     return ResultHelpers.CreateFailure(result);
 
-                ResponseData<MerchantBalanceResponse> responseData =
-                    JsonConvert.DeserializeObject<ResponseData<MerchantBalanceResponse>>(result.Data);
-
+                ResponseData<MerchantBalanceResponse> responseData = HandleResponseContent<MerchantBalanceResponse>(result.Data);
+                
                 return Result.Success(responseData.Data);
             }
             catch (Exception ex)
@@ -125,8 +124,7 @@ namespace TransactionProcessor.Client{
                 if (result.IsFailed)
                     return ResultHelpers.CreateFailure(result);
 
-                ResponseData<List<MerchantBalanceChangedEntryResponse>> responseData =
-                    JsonConvert.DeserializeObject<ResponseData<List<MerchantBalanceChangedEntryResponse>>>(result.Data);
+                ResponseData<List<MerchantBalanceChangedEntryResponse>> responseData = HandleResponseContent<List<MerchantBalanceChangedEntryResponse>>(result.Data);
 
                 return Result.Success(responseData.Data);
             }
@@ -159,9 +157,8 @@ namespace TransactionProcessor.Client{
                 if (result.IsFailed)
                     return ResultHelpers.CreateFailure(result);
 
-                ResponseData<SettlementResponse> responseData =
-                    JsonConvert.DeserializeObject<ResponseData<SettlementResponse>>(result.Data);
-
+                ResponseData<SettlementResponse> responseData = HandleResponseContent<SettlementResponse>(result.Data);
+                
                 return Result.Success(responseData.Data);
             }
             catch (Exception ex) {
@@ -195,9 +192,8 @@ namespace TransactionProcessor.Client{
                 if (result.IsFailed)
                     return ResultHelpers.CreateFailure(result);
 
-                ResponseData<GetVoucherResponse> responseData =
-                    JsonConvert.DeserializeObject<ResponseData<GetVoucherResponse>>(result.Data);
-
+                ResponseData<GetVoucherResponse> responseData = HandleResponseContent<GetVoucherResponse>(result.Data);
+                
                 return Result.Success(responseData.Data);
             }
             catch (Exception ex)
@@ -232,8 +228,7 @@ namespace TransactionProcessor.Client{
                 if (result.IsFailed)
                     return ResultHelpers.CreateFailure(result);
 
-                ResponseData<GetVoucherResponse> responseData =
-                    JsonConvert.DeserializeObject<ResponseData<GetVoucherResponse>>(result.Data);
+                ResponseData<GetVoucherResponse> responseData = HandleResponseContent<GetVoucherResponse>(result.Data);
 
                 return Result.Success(responseData.Data);
             }
@@ -268,8 +263,7 @@ namespace TransactionProcessor.Client{
                 if (result.IsFailed)
                     return ResultHelpers.CreateFailure(result);
 
-                ResponseData<SerialisedMessage> responseData =
-                    JsonConvert.DeserializeObject<ResponseData<SerialisedMessage>>(result.Data);
+                ResponseData<SerialisedMessage> responseData = HandleResponseContent<SerialisedMessage>(result.Data);
 
                 return Result.Success(responseData.Data);
             }
@@ -372,8 +366,7 @@ namespace TransactionProcessor.Client{
                 if (result.IsFailed)
                     return ResultHelpers.CreateFailure(result);
 
-                ResponseData<RedeemVoucherResponse> responseData =
-                    JsonConvert.DeserializeObject<ResponseData<RedeemVoucherResponse>>(result.Data);
+                ResponseData<RedeemVoucherResponse> responseData = HandleResponseContent<RedeemVoucherResponse>(result.Data);
 
                 return Result.Success(responseData.Data);
             }
@@ -418,10 +411,5 @@ namespace TransactionProcessor.Client{
                 throw exception;
             }
         }
-    }
-
-    internal class ResponseData<T>
-    {
-        public T Data { get; set; }
     }
 }
