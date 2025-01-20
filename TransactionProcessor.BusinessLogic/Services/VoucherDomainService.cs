@@ -42,7 +42,7 @@ public class VoucherDomainService : IVoucherDomainService
     /// <summary>
     /// The estate client
     /// </summary>
-    private readonly IEstateClient EstateClient;
+    private readonly IIntermediateEstateClient EstateClient;
 
     /// <summary>
     /// The database context factory
@@ -62,7 +62,7 @@ public class VoucherDomainService : IVoucherDomainService
     /// <param name="dbContextFactory">The database context factory.</param>
     public VoucherDomainService(IAggregateRepository<VoucherAggregate, DomainEvent> voucherAggregateRepository,
                                 ISecurityServiceClient securityServiceClient,
-                                IEstateClient estateClient,
+                                IIntermediateEstateClient estateClient,
                                 Shared.EntityFramework.IDbContextFactory<EstateManagementGenericContext> dbContextFactory)
     {
         this.VoucherAggregateRepository = voucherAggregateRepository;

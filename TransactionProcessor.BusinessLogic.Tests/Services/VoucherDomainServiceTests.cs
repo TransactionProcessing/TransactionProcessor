@@ -1,4 +1,5 @@
 ﻿using SimpleResults;
+using TransactionProcessor.BusinessLogic.Common;
 
 namespace TransactionProcessor.BusinessLogic.Tests.Services
 {
@@ -37,7 +38,7 @@ namespace TransactionProcessor.BusinessLogic.Tests.Services
 
             Logger.Initialise(NullLogger.Instance);
 
-            Mock<IEstateClient> estateClient = new Mock<IEstateClient>();
+            Mock<IIntermediateEstateClient> estateClient = new Mock<IIntermediateEstateClient>();
             Mock<ISecurityServiceClient> securityServiceClient = new Mock<ISecurityServiceClient>();
             Mock<IAggregateRepository<VoucherAggregate, DomainEvent>> voucherAggregateRepository = new Mock<IAggregateRepository<VoucherAggregate, DomainEvent>>();
             voucherAggregateRepository.Setup(v => v.GetLatestVersion(It.IsAny<Guid>(), It.IsAny<CancellationToken>())).ReturnsAsync(new VoucherAggregate());
@@ -74,7 +75,7 @@ namespace TransactionProcessor.BusinessLogic.Tests.Services
 
             Logger.Initialise(NullLogger.Instance);
 
-            Mock<IEstateClient> estateClient = new Mock<IEstateClient>();
+            Mock<IIntermediateEstateClient> estateClient = new Mock<IIntermediateEstateClient>();
             Mock<ISecurityServiceClient> securityServiceClient = new Mock<ISecurityServiceClient>();
             Mock<IAggregateRepository<VoucherAggregate, DomainEvent>> voucherAggregateRepository = new Mock<IAggregateRepository<VoucherAggregate, DomainEvent>>();
             voucherAggregateRepository.Setup(v => v.GetLatestVersion(It.IsAny<Guid>(), It.IsAny<CancellationToken>())).ReturnsAsync(new VoucherAggregate());
@@ -111,7 +112,7 @@ namespace TransactionProcessor.BusinessLogic.Tests.Services
 
             Logger.Initialise(NullLogger.Instance);
 
-            Mock<IEstateClient> estateClient = new Mock<IEstateClient>();
+            Mock<IIntermediateEstateClient> estateClient = new Mock<IIntermediateEstateClient>();
             Mock<ISecurityServiceClient> securityServiceClient = new Mock<ISecurityServiceClient>();
             Mock<IAggregateRepository<VoucherAggregate, DomainEvent>> voucherAggregateRepository = new Mock<IAggregateRepository<VoucherAggregate, DomainEvent>>();
             voucherAggregateRepository.Setup(v => v.GetLatestVersion(It.IsAny<Guid>(), It.IsAny<CancellationToken>())).ReturnsAsync(new VoucherAggregate());
@@ -149,7 +150,7 @@ namespace TransactionProcessor.BusinessLogic.Tests.Services
 
             Logger.Initialise(NullLogger.Instance);
 
-            Mock<IEstateClient> estateClient = new Mock<IEstateClient>();
+            Mock<IIntermediateEstateClient> estateClient = new Mock<IIntermediateEstateClient>();
             Mock<ISecurityServiceClient> securityServiceClient = new Mock<ISecurityServiceClient>();
             Mock<IAggregateRepository<VoucherAggregate, DomainEvent>> voucherAggregateRepository = new Mock<IAggregateRepository<VoucherAggregate, DomainEvent>>();
             voucherAggregateRepository.Setup(v => v.GetLatestVersion(It.IsAny<Guid>(), It.IsAny<CancellationToken>())).ReturnsAsync(new VoucherAggregate());
@@ -186,7 +187,7 @@ namespace TransactionProcessor.BusinessLogic.Tests.Services
 
             Logger.Initialise(NullLogger.Instance);
 
-            Mock<IEstateClient> estateClient = new Mock<IEstateClient>();
+            Mock<IIntermediateEstateClient> estateClient = new Mock<IIntermediateEstateClient>();
             Mock<ISecurityServiceClient> securityServiceClient = new Mock<ISecurityServiceClient>();
             Mock<IAggregateRepository<VoucherAggregate, DomainEvent>> voucherAggregateRepository = new Mock<IAggregateRepository<VoucherAggregate, DomainEvent>>();
             voucherAggregateRepository.Setup(v => v.GetLatestVersion(It.IsAny<Guid>(), It.IsAny<CancellationToken>())).ReturnsAsync(new VoucherAggregate());
@@ -226,7 +227,7 @@ namespace TransactionProcessor.BusinessLogic.Tests.Services
 
             Logger.Initialise(NullLogger.Instance);
 
-            Mock<IEstateClient> estateClient = new Mock<IEstateClient>();
+            Mock<IIntermediateEstateClient> estateClient = new Mock<IIntermediateEstateClient>();
             Mock<ISecurityServiceClient> securityServiceClient = new Mock<ISecurityServiceClient>();
             Mock<IAggregateRepository<VoucherAggregate, DomainEvent>> voucherAggregateRepository = new Mock<IAggregateRepository<VoucherAggregate, DomainEvent>>();
             voucherAggregateRepository.Setup(v => v.GetLatestVersion(It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
@@ -264,7 +265,7 @@ namespace TransactionProcessor.BusinessLogic.Tests.Services
 
             Logger.Initialise(NullLogger.Instance);
 
-            Mock<IEstateClient> estateClient = new Mock<IEstateClient>();
+            Mock<IIntermediateEstateClient> estateClient = new Mock<IIntermediateEstateClient>();
             Mock<ISecurityServiceClient> securityServiceClient = new Mock<ISecurityServiceClient>();
             Mock<IAggregateRepository<VoucherAggregate, DomainEvent>> voucherAggregateRepository = new Mock<IAggregateRepository<VoucherAggregate, DomainEvent>>();
             voucherAggregateRepository.Setup(v => v.GetLatestVersion(It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
@@ -305,7 +306,7 @@ namespace TransactionProcessor.BusinessLogic.Tests.Services
 
             Logger.Initialise(NullLogger.Instance);
 
-            Mock<IEstateClient> estateClient = new Mock<IEstateClient>();
+            Mock<IIntermediateEstateClient> estateClient = new Mock<IIntermediateEstateClient>();
             Mock<ISecurityServiceClient> securityServiceClient = new Mock<ISecurityServiceClient>();
             Mock<IAggregateRepository<VoucherAggregate, DomainEvent>> voucherAggregateRepository = new Mock<IAggregateRepository<VoucherAggregate, DomainEvent>>();
             voucherAggregateRepository.Setup(v => v.GetLatestVersion(It.IsAny<Guid>(), It.IsAny<CancellationToken>()))

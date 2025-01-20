@@ -1,4 +1,6 @@
-﻿namespace TransactionProcessor.IntegrationTests.Common
+﻿using TransactionProcessor.BusinessLogic.Common;
+
+namespace TransactionProcessor.IntegrationTests.Common
 {
     using System;
     using System.Collections.Generic;
@@ -29,7 +31,7 @@
         /// <summary>
         /// The estate client
         /// </summary>
-        public IEstateClient EstateClient;
+        public IIntermediateEstateClient EstateClient;
 
         public HttpClient TestHostHttpClient;
 
@@ -114,7 +116,7 @@
                                                                                               }
                                               };
             HttpClient httpClient = new HttpClient(clientHandler);
-            this.EstateClient = new EstateClient(EstateManagementBaseAddressResolver, httpClient,2);
+            this.EstateClient = new IntermediateEstateClient(new EstateClient(EstateManagementBaseAddressResolver, httpClient,2));
             this.SecurityServiceClient = new SecurityServiceClient(SecurityServiceBaseAddressResolver, httpClient);
             this.TransactionProcessorClient = new TransactionProcessorClient(TransactionProcessorBaseAddressResolver, httpClient);
             this.TestHostHttpClient= new HttpClient(clientHandler);

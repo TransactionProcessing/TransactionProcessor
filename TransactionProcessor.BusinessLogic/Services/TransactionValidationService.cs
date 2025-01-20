@@ -33,7 +33,7 @@ public class TransactionValidationService : ITransactionValidationService{
     /// <summary>
     /// The estate client
     /// </summary>
-    private readonly IEstateClient EstateClient;
+    private readonly IIntermediateEstateClient EstateClient;
 
     private readonly ProjectionEngine.Repository.IProjectionStateRepository<MerchantBalanceState> MerchantBalanceStateRepository;
 
@@ -49,7 +49,7 @@ public class TransactionValidationService : ITransactionValidationService{
 
     #endregion
 
-    public TransactionValidationService(IEstateClient estateClient,
+    public TransactionValidationService(IIntermediateEstateClient estateClient,
                                         ISecurityServiceClient securityServiceClient,
                                         ProjectionEngine.Repository.IProjectionStateRepository<MerchantBalanceState> merchantBalanceStateRepository,
                                         IEventStoreContext eventStoreContext)

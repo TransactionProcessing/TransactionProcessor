@@ -9,7 +9,8 @@
     using Microsoft.Extensions.DependencyInjection;
     using SecurityService.Client;
     using Shared.General;
-    
+    using TransactionProcessor.BusinessLogic.Common;
+
     /// <summary>
     /// 
     /// </summary>
@@ -48,6 +49,7 @@
             this.AddSingleton(httpClient);
 
             this.AddSingleton<IEstateClient>(new EstateClient(resolver1(), httpClient, 2));
+            this.AddSingleton<IIntermediateEstateClient, IntermediateEstateClient>();
         }
 
         #endregion

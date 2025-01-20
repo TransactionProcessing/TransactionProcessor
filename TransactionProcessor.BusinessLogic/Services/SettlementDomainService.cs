@@ -32,7 +32,7 @@ namespace TransactionProcessor.BusinessLogic.Services
 
         private readonly ISecurityServiceClient SecurityServiceClient;
 
-        private readonly IEstateClient EstateClient;
+        private readonly IIntermediateEstateClient EstateClient;
 
         private async Task<Result> ApplySettlementUpdates(Func<SettlementAggregate, Task<Result>> action,
                                                      Guid settlementId,
@@ -233,7 +233,7 @@ namespace TransactionProcessor.BusinessLogic.Services
         public SettlementDomainService(IAggregateRepository<TransactionAggregate, DomainEvent> transactionAggregateRepository,
                                        IAggregateRepository<SettlementAggregate, DomainEvent> settlementAggregateRepository,
                                        ISecurityServiceClient securityServiceClient,
-                                       IEstateClient estateClient)
+                                       IIntermediateEstateClient estateClient)
         {
             this.TransactionAggregateRepository = transactionAggregateRepository;
             this.SettlementAggregateRepository = settlementAggregateRepository;

@@ -48,13 +48,13 @@ namespace TransactionProcessor.BusinessLogic.Services
         private readonly IAggregateRepository<FloatActivityAggregate, DomainEvent> FloatActivityAggregateRepository;
         private readonly IAggregateRepository<TransactionAggregate.TransactionAggregate, DomainEvent> TransactionAggregateRepository;
 
-        private readonly IEstateClient EstateClient;
+        private readonly IIntermediateEstateClient EstateClient;
         private readonly ISecurityServiceClient SecurityServiceClient;
 
         public FloatDomainService(IAggregateRepository<FloatAggregate, DomainEvent> floatAggregateRepository,
                                   IAggregateRepository<FloatActivityAggregate, DomainEvent> floatActivityAggregateRepository,
                                   IAggregateRepository<TransactionAggregate.TransactionAggregate,DomainEvent> transactionAggregateRepository,
-                                  IEstateClient estateClient,
+                                  IIntermediateEstateClient estateClient,
                                   ISecurityServiceClient securityServiceClient)
         {
             this.FloatAggregateRepository = floatAggregateRepository;

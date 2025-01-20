@@ -21,6 +21,7 @@ using Shared.General;
 using Shared.Logger;
 using Shouldly;
 using Testing;
+using TransactionProcessor.BusinessLogic.Common;
 using Xunit;
 
 public class TransactionValidationServiceTests {
@@ -28,7 +29,7 @@ public class TransactionValidationServiceTests {
     private readonly Mock<ISecurityServiceClient> SecurityServiceClient;
 
     private readonly Mock<IProjectionStateRepository<MerchantBalanceState>> StateRepository;
-    private readonly Mock<IEstateClient> EstateClient;
+    private readonly Mock<IIntermediateEstateClient> EstateClient;
     private readonly Mock<IEventStoreContext> EventStoreContext;
     public TransactionValidationServiceTests() {
         IConfigurationRoot configurationRoot = new ConfigurationBuilder().AddInMemoryCollection(TestData.DefaultAppSettings).Build();
@@ -36,7 +37,7 @@ public class TransactionValidationServiceTests {
 
         Logger.Initialise(NullLogger.Instance);
 
-        this.EstateClient = new Mock<IEstateClient>();
+        this.EstateClient = new Mock<IIntermediateEstateClient>();
         this.SecurityServiceClient = new Mock<ISecurityServiceClient>();
         this.StateRepository = new Mock<IProjectionStateRepository<MerchantBalanceState>>();
         this.EventStoreContext = new Mock<IEventStoreContext>();
