@@ -23,12 +23,13 @@ namespace TransactionProcessor.BusinessLogic.Tests.Services
     using Shared.Logger;
     using Shouldly;
     using Testing;
+    using TransactionProcessor.BusinessLogic.Common;
     using TransactionProcessor.BusinessLogic.Services;
     using Xunit;
 
     public class FloatDomainServiceTests
     {
-        private readonly Mock<IEstateClient> EstateClient;
+        private readonly Mock<IIntermediateEstateClient> EstateClient;
         private readonly Mock<ISecurityServiceClient> SecurityServiceClient;
         private readonly Mock<IAggregateRepository<FloatAggregate, DomainEvent>> FloatAggregateRepository;
         private readonly Mock<IAggregateRepository<FloatActivityAggregate, DomainEvent>> FloatActivityAggregateRepository;
@@ -43,7 +44,7 @@ namespace TransactionProcessor.BusinessLogic.Tests.Services
 
             Logger.Initialise(NullLogger.Instance);
 
-            this.EstateClient = new Mock<IEstateClient>();
+            this.EstateClient = new Mock<IIntermediateEstateClient>();
             this.SecurityServiceClient = new Mock<ISecurityServiceClient>();
             this.FloatAggregateRepository = new Mock<IAggregateRepository<FloatAggregate, DomainEvent>>();
             this.FloatActivityAggregateRepository = new Mock<IAggregateRepository<FloatActivityAggregate, DomainEvent>>();

@@ -37,7 +37,7 @@ namespace TransactionProcessor.BusinessLogic.Tests.Services{
     public class TransactionDomainServiceTests{
         #region Fields
 
-        private readonly Mock<IEstateClient> EstateClient;
+        private readonly Mock<IIntermediateEstateClient> EstateClient;
 
         private readonly Mock<IOperatorProxy> OperatorProxy;
 
@@ -67,7 +67,7 @@ namespace TransactionProcessor.BusinessLogic.Tests.Services{
             Logger.Initialise(NullLogger.Instance);
 
             this.TransactionAggregateRepository = new Mock<IAggregateRepository<TransactionAggregate, DomainEvent>>();
-            this.EstateClient = new Mock<IEstateClient>();
+            this.EstateClient = new Mock<IIntermediateEstateClient>();
             this.SecurityServiceClient = new Mock<ISecurityServiceClient>();
             this.OperatorProxy = new Mock<IOperatorProxy>();
             this.ReconciliationAggregateRepository = new Mock<IAggregateRepository<ReconciliationAggregate, DomainEvent>>();

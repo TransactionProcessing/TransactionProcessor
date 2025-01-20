@@ -21,6 +21,7 @@ namespace TransactionProcessor.BusinessLogic.Tests.Services
     using Shouldly;
     using Testing;
     using TransactionAggregate;
+    using TransactionProcessor.BusinessLogic.Common;
     using Xunit;
 
     public class SettlementDomainServiceTests
@@ -31,7 +32,7 @@ namespace TransactionProcessor.BusinessLogic.Tests.Services
 
         private Mock<ISecurityServiceClient> securityServiceClient;
 
-        private Mock<IEstateClient> estateClient;
+        private Mock<IIntermediateEstateClient> estateClient;
 
         private SettlementDomainService settlementDomainService;
 
@@ -41,7 +42,7 @@ namespace TransactionProcessor.BusinessLogic.Tests.Services
             this.settlementAggregateRepository =
                 new Mock<IAggregateRepository<SettlementAggregate, DomainEvent>>();
             this.securityServiceClient = new Mock<ISecurityServiceClient>();
-            this.estateClient = new Mock<IEstateClient>();
+            this.estateClient = new Mock<IIntermediateEstateClient>();
             
             this.settlementDomainService =
                 new SettlementDomainService(this.transactionAggregateRepository.Object, settlementAggregateRepository.Object,

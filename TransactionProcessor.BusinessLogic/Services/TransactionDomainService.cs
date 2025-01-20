@@ -45,7 +45,7 @@ namespace TransactionProcessor.BusinessLogic.Services{
         /// <summary>
         /// The estate client
         /// </summary>
-        private readonly IEstateClient EstateClient;
+        private readonly IIntermediateEstateClient EstateClient;
 
         /// <summary>
         /// The operator proxy resolver
@@ -76,7 +76,7 @@ namespace TransactionProcessor.BusinessLogic.Services{
         #region Constructors
 
         public TransactionDomainService(IAggregateRepository<TransactionAggregate, DomainEvent> transactionAggregateRepository,
-                                        IEstateClient estateClient,
+                                        IIntermediateEstateClient estateClient,
                                         Func<String, IOperatorProxy> operatorProxyResolver,
                                         IAggregateRepository<ReconciliationAggregate, DomainEvent> reconciliationAggregateRepository,
                                         ITransactionValidationService transactionValidationService,

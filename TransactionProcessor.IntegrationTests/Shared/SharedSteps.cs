@@ -50,7 +50,7 @@ namespace TransactionProcessor.IntegrationTests.Shared
             this.ScenarioContext = scenarioContext;
             this.TestingContext = testingContext;
             this.SecurityServiceSteps = new SecurityServiceSteps(testingContext.DockerHelper.SecurityServiceClient);
-            this.EstateManagementSteps = new EstateManagementSteps(testingContext.DockerHelper.EstateClient, testingContext.DockerHelper.TestHostHttpClient);
+            this.EstateManagementSteps = new EstateManagementSteps(testingContext.DockerHelper.EstateClient.EstateClient, testingContext.DockerHelper.TestHostHttpClient);
             this.TransactionProcessorSteps = new TransactionProcessorSteps(testingContext.DockerHelper.TransactionProcessorClient, testingContext.DockerHelper.TestHostHttpClient,
                 testingContext.DockerHelper.ProjectionManagementClient);
         }
