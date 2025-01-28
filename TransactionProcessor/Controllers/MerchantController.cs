@@ -665,7 +665,14 @@ public class MerchantController : ControllerBase
 
         if (merchant.Operators != null) {
             foreach (MerchantOperatorResponse merchantOperatorResponse in merchant.Operators) {
-                m.Operators.Add(new() { OperatorId = merchantOperatorResponse.OperatorId, MerchantNumber = merchantOperatorResponse.MerchantNumber, TerminalNumber = merchantOperatorResponse.TerminalNumber });
+                m.Operators.Add(new() {
+                    OperatorId = merchantOperatorResponse.OperatorId, 
+                    MerchantNumber = merchantOperatorResponse.MerchantNumber, 
+                    TerminalNumber = merchantOperatorResponse.TerminalNumber,
+                    IsDeleted = merchantOperatorResponse.IsDeleted,
+                    Name = merchantOperatorResponse.Name
+
+                });
             }
         }
 

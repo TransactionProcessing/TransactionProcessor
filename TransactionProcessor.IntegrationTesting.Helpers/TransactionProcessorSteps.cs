@@ -361,6 +361,16 @@ public class TransactionProcessorSteps
                 MerchantResponse merchant = await this.TransactionProcessorClient
                     .GetMerchant(accessToken, m.estate.EstateId, m.merchantId, CancellationToken.None)
                     .ConfigureAwait(false);
+
+                if (merchant.Operators == null)
+                {
+                    Console.WriteLine($"Merchant {merchant.MerchantName} has null operators");
+                }
+
+                foreach (MerchantOperatorResponse merchantOperatorResponse in merchant.Operators) {
+                    Console.WriteLine($"Operator Id {merchantOperatorResponse.OperatorId} Name {merchantOperatorResponse.Name}");
+                }
+
                 MerchantOperatorResponse op = merchant.Operators.SingleOrDefault(o => o.OperatorId == m.operatorId);
                 op.ShouldNotBeNull();
                 result.Add((m.estate, op));
