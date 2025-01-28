@@ -2,6 +2,7 @@
 using MessagingService.DataTransferObjects;
 using Microsoft.Extensions.Caching.Memory;
 using SimpleResults;
+using TransactionProcessor.Aggregates;
 using TransactionProcessor.BusinessLogic.Common;
 using TransactionProcessor.BusinessLogic.Manager;
 using TransactionProcessor.BusinessLogic.Requests;
@@ -17,12 +18,10 @@ namespace TransactionProcessor.BusinessLogic.Tests.Services{
     using EstateManagement.DataTransferObjects.Requests;
     using EstateManagement.DataTransferObjects.Requests.Merchant;
     using EstateManagement.DataTransferObjects.Responses.Merchant;
-    using FloatAggregate;
     using MessagingService.Client;
     using Microsoft.Extensions.Configuration;
     using Models;
     using Moq;
-    using ReconciliationAggregate;
     using SecurityService.Client;
     using Shared.DomainDrivenDesign.EventSourcing;
     using Shared.EventStore.Aggregate;
@@ -30,7 +29,6 @@ namespace TransactionProcessor.BusinessLogic.Tests.Services{
     using Shared.Logger;
     using Shouldly;
     using Testing;
-    using TransactionAggregate;
     using Xunit;
     using static Microsoft.EntityFrameworkCore.DbLoggerCategory.Database;
 

@@ -24,6 +24,7 @@
             this.AddSingleton<IVoucherDomainService, VoucherDomainService>();
             this.AddSingleton<ITransactionValidationService, TransactionValidationService>();
             this.AddSingleton<IFloatDomainService, FloatDomainService>();
+            this.AddSingleton<IEstateDomainService, EstateDomainService>();
         }
 
         #endregion

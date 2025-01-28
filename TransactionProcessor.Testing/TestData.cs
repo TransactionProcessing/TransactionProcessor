@@ -1,4 +1,7 @@
-﻿namespace TransactionProcessor.Testing
+﻿using TransactionProcessor.Aggregates;
+using TransactionProcessor.Database.Entities;
+
+namespace TransactionProcessor.Testing
 {
     using System;
     using System.Collections.Generic;
@@ -11,20 +14,16 @@
     using EstateManagement.DataTransferObjects.Responses.Merchant;
     using EstateManagement.DataTransferObjects.Responses.Contract;
     using EstateManagement.DataTransferObjects.Responses.Estate;
-    using FloatAggregate;
     using Models;
     using PataPawaPostPay;
     using ProjectionEngine.State;
-    using ReconciliationAggregate;
     using SecurityService.DataTransferObjects.Responses;
-    using SettlementAggregates;
     using Shared.DomainDrivenDesign.EventSourcing;
     using Transaction.DomainEvents;
-    using TransactionAggregate;
     using TransactionProcessor.Voucher.DomainEvents;
-    using VoucherAggregate;
     using CalculationType = Models.CalculationType;
     using FeeType = Models.FeeType;
+    using EstateManagement.DataTransferObjects.Requests.Estate;
 
     public class TestData
     {
@@ -55,8 +54,7 @@
 
         public static String DeviceIdentifier1 = "1234567891";
 
-        public static Guid EstateId = Guid.Parse("A522FA27-F9D0-470A-A88D-325DED3B62EE");
-
+        public static Guid EstateId = Guid.Parse("488AAFDE-D1DF-4CE0-A0F7-819E42C4885C");
         public static Guid ContractId = Guid.Parse("97A9ED00-E522-428C-B3C3-5931092DBDCE");
         public static Guid ContractId1 = Guid.Parse("9314DD8B-42A6-4C24-87FE-53CDC70BA48F");
 
@@ -77,12 +75,11 @@
         public static Guid OperatorId = Guid.Parse("804E9D8D-C6FE-4A46-9E55-6A04EA3E1AE5");
         public static Guid OperatorId2 = Guid.Parse("C2A216E8-345F-4E45-B564-16821FFC524F");
 
+        public static String OperatorName = "Test Operator 1";
+        public static String OperatorName2 = "Test Operator Name 2";
+
         public static String CustomerEmailAddress = "testcustomer1@customer.co.uk";
-
-        //public static Guid OperatorIdentifier1 = Guid.Parse("590C07CF-500C-4F85-A5D4-A90A8021D0A1");
-
-        //public static String OperatorIdentifier2 = "NotSupported";
-
+        
         public static Boolean RequireCustomMerchantNumber = true;
 
         public static Boolean RequireCustomTerminalNumber = true;
@@ -1506,7 +1503,143 @@
 
             return aggregate;
         }
-        
+
+        public static String EstateReference = "C6634DE3";
+
+        public static Guid EstateSecurityUserId = Guid.Parse("CBEE25E6-1B08-4023-B20C-CFE0AD746808");
+        public static String EstateUserEmailAddress = "testestateuser@estate1.co.uk";
+        public static Guid SecurityUserId = Guid.Parse("45B74A2E-BF92-44E9-A300-08E5CDEACFE3");
+
+        public static CreateEstateRequest CreateEstateRequest =>
+            new CreateEstateRequest
+            {
+                EstateId = TestData.EstateId,
+                EstateName = TestData.EstateName,
+            };
+        public static CreateEstateUserRequest CreateEstateUserRequest =>
+            new CreateEstateUserRequest
+            {
+                EmailAddress = TestData.EstateUserEmailAddress,
+                FamilyName = TestData.EstateUserFamilyName,
+                GivenName = TestData.EstateUserGivenName,
+                MiddleName = TestData.EstateUserMiddleName,
+                Password = TestData.EstateUserPassword
+            };
+
+        public static AssignOperatorRequest AssignOperatorRequestToEstate =>
+            new()
+            {
+                OperatorId = TestData.OperatorId
+            };
+
+        public static String EstateUserFamilyName = "Estate";
+
+        public static String EstateUserGivenName = "Test";
+
+        public static String EstateUserMiddleName = "Middle";
+
+        public static String EstateUserPassword = "123456";
+
+        public static Models.Estate EstateModel =>
+            new Models.Estate
+            {
+                EstateId = TestData.EstateId,
+                Name = TestData.EstateName,
+                Operators = null,
+                SecurityUsers = null
+            };
+
+        public static Models.Estate EstateModelWithOperators =>
+            new Models.Estate
+            {
+                EstateId = TestData.EstateId,
+                Name = TestData.EstateName,
+                Operators = new List<EstateOperator>{
+                                                                          new EstateOperator{
+                                                                                          OperatorId = TestData.OperatorId
+                                                                                      }
+                                                                      },
+                SecurityUsers = null
+            };
+
+        public static Models.Estate EstateModelWithOperatorsAndSecurityUsers =>
+            new Models.Estate
+            {
+                EstateId = TestData.EstateId,
+                Name = TestData.EstateName,
+                Operators = new List<EstateOperator>{
+                                                                          new EstateOperator{
+                                                                                          OperatorId = TestData.OperatorId
+                                                                                      }
+                                                                      },
+                SecurityUsers = new List<SecurityUser>{
+                                                                                  new SecurityUser{
+                                                                                                      EmailAddress = TestData.EstateUserEmailAddress,
+                                                                                                      SecurityUserId = TestData.SecurityUserId
+                                                                                                  }
+                                                                              }
+            };
+
+        public static Models.Estate EstateModelWithSecurityUsers =>
+            new Models.Estate
+            {
+                EstateId = TestData.EstateId,
+                Name = TestData.EstateName,
+                Operators = null,
+                SecurityUsers = new List<SecurityUser>{
+                                                                                  new SecurityUser{
+                                                                                                      EmailAddress = TestData.EstateUserEmailAddress,
+                                                                                                      SecurityUserId = TestData.SecurityUserId
+                                                                                                  }
+                                                                              }
+            };
+
         #endregion
+
+        public static class Commands {
+            public static EstateCommands.CreateEstateUserCommand CreateEstateUserCommand => new EstateCommands.CreateEstateUserCommand(TestData.EstateId, TestData.CreateEstateUserRequest);
+            public static EstateCommands.AddOperatorToEstateCommand AddOperatorToEstateCommand => new EstateCommands.AddOperatorToEstateCommand(TestData.EstateId, TestData.AssignOperatorRequestToEstate);
+            public static EstateCommands.CreateEstateCommand CreateEstateCommand => new EstateCommands.CreateEstateCommand(TestData.CreateEstateRequest);
+            public static EstateCommands.RemoveOperatorFromEstateCommand RemoveOperatorFromEstateCommand => new(TestData.EstateId, TestData.OperatorId);
+        }
+
+        public static class Queries {
+            public static EstateQueries.GetEstateQuery GetEstateQuery => new(TestData.EstateId);
+            public static EstateQueries.GetEstatesQuery GetEstatesQuery => new(TestData.EstateId);
+        }
+
+        public static class Aggregates {
+            public static EstateAggregate EmptyEstateAggregate = EstateAggregate.Create(TestData.EstateId);
+
+            public static EstateAggregate CreatedEstateAggregate() {
+                EstateAggregate estateAggregate = EstateAggregate.Create(TestData.EstateId);
+
+                estateAggregate.Create(TestData.EstateName);
+
+                return estateAggregate;
+            }
+
+            public static EstateAggregate EstateAggregateWithOperator() {
+                EstateAggregate estateAggregate = EstateAggregate.Create(TestData.EstateId);
+
+                estateAggregate.Create(TestData.EstateName);
+                estateAggregate.AddOperator(TestData.OperatorId);
+
+                return estateAggregate;
+            }
+
+            public static EstateAggregate EstateAggregateWithOperatorDeleted()
+            {
+                EstateAggregate estateAggregate = EstateAggregate.Create(TestData.EstateId);
+
+                estateAggregate.Create(TestData.EstateName);
+                estateAggregate.AddOperator(TestData.OperatorId);
+                estateAggregate.RemoveOperator(TestData.OperatorId);
+
+                return estateAggregate;
+            }
+        }
     }
+
+
 }

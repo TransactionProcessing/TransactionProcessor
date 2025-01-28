@@ -18,7 +18,6 @@ namespace TransactionProcessor.BusinessLogic.Tests.DomainEventHandlers
     using EstateManagement.DataTransferObjects.Responses.Contract;
     using EstateManagement.DataTransferObjects.Responses.Merchant;
     using EventHandling;
-    using FloatAggregate;
     using MessagingService.Client;
     using MessagingService.DataTransferObjects;
     using Microsoft.Extensions.Caching.Memory;
@@ -26,7 +25,6 @@ namespace TransactionProcessor.BusinessLogic.Tests.DomainEventHandlers
     using Models;
     using Moq;
     using SecurityService.Client;
-    using SettlementAggregates;
     using Shared.DomainDrivenDesign.EventSourcing;
     using Shared.EventStore.Aggregate;
     using Shared.EventStore.EventStore;
@@ -35,7 +33,6 @@ namespace TransactionProcessor.BusinessLogic.Tests.DomainEventHandlers
     using Shared.Logger;
     using Shouldly;
     using Testing;
-    using TransactionAggregate;
     using TransactionProcessor.Settlement.DomainEvents;
     using TransactionProcessor.Transaction.DomainEvents;
     using Xunit;

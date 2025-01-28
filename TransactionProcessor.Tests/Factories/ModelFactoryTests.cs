@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Text;
+using TransactionProcessor.Aggregates;
 
 namespace TransactionProcessor.Tests.Factories
 {
@@ -9,7 +10,6 @@ namespace TransactionProcessor.Tests.Factories
     using Shouldly;
     using Testing;
     using TransactionProcessor.Factories;
-    using VoucherAggregate;
     using Xunit;
     using IssueVoucherResponse = Models.IssueVoucherResponse;
     using RedeemVoucherResponse = Models.RedeemVoucherResponse;
@@ -21,9 +21,7 @@ namespace TransactionProcessor.Tests.Factories
         {
             ProcessLogonTransactionResponse processLogonTransactionResponseModel = TestData.ProcessLogonTransactionResponseModel;
 
-            ModelFactory modelFactory = new ModelFactory();
-
-            SerialisedMessage logonTransactionResponse = modelFactory.ConvertFrom(processLogonTransactionResponseModel);
+            SerialisedMessage logonTransactionResponse = ModelFactory.ConvertFrom(processLogonTransactionResponseModel);
 
             logonTransactionResponse.ShouldNotBeNull();
             logonTransactionResponse.Metadata.ShouldContainKey(MetadataContants.KeyNameEstateId);
@@ -39,9 +37,7 @@ namespace TransactionProcessor.Tests.Factories
         {
             ProcessLogonTransactionResponse processLogonTransactionResponseModel = null;
 
-            ModelFactory modelFactory = new ModelFactory();
-
-            SerialisedMessage logonTransactionResponse = modelFactory.ConvertFrom(processLogonTransactionResponseModel);
+            SerialisedMessage logonTransactionResponse = ModelFactory.ConvertFrom(processLogonTransactionResponseModel);
 
             logonTransactionResponse.ShouldBeNull();
         }
@@ -51,9 +47,7 @@ namespace TransactionProcessor.Tests.Factories
         {
             ProcessSaleTransactionResponse processSaleTransactionResponseModel = TestData.ProcessSaleTransactionResponseModel;
 
-            ModelFactory modelFactory = new ModelFactory();
-
-            SerialisedMessage saleTransactionResponse = modelFactory.ConvertFrom(processSaleTransactionResponseModel);
+            SerialisedMessage saleTransactionResponse = ModelFactory.ConvertFrom(processSaleTransactionResponseModel);
 
             saleTransactionResponse.ShouldNotBeNull();
             saleTransactionResponse.Metadata.ShouldContainKey(MetadataContants.KeyNameEstateId);
@@ -69,9 +63,7 @@ namespace TransactionProcessor.Tests.Factories
         {
             ProcessSaleTransactionResponse processSaleTransactionResponseModel = null;
 
-            ModelFactory modelFactory = new ModelFactory();
-
-            SerialisedMessage saleTransactionResponse = modelFactory.ConvertFrom(processSaleTransactionResponseModel);
+            SerialisedMessage saleTransactionResponse = ModelFactory.ConvertFrom(processSaleTransactionResponseModel);
 
             saleTransactionResponse.ShouldBeNull();
         }
@@ -81,9 +73,7 @@ namespace TransactionProcessor.Tests.Factories
         {
             ProcessReconciliationTransactionResponse processReconciliationTransactionResponseModel = TestData.ProcessReconciliationTransactionResponseModel;
 
-            ModelFactory modelFactory = new ModelFactory();
-
-            SerialisedMessage processReconciliationTransactionResponse = modelFactory.ConvertFrom(processReconciliationTransactionResponseModel);
+            SerialisedMessage processReconciliationTransactionResponse = ModelFactory.ConvertFrom(processReconciliationTransactionResponseModel);
 
             processReconciliationTransactionResponse.ShouldNotBeNull();
             processReconciliationTransactionResponse.Metadata.ShouldContainKey(MetadataContants.KeyNameEstateId);
@@ -98,10 +88,8 @@ namespace TransactionProcessor.Tests.Factories
         public void ModelFactory_ProcessReconciliationTransactionResponse_NullInput_IsConverted()
         {
             ProcessReconciliationTransactionResponse processReconciliationTransactionResponseModel = null;
-
-            ModelFactory modelFactory = new ModelFactory();
-
-            SerialisedMessage processReconciliationTransactionResponse = modelFactory.ConvertFrom(processReconciliationTransactionResponseModel);
+            
+            SerialisedMessage processReconciliationTransactionResponse = ModelFactory.ConvertFrom(processReconciliationTransactionResponseModel);
 
             processReconciliationTransactionResponse.ShouldBeNull();
         }
@@ -109,9 +97,8 @@ namespace TransactionProcessor.Tests.Factories
         [Fact]
         public void ModelFactory_ConvertFrom_IssueVoucherResponse_IsConverted()
         {
-            ModelFactory modelFactory = new ModelFactory();
             IssueVoucherResponse model = TestData.IssueVoucherResponse;
-            DataTransferObjects.IssueVoucherResponse dto = modelFactory.ConvertFrom(model);
+            DataTransferObjects.IssueVoucherResponse dto = ModelFactory.ConvertFrom(model);
 
             dto.ShouldNotBeNull();
             dto.ExpiryDate.ShouldBe(model.ExpiryDate);
@@ -123,9 +110,8 @@ namespace TransactionProcessor.Tests.Factories
         [Fact]
         public void ModelFactory_ConvertFrom_IssueVoucherResponse_NullInput_IsConverted()
         {
-            ModelFactory modelFactory = new ModelFactory();
             IssueVoucherResponse model = null;
-            DataTransferObjects.IssueVoucherResponse dto = modelFactory.ConvertFrom(model);
+            DataTransferObjects.IssueVoucherResponse dto = ModelFactory.ConvertFrom(model);
 
             dto.ShouldBeNull();
         }
@@ -133,10 +119,9 @@ namespace TransactionProcessor.Tests.Factories
         [Fact]
         public void ModelFactory_ConvertFrom_VoucherModel_IsConverted()
         {
-            ModelFactory modelFactory = new ModelFactory();
             Voucher model = TestData.GetVoucherAggregateWithRecipientMobile().GetVoucher();
 
-            GetVoucherResponse dto = modelFactory.ConvertFrom(model);
+            GetVoucherResponse dto = ModelFactory.ConvertFrom(model);
             dto.ShouldNotBeNull();
             dto.TransactionId.ShouldBe(model.TransactionId);
             dto.IssuedDateTime.ShouldBe(model.IssuedDateTime);
@@ -156,9 +141,8 @@ namespace TransactionProcessor.Tests.Factories
         [Fact]
         public void ModelFactory_ConvertFrom_VoucherModel_NullInput_IsConverted()
         {
-            ModelFactory modelFactory = new ModelFactory();
             Voucher model = null;
-            GetVoucherResponse dto = modelFactory.ConvertFrom(model);
+            GetVoucherResponse dto = ModelFactory.ConvertFrom(model);
 
             dto.ShouldBeNull();
         }
@@ -166,9 +150,8 @@ namespace TransactionProcessor.Tests.Factories
         [Fact]
         public void ModelFactory_ConvertFrom_RedeemVoucherResponse_IsConverted()
         {
-            ModelFactory modelFactory = new ModelFactory();
             RedeemVoucherResponse model = TestData.RedeemVoucherResponse;
-            DataTransferObjects.RedeemVoucherResponse dto = modelFactory.ConvertFrom(model);
+            DataTransferObjects.RedeemVoucherResponse dto = ModelFactory.ConvertFrom(model);
 
             dto.ShouldNotBeNull();
             dto.ExpiryDate.ShouldBe(model.ExpiryDate);
@@ -179,9 +162,8 @@ namespace TransactionProcessor.Tests.Factories
         [Fact]
         public void ModelFactory_ConvertFrom_RedeemVoucherResponse_NullInput_IsConverted()
         {
-            ModelFactory modelFactory = new ModelFactory();
             RedeemVoucherResponse model = null;
-            DataTransferObjects.RedeemVoucherResponse dto = modelFactory.ConvertFrom(model);
+            DataTransferObjects.RedeemVoucherResponse dto = ModelFactory.ConvertFrom(model);
 
             dto.ShouldBeNull();
         }

@@ -1,0 +1,56 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net8.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+  </PropertyGroup>
+
+	<ItemGroup>
+		<PackageReference Include="EntityFrameworkCore.Exceptions.Common" Version="8.1.2" />
+		<PackageReference Include="EntityFrameworkCore.Exceptions.MySql.Pomelo" Version="8.1.2" />
+		<PackageReference Include="EntityFrameworkCore.Exceptions.SqlServer" Version="8.1.2" />
+		<PackageReference Include="Microsoft.EntityFrameworkCore" Version="8.0.3" />
+		<PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="8.0.3">
+			<PrivateAssets>all</PrivateAssets>
+			<IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+		</PackageReference>
+		<PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" Version="8.0.3" />
+		<PackageReference Include="Microsoft.EntityFrameworkCore.Relational" Version="8.0.3" />
+		<PackageReference Include="Pomelo.EntityFrameworkCore.MySql" Version="8.0.2" />
+		<PackageReference Include="Shared" Version="2025.1.1" />
+		<PackageReference Include="Microsoft.EntityFrameworkCore.Sqlite" Version="8.0.3" />
+		<PackageReference Include="Shared.DomainDrivenDesign" Version="2025.1.1" />
+	</ItemGroup>
+
+	<ItemGroup>
+		<None Update="SeedingScripts\CalendarSeeding.sql">
+			<CopyToOutputDirectory>Always</CopyToOutputDirectory>
+		</None>
+		<None Update="SeedingScripts\ResponseCodeSeeding.sql">
+			<CopyToOutputDirectory>Always</CopyToOutputDirectory>
+		</None>
+		<None Update="StoredProcedures\SqlServer\spBuildHistoricTransactions.sql">
+			<CopyToOutputDirectory>Always</CopyToOutputDirectory>
+		</None>
+		<None Update="StoredProcedures\SqlServer\spBuildSettlementSummary.sql">
+			<CopyToOutputDirectory>Always</CopyToOutputDirectory>
+		</None>
+		<None Update="StoredProcedures\SqlServer\spBuildTodaysTransactions.sql">
+			<CopyToOutputDirectory>Always</CopyToOutputDirectory>
+		</None>
+		<None Update="Views\MySql\Priority1\uvwSettlements.View.sql">
+			<CopyToOutputDirectory>Always</CopyToOutputDirectory>
+		</None>
+		<None Update="Views\SqlServer\Priority1\uvwSettlements.View.sql">
+			<CopyToOutputDirectory>Always</CopyToOutputDirectory>
+		</None>
+	</ItemGroup>
+
+	<ItemGroup>
+		<Folder Include="Migrations\MySql\" />
+		<Folder Include="Migrations\SqlServer\" />
+		<Folder Include="StoredProcedures\SqlServer\" />
+	</ItemGroup>
+
+</Project>

@@ -9,7 +9,9 @@ using EstateManagement.DataTransferObjects.Requests.Merchant;
 using EstateManagement.DataTransferObjects.Responses.Contract;
 using EstateManagement.DataTransferObjects.Responses.Estate;
 using EstateManagement.DataTransferObjects.Responses.Merchant;
+using Shared.EventStore.Aggregate;
 using SimpleResults;
+using TransactionProcessor.Aggregates;
 
 namespace TransactionProcessor.BusinessLogic.Common
 {

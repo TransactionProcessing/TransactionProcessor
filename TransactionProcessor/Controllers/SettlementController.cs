@@ -1,11 +1,17 @@
-﻿using Microsoft.AspNetCore.Http;
+﻿using EstateManagement.Client;
+using EstateManagement.DataTransferObjects.Responses.Settlement;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using SecurityService.Client;
+using SecurityService.DataTransferObjects.Responses;
 using Shared.Results;
 using SimpleResults;
+using TransactionProcessor.Aggregates;
 
 namespace TransactionProcessor.Controllers
 {
     using System;
+    using System.Collections.Generic;
     using System.Diagnostics.CodeAnalysis;
     using System.Threading;
     using System.Threading.Tasks;
@@ -16,10 +22,10 @@ namespace TransactionProcessor.Controllers
     using MediatR;
     using Microsoft.AspNetCore.Authorization;
     using Models;
-    using SettlementAggregates;
     using Shared.DomainDrivenDesign.EventSourcing;
     using Shared.EventStore.Aggregate;
     using Shared.Logger;
+    using TransactionProcessor.Database.Entities;
 
     [ExcludeFromCodeCoverage]
     [Route(SettlementController.ControllerRoute)]
@@ -30,8 +36,8 @@ namespace TransactionProcessor.Controllers
         private readonly IAggregateRepository<SettlementAggregate, DomainEvent> SettlmentAggregateRepository;
 
         private readonly IMediator Mediator;
-
-        private readonly IModelFactory ModelFactory;
+        private readonly IEstateClient EstateClient;
+        private readonly ISecurityServiceClient SecurityServiceClient;
 
         #region Others
 
@@ -45,13 +51,15 @@ namespace TransactionProcessor.Controllers
         /// </summary>
         private const String ControllerRoute = "api/" + SettlementController.ControllerName;
 
-        public SettlementController(IAggregateRepository<SettlementAggregate, DomainEvent> settlmentAggregateRepository,
+        public SettlementController(IAggregateRepository<SettlementAggregate, DomainEvent> settlementAggregateRepository,
                                     IMediator mediator,
-                                    IModelFactory modelFactory)
+                                    IEstateClient estateClient,
+                                    ISecurityServiceClient securityServiceClient)
         {
-            this.SettlmentAggregateRepository = settlmentAggregateRepository;
+            this.SettlmentAggregateRepository = settlementAggregateRepository;
             this.Mediator = mediator;
-            this.ModelFactory = modelFactory;
+            this.EstateClient = estateClient;
+            this.SecurityServiceClient = securityServiceClient;
         }
 
         [HttpGet]
@@ -104,6 +112,93 @@ namespace TransactionProcessor.Controllers
             Result<Guid> result = await this.Mediator.Send(command, cancellationToken);
 
             return result.ToActionResultX();
+        }
+        private TokenResponse TokenResponse;
+
+        [Route("{settlementId}")]
+        [HttpGet]
+        public async Task<IActionResult> GetSettlement([FromRoute] Guid estateId,
+                                                       [FromQuery] Guid merchantId,
+                                                       [FromRoute] Guid settlementId,
+                                                       CancellationToken cancellationToken)
+        {
+            this.TokenResponse = await Helpers.GetToken(this.TokenResponse, this.SecurityServiceClient, cancellationToken);
+
+            var result = await this.EstateClient.GetSettlement(this.TokenResponse.AccessToken, estateId, merchantId, settlementId, cancellationToken);
+
+            DataTransferObjects.Responses.Settlement.SettlementResponse settlementResponse = new DataTransferObjects.Responses.Settlement.SettlementResponse {
+                IsCompleted = result.Data.IsCompleted,
+                NumberOfFeesSettled = result.Data.NumberOfFeesSettled,
+                SettlementDate = result.Data.SettlementDate,
+                SettlementFees = new(),
+                SettlementId = result.Data.SettlementId,
+                ValueOfFeesSettled = result.Data.ValueOfFeesSettled
+            };
+
+            foreach (SettlementFeeResponse settlementFeeResponse in result.Data.SettlementFees) {
+                settlementResponse.SettlementFees.Add(new()
+                {
+                    TransactionId = settlementFeeResponse.TransactionId,
+                    MerchantId = settlementFeeResponse.MerchantId,
+                    MerchantName = settlementFeeResponse.MerchantName,
+                    SettlementDate = settlementFeeResponse.SettlementDate,
+                    SettlementId = settlementFeeResponse.SettlementId,
+                    CalculatedValue = settlementFeeResponse.CalculatedValue,
+                    FeeDescription = settlementFeeResponse.FeeDescription,
+                    IsSettled = settlementFeeResponse.IsSettled,
+                    OperatorIdentifier = settlementFeeResponse.OperatorIdentifier
+                });
+            }
+
+            return Result.Success(settlementResponse).ToActionResultX();
+        }
+
+        [Route("")]
+        [HttpGet]
+        public async Task<IActionResult> GetSettlements([FromRoute] Guid estateId,
+                                                        [FromQuery] Guid? merchantId,
+                                                        [FromQuery(Name = "start_date")] string startDate,
+                                                        [FromQuery(Name = "end_date")] string endDate,
+                                                        CancellationToken cancellationToken)
+        {
+            this.TokenResponse = await Helpers.GetToken(this.TokenResponse, this.SecurityServiceClient, cancellationToken);
+
+            var result = await this.EstateClient.GetSettlements(this.TokenResponse.AccessToken, estateId, merchantId, startDate, endDate, cancellationToken);
+            if (result.IsFailed)
+                return result.ToActionResultX();
+
+            var responses = new List<DataTransferObjects.Responses.Settlement.SettlementResponse>();
+            foreach (EstateManagement.DataTransferObjects.Responses.Settlement.SettlementResponse settlementResponses in result.Data) {
+                DataTransferObjects.Responses.Settlement.SettlementResponse sr = new DataTransferObjects.Responses.Settlement.SettlementResponse
+                {
+                    IsCompleted = settlementResponses.IsCompleted,
+                    NumberOfFeesSettled = settlementResponses.NumberOfFeesSettled,
+                    SettlementDate = settlementResponses.SettlementDate,
+                    SettlementFees = new(),
+                    SettlementId = settlementResponses.SettlementId,
+                    ValueOfFeesSettled = settlementResponses.ValueOfFeesSettled
+                };
+
+                foreach (SettlementFeeResponse settlementFeeResponse in settlementResponses.SettlementFees)
+                {
+                    sr.SettlementFees.Add(new()
+                    {
+                        TransactionId = settlementFeeResponse.TransactionId,
+                        MerchantId = settlementFeeResponse.MerchantId,
+                        MerchantName = settlementFeeResponse.MerchantName,
+                        SettlementDate = settlementFeeResponse.SettlementDate,
+                        SettlementId = settlementFeeResponse.SettlementId,
+                        CalculatedValue = settlementFeeResponse.CalculatedValue,
+                        FeeDescription = settlementFeeResponse.FeeDescription,
+                        IsSettled = settlementFeeResponse.IsSettled,
+                        OperatorIdentifier = settlementFeeResponse.OperatorIdentifier
+                    });
+                }
+                responses.Add(sr);
+            }
+            
+
+            return Result.Success(responses).ToActionResultX();
         }
 
         #endregion

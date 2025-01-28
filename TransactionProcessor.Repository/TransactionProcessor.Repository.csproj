@@ -1,0 +1,28 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net8.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+  </PropertyGroup>
+
+	<ItemGroup>
+		<PackageReference Include="Microsoft.EntityFrameworkCore" Version="8.0.3" />
+		<PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" Version="8.0.3" />
+		<PackageReference Include="Microsoft.EntityFrameworkCore.Relational" Version="8.0.3" />
+		<PackageReference Include="Shared" Version="2025.1.1" />
+		<PackageReference Include="Shared.EventStore" Version="2025.1.1" />
+
+	</ItemGroup>
+
+	<ItemGroup>
+	  <ProjectReference Include="..\TransactionProcessor.Database\TransactionProcessor.Database.csproj" />
+	  <ProjectReference Include="..\TransactionProcessor.Estate.DomainEvents\TransactionProcessor.Estate.DomainEvents.csproj" />
+	  <ProjectReference Include="..\TransactionProcessor.Float.DomainEvents\TransactionProcessor.Float.DomainEvents.csproj" />
+	  <ProjectReference Include="..\TransactionProcessor.Models\TransactionProcessor.Models.csproj" />
+	  <ProjectReference Include="..\TransactionProcessor.Reconciliation.DomainEvents\TransactionProcessor.Reconciliation.DomainEvents.csproj" />
+	  <ProjectReference Include="..\TransactionProcessor.Settlement.DomainEvents\TransactionProcessor.Settlement.DomainEvents.csproj" />
+	  <ProjectReference Include="..\TransactionProcessor.Transaction.DomainEvents\TransactionProcessor.Transaction.DomainEvents.csproj" />
+	  <ProjectReference Include="..\TransactionProcessor.Voucher.DomainEvents\TransactionProcessor.Voucher.DomainEvents.csproj" />
+	</ItemGroup>
+</Project>

@@ -12,7 +12,6 @@ namespace TransactionProcessor.BusinessLogic.Tests.Services
     using EstateManagement.Client;
     using EstateManagement.DataTransferObjects.Responses;
     using EstateManagement.DataTransferObjects.Responses.Contract;
-    using FloatAggregate;
     using Microsoft.Extensions.Configuration;
     using Models;
     using Moq;
@@ -23,6 +22,7 @@ namespace TransactionProcessor.BusinessLogic.Tests.Services
     using Shared.Logger;
     using Shouldly;
     using Testing;
+    using TransactionProcessor.Aggregates;
     using TransactionProcessor.BusinessLogic.Common;
     using TransactionProcessor.BusinessLogic.Services;
     using Xunit;
@@ -33,7 +33,7 @@ namespace TransactionProcessor.BusinessLogic.Tests.Services
         private readonly Mock<ISecurityServiceClient> SecurityServiceClient;
         private readonly Mock<IAggregateRepository<FloatAggregate, DomainEvent>> FloatAggregateRepository;
         private readonly Mock<IAggregateRepository<FloatActivityAggregate, DomainEvent>> FloatActivityAggregateRepository;
-        private readonly Mock<IAggregateRepository<TransactionAggregate.TransactionAggregate, DomainEvent>> TransactionAggregateRepository;
+        private readonly Mock<IAggregateRepository<TransactionAggregate, DomainEvent>> TransactionAggregateRepository;
 
         private readonly FloatDomainService FloatDomainService;
 
@@ -48,7 +48,7 @@ namespace TransactionProcessor.BusinessLogic.Tests.Services
             this.SecurityServiceClient = new Mock<ISecurityServiceClient>();
             this.FloatAggregateRepository = new Mock<IAggregateRepository<FloatAggregate, DomainEvent>>();
             this.FloatActivityAggregateRepository = new Mock<IAggregateRepository<FloatActivityAggregate, DomainEvent>>();
-            this.TransactionAggregateRepository = new Mock<IAggregateRepository<TransactionAggregate.TransactionAggregate, DomainEvent>>();
+            this.TransactionAggregateRepository = new Mock<IAggregateRepository<TransactionAggregate, DomainEvent>>();
             this.FloatDomainService = new FloatDomainService(this.FloatAggregateRepository.Object,
                 this.FloatActivityAggregateRepository.Object,
                 this.TransactionAggregateRepository.Object,

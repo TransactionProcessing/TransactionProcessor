@@ -5,14 +5,13 @@ using System;
 using System.Threading;
 using System.Threading.Tasks;
 using SimpleResults;
+using TransactionProcessor.Aggregates;
 
 namespace TransactionProcessor.BusinessLogic.Manager
 {
-    using EstateManagement.Database.Contexts;
     using Microsoft.EntityFrameworkCore;
     using ProjectionEngine.Database.Database;
     using ProjectionEngine.Database.Database.Entities;
-    using VoucherAggregate;
     using Voucher = Models.Voucher;
 
     public interface IVoucherManagementManager

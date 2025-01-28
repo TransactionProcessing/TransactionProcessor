@@ -7,7 +7,6 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="EstateManagement.Estate.DomainEvents" Version="2025.1.5" />
     <PackageReference Include="EstateManagement.Merchant.DomainEvents" Version="2025.1.5" />
     <PackageReference Include="FileProcessor.File.DomainEvents" Version="2025.1.1" />
     <PackageReference Include="FileProcessor.FileImportLog.DomainEvents" Version="2025.1.1" />
@@ -17,6 +16,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\TransactionProcessor.Estate.DomainEvents\TransactionProcessor.Estate.DomainEvents.csproj" />
     <ProjectReference Include="..\TransactionProcessor.ProjectionEngine.Database\TransactionProcessor.ProjectionEngine.Database.csproj" />
     <ProjectReference Include="..\TransactionProcessor.Transaction.DomainEvents\TransactionProcessor.Transaction.DomainEvents.csproj" />
     <ProjectReference Include="..\TransactionProcessor.Voucher.DomainEvents\TransactionProcessor.Voucher.DomainEvents.csproj" />

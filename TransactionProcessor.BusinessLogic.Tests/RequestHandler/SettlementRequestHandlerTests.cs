@@ -5,10 +5,10 @@ using Shared.DomainDrivenDesign.EventSourcing;
 using Shared.EventStore.Aggregate;
 using Shouldly;
 using SimpleResults;
+using TransactionProcessor.Aggregates;
 using TransactionProcessor.BusinessLogic.RequestHandlers;
 using TransactionProcessor.BusinessLogic.Requests;
 using TransactionProcessor.BusinessLogic.Services;
-using TransactionProcessor.SettlementAggregates;
 using TransactionProcessor.Testing;
 using Xunit;
 

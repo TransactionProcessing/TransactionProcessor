@@ -1,12 +1,18 @@
-﻿namespace TransactionProcessor.IntegrationTesting.Helpers;
+﻿using Shouldly;
+using TransactionProcessor.DataTransferObjects.Requests.Contract;
+using TransactionProcessor.DataTransferObjects.Requests.Estate;
+using TransactionProcessor.DataTransferObjects.Requests.Merchant;
+using TransactionProcessor.DataTransferObjects.Requests.Operator;
+using TransactionProcessor.DataTransferObjects.Responses.Contract;
+using TransactionProcessor.DataTransferObjects.Responses.Merchant;
+
+namespace TransactionProcessor.IntegrationTesting.Helpers;
 
 using DataTransferObjects;
-using EstateManagement.DataTransferObjects.Responses;
-using EstateManagement.IntegrationTesting.Helpers;
 using Newtonsoft.Json;
 using Reqnroll;
-using Shared.IntegrationTesting;
-using Shouldly;
+using AssignOperatorToMerchantRequest = DataTransferObjects.Requests.Merchant.AssignOperatorRequest;
+using AssignOperatorToEstateRequest = DataTransferObjects.Requests.Estate.AssignOperatorRequest;
 
 public static class ReqnrollTableHelper
 {
@@ -160,8 +166,8 @@ public static class ReqnrollExtensions{
 
                 Guid contractId = Guid.Empty;
                 Guid productId = Guid.Empty;
-                EstateManagement.IntegrationTesting.Helpers.Contract contract = null;
-                EstateManagement.IntegrationTesting.Helpers.Product product = null;
+                Contract contract = null;
+                Product product = null;
                 try{
                     contract = estateDetails.GetContract(contractDescription);
                 }
@@ -278,7 +284,7 @@ public static class ReqnrollExtensions{
 
         if (estateDetails == null && estateName == "InvalidEstate"){
             estateDetails = EstateDetails.Create(Guid.Parse("79902550-64DF-4491-B0C1-4E78943928A3"), estateName, "EstateRef1");
-            EstateManagement.DataTransferObjects.Responses.Merchant.MerchantResponse response = new() {
+            DataTransferObjects.Responses.Merchant.MerchantResponse response = new() {
                                                                                                        MerchantId = Guid.Parse("36AA0109-E2E3-4049-9575-F507A887BB1F"),
                                                                                                        MerchantName = "Test Merchant 1"
                                                                                                    };
@@ -541,5 +547,406 @@ public static class ReqnrollExtensions{
                                                                                                                                            TypeNameHandling = TypeNameHandling.All
                                                                                                                                        });
         return (estateDetails, transactionResponse);
+    }
+
+    public static List<CreateEstateRequest> ToCreateEstateRequests(this DataTableRows tableRows)
+    {
+        List<CreateEstateRequest> requests = new List<CreateEstateRequest>();
+        foreach (DataTableRow tableRow in tableRows)
+        {
+            CreateEstateRequest createEstateRequest = new CreateEstateRequest
+            {
+                EstateId = Guid.NewGuid(),
+                EstateName = ReqnrollTableHelper.GetStringRowValue(tableRow, "EstateName")
+            };
+            requests.Add(createEstateRequest);
+        }
+
+        return requests;
+    }
+
+    public static List<(EstateDetails, Guid, AssignOperatorToMerchantRequest)> ToAssignOperatorRequests(this DataTableRows tableRows, List<EstateDetails> estateDetailsList)
+    {
+        List<(EstateDetails, Guid, AssignOperatorToMerchantRequest)> requests = new();
+
+        foreach (DataTableRow tableRow in tableRows)
+        {
+            String estateName = ReqnrollTableHelper.GetStringRowValue(tableRow, "EstateName");
+            EstateDetails estateDetails = estateDetailsList.SingleOrDefault(e => e.EstateName == estateName);
+            estateDetails.ShouldNotBeNull();
+
+            // Lookup the merchant id
+            String merchantName = ReqnrollTableHelper.GetStringRowValue(tableRow, "MerchantName");
+            Guid merchantId = estateDetails.GetMerchantId(merchantName);
+
+            String operatorName = ReqnrollTableHelper.GetStringRowValue(tableRow, "OperatorName");
+            Guid operatorId = estateDetails.GetOperatorId(operatorName);
+            AssignOperatorToMerchantRequest assignOperatorRequest = new AssignOperatorToMerchantRequest
+            {
+                OperatorId = operatorId,
+                MerchantNumber =
+                    ReqnrollTableHelper.GetStringRowValue(tableRow, "MerchantNumber"),
+                TerminalNumber =
+                    ReqnrollTableHelper.GetStringRowValue(tableRow, "TerminalNumber"),
+            };
+
+            requests.Add((estateDetails, merchantId, assignOperatorRequest));
+        }
+
+        return requests;
+    }
+
+    public static List<(EstateDetails estate, CreateOperatorRequest request)> ToCreateOperatorRequests(this DataTableRows tableRows, List<EstateDetails> estateDetailsList)
+    {
+        List<(EstateDetails estate, CreateOperatorRequest request)> requests = new();
+
+        foreach (DataTableRow tableRow in tableRows)
+        {
+            String estateName = ReqnrollTableHelper.GetStringRowValue(tableRow, "EstateName");
+
+            EstateDetails estateDetails = estateDetailsList.SingleOrDefault(e => e.EstateName == estateName);
+            estateDetails.ShouldNotBeNull();
+
+            Guid operatorId = Guid.NewGuid();
+            String operatorName = ReqnrollTableHelper.GetStringRowValue(tableRow, "OperatorName");
+            Boolean requireCustomMerchantNumber = ReqnrollTableHelper.GetBooleanValue(tableRow, "RequireCustomMerchantNumber");
+            Boolean requireCustomTerminalNumber = ReqnrollTableHelper.GetBooleanValue(tableRow, "RequireCustomTerminalNumber");
+
+            CreateOperatorRequest createOperatorRequest = new CreateOperatorRequest
+            {
+                OperatorId = operatorId,
+                Name = operatorName,
+                RequireCustomMerchantNumber = requireCustomMerchantNumber,
+                RequireCustomTerminalNumber = requireCustomTerminalNumber
+            };
+            requests.Add((estateDetails, createOperatorRequest));
+        }
+
+        return requests;
+    }
+
+    public static List<(EstateDetails estate, AssignOperatorToEstateRequest request)> ToAssignOperatorToEstateRequests(this DataTableRows tableRows, List<EstateDetails> estateDetailsList)
+    {
+        List<(EstateDetails estate, AssignOperatorToEstateRequest request)> requests = new();
+
+        foreach (DataTableRow tableRow in tableRows)
+        {
+            String estateName = ReqnrollTableHelper.GetStringRowValue(tableRow, "EstateName");
+
+            EstateDetails estateDetails = estateDetailsList.SingleOrDefault(e => e.EstateName == estateName);
+            estateDetails.ShouldNotBeNull();
+
+
+            String operatorName = ReqnrollTableHelper.GetStringRowValue(tableRow, "OperatorName");
+            Guid operatorId = estateDetails.GetOperatorId(operatorName);
+
+            AssignOperatorToEstateRequest assignOperatorRequest = new AssignOperatorToEstateRequest()
+            {
+                OperatorId = operatorId
+            };
+            requests.Add((estateDetails, assignOperatorRequest));
+        }
+
+        return requests;
+    }
+
+    public static List<(EstateDetails estate, CreateMerchantRequest)> ToCreateMerchantRequests(this DataTableRows tableRows, List<EstateDetails> estateDetailsList)
+    {
+        List<(EstateDetails estate, CreateMerchantRequest)> requests = new();
+        foreach (DataTableRow tableRow in tableRows)
+        {
+            String estateName = ReqnrollTableHelper.GetStringRowValue(tableRow, "EstateName");
+            EstateDetails estateDetails = estateDetailsList.SingleOrDefault(e => e.EstateName == estateName);
+            estateDetails.ShouldNotBeNull();
+            String settlementSchedule = ReqnrollTableHelper.GetStringRowValue(tableRow, "SettlementSchedule");
+
+            SettlementSchedule schedule = SettlementSchedule.Immediate;
+            if (String.IsNullOrEmpty(settlementSchedule) == false)
+            {
+                schedule = Enum.Parse<SettlementSchedule>(settlementSchedule);
+            }
+
+            CreateMerchantRequest createMerchantRequest = new CreateMerchantRequest
+            {
+                Name = ReqnrollTableHelper.GetStringRowValue(tableRow, "MerchantName"),
+                Contact = new Contact
+                {
+                    ContactName =
+                                                                                ReqnrollTableHelper.GetStringRowValue(tableRow,
+                                                                                                                      "ContactName"),
+                    EmailAddress =
+                                                                                ReqnrollTableHelper.GetStringRowValue(tableRow,
+                                                                                                                      "EmailAddress")
+                },
+                Address = new Address
+                {
+                    AddressLine1 =
+                                                                                ReqnrollTableHelper.GetStringRowValue(tableRow,
+                                                                                                                      "AddressLine1"),
+                    Town =
+                                                                                ReqnrollTableHelper.GetStringRowValue(tableRow, "Town"),
+                    Region =
+                                                                                ReqnrollTableHelper.GetStringRowValue(tableRow,
+                                                                                                                      "Region"),
+                    Country =
+                                                                                ReqnrollTableHelper.GetStringRowValue(tableRow,
+                                                                                                                      "Country")
+                },
+                SettlementSchedule = schedule,
+                MerchantId = Guid.NewGuid()
+            };
+            requests.Add((estateDetails, createMerchantRequest));
+        }
+
+        return requests;
+    }
+
+    public static List<String> ToEstateDetails(this DataTableRows tableRows)
+    {
+        List<String> results = new List<String>();
+        foreach (DataTableRow tableRow in tableRows)
+        {
+            String estateName = ReqnrollTableHelper.GetStringRowValue(tableRow, "EstateName");
+            results.Add(estateName);
+        }
+
+        return results;
+    }
+
+    public static List<(EstateDetails, CreateContractRequest)> ToCreateContractRequests(this DataTableRows tableRows, List<EstateDetails> estateDetailsList)
+    {
+        List<(EstateDetails, CreateContractRequest)> result = new();
+
+        foreach (DataTableRow tableRow in tableRows)
+        {
+            String estateName = ReqnrollTableHelper.GetStringRowValue(tableRow, "EstateName");
+            EstateDetails estateDetails = estateDetailsList.SingleOrDefault(e => e.EstateName == estateName);
+            estateDetails.ShouldNotBeNull();
+
+            String operatorName = ReqnrollTableHelper.GetStringRowValue(tableRow, "OperatorName");
+            Guid operatorId = estateDetails.GetOperatorId(operatorName);
+
+            CreateContractRequest createContractRequest = new CreateContractRequest
+            {
+                OperatorId = operatorId,
+                Description = ReqnrollTableHelper.GetStringRowValue(tableRow, "ContractDescription")
+            };
+            result.Add((estateDetails, createContractRequest));
+        }
+
+        return result;
+    }
+
+    public static List<(EstateDetails, Contract, AddProductToContractRequest)> ToAddProductToContractRequest(this DataTableRows tableRows, List<EstateDetails> estateDetailsList)
+    {
+        List<(EstateDetails, Contract, AddProductToContractRequest)> result = new List<(EstateDetails, Contract, AddProductToContractRequest)>();
+        foreach (DataTableRow tableRow in tableRows)
+        {
+            String estateName = ReqnrollTableHelper.GetStringRowValue(tableRow, "EstateName");
+            EstateDetails estateDetails = estateDetailsList.SingleOrDefault(e => e.EstateName == estateName);
+            estateDetails.ShouldNotBeNull();
+
+            String contractName = ReqnrollTableHelper.GetStringRowValue(tableRow, "ContractDescription");
+            Contract contract = estateDetails.GetContract(contractName);
+
+            String productValue = ReqnrollTableHelper.GetStringRowValue(tableRow, "Value");
+
+            var productTypeString = ReqnrollTableHelper.GetStringRowValue(tableRow, "ProductType");
+            var productType = Enum.Parse<ProductType>(productTypeString, true);
+            AddProductToContractRequest addProductToContractRequest = new AddProductToContractRequest
+            {
+                ProductName =
+                                                                              ReqnrollTableHelper.GetStringRowValue(tableRow,
+                                                                                                                    "ProductName"),
+                DisplayText =
+                                                                              ReqnrollTableHelper.GetStringRowValue(tableRow,
+                                                                                                                    "DisplayText"),
+                Value = null,
+                ProductType = productType
+            };
+
+            if (String.IsNullOrEmpty(productValue) == false)
+            {
+                addProductToContractRequest.Value = Decimal.Parse(productValue);
+            }
+
+            result.Add((estateDetails, contract, addProductToContractRequest));
+        }
+
+        return result;
+    }
+
+    public static List<(EstateDetails, Contract, Product, AddTransactionFeeForProductToContractRequest)> ToAddTransactionFeeForProductToContractRequests(this DataTableRows tableRows, List<EstateDetails> estateDetailsList)
+    {
+        List<(EstateDetails, Contract, Product, AddTransactionFeeForProductToContractRequest)> result = new();
+        foreach (DataTableRow tableRow in tableRows)
+        {
+            String estateName = ReqnrollTableHelper.GetStringRowValue(tableRow, "EstateName");
+            EstateDetails estateDetails = estateDetailsList.SingleOrDefault(e => e.EstateName == estateName);
+            estateDetails.ShouldNotBeNull();
+
+            String contractName = ReqnrollTableHelper.GetStringRowValue(tableRow, "ContractDescription");
+            Contract contract = estateDetails.GetContract(contractName);
+
+            String productName = ReqnrollTableHelper.GetStringRowValue(tableRow, "ProductName");
+            Product product = contract.GetProduct(productName);
+
+            var calculationTypeString = ReqnrollTableHelper.GetStringRowValue(tableRow, "CalculationType");
+            var calculationType = Enum.Parse<CalculationType>(calculationTypeString, true);
+            AddTransactionFeeForProductToContractRequest addTransactionFeeForProductToContractRequest = new AddTransactionFeeForProductToContractRequest
+            {
+                Value =
+                                                                                                                ReqnrollTableHelper.GetDecimalValue(tableRow,
+                                                                                                                                                    "Value"),
+                Description =
+                                                                                                                ReqnrollTableHelper.GetStringRowValue(tableRow,
+                                                                                                                                                      "FeeDescription"),
+                CalculationType = calculationType
+            };
+            result.Add((estateDetails, contract, product, addTransactionFeeForProductToContractRequest));
+        }
+
+        return result;
+    }
+
+    public static List<(EstateDetails, Guid, AddMerchantDeviceRequest)> ToAddMerchantDeviceRequests(this DataTableRows tableRows, List<EstateDetails> estateDetailsList)
+    {
+        List<(EstateDetails, Guid, AddMerchantDeviceRequest)> result = new List<(EstateDetails, Guid, AddMerchantDeviceRequest)>();
+
+        foreach (DataTableRow tableRow in tableRows)
+        {
+            String estateName = ReqnrollTableHelper.GetStringRowValue(tableRow, "EstateName");
+            EstateDetails estateDetails = estateDetailsList.SingleOrDefault(e => e.EstateName == estateName);
+            estateDetails.ShouldNotBeNull();
+
+            String merchantName = ReqnrollTableHelper.GetStringRowValue(tableRow, "MerchantName");
+            Guid merchantId = estateDetails.GetMerchantId(merchantName);
+
+            String deviceIdentifier = ReqnrollTableHelper.GetStringRowValue(tableRow, "DeviceIdentifier");
+
+            AddMerchantDeviceRequest addMerchantDeviceRequest = new AddMerchantDeviceRequest
+            {
+                DeviceIdentifier = deviceIdentifier
+            };
+
+            result.Add((estateDetails, merchantId, addMerchantDeviceRequest));
+        }
+
+        return result;
+    }
+
+    public static List<(EstateDetails, Guid, Guid)> ToAddContractToMerchantRequests(this DataTableRows tableRows, List<EstateDetails> estateDetailsList)
+    {
+        List<(EstateDetails, Guid, Guid)> result = new List<(EstateDetails, Guid, Guid)>();
+
+        foreach (DataTableRow tableRow in tableRows)
+        {
+            String estateName = ReqnrollTableHelper.GetStringRowValue(tableRow, "EstateName");
+            EstateDetails estateDetails = estateDetailsList.SingleOrDefault(e => e.EstateName == estateName);
+            estateDetails.ShouldNotBeNull();
+
+            String? merchantName = ReqnrollTableHelper.GetStringRowValue(tableRow, "MerchantName");
+            Guid merchantId = estateDetails.GetMerchantId(merchantName);
+
+            String contractName = ReqnrollTableHelper.GetStringRowValue(tableRow, "ContractDescription");
+            Contract contract = estateDetails.GetContract(contractName);
+            result.Add((estateDetails, merchantId, contract.ContractId));
+        }
+
+        return result;
+    }
+
+    public static List<(EstateDetails, Guid, MakeMerchantDepositRequest)> ToMakeMerchantDepositRequest(this DataTableRows tableRows, List<EstateDetails> estateDetailsList)
+    {
+        List<(EstateDetails, Guid, MakeMerchantDepositRequest)> result = new List<(EstateDetails, Guid, MakeMerchantDepositRequest)>();
+
+        foreach (DataTableRow tableRow in tableRows)
+        {
+            String estateName = ReqnrollTableHelper.GetStringRowValue(tableRow, "EstateName");
+            EstateDetails estateDetails = estateDetailsList.SingleOrDefault(e => e.EstateName == estateName);
+            estateDetails.ShouldNotBeNull();
+
+            String merchantName = ReqnrollTableHelper.GetStringRowValue(tableRow, "MerchantName");
+            Guid merchantId = estateDetails.GetMerchantId(merchantName);
+
+            MakeMerchantDepositRequest makeMerchantDepositRequest = new MakeMerchantDepositRequest
+            {
+                DepositDateTime = ReqnrollTableHelper.GetDateForDateString(ReqnrollTableHelper.GetStringRowValue(tableRow, "DateTime"), DateTime.UtcNow),
+                Reference = ReqnrollTableHelper.GetStringRowValue(tableRow, "Reference"),
+                Amount = ReqnrollTableHelper.GetDecimalValue(tableRow, "Amount")
+            };
+
+            result.Add((estateDetails, merchantId, makeMerchantDepositRequest));
+        }
+
+        return result;
+    }
+
+    public static List<CreateNewUserRequest> ToCreateNewUserRequests(this DataTableRows tableRows, List<EstateDetails> estateDetailsList)
+    {
+        List<CreateNewUserRequest> createUserRequests = new List<CreateNewUserRequest>();
+        foreach (DataTableRow tableRow in tableRows)
+        {
+            Int32 userType = tableRow.ContainsKey("MerchantName") switch
+            {
+                true => 2,
+                _ => 1
+            };
+
+            String estateName = ReqnrollTableHelper.GetStringRowValue(tableRow, "EstateName");
+            EstateDetails estateDetails = estateDetailsList.SingleOrDefault(e => e.EstateName == estateName);
+            estateDetails.ShouldNotBeNull();
+            String merchantName = null;
+            Guid? merchantId = null;
+            if (userType == 2)
+            {
+                merchantName = ReqnrollTableHelper.GetStringRowValue(tableRow, "MerchantName");
+                merchantId = estateDetails.GetMerchant(merchantName).MerchantId;
+            }
+
+            CreateNewUserRequest createUserRequest = new CreateNewUserRequest
+            {
+                EmailAddress =
+                                                             ReqnrollTableHelper.GetStringRowValue(tableRow, "EmailAddress"),
+                FamilyName =
+                                                             ReqnrollTableHelper.GetStringRowValue(tableRow, "FamilyName"),
+                GivenName =
+                                                             ReqnrollTableHelper.GetStringRowValue(tableRow, "GivenName"),
+                MiddleName =
+                                                             ReqnrollTableHelper.GetStringRowValue(tableRow, "MiddleName"),
+                Password =
+                                                             ReqnrollTableHelper.GetStringRowValue(tableRow, "Password"),
+                UserType = userType,
+                EstateId = estateDetails.EstateId,
+                MerchantId = merchantId,
+                MerchantName = merchantName
+            };
+            createUserRequests.Add(createUserRequest);
+        }
+        return createUserRequests;
+    }
+
+    public static List<String> ToOperatorDetails(this DataTableRows tableRows)
+    {
+        List<String> results = new List<String>();
+        foreach (DataTableRow tableRow in tableRows)
+        {
+            String operatorName = ReqnrollTableHelper.GetStringRowValue(tableRow, "OperatorName");
+            results.Add(operatorName);
+        }
+
+        return results;
+    }
+
+    public static List<String> ToSecurityUsersDetails(this DataTableRows tableRows)
+    {
+        List<String> results = new List<String>();
+        foreach (DataTableRow tableRow in tableRows)
+        {
+            String emailAddress = ReqnrollTableHelper.GetStringRowValue(tableRow, "EmailAddress");
+            results.Add(emailAddress);
+        }
+
+        return results;
     }
 }

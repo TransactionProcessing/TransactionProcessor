@@ -1,5 +1,7 @@
 ﻿using SimpleResults;
+using TransactionProcessor.Aggregates;
 using TransactionProcessor.BusinessLogic.Common;
+using TransactionProcessor.Database.Contexts;
 
 namespace TransactionProcessor.BusinessLogic.Tests.Services
 {
@@ -10,7 +12,6 @@ namespace TransactionProcessor.BusinessLogic.Tests.Services
     using BusinessLogic.Services;
     using DomainEventHandlers;
     using EstateManagement.Client;
-    using EstateManagement.Database.Contexts;
     using Microsoft.EntityFrameworkCore;
     using Microsoft.EntityFrameworkCore.Diagnostics;
     using Microsoft.Extensions.Configuration;
@@ -24,7 +25,6 @@ namespace TransactionProcessor.BusinessLogic.Tests.Services
     using Shared.Logger;
     using Shouldly;
     using Testing;
-    using VoucherAggregate;
     using Xunit;
 
     public class VoucherDomainServiceTests
@@ -238,7 +238,7 @@ namespace TransactionProcessor.BusinessLogic.Tests.Services
                 .ReturnsAsync(Result.Failure());
 
             EstateManagementGenericContext context = await this.GetContext(Guid.NewGuid().ToString("N"));
-            context.Vouchers.Add(new EstateManagement.Database.Entities.Voucher {
+            context.Vouchers.Add(new TransactionProcessor.Database.Entities.Voucher {
                                                  VoucherCode = TestData.VoucherCode,
                                                  OperatorIdentifier = TestData.OperatorIdentifier
                                              });
@@ -277,7 +277,7 @@ namespace TransactionProcessor.BusinessLogic.Tests.Services
                         .ReturnsAsync(TestData.GetEstateResponseWithOperator1);
 
             EstateManagementGenericContext context = await this.GetContext(Guid.NewGuid().ToString("N"));
-            context.Vouchers.Add(new EstateManagement.Database.Entities.Voucher {
+            context.Vouchers.Add(new TransactionProcessor.Database.Entities.Voucher {
                                                  VoucherCode = TestData.VoucherCode,
                                                  OperatorIdentifier = TestData.OperatorIdentifier
                                              });

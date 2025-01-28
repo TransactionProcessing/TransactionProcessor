@@ -1,4 +1,5 @@
 ﻿using TransactionProcessor.BusinessLogic.Common;
+using TransactionProcessor.Database.Contexts;
 
 namespace TransactionProcessor.IntegrationTests.Common
 {
@@ -13,7 +14,6 @@ namespace TransactionProcessor.IntegrationTests.Common
     using Client;
     using Ductus.FluentDocker.Builders;
     using EstateManagement.Client;
-    using EstateManagement.Database.Contexts;
     using EventStore.Client;
     using global::Shared.IntegrationTesting;
     using SecurityService.Client;
@@ -31,7 +31,7 @@ namespace TransactionProcessor.IntegrationTests.Common
         /// <summary>
         /// The estate client
         /// </summary>
-        public IIntermediateEstateClient EstateClient;
+        //public IIntermediateEstateClient EstateClient;
 
         public HttpClient TestHostHttpClient;
 
@@ -81,7 +81,8 @@ namespace TransactionProcessor.IntegrationTests.Common
         public override async Task CreateSubscriptions(){
             List<(String streamName, String groupName, Int32 maxRetries)> subscriptions = new();
             subscriptions.AddRange(MessagingService.IntegrationTesting.Helpers.SubscriptionsHelper.GetSubscriptions());
-            subscriptions.AddRange(EstateManagement.IntegrationTesting.Helpers.SubscriptionsHelper.GetSubscriptions());
+            //var estateSubscriptions = EstateManagement.IntegrationTesting.Helpers.SubscriptionsHelper.GetSubscriptions();
+            //subscriptions.AddRange(estateSubscriptions.Where(e => e.streamName != "$ce-EstateAggregate"));
             subscriptions.AddRange(TransactionProcessor.IntegrationTesting.Helpers.SubscriptionsHelper.GetSubscriptions());
 
             foreach ((String streamName, String groupName, Int32 maxRetries) subscription in subscriptions)
@@ -116,7 +117,7 @@ namespace TransactionProcessor.IntegrationTests.Common
                                                                                               }
                                               };
             HttpClient httpClient = new HttpClient(clientHandler);
-            this.EstateClient = new IntermediateEstateClient(new EstateClient(EstateManagementBaseAddressResolver, httpClient,2));
+            //this.EstateClient = new IntermediateEstateClient(new EstateClient(EstateManagementBaseAddressResolver, httpClient,2));
             this.SecurityServiceClient = new SecurityServiceClient(SecurityServiceBaseAddressResolver, httpClient);
             this.TransactionProcessorClient = new TransactionProcessorClient(TransactionProcessorBaseAddressResolver, httpClient);
             this.TestHostHttpClient= new HttpClient(clientHandler);

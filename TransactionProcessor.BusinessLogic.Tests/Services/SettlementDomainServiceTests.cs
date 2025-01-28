@@ -1,4 +1,5 @@
 ﻿using SimpleResults;
+using TransactionProcessor.Aggregates;
 using TransactionProcessor.BusinessLogic.Requests;
 
 namespace TransactionProcessor.BusinessLogic.Tests.Services
@@ -13,14 +14,12 @@ namespace TransactionProcessor.BusinessLogic.Tests.Services
     using Models;
     using Moq;
     using SecurityService.Client;
-    using SettlementAggregates;
     using Shared.DomainDrivenDesign.EventSourcing;
     using Shared.EventStore.Aggregate;
     using Shared.General;
     using Shared.Logger;
     using Shouldly;
     using Testing;
-    using TransactionAggregate;
     using TransactionProcessor.BusinessLogic.Common;
     using Xunit;
 

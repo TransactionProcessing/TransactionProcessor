@@ -1,4 +1,7 @@
 ﻿using SimpleResults;
+using TransactionProcessor.Aggregates;
+using TransactionProcessor.Database.Contexts;
+using TransactionProcessor.Database.Entities;
 
 namespace TransactionProcessor.BusinessLogic.Tests.DomainEventHandlers;
 
@@ -9,8 +12,6 @@ using System.IO.Abstractions.TestingHelpers;
 using System.Reflection;
 using System.Threading;
 using System.Threading.Tasks;
-using EstateManagement.Database.Contexts;
-using EstateManagement.Database.Entities;
 using EventHandling;
 using MessagingService.Client;
 using Microsoft.EntityFrameworkCore;
@@ -23,9 +24,7 @@ using Shared.EventStore.Aggregate;
 using Shared.General;
 using Shared.Logger;
 using Testing;
-using VoucherAggregate;
 using Xunit;
-using Transaction = Models.Transaction;
 
 public enum TestDatabaseType
 {
@@ -73,7 +72,7 @@ public class VoucherDomainEventHandlerTests
                                   .ReturnsAsync(Result.Success(TestData.GetVoucherAggregateWithRecipientEmail()));
 
         EstateManagementGenericContext context = await this.GetContext(Guid.NewGuid().ToString("N"), TestDatabaseType.InMemory);
-        context.Transactions.Add(new EstateManagement.Database.Entities.Transaction()
+        context.Transactions.Add(new Database.Entities.Transaction()
         {
                                      TransactionId = TestData.TransactionId,
                                      MerchantId = TestData.MerchantId,
@@ -122,7 +121,7 @@ public class VoucherDomainEventHandlerTests
                                   .ReturnsAsync(Result.Success(TestData.GetVoucherAggregateWithRecipientMobile()));
 
         EstateManagementGenericContext context = await this.GetContext(Guid.NewGuid().ToString("N"), TestDatabaseType.InMemory);
-        context.Transactions.Add(new EstateManagement.Database.Entities.Transaction()
+        context.Transactions.Add(new Database.Entities.Transaction()
                                  {
                                      TransactionId = TestData.TransactionId,
                                      MerchantId = TestData.MerchantId,

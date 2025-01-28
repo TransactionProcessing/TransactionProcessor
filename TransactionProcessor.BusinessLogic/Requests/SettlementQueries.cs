@@ -2,7 +2,7 @@
 using System.Diagnostics.CodeAnalysis;
 using MediatR;
 using SimpleResults;
-using TransactionProcessor.SettlementAggregates;
+using TransactionProcessor.Aggregates;
 
 namespace TransactionProcessor.BusinessLogic.Requests;
 [ExcludeFromCodeCoverage]

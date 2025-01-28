@@ -4,6 +4,7 @@ using Newtonsoft.Json;
 using Shared.Exceptions;
 using Shared.Results;
 using SimpleResults;
+using TransactionProcessor.Aggregates;
 
 namespace TransactionProcessor.BusinessLogic.Services{
     using System;
@@ -18,27 +19,50 @@ namespace TransactionProcessor.BusinessLogic.Services{
     using EstateManagement.DataTransferObjects.Requests.Merchant;
     using EstateManagement.DataTransferObjects.Responses;
     using EstateManagement.DataTransferObjects.Responses.Estate;
-    using FloatAggregate;
     using MessagingService.Client;
     using MessagingService.DataTransferObjects;
     using Microsoft.Extensions.Caching.Memory;
     using Models;
     using OperatorInterfaces;
-    using ReconciliationAggregate;
     using SecurityService.Client;
     using SecurityService.DataTransferObjects.Responses;
     using Shared.DomainDrivenDesign.EventSourcing;
     using Shared.EventStore.Aggregate;
     using Shared.General;
     using Shared.Logger;
-    using TransactionAggregate;
     using TransactionProcessor.BusinessLogic.Manager;
     using TransactionProcessor.BusinessLogic.Requests;
 
-    /// <summary>
-    /// 
-    /// </summary>
-    /// <seealso cref="TransactionProcessor.BusinessLogic.Services.ITransactionDomainService" />
+    public interface ITransactionDomainService
+    {
+        #region Methods
+
+        Task<Result<ProcessLogonTransactionResponse>> ProcessLogonTransaction(TransactionCommands.ProcessLogonTransactionCommand command,
+                                                                              CancellationToken cancellationToken);
+
+        Task<Result<ProcessSaleTransactionResponse>> ProcessSaleTransaction(TransactionCommands.ProcessSaleTransactionCommand command,
+                                                                            CancellationToken cancellationToken);
+
+        Task<Result<ProcessReconciliationTransactionResponse>> ProcessReconciliationTransaction(TransactionCommands.ProcessReconciliationCommand command,
+                                                                                                CancellationToken cancellationToken);
+
+        Task<Result> ResendTransactionReceipt(TransactionCommands.ResendTransactionReceiptCommand command,
+                                              CancellationToken cancellationToken);
+
+        Task<Result> CalculateFeesForTransaction(TransactionCommands.CalculateFeesForTransactionCommand command,
+                                                 CancellationToken cancellationToken);
+
+        #endregion
+
+        Task<Result> AddSettledMerchantFee(TransactionCommands.AddSettledMerchantFeeCommand command,
+                                           CancellationToken cancellationToken);
+
+        Task<Result> SendCustomerEmailReceipt(TransactionCommands.SendCustomerEmailReceiptCommand command,
+                                              CancellationToken cancellationToken);
+        Task<Result> ResendCustomerEmailReceipt(TransactionCommands.ResendCustomerEmailReceiptCommand command,
+                                                CancellationToken cancellationToken);
+    }
+
     public class TransactionDomainService : ITransactionDomainService{
         #region Fields
 

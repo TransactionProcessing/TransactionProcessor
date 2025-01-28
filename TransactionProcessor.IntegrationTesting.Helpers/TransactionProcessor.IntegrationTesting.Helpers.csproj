@@ -9,8 +9,8 @@
   <ItemGroup>
     <PackageReference Include="ClientProxyBase" Version="2025.1.2" />
     <PackageReference Include="EstateManagement.Client" Version="2025.1.5" />
-    <PackageReference Include="EstateManagement.IntegrationTesting.Helpers" Version="2025.1.5" />
     <PackageReference Include="Reqnroll" Version="1.0.1" />
+    <PackageReference Include="Shared.IntegrationTesting" Version="2025.1.2" />
   </ItemGroup>
 
   <ItemGroup>
