@@ -1,5 +1,8 @@
 ﻿using Shared.Results;
 using SimpleResults;
+using TransactionProcessor.Aggregates;
+using TransactionProcessor.Database.Contexts;
+using TransactionProcessor.Database.Entities;
 
 namespace TransactionProcessor.BusinessLogic.EventHandling;
 
@@ -11,8 +14,6 @@ using System.Reflection;
 using System.Threading;
 using System.Threading.Tasks;
 using Common;
-using EstateManagement.Database.Contexts;
-using EstateManagement.Database.Entities;
 using MessagingService.Client;
 using MessagingService.DataTransferObjects;
 using Microsoft.EntityFrameworkCore;
@@ -24,7 +25,6 @@ using Shared.EventStore.EventHandling;
 using Shared.General;
 using Shared.Logger;
 using Voucher.DomainEvents;
-using VoucherAggregate;
 
 public class VoucherDomainEventHandler : IDomainEventHandler
 {
@@ -143,7 +143,7 @@ public class VoucherDomainEventHandler : IDomainEventHandler
 
         EstateManagementGenericContext context = await this.DbContextFactory.GetContext(voucherModel.EstateId, ConnectionStringIdentifier, cancellationToken);
 
-        Transaction transaction = await context.Transactions.SingleOrDefaultAsync(t => t.TransactionId == voucherModel.TransactionId, cancellationToken);
+        Database.Entities.Transaction transaction = await context.Transactions.SingleOrDefaultAsync(t => t.TransactionId == voucherModel.TransactionId, cancellationToken);
         Contract contract = await context.Contracts.SingleOrDefaultAsync(c => c.ContractId == transaction.ContractId, cancellationToken);
 
         return contract.Description;

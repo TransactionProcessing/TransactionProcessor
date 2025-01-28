@@ -1,5 +1,6 @@
 ﻿using Shared.Results;
 using SimpleResults;
+using TransactionProcessor.Aggregates;
 using TransactionProcessor.BusinessLogic.Requests;
 
 namespace TransactionProcessor.BusinessLogic.Services
@@ -17,14 +18,22 @@ namespace TransactionProcessor.BusinessLogic.Services
     using Models;
     using SecurityService.Client;
     using SecurityService.DataTransferObjects.Responses;
-    using SettlementAggregates;
     using Shared.DomainDrivenDesign.EventSourcing;
     using Shared.EventStore.Aggregate;
     using Shared.Exceptions;
     using Shared.General;
     using Shared.Logger;
-    using TransactionAggregate;
 
+    public interface ISettlementDomainService
+    {
+        Task<Result<Guid>> ProcessSettlement(SettlementCommands.ProcessSettlementCommand command, CancellationToken cancellationToken);
+
+        Task<Result> AddMerchantFeePendingSettlement(SettlementCommands.AddMerchantFeePendingSettlementCommand command,
+                                                     CancellationToken cancellationToken);
+
+        Task<Result> AddSettledFeeToSettlement(SettlementCommands.AddSettledFeeToSettlementCommand command,
+                                               CancellationToken cancellationToken);
+    }
     public class SettlementDomainService : ISettlementDomainService
     {
         private readonly IAggregateRepository<TransactionAggregate, DomainEvent> TransactionAggregateRepository;

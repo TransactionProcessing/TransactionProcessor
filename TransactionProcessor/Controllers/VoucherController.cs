@@ -35,20 +35,16 @@ namespace TransactionProcessor.Controllers
         private readonly IMediator Mediator;
 
         private readonly IVoucherManagementManager VoucherManagementManager;
-
-        private readonly IModelFactory ModelFactory;
-
+        
         #endregion
 
         #region Constructors
 
         public VoucherController(IMediator mediator,
-                                 IVoucherManagementManager voucherManagementManager,
-                                 IModelFactory modelFactory)
+                                 IVoucherManagementManager voucherManagementManager)
         {
             this.Mediator = mediator;
             this.VoucherManagementManager = voucherManagementManager;
-            this.ModelFactory = modelFactory;
         }
 
         #endregion
@@ -80,7 +76,7 @@ namespace TransactionProcessor.Controllers
             if (result.IsFailed)
                 ResultHelpers.CreateFailure(result).ToActionResultX();
 
-            return this.ModelFactory.ConvertFrom(result.Data).ToActionResultX();
+            return ModelFactory.ConvertFrom(result.Data).ToActionResultX();
         }
 
         /// <summary>
@@ -109,7 +105,7 @@ namespace TransactionProcessor.Controllers
                 if (getVoucherByCodeResult.IsFailed)
                     ResultHelpers.CreateFailure(getVoucherByCodeResult).ToActionResultX();
 
-                return this.ModelFactory.ConvertFrom(getVoucherByCodeResult.Data).ToActionResultX();
+                return ModelFactory.ConvertFrom(getVoucherByCodeResult.Data).ToActionResultX();
             }
 
             if (transactionId != Guid.Empty) {
@@ -119,7 +115,7 @@ namespace TransactionProcessor.Controllers
                 if (getVoucherByTransactionIdResult.IsFailed)
                     ResultHelpers.CreateFailure(getVoucherByTransactionIdResult).ToActionResultX();
 
-                return this.ModelFactory.ConvertFrom(getVoucherByTransactionIdResult.Data).ToActionResultX();
+                return ModelFactory.ConvertFrom(getVoucherByTransactionIdResult.Data).ToActionResultX();
             }
 
             return Result.Invalid().ToActionResultX();

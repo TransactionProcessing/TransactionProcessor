@@ -81,120 +81,120 @@ namespace TransactionProcessor.IntegrationTests.Features
         {
 #line 4
 #line hidden
-            Reqnroll.Table table21 = new Reqnroll.Table(new string[] {
+            Reqnroll.Table table40 = new Reqnroll.Table(new string[] {
                         "Name",
                         "DisplayName",
                         "Description"});
-            table21.AddRow(new string[] {
+            table40.AddRow(new string[] {
                         "estateManagement",
                         "Estate Managememt REST Scope",
                         "A scope for Estate Managememt REST"});
-            table21.AddRow(new string[] {
+            table40.AddRow(new string[] {
                         "transactionProcessor",
                         "Transaction Processor REST  Scope",
                         "A scope for Transaction Processor REST"});
 #line 6
- await testRunner.GivenAsync("I create the following api scopes", ((string)(null)), table21, "Given ");
+ await testRunner.GivenAsync("I create the following api scopes", ((string)(null)), table40, "Given ");
 #line hidden
-            Reqnroll.Table table22 = new Reqnroll.Table(new string[] {
+            Reqnroll.Table table41 = new Reqnroll.Table(new string[] {
                         "Name",
                         "DisplayName",
                         "Secret",
                         "Scopes",
                         "UserClaims"});
-            table22.AddRow(new string[] {
+            table41.AddRow(new string[] {
                         "estateManagement",
                         "Estate Managememt REST",
                         "Secret1",
                         "estateManagement",
                         "MerchantId, EstateId, role"});
-            table22.AddRow(new string[] {
+            table41.AddRow(new string[] {
                         "transactionProcessor",
                         "Transaction Processor REST",
                         "Secret1",
                         "transactionProcessor",
                         ""});
 #line 11
- await testRunner.GivenAsync("the following api resources exist", ((string)(null)), table22, "Given ");
+ await testRunner.GivenAsync("the following api resources exist", ((string)(null)), table41, "Given ");
 #line hidden
-            Reqnroll.Table table23 = new Reqnroll.Table(new string[] {
+            Reqnroll.Table table42 = new Reqnroll.Table(new string[] {
                         "ClientId",
                         "ClientName",
                         "Secret",
                         "Scopes",
                         "GrantTypes"});
-            table23.AddRow(new string[] {
+            table42.AddRow(new string[] {
                         "serviceClient",
                         "Service Client",
                         "Secret1",
                         "estateManagement,transactionProcessor",
                         "client_credentials"});
 #line 16
- await testRunner.GivenAsync("the following clients exist", ((string)(null)), table23, "Given ");
+ await testRunner.GivenAsync("the following clients exist", ((string)(null)), table42, "Given ");
 #line hidden
-            Reqnroll.Table table24 = new Reqnroll.Table(new string[] {
+            Reqnroll.Table table43 = new Reqnroll.Table(new string[] {
                         "ClientId"});
-            table24.AddRow(new string[] {
+            table43.AddRow(new string[] {
                         "serviceClient"});
 #line 20
  await testRunner.GivenAsync("I have a token to access the estate management and transaction processor resource" +
-                    "s", ((string)(null)), table24, "Given ");
+                    "s", ((string)(null)), table43, "Given ");
 #line hidden
-            Reqnroll.Table table25 = new Reqnroll.Table(new string[] {
+            Reqnroll.Table table44 = new Reqnroll.Table(new string[] {
                         "EstateName"});
-            table25.AddRow(new string[] {
+            table44.AddRow(new string[] {
                         "Test Estate 1"});
-            table25.AddRow(new string[] {
+            table44.AddRow(new string[] {
                         "Test Estate 2"});
 #line 24
- await testRunner.GivenAsync("I have created the following estates", ((string)(null)), table25, "Given ");
+ await testRunner.GivenAsync("I have created the following estates", ((string)(null)), table44, "Given ");
 #line hidden
-            Reqnroll.Table table26 = new Reqnroll.Table(new string[] {
+            Reqnroll.Table table45 = new Reqnroll.Table(new string[] {
                         "EstateName",
                         "OperatorName",
                         "RequireCustomMerchantNumber",
                         "RequireCustomTerminalNumber"});
-            table26.AddRow(new string[] {
+            table45.AddRow(new string[] {
                         "Test Estate 1",
                         "Safaricom",
                         "True",
                         "True"});
-            table26.AddRow(new string[] {
+            table45.AddRow(new string[] {
                         "Test Estate 2",
                         "Safaricom",
                         "True",
                         "True"});
 #line 29
- await testRunner.GivenAsync("I have created the following operators", ((string)(null)), table26, "Given ");
+ await testRunner.GivenAsync("I have created the following operators", ((string)(null)), table45, "Given ");
 #line hidden
-            Reqnroll.Table table27 = new Reqnroll.Table(new string[] {
+            Reqnroll.Table table46 = new Reqnroll.Table(new string[] {
                         "EstateName",
                         "OperatorName"});
-            table27.AddRow(new string[] {
+            table46.AddRow(new string[] {
                         "Test Estate 1",
                         "Safaricom"});
-            table27.AddRow(new string[] {
+            table46.AddRow(new string[] {
                         "Test Estate 2",
                         "Safaricom"});
 #line 34
- await testRunner.AndAsync("I have assigned the following operators to the estates", ((string)(null)), table27, "And ");
+ await testRunner.AndAsync("I have assigned the following operators to the estates", ((string)(null)), table46, "And ");
 #line hidden
-            Reqnroll.Table table28 = new Reqnroll.Table(new string[] {
+            Reqnroll.Table table47 = new Reqnroll.Table(new string[] {
                         "EstateName",
                         "OperatorName",
                         "ContractDescription"});
-            table28.AddRow(new string[] {
+            table47.AddRow(new string[] {
                         "Test Estate 1",
                         "Safaricom",
                         "Safaricom Contract"});
-            table28.AddRow(new string[] {
+            table47.AddRow(new string[] {
                         "Test Estate 2",
                         "Safaricom",
                         "Safaricom Contract"});
 #line 39
- await testRunner.GivenAsync("I create a contract with the following values", ((string)(null)), table28, "Given ");
+ await testRunner.GivenAsync("I create a contract with the following values", ((string)(null)), table47, "Given ");
 #line hidden
-            Reqnroll.Table table29 = new Reqnroll.Table(new string[] {
+            Reqnroll.Table table48 = new Reqnroll.Table(new string[] {
                         "EstateName",
                         "OperatorName",
                         "ContractDescription",
@@ -202,7 +202,7 @@ namespace TransactionProcessor.IntegrationTests.Features
                         "DisplayText",
                         "Value",
                         "ProductType"});
-            table29.AddRow(new string[] {
+            table48.AddRow(new string[] {
                         "Test Estate 1",
                         "Safaricom",
                         "Safaricom Contract",
@@ -210,7 +210,7 @@ namespace TransactionProcessor.IntegrationTests.Features
                         "Custom",
                         "",
                         "MobileTopup"});
-            table29.AddRow(new string[] {
+            table48.AddRow(new string[] {
                         "Test Estate 2",
                         "Safaricom",
                         "Safaricom Contract",
@@ -219,9 +219,9 @@ namespace TransactionProcessor.IntegrationTests.Features
                         "",
                         "MobileTopup"});
 #line 44
- await testRunner.WhenAsync("I create the following Products", ((string)(null)), table29, "When ");
+ await testRunner.WhenAsync("I create the following Products", ((string)(null)), table48, "When ");
 #line hidden
-            Reqnroll.Table table30 = new Reqnroll.Table(new string[] {
+            Reqnroll.Table table49 = new Reqnroll.Table(new string[] {
                         "EstateName",
                         "OperatorName",
                         "ContractDescription",
@@ -229,7 +229,7 @@ namespace TransactionProcessor.IntegrationTests.Features
                         "CalculationType",
                         "FeeDescription",
                         "Value"});
-            table30.AddRow(new string[] {
+            table49.AddRow(new string[] {
                         "Test Estate 1",
                         "Safaricom",
                         "Safaricom Contract",
@@ -237,7 +237,7 @@ namespace TransactionProcessor.IntegrationTests.Features
                         "Fixed",
                         "Merchant Commission",
                         "2.50"});
-            table30.AddRow(new string[] {
+            table49.AddRow(new string[] {
                         "Test Estate 2",
                         "Safaricom",
                         "Safaricom Contract",
@@ -246,9 +246,9 @@ namespace TransactionProcessor.IntegrationTests.Features
                         "Merchant Commission",
                         "0.85"});
 #line 49
- await testRunner.WhenAsync("I add the following Transaction Fees", ((string)(null)), table30, "When ");
+ await testRunner.WhenAsync("I add the following Transaction Fees", ((string)(null)), table49, "When ");
 #line hidden
-            Reqnroll.Table table31 = new Reqnroll.Table(new string[] {
+            Reqnroll.Table table50 = new Reqnroll.Table(new string[] {
                         "MerchantName",
                         "AddressLine1",
                         "Town",
@@ -257,7 +257,7 @@ namespace TransactionProcessor.IntegrationTests.Features
                         "ContactName",
                         "EmailAddress",
                         "EstateName"});
-            table31.AddRow(new string[] {
+            table50.AddRow(new string[] {
                         "Test Merchant 1",
                         "Address Line 1",
                         "TestTown",
@@ -266,7 +266,7 @@ namespace TransactionProcessor.IntegrationTests.Features
                         "Test Contact 1",
                         "testcontact1@merchant1.co.uk",
                         "Test Estate 1"});
-            table31.AddRow(new string[] {
+            table50.AddRow(new string[] {
                         "Test Merchant 2",
                         "Address Line 1",
                         "TestTown",
@@ -275,7 +275,7 @@ namespace TransactionProcessor.IntegrationTests.Features
                         "Test Contact 2",
                         "testcontact2@merchant2.co.uk",
                         "Test Estate 1"});
-            table31.AddRow(new string[] {
+            table50.AddRow(new string[] {
                         "Test Merchant 3",
                         "Address Line 1",
                         "TestTown",
@@ -285,80 +285,80 @@ namespace TransactionProcessor.IntegrationTests.Features
                         "testcontact3@merchant2.co.uk",
                         "Test Estate 2"});
 #line 54
- await testRunner.GivenAsync("I create the following merchants", ((string)(null)), table31, "Given ");
+ await testRunner.GivenAsync("I create the following merchants", ((string)(null)), table50, "Given ");
 #line hidden
-            Reqnroll.Table table32 = new Reqnroll.Table(new string[] {
+            Reqnroll.Table table51 = new Reqnroll.Table(new string[] {
                         "OperatorName",
                         "MerchantName",
                         "MerchantNumber",
                         "TerminalNumber",
                         "EstateName"});
-            table32.AddRow(new string[] {
+            table51.AddRow(new string[] {
                         "Safaricom",
                         "Test Merchant 1",
                         "00000001",
                         "10000001",
                         "Test Estate 1"});
-            table32.AddRow(new string[] {
+            table51.AddRow(new string[] {
                         "Safaricom",
                         "Test Merchant 2",
                         "00000002",
                         "10000002",
                         "Test Estate 1"});
-            table32.AddRow(new string[] {
+            table51.AddRow(new string[] {
                         "Safaricom",
                         "Test Merchant 3",
                         "00000003",
                         "10000003",
                         "Test Estate 2"});
 #line 60
- await testRunner.GivenAsync("I have assigned the following  operator to the merchants", ((string)(null)), table32, "Given ");
+ await testRunner.GivenAsync("I have assigned the following  operator to the merchants", ((string)(null)), table51, "Given ");
 #line hidden
-            Reqnroll.Table table33 = new Reqnroll.Table(new string[] {
+            Reqnroll.Table table52 = new Reqnroll.Table(new string[] {
                         "DeviceIdentifier",
                         "MerchantName",
                         "EstateName"});
-            table33.AddRow(new string[] {
+            table52.AddRow(new string[] {
                         "123456780",
                         "Test Merchant 1",
                         "Test Estate 1"});
-            table33.AddRow(new string[] {
+            table52.AddRow(new string[] {
                         "123456781",
                         "Test Merchant 2",
                         "Test Estate 1"});
-            table33.AddRow(new string[] {
+            table52.AddRow(new string[] {
                         "123456782",
                         "Test Merchant 3",
                         "Test Estate 2"});
 #line 66
- await testRunner.GivenAsync("I have assigned the following devices to the merchants", ((string)(null)), table33, "Given ");
+ await testRunner.GivenAsync("I have assigned the following devices to the merchants", ((string)(null)), table52, "Given ");
 #line hidden
-            Reqnroll.Table table34 = new Reqnroll.Table(new string[] {
+            Reqnroll.Table table53 = new Reqnroll.Table(new string[] {
                         "Reference",
                         "Amount",
                         "DateTime",
                         "MerchantName",
                         "EstateName"});
-            table34.AddRow(new string[] {
+            table53.AddRow(new string[] {
                         "Deposit1",
                         "200.00",
                         "Today",
                         "Test Merchant 1",
                         "Test Estate 1"});
-            table34.AddRow(new string[] {
+            table53.AddRow(new string[] {
                         "Deposit1",
                         "100.00",
                         "Today",
                         "Test Merchant 2",
                         "Test Estate 1"});
-            table34.AddRow(new string[] {
+            table53.AddRow(new string[] {
                         "Deposit1",
                         "100.00",
                         "Today",
                         "Test Merchant 3",
                         "Test Estate 2"});
 #line 72
- await testRunner.GivenAsync("I make the following manual merchant deposits", ((string)(null)), table34, "Given ");
+ await testRunner.GivenAsync("I make the following manual merchant deposits", ((string)(null)), table53, "Given ");
 #line hidden
         }
         
@@ -384,7 +384,7 @@ this.ScenarioInitialize(scenarioInfo);
 #line 4
 await this.FeatureBackgroundAsync();
 #line hidden
-                Reqnroll.Table table35 = new Reqnroll.Table(new string[] {
+                Reqnroll.Table table54 = new Reqnroll.Table(new string[] {
                             "DateTime",
                             "MerchantName",
                             "DeviceIdentifier",
@@ -392,7 +392,7 @@ await this.FeatureBackgroundAsync();
                             "TransactionCount",
                             "TransactionValue",
                             "TransactionType"});
-                table35.AddRow(new string[] {
+                table54.AddRow(new string[] {
                             "Today",
                             "Test Merchant 1",
                             "123456780",
@@ -400,7 +400,7 @@ await this.FeatureBackgroundAsync();
                             "1",
                             "100.00",
                             "Reconciliation"});
-                table35.AddRow(new string[] {
+                table54.AddRow(new string[] {
                             "Today",
                             "Test Merchant 2",
                             "123456781",
@@ -408,7 +408,7 @@ await this.FeatureBackgroundAsync();
                             "2",
                             "200.00",
                             "Reconciliation"});
-                table35.AddRow(new string[] {
+                table54.AddRow(new string[] {
                             "Today",
                             "Test Merchant 3",
                             "123456782",
@@ -417,30 +417,30 @@ await this.FeatureBackgroundAsync();
                             "300.00",
                             "Reconciliation"});
 #line 81
- await testRunner.WhenAsync("I perform the following reconciliations", ((string)(null)), table35, "When ");
+ await testRunner.WhenAsync("I perform the following reconciliations", ((string)(null)), table54, "When ");
 #line hidden
-                Reqnroll.Table table36 = new Reqnroll.Table(new string[] {
+                Reqnroll.Table table55 = new Reqnroll.Table(new string[] {
                             "EstateName",
                             "MerchantName",
                             "ResponseCode",
                             "ResponseMessage"});
-                table36.AddRow(new string[] {
+                table55.AddRow(new string[] {
                             "Test Estate 1",
                             "Test Merchant 1",
                             "0000",
                             "SUCCESS"});
-                table36.AddRow(new string[] {
+                table55.AddRow(new string[] {
                             "Test Estate 1",
                             "Test Merchant 2",
                             "0000",
                             "SUCCESS"});
-                table36.AddRow(new string[] {
+                table55.AddRow(new string[] {
                             "Test Estate 2",
                             "Test Merchant 3",
                             "0000",
                             "SUCCESS"});
 #line 87
- await testRunner.ThenAsync("reconciliation response should contain the following information", ((string)(null)), table36, "Then ");
+ await testRunner.ThenAsync("reconciliation response should contain the following information", ((string)(null)), table55, "Then ");
 #line hidden
             }
             await this.ScenarioCleanupAsync();

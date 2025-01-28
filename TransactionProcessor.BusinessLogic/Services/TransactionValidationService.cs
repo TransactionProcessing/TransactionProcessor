@@ -1,7 +1,11 @@
 ﻿using System.Runtime.CompilerServices;
 using EstateManagement.DataTransferObjects.Responses.Merchant;
+using Shared.DomainDrivenDesign.EventSourcing;
+using Shared.EventStore.Aggregate;
 using Shared.Results;
 using SimpleResults;
+using TransactionProcessor.Aggregates;
+using TransactionProcessor.Models;
 
 namespace TransactionProcessor.BusinessLogic.Services;
 
@@ -13,7 +17,6 @@ using System.Threading;
 using System.Threading.Tasks;
 using Common;
 using EstateManagement.Client;
-using EstateManagement.Database.Entities;
 using EstateManagement.DataTransferObjects.Responses;
 using EstateManagement.DataTransferObjects.Responses.Estate;
 using EventStore.Client;
@@ -27,6 +30,31 @@ using Shared.EventStore.ProjectionEngine;
 using Shared.General;
 using Shared.Logger;
 
+public interface ITransactionValidationService
+{
+    #region Methods
+
+    Task<Result<TransactionValidationResult>> ValidateLogonTransaction(Guid estateId,
+                                                                       Guid merchantId,
+                                                                       String deviceIdentifier,
+                                                                       CancellationToken cancellationToken);
+    Task<Result<TransactionValidationResult>> ValidateReconciliationTransaction(Guid estateId,
+                                                                                Guid merchantId,
+                                                                                String deviceIdentifier,
+                                                                                CancellationToken cancellationToken);
+
+    Task<Result<TransactionValidationResult>> ValidateSaleTransaction(Guid estateId,
+                                                                      Guid merchantId,
+                                                                      Guid contractId,
+                                                                      Guid productId,
+                                                                      String deviceIdentifier,
+                                                                      Guid operatorId,
+                                                                      Decimal? transactionAmount,
+                                                                      CancellationToken cancellationToken);
+
+    #endregion
+}
+
 public class TransactionValidationService : ITransactionValidationService{
     #region Fields
 
@@ -38,6 +66,7 @@ public class TransactionValidationService : ITransactionValidationService{
     private readonly ProjectionEngine.Repository.IProjectionStateRepository<MerchantBalanceState> MerchantBalanceStateRepository;
 
     private readonly IEventStoreContext EventStoreContext;
+    private readonly IAggregateRepository<EstateAggregate, DomainEvent> EstateAggregateRepository;
 
 
     /// <summary>
@@ -52,12 +81,14 @@ public class TransactionValidationService : ITransactionValidationService{
     public TransactionValidationService(IIntermediateEstateClient estateClient,
                                         ISecurityServiceClient securityServiceClient,
                                         ProjectionEngine.Repository.IProjectionStateRepository<MerchantBalanceState> merchantBalanceStateRepository,
-                                        IEventStoreContext eventStoreContext)
+                                        IEventStoreContext eventStoreContext,
+                                        IAggregateRepository<EstateAggregate, DomainEvent> estateAggregateRepository)
     {
         this.EstateClient = estateClient;
         this.SecurityServiceClient = securityServiceClient;
         this.MerchantBalanceStateRepository = merchantBalanceStateRepository;
         this.EventStoreContext = eventStoreContext;
+        this.EstateAggregateRepository = estateAggregateRepository;
     }
 
     #region Methods
@@ -76,7 +107,7 @@ public class TransactionValidationService : ITransactionValidationService{
                                                                                      String deviceIdentifier,
                                                                                      CancellationToken cancellationToken) {
         // Validate Estate
-        Result<TransactionValidationResult<EstateResponse>> estateValidationResult = await ValidateEstate(estateId, cancellationToken);
+        Result<TransactionValidationResult<EstateAggregate>> estateValidationResult = await ValidateEstate(estateId, cancellationToken);
         if (estateValidationResult.IsFailed) return CreateFailedResult(estateValidationResult.Data.validationResult);
 
         // Validate Merchant
@@ -99,10 +130,10 @@ public class TransactionValidationService : ITransactionValidationService{
         CancellationToken cancellationToken)
     {
         // Validate Estate
-        Result<TransactionValidationResult<EstateResponse>> estateValidationResult = await ValidateEstate(estateId, cancellationToken);
+        Result<TransactionValidationResult<EstateAggregate>> estateValidationResult = await ValidateEstate(estateId, cancellationToken);
         if (estateValidationResult.IsFailed) return CreateFailedResult(estateValidationResult.Data.validationResult);
 
-        EstateResponse estate = estateValidationResult.Data.additionalData;
+        EstateAggregate estate = estateValidationResult.Data.additionalData;
 
         // Validate Merchant
         Result<TransactionValidationResult<MerchantResponse>> merchantValidationResult = await ValidateMerchant(estateId, estateValidationResult.Data.additionalData.EstateName, merchantId, cancellationToken);
@@ -116,13 +147,6 @@ public class TransactionValidationService : ITransactionValidationService{
 
         // Validate the merchant device
         return Result.Success(new TransactionValidationResult(TransactionResponseCode.Success, "SUCCESS"));
-    }
-    
-    private async Task<Result<EstateResponse>> GetEstate(Guid estateId,
-                                                         CancellationToken cancellationToken){
-        this.TokenResponse = await Helpers.GetToken(this.TokenResponse, this.SecurityServiceClient, cancellationToken);
-
-        return await this.EstateClient.GetEstate(this.TokenResponse.AccessToken, estateId, cancellationToken);
     }
 
     private async Task<Result<EstateManagement.DataTransferObjects.Responses.Merchant.MerchantResponse>> GetMerchant(Guid estateId,
@@ -157,10 +181,10 @@ public class TransactionValidationService : ITransactionValidationService{
                                                                                CancellationToken cancellationToken)
     {
         // Validate Estate
-        Result<TransactionValidationResult<EstateResponse>> estateValidationResult = await ValidateEstate(estateId, cancellationToken);
+        Result<TransactionValidationResult<EstateAggregate>> estateValidationResult = await ValidateEstate(estateId, cancellationToken);
         if (estateValidationResult.IsFailed) return CreateFailedResult(estateValidationResult.Data.validationResult);
 
-        EstateResponse estate = estateValidationResult.Data.additionalData;
+        EstateAggregate estate = estateValidationResult.Data.additionalData;
 
         // Validate Operator for Estate
         Result<TransactionValidationResult> estateOperatorValidationResult = ValidateEstateOperator(estate, operatorId);
@@ -192,28 +216,29 @@ public class TransactionValidationService : ITransactionValidationService{
         return Result.Success(new TransactionValidationResult(TransactionResponseCode.Success, "SUCCESS"));
     }
 
-    private async Task<Result<TransactionValidationResult<EstateResponse>>> ValidateEstate(Guid estateId, CancellationToken cancellationToken)
+    private async Task<Result<TransactionValidationResult<EstateAggregate>>> ValidateEstate(Guid estateId, CancellationToken cancellationToken)
     {
-        Result<EstateResponse> getEstateResult = await this.GetEstate(estateId, cancellationToken);
+        Result<EstateAggregate> getEstateResult = await this.EstateAggregateRepository.GetLatestVersion(estateId, cancellationToken);
         if (getEstateResult.IsFailed) {
-            TransactionValidationResult transactionValidationResult = getEstateResult.Status switch {
+            TransactionValidationResult transactionValidationResult = getEstateResult.Status switch
+            {
                 ResultStatus.NotFound => new TransactionValidationResult(TransactionResponseCode.InvalidEstateId, $"Estate Id [{estateId}] is not a valid estate"),
                 _ => new TransactionValidationResult(TransactionResponseCode.UnknownFailure, $"An error occurred while getting Estate Id [{estateId}] Message: [{getEstateResult.Message}]")
             };
-
-            return CreateFailedResult(new TransactionValidationResult<EstateResponse>(transactionValidationResult));
+            return CreateFailedResult(new TransactionValidationResult<EstateAggregate>(transactionValidationResult));
         }
-        return Result.Success(new TransactionValidationResult<EstateResponse>(new TransactionValidationResult(TransactionResponseCode.Success, "SUCCESS"), getEstateResult.Data));
+        return Result.Success(new TransactionValidationResult<EstateAggregate>(new TransactionValidationResult(TransactionResponseCode.Success, "SUCCESS"), getEstateResult.Data));
     }
 
-    private Result<TransactionValidationResult> ValidateEstateOperator(EstateResponse estate, Guid operatorId)
-    {
-        if (estate.Operators == null || !estate.Operators.Any())
+    private Result<TransactionValidationResult> ValidateEstateOperator(EstateAggregate estate, Guid operatorId) {
+        List<EstateOperator> estateOperators = estate.GetEstate().Operators;
+
+        if (estateOperators == null || estateOperators.Any() == false)
         {
             return CreateFailedResult(new TransactionValidationResult(TransactionResponseCode.NoEstateOperators, $"Estate {estate.EstateName} has no operators defined"));
         }
 
-        EstateOperatorResponse estateOperatorRecord = estate.Operators.SingleOrDefault(o => o.OperatorId == operatorId);
+        EstateOperator estateOperatorRecord = estateOperators.SingleOrDefault(o => o.OperatorId == operatorId);
 
         Result<TransactionValidationResult> result = estateOperatorRecord switch {
             null => CreateFailedResult(new TransactionValidationResult(TransactionResponseCode.OperatorNotValidForEstate, $"Operator {operatorId} not configured for Estate [{estate.EstateName}]")),
@@ -352,3 +377,9 @@ public class TransactionValidationService : ITransactionValidationService{
         return Result.Success(new TransactionValidationResult(TransactionResponseCode.Success, "SUCCESS"));
     }
 }
+
+[ExcludeFromCodeCoverage]
+public record TransactionValidationResult(TransactionResponseCode ResponseCode, String ResponseMessage);
+
+[ExcludeFromCodeCoverage]
+public record TransactionValidationResult<T>(TransactionValidationResult validationResult, T additionalData = default);

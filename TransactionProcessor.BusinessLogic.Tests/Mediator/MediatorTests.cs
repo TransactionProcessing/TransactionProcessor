@@ -10,6 +10,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Shared.EventStore.EventStore;
+using TransactionProcessor.BusinessLogic.Manager;
 using TransactionProcessor.ProjectionEngine.Repository;
 using Xunit;
 
@@ -45,7 +46,11 @@ namespace TransactionProcessor.BusinessLogic.Tests.Mediator
             //this.Requests.Add(TestData.GetVoucherByVoucherCodeQuery);
             //this.Requests.Add(TestData.GetVoucherByTransactionIdQuery);
 
-
+            this.Requests.Add(TestData.Commands.CreateEstateCommand);
+            this.Requests.Add(TestData.Commands.CreateEstateUserCommand);
+            this.Requests.Add(TestData.Commands.AddOperatorToEstateCommand);
+            this.Requests.Add(TestData.Queries.GetEstateQuery);
+            this.Requests.Add(TestData.Queries.GetEstatesQuery);
         }
 
         [Fact]
@@ -113,7 +118,9 @@ namespace TransactionProcessor.BusinessLogic.Tests.Mediator
                                           s.AddSingleton<ITransactionDomainService, DummyTransactionDomainService>();
                                           s.AddSingleton<IProjectionStateRepository<MerchantBalanceState>, DummyMerchantBalanceStateRepository>();
                                           s.AddSingleton<ITransactionProcessorReadRepository, DummyTransactionProcessorReadRepository>();
-                                          s.AddSingleton<IEventStoreContext, DummyEventStoreContext>();
+                                          s.AddSingleton<IEstateDomainService, DummyEstateDomainService>();
+                                          s.AddSingleton<IEstateManagementManager, DummyEstateManagementManager>();
+                s.AddSingleton<IEventStoreContext, DummyEventStoreContext>();
             });
         }
     }

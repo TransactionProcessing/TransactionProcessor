@@ -4,13 +4,12 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using SimpleResults;
+using TransactionProcessor.Aggregates;
 using TransactionProcessor.BusinessLogic.Common;
-using TransactionProcessor.SettlementAggregates;
 
 namespace TransactionProcessor.BusinessLogic.RequestHandlers
 {
     using System.Threading;
-    using EstateManagement.Database.Entities;
     using MediatR;
     using Models;
     using Requests;

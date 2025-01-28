@@ -6,7 +6,6 @@ using SimpleResults;
 namespace TransactionProcessor.BusinessLogic.RequestHandlers
 {
     using System.Threading;
-    using EstateManagement.Database.Entities;
     using MediatR;
     using Models;
     using Requests;

@@ -1,4 +1,6 @@
 ﻿using Shared.Results;
+using TransactionProcessor.Aggregates;
+using TransactionProcessor.Database.Contexts;
 
 namespace TransactionProcessor.BusinessLogic.Services;
 
@@ -9,8 +11,6 @@ using System.Threading;
 using System.Threading.Tasks;
 using Common;
 using EstateManagement.Client;
-using EstateManagement.Database.Contexts;
-using EstateManagement.Database.Entities;
 using EstateManagement.DataTransferObjects.Responses;
 using EstateManagement.DataTransferObjects.Responses.Estate;
 using Google.Protobuf.WellKnownTypes;
@@ -25,7 +25,49 @@ using Shared.Exceptions;
 using Shared.General;
 using Shared.Logger;
 using SimpleResults;
-using VoucherAggregate;
+
+public interface IVoucherDomainService
+{
+    #region Methods
+
+    /// <summary>
+    /// Issues the voucher.
+    /// </summary>
+    /// <param name="voucherId">The voucher identifier.</param>
+    /// <param name="operatorId">The operator identifier.</param>
+    /// <param name="estateId">The estate identifier.</param>
+    /// <param name="transactionId">The transaction identifier.</param>
+    /// <param name="issuedDateTime">The issued date time.</param>
+    /// <param name="value">The value.</param>
+    /// <param name="recipientEmail">The recipient email.</param>
+    /// <param name="recipientMobile">The recipient mobile.</param>
+    /// <param name="cancellationToken">The cancellation token.</param>
+    /// <returns></returns>
+    Task<Result<IssueVoucherResponse>> IssueVoucher(Guid voucherId,
+                                                    Guid operatorId,
+                                                    Guid estateId,
+                                                    Guid transactionId,
+                                                    DateTime issuedDateTime,
+                                                    Decimal value,
+                                                    String recipientEmail,
+                                                    String recipientMobile,
+                                                    CancellationToken cancellationToken);
+
+    /// <summary>
+    /// Redeems the voucher.
+    /// </summary>
+    /// <param name="estateId">The estate identifier.</param>
+    /// <param name="voucherCode">The voucher code.</param>
+    /// <param name="redeemedDateTime">The redeemed date time.</param>
+    /// <param name="cancellationToken">The cancellation token.</param>
+    /// <returns></returns>
+    Task<Result<RedeemVoucherResponse>> RedeemVoucher(Guid estateId,
+                                              String voucherCode,
+                                              DateTime redeemedDateTime,
+                                              CancellationToken cancellationToken);
+
+    #endregion
+}
 
 public class VoucherDomainService : IVoucherDomainService
 {
@@ -155,7 +197,7 @@ public class VoucherDomainService : IVoucherDomainService
         // Find the voucher based on the voucher code
         EstateManagementGenericContext context = await this.DbContextFactory.GetContext(estateId, VoucherDomainService.ConnectionStringIdentifier, cancellationToken);
 
-        EstateManagement.Database.Entities.Voucher voucher = await context.Vouchers.SingleOrDefaultAsync(v => v.VoucherCode == voucherCode, cancellationToken);
+        TransactionProcessor.Database.Entities.Voucher voucher = await context.Vouchers.SingleOrDefaultAsync(v => v.VoucherCode == voucherCode, cancellationToken);
 
         if (voucher == null)
         {

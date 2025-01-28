@@ -30,11 +30,11 @@ namespace TransactionProcessor.Bootstrapper
         /// </summary>
         public MiscRegistry()
         {
-            this.AddSingleton<IModelFactory, ModelFactory>();
             this.AddSingleton<ITransactionReceiptBuilder, TransactionReceiptBuilder>();
             this.AddSingleton<IFileSystem, FileSystem>();
             this.AddSingleton<IFeeCalculationManager, FeeCalculationManager>();
             this.AddSingleton<IVoucherManagementManager, VoucherManagementManager>();
+            this.AddSingleton<IEstateManagementManager, EstateManagementManager>();
             this.AddSingleton<IMemoryCacheWrapper, MemoryCacheWrapper>();
 
             bool logRequests = ConfigurationReader.GetValueOrDefault<Boolean>("MiddlewareLogging", "LogRequests", true);

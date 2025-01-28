@@ -1,4 +1,6 @@
-﻿using SimpleResults;
+﻿using System.Linq;
+using EstateManagement.DataTransferObjects.Responses.Contract;
+using SimpleResults;
 
 namespace TransactionProcessor.Factories
 {
@@ -6,6 +8,7 @@ namespace TransactionProcessor.Factories
     using System.Collections.Generic;
     using BusinessLogic.Requests;
     using DataTransferObjects;
+    using EstateManagement.DataTransferObjects.Responses.Estate;
     using Models;
     using Newtonsoft.Json;
     using IssueVoucherResponse = DataTransferObjects.IssueVoucherResponse;
@@ -15,11 +18,11 @@ namespace TransactionProcessor.Factories
     /// 
     /// </summary>
     /// <seealso cref="TransactionProcessor.Factories.IModelFactory" />
-    public class ModelFactory : IModelFactory
+    public static class ModelFactory
     {
         #region Methods
 
-        public Result<SerialisedMessage> ConvertFrom(ProcessLogonTransactionResponse processLogonTransactionResponse)
+        public static Result<SerialisedMessage> ConvertFrom(ProcessLogonTransactionResponse processLogonTransactionResponse)
         {
             if (processLogonTransactionResponse == null)
             {
@@ -49,7 +52,7 @@ namespace TransactionProcessor.Factories
                    });
         }
 
-        public Result<SerialisedMessage> ConvertFrom(ProcessSaleTransactionResponse processSaleTransactionResponse)
+        public static Result<SerialisedMessage> ConvertFrom(ProcessSaleTransactionResponse processSaleTransactionResponse)
         {
             if (processSaleTransactionResponse == null)
             {
@@ -80,7 +83,7 @@ namespace TransactionProcessor.Factories
                    });
         }
 
-        public Result<SerialisedMessage> ConvertFrom(ProcessReconciliationTransactionResponse processReconciliationTransactionResponse)
+        public static Result<SerialisedMessage> ConvertFrom(ProcessReconciliationTransactionResponse processReconciliationTransactionResponse)
         {
             if (processReconciliationTransactionResponse == null)
             {
@@ -110,7 +113,7 @@ namespace TransactionProcessor.Factories
                    });
         }
 
-        public IssueVoucherResponse ConvertFrom(Models.IssueVoucherResponse issueVoucherResponse)
+        public static IssueVoucherResponse ConvertFrom(Models.IssueVoucherResponse issueVoucherResponse)
         {
             if (issueVoucherResponse == null)
             {
@@ -127,7 +130,7 @@ namespace TransactionProcessor.Factories
 
             return response;
         }
-        public Result<GetVoucherResponse> ConvertFrom(Voucher voucherModel)
+        public static Result<GetVoucherResponse> ConvertFrom(Voucher voucherModel)
         {
             if (voucherModel == null)
             {
@@ -152,7 +155,7 @@ namespace TransactionProcessor.Factories
 
             return Result.Success(response);
         }
-        public Result<RedeemVoucherResponse> ConvertFrom(Models.RedeemVoucherResponse redeemVoucherResponse)
+        public static Result<RedeemVoucherResponse> ConvertFrom(Models.RedeemVoucherResponse redeemVoucherResponse)
         {
             if (redeemVoucherResponse == null)
             {
@@ -169,6 +172,64 @@ namespace TransactionProcessor.Factories
             return Result.Success(response);
         }
 
+        public static Result<List<DataTransferObjects.Responses.Estate.EstateResponse>> ConvertFrom(List<Models.Estate> estates)
+        {
+            List<Result<DataTransferObjects.Responses.Estate.EstateResponse>> result = new();
+
+            estates.ForEach(c => result.Add(ModelFactory.ConvertFrom(c)));
+
+            if (result.Any(c => c.IsFailed))
+                return Result.Failure("Failed converting estates");
+
+            return Result.Success(result.Select(r => r.Data).ToList());
+
+        }
+
+        public static Result<DataTransferObjects.Responses.Estate.EstateResponse> ConvertFrom(Models.Estate estate)
+        {
+            if (estate == null)
+            {
+                return Result.Invalid("estate cannot be null");
+            }
+
+            DataTransferObjects.Responses.Estate.EstateResponse estateResponse = new()
+            {
+                EstateName = estate.Name,
+                EstateId = estate.EstateId,
+                EstateReportingId = estate.EstateReportingId,
+                EstateReference = estate.Reference,
+                Operators = new List<DataTransferObjects.Responses.Estate.EstateOperatorResponse>(),
+                SecurityUsers = new List<DataTransferObjects.Responses.Estate.SecurityUserResponse>()
+            };
+
+            if (estate.Operators != null && estate.Operators.Any())
+            {
+                estate.Operators.ForEach(o => estateResponse.Operators.Add(new DataTransferObjects.Responses.Estate.EstateOperatorResponse
+                {
+                    OperatorId = o.OperatorId,
+                    //RequireCustomTerminalNumber = o.RequireCustomTerminalNumber,
+                    //RequireCustomMerchantNumber = o.RequireCustomMerchantNumber,
+                    Name = o.Name,
+                    IsDeleted = o.IsDeleted
+                }));
+            }
+
+            if (estate.SecurityUsers != null && estate.SecurityUsers.Any())
+            {
+                estate.SecurityUsers.ForEach(s => estateResponse.SecurityUsers.Add(new DataTransferObjects.Responses.Estate.SecurityUserResponse
+                {
+                    EmailAddress = s.EmailAddress,
+                    SecurityUserId = s.SecurityUserId
+                }));
+            }
+
+            return Result.Success(estateResponse);
+        }
+
         #endregion
+
+        public static Object ConvertFrom(ContractResponse processReconciliationTransactionResponse) {
+            throw new NotImplementedException();
+        }
     }
 }

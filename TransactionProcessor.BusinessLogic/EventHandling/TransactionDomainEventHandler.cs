@@ -15,11 +15,9 @@ namespace TransactionProcessor.BusinessLogic.EventHandling
     using System.Threading.Tasks;
     using Common;
     using EstateManagement.Client;
-    using EstateManagement.Database.Entities;
     using EstateManagement.DataTransferObjects;
     using EstateManagement.DataTransferObjects.Responses;
     using EstateManagement.DataTransferObjects.Responses.Estate;
-    using FloatAggregate;
     using Manager;
     using MessagingService.Client;
     using MessagingService.DataTransferObjects;
@@ -29,14 +27,12 @@ namespace TransactionProcessor.BusinessLogic.EventHandling
     using SecurityService.DataTransferObjects.Responses;
     using Services;
     using Settlement.DomainEvents;
-    using SettlementAggregates;
     using Shared.DomainDrivenDesign.EventSourcing;
     using Shared.EventStore.Aggregate;
     using Shared.EventStore.EventHandling;
     using Shared.General;
     using Shared.Logger;
     using Transaction.DomainEvents;
-    using TransactionAggregate;
     using static TransactionProcessor.BusinessLogic.Requests.SettlementCommands;
     using static TransactionProcessor.BusinessLogic.Requests.TransactionCommands;
     using CalculationType = Models.CalculationType;

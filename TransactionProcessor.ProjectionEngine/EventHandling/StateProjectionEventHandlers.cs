@@ -1,6 +1,7 @@
 ﻿using Shared.Exceptions;
 using Shared.Logger;
 using SimpleResults;
+using TransactionProcessor.Estate.DomainEvents;
 
 namespace TransactionProcessor.ProjectionEngine.EventHandling;
 
@@ -8,7 +9,6 @@ using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using Database;
 using Database.Database;
-using EstateManagement.Estate.DomainEvents;
 using ProjectionHandler;
 using Shared.DomainDrivenDesign.EventSourcing;
 using Shared.EntityFramework;
@@ -46,7 +46,7 @@ public class StateProjectionEventHandler<TState> : IDomainEventHandler where TSt
 
         Logger.LogWarning($"|{domainEvent.EventId}|State Projection Domain Event Handler - Inside Handle {domainEvent.EventType}");
         Stopwatch sw = Stopwatch.StartNew();
-        var result = await this.ProjectionHandler.Handle(domainEvent, cancellationToken);
+        Result result = await this.ProjectionHandler.Handle(domainEvent, cancellationToken);
         sw.Stop();
         Logger.LogWarning($"|{domainEvent.EventId}|State Projection Event Handler - after Handle {domainEvent.EventType} time {sw.ElapsedMilliseconds}ms");
 

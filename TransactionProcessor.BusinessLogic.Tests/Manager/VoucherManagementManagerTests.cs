@@ -8,20 +8,18 @@ using System;
 using System.Threading;
 using System.Threading.Tasks;
 using SimpleResults;
+using TransactionProcessor.Aggregates;
 using TransactionProcessor.BusinessLogic.Manager;
 using TransactionProcessor.BusinessLogic.Tests.DomainEventHandlers;
 using Xunit;
 
 namespace TransactionProcessor.BusinessLogic.Tests.Manager
 {
-    using EstateManagement.Database.Contexts;
-    using EstateManagement.Database.Entities;
     using Microsoft.EntityFrameworkCore.Diagnostics;
     using ProjectionEngine.Database.Database;
     using ProjectionEngine.Database.Database.Entities;
     using Shared.EntityFramework;
     using Testing;
-    using VoucherAggregate;
 
     public class VoucherManagementManagerTests
     {

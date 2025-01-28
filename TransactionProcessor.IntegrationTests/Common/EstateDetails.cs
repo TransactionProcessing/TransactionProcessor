@@ -1,4 +1,4 @@
-﻿namespace TransactionProcessor.IntegrationTests.Common
+﻿/*namespace TransactionProcessor.IntegrationTests.Common
 {
     using System;
     using System.Collections.Generic;
@@ -9,7 +9,7 @@
     /// <summary>
     /// 
     /// </summary>
-    public class EstateDetails1
+    public class EstateDetails
     {
         #region Fields
 
@@ -47,7 +47,7 @@
         /// </summary>
         /// <param name="estateId">The estate identifier.</param>
         /// <param name="estateName">Name of the estate.</param>
-        private EstateDetails1(Guid estateId,
+        private EstateDetails(Guid estateId,
                               String estateName)
         {
             this.EstateId = estateId;
@@ -241,10 +241,10 @@
         /// <param name="estateId">The estate identifier.</param>
         /// <param name="estateName">Name of the estate.</param>
         /// <returns></returns>
-        public static EstateDetails1 Create(Guid estateId,
+        public static EstateDetails Create(Guid estateId,
                                            String estateName)
         {
-            return new EstateDetails1(estateId, estateName);
+            return new EstateDetails(estateId, estateName);
         }
 
         /// <summary>
@@ -358,4 +358,4 @@
 
         #endregion
     }
-}
+}*/

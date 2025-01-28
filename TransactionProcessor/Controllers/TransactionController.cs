@@ -38,15 +38,7 @@ namespace TransactionProcessor.Controllers
     {
         #region Fields
 
-        /// <summary>
-        /// The mediator
-        /// </summary>
         private readonly IMediator Mediator;
-
-        /// <summary>
-        /// The model factory
-        /// </summary>
-        private readonly IModelFactory ModelFactory;
 
         #endregion
 
@@ -57,11 +49,9 @@ namespace TransactionProcessor.Controllers
         /// </summary>
         /// <param name="mediator">The mediator.</param>
         /// <param name="modelFactory">The model factory.</param>
-        public TransactionController(IMediator mediator,
-                                     IModelFactory modelFactory)
+        public TransactionController(IMediator mediator)
         {
             this.Mediator = mediator;
-            this.ModelFactory = modelFactory;
         }
 
         #endregion
@@ -150,7 +140,7 @@ namespace TransactionProcessor.Controllers
             if (result.IsFailed)
                 return ResultHelpers.CreateFailure(result);
 
-            return this.ModelFactory.ConvertFrom(result.Data);
+            return ModelFactory.ConvertFrom(result.Data);
         }
 
         /// <summary>
@@ -183,7 +173,7 @@ namespace TransactionProcessor.Controllers
             if (result.IsFailed)
                 return ResultHelpers.CreateFailure(result);
 
-            return this.ModelFactory.ConvertFrom(result.Data);
+            return ModelFactory.ConvertFrom(result.Data);
         }
 
         private async Task<Result<SerialisedMessage>> ProcessSpecificMessage(ReconciliationRequest reconciliationRequest,
@@ -204,7 +194,7 @@ namespace TransactionProcessor.Controllers
             if (result.IsFailed)
                 return ResultHelpers.CreateFailure(result);
 
-            return this.ModelFactory.ConvertFrom(result.Data);
+            return ModelFactory.ConvertFrom(result.Data);
         }
 
         #endregion

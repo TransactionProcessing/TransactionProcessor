@@ -1,4 +1,7 @@
-﻿namespace TransactionProcessor.IntegrationTests.Common
+﻿using TransactionProcessor.DataTransferObjects.Responses.Merchant;
+using TransactionProcessor.IntegrationTesting.Helpers;
+
+namespace TransactionProcessor.IntegrationTests.Common
 {
     using System;
     using System.Collections.Generic;
@@ -6,9 +9,6 @@
     using System.Threading;
     using System.Threading.Tasks;
     using DataTransferObjects;
-    using EstateManagement.DataTransferObjects.Responses;
-    using EstateManagement.DataTransferObjects.Responses.Merchant;
-    using EstateManagement.IntegrationTesting.Helpers;
     using global::Shared.IntegrationTesting;
     using global::Shared.Logger;
     using Newtonsoft.Json;
