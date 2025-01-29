@@ -1,4 +1,5 @@
-﻿using TransactionProcessor.DataTransferObjects.Responses.Contract;
+﻿using EstateManagement.DataTransferObjects.Responses.Merchant;
+using TransactionProcessor.DataTransferObjects.Responses.Contract;
 
 namespace TransactionProcessor.IntegrationTesting.Helpers
 {

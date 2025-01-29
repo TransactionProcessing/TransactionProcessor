@@ -153,7 +153,13 @@ namespace TransactionProcessor.IntegrationTests.Shared
                 foreach (KeyValuePair<String, Guid> keyValuePair in operators) {
                     this.TestingContext.Logger.LogInformation($"Operator {keyValuePair.Key} {keyValuePair.Value} assigned to Estate {testingContextEstate.EstateName}");
                 }
+                var merchants = testingContextEstate.GetMerchants();
+                foreach (DataTransferObjects.Responses.Merchant.MerchantResponse merchantResponse in merchants) {
+                    this.TestingContext.Logger.LogInformation($"Merchant {merchantResponse.MerchantName} {merchantResponse.MerchantId} assigned to Estate {testingContextEstate.EstateName}");
+                }
             }
+
+
 
             List<(EstateDetails, Guid, DataTransferObjects.Requests.Merchant.AssignOperatorRequest)> requests = table.Rows.ToAssignOperatorRequests(this.TestingContext.Estates);
 
