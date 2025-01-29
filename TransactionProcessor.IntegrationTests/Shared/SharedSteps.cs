@@ -148,6 +148,13 @@ namespace TransactionProcessor.IntegrationTests.Shared
         [When(@"I assign the following  operator to the merchants")]
         public async Task WhenIAssignTheFollowingOperatorToTheMerchants(DataTable table)
         {
+            foreach (EstateDetails testingContextEstate in this.TestingContext.Estates) {
+                var operators = testingContextEstate.GetOperators();
+                foreach (KeyValuePair<String, Guid> keyValuePair in operators) {
+                    this.TestingContext.Logger.LogInformation($"Operator {keyValuePair.Key} {keyValuePair.Value} assigned to Estate {testingContextEstate.EstateName}");
+                }
+            }
+
             List<(EstateDetails, Guid, DataTransferObjects.Requests.Merchant.AssignOperatorRequest)> requests = table.Rows.ToAssignOperatorRequests(this.TestingContext.Estates);
 
             List<(EstateDetails, DataTransferObjects.Responses.Merchant.MerchantOperatorResponse)> results = await this.TransactionProcessorSteps.WhenIAssignTheFollowingOperatorToTheMerchants(this.TestingContext.AccessToken, requests);

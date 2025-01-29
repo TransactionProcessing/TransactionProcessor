@@ -63,6 +63,10 @@ namespace TransactionProcessor.IntegrationTesting.Helpers
             return transactionResponse.Value;
         }
 
+        public Dictionary<String,Guid> GetOperators() {
+            return this.Operators;
+        }
+
         public void AddOperator(Guid operatorId,
                                 String operatorName)
         {
