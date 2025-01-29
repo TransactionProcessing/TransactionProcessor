@@ -102,6 +102,12 @@ namespace TransactionProcessor.IntegrationTesting.Helpers
         
         public void AddMerchant(TransactionProcessor.DataTransferObjects.Responses.Merchant.MerchantResponse merchant)
         {
+            // make sure the merchant does not already exist
+            if (this.Merchants.Any(m => m.MerchantId == merchant.MerchantId))
+            {
+                return;
+            }
+
             this.Merchants.Add(merchant);
         }
 
