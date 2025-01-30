@@ -9,7 +9,7 @@ namespace TransactionProcessor.BusinessLogic.Requests
     [ExcludeFromCodeCoverage]
     public class EstateQueries
     {
-        public record GetEstateQuery(Guid EstateId) : IRequest<Result<Models.Estate>>;
-        public record GetEstatesQuery(Guid EstateId) : IRequest<Result<List<Models.Estate>>>;
+        public record GetEstateQuery(Guid EstateId) : IRequest<Result<Models.Estate.Estate>>;
+        public record GetEstatesQuery(Guid EstateId) : IRequest<Result<List<Models.Estate.Estate>>>;
     }
 }

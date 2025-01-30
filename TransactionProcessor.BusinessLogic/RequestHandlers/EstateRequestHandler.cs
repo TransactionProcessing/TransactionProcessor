@@ -16,8 +16,8 @@ namespace TransactionProcessor.BusinessLogic.RequestHandlers
                                         IRequestHandler<EstateCommands.AddOperatorToEstateCommand, Result>,
                                         IRequestHandler<EstateCommands.RemoveOperatorFromEstateCommand, Result>,
                                         IRequestHandler<EstateCommands.CreateEstateUserCommand, Result>,
-                                        IRequestHandler<EstateQueries.GetEstateQuery, Result<Models.Estate>>,
-                                        IRequestHandler<EstateQueries.GetEstatesQuery, Result<List<Models.Estate>>>
+                                        IRequestHandler<EstateQueries.GetEstateQuery, Result<Models.Estate.Estate>>,
+                                        IRequestHandler<EstateQueries.GetEstatesQuery, Result<List<Models.Estate.Estate>>>
     {
         #region Fields
 
@@ -59,12 +59,12 @@ namespace TransactionProcessor.BusinessLogic.RequestHandlers
             return await this.EstateDomainService.RemoveOperatorFromEstate(command, cancellationToken);
         }
 
-        public async Task<Result<Models.Estate>> Handle(EstateQueries.GetEstateQuery query, CancellationToken cancellationToken)
+        public async Task<Result<Models.Estate.Estate>> Handle(EstateQueries.GetEstateQuery query, CancellationToken cancellationToken)
         {
             return await this.EstateManagementManager.GetEstate(query.EstateId, cancellationToken);
         }
 
-        public async Task<Result<List<Models.Estate>>> Handle(EstateQueries.GetEstatesQuery query, CancellationToken cancellationToken)
+        public async Task<Result<List<Models.Estate.Estate>>> Handle(EstateQueries.GetEstatesQuery query, CancellationToken cancellationToken)
         {
             return await this.EstateManagementManager.GetEstates(query.EstateId, cancellationToken);
         }

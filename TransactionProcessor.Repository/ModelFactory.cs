@@ -1,11 +1,11 @@
-﻿using TransactionProcessor.Models;
+﻿using TransactionProcessor.Models.Estate;
 
 namespace TransactionProcessor.Repository
 {
-    using EstateModel = Models.Estate;
+    using EstateModel = Models.Estate.Estate;
     using EstateEntity = Database.Entities.Estate;
     using EstateSecurityUserEntity = Database.Entities.EstateSecurityUser;
-    using EstateOperatorModel = Models.EstateOperator;
+    using EstateOperatorModel = Models.Estate.Operator;
     using SecurityUserModel = SecurityUser;
     using OperatorEntity = Database.Entities.Operator;
 

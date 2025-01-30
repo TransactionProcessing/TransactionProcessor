@@ -75,7 +75,8 @@ namespace TransactionProcessor.Bootstrapper
             this.AddSingleton<IAggregateRepository<FloatAggregate, DomainEvent>, AggregateRepository<FloatAggregate, DomainEvent>>();
             this.AddSingleton<IAggregateRepository<FloatActivityAggregate, DomainEvent>, AggregateRepository<FloatActivityAggregate, DomainEvent>>();
             this.AddSingleton<IAggregateRepository<EstateAggregate, DomainEvent>, AggregateRepository<EstateAggregate, DomainEvent>>();
-            
+            this.AddSingleton<IAggregateRepository<OperatorAggregate, DomainEvent>, AggregateRepository<OperatorAggregate, DomainEvent>>();
+
             this.AddSingleton<IProjectionStateRepository<MerchantBalanceState>, MerchantBalanceStateRepository>();
             this.AddSingleton<IProjectionStateRepository<VoucherState>, VoucherStateRepository>();
             this.AddSingleton<ITransactionProcessorReadRepository, TransactionProcessorReadRepository>();

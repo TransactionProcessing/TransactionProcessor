@@ -1,5 +1,5 @@
 ﻿using Shouldly;
-using TransactionProcessor.Models;
+using TransactionProcessor.Models.Estate;
 using TransactionProcessor.Testing;
 
 namespace TransactionProcessor.Aggregates.Tests
@@ -72,7 +72,7 @@ namespace TransactionProcessor.Aggregates.Tests
             EstateAggregate aggregate = EstateAggregate.Create(TestData.EstateId);
             aggregate.Create(TestData.EstateName);
             aggregate.GenerateReference();
-            TransactionProcessor.Models.Estate model = aggregate.GetEstate();
+            TransactionProcessor.Models.Estate.Estate model = aggregate.GetEstate();
 
             model.EstateId.ShouldBe(TestData.EstateId);
             model.Name.ShouldBe(TestData.EstateName);
@@ -88,14 +88,14 @@ namespace TransactionProcessor.Aggregates.Tests
             aggregate.GenerateReference();
             aggregate.AddOperator(TestData.OperatorId);
 
-            TransactionProcessor.Models.Estate model = aggregate.GetEstate();
+            TransactionProcessor.Models.Estate.Estate model = aggregate.GetEstate();
 
             model.EstateId.ShouldBe(TestData.EstateId);
             model.Name.ShouldBe(TestData.EstateName);
             model.Reference.ShouldBe(TestData.EstateReference);
             model.Operators.ShouldHaveSingleItem();
             
-            EstateOperator? @operator =model.Operators.Single();
+            Models.Estate.Operator? @operator =model.Operators.Single();
             @operator.OperatorId.ShouldBe(TestData.OperatorId);
         }
 
@@ -105,7 +105,7 @@ namespace TransactionProcessor.Aggregates.Tests
             EstateAggregate aggregate = EstateAggregate.Create(TestData.EstateId);
             aggregate.Create(TestData.EstateName);
             aggregate.GenerateReference();
-            TransactionProcessor.Models.Estate model = aggregate.GetEstate();
+            TransactionProcessor.Models.Estate.Estate model = aggregate.GetEstate();
 
             model.EstateId.ShouldBe(TestData.EstateId);
             model.Name.ShouldBe(TestData.EstateName);
@@ -122,14 +122,14 @@ namespace TransactionProcessor.Aggregates.Tests
             aggregate.GenerateReference();
             aggregate.AddSecurityUser(TestData.SecurityUserId,TestData.EstateUserEmailAddress);
 
-            TransactionProcessor.Models.Estate model = aggregate.GetEstate();
+            TransactionProcessor.Models.Estate.Estate model = aggregate.GetEstate();
 
             model.EstateId.ShouldBe(TestData.EstateId);
             model.Name.ShouldBe(TestData.EstateName);
             model.Reference.ShouldBe(TestData.EstateReference);
             model.SecurityUsers.ShouldHaveSingleItem();
 
-            SecurityUser securityUser = model.SecurityUsers.Single();
+            SecurityUser? securityUser = model.SecurityUsers.Single();
             securityUser.SecurityUserId.ShouldBe(TestData.SecurityUserId);
             securityUser.EmailAddress.ShouldBe(TestData.EstateUserEmailAddress);
         }
@@ -142,7 +142,7 @@ namespace TransactionProcessor.Aggregates.Tests
 
             aggregate.AddOperator(TestData.OperatorId);
 
-            TransactionProcessor.Models.Estate estate = aggregate.GetEstate();
+            TransactionProcessor.Models.Estate.Estate estate = aggregate.GetEstate();
             estate.Operators.ShouldHaveSingleItem();
             estate.Operators.Single().OperatorId.ShouldBe(TestData.OperatorId);
             estate.Operators.Single().IsDeleted.ShouldBeFalse();
@@ -183,7 +183,7 @@ namespace TransactionProcessor.Aggregates.Tests
             aggregate.Create(TestData.EstateName);
             aggregate.AddSecurityUser(TestData.SecurityUserId, TestData.EstateUserEmailAddress);
 
-            TransactionProcessor.Models.Estate estate = aggregate.GetEstate();
+            TransactionProcessor.Models.Estate.Estate estate = aggregate.GetEstate();
             estate.SecurityUsers.ShouldHaveSingleItem();
             estate.SecurityUsers.Single().EmailAddress.ShouldBe(TestData.EstateUserEmailAddress);
         }
@@ -210,7 +210,7 @@ namespace TransactionProcessor.Aggregates.Tests
 
             aggregate.RemoveOperator(TestData.OperatorId);
 
-            TransactionProcessor.Models.Estate estate = aggregate.GetEstate();
+            TransactionProcessor.Models.Estate.Estate estate = aggregate.GetEstate();
             estate.Operators.ShouldHaveSingleItem();
             estate.Operators.Single().IsDeleted.ShouldBeTrue();
         }

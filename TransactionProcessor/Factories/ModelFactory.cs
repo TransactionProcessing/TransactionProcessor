@@ -1,6 +1,7 @@
 ﻿using System.Linq;
 using EstateManagement.DataTransferObjects.Responses.Contract;
 using SimpleResults;
+using TransactionProcessor.DataTransferObjects.Responses.Operator;
 
 namespace TransactionProcessor.Factories
 {
@@ -11,6 +12,7 @@ namespace TransactionProcessor.Factories
     using EstateManagement.DataTransferObjects.Responses.Estate;
     using Models;
     using Newtonsoft.Json;
+    using TransactionProcessor.Models.Estate;
     using IssueVoucherResponse = DataTransferObjects.IssueVoucherResponse;
     using RedeemVoucherResponse = DataTransferObjects.RedeemVoucherResponse;
 
@@ -21,6 +23,39 @@ namespace TransactionProcessor.Factories
     public static class ModelFactory
     {
         #region Methods
+
+        public static Result<OperatorResponse> ConvertFrom(Models.Operator.Operator @operator)
+        {
+            if (@operator == null)
+            {
+                return Result.Invalid("operator cannot be null");
+            }
+
+            OperatorResponse response = new();
+            response.OperatorId = @operator.OperatorId;
+            response.RequireCustomTerminalNumber = @operator.RequireCustomTerminalNumber;
+            response.RequireCustomMerchantNumber = @operator.RequireCustomMerchantNumber;
+            response.Name = @operator.Name;
+
+            return Result.Success(response);
+        }
+
+        public static Result<List<OperatorResponse>> ConvertFrom(List<Models.Operator.Operator> @operators)
+        {
+            if (@operators == null || @operators.Any() == false)
+            {
+                return Result.Success(new List<OperatorResponse>());
+            }
+
+            List<Result<OperatorResponse>> result = new();
+
+            @operators.ForEach(c => result.Add(ModelFactory.ConvertFrom(c)));
+
+            if (result.Any(c => c.IsFailed))
+                return Result.Failure("Failed converting operators");
+
+            return Result.Success(result.Select(r => r.Data).ToList());
+        }
 
         public static Result<SerialisedMessage> ConvertFrom(ProcessLogonTransactionResponse processLogonTransactionResponse)
         {
@@ -172,7 +207,7 @@ namespace TransactionProcessor.Factories
             return Result.Success(response);
         }
 
-        public static Result<List<DataTransferObjects.Responses.Estate.EstateResponse>> ConvertFrom(List<Models.Estate> estates)
+        public static Result<List<DataTransferObjects.Responses.Estate.EstateResponse>> ConvertFrom(List<Estate> estates)
         {
             List<Result<DataTransferObjects.Responses.Estate.EstateResponse>> result = new();
 
@@ -185,7 +220,7 @@ namespace TransactionProcessor.Factories
 
         }
 
-        public static Result<DataTransferObjects.Responses.Estate.EstateResponse> ConvertFrom(Models.Estate estate)
+        public static Result<DataTransferObjects.Responses.Estate.EstateResponse> ConvertFrom(Estate estate)
         {
             if (estate == null)
             {

@@ -25,6 +25,7 @@
             this.AddSingleton<ITransactionValidationService, TransactionValidationService>();
             this.AddSingleton<IFloatDomainService, FloatDomainService>();
             this.AddSingleton<IEstateDomainService, EstateDomainService>();
+            this.AddSingleton<IOperatorDomainService, OperatorDomainService>();
         }
 
         #endregion

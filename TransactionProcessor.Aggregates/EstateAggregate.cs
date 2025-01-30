@@ -2,8 +2,8 @@
 using Shared.DomainDrivenDesign.EventSourcing;
 using Shared.EventStore.Aggregate;
 using Shared.General;
-using TransactionProcessor.Aggregates.Models;
 using TransactionProcessor.Estate.DomainEvents;
+using TransactionProcessor.Models.Estate;
 
 namespace TransactionProcessor.Aggregates{
     public static class EstateAggregateExtensions{
@@ -70,18 +70,18 @@ namespace TransactionProcessor.Aggregates{
             aggregate.ApplyAndAppend(estateReferenceAllocatedEvent);
         }
 
-        public static TransactionProcessor.Models.Estate GetEstate(this EstateAggregate aggregate){
-            TransactionProcessor.Models.Estate estateModel = new TransactionProcessor.Models.Estate();
+        public static TransactionProcessor.Models.Estate.Estate GetEstate(this EstateAggregate aggregate){
+            TransactionProcessor.Models.Estate.Estate estateModel = new TransactionProcessor.Models.Estate.Estate();
 
             estateModel.EstateId = aggregate.AggregateId;
             estateModel.Name = aggregate.EstateName;
             estateModel.Reference = aggregate.EstateReference;
                 
-            estateModel.Operators = new List<TransactionProcessor.Models.EstateOperator>();
+            estateModel.Operators = new List<TransactionProcessor.Models.Estate.Operator>();
             if (aggregate.Operators.Any()){
                 
-                foreach (KeyValuePair<Guid, Operator> @operator in aggregate.Operators){
-                    estateModel.Operators.Add(new TransactionProcessor.Models.EstateOperator
+                foreach (KeyValuePair<Guid, TransactionProcessor.Models.Estate.Operator> @operator in aggregate.Operators){
+                    estateModel.Operators.Add(new TransactionProcessor.Models.Estate.Operator
                     {
                                                                             OperatorId = @operator.Key,
                                                                             IsDeleted = @operator.Value.IsDeleted,
@@ -89,11 +89,11 @@ namespace TransactionProcessor.Aggregates{
                 }
             }
 
-            estateModel.SecurityUsers = new List<TransactionProcessor.Models.SecurityUser>();
+            estateModel.SecurityUsers = new List<TransactionProcessor.Models.Estate.SecurityUser>();
             if (aggregate.SecurityUsers.Any()){
                 
-                foreach (KeyValuePair<Guid, Models.SecurityUser> securityUser in aggregate.SecurityUsers){
-                    estateModel.SecurityUsers.Add(new TransactionProcessor.Models.SecurityUser
+                foreach (KeyValuePair<Guid, SecurityUser> securityUser in aggregate.SecurityUsers){
+                    estateModel.SecurityUsers.Add(new TransactionProcessor.Models.Estate.SecurityUser
                     {
                                                                              EmailAddress = securityUser.Value.EmailAddress,
                                                                              SecurityUserId = securityUser.Key
@@ -104,8 +104,8 @@ namespace TransactionProcessor.Aggregates{
             return estateModel;
         }
 
-        public static void PlayEvent(this EstateAggregate aggregate, SecurityUserAddedToEstateEvent domainEvent){
-            SecurityUser securityUser = new (domainEvent.EmailAddress);
+        public static void PlayEvent(this EstateAggregate aggregate, SecurityUserAddedToEstateEvent domainEvent) {
+            SecurityUser securityUser = new() { EmailAddress = domainEvent.EmailAddress, SecurityUserId = domainEvent.SecurityUserId };
 
             aggregate.SecurityUsers.Add(domainEvent.SecurityUserId,securityUser);
         }
@@ -124,16 +124,17 @@ namespace TransactionProcessor.Aggregates{
         /// </summary>
         /// <param name="domainEvent">The domain event.</param>
         public static void PlayEvent(this EstateAggregate aggregate, OperatorAddedToEstateEvent domainEvent){
-            Operator @operator = new ();
+            TransactionProcessor.Models.Estate.Operator @operator = new() {
+              IsDeleted  = false,
+              OperatorId = domainEvent.OperatorId
+            };
 
             aggregate.Operators.Add(domainEvent.OperatorId, @operator);
         }
 
         public static void PlayEvent(this EstateAggregate aggregate, OperatorRemovedFromEstateEvent domainEvent){
-            KeyValuePair<Guid, Operator> @operator = aggregate.Operators.Single(o => o.Key == domainEvent.OperatorId);
-            aggregate.Operators[domainEvent.OperatorId] = @operator.Value with{
-                                                                                  IsDeleted = true
-                                                                              };
+            KeyValuePair<Guid, TransactionProcessor.Models.Estate.Operator> @operator = aggregate.Operators.Single(o => o.Key == domainEvent.OperatorId);
+            aggregate.Operators[domainEvent.OperatorId].IsDeleted = true;
         }
 
         private static void CheckEstateHasBeenCreated(this EstateAggregate aggregate){
@@ -168,9 +169,9 @@ namespace TransactionProcessor.Aggregates{
     public record EstateAggregate : Aggregate{
         #region Fields
 
-        internal readonly Dictionary<Guid, Operator> Operators;
+        internal readonly Dictionary<Guid, TransactionProcessor.Models.Estate.Operator> Operators;
 
-        internal readonly Dictionary<Guid, Models.SecurityUser> SecurityUsers;
+        internal readonly Dictionary<Guid, SecurityUser> SecurityUsers;
 
         #endregion
 
@@ -179,7 +180,7 @@ namespace TransactionProcessor.Aggregates{
         [ExcludeFromCodeCoverage]
         public EstateAggregate(){
             // Nothing here
-            this.Operators = new Dictionary<Guid, Operator>();
+            this.Operators = new Dictionary<Guid, TransactionProcessor.Models.Estate.Operator>();
             this.SecurityUsers = new Dictionary<Guid, SecurityUser>();
         }
         
@@ -187,7 +188,7 @@ namespace TransactionProcessor.Aggregates{
             Guard.ThrowIfInvalidGuid(aggregateId, "Aggregate Id cannot be an Empty Guid");
 
             this.AggregateId = aggregateId;
-            this.Operators = new Dictionary<Guid, Operator>();
+            this.Operators = new Dictionary<Guid, TransactionProcessor.Models.Estate.Operator>();
             this.SecurityUsers = new Dictionary<Guid, SecurityUser>();
         }
 

@@ -14,6 +14,7 @@
 		<ProjectReference Include="..\TransactionProcessor.Estate.DomainEvents\TransactionProcessor.Estate.DomainEvents.csproj" />
 		<ProjectReference Include="..\TransactionProcessor.Float.DomainEvents\TransactionProcessor.Float.DomainEvents.csproj" />
 		<ProjectReference Include="..\TransactionProcessor.Models\TransactionProcessor.Models.csproj" />
+		<ProjectReference Include="..\TransactionProcessor.Operator.DomainEvents\TransactionProcessor.Operator.DomainEvents.csproj" />
 		<ProjectReference Include="..\TransactionProcessor.Reconciliation.DomainEvents\TransactionProcessor.Reconciliation.DomainEvents.csproj" />
 		<ProjectReference Include="..\TransactionProcessor.Settlement.DomainEvents\TransactionProcessor.Settlement.DomainEvents.csproj" />
 		<ProjectReference Include="..\TransactionProcessor.Transaction.DomainEvents\TransactionProcessor.Transaction.DomainEvents.csproj" />

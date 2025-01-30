@@ -46,11 +46,19 @@ namespace TransactionProcessor.BusinessLogic.Tests.Mediator
             //this.Requests.Add(TestData.GetVoucherByVoucherCodeQuery);
             //this.Requests.Add(TestData.GetVoucherByTransactionIdQuery);
 
+            // Estate Commands and Queries
             this.Requests.Add(TestData.Commands.CreateEstateCommand);
             this.Requests.Add(TestData.Commands.CreateEstateUserCommand);
             this.Requests.Add(TestData.Commands.AddOperatorToEstateCommand);
+            this.Requests.Add(TestData.Commands.RemoveOperatorFromEstateCommand);
             this.Requests.Add(TestData.Queries.GetEstateQuery);
             this.Requests.Add(TestData.Queries.GetEstatesQuery);
+
+            // Operator Commands and Queries
+            this.Requests.Add(TestData.Commands.CreateOperatorCommand);
+            this.Requests.Add(TestData.Commands.UpdateOperatorCommand);
+            this.Requests.Add(TestData.Queries.GetOperatorQuery);
+            this.Requests.Add(TestData.Queries.GetOperatorsQuery);
         }
 
         [Fact]
@@ -120,6 +128,7 @@ namespace TransactionProcessor.BusinessLogic.Tests.Mediator
                                           s.AddSingleton<ITransactionProcessorReadRepository, DummyTransactionProcessorReadRepository>();
                                           s.AddSingleton<IEstateDomainService, DummyEstateDomainService>();
                                           s.AddSingleton<IEstateManagementManager, DummyEstateManagementManager>();
+                                          s.AddSingleton<IOperatorDomainService, DummyOperatorDomainService>();
                 s.AddSingleton<IEventStoreContext, DummyEventStoreContext>();
             });
         }

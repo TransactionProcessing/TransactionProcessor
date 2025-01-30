@@ -21,10 +21,10 @@ namespace TransactionProcessor.BusinessLogic.Manager
         //                          Guid contractId,
         //                          CancellationToken cancellationToken);
 
-        Task<Result<Models.Estate>> GetEstate(Guid estateId,
+        Task<Result<Models.Estate.Estate>> GetEstate(Guid estateId,
                                                         CancellationToken cancellationToken);
 
-        Task<Result<List<Models.Estate>>> GetEstates(Guid estateId,
+        Task<Result<List<Models.Estate.Estate>>> GetEstates(Guid estateId,
                                                                CancellationToken cancellationToken);
 
         //Task<Result<EstateManagement.Merchant>> GetMerchant(Guid estateId, Guid merchantId,
@@ -40,10 +40,10 @@ namespace TransactionProcessor.BusinessLogic.Manager
 
         //Task<Result<File>> GetFileDetails(Guid estateId, Guid fileId, CancellationToken cancellationToken);
 
-        //Task<Result<Operator>> GetOperator(Guid estateId,Guid operatorId,
-        //                       CancellationToken cancellationToken);
+        Task<Result<Models.Operator.Operator>> GetOperator(Guid estateId, Guid operatorId,
+                               CancellationToken cancellationToken);
 
-        //Task<Result<List<Operator>>> GetOperators(Guid estateId, CancellationToken cancellationToken);
+        Task<Result<List<Models.Operator.Operator>>> GetOperators(Guid estateId, CancellationToken cancellationToken);
 
         #endregion
     }

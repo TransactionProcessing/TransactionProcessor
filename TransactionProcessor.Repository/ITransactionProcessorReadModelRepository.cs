@@ -2,6 +2,7 @@
 using SimpleResults;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -18,21 +19,22 @@ using TransactionProcessor.Database.Entities;
 using Shared.Results;
 using Microsoft.EntityFrameworkCore;
 using System.Reflection;
+using TransactionProcessor.Operator.DomainEvents;
 
 namespace TransactionProcessor.Repository {
     public interface ITransactionProcessorReadModelRepository {
 
-        //Task<Result> UpdateOperator(OperatorNameUpdatedEvent domainEvent,
-        //                            CancellationToken cancellationToken);
+        Task<Result> UpdateOperator(OperatorNameUpdatedEvent domainEvent,
+                                    CancellationToken cancellationToken);
 
-        //Task<Result> UpdateOperator(OperatorRequireCustomMerchantNumberChangedEvent domainEvent,
-        //                            CancellationToken cancellationToken);
+        Task<Result> UpdateOperator(OperatorRequireCustomMerchantNumberChangedEvent domainEvent,
+                                    CancellationToken cancellationToken);
 
-        //Task<Result> UpdateOperator(OperatorRequireCustomTerminalNumberChangedEvent domainEvent,
-        //                            CancellationToken cancellationToken);
+        Task<Result> UpdateOperator(OperatorRequireCustomTerminalNumberChangedEvent domainEvent,
+                                    CancellationToken cancellationToken);
 
-        //Task<Result> AddOperator(OperatorCreatedEvent domainEvent,
-        //                         CancellationToken cancellationToken);
+        Task<Result> AddOperator(OperatorCreatedEvent domainEvent,
+                                 CancellationToken cancellationToken);
 
         //Task<Result> AddContract(ContractCreatedEvent domainEvent,
         //                         CancellationToken cancellationToken);
@@ -259,10 +261,14 @@ namespace TransactionProcessor.Repository {
         //Task<Result> UpdateMerchantContact(MerchantContactPhoneNumberUpdatedEvent domainEvent,
         //                                   CancellationToken cancellationToken);
 
-        Task<Result<Models.Estate>> GetEstate(Guid estateId,
+        Task<Result<Models.Estate.Estate>> GetEstate(Guid estateId,
                                               CancellationToken cancellationToken);
+
+        Task<Result<List<Models.Operator.Operator>>> GetOperators(Guid estateId,
+                                                                  CancellationToken cancellationToken);
     }
 
+    [ExcludeFromCodeCoverage]
     public class TransactionProcessorReadModelRepository : ITransactionProcessorReadModelRepository {
         private readonly Shared.EntityFramework.IDbContextFactory<EstateManagementGenericContext> DbContextFactory;
 
@@ -273,7 +279,7 @@ namespace TransactionProcessor.Repository {
         
         }
 
-        public async Task<Result<Models.Estate>> GetEstate(Guid estateId,
+        public async Task<Result<Models.Estate.Estate>> GetEstate(Guid estateId,
                                                            CancellationToken cancellationToken)
         {
             EstateManagementGenericContext context = await this.DbContextFactory.GetContext(estateId, ConnectionStringIdentifier, cancellationToken);
@@ -286,7 +292,7 @@ namespace TransactionProcessor.Repository {
             }
 
             List<EstateSecurityUser> estateSecurityUsers = await context.EstateSecurityUsers.Where(esu => esu.EstateId == estate.EstateId).ToListAsync(cancellationToken);
-            List<Operator> operators = await context.Operators.Where(eo => eo.EstateId == estate.EstateId).ToListAsync(cancellationToken);
+            List<Database.Entities.Operator> operators = await context.Operators.Where(eo => eo.EstateId == estate.EstateId).ToListAsync(cancellationToken);
 
             return Result.Success(ModelFactory.ConvertFrom(estate, estateSecurityUsers, operators));
         }
@@ -884,6 +890,88 @@ namespace TransactionProcessor.Repository {
             voucher.IsRedeemed = true;
             voucher.RedeemedDateTime = domainEvent.RedeemedDateTime;
             voucher.RedeemedDate = domainEvent.RedeemedDateTime.Date;
+
+            return await context.SaveChangesAsync(cancellationToken);
+        }
+
+        public async Task<Result<List<Models.Operator.Operator>>> GetOperators(Guid estateId, CancellationToken cancellationToken)
+        {
+            EstateManagementGenericContext context = await this.DbContextFactory.GetContext(estateId, ConnectionStringIdentifier, cancellationToken);
+
+            Database.Entities.Estate estate = await context.Estates.SingleOrDefaultAsync(e => e.EstateId == estateId, cancellationToken: cancellationToken);
+            List<Database.Entities.Operator> operators = await (from o in context.Operators where o.EstateId == estate.EstateId select o).ToListAsync(cancellationToken);
+
+            List<Models.Operator.Operator> models = new();
+
+            foreach (Database.Entities.Operator @operator in operators)
+            {
+                models.Add(new Models.Operator.Operator
+                {
+                    OperatorId = @operator.OperatorId,
+                    RequireCustomTerminalNumber = @operator.RequireCustomTerminalNumber,
+                    RequireCustomMerchantNumber = @operator.RequireCustomMerchantNumber,
+                    Name = @operator.Name,
+                });
+            }
+
+            return Result.Success(models);
+        }
+
+        public async Task<Result> UpdateOperator(OperatorNameUpdatedEvent domainEvent, CancellationToken cancellationToken)
+        {
+            EstateManagementGenericContext context = await this.GetContextFromDomainEvent(domainEvent, cancellationToken);
+
+            Result<Database.Entities.Operator> operatorResult = await context.LoadOperator(domainEvent, cancellationToken);
+            if (operatorResult.IsFailed)
+                return ResultHelpers.CreateFailure(operatorResult);
+            Database.Entities.Operator @operator = operatorResult.Data;
+            @operator.Name = domainEvent.Name;
+
+            return await context.SaveChangesAsync(cancellationToken);
+        }
+
+        public async Task<Result> UpdateOperator(OperatorRequireCustomMerchantNumberChangedEvent domainEvent, CancellationToken cancellationToken)
+        {
+            EstateManagementGenericContext context = await this.GetContextFromDomainEvent(domainEvent, cancellationToken);
+
+            Result<Database.Entities.Operator> operatorResult = await context.LoadOperator(domainEvent, cancellationToken);
+            if (operatorResult.IsFailed)
+                return ResultHelpers.CreateFailure(operatorResult);
+            Database.Entities.Operator @operator = operatorResult.Data;
+
+            @operator.RequireCustomMerchantNumber = domainEvent.RequireCustomMerchantNumber;
+
+            return await context.SaveChangesAsync(cancellationToken);
+        }
+
+        public async Task<Result> UpdateOperator(OperatorRequireCustomTerminalNumberChangedEvent domainEvent, CancellationToken cancellationToken)
+        {
+            EstateManagementGenericContext context = await this.GetContextFromDomainEvent(domainEvent, cancellationToken);
+
+            Result<Database.Entities.Operator> operatorResult = await context.LoadOperator(domainEvent, cancellationToken);
+            if (operatorResult.IsFailed)
+                return ResultHelpers.CreateFailure(operatorResult);
+            Database.Entities.Operator @operator = operatorResult.Data;
+
+            @operator.RequireCustomTerminalNumber = domainEvent.RequireCustomTerminalNumber;
+
+            return await context.SaveChangesAsync(cancellationToken);
+        }
+
+        public async Task<Result> AddOperator(OperatorCreatedEvent domainEvent, CancellationToken cancellationToken)
+        {
+            EstateManagementGenericContext context = await this.GetContextFromDomainEvent(domainEvent, cancellationToken);
+
+            Database.Entities.Operator @operator = new Database.Entities.Operator
+            {
+                RequireCustomTerminalNumber = domainEvent.RequireCustomTerminalNumber,
+                OperatorId = domainEvent.OperatorId,
+                Name = domainEvent.Name,
+                RequireCustomMerchantNumber = domainEvent.RequireCustomMerchantNumber,
+                EstateId = domainEvent.EstateId
+            };
+
+            await context.Operators.AddAsync(@operator, cancellationToken);
 
             return await context.SaveChangesAsync(cancellationToken);
         }

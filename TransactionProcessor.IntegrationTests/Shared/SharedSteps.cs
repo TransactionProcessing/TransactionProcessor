@@ -2,7 +2,9 @@
 using System.Collections.Generic;
 using TransactionProcessor.DataTransferObjects.Requests.Contract;
 using TransactionProcessor.DataTransferObjects.Requests.Merchant;
+using TransactionProcessor.DataTransferObjects.Requests.Operator;
 using TransactionProcessor.DataTransferObjects.Responses.Contract;
+using TransactionProcessor.DataTransferObjects.Responses.Operator;
 
 namespace TransactionProcessor.IntegrationTests.Shared
 {
@@ -437,6 +439,27 @@ namespace TransactionProcessor.IntegrationTests.Shared
                 this.TestingContext.Estates,
                 estateName,
                 operatorName);
+        }
+
+        [When("I update the operators with the following details")]
+        public async Task WhenIUpdateTheOperatorsWithTheFollowingDetails(DataTable table)
+        {
+            List<(EstateDetails, Guid, UpdateOperatorRequest)> requests = table.Rows.ToUpdateOperatorRequests(this.TestingContext.Estates);
+
+            List<OperatorResponse> verifiedOperators = await this.TransactionProcessorSteps.WhenIUpdateTheOperatorsWithTheFollowingDetails(this.TestingContext.AccessToken, requests);
+
+            foreach (OperatorResponse verifiedOperator in verifiedOperators)
+            {
+                this.TestingContext.Logger.LogInformation($"Operator {verifiedOperator.Name} updated");
+            }
+        }
+
+        [When("I get all the operators the following details are returned")]
+        public async Task WhenIGetAllTheOperatorsTheFollowingDetailsAreReturned(DataTable dataTable)
+        {
+            List<(EstateDetails, Guid, OperatorResponse)> expectedOperatorResponses = dataTable.Rows.ToOperatorResponses(this.TestingContext.Estates);
+
+            await this.TransactionProcessorSteps.WhenIGetAllTheOperatorsTheFollowingDetailsAreReturned(this.TestingContext.AccessToken, expectedOperatorResponses);
         }
     }
 }

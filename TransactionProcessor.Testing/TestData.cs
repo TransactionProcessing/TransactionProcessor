@@ -1,5 +1,7 @@
 ﻿using TransactionProcessor.Aggregates;
 using TransactionProcessor.Database.Entities;
+using TransactionProcessor.DataTransferObjects.Requests.Operator;
+using TransactionProcessor.Operator.DomainEvents;
 
 namespace TransactionProcessor.Testing
 {
@@ -24,6 +26,8 @@ namespace TransactionProcessor.Testing
     using CalculationType = Models.CalculationType;
     using FeeType = Models.FeeType;
     using EstateManagement.DataTransferObjects.Requests.Estate;
+    using TransactionProcessor.Models.Estate;
+    using TransactionProcessor.Estate.DomainEvents;
 
     public class TestData
     {
@@ -79,10 +83,18 @@ namespace TransactionProcessor.Testing
         public static String OperatorName2 = "Test Operator Name 2";
 
         public static String CustomerEmailAddress = "testcustomer1@customer.co.uk";
-        
+
         public static Boolean RequireCustomMerchantNumber = true;
 
+        public static Boolean RequireCustomMerchantNumberFalse = false;
+
+        public static Boolean RequireCustomMerchantNumberTrue = true;
+
         public static Boolean RequireCustomTerminalNumber = true;
+
+        public static Boolean RequireCustomTerminalNumberFalse = false;
+
+        public static Boolean RequireCustomTerminalNumberTrue = true;
 
         public static String ResponseCode = "0000";
 
@@ -146,6 +158,8 @@ namespace TransactionProcessor.Testing
             };
 
         #endregion
+
+        public static String EmailAddress = "testuser1@testestate1.co.uk";
 
         #region Properties
 
@@ -1540,8 +1554,8 @@ namespace TransactionProcessor.Testing
 
         public static String EstateUserPassword = "123456";
 
-        public static Models.Estate EstateModel =>
-            new Models.Estate
+        public static Estate EstateModel =>
+            new Models.Estate.Estate()
             {
                 EstateId = TestData.EstateId,
                 Name = TestData.EstateName,
@@ -1549,26 +1563,26 @@ namespace TransactionProcessor.Testing
                 SecurityUsers = null
             };
 
-        public static Models.Estate EstateModelWithOperators =>
-            new Models.Estate
+        public static Estate EstateModelWithOperators =>
+            new Models.Estate.Estate()
             {
                 EstateId = TestData.EstateId,
                 Name = TestData.EstateName,
-                Operators = new List<EstateOperator>{
-                                                                          new EstateOperator{
+                Operators = new List<Models.Estate.Operator>{
+                                                                          new Models.Estate.Operator{
                                                                                           OperatorId = TestData.OperatorId
                                                                                       }
                                                                       },
                 SecurityUsers = null
             };
 
-        public static Models.Estate EstateModelWithOperatorsAndSecurityUsers =>
-            new Models.Estate
+        public static Estate EstateModelWithOperatorsAndSecurityUsers =>
+            new Models.Estate.Estate()
             {
                 EstateId = TestData.EstateId,
                 Name = TestData.EstateName,
-                Operators = new List<EstateOperator>{
-                                                                          new EstateOperator{
+                Operators = new List<Models.Estate.Operator>{
+                                                                          new Models.Estate.Operator{
                                                                                           OperatorId = TestData.OperatorId
                                                                                       }
                                                                       },
@@ -1580,8 +1594,8 @@ namespace TransactionProcessor.Testing
                                                                               }
             };
 
-        public static Models.Estate EstateModelWithSecurityUsers =>
-            new Models.Estate
+        public static Estate EstateModelWithSecurityUsers =>
+            new Models.Estate.Estate()
             {
                 EstateId = TestData.EstateId,
                 Name = TestData.EstateName,
@@ -1592,6 +1606,23 @@ namespace TransactionProcessor.Testing
                                                                                                       SecurityUserId = TestData.SecurityUserId
                                                                                                   }
                                                                               }
+            };
+
+        public static CreateOperatorRequest CreateOperatorRequest =>
+            new CreateOperatorRequest()
+            {
+                OperatorId = TestData.OperatorId,
+                RequireCustomTerminalNumber = TestData.RequireCustomTerminalNumber,
+                RequireCustomMerchantNumber = TestData.RequireCustomMerchantNumber,
+                Name = TestData.OperatorName
+            };
+
+        public static UpdateOperatorRequest UpdateOperatorRequest =>
+            new UpdateOperatorRequest()
+            {
+                RequireCustomTerminalNumber = TestData.RequireCustomTerminalNumber,
+                RequireCustomMerchantNumber = TestData.RequireCustomMerchantNumber,
+                Name = TestData.OperatorName
             };
 
         #endregion
@@ -1601,11 +1632,19 @@ namespace TransactionProcessor.Testing
             public static EstateCommands.AddOperatorToEstateCommand AddOperatorToEstateCommand => new EstateCommands.AddOperatorToEstateCommand(TestData.EstateId, TestData.AssignOperatorRequestToEstate);
             public static EstateCommands.CreateEstateCommand CreateEstateCommand => new EstateCommands.CreateEstateCommand(TestData.CreateEstateRequest);
             public static EstateCommands.RemoveOperatorFromEstateCommand RemoveOperatorFromEstateCommand => new(TestData.EstateId, TestData.OperatorId);
+
+            public static OperatorCommands.CreateOperatorCommand CreateOperatorCommand => new(TestData.EstateId, TestData.CreateOperatorRequest);
+
+            public static OperatorCommands.UpdateOperatorCommand UpdateOperatorCommand => new(TestData.EstateId, TestData.OperatorId, TestData.UpdateOperatorRequest);
+
         }
 
         public static class Queries {
             public static EstateQueries.GetEstateQuery GetEstateQuery => new(TestData.EstateId);
             public static EstateQueries.GetEstatesQuery GetEstatesQuery => new(TestData.EstateId);
+
+            public static OperatorQueries.GetOperatorQuery GetOperatorQuery => new(TestData.EstateId, TestData.OperatorId);
+            public static OperatorQueries.GetOperatorsQuery GetOperatorsQuery => new(TestData.EstateId);
         }
 
         public static class Aggregates {
@@ -1638,6 +1677,24 @@ namespace TransactionProcessor.Testing
 
                 return estateAggregate;
             }
+        }
+
+        public static class DomainEvents {
+            public static EstateCreatedEvent EstateCreatedEvent => new EstateCreatedEvent(TestData.EstateId, TestData.EstateName);
+            public static EstateReferenceAllocatedEvent EstateReferenceAllocatedEvent => new EstateReferenceAllocatedEvent(TestData.EstateId, TestData.EstateReference);
+
+            public static SecurityUserAddedToEstateEvent EstateSecurityUserAddedEvent =
+                new SecurityUserAddedToEstateEvent(TestData.EstateId, TestData.EstateSecurityUserId, TestData.EmailAddress);
+
+            public static OperatorCreatedEvent OperatorCreatedEvent = new OperatorCreatedEvent(TestData.OperatorId,
+                TestData.EstateId,
+                TestData.OperatorName,
+                TestData.RequireCustomMerchantNumber,
+                TestData.RequireCustomTerminalNumber);
+
+            public static OperatorNameUpdatedEvent OperatorNameUpdatedEvent => new(TestData.OperatorId, TestData.EstateId, TestData.OperatorName2);
+            public static OperatorRequireCustomMerchantNumberChangedEvent OperatorRequireCustomMerchantNumberChangedEvent => new(TestData.OperatorId, TestData.EstateId, TestData.RequireCustomMerchantNumberFalse);
+            public static OperatorRequireCustomTerminalNumberChangedEvent OperatorRequireCustomTerminalNumberChangedEvent => new(TestData.OperatorId, TestData.EstateId, TestData.RequireCustomTerminalNumberFalse);
         }
     }
 

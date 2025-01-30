@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 
-namespace TransactionProcessor.Models
+namespace TransactionProcessor.Models.Estate
 {
     /// <summary>
     /// 
@@ -12,15 +12,15 @@ namespace TransactionProcessor.Models
     {
         #region Properties
 
-        public Int32 EstateReportingId { get; set; }
+        public int EstateReportingId { get; set; }
 
         public Guid EstateId { get; set; }
 
-        public String Name { get; set; }
+        public string Name { get; set; }
 
-        public String Reference { get; set; }
+        public string Reference { get; set; }
 
-        public List<EstateOperator> Operators { get; set; }
+        public List<Operator> Operators { get; set; }
 
         public List<SecurityUser> SecurityUsers { get; set; }
 
