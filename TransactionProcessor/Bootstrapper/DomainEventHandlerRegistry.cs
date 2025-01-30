@@ -76,6 +76,7 @@ namespace TransactionProcessor.Bootstrapper
             this.AddSingleton<TransactionDomainEventHandler>();
             this.AddSingleton<VoucherDomainEventHandler>();
             this.AddSingleton<EstateDomainEventHandler>();
+            this.AddSingleton<OperatorDomainEventHandler>();
             this.AddSingleton<StateProjectionEventHandler<MerchantBalanceState>>();
             this.AddSingleton<StateProjectionEventHandler<VoucherState>>();
 

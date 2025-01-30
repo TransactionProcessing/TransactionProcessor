@@ -5,6 +5,7 @@ using TransactionProcessor.DataTransferObjects.Requests.Merchant;
 using TransactionProcessor.DataTransferObjects.Requests.Operator;
 using TransactionProcessor.DataTransferObjects.Responses.Contract;
 using TransactionProcessor.DataTransferObjects.Responses.Merchant;
+using TransactionProcessor.DataTransferObjects.Responses.Operator;
 
 namespace TransactionProcessor.IntegrationTesting.Helpers;
 
@@ -97,6 +98,68 @@ public static class ReqnrollTableHelper
 }
 
 public static class ReqnrollExtensions{
+
+    public static List<(EstateDetails, Guid, OperatorResponse)> ToOperatorResponses(this DataTableRows tableRows, List<EstateDetails> estateDetailsList)
+    {
+        List<(EstateDetails, Guid, OperatorResponse)> result = new();
+
+        foreach (DataTableRow tableRow in tableRows)
+        {
+            String estateName = ReqnrollTableHelper.GetStringRowValue(tableRow, "EstateName");
+            EstateDetails estateDetails = estateDetailsList.SingleOrDefault(e => e.EstateName == estateName);
+            estateDetails.ShouldNotBeNull();
+
+            String operatorName = ReqnrollTableHelper.GetStringRowValue(tableRow, "OperatorName");
+            Boolean requireCustomMerchantNumber = ReqnrollTableHelper.GetBooleanValue(tableRow, "RequireCustomMerchantNumber");
+            Boolean requireCustomTerminalNumber = ReqnrollTableHelper.GetBooleanValue(tableRow, "RequireCustomTerminalNumber");
+            Guid operatorId = estateDetails.GetOperatorId(operatorName);
+
+
+            OperatorResponse operatorResponse = new()
+            {
+                RequireCustomTerminalNumber = requireCustomTerminalNumber,
+                RequireCustomMerchantNumber = requireCustomMerchantNumber,
+                Name = operatorName,
+                OperatorId = operatorId
+            };
+
+            result.Add((estateDetails, operatorId, operatorResponse));
+        }
+
+        return result;
+    }
+
+    public static List<(EstateDetails, Guid, UpdateOperatorRequest)> ToUpdateOperatorRequests(this DataTableRows tableRows, List<EstateDetails> estateDetailsList)
+    {
+        List<(EstateDetails, Guid, UpdateOperatorRequest)> result = new();
+
+        foreach (DataTableRow tableRow in tableRows)
+        {
+            String estateName = ReqnrollTableHelper.GetStringRowValue(tableRow, "EstateName");
+            EstateDetails estateDetails = estateDetailsList.SingleOrDefault(e => e.EstateName == estateName);
+            estateDetails.ShouldNotBeNull();
+
+            String merchantName = ReqnrollTableHelper.GetStringRowValue(tableRow, "OperatorName");
+            Guid operatorId = estateDetails.GetOperatorId(merchantName);
+
+            String updateOperatorName = ReqnrollTableHelper.GetStringRowValue(tableRow, "UpdateOperatorName");
+            Boolean requireCustomMerchantNumber = ReqnrollTableHelper.GetBooleanValue(tableRow, "RequireCustomMerchantNumber");
+            Boolean requireCustomTerminalNumber = ReqnrollTableHelper.GetBooleanValue(tableRow, "RequireCustomTerminalNumber");
+
+
+            UpdateOperatorRequest updateOperatorRequest = new UpdateOperatorRequest
+            {
+                RequireCustomTerminalNumber = requireCustomTerminalNumber,
+                RequireCustomMerchantNumber = requireCustomMerchantNumber,
+                Name = updateOperatorName
+            };
+
+            result.Add((estateDetails, operatorId, updateOperatorRequest));
+        }
+
+        return result;
+    }
+
     public static List<(EstateDetails, Guid, DateTime, Int32)> ToPendingSettlementRequests(this DataTableRows tableRows, List<EstateDetails> estateDetailsList){
         List<(EstateDetails, Guid, DateTime, Int32)> results = new List<(EstateDetails, Guid, DateTime, Int32)>();
         foreach (DataTableRow tableRow in tableRows){

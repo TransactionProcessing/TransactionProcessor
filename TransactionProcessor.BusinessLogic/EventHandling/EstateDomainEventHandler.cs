@@ -42,7 +42,15 @@ public class EstateDomainEventHandler : IDomainEventHandler
     public async Task<Result> Handle(IDomainEvent domainEvent,
                                      CancellationToken cancellationToken)
     {
-        return await this.HandleSpecificDomainEvent((dynamic)domainEvent, cancellationToken);
+        Task<Result> task = domainEvent switch
+        {
+            EstateCreatedEvent estateCreatedEvent => this.HandleSpecificDomainEvent(estateCreatedEvent, cancellationToken),
+            SecurityUserAddedToEstateEvent securityUserAddedToEstateEvent => this.HandleSpecificDomainEvent(securityUserAddedToEstateEvent, cancellationToken),
+            EstateReferenceAllocatedEvent estateReferenceAllocatedEvent => this.HandleSpecificDomainEvent(estateReferenceAllocatedEvent, cancellationToken),
+            _ => Task.FromResult(Result.Success())
+        };
+
+        return await task;
     }
 
     /// <summary>

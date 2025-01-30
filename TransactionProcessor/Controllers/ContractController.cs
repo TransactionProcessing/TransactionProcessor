@@ -1,9 +1,7 @@
-﻿using MediatR;
-using Microsoft.AspNetCore.Http;
+﻿using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Shared.General;
 using SimpleResults;
-using Swashbuckle.AspNetCore.Annotations;
 using Swashbuckle.AspNetCore.Filters;
 using System.Collections.Generic;
 using System.Security.Claims;
@@ -29,11 +27,9 @@ using AddTransactionFeeForProductToContractRequest = TransactionProcessor.DataTr
 using CreateContractRequest = TransactionProcessor.DataTransferObjects.Requests.Contract.CreateContractRequest;
 using Microsoft.AspNetCore.Authorization;
 using System.Diagnostics.CodeAnalysis;
-using EstateManagement.DataTransferObjects.Responses.Operator;
 using TransactionProcessor.BusinessLogic.Manager;
 using TransactionProcessor.BusinessLogic.Requests;
 using TransactionProcessor.Database.Entities;
-using TransactionProcessor.DataTransferObjects.Requests.Operator;
 using Microsoft.CodeAnalysis.Editing;
 
 namespace TransactionProcessor.Controllers {
@@ -313,149 +309,6 @@ namespace TransactionProcessor.Controllers {
         /// The controller name
         /// </summary>
         public const string ControllerName = "contracts";
-
-        /// <summary>
-        /// The controller route
-        /// </summary>
-        private const string ControllerRoute = "api/estates/{estateid}/" + ControllerName;
-
-        #endregion
-    }
-
-    [ExcludeFromCodeCoverage]
-    [Route(ControllerRoute)]
-    [ApiController]
-    public class OperatorController : ControllerBase
-    {
-        private readonly IEstateClient EstateClient;
-        private readonly ISecurityServiceClient SecurityServiceClient;
-
-        /// <summary>
-        /// The mediator
-        /// </summary>
-        private readonly IMediator Mediator;
-
-        /// <summary>
-        /// Initializes a new instance of the <see cref="OperatorController"/> class.
-        /// </summary>
-        /// <param name="mediator">The mediator.</param>
-        public OperatorController(IEstateClient estateClient, ISecurityServiceClient securityServiceClient) {
-            this.EstateClient = estateClient;
-            this.SecurityServiceClient = securityServiceClient;
-        }
-        private TokenResponse TokenResponse;
-        private ClaimsPrincipal UserOverride;
-        internal void SetContextOverride(HttpContext ctx)
-        {
-            UserOverride = ctx.User;
-        }
-
-        internal ClaimsPrincipal GetUser()
-        {
-            return UserOverride switch
-            {
-                null => HttpContext.User,
-                _ => UserOverride
-            };
-        }
-
-        /// <summary>
-        /// Creates the operator.
-        /// </summary>
-        /// <param name="estateId">The estate identifier.</param>
-        /// <param name="createOperatorRequest">The create operator request.</param>
-        /// <param name="cancellationToken">The cancellation token.</param>
-        /// <returns></returns>
-        [HttpPost]
-        [Route("")]
-        public async Task<IActionResult> CreateOperator([FromRoute] Guid estateId, [FromBody] CreateOperatorRequest createOperatorRequest, CancellationToken cancellationToken)
-        {
-            this.TokenResponse = await Helpers.GetToken(this.TokenResponse, this.SecurityServiceClient, cancellationToken);
-
-            var estateClientRequest = new EstateManagement.DataTransferObjects.Requests.Operator.CreateOperatorRequest() {
-                Name = createOperatorRequest.Name,
-                OperatorId = createOperatorRequest.OperatorId,
-                RequireCustomMerchantNumber = createOperatorRequest.RequireCustomMerchantNumber,
-                RequireCustomTerminalNumber = createOperatorRequest.RequireCustomTerminalNumber
-            };
-
-            var result = await this.EstateClient.CreateOperator(this.TokenResponse.AccessToken, estateId, estateClientRequest, cancellationToken);
-            
-            // return the result
-            return result.ToActionResultX();
-        }
-
-        [HttpPost]
-        [Route("{operatorId}")]
-        [SwaggerResponse(200, "OK")]
-        public async Task<IActionResult> UpdateOperator([FromRoute] Guid estateId, [FromRoute] Guid operatorId, [FromBody] UpdateOperatorRequest updateOperatorRequest, CancellationToken cancellationToken)
-        {
-            this.TokenResponse = await Helpers.GetToken(this.TokenResponse, this.SecurityServiceClient, cancellationToken);
-
-            var estateClientRequest = new EstateManagement.DataTransferObjects.Requests.Operator.UpdateOperatorRequest()
-            {
-                Name = updateOperatorRequest.Name,
-                RequireCustomMerchantNumber = updateOperatorRequest.RequireCustomMerchantNumber,
-                RequireCustomTerminalNumber = updateOperatorRequest.RequireCustomTerminalNumber
-            };
-
-            var result = await this.EstateClient.UpdateOperator(this.TokenResponse.AccessToken, estateId, operatorId, estateClientRequest, cancellationToken);
-            
-            // return the result
-            return result.ToActionResultX();
-        }
-
-
-        [HttpGet]
-        [Route("{operatorId}")]
-        public async Task<IActionResult> GetOperator([FromRoute] Guid estateId,
-                                                     [FromRoute] Guid operatorId,
-                                                     CancellationToken cancellationToken)
-        {
-            this.TokenResponse = await Helpers.GetToken(this.TokenResponse, this.SecurityServiceClient, cancellationToken);
-
-            var result = await this.EstateClient.GetOperator(this.TokenResponse.AccessToken, estateId, operatorId, cancellationToken);
-
-            if (result.IsFailed)
-            {
-                return result.ToActionResultX();
-            }
-
-            DataTransferObjects.Responses.Operator.OperatorResponse response = new() { OperatorId = result.Data.OperatorId, Name = result.Data.Name, RequireCustomMerchantNumber = result.Data.RequireCustomMerchantNumber, RequireCustomTerminalNumber = result.Data.RequireCustomTerminalNumber };
-
-            return Result.Success(response).ToActionResultX();
-        }
-
-        [HttpGet]
-        [Route("")]
-        public async Task<IActionResult> GetOperators([FromRoute] Guid estateId,
-                                                      CancellationToken cancellationToken)
-        {
-            this.TokenResponse = await Helpers.GetToken(this.TokenResponse, this.SecurityServiceClient, cancellationToken);
-
-            var result = await this.EstateClient.GetOperators(this.TokenResponse.AccessToken, estateId, cancellationToken);
-
-            if (result.IsFailed)
-            {
-                return result.ToActionResultX();
-            }
-
-            List<DataTransferObjects.Responses.Operator.OperatorResponse> responses = new();
-            foreach (OperatorResponse operatorResponse in result.Data) {
-
-
-                responses.Add(new() { OperatorId = operatorResponse.OperatorId, Name = operatorResponse.Name, RequireCustomMerchantNumber = operatorResponse.RequireCustomMerchantNumber, RequireCustomTerminalNumber = operatorResponse.RequireCustomTerminalNumber });
-            }
-
-            return Result.Success(responses).ToActionResultX();
-        }
-
-        #region Others
-
-        /// <summary>
-        /// The controller name
-        /// </summary>
-        public const string ControllerName = "operators";
 
         /// <summary>
         /// The controller route

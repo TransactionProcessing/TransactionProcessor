@@ -231,14 +231,14 @@ public class TransactionValidationService : ITransactionValidationService{
     }
 
     private Result<TransactionValidationResult> ValidateEstateOperator(EstateAggregate estate, Guid operatorId) {
-        List<EstateOperator> estateOperators = estate.GetEstate().Operators;
+        List<Models.Estate.Operator> estateOperators = estate.GetEstate().Operators;
 
         if (estateOperators == null || estateOperators.Any() == false)
         {
             return CreateFailedResult(new TransactionValidationResult(TransactionResponseCode.NoEstateOperators, $"Estate {estate.EstateName} has no operators defined"));
         }
 
-        EstateOperator estateOperatorRecord = estateOperators.SingleOrDefault(o => o.OperatorId == operatorId);
+        Models.Estate.Operator estateOperatorRecord = estateOperators.SingleOrDefault(o => o.OperatorId == operatorId);
 
         Result<TransactionValidationResult> result = estateOperatorRecord switch {
             null => CreateFailedResult(new TransactionValidationResult(TransactionResponseCode.OperatorNotValidForEstate, $"Operator {operatorId} not configured for Estate [{estate.EstateName}]")),

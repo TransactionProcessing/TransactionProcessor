@@ -657,6 +657,26 @@ public class TransactionProcessorSteps
         estate.EstateName.ShouldBe(expectedEstateDetails.Single());
     }
 
+    public async Task WhenIGetAllTheOperatorsTheFollowingDetailsAreReturned(String accessToken, List<(EstateDetails, Guid, OperatorResponse)> expectedOperatorResponses)
+    {
+        IEnumerable<Guid> distinctEstates = expectedOperatorResponses.Select(e => e.Item1).DistinctBy(e => e.EstateId).Select(e => e.EstateId);
+
+        foreach (Guid estateId in distinctEstates)
+        {
+            await Retry.For(async () => {
+                List<OperatorResponse>? operatorList = await this.TransactionProcessorClient.GetOperators(accessToken, estateId, CancellationToken.None);
+
+                foreach (OperatorResponse operatorResponse in operatorList)
+                {
+                    OperatorResponse? expectedOperator = expectedOperatorResponses.SingleOrDefault(s => s.Item3.OperatorId == operatorResponse.OperatorId).Item3;
+                    expectedOperator.ShouldNotBeNull();
+                    operatorResponse.RequireCustomMerchantNumber.ShouldBe(expectedOperator.RequireCustomMerchantNumber);
+                    operatorResponse.RequireCustomTerminalNumber.ShouldBe(expectedOperator.RequireCustomTerminalNumber);
+                    operatorResponse.Name.ShouldBe(expectedOperator.Name);
+                }
+            });
+        }
+    }
     public async Task WhenIGetTheEstateTheEstateOperatorDetailsAreReturnedAsFollows(String accessToken, String estateName, List<EstateDetails> estateDetailsList, List<String> expectedOperators)
     {
         Guid estateId = Guid.NewGuid();
@@ -733,5 +753,32 @@ public class TransactionProcessorSteps
             operatorResponse.ShouldNotBeNull();
             operatorResponse.IsDeleted.ShouldBeTrue();
         });
+    }
+
+    public async Task<List<OperatorResponse>> WhenIUpdateTheOperatorsWithTheFollowingDetails(string accessToken, List<(EstateDetails estate, Guid operatorId, UpdateOperatorRequest request)> requests)
+    {
+        List<OperatorResponse> responses = new List<OperatorResponse>();
+
+        foreach ((EstateDetails estate, Guid operatorId, UpdateOperatorRequest request) request in requests)
+        {
+            await this.TransactionProcessorClient.UpdateOperator(accessToken, request.estate.EstateId, request.operatorId, request.request, CancellationToken.None).ConfigureAwait(false);
+        }
+
+        foreach ((EstateDetails estate, Guid operatorId, UpdateOperatorRequest request) request in requests)
+        {
+            await Retry.For(async () => {
+                OperatorResponse? operatorResponse = await this.TransactionProcessorClient
+                    .GetOperator(accessToken, request.estate.EstateId, request.operatorId, CancellationToken.None)
+                    .ConfigureAwait(false);
+
+                operatorResponse.Name.ShouldBe(request.request.Name);
+                operatorResponse.RequireCustomTerminalNumber.ShouldBe(request.request.RequireCustomTerminalNumber.Value);
+                operatorResponse.RequireCustomMerchantNumber.ShouldBe(request.request.RequireCustomMerchantNumber.Value);
+                responses.Add(operatorResponse);
+            });
+            request.estate.UpdateOperator(request.operatorId, request.request.Name);
+        }
+
+        return responses;
     }
 }

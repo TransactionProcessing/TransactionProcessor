@@ -116,7 +116,7 @@ namespace TransactionProcessor.Controllers
 
             EstateQueries.GetEstateQuery query = new(estateId);
 
-            Result<Models.Estate> result = await Mediator.Send(query, cancellationToken);
+            Result<Models.Estate.Estate> result = await Mediator.Send(query, cancellationToken);
             if (result.IsFailed)
             {
                 return result.ToActionResultX();
@@ -146,7 +146,7 @@ namespace TransactionProcessor.Controllers
 
             EstateQueries.GetEstatesQuery query = new(estateId);
 
-            Result<List<Models.Estate>> result = await Mediator.Send(query, cancellationToken);
+            Result<List<Models.Estate.Estate>> result = await Mediator.Send(query, cancellationToken);
             if (result.IsFailed)
             {
                 return result.ToActionResultX();

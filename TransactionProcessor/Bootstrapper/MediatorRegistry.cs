@@ -39,6 +39,7 @@ namespace TransactionProcessor.Bootstrapper
             this.RegisterTransactionRequestHandler();
             this.RegisterSettlementRequestHandler();
             this.RegisterEstateRequestHandler();
+            this.RegisterOperatorRequestHandler();
         }
 
         #endregion
@@ -68,8 +69,8 @@ namespace TransactionProcessor.Bootstrapper
             this.AddSingleton<IRequestHandler<EstateCommands.CreateEstateUserCommand, Result>, EstateRequestHandler>();
             this.AddSingleton<IRequestHandler<EstateCommands.AddOperatorToEstateCommand, Result>, EstateRequestHandler>();
             this.AddSingleton<IRequestHandler<EstateCommands.RemoveOperatorFromEstateCommand, Result>, EstateRequestHandler>();
-            this.AddSingleton<IRequestHandler<EstateQueries.GetEstateQuery, Result<Estate>>, EstateRequestHandler>();
-            this.AddSingleton<IRequestHandler<EstateQueries.GetEstatesQuery, Result<List<Estate>>>, EstateRequestHandler>();
+            this.AddSingleton<IRequestHandler<EstateQueries.GetEstateQuery, Result<Models.Estate.Estate>>, EstateRequestHandler>();
+            this.AddSingleton<IRequestHandler<EstateQueries.GetEstatesQuery, Result<List<Models.Estate.Estate>>>, EstateRequestHandler>();
         }
 
         private void RegisterSettlementRequestHandler() {
@@ -86,6 +87,14 @@ namespace TransactionProcessor.Bootstrapper
             this.AddSingleton<IRequestHandler<TransactionCommands.ResendTransactionReceiptCommand, Result>, TransactionRequestHandler>();
             this.AddSingleton<IRequestHandler<TransactionCommands.AddSettledMerchantFeeCommand, Result>, TransactionRequestHandler>();
             this.AddSingleton<IRequestHandler<TransactionCommands.CalculateFeesForTransactionCommand, Result>, TransactionRequestHandler>();
+        }
+
+        private void RegisterOperatorRequestHandler()
+        {
+            this.AddSingleton<IRequestHandler<OperatorCommands.CreateOperatorCommand, Result>, OperatorRequestHandler>();
+            this.AddSingleton<IRequestHandler<OperatorCommands.UpdateOperatorCommand, Result>, OperatorRequestHandler>();
+            this.AddSingleton<IRequestHandler<OperatorQueries.GetOperatorQuery, Result<Models.Operator.Operator>>, OperatorRequestHandler>();
+            this.AddSingleton<IRequestHandler<OperatorQueries.GetOperatorsQuery, Result<List<Models.Operator.Operator>>>, OperatorRequestHandler>();
         }
     }
 }
