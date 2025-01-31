@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 using SimpleResults;
+using TransactionProcessor.Models.Contract;
 
 namespace TransactionProcessor.BusinessLogic.Manager
 {
@@ -14,12 +15,12 @@ namespace TransactionProcessor.BusinessLogic.Manager
         //                                                  Guid merchantId,
         //                                                  CancellationToken cancellationToken);
 
-        //Task<Result<List<Contract>>> GetContracts(Guid estateId,
-        //                                          CancellationToken cancellationToken);
+        Task<Result<List<Contract>>> GetContracts(Guid estateId,
+                                                  CancellationToken cancellationToken);
 
-        //Task<Result<Contract>> GetContract(Guid estateId,
-        //                          Guid contractId,
-        //                          CancellationToken cancellationToken);
+        Task<Result<Contract>> GetContract(Guid estateId,
+                                  Guid contractId,
+                                  CancellationToken cancellationToken);
 
         Task<Result<Models.Estate.Estate>> GetEstate(Guid estateId,
                                                         CancellationToken cancellationToken);

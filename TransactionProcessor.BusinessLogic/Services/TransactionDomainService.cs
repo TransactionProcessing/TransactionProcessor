@@ -1,10 +1,12 @@
-﻿using EstateManagement.DataTransferObjects.Responses.Contract;
+﻿using EstateManagement.DataTransferObjects.Requests.Merchant;
+using EstateManagement.DataTransferObjects.Responses.Contract;
 using EstateManagement.DataTransferObjects.Responses.Merchant;
 using Newtonsoft.Json;
 using Shared.Exceptions;
 using Shared.Results;
 using SimpleResults;
 using TransactionProcessor.Aggregates;
+using TransactionProcessor.Models.Estate;
 
 namespace TransactionProcessor.BusinessLogic.Services{
     using System;
@@ -14,11 +16,6 @@ namespace TransactionProcessor.BusinessLogic.Services{
     using System.Threading;
     using System.Threading.Tasks;
     using Common;
-    using EstateManagement.Client;
-    using EstateManagement.DataTransferObjects.Requests;
-    using EstateManagement.DataTransferObjects.Requests.Merchant;
-    using EstateManagement.DataTransferObjects.Responses;
-    using EstateManagement.DataTransferObjects.Responses.Estate;
     using MessagingService.Client;
     using MessagingService.DataTransferObjects;
     using Microsoft.Extensions.Caching.Memory;
@@ -32,6 +29,7 @@ namespace TransactionProcessor.BusinessLogic.Services{
     using Shared.Logger;
     using TransactionProcessor.BusinessLogic.Manager;
     using TransactionProcessor.BusinessLogic.Requests;
+    using static Microsoft.EntityFrameworkCore.DbLoggerCategory.Database;
 
     public interface ITransactionDomainService
     {
@@ -82,7 +80,7 @@ namespace TransactionProcessor.BusinessLogic.Services{
         private readonly IAggregateRepository<ReconciliationAggregate, DomainEvent> ReconciliationAggregateRepository;
 
         private readonly ISecurityServiceClient SecurityServiceClient;
-
+        private readonly IAggregateRepository<OperatorAggregate, DomainEvent> OperatorAggregateRepository;
         private readonly IAggregateRepository<FloatAggregate, DomainEvent> FloatAggregateRepository;
         private readonly IMemoryCacheWrapper MemoryCache;
         private readonly IFeeCalculationManager FeeCalculationManager;
@@ -94,6 +92,8 @@ namespace TransactionProcessor.BusinessLogic.Services{
         private readonly IAggregateRepository<TransactionAggregate, DomainEvent> TransactionAggregateRepository;
 
         private readonly ITransactionValidationService TransactionValidationService;
+
+        private readonly IAggregateRepository<EstateAggregate, DomainEvent> EstateAggregateRepository;
 
         #endregion
 
@@ -109,7 +109,9 @@ namespace TransactionProcessor.BusinessLogic.Services{
                                         IMemoryCacheWrapper memoryCache,
                                         IFeeCalculationManager feeCalculationManager,
                                         ITransactionReceiptBuilder transactionReceiptBuilder,
-                                        IMessagingServiceClient messagingServiceClient)
+                                        IMessagingServiceClient messagingServiceClient,
+                                        IAggregateRepository<EstateAggregate, DomainEvent> estateAggregateRepository,
+                                        IAggregateRepository<OperatorAggregate, DomainEvent> operatorAggregateRepository)
         {
             this.TransactionAggregateRepository = transactionAggregateRepository;
             this.EstateClient = estateClient;
@@ -122,6 +124,8 @@ namespace TransactionProcessor.BusinessLogic.Services{
             this.FeeCalculationManager = feeCalculationManager;
             this.TransactionReceiptBuilder = transactionReceiptBuilder;
             this.MessagingServiceClient = messagingServiceClient;
+            EstateAggregateRepository = estateAggregateRepository;
+            this.OperatorAggregateRepository = operatorAggregateRepository;
         }
 
         #endregion
@@ -418,7 +422,7 @@ namespace TransactionProcessor.BusinessLogic.Services{
                     }
 
                     // Get the model from the aggregate
-                    Transaction transaction = transactionAggregate.GetTransaction();
+                    Models.Transaction transaction = transactionAggregate.GetTransaction();
                     
                     return Result.Success(new ProcessSaleTransactionResponse {
                         ResponseMessage = transaction.ResponseMessage,
@@ -476,14 +480,14 @@ namespace TransactionProcessor.BusinessLogic.Services{
                     List<CalculatedFee> resultFees =
                         this.FeeCalculationManager.CalculateFees(feesForCalculation, transactionAggregate.TransactionAmount.Value, command.CompletedDateTime);
 
-                    IEnumerable<CalculatedFee> nonMerchantFees = resultFees.Where(f => f.FeeType == FeeType.ServiceProvider);
+                    IEnumerable<CalculatedFee> nonMerchantFees = resultFees.Where(f => f.FeeType == TransactionProcessor.Models.Contract.FeeType.ServiceProvider);
                     foreach (CalculatedFee calculatedFee in nonMerchantFees){
                         // Add Fee to the Transaction 
                         transactionAggregate.AddFee(calculatedFee);
                     }
 
                     // Now deal with merchant fees 
-                    List<CalculatedFee> merchantFees = resultFees.Where(f => f.FeeType == FeeType.Merchant).ToList();
+                    List<CalculatedFee> merchantFees = resultFees.Where(f => f.FeeType == TransactionProcessor.Models.Contract.FeeType.Merchant).ToList();
 
                     if (merchantFees.Any())
                     {
@@ -529,7 +533,7 @@ namespace TransactionProcessor.BusinessLogic.Services{
                         FeeCalculatedDateTime = command.FeeCalculatedDateTime,
                         FeeCalculationType = command.FeeCalculationType,
                         FeeId = command.FeeId,
-                        FeeType = FeeType.Merchant,
+                        FeeType = TransactionProcessor.Models.Contract.FeeType.Merchant,
                         FeeValue = command.FeeValue,
                         IsSettled = true
                     };
@@ -551,13 +555,16 @@ namespace TransactionProcessor.BusinessLogic.Services{
             if (transactionAggregateResult.IsFailed)
                 return ResultHelpers.CreateFailure(transactionAggregateResult);
             
-            Transaction transaction = transactionAggregateResult.Data.GetTransaction();
+            Models.Transaction transaction = transactionAggregateResult.Data.GetTransaction();
 
             MerchantResponse merchant =
                 await this.EstateClient.GetMerchant(this.TokenResponse.AccessToken, command.EstateId, transaction.MerchantId, cancellationToken);
 
-            EstateResponse estate = await this.EstateClient.GetEstate(this.TokenResponse.AccessToken, command.EstateId, cancellationToken);
-            EstateOperatorResponse @operator = estate.Operators.Single(o => o.OperatorId == transaction.OperatorId);
+            Result<EstateAggregate> estateResult = await this.EstateAggregateRepository.GetLatestVersion(command.EstateId, cancellationToken);
+            if (estateResult.IsFailed)
+                return ResultHelpers.CreateFailure(estateResult);
+            Estate estate = estateResult.Data.GetEstate();
+            Operator @operator = estate.Operators.Single(o => o.OperatorId == transaction.OperatorId);
 
             // Determine the body of the email
             String receiptMessage = await this.TransactionReceiptBuilder.GetEmailReceiptMessage(transaction, merchant, @operator.Name, cancellationToken);
@@ -682,9 +689,8 @@ namespace TransactionProcessor.BusinessLogic.Services{
                 {
                     FeeId = contractProductTransactionFee.TransactionFeeId,
                     Value = contractProductTransactionFee.Value,
-                    FeeType = (FeeType)contractProductTransactionFee.FeeType,
-                    CalculationType =
-                                                                              (CalculationType)contractProductTransactionFee.CalculationType
+                    FeeType = (TransactionProcessor.Models.Contract.FeeType)contractProductTransactionFee.FeeType,
+                    CalculationType = (TransactionProcessor.Models.Contract.CalculationType)contractProductTransactionFee.CalculationType
                 };
 
                 feesForCalculation.Add(transactionFeeToCalculate);
@@ -749,11 +755,16 @@ namespace TransactionProcessor.BusinessLogic.Services{
                                                                         CancellationToken cancellationToken){
 
             // TODO: introduce some kind of mapping in here to link operator id to the name
-            // Get Operators from the Estate Management API
-            Result<EstateResponse> getEstateResult = await this.EstateClient.GetEstate(this.TokenResponse.AccessToken, merchant.EstateId, cancellationToken);
-            EstateOperatorResponse @operator = getEstateResult.Data.Operators.Single(e => e.OperatorId == operatorId);
+            Result<EstateAggregate> estateResult = await this.EstateAggregateRepository.GetLatestVersion(merchant.EstateId, cancellationToken);
+            if (estateResult.IsFailed)
+                return ResultHelpers.CreateFailure(estateResult);
+            Estate estate = estateResult.Data.GetEstate();
+            Operator @operator = estate.Operators.SingleOrDefault(o => o.OperatorId == operatorId);
             
-            IOperatorProxy operatorProxy = this.OperatorProxyResolver(@operator.Name.Replace(" ", ""));
+            var operatorResult = await this.OperatorAggregateRepository.GetLatestVersion(operatorId, cancellationToken);
+            if (operatorResult.IsFailed)
+                return ResultHelpers.CreateFailure(operatorResult);
+            IOperatorProxy operatorProxy = this.OperatorProxyResolver(operatorResult.Data.Name.Replace(" ", ""));
             try{
                 Result<OperatorResponse> saleResult = await operatorProxy.ProcessSaleMessage(this.TokenResponse.AccessToken,
                                                                           transactionId,

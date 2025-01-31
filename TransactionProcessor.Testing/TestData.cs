@@ -1,7 +1,10 @@
 ﻿using TransactionProcessor.Aggregates;
-using TransactionProcessor.Database.Entities;
+using TransactionProcessor.DataTransferObjects.Requests.Contract;
+using TransactionProcessor.DataTransferObjects.Requests.Estate;
 using TransactionProcessor.DataTransferObjects.Requests.Operator;
-using TransactionProcessor.Operator.DomainEvents;
+using TransactionProcessor.DataTransferObjects.Responses.Estate;
+using TransactionProcessor.DomainEvents;
+using TransactionProcessor.Models.Contract;
 
 namespace TransactionProcessor.Testing
 {
@@ -14,20 +17,15 @@ namespace TransactionProcessor.Testing
     using BusinessLogic.Requests;
     using BusinessLogic.Services;
     using EstateManagement.DataTransferObjects.Responses.Merchant;
-    using EstateManagement.DataTransferObjects.Responses.Contract;
-    using EstateManagement.DataTransferObjects.Responses.Estate;
     using Models;
     using PataPawaPostPay;
     using ProjectionEngine.State;
     using SecurityService.DataTransferObjects.Responses;
     using Shared.DomainDrivenDesign.EventSourcing;
-    using Transaction.DomainEvents;
-    using TransactionProcessor.Voucher.DomainEvents;
-    using CalculationType = Models.CalculationType;
-    using FeeType = Models.FeeType;
-    using EstateManagement.DataTransferObjects.Requests.Estate;
     using TransactionProcessor.Models.Estate;
-    using TransactionProcessor.Estate.DomainEvents;
+    using System.Linq;
+    using ContractProductTransactionFeeModel = Models.Contract.ContractProductTransactionFee;
+    using static TransactionProcessor.DomainEvents.ContractDomainEvents;
 
     public class TestData
     {
@@ -159,8 +157,50 @@ namespace TransactionProcessor.Testing
 
         #endregion
 
-        public static String EmailAddress = "testuser1@testestate1.co.uk";
+        public static Models.Operator.Operator OperatorModel =>
+            new Models.Operator.Operator()
+            {
+                OperatorId = TestData.OperatorId,
+                RequireCustomTerminalNumber = TestData.RequireCustomTerminalNumber,
+                RequireCustomMerchantNumber = TestData.RequireCustomMerchantNumber,
+                Name = TestData.OperatorName
+            };
 
+        public static Models.Contract.Contract ContractModelWithProductsAndTransactionFees =>
+            new Models.Contract.Contract
+            {
+                OperatorId = TestData.OperatorId,
+                ContractId = TestData.ContractId,
+                Description = TestData.ContractDescription,
+                IsCreated = true,
+                Products = new List<Product>{
+                                                                            new Product{
+                                                                                           Value = TestData.ProductFixedValue,
+                                                                                           ContractProductId = TestData.ContractProductId,
+                                                                                           DisplayText = TestData.ProductDisplayText,
+                                                                                           Name = TestData.ProductName,
+                                                                                           TransactionFees = new List<ContractProductTransactionFeeModel>{
+                                                                                                                                              new ContractProductTransactionFeeModel(){
+                                                                                                                                                                         TransactionFeeId = TestData.TransactionFeeId,
+                                                                                                                                                                         Description = TestData.TransactionFeeDescription,
+                                                                                                                                                                         Value = TestData.TransactionFeeValue,
+                                                                                                                                                                         CalculationType = CalculationType.Fixed
+                                                                                                                                                                     }
+                                                                                                                                          }
+                                                                                       }
+                                                                        }
+            };
+
+        public static String EmailAddress = "testuser1@testestate1.co.uk";
+        public static String ContractDescription = "Test Contract";
+        public static Guid ContractProductId = Guid.Parse("C6309D4C-3182-4D96-AEEA-E9DBBB9DED8F");
+        public static String ProductName = "Product 1";
+        public static String ProductDisplayText = "100 KES";
+        public static Decimal ProductFixedValue = 100.00m;
+        public static ProductType ProductTypeBillPayment = ProductType.BillPayment;
+
+        public static ProductType ProductTypeMobileTopup = ProductType.MobileTopup;
+        public static Guid ContractProductId2 = Guid.Parse("642522E4-05F1-4218-9739-18211930F489");
         #region Properties
 
         /// <summary>
@@ -1076,13 +1116,13 @@ namespace TransactionProcessor.Testing
             return SecurityService.DataTransferObjects.Responses.TokenResponse.Create("AccessToken", string.Empty, 100);
         }
 
-        public static CustomerEmailReceiptRequestedEvent CustomerEmailReceiptRequestedEvent =
-            new CustomerEmailReceiptRequestedEvent(TestData.TransactionId, TestData.EstateId, TestData.MerchantId, TestData.CustomerEmailAddress, TestData.TransactionDateTime);
+        public static TransactionDomainEvents.CustomerEmailReceiptRequestedEvent CustomerEmailReceiptRequestedEvent =
+            new TransactionDomainEvents.CustomerEmailReceiptRequestedEvent(TestData.TransactionId, TestData.EstateId, TestData.MerchantId, TestData.CustomerEmailAddress, TestData.TransactionDateTime);
 
-        public static CustomerEmailReceiptResendRequestedEvent CustomerEmailReceiptResendRequestedEvent =
-            new CustomerEmailReceiptResendRequestedEvent(TestData.TransactionId, TestData.EstateId, TestData.MerchantId, TestData.TransactionDateTime);
+        public static TransactionDomainEvents.CustomerEmailReceiptResendRequestedEvent CustomerEmailReceiptResendRequestedEvent =
+            new TransactionDomainEvents.CustomerEmailReceiptResendRequestedEvent(TestData.TransactionId, TestData.EstateId, TestData.MerchantId, TestData.TransactionDateTime);
         
-        public static SettledMerchantFeeAddedToTransactionEvent SettledMerchantFeeAddedToTransactionEvent(DateTime settlementDueDate) => new SettledMerchantFeeAddedToTransactionEvent(TestData.SettlementAggregateId,
+        public static TransactionDomainEvents.SettledMerchantFeeAddedToTransactionEvent SettledMerchantFeeAddedToTransactionEvent(DateTime settlementDueDate) => new TransactionDomainEvents.SettledMerchantFeeAddedToTransactionEvent(TestData.SettlementAggregateId,
                                                                                                                                                                                        TestData.EstateId,
                                                                                                                                                                                        TestData.MerchantId,
                                                                                                                                                                                        TestData.CalculatedFeeValue,
@@ -1094,7 +1134,7 @@ namespace TransactionProcessor.Testing
                                                                                                                                                                                        TestData.SettlementAggregateId,
                                                                                                                                                                                        TestData.TransactionDateTime);
 
-        public static TransactionHasBeenCompletedEvent TransactionHasBeenCompletedEvent = new TransactionHasBeenCompletedEvent(TestData.TransactionId,
+        public static TransactionDomainEvents.TransactionHasBeenCompletedEvent TransactionHasBeenCompletedEvent = new TransactionDomainEvents.TransactionHasBeenCompletedEvent(TestData.TransactionId,
                                                                                                                                   TestData.EstateId,
                                                                                                                                   TestData.MerchantId,
                                                                                                                                   TestData.ResponseCode,
@@ -1255,24 +1295,24 @@ namespace TransactionProcessor.Testing
         public static TransactionCommands.ResendTransactionReceiptCommand ResendTransactionReceiptCommand => new(TestData.TransactionId,
                                                                                                                                 TestData.EstateId);
 
-        public static List<ContractProductTransactionFee> ContractProductTransactionFees =>
-            new List<ContractProductTransactionFee>
+        public static List<EstateManagement.DataTransferObjects.Responses.Contract.ContractProductTransactionFee> ContractProductTransactionFees =>
+            new List<EstateManagement.DataTransferObjects.Responses.Contract.ContractProductTransactionFee>
             {
-                new ContractProductTransactionFee
+                new EstateManagement.DataTransferObjects.Responses.Contract.ContractProductTransactionFee
                 {
                     FeeType = EstateManagement.DataTransferObjects.Responses.Contract.FeeType.ServiceProvider,
                     Value = TestData.TransactionFeeValue,
                     TransactionFeeId = TestData.TransactionFeeId,
                     Description = TestData.TransactionFeeDescription,
-                    CalculationType = (EstateManagement.DataTransferObjects.Responses.Contract.CalculationType)CalculationType.Fixed
+                    CalculationType = EstateManagement.DataTransferObjects.Responses.Contract.CalculationType.Fixed
                 },
-                new ContractProductTransactionFee
+                new EstateManagement.DataTransferObjects.Responses.Contract.ContractProductTransactionFee
                 {
                     FeeType = EstateManagement.DataTransferObjects.Responses.Contract.FeeType.Merchant,
                     Value = TestData.TransactionFeeValue,
                     TransactionFeeId = TestData.TransactionFeeId2,
                     Description = TestData.TransactionFeeDescription,
-                    CalculationType = (EstateManagement.DataTransferObjects.Responses.Contract.CalculationType)CalculationType.Fixed
+                    CalculationType = EstateManagement.DataTransferObjects.Responses.Contract.CalculationType.Fixed
                 }
             };
 
@@ -1283,7 +1323,7 @@ namespace TransactionProcessor.Testing
                 FeeCalculationType = CalculationType.Fixed,
                 FeeId = TestData.TransactionFeeId,
                 FeeValue = TestData.TransactionFeeValue,
-                FeeType = FeeType.Merchant
+                FeeType = TransactionProcessor.Models.Contract.FeeType.Merchant
             };
 
         public static CalculatedFee CalculatedFeeMerchantFee(Guid transactionFeeId) =>
@@ -1293,7 +1333,7 @@ namespace TransactionProcessor.Testing
                 FeeCalculationType = CalculationType.Fixed,
                 FeeId = transactionFeeId,
                 FeeValue = TestData.TransactionFeeValue,
-                FeeType = FeeType.Merchant
+                FeeType = TransactionProcessor.Models.Contract.FeeType.Merchant
             };
 
         public static CalculatedFee CalculatedFeeMerchantFee2 =>
@@ -1303,7 +1343,7 @@ namespace TransactionProcessor.Testing
                 FeeCalculationType = CalculationType.Fixed,
                 FeeId = TestData.TransactionFeeId2,
                 FeeValue = TestData.TransactionFeeValue,
-                FeeType = FeeType.Merchant
+                FeeType = TransactionProcessor.Models.Contract.FeeType.Merchant
             };
 
         public static CalculatedFee CalculatedFeeServiceProviderFee() =>
@@ -1313,7 +1353,7 @@ namespace TransactionProcessor.Testing
                 FeeCalculationType = CalculationType.Fixed,
                 FeeId = TestData.TransactionFeeId2,
                 FeeValue = TestData.TransactionFeeValue,
-                FeeType = FeeType.ServiceProvider
+                FeeType = TransactionProcessor.Models.Contract.FeeType.ServiceProvider
             };
 
         public static CalculatedFee CalculatedFeeServiceProviderFee(Guid transactionFeeId) =>
@@ -1323,7 +1363,7 @@ namespace TransactionProcessor.Testing
                 FeeCalculationType = CalculationType.Fixed,
                 FeeId = transactionFeeId,
                 FeeValue = TestData.TransactionFeeValue,
-                FeeType = FeeType.ServiceProvider
+                FeeType = TransactionProcessor.Models.Contract.FeeType.ServiceProvider
             };
 
         public static CalculatedFee CalculatedFeeUnsupportedFee =>
@@ -1408,12 +1448,12 @@ namespace TransactionProcessor.Testing
             return aggregate;
         }
 
-        public static List<ContractResponse> MerchantContractResponses =>
-            new List<ContractResponse>() {
-                                             new ContractResponse {
+        public static List<EstateManagement.DataTransferObjects.Responses.Contract.ContractResponse> MerchantContractResponses =>
+            new () {
+                                             new() {
                                                                       ContractId = TestData.ContractId,
-                                                                      Products = new List<ContractProduct> {
-                                                                                                               new ContractProduct {
+                                                                      Products = new() {
+                                                                                                               new () {
                                                                                                                    ProductId = TestData.ProductId,
                                                                                                                }
                                                                                                            }
@@ -1447,7 +1487,7 @@ namespace TransactionProcessor.Testing
 
         public static String Barcode = "1234567890";
 
-        public static VoucherIssuedEvent VoucherIssuedEvent = new VoucherIssuedEvent(TestData.VoucherId,
+        public static VoucherDomainEvents.VoucherIssuedEvent VoucherIssuedEvent = new VoucherDomainEvents.VoucherIssuedEvent(TestData.VoucherId,
                                                                                         TestData.EstateId,
                                                                                         TestData.IssuedDateTime,
                                                                                         TestData.RecipientEmail,
@@ -1478,8 +1518,8 @@ namespace TransactionProcessor.Testing
         public static Decimal UnitCostPrice = 0.9m;
         public static Decimal TotalCostPrice = 9.0m;
 
-        public static TransactionCostInformationRecordedEvent TransactionCostInformationRecordedEvent =>
-            new TransactionCostInformationRecordedEvent(TestData.TransactionId,
+        public static TransactionDomainEvents.TransactionCostInformationRecordedEvent TransactionCostInformationRecordedEvent =>
+            new TransactionDomainEvents.TransactionCostInformationRecordedEvent(TestData.TransactionId,
                                                         TestData.EstateId,
                                                         TestData.MerchantId,
                                                         TestData.UnitCostPrice,
@@ -1625,9 +1665,79 @@ namespace TransactionProcessor.Testing
                 Name = TestData.OperatorName
             };
 
+        public static DataTransferObjects.Requests.Contract.CreateContractRequest CreateContractRequest =
+            new DataTransferObjects.Requests.Contract.CreateContractRequest
+            {
+                Description = ContractDescription,
+                OperatorId = OperatorId
+            };
+
+        public static AddProductToContractRequest AddProductToContractRequest_FixedValue =>
+            new AddProductToContractRequest
+            {
+                Value = ProductFixedValue,
+                DisplayText = ProductDisplayText,
+                ProductName = ProductName,
+                ProductType = DataTransferObjects.Responses.Contract.ProductType.MobileTopup
+            };
+
+
+
+        public static AddProductToContractRequest AddProductToContractRequest_VariableValue =>
+            new AddProductToContractRequest
+            {
+                Value = null,
+                DisplayText = ProductDisplayText,
+                ProductName = ProductName,
+                ProductType = DataTransferObjects.Responses.Contract.ProductType.MobileTopup
+            };
+
+        public static DataTransferObjects.Requests.Contract.AddTransactionFeeForProductToContractRequest
+            AddTransactionFeeForProductToContractRequest =>
+            new()
+            {
+                Description = TransactionFeeDescription,
+                CalculationType = DataTransferObjects.Responses.Contract.CalculationType.Fixed,
+                Value = TransactionFeeValue,
+                FeeType = DataTransferObjects.Responses.Contract.FeeType.Merchant
+            };
+
+        public static Int32 FeeCalculationType = 0;
+
+        public static Int32 FeeType = 0;
+
+        public static Decimal FeeValue = 0.0005m;
+
         #endregion
 
         public static class Commands {
+            public static ContractCommands.AddTransactionFeeForProductToContractCommand
+                AddTransactionFeeForProductToContractCommand(
+                    DataTransferObjects.Responses.Contract.CalculationType calculationType,
+                    DataTransferObjects.Responses.Contract.FeeType feeType)
+            {
+                DataTransferObjects.Requests.Contract.AddTransactionFeeForProductToContractRequest x =
+                    AddTransactionFeeForProductToContractRequest;
+                x.CalculationType = calculationType;
+                x.FeeType = feeType;
+
+                ContractCommands.AddTransactionFeeForProductToContractCommand cmd = new(EstateId, ContractId,
+                    ContractProductId, TransactionFeeId, x);
+                return cmd;
+            }
+
+            public static ContractCommands.DisableTransactionFeeForProductCommand DisableTransactionFeeForProductCommand =
+                new ContractCommands.DisableTransactionFeeForProductCommand(TestData.EstateId, TestData.ContractId,
+                    TestData.ContractProductId, TestData.TransactionFeeId);
+
+            public static ContractCommands.AddProductToContractCommand AddProductToContractCommand_FixedValue =>
+                new(EstateId, ContractId, ContractProductId, TestData.AddProductToContractRequest_FixedValue);
+
+            public static ContractCommands.AddProductToContractCommand AddProductToContractCommand_VariableValue =>
+                new(EstateId, ContractId, ContractProductId, TestData.AddProductToContractRequest_VariableValue);
+
+            public static ContractCommands.CreateContractCommand CreateContractCommand =>
+                new ContractCommands.CreateContractCommand(EstateId, ContractId, CreateContractRequest);
             public static EstateCommands.CreateEstateUserCommand CreateEstateUserCommand => new EstateCommands.CreateEstateUserCommand(TestData.EstateId, TestData.CreateEstateUserRequest);
             public static EstateCommands.AddOperatorToEstateCommand AddOperatorToEstateCommand => new EstateCommands.AddOperatorToEstateCommand(TestData.EstateId, TestData.AssignOperatorRequestToEstate);
             public static EstateCommands.CreateEstateCommand CreateEstateCommand => new EstateCommands.CreateEstateCommand(TestData.CreateEstateRequest);
@@ -1645,9 +1755,78 @@ namespace TransactionProcessor.Testing
 
             public static OperatorQueries.GetOperatorQuery GetOperatorQuery => new(TestData.EstateId, TestData.OperatorId);
             public static OperatorQueries.GetOperatorsQuery GetOperatorsQuery => new(TestData.EstateId);
+            public static ContractQueries.GetContractQuery GetContractQuery => new(EstateId, ContractId);
+            public static ContractQueries.GetContractsQuery GetContractsQuery => new(EstateId);
+
         }
 
         public static class Aggregates {
+
+            public static OperatorAggregate EmptyOperatorAggregate()
+            {
+                OperatorAggregate operatorAggregate = OperatorAggregate.Create(TestData.OperatorId);
+
+                return operatorAggregate;
+            }
+
+            public static ContractAggregate EmptyContractAggregate()
+            {
+                ContractAggregate contractAggregate = ContractAggregate.Create(TestData.ContractId);
+
+                return contractAggregate;
+            }
+            public static ContractAggregate CreatedContractAggregate()
+            {
+                ContractAggregate contractAggregate = ContractAggregate.Create(TestData.ContractId);
+
+                contractAggregate.Create(TestData.EstateId, TestData.OperatorId, TestData.ContractDescription);
+
+                return contractAggregate;
+            }
+
+            public static ContractAggregate CreatedContractAggregateWithAProduct()
+            {
+                ContractAggregate contractAggregate = ContractAggregate.Create(TestData.ContractId);
+
+                contractAggregate.Create(TestData.EstateId, TestData.OperatorId, TestData.ContractDescription);
+                contractAggregate.AddFixedValueProduct(TestData.ContractProductId,
+                                                       TestData.ProductName,
+                                                       TestData.ProductDisplayText,
+                                                       TestData.ProductFixedValue,
+                                                       TestData.ProductTypeMobileTopup);
+
+                return contractAggregate;
+            }
+
+            public static ContractAggregate CreatedContractAggregateWithAProductAndTransactionFee(CalculationType calculationType, FeeType feeType)
+            {
+                ContractAggregate contractAggregate = ContractAggregate.Create(TestData.ContractId);
+
+                contractAggregate.Create(TestData.EstateId, TestData.OperatorId, TestData.ContractDescription);
+                contractAggregate.AddFixedValueProduct(TestData.ContractProductId,
+                                                       TestData.ProductName,
+                                                       TestData.ProductDisplayText,
+                                                       TestData.ProductFixedValue,
+                                                       TestData.ProductTypeMobileTopup);
+
+                Product product = contractAggregate.GetProducts().Single(p => p.ContractProductId == TestData.ContractProductId);
+                contractAggregate.AddTransactionFee(product,
+                                                    TestData.TransactionFeeId,
+                                                    TestData.TransactionFeeDescription,
+                                                    calculationType,
+                                                    feeType,
+                                                    TestData.TransactionFeeValue);
+
+                return contractAggregate;
+            }
+
+            public static OperatorAggregate CreatedOperatorAggregate()
+            {
+                OperatorAggregate operatorAggregate = OperatorAggregate.Create(TestData.OperatorId);
+                operatorAggregate.Create(TestData.EstateId, TestData.OperatorName, TestData.RequireCustomMerchantNumber, TestData.RequireCustomTerminalNumber);
+                return operatorAggregate;
+            }
+
             public static EstateAggregate EmptyEstateAggregate = EstateAggregate.Create(TestData.EstateId);
 
             public static EstateAggregate CreatedEstateAggregate() {
@@ -1680,21 +1859,43 @@ namespace TransactionProcessor.Testing
         }
 
         public static class DomainEvents {
-            public static EstateCreatedEvent EstateCreatedEvent => new EstateCreatedEvent(TestData.EstateId, TestData.EstateName);
-            public static EstateReferenceAllocatedEvent EstateReferenceAllocatedEvent => new EstateReferenceAllocatedEvent(TestData.EstateId, TestData.EstateReference);
 
-            public static SecurityUserAddedToEstateEvent EstateSecurityUserAddedEvent =
-                new SecurityUserAddedToEstateEvent(TestData.EstateId, TestData.EstateSecurityUserId, TestData.EmailAddress);
+            public static TransactionFeeForProductAddedToContractEvent TransactionFeeForProductAddedToContractEvent =>
+                new TransactionFeeForProductAddedToContractEvent(TestData.ContractId,
+                    TestData.EstateId,
+                    TestData.ContractProductId,
+                    TestData.TransactionFeeId,
+                    TestData.TransactionFeeDescription,
+                    TestData.FeeCalculationType,
+                    TestData.FeeType,
+                    TestData.FeeValue);
 
-            public static OperatorCreatedEvent OperatorCreatedEvent = new OperatorCreatedEvent(TestData.OperatorId,
+            public static TransactionFeeForProductDisabledEvent TransactionFeeForProductDisabledEvent => new TransactionFeeForProductDisabledEvent(TestData.ContractId, TestData.EstateId, TestData.ContractProductId, TestData.TransactionFeeId);
+            public static VariableValueProductAddedToContractEvent VariableValueProductAddedToContractEvent => new VariableValueProductAddedToContractEvent(TestData.ContractId, TestData.EstateId, TestData.ContractProductId, TestData.ProductName, TestData.ProductDisplayText, (Int32)TestData.ProductTypeMobileTopup);
+            public static ContractDomainEvents.FixedValueProductAddedToContractEvent FixedValueProductAddedToContractEvent =>
+                new ContractDomainEvents.FixedValueProductAddedToContractEvent(TestData.ContractId,
+                    TestData.EstateId,
+                    TestData.ContractProductId,
+                    TestData.ProductName,
+                    TestData.ProductDisplayText,
+                    TestData.ProductFixedValue,
+                    (Int32)TestData.ProductTypeMobileTopup);
+            public static ContractDomainEvents.ContractCreatedEvent ContractCreatedEvent => new ContractDomainEvents.ContractCreatedEvent(TestData.ContractId, TestData.EstateId, TestData.OperatorId, TestData.ContractDescription);
+            public static EstateDomainEvents.EstateCreatedEvent EstateCreatedEvent => new EstateDomainEvents.EstateCreatedEvent(TestData.EstateId, TestData.EstateName);
+            public static EstateDomainEvents.EstateReferenceAllocatedEvent EstateReferenceAllocatedEvent => new EstateDomainEvents.EstateReferenceAllocatedEvent(TestData.EstateId, TestData.EstateReference);
+
+            public static EstateDomainEvents.SecurityUserAddedToEstateEvent EstateSecurityUserAddedEvent =
+                new EstateDomainEvents.SecurityUserAddedToEstateEvent(TestData.EstateId, TestData.EstateSecurityUserId, TestData.EmailAddress);
+
+            public static OperatorDomainEvents.OperatorCreatedEvent OperatorCreatedEvent = new OperatorDomainEvents.OperatorCreatedEvent(TestData.OperatorId,
                 TestData.EstateId,
                 TestData.OperatorName,
                 TestData.RequireCustomMerchantNumber,
                 TestData.RequireCustomTerminalNumber);
 
-            public static OperatorNameUpdatedEvent OperatorNameUpdatedEvent => new(TestData.OperatorId, TestData.EstateId, TestData.OperatorName2);
-            public static OperatorRequireCustomMerchantNumberChangedEvent OperatorRequireCustomMerchantNumberChangedEvent => new(TestData.OperatorId, TestData.EstateId, TestData.RequireCustomMerchantNumberFalse);
-            public static OperatorRequireCustomTerminalNumberChangedEvent OperatorRequireCustomTerminalNumberChangedEvent => new(TestData.OperatorId, TestData.EstateId, TestData.RequireCustomTerminalNumberFalse);
+            public static OperatorDomainEvents.OperatorNameUpdatedEvent OperatorNameUpdatedEvent => new(TestData.OperatorId, TestData.EstateId, TestData.OperatorName2);
+            public static OperatorDomainEvents.OperatorRequireCustomMerchantNumberChangedEvent OperatorRequireCustomMerchantNumberChangedEvent => new(TestData.OperatorId, TestData.EstateId, TestData.RequireCustomMerchantNumberFalse);
+            public static OperatorDomainEvents.OperatorRequireCustomTerminalNumberChangedEvent OperatorRequireCustomTerminalNumberChangedEvent => new(TestData.OperatorId, TestData.EstateId, TestData.RequireCustomTerminalNumberFalse);
         }
     }
 

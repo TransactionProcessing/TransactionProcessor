@@ -2,6 +2,7 @@
 using SimpleResults;
 using TransactionProcessor.Aggregates;
 using TransactionProcessor.BusinessLogic.Requests;
+using TransactionProcessor.Models.Contract;
 
 namespace TransactionProcessor.BusinessLogic.Services
 {

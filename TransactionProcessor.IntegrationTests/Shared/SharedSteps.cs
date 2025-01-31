@@ -461,5 +461,45 @@ namespace TransactionProcessor.IntegrationTests.Shared
 
             await this.TransactionProcessorSteps.WhenIGetAllTheOperatorsTheFollowingDetailsAreReturned(this.TestingContext.AccessToken, expectedOperatorResponses);
         }
+
+        [Then(@"I get the Contracts for '(.*)' the following contract details are returned")]
+        public async Task ThenIGetTheContractsForTheFollowingContractDetailsAreReturned(String estateName,
+                                                                                        DataTable table)
+        {
+            List<(String, String)> contractDetails = table.Rows.ToContractDetails();
+            await this.TransactionProcessorSteps.ThenIGetTheContractsForTheFollowingContractDetailsAreReturned(this.TestingContext.AccessToken, estateName, this.TestingContext.Estates, contractDetails);
+        }
+
+        [Then(@"I get the Merchant Contracts for '(.*)' for '(.*)' the following contract details are returned")]
+        public async Task ThenIGetTheMerchantContractsForForTheFollowingContractDetailsAreReturned(String merchantName,
+                                                                                                   String estateName,
+                                                                                                   DataTable table)
+        {
+            List<(String, String)> contractDetails = table.Rows.ToContractDetails();
+            await this.TransactionProcessorSteps.ThenIGetTheMerchantContractsForForTheFollowingContractDetailsAreReturned(this.TestingContext.AccessToken, estateName, merchantName, this.TestingContext.Estates, contractDetails);
+        }
+
+        [Then(@"I get the Transaction Fees for '(.*)' on the '(.*)' contract for '(.*)' the following fees are returned")]
+        public async Task ThenIGetTheTransactionFeesForOnTheContractForTheFollowingFeesAreReturned(String productName,
+                                                                                                   String contractName,
+                                                                                                   String estateName,
+                                                                                                   DataTable table)
+        {
+            List<(CalculationType, String, Decimal?, FeeType)> transactionFees = table.Rows.ToContractTransactionFeeDetails();
+            await this.TransactionProcessorSteps.ThenIGetTheTransactionFeesForOnTheContractForTheFollowingFeesAreReturned(this.TestingContext.AccessToken,
+                estateName,
+                contractName,
+                productName,
+                this.TestingContext.Estates, transactionFees);
+
+
+        }
+
+        [When("I create another contract with the same values it should be rejected")]
+        public async Task WhenICreateAnotherContractWithTheSameValuesItShouldBeRejected(DataTable table)
+        {
+            List<(EstateDetails, CreateContractRequest)> requests = table.Rows.ToCreateContractRequests(this.TestingContext.Estates);
+            await this.TransactionProcessorSteps.WhenICreateAnotherContractWithTheSameValuesItShouldBeRejected(this.TestingContext.AccessToken, requests);
+        }
     }
 }

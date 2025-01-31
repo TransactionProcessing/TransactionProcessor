@@ -31,32 +31,32 @@ namespace TransactionProcessor.BusinessLogic.Tests.Services
     {
         #region Methods
 
-        [Fact]
-        public async Task VoucherDomainService_IssueVoucher_EstateWithEmptyOperators_ErrorThrown() {
+        private Mock<IAggregateRepository<VoucherAggregate, DomainEvent>> VoucherAggregateRepository;
+        private Mock<IAggregateRepository<EstateAggregate, DomainEvent>> EstateAggregateRepository;
+        private Mock<Shared.EntityFramework.IDbContextFactory<EstateManagementGenericContext>> DbContextFactory;
+        private VoucherDomainService VoucherDomainService;
+        public VoucherDomainServiceTests() {
             IConfigurationRoot configurationRoot = new ConfigurationBuilder().AddInMemoryCollection(TestData.DefaultAppSettings).Build();
             ConfigurationReader.Initialise(configurationRoot);
 
             Logger.Initialise(NullLogger.Instance);
 
-            Mock<IIntermediateEstateClient> estateClient = new Mock<IIntermediateEstateClient>();
-            Mock<ISecurityServiceClient> securityServiceClient = new Mock<ISecurityServiceClient>();
-            Mock<IAggregateRepository<VoucherAggregate, DomainEvent>> voucherAggregateRepository = new Mock<IAggregateRepository<VoucherAggregate, DomainEvent>>();
-            voucherAggregateRepository.Setup(v => v.GetLatestVersion(It.IsAny<Guid>(), It.IsAny<CancellationToken>())).ReturnsAsync(new VoucherAggregate());
-            securityServiceClient.Setup(s => s.GetToken(It.IsAny<String>(), It.IsAny<String>(), It.IsAny<CancellationToken>())).ReturnsAsync(Result.Success(TestData.TokenResponse()));
-            estateClient.Setup(e => e.GetEstate(It.IsAny<String>(), It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
-                        .ReturnsAsync(TestData.GetEstateResponseWithEmptyOperators);
+            this.VoucherAggregateRepository  = new Mock<IAggregateRepository<VoucherAggregate, DomainEvent>>();
+            this.EstateAggregateRepository = new Mock<IAggregateRepository<EstateAggregate, DomainEvent>>();
+            this.DbContextFactory = new Mock<Shared.EntityFramework.IDbContextFactory<EstateManagementGenericContext>>();
+            this.VoucherDomainService = new VoucherDomainService(VoucherAggregateRepository.Object,
+                DbContextFactory.Object,
+                EstateAggregateRepository.Object);
+        }
 
+        [Fact]
+        public async Task VoucherDomainService_IssueVoucher_EstateWithNoOperators_ErrorThrown() {
+            
+            VoucherAggregateRepository.Setup(v => v.GetLatestVersion(It.IsAny<Guid>(), It.IsAny<CancellationToken>())).ReturnsAsync(new VoucherAggregate());
             EstateManagementGenericContext context = await this.GetContext(Guid.NewGuid().ToString("N"));
-
-            var dbContextFactory = this.GetMockDbContextFactory();
-            dbContextFactory.Setup(d => d.GetContext(It.IsAny<Guid>(), It.IsAny<String>(), It.IsAny<CancellationToken>())).ReturnsAsync(context);
-
-            VoucherDomainService domainService = new VoucherDomainService(voucherAggregateRepository.Object,
-                                                                          securityServiceClient.Object,
-                                                                          estateClient.Object,
-                                                                          dbContextFactory.Object);
-
-            var result = await domainService.IssueVoucher(TestData.VoucherId,
+            DbContextFactory.Setup(d => d.GetContext(It.IsAny<Guid>(), It.IsAny<String>(), It.IsAny<CancellationToken>())).ReturnsAsync(context);
+            EstateAggregateRepository.Setup(f => f.GetLatestVersion(It.IsAny<Guid>(), It.IsAny<CancellationToken>())).ReturnsAsync(Result.Success(TestData.Aggregates.CreatedEstateAggregate()));
+            var result = await this.VoucherDomainService.IssueVoucher(TestData.VoucherId,
                                                                                  TestData.OperatorId,
                                                                                  TestData.EstateId,
                                                                                  TestData.TransactionId,
@@ -68,70 +68,52 @@ namespace TransactionProcessor.BusinessLogic.Tests.Services
             result.IsFailed.ShouldBeTrue();
         }
 
-        [Fact]
-        public async Task VoucherDomainService_IssueVoucher_EstateWithNullOperators_ErrorThrown() {
-            IConfigurationRoot configurationRoot = new ConfigurationBuilder().AddInMemoryCollection(TestData.DefaultAppSettings).Build();
-            ConfigurationReader.Initialise(configurationRoot);
+        //[Fact]
+        //public async Task VoucherDomainService_IssueVoucher_EstateWithNullOperators_ErrorThrown() {
+        //    IConfigurationRoot configurationRoot = new ConfigurationBuilder().AddInMemoryCollection(TestData.DefaultAppSettings).Build();
+        //    ConfigurationReader.Initialise(configurationRoot);
 
-            Logger.Initialise(NullLogger.Instance);
+        //    Logger.Initialise(NullLogger.Instance);
 
-            Mock<IIntermediateEstateClient> estateClient = new Mock<IIntermediateEstateClient>();
-            Mock<ISecurityServiceClient> securityServiceClient = new Mock<ISecurityServiceClient>();
-            Mock<IAggregateRepository<VoucherAggregate, DomainEvent>> voucherAggregateRepository = new Mock<IAggregateRepository<VoucherAggregate, DomainEvent>>();
-            voucherAggregateRepository.Setup(v => v.GetLatestVersion(It.IsAny<Guid>(), It.IsAny<CancellationToken>())).ReturnsAsync(new VoucherAggregate());
-            securityServiceClient.Setup(s => s.GetToken(It.IsAny<String>(), It.IsAny<String>(), It.IsAny<CancellationToken>())).ReturnsAsync(Result.Success(TestData.TokenResponse()));
-            estateClient.Setup(e => e.GetEstate(It.IsAny<String>(), It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
-                        .ReturnsAsync(TestData.GetEstateResponseWithNullOperators);
+        //    Mock<IIntermediateEstateClient> estateClient = new Mock<IIntermediateEstateClient>();
+        //    Mock<ISecurityServiceClient> securityServiceClient = new Mock<ISecurityServiceClient>();
+        //    Mock<IAggregateRepository<VoucherAggregate, DomainEvent>> voucherAggregateRepository = new Mock<IAggregateRepository<VoucherAggregate, DomainEvent>>();
+        //    voucherAggregateRepository.Setup(v => v.GetLatestVersion(It.IsAny<Guid>(), It.IsAny<CancellationToken>())).ReturnsAsync(new VoucherAggregate());
+        //    securityServiceClient.Setup(s => s.GetToken(It.IsAny<String>(), It.IsAny<String>(), It.IsAny<CancellationToken>())).ReturnsAsync(Result.Success(TestData.TokenResponse()));
+        //    estateClient.Setup(e => e.GetEstate(It.IsAny<String>(), It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
+        //                .ReturnsAsync(TestData.GetEstateResponseWithNullOperators);
 
-            EstateManagementGenericContext context = await this.GetContext(Guid.NewGuid().ToString("N"));
+        //    EstateManagementGenericContext context = await this.GetContext(Guid.NewGuid().ToString("N"));
 
-            var dbContextFactory = this.GetMockDbContextFactory();
-            dbContextFactory.Setup(d => d.GetContext(It.IsAny<Guid>(), It.IsAny<String>(), It.IsAny<CancellationToken>())).ReturnsAsync(context);
+        //    var dbContextFactory = this.GetMockDbContextFactory();
+        //    dbContextFactory.Setup(d => d.GetContext(It.IsAny<Guid>(), It.IsAny<String>(), It.IsAny<CancellationToken>())).ReturnsAsync(context);
 
-            VoucherDomainService domainService = new VoucherDomainService(voucherAggregateRepository.Object,
-                                                                          securityServiceClient.Object,
-                                                                          estateClient.Object,
-                                                                          dbContextFactory.Object);
+        //    VoucherDomainService domainService = new VoucherDomainService(voucherAggregateRepository.Object,
+        //                                                                  securityServiceClient.Object,
+        //                                                                  estateClient.Object,
+        //                                                                  dbContextFactory.Object);
 
-            var result = await domainService.IssueVoucher(TestData.VoucherId,
-                                                                                 TestData.OperatorId,
-                                                                                 TestData.EstateId,
-                                                                                 TestData.TransactionId,
-                                                                                 TestData.IssuedDateTime,
-                                                                                 TestData.Value,
-                                                                                 TestData.RecipientEmail,
-                                                                                 TestData.RecipientMobile,
-                                                                                 CancellationToken.None);
-            result.IsFailed.ShouldBeTrue();
-        }
+        //    var result = await domainService.IssueVoucher(TestData.VoucherId,
+        //                                                                         TestData.OperatorId,
+        //                                                                         TestData.EstateId,
+        //                                                                         TestData.TransactionId,
+        //                                                                         TestData.IssuedDateTime,
+        //                                                                         TestData.Value,
+        //                                                                         TestData.RecipientEmail,
+        //                                                                         TestData.RecipientMobile,
+        //                                                                         CancellationToken.None);
+        //    result.IsFailed.ShouldBeTrue();
+        //}
 
         [Fact]
         public async Task VoucherDomainService_IssueVoucher_InvalidEstate_ErrorThrown() {
-            IConfigurationRoot configurationRoot = new ConfigurationBuilder().AddInMemoryCollection(TestData.DefaultAppSettings).Build();
-            ConfigurationReader.Initialise(configurationRoot);
-
-            Logger.Initialise(NullLogger.Instance);
-
-            Mock<IIntermediateEstateClient> estateClient = new Mock<IIntermediateEstateClient>();
-            Mock<ISecurityServiceClient> securityServiceClient = new Mock<ISecurityServiceClient>();
-            Mock<IAggregateRepository<VoucherAggregate, DomainEvent>> voucherAggregateRepository = new Mock<IAggregateRepository<VoucherAggregate, DomainEvent>>();
-            voucherAggregateRepository.Setup(v => v.GetLatestVersion(It.IsAny<Guid>(), It.IsAny<CancellationToken>())).ReturnsAsync(new VoucherAggregate());
-            securityServiceClient.Setup(s => s.GetToken(It.IsAny<String>(), It.IsAny<String>(), It.IsAny<CancellationToken>())).ReturnsAsync(Result.Success(TestData.TokenResponse()));
-            estateClient.Setup(e => e.GetEstate(It.IsAny<String>(), It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
-                //.ThrowsAsync(new Exception("Exception", new KeyNotFoundException("Invalid Estate")));
-                .ReturnsAsync(Result.Failure());
+            VoucherAggregateRepository.Setup(v => v.GetLatestVersion(It.IsAny<Guid>(), It.IsAny<CancellationToken>())).ReturnsAsync(new VoucherAggregate());
+            EstateAggregateRepository.Setup(f => f.GetLatestVersion(It.IsAny<Guid>(), It.IsAny<CancellationToken>())).ReturnsAsync(Result.Failure());
 
             EstateManagementGenericContext context = await this.GetContext(Guid.NewGuid().ToString("N"));
+            DbContextFactory.Setup(d => d.GetContext(It.IsAny<Guid>(), It.IsAny<String>(), It.IsAny<CancellationToken>())).ReturnsAsync(context);
 
-            var dbContextFactory = this.GetMockDbContextFactory();
-            dbContextFactory.Setup(d => d.GetContext(It.IsAny<Guid>(), It.IsAny<String>(), It.IsAny<CancellationToken>())).ReturnsAsync(context);
-
-            VoucherDomainService domainService = new VoucherDomainService(voucherAggregateRepository.Object,
-                                                                          securityServiceClient.Object,
-                                                                          estateClient.Object,
-                                                                          dbContextFactory.Object);
-
-            var result = await domainService.IssueVoucher(TestData.VoucherId,
+            var result = await this.VoucherDomainService.IssueVoucher(TestData.VoucherId,
                                                                                  TestData.OperatorId,
                                                                                  TestData.EstateId,
                                                                                  TestData.TransactionId,
@@ -145,31 +127,14 @@ namespace TransactionProcessor.BusinessLogic.Tests.Services
 
         [Fact]
         public async Task VoucherDomainService_IssueVoucher_OperatorNotSupportedByEstate_ErrorThrown() {
-            IConfigurationRoot configurationRoot = new ConfigurationBuilder().AddInMemoryCollection(TestData.DefaultAppSettings).Build();
-            ConfigurationReader.Initialise(configurationRoot);
-
-            Logger.Initialise(NullLogger.Instance);
-
-            Mock<IIntermediateEstateClient> estateClient = new Mock<IIntermediateEstateClient>();
-            Mock<ISecurityServiceClient> securityServiceClient = new Mock<ISecurityServiceClient>();
-            Mock<IAggregateRepository<VoucherAggregate, DomainEvent>> voucherAggregateRepository = new Mock<IAggregateRepository<VoucherAggregate, DomainEvent>>();
-            voucherAggregateRepository.Setup(v => v.GetLatestVersion(It.IsAny<Guid>(), It.IsAny<CancellationToken>())).ReturnsAsync(new VoucherAggregate());
-            securityServiceClient.Setup(s => s.GetToken(It.IsAny<String>(), It.IsAny<String>(), It.IsAny<CancellationToken>())).ReturnsAsync(Result.Success(TestData.TokenResponse()));
-            estateClient.Setup(e => e.GetEstate(It.IsAny<String>(), It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
-                        .ReturnsAsync(TestData.GetEstateResponseWithOperator2);
+            VoucherAggregateRepository.Setup(v => v.GetLatestVersion(It.IsAny<Guid>(), It.IsAny<CancellationToken>())).ReturnsAsync(new VoucherAggregate());
+            EstateAggregateRepository.Setup(f => f.GetLatestVersion(It.IsAny<Guid>(), It.IsAny<CancellationToken>())).ReturnsAsync(Result.Success(TestData.Aggregates.EstateAggregateWithOperator()));
 
             EstateManagementGenericContext context = await this.GetContext(Guid.NewGuid().ToString("N"));
+            DbContextFactory.Setup(d => d.GetContext(It.IsAny<Guid>(), It.IsAny<String>(), It.IsAny<CancellationToken>())).ReturnsAsync(context);
 
-            var dbContextFactory = this.GetMockDbContextFactory();
-            dbContextFactory.Setup(d => d.GetContext(It.IsAny<Guid>(), It.IsAny<String>(), It.IsAny<CancellationToken>())).ReturnsAsync(context);
-
-            VoucherDomainService domainService = new VoucherDomainService(voucherAggregateRepository.Object,
-                                                                          securityServiceClient.Object,
-                                                                          estateClient.Object,
-                                                                          dbContextFactory.Object);
-
-            var result = await domainService.IssueVoucher(TestData.VoucherId,
-                                                                                 TestData.OperatorId,
+            var result = await this.VoucherDomainService.IssueVoucher(TestData.VoucherId,
+                                                                                 TestData.OperatorId2,
                                                                                  TestData.EstateId,
                                                                                  TestData.TransactionId,
                                                                                  TestData.IssuedDateTime,
@@ -182,31 +147,15 @@ namespace TransactionProcessor.BusinessLogic.Tests.Services
 
         [Fact]
         public async Task VoucherDomainService_IssueVoucher_VoucherIssued() {
-            IConfigurationRoot configurationRoot = new ConfigurationBuilder().AddInMemoryCollection(TestData.DefaultAppSettings).Build();
-            ConfigurationReader.Initialise(configurationRoot);
 
-            Logger.Initialise(NullLogger.Instance);
-
-            Mock<IIntermediateEstateClient> estateClient = new Mock<IIntermediateEstateClient>();
-            Mock<ISecurityServiceClient> securityServiceClient = new Mock<ISecurityServiceClient>();
-            Mock<IAggregateRepository<VoucherAggregate, DomainEvent>> voucherAggregateRepository = new Mock<IAggregateRepository<VoucherAggregate, DomainEvent>>();
-            voucherAggregateRepository.Setup(v => v.GetLatestVersion(It.IsAny<Guid>(), It.IsAny<CancellationToken>())).ReturnsAsync(new VoucherAggregate());
-            voucherAggregateRepository.Setup(v => v.SaveChanges(It.IsAny<VoucherAggregate>(), It.IsAny<CancellationToken>())).ReturnsAsync(Result.Success);
-            securityServiceClient.Setup(s => s.GetToken(It.IsAny<String>(), It.IsAny<String>(), It.IsAny<CancellationToken>())).ReturnsAsync(Result.Success(TestData.TokenResponse()));
-            estateClient.Setup(e => e.GetEstate(It.IsAny<String>(), It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
-                        .ReturnsAsync(TestData.GetEstateResponseWithOperator1);
+            VoucherAggregateRepository.Setup(v => v.GetLatestVersion(It.IsAny<Guid>(), It.IsAny<CancellationToken>())).ReturnsAsync(new VoucherAggregate());
+            VoucherAggregateRepository.Setup(v => v.SaveChanges(It.IsAny<VoucherAggregate>(), It.IsAny<CancellationToken>())).ReturnsAsync(Result.Success);
+            EstateAggregateRepository.Setup(f => f.GetLatestVersion(It.IsAny<Guid>(), It.IsAny<CancellationToken>())).ReturnsAsync(Result.Success(TestData.Aggregates.EstateAggregateWithOperator()));
 
             EstateManagementGenericContext context = await this.GetContext(Guid.NewGuid().ToString("N"));
+            DbContextFactory.Setup(d => d.GetContext(It.IsAny<Guid>(), It.IsAny<String>(), It.IsAny<CancellationToken>())).ReturnsAsync(context);
 
-            var dbContextFactory = this.GetMockDbContextFactory();
-            dbContextFactory.Setup(d => d.GetContext(It.IsAny<Guid>(), It.IsAny<String>(), It.IsAny<CancellationToken>())).ReturnsAsync(context);
-
-            VoucherDomainService domainService = new VoucherDomainService(voucherAggregateRepository.Object,
-                                                                          securityServiceClient.Object,
-                                                                          estateClient.Object,
-                                                                          dbContextFactory.Object);
-
-            var result = await domainService.IssueVoucher(TestData.VoucherId,
+            var result = await this.VoucherDomainService.IssueVoucher(TestData.VoucherId,
                                                                                          TestData.OperatorId,
                                                                                          TestData.EstateId,
                                                                                          TestData.TransactionId,
@@ -222,20 +171,10 @@ namespace TransactionProcessor.BusinessLogic.Tests.Services
 
         [Fact]
         public async Task VoucherDomainService_RedeemVoucher_InvalidEstate_ErrorThrown() {
-            IConfigurationRoot configurationRoot = new ConfigurationBuilder().AddInMemoryCollection(TestData.DefaultAppSettings).Build();
-            ConfigurationReader.Initialise(configurationRoot);
-
-            Logger.Initialise(NullLogger.Instance);
-
-            Mock<IIntermediateEstateClient> estateClient = new Mock<IIntermediateEstateClient>();
-            Mock<ISecurityServiceClient> securityServiceClient = new Mock<ISecurityServiceClient>();
-            Mock<IAggregateRepository<VoucherAggregate, DomainEvent>> voucherAggregateRepository = new Mock<IAggregateRepository<VoucherAggregate, DomainEvent>>();
-            voucherAggregateRepository.Setup(v => v.GetLatestVersion(It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
+            
+            VoucherAggregateRepository.Setup(v => v.GetLatestVersion(It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
                                       .ReturnsAsync(Result.Success(TestData.GetVoucherAggregateWithRecipientMobile()));
-            securityServiceClient.Setup(s => s.GetToken(It.IsAny<String>(), It.IsAny<String>(), It.IsAny<CancellationToken>())).ReturnsAsync(Result.Success(TestData.TokenResponse()));
-            estateClient.Setup(e => e.GetEstate(It.IsAny<String>(), It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
-                //.ThrowsAsync(new Exception("Exception", new KeyNotFoundException("Invalid Estate")));
-                .ReturnsAsync(Result.Failure());
+            EstateAggregateRepository.Setup(f => f.GetLatestVersion(It.IsAny<Guid>(), It.IsAny<CancellationToken>())).ReturnsAsync(Result.Failure());
 
             EstateManagementGenericContext context = await this.GetContext(Guid.NewGuid().ToString("N"));
             context.Vouchers.Add(new TransactionProcessor.Database.Entities.Voucher {
@@ -243,15 +182,9 @@ namespace TransactionProcessor.BusinessLogic.Tests.Services
                                                  OperatorIdentifier = TestData.OperatorIdentifier
                                              });
             await context.SaveChangesAsync();
-            var dbContextFactory = this.GetMockDbContextFactory();
-            dbContextFactory.Setup(d => d.GetContext(It.IsAny<Guid>(), It.IsAny<String>(), It.IsAny<CancellationToken>())).ReturnsAsync(context);
+            DbContextFactory.Setup(d => d.GetContext(It.IsAny<Guid>(), It.IsAny<String>(), It.IsAny<CancellationToken>())).ReturnsAsync(context);
 
-            VoucherDomainService domainService = new VoucherDomainService(voucherAggregateRepository.Object,
-                                                                          securityServiceClient.Object,
-                                                                          estateClient.Object,
-                                                                          dbContextFactory.Object);
-
-            var result = await domainService.RedeemVoucher(TestData.EstateId,
+            var result = await this.VoucherDomainService.RedeemVoucher(TestData.EstateId,
                                                                                   TestData.VoucherCode,
                                                                                   TestData.RedeemedDateTime,
                                                                                   CancellationToken.None);
@@ -260,21 +193,12 @@ namespace TransactionProcessor.BusinessLogic.Tests.Services
 
         [Fact]
         public async Task VoucherDomainService_RedeemVoucher_VoucherRedeemed() {
-            IConfigurationRoot configurationRoot = new ConfigurationBuilder().AddInMemoryCollection(TestData.DefaultAppSettings).Build();
-            ConfigurationReader.Initialise(configurationRoot);
 
-            Logger.Initialise(NullLogger.Instance);
-
-            Mock<IIntermediateEstateClient> estateClient = new Mock<IIntermediateEstateClient>();
-            Mock<ISecurityServiceClient> securityServiceClient = new Mock<ISecurityServiceClient>();
-            Mock<IAggregateRepository<VoucherAggregate, DomainEvent>> voucherAggregateRepository = new Mock<IAggregateRepository<VoucherAggregate, DomainEvent>>();
-            voucherAggregateRepository.Setup(v => v.GetLatestVersion(It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
+            VoucherAggregateRepository.Setup(v => v.GetLatestVersion(It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
                                       .ReturnsAsync(Result.Success(TestData.GetVoucherAggregateWithRecipientMobile()));
-            voucherAggregateRepository.Setup(v => v.SaveChanges(It.IsAny<VoucherAggregate>(), It.IsAny<CancellationToken>()))
+            VoucherAggregateRepository.Setup(v => v.SaveChanges(It.IsAny<VoucherAggregate>(), It.IsAny<CancellationToken>()))
                 .ReturnsAsync(Result.Success);
-            securityServiceClient.Setup(s => s.GetToken(It.IsAny<String>(), It.IsAny<String>(), It.IsAny<CancellationToken>())).ReturnsAsync(Result.Success(TestData.TokenResponse()));
-            estateClient.Setup(e => e.GetEstate(It.IsAny<String>(), It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
-                        .ReturnsAsync(TestData.GetEstateResponseWithOperator1);
+            EstateAggregateRepository.Setup(f => f.GetLatestVersion(It.IsAny<Guid>(), It.IsAny<CancellationToken>())).ReturnsAsync(Result.Success(TestData.Aggregates.CreatedEstateAggregate()));
 
             EstateManagementGenericContext context = await this.GetContext(Guid.NewGuid().ToString("N"));
             context.Vouchers.Add(new TransactionProcessor.Database.Entities.Voucher {
@@ -282,15 +206,9 @@ namespace TransactionProcessor.BusinessLogic.Tests.Services
                                                  OperatorIdentifier = TestData.OperatorIdentifier
                                              });
             await context.SaveChangesAsync();
-            var dbContextFactory = this.GetMockDbContextFactory();
-            dbContextFactory.Setup(d => d.GetContext(It.IsAny<Guid>(), It.IsAny<String>(), It.IsAny<CancellationToken>())).ReturnsAsync(context);
+            DbContextFactory.Setup(d => d.GetContext(It.IsAny<Guid>(), It.IsAny<String>(), It.IsAny<CancellationToken>())).ReturnsAsync(context);
 
-            VoucherDomainService domainService = new VoucherDomainService(voucherAggregateRepository.Object,
-                                                                          securityServiceClient.Object,
-                                                                          estateClient.Object,
-                                                                          dbContextFactory.Object);
-
-            var result = await domainService.RedeemVoucher(TestData.EstateId,
+            var result = await this.VoucherDomainService.RedeemVoucher(TestData.EstateId,
                                                                                             TestData.VoucherCode,
                                                                                             TestData.RedeemedDateTime,
                                                                                             CancellationToken.None);
@@ -301,30 +219,14 @@ namespace TransactionProcessor.BusinessLogic.Tests.Services
 
         [Fact]
         public async Task VoucherDomainService_RedeemVoucher_VoucherNotFound_ErrorThrown() {
-            IConfigurationRoot configurationRoot = new ConfigurationBuilder().AddInMemoryCollection(TestData.DefaultAppSettings).Build();
-            ConfigurationReader.Initialise(configurationRoot);
-
-            Logger.Initialise(NullLogger.Instance);
-
-            Mock<IIntermediateEstateClient> estateClient = new Mock<IIntermediateEstateClient>();
-            Mock<ISecurityServiceClient> securityServiceClient = new Mock<ISecurityServiceClient>();
-            Mock<IAggregateRepository<VoucherAggregate, DomainEvent>> voucherAggregateRepository = new Mock<IAggregateRepository<VoucherAggregate, DomainEvent>>();
-            voucherAggregateRepository.Setup(v => v.GetLatestVersion(It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
+            VoucherAggregateRepository.Setup(v => v.GetLatestVersion(It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
                                       .ReturnsAsync(Result.Success(TestData.GetVoucherAggregateWithRecipientMobile()));
-            securityServiceClient.Setup(s => s.GetToken(It.IsAny<String>(), It.IsAny<String>(), It.IsAny<CancellationToken>())).ReturnsAsync(Result.Success(TestData.TokenResponse()));
-            estateClient.Setup(e => e.GetEstate(It.IsAny<String>(), It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
-                        .ReturnsAsync(TestData.GetEstateResponseWithOperator1);
+            EstateAggregateRepository.Setup(f => f.GetLatestVersion(It.IsAny<Guid>(), It.IsAny<CancellationToken>())).ReturnsAsync(Result.Success(TestData.Aggregates.CreatedEstateAggregate()));
 
             EstateManagementGenericContext context = await this.GetContext(Guid.NewGuid().ToString("N"));
-            var dbContextFactory = this.GetMockDbContextFactory();
-            dbContextFactory.Setup(d => d.GetContext(It.IsAny<Guid>(), It.IsAny<String>(), It.IsAny<CancellationToken>())).ReturnsAsync(context);
+            DbContextFactory.Setup(d => d.GetContext(It.IsAny<Guid>(), It.IsAny<String>(), It.IsAny<CancellationToken>())).ReturnsAsync(context);
 
-            VoucherDomainService domainService = new VoucherDomainService(voucherAggregateRepository.Object,
-                                                                          securityServiceClient.Object,
-                                                                          estateClient.Object,
-                                                                          dbContextFactory.Object);
-
-            var result = await domainService.RedeemVoucher(TestData.EstateId,
+            var result = await this.VoucherDomainService.RedeemVoucher(TestData.EstateId,
                                                                                   TestData.VoucherCode,
                                                                                   TestData.RedeemedDateTime,
                                                                                   CancellationToken.None);
@@ -347,9 +249,6 @@ namespace TransactionProcessor.BusinessLogic.Tests.Services
             return context;
         }
 
-        private Mock<Shared.EntityFramework.IDbContextFactory<EstateManagementGenericContext>> GetMockDbContextFactory() {
-            return new Mock<Shared.EntityFramework.IDbContextFactory<EstateManagementGenericContext>>();
-        }
 
         #endregion
     }

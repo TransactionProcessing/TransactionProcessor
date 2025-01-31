@@ -8,6 +8,8 @@ using Shared.EventStore.Aggregate;
 using Shared.Results;
 using SimpleResults;
 using TransactionProcessor.Aggregates;
+using TransactionProcessor.Models.Contract;
+using TransactionProcessor.Models.Estate;
 using TransactionProcessor.ProjectionEngine.Repository;
 using TransactionProcessor.Repository;
 
@@ -25,7 +27,7 @@ namespace TransactionProcessor.BusinessLogic.Manager
 
         private readonly IAggregateRepository<EstateAggregate, DomainEvent> EstateAggregateRepository;
 
-        //private readonly IAggregateRepository<ContractAggregate, DomainEvent> ContractAggregateRepository;
+        private readonly IAggregateRepository<ContractAggregate, DomainEvent> ContractAggregateRepository;
 
         //private readonly IAggregateRepository<MerchantAggregate, DomainEvent> MerchantAggregateRepository;
 
@@ -39,14 +41,14 @@ namespace TransactionProcessor.BusinessLogic.Manager
         
         public EstateManagementManager(ITransactionProcessorReadModelRepository estateManagementRepository,
                                        IAggregateRepository<EstateAggregate, DomainEvent> estateAggregateRepository,
-                                       //IAggregateRepository<ContractAggregate,DomainEvent> contractAggregateRepository,
+                                       IAggregateRepository<ContractAggregate,DomainEvent> contractAggregateRepository,
                                        //IAggregateRepository<MerchantAggregate, DomainEvent> merchantAggregateRepository,
                                        //IModelFactory modelFactory,
                                        IAggregateRepository<OperatorAggregate, DomainEvent> operatorAggregateRepository)
         {
             this.EstateManagementRepository = estateManagementRepository;
             this.EstateAggregateRepository = estateAggregateRepository;
-            //this.ContractAggregateRepository = contractAggregateRepository;
+            this.ContractAggregateRepository = contractAggregateRepository;
             //this.MerchantAggregateRepository = merchantAggregateRepository;
             this.OperatorAggregateRepository = operatorAggregateRepository;
             //this.ModelFactory = modelFactory;
@@ -56,33 +58,35 @@ namespace TransactionProcessor.BusinessLogic.Manager
 
         #region Methods
 
-        //public async Task<Result<List<Contract>>> GetContracts(Guid estateId,
-        //                                                       CancellationToken cancellationToken)
-        //{
-        //    Result<List<Contract>> getContractsResult = await this.EstateManagementRepository.GetContracts(estateId, cancellationToken);
+        public async Task<Result<List<Contract>>> GetContracts(Guid estateId,
+                                                                    CancellationToken cancellationToken)
+        {
+            Result<List<Contract>> getContractsResult = await this.EstateManagementRepository.GetContracts(estateId, cancellationToken);
 
-        //    if (getContractsResult.IsFailed)
-        //        return ResultHelpers.CreateFailure(getContractsResult);
+            if (getContractsResult.IsFailed)
+                return ResultHelpers.CreateFailure(getContractsResult);
 
-        //    return  Result.Success(getContractsResult.Data);
-        //}
+            return Result.Success(getContractsResult.Data);
+        }
 
-        //public async Task<Result<Contract>> GetContract(Guid estateId,
-        //                                        Guid contractId,
-        //                                        CancellationToken cancellationToken){
-        //    Result<ContractAggregate> getContractResult = await this.ContractAggregateRepository.GetLatestVersion(contractId, cancellationToken);
-        //    if (getContractResult.IsFailed)
-        //        return ResultHelpers.CreateFailure(getContractResult);
+        public async Task<Result<Contract>> GetContract(Guid estateId,
+                                                Guid contractId,
+                                                CancellationToken cancellationToken)
+        {
+            Result<ContractAggregate> getContractResult = await this.ContractAggregateRepository.GetLatestVersion(contractId, cancellationToken);
+            if (getContractResult.IsFailed)
+                return ResultHelpers.CreateFailure(getContractResult);
 
-        //    ContractAggregate contractAggregate = getContractResult.Data;
-            
-        //    if (contractAggregate.IsCreated == false){
-        //        return Result.NotFound($"No contract found with Id [{estateId}]");
-        //    }
-        //    Contract contractModel = contractAggregate.GetContract();
+            ContractAggregate contractAggregate = getContractResult.Data;
 
-        //    return Result.Success(contractModel);
-        //}
+            if (contractAggregate.IsCreated == false)
+            {
+                return Result.NotFound($"No contract found with Id [{estateId}]");
+            }
+            Contract contractModel = contractAggregate.GetContract();
+
+            return Result.Success(contractModel);
+        }
 
         public async Task<Result<Models.Estate.Estate>> GetEstate(Guid estateId,
                                                   CancellationToken cancellationToken){
@@ -98,12 +102,14 @@ namespace TransactionProcessor.BusinessLogic.Manager
 
             Models.Estate.Estate estateModel = estateAggregate.GetEstate();
 
-            //if (estateModel.Operators != null){
-            //    foreach (Operator @operator in estateModel.Operators){
-            //        OperatorAggregate operatorAggregate = await this.OperatorAggregateRepository.GetLatestVersion(@operator.OperatorId, cancellationToken);
-            //        @operator.Name = operatorAggregate.Name;
-            //    }
-            //}
+            if (estateModel.Operators != null)
+            {
+                foreach (Operator @operator in estateModel.Operators)
+                {
+                    OperatorAggregate operatorAggregate = await this.OperatorAggregateRepository.GetLatestVersion(@operator.OperatorId, cancellationToken);
+                    @operator.Name = operatorAggregate.Name;
+                }
+            }
 
             return Result.Success(estateModel);
         }
@@ -175,33 +181,35 @@ namespace TransactionProcessor.BusinessLogic.Manager
         //    return Result.Success(merchants);
         //}
 
-        //public async Task<Result<List<Models.Contract.ContractProductTransactionFee>>> GetTransactionFeesForProduct(Guid estateId,
-        //                                                                     Guid merchantId,
-        //                                                                     Guid contractId,
-        //                                                                     Guid productId,
-        //                                                                     CancellationToken cancellationToken)
-        //{
-        //    // TODO: this will need updated to handle merchant specific fees when that is available
+        public async Task<Result<List<Models.Contract.ContractProductTransactionFee>>> GetTransactionFeesForProduct(Guid estateId,
+                                                                             Guid merchantId,
+                                                                             Guid contractId,
+                                                                             Guid productId,
+                                                                             CancellationToken cancellationToken)
+        {
+            // TODO: this will need updated to handle merchant specific fees when that is available
 
-        //    Result<ContractAggregate> getContractResult = await this.ContractAggregateRepository.GetLatestVersion(contractId, cancellationToken);
-        //    if (getContractResult.IsFailed)
-        //        return ResultHelpers.CreateFailure(getContractResult);
-        //    ContractAggregate contract = getContractResult.Data;
-        //    if (contract.IsCreated == false){
-        //        return Result.NotFound($"No contract found with Id [{contractId}]");
-        //    }
+            Result<ContractAggregate> getContractResult = await this.ContractAggregateRepository.GetLatestVersion(contractId, cancellationToken);
+            if (getContractResult.IsFailed)
+                return ResultHelpers.CreateFailure(getContractResult);
+            ContractAggregate contract = getContractResult.Data;
+            if (contract.IsCreated == false)
+            {
+                return Result.NotFound($"No contract found with Id [{contractId}]");
+            }
 
-        //    List<Product> products = contract.GetProducts();
+            List<Product> products = contract.GetProducts();
 
-        //    Product product = products.SingleOrDefault(p => p.ContractProductId == productId);
+            Product product = products.SingleOrDefault(p => p.ContractProductId == productId);
 
-        //    if (product == null){
-        //        return Result.NotFound($"No product found with Id [{productId}] on contract Id [{contractId}]");
-        //    }
+            if (product == null)
+            {
+                return Result.NotFound($"No product found with Id [{productId}] on contract Id [{contractId}]");
+            }
 
-        //    return  Result.Success(product.TransactionFees);
+            return Result.Success(product.TransactionFees);
 
-        //}
+        }
 
         //public async Task<Result<File>> GetFileDetails(Guid estateId, Guid fileId, CancellationToken cancellationToken){
         //    var getFileDetailsResult= await this.EstateManagementRepository.GetFileDetails(estateId, fileId, cancellationToken);

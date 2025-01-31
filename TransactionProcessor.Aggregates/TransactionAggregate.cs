@@ -1,5 +1,5 @@
-﻿using TransactionProcessor.Models;
-using TransactionProcessor.Transaction.DomainEvents;
+﻿using TransactionProcessor.DomainEvents;
+using TransactionProcessor.Models.Contract;
 
 namespace TransactionProcessor.Aggregates
 {
@@ -26,8 +26,8 @@ namespace TransactionProcessor.Aggregates
             aggregate.CheckTransactionNotAlreadyAuthorised();
             aggregate.CheckTransactionNotAlreadyDeclined();
 
-            TransactionDeclinedByOperatorEvent transactionDeclinedByOperatorEvent =
-                new TransactionDeclinedByOperatorEvent(aggregate.AggregateId,
+            TransactionDomainEvents.TransactionDeclinedByOperatorEvent transactionDeclinedByOperatorEvent =
+                new TransactionDomainEvents.TransactionDeclinedByOperatorEvent(aggregate.AggregateId,
                                                        aggregate.EstateId,
                                                        aggregate.MerchantId,
                                                        operatorId,
@@ -46,8 +46,8 @@ namespace TransactionProcessor.Aggregates
             aggregate.CheckTransactionHasBeenStarted();
             aggregate.CheckTransactionNotAlreadyAuthorised();
             aggregate.CheckTransactionNotAlreadyDeclined();
-            TransactionHasBeenLocallyDeclinedEvent transactionHasBeenLocallyDeclinedEvent =
-                new TransactionHasBeenLocallyDeclinedEvent(aggregate.AggregateId, aggregate.EstateId, aggregate.MerchantId, responseCode, responseMessage,
+            TransactionDomainEvents.TransactionHasBeenLocallyDeclinedEvent transactionHasBeenLocallyDeclinedEvent =
+                new TransactionDomainEvents.TransactionHasBeenLocallyDeclinedEvent(aggregate.AggregateId, aggregate.EstateId, aggregate.MerchantId, responseCode, responseMessage,
                     aggregate.TransactionDateTime);
 
             aggregate.ApplyAndAppend(transactionHasBeenLocallyDeclinedEvent);
@@ -93,7 +93,7 @@ namespace TransactionProcessor.Aggregates
             if (calculatedFee.FeeType == FeeType.ServiceProvider)
             {
                 // This is an operational (service provider) fee
-                @event = new ServiceProviderFeeAddedToTransactionEvent(aggregate.AggregateId,
+                @event = new TransactionDomainEvents.ServiceProviderFeeAddedToTransactionEvent(aggregate.AggregateId,
                                                                        aggregate.EstateId,
                                                                        aggregate.MerchantId,
                                                                        calculatedFee.CalculatedValue,
@@ -121,8 +121,8 @@ namespace TransactionProcessor.Aggregates
             aggregate.CheckTransactionNotAlreadyCompleted();
             aggregate.CheckProductDetailsNotAlreadyAdded();
 
-            ProductDetailsAddedToTransactionEvent productDetailsAddedToTransactionEvent =
-                new ProductDetailsAddedToTransactionEvent(aggregate.AggregateId, aggregate.EstateId, aggregate.MerchantId, contractId, productId,
+            TransactionDomainEvents.ProductDetailsAddedToTransactionEvent productDetailsAddedToTransactionEvent =
+                new TransactionDomainEvents.ProductDetailsAddedToTransactionEvent(aggregate.AggregateId, aggregate.EstateId, aggregate.MerchantId, contractId, productId,
                     aggregate.TransactionDateTime);
 
             aggregate.ApplyAndAppend(productDetailsAddedToTransactionEvent);
@@ -145,7 +145,7 @@ namespace TransactionProcessor.Aggregates
 
             DomainEvent @event = null;
             if (calculatedFee.FeeType == FeeType.Merchant){
-                @event = new MerchantFeePendingSettlementAddedToTransactionEvent(aggregate.AggregateId,
+                @event = new TransactionDomainEvents.MerchantFeePendingSettlementAddedToTransactionEvent(aggregate.AggregateId,
                                                                       aggregate.EstateId,
                                                                       aggregate.MerchantId,
                                                                       calculatedFee.CalculatedValue,
@@ -183,7 +183,7 @@ namespace TransactionProcessor.Aggregates
             if (calculatedFee.FeeType == FeeType.Merchant)
             {
                 // This is a merchant fee
-                @event = new SettledMerchantFeeAddedToTransactionEvent(aggregate.AggregateId,
+                @event = new TransactionDomainEvents.SettledMerchantFeeAddedToTransactionEvent(aggregate.AggregateId,
                                                                        aggregate.EstateId,
                                                                        aggregate.MerchantId,
                                                                        calculatedFee.CalculatedValue,
@@ -210,8 +210,8 @@ namespace TransactionProcessor.Aggregates
             if (aggregate.TransactionSource != TransactionSource.NotSet)
                 return;
 
-            TransactionSourceAddedToTransactionEvent transactionSourceAddedToTransactionEvent =
-                new TransactionSourceAddedToTransactionEvent(aggregate.AggregateId, aggregate.EstateId, aggregate.MerchantId, (Int32)transactionSource,
+            TransactionDomainEvents.TransactionSourceAddedToTransactionEvent transactionSourceAddedToTransactionEvent =
+                new TransactionDomainEvents.TransactionSourceAddedToTransactionEvent(aggregate.AggregateId, aggregate.EstateId, aggregate.MerchantId, (Int32)transactionSource,
                     aggregate.TransactionDateTime);
 
             aggregate.ApplyAndAppend(transactionSourceAddedToTransactionEvent);
@@ -229,7 +229,7 @@ namespace TransactionProcessor.Aggregates
             aggregate.CheckTransactionHasBeenStarted();
             aggregate.CheckTransactionNotAlreadyAuthorised();
 
-            TransactionAuthorisedByOperatorEvent transactionAuthorisedByOperatorEvent = new TransactionAuthorisedByOperatorEvent(aggregate.AggregateId,
+            TransactionDomainEvents.TransactionAuthorisedByOperatorEvent transactionAuthorisedByOperatorEvent = new TransactionDomainEvents.TransactionAuthorisedByOperatorEvent(aggregate.AggregateId,
                                                                                                                                  aggregate.EstateId,
                                                                                                                                  aggregate.MerchantId,
                                                                                                                                  operatorId,
@@ -251,8 +251,8 @@ namespace TransactionProcessor.Aggregates
             aggregate.CheckTransactionHasBeenStarted();
             aggregate.CheckTransactionNotAlreadyAuthorised();
             aggregate.CheckTransactionCanBeLocallyAuthorised();
-            TransactionHasBeenLocallyAuthorisedEvent transactionHasBeenLocallyAuthorisedEvent =
-                new TransactionHasBeenLocallyAuthorisedEvent(aggregate.AggregateId, aggregate.EstateId, aggregate.MerchantId, authorisationCode, responseCode, responseMessage,
+            TransactionDomainEvents.TransactionHasBeenLocallyAuthorisedEvent transactionHasBeenLocallyAuthorisedEvent =
+                new TransactionDomainEvents.TransactionHasBeenLocallyAuthorisedEvent(aggregate.AggregateId, aggregate.EstateId, aggregate.MerchantId, authorisationCode, responseCode, responseMessage,
                     aggregate.TransactionDateTime);
 
             aggregate.ApplyAndAppend(transactionHasBeenLocallyAuthorisedEvent);
@@ -264,8 +264,8 @@ namespace TransactionProcessor.Aggregates
             aggregate.CheckTransactionHasBeenAuthorisedOrDeclined();
             aggregate.CheckTransactionNotAlreadyCompleted();
 
-            TransactionHasBeenCompletedEvent transactionHasBeenCompletedEvent =
-                new TransactionHasBeenCompletedEvent(aggregate.AggregateId,
+            TransactionDomainEvents.TransactionHasBeenCompletedEvent transactionHasBeenCompletedEvent =
+                new TransactionDomainEvents.TransactionHasBeenCompletedEvent(aggregate.AggregateId,
                                                      aggregate.EstateId,
                                                      aggregate.MerchantId,
                                                      aggregate.ResponseCode,
@@ -288,8 +288,8 @@ namespace TransactionProcessor.Aggregates
             aggregate.CheckTransactionNotAlreadyDeclined();
             aggregate.CheckAdditionalRequestDataNotAlreadyRecorded();
 
-            AdditionalRequestDataRecordedEvent additionalRequestDataRecordedEvent =
-                new AdditionalRequestDataRecordedEvent(aggregate.AggregateId, aggregate.EstateId, aggregate.MerchantId, operatorId, additionalTransactionRequestMetadata,
+            TransactionDomainEvents.AdditionalRequestDataRecordedEvent additionalRequestDataRecordedEvent =
+                new TransactionDomainEvents.AdditionalRequestDataRecordedEvent(aggregate.AggregateId, aggregate.EstateId, aggregate.MerchantId, operatorId, additionalTransactionRequestMetadata,
                     aggregate.TransactionDateTime);
 
             aggregate.ApplyAndAppend(additionalRequestDataRecordedEvent);
@@ -302,8 +302,8 @@ namespace TransactionProcessor.Aggregates
             aggregate.CheckTransactionHasBeenStarted();
             aggregate.CheckAdditionalResponseDataNotAlreadyRecorded();
 
-            AdditionalResponseDataRecordedEvent additionalResponseDataRecordedEvent =
-                new AdditionalResponseDataRecordedEvent(aggregate.AggregateId, aggregate.EstateId, aggregate.MerchantId, operatorId, additionalTransactionResponseMetadata,
+            TransactionDomainEvents.AdditionalResponseDataRecordedEvent additionalResponseDataRecordedEvent =
+                new TransactionDomainEvents.AdditionalResponseDataRecordedEvent(aggregate.AggregateId, aggregate.EstateId, aggregate.MerchantId, operatorId, additionalTransactionResponseMetadata,
                     aggregate.TransactionDateTime);
 
             aggregate.ApplyAndAppend(additionalResponseDataRecordedEvent);
@@ -314,8 +314,8 @@ namespace TransactionProcessor.Aggregates
             aggregate.CheckTransactionHasBeenCompleted();
             aggregate.CheckCustomerHasNotAlreadyRequestedEmailReceipt();
 
-            CustomerEmailReceiptRequestedEvent customerEmailReceiptRequestedEvent =
-                new CustomerEmailReceiptRequestedEvent(aggregate.AggregateId, aggregate.EstateId, aggregate.MerchantId, customerEmailAddress,
+            TransactionDomainEvents.CustomerEmailReceiptRequestedEvent customerEmailReceiptRequestedEvent =
+                new TransactionDomainEvents.CustomerEmailReceiptRequestedEvent(aggregate.AggregateId, aggregate.EstateId, aggregate.MerchantId, customerEmailAddress,
                     aggregate.TransactionDateTime);
 
             aggregate.ApplyAndAppend(customerEmailReceiptRequestedEvent);
@@ -325,8 +325,8 @@ namespace TransactionProcessor.Aggregates
         {
             aggregate.CheckCustomerHasAlreadyRequestedEmailReceipt();
 
-            CustomerEmailReceiptResendRequestedEvent customerEmailReceiptResendRequestedEvent =
-                new CustomerEmailReceiptResendRequestedEvent(aggregate.AggregateId, aggregate.EstateId, aggregate.MerchantId,
+            TransactionDomainEvents.CustomerEmailReceiptResendRequestedEvent customerEmailReceiptResendRequestedEvent =
+                new TransactionDomainEvents.CustomerEmailReceiptResendRequestedEvent(aggregate.AggregateId, aggregate.EstateId, aggregate.MerchantId,
                     aggregate.TransactionDateTime);
 
             aggregate.ApplyAndAppend(customerEmailReceiptResendRequestedEvent);
@@ -359,7 +359,7 @@ namespace TransactionProcessor.Aggregates
 
             aggregate.CheckTransactionNotAlreadyStarted();
             aggregate.CheckTransactionNotAlreadyCompleted();
-            TransactionHasStartedEvent transactionHasStartedEvent = new TransactionHasStartedEvent(aggregate.AggregateId,
+            TransactionDomainEvents.TransactionHasStartedEvent transactionHasStartedEvent = new TransactionDomainEvents.TransactionHasStartedEvent(aggregate.AggregateId,
                                                                                                    estateId,
                                                                                                    merchantId,
                                                                                                    transactionDateTime,
@@ -380,7 +380,7 @@ namespace TransactionProcessor.Aggregates
             if (unitCost == 0 || totalCost == 0)
                 return;
 
-            TransactionCostInformationRecordedEvent transactionCostInformationRecordedEvent = new TransactionCostInformationRecordedEvent(aggregate.AggregateId,
+            TransactionDomainEvents.TransactionCostInformationRecordedEvent transactionCostInformationRecordedEvent = new TransactionDomainEvents.TransactionCostInformationRecordedEvent(aggregate.AggregateId,
                                                                                                               aggregate.EstateId,
                                                                                                               aggregate.MerchantId,
                                                                                                               unitCost,
@@ -530,30 +530,30 @@ namespace TransactionProcessor.Aggregates
             return aggregate.CalculatedFees.Any(c => c.FeeId == calculatedFee.FeeId);
         }
 
-        public static void PlayEvent(this TransactionAggregate aggregate, CustomerEmailReceiptRequestedEvent domainEvent)
+        public static void PlayEvent(this TransactionAggregate aggregate, TransactionDomainEvents.CustomerEmailReceiptRequestedEvent domainEvent)
         {
             aggregate.CustomerEmailAddress = domainEvent.CustomerEmailAddress;
             aggregate.CustomerEmailReceiptHasBeenRequested = true;
             aggregate.ReceiptMessageId = domainEvent.EventId;
         }
 
-        public static void PlayEvent(this TransactionAggregate aggregate, CustomerEmailReceiptResendRequestedEvent domainEvent)
+        public static void PlayEvent(this TransactionAggregate aggregate, TransactionDomainEvents.CustomerEmailReceiptResendRequestedEvent domainEvent)
         {
             aggregate.ReceiptResendCount++;
         }
 
-        public static void PlayEvent(this TransactionAggregate aggregate, AdditionalRequestDataRecordedEvent domainEvent)
+        public static void PlayEvent(this TransactionAggregate aggregate, TransactionDomainEvents.AdditionalRequestDataRecordedEvent domainEvent)
         {
             aggregate.AdditionalTransactionRequestMetadata = domainEvent.AdditionalTransactionRequestMetadata;
             aggregate.OperatorId = domainEvent.OperatorId;
         }
 
-        public static void PlayEvent(this TransactionAggregate aggregate, AdditionalResponseDataRecordedEvent domainEvent)
+        public static void PlayEvent(this TransactionAggregate aggregate, TransactionDomainEvents.AdditionalResponseDataRecordedEvent domainEvent)
         {
             aggregate.AdditionalTransactionResponseMetadata = domainEvent.AdditionalTransactionResponseMetadata;
         }
 
-        public static void PlayEvent(this TransactionAggregate aggregate, TransactionHasStartedEvent domainEvent)
+        public static void PlayEvent(this TransactionAggregate aggregate, TransactionDomainEvents.TransactionHasStartedEvent domainEvent)
         {
             aggregate.MerchantId = domainEvent.MerchantId;
             aggregate.EstateId = domainEvent.EstateId;
@@ -570,7 +570,7 @@ namespace TransactionProcessor.Aggregates
             aggregate.TransactionAmount = domainEvent.TransactionAmount.HasValue ? domainEvent.TransactionAmount : null;
         }
 
-        public static void PlayEvent(this TransactionAggregate aggregate, TransactionHasBeenLocallyAuthorisedEvent domainEvent)
+        public static void PlayEvent(this TransactionAggregate aggregate, TransactionDomainEvents.TransactionHasBeenLocallyAuthorisedEvent domainEvent)
         {
             aggregate.IsLocallyAuthorised = true;
             aggregate.ResponseMessage = domainEvent.ResponseMessage;
@@ -578,20 +578,20 @@ namespace TransactionProcessor.Aggregates
             aggregate.AuthorisationCode = domainEvent.AuthorisationCode;
         }
 
-        public static void PlayEvent(this TransactionAggregate aggregate, TransactionHasBeenLocallyDeclinedEvent domainEvent)
+        public static void PlayEvent(this TransactionAggregate aggregate, TransactionDomainEvents.TransactionHasBeenLocallyDeclinedEvent domainEvent)
         {
             aggregate.IsLocallyDeclined = true;
             aggregate.ResponseMessage = domainEvent.ResponseMessage;
             aggregate.ResponseCode = domainEvent.ResponseCode;
         }
 
-        public static void PlayEvent(this TransactionAggregate aggregate, TransactionHasBeenCompletedEvent domainEvent)
+        public static void PlayEvent(this TransactionAggregate aggregate, TransactionDomainEvents.TransactionHasBeenCompletedEvent domainEvent)
         {
             //aggregate.IsStarted = false; // Transaction has reached its final state
             aggregate.IsCompleted = true;
         }
 
-        public static void PlayEvent(this TransactionAggregate aggregate, TransactionAuthorisedByOperatorEvent domainEvent)
+        public static void PlayEvent(this TransactionAggregate aggregate, TransactionDomainEvents.TransactionAuthorisedByOperatorEvent domainEvent)
         {
             aggregate.IsAuthorised = true;
             aggregate.OperatorId = domainEvent.OperatorId;
@@ -603,7 +603,7 @@ namespace TransactionProcessor.Aggregates
             aggregate.ResponseMessage = domainEvent.ResponseMessage;
         }
 
-        public static void PlayEvent(this TransactionAggregate aggregate, TransactionDeclinedByOperatorEvent domainEvent)
+        public static void PlayEvent(this TransactionAggregate aggregate, TransactionDomainEvents.TransactionDeclinedByOperatorEvent domainEvent)
         {
             aggregate.IsDeclined = true;
             aggregate.OperatorId = domainEvent.OperatorId;
@@ -613,31 +613,31 @@ namespace TransactionProcessor.Aggregates
             aggregate.ResponseMessage = domainEvent.ResponseMessage;
         }
 
-        public static void PlayEvent(this TransactionAggregate aggregate, ProductDetailsAddedToTransactionEvent domainEvent)
+        public static void PlayEvent(this TransactionAggregate aggregate, TransactionDomainEvents.ProductDetailsAddedToTransactionEvent domainEvent)
         {
             aggregate.IsProductDetailsAdded = true;
             aggregate.ContractId = domainEvent.ContractId;
             aggregate.ProductId = domainEvent.ProductId;
         }
 
-        public static void PlayEvent(this TransactionAggregate aggregate, TransactionSourceAddedToTransactionEvent domainEvent)
+        public static void PlayEvent(this TransactionAggregate aggregate, TransactionDomainEvents.TransactionSourceAddedToTransactionEvent domainEvent)
         {
             aggregate.TransactionSource = (TransactionSource)domainEvent.TransactionSource;
         }
 
-        public static void PlayEvent(this TransactionAggregate aggregate, TransactionCostInformationRecordedEvent domainEvent){
+        public static void PlayEvent(this TransactionAggregate aggregate, TransactionDomainEvents.TransactionCostInformationRecordedEvent domainEvent){
             aggregate.UnitCost = domainEvent.UnitCostValue;
             aggregate.TotalCost = domainEvent.TotalCostValue;
             aggregate.HasCostsCalculated= true;
         }
 
-        public static void PlayEvent(this TransactionAggregate aggregate, SettledMerchantFeeAddedToTransactionEvent domainEvent)
+        public static void PlayEvent(this TransactionAggregate aggregate, TransactionDomainEvents.SettledMerchantFeeAddedToTransactionEvent domainEvent)
         {
             CalculatedFee fee = aggregate.CalculatedFees.Single(c => c.FeeId == domainEvent.FeeId);
             fee.IsSettled = true;
         }
 
-        public static void PlayEvent(this TransactionAggregate aggregate, MerchantFeePendingSettlementAddedToTransactionEvent domainEvent)
+        public static void PlayEvent(this TransactionAggregate aggregate, TransactionDomainEvents.MerchantFeePendingSettlementAddedToTransactionEvent domainEvent)
         {
             aggregate.CalculatedFees.Add(new CalculatedFee
                                          {
@@ -651,7 +651,7 @@ namespace TransactionProcessor.Aggregates
                                          });
         }
 
-        public static void PlayEvent(this TransactionAggregate aggregate, ServiceProviderFeeAddedToTransactionEvent domainEvent)
+        public static void PlayEvent(this TransactionAggregate aggregate, TransactionDomainEvents.ServiceProviderFeeAddedToTransactionEvent domainEvent)
         {
             aggregate.CalculatedFees.Add(new CalculatedFee
                                          {

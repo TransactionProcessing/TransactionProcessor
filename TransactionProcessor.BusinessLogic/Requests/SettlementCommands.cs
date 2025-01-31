@@ -3,6 +3,7 @@ using System.Diagnostics.CodeAnalysis;
 using MediatR;
 using SimpleResults;
 using TransactionProcessor.Models;
+using TransactionProcessor.Models.Contract;
 
 namespace TransactionProcessor.BusinessLogic.Requests;
 [ExcludeFromCodeCoverage]

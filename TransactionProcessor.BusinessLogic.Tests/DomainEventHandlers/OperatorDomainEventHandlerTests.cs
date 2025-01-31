@@ -3,8 +3,7 @@ using Moq;
 using Shared.Logger;
 using Shouldly;
 using TransactionProcessor.BusinessLogic.EventHandling;
-using TransactionProcessor.Estate.DomainEvents;
-using TransactionProcessor.Operator.DomainEvents;
+using TransactionProcessor.DomainEvents;
 using TransactionProcessor.Repository;
 using TransactionProcessor.Testing;
 using Xunit;
@@ -26,7 +25,7 @@ public class OperatorDomainEventHandlerTests
     [Fact]
     public void OperatorDomainEventHandler_OperatorCreatedEvent_EventIsHandled()
     {
-        OperatorCreatedEvent operatorCreatedEvent = TestData.DomainEvents.OperatorCreatedEvent;
+        OperatorDomainEvents.OperatorCreatedEvent operatorCreatedEvent = TestData.DomainEvents.OperatorCreatedEvent;
 
         Should.NotThrow(async () => { await this.DomainEventHandler.Handle(operatorCreatedEvent, CancellationToken.None); });
     }
@@ -34,7 +33,7 @@ public class OperatorDomainEventHandlerTests
     [Fact]
     public void OperatorDomainEventHandler_OperatorNameUpdatedEvent_EventIsHandled()
     {
-        OperatorNameUpdatedEvent operatorCreatedEvent = TestData.DomainEvents.OperatorNameUpdatedEvent;
+        OperatorDomainEvents.OperatorNameUpdatedEvent operatorCreatedEvent = TestData.DomainEvents.OperatorNameUpdatedEvent;
 
         Should.NotThrow(async () => { await this.DomainEventHandler.Handle(operatorCreatedEvent, CancellationToken.None); });
     }
@@ -42,7 +41,7 @@ public class OperatorDomainEventHandlerTests
     [Fact]
     public void OperatorDomainEventHandler_OperatorRequireCustomMerchantNumberChangedEvent_EventIsHandled()
     {
-        OperatorRequireCustomMerchantNumberChangedEvent operatorCreatedEvent = TestData.DomainEvents.OperatorRequireCustomMerchantNumberChangedEvent;
+        OperatorDomainEvents.OperatorRequireCustomMerchantNumberChangedEvent operatorCreatedEvent = TestData.DomainEvents.OperatorRequireCustomMerchantNumberChangedEvent;
 
         Should.NotThrow(async () => { await this.DomainEventHandler.Handle(operatorCreatedEvent, CancellationToken.None); });
     }
@@ -50,7 +49,7 @@ public class OperatorDomainEventHandlerTests
     [Fact]
     public void OperatorDomainEventHandler_OperatorRequireCustomTerminalNumberChangedEvent_EventIsHandled()
     {
-        OperatorRequireCustomTerminalNumberChangedEvent operatorCreatedEvent = TestData.DomainEvents.OperatorRequireCustomTerminalNumberChangedEvent;
+        OperatorDomainEvents.OperatorRequireCustomTerminalNumberChangedEvent operatorCreatedEvent = TestData.DomainEvents.OperatorRequireCustomTerminalNumberChangedEvent;
 
         Should.NotThrow(async () => { await this.DomainEventHandler.Handle(operatorCreatedEvent, CancellationToken.None); });
     }
@@ -58,7 +57,7 @@ public class OperatorDomainEventHandlerTests
     [Fact]
     public void OperatorDomainEventHandler_EstateCreatedEvent_EventIsHandled()
     {
-        EstateCreatedEvent domainEvent = TestData.DomainEvents.EstateCreatedEvent;
+        EstateDomainEvents.EstateCreatedEvent domainEvent = TestData.DomainEvents.EstateCreatedEvent;
 
         Should.NotThrow(async () => { await this.DomainEventHandler.Handle(domainEvent, CancellationToken.None); });
     }

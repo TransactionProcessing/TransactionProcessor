@@ -1,5 +1,6 @@
 ﻿using Shared.Logger;
 using SimpleResults;
+using TransactionProcessor.DomainEvents;
 
 namespace TransactionProcessor.ProjectionEngine.Dispatchers;
 
@@ -8,7 +9,6 @@ using Models;
 using Repository;
 using Shared.DomainDrivenDesign.EventSourcing;
 using State;
-using Transaction.DomainEvents;
 
 public class MerchantBalanceStateDispatcher : IStateDispatcher<MerchantBalanceState>
 {
@@ -26,8 +26,8 @@ public class MerchantBalanceStateDispatcher : IStateDispatcher<MerchantBalanceSt
             ManualDepositMadeEvent e => this.CreateManualDepositBalanceEntry(state, e),
             AutomaticDepositMadeEvent e => this.CreateAutomaticDepositBalanceEntry(state, e),
             WithdrawalMadeEvent e => this.CreateWithdrawalBalanceEntry(state, e),
-            TransactionHasBeenCompletedEvent e => this.CreateTransactionBalanceEntry(state, e),
-            SettledMerchantFeeAddedToTransactionEvent e => this.CreateTransactionFeeBalanceEntry(state, e),
+            TransactionDomainEvents.TransactionHasBeenCompletedEvent e => this.CreateTransactionBalanceEntry(state, e),
+            TransactionDomainEvents.SettledMerchantFeeAddedToTransactionEvent e => this.CreateTransactionFeeBalanceEntry(state, e),
             _ => null
         };
 
@@ -40,7 +40,7 @@ public class MerchantBalanceStateDispatcher : IStateDispatcher<MerchantBalanceSt
     }
 
     private MerchantBalanceChangedEntry CreateTransactionFeeBalanceEntry(MerchantBalanceState state,
-                                                                         SettledMerchantFeeAddedToTransactionEvent @event) =>
+                                                                         TransactionDomainEvents.SettledMerchantFeeAddedToTransactionEvent @event) =>
         new MerchantBalanceChangedEntry {
                                             MerchantId = @event.MerchantId,
                                             EstateId = @event.EstateId,
@@ -65,7 +65,7 @@ public class MerchantBalanceStateDispatcher : IStateDispatcher<MerchantBalanceSt
                                             DebitOrCredit = "D"
                                         };
 
-    private MerchantBalanceChangedEntry CreateTransactionBalanceEntry(MerchantBalanceState state, TransactionHasBeenCompletedEvent @event) {
+    private MerchantBalanceChangedEntry CreateTransactionBalanceEntry(MerchantBalanceState state, TransactionDomainEvents.TransactionHasBeenCompletedEvent @event) {
         if (@event.IsAuthorised == false)
             return null;
             

@@ -26,6 +26,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\TransactionProcessor.DomainEvents\TransactionProcessor.DomainEvents.csproj" />
     <ProjectReference Include="..\TransactionProcessor.Testing\TransactionProcessor.Testing.csproj" />
     <ProjectReference Include="..\TransactionProcessor\TransactionProcessor.csproj" />
   </ItemGroup>

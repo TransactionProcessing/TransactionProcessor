@@ -723,17 +723,20 @@ public class MerchantController : ControllerBase
                     ProductReportingId = contractResponseProduct.ProductReportingId,
                     TransactionFees = new()
                 };
-                foreach (EstateManagement.DataTransferObjects.Responses.Contract.ContractProductTransactionFee contractProductTransactionFee in contractResponseProduct.TransactionFees) {
-                    p.TransactionFees.Add(new DataTransferObjects.Responses.Contract.ContractProductTransactionFee
-                    {
-                        FeeType = (DataTransferObjects.Responses.Contract.FeeType)contractProductTransactionFee.FeeType,
-                        CalculationType = (DataTransferObjects.Responses.Contract.CalculationType)contractProductTransactionFee.CalculationType,
-                        Value = contractProductTransactionFee.Value,
-                        Description = contractProductTransactionFee.Description,
-                        TransactionFeeReportingId = contractProductTransactionFee.TransactionFeeReportingId,
-                        TransactionFeeId = contractProductTransactionFee.TransactionFeeId
-                    });
+
+                if (contractResponseProduct.TransactionFees != null) {
+                    foreach (EstateManagement.DataTransferObjects.Responses.Contract.ContractProductTransactionFee contractProductTransactionFee in contractResponseProduct.TransactionFees) {
+                        p.TransactionFees.Add(new DataTransferObjects.Responses.Contract.ContractProductTransactionFee {
+                            FeeType = (DataTransferObjects.Responses.Contract.FeeType)contractProductTransactionFee.FeeType,
+                            CalculationType = (DataTransferObjects.Responses.Contract.CalculationType)contractProductTransactionFee.CalculationType,
+                            Value = contractProductTransactionFee.Value,
+                            Description = contractProductTransactionFee.Description,
+                            TransactionFeeReportingId = contractProductTransactionFee.TransactionFeeReportingId,
+                            TransactionFeeId = contractProductTransactionFee.TransactionFeeId
+                        });
+                    }
                 }
+
                 cr.Products.Add(p);
 
             }

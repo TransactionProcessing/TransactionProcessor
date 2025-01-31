@@ -1,9 +1,9 @@
-﻿namespace TransactionProcessor.ProjectionEngine.State
+﻿using TransactionProcessor.DomainEvents;
+
+namespace TransactionProcessor.ProjectionEngine.State
 {
     using System.Diagnostics.Contracts;
     using EstateManagement.Merchant.DomainEvents;
-    using Transaction.DomainEvents;
-
     public static class MerchantBalanceStateExtensions
     {
         [Pure]
@@ -37,7 +37,7 @@
 
         [Pure]
         public static MerchantBalanceState HandleTransactionHasStartedEvent(this MerchantBalanceState state,
-                                                                            TransactionHasStartedEvent thse){
+                                                                            TransactionDomainEvents.TransactionHasStartedEvent thse){
 
             if (thse.TransactionType == "Logon"){
                 return state;
@@ -49,7 +49,7 @@
 
         [Pure]
         public static MerchantBalanceState HandleTransactionHasBeenCompletedEvent(this MerchantBalanceState state,
-                                                                                  TransactionHasBeenCompletedEvent thbce)
+                                                                                  TransactionDomainEvents.TransactionHasBeenCompletedEvent thbce)
         {
 
             if (thbce.IsAuthorised)
@@ -65,7 +65,7 @@
 
         [Pure]
         public static MerchantBalanceState HandleSettledMerchantFeeAddedToTransactionEvent(this MerchantBalanceState state,
-                                                                                           SettledMerchantFeeAddedToTransactionEvent mfatte) =>
+                                                                                           TransactionDomainEvents.SettledMerchantFeeAddedToTransactionEvent mfatte) =>
             state.IncrementAvailableBalance(mfatte.CalculatedValue).IncrementBalance(mfatte.CalculatedValue).RecordMerchantFee(mfatte);
 
         [Pure]
@@ -93,7 +93,7 @@
 
         [Pure]
         public static MerchantBalanceState CompleteTransaction(this MerchantBalanceState state,
-                                                               TransactionHasBeenCompletedEvent domainEvent)
+                                                               TransactionDomainEvents.TransactionHasBeenCompletedEvent domainEvent)
         {
             return state with
             {
@@ -176,7 +176,7 @@
 
         [Pure]
         public static MerchantBalanceState RecordMerchantFee(this MerchantBalanceState state,
-                                                             SettledMerchantFeeAddedToTransactionEvent mfatte) =>
+                                                             TransactionDomainEvents.SettledMerchantFeeAddedToTransactionEvent mfatte) =>
             state with
             {
                 FeeCount = state.FeeCount + 1,

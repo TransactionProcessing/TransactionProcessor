@@ -1,4 +1,6 @@
-﻿namespace TransactionProcessor.Models
+﻿using TransactionProcessor.Models.Contract;
+
+namespace TransactionProcessor.Models
 {
     using System;
     using System.Diagnostics.CodeAnalysis;

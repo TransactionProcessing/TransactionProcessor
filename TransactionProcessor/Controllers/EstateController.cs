@@ -1,6 +1,4 @@
-﻿using EstateManagement.DataTransferObjects.Requests.Estate;
-using EstateManagement.DataTransferObjects.Responses.Estate;
-using MediatR;
+﻿using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
@@ -18,6 +16,7 @@ using System;
 using Shared.Results;
 using TransactionProcessor.BusinessLogic.Requests;
 using TransactionProcessor.Factories;
+using TransactionProcessor.DataTransferObjects.Requests.Estate;
 
 namespace TransactionProcessor.Controllers
 {

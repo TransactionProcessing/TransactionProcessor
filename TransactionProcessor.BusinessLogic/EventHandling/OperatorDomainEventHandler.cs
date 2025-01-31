@@ -7,7 +7,7 @@ using System.Linq;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
-using TransactionProcessor.Operator.DomainEvents;
+using TransactionProcessor.DomainEvents;
 using TransactionProcessor.Repository;
 
 namespace TransactionProcessor.BusinessLogic.EventHandling
@@ -41,10 +41,10 @@ namespace TransactionProcessor.BusinessLogic.EventHandling
         {
             Task<Result> t = domainEvent switch
             {
-                OperatorCreatedEvent oce => this.EstateReportingRepository.AddOperator(oce, cancellationToken),
-                OperatorNameUpdatedEvent onue => this.EstateReportingRepository.UpdateOperator(onue, cancellationToken),
-                OperatorRequireCustomMerchantNumberChangedEvent oprcmnce => this.EstateReportingRepository.UpdateOperator(oprcmnce, cancellationToken),
-                OperatorRequireCustomTerminalNumberChangedEvent oprctnce => this.EstateReportingRepository.UpdateOperator(oprctnce, cancellationToken),
+                OperatorDomainEvents.OperatorCreatedEvent oce => this.EstateReportingRepository.AddOperator(oce, cancellationToken),
+                OperatorDomainEvents.OperatorNameUpdatedEvent onue => this.EstateReportingRepository.UpdateOperator(onue, cancellationToken),
+                OperatorDomainEvents.OperatorRequireCustomMerchantNumberChangedEvent oprcmnce => this.EstateReportingRepository.UpdateOperator(oprcmnce, cancellationToken),
+                OperatorDomainEvents.OperatorRequireCustomTerminalNumberChangedEvent oprctnce => this.EstateReportingRepository.UpdateOperator(oprctnce, cancellationToken),
                 _ => null
             };
             if (t != null)

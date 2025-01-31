@@ -1,8 +1,5 @@
-﻿namespace TransactionProcessor.Models
+﻿namespace TransactionProcessor.Models.Contract
 {
-    /// <summary>
-    /// 
-    /// </summary>
     public enum CalculationType
     {
         /// <summary>

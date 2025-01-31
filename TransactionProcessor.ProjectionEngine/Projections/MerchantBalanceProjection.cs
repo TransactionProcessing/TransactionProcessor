@@ -1,9 +1,10 @@
-﻿namespace TransactionProcessor.ProjectionEngine.Projections;
+﻿using TransactionProcessor.DomainEvents;
+
+namespace TransactionProcessor.ProjectionEngine.Projections;
 
 using EstateManagement.Merchant.DomainEvents;
 using Shared.DomainDrivenDesign.EventSourcing;
 using State;
-using Transaction.DomainEvents;
 
 public class MerchantBalanceProjection : IProjection<MerchantBalanceState>
 {
@@ -16,9 +17,9 @@ public class MerchantBalanceProjection : IProjection<MerchantBalanceState>
             ManualDepositMadeEvent mdme => state.HandleManualDepositMadeEvent(mdme),
             WithdrawalMadeEvent wme => state.HandleWithdrawalMadeEvent(wme),
             AutomaticDepositMadeEvent adme => state.HandleAutomaticDepositMadeEvent(adme),
-            TransactionHasStartedEvent thse => state.HandleTransactionHasStartedEvent(thse),
-            TransactionHasBeenCompletedEvent thbce => state.HandleTransactionHasBeenCompletedEvent(thbce),
-            SettledMerchantFeeAddedToTransactionEvent mfatte => state.HandleSettledMerchantFeeAddedToTransactionEvent(mfatte),
+            TransactionDomainEvents.TransactionHasStartedEvent thse => state.HandleTransactionHasStartedEvent(thse),
+            TransactionDomainEvents.TransactionHasBeenCompletedEvent thbce => state.HandleTransactionHasBeenCompletedEvent(thbce),
+            TransactionDomainEvents.SettledMerchantFeeAddedToTransactionEvent mfatte => state.HandleSettledMerchantFeeAddedToTransactionEvent(mfatte),
             _ => state
         };
 
@@ -32,9 +33,9 @@ public class MerchantBalanceProjection : IProjection<MerchantBalanceState>
             MerchantCreatedEvent _ => true,
             ManualDepositMadeEvent _ => true,
             AutomaticDepositMadeEvent _ => true,
-            TransactionHasStartedEvent _ => true,
-            TransactionHasBeenCompletedEvent _ => true,
-            SettledMerchantFeeAddedToTransactionEvent _ => true,
+            TransactionDomainEvents.TransactionHasStartedEvent _ => true,
+            TransactionDomainEvents.TransactionHasBeenCompletedEvent _ => true,
+            TransactionDomainEvents.SettledMerchantFeeAddedToTransactionEvent _ => true,
             _ => false
         };
     }

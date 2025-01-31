@@ -28,7 +28,6 @@
   <ItemGroup>
     <ProjectReference Include="..\TransactionProcessor.Models\TransactionProcessor.Models.csproj" />
     <ProjectReference Include="..\TransactionProcessor.ProjectionEngine\TransactionProcessor.ProjectionEngine.csproj" />
-    <ProjectReference Include="..\TransactionProcessor.Transaction.DomainEvents\TransactionProcessor.Transaction.DomainEvents.csproj" />
   </ItemGroup>
 
 </Project>

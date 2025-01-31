@@ -3,24 +3,23 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using TransactionProcessor.DomainEvents;
 
 namespace TransactionProcessor.ProjectionEngine.Projections
 {
     using EstateManagement.Merchant.DomainEvents;
     using Shared.DomainDrivenDesign.EventSourcing;
     using State;
-    using TransactionProcessor.Transaction.DomainEvents;
-    using Voucher.DomainEvents;
 
     public class VoucherProjection : IProjection<VoucherState>
     {
         public async Task<VoucherState> Handle(VoucherState state, IDomainEvent domainEvent, CancellationToken cancellationToken){
             VoucherState newState = domainEvent switch
             {
-                VoucherGeneratedEvent vge => state.HandleVoucherGeneratedEvent(vge),
-                BarcodeAddedEvent bae => state.HandleBarcodeAddedEvent(bae),
-                VoucherIssuedEvent vie => state.HandleVoucherIssuedEvent(vie),
-                VoucherFullyRedeemedEvent vfre=> state.HandleVoucherFullyRedeemedEvent(vfre),
+                VoucherDomainEvents.VoucherGeneratedEvent vge => state.HandleVoucherGeneratedEvent(vge),
+                VoucherDomainEvents.BarcodeAddedEvent bae => state.HandleBarcodeAddedEvent(bae),
+                VoucherDomainEvents.VoucherIssuedEvent vie => state.HandleVoucherIssuedEvent(vie),
+                VoucherDomainEvents.VoucherFullyRedeemedEvent vfre=> state.HandleVoucherFullyRedeemedEvent(vfre),
                 _ => state
             };
 
@@ -30,10 +29,10 @@ namespace TransactionProcessor.ProjectionEngine.Projections
         public Boolean ShouldIHandleEvent(IDomainEvent domainEvent){
             return domainEvent switch
             {
-                VoucherGeneratedEvent _ => true,
-                BarcodeAddedEvent _ => true,
-                VoucherIssuedEvent _ => true,
-                VoucherFullyRedeemedEvent _ => true,
+                VoucherDomainEvents.VoucherGeneratedEvent _ => true,
+                VoucherDomainEvents.BarcodeAddedEvent _ => true,
+                VoucherDomainEvents.VoucherIssuedEvent _ => true,
+                VoucherDomainEvents.VoucherFullyRedeemedEvent _ => true,
                 _ => false
             };
         }

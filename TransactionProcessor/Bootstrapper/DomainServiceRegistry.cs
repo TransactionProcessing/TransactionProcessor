@@ -26,6 +26,7 @@
             this.AddSingleton<IFloatDomainService, FloatDomainService>();
             this.AddSingleton<IEstateDomainService, EstateDomainService>();
             this.AddSingleton<IOperatorDomainService, OperatorDomainService>();
+            this.AddSingleton<IContractDomainService, ContractDomainService>();
         }
 
         #endregion

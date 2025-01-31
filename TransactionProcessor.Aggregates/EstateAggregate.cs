@@ -2,7 +2,7 @@
 using Shared.DomainDrivenDesign.EventSourcing;
 using Shared.EventStore.Aggregate;
 using Shared.General;
-using TransactionProcessor.Estate.DomainEvents;
+using TransactionProcessor.DomainEvents;
 using TransactionProcessor.Models.Estate;
 
 namespace TransactionProcessor.Aggregates{
@@ -15,8 +15,8 @@ namespace TransactionProcessor.Aggregates{
             aggregate.CheckEstateHasBeenCreated();
             aggregate.CheckOperatorHasNotAlreadyBeenCreated(operatorId);
 
-            OperatorAddedToEstateEvent operatorAddedToEstateEvent =
-                new OperatorAddedToEstateEvent(aggregate.AggregateId, operatorId);
+            EstateDomainEvents.OperatorAddedToEstateEvent operatorAddedToEstateEvent =
+                new EstateDomainEvents.OperatorAddedToEstateEvent(aggregate.AggregateId, operatorId);
 
             aggregate.ApplyAndAppend(operatorAddedToEstateEvent);
         }
@@ -28,8 +28,8 @@ namespace TransactionProcessor.Aggregates{
             aggregate.CheckEstateHasBeenCreated();
             aggregate.CheckOperatorHasBeenAdded(operatorId);
 
-            OperatorRemovedFromEstateEvent operatorRemovedFromEstateEvent =
-                new OperatorRemovedFromEstateEvent(aggregate.AggregateId, operatorId);
+            EstateDomainEvents.OperatorRemovedFromEstateEvent operatorRemovedFromEstateEvent =
+                new EstateDomainEvents.OperatorRemovedFromEstateEvent(aggregate.AggregateId, operatorId);
 
             aggregate.ApplyAndAppend(operatorRemovedFromEstateEvent);
         }
@@ -39,7 +39,7 @@ namespace TransactionProcessor.Aggregates{
                                            String emailAddress){
             aggregate.CheckEstateHasBeenCreated();
 
-            SecurityUserAddedToEstateEvent securityUserAddedEvent = new SecurityUserAddedToEstateEvent(aggregate.AggregateId, securityUserId, emailAddress);
+            EstateDomainEvents.SecurityUserAddedToEstateEvent securityUserAddedEvent = new EstateDomainEvents.SecurityUserAddedToEstateEvent(aggregate.AggregateId, securityUserId, emailAddress);
 
             aggregate.ApplyAndAppend(securityUserAddedEvent);
         }
@@ -51,7 +51,7 @@ namespace TransactionProcessor.Aggregates{
             if (aggregate.IsCreated)
                 return;
 
-            EstateCreatedEvent estateCreatedEvent = new EstateCreatedEvent(aggregate.AggregateId, estateName);
+            EstateDomainEvents.EstateCreatedEvent estateCreatedEvent = new EstateDomainEvents.EstateCreatedEvent(aggregate.AggregateId, estateName);
 
             aggregate.ApplyAndAppend(estateCreatedEvent);
         }
@@ -65,7 +65,7 @@ namespace TransactionProcessor.Aggregates{
 
             String reference = $"{aggregate.AggregateId.GetHashCode():X}";
 
-            EstateReferenceAllocatedEvent estateReferenceAllocatedEvent = new EstateReferenceAllocatedEvent(aggregate.AggregateId, reference);
+            EstateDomainEvents.EstateReferenceAllocatedEvent estateReferenceAllocatedEvent = new EstateDomainEvents.EstateReferenceAllocatedEvent(aggregate.AggregateId, reference);
 
             aggregate.ApplyAndAppend(estateReferenceAllocatedEvent);
         }
@@ -104,18 +104,18 @@ namespace TransactionProcessor.Aggregates{
             return estateModel;
         }
 
-        public static void PlayEvent(this EstateAggregate aggregate, SecurityUserAddedToEstateEvent domainEvent) {
+        public static void PlayEvent(this EstateAggregate aggregate, EstateDomainEvents.SecurityUserAddedToEstateEvent domainEvent) {
             SecurityUser securityUser = new() { EmailAddress = domainEvent.EmailAddress, SecurityUserId = domainEvent.SecurityUserId };
 
             aggregate.SecurityUsers.Add(domainEvent.SecurityUserId,securityUser);
         }
 
-        public static void PlayEvent(this EstateAggregate aggregate, EstateCreatedEvent domainEvent){
+        public static void PlayEvent(this EstateAggregate aggregate, EstateDomainEvents.EstateCreatedEvent domainEvent){
             aggregate.EstateName = domainEvent.EstateName;
             aggregate.IsCreated = true;
         }
 
-        public static void PlayEvent(this EstateAggregate aggregate, EstateReferenceAllocatedEvent domainEvent){
+        public static void PlayEvent(this EstateAggregate aggregate, EstateDomainEvents.EstateReferenceAllocatedEvent domainEvent){
             aggregate.EstateReference = domainEvent.EstateReference;
         }
 
@@ -123,7 +123,7 @@ namespace TransactionProcessor.Aggregates{
         /// Operators the added to estate event.
         /// </summary>
         /// <param name="domainEvent">The domain event.</param>
-        public static void PlayEvent(this EstateAggregate aggregate, OperatorAddedToEstateEvent domainEvent){
+        public static void PlayEvent(this EstateAggregate aggregate, EstateDomainEvents.OperatorAddedToEstateEvent domainEvent){
             TransactionProcessor.Models.Estate.Operator @operator = new() {
               IsDeleted  = false,
               OperatorId = domainEvent.OperatorId
@@ -132,7 +132,7 @@ namespace TransactionProcessor.Aggregates{
             aggregate.Operators.Add(domainEvent.OperatorId, @operator);
         }
 
-        public static void PlayEvent(this EstateAggregate aggregate, OperatorRemovedFromEstateEvent domainEvent){
+        public static void PlayEvent(this EstateAggregate aggregate, EstateDomainEvents.OperatorRemovedFromEstateEvent domainEvent){
             KeyValuePair<Guid, TransactionProcessor.Models.Estate.Operator> @operator = aggregate.Operators.Single(o => o.Key == domainEvent.OperatorId);
             aggregate.Operators[domainEvent.OperatorId].IsDeleted = true;
         }

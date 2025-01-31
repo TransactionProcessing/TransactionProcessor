@@ -2,35 +2,24 @@
 using Microsoft.AspNetCore.Mvc;
 using Shared.General;
 using SimpleResults;
-using Swashbuckle.AspNetCore.Filters;
 using System.Collections.Generic;
 using System.Security.Claims;
 using System.Threading.Tasks;
 using System.Threading;
 using System;
-using EstateManagement.Client;
-using SecurityService.Client;
-using SecurityService.DataTransferObjects.Responses;
 using Shared.Results;
-using TransactionProcessor.BusinessLogic.Common;
 using TransactionProcessor.DataTransferObjects.Responses.Contract;
 using TransactionProcessor.Factories;
-using ContractProduct = TransactionProcessor.DataTransferObjects.Responses.Contract.ContractProduct;
-using ContractProductTransactionFee = TransactionProcessor.DataTransferObjects.Responses.Contract.ContractProductTransactionFee;
-using ContractResponse = EstateManagement.DataTransferObjects.Responses.Contract.ContractResponse;
-using ProductType = TransactionProcessor.DataTransferObjects.Responses.Contract.ProductType;
-using Azure;
-using TransactionProcessor.DataTransferObjects.Requests.Contract;
-using EstateManagement.DataTransferObjects.Requests.Contract;
-using AddProductToContractRequest = TransactionProcessor.DataTransferObjects.Requests.Contract.AddProductToContractRequest;
-using AddTransactionFeeForProductToContractRequest = TransactionProcessor.DataTransferObjects.Requests.Contract.AddTransactionFeeForProductToContractRequest;
-using CreateContractRequest = TransactionProcessor.DataTransferObjects.Requests.Contract.CreateContractRequest;
 using Microsoft.AspNetCore.Authorization;
 using System.Diagnostics.CodeAnalysis;
-using TransactionProcessor.BusinessLogic.Manager;
 using TransactionProcessor.BusinessLogic.Requests;
-using TransactionProcessor.Database.Entities;
-using Microsoft.CodeAnalysis.Editing;
+using MediatR;
+using TransactionProcessor.DataTransferObjects.Requests.Contract;
+using TransactionProcessor.Models.Contract;
+using CalculationType = TransactionProcessor.DataTransferObjects.Responses.Contract.CalculationType;
+using ContractProductTransactionFee = TransactionProcessor.DataTransferObjects.Responses.Contract.ContractProductTransactionFee;
+using FeeType = TransactionProcessor.DataTransferObjects.Responses.Contract.FeeType;
+using ProductType = TransactionProcessor.DataTransferObjects.Responses.Contract.ProductType;
 
 namespace TransactionProcessor.Controllers {
     [ExcludeFromCodeCoverage]
@@ -38,22 +27,18 @@ namespace TransactionProcessor.Controllers {
     [ApiController]
     [Authorize]
     public class ContractController : ControllerBase {
-        private readonly IEstateClient EstateClient;
-        private readonly ISecurityServiceClient SecurityServiceClient;
+        private readonly IMediator Mediator;
 
         private ClaimsPrincipal UserOverride;
-        private TokenResponse TokenResponse;
-
+        
         internal void SetContextOverride(HttpContext ctx) {
             UserOverride = ctx.User;
         }
 
         #region Constructors
 
-        public ContractController(IEstateClient estateClient,
-                                  ISecurityServiceClient securityServiceClient) {
-            this.EstateClient = estateClient;
-            this.SecurityServiceClient = securityServiceClient;
+        public ContractController(IMediator mediator) {
+            this.Mediator = mediator;
         }
 
         #endregion
@@ -101,65 +86,16 @@ namespace TransactionProcessor.Controllers {
             if (securityChecksResult.IsFailed)
                 return securityChecksResult.ToActionResultX();
 
-            this.TokenResponse = await Helpers.GetToken(this.TokenResponse, this.SecurityServiceClient, cancellationToken);
-
-            Result<ContractResponse> contractResponse = await this.EstateClient.GetContract(this.TokenResponse.AccessToken, estateId, contractId, cancellationToken);
-            if (contractResponse.IsFailed) {
-                var x = contractResponse.ToActionResultX();
+            ContractQueries.GetContractQuery query = new ContractQueries.GetContractQuery(estateId, contractId);
+            Result<Contract> result = await Mediator.Send(query, cancellationToken);
+            if (result.IsFailed)
+            {
+                var x = result.ToActionResultX();
                 return x;
             }
 
-            DataTransferObjects.Responses.Contract.ContractResponse response = ConvertContract(contractResponse.Data);
-
-            var result = Result.Success(response);
-
-            return result.ToActionResultX();
+            return ModelFactory.ConvertFrom(result.Data).ToActionResultX();
         }
-
-        private TransactionProcessor.DataTransferObjects.Responses.Contract.ContractResponse ConvertContract(ContractResponse contractResponse) {
-            TransactionProcessor.DataTransferObjects.Responses.Contract.ContractResponse response = new() {
-                ContractId = contractResponse.ContractId,
-                ContractReportingId = contractResponse.ContractReportingId,
-                Description = contractResponse.Description,
-                EstateId = contractResponse.EstateId,
-                EstateReportingId = contractResponse.EstateReportingId,
-                OperatorId = contractResponse.OperatorId,
-                OperatorName = contractResponse.OperatorName,
-                Products = new List<ContractProduct>()
-            };
-            if (contractResponse.Products != null) {
-                foreach (EstateManagement.DataTransferObjects.Responses.Contract.ContractProduct contractProduct in contractResponse.Products) {
-                    var product = new ContractProduct {
-                        Name = contractProduct.Name,
-                        ProductId = contractProduct.ProductId,
-                        DisplayText = contractProduct.DisplayText,
-                        ProductReportingId = contractProduct.ProductReportingId,
-                        ProductType = (ProductType)contractProduct.ProductType,
-                        Value = contractProduct.Value,
-                        TransactionFees = new List<ContractProductTransactionFee>()
-                    };
-
-                    if (contractProduct.TransactionFees != null) {
-                        foreach (EstateManagement.DataTransferObjects.Responses.Contract.ContractProductTransactionFee contractProductTransactionFee in contractProduct.TransactionFees) {
-                            var transactionFee = new ContractProductTransactionFee {
-                                Description = contractProductTransactionFee.Description,
-                                FeeType = (FeeType)contractProductTransactionFee.FeeType,
-                                TransactionFeeId = contractProductTransactionFee.TransactionFeeId,
-                                Value = contractProductTransactionFee.Value,
-                                CalculationType = (CalculationType)contractProductTransactionFee.CalculationType,
-                                TransactionFeeReportingId = contractProductTransactionFee.TransactionFeeReportingId
-                            };
-                            product.TransactionFees.Add(transactionFee);
-                        }
-                    }
-
-                    response.Products.Add(product);
-                }
-            }
-
-            return response;
-        }
-
 
         /// <summary>
         /// Gets the contracts.
@@ -175,23 +111,10 @@ namespace TransactionProcessor.Controllers {
             if (securityChecksResult.IsFailed)
                 return securityChecksResult.ToActionResultX();
 
-            this.TokenResponse = await Helpers.GetToken(this.TokenResponse, this.SecurityServiceClient, cancellationToken);
+            ContractQueries.GetContractsQuery query = new ContractQueries.GetContractsQuery(estateId);
 
-            var contractsResponse = await this.EstateClient.GetContracts(this.TokenResponse.AccessToken, estateId, cancellationToken);
-            if (contractsResponse.IsFailed) {
-                var x = contractsResponse.ToActionResultX();
-                return x;
-            }
-
-            List<DataTransferObjects.Responses.Contract.ContractResponse> responses = new();
-            foreach (ContractResponse contractResponse in contractsResponse.Data) {
-                var response = ConvertContract(contractResponse);
-                responses.Add(response);
-            }
-
-            var result = Result.Success(responses);
-
-            return result.ToActionResultX();
+            Result<List<Contract>> result = await Mediator.Send(query, cancellationToken);
+            return ModelFactory.ConvertFrom(result.Data).ToActionResultX();
 
         }
 
@@ -215,11 +138,13 @@ namespace TransactionProcessor.Controllers {
 
             Guid productId = Guid.NewGuid();
 
-            this.TokenResponse = await Helpers.GetToken(this.TokenResponse, this.SecurityServiceClient, cancellationToken);
+            // Create the command
+            ContractCommands.AddProductToContractCommand command =
+                new(estateId, contractId, productId,
+                    addProductToContractRequest);
 
-            var estateClientRequest = new EstateManagement.DataTransferObjects.Requests.Contract.AddProductToContractRequest() { ProductType = (EstateManagement.DataTransferObjects.Responses.Contract.ProductType)addProductToContractRequest.ProductType, DisplayText = addProductToContractRequest.DisplayText, Value = addProductToContractRequest.Value, ProductName = addProductToContractRequest.ProductName };
-
-            var result = await this.EstateClient.AddProductToContract(this.TokenResponse.AccessToken, estateId, contractId, estateClientRequest, cancellationToken);
+            // Route the command
+            Result result = await Mediator.Send(command, cancellationToken);
             return result.ToActionResultX();
         }
 
@@ -243,9 +168,14 @@ namespace TransactionProcessor.Controllers {
             Result securityChecksResult = StandardSecurityChecks(estateId);
             if (securityChecksResult.IsFailed)
                 return securityChecksResult.ToActionResultX();
-            this.TokenResponse = await Helpers.GetToken(this.TokenResponse, this.SecurityServiceClient, cancellationToken);
-            var estateClientRequest = new EstateManagement.DataTransferObjects.Requests.Contract.AddTransactionFeeForProductToContractRequest() { Value = addTransactionFeeForProductToContractRequest.Value, CalculationType = (EstateManagement.DataTransferObjects.Responses.Contract.CalculationType)addTransactionFeeForProductToContractRequest.CalculationType, FeeType = (EstateManagement.DataTransferObjects.Responses.Contract.FeeType)addTransactionFeeForProductToContractRequest.FeeType, Description = addTransactionFeeForProductToContractRequest.Description };
-            var result = await this.EstateClient.AddTransactionFeeForProductToContract(this.TokenResponse.AccessToken, estateId, contractId, productId, estateClientRequest, cancellationToken);
+            Guid transactionFeeId = Guid.NewGuid();
+
+            // Create the command
+            ContractCommands.AddTransactionFeeForProductToContractCommand command =
+                new(estateId, contractId, productId, transactionFeeId, addTransactionFeeForProductToContractRequest);
+
+            // Route the command
+            Result result = await Mediator.Send(command, cancellationToken);
             return result.ToActionResultX();
         }
 
@@ -268,9 +198,11 @@ namespace TransactionProcessor.Controllers {
             Result securityChecksResult = StandardSecurityChecks(estateId);
             if (securityChecksResult.IsFailed)
                 return securityChecksResult.ToActionResultX();
-            this.TokenResponse = await Helpers.GetToken(this.TokenResponse, this.SecurityServiceClient, cancellationToken);
+            // Create the command
+            ContractCommands.DisableTransactionFeeForProductCommand command = new(contractId, estateId, productId, transactionFeeId);
+
             // Route the command
-            Result result = await this.EstateClient.DisableTransactionFeeForProduct(this.TokenResponse.AccessToken, estateId, contractId, productId, transactionFeeId, cancellationToken);
+            Result result = await Mediator.Send(command, cancellationToken);
 
             // return the result
             return result.ToActionResultX();
@@ -292,10 +224,13 @@ namespace TransactionProcessor.Controllers {
             Result securityChecksResult = StandardSecurityChecks(estateId);
             if (securityChecksResult.IsFailed)
                 return securityChecksResult.ToActionResultX();
-            this.TokenResponse = await Helpers.GetToken(this.TokenResponse, this.SecurityServiceClient, cancellationToken);
-            EstateManagement.DataTransferObjects.Requests.Contract.CreateContractRequest estateClientRequest = new EstateManagement.DataTransferObjects.Requests.Contract.CreateContractRequest() { Description = createContractRequest.Description, OperatorId = createContractRequest.OperatorId, };
+            Guid contractId = Guid.NewGuid();
 
-            Result result = await this.EstateClient.CreateContract(this.TokenResponse.AccessToken, estateId, estateClientRequest, cancellationToken);
+            // Create the command
+            ContractCommands.CreateContractCommand command = new(estateId, contractId, createContractRequest);
+
+            // Route the command
+            Result result = await Mediator.Send(command, cancellationToken);
 
             // return the result
             return result.ToActionResultX();

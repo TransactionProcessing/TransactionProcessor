@@ -5,7 +5,7 @@ using Shared.Logger;
 using Shouldly;
 using SimpleResults;
 using TransactionProcessor.BusinessLogic.EventHandling;
-using TransactionProcessor.Estate.DomainEvents;
+using TransactionProcessor.DomainEvents;
 using TransactionProcessor.Repository;
 using TransactionProcessor.Testing;
 using Xunit;
@@ -30,9 +30,9 @@ public class EstateDomainEventHandlerTests
     [Fact]
     public void EstateDomainEventHandler_EstateCreatedEvent_EventIsHandled()
     {
-        EstateCreatedEvent estateCreatedEvent = TestData.DomainEvents.EstateCreatedEvent;
+        EstateDomainEvents.EstateCreatedEvent estateCreatedEvent = TestData.DomainEvents.EstateCreatedEvent;
         this.EstateReportingRepository
-            .Setup(r => r.CreateReadModel(It.IsAny<EstateCreatedEvent>(), It.IsAny<CancellationToken>()))
+            .Setup(r => r.CreateReadModel(It.IsAny<EstateDomainEvents.EstateCreatedEvent>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(Result.Success);
 
         Should.NotThrow(async () => { await this.DomainEventHandler.Handle(estateCreatedEvent, CancellationToken.None); });
@@ -41,19 +41,19 @@ public class EstateDomainEventHandlerTests
     [Fact]
     public async Task EstateDomainEventHandler_EstateCreatedEvent_CreateReadModelFailed_EventIsHandled()
     {
-        EstateCreatedEvent estateCreatedEvent = TestData.DomainEvents.EstateCreatedEvent;
+        EstateDomainEvents.EstateCreatedEvent estateCreatedEvent = TestData.DomainEvents.EstateCreatedEvent;
         this.EstateReportingRepository
-            .Setup(r => r.CreateReadModel(It.IsAny<EstateCreatedEvent>(), It.IsAny<CancellationToken>()))
+            .Setup(r => r.CreateReadModel(It.IsAny<EstateDomainEvents.EstateCreatedEvent>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(Result.Failure);
 
-        var result = await this.DomainEventHandler.Handle(estateCreatedEvent, CancellationToken.None);
+        Result result = await this.DomainEventHandler.Handle(estateCreatedEvent, CancellationToken.None);
         result.IsFailed.ShouldBeTrue();
     }
 
     [Fact]
     public void EstateDomainEventHandler_EstateReferenceAllocatedEvent_EventIsHandled()
     {
-        EstateReferenceAllocatedEvent estateReferenceAllocatedEvent = TestData.DomainEvents.EstateReferenceAllocatedEvent;
+        EstateDomainEvents.EstateReferenceAllocatedEvent estateReferenceAllocatedEvent = TestData.DomainEvents.EstateReferenceAllocatedEvent;
 
         Should.NotThrow(async () => { await this.DomainEventHandler.Handle(estateReferenceAllocatedEvent, CancellationToken.None); });
     }
@@ -61,7 +61,7 @@ public class EstateDomainEventHandlerTests
     [Fact]
     public void EstateDomainEventHandler_SecurityUserAddedEvent_EventIsHandled()
     {
-        SecurityUserAddedToEstateEvent securityUserAddedEvent = TestData.DomainEvents.EstateSecurityUserAddedEvent;
+        EstateDomainEvents.SecurityUserAddedToEstateEvent securityUserAddedEvent = TestData.DomainEvents.EstateSecurityUserAddedEvent;
 
         Should.NotThrow(async () => { await this.DomainEventHandler.Handle(securityUserAddedEvent, CancellationToken.None); });
     }

@@ -12,6 +12,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\TransactionProcessor.BusinessLogic\TransactionProcessor.BusinessLogic.csproj" />
+    <ProjectReference Include="..\TransactionProcessor.DomainEvents\TransactionProcessor.DomainEvents.csproj" />
     <ProjectReference Include="..\TransactionProcessor.Models\TransactionProcessor.Models.csproj" />
   </ItemGroup>
 

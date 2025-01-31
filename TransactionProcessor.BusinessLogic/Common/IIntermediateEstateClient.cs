@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Text;
 using System.Threading;
@@ -17,11 +18,6 @@ namespace TransactionProcessor.BusinessLogic.Common
 {
     public interface IIntermediateEstateClient
     {
-        Task<Result<EstateResponse>> GetEstate(
-            string accessToken,
-            Guid estateId,
-            CancellationToken cancellationToken);
-
         Task<Result<MerchantResponse>> GetMerchant(
             string accessToken,
             Guid estateId,
@@ -58,16 +54,11 @@ namespace TransactionProcessor.BusinessLogic.Common
         public IEstateClient EstateClient { get; }
     }
 
+    [ExcludeFromCodeCoverage]
     public class IntermediateEstateClient : IIntermediateEstateClient {
         
         public IntermediateEstateClient(IEstateClient estateClient) {
             this.EstateClient = estateClient;
-        }
-
-        public async Task<Result<EstateResponse>> GetEstate(String accessToken,
-                                                            Guid estateId,
-                                                            CancellationToken cancellationToken) {
-            return await this.EstateClient.GetEstate(accessToken, estateId, cancellationToken);
         }
 
         public async Task<Result<MerchantResponse>> GetMerchant(String accessToken,

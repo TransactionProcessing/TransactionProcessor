@@ -1,6 +1,7 @@
 ﻿using Shared.Results;
 using TransactionProcessor.Aggregates;
 using TransactionProcessor.Database.Contexts;
+using TransactionProcessor.Models.Estate;
 
 namespace TransactionProcessor.BusinessLogic.Services;
 
@@ -75,21 +76,13 @@ public class VoucherDomainService : IVoucherDomainService
     /// The voucher aggregate repository
     /// </summary>
     private readonly IAggregateRepository<VoucherAggregate, DomainEvent> VoucherAggregateRepository;
-
-    /// <summary>
-    /// The security service client
-    /// </summary>
-    private readonly ISecurityServiceClient SecurityServiceClient;
-
-    /// <summary>
-    /// The estate client
-    /// </summary>
-    private readonly IIntermediateEstateClient EstateClient;
-
+    
     /// <summary>
     /// The database context factory
     /// </summary>
     private readonly Shared.EntityFramework.IDbContextFactory<EstateManagementGenericContext> DbContextFactory;
+
+    private readonly IAggregateRepository<EstateAggregate, DomainEvent> EstateAggregateRepository;
 
     private const String ConnectionStringIdentifier = "EstateReportingReadModel";
 
@@ -103,14 +96,12 @@ public class VoucherDomainService : IVoucherDomainService
     /// <param name="estateClient">The estate client.</param>
     /// <param name="dbContextFactory">The database context factory.</param>
     public VoucherDomainService(IAggregateRepository<VoucherAggregate, DomainEvent> voucherAggregateRepository,
-                                ISecurityServiceClient securityServiceClient,
-                                IIntermediateEstateClient estateClient,
-                                Shared.EntityFramework.IDbContextFactory<EstateManagementGenericContext> dbContextFactory)
+                                Shared.EntityFramework.IDbContextFactory<EstateManagementGenericContext> dbContextFactory,
+                                IAggregateRepository<EstateAggregate, DomainEvent> estateAggregateRepository)
     {
         this.VoucherAggregateRepository = voucherAggregateRepository;
-        this.SecurityServiceClient = securityServiceClient;
-        this.EstateClient = estateClient;
         this.DbContextFactory = dbContextFactory;
+        this.EstateAggregateRepository = estateAggregateRepository;
     }
     #endregion
 
@@ -231,58 +222,37 @@ public class VoucherDomainService : IVoucherDomainService
     }
 
     
-    private async Task<Result<EstateResponse>> ValidateVoucherIssue(Guid estateId, Guid operatorId, CancellationToken cancellationToken)
+    private async Task<Result> ValidateVoucherIssue(Guid estateId, Guid operatorId, CancellationToken cancellationToken)
     {
-        EstateResponse estate = null;
-
         // Validate the Estate Record is a valid estate
-        Result<EstateResponse> getEstateResult = await this.GetEstate(estateId, cancellationToken);
-        if (getEstateResult.IsFailed)
-            return ResultHelpers.CreateFailure(getEstateResult);
+        Result<EstateAggregate> estateResult = await this.EstateAggregateRepository.GetLatestVersion(estateId, cancellationToken);
+        if (estateResult.IsFailed)
+            return ResultHelpers.CreateFailure(estateResult);
 
-        estate = getEstateResult.Data;
+        Estate estate = estateResult.Data.GetEstate();
         if (estate.Operators == null || estate.Operators.Any() == false)
         {
-            return Result.NotFound($"Estate {estate.EstateName} has no operators defined");
+            return Result.NotFound($"Estate {estate.Name} has no operators defined");
         }
 
-        EstateOperatorResponse estateOperator = estate.Operators.SingleOrDefault(o => o.OperatorId == operatorId);
+        Operator estateOperator = estate.Operators.SingleOrDefault(o => o.OperatorId == operatorId);
         if (estateOperator == null)
         {
-            return Result.NotFound($"Operator Identifier [{operatorId}] is not a valid for estate [{estate.EstateName}]");
+            return Result.NotFound($"Operator Identifier [{operatorId}] is not a valid for estate [{estate.Name}]");
         }
 
-        return getEstateResult;
+        return Result.Success();
     }
 
-    private async Task<Result<EstateResponse>> ValidateVoucherRedemption(Guid estateId, CancellationToken cancellationToken)
+    private async Task<Result> ValidateVoucherRedemption(Guid estateId, CancellationToken cancellationToken)
     {
         // Validate the Estate Record is a valid estate
-        Result<EstateResponse> getEstateResult = await this.GetEstate(estateId, cancellationToken);
-        if (getEstateResult.IsFailed)
-            return ResultHelpers.CreateFailure(getEstateResult);
+        Result<EstateAggregate> estateResult = await this.EstateAggregateRepository.GetLatestVersion(estateId, cancellationToken);
+        if (estateResult.IsFailed)
+            return ResultHelpers.CreateFailure(estateResult);
 
-        return getEstateResult;
+        return Result.Success();
     }
 
-    /// <summary>
-    /// The token response
-    /// </summary>
-    private TokenResponse TokenResponse;
-
-    /// <summary>
-    /// Gets the estate.
-    /// </summary>
-    /// <param name="estateId">The estate identifier.</param>
-    /// <param name="cancellationToken">The cancellation token.</param>
-    /// <returns></returns>
-    private async Task<Result<EstateResponse>> GetEstate(Guid estateId,
-                                                 CancellationToken cancellationToken)
-    {
-        this.TokenResponse = await Helpers.GetToken(this.TokenResponse, this.SecurityServiceClient, cancellationToken);
-
-        return await this.EstateClient.GetEstate(this.TokenResponse.AccessToken, estateId, cancellationToken);
-    }
-    
     #endregion
 }
