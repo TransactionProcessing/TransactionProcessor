@@ -1,10 +1,10 @@
+using TransactionProcessor.DomainEvents;
 using TransactionProcessor.Models;
+using TransactionProcessor.Models.Contract;
 
 namespace TransactionProcessor.ProjectionEngine.Tests
 {
     using EstateManagement.Merchant.DomainEvents;
-    using Transaction.DomainEvents;
-    using Voucher.DomainEvents;
 
     public class TestData{
         public static Guid MerchantId = Guid.Parse("1FDEF549-4BDA-4DA3-823B-79684CD93F88");
@@ -99,8 +99,8 @@ namespace TransactionProcessor.ProjectionEngine.Tests
 
         public static String Country = "Country";
 
-        public static SettledMerchantFeeAddedToTransactionEvent GetSettledMerchantFeeAddedToTransactionEvent(Decimal? calculatedFeeValue = 1.25m) =>
-            new SettledMerchantFeeAddedToTransactionEvent(TestData.TransactionId,
+        public static TransactionDomainEvents.SettledMerchantFeeAddedToTransactionEvent GetSettledMerchantFeeAddedToTransactionEvent(Decimal? calculatedFeeValue = 1.25m) =>
+            new TransactionDomainEvents.SettledMerchantFeeAddedToTransactionEvent(TestData.TransactionId,
                                                           TestData.EstateId,
                                                           TestData.MerchantId,
                                                           calculatedFeeValue.Value,
@@ -112,12 +112,12 @@ namespace TransactionProcessor.ProjectionEngine.Tests
                                                           TestData.SettlementId,
                                                           TestData.TransactionDateTime);
         
-        public static TransactionHasBeenCompletedEvent GetTransactionHasBeenCompletedEvent(Boolean? isAuthorised = true,
-                                                                                           Decimal? amount = null){
+        public static TransactionDomainEvents.TransactionHasBeenCompletedEvent GetTransactionHasBeenCompletedEvent(Boolean? isAuthorised = true,
+                                                                                                                   Decimal? amount = null){
             if (amount == null)
                 amount = TestData.TransactionAmount.GetValueOrDefault(0);
 
-            return new TransactionHasBeenCompletedEvent(TestData.TransactionId,
+            return new TransactionDomainEvents.TransactionHasBeenCompletedEvent(TestData.TransactionId,
                                                  TestData.EstateId,
                                                  TestData.MerchantId,
                                                  TestData.ResponseCode,
@@ -128,13 +128,13 @@ namespace TransactionProcessor.ProjectionEngine.Tests
                                                  TestData.TransactionDateTime);
         }
 
-        public static TransactionHasStartedEvent GetTransactionHasStartedEvent(Decimal? amount = null, String type = null){
+        public static TransactionDomainEvents.TransactionHasStartedEvent GetTransactionHasStartedEvent(Decimal? amount = null, String type = null){
                 if (amount == null)
                     amount = TestData.TransactionAmount.GetValueOrDefault(0);
                 if (type == null)
                     type = TestData.TransactionType;
 
-                return new TransactionHasStartedEvent(TestData.TransactionId,
+                return new TransactionDomainEvents.TransactionHasStartedEvent(TestData.TransactionId,
                                                       TestData.EstateId,
                                                       TestData.MerchantId,
                                                       TestData.TransactionDateTime,
@@ -200,8 +200,8 @@ namespace TransactionProcessor.ProjectionEngine.Tests
         public static String RecipientEmail = "testrecipient@email.com";
         public static String RecipientMobile = "07777777775";
 
-        public static VoucherGeneratedEvent VoucherGeneratedEvent =>
-            new VoucherGeneratedEvent(TestData.VoucherId,
+        public static VoucherDomainEvents.VoucherGeneratedEvent VoucherGeneratedEvent =>
+            new VoucherDomainEvents.VoucherGeneratedEvent(TestData.VoucherId,
                                       TestData.EstateId,
                                       TestData.TransactionId,
                                       TestData.GeneratedDateTime,
@@ -211,13 +211,13 @@ namespace TransactionProcessor.ProjectionEngine.Tests
                                       TestData.ExpiryDateTime,
                                       TestData.Message);
 
-        public static BarcodeAddedEvent BarcodeAddedEvent => new BarcodeAddedEvent(TestData.VoucherId, TestData.EstateId, TestData.Barcode);
+        public static VoucherDomainEvents.BarcodeAddedEvent BarcodeAddedEvent => new VoucherDomainEvents.BarcodeAddedEvent(TestData.VoucherId, TestData.EstateId, TestData.Barcode);
 
-        public static VoucherIssuedEvent VoucherIssuedEvent => new VoucherIssuedEvent(TestData.VoucherId,TestData.EstateId, TestData.IssuedDateTime, TestData.RecipientEmail, TestData.RecipientMobile);
+        public static VoucherDomainEvents.VoucherIssuedEvent VoucherIssuedEvent => new VoucherDomainEvents.VoucherIssuedEvent(TestData.VoucherId,TestData.EstateId, TestData.IssuedDateTime, TestData.RecipientEmail, TestData.RecipientMobile);
 
-        public static VoucherFullyRedeemedEvent VoucherFullyRedeemedEvent => new VoucherFullyRedeemedEvent(TestData.VoucherId, TestData.EstateId, TestData.RedeemedDateTime);
+        public static VoucherDomainEvents.VoucherFullyRedeemedEvent VoucherFullyRedeemedEvent => new VoucherDomainEvents.VoucherFullyRedeemedEvent(TestData.VoucherId, TestData.EstateId, TestData.RedeemedDateTime);
 
-        public static TransactionHasBeenCompletedEvent TransactionHasBeenCompletedEvent => new TransactionHasBeenCompletedEvent(TestData.TransactionId,
+        public static TransactionDomainEvents.TransactionHasBeenCompletedEvent TransactionHasBeenCompletedEvent => new TransactionDomainEvents.TransactionHasBeenCompletedEvent(TestData.TransactionId,
             TestData.EstateId,
             TestData.MerchantId,
             TestData.ResponseCode,
@@ -232,7 +232,7 @@ namespace TransactionProcessor.ProjectionEngine.Tests
         public static DateTime TransactionFeeCalculateDateTime = new DateTime(2021, 3, 18);
         public static DateTime SettlementDate = new DateTime(2021, 9, 22, 1, 2, 3);
         public static Decimal CalculatedFeeValue = 0.5m;
-        public static SettledMerchantFeeAddedToTransactionEvent SettledMerchantFeeAddedToTransactionEvent(DateTime settlementDueDate) => new(TestData.SettlementAggregateId,
+        public static TransactionDomainEvents.SettledMerchantFeeAddedToTransactionEvent SettledMerchantFeeAddedToTransactionEvent(DateTime settlementDueDate) => new(TestData.SettlementAggregateId,
                                                                                                                                                                                        TestData.EstateId,
                                                                                                                                                                                        TestData.MerchantId,
                                                                                                                                                                                        TestData.CalculatedFeeValue,

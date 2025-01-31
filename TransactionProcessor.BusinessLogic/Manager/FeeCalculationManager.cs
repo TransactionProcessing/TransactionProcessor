@@ -1,4 +1,6 @@
-﻿namespace TransactionProcessor.BusinessLogic.Manager
+﻿using TransactionProcessor.Models.Contract;
+
+namespace TransactionProcessor.BusinessLogic.Manager
 {
     using System;
     using System.Collections.Generic;

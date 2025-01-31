@@ -40,6 +40,7 @@ namespace TransactionProcessor.Bootstrapper
             this.RegisterSettlementRequestHandler();
             this.RegisterEstateRequestHandler();
             this.RegisterOperatorRequestHandler();
+            this.RegisterContractRequestHandler();
         }
 
         #endregion
@@ -95,6 +96,16 @@ namespace TransactionProcessor.Bootstrapper
             this.AddSingleton<IRequestHandler<OperatorCommands.UpdateOperatorCommand, Result>, OperatorRequestHandler>();
             this.AddSingleton<IRequestHandler<OperatorQueries.GetOperatorQuery, Result<Models.Operator.Operator>>, OperatorRequestHandler>();
             this.AddSingleton<IRequestHandler<OperatorQueries.GetOperatorsQuery, Result<List<Models.Operator.Operator>>>, OperatorRequestHandler>();
+        }
+
+        private void RegisterContractRequestHandler() {
+            this.AddSingleton<IRequestHandler<ContractCommands.CreateContractCommand, Result>, ContractRequestHandler>();
+            this.AddSingleton<IRequestHandler<ContractCommands.AddProductToContractCommand, Result>, ContractRequestHandler>();
+            this.AddSingleton<IRequestHandler<ContractCommands.DisableTransactionFeeForProductCommand, Result>, ContractRequestHandler>();
+            this.AddSingleton<IRequestHandler<ContractCommands.AddTransactionFeeForProductToContractCommand, Result>, ContractRequestHandler>();
+
+            this.AddSingleton<IRequestHandler<ContractQueries.GetContractQuery, Result<Models.Contract.Contract>>, ContractRequestHandler>();
+            this.AddSingleton<IRequestHandler<ContractQueries.GetContractsQuery, Result<List<Models.Contract.Contract>>>, ContractRequestHandler>();
         }
     }
 }

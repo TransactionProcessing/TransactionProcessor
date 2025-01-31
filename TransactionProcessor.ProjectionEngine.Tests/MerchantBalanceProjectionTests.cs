@@ -1,3 +1,5 @@
+using TransactionProcessor.DomainEvents;
+
 namespace TransactionProcessor.ProjectionEngine.Tests;
 
 using EstateManagement.Merchant.DomainEvents;
@@ -5,7 +7,6 @@ using Projections;
 using Shared.DomainDrivenDesign.EventSourcing;
 using Shouldly;
 using State;
-using Transaction.DomainEvents;
 
 public class MerchantBalanceProjectionTests
 {
@@ -13,9 +14,9 @@ public class MerchantBalanceProjectionTests
     [InlineData(typeof(MerchantCreatedEvent), true)]
     [InlineData(typeof(ManualDepositMadeEvent), true)]
     [InlineData(typeof(AutomaticDepositMadeEvent), true)]
-    [InlineData(typeof(TransactionHasStartedEvent), true)]
-    [InlineData(typeof(TransactionHasBeenCompletedEvent), true)]
-    [InlineData(typeof(SettledMerchantFeeAddedToTransactionEvent), true)]
+    [InlineData(typeof(TransactionDomainEvents.TransactionHasStartedEvent), true)]
+    [InlineData(typeof(TransactionDomainEvents.TransactionHasBeenCompletedEvent), true)]
+    [InlineData(typeof(TransactionDomainEvents.SettledMerchantFeeAddedToTransactionEvent), true)]
     [InlineData(typeof(AddressAddedEvent), false)]
     public void MerchantBalanceProjection_ShouldIHandleEvent_ReturnsExpectedValue(Type eventType, Boolean expectedResult){
         MerchantBalanceProjection projection = new MerchantBalanceProjection();
@@ -25,9 +26,9 @@ public class MerchantBalanceProjectionTests
             _ when eventType == typeof(MerchantCreatedEvent) => TestData.MerchantCreatedEvent,
             _ when eventType == typeof(ManualDepositMadeEvent) => TestData.ManualDepositMadeEvent,
         _ when eventType == typeof(AutomaticDepositMadeEvent) => TestData.AutomaticDepositMadeEvent,
-        _ when eventType == typeof(TransactionHasStartedEvent) => TestData.GetTransactionHasStartedEvent(),
-        _ when eventType == typeof(TransactionHasBeenCompletedEvent) => TestData.GetTransactionHasBeenCompletedEvent(),
-        _ when eventType == typeof(SettledMerchantFeeAddedToTransactionEvent) => TestData.GetSettledMerchantFeeAddedToTransactionEvent(),
+        _ when eventType == typeof(TransactionDomainEvents.TransactionHasStartedEvent) => TestData.GetTransactionHasStartedEvent(),
+        _ when eventType == typeof(TransactionDomainEvents.TransactionHasBeenCompletedEvent) => TestData.GetTransactionHasBeenCompletedEvent(),
+        _ when eventType == typeof(TransactionDomainEvents.SettledMerchantFeeAddedToTransactionEvent) => TestData.GetSettledMerchantFeeAddedToTransactionEvent(),
             _ => TestData.AddressAddedEvent
         };
 
@@ -282,7 +283,7 @@ public class MerchantBalanceProjectionTests
                     StartedTransactionCount = 0
                 };
 
-        TransactionHasStartedEvent @event = TestData.GetTransactionHasStartedEvent(TestData.TransactionAmount);
+        TransactionDomainEvents.TransactionHasStartedEvent @event = TestData.GetTransactionHasStartedEvent(TestData.TransactionAmount);
 
         MerchantBalanceState newState = await projection.Handle(state, @event, CancellationToken.None);
 
@@ -307,7 +308,7 @@ public class MerchantBalanceProjectionTests
                     SaleCount = 0,
                     AuthorisedSales = 0
                 };
-        TransactionHasBeenCompletedEvent @event = TestData.GetTransactionHasBeenCompletedEvent(true, TestData.TransactionAmount);
+        TransactionDomainEvents.TransactionHasBeenCompletedEvent @event = TestData.GetTransactionHasBeenCompletedEvent(true, TestData.TransactionAmount);
 
         MerchantBalanceState newState = await projection.Handle(state, @event, CancellationToken.None);
 
@@ -324,7 +325,7 @@ public class MerchantBalanceProjectionTests
     {
         MerchantBalanceProjection projection = new MerchantBalanceProjection();
         MerchantBalanceState state = new MerchantBalanceState();
-        TransactionHasBeenCompletedEvent @event = TestData.GetTransactionHasBeenCompletedEvent(true, TestData.TransactionAmount);
+        TransactionDomainEvents.TransactionHasBeenCompletedEvent @event = TestData.GetTransactionHasBeenCompletedEvent(true, TestData.TransactionAmount);
         state = state with
                 {
                     EstateId = TestData.EstateId,
@@ -353,7 +354,7 @@ public class MerchantBalanceProjectionTests
     {
         MerchantBalanceProjection projection = new MerchantBalanceProjection();
         MerchantBalanceState state = new MerchantBalanceState();
-        TransactionHasBeenCompletedEvent @event = TestData.GetTransactionHasBeenCompletedEvent(true, TestData.TransactionAmount);
+        TransactionDomainEvents.TransactionHasBeenCompletedEvent @event = TestData.GetTransactionHasBeenCompletedEvent(true, TestData.TransactionAmount);
         state = state with
                 {
                     EstateId = TestData.EstateId,
@@ -393,7 +394,7 @@ public class MerchantBalanceProjectionTests
                     SaleCount = 1,
                     DeclinedSales = 0
         };
-        TransactionHasBeenCompletedEvent @event = TestData.GetTransactionHasBeenCompletedEvent(false, TestData.TransactionAmount);
+        TransactionDomainEvents.TransactionHasBeenCompletedEvent @event = TestData.GetTransactionHasBeenCompletedEvent(false, TestData.TransactionAmount);
 
         MerchantBalanceState newState = await projection.Handle(state, @event, CancellationToken.None);
 
@@ -410,7 +411,7 @@ public class MerchantBalanceProjectionTests
     {
         MerchantBalanceProjection projection = new MerchantBalanceProjection();
         MerchantBalanceState state = new MerchantBalanceState();
-        TransactionHasBeenCompletedEvent @event = TestData.GetTransactionHasBeenCompletedEvent(false, TestData.TransactionAmount);
+        TransactionDomainEvents.TransactionHasBeenCompletedEvent @event = TestData.GetTransactionHasBeenCompletedEvent(false, TestData.TransactionAmount);
         state = state with
         {
             EstateId = TestData.EstateId,
@@ -439,7 +440,7 @@ public class MerchantBalanceProjectionTests
     {
         MerchantBalanceProjection projection = new MerchantBalanceProjection();
         MerchantBalanceState state = new MerchantBalanceState();
-        TransactionHasBeenCompletedEvent @event = TestData.GetTransactionHasBeenCompletedEvent(false, TestData.TransactionAmount);
+        TransactionDomainEvents.TransactionHasBeenCompletedEvent @event = TestData.GetTransactionHasBeenCompletedEvent(false, TestData.TransactionAmount);
         state = state with
         {
             EstateId = TestData.EstateId,
@@ -476,7 +477,7 @@ public class MerchantBalanceProjectionTests
                     AvailableBalance = 75.00m,
                     Balance = 75.00m
                 };
-        SettledMerchantFeeAddedToTransactionEvent @event = TestData.GetSettledMerchantFeeAddedToTransactionEvent(0.25m);
+        TransactionDomainEvents.SettledMerchantFeeAddedToTransactionEvent @event = TestData.GetSettledMerchantFeeAddedToTransactionEvent(0.25m);
 
         MerchantBalanceState newState = await projection.Handle(state, @event, CancellationToken.None);
 
@@ -492,7 +493,7 @@ public class MerchantBalanceProjectionTests
     {
         MerchantBalanceProjection projection = new MerchantBalanceProjection();
         MerchantBalanceState state = new MerchantBalanceState();
-        SettledMerchantFeeAddedToTransactionEvent @event = TestData.GetSettledMerchantFeeAddedToTransactionEvent(0.25m);
+        TransactionDomainEvents.SettledMerchantFeeAddedToTransactionEvent @event = TestData.GetSettledMerchantFeeAddedToTransactionEvent(0.25m);
         state = state with
                 {
                     EstateId = TestData.EstateId,
@@ -519,7 +520,7 @@ public class MerchantBalanceProjectionTests
     {
         MerchantBalanceProjection projection = new MerchantBalanceProjection();
         MerchantBalanceState state = new MerchantBalanceState();
-        SettledMerchantFeeAddedToTransactionEvent @event = TestData.GetSettledMerchantFeeAddedToTransactionEvent(0.25m);
+        TransactionDomainEvents.SettledMerchantFeeAddedToTransactionEvent @event = TestData.GetSettledMerchantFeeAddedToTransactionEvent(0.25m);
         state = state with
                 {
                     EstateId = TestData.EstateId,
@@ -549,9 +550,9 @@ public class MerchantBalanceProjectionTests
 
         MerchantCreatedEvent merchantCreatedEvent = TestData.MerchantCreatedEvent;
         ManualDepositMadeEvent manualDepositMadeEvent = TestData.ManualDepositMadeEvent;
-        TransactionHasStartedEvent transactionHasStartedEvent = TestData.GetTransactionHasStartedEvent(TestData.TransactionAmount);
-        TransactionHasBeenCompletedEvent transactionHasBeenCompleteEvent = TestData.GetTransactionHasBeenCompletedEvent(true, TestData.TransactionAmount);
-        SettledMerchantFeeAddedToTransactionEvent merchantFeeAddedToTransactionEvent = TestData.GetSettledMerchantFeeAddedToTransactionEvent(0.25m);
+        TransactionDomainEvents.TransactionHasStartedEvent transactionHasStartedEvent = TestData.GetTransactionHasStartedEvent(TestData.TransactionAmount);
+        TransactionDomainEvents.TransactionHasBeenCompletedEvent transactionHasBeenCompleteEvent = TestData.GetTransactionHasBeenCompletedEvent(true, TestData.TransactionAmount);
+        TransactionDomainEvents.SettledMerchantFeeAddedToTransactionEvent merchantFeeAddedToTransactionEvent = TestData.GetSettledMerchantFeeAddedToTransactionEvent(0.25m);
 
         MerchantBalanceState newState = await projection.Handle(state,merchantCreatedEvent , CancellationToken.None);
         newState = await projection.Handle(newState, merchantFeeAddedToTransactionEvent, CancellationToken.None);

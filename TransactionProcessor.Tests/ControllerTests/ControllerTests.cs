@@ -1,16 +1,16 @@
-﻿using Microsoft.AspNetCore.Http;
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Moq;
 using Newtonsoft.Json;
 using Shared.EventStore.EventHandling;
 using Shouldly;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using TransactionProcessor.Controllers;
-using TransactionProcessor.Transaction.DomainEvents;
+using TransactionProcessor.DomainEvents;
 using Xunit;
 
 namespace TransactionProcessor.Tests.ControllerTests
@@ -29,7 +29,7 @@ namespace TransactionProcessor.Tests.ControllerTests
         public async Task DomainEventController_EventIdNotPresentInJson_ErrorThrown()
         {
             Mock<IDomainEventHandlerResolver> resolver = new Mock<IDomainEventHandlerResolver>();
-            TypeMap.AddType<TransactionHasBeenCompletedEvent>("TransactionHasBeenCompletedEvent");
+            TypeMap.AddType<TransactionDomainEvents.TransactionHasBeenCompletedEvent>("TransactionHasBeenCompletedEvent");
             DefaultHttpContext httpContext = new DefaultHttpContext();
             httpContext.Request.Headers["eventType"] = "TransactionHasBeenCompletedEvent";
             DomainEventController controller = new DomainEventController(resolver.Object)
@@ -51,7 +51,7 @@ namespace TransactionProcessor.Tests.ControllerTests
         public async Task DomainEventController_EventIdPresentInJson_NoErrorThrown()
         {
             Mock<IDomainEventHandlerResolver> resolver = new Mock<IDomainEventHandlerResolver>();
-            TypeMap.AddType<TransactionHasBeenCompletedEvent>("TransactionHasBeenCompletedEvent");
+            TypeMap.AddType<TransactionDomainEvents.TransactionHasBeenCompletedEvent>("TransactionHasBeenCompletedEvent");
             DefaultHttpContext httpContext = new DefaultHttpContext();
             httpContext.Request.Headers["eventType"] = "TransactionHasBeenCompletedEvent";
             DomainEventController controller = new DomainEventController(resolver.Object)

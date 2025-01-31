@@ -2,8 +2,8 @@
 using Shared.DomainDrivenDesign.EventSourcing;
 using Shared.EventStore.Aggregate;
 using Shared.General;
+using TransactionProcessor.DomainEvents;
 using TransactionProcessor.Models;
-using TransactionProcessor.Voucher.DomainEvents;
 
 namespace TransactionProcessor.Aggregates;
 
@@ -15,7 +15,7 @@ public static class VoucherAggregateExtensions{
         aggregate.CheckIfVoucherHasBeenGenerated();
         aggregate.CheckIfVoucherAlreadyIssued();
 
-        BarcodeAddedEvent barcodeAddedEvent = new BarcodeAddedEvent(aggregate.AggregateId, aggregate.EstateId, barcodeAsBase64);
+        VoucherDomainEvents.BarcodeAddedEvent barcodeAddedEvent = new VoucherDomainEvents.BarcodeAddedEvent(aggregate.AggregateId, aggregate.EstateId, barcodeAsBase64);
 
         aggregate.ApplyAndAppend(barcodeAddedEvent);
     }
@@ -40,8 +40,8 @@ public static class VoucherAggregateExtensions{
         DateTime expiryDateTime = generatedDateTime.AddDays(30); // Default to a 30 day expiry for now...
         String message = string.Empty;
 
-        VoucherGeneratedEvent voucherGeneratedEvent =
-            new VoucherGeneratedEvent(aggregate.AggregateId, estateId, transactionId, generatedDateTime, operatorId, value, voucherCode, expiryDateTime, message);
+        VoucherDomainEvents.VoucherGeneratedEvent voucherGeneratedEvent =
+            new VoucherDomainEvents.VoucherGeneratedEvent(aggregate.AggregateId, estateId, transactionId, generatedDateTime, operatorId, value, voucherCode, expiryDateTime, message);
 
         aggregate.ApplyAndAppend(voucherGeneratedEvent);
     }
@@ -84,7 +84,7 @@ public static class VoucherAggregateExtensions{
 
         aggregate.CheckIfVoucherAlreadyIssued();
 
-        VoucherIssuedEvent voucherIssuedEvent = new VoucherIssuedEvent(aggregate.AggregateId, aggregate.EstateId, issuedDateTime, recipientEmail, recipientMobile);
+        VoucherDomainEvents.VoucherIssuedEvent voucherIssuedEvent = new VoucherDomainEvents.VoucherIssuedEvent(aggregate.AggregateId, aggregate.EstateId, issuedDateTime, recipientEmail, recipientMobile);
 
         aggregate.ApplyAndAppend(voucherIssuedEvent);
     }
@@ -95,7 +95,7 @@ public static class VoucherAggregateExtensions{
         aggregate.CheckIfVoucherHasBeenIssued();
         aggregate.CheckIfVoucherAlreadyRedeemed();
 
-        VoucherFullyRedeemedEvent voucherFullyRedeemedEvent = new VoucherFullyRedeemedEvent(aggregate.AggregateId, aggregate.EstateId, redeemedDateTime);
+        VoucherDomainEvents.VoucherFullyRedeemedEvent voucherFullyRedeemedEvent = new VoucherDomainEvents.VoucherFullyRedeemedEvent(aggregate.AggregateId, aggregate.EstateId, redeemedDateTime);
 
         aggregate.ApplyAndAppend(voucherFullyRedeemedEvent);
     }
@@ -153,7 +153,7 @@ public static class VoucherAggregateExtensions{
     
     private static readonly Random rdm = new Random();
     
-    public static void PlayEvent(this VoucherAggregate aggregate, VoucherGeneratedEvent domainEvent)
+    public static void PlayEvent(this VoucherAggregate aggregate, VoucherDomainEvents.VoucherGeneratedEvent domainEvent)
     {
         aggregate.IsGenerated = true;
         aggregate.EstateId = domainEvent.EstateId;
@@ -166,7 +166,7 @@ public static class VoucherAggregateExtensions{
         aggregate.Balance = 0;
     }
     
-    public static void PlayEvent(this VoucherAggregate aggregate, VoucherIssuedEvent domainEvent)
+    public static void PlayEvent(this VoucherAggregate aggregate, VoucherDomainEvents.VoucherIssuedEvent domainEvent)
     {
         aggregate.IsIssued = true;
         aggregate.IssuedDateTime = domainEvent.IssuedDateTime;
@@ -175,12 +175,12 @@ public static class VoucherAggregateExtensions{
         aggregate.Balance = aggregate.Value;
     }
 
-    public static void PlayEvent(this VoucherAggregate aggregate, BarcodeAddedEvent domainEvent)
+    public static void PlayEvent(this VoucherAggregate aggregate, VoucherDomainEvents.BarcodeAddedEvent domainEvent)
     {
         aggregate.Barcode = domainEvent.Barcode;
     }
 
-    public static void PlayEvent(this VoucherAggregate aggregate, VoucherFullyRedeemedEvent domainEvent)
+    public static void PlayEvent(this VoucherAggregate aggregate, VoucherDomainEvents.VoucherFullyRedeemedEvent domainEvent)
     {
         aggregate.RedeemedDateTime = domainEvent.RedeemedDateTime;
         aggregate.IsRedeemed = true;

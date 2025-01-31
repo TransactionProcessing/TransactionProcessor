@@ -1,7 +1,7 @@
 ﻿using EstateManagement.Merchant.DomainEvents;
 using SimpleResults;
+using TransactionProcessor.DomainEvents;
 using TransactionProcessor.ProjectionEngine.Models;
-using TransactionProcessor.Transaction.DomainEvents;
 
 namespace TransactionProcessor.ProjectionEngine.Tests;
 
@@ -210,8 +210,8 @@ public class MerchantBalanceStateDispatcherTests
     [InlineData(typeof(ManualDepositMadeEvent))]
     [InlineData(typeof(AutomaticDepositMadeEvent))]
     [InlineData(typeof(WithdrawalMadeEvent))]
-    [InlineData(typeof(TransactionHasBeenCompletedEvent))]
-    [InlineData(typeof(SettledMerchantFeeAddedToTransactionEvent))]
+    [InlineData(typeof(TransactionDomainEvents.TransactionHasBeenCompletedEvent))]
+    [InlineData(typeof(TransactionDomainEvents.SettledMerchantFeeAddedToTransactionEvent))]
     public async Task MerchantBalanceStateDispatcher_EventIsDispatched_ResultSuccessful(Type type) {
         MerchantBalanceState state = new();
 
@@ -222,8 +222,8 @@ public class MerchantBalanceStateDispatcherTests
             nameof(ManualDepositMadeEvent) => TestData.ManualDepositMadeEvent,
             nameof(AutomaticDepositMadeEvent) => TestData.AutomaticDepositMadeEvent,
             nameof(WithdrawalMadeEvent) => TestData.WithdrawalMadeEvent,
-            nameof(TransactionHasBeenCompletedEvent) => TestData.TransactionHasBeenCompletedEvent,
-            nameof(SettledMerchantFeeAddedToTransactionEvent) => TestData.SettledMerchantFeeAddedToTransactionEvent(DateTime.Now),
+            nameof(TransactionDomainEvents.TransactionHasBeenCompletedEvent) => TestData.TransactionHasBeenCompletedEvent,
+            nameof(TransactionDomainEvents.SettledMerchantFeeAddedToTransactionEvent) => TestData.SettledMerchantFeeAddedToTransactionEvent(DateTime.Now),
             _ => null
         };
 

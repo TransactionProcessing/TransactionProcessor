@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Text;
+using TransactionProcessor.Models.Contract;
 
 namespace TransactionProcessor.BusinessLogic.Tests.Manager
 {

@@ -10,6 +10,7 @@ public static class SubscriptionsHelper
                                                                                                ("$ce-SettlementAggregate", "Transaction Processor", 0),
                                                                                                ("$ce-TransactionAggregate", "Transaction Processor", 0),
                                                                                                ("$ce-OperatorAggregate", "Transaction Processor", 0),                                                                                               ("$ce-VoucherAggregate", "Transaction Processor", 0),
+                                                                                               ("$ce-ContractAggregate", "Transaction Processor", 0),
                                                                                                
                                                                                                // Ordered
                                                                                                ("$ce-EstateAggregate", "Transaction Processor - Ordered", 2),
@@ -20,7 +21,6 @@ public static class SubscriptionsHelper
 
                                                                                                // Estate Management Main
                                                                                                ("$ce-CallbackMessageAggregate", "Estate Management", 0),
-                                                                                               ("$ce-ContractAggregate", "Estate Management", 0),
                                                                                                ("$ce-FileAggregate", "Estate Management", 0),
                                                                                                ("$ce-FloatAggregate", "Estate Management", 0),
                                                                                                ("$ce-MerchantAggregate", "Estate Management", 0),

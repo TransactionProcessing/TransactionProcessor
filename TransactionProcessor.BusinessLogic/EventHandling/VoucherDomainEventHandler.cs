@@ -3,6 +3,7 @@ using SimpleResults;
 using TransactionProcessor.Aggregates;
 using TransactionProcessor.Database.Contexts;
 using TransactionProcessor.Database.Entities;
+using TransactionProcessor.DomainEvents;
 
 namespace TransactionProcessor.BusinessLogic.EventHandling;
 
@@ -24,7 +25,6 @@ using Shared.EventStore.Aggregate;
 using Shared.EventStore.EventHandling;
 using Shared.General;
 using Shared.Logger;
-using Voucher.DomainEvents;
 
 public class VoucherDomainEventHandler : IDomainEventHandler
 {
@@ -154,7 +154,7 @@ public class VoucherDomainEventHandler : IDomainEventHandler
     /// </summary>
     /// <param name="domainEvent">The domain event.</param>
     /// <param name="cancellationToken">The cancellation token.</param>
-    private async Task<Result> HandleSpecificDomainEvent(VoucherIssuedEvent domainEvent,
+    private async Task<Result> HandleSpecificDomainEvent(VoucherDomainEvents.VoucherIssuedEvent domainEvent,
                                                          CancellationToken cancellationToken)
     {
         // Get the voucher aggregate

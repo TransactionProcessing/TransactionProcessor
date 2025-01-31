@@ -764,6 +764,33 @@ public static class ReqnrollExtensions{
         return requests;
     }
 
+    public static List<(String, String)> ToContractDetails(this DataTableRows tableRows)
+    {
+        List<(String, String)> contracts = new List<(String, String)>();
+        foreach (DataTableRow tableRow in tableRows)
+        {
+            String contractDescription = ReqnrollTableHelper.GetStringRowValue(tableRow, "ContractDescription");
+            String productName = ReqnrollTableHelper.GetStringRowValue(tableRow, "ProductName");
+            contracts.Add((contractDescription, productName));
+        }
+
+        return contracts;
+    }
+
+    public static List<(CalculationType, String, Decimal?, FeeType)> ToContractTransactionFeeDetails(this DataTableRows tableRows)
+    {
+        var transactionFees = new List<(CalculationType, String, Decimal?, FeeType)>();
+        foreach (DataTableRow tableRow in tableRows)
+        {
+            CalculationType calculationType = ReqnrollTableHelper.GetEnumValue<CalculationType>(tableRow, "CalculationType");
+            FeeType feeType = ReqnrollTableHelper.GetEnumValue<FeeType>(tableRow, "FeeType");
+            String feeDescription = ReqnrollTableHelper.GetStringRowValue(tableRow, "FeeDescription");
+            Decimal feeValue = ReqnrollTableHelper.GetDecimalValue(tableRow, "Value");
+        }
+
+        return transactionFees;
+    }
+
     public static List<String> ToEstateDetails(this DataTableRows tableRows)
     {
         List<String> results = new List<String>();

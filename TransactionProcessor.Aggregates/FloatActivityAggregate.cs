@@ -3,7 +3,7 @@ using System;
 using Shared.DomainDrivenDesign.EventSourcing;
 using Shared.EventStore.Aggregate;
 using Shared.General;
-using TransactionProcessor.Float.DomainEvents;
+using TransactionProcessor.DomainEvents;
 
 namespace TransactionProcessor.Aggregates
 {
@@ -11,14 +11,14 @@ namespace TransactionProcessor.Aggregates
     {
 
         public static void PlayEvent(this FloatActivityAggregate aggregate,
-                                     FloatAggregateCreditedEvent domainEvent)
+                                     FloatActivityDomainEvents.FloatAggregateCreditedEvent domainEvent)
         {
             aggregate.CreditCount++;
             aggregate.Credits.Add(domainEvent.CreditId);
         }
 
         public static void PlayEvent(this FloatActivityAggregate aggregate,
-                                     FloatAggregateDebitedEvent domainEvent)
+                                     FloatActivityDomainEvents.FloatAggregateDebitedEvent domainEvent)
         {
             aggregate.DebitCount++;
             aggregate.Debits.Add(domainEvent.DebitId);
@@ -34,7 +34,7 @@ namespace TransactionProcessor.Aggregates
             if (aggregate.Credits.Any(c => c == creditId))
                 return;
 
-            FloatAggregateCreditedEvent floatAggregateCreditedEvent = new(aggregate.AggregateId, estateId, activityDateTime, creditAmount, creditId);
+            FloatActivityDomainEvents.FloatAggregateCreditedEvent floatAggregateCreditedEvent = new(aggregate.AggregateId, estateId, activityDateTime, creditAmount, creditId);
             aggregate.ApplyAndAppend(floatAggregateCreditedEvent);
         }
 
@@ -47,7 +47,7 @@ namespace TransactionProcessor.Aggregates
             if (aggregate.Debits.Any(c => c == transactionId))
                 return;
 
-            FloatAggregateDebitedEvent floatAggregateCreditedEvent = new(aggregate.AggregateId, estateId, activityDateTime, transactionAmount, transactionId);
+            FloatActivityDomainEvents.FloatAggregateDebitedEvent floatAggregateCreditedEvent = new(aggregate.AggregateId, estateId, activityDateTime, transactionAmount, transactionId);
             aggregate.ApplyAndAppend(floatAggregateCreditedEvent);
         }
     }

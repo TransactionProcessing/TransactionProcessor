@@ -781,4 +781,121 @@ public class TransactionProcessorSteps
 
         return responses;
     }
+
+    public async Task ThenIGetTheContractsForTheFollowingContractDetailsAreReturned(String accessToken, String estateName, List<EstateDetails> estateDetailsList, List<(String, String)> contractDetails)
+    {
+
+        Guid estateId = Guid.NewGuid();
+        EstateDetails estateDetails = estateDetailsList.SingleOrDefault(e => e.EstateName == estateName);
+        estateDetails.ShouldNotBeNull();
+
+        String token = accessToken;
+        if (estateDetails != null)
+        {
+            estateId = estateDetails.EstateId;
+            if (String.IsNullOrEmpty(estateDetails.AccessToken) == false)
+            {
+                token = estateDetails.AccessToken;
+            }
+        }
+
+        await Retry.For(async () => {
+            List<ContractResponse> contracts =
+                await this.TransactionProcessorClient.GetContracts(token, estateDetails.EstateId, CancellationToken.None);
+
+            contracts.ShouldNotBeNull();
+            contracts.ShouldHaveSingleItem();
+            ContractResponse contract = contracts.Single();
+            contract.Products.ShouldNotBeNull();
+            foreach ((String, String) contractDetail in contractDetails)
+            {
+                contract.Description.ShouldBe(contractDetail.Item1);
+                contract.Products.Any(p => p.Name == contractDetail.Item2).ShouldBeTrue();
+            }
+        });
+    }
+
+    public async Task ThenIGetTheMerchantContractsForForTheFollowingContractDetailsAreReturned(String accessToken, String estateName, String merchantName, List<EstateDetails> estateDetailsList, List<(String, String)> contractDetails)
+    {
+        Guid estateId = Guid.NewGuid();
+        EstateDetails estateDetails = estateDetailsList.SingleOrDefault(e => e.EstateName == estateName);
+        estateDetails.ShouldNotBeNull();
+
+        String token = accessToken;
+        if (estateDetails != null)
+        {
+            estateId = estateDetails.EstateId;
+            if (String.IsNullOrEmpty(estateDetails.AccessToken) == false)
+            {
+                token = estateDetails.AccessToken;
+            }
+        }
+
+        Guid merchantId = estateDetails.GetMerchant(merchantName).MerchantId;
+
+        await Retry.For(async () => {
+            List<ContractResponse> contracts =
+                await this.TransactionProcessorClient.GetMerchantContracts(token, estateDetails.EstateId, merchantId, CancellationToken.None);
+
+            contracts.ShouldNotBeNull();
+            contracts.ShouldHaveSingleItem();
+            ContractResponse contractResponse = contracts.Single();
+
+            foreach (var contract in contractDetails)
+            {
+                contractResponse.Description.ShouldBe(contract.Item1);
+                contractResponse.Products.Any(p => p.Name == contract.Item2).ShouldBeTrue();
+            }
+        });
+    }
+
+    public async Task ThenIGetTheTransactionFeesForOnTheContractForTheFollowingFeesAreReturned(String accessToken, String estateName, String contractName, String productName, List<EstateDetails> estateDetailsList, List<(CalculationType, String, Decimal?, FeeType)> transactionFees)
+    {
+        Guid estateId = Guid.NewGuid();
+        EstateDetails estateDetails = estateDetailsList.SingleOrDefault(e => e.EstateName == estateName);
+        estateDetails.ShouldNotBeNull();
+
+        String token = accessToken;
+        if (estateDetails != null)
+        {
+            estateId = estateDetails.EstateId;
+            if (String.IsNullOrEmpty(estateDetails.AccessToken) == false)
+            {
+                token = estateDetails.AccessToken;
+            }
+        }
+
+        Contract contract = estateDetails.GetContract(contractName);
+
+        Product product = contract.GetProduct(productName);
+
+        await Retry.For(async () => {
+            List<ContractProductTransactionFee> transactionFeesResults =
+                await this.TransactionProcessorClient.GetTransactionFeesForProduct(token,
+                                                                     estateDetails.EstateId,
+                                                                     Guid.Empty,
+                                                                     contract.ContractId,
+                                                                     product.ProductId,
+                                                                     CancellationToken.None);
+            foreach ((CalculationType, String, Decimal?, FeeType) transactionFee in transactionFees)
+            {
+                Boolean feeFound = transactionFeesResults.Any(f => f.CalculationType == transactionFee.Item1 && f.Description == transactionFee.Item2 &&
+                                                                   f.Value == transactionFee.Item3 && f.FeeType == transactionFee.Item4);
+
+                feeFound.ShouldBeTrue();
+            }
+        });
+    }
+
+    public async Task WhenICreateAnotherContractWithTheSameValuesItShouldBeRejected(string accessToken, List<(EstateDetails, CreateContractRequest)> requests)
+    {
+        var createContractRequest = requests.Single();
+
+        var result = await this.TransactionProcessorClient.CreateContract(accessToken, createContractRequest.Item1.EstateId,
+            createContractRequest.Item2, CancellationToken.None);
+
+        result.IsFailed.ShouldBeTrue();
+        result.Status.ShouldBe(ResultStatus.Conflict);
+
+    }
 }

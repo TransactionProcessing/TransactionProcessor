@@ -7,13 +7,13 @@ using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using TransactionProcessor.Float.DomainEvents;
+using TransactionProcessor.DomainEvents;
 
 namespace TransactionProcessor.Aggregates
 {
     public static class FloatAggregateExtensions
     {
-        public static void PlayEvent(this FloatAggregate aggregate, FloatCreatedForContractProductEvent domainEvent)
+        public static void PlayEvent(this FloatAggregate aggregate, FloatDomainEvents.FloatCreatedForContractProductEvent domainEvent)
         {
             aggregate.EstateId = domainEvent.EstateId;
             aggregate.ContractId = domainEvent.ContractId;
@@ -22,7 +22,7 @@ namespace TransactionProcessor.Aggregates
             aggregate.IsCreated = true;
         }
 
-        public static void PlayEvent(this FloatAggregate aggregate, FloatCreditPurchasedEvent domainEvent)
+        public static void PlayEvent(this FloatAggregate aggregate, FloatDomainEvents.FloatCreditPurchasedEvent domainEvent)
         {
             aggregate.NumberOfCreditPurchases++;
             aggregate.TotalCreditPurchases += domainEvent.Amount;
@@ -39,7 +39,7 @@ namespace TransactionProcessor.Aggregates
         {
             aggregate.ValidateFloatIsNotAlreadyCreated();
 
-            FloatCreatedForContractProductEvent floatCreatedForContractProductEvent = new(aggregate.AggregateId,
+            FloatDomainEvents.FloatCreatedForContractProductEvent floatCreatedForContractProductEvent = new(aggregate.AggregateId,
                 estateId, contractId, productId, createdDateTime);
 
             aggregate.ApplyAndAppend(floatCreatedForContractProductEvent);
@@ -50,7 +50,7 @@ namespace TransactionProcessor.Aggregates
             aggregate.ValidateFloatIsAlreadyCreated();
             aggregate.ValidateCreditIsNotADuplicate(creditPurchasedDate, amount, costPrice);
 
-            FloatCreditPurchasedEvent floatCreditPurchasedEvent = new(aggregate.AggregateId, aggregate.EstateId,
+            FloatDomainEvents.FloatCreditPurchasedEvent floatCreditPurchasedEvent = new(aggregate.AggregateId, aggregate.EstateId,
                                                                                                 creditPurchasedDate, amount, costPrice);
 
             aggregate.ApplyAndAppend(floatCreditPurchasedEvent);

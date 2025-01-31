@@ -1,15 +1,15 @@
-﻿namespace TransactionProcessor.BusinessLogic.Tests.DomainEventHanders
-{
-    using System;
-    using System.Collections.Generic;
-    using System.Linq;
-    using Moq;
-    using Shared.EventStore.EventHandling;
-    using Shouldly;
-    using Testing;
-    using Transaction.DomainEvents;
-    using Xunit;
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using Moq;
+using Shared.EventStore.EventHandling;
+using Shouldly;
+using TransactionProcessor.DomainEvents;
+using TransactionProcessor.Testing;
+using Xunit;
 
+namespace TransactionProcessor.BusinessLogic.Tests.DomainEventHandlers
+{
     public class DomainEventHandlerResolverTests
     {
         [Fact]
@@ -45,7 +45,7 @@
                 String handlerTypeName = "TransactionProcessor.BusinessLogic.EventHandling.TransactionDomainEventHandler, TransactionProcessor.BusinessLogic";
                 Dictionary<String, String[]> eventHandlerConfiguration = new Dictionary<String, String[]>();
 
-            TransactionHasBeenCompletedEvent transactionHasBeenCompletedEvent = TestData.TransactionHasBeenCompletedEvent;
+            TransactionDomainEvents.TransactionHasBeenCompletedEvent transactionHasBeenCompletedEvent = TestData.TransactionHasBeenCompletedEvent;
 
             eventHandlerConfiguration.Add(transactionHasBeenCompletedEvent.GetType().Name, new String[] { handlerTypeName });
 
@@ -67,7 +67,7 @@
             String handlerTypeName = "TransactionProcessor.BusinessLogic.EventHandling.TransactionDomainEventHandler, TransactionProcessor.BusinessLogic";
             Dictionary<String, String[]> eventHandlerConfiguration = new Dictionary<String, String[]>();
 
-            TransactionHasBeenCompletedEvent transactionHasBeenCompletedEvent = TestData.TransactionHasBeenCompletedEvent;
+            TransactionDomainEvents.TransactionHasBeenCompletedEvent transactionHasBeenCompletedEvent = TestData.TransactionHasBeenCompletedEvent;
 
             eventHandlerConfiguration.Add("RandomEvent", new String[] { handlerTypeName });
             Mock<IDomainEventHandler> domainEventHandler = new Mock<IDomainEventHandler>();
@@ -85,7 +85,7 @@
         {
             Dictionary<String, String[]> eventHandlerConfiguration = new Dictionary<String, String[]>();
 
-            TransactionHasBeenCompletedEvent transactionHasBeenCompletedEvent = TestData.TransactionHasBeenCompletedEvent;
+            TransactionDomainEvents.TransactionHasBeenCompletedEvent transactionHasBeenCompletedEvent = TestData.TransactionHasBeenCompletedEvent;
             Mock<IDomainEventHandler> domainEventHandler = new Mock<IDomainEventHandler>();
 
             Func<Type, IDomainEventHandler> createDomainEventHandlerFunc = (type) => { return domainEventHandler.Object; };

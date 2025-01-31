@@ -11,6 +11,7 @@ using System.Text;
 using System.Threading.Tasks;
 using Shared.EventStore.EventStore;
 using TransactionProcessor.BusinessLogic.Manager;
+using TransactionProcessor.DataTransferObjects.Responses.Contract;
 using TransactionProcessor.ProjectionEngine.Repository;
 using Xunit;
 
@@ -59,6 +60,15 @@ namespace TransactionProcessor.BusinessLogic.Tests.Mediator
             this.Requests.Add(TestData.Commands.UpdateOperatorCommand);
             this.Requests.Add(TestData.Queries.GetOperatorQuery);
             this.Requests.Add(TestData.Queries.GetOperatorsQuery);
+
+            // Contract Commands and Queries
+            this.Requests.Add(TestData.Commands.CreateContractCommand);
+            this.Requests.Add(TestData.Commands.AddProductToContractCommand_VariableValue);
+            this.Requests.Add(TestData.Commands.AddProductToContractCommand_FixedValue);
+            this.Requests.Add(TestData.Commands.AddTransactionFeeForProductToContractCommand(CalculationType.Fixed, FeeType.Merchant));
+            this.Requests.Add(TestData.Commands.DisableTransactionFeeForProductCommand);
+            this.Requests.Add(TestData.Queries.GetContractQuery);
+            this.Requests.Add(TestData.Queries.GetContractsQuery);
         }
 
         [Fact]

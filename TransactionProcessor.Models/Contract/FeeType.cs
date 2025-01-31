@@ -1,4 +1,4 @@
-﻿namespace TransactionProcessor.Models
+﻿namespace TransactionProcessor.Models.Contract
 {
     /// <summary>
     /// 

@@ -6,28 +6,27 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using TransactionProcessor.DomainEvents;
 using TransactionProcessor.ProjectionEngine.Projections;
 using TransactionProcessor.ProjectionEngine.State;
-using TransactionProcessor.Transaction.DomainEvents;
-using TransactionProcessor.Voucher.DomainEvents;
 
 namespace TransactionProcessor.ProjectionEngine.Tests
 {
     public class VoucherProjectionTests{
         [Theory]
-        [InlineData(typeof(VoucherGeneratedEvent), true)]
-        [InlineData(typeof(BarcodeAddedEvent), true)]
-        [InlineData(typeof(VoucherIssuedEvent), true)]
-        [InlineData(typeof(VoucherFullyRedeemedEvent), true)]
+        [InlineData(typeof(VoucherDomainEvents.VoucherGeneratedEvent), true)]
+        [InlineData(typeof(VoucherDomainEvents.BarcodeAddedEvent), true)]
+        [InlineData(typeof(VoucherDomainEvents.VoucherIssuedEvent), true)]
+        [InlineData(typeof(VoucherDomainEvents.VoucherFullyRedeemedEvent), true)]
         [InlineData(typeof(AddressAddedEvent), false)]
         public void VoucherProjection_ShouldIHandleEvent_ReturnsExpectedValue(Type eventType, Boolean expectedResult){
             VoucherProjection projection = new VoucherProjection();
 
             IDomainEvent domainEvent = eventType switch{
-                _ when eventType == typeof(VoucherGeneratedEvent) => TestData.VoucherGeneratedEvent,
-                _ when eventType == typeof(BarcodeAddedEvent) => TestData.BarcodeAddedEvent,
-                _ when eventType == typeof(VoucherIssuedEvent) => TestData.VoucherIssuedEvent,
-                _ when eventType == typeof(VoucherFullyRedeemedEvent) => TestData.VoucherFullyRedeemedEvent,
+                _ when eventType == typeof(VoucherDomainEvents.VoucherGeneratedEvent) => TestData.VoucherGeneratedEvent,
+                _ when eventType == typeof(VoucherDomainEvents.BarcodeAddedEvent) => TestData.BarcodeAddedEvent,
+                _ when eventType == typeof(VoucherDomainEvents.VoucherIssuedEvent) => TestData.VoucherIssuedEvent,
+                _ when eventType == typeof(VoucherDomainEvents.VoucherFullyRedeemedEvent) => TestData.VoucherFullyRedeemedEvent,
                 _ => TestData.AddressAddedEvent
             };
 

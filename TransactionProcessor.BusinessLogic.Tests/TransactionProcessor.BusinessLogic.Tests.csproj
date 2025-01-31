@@ -30,6 +30,7 @@
   <ItemGroup>
     <ProjectReference Include="..\TransactionProcessor.Aggregates\TransactionProcessor.Aggregates.csproj" />
     <ProjectReference Include="..\TransactionProcessor.BusinessLogic\TransactionProcessor.BusinessLogic.csproj" />
+    <ProjectReference Include="..\TransactionProcessor.DomainEvents\TransactionProcessor.DomainEvents.csproj" />
     <ProjectReference Include="..\TransactionProcessor.Testing\TransactionProcessor.Testing.csproj" />
     <ProjectReference Include="..\TransactionProcessor\TransactionProcessor.csproj" />
   </ItemGroup>

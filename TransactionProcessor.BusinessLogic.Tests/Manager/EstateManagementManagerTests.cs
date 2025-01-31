@@ -16,6 +16,8 @@ using TransactionProcessor.ProjectionEngine.Repository;
 using TransactionProcessor.Repository;
 using TransactionProcessor.Testing;
 using Xunit;
+using TransactionProcessor.Models.Contract;
+using TransactionProcessor.Models.Operator;
 
 namespace TransactionProcessor.BusinessLogic.Tests.Manager
 {
@@ -23,7 +25,7 @@ namespace TransactionProcessor.BusinessLogic.Tests.Manager
     {
         private readonly Mock<ITransactionProcessorReadModelRepository> EstateManagementRepository;
         private readonly Mock<IAggregateRepository<EstateAggregate, DomainEvent>> EstateAggregateRepository;
-        //private readonly Mock<IAggregateRepository<ContractAggregate, DomainEvent>> ContractAggregateRepository;
+        private readonly Mock<IAggregateRepository<ContractAggregate, DomainEvent>> ContractAggregateRepository;
         //private readonly Mock<IAggregateRepository<MerchantAggregate, DomainEvent>> MerchantAggregateRepository;
         private readonly Mock<IAggregateRepository<OperatorAggregate, DomainEvent>> OperatorAggregateRepository;
 
@@ -34,12 +36,12 @@ namespace TransactionProcessor.BusinessLogic.Tests.Manager
             this.EstateManagementRepository = new Mock<ITransactionProcessorReadModelRepository>();
 
             this.EstateAggregateRepository = new Mock<IAggregateRepository<EstateAggregate, DomainEvent>>();
-            //this.ContractAggregateRepository = new Mock<IAggregateRepository<ContractAggregate, DomainEvent>>();
+            this.ContractAggregateRepository = new Mock<IAggregateRepository<ContractAggregate, DomainEvent>>();
             //this.MerchantAggregateRepository = new Mock<IAggregateRepository<MerchantAggregate, DomainEvent>>();
             this.OperatorAggregateRepository = new Mock<IAggregateRepository<OperatorAggregate, DomainEvent>>();
 
             this.EstateManagementManager = new EstateManagementManager(this.EstateManagementRepository.Object, this.EstateAggregateRepository.Object,
-            //this.ContractAggregateRepository.Object,
+            this.ContractAggregateRepository.Object,
             //this.MerchantAggregateRepository.Object,
             this.OperatorAggregateRepository.Object);
         }
@@ -74,7 +76,7 @@ namespace TransactionProcessor.BusinessLogic.Tests.Manager
         {
             this.EstateAggregateRepository.Setup(a => a.GetLatestVersion(It.IsAny<Guid>(), It.IsAny<CancellationToken>())).ReturnsAsync(Result.Success(TestData.Aggregates.EstateAggregateWithOperator()));
             this.EstateManagementRepository.Setup(e => e.GetEstate(It.IsAny<Guid>(), It.IsAny<CancellationToken>())).ReturnsAsync(Result.Success(TestData.EstateModel));
-            //this.OperatorAggregateRepository.Setup(o => o.GetLatestVersion(It.IsAny<Guid>(), CancellationToken.None)).ReturnsAsync(Result.Success(TestData.Aggregates.CreatedOperatorAggregate()));
+            this.OperatorAggregateRepository.Setup(o => o.GetLatestVersion(It.IsAny<Guid>(), CancellationToken.None)).ReturnsAsync(Result.Success(TestData.Aggregates.CreatedOperatorAggregate()));
 
             var getEstateResult = await this.EstateManagementManager.GetEstate(TestData.EstateId, CancellationToken.None);
             getEstateResult.IsSuccess.ShouldBeTrue();
@@ -85,7 +87,7 @@ namespace TransactionProcessor.BusinessLogic.Tests.Manager
             estateModel.Operators.ShouldHaveSingleItem();
             estateModel.Operators.Single().OperatorId.ShouldBe(TestData.OperatorId);
             // TODO: add back in with operator aggregate
-            //estateModel.Operators.Single().Name.ShouldBe(TestData.OperatorName);
+            estateModel.Operators.Single().Name.ShouldBe(TestData.OperatorName);
             estateModel.Operators.Single().IsDeleted.ShouldBeFalse();
         }
 
@@ -274,7 +276,7 @@ namespace TransactionProcessor.BusinessLogic.Tests.Manager
             Result<List<Merchant>> getMerchantsResult = await this.EstateManagementManager.GetMerchants(TestData.EstateId, CancellationToken.None);
             getMerchantsResult.IsFailed.ShouldBeTrue();
         }
-
+        */
         [Fact]
         public async Task EstateManagementManager_GetContract_ContractIsReturned()
         {
@@ -372,7 +374,7 @@ namespace TransactionProcessor.BusinessLogic.Tests.Manager
             var result = await this.EstateManagementManager.GetTransactionFeesForProduct(TestData.EstateId, TestData.MerchantId, TestData.ContractId, TestData.ContractProductId, CancellationToken.None);
             result.IsFailed.ShouldBeTrue();
         }
-
+        /*
         [Fact]
         public async Task EstateManagementManager_GetMerchantContracts_MerchantContractsReturned()
         {
@@ -423,7 +425,7 @@ namespace TransactionProcessor.BusinessLogic.Tests.Manager
             var getFileDetailsResult = await this.EstateManagementManager.GetFileDetails(TestData.EstateId, TestData.FileId, CancellationToken.None);
             getFileDetailsResult.IsFailed.ShouldBeTrue();
         }
-
+        */
         [Fact]
         public async Task EstateManagementManager_GetOperator_OperatorDetailsAreReturned()
         {
@@ -485,6 +487,6 @@ namespace TransactionProcessor.BusinessLogic.Tests.Manager
             var getOperatorsResult = await this.EstateManagementManager.GetOperators(TestData.EstateId, CancellationToken.None);
             getOperatorsResult.IsFailed.ShouldBeTrue();
         }
-        */
+        
     }
 }

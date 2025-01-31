@@ -46,6 +46,7 @@ namespace TransactionProcessor.BusinessLogic.Services
         private readonly IAggregateRepository<FloatAggregate, DomainEvent> FloatAggregateRepository;
         private readonly IAggregateRepository<FloatActivityAggregate, DomainEvent> FloatActivityAggregateRepository;
         private readonly IAggregateRepository<TransactionAggregate, DomainEvent> TransactionAggregateRepository;
+        private readonly IAggregateRepository<EstateAggregate, DomainEvent> EstateAggregateRepository;
 
         private readonly IIntermediateEstateClient EstateClient;
         private readonly ISecurityServiceClient SecurityServiceClient;
@@ -53,12 +54,14 @@ namespace TransactionProcessor.BusinessLogic.Services
         public FloatDomainService(IAggregateRepository<FloatAggregate, DomainEvent> floatAggregateRepository,
                                   IAggregateRepository<FloatActivityAggregate, DomainEvent> floatActivityAggregateRepository,
                                   IAggregateRepository<TransactionAggregate,DomainEvent> transactionAggregateRepository,
+                                  IAggregateRepository<EstateAggregate, DomainEvent> estateAggregateRepository,
                                   IIntermediateEstateClient estateClient,
                                   ISecurityServiceClient securityServiceClient)
         {
             this.FloatAggregateRepository = floatAggregateRepository;
             this.FloatActivityAggregateRepository = floatActivityAggregateRepository;
             this.TransactionAggregateRepository = transactionAggregateRepository;
+            this.EstateAggregateRepository = estateAggregateRepository;
             this.EstateClient = estateClient;
             this.SecurityServiceClient = securityServiceClient;
         }
@@ -126,7 +129,7 @@ namespace TransactionProcessor.BusinessLogic.Services
         {
             this.TokenResponse = await Helpers.GetToken(this.TokenResponse, this.SecurityServiceClient, cancellationToken);
 
-            Result<EstateResponse> result= await this.EstateClient.GetEstate(this.TokenResponse.AccessToken, estateId, cancellationToken);
+            Result<EstateAggregate> result = await this.EstateAggregateRepository.GetLatestVersion(estateId, cancellationToken);
 
             if (result.IsFailed) {
                 return ResultHelpers.CreateFailure(result);

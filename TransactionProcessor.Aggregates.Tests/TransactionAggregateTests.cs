@@ -1,9 +1,9 @@
 using Shouldly;
 using TransactionProcessor.Models;
+using TransactionProcessor.Models.Contract;
 using TransactionProcessor.Testing;
 
 namespace TransactionProcessor.Aggregates.Tests{
-    using FeeType = TransactionProcessor.Models.FeeType;
 
     public class TransactionAggregateTests{
         [Fact]

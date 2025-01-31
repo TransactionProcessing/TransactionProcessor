@@ -4,13 +4,13 @@ using System.Diagnostics.Contracts;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using TransactionProcessor.Voucher.DomainEvents;
+using TransactionProcessor.DomainEvents;
 
 namespace TransactionProcessor.ProjectionEngine.State
 {
 public static class VoucherStateExtension{
     [Pure]
-    public static VoucherState HandleVoucherGeneratedEvent(this VoucherState state, VoucherGeneratedEvent @event) =>
+    public static VoucherState HandleVoucherGeneratedEvent(this VoucherState state, VoucherDomainEvents.VoucherGeneratedEvent @event) =>
         state with{
                       VoucherCode = @event.VoucherCode,
                       VoucherId = @event.VoucherId,
@@ -20,20 +20,20 @@ public static class VoucherStateExtension{
                   };
 
     [Pure]
-    public static VoucherState HandleBarcodeAddedEvent(this VoucherState state, BarcodeAddedEvent @event) =>
+    public static VoucherState HandleBarcodeAddedEvent(this VoucherState state, VoucherDomainEvents.BarcodeAddedEvent @event) =>
         state with{
                       Barcode = @event.Barcode,
                   };
 
     [Pure]
-    public static VoucherState HandleVoucherIssuedEvent(this VoucherState state, VoucherIssuedEvent @event) =>
+    public static VoucherState HandleVoucherIssuedEvent(this VoucherState state, VoucherDomainEvents.VoucherIssuedEvent @event) =>
         state with{
                       IsIssued = true
                   };
 
 
     [Pure]
-    public static VoucherState HandleVoucherFullyRedeemedEvent(this VoucherState state, VoucherFullyRedeemedEvent @event) =>
+    public static VoucherState HandleVoucherFullyRedeemedEvent(this VoucherState state, VoucherDomainEvents.VoucherFullyRedeemedEvent @event) =>
         state with{
                       IsFullyRedeemed = true
                   };

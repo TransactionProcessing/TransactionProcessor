@@ -1,4 +1,6 @@
-﻿using TransactionProcessor.Models;
+﻿using TransactionProcessor.DomainEvents;
+using TransactionProcessor.Models;
+using TransactionProcessor.Models.Contract;
 
 namespace TransactionProcessor.Aggregates
 {
@@ -7,7 +9,6 @@ namespace TransactionProcessor.Aggregates
     using System.Diagnostics.CodeAnalysis;
     using System.Linq;
     using Models;
-    using Settlement.DomainEvents;
     using Shared.DomainDrivenDesign.EventSourcing;
     using Shared.EventStore.Aggregate;
     using Shared.General;
@@ -17,7 +18,7 @@ namespace TransactionProcessor.Aggregates
 
             aggregate.CheckHasBeenCreated();
 
-            SettlementProcessingStartedEvent startedEvent = new SettlementProcessingStartedEvent(aggregate.AggregateId,
+            SettlementDomainEvents.SettlementProcessingStartedEvent startedEvent = new SettlementDomainEvents.SettlementProcessingStartedEvent(aggregate.AggregateId,
                                                                                                  aggregate.EstateId,
                                                                                                  aggregate.MerchantId,
                                                                                                  dateTime);
@@ -31,7 +32,7 @@ namespace TransactionProcessor.Aggregates
             if (aggregate.SettlementComplete)
                 return;
 
-            SettlementCompletedEvent pendingSettlementCompletedEvent = new SettlementCompletedEvent(aggregate.AggregateId, aggregate.EstateId, aggregate.MerchantId);
+            SettlementDomainEvents.SettlementCompletedEvent pendingSettlementCompletedEvent = new SettlementDomainEvents.SettlementCompletedEvent(aggregate.AggregateId, aggregate.EstateId, aggregate.MerchantId);
             aggregate.ApplyAndAppend(pendingSettlementCompletedEvent);
         }
 
@@ -53,14 +54,14 @@ namespace TransactionProcessor.Aggregates
                 return;
             }
 
-            MerchantFeeSettledEvent merchantFeeSettledEvent = SettlementAggregateExtensions.CreateMerchantFeeSettledEvent(aggregate, pendingFee,settledDate);
+            SettlementDomainEvents.MerchantFeeSettledEvent merchantFeeSettledEvent = SettlementAggregateExtensions.CreateMerchantFeeSettledEvent(aggregate, pendingFee,settledDate);
 
             aggregate.ApplyAndAppend(merchantFeeSettledEvent);
 
             if (aggregate.CalculatedFeesPendingSettlement.Any() == false)
             {
                 // Settlement is completed
-                SettlementCompletedEvent pendingSettlementCompletedEvent = new SettlementCompletedEvent(aggregate.AggregateId, aggregate.EstateId, aggregate.MerchantId);
+                SettlementDomainEvents.SettlementCompletedEvent pendingSettlementCompletedEvent = new SettlementDomainEvents.SettlementCompletedEvent(aggregate.AggregateId, aggregate.EstateId, aggregate.MerchantId);
                 aggregate.ApplyAndAppend(pendingSettlementCompletedEvent);
             }
         }
@@ -71,9 +72,9 @@ namespace TransactionProcessor.Aggregates
             return settledFee;
         }
 
-        private static MerchantFeeSettledEvent CreateMerchantFeeSettledEvent(SettlementAggregate aggregate, (Guid transactionId, Guid merchantId, CalculatedFee calculatedFee) feeDetails,
-                                                                             DateTime settledDate){
-            MerchantFeeSettledEvent merchantFeeSettledEvent = new MerchantFeeSettledEvent(aggregate.AggregateId,
+        private static SettlementDomainEvents.MerchantFeeSettledEvent CreateMerchantFeeSettledEvent(SettlementAggregate aggregate, (Guid transactionId, Guid merchantId, CalculatedFee calculatedFee) feeDetails,
+                                                                                                    DateTime settledDate){
+            SettlementDomainEvents.MerchantFeeSettledEvent merchantFeeSettledEvent = new SettlementDomainEvents.MerchantFeeSettledEvent(aggregate.AggregateId,
                                                                                           aggregate.EstateId,
                                                                                           feeDetails.merchantId,
                                                                                           feeDetails.transactionId,
@@ -104,7 +105,7 @@ namespace TransactionProcessor.Aggregates
                 return;
             }
 
-            MerchantFeeSettledEvent merchantFeeSettledEvent = SettlementAggregateExtensions.CreateMerchantFeeSettledEvent(aggregate, pendingFee,DateTime.Now);
+            SettlementDomainEvents.MerchantFeeSettledEvent merchantFeeSettledEvent = SettlementAggregateExtensions.CreateMerchantFeeSettledEvent(aggregate, pendingFee,DateTime.Now);
 
             aggregate.ApplyAndAppend(merchantFeeSettledEvent);
         }
@@ -132,7 +133,7 @@ namespace TransactionProcessor.Aggregates
             if (calculatedFee.FeeType == FeeType.Merchant)
             {
                 // This is a merchant fee
-                @event = new MerchantFeeAddedPendingSettlementEvent(aggregate.AggregateId,
+                @event = new SettlementDomainEvents.MerchantFeeAddedPendingSettlementEvent(aggregate.AggregateId,
                                                                     aggregate.EstateId,
                                                                     merchantId,
                                                                     transactionId,
@@ -160,8 +161,8 @@ namespace TransactionProcessor.Aggregates
         {
             aggregate.CheckHasNotAlreadyBeenCreated();
 
-            SettlementCreatedForDateEvent pendingSettlementCreatedForDateEvent =
-                new SettlementCreatedForDateEvent(aggregate.AggregateId, estateId,merchantId, settlementDate.Date);
+            SettlementDomainEvents.SettlementCreatedForDateEvent pendingSettlementCreatedForDateEvent =
+                new SettlementDomainEvents.SettlementCreatedForDateEvent(aggregate.AggregateId, estateId,merchantId, settlementDate.Date);
 
             aggregate.ApplyAndAppend(pendingSettlementCreatedForDateEvent);
         }
@@ -198,7 +199,7 @@ namespace TransactionProcessor.Aggregates
             }
         }
         
-        public static void PlayEvent(this SettlementAggregate aggregate, MerchantFeeSettledEvent domainEvent)
+        public static void PlayEvent(this SettlementAggregate aggregate, SettlementDomainEvents.MerchantFeeSettledEvent domainEvent)
         {
             // Add to the settled fees list
             aggregate.SettledCalculatedFees.Add(new(domainEvent.TransactionId,
@@ -220,7 +221,7 @@ namespace TransactionProcessor.Aggregates
             aggregate.CalculatedFeesPendingSettlement.Remove(feeToRemove);
         }
 
-        public static void PlayEvent(this SettlementAggregate aggregate, MerchantFeeAddedPendingSettlementEvent domainEvent)
+        public static void PlayEvent(this SettlementAggregate aggregate, SettlementDomainEvents.MerchantFeeAddedPendingSettlementEvent domainEvent)
         {
             aggregate.CalculatedFeesPendingSettlement.Add(new(domainEvent.TransactionId,
                                                               domainEvent.MerchantId,
@@ -234,7 +235,7 @@ namespace TransactionProcessor.Aggregates
                                                               }));
         }
 
-        public static void PlayEvent(this SettlementAggregate aggregate, SettlementCreatedForDateEvent domainEvent)
+        public static void PlayEvent(this SettlementAggregate aggregate, SettlementDomainEvents.SettlementCreatedForDateEvent domainEvent)
         {
             aggregate.EstateId = domainEvent.EstateId;
             aggregate.MerchantId = domainEvent.MerchantId;
@@ -242,12 +243,12 @@ namespace TransactionProcessor.Aggregates
             aggregate.IsCreated = true;
         }
 
-        public static void PlayEvent(this SettlementAggregate aggregate, SettlementCompletedEvent domainEvent)
+        public static void PlayEvent(this SettlementAggregate aggregate, SettlementDomainEvents.SettlementCompletedEvent domainEvent)
         {
             aggregate.SettlementComplete = true;
         }
 
-        public static void PlayEvent(this SettlementAggregate aggregate, SettlementProcessingStartedEvent domainEvent){
+        public static void PlayEvent(this SettlementAggregate aggregate, SettlementDomainEvents.SettlementProcessingStartedEvent domainEvent){
             aggregate.ProcessingStarted= true;
             aggregate.ProcessingStartedDateTime = domainEvent.ProcessingStartedDateTime;
         }

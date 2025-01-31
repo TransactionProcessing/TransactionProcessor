@@ -1,7 +1,10 @@
 ﻿using System.Linq;
-using EstateManagement.DataTransferObjects.Responses.Contract;
 using SimpleResults;
+using TransactionProcessor.DataTransferObjects.Responses.Contract;
 using TransactionProcessor.DataTransferObjects.Responses.Operator;
+using TransactionProcessor.Models.Contract;
+using ProductType = TransactionProcessor.DataTransferObjects.Responses.Contract.ProductType;
+//using CalculationType = TransactionProcessor.DataTransferObjects.Responses.Contract.CalculationType;
 
 namespace TransactionProcessor.Factories
 {
@@ -9,7 +12,6 @@ namespace TransactionProcessor.Factories
     using System.Collections.Generic;
     using BusinessLogic.Requests;
     using DataTransferObjects;
-    using EstateManagement.DataTransferObjects.Responses.Estate;
     using Models;
     using Newtonsoft.Json;
     using TransactionProcessor.Models.Estate;
@@ -23,6 +25,73 @@ namespace TransactionProcessor.Factories
     public static class ModelFactory
     {
         #region Methods
+        public static Result<List<ContractResponse>> ConvertFrom(List<Contract> contracts)
+        {
+            List<Result<ContractResponse>> result = new();
+
+            contracts.ForEach(c => result.Add(ModelFactory.ConvertFrom(c)));
+
+            if (result.Any(c => c.IsFailed))
+                return Result.Failure("Failed converting contracts");
+
+            return Result.Success(result.Select(r => r.Data).ToList());
+        }
+
+        public static Result<ContractResponse> ConvertFrom(Contract contract)
+        {
+            if (contract == null)
+            {
+                return Result.Invalid("contract cannot be null");
+            }
+
+            ContractResponse contractResponse = new ContractResponse
+            {
+                EstateId = contract.EstateId,
+                EstateReportingId = contract.EstateReportingId,
+                ContractId = contract.ContractId,
+                ContractReportingId = contract.ContractReportingId,
+                OperatorId = contract.OperatorId,
+                OperatorName = contract.OperatorName,
+                Description = contract.Description
+            };
+
+            if (contract.Products != null && contract.Products.Any())
+            {
+                contractResponse.Products = new List<DataTransferObjects.Responses.Contract.ContractProduct>();
+
+                contract.Products.ForEach(p => {
+                    DataTransferObjects.Responses.Contract.ContractProduct contractProduct = new DataTransferObjects.Responses.Contract.ContractProduct
+                    {
+                        ProductReportingId = p.ContractProductReportingId,
+                        ProductId = p.ContractProductId,
+                        Value = p.Value,
+                        DisplayText = p.DisplayText,
+                        Name = p.Name,
+                        ProductType = Enum.Parse<ProductType>(p.ProductType.ToString())
+                    };
+                    if (p.TransactionFees != null && p.TransactionFees.Any())
+                    {
+                        contractProduct.TransactionFees = new List<DataTransferObjects.Responses.Contract.ContractProductTransactionFee>();
+                        p.TransactionFees.ForEach(tf => {
+                            DataTransferObjects.Responses.Contract.ContractProductTransactionFee transactionFee = new DataTransferObjects.Responses.Contract.ContractProductTransactionFee
+                            {
+                                TransactionFeeId = tf.TransactionFeeId,
+                                Value = tf.Value,
+                                Description = tf.Description,
+                            };
+                            transactionFee.CalculationType =
+                                Enum.Parse<TransactionProcessor.DataTransferObjects.Responses.Contract.CalculationType>(tf.CalculationType.ToString());
+
+                            contractProduct.TransactionFees.Add(transactionFee);
+                        });
+                    }
+
+                    contractResponse.Products.Add(contractProduct);
+                });
+            }
+
+            return Result.Success(contractResponse);
+        }
 
         public static Result<OperatorResponse> ConvertFrom(Models.Operator.Operator @operator)
         {

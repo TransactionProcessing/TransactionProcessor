@@ -11,16 +11,8 @@ namespace TransactionProcessor
 {
     using System.Diagnostics.CodeAnalysis;
     using System.IO;
-    using System.Net.Http;
-    using EventStore.Client;
     using Lamar.Microsoft.DependencyInjection;
     using Microsoft.Extensions.DependencyInjection;
-    using Reconciliation.DomainEvents;
-    using Settlement.DomainEvents;
-    using Shared.EventStore.Aggregate;
-    using Shared.EventStore.EventHandling;
-    using Shared.Logger;
-    using Transaction.DomainEvents;
 
     [ExcludeFromCodeCoverage]
     public class Program

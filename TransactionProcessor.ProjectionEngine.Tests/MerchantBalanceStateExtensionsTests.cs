@@ -3,12 +3,12 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using TransactionProcessor.DomainEvents;
 using TransactionProcessor.ProjectionEngine.State;
 
 namespace TransactionProcessor.ProjectionEngine.Tests
 {
     using Shouldly;
-    using Transaction.DomainEvents;
 
     public class MerchantBalanceStateExtensionsTests{
         [Fact]
@@ -114,7 +114,7 @@ namespace TransactionProcessor.ProjectionEngine.Tests
             state.AvailableBalance.ShouldBe(0);
             state.Balance.ShouldBe(0);
 
-            TransactionHasStartedEvent startedEvent = TestData.GetTransactionHasStartedEvent(TestData.TransactionAmount);
+            TransactionDomainEvents.TransactionHasStartedEvent startedEvent = TestData.GetTransactionHasStartedEvent(TestData.TransactionAmount);
             state = state.HandleTransactionHasStartedEvent(startedEvent);
 
             state.AvailableBalance.ShouldBe(startedEvent.TransactionAmount.Value * -1);
@@ -131,7 +131,7 @@ namespace TransactionProcessor.ProjectionEngine.Tests
             state.AvailableBalance.ShouldBe(0);
             state.Balance.ShouldBe(0);
 
-            TransactionHasStartedEvent startedEvent = TestData.GetTransactionHasStartedEvent(TestData.TransactionAmount, "Logon");
+            TransactionDomainEvents.TransactionHasStartedEvent startedEvent = TestData.GetTransactionHasStartedEvent(TestData.TransactionAmount, "Logon");
 
             state = state.HandleTransactionHasStartedEvent(startedEvent);
 
@@ -153,7 +153,7 @@ namespace TransactionProcessor.ProjectionEngine.Tests
             state.AvailableBalance.ShouldBe(0);
             state.Balance.ShouldBe(0);
 
-            TransactionHasBeenCompletedEvent completedEvent = TestData.GetTransactionHasBeenCompletedEvent(isAuthorised, 
+            TransactionDomainEvents.TransactionHasBeenCompletedEvent completedEvent = TestData.GetTransactionHasBeenCompletedEvent(isAuthorised, 
                                                                                                            hasValue == true ? 
                                                                                                            TestData.TransactionAmount : null);
             state = state.HandleTransactionHasBeenCompletedEvent(completedEvent);
@@ -182,7 +182,7 @@ namespace TransactionProcessor.ProjectionEngine.Tests
             state.AvailableBalance.ShouldBe(0);
             state.Balance.ShouldBe(0);
 
-            SettledMerchantFeeAddedToTransactionEvent merchantFeeAddedToTransactionEvent = TestData.GetSettledMerchantFeeAddedToTransactionEvent(1.00m);
+            TransactionDomainEvents.SettledMerchantFeeAddedToTransactionEvent merchantFeeAddedToTransactionEvent = TestData.GetSettledMerchantFeeAddedToTransactionEvent(1.00m);
             state = state.HandleSettledMerchantFeeAddedToTransactionEvent(merchantFeeAddedToTransactionEvent);
 
             state.Balance.ShouldBe(merchantFeeAddedToTransactionEvent.CalculatedValue);

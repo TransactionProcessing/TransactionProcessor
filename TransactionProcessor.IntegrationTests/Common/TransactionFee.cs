@@ -1,4 +1,6 @@
-﻿namespace TransactionProcessor.IntegrationTests.Common
+﻿using TransactionProcessor.Models.Contract;
+
+namespace TransactionProcessor.IntegrationTests.Common
 {
     using System;
     using EstateManagement.DataTransferObjects;
