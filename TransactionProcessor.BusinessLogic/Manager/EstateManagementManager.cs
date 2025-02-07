@@ -9,9 +9,11 @@ using Shared.Results;
 using SimpleResults;
 using TransactionProcessor.Aggregates;
 using TransactionProcessor.Models.Contract;
-using TransactionProcessor.Models.Estate;
+using TransactionProcessor.Models.Merchant;
 using TransactionProcessor.ProjectionEngine.Repository;
 using TransactionProcessor.Repository;
+using Contract = TransactionProcessor.Models.Contract.Contract;
+using Operator = TransactionProcessor.Models.Estate.Operator;
 
 namespace TransactionProcessor.BusinessLogic.Manager
 {
@@ -29,11 +31,9 @@ namespace TransactionProcessor.BusinessLogic.Manager
 
         private readonly IAggregateRepository<ContractAggregate, DomainEvent> ContractAggregateRepository;
 
-        //private readonly IAggregateRepository<MerchantAggregate, DomainEvent> MerchantAggregateRepository;
+        private readonly IAggregateRepository<MerchantAggregate, DomainEvent> MerchantAggregateRepository;
 
         private readonly IAggregateRepository<OperatorAggregate, DomainEvent> OperatorAggregateRepository;
-
-        //private readonly IModelFactory ModelFactory;
 
         #endregion
 
@@ -42,16 +42,14 @@ namespace TransactionProcessor.BusinessLogic.Manager
         public EstateManagementManager(ITransactionProcessorReadModelRepository estateManagementRepository,
                                        IAggregateRepository<EstateAggregate, DomainEvent> estateAggregateRepository,
                                        IAggregateRepository<ContractAggregate,DomainEvent> contractAggregateRepository,
-                                       //IAggregateRepository<MerchantAggregate, DomainEvent> merchantAggregateRepository,
-                                       //IModelFactory modelFactory,
+                                       IAggregateRepository<MerchantAggregate, DomainEvent> merchantAggregateRepository,
                                        IAggregateRepository<OperatorAggregate, DomainEvent> operatorAggregateRepository)
         {
             this.EstateManagementRepository = estateManagementRepository;
             this.EstateAggregateRepository = estateAggregateRepository;
             this.ContractAggregateRepository = contractAggregateRepository;
-            //this.MerchantAggregateRepository = merchantAggregateRepository;
+            this.MerchantAggregateRepository = merchantAggregateRepository;
             this.OperatorAggregateRepository = operatorAggregateRepository;
-            //this.ModelFactory = modelFactory;
         }
 
         #endregion
@@ -125,61 +123,65 @@ namespace TransactionProcessor.BusinessLogic.Manager
                                      });
         }
 
-        //public async Task<Result<Merchant>> GetMerchant(Guid estateId,
-        //                                        Guid merchantId,
-        //                                        CancellationToken cancellationToken)
-        //{
-        //    Result<MerchantAggregate> getMerchantResult= await this.MerchantAggregateRepository.GetLatestVersion(merchantId, cancellationToken);
-        //    if (getMerchantResult.IsFailed)
-        //        return ResultHelpers.CreateFailure(getMerchantResult);
+        public async Task<Result<Merchant>> GetMerchant(Guid estateId,
+                                                Guid merchantId,
+                                                CancellationToken cancellationToken)
+        {
+            Result<MerchantAggregate> getMerchantResult = await this.MerchantAggregateRepository.GetLatestVersion(merchantId, cancellationToken);
+            if (getMerchantResult.IsFailed)
+                return ResultHelpers.CreateFailure(getMerchantResult);
 
-        //    MerchantAggregate merchantAggregate = getMerchantResult.Data;
-        //    if (merchantAggregate.IsCreated == false)
-        //    {
-        //        return Result.NotFound($"No merchant found with Id [{merchantId}]");
-        //    }
+            MerchantAggregate merchantAggregate = getMerchantResult.Data;
+            if (merchantAggregate.IsCreated == false)
+            {
+                return Result.NotFound($"No merchant found with Id [{merchantId}]");
+            }
 
-        //    Merchant merchantModel = merchantAggregate.GetMerchant();
+            Merchant merchantModel = merchantAggregate.GetMerchant();
 
-        //    if (merchantModel.Operators != null){
-        //        foreach (Models.Merchant.Operator @operator in merchantModel.Operators){
-        //            OperatorAggregate operatorAggregate = await this.OperatorAggregateRepository.GetLatestVersion(@operator.OperatorId, cancellationToken);
-        //            @operator.Name = operatorAggregate.Name;
-        //        }
-        //    }
+            if (merchantModel.Operators != null)
+            {
+                var operators = new List<Models.Merchant.Operator>();
+                foreach (Models.Merchant.Operator @operator in merchantModel.Operators)
+                {
+                    OperatorAggregate operatorAggregate = await this.OperatorAggregateRepository.GetLatestVersion(@operator.OperatorId, cancellationToken);
+                    var newOperator = @operator with { Name = operatorAggregate.Name };
+                    operators.Add(newOperator);
+                }
+            }
 
-        //    return Result.Success(merchantModel);
-        //}
+            return Result.Success(merchantModel);
+        }
 
-        //public async Task<Result<List<Contract>>> GetMerchantContracts(Guid estateId,
-        //                                                       Guid merchantId,
-        //                                                       CancellationToken cancellationToken)
-        //{
-        //    Result<List<Contract>> getMerchantContractsResult = await this.EstateManagementRepository.GetMerchantContracts(estateId, merchantId, cancellationToken);
-        //    if (getMerchantContractsResult.IsFailed)
-        //        return ResultHelpers.CreateFailure(getMerchantContractsResult);
+        public async Task<Result<List<Contract>>> GetMerchantContracts(Guid estateId,
+                                                               Guid merchantId,
+                                                               CancellationToken cancellationToken)
+        {
+            Result<List<Contract>> getMerchantContractsResult = await this.EstateManagementRepository.GetMerchantContracts(estateId, merchantId, cancellationToken);
+            if (getMerchantContractsResult.IsFailed)
+                return ResultHelpers.CreateFailure(getMerchantContractsResult);
 
-        //    var contractModels = getMerchantContractsResult.Data;
-        //    if (contractModels.Any() == false)
-        //        return Result.NotFound($"No contracts for Estate {estateId} and Merchant {merchantId}");
+            var contractModels = getMerchantContractsResult.Data;
+            if (contractModels.Any() == false)
+                return Result.NotFound($"No contracts for Estate {estateId} and Merchant {merchantId}");
 
-        //    return Result.Success(contractModels);
-        //}
+            return Result.Success(contractModels);
+        }
 
-        //public async Task<Result<List<Merchant>>> GetMerchants(Guid estateId,
-        //                                               CancellationToken cancellationToken)
-        //{
-        //    var getMerchantsResult= await this.EstateManagementRepository.GetMerchants(estateId, cancellationToken);
-        //    if (getMerchantsResult.IsFailed)
-        //        return ResultHelpers.CreateFailure(getMerchantsResult);
-        //    var merchants = getMerchantsResult.Data;
-        //    if (merchants == null || merchants.Any() == false)
-        //    {
-        //        return Result.NotFound($"No Merchants found for estate Id {estateId}");
-        //    }
+        public async Task<Result<List<Merchant>>> GetMerchants(Guid estateId,
+                                                       CancellationToken cancellationToken)
+        {
+            var getMerchantsResult = await this.EstateManagementRepository.GetMerchants(estateId, cancellationToken);
+            if (getMerchantsResult.IsFailed)
+                return ResultHelpers.CreateFailure(getMerchantsResult);
+            var merchants = getMerchantsResult.Data;
+            if (merchants == null || merchants.Any() == false)
+            {
+                return Result.NotFound($"No Merchants found for estate Id {estateId}");
+            }
 
-        //    return Result.Success(merchants);
-        //}
+            return Result.Success(merchants);
+        }
 
         public async Task<Result<List<Models.Contract.ContractProductTransactionFee>>> GetTransactionFeesForProduct(Guid estateId,
                                                                              Guid merchantId,

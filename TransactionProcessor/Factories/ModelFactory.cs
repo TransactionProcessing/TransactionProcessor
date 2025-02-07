@@ -1,6 +1,7 @@
 ﻿using System.Linq;
 using SimpleResults;
 using TransactionProcessor.DataTransferObjects.Responses.Contract;
+using TransactionProcessor.DataTransferObjects.Responses.Merchant;
 using TransactionProcessor.DataTransferObjects.Responses.Operator;
 using TransactionProcessor.Models.Contract;
 using ProductType = TransactionProcessor.DataTransferObjects.Responses.Contract.ProductType;
@@ -15,6 +16,8 @@ namespace TransactionProcessor.Factories
     using Models;
     using Newtonsoft.Json;
     using TransactionProcessor.Models.Estate;
+    using TransactionProcessor.Models.Merchant;
+    using CalculationType = DataTransferObjects.Responses.Contract.CalculationType;
     using IssueVoucherResponse = DataTransferObjects.IssueVoucherResponse;
     using RedeemVoucherResponse = DataTransferObjects.RedeemVoucherResponse;
 
@@ -25,7 +28,7 @@ namespace TransactionProcessor.Factories
     public static class ModelFactory
     {
         #region Methods
-        public static Result<List<ContractResponse>> ConvertFrom(List<Contract> contracts)
+        public static Result<List<ContractResponse>> ConvertFrom(List<Models.Contract.Contract> contracts)
         {
             List<Result<ContractResponse>> result = new();
 
@@ -37,7 +40,7 @@ namespace TransactionProcessor.Factories
             return Result.Success(result.Select(r => r.Data).ToList());
         }
 
-        public static Result<ContractResponse> ConvertFrom(Contract contract)
+        public static Result<ContractResponse> ConvertFrom(Models.Contract.Contract contract)
         {
             if (contract == null)
             {
@@ -80,7 +83,7 @@ namespace TransactionProcessor.Factories
                                 Description = tf.Description,
                             };
                             transactionFee.CalculationType =
-                                Enum.Parse<TransactionProcessor.DataTransferObjects.Responses.Contract.CalculationType>(tf.CalculationType.ToString());
+                                Enum.Parse<CalculationType>(tf.CalculationType.ToString());
 
                             contractProduct.TransactionFees.Add(transactionFee);
                         });
@@ -289,6 +292,51 @@ namespace TransactionProcessor.Factories
 
         }
 
+        public static Result<List<DataTransferObjects.Responses.Contract.ContractProductTransactionFee>> ConvertFrom(List<Models.Contract.ContractProductTransactionFee> transactionFees)
+        {
+            List<DataTransferObjects.Responses.Contract.ContractProductTransactionFee> result = new();
+            transactionFees.ForEach(tf => {
+                DataTransferObjects.Responses.Contract.ContractProductTransactionFee transactionFee = new DataTransferObjects.Responses.Contract.ContractProductTransactionFee
+                {
+                    TransactionFeeId = tf.TransactionFeeId,
+                    Value = tf.Value,
+                    Description = tf.Description,
+                };
+                transactionFee.CalculationType = Enum.Parse<CalculationType>(tf.CalculationType.ToString());
+                transactionFee.FeeType = Enum.Parse<DataTransferObjects.Responses.Contract.FeeType>(tf.FeeType.ToString());
+
+                result.Add(transactionFee);
+            });
+
+            return Result.Success(result);
+        }
+
+        public static Result<List<MerchantResponse>> ConvertFrom(List<Models.Merchant.Merchant> merchants)
+        {
+            List<Result<MerchantResponse>> result = new();
+
+            if (merchants == null)
+                return Result.Success(new List<MerchantResponse>());
+
+            merchants.ForEach(c => result.Add(ModelFactory.ConvertFrom(c)));
+
+            if (result.Any(c => c.IsFailed))
+                return Result.Failure("Failed converting merchants");
+
+            return Result.Success(result.Select(r => r.Data).ToList());
+        }
+
+        private static TransactionProcessor.DataTransferObjects.Responses.Merchant.SettlementSchedule ConvertFrom(Models.Merchant.SettlementSchedule settlementSchedule)
+        {
+            return settlementSchedule switch
+            {
+                Models.Merchant.SettlementSchedule.Weekly => TransactionProcessor.DataTransferObjects.Responses.Merchant.SettlementSchedule.Weekly,
+                Models.Merchant.SettlementSchedule.Monthly => TransactionProcessor.DataTransferObjects.Responses.Merchant.SettlementSchedule.Monthly,
+                Models.Merchant.SettlementSchedule.Immediate => TransactionProcessor.DataTransferObjects.Responses.Merchant.SettlementSchedule.Immediate,
+                Models.Merchant.SettlementSchedule.NotSet => TransactionProcessor.DataTransferObjects.Responses.Merchant.SettlementSchedule.NotSet,
+            };
+        }
+
         public static Result<DataTransferObjects.Responses.Estate.EstateResponse> ConvertFrom(Estate estate)
         {
             if (estate == null)
@@ -332,8 +380,94 @@ namespace TransactionProcessor.Factories
 
         #endregion
 
-        public static Object ConvertFrom(ContractResponse processReconciliationTransactionResponse) {
-            throw new NotImplementedException();
+        public static Result<MerchantResponse> ConvertFrom(Models.Merchant.Merchant merchant)
+        {
+            if (merchant == null)
+            {
+                return Result.Invalid("merchant cannot be null");
+            }
+
+            MerchantResponse merchantResponse = new MerchantResponse
+            {
+                EstateId = merchant.EstateId,
+                EstateReportingId = merchant.EstateReportingId,
+                MerchantId = merchant.MerchantId,
+                MerchantReportingId = merchant.MerchantReportingId,
+                MerchantName = merchant.MerchantName,
+                SettlementSchedule = ModelFactory.ConvertFrom(merchant.SettlementSchedule),
+                MerchantReference = merchant.Reference,
+                NextStatementDate = merchant.NextStatementDate
+            };
+
+            if (merchant.Addresses != null && merchant.Addresses.Any())
+            {
+                merchantResponse.Addresses = new List<AddressResponse>();
+
+                merchant.Addresses.ForEach(a => merchantResponse.Addresses.Add(new AddressResponse
+                {
+                    AddressId = a.AddressId,
+                    Town = a.Town,
+                    Region = a.Region,
+                    PostalCode = a.PostalCode,
+                    Country = a.Country,
+                    AddressLine1 = a.AddressLine1,
+                    AddressLine2 = a.AddressLine2,
+                    AddressLine3 = a.AddressLine3,
+                    AddressLine4 = a.AddressLine4
+                }));
+            }
+
+            if (merchant.Contacts != null && merchant.Contacts.Any())
+            {
+                merchantResponse.Contacts = new List<ContactResponse>();
+
+                merchant.Contacts.ForEach(c => merchantResponse.Contacts.Add(new ContactResponse
+                {
+                    ContactId = c.ContactId,
+                    ContactPhoneNumber = c.ContactPhoneNumber,
+                    ContactEmailAddress = c.ContactEmailAddress,
+                    ContactName = c.ContactName
+                }));
+            }
+
+            if (merchant.Devices != null && merchant.Devices.Any())
+            {
+                merchantResponse.Devices = new Dictionary<Guid, String>();
+
+                foreach (Device device in merchant.Devices)
+                {
+                    merchantResponse.Devices.Add(device.DeviceId, device.DeviceIdentifier);
+                }
+            }
+
+            if (merchant.Operators != null && merchant.Operators.Any())
+            {
+                merchantResponse.Operators = new List<MerchantOperatorResponse>();
+
+                merchant.Operators.ForEach(a => merchantResponse.Operators.Add(new MerchantOperatorResponse
+                {
+                    Name = a.Name,
+                    MerchantNumber = a.MerchantNumber,
+                    OperatorId = a.OperatorId,
+                    TerminalNumber = a.TerminalNumber,
+                    IsDeleted = a.IsDeleted
+                }));
+            }
+
+            if (merchant.Contracts != null && merchant.Contracts.Any())
+            {
+                merchantResponse.Contracts = new List<MerchantContractResponse>();
+                merchant.Contracts.ForEach(mc => {
+                    merchantResponse.Contracts.Add(new MerchantContractResponse()
+                    {
+                        ContractId = mc.ContractId,
+                        ContractProducts = mc.ContractProducts,
+                        IsDeleted = mc.IsDeleted,
+                    });
+                });
+            }
+
+            return merchantResponse;
         }
     }
 }

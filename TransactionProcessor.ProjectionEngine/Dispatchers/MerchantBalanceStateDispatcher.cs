@@ -4,7 +4,6 @@ using TransactionProcessor.DomainEvents;
 
 namespace TransactionProcessor.ProjectionEngine.Dispatchers;
 
-using EstateManagement.Merchant.DomainEvents;
 using Models;
 using Repository;
 using Shared.DomainDrivenDesign.EventSourcing;
@@ -22,10 +21,10 @@ public class MerchantBalanceStateDispatcher : IStateDispatcher<MerchantBalanceSt
                                        CancellationToken cancellationToken) {
 
         MerchantBalanceChangedEntry entry = @event switch {
-            MerchantCreatedEvent e => this.CreateOpeningBalanceEntry(e),
-            ManualDepositMadeEvent e => this.CreateManualDepositBalanceEntry(state, e),
-            AutomaticDepositMadeEvent e => this.CreateAutomaticDepositBalanceEntry(state, e),
-            WithdrawalMadeEvent e => this.CreateWithdrawalBalanceEntry(state, e),
+            MerchantDomainEvents.MerchantCreatedEvent e => this.CreateOpeningBalanceEntry(e),
+            MerchantDomainEvents.ManualDepositMadeEvent e => this.CreateManualDepositBalanceEntry(state, e),
+            MerchantDomainEvents.AutomaticDepositMadeEvent e => this.CreateAutomaticDepositBalanceEntry(state, e),
+            MerchantDomainEvents.WithdrawalMadeEvent e => this.CreateWithdrawalBalanceEntry(state, e),
             TransactionDomainEvents.TransactionHasBeenCompletedEvent e => this.CreateTransactionBalanceEntry(state, e),
             TransactionDomainEvents.SettledMerchantFeeAddedToTransactionEvent e => this.CreateTransactionFeeBalanceEntry(state, e),
             _ => null
@@ -53,7 +52,7 @@ public class MerchantBalanceStateDispatcher : IStateDispatcher<MerchantBalanceSt
                                         };
 
     private MerchantBalanceChangedEntry CreateWithdrawalBalanceEntry(MerchantBalanceState state,
-                                                                         WithdrawalMadeEvent @event) =>
+                                                                         MerchantDomainEvents.WithdrawalMadeEvent @event) =>
         new MerchantBalanceChangedEntry {
                                             MerchantId = @event.MerchantId,
                                             EstateId = @event.EstateId,
@@ -92,7 +91,7 @@ public class MerchantBalanceStateDispatcher : IStateDispatcher<MerchantBalanceSt
     }
 
     private MerchantBalanceChangedEntry CreateManualDepositBalanceEntry(MerchantBalanceState state,
-                                                                        ManualDepositMadeEvent @event) =>
+                                                                        MerchantDomainEvents.ManualDepositMadeEvent @event) =>
         new MerchantBalanceChangedEntry {
                                             MerchantId = @event.MerchantId,
                                             EstateId = @event.EstateId,
@@ -105,7 +104,7 @@ public class MerchantBalanceStateDispatcher : IStateDispatcher<MerchantBalanceSt
                                         };
 
     private MerchantBalanceChangedEntry CreateAutomaticDepositBalanceEntry(MerchantBalanceState state,
-                                                                           AutomaticDepositMadeEvent @event) =>
+                                                                           MerchantDomainEvents.AutomaticDepositMadeEvent @event) =>
         new MerchantBalanceChangedEntry {
                                             MerchantId = @event.MerchantId,
                                             EstateId = @event.EstateId,
@@ -117,7 +116,7 @@ public class MerchantBalanceStateDispatcher : IStateDispatcher<MerchantBalanceSt
                                             DebitOrCredit = "C"
                                         };
 
-    private MerchantBalanceChangedEntry CreateOpeningBalanceEntry(MerchantCreatedEvent @event) => 
+    private MerchantBalanceChangedEntry CreateOpeningBalanceEntry(MerchantDomainEvents.MerchantCreatedEvent @event) => 
         new MerchantBalanceChangedEntry {
                                                    MerchantId = @event.MerchantId,
                                                    EstateId = @event.EstateId,

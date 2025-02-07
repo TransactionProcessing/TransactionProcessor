@@ -1,4 +1,5 @@
 ﻿using TransactionProcessor.DomainEvents;
+using TransactionProcessor.Models;
 using TransactionProcessor.Models.Contract;
 
 namespace TransactionProcessor.Aggregates

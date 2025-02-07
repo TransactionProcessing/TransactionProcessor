@@ -20,7 +20,7 @@
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns></returns>
         Task<String> GetEmailReceiptMessage(Transaction transaction,
-                                            EstateManagement.DataTransferObjects.Responses.Merchant.MerchantResponse merchant,
+                                            Models.Merchant.Merchant merchant,
                                             String operatorName,
                                             CancellationToken cancellationToken);
 
@@ -61,7 +61,7 @@
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns></returns>
         public async Task<String> GetEmailReceiptMessage(Transaction transaction,
-                                                         EstateManagement.DataTransferObjects.Responses.Merchant.MerchantResponse merchant,
+                                                         Models.Merchant.Merchant merchant,
                                                          String operatorName,
                                                          CancellationToken cancellationToken)
         {

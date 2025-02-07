@@ -37,7 +37,7 @@ namespace TransactionProcessor.BusinessLogic.Tests.Services
 
             TransactionReceiptBuilder receiptBuilder = new TransactionReceiptBuilder(fileSystem);
 
-            String receiptMessage = await receiptBuilder.GetEmailReceiptMessage(transaction, new EstateManagement.DataTransferObjects.Responses.Merchant.MerchantResponse(),"OperatorName", CancellationToken.None);
+            String receiptMessage = await receiptBuilder.GetEmailReceiptMessage(transaction, new Models.Merchant.Merchant(),"OperatorName", CancellationToken.None);
 
             receiptMessage.ShouldBe("Transaction Number: 12345");
 

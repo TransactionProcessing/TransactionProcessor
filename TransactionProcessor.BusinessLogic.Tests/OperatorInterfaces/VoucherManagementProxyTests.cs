@@ -25,8 +25,7 @@ namespace TransactionProcessor.BusinessLogic.Tests.OperatorInterfaces
             
             IOperatorProxy voucherManagementProxy = new VoucherManagementProxy(mediator.Object);
 
-            OperatorResponse operatorResponse = await voucherManagementProxy.ProcessLogonMessage(TestData.TokenResponse().AccessToken,
-                                                                                                CancellationToken.None);
+            OperatorResponse operatorResponse = await voucherManagementProxy.ProcessLogonMessage(CancellationToken.None);
 
             operatorResponse.ShouldBeNull();
         }
@@ -37,8 +36,7 @@ namespace TransactionProcessor.BusinessLogic.Tests.OperatorInterfaces
             mediator.Setup(m => m.Send(It.IsAny<VoucherCommands.IssueVoucherCommand>(), It.IsAny<CancellationToken>())).ReturnsAsync(Result.Success(TestData.IssueVoucherResponse));
             IOperatorProxy voucherManagementProxy = new VoucherManagementProxy(mediator.Object);
 
-            var result = await voucherManagementProxy.ProcessSaleMessage(TestData.TokenResponse().AccessToken,
-                                                                                                TestData.TransactionId,
+            var result = await voucherManagementProxy.ProcessSaleMessage(TestData.TransactionId,
                                                                                                 TestData.OperatorId,
                                                                                                 TestData.Merchant,
                                                                                                 TestData.TransactionDateTime,
@@ -68,8 +66,7 @@ namespace TransactionProcessor.BusinessLogic.Tests.OperatorInterfaces
 
             IOperatorProxy voucherManagementProxy = new VoucherManagementProxy(mediator.Object);
 
-            var result = await voucherManagementProxy.ProcessSaleMessage(TestData.TokenResponse().AccessToken,
-                                                                                        TestData.TransactionId,
+            var result = await voucherManagementProxy.ProcessSaleMessage(TestData.TransactionId,
                                                                                         TestData.OperatorId,
                                                                                         TestData.Merchant,
                                                                                         TestData.TransactionDateTime,
@@ -101,8 +98,7 @@ namespace TransactionProcessor.BusinessLogic.Tests.OperatorInterfaces
 
             IOperatorProxy voucherManagementProxy = new VoucherManagementProxy(mediator.Object);
 
-            var result = await voucherManagementProxy.ProcessSaleMessage(TestData.TokenResponse().AccessToken,
-                                                                                        TestData.TransactionId,
+            var result = await voucherManagementProxy.ProcessSaleMessage(TestData.TransactionId,
                                                                                         TestData.OperatorId,
                                                                                         TestData.Merchant,
                                                                                         TestData.TransactionDateTime,

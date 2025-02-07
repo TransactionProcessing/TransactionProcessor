@@ -29,16 +29,14 @@ namespace TransactionProcessor.BusinessLogic.OperatorInterfaces.VoucherManagemen
             this.Mediator = mediator;
         }
 
-        public async Task<Result<OperatorResponse>> ProcessLogonMessage(String accessToken,
-                                                                        CancellationToken cancellationToken)
+        public async Task<Result<OperatorResponse>> ProcessLogonMessage(CancellationToken cancellationToken)
         {
             return Result.Success();
         }
 
-        public async Task<Result<OperatorResponse>> ProcessSaleMessage(String accessToken,
-                                                                       Guid transactionId,
+        public async Task<Result<OperatorResponse>> ProcessSaleMessage(Guid transactionId,
                                                                        Guid operatorId,
-                                                                       MerchantResponse merchant,
+                                                                       Models.Merchant.Merchant merchant,
                                                                        DateTime transactionDateTime,
                                                                        String transactionReference,
                                                                        Dictionary<String, String> additionalTransactionMetadata,

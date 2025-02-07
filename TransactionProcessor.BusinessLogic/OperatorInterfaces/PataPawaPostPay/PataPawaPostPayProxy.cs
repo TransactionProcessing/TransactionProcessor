@@ -42,8 +42,7 @@ namespace TransactionProcessor.BusinessLogic.OperatorInterfaces.PataPawaPostPay
 
         #region Methods
 
-        public async Task<Result<OperatorResponse>> ProcessLogonMessage(String accessToken,
-                                                                        CancellationToken cancellationToken) {
+        public async Task<Result<OperatorResponse>> ProcessLogonMessage(CancellationToken cancellationToken) {
 
             // Check if we need to do a logon with the operator
             OperatorResponse operatorResponse = this.MemoryCache.Get<OperatorResponse>("PataPawaPostPayLogon");
@@ -82,14 +81,13 @@ namespace TransactionProcessor.BusinessLogic.OperatorInterfaces.PataPawaPostPay
                                           EvictionReason reason,
                                           Object state) {
             if (key.ToString().Contains("Logon")) {
-                ProcessLogonMessage(String.Empty, CancellationToken.None).Wait();
+                ProcessLogonMessage(CancellationToken.None).Wait();
             }
         }
 
-        public async Task<Result<OperatorResponse>> ProcessSaleMessage(String accessToken,
-                                                                       Guid transactionId,
+        public async Task<Result<OperatorResponse>> ProcessSaleMessage(Guid transactionId,
                                                                        Guid operatorId,
-                                                                       EstateManagement.DataTransferObjects.Responses.Merchant.MerchantResponse merchant,
+                                                                       Models.Merchant.Merchant merchant,
                                                                        DateTime transactionDateTime,
                                                                        String transactionReference,
                                                                        Dictionary<String, String> additionalTransactionMetadata,

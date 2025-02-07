@@ -9,6 +9,7 @@ namespace TransactionProcessor.IntegrationTests.Common
     using System.Linq;
     using System.Net;
     using System.Net.Http;
+    using System.Text;
     using System.Threading;
     using System.Threading.Tasks;
     using Client;
@@ -16,6 +17,7 @@ namespace TransactionProcessor.IntegrationTests.Common
     using EstateManagement.Client;
     using EventStore.Client;
     using global::Shared.IntegrationTesting;
+    using Newtonsoft.Json;
     using SecurityService.Client;
     using Shouldly;
     using Retry = IntegrationTests.Retry;
@@ -27,11 +29,12 @@ namespace TransactionProcessor.IntegrationTests.Common
     public class DockerHelper : global::Shared.IntegrationTesting.DockerHelper
     {
         #region Fields
+        public static String TestBankAccountNumber = "12345678";
 
         /// <summary>
-        /// The estate client
+        /// The test bank sort code
         /// </summary>
-        //public IIntermediateEstateClient EstateClient;
+        public static String TestBankSortCode = "112233";
 
         public HttpClient TestHostHttpClient;
 
@@ -40,7 +43,6 @@ namespace TransactionProcessor.IntegrationTests.Common
         /// </summary>
         public ISecurityServiceClient SecurityServiceClient;
         
-
         /// <summary>
         /// The transaction processor client
         /// </summary>
@@ -66,6 +68,28 @@ namespace TransactionProcessor.IntegrationTests.Common
         #endregion
 
         #region Methods
+
+        private async Task ConfigureTestBank(String sortCode,
+                                             String accountNumber,
+                                             String callbackUrl)
+        {
+            this.Trace(this.TestHostHttpClient.BaseAddress.ToString());
+
+            var hostConfig = new
+            {
+                sort_code = sortCode,
+                account_number = accountNumber,
+                callback_url = callbackUrl
+            };
+
+            await Retry.For(async () =>
+            {
+                HttpRequestMessage requestMessage = new HttpRequestMessage(HttpMethod.Post, "/api/testbank/configuration");
+                requestMessage.Content = new StringContent(JsonConvert.SerializeObject(hostConfig), Encoding.UTF8, "application/json");
+                var responseMessage = await this.TestHostHttpClient.SendAsync(requestMessage);
+                responseMessage.IsSuccessStatusCode.ShouldBeTrue();
+            });
+        }
 
         public override ContainerBuilder SetupTransactionProcessorContainer(){
 
@@ -122,6 +146,11 @@ namespace TransactionProcessor.IntegrationTests.Common
             this.TransactionProcessorClient = new TransactionProcessorClient(TransactionProcessorBaseAddressResolver, httpClient);
             this.TestHostHttpClient= new HttpClient(clientHandler);
             this.TestHostHttpClient.BaseAddress = new Uri($"http://127.0.0.1:{this.TestHostServicePort}");
+
+            this.Trace("About to configure Test Bank");
+            String callbackUrl = $"http://{this.CallbackHandlerContainerName}:{DockerPorts.CallbackHandlerDockerPort}/api/callbacks";
+            await this.ConfigureTestBank(DockerHelper.TestBankSortCode, DockerHelper.TestBankAccountNumber, callbackUrl);
+            this.Trace("Test Bank Configured");
 
             this.ProjectionManagementClient = new EventStoreProjectionManagementClient(ConfigureEventStoreSettings());
         }

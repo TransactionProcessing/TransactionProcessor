@@ -47,26 +47,22 @@ namespace TransactionProcessor.BusinessLogic.Services
         private readonly IAggregateRepository<FloatActivityAggregate, DomainEvent> FloatActivityAggregateRepository;
         private readonly IAggregateRepository<TransactionAggregate, DomainEvent> TransactionAggregateRepository;
         private readonly IAggregateRepository<EstateAggregate, DomainEvent> EstateAggregateRepository;
-
-        private readonly IIntermediateEstateClient EstateClient;
-        private readonly ISecurityServiceClient SecurityServiceClient;
+        private readonly IAggregateRepository<ContractAggregate, DomainEvent> ContractAggregateRepository;
 
         public FloatDomainService(IAggregateRepository<FloatAggregate, DomainEvent> floatAggregateRepository,
                                   IAggregateRepository<FloatActivityAggregate, DomainEvent> floatActivityAggregateRepository,
                                   IAggregateRepository<TransactionAggregate,DomainEvent> transactionAggregateRepository,
                                   IAggregateRepository<EstateAggregate, DomainEvent> estateAggregateRepository,
-                                  IIntermediateEstateClient estateClient,
-                                  ISecurityServiceClient securityServiceClient)
+                                  IAggregateRepository<ContractAggregate, DomainEvent> contractAggregateRepository)
         {
             this.FloatAggregateRepository = floatAggregateRepository;
             this.FloatActivityAggregateRepository = floatActivityAggregateRepository;
             this.TransactionAggregateRepository = transactionAggregateRepository;
             this.EstateAggregateRepository = estateAggregateRepository;
-            this.EstateClient = estateClient;
-            this.SecurityServiceClient = securityServiceClient;
+            this.ContractAggregateRepository = contractAggregateRepository;
         }
         
-        private TokenResponse TokenResponse;
+        //private TokenResponse TokenResponse;
 
         private async Task<Result> ApplyFloatUpdates(Func<FloatAggregate, Result> action, Guid floatId, CancellationToken cancellationToken, Boolean isNotFoundError = true)
         {
@@ -127,8 +123,6 @@ namespace TransactionProcessor.BusinessLogic.Services
 
         private async Task<Result> ValidateEstate(Guid estateId, CancellationToken cancellationToken)
         {
-            this.TokenResponse = await Helpers.GetToken(this.TokenResponse, this.SecurityServiceClient, cancellationToken);
-
             Result<EstateAggregate> result = await this.EstateAggregateRepository.GetLatestVersion(estateId, cancellationToken);
 
             if (result.IsFailed) {
@@ -139,23 +133,19 @@ namespace TransactionProcessor.BusinessLogic.Services
 
         private async Task<Result> ValidateContractProduct(Guid estateId, Guid contractId, Guid productId, CancellationToken cancellationToken)
         {
-            this.TokenResponse = await Helpers.GetToken(this.TokenResponse, this.SecurityServiceClient, cancellationToken);
-            
-            // TODO: validate the estate, contract and product
-            Result<ContractResponse> contractResult = await this.EstateClient.GetContract(this.TokenResponse.AccessToken, estateId, contractId, cancellationToken);
-            if (contractResult.IsFailed)
+            Result<ContractAggregate> getContractResult = await this.ContractAggregateRepository.GetLatestVersion(contractId, cancellationToken);
+            if (getContractResult.IsFailed)
             {
-                return ResultHelpers.CreateFailure(contractResult);
+                return ResultHelpers.CreateFailure(getContractResult);
             }
 
-            ContractResponse contract = contractResult.Data;
-            Boolean productExists = contract.Products.Any(cp => cp.ProductId == productId);
+            Models.Contract.Contract contract = getContractResult.Data.GetContract();
+            Boolean productExists = contract.Products.Any(cp => cp.ContractProductId == productId);
 
-            if (productExists == false)
-            {
-                return Result.NotFound($"Contract Product with Id {productId} not found in Contract Id {contractId} for Estate Id {estateId}");
-            }
-            return Result.Success();
+            return productExists switch {
+                false => Result.NotFound($"Contract Product with Id {productId} not found in Contract Id {contractId} for Estate Id {estateId}"),
+                _ => Result.Success()
+            };
         }
 
         public async Task<Result> CreateFloatForContractProduct(FloatCommands.CreateFloatForContractProductCommand command,

@@ -35,7 +35,7 @@ namespace TransactionProcessor.BusinessLogic.Tests.OperatorInterfaces
             HttpClient httpClient = SetupMockHttpClient(responseMessage);
 
             IOperatorProxy safaricomPinlessproxy = new SafaricomPinlessProxy(safaricomConfiguration, httpClient);
-            OperatorResponse operatorResponse = await safaricomPinlessproxy.ProcessLogonMessage(TestData.TokenResponse().AccessToken, CancellationToken.None);
+            OperatorResponse operatorResponse = await safaricomPinlessproxy.ProcessLogonMessage(CancellationToken.None);
             operatorResponse.ShouldBeNull();
 
         }
@@ -54,8 +54,7 @@ namespace TransactionProcessor.BusinessLogic.Tests.OperatorInterfaces
 
             IOperatorProxy safaricomPinlessproxy = new SafaricomPinlessProxy(safaricomConfiguration, httpClient);
 
-            var result= await  safaricomPinlessproxy.ProcessSaleMessage(TestData.TokenResponse().AccessToken,
-                                                                                                TestData.TransactionId,
+            var result= await  safaricomPinlessproxy.ProcessSaleMessage(TestData.TransactionId,
                                                                                                 TestData.OperatorId,
                                                                                                 TestData.Merchant,
                                                                                                 TestData.TransactionDateTime,
@@ -86,8 +85,7 @@ namespace TransactionProcessor.BusinessLogic.Tests.OperatorInterfaces
 
             IOperatorProxy safaricomPinlessproxy = new SafaricomPinlessProxy(safaricomConfiguration, httpClient);
 
-            var result = await safaricomPinlessproxy.ProcessSaleMessage(TestData.TokenResponse().AccessToken,
-                                                                                                TestData.TransactionId,
+            var result = await safaricomPinlessproxy.ProcessSaleMessage(TestData.TransactionId,
                                                                                                 TestData.OperatorId,
                                                                                                 TestData.Merchant,
                                                                                                 TestData.TransactionDateTime,
@@ -120,8 +118,7 @@ namespace TransactionProcessor.BusinessLogic.Tests.OperatorInterfaces
 
             IOperatorProxy safaricomPinlessproxy = new SafaricomPinlessProxy(safaricomConfiguration, httpClient);
 
-            var result= await safaricomPinlessproxy.ProcessSaleMessage(TestData.TokenResponse().AccessToken,
-                                                                                                TestData.TransactionId,
+            var result= await safaricomPinlessproxy.ProcessSaleMessage(TestData.TransactionId,
                                                                                                 TestData.OperatorId,
                                                                                                 TestData.Merchant,
                                                                                                 TestData.TransactionDateTime,
@@ -150,8 +147,7 @@ namespace TransactionProcessor.BusinessLogic.Tests.OperatorInterfaces
 
             IOperatorProxy safaricomPinlessproxy = new SafaricomPinlessProxy(safaricomConfiguration, httpClient);
 
-            var result =  await safaricomPinlessproxy.ProcessSaleMessage(TestData.TokenResponse().AccessToken, 
-                                                                                               TestData.TransactionId,
+            var result =  await safaricomPinlessproxy.ProcessSaleMessage(TestData.TransactionId,
                                                                                                TestData.OperatorId,
                                                                                                TestData.Merchant,
                                                                                                TestData.TransactionDateTime,
@@ -176,8 +172,7 @@ namespace TransactionProcessor.BusinessLogic.Tests.OperatorInterfaces
 
             IOperatorProxy safaricomPinlessproxy = new SafaricomPinlessProxy(safaricomConfiguration, httpClient);
 
-            var result = await safaricomPinlessproxy.ProcessSaleMessage(TestData.TokenResponse().AccessToken, 
-                                                                                       TestData.TransactionId,
+            var result = await safaricomPinlessproxy.ProcessSaleMessage(TestData.TransactionId,
                                                                                        TestData.OperatorId,
                                                                                        TestData.Merchant,
                                                                                        TestData.TransactionDateTime,
@@ -214,8 +209,7 @@ namespace TransactionProcessor.BusinessLogic.Tests.OperatorInterfaces
                                                                 {"CustomerAccountNumber",customerAccountNumber }
                                                             };
 
-            var result = await safaricomPinlessproxy.ProcessSaleMessage(TestData.TokenResponse().AccessToken, 
-                                                                                       TestData.TransactionId,
+            var result = await safaricomPinlessproxy.ProcessSaleMessage(TestData.TransactionId,
                                                                                        TestData.OperatorId,
                                                                                        TestData.Merchant,
                                                                                        TestData.TransactionDateTime,

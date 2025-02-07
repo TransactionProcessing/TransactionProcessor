@@ -13,8 +13,8 @@ namespace TransactionProcessor.Aggregates
 {
     public static class OperatorAggregateExtensions
     {
-        public static Models.Operator.Operator GetOperator(this OperatorAggregate aggregate) {
-            return new Models.Operator.Operator() { Name = aggregate.Name, OperatorId = aggregate.AggregateId, RequireCustomMerchantNumber = aggregate.RequireCustomMerchantNumber, RequireCustomTerminalNumber = aggregate.RequireCustomTerminalNumber };
+        public static TransactionProcessor.Models.Operator.Operator GetOperator(this OperatorAggregate aggregate) {
+            return new TransactionProcessor.Models.Operator.Operator() { Name = aggregate.Name, OperatorId = aggregate.AggregateId, RequireCustomMerchantNumber = aggregate.RequireCustomMerchantNumber, RequireCustomTerminalNumber = aggregate.RequireCustomTerminalNumber };
         }
 
         public static void PlayEvent(this OperatorAggregate aggregate, OperatorDomainEvents.OperatorCreatedEvent domainEvent)

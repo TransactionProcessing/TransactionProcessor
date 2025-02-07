@@ -1,4 +1,5 @@
 ﻿using SimpleResults;
+using TransactionProcessor.DataTransferObjects.Responses.Merchant;
 
 namespace TransactionProcessor.BusinessLogic.OperatorInterfaces
 {
@@ -6,7 +7,6 @@ namespace TransactionProcessor.BusinessLogic.OperatorInterfaces
     using System.Collections.Generic;
     using System.Threading;
     using System.Threading.Tasks;
-    using EstateManagement.DataTransferObjects.Responses.Merchant;
 
     /// <summary>
     /// 
@@ -14,13 +14,11 @@ namespace TransactionProcessor.BusinessLogic.OperatorInterfaces
     public interface IOperatorProxy
     {
         #region Methods
-        Task<Result<OperatorResponse>> ProcessLogonMessage(String accessToken, 
-                                                           CancellationToken cancellationToken);
+        Task<Result<OperatorResponse>> ProcessLogonMessage(CancellationToken cancellationToken);
 
-        Task<Result<OperatorResponse>> ProcessSaleMessage(String accessToken,
-                                                          Guid transactionId,
+        Task<Result<OperatorResponse>> ProcessSaleMessage(Guid transactionId,
                                                           Guid operatorId,
-                                                          MerchantResponse merchant,
+                                                          Models.Merchant.Merchant merchant,
                                                           DateTime transactionDateTime,
                                                           String transactionReference,
                                                           Dictionary<String, String> additionalTransactionMetadata,

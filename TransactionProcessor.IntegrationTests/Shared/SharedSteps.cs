@@ -67,6 +67,13 @@ namespace TransactionProcessor.IntegrationTests.Shared
     [Binding]
     [Scope(Tag = "shared")]
     public partial class SharedSteps{
+        
+        [When(@"I get the merchant ""(.*)"" for estate ""(.*)"" an error is returned")]
+        public async Task WhenIGetTheMerchantForEstateAnErrorIsReturned(String merchantName,
+                                                                        String estateName)
+        {
+            await this.TransactionProcessorSteps.WhenIGetTheMerchantForEstateAnErrorIsReturned(this.TestingContext.AccessToken, estateName, merchantName, this.TestingContext.Estates);
+        }
 
         [When(@"I get the completed settlements the following information should be returned")]
         public async Task WhenIGetTheCompletedSettlementsTheFollowingInformationShouldBeReturned(DataTable table)
@@ -146,8 +153,8 @@ namespace TransactionProcessor.IntegrationTests.Shared
             await this.SecurityServiceSteps.GivenICreateTheFollowingApiScopes(requests);
         }
 
-        [Given(@"I have assigned the following  operator to the merchants")]
-        [When(@"I assign the following  operator to the merchants")]
+        [Given(@"I have assigned the following operator to the merchants")]
+        [When(@"I assign the following operator to the merchants")]
         public async Task WhenIAssignTheFollowingOperatorToTheMerchants(DataTable table)
         {
             foreach (EstateDetails testingContextEstate in this.TestingContext.Estates) {
@@ -197,6 +204,77 @@ namespace TransactionProcessor.IntegrationTests.Shared
             await this.TransactionProcessorSteps.GivenIHaveAssignedTheFollowingOperatorsToTheEstates(this.TestingContext.AccessToken, requests);
 
             // TODO Verify
+        }
+
+        [Given(@"I have assigned the following devices to the merchants")]
+        [When(@"I add the following devices to the merchant")]
+        public async Task WhenIAddTheFollowingDevicesToTheMerchant(DataTable table)
+        {
+            List<(EstateDetails, Guid, AddMerchantDeviceRequest)> requests = table.Rows.ToAddMerchantDeviceRequests(this.TestingContext.Estates);
+
+            List<(EstateDetails, DataTransferObjects.Responses.Merchant.MerchantResponse, String)> results = await this.TransactionProcessorSteps.GivenIHaveAssignedTheFollowingDevicesToTheMerchants(this.TestingContext.AccessToken, requests);
+            foreach ((EstateDetails, DataTransferObjects.Responses.Merchant.MerchantResponse, String) result in results)
+            {
+                this.TestingContext.Logger.LogInformation($"Device {result.Item3} assigned to Merchant {result.Item2.MerchantName} Estate {result.Item1.EstateName}");
+            }
+        }
+
+        [When(@"I make the following merchant withdrawals")]
+        public async Task WhenIMakeTheFollowingMerchantWithdrawals(DataTable table)
+        {
+            List<(EstateDetails, Guid, MakeMerchantWithdrawalRequest)> requests = table.Rows.ToMakeMerchantWithdrawalRequest(this.TestingContext.Estates);
+            await this.TransactionProcessorSteps.WhenIMakeTheFollowingMerchantWithdrawals(this.TestingContext.AccessToken, requests);
+        }
+
+        [When(@"I make the following automatic merchant deposits")]
+        public async Task WhenIMakeTheFollowingAutomaticMerchantDeposits(DataTable table)
+        {
+            var results = table.Rows.ToAutomaticDepositRequests(this.TestingContext.Estates, DockerHelper.TestBankSortCode, DockerHelper.TestBankAccountNumber);
+            await this.TransactionProcessorSteps.WhenIMakeTheFollowingAutomaticMerchantDeposits(results);
+        }
+
+        [When(@"I make the following manual merchant deposits the deposit is rejected")]
+        [When(@"I make the following automatic merchant deposits the deposit is rejected")]
+        public async Task WhenIMakeTheFollowingMerchantDepositsTheDepositIsRejected(DataTable table)
+        {
+            List<(EstateDetails, Guid, MakeMerchantDepositRequest)> requests = table.Rows.ToMakeMerchantDepositRequest(this.TestingContext.Estates);
+            await this.TransactionProcessorSteps.WhenIMakeTheFollowingMerchantDepositsTheDepositIsRejected(this.TestingContext.AccessToken, requests);
+        }
+
+        [When(@"I set the merchants settlement schedule")]
+        public async Task WhenISetTheMerchantsSettlementSchedule(DataTable table)
+        {
+            List<(EstateDetails, Guid, SetSettlementScheduleRequest)> requests = table.Rows.ToSetSettlementScheduleRequests(this.TestingContext.Estates);
+            await this.TransactionProcessorSteps.WhenISetTheMerchantsSettlementSchedule(this.TestingContext.AccessToken, requests);
+        }
+
+        [Given(@"I make the following manual merchant deposits")]
+        [When(@"I make the following manual merchant deposits")]
+        public async Task WhenIMakeTheFollowingManualMerchantDeposits(DataTable table)
+        {
+            List<(EstateDetails, Guid, MakeMerchantDepositRequest)> requests = table.Rows.ToMakeMerchantDepositRequest(this.TestingContext.Estates);
+
+            foreach ((EstateDetails, Guid, MakeMerchantDepositRequest) request in requests)
+            {
+                Decimal previousMerchantBalance = await this.GetMerchantBalance(request.Item2);
+
+                await this.TransactionProcessorSteps.GivenIMakeTheFollowingManualMerchantDeposits(this.TestingContext.AccessToken, request);
+
+                await Retry.For(async () => {
+                    Decimal currentMerchantBalance = await this.GetMerchantBalance(request.Item2);
+
+                    currentMerchantBalance.ShouldBe(previousMerchantBalance + request.Item3.Amount);
+
+                    this.TestingContext.Logger.LogInformation($"Deposit Reference {request.Item3.Reference} made for Merchant Id {request.Item2}");
+                });
+            }
+        }
+
+        [When(@"I swap the merchant device the device is swapped")]
+        public async Task WhenISwapTheMerchantDeviceTheDeviceIsSwapped(DataTable table)
+        {
+            var requests = table.Rows.ToSwapMerchantDeviceRequests(this.TestingContext.Estates);
+            await this.TransactionProcessorSteps.WhenISwapTheMerchantDeviceTheDeviceIsSwapped(this.TestingContext.AccessToken, requests);
         }
 
         [Given("I create the following merchants")]
@@ -263,6 +341,16 @@ namespace TransactionProcessor.IntegrationTests.Shared
             List<SerialisedMessage> transactions = table.Rows.GetTransactionResendDetails(this.TestingContext.Estates);
             await this.TransactionProcessorSteps.WhenIRequestTheReceiptIsResent(this.TestingContext.AccessToken, transactions);
         }
+        [When(@"I get the merchants for '(.*)' then (.*) merchants will be returned")]
+        public async Task WhenIGetTheMerchantsForThenMerchantsWillBeReturned(String estateName,
+                                                                             Int32 expectedMerchantCount)
+        {
+            await this.TransactionProcessorSteps.WhenIGetTheMerchantsForThenMerchantsWillBeReturned(this.TestingContext.AccessToken,
+                estateName,
+                this.TestingContext.Estates,
+                expectedMerchantCount);
+        }
+
 
         [Given(@"the following api resources exist")]
         public async Task GivenTheFollowingApiResourcesExist(DataTable table)
@@ -500,6 +588,54 @@ namespace TransactionProcessor.IntegrationTests.Shared
         {
             List<(EstateDetails, CreateContractRequest)> requests = table.Rows.ToCreateContractRequests(this.TestingContext.Estates);
             await this.TransactionProcessorSteps.WhenICreateAnotherContractWithTheSameValuesItShouldBeRejected(this.TestingContext.AccessToken, requests);
+        }
+
+        [When("I update the merchants with the following details")]
+        public async Task WhenIUpdateTheMerchantsWithTheFollowingDetails(DataTable table)
+        {
+            List<(EstateDetails, Guid, UpdateMerchantRequest)> requests = table.Rows.ToUpdateMerchantRequests(this.TestingContext.Estates);
+
+            List<DataTransferObjects.Responses.Merchant.MerchantResponse> verifiedMerchants = await this.TransactionProcessorSteps.WhenIUpdateTheFollowingMerchants(this.TestingContext.AccessToken, requests);
+
+            foreach (DataTransferObjects.Responses.Merchant.MerchantResponse verifiedMerchant in verifiedMerchants)
+            {
+                EstateDetails estateDetails = this.TestingContext.GetEstateDetails(verifiedMerchant.EstateId);
+                this.TestingContext.Logger.LogInformation($"Merchant {verifiedMerchant.MerchantName} updated for Estate {estateDetails.EstateName}");
+            }
+        }
+
+        [When("I update the merchants address with the following details")]
+        public async Task WhenIUpdateTheMerchantsAddressWithTheFollowingDetails(DataTable dataTable)
+        {
+            List<(EstateDetails, DataTransferObjects.Responses.Merchant.MerchantResponse, Guid, Address)> addressUpdatesList = dataTable.Rows.ToAddressUpdates(this.TestingContext.Estates);
+            await this.TransactionProcessorSteps.WhenIUpdateTheMerchantsAddressWithTheFollowingDetails(this.TestingContext.AccessToken, addressUpdatesList);
+        }
+
+        [When("I update the merchants contact with the following details")]
+        public async Task WhenIUpdateTheMerchantsContactWithTheFollowingDetails(DataTable dataTable)
+        {
+            List<(EstateDetails, DataTransferObjects.Responses.Merchant.MerchantResponse, Guid, Contact)> contactUpdatesList = dataTable.Rows.ToContactUpdates(this.TestingContext.Estates);
+            await this.TransactionProcessorSteps.WhenIUpdateTheMerchantsContactWithTheFollowingDetails(this.TestingContext.AccessToken, contactUpdatesList);
+        }
+
+        [When("I remove the contract {string} from merchant {string} on {string} the contract is removed")]
+        public async Task WhenIRemoveTheContractFromMerchantOnTheContractIsRemoved(string contractName, string merchantName, string estateName)
+        {
+            await this.TransactionProcessorSteps.WhenIRemoveTheContractFromMerchantOnTheContractIsRemoved(this.TestingContext.AccessToken,
+                this.TestingContext.Estates,
+                estateName,
+                merchantName,
+                contractName);
+        }
+
+        [When("I remove the operator {string} from merchant {string} on {string} the operator is removed")]
+        public async Task WhenIRemoveTheOperatorFromMerchantOnTheOperatorIsRemoved(string operatorName, string merchantName, string estateName)
+        {
+            await this.TransactionProcessorSteps.WhenIRemoveTheOperatorFromMerchantOnTheOperatorIsRemoved(this.TestingContext.AccessToken,
+                this.TestingContext.Estates,
+                estateName,
+                merchantName,
+                operatorName);
         }
     }
 }

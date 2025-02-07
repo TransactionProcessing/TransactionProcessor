@@ -7,7 +7,6 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="EstateManagement.Merchant.DomainEvents" Version="2025.1.5" />
     <PackageReference Include="FileProcessor.File.DomainEvents" Version="2025.1.1" />
     <PackageReference Include="FileProcessor.FileImportLog.DomainEvents" Version="2025.1.1" />
     

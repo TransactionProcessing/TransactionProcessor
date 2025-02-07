@@ -1,6 +1,7 @@
 ﻿using System.Diagnostics.CodeAnalysis;
 using System.Reflection.Metadata.Ecma335;
 using SimpleResults;
+using TransactionProcessor.DataTransferObjects.Responses.Merchant;
 
 namespace TransactionProcessor.BusinessLogic.OperatorInterfaces.PataPawaPrePay;
 
@@ -10,7 +11,6 @@ using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
 using Common;
-using EstateManagement.DataTransferObjects.Responses.Merchant;
 using Microsoft.Extensions.Caching.Memory;
 using Newtonsoft.Json;
 using Shared.Logger;
@@ -30,7 +30,7 @@ public class PataPawaPrePayProxy : IOperatorProxy{
         this.MemoryCache = memoryCache;
     }
 
-    public async Task<Result<OperatorResponse>> ProcessLogonMessage(String accessToken, CancellationToken cancellationToken){
+    public async Task<Result<OperatorResponse>> ProcessLogonMessage(CancellationToken cancellationToken){
         // Check if we need to do a logon with the operator
         OperatorResponse operatorResponse = this.MemoryCache.Get<OperatorResponse>("PataPawaPrePayLogon");
         if (operatorResponse != null){
@@ -59,8 +59,8 @@ public class PataPawaPrePayProxy : IOperatorProxy{
         return this.CreateFromLogon(responseContent);
     }
 
-    public async Task<Result<OperatorResponse>> ProcessSaleMessage(String accessToken, Guid transactionId, Guid operatorId,
-                                                                   MerchantResponse merchant, DateTime transactionDateTime, String transactionReference, Dictionary<String, String> additionalTransactionMetadata, CancellationToken cancellationToken){
+    public async Task<Result<OperatorResponse>> ProcessSaleMessage(Guid transactionId, Guid operatorId,
+                                                                   Models.Merchant.Merchant merchant, DateTime transactionDateTime, String transactionReference, Dictionary<String, String> additionalTransactionMetadata, CancellationToken cancellationToken){
         // Get the logon response for the operator
         OperatorResponse logonResponse = this.MemoryCache.Get<OperatorResponse>("PataPawaPrePayLogon");
         if (logonResponse == null)
@@ -239,7 +239,7 @@ public class PataPawaPrePayProxy : IOperatorProxy{
                                       EvictionReason reason,
                                       Object state){
         if (key.ToString().Contains("Logon")){
-            this.ProcessLogonMessage(String.Empty, CancellationToken.None).Wait();
+            this.ProcessLogonMessage(CancellationToken.None).Wait();
         }
     }
 }

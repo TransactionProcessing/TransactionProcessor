@@ -2,7 +2,6 @@ using TransactionProcessor.DomainEvents;
 
 namespace TransactionProcessor.ProjectionEngine.Tests;
 
-using EstateManagement.Merchant.DomainEvents;
 using Projections;
 using Shared.DomainDrivenDesign.EventSourcing;
 using Shouldly;
@@ -11,21 +10,21 @@ using State;
 public class MerchantBalanceProjectionTests
 {
     [Theory]
-    [InlineData(typeof(MerchantCreatedEvent), true)]
-    [InlineData(typeof(ManualDepositMadeEvent), true)]
-    [InlineData(typeof(AutomaticDepositMadeEvent), true)]
+    [InlineData(typeof(MerchantDomainEvents.MerchantCreatedEvent), true)]
+    [InlineData(typeof(MerchantDomainEvents.ManualDepositMadeEvent), true)]
+    [InlineData(typeof(MerchantDomainEvents.AutomaticDepositMadeEvent), true)]
     [InlineData(typeof(TransactionDomainEvents.TransactionHasStartedEvent), true)]
     [InlineData(typeof(TransactionDomainEvents.TransactionHasBeenCompletedEvent), true)]
     [InlineData(typeof(TransactionDomainEvents.SettledMerchantFeeAddedToTransactionEvent), true)]
-    [InlineData(typeof(AddressAddedEvent), false)]
+    [InlineData(typeof(MerchantDomainEvents.AddressAddedEvent), false)]
     public void MerchantBalanceProjection_ShouldIHandleEvent_ReturnsExpectedValue(Type eventType, Boolean expectedResult){
         MerchantBalanceProjection projection = new MerchantBalanceProjection();
 
         IDomainEvent domainEvent = eventType switch
         {
-            _ when eventType == typeof(MerchantCreatedEvent) => TestData.MerchantCreatedEvent,
-            _ when eventType == typeof(ManualDepositMadeEvent) => TestData.ManualDepositMadeEvent,
-        _ when eventType == typeof(AutomaticDepositMadeEvent) => TestData.AutomaticDepositMadeEvent,
+            _ when eventType == typeof(MerchantDomainEvents.MerchantCreatedEvent) => TestData.MerchantCreatedEvent,
+            _ when eventType == typeof(MerchantDomainEvents.ManualDepositMadeEvent) => TestData.ManualDepositMadeEvent,
+        _ when eventType == typeof(MerchantDomainEvents.AutomaticDepositMadeEvent) => TestData.AutomaticDepositMadeEvent,
         _ when eventType == typeof(TransactionDomainEvents.TransactionHasStartedEvent) => TestData.GetTransactionHasStartedEvent(),
         _ when eventType == typeof(TransactionDomainEvents.TransactionHasBeenCompletedEvent) => TestData.GetTransactionHasBeenCompletedEvent(),
         _ when eventType == typeof(TransactionDomainEvents.SettledMerchantFeeAddedToTransactionEvent) => TestData.GetSettledMerchantFeeAddedToTransactionEvent(),
@@ -41,7 +40,7 @@ public class MerchantBalanceProjectionTests
     {
         MerchantBalanceProjection projection = new MerchantBalanceProjection();
         MerchantBalanceState state = new MerchantBalanceState();
-        AddressAddedEvent @event = TestData.AddressAddedEvent;
+        MerchantDomainEvents.AddressAddedEvent @event = TestData.AddressAddedEvent;
 
         MerchantBalanceState newState = await projection.Handle(state, @event, CancellationToken.None);
 
@@ -52,7 +51,7 @@ public class MerchantBalanceProjectionTests
     public async Task MerchantBalanceProjection_Handle_MerchantCreatedEvent_EventIsHandled() {
         MerchantBalanceProjection projection = new MerchantBalanceProjection();
         MerchantBalanceState state = new MerchantBalanceState();
-        MerchantCreatedEvent @event = TestData.MerchantCreatedEvent;
+        MerchantDomainEvents.MerchantCreatedEvent @event = TestData.MerchantCreatedEvent;
             
         MerchantBalanceState newState = await projection.Handle(state, @event, CancellationToken.None);
 
@@ -87,7 +86,7 @@ public class MerchantBalanceProjectionTests
                     LastDeposit = DateTime.MinValue
                 };
 
-        ManualDepositMadeEvent @event = TestData.ManualDepositMadeEvent;
+        MerchantDomainEvents.ManualDepositMadeEvent @event = TestData.ManualDepositMadeEvent;
 
         MerchantBalanceState newState = await projection.Handle(state, @event, CancellationToken.None);
 
@@ -115,7 +114,7 @@ public class MerchantBalanceProjectionTests
                     LastWithdrawal = DateTime.MinValue
                 };
 
-        WithdrawalMadeEvent @event = TestData.WithdrawalMadeEvent;
+        MerchantDomainEvents.WithdrawalMadeEvent @event = TestData.WithdrawalMadeEvent;
 
         MerchantBalanceState newState = await projection.Handle(state, @event, CancellationToken.None);
 
@@ -143,7 +142,7 @@ public class MerchantBalanceProjectionTests
             TotalDeposited = TestData.ManualDepositMadeEvent.Amount,
         };
 
-        ManualDepositMadeEvent @event = TestData.ManualDepositMadeEvent;
+        MerchantDomainEvents.ManualDepositMadeEvent @event = TestData.ManualDepositMadeEvent;
 
         MerchantBalanceState newState = await projection.Handle(state, @event, CancellationToken.None);
 
@@ -171,7 +170,7 @@ public class MerchantBalanceProjectionTests
             TotalDeposited = TestData.ManualDepositMadeEvent.Amount,
         };
 
-        ManualDepositMadeEvent @event = TestData.ManualDepositMadeEvent;
+        MerchantDomainEvents.ManualDepositMadeEvent @event = TestData.ManualDepositMadeEvent;
 
         MerchantBalanceState newState = await projection.Handle(state, @event, CancellationToken.None);
 
@@ -196,7 +195,7 @@ public class MerchantBalanceProjectionTests
                     TotalDeposited = 0,
         };
 
-        AutomaticDepositMadeEvent @event = TestData.AutomaticDepositMadeEvent;
+        MerchantDomainEvents.AutomaticDepositMadeEvent @event = TestData.AutomaticDepositMadeEvent;
 
         MerchantBalanceState newState = await projection.Handle(state, @event, CancellationToken.None);
 
@@ -224,7 +223,7 @@ public class MerchantBalanceProjectionTests
             TotalDeposited = TestData.AutomaticDepositMadeEvent.Amount,
         };
 
-        AutomaticDepositMadeEvent @event = TestData.AutomaticDepositMadeEvent;
+        MerchantDomainEvents.AutomaticDepositMadeEvent @event = TestData.AutomaticDepositMadeEvent;
 
         MerchantBalanceState newState = await projection.Handle(state, @event, CancellationToken.None);
 
@@ -252,7 +251,7 @@ public class MerchantBalanceProjectionTests
             TotalDeposited = TestData.AutomaticDepositMadeEvent.Amount,
         };
 
-        AutomaticDepositMadeEvent @event = new AutomaticDepositMadeEvent(TestData.AutomaticDepositMadeEvent.AggregateId,
+        MerchantDomainEvents.AutomaticDepositMadeEvent @event = new MerchantDomainEvents.AutomaticDepositMadeEvent(TestData.AutomaticDepositMadeEvent.AggregateId,
                                                                          TestData.AutomaticDepositMadeEvent.EstateId,
                                                                          TestData.AutomaticDepositMadeEvent.DepositId,
                                                                          TestData.AutomaticDepositMadeEvent.Reference,
@@ -548,8 +547,8 @@ public class MerchantBalanceProjectionTests
         MerchantBalanceProjection projection = new MerchantBalanceProjection();
         MerchantBalanceState state = new MerchantBalanceState();
 
-        MerchantCreatedEvent merchantCreatedEvent = TestData.MerchantCreatedEvent;
-        ManualDepositMadeEvent manualDepositMadeEvent = TestData.ManualDepositMadeEvent;
+        MerchantDomainEvents.MerchantCreatedEvent merchantCreatedEvent = TestData.MerchantCreatedEvent;
+        MerchantDomainEvents.ManualDepositMadeEvent manualDepositMadeEvent = TestData.ManualDepositMadeEvent;
         TransactionDomainEvents.TransactionHasStartedEvent transactionHasStartedEvent = TestData.GetTransactionHasStartedEvent(TestData.TransactionAmount);
         TransactionDomainEvents.TransactionHasBeenCompletedEvent transactionHasBeenCompleteEvent = TestData.GetTransactionHasBeenCompletedEvent(true, TestData.TransactionAmount);
         TransactionDomainEvents.SettledMerchantFeeAddedToTransactionEvent merchantFeeAddedToTransactionEvent = TestData.GetSettledMerchantFeeAddedToTransactionEvent(0.25m);

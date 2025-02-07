@@ -58,7 +58,7 @@ Scenario: Get Pending Settlement
 	| Test Merchant 2 | Address Line 1 | TestTown | Test Region | United Kingdom | Test Contact 2 | testcontact2@merchant2.co.uk | Test Estate 1 | Weekly             |
 	| Test Merchant 3 | Address Line 1 | TestTown | Test Region | United Kingdom | Test Contact 3 | testcontact3@merchant2.co.uk | Test Estate 1 | Monthly            |
 
-	Given I have assigned the following  operator to the merchants
+	Given I have assigned the following operator to the merchants
 	| OperatorName | MerchantName    | MerchantNumber | TerminalNumber | EstateName    |
 	| Safaricom    | Test Merchant 1 | 00000001       | 10000001       | Test Estate 1 |
 	| Voucher      | Test Merchant 1 | 00000001       | 10000001       | Test Estate 1 |
@@ -126,7 +126,7 @@ Scenario: Process Settlement
 	| Test Merchant 1 | Address Line 1 | TestTown | Test Region | United Kingdom | Test Contact 1 | testcontact1@merchant1.co.uk | Test Estate 1 | Immediate             |
 	| Test Merchant 2 | Address Line 1 | TestTown | Test Region | United Kingdom | Test Contact 2 | testcontact2@merchant2.co.uk | Test Estate 1 | Weekly             |
 
-	Given I have assigned the following  operator to the merchants
+	Given I have assigned the following operator to the merchants
 	| OperatorName | MerchantName    | MerchantNumber | TerminalNumber | EstateName    |
 	| Safaricom    | Test Merchant 1 | 00000001       | 10000001       | Test Estate 1 |
 	| Voucher      | Test Merchant 1 | 00000001       | 10000001       | Test Estate 1 |

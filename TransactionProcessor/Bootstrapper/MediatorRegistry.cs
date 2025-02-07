@@ -46,6 +46,26 @@ namespace TransactionProcessor.Bootstrapper
         #endregion
 
         private void RegisterMerchantRequestHandler() {
+            this.AddSingleton<IRequestHandler<MerchantCommands.CreateMerchantCommand, Result>, MerchantRequestHandler>();
+            this.AddSingleton<IRequestHandler<MerchantCommands.AssignOperatorToMerchantCommand, Result>, MerchantRequestHandler>();
+            this.AddSingleton<IRequestHandler<MerchantCommands.CreateMerchantUserCommand, Result>, MerchantRequestHandler>();
+            this.AddSingleton<IRequestHandler<MerchantCommands.AddMerchantDeviceCommand, Result>, MerchantRequestHandler>();
+            this.AddSingleton<IRequestHandler<MerchantCommands.MakeMerchantDepositCommand, Result>, MerchantRequestHandler>();
+            this.AddSingleton<IRequestHandler<MerchantCommands.MakeMerchantWithdrawalCommand, Result>, MerchantRequestHandler>();
+            this.AddSingleton<IRequestHandler<MerchantCommands.SwapMerchantDeviceCommand, Result>, MerchantRequestHandler>();
+            this.AddSingleton<IRequestHandler<MerchantCommands.AddMerchantContractCommand, Result>, MerchantRequestHandler>();
+            this.AddSingleton<IRequestHandler<MerchantCommands.UpdateMerchantCommand, Result>, MerchantRequestHandler>();
+            this.AddSingleton<IRequestHandler<MerchantCommands.AddMerchantAddressCommand, Result>, MerchantRequestHandler>();
+            this.AddSingleton<IRequestHandler<MerchantCommands.UpdateMerchantAddressCommand, Result>, MerchantRequestHandler>();
+            this.AddSingleton<IRequestHandler<MerchantCommands.AddMerchantContactCommand, Result>, MerchantRequestHandler>();
+            this.AddSingleton<IRequestHandler<MerchantCommands.UpdateMerchantContactCommand, Result>, MerchantRequestHandler>();
+            this.AddSingleton<IRequestHandler<MerchantCommands.RemoveOperatorFromMerchantCommand, Result>, MerchantRequestHandler>();
+            this.AddSingleton<IRequestHandler<MerchantCommands.RemoveMerchantContractCommand, Result>, MerchantRequestHandler>();
+
+            this.AddSingleton<IRequestHandler<MerchantQueries.GetMerchantQuery, Result<Models.Merchant.Merchant>>, MerchantRequestHandler>();
+            this.AddSingleton<IRequestHandler<MerchantQueries.GetMerchantContractsQuery, Result<List<Models.Contract.Contract>>>, MerchantRequestHandler>();
+            this.AddSingleton<IRequestHandler<MerchantQueries.GetMerchantsQuery, Result<List<Models.Merchant.Merchant>>>, MerchantRequestHandler>();
+            this.AddSingleton<IRequestHandler<MerchantQueries.GetTransactionFeesForProductQuery, Result<List<Models.Contract.ContractProductTransactionFee>>>, MerchantRequestHandler>();
             this.AddSingleton<IRequestHandler<MerchantQueries.GetMerchantLiveBalanceQuery, Result<MerchantBalanceProjectionState1>>, MerchantRequestHandler>();
             this.AddSingleton<IRequestHandler<MerchantQueries.GetMerchantBalanceQuery, Result<MerchantBalanceState>>, MerchantRequestHandler>();
             this.AddSingleton<IRequestHandler<MerchantQueries.GetMerchantBalanceHistoryQuery, Result<List<MerchantBalanceChangedEntry>>>, MerchantRequestHandler>();

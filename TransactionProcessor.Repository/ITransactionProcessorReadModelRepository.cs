@@ -15,9 +15,11 @@ using Microsoft.EntityFrameworkCore;
 using System.Reflection;
 using TransactionProcessor.DomainEvents;
 using TransactionProcessor.Models.Contract;
+using MerchantModel = TransactionProcessor.Models.Merchant.Merchant;
 using Contract = TransactionProcessor.Database.Entities.Contract;
 using ContractModel = TransactionProcessor.Models.Contract.Contract;
 using ContractProductTransactionFee = TransactionProcessor.Database.Entities.ContractProductTransactionFee;
+using static TransactionProcessor.DomainEvents.MerchantDomainEvents;
 
 namespace TransactionProcessor.Repository {
     public interface ITransactionProcessorReadModelRepository {
@@ -46,8 +48,8 @@ namespace TransactionProcessor.Repository {
         Task<Result> AddContractProductTransactionFee(ContractDomainEvents.TransactionFeeForProductAddedToContractEvent domainEvent,
                                                       CancellationToken cancellationToken);
 
-        //Task<Result> AddContractToMerchant(ContractAddedToMerchantEvent domainEvent,
-        //                                   CancellationToken cancellationToken);
+        Task<Result> AddContractToMerchant(ContractAddedToMerchantEvent domainEvent,
+                                           CancellationToken cancellationToken);
 
         Task<Result> AddEstate(EstateDomainEvents.EstateCreatedEvent domainEvent,
                                CancellationToken cancellationToken);
@@ -70,29 +72,29 @@ namespace TransactionProcessor.Repository {
         //Task<Result> AddGeneratedVoucher(VoucherGeneratedEvent domainEvent,
         //                                 CancellationToken cancellationToken);
 
-        //Task<Result> AddMerchant(MerchantCreatedEvent domainEvent,
-        //                         CancellationToken cancellationToken);
+        Task<Result> AddMerchant(MerchantDomainEvents.MerchantCreatedEvent domainEvent,
+                                CancellationToken cancellationToken);
 
-        //Task<Result> UpdateMerchant(MerchantNameUpdatedEvent domainEvent,
-        //                            CancellationToken cancellationToken);
+        Task<Result> UpdateMerchant(MerchantDomainEvents.MerchantNameUpdatedEvent domainEvent,
+                                    CancellationToken cancellationToken);
 
-        //Task<Result> AddMerchantAddress(AddressAddedEvent domainEvent,
-        //                                CancellationToken cancellationToken);
+        Task<Result> AddMerchantAddress(MerchantDomainEvents.AddressAddedEvent domainEvent,
+                                        CancellationToken cancellationToken);
 
-        //Task<Result> AddMerchantContact(ContactAddedEvent domainEvent,
-        //                                CancellationToken cancellationToken);
+        Task<Result> AddMerchantContact(MerchantDomainEvents.ContactAddedEvent domainEvent,
+                                        CancellationToken cancellationToken);
 
-        //Task<Result> AddMerchantDevice(DeviceAddedToMerchantEvent domainEvent,
-        //                               CancellationToken cancellationToken);
+        Task<Result> AddMerchantDevice(MerchantDomainEvents.DeviceAddedToMerchantEvent domainEvent,
+                                       CancellationToken cancellationToken);
 
-        //Task<Result> SwapMerchantDevice(DeviceSwappedForMerchantEvent domainEvent,
-        //                                CancellationToken cancellationToken);
+        Task<Result> SwapMerchantDevice(MerchantDomainEvents.DeviceSwappedForMerchantEvent domainEvent,
+                                        CancellationToken cancellationToken);
 
-        //Task<Result> AddMerchantOperator(OperatorAssignedToMerchantEvent domainEvent,
-        //                                 CancellationToken cancellationToken);
+        Task<Result> AddMerchantOperator(MerchantDomainEvents.OperatorAssignedToMerchantEvent domainEvent,
+                                         CancellationToken cancellationToken);
 
-        //Task<Result> AddMerchantSecurityUser(SecurityUserAddedToMerchantEvent domainEvent,
-        //                                     CancellationToken cancellationToken);
+        Task<Result> AddMerchantSecurityUser(MerchantDomainEvents.SecurityUserAddedToMerchantEvent domainEvent,
+                                             CancellationToken cancellationToken);
 
         //Task<Result> AddPendingMerchantFeeToSettlement(MerchantFeeAddedPendingSettlementEvent domainEvent,
         //                                               CancellationToken cancellationToken);
@@ -181,14 +183,14 @@ namespace TransactionProcessor.Repository {
         //Task<Result> UpdateFileLine(FileLineProcessingIgnoredEvent domainEvent,
         //                            CancellationToken cancellationToken);
 
-        //Task<Result> UpdateMerchant(MerchantReferenceAllocatedEvent domainEvent,
-        //                            CancellationToken cancellationToken);
+        Task<Result> UpdateMerchant(MerchantDomainEvents.MerchantReferenceAllocatedEvent domainEvent,
+                                    CancellationToken cancellationToken);
 
         //Task<Result> UpdateMerchant(StatementGeneratedEvent domainEvent,
         //                            CancellationToken cancellationToken);
 
-        //Task<Result> UpdateMerchant(SettlementScheduleChangedEvent domainEvent,
-        //                            CancellationToken cancellationToken);
+        Task<Result> UpdateMerchant(MerchantDomainEvents.SettlementScheduleChangedEvent domainEvent,
+                                    CancellationToken cancellationToken);
 
         Task<Result> UpdateMerchant(TransactionDomainEvents.TransactionHasBeenCompletedEvent domainEvent,
                                     CancellationToken cancellationToken);
@@ -220,44 +222,44 @@ namespace TransactionProcessor.Repository {
         Task<Result> UpdateVoucherRedemptionDetails(VoucherDomainEvents.VoucherFullyRedeemedEvent domainEvent,
                                                     CancellationToken cancellationToken);
 
-        //Task<Result> RemoveOperatorFromMerchant(OperatorRemovedFromMerchantEvent domainEvent,
-        //                                        CancellationToken cancellationToken);
+        Task<Result> RemoveOperatorFromMerchant(MerchantDomainEvents.OperatorRemovedFromMerchantEvent domainEvent,
+                                                CancellationToken cancellationToken);
 
-        //Task<Result> RemoveContractFromMerchant(ContractRemovedFromMerchantEvent domainEvent,
-        //                                        CancellationToken cancellationToken);
+        Task<Result> RemoveContractFromMerchant(MerchantDomainEvents.ContractRemovedFromMerchantEvent domainEvent,
+                                                CancellationToken cancellationToken);
 
-        //Task<Result> UpdateMerchantAddress(MerchantAddressLine1UpdatedEvent domainEvent,
-        //                                   CancellationToken cancellationToken);
+        Task<Result> UpdateMerchantAddress(MerchantDomainEvents.MerchantAddressLine1UpdatedEvent domainEvent,
+                                           CancellationToken cancellationToken);
 
-        //Task<Result> UpdateMerchantAddress(MerchantAddressLine2UpdatedEvent domainEvent,
-        //                                   CancellationToken cancellationToken);
+        Task<Result> UpdateMerchantAddress(MerchantDomainEvents.MerchantAddressLine2UpdatedEvent domainEvent,
+                                           CancellationToken cancellationToken);
 
-        //Task<Result> UpdateMerchantAddress(MerchantAddressLine3UpdatedEvent domainEvent,
-        //                                   CancellationToken cancellationToken);
+        Task<Result> UpdateMerchantAddress(MerchantDomainEvents.MerchantAddressLine3UpdatedEvent domainEvent,
+                                           CancellationToken cancellationToken);
 
-        //Task<Result> UpdateMerchantAddress(MerchantAddressLine4UpdatedEvent domainEvent,
-        //                                   CancellationToken cancellationToken);
+        Task<Result> UpdateMerchantAddress(MerchantDomainEvents.MerchantAddressLine4UpdatedEvent domainEvent,
+                                           CancellationToken cancellationToken);
 
-        //Task<Result> UpdateMerchantAddress(MerchantCountyUpdatedEvent domainEvent,
-        //                                   CancellationToken cancellationToken);
+        Task<Result> UpdateMerchantAddress(MerchantDomainEvents.MerchantCountyUpdatedEvent domainEvent,
+                                           CancellationToken cancellationToken);
 
-        //Task<Result> UpdateMerchantAddress(MerchantRegionUpdatedEvent domainEvent,
-        //                                   CancellationToken cancellationToken);
+        Task<Result> UpdateMerchantAddress(MerchantDomainEvents.MerchantRegionUpdatedEvent domainEvent,
+                                           CancellationToken cancellationToken);
 
-        //Task<Result> UpdateMerchantAddress(MerchantTownUpdatedEvent domainEvent,
-        //                                   CancellationToken cancellationToken);
+        Task<Result> UpdateMerchantAddress(MerchantDomainEvents.MerchantTownUpdatedEvent domainEvent,
+                                           CancellationToken cancellationToken);
 
-        //Task<Result> UpdateMerchantAddress(MerchantPostalCodeUpdatedEvent domainEvent,
-        //                                   CancellationToken cancellationToken);
+        Task<Result> UpdateMerchantAddress(MerchantDomainEvents.MerchantPostalCodeUpdatedEvent domainEvent,
+                                           CancellationToken cancellationToken);
 
-        //Task<Result> UpdateMerchantContact(MerchantContactNameUpdatedEvent domainEvent,
-        //                                   CancellationToken cancellationToken);
+        Task<Result> UpdateMerchantContact(MerchantDomainEvents.MerchantContactNameUpdatedEvent domainEvent,
+                                           CancellationToken cancellationToken);
 
-        //Task<Result> UpdateMerchantContact(MerchantContactEmailAddressUpdatedEvent domainEvent,
-        //                                   CancellationToken cancellationToken);
+        Task<Result> UpdateMerchantContact(MerchantDomainEvents.MerchantContactEmailAddressUpdatedEvent domainEvent,
+                                           CancellationToken cancellationToken);
 
-        //Task<Result> UpdateMerchantContact(MerchantContactPhoneNumberUpdatedEvent domainEvent,
-        //                                   CancellationToken cancellationToken);
+        Task<Result> UpdateMerchantContact(MerchantDomainEvents.MerchantContactPhoneNumberUpdatedEvent domainEvent,
+                                           CancellationToken cancellationToken);
 
         Task<Result<Models.Estate.Estate>> GetEstate(Guid estateId,
                                               CancellationToken cancellationToken);
@@ -267,6 +269,13 @@ namespace TransactionProcessor.Repository {
 
         Task<Result<List<ContractModel>>> GetContracts(Guid estateId,
                                                   CancellationToken cancellationToken);
+
+        Task<Result<List<ContractModel>>> GetMerchantContracts(Guid estateId,
+                                                               Guid merchantId,
+                                                               CancellationToken cancellationToken);
+
+        Task<Result<List<MerchantModel>>> GetMerchants(Guid estateId,
+                                                       CancellationToken cancellationToken);
     }
 
     [ExcludeFromCodeCoverage]
@@ -278,6 +287,490 @@ namespace TransactionProcessor.Repository {
         public TransactionProcessorReadModelRepository(Shared.EntityFramework.IDbContextFactory<EstateManagementGenericContext> dbContextFactory) {
    this.DbContextFactory = dbContextFactory;
         
+        }
+
+        public async Task<Result> AddMerchant(MerchantDomainEvents.MerchantCreatedEvent domainEvent,
+                                              CancellationToken cancellationToken)
+        {
+            EstateManagementGenericContext context = await this.GetContextFromDomainEvent(domainEvent, cancellationToken);
+
+            Merchant merchant = new Merchant
+            {
+                EstateId = domainEvent.EstateId,
+                MerchantId = domainEvent.MerchantId,
+                Name = domainEvent.MerchantName,
+                CreatedDateTime = domainEvent.DateCreated,
+                LastStatementGenerated = DateTime.MinValue,
+                SettlementSchedule = 0
+            };
+
+            await context.Merchants.AddAsync(merchant, cancellationToken);
+
+            return await context.SaveChangesAsync(cancellationToken);
+        }
+
+        public async Task<Result> UpdateMerchant(MerchantNameUpdatedEvent domainEvent, CancellationToken cancellationToken)
+        {
+            EstateManagementGenericContext context = await this.GetContextFromDomainEvent(domainEvent, cancellationToken);
+
+            Result<Merchant> merchantResult = await context.LoadMerchant(domainEvent, cancellationToken);
+            if (merchantResult.IsFailed)
+                return ResultHelpers.CreateFailure(merchantResult);
+            var merchant = merchantResult.Data;
+            merchant.Name = domainEvent.MerchantName;
+
+            return await context.SaveChangesAsync(cancellationToken);
+        }
+
+        public async Task<Result> AddMerchantAddress(AddressAddedEvent domainEvent,
+                                             CancellationToken cancellationToken)
+        {
+            EstateManagementGenericContext context = await this.GetContextFromDomainEvent(domainEvent, cancellationToken);
+
+            MerchantAddress merchantAddress = new MerchantAddress
+            {
+                MerchantId = domainEvent.MerchantId,
+                AddressId = domainEvent.AddressId,
+                AddressLine1 = domainEvent.AddressLine1,
+                AddressLine2 = domainEvent.AddressLine2,
+                AddressLine3 = domainEvent.AddressLine3,
+                AddressLine4 = domainEvent.AddressLine4,
+                Country = domainEvent.Country,
+                PostalCode = domainEvent.PostalCode,
+                Region = domainEvent.Region,
+                Town = domainEvent.Town
+            };
+
+            await context.MerchantAddresses.AddAsync(merchantAddress, cancellationToken);
+
+            return await context.SaveChangesAsync(cancellationToken);
+        }
+
+        public async Task<Result> AddMerchantContact(ContactAddedEvent domainEvent,
+                                             CancellationToken cancellationToken)
+        {
+            EstateManagementGenericContext context = await this.GetContextFromDomainEvent(domainEvent, cancellationToken);
+
+            MerchantContact merchantContact = new MerchantContact
+            {
+                MerchantId = domainEvent.MerchantId,
+                Name = domainEvent.ContactName,
+                ContactId = domainEvent.ContactId,
+                EmailAddress = domainEvent.ContactEmailAddress,
+                PhoneNumber = domainEvent.ContactPhoneNumber
+            };
+
+            await context.MerchantContacts.AddAsync(merchantContact, cancellationToken);
+
+            return await context.SaveChangesAsync(cancellationToken);
+        }
+
+        public async Task<Result> AddMerchantDevice(DeviceAddedToMerchantEvent domainEvent,
+                                            CancellationToken cancellationToken)
+        {
+            EstateManagementGenericContext context = await this.GetContextFromDomainEvent(domainEvent, cancellationToken);
+
+            MerchantDevice merchantDevice = new MerchantDevice
+            {
+                MerchantId = domainEvent.MerchantId,
+                DeviceId = domainEvent.DeviceId,
+                DeviceIdentifier = domainEvent.DeviceIdentifier
+            };
+
+            await context.MerchantDevices.AddAsync(merchantDevice, cancellationToken);
+
+            return await context.SaveChangesAsync(cancellationToken);
+        }
+
+        public async Task<Result> SwapMerchantDevice(DeviceSwappedForMerchantEvent domainEvent, CancellationToken cancellationToken)
+        {
+            EstateManagementGenericContext context = await this.GetContextFromDomainEvent(domainEvent, cancellationToken);
+
+            var getDeviceResult = await context.LoadMerchantDevice(domainEvent, cancellationToken);
+            if (getDeviceResult.IsFailed)
+                return ResultHelpers.CreateFailure(getDeviceResult);
+            var device = getDeviceResult.Data;
+
+            device.DeviceIdentifier = domainEvent.NewDeviceIdentifier;
+
+            return await context.SaveChangesAsync(cancellationToken);
+        }
+
+        public async Task<Result> AddMerchantOperator(OperatorAssignedToMerchantEvent domainEvent,
+                                              CancellationToken cancellationToken)
+        {
+            EstateManagementGenericContext context = await this.GetContextFromDomainEvent(domainEvent, cancellationToken);
+            String operatorName = domainEvent.Name;
+            if (String.IsNullOrEmpty(operatorName))
+            {
+                // Lookup the operator
+                Operator @operator = await context.Operators.SingleOrDefaultAsync(o => o.OperatorId == domainEvent.OperatorId, cancellationToken);
+                operatorName = @operator.Name;
+            }
+
+            if (String.IsNullOrEmpty(operatorName))
+            {
+                return Result.Failure("Unable to get operator name and this can't be null");
+            }
+
+            MerchantOperator merchantOperator = new MerchantOperator
+            {
+                Name = operatorName,
+                MerchantId = domainEvent.MerchantId,
+                MerchantNumber = domainEvent.MerchantNumber,
+                OperatorId = domainEvent.OperatorId,
+                TerminalNumber = domainEvent.TerminalNumber
+            };
+
+            await context.MerchantOperators.AddAsync(merchantOperator, cancellationToken);
+
+            return await context.SaveChangesAsync(cancellationToken);
+        }
+
+        public async Task<Result> AddMerchantSecurityUser(SecurityUserAddedToMerchantEvent domainEvent,
+                                                  CancellationToken cancellationToken)
+        {
+            EstateManagementGenericContext context = await this.GetContextFromDomainEvent(domainEvent, cancellationToken);
+
+            MerchantSecurityUser merchantSecurityUser = new MerchantSecurityUser
+            {
+                MerchantId = domainEvent.MerchantId,
+                EmailAddress = domainEvent.EmailAddress,
+                SecurityUserId = domainEvent.SecurityUserId
+            };
+
+            await context.MerchantSecurityUsers.AddAsync(merchantSecurityUser, cancellationToken);
+
+            return await context.SaveChangesAsync(cancellationToken);
+        }
+        public async Task<Result> UpdateMerchant(SettlementScheduleChangedEvent domainEvent,
+                                                 CancellationToken cancellationToken)
+        {
+            EstateManagementGenericContext context = await this.GetContextFromDomainEvent(domainEvent, cancellationToken);
+
+            Result<Merchant> merchantResult = await context.LoadMerchant(domainEvent, cancellationToken);
+            if (merchantResult.IsFailed)
+                return ResultHelpers.CreateFailure(merchantResult);
+            var merchant = merchantResult.Data;
+
+            merchant.SettlementSchedule = domainEvent.SettlementSchedule;
+            return await context.SaveChangesAsync(cancellationToken);
+        }
+
+        public async Task<Result> RemoveOperatorFromMerchant(OperatorRemovedFromMerchantEvent domainEvent, CancellationToken cancellationToken)
+        {
+            EstateManagementGenericContext context = await this.GetContextFromDomainEvent(domainEvent, cancellationToken);
+
+            MerchantOperator merchantOperator = await context.MerchantOperators.SingleOrDefaultAsync(o => o.OperatorId == domainEvent.OperatorId &&
+                                                                                                          o.MerchantId == domainEvent.MerchantId,
+                cancellationToken: cancellationToken);
+            if (merchantOperator == null)
+            {
+                return Result.NotFound($"No operator {domainEvent.OperatorId} found for merchant {domainEvent.MerchantId}");
+            }
+
+            merchantOperator.IsDeleted = true;
+
+            return await context.SaveChangesAsync(cancellationToken);
+        }
+
+        public async Task<Result> RemoveContractFromMerchant(ContractRemovedFromMerchantEvent domainEvent, CancellationToken cancellationToken)
+        {
+            EstateManagementGenericContext context = await this.GetContextFromDomainEvent(domainEvent, cancellationToken);
+
+            MerchantContract merchantContract = await context.MerchantContracts.SingleOrDefaultAsync(o => o.ContractId == domainEvent.ContractId &&
+                                                                                                          o.MerchantId == domainEvent.MerchantId,
+                cancellationToken: cancellationToken);
+            if (merchantContract == null)
+            {
+                return Result.NotFound($"No contract {domainEvent.ContractId} found for merchant {domainEvent.MerchantId}");
+            }
+
+
+            merchantContract.IsDeleted = true;
+
+            return await context.SaveChangesAsync(cancellationToken);
+        }
+
+        public async Task<Result> UpdateMerchantAddress(MerchantAddressLine1UpdatedEvent domainEvent, CancellationToken cancellationToken)
+        {
+            EstateManagementGenericContext context = await this.GetContextFromDomainEvent(domainEvent, cancellationToken);
+
+            var getMerchantAddressResult = await context.LoadMerchantAddress(domainEvent, cancellationToken);
+            if (getMerchantAddressResult.IsFailed)
+                return ResultHelpers.CreateFailure(getMerchantAddressResult);
+            var merchantAddress = getMerchantAddressResult.Data;
+
+            merchantAddress.AddressLine1 = domainEvent.AddressLine1;
+
+            return await context.SaveChangesAsync(cancellationToken);
+        }
+
+        public async Task<Result> UpdateMerchantAddress(MerchantAddressLine2UpdatedEvent domainEvent, CancellationToken cancellationToken)
+        {
+            EstateManagementGenericContext context = await this.GetContextFromDomainEvent(domainEvent, cancellationToken);
+
+            var getMerchantAddressResult = await context.LoadMerchantAddress(domainEvent, cancellationToken);
+            if (getMerchantAddressResult.IsFailed)
+                return ResultHelpers.CreateFailure(getMerchantAddressResult);
+            var merchantAddress = getMerchantAddressResult.Data;
+
+            merchantAddress.AddressLine2 = domainEvent.AddressLine2;
+
+            return await context.SaveChangesAsync(cancellationToken);
+        }
+
+        public async Task<Result> UpdateMerchantAddress(MerchantAddressLine3UpdatedEvent domainEvent, CancellationToken cancellationToken)
+        {
+            EstateManagementGenericContext context = await this.GetContextFromDomainEvent(domainEvent, cancellationToken);
+
+            var getMerchantAddressResult = await context.LoadMerchantAddress(domainEvent, cancellationToken);
+            if (getMerchantAddressResult.IsFailed)
+                return ResultHelpers.CreateFailure(getMerchantAddressResult);
+            var merchantAddress = getMerchantAddressResult.Data;
+
+            merchantAddress.AddressLine3 = domainEvent.AddressLine3;
+
+            return await context.SaveChangesAsync(cancellationToken);
+        }
+
+        public async Task<Result> UpdateMerchantAddress(MerchantAddressLine4UpdatedEvent domainEvent, CancellationToken cancellationToken)
+        {
+            EstateManagementGenericContext context = await this.GetContextFromDomainEvent(domainEvent, cancellationToken);
+
+            var getMerchantAddressResult = await context.LoadMerchantAddress(domainEvent, cancellationToken);
+            if (getMerchantAddressResult.IsFailed)
+                return ResultHelpers.CreateFailure(getMerchantAddressResult);
+            var merchantAddress = getMerchantAddressResult.Data;
+
+            merchantAddress.AddressLine4 = domainEvent.AddressLine4;
+
+            return await context.SaveChangesAsync(cancellationToken);
+        }
+
+        public async Task<Result> UpdateMerchantAddress(MerchantCountyUpdatedEvent domainEvent, CancellationToken cancellationToken)
+        {
+            EstateManagementGenericContext context = await this.GetContextFromDomainEvent(domainEvent, cancellationToken);
+
+            var getMerchantAddressResult = await context.LoadMerchantAddress(domainEvent, cancellationToken);
+            if (getMerchantAddressResult.IsFailed)
+                return ResultHelpers.CreateFailure(getMerchantAddressResult);
+            var merchantAddress = getMerchantAddressResult.Data;
+
+            merchantAddress.Country = domainEvent.Country;
+
+            return await context.SaveChangesAsync(cancellationToken);
+        }
+
+        public async Task<Result> UpdateMerchantAddress(MerchantRegionUpdatedEvent domainEvent, CancellationToken cancellationToken)
+        {
+            EstateManagementGenericContext context = await this.GetContextFromDomainEvent(domainEvent, cancellationToken);
+
+            var getMerchantAddressResult = await context.LoadMerchantAddress(domainEvent, cancellationToken);
+            if (getMerchantAddressResult.IsFailed)
+                return ResultHelpers.CreateFailure(getMerchantAddressResult);
+            var merchantAddress = getMerchantAddressResult.Data;
+
+            merchantAddress.Region = domainEvent.Region;
+
+            return await context.SaveChangesAsync(cancellationToken);
+        }
+
+        public async Task<Result> UpdateMerchantAddress(MerchantTownUpdatedEvent domainEvent, CancellationToken cancellationToken)
+        {
+            EstateManagementGenericContext context = await this.GetContextFromDomainEvent(domainEvent, cancellationToken);
+
+            var getMerchantAddressResult = await context.LoadMerchantAddress(domainEvent, cancellationToken);
+            if (getMerchantAddressResult.IsFailed)
+                return ResultHelpers.CreateFailure(getMerchantAddressResult);
+            var merchantAddress = getMerchantAddressResult.Data;
+
+            merchantAddress.Town = domainEvent.Town;
+
+            return await context.SaveChangesAsync(cancellationToken);
+        }
+
+        public async Task<Result> UpdateMerchantAddress(MerchantPostalCodeUpdatedEvent domainEvent, CancellationToken cancellationToken)
+        {
+            EstateManagementGenericContext context = await this.GetContextFromDomainEvent(domainEvent, cancellationToken);
+
+            var getMerchantAddressResult = await context.LoadMerchantAddress(domainEvent, cancellationToken);
+            if (getMerchantAddressResult.IsFailed)
+                return ResultHelpers.CreateFailure(getMerchantAddressResult);
+            var merchantAddress = getMerchantAddressResult.Data;
+
+            merchantAddress.PostalCode = domainEvent.PostalCode;
+
+            return await context.SaveChangesAsync(cancellationToken);
+        }
+
+        public async Task<Result> UpdateMerchantContact(MerchantContactNameUpdatedEvent domainEvent, CancellationToken cancellationToken)
+        {
+            EstateManagementGenericContext context = await this.GetContextFromDomainEvent(domainEvent, cancellationToken);
+
+            var getMerchantContactResult = await context.LoadMerchantContact(domainEvent, cancellationToken);
+            if (getMerchantContactResult.IsFailed)
+                return ResultHelpers.CreateFailure(getMerchantContactResult);
+            var merchantContact = getMerchantContactResult.Data;
+
+            merchantContact.Name = domainEvent.ContactName;
+
+            return await context.SaveChangesAsync(cancellationToken);
+        }
+
+        public async Task<Result> UpdateMerchantContact(MerchantContactEmailAddressUpdatedEvent domainEvent, CancellationToken cancellationToken)
+        {
+            EstateManagementGenericContext context = await this.GetContextFromDomainEvent(domainEvent, cancellationToken);
+
+            var getMerchantContactResult = await context.LoadMerchantContact(domainEvent, cancellationToken);
+            if (getMerchantContactResult.IsFailed)
+                return ResultHelpers.CreateFailure(getMerchantContactResult);
+            var merchantContact = getMerchantContactResult.Data;
+
+            merchantContact.EmailAddress = domainEvent.ContactEmailAddress;
+
+            return await context.SaveChangesAsync(cancellationToken);
+        }
+
+        public async Task<Result> UpdateMerchantContact(MerchantContactPhoneNumberUpdatedEvent domainEvent, CancellationToken cancellationToken)
+        {
+            EstateManagementGenericContext context = await this.GetContextFromDomainEvent(domainEvent, cancellationToken);
+
+            var getMerchantContactResult = await context.LoadMerchantContact(domainEvent, cancellationToken);
+            if (getMerchantContactResult.IsFailed)
+                return ResultHelpers.CreateFailure(getMerchantContactResult);
+            var merchantContact = getMerchantContactResult.Data;
+
+            merchantContact.PhoneNumber = domainEvent.ContactPhoneNumber;
+
+            return await context.SaveChangesAsync(cancellationToken);
+        }
+
+        public async Task<Result> AddContractToMerchant(ContractAddedToMerchantEvent domainEvent, CancellationToken cancellationToken)
+        {
+            EstateManagementGenericContext context = await this.GetContextFromDomainEvent(domainEvent, cancellationToken);
+
+            MerchantContract merchantContract = new MerchantContract
+            {
+                MerchantId = domainEvent.MerchantId,
+                ContractId = domainEvent.ContractId
+            };
+
+            await context.MerchantContracts.AddAsync(merchantContract, cancellationToken);
+            return await context.SaveChangesAsync(cancellationToken);
+        }
+        public async Task<Result> UpdateMerchant(MerchantReferenceAllocatedEvent domainEvent,
+                                                 CancellationToken cancellationToken)
+        {
+            EstateManagementGenericContext context = await this.GetContextFromDomainEvent(domainEvent, cancellationToken);
+
+            Result<Merchant> merchantResult = await context.LoadMerchant(domainEvent, cancellationToken);
+            if (merchantResult.IsFailed)
+                return ResultHelpers.CreateFailure(merchantResult);
+            var merchant = merchantResult.Data;
+
+            merchant.Reference = domainEvent.MerchantReference;
+            return await context.SaveChangesAsync(cancellationToken);
+        }
+
+        public async Task<Result<List<MerchantModel>>> GetMerchants(Guid estateId,
+                                                                  CancellationToken cancellationToken)
+        {
+            EstateManagementGenericContext context = await this.DbContextFactory.GetContext(estateId, ConnectionStringIdentifier, cancellationToken);
+
+            Estate estate = await context.Estates.SingleOrDefaultAsync(e => e.EstateId == estateId, cancellationToken: cancellationToken);
+            List<Merchant> merchants = await (from m in context.Merchants where m.EstateId == estateId select m).ToListAsync(cancellationToken);
+            List<MerchantAddress> merchantAddresses = await (from a in context.MerchantAddresses where merchants.Select(m => m.MerchantId).Contains(a.MerchantId) select a).ToListAsync(cancellationToken);
+            List<MerchantContact> merchantContacts = await (from c in context.MerchantContacts where merchants.Select(m => m.MerchantId).Contains(c.MerchantId) select c).ToListAsync(cancellationToken);
+            List<MerchantOperator> merchantOperators = await (from o in context.MerchantOperators where merchants.Select(m => m.MerchantId).Contains(o.MerchantId) select o).ToListAsync(cancellationToken);
+            List<MerchantSecurityUser> merchantSecurityUsers = await (from u in context.MerchantSecurityUsers where merchants.Select(m => m.MerchantId).Contains(u.MerchantId) select u).ToListAsync(cancellationToken);
+            List<MerchantDevice> merchantDevices = await (from d in context.MerchantDevices where merchants.Select(m => m.MerchantId).Contains(d.MerchantId) select d).ToListAsync(cancellationToken);
+
+            if (merchants.Any() == false)
+            {
+                return Result.NotFound($"No merchants found for estate {estateId}");
+            }
+
+            List<MerchantModel> models = new List<MerchantModel>();
+
+            foreach (Merchant m in merchants)
+            {
+                List<MerchantAddress> a = merchantAddresses.Where(ma => ma.MerchantId == m.MerchantId).ToList();
+                List<MerchantContact> c = merchantContacts.Where(mc => mc.MerchantId == m.MerchantId).ToList();
+                List<MerchantOperator> o = merchantOperators.Where(mo => mo.MerchantId == m.MerchantId).ToList();
+                List<MerchantSecurityUser> u = merchantSecurityUsers.Where(msu => msu.MerchantId == m.MerchantId).ToList();
+                List<MerchantDevice> d = merchantDevices.Where(ma => ma.MerchantId == m.MerchantId).ToList();
+
+                models.Add(ModelFactory.ConvertFrom(estateId, m, a, c, o, d, u));
+            }
+
+            return Result.Success(models);
+        }
+
+        public async Task<Result<List<ContractModel>>> GetMerchantContracts(Guid estateId,
+                                                                            Guid merchantId,
+                                                                            CancellationToken cancellationToken)
+        {
+            EstateManagementGenericContext context = await this.DbContextFactory.GetContext(estateId, ConnectionStringIdentifier, cancellationToken);
+
+            var x = await (from c in context.Contracts
+                           join cp in context.ContractProducts on c.ContractId equals cp.ContractId
+                           join eo in context.Operators on c.OperatorId equals eo.OperatorId
+                           join m in context.Merchants on c.EstateId equals m.EstateId
+                           join e in context.Estates on c.EstateId equals e.EstateId
+                           join mc in context.MerchantContracts on new { c.ContractId, m.MerchantId } equals new { mc.ContractId, mc.MerchantId }
+                           where m.MerchantId == merchantId && e.EstateId == estateId
+                           select new
+                           {
+                               Contract = c,
+                               Product = cp,
+                               Operator = eo
+                           }).ToListAsync(cancellationToken);
+
+            List<ContractModel> contracts = new List<ContractModel>();
+
+            foreach (var test in x)
+            {
+                // attempt to find the contract
+                ContractModel contract = contracts.SingleOrDefault(c => c.ContractId == test.Contract.ContractId);
+
+                if (contract == null)
+                {
+                    // create the contract
+                    contract = new ContractModel
+                    {
+                        OperatorId = test.Contract.OperatorId,
+                        OperatorName = test.Operator.Name,
+                        Products = new List<Product>(),
+                        Description = test.Contract.Description,
+                        IsCreated = true,
+                        ContractId = test.Contract.ContractId,
+                        ContractReportingId = test.Contract.ContractReportingId,
+                        EstateId = estateId
+                    };
+
+                    contracts.Add(contract);
+                }
+
+                // Now add the product if not already added
+                Boolean productFound = contract.Products.Any(p => p.ContractProductId == test.Product.ContractProductId);
+
+                if (productFound == false)
+                {
+                    // Not already there so need to add it
+                    contract.Products.Add(new Product
+                    {
+                        ContractProductId = test.Product.ContractProductId,
+                        ContractProductReportingId = test.Product.ContractProductReportingId,
+                        TransactionFees = null,
+                        Value = test.Product.Value,
+                        Name = test.Product.ProductName,
+                        DisplayText = test.Product.DisplayText
+                    });
+                }
+            }
+
+            return Result.Success(contracts);
         }
 
         public async Task<Result<List<ContractModel>>> GetContracts(Guid estateId,

@@ -111,7 +111,7 @@ namespace TransactionProcessor
                 Func<String, IOperatorProxy> resolver = Startup.ServiceProvider.GetService<Func<String, IOperatorProxy>>();
                 IOperatorProxy proxy = resolver(operatorId);
 
-                Result<OperatorResponse> logonResult = proxy.ProcessLogonMessage(null, CancellationToken.None).Result;
+                Result<OperatorResponse> logonResult = proxy.ProcessLogonMessage(CancellationToken.None).Result;
 
                 if (logonResult.IsSuccess) {
                     Logger.LogInformation($"Auto logon for operator Id [{operatorId}] status [{logonResult.Data.IsSuccessful}]");
