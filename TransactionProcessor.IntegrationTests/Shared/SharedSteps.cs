@@ -370,18 +370,7 @@ namespace TransactionProcessor.IntegrationTests.Shared
             }
         }
 
-        [Given(@"I have assigned the following devices to the merchants")]
-        public async Task GivenIHaveAssignedTheFollowingDevicesToTheMerchants(DataTable table)
-        {
-
-            List<(EstateDetails, Guid, AddMerchantDeviceRequest)> requests = table.Rows.ToAddMerchantDeviceRequests(this.TestingContext.Estates);
-
-            List<(EstateDetails, DataTransferObjects.Responses.Merchant.MerchantResponse, String)> results = await this.TransactionProcessorSteps.GivenIHaveAssignedTheFollowingDevicesToTheMerchants(this.TestingContext.AccessToken, requests);
-            foreach ((EstateDetails, DataTransferObjects.Responses.Merchant.MerchantResponse, String) result in results)
-            {
-                this.TestingContext.Logger.LogInformation($"Device {result.Item3} assigned to Merchant {result.Item2.MerchantName} Estate {result.Item1.EstateName}");
-            }
-        }
+        
 
         [When(@"I add the following contracts to the following merchants")]
         public async Task WhenIAddTheFollowingContractsToTheFollowingMerchants(DataTable table)
@@ -398,27 +387,7 @@ namespace TransactionProcessor.IntegrationTests.Shared
             return balanceValue;
         }
 
-        [Given(@"I make the following manual merchant deposits")]
-        public async Task GivenIMakeTheFollowingManualMerchantDeposits(DataTable table)
-        {
-            List<(EstateDetails, Guid, MakeMerchantDepositRequest)> requests = table.Rows.ToMakeMerchantDepositRequest(this.TestingContext.Estates);
-
-            foreach ((EstateDetails, Guid, MakeMerchantDepositRequest) request in requests)
-            {
-                Decimal previousMerchantBalance = await this.GetMerchantBalance(request.Item2);
-
-                await this.TransactionProcessorSteps.GivenIMakeTheFollowingManualMerchantDeposits(this.TestingContext.AccessToken, request);
-
-                await Retry.For(async () => {
-                                    Decimal currentMerchantBalance = await this.GetMerchantBalance(request.Item2);
-
-                                    currentMerchantBalance.ShouldBe(previousMerchantBalance + request.Item3.Amount);
-
-                    this.TestingContext.Logger.LogInformation($"Deposit Reference {request.Item3.Reference} made for Merchant Id {request.Item2}");
-                });
-            }
-        }
-
+        
         [When(@"I perform the following reconciliations")]
         public async Task WhenIPerformTheFollowingReconciliations(DataTable table)
         {
