@@ -10,6 +10,7 @@ using SimpleResults;
 using TransactionProcessor.BusinessLogic.Common;
 using TransactionProcessor.BusinessLogic.Requests;
 using TransactionProcessor.DataTransferObjects.Requests.Merchant;
+using TransactionProcessor.Factories;
 using Address = EstateManagement.DataTransferObjects.Requests.Merchant.Address;
 using CalculationType = TransactionProcessor.DataTransferObjects.Responses.Contract.CalculationType;
 using Contact = EstateManagement.DataTransferObjects.Requests.Merchant.Contact;
@@ -282,26 +283,10 @@ public class MerchantController : ControllerBase
             return Forbid();
         }
 
-        this.TokenResponse = await Helpers.GetToken(this.TokenResponse, this.SecurityServiceClient, cancellationToken);
+        MerchantCommands.CreateMerchantCommand command = new(estateId, createMerchantRequest);
 
-        var estateClientRequest = new EstateManagement.DataTransferObjects.Requests.Merchant.CreateMerchantRequest {
-            Name = createMerchantRequest.Name,
-            Address = new Address {
-                AddressLine1 = createMerchantRequest.Address.AddressLine1,
-                AddressLine2 = createMerchantRequest.Address.AddressLine2,
-                AddressLine3 = createMerchantRequest.Address.AddressLine3,
-                AddressLine4 = createMerchantRequest.Address.AddressLine4,
-                Country = createMerchantRequest.Address.Country,
-                PostalCode = createMerchantRequest.Address.PostalCode,
-                Region = createMerchantRequest.Address.Region,
-                Town = createMerchantRequest.Address.Town
-            },
-            Contact = new Contact { ContactName = createMerchantRequest.Contact.ContactName, EmailAddress = createMerchantRequest.Contact.EmailAddress, PhoneNumber = createMerchantRequest.Contact.PhoneNumber },
-            CreatedDateTime = createMerchantRequest.CreatedDateTime,
-            MerchantId = createMerchantRequest.MerchantId,
-            SettlementSchedule = (SettlementSchedule)createMerchantRequest.SettlementSchedule
-        };
-        var result = await this.EstateClient.CreateMerchant(this.TokenResponse.AccessToken, estateId, estateClientRequest, cancellationToken);
+        // Route the command
+        Result result = await Mediator.Send(command, cancellationToken);
 
         // return the result
         return result.ToActionResultX();
@@ -322,15 +307,10 @@ public class MerchantController : ControllerBase
             return Forbid();
         }
 
-        this.TokenResponse = await Helpers.GetToken(this.TokenResponse, this.SecurityServiceClient, cancellationToken);
+        MerchantCommands.AssignOperatorToMerchantCommand command = new(estateId, merchantId, assignOperatorRequest);
 
-        var estateClientRequest = new EstateManagement.DataTransferObjects.Requests.Merchant.AssignOperatorRequest
-        {
-            OperatorId = assignOperatorRequest.OperatorId,
-            MerchantNumber = assignOperatorRequest.MerchantNumber,
-            TerminalNumber = assignOperatorRequest.TerminalNumber
-        };
-        var result = await this.EstateClient.AssignOperatorToMerchant(this.TokenResponse.AccessToken, estateId, merchantId, estateClientRequest, cancellationToken);
+        // Route the command
+        Result result = await Mediator.Send(command, cancellationToken);
 
         // return the result
         return result.ToActionResultX();
@@ -349,9 +329,10 @@ public class MerchantController : ControllerBase
             return Forbid();
         }
 
-        this.TokenResponse = await Helpers.GetToken(this.TokenResponse, this.SecurityServiceClient, cancellationToken);
+        MerchantCommands.RemoveOperatorFromMerchantCommand command = new(estateId, merchantId, operatorId);
 
-        var result = await this.EstateClient.RemoveOperatorFromMerchant(this.TokenResponse.AccessToken, estateId, merchantId, operatorId, cancellationToken);
+        // Route the command
+        Result result = await Mediator.Send(command, cancellationToken);
 
         // return the result
         return result.ToActionResultX();
@@ -370,15 +351,10 @@ public class MerchantController : ControllerBase
             return Forbid();
         }
 
-        this.TokenResponse = await Helpers.GetToken(this.TokenResponse, this.SecurityServiceClient, cancellationToken);
+        MerchantCommands.AddMerchantDeviceCommand command = new(estateId, merchantId, addMerchantDeviceRequest);
 
-        var estateClientRequest = new EstateManagement.DataTransferObjects.Requests.Merchant.AddMerchantDeviceRequest
-        {
-            DeviceIdentifier = addMerchantDeviceRequest.DeviceIdentifier
-        };
-
-        var result = await this.EstateClient.AddDeviceToMerchant(this.TokenResponse.AccessToken, estateId, merchantId, estateClientRequest, cancellationToken);
-
+        // Route the command
+        Result result = await Mediator.Send(command, cancellationToken);
 
         // return the result
         return result.ToActionResultX();
@@ -397,14 +373,11 @@ public class MerchantController : ControllerBase
             return Forbid();
         }
 
-        this.TokenResponse = await Helpers.GetToken(this.TokenResponse, this.SecurityServiceClient, cancellationToken);
+        MerchantCommands.AddMerchantContractCommand command = new(estateId, merchantId, addMerchantContractRequest);
 
-        var estateClientRequest = new EstateManagement.DataTransferObjects.Requests.Merchant.AddMerchantContractRequest
-        {
-            ContractId = addMerchantContractRequest.ContractId
-        };
-        var result = await this.EstateClient.AddContractToMerchant(this.TokenResponse.AccessToken, estateId, merchantId, estateClientRequest, cancellationToken);
-        
+        // Route the command
+        Result result = await Mediator.Send(command, cancellationToken);
+
         // return the result
         return result.ToActionResultX();
     }
@@ -422,9 +395,10 @@ public class MerchantController : ControllerBase
             return Forbid();
         }
 
-        this.TokenResponse = await Helpers.GetToken(this.TokenResponse, this.SecurityServiceClient, cancellationToken);
+        MerchantCommands.RemoveMerchantContractCommand command = new(estateId, merchantId, contractId);
 
-        var result = await this.EstateClient.RemoveContractFromMerchant(this.TokenResponse.AccessToken, estateId, merchantId, contractId, cancellationToken);
+        // Route the command
+        Result result = await Mediator.Send(command, cancellationToken);
 
         // return the result
         return result.ToActionResultX();
@@ -443,16 +417,10 @@ public class MerchantController : ControllerBase
             return Forbid();
         }
 
-        var estateClientRequest = new EstateManagement.DataTransferObjects.Requests.Merchant.CreateMerchantUserRequest
-        {
-            EmailAddress = createMerchantUserRequest.EmailAddress,
-            FamilyName = createMerchantUserRequest.FamilyName,
-            GivenName = createMerchantUserRequest.GivenName,
-            Password = createMerchantUserRequest.Password,
-            MiddleName = createMerchantUserRequest.MiddleName,
-        };
+        MerchantCommands.CreateMerchantUserCommand command = new(estateId, merchantId, createMerchantUserRequest);
 
-        var result = await this.EstateClient.CreateMerchantUser(this.TokenResponse.AccessToken, estateId, merchantId, estateClientRequest, cancellationToken);
+        // Route the command
+        Result result = await Mediator.Send(command, cancellationToken);
 
         // return the result
         return result.ToActionResultX();
@@ -531,14 +499,10 @@ public class MerchantController : ControllerBase
             return Forbid();
         }
 
-        this.TokenResponse = await Helpers.GetToken(this.TokenResponse, this.SecurityServiceClient, cancellationToken);
+        MerchantCommands.SwapMerchantDeviceCommand command = new(estateId, merchantId, deviceIdentifier, swapMerchantDeviceRequest);
 
-        var estateClientRequest = new EstateManagement.DataTransferObjects.Requests.Merchant.SwapMerchantDeviceRequest
-        {
-            NewDeviceIdentifier = swapMerchantDeviceRequest.NewDeviceIdentifier
-        };
-        var result = await this.EstateClient.SwapDeviceForMerchant(this.TokenResponse.AccessToken, estateId, merchantId, deviceIdentifier, estateClientRequest, cancellationToken);
-
+        // Route the command
+        Result result = await Mediator.Send(command, cancellationToken);
 
         // return the result
         return result.ToActionResultX();
@@ -586,98 +550,95 @@ public class MerchantController : ControllerBase
             return Forbid();
         }
 
-        this.TokenResponse = await Helpers.GetToken(this.TokenResponse, this.SecurityServiceClient, cancellationToken);
+        MerchantQueries.GetMerchantQuery query = new(estateId, merchantId);
 
-        Result<MerchantResponse> result = await this.EstateClient.GetMerchant(this.TokenResponse.AccessToken, estateId, merchantId, cancellationToken);
-
+        // Route the query
+        Result<Models.Merchant.Merchant> result = await Mediator.Send(query, cancellationToken);
         if (result.IsFailed)
             return result.ToActionResultX();
-
-        var m = ConvertMerchant(result.Data);
-
-        return Result.Success(m).ToActionResultX();
+        return ModelFactory.ConvertFrom(result.Data).ToActionResultX();
     }
 
-    private static DataTransferObjects.Responses.Merchant.MerchantResponse ConvertMerchant(MerchantResponse merchant) {
-        var m = new DataTransferObjects.Responses.Merchant.MerchantResponse()
-        {
-            Operators = new List<DataTransferObjects.Responses.Merchant.MerchantOperatorResponse>(),
-            MerchantId = merchant.MerchantId,
-            SettlementSchedule = (DataTransferObjects.Responses.Merchant.SettlementSchedule)merchant.SettlementSchedule,
-            EstateId = merchant.EstateId,
-            EstateReportingId = merchant.EstateReportingId,
-            Addresses = new(),
-            Contacts = new(),
-            Contracts = new(),
-            Devices = new Dictionary<Guid, String>(),
-            MerchantName = merchant.MerchantName,
-            MerchantReference = merchant.MerchantReference,
-            MerchantReportingId = merchant.MerchantReportingId,
-            NextStatementDate = merchant.NextStatementDate
-        };
+    //private static DataTransferObjects.Responses.Merchant.MerchantResponse ConvertMerchant(MerchantResponse merchant) {
+    //    var m = new DataTransferObjects.Responses.Merchant.MerchantResponse()
+    //    {
+    //        Operators = new List<DataTransferObjects.Responses.Merchant.MerchantOperatorResponse>(),
+    //        MerchantId = merchant.MerchantId,
+    //        SettlementSchedule = (DataTransferObjects.Responses.Merchant.SettlementSchedule)merchant.SettlementSchedule,
+    //        EstateId = merchant.EstateId,
+    //        EstateReportingId = merchant.EstateReportingId,
+    //        Addresses = new(),
+    //        Contacts = new(),
+    //        Contracts = new(),
+    //        Devices = new Dictionary<Guid, String>(),
+    //        MerchantName = merchant.MerchantName,
+    //        MerchantReference = merchant.MerchantReference,
+    //        MerchantReportingId = merchant.MerchantReportingId,
+    //        NextStatementDate = merchant.NextStatementDate
+    //    };
 
-        if (merchant.Addresses != null) {
-            foreach (AddressResponse addressResponse in merchant.Addresses) {
-                m.Addresses.Add(new DataTransferObjects.Responses.Merchant.AddressResponse {
-                    AddressLine3 = addressResponse.AddressLine3,
-                    AddressLine4 = addressResponse.AddressLine4,
-                    AddressLine2 = addressResponse.AddressLine2,
-                    Country = addressResponse.Country,
-                    PostalCode = addressResponse.PostalCode,
-                    Region = addressResponse.Region,
-                    Town = addressResponse.Town,
-                    AddressLine1 = addressResponse.AddressLine1,
-                    AddressId = addressResponse.AddressId
-                });
-            }
-        }
+    //    if (merchant.Addresses != null) {
+    //        foreach (AddressResponse addressResponse in merchant.Addresses) {
+    //            m.Addresses.Add(new DataTransferObjects.Responses.Merchant.AddressResponse {
+    //                AddressLine3 = addressResponse.AddressLine3,
+    //                AddressLine4 = addressResponse.AddressLine4,
+    //                AddressLine2 = addressResponse.AddressLine2,
+    //                Country = addressResponse.Country,
+    //                PostalCode = addressResponse.PostalCode,
+    //                Region = addressResponse.Region,
+    //                Town = addressResponse.Town,
+    //                AddressLine1 = addressResponse.AddressLine1,
+    //                AddressId = addressResponse.AddressId
+    //            });
+    //        }
+    //    }
 
-        if (merchant.Contacts != null)
-        {
-            foreach (ContactResponse contactResponse in merchant.Contacts)
-            {
-                m.Contacts.Add(new DataTransferObjects.Responses.Contract.ContactResponse
-                {
-                    ContactId = contactResponse.ContactId,
-                    ContactName = contactResponse.ContactName,
-                    ContactEmailAddress = contactResponse.ContactEmailAddress,
-                    ContactPhoneNumber = contactResponse.ContactPhoneNumber
-                });
-            }
-        }
+    //    if (merchant.Contacts != null)
+    //    {
+    //        foreach (ContactResponse contactResponse in merchant.Contacts)
+    //        {
+    //            m.Contacts.Add(new DataTransferObjects.Responses.Contract.ContactResponse
+    //            {
+    //                ContactId = contactResponse.ContactId,
+    //                ContactName = contactResponse.ContactName,
+    //                ContactEmailAddress = contactResponse.ContactEmailAddress,
+    //                ContactPhoneNumber = contactResponse.ContactPhoneNumber
+    //            });
+    //        }
+    //    }
 
-        if (merchant.Contracts != null) {
-            foreach (MerchantContractResponse merchantContractResponse in merchant.Contracts) {
-                var mcr = new DataTransferObjects.Responses.Merchant.MerchantContractResponse { ContractId = merchantContractResponse.ContractId, ContractProducts = new List<Guid>(), IsDeleted = merchantContractResponse.IsDeleted, };
-                foreach (Guid contractProduct in merchantContractResponse.ContractProducts) {
-                    mcr.ContractProducts.Add(contractProduct);
-                }
+    //    if (merchant.Contracts != null) {
+    //        foreach (MerchantContractResponse merchantContractResponse in merchant.Contracts) {
+    //            var mcr = new DataTransferObjects.Responses.Merchant.MerchantContractResponse { ContractId = merchantContractResponse.ContractId, ContractProducts = new List<Guid>(), IsDeleted = merchantContractResponse.IsDeleted, };
+    //            foreach (Guid contractProduct in merchantContractResponse.ContractProducts) {
+    //                mcr.ContractProducts.Add(contractProduct);
+    //            }
 
-                m.Contracts.Add(mcr);
-            }
-        }
+    //            m.Contracts.Add(mcr);
+    //        }
+    //    }
 
-        if (merchant.Devices != null) {
-            foreach (KeyValuePair<Guid, String> keyValuePair in merchant.Devices) {
-                m.Devices.Add(keyValuePair.Key, keyValuePair.Value);
-            }
-        }
+    //    if (merchant.Devices != null) {
+    //        foreach (KeyValuePair<Guid, String> keyValuePair in merchant.Devices) {
+    //            m.Devices.Add(keyValuePair.Key, keyValuePair.Value);
+    //        }
+    //    }
 
-        if (merchant.Operators != null) {
-            foreach (MerchantOperatorResponse merchantOperatorResponse in merchant.Operators) {
-                m.Operators.Add(new() {
-                    OperatorId = merchantOperatorResponse.OperatorId, 
-                    MerchantNumber = merchantOperatorResponse.MerchantNumber, 
-                    TerminalNumber = merchantOperatorResponse.TerminalNumber,
-                    IsDeleted = merchantOperatorResponse.IsDeleted,
-                    Name = merchantOperatorResponse.Name
+    //    if (merchant.Operators != null) {
+    //        foreach (MerchantOperatorResponse merchantOperatorResponse in merchant.Operators) {
+    //            m.Operators.Add(new() {
+    //                OperatorId = merchantOperatorResponse.OperatorId, 
+    //                MerchantNumber = merchantOperatorResponse.MerchantNumber, 
+    //                TerminalNumber = merchantOperatorResponse.TerminalNumber,
+    //                IsDeleted = merchantOperatorResponse.IsDeleted,
+    //                Name = merchantOperatorResponse.Name
 
-                });
-            }
-        }
+    //            });
+    //        }
+    //    }
 
-        return m;
-    }
+    //    return m;
+    //}
 
     [Route("{merchantId}/contracts")]
     [HttpGet]
@@ -691,60 +652,11 @@ public class MerchantController : ControllerBase
             return Forbid();
         }
 
-        this.TokenResponse = await Helpers.GetToken(this.TokenResponse, this.SecurityServiceClient, cancellationToken);
+        MerchantQueries.GetMerchantContractsQuery query = new(estateId, merchantId);
 
-        Result<List<ContractResponse>> result = await this.EstateClient.GetMerchantContracts(this.TokenResponse.AccessToken, estateId, merchantId, cancellationToken);
+        Result<List<Models.Contract.Contract>> result = await Mediator.Send(query, cancellationToken);
 
-        if (result.IsFailed)
-            return result.ToActionResultX();
-
-        List<DataTransferObjects.Responses.Contract.ContractResponse> responses = new();
-
-        foreach (ContractResponse contractResponse in result.Data) {
-            var cr = new DataTransferObjects.Responses.Contract.ContractResponse {
-                Description = contractResponse.Description,
-                EstateId = contractResponse.EstateId,
-                EstateReportingId = contractResponse.EstateReportingId,
-                ContractId = contractResponse.ContractId,
-                Products = new(),
-                ContractReportingId = contractResponse.ContractReportingId,
-                OperatorId = contractResponse.OperatorId,
-                OperatorName = contractResponse.OperatorName
-            };
-
-            foreach (EstateManagement.DataTransferObjects.Responses.Contract.ContractProduct contractResponseProduct in contractResponse.Products) {
-                var p = new DataTransferObjects.Responses.Contract.ContractProduct
-                {
-                    ProductId = contractResponseProduct.ProductId,
-                    Value = contractResponseProduct.Value,
-                    ProductType = (ProductType)contractResponseProduct.ProductType,
-                    DisplayText = contractResponseProduct.DisplayText,
-                    Name = contractResponseProduct.Name,
-                    ProductReportingId = contractResponseProduct.ProductReportingId,
-                    TransactionFees = new()
-                };
-
-                if (contractResponseProduct.TransactionFees != null) {
-                    foreach (EstateManagement.DataTransferObjects.Responses.Contract.ContractProductTransactionFee contractProductTransactionFee in contractResponseProduct.TransactionFees) {
-                        p.TransactionFees.Add(new DataTransferObjects.Responses.Contract.ContractProductTransactionFee {
-                            FeeType = (DataTransferObjects.Responses.Contract.FeeType)contractProductTransactionFee.FeeType,
-                            CalculationType = (DataTransferObjects.Responses.Contract.CalculationType)contractProductTransactionFee.CalculationType,
-                            Value = contractProductTransactionFee.Value,
-                            Description = contractProductTransactionFee.Description,
-                            TransactionFeeReportingId = contractProductTransactionFee.TransactionFeeReportingId,
-                            TransactionFeeId = contractProductTransactionFee.TransactionFeeId
-                        });
-                    }
-                }
-
-                cr.Products.Add(p);
-
-            }
-
-            responses.Add(cr);
-        }
-
-        return Result.Success(responses).ToActionResultX();
+        return ModelFactory.ConvertFrom(result.Data).ToActionResultX();
     }
 
     [HttpGet]
@@ -758,18 +670,11 @@ public class MerchantController : ControllerBase
             return Forbid();
         }
 
-        this.TokenResponse = await Helpers.GetToken(this.TokenResponse, this.SecurityServiceClient, cancellationToken);
+        MerchantQueries.GetMerchantsQuery query = new(estateId);
 
-        var result = await this.EstateClient.GetMerchants(this.TokenResponse.AccessToken, estateId, cancellationToken);
+        Result<List<Models.Merchant.Merchant>> result = await Mediator.Send(query, cancellationToken);
 
-        if (result.IsFailed)
-            return result.ToActionResultX();
-        List<DataTransferObjects.Responses.Merchant.MerchantResponse> responses = new();
-        foreach (MerchantResponse merchantResponse in result.Data) {
-            responses.Add(ConvertMerchant(merchantResponse));
-        }
-        
-        return Result.Success(responses).ToActionResultX();
+        return ModelFactory.ConvertFrom(result.Data).ToActionResultX();
     }
 
     [Route("{merchantId}/contracts/{contractId}/products/{productId}/transactionFees")]
@@ -786,27 +691,11 @@ public class MerchantController : ControllerBase
             return Forbid();
         }
 
-        this.TokenResponse = await Helpers.GetToken(this.TokenResponse, this.SecurityServiceClient, cancellationToken);
+        MerchantQueries.GetTransactionFeesForProductQuery query = new(estateId, merchantId, contractId, productId);
 
-        var result = await this.EstateClient.GetTransactionFeesForProduct(this.TokenResponse.AccessToken, estateId, merchantId, contractId, productId, cancellationToken);
+        List<Models.Contract.ContractProductTransactionFee> transactionFees = await Mediator.Send(query, cancellationToken);
 
-        if (result.IsFailed)
-            return result.ToActionResultX();
-
-        List<DataTransferObjects.Responses.Contract.ContractProductTransactionFee> responses = new();
-
-        foreach (EstateManagement.DataTransferObjects.Responses.Contract.ContractProductTransactionFee contractProductTransactionFee in result.Data) {
-            responses.Add(new DataTransferObjects.Responses.Contract.ContractProductTransactionFee {
-                CalculationType = (CalculationType)contractProductTransactionFee.CalculationType,
-                Value = contractProductTransactionFee.Value,
-                Description = contractProductTransactionFee.Description,
-                FeeType = (FeeType)contractProductTransactionFee.FeeType,
-                TransactionFeeReportingId = contractProductTransactionFee.TransactionFeeReportingId,
-                TransactionFeeId = contractProductTransactionFee.TransactionFeeId
-            });
-        }
-        
-        return Result.Success(responses).ToActionResultX();
+        return ModelFactory.ConvertFrom(transactionFees).ToActionResultX();
     }
 
     [HttpPatch]
@@ -823,16 +712,11 @@ public class MerchantController : ControllerBase
             return Forbid();
         }
 
-        this.TokenResponse = await Helpers.GetToken(this.TokenResponse, this.SecurityServiceClient, cancellationToken);
+        MerchantCommands.UpdateMerchantCommand command = new(estateId, merchantId, updateMerchantRequest);
 
-        var estateClientRequest = new EstateManagement.DataTransferObjects.Requests.Merchant.UpdateMerchantRequest
-        {
-            Name = updateMerchantRequest.Name,
-            SettlementSchedule = (SettlementSchedule)updateMerchantRequest.SettlementSchedule
-        };
-        
-        var result = await this.EstateClient.UpdateMerchant(this.TokenResponse.AccessToken, estateId, merchantId, estateClientRequest, cancellationToken);
-        
+        // Route the command
+        Result result = await Mediator.Send(command, cancellationToken);
+
         // return the result
         return result.ToActionResultX();
     }
@@ -850,21 +734,10 @@ public class MerchantController : ControllerBase
             return Forbid();
         }
 
-        var estateClientRequest = new EstateManagement.DataTransferObjects.Requests.Merchant.Address
-        {
-            AddressLine1 = addAddressRequest.AddressLine1,
-            AddressLine2 = addAddressRequest.AddressLine2,
-            AddressLine3 = addAddressRequest.AddressLine3,
-            AddressLine4 = addAddressRequest.AddressLine4,
-            Country = addAddressRequest.Country,
-            PostalCode = addAddressRequest.PostalCode,
-            Region = addAddressRequest.Region,
-            Town = addAddressRequest.Town
-        };
+        MerchantCommands.AddMerchantAddressCommand command = new(estateId, merchantId, addAddressRequest);
 
-        this.TokenResponse = await Helpers.GetToken(this.TokenResponse, this.SecurityServiceClient, cancellationToken);
-
-        var result = await this.EstateClient.AddMerchantAddress(this.TokenResponse.AccessToken, estateId, merchantId, estateClientRequest, cancellationToken);
+        // Route the command
+        Result result = await Mediator.Send(command, cancellationToken);
 
         // return the result
         return result.ToActionResultX();
@@ -884,21 +757,10 @@ public class MerchantController : ControllerBase
             return Forbid();
         }
 
-        var estateClientRequest = new EstateManagement.DataTransferObjects.Requests.Merchant.Address
-        {
-            AddressLine1 = updateAddressRequest.AddressLine1,
-            AddressLine2 = updateAddressRequest.AddressLine2,
-            AddressLine3 = updateAddressRequest.AddressLine3,
-            AddressLine4 = updateAddressRequest.AddressLine4,
-            Country = updateAddressRequest.Country,
-            PostalCode = updateAddressRequest.PostalCode,
-            Region = updateAddressRequest.Region,
-            Town = updateAddressRequest.Town
-        };
+        MerchantCommands.UpdateMerchantAddressCommand command = new(estateId, merchantId, addressId, updateAddressRequest);
 
-        this.TokenResponse = await Helpers.GetToken(this.TokenResponse, this.SecurityServiceClient, cancellationToken);
-
-        var result = await this.EstateClient.UpdateMerchantAddress(this.TokenResponse.AccessToken, estateId, merchantId,addressId, estateClientRequest, cancellationToken);
+        // Route the command
+        Result result = await Mediator.Send(command, cancellationToken);
 
         // return the result
         return result.ToActionResultX();
@@ -917,15 +779,10 @@ public class MerchantController : ControllerBase
             return Forbid();
         }
 
-        this.TokenResponse = await Helpers.GetToken(this.TokenResponse, this.SecurityServiceClient, cancellationToken);
-        var estateClientRequest = new EstateManagement.DataTransferObjects.Requests.Merchant.Contact
-        {
-            ContactName = addContactRequest.ContactName,
-            EmailAddress = addContactRequest.EmailAddress,
-            PhoneNumber = addContactRequest.PhoneNumber
-        };
+        MerchantCommands.AddMerchantContactCommand command = new(estateId, merchantId, addContactRequest);
 
-        var result = await this.EstateClient.AddMerchantContact(this.TokenResponse.AccessToken, estateId, merchantId, estateClientRequest, cancellationToken);
+        // Route the command
+        Result result = await Mediator.Send(command, cancellationToken);
 
         // return the result
         return result.ToActionResultX();
@@ -945,15 +802,10 @@ public class MerchantController : ControllerBase
             return Forbid();
         }
 
-        this.TokenResponse = await Helpers.GetToken(this.TokenResponse, this.SecurityServiceClient, cancellationToken);
-        var estateClientRequest = new EstateManagement.DataTransferObjects.Requests.Merchant.Contact
-        {
-            ContactName = updateContactRequest.ContactName,
-            EmailAddress = updateContactRequest.EmailAddress,
-            PhoneNumber = updateContactRequest.PhoneNumber
-        };
+        MerchantCommands.UpdateMerchantContactCommand command = new(estateId, merchantId, contactId, updateContactRequest);
 
-        var result = await this.EstateClient.UpdateMerchantContact(this.TokenResponse.AccessToken, estateId, merchantId, contactId,estateClientRequest, cancellationToken);
+        // Route the command
+        Result result = await Mediator.Send(command, cancellationToken);
 
         // return the result
         return result.ToActionResultX();

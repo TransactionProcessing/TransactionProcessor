@@ -57,7 +57,7 @@ Background:
 	| Test Merchant 2 | Address Line 1 | TestTown | Test Region | United Kingdom | Test Contact 2 | testcontact2@merchant2.co.uk | Test Estate 1 |
 	| Test Merchant 3 | Address Line 1 | TestTown | Test Region | United Kingdom | Test Contact 3 | testcontact3@merchant2.co.uk | Test Estate 2 |
 
-	Given I have assigned the following  operator to the merchants
+	Given I have assigned the following operator to the merchants
 	| OperatorName | MerchantName    | MerchantNumber | TerminalNumber | EstateName    |
 	| Safaricom    | Test Merchant 1 | 00000001       | 10000001       | Test Estate 1 |
 	| Safaricom    | Test Merchant 2 | 00000002       | 10000002       | Test Estate 1 |

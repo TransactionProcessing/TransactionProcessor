@@ -1,5 +1,4 @@
-﻿using EstateManagement.Merchant.DomainEvents;
-using Shared.DomainDrivenDesign.EventSourcing;
+﻿using Shared.DomainDrivenDesign.EventSourcing;
 using Shouldly;
 using System;
 using System.Collections.Generic;
@@ -18,7 +17,7 @@ namespace TransactionProcessor.ProjectionEngine.Tests
         [InlineData(typeof(VoucherDomainEvents.BarcodeAddedEvent), true)]
         [InlineData(typeof(VoucherDomainEvents.VoucherIssuedEvent), true)]
         [InlineData(typeof(VoucherDomainEvents.VoucherFullyRedeemedEvent), true)]
-        [InlineData(typeof(AddressAddedEvent), false)]
+        [InlineData(typeof(MerchantDomainEvents.AddressAddedEvent), false)]
         public void VoucherProjection_ShouldIHandleEvent_ReturnsExpectedValue(Type eventType, Boolean expectedResult){
             VoucherProjection projection = new VoucherProjection();
 
@@ -38,7 +37,7 @@ namespace TransactionProcessor.ProjectionEngine.Tests
         public async Task VoucherProjection_Handle_UnSupportedEvent_EventIsHandled(){
             VoucherProjection projection = new VoucherProjection();
             VoucherState state = new VoucherState();
-            AddressAddedEvent @event = TestData.AddressAddedEvent;
+            MerchantDomainEvents.AddressAddedEvent @event = TestData.AddressAddedEvent;
 
             VoucherState newState = await projection.Handle(state, @event, CancellationToken.None);
 

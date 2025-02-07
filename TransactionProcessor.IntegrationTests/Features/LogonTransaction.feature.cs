@@ -293,7 +293,7 @@ namespace TransactionProcessor.IntegrationTests.Features
                         "10000001",
                         "Test Estate 1"});
 #line 46
- await testRunner.GivenAsync("I have assigned the following  operator to the merchants", ((string)(null)), table52, "Given ");
+ await testRunner.GivenAsync("I have assigned the following operator to the merchants", ((string)(null)), table52, "Given ");
 #line hidden
         }
         

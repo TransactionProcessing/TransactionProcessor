@@ -7,7 +7,6 @@ using TransactionProcessor.DomainEvents;
 
 namespace TransactionProcessor.ProjectionEngine.Projections
 {
-    using EstateManagement.Merchant.DomainEvents;
     using Shared.DomainDrivenDesign.EventSourcing;
     using State;
 

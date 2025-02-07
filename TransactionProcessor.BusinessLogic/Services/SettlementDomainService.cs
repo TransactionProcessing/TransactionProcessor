@@ -3,26 +3,21 @@ using SimpleResults;
 using TransactionProcessor.Aggregates;
 using TransactionProcessor.BusinessLogic.Requests;
 using TransactionProcessor.Models.Contract;
+using TransactionProcessor.Models.Merchant;
 
 namespace TransactionProcessor.BusinessLogic.Services
 {
     using System;
     using System.Collections.Generic;
-    using System.Diagnostics.CodeAnalysis;
     using System.Linq;
     using System.Threading;
     using System.Threading.Tasks;
     using Common;
-    using EstateManagement.Client;
-    using EstateManagement.DataTransferObjects;
-    using EstateManagement.DataTransferObjects.Responses;
     using Models;
     using SecurityService.Client;
-    using SecurityService.DataTransferObjects.Responses;
     using Shared.DomainDrivenDesign.EventSourcing;
     using Shared.EventStore.Aggregate;
     using Shared.Exceptions;
-    using Shared.General;
     using Shared.Logger;
 
     public interface ISettlementDomainService
@@ -39,11 +34,8 @@ namespace TransactionProcessor.BusinessLogic.Services
     {
         private readonly IAggregateRepository<TransactionAggregate, DomainEvent> TransactionAggregateRepository;
         private readonly IAggregateRepository<SettlementAggregate, DomainEvent> SettlementAggregateRepository;
-
-        private readonly ISecurityServiceClient SecurityServiceClient;
-
-        private readonly IIntermediateEstateClient EstateClient;
-
+        private readonly IAggregateRepository<MerchantAggregate, DomainEvent> MerchantAggregateRepository;
+        
         private async Task<Result> ApplySettlementUpdates(Func<SettlementAggregate, Task<Result>> action,
                                                      Guid settlementId,
                                                      CancellationToken cancellationToken,
@@ -122,14 +114,12 @@ namespace TransactionProcessor.BusinessLogic.Services
                     return Result.Success();
                 }
 
-                this.TokenResponse = await Helpers.GetToken(this.TokenResponse, this.SecurityServiceClient, cancellationToken);
+                Result<MerchantAggregate> merchantResult = await this.MerchantAggregateRepository.GetLatestVersion(command.MerchantId, cancellationToken);
+                if (merchantResult.IsFailed)
+                    return ResultHelpers.CreateFailure(merchantResult);
 
-                EstateManagement.DataTransferObjects.Responses.Merchant.MerchantResponse merchant = await this.EstateClient.GetMerchant(this.TokenResponse.AccessToken,
-                    command.EstateId,
-                    command.MerchantId,
-                    cancellationToken);
-
-                if (merchant.SettlementSchedule == EstateManagement.DataTransferObjects.Responses.Merchant.SettlementSchedule.Immediate)
+                MerchantAggregate merchant = merchantResult.Data;
+                if (merchant.SettlementSchedule == SettlementSchedule.Immediate)
                 {
                     // Mark the settlement as completed
                     settlementAggregate.StartProcessing(DateTime.Now);
@@ -216,18 +206,15 @@ namespace TransactionProcessor.BusinessLogic.Services
 
         public async Task<Result> AddSettledFeeToSettlement(SettlementCommands.AddSettledFeeToSettlementCommand command,
                                                             CancellationToken cancellationToken) {
-            this.TokenResponse = await Helpers.GetToken(this.TokenResponse, this.SecurityServiceClient, cancellationToken);
-
             Guid aggregateId = Helpers.CalculateSettlementAggregateId(command.SettledDate.Date, command.MerchantId, command.EstateId);
             Result result = await ApplySettlementUpdates(async (SettlementAggregate settlementAggregate) => {
-                
-                var getMerchantResult = await this.EstateClient.GetMerchant(this.TokenResponse.AccessToken, command.EstateId, command.MerchantId, cancellationToken);
-                if (getMerchantResult.IsFailed) {
-                    return ResultHelpers.CreateFailure(getMerchantResult);
-                }
 
-                var merchant = getMerchantResult.Data;
-                if (merchant.SettlementSchedule == EstateManagement.DataTransferObjects.Responses.Merchant.SettlementSchedule.Immediate){
+                Result<MerchantAggregate> merchantResult = await this.MerchantAggregateRepository.GetLatestVersion(command.MerchantId, cancellationToken);
+                if (merchantResult.IsFailed)
+                    return ResultHelpers.CreateFailure(merchantResult);
+
+                MerchantAggregate merchant = merchantResult.Data;
+                if (merchant.SettlementSchedule == SettlementSchedule.Immediate){
                     settlementAggregate.ImmediatelyMarkFeeAsSettled(command.MerchantId, command.TransactionId, command.FeeId);
                 }
                 else {
@@ -242,15 +229,11 @@ namespace TransactionProcessor.BusinessLogic.Services
 
         public SettlementDomainService(IAggregateRepository<TransactionAggregate, DomainEvent> transactionAggregateRepository,
                                        IAggregateRepository<SettlementAggregate, DomainEvent> settlementAggregateRepository,
-                                       ISecurityServiceClient securityServiceClient,
-                                       IIntermediateEstateClient estateClient)
+                                       IAggregateRepository<MerchantAggregate, DomainEvent> merchantAggregateRepository)
         {
             this.TransactionAggregateRepository = transactionAggregateRepository;
             this.SettlementAggregateRepository = settlementAggregateRepository;
-            this.SecurityServiceClient = securityServiceClient;
-            this.EstateClient = estateClient;
+            this.MerchantAggregateRepository = merchantAggregateRepository;
         }
-
-        private TokenResponse TokenResponse;
     }
 }

@@ -43,7 +43,7 @@ namespace TransactionProcessor.Aggregates.Tests
         {
             OperatorAggregate aggregate = OperatorAggregate.Create(TestData.OperatorId);
             aggregate.Create(TestData.EstateId, TestData.OperatorName, TestData.RequireCustomMerchantNumber, TestData.RequireCustomTerminalNumber);
-            Models.Operator.Operator @operator = aggregate.GetOperator();
+            TransactionProcessor.Models.Operator.Operator @operator = aggregate.GetOperator();
             @operator.OperatorId.ShouldBe(TestData.OperatorId);
             @operator.Name.ShouldBe(TestData.OperatorName);
             @operator.RequireCustomTerminalNumber.ShouldBe(TestData.RequireCustomTerminalNumber);

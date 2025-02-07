@@ -4,6 +4,8 @@ using System.Threading;
 using System.Threading.Tasks;
 using SimpleResults;
 using TransactionProcessor.Models.Contract;
+using TransactionProcessor.Models.Merchant;
+using Contract = TransactionProcessor.Models.Contract.Contract;
 
 namespace TransactionProcessor.BusinessLogic.Manager
 {
@@ -11,9 +13,9 @@ namespace TransactionProcessor.BusinessLogic.Manager
     {
         #region Methods
 
-        //Task<Result<List<Contract>>> GetMerchantContracts(Guid estateId,
-        //                                                  Guid merchantId,
-        //                                                  CancellationToken cancellationToken);
+        Task<Result<List<Contract>>> GetMerchantContracts(Guid estateId,
+                                                          Guid merchantId,
+                                                          CancellationToken cancellationToken);
 
         Task<Result<List<Contract>>> GetContracts(Guid estateId,
                                                   CancellationToken cancellationToken);
@@ -28,16 +30,16 @@ namespace TransactionProcessor.BusinessLogic.Manager
         Task<Result<List<Models.Estate.Estate>>> GetEstates(Guid estateId,
                                                                CancellationToken cancellationToken);
 
-        //Task<Result<EstateManagement.Merchant>> GetMerchant(Guid estateId, Guid merchantId,
-        //                                                    CancellationToken cancellationToken);
+        Task<Result<Merchant>> GetMerchant(Guid estateId, Guid merchantId,
+                                                            CancellationToken cancellationToken);
 
-        //Task<Result<List<EstateManagement.Merchant>>> GetMerchants(Guid estateId, CancellationToken cancellationToken);
+        Task<Result<List<Merchant>>> GetMerchants(Guid estateId, CancellationToken cancellationToken);
 
-        //Task<Result<List<ContractProductTransactionFee>>> GetTransactionFeesForProduct(Guid estateId,
-        //                                                        Guid merchantId,
-        //                                                        Guid contractId,
-        //                                                        Guid productId,
-        //                                                        CancellationToken cancellationToken);
+        Task<Result<List<ContractProductTransactionFee>>> GetTransactionFeesForProduct(Guid estateId,
+                                                                Guid merchantId,
+                                                                Guid contractId,
+                                                                Guid productId,
+                                                                CancellationToken cancellationToken);
 
         //Task<Result<File>> GetFileDetails(Guid estateId, Guid fileId, CancellationToken cancellationToken);
 

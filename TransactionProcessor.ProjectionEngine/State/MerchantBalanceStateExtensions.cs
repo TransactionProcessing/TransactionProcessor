@@ -3,7 +3,6 @@
 namespace TransactionProcessor.ProjectionEngine.State
 {
     using System.Diagnostics.Contracts;
-    using EstateManagement.Merchant.DomainEvents;
     public static class MerchantBalanceStateExtensions
     {
         [Pure]
@@ -16,23 +15,23 @@ namespace TransactionProcessor.ProjectionEngine.State
 
         [Pure]
         public static MerchantBalanceState HandleMerchantCreated(this MerchantBalanceState state,
-                                                                MerchantCreatedEvent mce) =>
+                                                                MerchantDomainEvents.MerchantCreatedEvent mce) =>
             state.SetEstateId(mce.EstateId).SetMerchantId(mce.MerchantId).SetMerchantName(mce.MerchantName).InitialiseBalances();
 
 
         [Pure]
         public static MerchantBalanceState HandleManualDepositMadeEvent(this MerchantBalanceState state,
-                                                                        ManualDepositMadeEvent mdme) =>
+                                                                        MerchantDomainEvents.ManualDepositMadeEvent mdme) =>
             state.IncrementAvailableBalance(mdme.Amount).IncrementBalance(mdme.Amount).RecordDeposit(mdme);
 
         [Pure]
         public static MerchantBalanceState HandleWithdrawalMadeEvent(this MerchantBalanceState state,
-                                                                     WithdrawalMadeEvent wme) =>
+                                                                     MerchantDomainEvents.WithdrawalMadeEvent wme) =>
             state.DecrementAvailableBalance(wme.Amount).DecrementBalance(wme.Amount).RecordWithdrawal(wme);
 
         [Pure]
         public static MerchantBalanceState HandleAutomaticDepositMadeEvent(this MerchantBalanceState state,
-                                                                           AutomaticDepositMadeEvent adme) =>
+                                                                           MerchantDomainEvents.AutomaticDepositMadeEvent adme) =>
             state.IncrementAvailableBalance(adme.Amount).IncrementBalance(adme.Amount).RecordDeposit(adme);
 
         [Pure]
@@ -128,7 +127,7 @@ namespace TransactionProcessor.ProjectionEngine.State
 
         [Pure]
         public static MerchantBalanceState RecordDeposit(this MerchantBalanceState state,
-                                                               ManualDepositMadeEvent mdme) =>
+                                                               MerchantDomainEvents.ManualDepositMadeEvent mdme) =>
             state with
             {
                 DepositCount = state.DepositCount + 1,
@@ -138,7 +137,7 @@ namespace TransactionProcessor.ProjectionEngine.State
 
         [Pure]
         public static MerchantBalanceState RecordDeposit(this MerchantBalanceState state,
-                                                         AutomaticDepositMadeEvent adme) =>
+                                                         MerchantDomainEvents.AutomaticDepositMadeEvent adme) =>
             state with
             {
                 DepositCount = state.DepositCount + 1,
@@ -148,7 +147,7 @@ namespace TransactionProcessor.ProjectionEngine.State
 
         [Pure]
         public static MerchantBalanceState RecordWithdrawal(this MerchantBalanceState state,
-                                                         WithdrawalMadeEvent wme) =>
+                                                         MerchantDomainEvents.WithdrawalMadeEvent wme) =>
             state with
             {
                 WithdrawalCount = state.WithdrawalCount + 1,

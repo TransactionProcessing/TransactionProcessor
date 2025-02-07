@@ -1,12 +1,16 @@
 ﻿using EstateManagement.DataTransferObjects.Requests.Merchant;
-using EstateManagement.DataTransferObjects.Responses.Contract;
 using EstateManagement.DataTransferObjects.Responses.Merchant;
 using Newtonsoft.Json;
 using Shared.Exceptions;
 using Shared.Results;
 using SimpleResults;
 using TransactionProcessor.Aggregates;
+using TransactionProcessor.Models.Contract;
 using TransactionProcessor.Models.Estate;
+using TransactionProcessor.Models.Merchant;
+using Contract = TransactionProcessor.Models.Contract.Contract;
+using ContractProductTransactionFee = EstateManagement.DataTransferObjects.Responses.Contract.ContractProductTransactionFee;
+using Operator = TransactionProcessor.Models.Estate.Operator;
 
 namespace TransactionProcessor.BusinessLogic.Services{
     using System;
@@ -18,6 +22,7 @@ namespace TransactionProcessor.BusinessLogic.Services{
     using Common;
     using MessagingService.Client;
     using MessagingService.DataTransferObjects;
+    using Microsoft.AspNetCore.Mvc.RazorPages;
     using Microsoft.Extensions.Caching.Memory;
     using Models;
     using OperatorInterfaces;
@@ -61,13 +66,8 @@ namespace TransactionProcessor.BusinessLogic.Services{
                                                 CancellationToken cancellationToken);
     }
 
-    public class TransactionDomainService : ITransactionDomainService{
+    public class TransactionDomainService : ITransactionDomainService {
         #region Fields
-
-        /// <summary>
-        /// The estate client
-        /// </summary>
-        private readonly IIntermediateEstateClient EstateClient;
 
         /// <summary>
         /// The operator proxy resolver
@@ -94,13 +94,14 @@ namespace TransactionProcessor.BusinessLogic.Services{
         private readonly ITransactionValidationService TransactionValidationService;
 
         private readonly IAggregateRepository<EstateAggregate, DomainEvent> EstateAggregateRepository;
+        private readonly IAggregateRepository<MerchantAggregate, DomainEvent> MerchantAggregateRepository;
+        private readonly IAggregateRepository<ContractAggregate, DomainEvent> ContractAggregateRepository;
 
         #endregion
 
         #region Constructors
 
         public TransactionDomainService(IAggregateRepository<TransactionAggregate, DomainEvent> transactionAggregateRepository,
-                                        IIntermediateEstateClient estateClient,
                                         Func<String, IOperatorProxy> operatorProxyResolver,
                                         IAggregateRepository<ReconciliationAggregate, DomainEvent> reconciliationAggregateRepository,
                                         ITransactionValidationService transactionValidationService,
@@ -111,10 +112,11 @@ namespace TransactionProcessor.BusinessLogic.Services{
                                         ITransactionReceiptBuilder transactionReceiptBuilder,
                                         IMessagingServiceClient messagingServiceClient,
                                         IAggregateRepository<EstateAggregate, DomainEvent> estateAggregateRepository,
-                                        IAggregateRepository<OperatorAggregate, DomainEvent> operatorAggregateRepository)
-        {
+                                        IAggregateRepository<OperatorAggregate, DomainEvent> operatorAggregateRepository,
+                                        IAggregateRepository<MerchantAggregate, DomainEvent> merchantAggregateRepository,
+                                        IAggregateRepository<ContractAggregate, DomainEvent> contractAggregateRepository) {
             this.TransactionAggregateRepository = transactionAggregateRepository;
-            this.EstateClient = estateClient;
+            //this.EstateClient = estateClient;
             this.OperatorProxyResolver = operatorProxyResolver;
             this.ReconciliationAggregateRepository = reconciliationAggregateRepository;
             this.TransactionValidationService = transactionValidationService;
@@ -126,6 +128,8 @@ namespace TransactionProcessor.BusinessLogic.Services{
             this.MessagingServiceClient = messagingServiceClient;
             EstateAggregateRepository = estateAggregateRepository;
             this.OperatorAggregateRepository = operatorAggregateRepository;
+            MerchantAggregateRepository = merchantAggregateRepository;
+            this.ContractAggregateRepository = contractAggregateRepository;
         }
 
         #endregion
@@ -133,14 +137,11 @@ namespace TransactionProcessor.BusinessLogic.Services{
         private async Task<Result<T>> ApplyUpdates<T>(Func<TransactionAggregate, Task<Result<T>>> action,
                                                       Guid transactionId,
                                                       CancellationToken cancellationToken,
-                                                      Boolean isNotFoundError = true)
-        {
-            try
-            {
+                                                      Boolean isNotFoundError = true) {
+            try {
 
                 Result<TransactionAggregate> getTransactionResult = await this.TransactionAggregateRepository.GetLatestVersion(transactionId, cancellationToken);
-                Result<TransactionAggregate> transactionAggregateResult =
-                    DomainServiceHelper.HandleGetAggregateResult(getTransactionResult, transactionId, isNotFoundError);
+                Result<TransactionAggregate> transactionAggregateResult = DomainServiceHelper.HandleGetAggregateResult(getTransactionResult, transactionId, isNotFoundError);
 
                 if (transactionAggregateResult.IsFailed)
                     return ResultHelpers.CreateFailure(transactionAggregateResult);
@@ -155,23 +156,19 @@ namespace TransactionProcessor.BusinessLogic.Services{
                     return ResultHelpers.CreateFailure(saveResult);
                 return Result.Success(result.Data);
             }
-            catch (Exception ex)
-            {
+            catch (Exception ex) {
                 return Result.Failure(ex.GetExceptionMessages());
             }
         }
 
         private async Task<Result> ApplyUpdates(Func<TransactionAggregate, Task<Result>> action,
-                                                      Guid transactionId,
-                                                      CancellationToken cancellationToken,
-                                                      Boolean isNotFoundError = true)
-        {
-            try
-            {
+                                                Guid transactionId,
+                                                CancellationToken cancellationToken,
+                                                Boolean isNotFoundError = true) {
+            try {
 
                 Result<TransactionAggregate> getTransactionResult = await this.TransactionAggregateRepository.GetLatestVersion(transactionId, cancellationToken);
-                Result<TransactionAggregate> transactionAggregateResult =
-                    DomainServiceHelper.HandleGetAggregateResult(getTransactionResult, transactionId, isNotFoundError);
+                Result<TransactionAggregate> transactionAggregateResult = DomainServiceHelper.HandleGetAggregateResult(getTransactionResult, transactionId, isNotFoundError);
 
                 if (transactionAggregateResult.IsFailed)
                     return ResultHelpers.CreateFailure(transactionAggregateResult);
@@ -186,8 +183,7 @@ namespace TransactionProcessor.BusinessLogic.Services{
                     return ResultHelpers.CreateFailure(saveResult);
                 return Result.Success();
             }
-            catch (Exception ex)
-            {
+            catch (Exception ex) {
                 return Result.Failure(ex.GetExceptionMessages());
             }
         }
@@ -195,14 +191,11 @@ namespace TransactionProcessor.BusinessLogic.Services{
         private async Task<Result<T>> ApplyUpdates<T>(Func<ReconciliationAggregate, Task<Result<T>>> action,
                                                       Guid transactionId,
                                                       CancellationToken cancellationToken,
-                                                      Boolean isNotFoundError = true)
-        {
-            try
-            {
+                                                      Boolean isNotFoundError = true) {
+            try {
 
                 Result<ReconciliationAggregate> getTransactionResult = await this.ReconciliationAggregateRepository.GetLatestVersion(transactionId, cancellationToken);
-                Result<ReconciliationAggregate> reconciliationAggregateResult =
-                    DomainServiceHelper.HandleGetAggregateResult(getTransactionResult, transactionId, isNotFoundError);
+                Result<ReconciliationAggregate> reconciliationAggregateResult = DomainServiceHelper.HandleGetAggregateResult(getTransactionResult, transactionId, isNotFoundError);
 
                 ReconciliationAggregate reconciliationAggregate = reconciliationAggregateResult.Data;
                 Result<T> result = await action(reconciliationAggregate);
@@ -214,8 +207,7 @@ namespace TransactionProcessor.BusinessLogic.Services{
                     return ResultHelpers.CreateFailure(saveResult);
                 return Result.Success(result.Data);
             }
-            catch (Exception ex)
-            {
+            catch (Exception ex) {
                 return Result.Failure(ex.GetExceptionMessages());
             }
         }
@@ -223,216 +215,184 @@ namespace TransactionProcessor.BusinessLogic.Services{
         #region Methods
 
         public async Task<Result<ProcessLogonTransactionResponse>> ProcessLogonTransaction(TransactionCommands.ProcessLogonTransactionCommand command,
-                                                                                   CancellationToken cancellationToken) {
-            Result<ProcessLogonTransactionResponse> result = await ApplyUpdates<ProcessLogonTransactionResponse>(
-                async (TransactionAggregate transactionAggregate) => {
-                    TransactionType transactionType = TransactionType.Logon;
+                                                                                           CancellationToken cancellationToken) {
+            Result<ProcessLogonTransactionResponse> result = await ApplyUpdates<ProcessLogonTransactionResponse>(async (TransactionAggregate transactionAggregate) => {
+                TransactionType transactionType = TransactionType.Logon;
 
-                    // Generate a transaction reference
-                    String transactionReference = this.GenerateTransactionReference();
+                // Generate a transaction reference
+                String transactionReference = this.GenerateTransactionReference();
 
-                    transactionAggregate.StartTransaction(command.TransactionDateTime, command.TransactionNumber, transactionType,
-                        transactionReference, command.EstateId, command.MerchantId, command.DeviceIdentifier,
-                        null); // Logon transaction has no amount
+                transactionAggregate.StartTransaction(command.TransactionDateTime, command.TransactionNumber, transactionType, transactionReference, command.EstateId, command.MerchantId, command.DeviceIdentifier, null); // Logon transaction has no amount
 
-                    Result<TransactionValidationResult> validationResult =
-                        await this.TransactionValidationService.ValidateLogonTransaction(command.EstateId, command.MerchantId, command.DeviceIdentifier, cancellationToken);
+                Result<TransactionValidationResult> validationResult = await this.TransactionValidationService.ValidateLogonTransaction(command.EstateId, command.MerchantId, command.DeviceIdentifier, cancellationToken);
 
-                    if (validationResult.IsSuccess && (validationResult.Data.ResponseCode == TransactionResponseCode.Success || validationResult.Data.ResponseCode == TransactionResponseCode.SuccessNeedToAddDevice)) {
-                        if (validationResult.Data.ResponseCode == TransactionResponseCode.SuccessNeedToAddDevice) {
-                            await this.AddDeviceToMerchant(command.EstateId, command.MerchantId, command.DeviceIdentifier, cancellationToken);
-                        }
-
-                        // Record the successful validation
-                        // TODO: Generate local authcode
-                        transactionAggregate.AuthoriseTransactionLocally("ABCD1234",
-                            ((Int32)validationResult.Data.ResponseCode).ToString().PadLeft(4, '0'),
-                            validationResult.Data.ResponseMessage);
-                    }
-                    else {
-                        // Record the failure
-                        transactionAggregate.DeclineTransactionLocally(
-                            ((Int32)validationResult.Data.ResponseCode).ToString().PadLeft(4, '0'),
-                            validationResult.Data.ResponseMessage);
+                if (validationResult.IsSuccess && (validationResult.Data.ResponseCode == TransactionResponseCode.Success || validationResult.Data.ResponseCode == TransactionResponseCode.SuccessNeedToAddDevice)) {
+                    if (validationResult.Data.ResponseCode == TransactionResponseCode.SuccessNeedToAddDevice) {
+                        await this.AddDeviceToMerchant(command.MerchantId, command.DeviceIdentifier, cancellationToken);
                     }
 
-                    transactionAggregate.CompleteTransaction();
+                    // Record the successful validation
+                    // TODO: Generate local authcode
+                    transactionAggregate.AuthoriseTransactionLocally("ABCD1234", ((Int32)validationResult.Data.ResponseCode).ToString().PadLeft(4, '0'), validationResult.Data.ResponseMessage);
+                }
+                else {
+                    // Record the failure
+                    transactionAggregate.DeclineTransactionLocally(((Int32)validationResult.Data.ResponseCode).ToString().PadLeft(4, '0'), validationResult.Data.ResponseMessage);
+                }
 
-                    return Result.Success(new ProcessLogonTransactionResponse {
-                        ResponseMessage = transactionAggregate.ResponseMessage,
-                        ResponseCode = transactionAggregate.ResponseCode,
-                        EstateId = command.EstateId,
-                        MerchantId = command.MerchantId,
-                        TransactionId = command.TransactionId
-                    });
+                transactionAggregate.CompleteTransaction();
 
-                }, command.TransactionId, cancellationToken, false);
+                return Result.Success(new ProcessLogonTransactionResponse {
+                    ResponseMessage = transactionAggregate.ResponseMessage,
+                    ResponseCode = transactionAggregate.ResponseCode,
+                    EstateId = command.EstateId,
+                    MerchantId = command.MerchantId,
+                    TransactionId = command.TransactionId
+                });
+
+            }, command.TransactionId, cancellationToken, false);
 
             return result;
         }
 
         public async Task<Result<ProcessReconciliationTransactionResponse>> ProcessReconciliationTransaction(TransactionCommands.ProcessReconciliationCommand command,
-                                                                                                     CancellationToken cancellationToken){
+                                                                                                             CancellationToken cancellationToken) {
 
-            Result<ProcessReconciliationTransactionResponse> result = await ApplyUpdates<ProcessReconciliationTransactionResponse>(
-                async (ReconciliationAggregate reconciliationAggregate) => {
-                    Result<TransactionValidationResult> validationResult =
-                        await this.TransactionValidationService.ValidateReconciliationTransaction(command.EstateId, command.MerchantId, command.DeviceIdentifier, cancellationToken);
+            Result<ProcessReconciliationTransactionResponse> result = await ApplyUpdates<ProcessReconciliationTransactionResponse>(async (ReconciliationAggregate reconciliationAggregate) => {
+                Result<TransactionValidationResult> validationResult = await this.TransactionValidationService.ValidateReconciliationTransaction(command.EstateId, command.MerchantId, command.DeviceIdentifier, cancellationToken);
 
-                    reconciliationAggregate.StartReconciliation(command.TransactionDateTime, command.EstateId, command.MerchantId);
+                reconciliationAggregate.StartReconciliation(command.TransactionDateTime, command.EstateId, command.MerchantId);
 
-                    reconciliationAggregate.RecordOverallTotals(command.TransactionCount, command.TransactionValue);
+                reconciliationAggregate.RecordOverallTotals(command.TransactionCount, command.TransactionValue);
 
-                    if (validationResult.IsSuccess && validationResult.Data.ResponseCode == TransactionResponseCode.Success)
-                    {
-                        // Record the successful validation
-                        reconciliationAggregate.Authorise(((Int32)validationResult.Data.ResponseCode).ToString().PadLeft(4, '0'), validationResult.Data.ResponseMessage);
-                    }
-                    else
-                    {
-                        // Record the failure
-                        reconciliationAggregate.Decline(((Int32)validationResult.Data.ResponseCode).ToString().PadLeft(4, '0'), validationResult.Data.ResponseMessage);
-                    }
+                if (validationResult.IsSuccess && validationResult.Data.ResponseCode == TransactionResponseCode.Success) {
+                    // Record the successful validation
+                    reconciliationAggregate.Authorise(((Int32)validationResult.Data.ResponseCode).ToString().PadLeft(4, '0'), validationResult.Data.ResponseMessage);
+                }
+                else {
+                    // Record the failure
+                    reconciliationAggregate.Decline(((Int32)validationResult.Data.ResponseCode).ToString().PadLeft(4, '0'), validationResult.Data.ResponseMessage);
+                }
 
-                    reconciliationAggregate.CompleteReconciliation();
+                reconciliationAggregate.CompleteReconciliation();
 
-                    return Result.Success(new ProcessReconciliationTransactionResponse {
-                        EstateId = reconciliationAggregate.EstateId,
-                        MerchantId = reconciliationAggregate.MerchantId,
-                        ResponseCode = reconciliationAggregate.ResponseCode,
-                        ResponseMessage = reconciliationAggregate.ResponseMessage,
-                        TransactionId = command.TransactionId
-                    });
+                return Result.Success(new ProcessReconciliationTransactionResponse {
+                    EstateId = reconciliationAggregate.EstateId,
+                    MerchantId = reconciliationAggregate.MerchantId,
+                    ResponseCode = reconciliationAggregate.ResponseCode,
+                    ResponseMessage = reconciliationAggregate.ResponseMessage,
+                    TransactionId = command.TransactionId
+                });
 
-                }, command.TransactionId, cancellationToken, false);
+            }, command.TransactionId, cancellationToken, false);
             return result;
         }
 
         public async Task<Result<ProcessSaleTransactionResponse>> ProcessSaleTransaction(TransactionCommands.ProcessSaleTransactionCommand command,
-                                                                                 CancellationToken cancellationToken) {
+                                                                                         CancellationToken cancellationToken) {
 
-            Result<ProcessSaleTransactionResponse> result = await ApplyUpdates<ProcessSaleTransactionResponse>(
-                async (TransactionAggregate transactionAggregate) => {
+            Result<ProcessSaleTransactionResponse> result = await ApplyUpdates<ProcessSaleTransactionResponse>(async (TransactionAggregate transactionAggregate) => {
 
-                    TransactionType transactionType = TransactionType.Sale;
-                    TransactionSource transactionSourceValue = (TransactionSource)command.TransactionSource;
+                TransactionType transactionType = TransactionType.Sale;
+                TransactionSource transactionSourceValue = (TransactionSource)command.TransactionSource;
 
-                    // Generate a transaction reference
-                    String transactionReference = this.GenerateTransactionReference();
+                // Generate a transaction reference
+                String transactionReference = this.GenerateTransactionReference();
 
-                    // Extract the transaction amount from the metadata
-                    Decimal? transactionAmount =
-                        command.AdditionalTransactionMetadata.ExtractFieldFromMetadata<Decimal?>("Amount");
+                // Extract the transaction amount from the metadata
+                Decimal? transactionAmount = command.AdditionalTransactionMetadata.ExtractFieldFromMetadata<Decimal?>("Amount");
 
-                    Result<TransactionValidationResult> validationResult =
-                        await this.TransactionValidationService.ValidateSaleTransaction(command.EstateId, command.MerchantId,
-                            command.ContractId, command.ProductId, command.DeviceIdentifier, command.OperatorId, transactionAmount, cancellationToken);
-                    
-                    Logger.LogInformation($"Validation response is [{JsonConvert.SerializeObject(validationResult)}]");
+                Result<TransactionValidationResult> validationResult = await this.TransactionValidationService.ValidateSaleTransaction(command.EstateId, command.MerchantId, command.ContractId, command.ProductId, command.DeviceIdentifier, command.OperatorId, transactionAmount, cancellationToken);
 
-                    Guid floatAggregateId =
-                        IdGenerationService.GenerateFloatAggregateId(command.EstateId, command.ContractId, command.ProductId);
-                    var floatAggregateResult =
-                        await this.FloatAggregateRepository.GetLatestVersion(floatAggregateId, cancellationToken);
-                    Decimal unitCost = 0;
-                    Decimal totalCost = 0;
-                    if (floatAggregateResult.IsSuccess) {
-                        // TODO: Move calculation to float
-                        var floatAggregate = floatAggregateResult.Data;
-                        unitCost = floatAggregate.GetUnitCostPrice();
-                        totalCost = transactionAmount.GetValueOrDefault() * unitCost;
-                    }
-                    transactionAggregate.StartTransaction(command.TransactionDateTime, command.TransactionNumber, transactionType,
-                        transactionReference, command.EstateId, command.MerchantId, command.DeviceIdentifier, transactionAmount);
+                Logger.LogInformation($"Validation response is [{JsonConvert.SerializeObject(validationResult)}]");
 
-                    // Add the product details (unless invalid estate)
-                    if (validationResult.Data.ResponseCode != TransactionResponseCode.InvalidEstateId &&
-                        validationResult.Data.ResponseCode != TransactionResponseCode.InvalidContractIdValue &&
-                        validationResult.Data.ResponseCode != TransactionResponseCode.InvalidProductIdValue &&
-                        validationResult.Data.ResponseCode != TransactionResponseCode.ContractNotValidForMerchant &&
-                        validationResult.Data.ResponseCode != TransactionResponseCode.ProductNotValidForMerchant) {
-                        transactionAggregate.AddProductDetails(command.ContractId, command.ProductId);
-                    }
-                    
-                    transactionAggregate.RecordCostPrice(unitCost, totalCost);
+                Guid floatAggregateId = IdGenerationService.GenerateFloatAggregateId(command.EstateId, command.ContractId, command.ProductId);
+                var floatAggregateResult = await this.FloatAggregateRepository.GetLatestVersion(floatAggregateId, cancellationToken);
+                Decimal unitCost = 0;
+                Decimal totalCost = 0;
+                if (floatAggregateResult.IsSuccess) {
+                    // TODO: Move calculation to float
+                    var floatAggregate = floatAggregateResult.Data;
+                    unitCost = floatAggregate.GetUnitCostPrice();
+                    totalCost = transactionAmount.GetValueOrDefault() * unitCost;
+                }
 
-                    // Add the transaction source
-                    transactionAggregate.AddTransactionSource(transactionSourceValue);
-                    
-                    if (validationResult.Data.ResponseCode == TransactionResponseCode.Success) {
-                        // Record any additional request metadata
-                        transactionAggregate.RecordAdditionalRequestData(command.OperatorId, command.AdditionalTransactionMetadata);
+                transactionAggregate.StartTransaction(command.TransactionDateTime, command.TransactionNumber, transactionType, transactionReference, command.EstateId, command.MerchantId, command.DeviceIdentifier, transactionAmount);
 
-                        // Do the online processing with the operator here
-                        EstateManagement.DataTransferObjects.Responses.Merchant.MerchantResponse merchant =
-                            await this.GetMerchant(command.EstateId, command.MerchantId, cancellationToken);
-                        Result<OperatorResponse> operatorResult = await this.ProcessMessageWithOperator(merchant,
-                            command.TransactionId, command.TransactionDateTime, command.OperatorId, command.AdditionalTransactionMetadata,
-                            transactionReference, cancellationToken);
-                        
-                        // Act on the operator response
-                        // TODO: see if we still need this case...
-                        //if (operatorResult.IsFailed) {
-                        //    // Failed to perform sed/receive with the operator
-                        //    TransactionResponseCode transactionResponseCode =
-                        //        TransactionResponseCode.OperatorCommsError;
-                        //    String responseMessage = "OPERATOR COMMS ERROR";
+                // Add the product details (unless invalid estate)
+                if (validationResult.Data.ResponseCode != TransactionResponseCode.InvalidEstateId && validationResult.Data.ResponseCode != TransactionResponseCode.InvalidContractIdValue && validationResult.Data.ResponseCode != TransactionResponseCode.InvalidProductIdValue && validationResult.Data.ResponseCode != TransactionResponseCode.ContractNotValidForMerchant && validationResult.Data.ResponseCode != TransactionResponseCode.ProductNotValidForMerchant) {
+                    transactionAggregate.AddProductDetails(command.ContractId, command.ProductId);
+                }
 
-                        //    transactionAggregate.DeclineTransactionLocally(
-                        //        ((Int32)transactionResponseCode).ToString().PadLeft(4, '0'), responseMessage);
-                        //}
-                        //else {
+                transactionAggregate.RecordCostPrice(unitCost, totalCost);
 
-                        if (operatorResult.IsSuccess) {
-                                TransactionResponseCode transactionResponseCode = TransactionResponseCode.Success;
-                                String responseMessage = "SUCCESS";
+                // Add the transaction source
+                transactionAggregate.AddTransactionSource(transactionSourceValue);
 
-                                transactionAggregate.AuthoriseTransaction(command.OperatorId,
-                                    operatorResult.Data.AuthorisationCode, operatorResult.Data.ResponseCode,
-                                    operatorResult.Data.ResponseMessage, operatorResult.Data.TransactionId,
-                                    ((Int32)transactionResponseCode).ToString().PadLeft(4, '0'), responseMessage);
-                            }
-                            else {
-                                TransactionResponseCode transactionResponseCode =
-                                    TransactionResponseCode.TransactionDeclinedByOperator;
-                                String responseMessage = "DECLINED BY OPERATOR";
+                if (validationResult.Data.ResponseCode == TransactionResponseCode.Success) {
+                    // Record any additional request metadata
+                    transactionAggregate.RecordAdditionalRequestData(command.OperatorId, command.AdditionalTransactionMetadata);
 
-                                transactionAggregate.DeclineTransaction(command.OperatorId, operatorResult.Data.ResponseCode,
-                                    operatorResult.Data.ResponseMessage,
-                                    ((Int32)transactionResponseCode).ToString().PadLeft(4, '0'), responseMessage);
-                            }
+                    // Do the online processing with the operator here
+                    Result<Merchant> merchantResult = await this.GetMerchant(command.MerchantId, cancellationToken);
+                    if (merchantResult.IsFailed)
+                        return ResultHelpers.CreateFailure(merchantResult);
+                    Result<OperatorResponse> operatorResult = await this.ProcessMessageWithOperator(merchantResult.Data, command.TransactionId, command.TransactionDateTime, command.OperatorId, command.AdditionalTransactionMetadata, transactionReference, cancellationToken);
 
-                            // Record any additional operator response metadata
-                            transactionAggregate.RecordAdditionalResponseData(command.OperatorId,
-                                operatorResult.Data.AdditionalTransactionResponseMetadata);
-                        //}
+                    // Act on the operator response
+                    // TODO: see if we still need this case...
+                    //if (operatorResult.IsFailed) {
+                    //    // Failed to perform sed/receive with the operator
+                    //    TransactionResponseCode transactionResponseCode =
+                    //        TransactionResponseCode.OperatorCommsError;
+                    //    String responseMessage = "OPERATOR COMMS ERROR";
+
+                    //    transactionAggregate.DeclineTransactionLocally(
+                    //        ((Int32)transactionResponseCode).ToString().PadLeft(4, '0'), responseMessage);
+                    //}
+                    //else {
+
+                    if (operatorResult.IsSuccess) {
+                        TransactionResponseCode transactionResponseCode = TransactionResponseCode.Success;
+                        String responseMessage = "SUCCESS";
+
+                        transactionAggregate.AuthoriseTransaction(command.OperatorId, operatorResult.Data.AuthorisationCode, operatorResult.Data.ResponseCode, operatorResult.Data.ResponseMessage, operatorResult.Data.TransactionId, ((Int32)transactionResponseCode).ToString().PadLeft(4, '0'), responseMessage);
                     }
                     else {
-                        // Record the failure
-                        transactionAggregate.DeclineTransactionLocally(
-                            ((Int32)validationResult.Data.ResponseCode).ToString().PadLeft(4, '0'),
-                            validationResult.Data.ResponseMessage);
+                        TransactionResponseCode transactionResponseCode = TransactionResponseCode.TransactionDeclinedByOperator;
+                        String responseMessage = "DECLINED BY OPERATOR";
+
+                        transactionAggregate.DeclineTransaction(command.OperatorId, operatorResult.Data.ResponseCode, operatorResult.Data.ResponseMessage, ((Int32)transactionResponseCode).ToString().PadLeft(4, '0'), responseMessage);
                     }
 
-                    transactionAggregate.CompleteTransaction();
+                    // Record any additional operator response metadata
+                    transactionAggregate.RecordAdditionalResponseData(command.OperatorId, operatorResult.Data.AdditionalTransactionResponseMetadata);
+                    //}
+                }
+                else {
+                    // Record the failure
+                    transactionAggregate.DeclineTransactionLocally(((Int32)validationResult.Data.ResponseCode).ToString().PadLeft(4, '0'), validationResult.Data.ResponseMessage);
+                }
 
-                    // Determine if the email receipt is required
-                    if (String.IsNullOrEmpty(command.CustomerEmailAddress) == false) {
-                        transactionAggregate.RequestEmailReceipt(command.CustomerEmailAddress);
-                    }
+                transactionAggregate.CompleteTransaction();
 
-                    // Get the model from the aggregate
-                    Models.Transaction transaction = transactionAggregate.GetTransaction();
-                    
-                    return Result.Success(new ProcessSaleTransactionResponse {
-                        ResponseMessage = transaction.ResponseMessage,
-                        ResponseCode = transaction.ResponseCode,
-                        EstateId = command.EstateId,
-                        MerchantId = command.MerchantId,
-                        AdditionalTransactionMetadata = transaction.AdditionalResponseMetadata,
-                        TransactionId = command.TransactionId
-                    });
-                }, command.TransactionId, cancellationToken,false);
+                // Determine if the email receipt is required
+                if (String.IsNullOrEmpty(command.CustomerEmailAddress) == false) {
+                    transactionAggregate.RequestEmailReceipt(command.CustomerEmailAddress);
+                }
+
+                // Get the model from the aggregate
+                Models.Transaction transaction = transactionAggregate.GetTransaction();
+
+                return Result.Success(new ProcessSaleTransactionResponse {
+                    ResponseMessage = transaction.ResponseMessage,
+                    ResponseCode = transaction.ResponseCode,
+                    EstateId = command.EstateId,
+                    MerchantId = command.MerchantId,
+                    AdditionalTransactionMetadata = transaction.AdditionalResponseMetadata,
+                    TransactionId = command.TransactionId
+                });
+            }, command.TransactionId, cancellationToken, false);
 
             return result;
         }
@@ -440,19 +400,16 @@ namespace TransactionProcessor.BusinessLogic.Services{
         public async Task<Result> ResendTransactionReceipt(TransactionCommands.ResendTransactionReceiptCommand command,
                                                            CancellationToken cancellationToken) {
 
-            Result result = await ApplyUpdates(
-                async (TransactionAggregate transactionAggregate) => {
-                    transactionAggregate.RequestEmailReceiptResend();
+            Result result = await ApplyUpdates(async (TransactionAggregate transactionAggregate) => {
+                transactionAggregate.RequestEmailReceiptResend();
 
-                    return Result.Success();
-                }, command.TransactionId, cancellationToken);
+                return Result.Success();
+            }, command.TransactionId, cancellationToken);
             return result;
         }
 
-        internal static Boolean RequireFeeCalculation(TransactionAggregate transactionAggregate)
-        {
-            return transactionAggregate switch
-            {
+        internal static Boolean RequireFeeCalculation(TransactionAggregate transactionAggregate) {
+            return transactionAggregate switch {
                 _ when transactionAggregate.TransactionType == TransactionType.Logon => false,
                 _ when transactionAggregate.IsAuthorised == false => false,
                 _ when transactionAggregate.IsCompleted == false => false,
@@ -464,84 +421,74 @@ namespace TransactionProcessor.BusinessLogic.Services{
 
         public async Task<Result> CalculateFeesForTransaction(TransactionCommands.CalculateFeesForTransactionCommand command,
                                                               CancellationToken cancellationToken) {
-            this.TokenResponse = await Helpers.GetToken(this.TokenResponse, this.SecurityServiceClient, cancellationToken);
+            Result result = await ApplyUpdates(async (TransactionAggregate transactionAggregate) => {
 
-            Result result = await ApplyUpdates(
-                async (TransactionAggregate transactionAggregate) => {
-
-                    if (RequireFeeCalculation(transactionAggregate) == false)
-                        return Result.Success();
-
-                    List<TransactionFeeToCalculate> feesForCalculation = await this.GetTransactionFeesForCalculation(transactionAggregate, cancellationToken);
-
-                    if (feesForCalculation == null)
-                        return Result.Failure("Error getting transaction fees");
-
-                    List<CalculatedFee> resultFees =
-                        this.FeeCalculationManager.CalculateFees(feesForCalculation, transactionAggregate.TransactionAmount.Value, command.CompletedDateTime);
-
-                    IEnumerable<CalculatedFee> nonMerchantFees = resultFees.Where(f => f.FeeType == TransactionProcessor.Models.Contract.FeeType.ServiceProvider);
-                    foreach (CalculatedFee calculatedFee in nonMerchantFees){
-                        // Add Fee to the Transaction 
-                        transactionAggregate.AddFee(calculatedFee);
-                    }
-
-                    // Now deal with merchant fees 
-                    List<CalculatedFee> merchantFees = resultFees.Where(f => f.FeeType == TransactionProcessor.Models.Contract.FeeType.Merchant).ToList();
-
-                    if (merchantFees.Any())
-                    {
-                        var merchant = await this.GetMerchant(command.EstateId, command.MerchantId, cancellationToken);
-                        if (merchant.SettlementSchedule == EstateManagement.DataTransferObjects.Responses.Merchant.SettlementSchedule.NotSet)
-                        {
-                            // TODO: Result
-                            //throw new NotSupportedException($"Merchant {merchant.MerchantId} does not have a settlement schedule configured");
-                        }
-
-                        foreach (CalculatedFee calculatedFee in merchantFees)
-                        {
-                            // Determine when the fee should be applied
-                            DateTime settlementDate = CalculateSettlementDate(merchant.SettlementSchedule, command.CompletedDateTime);
-
-                            transactionAggregate.AddFeePendingSettlement(calculatedFee, settlementDate);
-
-
-                            if (merchant.SettlementSchedule == EstateManagement.DataTransferObjects.Responses.Merchant.SettlementSchedule.Immediate)
-                            {
-                                Guid settlementId = Helpers.CalculateSettlementAggregateId(settlementDate, command.MerchantId, command.EstateId);
-
-                                // Add fees to transaction now if settlement is immediate
-                                transactionAggregate.AddSettledFee(calculatedFee,
-                                                                   settlementDate,
-                                                                   settlementId);
-                            }
-                        }
-                    }
-
+                if (RequireFeeCalculation(transactionAggregate) == false)
                     return Result.Success();
-                }, command.TransactionId, cancellationToken);
+
+                List<TransactionFeeToCalculate> feesForCalculation = await this.GetTransactionFeesForCalculation(transactionAggregate, cancellationToken);
+
+                if (feesForCalculation == null)
+                    return Result.Failure("Error getting transaction fees");
+
+                List<CalculatedFee> resultFees = this.FeeCalculationManager.CalculateFees(feesForCalculation, transactionAggregate.TransactionAmount.Value, command.CompletedDateTime);
+
+                IEnumerable<CalculatedFee> nonMerchantFees = resultFees.Where(f => f.FeeType == TransactionProcessor.Models.Contract.FeeType.ServiceProvider);
+                foreach (CalculatedFee calculatedFee in nonMerchantFees) {
+                    // Add Fee to the Transaction 
+                    transactionAggregate.AddFee(calculatedFee);
+                }
+
+                // Now deal with merchant fees 
+                List<CalculatedFee> merchantFees = resultFees.Where(f => f.FeeType == TransactionProcessor.Models.Contract.FeeType.Merchant).ToList();
+
+                if (merchantFees.Any()) {
+                    Result<Merchant> merchantResult = await this.GetMerchant(command.MerchantId, cancellationToken);
+                    if (merchantResult.IsFailed)
+                        return ResultHelpers.CreateFailure(merchantResult);
+                    if (merchantResult.Data.SettlementSchedule == Models.Merchant.SettlementSchedule.NotSet) {
+                        // TODO: Result
+                        //throw new NotSupportedException($"Merchant {merchant.MerchantId} does not have a settlement schedule configured");
+                    }
+
+                    foreach (CalculatedFee calculatedFee in merchantFees) {
+                        // Determine when the fee should be applied
+                        DateTime settlementDate = CalculateSettlementDate(merchantResult.Data.SettlementSchedule, command.CompletedDateTime);
+
+                        transactionAggregate.AddFeePendingSettlement(calculatedFee, settlementDate);
+
+
+                        if (merchantResult.Data.SettlementSchedule == Models.Merchant.SettlementSchedule.Immediate) {
+                            Guid settlementId = Helpers.CalculateSettlementAggregateId(settlementDate, command.MerchantId, command.EstateId);
+
+                            // Add fees to transaction now if settlement is immediate
+                            transactionAggregate.AddSettledFee(calculatedFee, settlementDate, settlementId);
+                        }
+                    }
+                }
+
+                return Result.Success();
+            }, command.TransactionId, cancellationToken);
             return result;
         }
 
         public async Task<Result> AddSettledMerchantFee(TransactionCommands.AddSettledMerchantFeeCommand command,
                                                         CancellationToken cancellationToken) {
-            Result result = await ApplyUpdates(
-                async (TransactionAggregate transactionAggregate) => {
-                    CalculatedFee calculatedFee = new CalculatedFee
-                    {
-                        CalculatedValue = command.CalculatedValue,
-                        FeeCalculatedDateTime = command.FeeCalculatedDateTime,
-                        FeeCalculationType = command.FeeCalculationType,
-                        FeeId = command.FeeId,
-                        FeeType = TransactionProcessor.Models.Contract.FeeType.Merchant,
-                        FeeValue = command.FeeValue,
-                        IsSettled = true
-                    };
+            Result result = await ApplyUpdates(async (TransactionAggregate transactionAggregate) => {
+                CalculatedFee calculatedFee = new CalculatedFee {
+                    CalculatedValue = command.CalculatedValue,
+                    FeeCalculatedDateTime = command.FeeCalculatedDateTime,
+                    FeeCalculationType = command.FeeCalculationType,
+                    FeeId = command.FeeId,
+                    FeeType = TransactionProcessor.Models.Contract.FeeType.Merchant,
+                    FeeValue = command.FeeValue,
+                    IsSettled = true
+                };
 
-                    transactionAggregate.AddSettledFee(calculatedFee, command.SettledDateTime, command.SettlementId);
+                transactionAggregate.AddSettledFee(calculatedFee, command.SettledDateTime, command.SettlementId);
 
-                    return Result.Success();
-                }, command.TransactionId, cancellationToken);
+                return Result.Success();
+            }, command.TransactionId, cancellationToken);
             return result;
         }
 
@@ -549,16 +496,16 @@ namespace TransactionProcessor.BusinessLogic.Services{
                                                            CancellationToken cancellationToken) {
             this.TokenResponse = await Helpers.GetToken(this.TokenResponse, this.SecurityServiceClient, cancellationToken);
 
-            Result<TransactionAggregate> transactionAggregateResult =
-                await this.TransactionAggregateRepository.GetLatestVersion(command.TransactionId, cancellationToken);
+            Result<TransactionAggregate> transactionAggregateResult = await this.TransactionAggregateRepository.GetLatestVersion(command.TransactionId, cancellationToken);
 
             if (transactionAggregateResult.IsFailed)
                 return ResultHelpers.CreateFailure(transactionAggregateResult);
-            
+
             Models.Transaction transaction = transactionAggregateResult.Data.GetTransaction();
 
-            MerchantResponse merchant =
-                await this.EstateClient.GetMerchant(this.TokenResponse.AccessToken, command.EstateId, transaction.MerchantId, cancellationToken);
+            Result<Merchant> merchantResult = await this.GetMerchant(transaction.MerchantId, cancellationToken);
+            if (merchantResult.IsFailed)
+                return ResultHelpers.CreateFailure(merchantResult);
 
             Result<EstateAggregate> estateResult = await this.EstateAggregateRepository.GetLatestVersion(command.EstateId, cancellationToken);
             if (estateResult.IsFailed)
@@ -567,88 +514,67 @@ namespace TransactionProcessor.BusinessLogic.Services{
             Operator @operator = estate.Operators.Single(o => o.OperatorId == transaction.OperatorId);
 
             // Determine the body of the email
-            String receiptMessage = await this.TransactionReceiptBuilder.GetEmailReceiptMessage(transaction, merchant, @operator.Name, cancellationToken);
+            String receiptMessage = await this.TransactionReceiptBuilder.GetEmailReceiptMessage(transaction, merchantResult.Data, @operator.Name, cancellationToken);
 
             // Send the message
-            return await this.SendEmailMessage(this.TokenResponse.AccessToken,
-                command.EventId,
-                command.EstateId,
-                "Transaction Successful",
-                receiptMessage,
-                command.CustomerEmailAddress,
-                cancellationToken);
+            return await this.SendEmailMessage(this.TokenResponse.AccessToken, command.EventId, command.EstateId, "Transaction Successful", receiptMessage, command.CustomerEmailAddress, cancellationToken);
         }
 
         public async Task<Result> ResendCustomerEmailReceipt(TransactionCommands.ResendCustomerEmailReceiptCommand command,
                                                              CancellationToken cancellationToken) {
             this.TokenResponse = await Helpers.GetToken(this.TokenResponse, this.SecurityServiceClient, cancellationToken);
 
-            Result<TransactionAggregate> transactionAggregateResult =
-                await this.TransactionAggregateRepository.GetLatestVersion(command.TransactionId, cancellationToken);
+            Result<TransactionAggregate> transactionAggregateResult = await this.TransactionAggregateRepository.GetLatestVersion(command.TransactionId, cancellationToken);
 
             if (transactionAggregateResult.IsFailed)
                 return ResultHelpers.CreateFailure(transactionAggregateResult);
-            
+
             return await this.ResendEmailMessage(this.TokenResponse.AccessToken, transactionAggregateResult.Data.ReceiptMessageId, command.EstateId, cancellationToken);
         }
 
-        internal static DateTime CalculateSettlementDate(EstateManagement.DataTransferObjects.Responses.Merchant.SettlementSchedule merchantSettlementSchedule,
-                                                         DateTime completeDateTime)
-        {
-            if (merchantSettlementSchedule == EstateManagement.DataTransferObjects.Responses.Merchant.SettlementSchedule.Weekly)
-            {
+        internal static DateTime CalculateSettlementDate(Models.Merchant.SettlementSchedule merchantSettlementSchedule,
+                                                         DateTime completeDateTime) {
+            if (merchantSettlementSchedule == Models.Merchant.SettlementSchedule.Weekly) {
                 return completeDateTime.Date.AddDays(7).Date;
             }
 
-            if (merchantSettlementSchedule == EstateManagement.DataTransferObjects.Responses.Merchant.SettlementSchedule.Monthly)
-            {
+            if (merchantSettlementSchedule == Models.Merchant.SettlementSchedule.Monthly) {
                 return completeDateTime.Date.AddMonths(1).Date;
             }
 
             return completeDateTime.Date;
         }
 
-        private async Task<List<TransactionFeeToCalculate>> GetTransactionFeesForCalculation(TransactionAggregate transactionAggregate, CancellationToken cancellationToken)
-        {
+        private async Task<List<TransactionFeeToCalculate>> GetTransactionFeesForCalculation(TransactionAggregate transactionAggregate,
+                                                                                             CancellationToken cancellationToken) {
             // TODO: convert to result??
 
             Boolean contractProductFeeCacheEnabled;
             String contractProductFeeCacheEnabledValue = ConfigurationReader.GetValue("ContractProductFeeCacheEnabled");
-            if (String.IsNullOrEmpty(contractProductFeeCacheEnabledValue))
-            {
+            if (String.IsNullOrEmpty(contractProductFeeCacheEnabledValue)) {
                 contractProductFeeCacheEnabled = false;
             }
-            else
-            {
+            else {
                 contractProductFeeCacheEnabled = Boolean.Parse(contractProductFeeCacheEnabledValue);
             }
 
             Boolean feesInCache;
-            Result<List<ContractProductTransactionFee>> feesForProduct = null;
-            if (contractProductFeeCacheEnabled == false)
-            {
+            Result<List<Models.Contract.ContractProductTransactionFee>> feesForProduct = null;
+            if (contractProductFeeCacheEnabled == false) {
                 feesInCache = false;
             }
-            else
-            {
+            else {
                 // Ok we should have filtered out the not applicable transactions
                 // Check if we have fees for this product in the cache
-                feesInCache = this.MemoryCache.TryGetValue((transactionAggregate.EstateId, transactionAggregate.ContractId, transactionAggregate.ProductId),
-                                                                   out feesForProduct);
+                feesInCache = this.MemoryCache.TryGetValue((transactionAggregate.EstateId, transactionAggregate.ContractId, transactionAggregate.ProductId), out feesForProduct);
             }
 
-            if (feesInCache == false)
-            {
+            if (feesInCache == false) {
                 Logger.LogInformation($"Fees for Key: Estate Id {transactionAggregate.EstateId} Contract Id {transactionAggregate.ContractId} ProductId {transactionAggregate.ProductId} not found in the cache");
 
                 // Nothing in cache so we need to make a remote call
                 // Get the fees to be calculated
-                feesForProduct = await this.EstateClient.GetTransactionFeesForProduct(this.TokenResponse.AccessToken,
-                                                                                      transactionAggregate.EstateId,
-                                                                                      transactionAggregate.MerchantId,
-                                                                                      transactionAggregate.ContractId,
-                                                                                      transactionAggregate.ProductId,
-                                                                                      cancellationToken);
+                feesForProduct = await this.GetTransactionFeesForProduct(transactionAggregate.ContractId, transactionAggregate.ProductId, cancellationToken);
 
 
                 if (feesForProduct.IsFailed) {
@@ -658,40 +584,25 @@ namespace TransactionProcessor.BusinessLogic.Services{
 
                 Logger.LogInformation($"After getting Fees {feesForProduct.Data.Count} returned");
 
-                if (contractProductFeeCacheEnabled == true)
-                {
+                if (contractProductFeeCacheEnabled == true) {
                     // Now add this the result to the cache
                     String contractProductFeeCacheExpiryInHours = ConfigurationReader.GetValue("ContractProductFeeCacheExpiryInHours");
-                    if (String.IsNullOrEmpty(contractProductFeeCacheExpiryInHours))
-                    {
+                    if (String.IsNullOrEmpty(contractProductFeeCacheExpiryInHours)) {
                         contractProductFeeCacheExpiryInHours = "168"; // 7 Days default
                     }
 
-                    this.MemoryCache.Set((transactionAggregate.EstateId, transactionAggregate.ContractId, transactionAggregate.ProductId),
-                                         feesForProduct.Data,
-                                         new MemoryCacheEntryOptions()
-                                         {
-                                             AbsoluteExpirationRelativeToNow = TimeSpan.FromHours(Int32.Parse(contractProductFeeCacheExpiryInHours))
-                                         });
+                    this.MemoryCache.Set((transactionAggregate.EstateId, transactionAggregate.ContractId, transactionAggregate.ProductId), feesForProduct.Data, new MemoryCacheEntryOptions() { AbsoluteExpirationRelativeToNow = TimeSpan.FromHours(Int32.Parse(contractProductFeeCacheExpiryInHours)) });
                     Logger.LogInformation($"Fees for Key: Estate Id {transactionAggregate.EstateId} Contract Id {transactionAggregate.ContractId} ProductId {transactionAggregate.ProductId} added to cache");
                 }
             }
-            else
-            {
+            else {
                 Logger.LogInformation($"Fees for Key: Estate Id {transactionAggregate.EstateId} Contract Id {transactionAggregate.ContractId} ProductId {transactionAggregate.ProductId} found in the cache");
             }
 
             List<TransactionFeeToCalculate> feesForCalculation = new List<TransactionFeeToCalculate>();
 
-            foreach (ContractProductTransactionFee contractProductTransactionFee in feesForProduct.Data)
-            {
-                TransactionFeeToCalculate transactionFeeToCalculate = new TransactionFeeToCalculate
-                {
-                    FeeId = contractProductTransactionFee.TransactionFeeId,
-                    Value = contractProductTransactionFee.Value,
-                    FeeType = (TransactionProcessor.Models.Contract.FeeType)contractProductTransactionFee.FeeType,
-                    CalculationType = (TransactionProcessor.Models.Contract.CalculationType)contractProductTransactionFee.CalculationType
-                };
+            foreach (Models.Contract.ContractProductTransactionFee contractProductTransactionFee in feesForProduct.Data) {
+                TransactionFeeToCalculate transactionFeeToCalculate = new TransactionFeeToCalculate { FeeId = contractProductTransactionFee.TransactionFeeId, Value = contractProductTransactionFee.Value, FeeType = (TransactionProcessor.Models.Contract.FeeType)contractProductTransactionFee.FeeType, CalculationType = (TransactionProcessor.Models.Contract.CalculationType)contractProductTransactionFee.CalculationType };
 
                 feesForCalculation.Add(transactionFeeToCalculate);
             }
@@ -706,20 +617,14 @@ namespace TransactionProcessor.BusinessLogic.Services{
         /// <param name="merchantId">The merchant identifier.</param>
         /// <param name="deviceIdentifier">The device identifier.</param>
         /// <param name="cancellationToken">The cancellation token.</param>
-        private async Task AddDeviceToMerchant(Guid estateId,
-                                               Guid merchantId,
+        private async Task AddDeviceToMerchant(Guid merchantId,
                                                String deviceIdentifier,
-                                               CancellationToken cancellationToken){
-            this.TokenResponse = await Helpers.GetToken(this.TokenResponse, this.SecurityServiceClient, cancellationToken);
-
+                                               CancellationToken cancellationToken) {
+            // TODO: Should this be firing a command to add the device??
             // Add the device to the merchant
-            await this.EstateClient.AddDeviceToMerchant(this.TokenResponse.AccessToken,
-                                                        estateId,
-                                                        merchantId,
-                                                        new AddMerchantDeviceRequest{
-                                                                                        DeviceIdentifier = deviceIdentifier
-                                                                                    },
-                                                        cancellationToken);
+            Result<MerchantAggregate> merchantAggregate = await this.MerchantAggregateRepository.GetLatestVersion(merchantId, cancellationToken);
+            merchantAggregate.Data.AddDevice(Guid.NewGuid(), deviceIdentifier);
+            await this.MerchantAggregateRepository.SaveChanges(merchantAggregate.Data, cancellationToken);
         }
 
         /// <summary>
@@ -727,32 +632,33 @@ namespace TransactionProcessor.BusinessLogic.Services{
         /// </summary>
         /// <returns></returns>
         [ExcludeFromCodeCoverage]
-        private String GenerateTransactionReference(){
+        private String GenerateTransactionReference() {
             Int64 i = 1;
-            foreach (Byte b in Guid.NewGuid().ToByteArray()){
+            foreach (Byte b in Guid.NewGuid().ToByteArray()) {
                 i *= (b + 1);
             }
 
             return $"{i - DateTime.Now.Ticks:x}";
         }
 
-        private async Task<EstateManagement.DataTransferObjects.Responses.Merchant.MerchantResponse> GetMerchant(Guid estateId,
-                                                                                                                                   Guid merchantId,
-                                                                                                                                   CancellationToken cancellationToken){
-            this.TokenResponse = await Helpers.GetToken(this.TokenResponse, this.SecurityServiceClient, cancellationToken);
+        private async Task<Result<Merchant>> GetMerchant(Guid merchantId,
+                                                         CancellationToken cancellationToken) {
+            Result<MerchantAggregate> merchantAggregateResult = await this.MerchantAggregateRepository.GetLatestVersion(merchantId, cancellationToken);
 
-            EstateManagement.DataTransferObjects.Responses.Merchant.MerchantResponse merchant = await this.EstateClient.GetMerchant(this.TokenResponse.AccessToken, estateId, merchantId, cancellationToken);
+            if (merchantAggregateResult.IsFailed)
+                return ResultHelpers.CreateFailure(merchantAggregateResult);
+            Merchant merchant = merchantAggregateResult.Data.GetMerchant();
 
             return merchant;
         }
-        
-        private async Task<Result<OperatorResponse>> ProcessMessageWithOperator(EstateManagement.DataTransferObjects.Responses.Merchant.MerchantResponse merchant,
-                                                                        Guid transactionId,
-                                                                        DateTime transactionDateTime,
-                                                                        Guid operatorId,
-                                                                        Dictionary<String, String> additionalTransactionMetadata,
-                                                                        String transactionReference,
-                                                                        CancellationToken cancellationToken){
+
+        private async Task<Result<OperatorResponse>> ProcessMessageWithOperator(Models.Merchant.Merchant merchant,
+                                                                                Guid transactionId,
+                                                                                DateTime transactionDateTime,
+                                                                                Guid operatorId,
+                                                                                Dictionary<String, String> additionalTransactionMetadata,
+                                                                                String transactionReference,
+                                                                                CancellationToken cancellationToken) {
 
             // TODO: introduce some kind of mapping in here to link operator id to the name
             Result<EstateAggregate> estateResult = await this.EstateAggregateRepository.GetLatestVersion(merchant.EstateId, cancellationToken);
@@ -760,49 +666,30 @@ namespace TransactionProcessor.BusinessLogic.Services{
                 return ResultHelpers.CreateFailure(estateResult);
             Estate estate = estateResult.Data.GetEstate();
             Operator @operator = estate.Operators.SingleOrDefault(o => o.OperatorId == operatorId);
-            
+
             var operatorResult = await this.OperatorAggregateRepository.GetLatestVersion(operatorId, cancellationToken);
             if (operatorResult.IsFailed)
                 return ResultHelpers.CreateFailure(operatorResult);
             IOperatorProxy operatorProxy = this.OperatorProxyResolver(operatorResult.Data.Name.Replace(" ", ""));
-            try{
-                Result<OperatorResponse> saleResult = await operatorProxy.ProcessSaleMessage(this.TokenResponse.AccessToken,
-                                                                          transactionId,
-                                                                          operatorId,
-                                                                          merchant,
-                                                                          transactionDateTime,
-                                                                          transactionReference,
-                                                                          additionalTransactionMetadata,
-                                                                          cancellationToken);
+            try {
+                Result<OperatorResponse> saleResult = await operatorProxy.ProcessSaleMessage(transactionId, operatorId, merchant, transactionDateTime, transactionReference, additionalTransactionMetadata, cancellationToken);
                 if (saleResult.IsFailed) {
-                    return CreateFailedResult(new OperatorResponse {
-                        IsSuccessful = false, ResponseCode = "9999", ResponseMessage = saleResult.Message
-                    });
+                    return CreateFailedResult(new OperatorResponse { IsSuccessful = false, ResponseCode = "9999", ResponseMessage = saleResult.Message });
                 }
 
                 return saleResult;
             }
-            catch(Exception e){
+            catch (Exception e) {
                 // Log out the error
                 Logger.LogError(e);
-                return CreateFailedResult(new OperatorResponse
-                {
-                    IsSuccessful = false,
-                    ResponseCode = "9999",
-                    ResponseMessage =e.GetCombinedExceptionMessages()
-                });
+                return CreateFailedResult(new OperatorResponse { IsSuccessful = false, ResponseCode = "9999", ResponseMessage = e.GetCombinedExceptionMessages() });
             }
         }
 
         #endregion
 
-        internal static Result<T> CreateFailedResult<T>(T resultData)
-        {
-            return new Result<T>
-            {
-                IsSuccess = false,
-                Data = resultData
-            };
+        internal static Result<T> CreateFailedResult<T>(T resultData) {
+            return new Result<T> { IsSuccess = false, Data = resultData };
         }
 
         [ExcludeFromCodeCoverage]
@@ -812,34 +699,27 @@ namespace TransactionProcessor.BusinessLogic.Services{
                                                     String subject,
                                                     String body,
                                                     String emailAddress,
-                                                    CancellationToken cancellationToken)
-        {
-            SendEmailRequest sendEmailRequest = new SendEmailRequest
-            {
+                                                    CancellationToken cancellationToken) {
+            SendEmailRequest sendEmailRequest = new SendEmailRequest {
                 MessageId = messageId,
                 Body = body,
                 ConnectionIdentifier = estateId,
                 FromAddress = "golfhandicapping@btinternet.com", // TODO: lookup from config
                 IsHtml = true,
                 Subject = subject,
-                ToAddresses = new List<String> {
-                                                                                                            emailAddress
-                                                                                                        }
+                ToAddresses = new List<String> { emailAddress }
             };
 
             // TODO: may decide to record the message Id againsts the Transaction Aggregate in future, but for now
             // we wont do this...
-            try
-            {
+            try {
                 return await this.MessagingServiceClient.SendEmail(accessToken, sendEmailRequest, cancellationToken);
             }
-            catch (Exception ex) when (ex.InnerException != null && ex.InnerException.GetType() == typeof(InvalidOperationException))
-            {
-                if (ex.InnerException.Message.Contains("Cannot send a message to provider that has already been sent", StringComparison.InvariantCultureIgnoreCase) ==
-                    false)
-                {
+            catch (Exception ex) when (ex.InnerException != null && ex.InnerException.GetType() == typeof(InvalidOperationException)) {
+                if (ex.InnerException.Message.Contains("Cannot send a message to provider that has already been sent", StringComparison.InvariantCultureIgnoreCase) == false) {
                     return Result.Failure(ex.GetExceptionMessages());
                 }
+
                 return Result.Success("Duplicate message send");
             }
         }
@@ -848,29 +728,37 @@ namespace TransactionProcessor.BusinessLogic.Services{
         private async Task<Result> ResendEmailMessage(String accessToken,
                                                       Guid messageId,
                                                       Guid estateId,
-                                                      CancellationToken cancellationToken)
-        {
-            ResendEmailRequest resendEmailRequest = new ResendEmailRequest
-            {
-                ConnectionIdentifier = estateId,
-                MessageId = messageId
-            };
-            try
-            {
+                                                      CancellationToken cancellationToken) {
+            ResendEmailRequest resendEmailRequest = new ResendEmailRequest { ConnectionIdentifier = estateId, MessageId = messageId };
+            try {
                 return await this.MessagingServiceClient.ResendEmail(accessToken, resendEmailRequest, cancellationToken);
             }
-            catch (Exception ex) when (ex.InnerException != null && ex.InnerException.GetType() == typeof(InvalidOperationException))
-            {
+            catch (Exception ex) when (ex.InnerException != null && ex.InnerException.GetType() == typeof(InvalidOperationException)) {
                 // Only bubble up if not a duplicate message
-                if (ex.InnerException.Message.Contains("Cannot send a message to provider that has already been sent", StringComparison.InvariantCultureIgnoreCase) ==
-                    false)
-                {
+                if (ex.InnerException.Message.Contains("Cannot send a message to provider that has already been sent", StringComparison.InvariantCultureIgnoreCase) == false) {
                     return Result.Failure(ex.GetExceptionMessages());
                 }
+
                 return Result.Success("Duplicate message send");
             }
 
         }
-    }
 
+        private async Task<Result<List<Models.Contract.ContractProductTransactionFee>>> GetTransactionFeesForProduct(Guid contractId,
+                                                                                                                     Guid productId,
+                                                                                                                     CancellationToken cancellationToken) {
+            Result<ContractAggregate> contractAggregateResult = await this.ContractAggregateRepository.GetLatestVersion(contractId, CancellationToken.None);
+            if (contractAggregateResult.IsFailed)
+                return ResultHelpers.CreateFailure(contractAggregateResult);
+
+            Contract contract = contractAggregateResult.Data.GetContract();
+
+            Product product = contract.Products.SingleOrDefault(p => p.ContractProductId == productId);
+            if (product == null)
+                return Result.Failure("Product not found");
+
+            List<Models.Contract.ContractProductTransactionFee> transactionFees = product.TransactionFees.ToList();
+            return Result.Success(transactionFees);
+        }
+    }
 }

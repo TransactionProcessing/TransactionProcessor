@@ -98,6 +98,202 @@ public static class ReqnrollTableHelper
 }
 
 public static class ReqnrollExtensions{
+    public static List<(EstateDetails, MerchantResponse, Guid, Address)> ToAddressUpdates(this DataTableRows tableRows, List<EstateDetails> estateDetailsList)
+    {
+
+        List<(EstateDetails, MerchantResponse, Guid, Address)> result = new();
+
+        foreach (DataTableRow tableRow in tableRows)
+        {
+            String estateName = ReqnrollTableHelper.GetStringRowValue(tableRow, "EstateName");
+            EstateDetails estateDetails = estateDetailsList.SingleOrDefault(e => e.EstateName == estateName);
+            estateDetails.ShouldNotBeNull();
+
+            foreach (DataTableRow dataTableRow in tableRows)
+            {
+
+                String merchantName = ReqnrollTableHelper.GetStringRowValue(tableRow, "MerchantName");
+                MerchantResponse merchant = estateDetails.GetMerchant(merchantName);
+
+                Guid addressId = merchant.Addresses.First().AddressId;
+
+                Address addressUpdateRequest = new Address()
+                {
+                    AddressLine1 = ReqnrollTableHelper.GetStringRowValue(tableRow, "AddressLine1"),
+                    AddressLine2 = ReqnrollTableHelper.GetStringRowValue(tableRow, "AddressLine2"),
+                    AddressLine3 = ReqnrollTableHelper.GetStringRowValue(tableRow, "AddressLine3"),
+                    AddressLine4 = ReqnrollTableHelper.GetStringRowValue(tableRow, "AddressLine4"),
+                    Town = ReqnrollTableHelper.GetStringRowValue(tableRow, "Town"),
+                    Region = ReqnrollTableHelper.GetStringRowValue(tableRow, "Region"),
+                    Country = ReqnrollTableHelper.GetStringRowValue(tableRow, "Country"),
+                    PostalCode = ReqnrollTableHelper.GetStringRowValue(tableRow, "PostalCode")
+                };
+                result.Add((estateDetails, merchant, addressId, addressUpdateRequest));
+            }
+
+        }
+
+        return result;
+    }
+
+    public static List<(EstateDetails, MerchantResponse, Guid, Contact)> ToContactUpdates(this DataTableRows tableRows, List<EstateDetails> estateDetailsList)
+    {
+
+        List<(EstateDetails, MerchantResponse, Guid, Contact)> result = new();
+
+        foreach (DataTableRow tableRow in tableRows)
+        {
+            String estateName = ReqnrollTableHelper.GetStringRowValue(tableRow, "EstateName");
+            EstateDetails estateDetails = estateDetailsList.SingleOrDefault(e => e.EstateName == estateName);
+            estateDetails.ShouldNotBeNull();
+
+            foreach (DataTableRow dataTableRow in tableRows)
+            {
+
+                String merchantName = ReqnrollTableHelper.GetStringRowValue(tableRow, "MerchantName");
+                MerchantResponse merchant = estateDetails.GetMerchant(merchantName);
+
+                Guid contactId = merchant.Contacts.First().ContactId;
+
+                Contact contactUpdateRequest = new Contact()
+                {
+                    ContactName = ReqnrollTableHelper.GetStringRowValue(tableRow, "ContactName"),
+                    EmailAddress = ReqnrollTableHelper.GetStringRowValue(tableRow, "EmailAddress"),
+                    PhoneNumber = ReqnrollTableHelper.GetStringRowValue(tableRow, "PhoneNumber"),
+                };
+                result.Add((estateDetails, merchant, contactId, contactUpdateRequest));
+            }
+        }
+
+        return result;
+    }
+    public static List<(EstateDetails, Guid, UpdateMerchantRequest)> ToUpdateMerchantRequests(this DataTableRows tableRows, List<EstateDetails> estateDetailsList)
+    {
+        List<(EstateDetails, Guid, UpdateMerchantRequest)> result = new List<(EstateDetails, Guid, UpdateMerchantRequest)>();
+
+        foreach (DataTableRow tableRow in tableRows)
+        {
+            String estateName = ReqnrollTableHelper.GetStringRowValue(tableRow, "EstateName");
+            EstateDetails estateDetails = estateDetailsList.SingleOrDefault(e => e.EstateName == estateName);
+            estateDetails.ShouldNotBeNull();
+
+            String merchantName = ReqnrollTableHelper.GetStringRowValue(tableRow, "MerchantName");
+            Guid merchantId = estateDetails.GetMerchantId(merchantName);
+
+            String updateMerchantName = ReqnrollTableHelper.GetStringRowValue(tableRow, "UpdateMerchantName");
+
+            String settlementSchedule = ReqnrollTableHelper.GetStringRowValue(tableRow, "SettlementSchedule");
+
+            SettlementSchedule schedule = SettlementSchedule.Immediate;
+            if (String.IsNullOrEmpty(settlementSchedule) == false)
+            {
+                schedule = Enum.Parse<SettlementSchedule>(settlementSchedule);
+            }
+
+            UpdateMerchantRequest updateMerchantRequest = new UpdateMerchantRequest
+            {
+                Name = updateMerchantName,
+                SettlementSchedule = schedule
+            };
+
+            result.Add((estateDetails, merchantId, updateMerchantRequest));
+        }
+
+        return result;
+    }
+
+    public static List<String> ToAutomaticDepositRequests(this DataTableRows tableRows, List<EstateDetails> estateDetailsList, String testBankSortCode, String testBankAccountNumber)
+    {
+        List<String> requests = new List<String>();
+        foreach (DataTableRow tableRow in tableRows)
+        {
+            Decimal amount = ReqnrollTableHelper.GetDecimalValue(tableRow, "Amount");
+            DateTime depositDateTime = ReqnrollTableHelper.GetDateForDateString(ReqnrollTableHelper.GetStringRowValue(tableRow, "DateTime"), DateTime.UtcNow);
+            String merchantName = ReqnrollTableHelper.GetStringRowValue(tableRow, "MerchantName");
+            String estateName = ReqnrollTableHelper.GetStringRowValue(tableRow, "EstateName");
+
+            Guid estateId = Guid.NewGuid();
+            EstateDetails estateDetails = estateDetailsList.SingleOrDefault(e => e.EstateName == estateName);
+            estateDetails.ShouldNotBeNull();
+
+            var merchant = estateDetails.GetMerchant(merchantName);
+
+            var depositReference = $"{estateDetails.EstateReference}-{merchant.MerchantReference}";
+
+            // This will send a request to the Test Host (test bank)
+            var makeDepositRequest = new
+            {
+                date_time = depositDateTime,
+                from_sort_code = "665544",
+                from_account_number = "12312312",
+                to_sort_code = testBankSortCode,
+                to_account_number = testBankAccountNumber,
+                deposit_reference = depositReference,
+                amount = amount
+            };
+
+            requests.Add(JsonConvert.SerializeObject(makeDepositRequest));
+        }
+
+        return requests;
+    }
+
+    public static List<(EstateDetails, Guid, MakeMerchantDepositRequest)> ToMakeMerchantDepositRequest(this DataTableRows tableRows, List<EstateDetails> estateDetailsList)
+    {
+        List<(EstateDetails, Guid, MakeMerchantDepositRequest)> result = new List<(EstateDetails, Guid, MakeMerchantDepositRequest)>();
+
+        foreach (DataTableRow tableRow in tableRows)
+        {
+            String estateName = ReqnrollTableHelper.GetStringRowValue(tableRow, "EstateName");
+            EstateDetails estateDetails = estateDetailsList.SingleOrDefault(e => e.EstateName == estateName);
+            estateDetails.ShouldNotBeNull();
+
+            String merchantName = ReqnrollTableHelper.GetStringRowValue(tableRow, "MerchantName");
+            Guid merchantId = estateDetails.GetMerchantId(merchantName);
+
+            MakeMerchantDepositRequest makeMerchantDepositRequest = new MakeMerchantDepositRequest
+            {
+                DepositDateTime = ReqnrollTableHelper.GetDateForDateString(ReqnrollTableHelper.GetStringRowValue(tableRow, "DateTime"), DateTime.UtcNow),
+                Reference = ReqnrollTableHelper.GetStringRowValue(tableRow, "Reference"),
+                Amount = ReqnrollTableHelper.GetDecimalValue(tableRow, "Amount")
+            };
+
+            result.Add((estateDetails, merchantId, makeMerchantDepositRequest));
+        }
+
+        return result;
+    }
+
+    public static List<(EstateDetails, Guid, MakeMerchantWithdrawalRequest)> ToMakeMerchantWithdrawalRequest(this DataTableRows tableRows, List<EstateDetails> estateDetailsList)
+    {
+        List<(EstateDetails, Guid, MakeMerchantWithdrawalRequest)> result = new List<(EstateDetails, Guid, MakeMerchantWithdrawalRequest)>();
+
+        foreach (DataTableRow tableRow in tableRows)
+        {
+            String estateName = ReqnrollTableHelper.GetStringRowValue(tableRow, "EstateName");
+            EstateDetails estateDetails = estateDetailsList.SingleOrDefault(e => e.EstateName == estateName);
+            estateDetails.ShouldNotBeNull();
+
+            String merchantName = ReqnrollTableHelper.GetStringRowValue(tableRow, "MerchantName");
+            Guid merchantId = estateDetails.GetMerchantId(merchantName);
+
+            MakeMerchantWithdrawalRequest makeMerchantWithdrawalRequest = new MakeMerchantWithdrawalRequest
+            {
+                WithdrawalDateTime =
+                                                                                  ReqnrollTableHelper.GetDateForDateString(ReqnrollTableHelper
+                                                                                                                                   .GetStringRowValue(tableRow,
+                                                                                                                                                      "DateTime"),
+                                                                                                                               DateTime.Now),
+                Amount =
+                                                                                  ReqnrollTableHelper.GetDecimalValue(tableRow,
+                                                                                                                      "Amount")
+            };
+
+            result.Add((estateDetails, merchantId, makeMerchantWithdrawalRequest));
+        }
+
+        return result;
+    }
 
     public static List<(EstateDetails, Guid, OperatorResponse)> ToOperatorResponses(this DataTableRows tableRows, List<EstateDetails> estateDetailsList)
     {
@@ -899,6 +1095,32 @@ public static class ReqnrollExtensions{
         return result;
     }
 
+    public static List<(EstateDetails, Guid, SetSettlementScheduleRequest)> ToSetSettlementScheduleRequests(this DataTableRows tableRows, List<EstateDetails> estateDetailsList)
+    {
+
+        List<(EstateDetails, Guid, SetSettlementScheduleRequest)> requests = new List<(EstateDetails, Guid, SetSettlementScheduleRequest)>();
+        foreach (DataTableRow tableRow in tableRows)
+        {
+            String estateName = ReqnrollTableHelper.GetStringRowValue(tableRow, "EstateName");
+            EstateDetails estateDetails = estateDetailsList.SingleOrDefault(e => e.EstateName == estateName);
+            estateDetails.ShouldNotBeNull();
+
+            // Lookup the merchant id
+            String merchantName = ReqnrollTableHelper.GetStringRowValue(tableRow, "MerchantName");
+            Guid merchantId = estateDetails.GetMerchant(merchantName).MerchantId;
+
+            SettlementSchedule schedule = Enum.Parse<SettlementSchedule>(ReqnrollTableHelper.GetStringRowValue(tableRow, "SettlementSchedule"));
+
+            SetSettlementScheduleRequest setSettlementScheduleRequest = new SetSettlementScheduleRequest
+            {
+                SettlementSchedule = schedule
+            };
+            requests.Add((estateDetails, merchantId, setSettlementScheduleRequest));
+        }
+
+        return requests;
+    }
+
     public static List<(EstateDetails, Guid, AddMerchantDeviceRequest)> ToAddMerchantDeviceRequests(this DataTableRows tableRows, List<EstateDetails> estateDetailsList)
     {
         List<(EstateDetails, Guid, AddMerchantDeviceRequest)> result = new List<(EstateDetails, Guid, AddMerchantDeviceRequest)>();
@@ -946,30 +1168,31 @@ public static class ReqnrollExtensions{
         return result;
     }
 
-    public static List<(EstateDetails, Guid, MakeMerchantDepositRequest)> ToMakeMerchantDepositRequest(this DataTableRows tableRows, List<EstateDetails> estateDetailsList)
+    public static List<(EstateDetails, Guid, String, SwapMerchantDeviceRequest)> ToSwapMerchantDeviceRequests(this DataTableRows tableRows, List<EstateDetails> estateDetailsList)
     {
-        List<(EstateDetails, Guid, MakeMerchantDepositRequest)> result = new List<(EstateDetails, Guid, MakeMerchantDepositRequest)>();
 
+        List<(EstateDetails, Guid, String, SwapMerchantDeviceRequest)> requests = new List<(EstateDetails, Guid, String, SwapMerchantDeviceRequest)>();
         foreach (DataTableRow tableRow in tableRows)
         {
             String estateName = ReqnrollTableHelper.GetStringRowValue(tableRow, "EstateName");
             EstateDetails estateDetails = estateDetailsList.SingleOrDefault(e => e.EstateName == estateName);
             estateDetails.ShouldNotBeNull();
 
+            // Lookup the merchant id
             String merchantName = ReqnrollTableHelper.GetStringRowValue(tableRow, "MerchantName");
-            Guid merchantId = estateDetails.GetMerchantId(merchantName);
+            Guid merchantId = estateDetails.GetMerchant(merchantName).MerchantId;
 
-            MakeMerchantDepositRequest makeMerchantDepositRequest = new MakeMerchantDepositRequest
+            String originalDeviceIdentifier = ReqnrollTableHelper.GetStringRowValue(tableRow, "OriginalDeviceIdentifier");
+            String newDeviceIdentifier = ReqnrollTableHelper.GetStringRowValue(tableRow, "NewDeviceIdentifier");
+
+            SwapMerchantDeviceRequest swapMerchantDeviceRequest = new SwapMerchantDeviceRequest
             {
-                DepositDateTime = ReqnrollTableHelper.GetDateForDateString(ReqnrollTableHelper.GetStringRowValue(tableRow, "DateTime"), DateTime.UtcNow),
-                Reference = ReqnrollTableHelper.GetStringRowValue(tableRow, "Reference"),
-                Amount = ReqnrollTableHelper.GetDecimalValue(tableRow, "Amount")
+                NewDeviceIdentifier = newDeviceIdentifier
             };
-
-            result.Add((estateDetails, merchantId, makeMerchantDepositRequest));
+            requests.Add((estateDetails, merchantId, originalDeviceIdentifier, swapMerchantDeviceRequest));
         }
 
-        return result;
+        return requests;
     }
 
     public static List<CreateNewUserRequest> ToCreateNewUserRequests(this DataTableRows tableRows, List<EstateDetails> estateDetailsList)

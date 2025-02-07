@@ -49,7 +49,7 @@ namespace TransactionProcessor.BusinessLogic.Tests.OperatorInterfaces
 
             PataPawaPostPayService.Setup(s => s.getLoginRequestAsync(It.IsAny<String>(), It.IsAny<String>())).ReturnsAsync(TestData.PataPawaPostPaidSuccessfulLoginResponse);
 
-            BusinessLogic.OperatorInterfaces.OperatorResponse logonResponse = await PataPawaPostPayProxy.ProcessLogonMessage("", CancellationToken.None);
+            BusinessLogic.OperatorInterfaces.OperatorResponse logonResponse = await PataPawaPostPayProxy.ProcessLogonMessage(CancellationToken.None);
 
             logonResponse.ShouldNotBeNull();
             logonResponse.IsSuccessful.ShouldBeTrue();
@@ -69,7 +69,7 @@ namespace TransactionProcessor.BusinessLogic.Tests.OperatorInterfaces
 
             this.MemoryCache.Set("PataPawaPostPayLogon", operatorResponse, new MemoryCacheEntryOptions());
 
-            var result = await PataPawaPostPayProxy.ProcessLogonMessage("", CancellationToken.None);
+            var result = await PataPawaPostPayProxy.ProcessLogonMessage(CancellationToken.None);
 
             result.IsSuccess.ShouldBeTrue();
             result.Data.TransactionId.ShouldBe(operatorResponse.TransactionId);
@@ -80,7 +80,7 @@ namespace TransactionProcessor.BusinessLogic.Tests.OperatorInterfaces
 
             PataPawaPostPayService.Setup(s => s.getLoginRequestAsync(It.IsAny<String>(), It.IsAny<String>())).ReturnsAsync(TestData.PataPawaPostPaidFailedLoginResponse);
             
-            var result = await this.PataPawaPostPayProxy.ProcessLogonMessage(TestData.TokenResponse().AccessToken, CancellationToken.None);
+            var result = await this.PataPawaPostPayProxy.ProcessLogonMessage(CancellationToken.None);
 
             result.IsFailed.ShouldBeTrue();
             result.Status.ShouldBe(ResultStatus.Failure);
@@ -93,8 +93,7 @@ namespace TransactionProcessor.BusinessLogic.Tests.OperatorInterfaces
                                   .ReturnsAsync(TestData.PataPawaPostPaidSuccessfulVerifyAccountResponse);
             MemoryCache.Set("PataPawaPostPayLogon", TestData.PataPawaPostPaidSuccessfulLoginOperatorResponse);
             
-            BusinessLogic.OperatorInterfaces.OperatorResponse saleResponse = await this.PataPawaPostPayProxy.ProcessSaleMessage(TestData.TokenResponse().AccessToken,
-                                                                                                TestData.TransactionId,
+            BusinessLogic.OperatorInterfaces.OperatorResponse saleResponse = await this.PataPawaPostPayProxy.ProcessSaleMessage(TestData.TransactionId,
                                                                                                 TestData.OperatorId,
                                                                                                 TestData.Merchant,
                                                                                                 TestData.TransactionDateTime,
@@ -121,8 +120,7 @@ namespace TransactionProcessor.BusinessLogic.Tests.OperatorInterfaces
                 .ReturnsAsync(TestData.PataPawaPostPaidSuccessfulVerifyAccountResponse);
             MemoryCache.Set("PataPawaPostPayLogon", TestData.PataPawaPostPaidFailedLoginOperatorResponse);
             
-            var result = await this.PataPawaPostPayProxy.ProcessSaleMessage(TestData.TokenResponse().AccessToken,
-                                                                                                                                                                    TestData.TransactionId,
+            var result = await this.PataPawaPostPayProxy.ProcessSaleMessage(TestData.TransactionId,
                                                                                                                                                                     TestData.OperatorId,
                                                                                                                                                                     TestData.Merchant,
                                                                                                                                                                     TestData.TransactionDateTime,
@@ -138,8 +136,7 @@ namespace TransactionProcessor.BusinessLogic.Tests.OperatorInterfaces
         {
             MemoryCache.Set("PataPawaPostPayLogon", TestData.PataPawaPostPaidSuccessfulLoginOperatorResponse);
 
-            var result= await this.PataPawaPostPayProxy.ProcessSaleMessage(TestData.TokenResponse().AccessToken,
-                                                                                                    TestData.TransactionId,
+            var result= await this.PataPawaPostPayProxy.ProcessSaleMessage(TestData.TransactionId,
                                                                                                     TestData.OperatorId,
                                                                                                     TestData.Merchant,
                                                                                                     TestData.TransactionDateTime,
@@ -156,8 +153,7 @@ namespace TransactionProcessor.BusinessLogic.Tests.OperatorInterfaces
         {
             MemoryCache.Set("PataPawaPostPayLogon", TestData.PataPawaPostPaidSuccessfulLoginOperatorResponse);
             
-            var result= await this.PataPawaPostPayProxy.ProcessSaleMessage(TestData.TokenResponse().AccessToken,
-                                                                                                                                                                    TestData.TransactionId,
+            var result= await this.PataPawaPostPayProxy.ProcessSaleMessage(TestData.TransactionId,
                                                                                                                                                                     TestData.OperatorId,
                                                                                                                                                                     TestData.Merchant,
                                                                                                                                                                     TestData.TransactionDateTime,
@@ -174,8 +170,7 @@ namespace TransactionProcessor.BusinessLogic.Tests.OperatorInterfaces
         {
             MemoryCache.Set("PataPawaPostPayLogon", TestData.PataPawaPostPaidSuccessfulLoginOperatorResponse);
 
-            var result= await this.PataPawaPostPayProxy.ProcessSaleMessage(TestData.TokenResponse().AccessToken,
-                                                                                                                                                                                TestData.TransactionId,
+            var result= await this.PataPawaPostPayProxy.ProcessSaleMessage(TestData.TransactionId,
                                                                                                                                                                                 TestData.OperatorId,
                                                                                                                                                                                 TestData.Merchant,
                                                                                                                                                                                 TestData.TransactionDateTime,
@@ -196,8 +191,7 @@ namespace TransactionProcessor.BusinessLogic.Tests.OperatorInterfaces
                 .ReturnsAsync(TestData.PataPawaPostPaidFailedVerifyAccountResponse);
             MemoryCache.Set("PataPawaPostPayLogon", TestData.PataPawaPostPaidSuccessfulLoginOperatorResponse);
             
-            var result= await this.PataPawaPostPayProxy.ProcessSaleMessage(TestData.TokenResponse().AccessToken,
-                                                                                                                                            TestData.TransactionId,
+            var result= await this.PataPawaPostPayProxy.ProcessSaleMessage(TestData.TransactionId,
                                                                                                                                             TestData.OperatorId,
                                                                                                                                             TestData.Merchant,
                                                                                                                                             TestData.TransactionDateTime,
@@ -217,7 +211,7 @@ namespace TransactionProcessor.BusinessLogic.Tests.OperatorInterfaces
                 .ReturnsAsync(TestData.PataPawaPostPaidSuccessfulProcessBillResponse);
             this.MemoryCache.Set("PataPawaPostPayLogon", TestData.PataPawaPostPaidSuccessfulLoginOperatorResponse);
 
-            BusinessLogic.OperatorInterfaces.OperatorResponse saleResponse = await this.PataPawaPostPayProxy.ProcessSaleMessage(TestData.TokenResponse().AccessToken,
+            BusinessLogic.OperatorInterfaces.OperatorResponse saleResponse = await this.PataPawaPostPayProxy.ProcessSaleMessage(
                                                                                                 TestData.TransactionId,
                                                                                                 TestData.OperatorId,
                                                                                                 TestData.Merchant,
@@ -238,8 +232,7 @@ namespace TransactionProcessor.BusinessLogic.Tests.OperatorInterfaces
         {
             this.MemoryCache.Set("PataPawaPostPayLogon", TestData.PataPawaPostPaidFailedLoginOperatorResponse);
 
-            var result = await this.PataPawaPostPayProxy.ProcessSaleMessage(TestData.TokenResponse().AccessToken,
-                TestData.TransactionId, TestData.OperatorId, TestData.Merchant, TestData.TransactionDateTime,
+            var result = await this.PataPawaPostPayProxy.ProcessSaleMessage(TestData.TransactionId, TestData.OperatorId, TestData.Merchant, TestData.TransactionDateTime,
                 TestData.TransactionReference, TestData.AdditionalTransactionMetaDataForPataPawaProcessBill(),
                 CancellationToken.None);
             
@@ -252,8 +245,7 @@ namespace TransactionProcessor.BusinessLogic.Tests.OperatorInterfaces
         {
             this.MemoryCache.Set("PataPawaPostPayLogon", TestData.PataPawaPostPaidSuccessfulLoginOperatorResponse);
 
-            var result = await PataPawaPostPayProxy.ProcessSaleMessage(TestData.TokenResponse().AccessToken,
-                                                                                                                                                             TestData.TransactionId,
+            var result = await PataPawaPostPayProxy.ProcessSaleMessage(TestData.TransactionId,
                                                                                                                                                              TestData.OperatorId,
                                                                                                                                                              TestData.Merchant,
                                                                                                                                                              TestData.TransactionDateTime,
@@ -270,8 +262,7 @@ namespace TransactionProcessor.BusinessLogic.Tests.OperatorInterfaces
         {
             MemoryCache.Set("PataPawaPostPayLogon", TestData.PataPawaPostPaidSuccessfulLoginOperatorResponse);
 
-            var result = await PataPawaPostPayProxy.ProcessSaleMessage(TestData.TokenResponse().AccessToken,
-                                                                                              TestData.TransactionId,
+            var result = await PataPawaPostPayProxy.ProcessSaleMessage(TestData.TransactionId,
                                                                                               TestData.OperatorId,
                                                                                               TestData.Merchant,
                                                                                               TestData.TransactionDateTime,
@@ -289,8 +280,7 @@ namespace TransactionProcessor.BusinessLogic.Tests.OperatorInterfaces
         {
             MemoryCache.Set("PataPawaPostPayLogon", TestData.PataPawaPostPaidSuccessfulLoginOperatorResponse);
 
-            var result = await PataPawaPostPayProxy.ProcessSaleMessage(TestData.TokenResponse().AccessToken,
-                                                                                                                                                             TestData.TransactionId,
+            var result = await PataPawaPostPayProxy.ProcessSaleMessage(TestData.TransactionId,
                                                                                                                                                              TestData.OperatorId,
                                                                                                                                                              TestData.Merchant,
                                                                                                                                                              TestData.TransactionDateTime,
@@ -307,8 +297,7 @@ namespace TransactionProcessor.BusinessLogic.Tests.OperatorInterfaces
         {
             MemoryCache.Set("PataPawaPostPayLogon", TestData.PataPawaPostPaidSuccessfulLoginOperatorResponse);
 
-            var result = await PataPawaPostPayProxy.ProcessSaleMessage(TestData.TokenResponse().AccessToken,
-                                                                                              TestData.TransactionId,
+            var result = await PataPawaPostPayProxy.ProcessSaleMessage(TestData.TransactionId,
                                                                                               TestData.OperatorId,
                                                                                               TestData.Merchant,
                                                                                               TestData.TransactionDateTime,
@@ -325,8 +314,7 @@ namespace TransactionProcessor.BusinessLogic.Tests.OperatorInterfaces
         {
             this.MemoryCache.Set("PataPawaPostPayLogon", TestData.PataPawaPostPaidSuccessfulLoginOperatorResponse);
             
-            var result = await PataPawaPostPayProxy.ProcessSaleMessage(TestData.TokenResponse().AccessToken,
-                                                                                                                                                             TestData.TransactionId,
+            var result = await PataPawaPostPayProxy.ProcessSaleMessage(TestData.TransactionId,
                                                                                                                                                              TestData.OperatorId,
                                                                                                                                                              TestData.Merchant,
                                                                                                                                                              TestData.TransactionDateTime,
@@ -343,8 +331,7 @@ namespace TransactionProcessor.BusinessLogic.Tests.OperatorInterfaces
         {
             MemoryCache.Set("PataPawaPostPayLogon", TestData.PataPawaPostPaidSuccessfulLoginOperatorResponse);
 
-            var result= await PataPawaPostPayProxy.ProcessSaleMessage(TestData.TokenResponse().AccessToken,
-                                                                                                                                                                         TestData.TransactionId,
+            var result= await PataPawaPostPayProxy.ProcessSaleMessage(TestData.TransactionId,
                                                                                                                                                                          TestData.OperatorId,
                                                                                                                                                                          TestData.Merchant,
                                                                                                                                                                          TestData.TransactionDateTime,
@@ -361,8 +348,7 @@ namespace TransactionProcessor.BusinessLogic.Tests.OperatorInterfaces
         {
             MemoryCache.Set("PataPawaPostPayLogon", TestData.PataPawaPostPaidSuccessfulLoginOperatorResponse);
             
-            var result= await PataPawaPostPayProxy.ProcessSaleMessage(TestData.TokenResponse().AccessToken,
-                                                                                                                                                                         TestData.TransactionId,
+            var result= await PataPawaPostPayProxy.ProcessSaleMessage(TestData.TransactionId,
                                                                                                                                                                          TestData.OperatorId,
                                                                                                                                                                          TestData.Merchant,
                                                                                                                                                                          TestData.TransactionDateTime,
@@ -382,8 +368,7 @@ namespace TransactionProcessor.BusinessLogic.Tests.OperatorInterfaces
                 .ReturnsAsync(TestData.PataPawaPostPaidFailedProcessBillResponse);
             MemoryCache.Set("PataPawaPostPayLogon", TestData.PataPawaPostPaidSuccessfulLoginOperatorResponse);
 
-            var result = await PataPawaPostPayProxy.ProcessSaleMessage(TestData.TokenResponse().AccessToken,
-                                                                                                     TestData.TransactionId,
+            var result = await PataPawaPostPayProxy.ProcessSaleMessage(TestData.TransactionId,
                                                                                                      TestData.OperatorId,
                                                                                                      TestData.Merchant,
                                                                                                      TestData.TransactionDateTime,

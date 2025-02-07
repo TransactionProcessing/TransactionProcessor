@@ -43,7 +43,7 @@ public class PataPawaPrePayProxyTests {
 
         this.MockHttpMessageHandler.When("http://localhost").Respond("application/json", JsonConvert.SerializeObject(logonResponse));
             
-        var result = await this.PataPawaPrePayProxy.ProcessLogonMessage("token", CancellationToken.None);
+        var result = await this.PataPawaPrePayProxy.ProcessLogonMessage(CancellationToken.None);
         result.IsSuccess.ShouldBeTrue();
         result.Data.ResponseCode.ShouldBe("0000");
         result.Data.IsSuccessful.ShouldBeTrue();
@@ -56,7 +56,7 @@ public class PataPawaPrePayProxyTests {
         this.MemoryCache.Set("PataPawaPrePayLogon", operatorResponse, new MemoryCacheEntryOptions());
         LogonResponse logonResponse = new LogonResponse { Balance = "0", Key = "Key", Msg = "Success", Status = 0 };
 
-        var result = await this.PataPawaPrePayProxy.ProcessLogonMessage("token", CancellationToken.None);
+        var result = await this.PataPawaPrePayProxy.ProcessLogonMessage(CancellationToken.None);
         result.IsSuccess.ShouldBeTrue();
         result.Data.TransactionId.ShouldBe(operatorResponse.TransactionId);
     }
@@ -68,7 +68,7 @@ public class PataPawaPrePayProxyTests {
 
         this.MockHttpMessageHandler.When("http://localhost").Respond("application/json", JsonConvert.SerializeObject(logonResponse));
 
-        var result = await this.PataPawaPrePayProxy.ProcessLogonMessage("token", CancellationToken.None);
+        var result = await this.PataPawaPrePayProxy.ProcessLogonMessage(CancellationToken.None);
         result.IsFailed.ShouldBeTrue();
     }
 
@@ -79,7 +79,7 @@ public class PataPawaPrePayProxyTests {
 
         this.MockHttpMessageHandler.When("http://localhost").Respond(req => new HttpResponseMessage(HttpStatusCode.BadRequest));
 
-        var result = await this.PataPawaPrePayProxy.ProcessLogonMessage("token", CancellationToken.None);
+        var result = await this.PataPawaPrePayProxy.ProcessLogonMessage(CancellationToken.None);
         result.IsFailed.ShouldBeTrue();
     }
 
@@ -104,7 +104,7 @@ public class PataPawaPrePayProxyTests {
 
         this.MockHttpMessageHandler.When("http://localhost").Respond("application/json", JsonConvert.SerializeObject(meterResponse));
             
-        var result = await this.PataPawaPrePayProxy.ProcessSaleMessage("token", TestData.TransactionId, 
+        var result = await this.PataPawaPrePayProxy.ProcessSaleMessage(TestData.TransactionId, 
             TestData.OperatorId, TestData.Merchant, TestData.TransactionDateTime, TestData.TransactionReference,
             metaDataDictionary, CancellationToken.None);
             
@@ -134,7 +134,7 @@ public class PataPawaPrePayProxyTests {
 
         this.MockHttpMessageHandler.When("http://localhost").Respond("application/json", JsonConvert.SerializeObject(meterResponse));
 
-        var result = await this.PataPawaPrePayProxy.ProcessSaleMessage("token", TestData.TransactionId,
+        var result = await this.PataPawaPrePayProxy.ProcessSaleMessage(TestData.TransactionId,
             TestData.OperatorId, TestData.Merchant, TestData.TransactionDateTime, TestData.TransactionReference,
             metaDataDictionary, CancellationToken.None);
 
@@ -167,7 +167,7 @@ public class PataPawaPrePayProxyTests {
 
         this.MockHttpMessageHandler.When("http://localhost").Respond("application/json", JsonConvert.SerializeObject(vendResponse));
 
-        var result = await this.PataPawaPrePayProxy.ProcessSaleMessage("token", TestData.TransactionId,
+        var result = await this.PataPawaPrePayProxy.ProcessSaleMessage(TestData.TransactionId,
             TestData.OperatorId, TestData.Merchant, TestData.TransactionDateTime, TestData.TransactionReference,
             metaDataDictionary, CancellationToken.None);
 
@@ -207,7 +207,7 @@ public class PataPawaPrePayProxyTests {
 
         this.MockHttpMessageHandler.When("http://localhost").Respond("application/json", JsonConvert.SerializeObject(vendResponse));
 
-        var result = await this.PataPawaPrePayProxy.ProcessSaleMessage("token", TestData.TransactionId,
+        var result = await this.PataPawaPrePayProxy.ProcessSaleMessage(TestData.TransactionId,
             TestData.OperatorId, TestData.Merchant, TestData.TransactionDateTime, TestData.TransactionReference,
             metaDataDictionary, CancellationToken.None);
 
@@ -247,7 +247,7 @@ public class PataPawaPrePayProxyTests {
 
         this.MockHttpMessageHandler.When("http://localhost").Respond("application/json", JsonConvert.SerializeObject(vendResponse));
 
-        var result = await this.PataPawaPrePayProxy.ProcessSaleMessage("token", TestData.TransactionId,
+        var result = await this.PataPawaPrePayProxy.ProcessSaleMessage(TestData.TransactionId,
             TestData.OperatorId, TestData.Merchant, TestData.TransactionDateTime, TestData.TransactionReference,
             metaDataDictionary, CancellationToken.None);
 
@@ -287,7 +287,7 @@ public class PataPawaPrePayProxyTests {
 
         this.MockHttpMessageHandler.When("http://localhost").Respond("application/json", JsonConvert.SerializeObject(vendResponse));
 
-        var result = await this.PataPawaPrePayProxy.ProcessSaleMessage("token", TestData.TransactionId,
+        var result = await this.PataPawaPrePayProxy.ProcessSaleMessage(TestData.TransactionId,
             TestData.OperatorId, TestData.Merchant, TestData.TransactionDateTime, TestData.TransactionReference,
             metaDataDictionary, CancellationToken.None);
 
@@ -325,7 +325,7 @@ public class PataPawaPrePayProxyTests {
 
         this.MockHttpMessageHandler.When("http://localhost").Respond("application/json", JsonConvert.SerializeObject(vendResponse));
 
-        var result = await this.PataPawaPrePayProxy.ProcessSaleMessage("token", TestData.TransactionId,
+        var result = await this.PataPawaPrePayProxy.ProcessSaleMessage(TestData.TransactionId,
             TestData.OperatorId, TestData.Merchant, TestData.TransactionDateTime, TestData.TransactionReference,
             metaDataDictionary, CancellationToken.None);
 
@@ -354,7 +354,7 @@ public class PataPawaPrePayProxyTests {
 
         //this.MockHttpMessageHandler.When("http://localhost").Respond("application/json", JsonConvert.SerializeObject(meterResponse));
 
-        var result = await this.PataPawaPrePayProxy.ProcessSaleMessage("token", TestData.TransactionId,
+        var result = await this.PataPawaPrePayProxy.ProcessSaleMessage(TestData.TransactionId,
             TestData.OperatorId, TestData.Merchant, TestData.TransactionDateTime, TestData.TransactionReference,
             metaDataDictionary, CancellationToken.None);
 
@@ -385,7 +385,7 @@ public class PataPawaPrePayProxyTests {
 
         //this.MockHttpMessageHandler.When("http://localhost").Respond("application/json", JsonConvert.SerializeObject(meterResponse));
 
-        var result = await this.PataPawaPrePayProxy.ProcessSaleMessage("token", TestData.TransactionId,
+        var result = await this.PataPawaPrePayProxy.ProcessSaleMessage(TestData.TransactionId,
             TestData.OperatorId, TestData.Merchant, TestData.TransactionDateTime, TestData.TransactionReference,
             metaDataDictionary, CancellationToken.None);
 
@@ -416,7 +416,7 @@ public class PataPawaPrePayProxyTests {
 
         //this.MockHttpMessageHandler.When("http://localhost").Respond("application/json", JsonConvert.SerializeObject(meterResponse));
 
-        var result = await this.PataPawaPrePayProxy.ProcessSaleMessage("token", TestData.TransactionId,
+        var result = await this.PataPawaPrePayProxy.ProcessSaleMessage(TestData.TransactionId,
             TestData.OperatorId, TestData.Merchant, TestData.TransactionDateTime, TestData.TransactionReference,
             metaDataDictionary, CancellationToken.None);
 
@@ -447,7 +447,7 @@ public class PataPawaPrePayProxyTests {
 
         //this.MockHttpMessageHandler.When("http://localhost").Respond("application/json", JsonConvert.SerializeObject(meterResponse));
 
-        var result = await this.PataPawaPrePayProxy.ProcessSaleMessage("token", TestData.TransactionId,
+        var result = await this.PataPawaPrePayProxy.ProcessSaleMessage(TestData.TransactionId,
             TestData.OperatorId, TestData.Merchant, TestData.TransactionDateTime, TestData.TransactionReference,
             metaDataDictionary, CancellationToken.None);
 

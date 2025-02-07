@@ -4,8 +4,6 @@ using TransactionProcessor.Models.Contract;
 
 namespace TransactionProcessor.ProjectionEngine.Tests
 {
-    using EstateManagement.Merchant.DomainEvents;
-
     public class TestData{
         public static Guid MerchantId = Guid.Parse("1FDEF549-4BDA-4DA3-823B-79684CD93F88");
 
@@ -69,7 +67,7 @@ namespace TransactionProcessor.ProjectionEngine.Tests
 
         public static Guid ManualWithdrawalId = Guid.Parse("4DCDA910-53E4-40F8-AF4B-FEEAC2338739");
 
-        public static AddressAddedEvent AddressAddedEvent = new AddressAddedEvent(TestData.MerchantId,
+        public static MerchantDomainEvents.AddressAddedEvent AddressAddedEvent = new MerchantDomainEvents.AddressAddedEvent(TestData.MerchantId,
                                                                                   TestData.EstateId,
                                                                                   TestData.AddressId,
                                                                                   TestData.AddressLine1,
@@ -145,26 +143,26 @@ namespace TransactionProcessor.ProjectionEngine.Tests
                                                       amount);
             }
 
-        public static MerchantCreatedEvent MerchantCreatedEvent =>
-            new MerchantCreatedEvent(TestData.MerchantId, TestData.EstateId, TestData.MerchantName, TestData.CreatedDateTime);
+        public static MerchantDomainEvents.MerchantCreatedEvent MerchantCreatedEvent =>
+            new MerchantDomainEvents.MerchantCreatedEvent(TestData.MerchantId, TestData.EstateId, TestData.MerchantName, TestData.CreatedDateTime);
 
-        public static ManualDepositMadeEvent ManualDepositMadeEvent =>
-            new ManualDepositMadeEvent(TestData.MerchantId, TestData.EstateId, TestData.ManualDepositId, 
+        public static MerchantDomainEvents.ManualDepositMadeEvent ManualDepositMadeEvent =>
+            new MerchantDomainEvents.ManualDepositMadeEvent(TestData.MerchantId, TestData.EstateId, TestData.ManualDepositId, 
                                        TestData.ManualDepositReference, TestData.ManualDepositDateTime,
                                        TestData.ManualDepositAmount);
 
-        public static AutomaticDepositMadeEvent AutomaticDepositMadeEvent =>
-            new AutomaticDepositMadeEvent(TestData.MerchantId, TestData.EstateId, TestData.AutomaticDepositId,
+        public static MerchantDomainEvents.AutomaticDepositMadeEvent AutomaticDepositMadeEvent =>
+            new MerchantDomainEvents.AutomaticDepositMadeEvent(TestData.MerchantId, TestData.EstateId, TestData.AutomaticDepositId,
                                           TestData.AutomaticDepositReference, TestData.AutomaticDepositDateTime,
                                           TestData.AutomaticDepositAmount);
 
-        public static WithdrawalMadeEvent WithdrawalMadeEvent =>
-            new WithdrawalMadeEvent(TestData.MerchantId, TestData.EstateId, TestData.ManualWithdrawalId,
+        public static MerchantDomainEvents.WithdrawalMadeEvent WithdrawalMadeEvent =>
+            new MerchantDomainEvents.WithdrawalMadeEvent(TestData.MerchantId, TestData.EstateId, TestData.ManualWithdrawalId,
                                     TestData.WithdrawalDateTime,
                                     TestData.WithdrawalAmount);
 
-        public static WithdrawalMadeEvent WithdrawalMadeEvent1 =>
-            new WithdrawalMadeEvent(TestData.MerchantId, TestData.EstateId, TestData.ManualWithdrawalId,
+        public static MerchantDomainEvents.WithdrawalMadeEvent WithdrawalMadeEvent1 =>
+            new MerchantDomainEvents.WithdrawalMadeEvent(TestData.MerchantId, TestData.EstateId, TestData.ManualWithdrawalId,
                                     TestData.WithdrawalDateTime.AddDays(1),
                                     TestData.WithdrawalAmount);
 

@@ -27,13 +27,8 @@ namespace TransactionProcessor.BusinessLogic.Tests.Services
     public class SettlementDomainServiceTests
     {
         private Mock<IAggregateRepository<TransactionAggregate, DomainEvent>> transactionAggregateRepository;
-
         private Mock<IAggregateRepository<SettlementAggregate, DomainEvent>> settlementAggregateRepository;
-
-        private Mock<ISecurityServiceClient> securityServiceClient;
-
-        private Mock<IIntermediateEstateClient> estateClient;
-
+        private Mock<IAggregateRepository<MerchantAggregate, DomainEvent>> merchantAggregateRepository;
         private SettlementDomainService settlementDomainService;
 
         public SettlementDomainServiceTests() {
@@ -41,12 +36,12 @@ namespace TransactionProcessor.BusinessLogic.Tests.Services
                 new Mock<IAggregateRepository<TransactionAggregate, DomainEvent>>();
             this.settlementAggregateRepository =
                 new Mock<IAggregateRepository<SettlementAggregate, DomainEvent>>();
-            this.securityServiceClient = new Mock<ISecurityServiceClient>();
-            this.estateClient = new Mock<IIntermediateEstateClient>();
+            this.merchantAggregateRepository =
+                new Mock<IAggregateRepository<MerchantAggregate, DomainEvent>>();
             
             this.settlementDomainService =
                 new SettlementDomainService(this.transactionAggregateRepository.Object, settlementAggregateRepository.Object,
-                                            this.securityServiceClient.Object, this.estateClient.Object);
+                                            merchantAggregateRepository.Object);
 
             IConfigurationRoot configurationRoot = new ConfigurationBuilder().AddInMemoryCollection(TestData.DefaultAppSettings).Build();
             ConfigurationReader.Initialise(configurationRoot);
@@ -85,11 +80,8 @@ namespace TransactionProcessor.BusinessLogic.Tests.Services
                 .ReturnsAsync(Result.Success())
                 .ReturnsAsync(Result.Success());
 
-
-            this.securityServiceClient.Setup(s => s.GetToken(It.IsAny<String>(), It.IsAny<String>(), It.IsAny<CancellationToken>())).ReturnsAsync(Result.Success(TestData.TokenResponse()));
-
-            this.estateClient.Setup(e => e.GetMerchant(It.IsAny<String>(), It.IsAny<Guid>(), It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
-                .ReturnsAsync(TestData.GetMerchantResponseWithOperator1);
+            this.merchantAggregateRepository.Setup(e => e.GetLatestVersion(It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
+                .ReturnsAsync(TestData.Aggregates.CreatedMerchantAggregate());
 
             SettlementCommands.ProcessSettlementCommand command =
                 new(TestData.SettlementDate, TestData.MerchantId,
@@ -133,10 +125,8 @@ namespace TransactionProcessor.BusinessLogic.Tests.Services
                 .ReturnsAsync(Result.Success());
 
 
-            this.securityServiceClient.Setup(s => s.GetToken(It.IsAny<String>(), It.IsAny<String>(), It.IsAny<CancellationToken>())).ReturnsAsync(Result.Success(TestData.TokenResponse()));
-
-            this.estateClient.Setup(e => e.GetMerchant(It.IsAny<String>(), It.IsAny<Guid>(), It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
-                .ReturnsAsync(TestData.GetMerchantResponseWithOperator1ImmediateSettlement);
+            this.merchantAggregateRepository.Setup(e => e.GetLatestVersion(It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
+                .ReturnsAsync(TestData.Aggregates.CreatedMerchantAggregate());
 
             SettlementCommands.ProcessSettlementCommand command =
                 new(TestData.SettlementDate, TestData.MerchantId,
@@ -175,10 +165,8 @@ namespace TransactionProcessor.BusinessLogic.Tests.Services
             this.settlementAggregateRepository
                 .Setup(s => s.SaveChanges(It.IsAny<SettlementAggregate>(), It.IsAny<CancellationToken>()))
                 .ReturnsAsync(Result.Success);
-            this.securityServiceClient.Setup(s => s.GetToken(It.IsAny<String>(), It.IsAny<String>(), It.IsAny<CancellationToken>())).ReturnsAsync(Result.Success(TestData.TokenResponse()));
-
-            this.estateClient.Setup(e => e.GetMerchant(It.IsAny<String>(), It.IsAny<Guid>(), It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
-                .ReturnsAsync(TestData.GetMerchantResponseWithOperator1);
+            this.merchantAggregateRepository.Setup(e => e.GetLatestVersion(It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
+                .ReturnsAsync(TestData.Aggregates.CreatedMerchantAggregate());
 
             SettlementCommands.ProcessSettlementCommand command =
                 new(TestData.SettlementDate, TestData.MerchantId,
@@ -197,7 +185,6 @@ namespace TransactionProcessor.BusinessLogic.Tests.Services
             this.settlementAggregateRepository
                 .Setup(s => s.SaveChanges(It.IsAny<SettlementAggregate>(), It.IsAny<CancellationToken>()))
                 .ReturnsAsync(Result.Success);
-            this.securityServiceClient.Setup(s => s.GetToken(It.IsAny<String>(), It.IsAny<String>(), It.IsAny<CancellationToken>())).ReturnsAsync(Result.Success(TestData.TokenResponse()));
 
             this.transactionAggregateRepository.SetupSequence(s => s.GetLatestVersion(It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
                 .ReturnsAsync(TestData.GetCompletedAuthorisedSaleTransactionAggregateWithPendingFee(TestData.FeeIds.GetValueOrDefault(0)))
@@ -222,8 +209,8 @@ namespace TransactionProcessor.BusinessLogic.Tests.Services
                 .ReturnsAsync(Result.Success())
                 .ReturnsAsync(Result.Success());
 
-            this.estateClient.Setup(e => e.GetMerchant(It.IsAny<String>(), It.IsAny<Guid>(), It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
-                .ReturnsAsync(TestData.GetMerchantResponseWithOperator1);
+            this.merchantAggregateRepository.Setup(e => e.GetLatestVersion(It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
+                .ReturnsAsync(TestData.Aggregates.CreatedMerchantAggregate());
 
             SettlementCommands.ProcessSettlementCommand command = new(TestData.SettlementDate, TestData.MerchantId, TestData.EstateId);
 
@@ -239,13 +226,12 @@ namespace TransactionProcessor.BusinessLogic.Tests.Services
             this.settlementAggregateRepository
                 .Setup(s => s.SaveChanges(It.IsAny<SettlementAggregate>(), It.IsAny<CancellationToken>()))
                 .ReturnsAsync(Result.Success);
-            this.securityServiceClient.Setup(s => s.GetToken(It.IsAny<String>(), It.IsAny<String>(), It.IsAny<CancellationToken>())).ReturnsAsync(Result.Success(TestData.TokenResponse()));
 
             this.transactionAggregateRepository.Setup(s => s.GetLatestVersion(It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
                 .ThrowsAsync(new Exception());
-            
-            this.estateClient.Setup(e => e.GetMerchant(It.IsAny<String>(), It.IsAny<Guid>(), It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
-                .ReturnsAsync(TestData.GetMerchantResponseWithOperator1);
+
+            this.merchantAggregateRepository.Setup(e => e.GetLatestVersion(It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
+                .ReturnsAsync(TestData.Aggregates.CreatedMerchantAggregate());
 
             SettlementCommands.ProcessSettlementCommand command = new(TestData.SettlementDate, TestData.MerchantId, TestData.EstateId);
 
@@ -261,9 +247,8 @@ namespace TransactionProcessor.BusinessLogic.Tests.Services
             this.settlementAggregateRepository
                 .Setup(s => s.SaveChanges(It.IsAny<SettlementAggregate>(), It.IsAny<CancellationToken>()))
                 .ReturnsAsync(Result.Success);
-            this.securityServiceClient.Setup(s => s.GetToken(It.IsAny<String>(), It.IsAny<String>(), It.IsAny<CancellationToken>())).ReturnsAsync(Result.Success(TestData.TokenResponse()));
-            
-            this.estateClient.Setup(e => e.GetMerchant(It.IsAny<String>(), It.IsAny<Guid>(), It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
+
+            this.merchantAggregateRepository.Setup(e => e.GetLatestVersion(It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
                 .ThrowsAsync(new Exception());
 
             SettlementCommands.ProcessSettlementCommand command = new(TestData.SettlementDate, TestData.MerchantId, TestData.EstateId);
@@ -309,8 +294,8 @@ namespace TransactionProcessor.BusinessLogic.Tests.Services
             this.settlementAggregateRepository
                 .Setup(s => s.SaveChanges(It.IsAny<SettlementAggregate>(), It.IsAny<CancellationToken>()))
                 .ReturnsAsync(Result.Success);
-            this.estateClient.Setup(e => e.GetMerchant(It.IsAny<String>(), It.IsAny<Guid>(), It.IsAny<Guid>(), It.IsAny<CancellationToken>())).ReturnsAsync(Result.Success(TestData.Merchant));
-            this.securityServiceClient.Setup(s => s.GetToken(It.IsAny<String>(), It.IsAny<String>(), It.IsAny<CancellationToken>())).ReturnsAsync(Result.Success(TestData.TokenResponse()));
+            this.merchantAggregateRepository.Setup(e => e.GetLatestVersion(It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
+                .ReturnsAsync(TestData.Aggregates.CreatedMerchantAggregate());
 
             SettlementCommands.AddSettledFeeToSettlementCommand command = new(TestData.SettlementDate, TestData.MerchantId, TestData.EstateId, TestData.TransactionFeeId, TestData.TransactionId);
 
@@ -326,8 +311,8 @@ namespace TransactionProcessor.BusinessLogic.Tests.Services
             this.settlementAggregateRepository
                 .Setup(s => s.SaveChanges(It.IsAny<SettlementAggregate>(), It.IsAny<CancellationToken>()))
                 .ReturnsAsync(Result.Success);
-            this.estateClient.Setup(e => e.GetMerchant(It.IsAny<String>(), It.IsAny<Guid>(), It.IsAny<Guid>(), It.IsAny<CancellationToken>())).ReturnsAsync(Result.Success(TestData.MerchantWithImmediateSettlement));
-            this.securityServiceClient.Setup(s => s.GetToken(It.IsAny<String>(), It.IsAny<String>(), It.IsAny<CancellationToken>())).ReturnsAsync(Result.Success(TestData.TokenResponse()));
+            this.merchantAggregateRepository.Setup(e => e.GetLatestVersion(It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
+                .ReturnsAsync(TestData.Aggregates.CreatedMerchantAggregate());
 
             SettlementCommands.AddSettledFeeToSettlementCommand command = new(TestData.SettlementDate, TestData.MerchantId, TestData.EstateId, TestData.TransactionFeeId, TestData.TransactionId);
 
@@ -343,8 +328,8 @@ namespace TransactionProcessor.BusinessLogic.Tests.Services
             this.settlementAggregateRepository
                 .Setup(s => s.SaveChanges(It.IsAny<SettlementAggregate>(), It.IsAny<CancellationToken>()))
                 .ReturnsAsync(Result.Success);
-            this.estateClient.Setup(e => e.GetMerchant(It.IsAny<String>(), It.IsAny<Guid>(), It.IsAny<Guid>(), It.IsAny<CancellationToken>())).ReturnsAsync(Result.Failure());
-            this.securityServiceClient.Setup(s => s.GetToken(It.IsAny<String>(), It.IsAny<String>(), It.IsAny<CancellationToken>())).ReturnsAsync(Result.Success(TestData.TokenResponse()));
+            this.merchantAggregateRepository.Setup(e => e.GetLatestVersion(It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
+                .ReturnsAsync(Result.Failure());
 
             SettlementCommands.AddSettledFeeToSettlementCommand command = new(TestData.SettlementDate, TestData.MerchantId, TestData.EstateId, TestData.TransactionFeeId, TestData.TransactionId);
 
@@ -360,8 +345,8 @@ namespace TransactionProcessor.BusinessLogic.Tests.Services
             this.settlementAggregateRepository
                 .Setup(s => s.SaveChanges(It.IsAny<SettlementAggregate>(), It.IsAny<CancellationToken>()))
                 .ReturnsAsync(Result.Failure);
-            this.estateClient.Setup(e => e.GetMerchant(It.IsAny<String>(), It.IsAny<Guid>(), It.IsAny<Guid>(), It.IsAny<CancellationToken>())).ReturnsAsync(Result.Success(TestData.MerchantWithImmediateSettlement));
-            this.securityServiceClient.Setup(s => s.GetToken(It.IsAny<String>(), It.IsAny<String>(), It.IsAny<CancellationToken>())).ReturnsAsync(Result.Success(TestData.TokenResponse()));
+            this.merchantAggregateRepository.Setup(e => e.GetLatestVersion(It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
+                .ReturnsAsync(TestData.Aggregates.CreatedMerchantAggregate());
 
             SettlementCommands.AddSettledFeeToSettlementCommand command = new(TestData.SettlementDate, TestData.MerchantId, TestData.EstateId, TestData.TransactionFeeId, TestData.TransactionId);
 
@@ -377,8 +362,8 @@ namespace TransactionProcessor.BusinessLogic.Tests.Services
             this.settlementAggregateRepository
                 .Setup(s => s.SaveChanges(It.IsAny<SettlementAggregate>(), It.IsAny<CancellationToken>()))
                 .ThrowsAsync(new Exception());
-            this.estateClient.Setup(e => e.GetMerchant(It.IsAny<String>(), It.IsAny<Guid>(), It.IsAny<Guid>(), It.IsAny<CancellationToken>())).ReturnsAsync(Result.Success(TestData.MerchantWithImmediateSettlement));
-            this.securityServiceClient.Setup(s => s.GetToken(It.IsAny<String>(), It.IsAny<String>(), It.IsAny<CancellationToken>())).ReturnsAsync(Result.Success(TestData.TokenResponse()));
+            this.merchantAggregateRepository.Setup(e => e.GetLatestVersion(It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
+                .ReturnsAsync(TestData.Aggregates.CreatedMerchantAggregate());
 
             SettlementCommands.AddSettledFeeToSettlementCommand command = new(TestData.SettlementDate, TestData.MerchantId, TestData.EstateId, TestData.TransactionFeeId, TestData.TransactionId);
 

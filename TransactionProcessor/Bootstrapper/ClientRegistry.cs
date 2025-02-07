@@ -49,7 +49,6 @@
             this.AddSingleton(httpClient);
 
             this.AddSingleton<IEstateClient>(new EstateClient(resolver1(), httpClient, 2));
-            this.AddSingleton<IIntermediateEstateClient, IntermediateEstateClient>();
         }
 
         #endregion

@@ -30,12 +30,11 @@ namespace TransactionProcessor.BusinessLogic.Tests.Services
 
     public class FloatDomainServiceTests
     {
-        private readonly Mock<IIntermediateEstateClient> EstateClient;
-        private readonly Mock<ISecurityServiceClient> SecurityServiceClient;
         private readonly Mock<IAggregateRepository<FloatAggregate, DomainEvent>> FloatAggregateRepository;
         private readonly Mock<IAggregateRepository<FloatActivityAggregate, DomainEvent>> FloatActivityAggregateRepository;
         private readonly Mock<IAggregateRepository<TransactionAggregate, DomainEvent>> TransactionAggregateRepository;
         private readonly Mock<IAggregateRepository<EstateAggregate, DomainEvent>> EstateAggregateRepository;
+        private readonly Mock<IAggregateRepository<ContractAggregate,DomainEvent>> ContractAggregateRepository;
         private readonly FloatDomainService FloatDomainService;
 
         public FloatDomainServiceTests(){
@@ -45,43 +44,27 @@ namespace TransactionProcessor.BusinessLogic.Tests.Services
 
             Logger.Initialise(NullLogger.Instance);
 
-            this.EstateClient = new Mock<IIntermediateEstateClient>();
-            this.SecurityServiceClient = new Mock<ISecurityServiceClient>();
             this.FloatAggregateRepository = new Mock<IAggregateRepository<FloatAggregate, DomainEvent>>();
             this.FloatActivityAggregateRepository = new Mock<IAggregateRepository<FloatActivityAggregate, DomainEvent>>();
             this.TransactionAggregateRepository = new Mock<IAggregateRepository<TransactionAggregate, DomainEvent>>();
             this.EstateAggregateRepository = new Mock<IAggregateRepository<EstateAggregate, DomainEvent>>();
+            this.ContractAggregateRepository = new Mock<IAggregateRepository<ContractAggregate, DomainEvent>>();
 
             this.FloatDomainService = new FloatDomainService(this.FloatAggregateRepository.Object,
                 this.FloatActivityAggregateRepository.Object,
                 this.TransactionAggregateRepository.Object,
                 this.EstateAggregateRepository.Object,
-                                                             this.EstateClient.Object,
-                                                             this.SecurityServiceClient.Object);
+                this.ContractAggregateRepository.Object);
         }
 
         [Fact]
         public async Task FloatDomainService_CreateFloatForContractProduct_FloatCreated(){
 
-            this.SecurityServiceClient.Setup(s => s.GetToken(It.IsAny<String>(), It.IsAny<String>(), It.IsAny<CancellationToken>())).ReturnsAsync(Result.Success(TestData.TokenResponse()));
-
             this.EstateAggregateRepository.Setup(f => f.GetLatestVersion(It.IsAny<Guid>(), It.IsAny<CancellationToken>())).ReturnsAsync( Result.Success(TestData.Aggregates.EstateAggregateWithOperator()));
 
             this.FloatAggregateRepository.Setup(f => f.GetLatestVersion(It.IsAny<Guid>(), It.IsAny<CancellationToken>())).ReturnsAsync(new FloatAggregate());
             this.FloatAggregateRepository.Setup(f => f.SaveChanges(It.IsAny<FloatAggregate>(), It.IsAny<CancellationToken>())).ReturnsAsync(Result.Success);
-            this.EstateClient.Setup(e => e.GetContract(It.IsAny<String>(),
-                                                       It.IsAny<Guid>(),
-                                                       It.IsAny<Guid>(),
-                                                       It.IsAny<CancellationToken>())).ReturnsAsync(new ContractResponse{
-                                                                                                                            EstateId = TestData.EstateId,
-                                                                                                                            ContractId = TestData.ContractId,
-                                                                                                                            Products = new List<ContractProduct>{
-                                                                                                                                                                    new ContractProduct{
-                                                                                                                                                                                           ProductId = TestData.ProductId,
-                                                                                                                                                                                       }
-                                                                                                                                                                }
-                                                                                                                        });
-
+            this.ContractAggregateRepository.Setup(f => f.GetLatestVersion(It.IsAny<Guid>(), It.IsAny<CancellationToken>())).ReturnsAsync(TestData.Aggregates.CreatedContractAggregateWithAProductAndTransactionFee(Models.Contract.CalculationType.Fixed,Models.Contract.FeeType.Merchant));
             var command = new FloatCommands.CreateFloatForContractProductCommand(TestData.EstateId, TestData.ContractId,
                 TestData.ProductId, TestData.FloatCreatedDateTime);
             var result = await this.FloatDomainService.CreateFloatForContractProduct(command, CancellationToken.None);
@@ -91,25 +74,9 @@ namespace TransactionProcessor.BusinessLogic.Tests.Services
         [Fact]
         public async Task FloatDomainService_CreateFloatForContractProduct_InvalidEstate_ErrorThrown()
         {
-
-            this.SecurityServiceClient.Setup(s => s.GetToken(It.IsAny<String>(), It.IsAny<String>(), It.IsAny<CancellationToken>())).ReturnsAsync(Result.Success(TestData.TokenResponse()));
-            
             this.FloatAggregateRepository.Setup(f => f.GetLatestVersion(It.IsAny<Guid>(), It.IsAny<CancellationToken>())).ReturnsAsync(new FloatAggregate());
             this.EstateAggregateRepository.Setup(f => f.GetLatestVersion(It.IsAny<Guid>(), It.IsAny<CancellationToken>())).ReturnsAsync(Result.Failure());
-            this.EstateClient.Setup(e => e.GetContract(It.IsAny<String>(),
-                                                       It.IsAny<Guid>(),
-                                                       It.IsAny<Guid>(),
-                                                       It.IsAny<CancellationToken>())).ReturnsAsync(new ContractResponse
-                                                       {
-                                                           EstateId = TestData.EstateId,
-                                                           ContractId = TestData.ContractId,
-                                                           Products = new List<ContractProduct>{
-                                                                                                                                                                    new ContractProduct{
-                                                                                                                                                                                           ProductId = TestData.ProductId,
-                                                                                                                                                                                       }
-                                                                                                                                                                }
-                                                       });
-
+            
             var command = new FloatCommands.CreateFloatForContractProductCommand(TestData.EstateId, TestData.ContractId,
                 TestData.ProductId, TestData.FloatCreatedDateTime);
             var result = await this.FloatDomainService.CreateFloatForContractProduct(command, CancellationToken.None);
@@ -119,13 +86,9 @@ namespace TransactionProcessor.BusinessLogic.Tests.Services
         [Fact]
         public async Task FloatDomainService_CreateFloatForContractProduct_InvalidContract_ErrorThrown()
         {
-
-            this.SecurityServiceClient.Setup(s => s.GetToken(It.IsAny<String>(), It.IsAny<String>(), It.IsAny<CancellationToken>())).ReturnsAsync(Result.Success(TestData.TokenResponse()));
-
             this.EstateAggregateRepository.Setup(f => f.GetLatestVersion(It.IsAny<Guid>(), It.IsAny<CancellationToken>())).ReturnsAsync(Result.Success(TestData.Aggregates.EstateAggregateWithOperator()));
-            this.EstateClient.Setup(e => e.GetContract(It.IsAny<String>(),
-                It.IsAny<Guid>(), It.IsAny<Guid>(), It.IsAny<CancellationToken>())).ReturnsAsync(Result.Failure());
             this.FloatAggregateRepository.Setup(f => f.GetLatestVersion(It.IsAny<Guid>(), It.IsAny<CancellationToken>())).ReturnsAsync(new FloatAggregate());
+            this.ContractAggregateRepository.Setup(f => f.GetLatestVersion(It.IsAny<Guid>(), It.IsAny<CancellationToken>())).ReturnsAsync(Result.NotFound());
 
             var command = new FloatCommands.CreateFloatForContractProductCommand(TestData.EstateId, TestData.ContractId,
                 TestData.ProductId, TestData.FloatCreatedDateTime);
@@ -136,23 +99,10 @@ namespace TransactionProcessor.BusinessLogic.Tests.Services
         [Fact]
         public async Task FloatDomainService_CreateFloatForContractProduct_InvalidContractProduct_ErrorThrown()
         {
-
-            this.SecurityServiceClient.Setup(s => s.GetToken(It.IsAny<String>(), It.IsAny<String>(), It.IsAny<CancellationToken>())).ReturnsAsync(Result.Success(TestData.TokenResponse()));
+            this.ContractAggregateRepository.Setup(f => f.GetLatestVersion(It.IsAny<Guid>(), It.IsAny<CancellationToken>())).ReturnsAsync(TestData.Aggregates.CreatedContractAggregate());
 
             this.EstateAggregateRepository.Setup(f => f.GetLatestVersion(It.IsAny<Guid>(), It.IsAny<CancellationToken>())).ReturnsAsync(Result.Success(TestData.Aggregates.EstateAggregateWithOperator()));
-            this.EstateClient.Setup(e => e.GetContract(It.IsAny<String>(),
-                It.IsAny<Guid>(), It.IsAny<Guid>(), It.IsAny<CancellationToken>())).ReturnsAsync(Result.Success(new ContractResponse()));
             this.FloatAggregateRepository.Setup(f => f.GetLatestVersion(It.IsAny<Guid>(), It.IsAny<CancellationToken>())).ReturnsAsync(new FloatAggregate());
-
-            this.EstateClient.Setup(e => e.GetContract(It.IsAny<String>(),
-                                                       It.IsAny<Guid>(),
-                                                       It.IsAny<Guid>(),
-                                                       It.IsAny<CancellationToken>())).ReturnsAsync(new ContractResponse
-                                                       {
-                                                           EstateId = TestData.EstateId,
-                                                           ContractId = TestData.ContractId,
-                                                           Products = new List<ContractProduct>()
-                                                       });
 
             var command = new FloatCommands.CreateFloatForContractProductCommand(TestData.EstateId, TestData.ContractId,
                 TestData.ProductId, TestData.FloatCreatedDateTime);

@@ -26,7 +26,7 @@ namespace TransactionProcessor.BusinessLogic.Tests.Manager
         private readonly Mock<ITransactionProcessorReadModelRepository> EstateManagementRepository;
         private readonly Mock<IAggregateRepository<EstateAggregate, DomainEvent>> EstateAggregateRepository;
         private readonly Mock<IAggregateRepository<ContractAggregate, DomainEvent>> ContractAggregateRepository;
-        //private readonly Mock<IAggregateRepository<MerchantAggregate, DomainEvent>> MerchantAggregateRepository;
+        private readonly Mock<IAggregateRepository<MerchantAggregate, DomainEvent>> MerchantAggregateRepository;
         private readonly Mock<IAggregateRepository<OperatorAggregate, DomainEvent>> OperatorAggregateRepository;
 
         private readonly EstateManagementManager EstateManagementManager;
@@ -37,12 +37,12 @@ namespace TransactionProcessor.BusinessLogic.Tests.Manager
 
             this.EstateAggregateRepository = new Mock<IAggregateRepository<EstateAggregate, DomainEvent>>();
             this.ContractAggregateRepository = new Mock<IAggregateRepository<ContractAggregate, DomainEvent>>();
-            //this.MerchantAggregateRepository = new Mock<IAggregateRepository<MerchantAggregate, DomainEvent>>();
+            this.MerchantAggregateRepository = new Mock<IAggregateRepository<MerchantAggregate, DomainEvent>>();
             this.OperatorAggregateRepository = new Mock<IAggregateRepository<OperatorAggregate, DomainEvent>>();
 
             this.EstateManagementManager = new EstateManagementManager(this.EstateManagementRepository.Object, this.EstateAggregateRepository.Object,
             this.ContractAggregateRepository.Object,
-            //this.MerchantAggregateRepository.Object,
+            this.MerchantAggregateRepository.Object,
             this.OperatorAggregateRepository.Object);
         }
 

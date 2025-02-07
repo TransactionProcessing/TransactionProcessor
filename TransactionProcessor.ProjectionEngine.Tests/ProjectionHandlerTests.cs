@@ -1,5 +1,4 @@
-﻿using EstateManagement.Merchant.DomainEvents;
-using SimpleResults;
+﻿using SimpleResults;
 using TransactionProcessor.DomainEvents;
 using TransactionProcessor.ProjectionEngine.Models;
 
@@ -206,10 +205,10 @@ public class MerchantBalanceStateDispatcherTests
     }
 
     [Theory]
-    [InlineData(typeof(MerchantCreatedEvent))]
-    [InlineData(typeof(ManualDepositMadeEvent))]
-    [InlineData(typeof(AutomaticDepositMadeEvent))]
-    [InlineData(typeof(WithdrawalMadeEvent))]
+    [InlineData(typeof(MerchantDomainEvents.MerchantCreatedEvent))]
+    [InlineData(typeof(MerchantDomainEvents.ManualDepositMadeEvent))]
+    [InlineData(typeof(MerchantDomainEvents.AutomaticDepositMadeEvent))]
+    [InlineData(typeof(MerchantDomainEvents.WithdrawalMadeEvent))]
     [InlineData(typeof(TransactionDomainEvents.TransactionHasBeenCompletedEvent))]
     [InlineData(typeof(TransactionDomainEvents.SettledMerchantFeeAddedToTransactionEvent))]
     public async Task MerchantBalanceStateDispatcher_EventIsDispatched_ResultSuccessful(Type type) {
@@ -218,10 +217,10 @@ public class MerchantBalanceStateDispatcherTests
         this.Repository.Setup(t => t.AddMerchantBalanceChangedEntry(It.IsAny<MerchantBalanceChangedEntry>(), It.IsAny<CancellationToken>())).ReturnsAsync(Result.Success);
 
         IDomainEvent domainEvent = type.Name switch {
-            nameof(MerchantCreatedEvent) => TestData.MerchantCreatedEvent,
-            nameof(ManualDepositMadeEvent) => TestData.ManualDepositMadeEvent,
-            nameof(AutomaticDepositMadeEvent) => TestData.AutomaticDepositMadeEvent,
-            nameof(WithdrawalMadeEvent) => TestData.WithdrawalMadeEvent,
+            nameof(MerchantDomainEvents.MerchantCreatedEvent) => TestData.MerchantCreatedEvent,
+            nameof(MerchantDomainEvents.ManualDepositMadeEvent) => TestData.ManualDepositMadeEvent,
+            nameof(MerchantDomainEvents.AutomaticDepositMadeEvent) => TestData.AutomaticDepositMadeEvent,
+            nameof(MerchantDomainEvents.WithdrawalMadeEvent) => TestData.WithdrawalMadeEvent,
             nameof(TransactionDomainEvents.TransactionHasBeenCompletedEvent) => TestData.TransactionHasBeenCompletedEvent,
             nameof(TransactionDomainEvents.SettledMerchantFeeAddedToTransactionEvent) => TestData.SettledMerchantFeeAddedToTransactionEvent(DateTime.Now),
             _ => null

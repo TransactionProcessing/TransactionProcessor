@@ -13,7 +13,7 @@ namespace TransactionProcessor.BusinessLogic.OperatorInterfaces.SafaricomPinless
     using System.Xml;
     using System.Xml.Serialization;
     using Common;
-    using EstateManagement.DataTransferObjects.Responses.Merchant;
+    using TransactionProcessor.DataTransferObjects.Responses.Merchant;
     using Shared.Logger;
 
     /// <summary>
@@ -51,8 +51,7 @@ namespace TransactionProcessor.BusinessLogic.OperatorInterfaces.SafaricomPinless
 
         #region Methods
 
-        public async Task<Result<OperatorResponse>> ProcessLogonMessage(String accessToken,
-                                                                        CancellationToken cancellationToken) {
+        public async Task<Result<OperatorResponse>> ProcessLogonMessage(CancellationToken cancellationToken) {
             return Result.Success();
         }
 
@@ -73,10 +72,9 @@ namespace TransactionProcessor.BusinessLogic.OperatorInterfaces.SafaricomPinless
         /// CustomerAccountNumber is a required field for this transaction type
         /// or
         /// Error sending request [{requestUrl}] to Safaricom.  Status Code [{responseMessage.StatusCode}]</exception>
-        public async Task<Result<OperatorResponse>> ProcessSaleMessage(String accessToken,
-                                                                       Guid transactionId,
+        public async Task<Result<OperatorResponse>> ProcessSaleMessage(Guid transactionId,
                                                                        Guid operatorId,
-                                                                       MerchantResponse merchant,
+                                                                       Models.Merchant.Merchant merchant,
                                                                        DateTime transactionDateTime,
                                                                        String transactionReference,
                                                                        Dictionary<String, String> additionalTransactionMetadata,

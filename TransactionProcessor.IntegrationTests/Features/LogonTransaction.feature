@@ -43,7 +43,7 @@ Background:
 	| Test Merchant 6 | Address Line 1 | TestTown | Test Region | United Kingdom | Test Contact 6 | testcontact6@merchant2.co.uk | Test Estate 1 |
 	| Test Merchant 7 | Address Line 1 | TestTown | Test Region | United Kingdom | Test Contact 7 | testcontact7@merchant2.co.uk | Test Estate 1 |
 
-	Given I have assigned the following  operator to the merchants
+	Given I have assigned the following operator to the merchants
 	| OperatorName    | MerchantName    | MerchantNumber | TerminalNumber | EstateName    |
 	| Test Operator 1 | Test Merchant 1 | 00000001       | 10000001       | Test Estate 1 |
 	| Test Operator 1 | Test Merchant 2 | 00000001       | 10000001       | Test Estate 1 |

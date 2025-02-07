@@ -95,7 +95,7 @@ namespace TransactionProcessor.Aggregates.Tests
             model.Reference.ShouldBe(TestData.EstateReference);
             model.Operators.ShouldHaveSingleItem();
             
-            Models.Estate.Operator? @operator =model.Operators.Single();
+            TransactionProcessor.Models.Estate.Operator? @operator =model.Operators.Single();
             @operator.OperatorId.ShouldBe(TestData.OperatorId);
         }
 

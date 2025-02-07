@@ -34,6 +34,56 @@ public class TransactionProcessorSteps
         this.TestHostHttpClient = testHostHttpClient;
         this.ProjectionManagementClient = projectionManagementClient;
     }
+    public async Task WhenIGetTheMerchantsForThenMerchantsWillBeReturned(String accessToken, String estateName, List<EstateDetails> estateDetailsList, Int32 expectedMerchantCount)
+    {
+        Guid estateId = Guid.NewGuid();
+        EstateDetails estateDetails = estateDetailsList.SingleOrDefault(e => e.EstateName == estateName);
+        estateDetails.ShouldNotBeNull();
+
+        String token = accessToken;
+        if (estateDetails != null)
+        {
+            estateId = estateDetails.EstateId;
+            if (String.IsNullOrEmpty(estateDetails.AccessToken) == false)
+            {
+                token = estateDetails.AccessToken;
+            }
+        }
+
+        await Retry.For(async () => {
+            List<MerchantResponse> merchantList = await this.TransactionProcessorClient
+                .GetMerchants(token, estateDetails.EstateId, CancellationToken.None)
+                .ConfigureAwait(false);
+
+            merchantList.ShouldNotBeNull();
+            merchantList.ShouldNotBeEmpty();
+            merchantList.Count.ShouldBe(expectedMerchantCount);
+        });
+    }
+    public async Task WhenIGetTheMerchantForEstateAnErrorIsReturned(String accessToken, String estateName, String merchantName, List<EstateDetails> estateDetailsList)
+    {
+        Guid estateId = Guid.NewGuid();
+        EstateDetails estateDetails = estateDetailsList.SingleOrDefault(e => e.EstateName == estateName);
+        estateDetails.ShouldNotBeNull();
+
+        String token = accessToken;
+        if (estateDetails != null)
+        {
+            estateId = estateDetails.EstateId;
+            if (String.IsNullOrEmpty(estateDetails.AccessToken) == false)
+            {
+                token = estateDetails.AccessToken;
+            }
+        }
+
+        Guid merchantId = Guid.NewGuid();
+
+        var result = await this.TransactionProcessorClient
+            .GetMerchant(token, estateDetails.EstateId, merchantId, CancellationToken.None)
+            .ConfigureAwait(false);
+        result.IsFailed.ShouldBeTrue();
+        result.Status.ShouldBe(ResultStatus.NotFound);
+    }
 
     public async Task WhenIPerformTheFollowingTransactions(String accessToken, List<(EstateDetails, Guid, String, SerialisedMessage)> serialisedMessages)
     {
@@ -44,6 +94,85 @@ public class TransactionProcessorSteps
                 await this.TransactionProcessorClient.PerformTransaction(accessToken, serialisedMessage.Item4, CancellationToken.None);
             var message = JsonConvert.SerializeObject(responseSerialisedMessage);
             serialisedMessage.Item1.AddTransactionResponse(serialisedMessage.Item2, serialisedMessage.Item3, message);
+        }
+    }
+
+    public async Task WhenISetTheMerchantsSettlementSchedule(String accessToken, List<(EstateDetails, Guid, SetSettlementScheduleRequest)> requests)
+    {
+        foreach (var request in requests)
+        {
+            Should.NotThrow(async () => {
+                await this.TransactionProcessorClient.SetMerchantSettlementSchedule(accessToken,
+                    request.Item1.EstateId,
+                    request.Item2,
+                    request.Item3,
+                    CancellationToken.None);
+            });
+
+        }
+    }
+
+    public async Task WhenISwapTheMerchantDeviceTheDeviceIsSwapped(String accessToken, List<(EstateDetails, Guid, String, SwapMerchantDeviceRequest)> requests)
+    {
+        foreach ((EstateDetails, Guid, String, SwapMerchantDeviceRequest) request in requests)
+        {
+            await this.TransactionProcessorClient
+                .SwapDeviceForMerchant(accessToken,
+                    request.Item1.EstateId,
+                    request.Item2,
+                    request.Item3,
+                    request.Item4,
+                    CancellationToken.None).ConfigureAwait(false);
+
+            //this.TestingContext.Logger.LogInformation($"Device {newDeviceIdentifier} assigned to Merchant {merchantName}");
+
+            await Retry.For(async () => {
+                MerchantResponse? merchantResponse = await this.TransactionProcessorClient
+                    .GetMerchant(accessToken, request.Item1.EstateId, request.Item2, CancellationToken.None)
+                    .ConfigureAwait(false);
+
+                merchantResponse.Devices.ContainsValue(request.Item4.NewDeviceIdentifier);
+            });
+        }
+    }
+
+    public async Task WhenIMakeTheFollowingMerchantDepositsTheDepositIsRejected(String accessToken, List<(EstateDetails, Guid, MakeMerchantDepositRequest)> makeDepositRequests)
+    {
+        foreach ((EstateDetails, Guid, MakeMerchantDepositRequest) makeDepositRequest in makeDepositRequests)
+        {
+
+            var result = await this.TransactionProcessorClient.MakeMerchantDeposit(accessToken, makeDepositRequest.Item1.EstateId,
+                makeDepositRequest.Item2, makeDepositRequest.Item3, CancellationToken.None).ConfigureAwait(false);
+
+            result.IsFailed.ShouldBeTrue();
+        }
+    }
+
+    public async Task WhenIMakeTheFollowingAutomaticMerchantDeposits(List<String> makeDepositRequests)
+    {
+        foreach (String makeDepositRequest in makeDepositRequests)
+        {
+            HttpRequestMessage requestMessage = new HttpRequestMessage(HttpMethod.Post, "/api/testbank");
+            requestMessage.Content = new StringContent(makeDepositRequest, Encoding.UTF8, "application/json");
+            HttpResponseMessage responseMessage = await this.TestHostHttpClient.SendAsync(requestMessage);
+
+            responseMessage.IsSuccessStatusCode.ShouldBeTrue();
+        }
+    }
+
+    public async Task WhenIMakeTheFollowingMerchantWithdrawals(String accessToken, List<(EstateDetails, Guid, MakeMerchantWithdrawalRequest)> requests)
+    {
+        foreach ((EstateDetails, Guid, MakeMerchantWithdrawalRequest) makeMerchantWithdrawalRequest in requests)
+        {
+
+            var result = await this.TransactionProcessorClient
+                .MakeMerchantWithdrawal(accessToken,
+                    makeMerchantWithdrawalRequest.Item1.EstateId,
+                    makeMerchantWithdrawalRequest.Item2,
+                    makeMerchantWithdrawalRequest.Item3,
+                    CancellationToken.None).ConfigureAwait(false);
+
+            result.IsSuccess.ShouldBeTrue();
         }
     }
 
@@ -336,6 +465,31 @@ public class TransactionProcessorSteps
         }
 
         return results;
+    }
+
+    public async Task<List<MerchantResponse>> WhenIUpdateTheFollowingMerchants(string accessToken, List<(EstateDetails estate, Guid merchantId, UpdateMerchantRequest request)> requests)
+    {
+        List<MerchantResponse> responses = new List<MerchantResponse>();
+
+        foreach ((EstateDetails estate, Guid merchantId, UpdateMerchantRequest request) request in requests)
+        {
+            await this.TransactionProcessorClient.UpdateMerchant(accessToken, request.estate.EstateId, request.merchantId, request.request, CancellationToken.None).ConfigureAwait(false);
+        }
+
+        foreach ((EstateDetails estate, Guid merchantId, UpdateMerchantRequest request) request in requests)
+        {
+            await Retry.For(async () => {
+                MerchantResponse merchant = await this.TransactionProcessorClient
+                    .GetMerchant(accessToken, request.estate.EstateId, request.merchantId, CancellationToken.None)
+                    .ConfigureAwait(false);
+
+                merchant.MerchantName.ShouldBe(request.request.Name);
+                merchant.SettlementSchedule.ShouldBe(request.request.SettlementSchedule);
+                responses.Add(merchant);
+            });
+        }
+
+        return responses;
     }
 
     public async Task<List<(EstateDetails, MerchantOperatorResponse)>> WhenIAssignTheFollowingOperatorToTheMerchants(string accessToken, List<(EstateDetails estate, Guid merchantId, DataTransferObjects.Requests.Merchant.AssignOperatorRequest request)> requests)
@@ -898,4 +1052,94 @@ public class TransactionProcessorSteps
         result.Status.ShouldBe(ResultStatus.Conflict);
 
     }
+
+    public async Task WhenIUpdateTheMerchantsAddressWithTheFollowingDetails(String accessToken, List<(EstateDetails, MerchantResponse, Guid, Address)> addressUpdatesList)
+    {
+        foreach ((EstateDetails, MerchantResponse, Guid, Address) addressUpdate in addressUpdatesList)
+        {
+            await this.TransactionProcessorClient.UpdateMerchantAddress(accessToken, addressUpdate.Item1.EstateId, addressUpdate.Item2.MerchantId, addressUpdate.Item3, addressUpdate.Item4, CancellationToken.None);
+        }
+
+        foreach ((EstateDetails, MerchantResponse, Guid, Address) addressVerify in addressUpdatesList)
+        {
+            await Retry.For(async () => {
+                MerchantResponse? merchant = await this.TransactionProcessorClient.GetMerchant(accessToken, addressVerify.Item1.EstateId, addressVerify.Item2.MerchantId, CancellationToken.None);
+                merchant.ShouldNotBeNull();
+
+                AddressResponse? address = merchant.Addresses.First();
+                address.AddressLine1.ShouldBe(addressVerify.Item4.AddressLine1);
+                address.AddressLine2.ShouldBe(addressVerify.Item4.AddressLine2);
+                address.AddressLine3.ShouldBe(addressVerify.Item4.AddressLine3);
+                address.AddressLine4.ShouldBe(addressVerify.Item4.AddressLine4);
+                address.Country.ShouldBe(addressVerify.Item4.Country);
+                address.Region.ShouldBe(addressVerify.Item4.Region);
+                address.Town.ShouldBe(addressVerify.Item4.Town);
+                address.PostalCode.ShouldBe(addressVerify.Item4.PostalCode);
+            });
+        }
+    }
+
+    public async Task WhenIUpdateTheMerchantsContactWithTheFollowingDetails(String accessToken, List<(EstateDetails, MerchantResponse, Guid, Contact)> contactUpdatesList)
+    {
+        foreach ((EstateDetails, MerchantResponse, Guid, Contact) contactUpdate in contactUpdatesList)
+        {
+            await this.TransactionProcessorClient.UpdateMerchantContact(accessToken, contactUpdate.Item1.EstateId, contactUpdate.Item2.MerchantId, contactUpdate.Item3, contactUpdate.Item4, CancellationToken.None);
+        }
+
+        foreach ((EstateDetails, MerchantResponse, Guid, Contact) contactVerify in contactUpdatesList)
+        {
+            await Retry.For(async () => {
+                MerchantResponse? merchant = await this.TransactionProcessorClient.GetMerchant(accessToken, contactVerify.Item1.EstateId, contactVerify.Item2.MerchantId, CancellationToken.None);
+                merchant.ShouldNotBeNull();
+
+                ContactResponse? contact = merchant.Contacts.First();
+                contact.ContactEmailAddress.ShouldBe(contactVerify.Item4.EmailAddress);
+                contact.ContactPhoneNumber.ShouldBe(contactVerify.Item4.PhoneNumber);
+                contact.ContactName.ShouldBe(contactVerify.Item4.ContactName);
+            });
+        }
+    }
+
+    public async Task WhenIRemoveTheContractFromMerchantOnTheContractIsRemoved(String accessToken, List<EstateDetails> estateDetailsList, String estateName, String merchantName, String contractName)
+    {
+        EstateDetails estateDetails = estateDetailsList.SingleOrDefault(e => e.EstateName == estateName);
+        estateDetails.ShouldNotBeNull();
+        Contract estateContract = estateDetails.GetContract(contractName);
+        estateContract.ShouldNotBeNull();
+        MerchantResponse merchant = estateDetails.GetMerchant(merchantName);
+
+        //MerchantContractResponse? contract = merchant.Contracts.SingleOrDefault(c => c.ContractId == estateContract.ContractId);
+        //contract.ShouldNotBeNull();
+
+        await this.TransactionProcessorClient.RemoveContractFromMerchant(accessToken, estateDetails.EstateId, merchant.MerchantId, estateContract.ContractId, CancellationToken.None);
+
+        await Retry.For(async () => {
+            MerchantResponse? merchantResponse = await this.TransactionProcessorClient.GetMerchant(accessToken, estateDetails.EstateId, merchant.MerchantId, CancellationToken.None);
+            merchantResponse.ShouldNotBeNull();
+
+            MerchantContractResponse? contractResponse = merchantResponse.Contracts.SingleOrDefault(c => c.ContractId == estateContract.ContractId);
+            contractResponse.ShouldNotBeNull();
+            contractResponse.IsDeleted.ShouldBeTrue();
+        });
+    }
+
+    public async Task WhenIRemoveTheOperatorFromMerchantOnTheOperatorIsRemoved(String accessToken, List<EstateDetails> estateDetailsList, String estateName, String merchantName, String operatorName)
+    {
+        EstateDetails estateDetails = estateDetailsList.SingleOrDefault(e => e.EstateName == estateName);
+        estateDetails.ShouldNotBeNull();
+        Guid operatorId = estateDetails.GetOperatorId(operatorName);
+        MerchantResponse merchant = estateDetails.GetMerchant(merchantName);
+
+        await this.TransactionProcessorClient.RemoveOperatorFromMerchant(accessToken, estateDetails.EstateId, merchant.MerchantId, operatorId, CancellationToken.None);
+
+        await Retry.For(async () => {
+            MerchantResponse? merchantResponse = await this.TransactionProcessorClient.GetMerchant(accessToken, estateDetails.EstateId, merchant.MerchantId, CancellationToken.None);
+            merchantResponse.ShouldNotBeNull();
+
+            MerchantOperatorResponse? operatorResponse = merchantResponse.Operators.SingleOrDefault(c => c.OperatorId == operatorId);
+            operatorResponse.ShouldNotBeNull();
+            operatorResponse.IsDeleted.ShouldBeTrue();
+        });
+    }
+
 }

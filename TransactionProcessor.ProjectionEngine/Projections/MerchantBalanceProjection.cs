@@ -2,7 +2,6 @@
 
 namespace TransactionProcessor.ProjectionEngine.Projections;
 
-using EstateManagement.Merchant.DomainEvents;
 using Shared.DomainDrivenDesign.EventSourcing;
 using State;
 
@@ -13,10 +12,10 @@ public class MerchantBalanceProjection : IProjection<MerchantBalanceState>
                                                    CancellationToken cancellationToken)
     {
         MerchantBalanceState newState = domainEvent switch {
-            MerchantCreatedEvent mce => state.HandleMerchantCreated(mce),
-            ManualDepositMadeEvent mdme => state.HandleManualDepositMadeEvent(mdme),
-            WithdrawalMadeEvent wme => state.HandleWithdrawalMadeEvent(wme),
-            AutomaticDepositMadeEvent adme => state.HandleAutomaticDepositMadeEvent(adme),
+            MerchantDomainEvents.MerchantCreatedEvent mce => state.HandleMerchantCreated(mce),
+            MerchantDomainEvents.ManualDepositMadeEvent mdme => state.HandleManualDepositMadeEvent(mdme),
+            MerchantDomainEvents.WithdrawalMadeEvent wme => state.HandleWithdrawalMadeEvent(wme),
+            MerchantDomainEvents.AutomaticDepositMadeEvent adme => state.HandleAutomaticDepositMadeEvent(adme),
             TransactionDomainEvents.TransactionHasStartedEvent thse => state.HandleTransactionHasStartedEvent(thse),
             TransactionDomainEvents.TransactionHasBeenCompletedEvent thbce => state.HandleTransactionHasBeenCompletedEvent(thbce),
             TransactionDomainEvents.SettledMerchantFeeAddedToTransactionEvent mfatte => state.HandleSettledMerchantFeeAddedToTransactionEvent(mfatte),
@@ -30,9 +29,9 @@ public class MerchantBalanceProjection : IProjection<MerchantBalanceState>
     {
         return domainEvent switch
         {
-            MerchantCreatedEvent _ => true,
-            ManualDepositMadeEvent _ => true,
-            AutomaticDepositMadeEvent _ => true,
+            MerchantDomainEvents.MerchantCreatedEvent _ => true,
+            MerchantDomainEvents.ManualDepositMadeEvent _ => true,
+            MerchantDomainEvents.AutomaticDepositMadeEvent _ => true,
             TransactionDomainEvents.TransactionHasStartedEvent _ => true,
             TransactionDomainEvents.TransactionHasBeenCompletedEvent _ => true,
             TransactionDomainEvents.SettledMerchantFeeAddedToTransactionEvent _ => true,
