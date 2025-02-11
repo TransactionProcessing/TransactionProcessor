@@ -1,5 +1,4 @@
-﻿using EstateManagement.DataTransferObjects.Responses.Merchant;
-using Moq;
+﻿using Moq;
 using Shared.DomainDrivenDesign.EventSourcing;
 using Shared.EventStore.Aggregate;
 using SimpleResults;
@@ -17,7 +16,9 @@ using TransactionProcessor.Repository;
 using TransactionProcessor.Testing;
 using Xunit;
 using TransactionProcessor.Models.Contract;
-using TransactionProcessor.Models.Operator;
+using TransactionProcessor.Models.Merchant;
+using Contract = TransactionProcessor.Models.Contract.Contract;
+using Operator = TransactionProcessor.Models.Operator.Operator;
 
 namespace TransactionProcessor.BusinessLogic.Tests.Manager
 {
@@ -487,6 +488,201 @@ namespace TransactionProcessor.BusinessLogic.Tests.Manager
             var getOperatorsResult = await this.EstateManagementManager.GetOperators(TestData.EstateId, CancellationToken.None);
             getOperatorsResult.IsFailed.ShouldBeTrue();
         }
-        
+
+        [Fact]
+        public async Task EstateManagementManager_GetMerchant_MerchantIsReturned()
+        {
+            this.MerchantAggregateRepository.Setup(m => m.GetLatestVersion(It.IsAny<Guid>(), It.IsAny<CancellationToken>())).ReturnsAsync(Result.Success(TestData.Aggregates.MerchantAggregateWithEverything(SettlementSchedule.Immediate)));
+            this.OperatorAggregateRepository.Setup(o => o.GetLatestVersion(It.IsAny<Guid>(), CancellationToken.None)).ReturnsAsync(Result.Success(TestData.Aggregates.CreatedOperatorAggregate()));
+
+            Merchant expectedModel = TestData.MerchantModelWithAddressesContactsDevicesAndOperatorsAndContracts();
+
+            var getMerchantResult = await this.EstateManagementManager.GetMerchant(TestData.EstateId, TestData.MerchantId, CancellationToken.None);
+            getMerchantResult.IsSuccess.ShouldBeTrue();
+            var merchantModel = getMerchantResult.Data;
+
+            merchantModel.ShouldNotBeNull();
+            merchantModel.MerchantReportingId.ShouldBe(expectedModel.MerchantReportingId);
+            merchantModel.EstateId.ShouldBe(expectedModel.EstateId);
+            merchantModel.EstateReportingId.ShouldBe(expectedModel.EstateReportingId);
+            merchantModel.NextStatementDate.ShouldBe(expectedModel.NextStatementDate);
+            merchantModel.MerchantId.ShouldBe(expectedModel.MerchantId);
+            merchantModel.MerchantName.ShouldBe(expectedModel.MerchantName);
+            merchantModel.SettlementSchedule.ShouldBe(expectedModel.SettlementSchedule);
+
+            merchantModel.Addresses.ShouldHaveSingleItem();
+            merchantModel.Addresses.Single().AddressId.ShouldNotBe(Guid.Empty);
+            merchantModel.Addresses.Single().AddressLine1.ShouldBe(expectedModel.Addresses.Single().AddressLine1);
+            merchantModel.Addresses.Single().AddressLine2.ShouldBe(expectedModel.Addresses.Single().AddressLine2);
+            merchantModel.Addresses.Single().AddressLine3.ShouldBe(expectedModel.Addresses.Single().AddressLine3);
+            merchantModel.Addresses.Single().AddressLine4.ShouldBe(expectedModel.Addresses.Single().AddressLine4);
+            merchantModel.Addresses.Single().Country.ShouldBe(expectedModel.Addresses.Single().Country);
+            merchantModel.Addresses.Single().PostalCode.ShouldBe(expectedModel.Addresses.Single().PostalCode);
+            merchantModel.Addresses.Single().Region.ShouldBe(expectedModel.Addresses.Single().Region);
+            merchantModel.Addresses.Single().Town.ShouldBe(expectedModel.Addresses.Single().Town);
+
+            merchantModel.Contacts.ShouldHaveSingleItem();
+            merchantModel.Contacts.Single().ContactEmailAddress.ShouldBe(expectedModel.Contacts.Single().ContactEmailAddress);
+            merchantModel.Contacts.Single().ContactId.ShouldNotBe(Guid.Empty);
+            merchantModel.Contacts.Single().ContactName.ShouldBe(expectedModel.Contacts.Single().ContactName);
+            merchantModel.Contacts.Single().ContactPhoneNumber.ShouldBe(expectedModel.Contacts.Single().ContactPhoneNumber);
+
+            merchantModel.Devices.ShouldHaveSingleItem();
+            merchantModel.Devices.Single().DeviceId.ShouldBe(expectedModel.Devices.Single().DeviceId);
+            merchantModel.Devices.Single().DeviceIdentifier.ShouldBe(expectedModel.Devices.Single().DeviceIdentifier);
+
+            merchantModel.Operators.ShouldHaveSingleItem();
+            merchantModel.Operators.Single().MerchantNumber.ShouldBe(expectedModel.Operators.Single().MerchantNumber);
+            merchantModel.Operators.Single().Name.ShouldBe(expectedModel.Operators.Single().Name);
+            merchantModel.Operators.Single().OperatorId.ShouldBe(expectedModel.Operators.Single().OperatorId);
+            merchantModel.Operators.Single().TerminalNumber.ShouldBe(expectedModel.Operators.Single().TerminalNumber);
+
+        }
+
+        [Fact]
+        public async Task EstateManagementManager_GetMerchant_MerchantIsReturnedWithNullAddressesAndContacts()
+        {
+            this.MerchantAggregateRepository.Setup(m => m.GetLatestVersion(It.IsAny<Guid>(), It.IsAny<CancellationToken>())).ReturnsAsync(Result.Success(TestData.Aggregates.MerchantAggregateWithOperator()));
+            this.OperatorAggregateRepository.Setup(o => o.GetLatestVersion(It.IsAny<Guid>(), CancellationToken.None)).ReturnsAsync(Result.Success(TestData.Aggregates.EmptyOperatorAggregate()));
+
+            var getMerchantResult = await this.EstateManagementManager.GetMerchant(TestData.EstateId, TestData.MerchantId, CancellationToken.None);
+            getMerchantResult.IsSuccess.ShouldBeTrue();
+            var merchantModel = getMerchantResult.Data;
+
+            merchantModel.ShouldNotBeNull();
+            merchantModel.MerchantId.ShouldBe(TestData.MerchantId);
+            merchantModel.MerchantName.ShouldBe(TestData.MerchantName);
+            merchantModel.Addresses.ShouldBeNull();
+            merchantModel.Contacts.ShouldBeNull();
+        }
+
+        [Fact]
+        public async Task EstateManagementManager_GetMerchant_WithAddress_MerchantIsReturnedWithNullContacts()
+        {
+            this.MerchantAggregateRepository.Setup(m => m.GetLatestVersion(It.IsAny<Guid>(), It.IsAny<CancellationToken>())).ReturnsAsync(Result.Success(TestData.Aggregates.MerchantAggregateWithAddress()));
+
+            var getMerchantResult = await this.EstateManagementManager.GetMerchant(TestData.EstateId, TestData.MerchantId, CancellationToken.None);
+            getMerchantResult.IsSuccess.ShouldBeTrue();
+            var merchantModel = getMerchantResult.Data;
+
+            merchantModel.ShouldNotBeNull();
+            merchantModel.MerchantId.ShouldBe(TestData.MerchantId);
+            merchantModel.MerchantName.ShouldBe(TestData.MerchantName);
+            merchantModel.Addresses.ShouldHaveSingleItem();
+            merchantModel.Contacts.ShouldBeNull();
+        }
+
+        [Fact]
+        public async Task EstateManagementManager_GetMerchant_WithContact_MerchantIsReturnedWithNullAddresses()
+        {
+            this.MerchantAggregateRepository.Setup(m => m.GetLatestVersion(It.IsAny<Guid>(), It.IsAny<CancellationToken>())).ReturnsAsync(Result.Success(TestData.Aggregates.MerchantAggregateWithContact()));
+
+            var getMerchantResult = await this.EstateManagementManager.GetMerchant(TestData.EstateId, TestData.MerchantId, CancellationToken.None);
+            getMerchantResult.IsSuccess.ShouldBeTrue();
+            var merchantModel = getMerchantResult.Data;
+
+            merchantModel.ShouldNotBeNull();
+            merchantModel.MerchantId.ShouldBe(TestData.MerchantId);
+            merchantModel.MerchantName.ShouldBe(TestData.MerchantName);
+            merchantModel.Addresses.ShouldBeNull();
+            merchantModel.Contacts.ShouldHaveSingleItem();
+        }
+
+        [Fact]
+        public async Task EstateManagementManager_GetMerchant_MerchantNotCreated_ErrorThrown()
+        {
+            this.MerchantAggregateRepository.Setup(m => m.GetLatestVersion(It.IsAny<Guid>(), It.IsAny<CancellationToken>())).ReturnsAsync(Result.Success(TestData.Aggregates.EmptyMerchantAggregate()));
+
+            var result = await this.EstateManagementManager.GetMerchant(TestData.EstateId, TestData.MerchantId, CancellationToken.None);
+            result.IsFailed.ShouldBeTrue();
+        }
+
+        [Fact]
+        public async Task EstateManagementManager_GetMerchant_GetLatestFails_ErrorThrown()
+        {
+            this.MerchantAggregateRepository.Setup(m => m.GetLatestVersion(It.IsAny<Guid>(), It.IsAny<CancellationToken>())).ReturnsAsync(Result.Failure());
+
+            var result = await this.EstateManagementManager.GetMerchant(TestData.EstateId, TestData.MerchantId, CancellationToken.None);
+            result.IsFailed.ShouldBeTrue();
+        }
+
+        [Fact]
+        public async Task EstateManagementManager_GetMerchantContracts_MerchantContractsReturned()
+        {
+            this.EstateManagementRepository.Setup(e => e.GetMerchantContracts(It.IsAny<Guid>(), It.IsAny<Guid>(), It.IsAny<CancellationToken>())).ReturnsAsync(Result.Success(TestData.MerchantContracts));
+
+            var getMerchantContractsResult = await this.EstateManagementManager.GetMerchantContracts(TestData.EstateId, TestData.MerchantId, CancellationToken.None);
+            getMerchantContractsResult.IsSuccess.ShouldBeTrue();
+            var merchantContracts = getMerchantContractsResult.Data;
+            merchantContracts.ShouldNotBeNull();
+            merchantContracts.ShouldHaveSingleItem();
+            merchantContracts.Single().ContractId.ShouldBe(TestData.ContractId);
+        }
+
+        [Fact]
+        public async Task EstateManagementManager_GetMerchantContracts_EmptyListReturned_ResultFailed()
+        {
+            this.EstateManagementRepository.Setup(e => e.GetMerchantContracts(It.IsAny<Guid>(), It.IsAny<Guid>(), It.IsAny<CancellationToken>())).ReturnsAsync(Result.Success(TestData.MerchantContractsEmptyList));
+
+            var getMerchantContractsResult = await this.EstateManagementManager.GetMerchantContracts(TestData.EstateId, TestData.MerchantId, CancellationToken.None);
+            getMerchantContractsResult.IsFailed.ShouldBeTrue();
+        }
+
+        [Fact]
+        public async Task EstateManagementManager_GetMerchantContracts_RepoCallFailed_ResultFailed()
+        {
+            this.EstateManagementRepository.Setup(e => e.GetMerchantContracts(It.IsAny<Guid>(), It.IsAny<Guid>(), It.IsAny<CancellationToken>())).ReturnsAsync(Result.Failure());
+
+            var getMerchantContractsResult = await this.EstateManagementManager.GetMerchantContracts(TestData.EstateId, TestData.MerchantId, CancellationToken.None);
+            getMerchantContractsResult.IsFailed.ShouldBeTrue();
+        }
+
+        [Fact]
+        public async Task EstateManagementManager_GetMerchants_MerchantListIsReturned()
+        {
+            this.EstateManagementRepository.Setup(e => e.GetMerchants(It.IsAny<Guid>(), It.IsAny<CancellationToken>())).ReturnsAsync(Result.Success(new List<Merchant>
+                                                                                                                                     {
+                                                                                                                                         TestData
+                                                                                                                                             .MerchantModelWithAddressesContactsDevicesAndOperatorsAndContracts()
+                                                                                                                                     }));
+
+            Result<List<Merchant>> getMerchantsResult = await this.EstateManagementManager.GetMerchants(TestData.EstateId, CancellationToken.None);
+            getMerchantsResult.IsSuccess.ShouldBeTrue();
+            var merchantList = getMerchantsResult.Data;
+
+            merchantList.ShouldNotBeNull();
+            merchantList.ShouldNotBeEmpty();
+            merchantList.ShouldHaveSingleItem();
+        }
+
+        [Fact]
+        public async Task EstateManagementManager_GetMerchants_NullMerchants_ExceptionThrown()
+        {
+            List<Merchant> merchants = null;
+            this.EstateManagementRepository.Setup(e => e.GetMerchants(It.IsAny<Guid>(), It.IsAny<CancellationToken>())).ReturnsAsync(Result.Success(merchants));
+
+            Result<List<Merchant>> getMerchantsResult = await this.EstateManagementManager.GetMerchants(TestData.EstateId, CancellationToken.None);
+            getMerchantsResult.IsFailed.ShouldBeTrue();
+        }
+
+        [Fact]
+        public async Task EstateManagementManager_GetMerchants_EmptyMerchants_ExceptionThrown()
+        {
+            List<Merchant> merchants = new List<Merchant>();
+            this.EstateManagementRepository.Setup(e => e.GetMerchants(It.IsAny<Guid>(), It.IsAny<CancellationToken>())).ReturnsAsync(Result.Success(merchants));
+
+            Result<List<Merchant>> getMerchantsResult = await this.EstateManagementManager.GetMerchants(TestData.EstateId, CancellationToken.None);
+            getMerchantsResult.IsFailed.ShouldBeTrue();
+        }
+
+        [Fact]
+        public async Task EstateManagementManager_GetMerchants_RepoCallFails_ExceptionThrown()
+        {
+            List<Merchant> merchants = new List<Merchant>();
+            this.EstateManagementRepository.Setup(e => e.GetMerchants(It.IsAny<Guid>(), It.IsAny<CancellationToken>())).ReturnsAsync(Result.Failure());
+
+            Result<List<Merchant>> getMerchantsResult = await this.EstateManagementManager.GetMerchants(TestData.EstateId, CancellationToken.None);
+            getMerchantsResult.IsFailed.ShouldBeTrue();
+        }
     }
 }

@@ -47,14 +47,7 @@ using TransactionProcessor.Database.Entities;
 [Authorize]
 public class MerchantController : ControllerBase
 {
-    private readonly IProjectionStateRepository<MerchantBalanceState> MerchantBalanceStateRepository;
-
-    private readonly IEventStoreContext EventStoreContext;
     private readonly IMediator Mediator;
-    private readonly IEstateClient EstateClient;
-    private readonly ISecurityServiceClient SecurityServiceClient;
-
-    private readonly ITransactionProcessorReadRepository TransactionProcessorReadRepository;
 
     public MerchantController(IProjectionStateRepository<MerchantBalanceState> merchantBalanceStateRepository,
                               ITransactionProcessorReadRepository transactionProcessorReadRepository,
@@ -62,12 +55,7 @@ public class MerchantController : ControllerBase
                               IMediator mediator,
                               IEstateClient estateClient,
                               ISecurityServiceClient securityServiceClient) {
-        this.MerchantBalanceStateRepository = merchantBalanceStateRepository;
-        this.TransactionProcessorReadRepository = transactionProcessorReadRepository;
-        this.EventStoreContext = eventStoreContext;
         this.Mediator = mediator;
-        this.EstateClient = estateClient;
-        this.SecurityServiceClient = securityServiceClient;
     }
 
     #region Others
@@ -269,7 +257,7 @@ public class MerchantController : ControllerBase
 
         return true;
     }
-    private TokenResponse TokenResponse;
+    //private TokenResponse TokenResponse;
     [HttpPost]
     [Route("")]
     public async Task<IActionResult> CreateMerchant([FromRoute] Guid estateId,
@@ -439,17 +427,11 @@ public class MerchantController : ControllerBase
             return Forbid();
         }
 
-        this.TokenResponse = await Helpers.GetToken(this.TokenResponse, this.SecurityServiceClient, cancellationToken);
+        // This will always be a manual deposit as auto ones come in via another route
+        MerchantCommands.MakeMerchantDepositCommand command = new(estateId, merchantId, DataTransferObjects.Requests.Merchant.MerchantDepositSource.Manual, makeMerchantDepositRequest);
 
-        var estateClientRequest = new EstateManagement.DataTransferObjects.Requests.Merchant.MakeMerchantDepositRequest
-        {
-            Amount = makeMerchantDepositRequest.Amount,
-            DepositDateTime = makeMerchantDepositRequest.DepositDateTime,
-            Reference = makeMerchantDepositRequest.Reference
-        };
-
-        var result = await this.EstateClient.MakeMerchantDeposit(this.TokenResponse.AccessToken, estateId, merchantId, estateClientRequest, cancellationToken);
-
+        // Route the command
+        Result result = await Mediator.Send(command, cancellationToken);
 
         // return the result
         return result.ToActionResultX();
@@ -470,16 +452,10 @@ public class MerchantController : ControllerBase
             return Forbid();
         }
 
-        this.TokenResponse = await Helpers.GetToken(this.TokenResponse, this.SecurityServiceClient, cancellationToken);
+        MerchantCommands.MakeMerchantWithdrawalCommand command = new(estateId, merchantId, makeMerchantWithdrawalRequest);
 
-        var estateClientRequest= new EstateManagement.DataTransferObjects.Requests.Merchant.MakeMerchantWithdrawalRequest
-        {
-            Amount = makeMerchantWithdrawalRequest.Amount,
-            Reference = makeMerchantWithdrawalRequest.Reference,
-            WithdrawalDateTime = makeMerchantWithdrawalRequest.WithdrawalDateTime
-        };
-
-        var result = await this.EstateClient.MakeMerchantWithdrawal(this.TokenResponse.AccessToken, estateId, merchantId, estateClientRequest, cancellationToken);
+        // Route the command
+        Result result = await Mediator.Send(command, cancellationToken);
 
         // return the result
         return result.ToActionResultX();

@@ -108,6 +108,7 @@ namespace TransactionProcessor.Bootstrapper
             this.AddSingleton<IRequestHandler<TransactionCommands.ResendTransactionReceiptCommand, Result>, TransactionRequestHandler>();
             this.AddSingleton<IRequestHandler<TransactionCommands.AddSettledMerchantFeeCommand, Result>, TransactionRequestHandler>();
             this.AddSingleton<IRequestHandler<TransactionCommands.CalculateFeesForTransactionCommand, Result>, TransactionRequestHandler>();
+            this.AddSingleton<IRequestHandler<TransactionCommands.SendCustomerEmailReceiptCommand, Result>, TransactionRequestHandler>();
         }
 
         private void RegisterOperatorRequestHandler()

@@ -1,5 +1,8 @@
-﻿namespace TransactionProcessor.Aggregates.Models;
+﻿using System.Diagnostics.CodeAnalysis;
 
+namespace TransactionProcessor.Aggregates.Models;
+
+[ExcludeFromCodeCoverage]
 internal record Contract
 {
     public Contract(Guid ContractId, Boolean IsDeleted = false)

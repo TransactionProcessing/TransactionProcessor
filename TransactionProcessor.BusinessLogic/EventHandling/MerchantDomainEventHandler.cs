@@ -10,22 +10,20 @@ using Shared.EventStore.EventHandling;
 using Shared.Results;
 using SimpleResults;
 using TransactionProcessor.Aggregates;
+using TransactionProcessor.BusinessLogic.Events;
 using TransactionProcessor.BusinessLogic.Requests;
 using TransactionProcessor.DomainEvents;
 using TransactionProcessor.Models.Merchant;
 using TransactionProcessor.Repository;
 using TransactionProcessor.DomainEvents;
+using MakeMerchantDepositRequest = TransactionProcessor.DataTransferObjects.Requests.Merchant.MakeMerchantDepositRequest;
 using MerchantDepositSource = EstateManagement.DataTransferObjects.Requests.Merchant.MerchantDepositSource;
 
 namespace TransactionProcessor.BusinessLogic.EventHandling
 {
-    //using Deposit = CallbackHandler.DataTransferObjects.Deposit;
-
     public class MerchantDomainEventHandler : IDomainEventHandler
     {
         #region Fields
-
-        //private readonly IEstateManagementRepository EstateManagementRepository;
 
         private readonly IMediator Mediator;
 
@@ -37,12 +35,10 @@ namespace TransactionProcessor.BusinessLogic.EventHandling
         #region Constructors
 
         public MerchantDomainEventHandler(IAggregateRepository<MerchantAggregate, DomainEvent> merchantAggregateRepository,
-                                          //IEstateManagementRepository estateManagementRepository,
                                           ITransactionProcessorReadModelRepository estateReportingRepository,
                                           IMediator mediator)
         {
             this.MerchantAggregateRepository = merchantAggregateRepository;
-            //this.EstateManagementRepository = estateManagementRepository;
             this.EstateReportingRepository = estateReportingRepository;
             this.Mediator = mediator;
         }
@@ -67,7 +63,7 @@ namespace TransactionProcessor.BusinessLogic.EventHandling
                 //StatementGeneratedEvent de => this.EstateReportingRepository.UpdateMerchant(de, cancellationToken),
                 TransactionDomainEvents.TransactionHasBeenCompletedEvent de => this.EstateReportingRepository.UpdateMerchant(de, cancellationToken),
                 MerchantDomainEvents.ContractAddedToMerchantEvent de => this.EstateReportingRepository.AddContractToMerchant(de, cancellationToken),
-                //CallbackReceivedEnrichedEvent de => this.HandleSpecificDomainEvent(de, cancellationToken),
+                CallbackReceivedEnrichedEvent de => this.HandleSpecificDomainEvent(de, cancellationToken),
                 MerchantDomainEvents.DeviceSwappedForMerchantEvent de => this.EstateReportingRepository.SwapMerchantDevice(de, cancellationToken),
                 MerchantDomainEvents.OperatorRemovedFromMerchantEvent de => this.EstateReportingRepository.RemoveOperatorFromMerchant(de, cancellationToken),
                 MerchantDomainEvents.MerchantAddressLine1UpdatedEvent de => this.EstateReportingRepository.UpdateMerchantAddress(de,cancellationToken),
@@ -89,36 +85,37 @@ namespace TransactionProcessor.BusinessLogic.EventHandling
             return Result.Success();
         }
 
-        //private async Task<Result> HandleSpecificDomainEvent(CallbackReceivedEnrichedEvent domainEvent,
-        //                                             CancellationToken cancellationToken)
-        //{
-        //    if (domainEvent.TypeString == typeof(Deposit).ToString())
-        //    {
-        //        // Work out the merchant id from the reference field (second part, split on hyphen)
-        //        String merchantReference = domainEvent.Reference.Split("-")[1];
+        private async Task<Result> HandleSpecificDomainEvent(CallbackReceivedEnrichedEvent domainEvent,
+                                                     CancellationToken cancellationToken)
+        {
+            if (domainEvent.TypeString == typeof(CallbackHandler.DataTransferObjects.Deposit).ToString())
+            {
+                // Work out the merchant id from the reference field (second part, split on hyphen)
+                String merchantReference = domainEvent.Reference.Split("-")[1];
 
-        //        Result<EstateManagement.Merchant> result = await this.EstateManagementRepository.GetMerchantFromReference(domainEvent.EstateId, merchantReference, cancellationToken);
-        //        if (result.IsFailed)
-        //            return ResultHelpers.CreateFailure(result);
+                Result<Merchant> result = await this.EstateReportingRepository.GetMerchantFromReference(domainEvent.EstateId, merchantReference, cancellationToken);
+                if (result.IsFailed)
+                    return ResultHelpers.CreateFailure(result);
 
-        //        // We now need to deserialise the message from the callback
-        //        Deposit callbackMessage = JsonConvert.DeserializeObject<Deposit>(domainEvent.CallbackMessage);
+                // We now need to deserialise the message from the callback
+                CallbackHandler.DataTransferObjects.Deposit callbackMessage = JsonConvert.DeserializeObject<CallbackHandler.DataTransferObjects.Deposit>(domainEvent.CallbackMessage);
 
-        //        MerchantCommands.MakeMerchantDepositCommand command = new(domainEvent.EstateId,
-        //                                                                  result.Data.MerchantId,
-        //                                                                  MerchantDepositSource.Automatic,
-        //                                                                  new MakeMerchantDepositRequest{
-        //                                                                                                    DepositDateTime = callbackMessage.DateTime,
-        //                                                                                                    Reference = callbackMessage.Reference,
-        //                                                                                                    Amount = callbackMessage.Amount,
-        //                                                                                                });
-        //        return await this.Mediator.Send(command, cancellationToken);
-        //    }
-        //    return Result.Success();
-        //}
-        
-        
-        
+                MerchantCommands.MakeMerchantDepositCommand command = new(domainEvent.EstateId,
+                                                                          result.Data.MerchantId,
+                                                                          DataTransferObjects.Requests.Merchant.MerchantDepositSource.Automatic,
+                                                                          new MakeMerchantDepositRequest
+                                                                          {
+                                                                              DepositDateTime = callbackMessage.DateTime,
+                                                                              Reference = callbackMessage.Reference,
+                                                                              Amount = callbackMessage.Amount,
+                                                                          });
+                return await this.Mediator.Send(command, cancellationToken);
+            }
+            return Result.Success();
+        }
+
+
+
 
         #endregion
     }

@@ -23,6 +23,93 @@ namespace TransactionProcessor.Repository
 
     public static class ModelFactory
     {
+        //public static MerchantModel ConvertFrom(Guid estateId, MerchantEntity merchant)
+        //{
+        //    MerchantModel merchantModel = new MerchantModel();
+        //    merchantModel.EstateId = estateId;
+        //    merchantModel.MerchantReportingId = merchant.MerchantReportingId;
+        //    merchantModel.MerchantId = merchant.MerchantId;
+        //    merchantModel.MerchantName = merchant.Name;
+        //    merchantModel.Reference = merchant.Reference;
+        //    merchantModel.SettlementSchedule = (SettlementSchedule)merchant.SettlementSchedule;
+
+        //    return merchantModel;
+        //}
+
+        //public static MerchantModel ConvertFrom(Guid estateId,
+        //                                        MerchantEntity merchant,
+        //                                        List<MerchantAddressEntity> merchantAddresses,
+        //                                        List<MerchantContactEntity> merchantContacts,
+        //                                        List<MerchantOperatorEntity> merchantOperators,
+        //                                        List<MerchantDeviceEntity> merchantDevices,
+        //                                        List<MerchantSecurityUserEntity> merchantSecurityUsers)
+        //{
+        //    MerchantModel merchantModel = this.ConvertFrom(estateId, merchant);
+
+        //    if (merchantAddresses != null && merchantAddresses.Any())
+        //    {
+        //        merchantModel.Addresses = new List<MerchantAddressModel>();
+        //        merchantAddresses.ForEach(ma => merchantModel.Addresses.Add(new MerchantAddressModel
+        //        {
+        //            AddressId = ma.AddressId,
+        //            AddressLine1 = ma.AddressLine1,
+        //            AddressLine2 = ma.AddressLine2,
+        //            AddressLine3 = ma.AddressLine3,
+        //            AddressLine4 = ma.AddressLine4,
+        //            Country = ma.Country,
+        //            PostalCode = ma.PostalCode,
+        //            Region = ma.Region,
+        //            Town = ma.Town
+        //        }));
+        //    }
+
+        //    if (merchantContacts != null && merchantContacts.Any())
+        //    {
+        //        merchantModel.Contacts = new List<MerchantContactModel>();
+        //        merchantContacts.ForEach(mc => merchantModel.Contacts.Add(new MerchantContactModel
+        //        {
+        //            ContactEmailAddress = mc.EmailAddress,
+        //            ContactId = mc.ContactId,
+        //            ContactName = mc.Name,
+        //            ContactPhoneNumber = mc.PhoneNumber
+        //        }));
+        //    }
+
+        //    if (merchantOperators != null && merchantOperators.Any())
+        //    {
+        //        merchantModel.Operators = new List<MerchantOperatorModel>();
+        //        merchantOperators.ForEach(mo => merchantModel.Operators.Add(new MerchantOperatorModel
+        //        {
+        //            Name = mo.Name,
+        //            MerchantNumber = mo.MerchantNumber,
+        //            OperatorId = mo.OperatorId,
+        //            TerminalNumber = mo.TerminalNumber
+        //        }));
+        //    }
+
+        //    if (merchantDevices != null && merchantDevices.Any())
+        //    {
+        //        merchantModel.Devices = new List<Device>();
+        //        merchantDevices.ForEach(md => merchantModel.Devices.Add(new Device
+        //        {
+        //            DeviceIdentifier = md.DeviceIdentifier,
+        //            DeviceId = md.DeviceId,
+        //        }));
+        //    }
+
+        //    if (merchantSecurityUsers != null && merchantSecurityUsers.Any())
+        //    {
+        //        merchantModel.SecurityUsers = new List<SecurityUserModel>();
+        //        merchantSecurityUsers.ForEach(msu => merchantModel.SecurityUsers.Add(new SecurityUserModel
+        //        {
+        //            EmailAddress = msu.EmailAddress,
+        //            SecurityUserId = msu.SecurityUserId
+        //        }));
+        //    }
+
+        //    return merchantModel;
+        //}
+
         public static EstateModel ConvertFrom(EstateEntity estate,
                                        List<EstateSecurityUserEntity> estateSecurityUsers,
                                        List<OperatorEntity> operators)

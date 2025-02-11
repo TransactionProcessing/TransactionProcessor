@@ -22,7 +22,7 @@ namespace TransactionProcessor.BusinessLogic.Tests.RequestHandler
             TransactionRequestHandler handler = new TransactionRequestHandler(transactionDomainService.Object);
             transactionDomainService.Setup(t => t.ProcessLogonTransaction(It.IsAny<TransactionCommands.ProcessLogonTransactionCommand>(),
                 It.IsAny<CancellationToken>())).ReturnsAsync(Result.Success());
-            TransactionCommands.ProcessLogonTransactionCommand command = TestData.ProcessLogonTransactionCommand;
+            TransactionCommands.ProcessLogonTransactionCommand command = TestData.Commands.ProcessLogonTransactionCommand;
 
             var result = await handler.Handle(command, CancellationToken.None);
             result.IsSuccess.ShouldBeTrue();
@@ -36,7 +36,7 @@ namespace TransactionProcessor.BusinessLogic.Tests.RequestHandler
             TransactionRequestHandler handler = new TransactionRequestHandler(transactionDomainService.Object);
             transactionDomainService.Setup(t => t.ProcessSaleTransaction(It.IsAny<TransactionCommands.ProcessSaleTransactionCommand>(),
                 It.IsAny<CancellationToken>())).ReturnsAsync(Result.Success());
-            TransactionCommands.ProcessSaleTransactionCommand command = TestData.ProcessSaleTransactionCommand;
+            TransactionCommands.ProcessSaleTransactionCommand command = TestData.Commands.ProcessSaleTransactionCommand;
 
             var result = await handler.Handle(command, CancellationToken.None);
             result.IsSuccess.ShouldBeTrue();
@@ -50,7 +50,7 @@ namespace TransactionProcessor.BusinessLogic.Tests.RequestHandler
             TransactionRequestHandler handler = new TransactionRequestHandler(transactionDomainService.Object);
             transactionDomainService.Setup(t => t.ProcessReconciliationTransaction(It.IsAny<TransactionCommands.ProcessReconciliationCommand>(),
                 It.IsAny<CancellationToken>())).ReturnsAsync(Result.Success());
-            TransactionCommands.ProcessReconciliationCommand command = TestData.ProcessReconciliationCommand;
+            TransactionCommands.ProcessReconciliationCommand command = TestData.Commands.ProcessReconciliationCommand;
 
             var result = await handler.Handle(command, CancellationToken.None);
             result.IsSuccess.ShouldBeTrue();
@@ -65,7 +65,7 @@ namespace TransactionProcessor.BusinessLogic.Tests.RequestHandler
             transactionDomainService
                 .Setup(t => t.ResendTransactionReceipt(It.IsAny<TransactionCommands.ResendTransactionReceiptCommand>(),
                     It.IsAny<CancellationToken>())).ReturnsAsync(Result.Success());
-            TransactionCommands.ResendTransactionReceiptCommand command = TestData.ResendTransactionReceiptCommand;
+            TransactionCommands.ResendTransactionReceiptCommand command = TestData.Commands.ResendTransactionReceiptCommand;
 
             var result = await handler.Handle(command, CancellationToken.None);
             result.IsSuccess.ShouldBeTrue();

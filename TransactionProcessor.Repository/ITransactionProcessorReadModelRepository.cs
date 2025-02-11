@@ -23,7 +23,9 @@ using static TransactionProcessor.DomainEvents.MerchantDomainEvents;
 
 namespace TransactionProcessor.Repository {
     public interface ITransactionProcessorReadModelRepository {
-
+        Task<Result<MerchantModel>> GetMerchantFromReference(Guid estateId,
+                                                             String reference,
+                                                             CancellationToken cancellationToken);
         Task<Result> UpdateOperator(OperatorDomainEvents.OperatorNameUpdatedEvent domainEvent,
                                     CancellationToken cancellationToken);
 
@@ -287,6 +289,20 @@ namespace TransactionProcessor.Repository {
         public TransactionProcessorReadModelRepository(Shared.EntityFramework.IDbContextFactory<EstateManagementGenericContext> dbContextFactory) {
    this.DbContextFactory = dbContextFactory;
         
+        }
+
+        public async Task<Result<MerchantModel>> GetMerchantFromReference(Guid estateId,
+                                                                          String reference,
+                                                                          CancellationToken cancellationToken)
+        {
+            EstateManagementGenericContext context = await this.DbContextFactory.GetContext(estateId, ConnectionStringIdentifier, cancellationToken);
+
+            Merchant merchant = await (from m in context.Merchants where m.Reference == reference select m).SingleOrDefaultAsync(cancellationToken);
+
+            if (merchant == null)
+                return Result.NotFound($"No merchant found with reference {reference}");
+
+            return Result.Success(ModelFactory.ConvertFrom(estateId, merchant, null, null, null, null, null));
         }
 
         public async Task<Result> AddMerchant(MerchantDomainEvents.MerchantCreatedEvent domainEvent,

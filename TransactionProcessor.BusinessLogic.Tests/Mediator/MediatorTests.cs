@@ -29,20 +29,22 @@ namespace TransactionProcessor.BusinessLogic.Tests.Mediator
 
         public MediatorTests()
         {
-            this.Requests.Add(TestData.ProcessLogonTransactionCommand);
-            this.Requests.Add(TestData.ProcessReconciliationCommand);
-            this.Requests.Add(TestData.ProcessSaleTransactionCommand);
-            this.Requests.Add(TestData.ProcessSettlementCommand);
-            this.Requests.Add(TestData.GetMerchantBalanceQuery);
-            this.Requests.Add(TestData.GetMerchantLiveBalanceQuery);
-            this.Requests.Add(TestData.GetMerchantBalanceHistoryQuery);
-            this.Requests.Add(TestData.AddMerchantFeePendingSettlementCommand);
-            this.Requests.Add(TestData.AddSettledFeeToSettlementCommand);
-            this.Requests.Add(TestData.GetPendingSettlementQuery);
-            this.Requests.Add(TestData.RecordCreditPurchaseCommand);
-            this.Requests.Add(TestData.CalculateFeesForTransactionCommand);
-            this.Requests.Add(TestData.AddSettledMerchantFeeCommand);
-            this.Requests.Add(TestData.RecordTransactionCommand);
+            this.Requests.Add(TestData.Commands.ProcessLogonTransactionCommand);
+            this.Requests.Add(TestData.Commands.ProcessReconciliationCommand);
+            this.Requests.Add(TestData.Commands.ProcessSaleTransactionCommand);
+            this.Requests.Add(TestData.Commands.ProcessSettlementCommand);
+            this.Requests.Add(TestData.Queries.GetMerchantBalanceQuery);
+            this.Requests.Add(TestData.Queries.GetMerchantLiveBalanceQuery);
+            this.Requests.Add(TestData.Queries.GetMerchantBalanceHistoryQuery);
+            this.Requests.Add(TestData.Commands.AddMerchantFeePendingSettlementCommand);
+            this.Requests.Add(TestData.Commands.AddSettledFeeToSettlementCommand);
+            this.Requests.Add(TestData.Queries.GetPendingSettlementQuery);
+            this.Requests.Add(TestData.Commands.RecordCreditPurchaseCommand);
+            this.Requests.Add(TestData.Commands.CalculateFeesForTransactionCommand);
+            this.Requests.Add(TestData.Commands.AddSettledMerchantFeeCommand);
+            this.Requests.Add(TestData.Commands.RecordTransactionCommand);
+            this.Requests.Add(TestData.Commands.SendCustomerEmailReceiptCommand);
+            this.Requests.Add(TestData.Commands.ResendTransactionReceiptCommand);
             // TODO: this needs the query handling function refactoring to use a repository not the context direct
             //this.Requests.Add(TestData.GetVoucherByVoucherCodeQuery);
             //this.Requests.Add(TestData.GetVoucherByTransactionIdQuery);
@@ -69,6 +71,28 @@ namespace TransactionProcessor.BusinessLogic.Tests.Mediator
             this.Requests.Add(TestData.Commands.DisableTransactionFeeForProductCommand);
             this.Requests.Add(TestData.Queries.GetContractQuery);
             this.Requests.Add(TestData.Queries.GetContractsQuery);
+
+            // Merchant Commands and Queries
+            this.Requests.Add(TestData.Commands.AddMerchantDeviceCommand);
+            this.Requests.Add(TestData.Commands.CreateMerchantCommand);
+            this.Requests.Add(TestData.Commands.AssignOperatorToMerchantCommand);
+            this.Requests.Add(TestData.Commands.AddMerchantContractCommand);
+            this.Requests.Add(TestData.Commands.CreateMerchantUserCommand);
+            this.Requests.Add(TestData.Commands.MakeMerchantDepositCommand);
+            this.Requests.Add(TestData.Commands.MakeMerchantWithdrawalCommand);
+            this.Requests.Add(TestData.Commands.SwapMerchantDeviceCommand);
+            this.Requests.Add(TestData.Commands.UpdateMerchantCommand);
+            this.Requests.Add(TestData.Commands.AddMerchantAddressCommand);
+            this.Requests.Add(TestData.Commands.UpdateMerchantAddressCommand);
+            this.Requests.Add(TestData.Commands.AddMerchantContactCommand);
+            this.Requests.Add(TestData.Commands.UpdateMerchantContactCommand);
+            this.Requests.Add(TestData.Commands.RemoveOperatorFromMerchantCommand);
+            this.Requests.Add(TestData.Commands.RemoveMerchantContractCommand);
+            this.Requests.Add(TestData.Queries.GetMerchantsQuery);
+            this.Requests.Add(TestData.Queries.GetMerchantQuery);
+            this.Requests.Add(TestData.Queries.GetMerchantContractsQuery);
+            this.Requests.Add(TestData.Queries.GetTransactionFeesForProductQuery);
+
         }
 
         [Fact]

@@ -103,8 +103,7 @@ IRequestHandler<MerchantCommands.SwapMerchantDeviceCommand, Result>,
     public async Task<Result> Handle(MerchantCommands.MakeMerchantDepositCommand command,
                                      CancellationToken cancellationToken)
     {
-        return Result.Success();
-        //return await this.MerchantDomainService.MakeMerchantDeposit(command, cancellationToken);
+        return await this.MerchantDomainService.MakeMerchantDeposit(command, cancellationToken);
     }
 
     public async Task<Result> Handle(MerchantCommands.SwapMerchantDeviceCommand command,
@@ -116,8 +115,7 @@ IRequestHandler<MerchantCommands.SwapMerchantDeviceCommand, Result>,
     public async Task<Result> Handle(MerchantCommands.MakeMerchantWithdrawalCommand command,
                                      CancellationToken cancellationToken)
     {
-        return Result.Success();
-        //return await this.MerchantDomainService.MakeMerchantWithdrawal(command, cancellationToken);
+        return await this.MerchantDomainService.MakeMerchantWithdrawal(command, cancellationToken);
     }
 
     public async Task<Result> Handle(MerchantCommands.AddMerchantContractCommand command, CancellationToken cancellationToken)
