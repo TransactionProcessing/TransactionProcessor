@@ -1,7 +1,9 @@
-﻿using SecurityService.Client;
+﻿using Newtonsoft.Json;
+using SecurityService.Client;
 using SecurityService.DataTransferObjects;
 using Shared.DomainDrivenDesign.EventSourcing;
 using Shared.EventStore.Aggregate;
+using Shared.EventStore.EventStore;
 using Shared.Exceptions;
 using Shared.Results;
 using Shared.ValueObjects;
@@ -16,6 +18,7 @@ using TransactionProcessor.Aggregates;
 using TransactionProcessor.BusinessLogic.Requests;
 using TransactionProcessor.Models.Estate;
 using TransactionProcessor.Models.Merchant;
+using TransactionProcessor.ProjectionEngine.State;
 using Operator = TransactionProcessor.Models.Operator.Operator;
 
 namespace TransactionProcessor.BusinessLogic.Services
@@ -28,8 +31,8 @@ namespace TransactionProcessor.BusinessLogic.Services
         Task<Result> CreateMerchantUser(MerchantCommands.CreateMerchantUserCommand command, CancellationToken cancellationToken);
         Task<Result> AddDeviceToMerchant(MerchantCommands.AddMerchantDeviceCommand command, CancellationToken cancellationToken);
         Task<Result> SwapMerchantDevice(MerchantCommands.SwapMerchantDeviceCommand command, CancellationToken cancellationToken);
-        //Task<Result> MakeMerchantDeposit(MerchantCommands.MakeMerchantDepositCommand command, CancellationToken cancellationToken);
-        //Task<Result> MakeMerchantWithdrawal(MerchantCommands.MakeMerchantWithdrawalCommand command, CancellationToken cancellationToken);
+        Task<Result> MakeMerchantDeposit(MerchantCommands.MakeMerchantDepositCommand command, CancellationToken cancellationToken);
+        Task<Result> MakeMerchantWithdrawal(MerchantCommands.MakeMerchantWithdrawalCommand command, CancellationToken cancellationToken);
         Task<Result> AddContractToMerchant(MerchantCommands.AddMerchantContractCommand command, CancellationToken cancellationToken);
         Task<Result> UpdateMerchant(MerchantCommands.UpdateMerchantCommand command, CancellationToken cancellationToken);
         Task<Result> AddMerchantAddress(MerchantCommands.AddMerchantAddressCommand command, CancellationToken cancellationToken);
@@ -50,11 +53,12 @@ namespace TransactionProcessor.BusinessLogic.Services
 
         private readonly IAggregateRepository<MerchantAggregate, DomainEvent> MerchantAggregateRepository;
 
-        //private readonly IAggregateRepository<MerchantDepositListAggregate, DomainEvent> MerchantDepositListAggregateRepository;
+        private readonly IAggregateRepository<MerchantDepositListAggregate, DomainEvent> MerchantDepositListAggregateRepository;
 
         private readonly IAggregateRepository<ContractAggregate, DomainEvent> ContractAggregateRepository;
 
         private readonly ISecurityServiceClient SecurityServiceClient;
+        private readonly IEventStoreContext EventStoreContext;
 
         #endregion
 
@@ -62,15 +66,17 @@ namespace TransactionProcessor.BusinessLogic.Services
 
         public MerchantDomainService(IAggregateRepository<EstateAggregate, DomainEvent> estateAggregateRepository,
                                      IAggregateRepository<MerchantAggregate, DomainEvent> merchantAggregateRepository,
-                                     //IAggregateRepository<MerchantDepositListAggregate, DomainEvent> merchantDepositListAggregateRepository,
+                                     IAggregateRepository<MerchantDepositListAggregate, DomainEvent> merchantDepositListAggregateRepository,
                                      IAggregateRepository<ContractAggregate, DomainEvent> contractAggregateRepository,
-                                     ISecurityServiceClient securityServiceClient)
+                                     ISecurityServiceClient securityServiceClient,
+                                     IEventStoreContext eventStoreContext)
         {
             this.EstateAggregateRepository = estateAggregateRepository;
             this.MerchantAggregateRepository = merchantAggregateRepository;
-            //this.MerchantDepositListAggregateRepository = merchantDepositListAggregateRepository;
+            this.MerchantDepositListAggregateRepository = merchantDepositListAggregateRepository;
             this.ContractAggregateRepository = contractAggregateRepository;
             this.SecurityServiceClient = securityServiceClient;
+            this.EventStoreContext = eventStoreContext;
         }
 
         #endregion
@@ -291,91 +297,101 @@ namespace TransactionProcessor.BusinessLogic.Services
             return Result.Success();
         }
 
-        //public async Task<Result> MakeMerchantDeposit(MerchantCommands.MakeMerchantDepositCommand command, CancellationToken cancellationToken)
-        //{
-        //    Result result = await ApplyUpdates(
-        //        async ((EstateAggregate estateAggregate, MerchantAggregate merchantAggregate) aggregates) => {
+        public async Task<Result> MakeMerchantDeposit(MerchantCommands.MakeMerchantDepositCommand command, CancellationToken cancellationToken)
+        {
+            Result result = await ApplyUpdates(
+                async ((EstateAggregate estateAggregate, MerchantAggregate merchantAggregate) aggregates) => {
 
-        //            Result result =
-        //                this.ValidateEstateAndMerchant(aggregates.estateAggregate, aggregates.merchantAggregate);
-        //            if (result.IsFailed)
-        //                return ResultHelpers.CreateFailure(result);
+                    Result result =
+                        this.ValidateEstateAndMerchant(aggregates.estateAggregate, aggregates.merchantAggregate);
+                    if (result.IsFailed)
+                        return ResultHelpers.CreateFailure(result);
 
-        //            Result<MerchantDepositListAggregate> getDepositListResult = await this.MerchantDepositListAggregateRepository.GetLatestVersion(command.MerchantId, cancellationToken);
-        //            Result<MerchantDepositListAggregate> merchantDepositListAggregateResult =
-        //                DomainServiceHelper.HandleGetAggregateResult(getDepositListResult, command.MerchantId, false);
-        //            if (merchantDepositListAggregateResult.IsFailed)
-        //                return ResultHelpers.CreateFailure(merchantDepositListAggregateResult);
+                    Result<MerchantDepositListAggregate> getDepositListResult = await this.MerchantDepositListAggregateRepository.GetLatestVersion(command.MerchantId, cancellationToken);
+                    Result<MerchantDepositListAggregate> merchantDepositListAggregateResult =
+                        DomainServiceHelper.HandleGetAggregateResult(getDepositListResult, command.MerchantId, false);
+                    if (merchantDepositListAggregateResult.IsFailed)
+                        return ResultHelpers.CreateFailure(merchantDepositListAggregateResult);
 
-        //            MerchantDepositListAggregate merchantDepositListAggregate = merchantDepositListAggregateResult.Data;
-        //            if (merchantDepositListAggregate.IsCreated == false)
-        //            {
-        //                merchantDepositListAggregate.Create(aggregates.merchantAggregate, command.RequestDto.DepositDateTime);
-        //            }
+                    MerchantDepositListAggregate merchantDepositListAggregate = merchantDepositListAggregateResult.Data;
+                    if (merchantDepositListAggregate.IsCreated == false)
+                    {
+                        merchantDepositListAggregate.Create(aggregates.merchantAggregate, command.RequestDto.DepositDateTime);
+                    }
 
-        //            PositiveMoney amount = PositiveMoney.Create(Money.Create(command.RequestDto.Amount));
+                    PositiveMoney amount = PositiveMoney.Create(Money.Create(command.RequestDto.Amount));
+                    MerchantDepositSource depositSource = command.DepositSource switch
+                    {
+                        DataTransferObjects.Requests.Merchant.MerchantDepositSource.Manual => Models.Merchant.MerchantDepositSource.Manual,
+                        _ => Models.Merchant.MerchantDepositSource.Automatic,
+                    };
+                    merchantDepositListAggregate.MakeDeposit(depositSource, command.RequestDto.Reference, command.RequestDto.DepositDateTime, amount);
 
-        //            merchantDepositListAggregate.MakeDeposit(command.DepositSource, command.RequestDto.Reference, command.RequestDto.DepositDateTime, amount);
+                    Result saveResult = await this.MerchantDepositListAggregateRepository.SaveChanges(merchantDepositListAggregate, cancellationToken);
+                    if (saveResult.IsFailed)
+                        return ResultHelpers.CreateFailure(saveResult);
 
-        //            Result saveResult = await this.MerchantDepositListAggregateRepository.SaveChanges(merchantDepositListAggregate, cancellationToken);
-        //            if (saveResult.IsFailed)
-        //                return ResultHelpers.CreateFailure(saveResult);
+                    return Result.Success();
+                }, command.EstateId, command.MerchantId, cancellationToken);
 
-        //            return Result.Success();
-        //        }, command.EstateId, command.MerchantId, cancellationToken);
+            if (result.IsFailed)
+                return ResultHelpers.CreateFailure(result);
 
-        //    if (result.IsFailed)
-        //        return ResultHelpers.CreateFailure(result);
+            return Result.Success();
+        }
 
-        //    return Result.Success();
-        //}
+        public async Task<Result> MakeMerchantWithdrawal(MerchantCommands.MakeMerchantWithdrawalCommand command,
+                                                               CancellationToken cancellationToken)
+        {
 
-        //public async Task<Result> MakeMerchantWithdrawal(MerchantCommands.MakeMerchantWithdrawalCommand command,
-        //                                                       CancellationToken cancellationToken)
-        //{
+            Result result = await ApplyUpdates(
+                async ((EstateAggregate estateAggregate, MerchantAggregate merchantAggregate) aggregates) =>
+                {
 
-        //    Result result = await ApplyUpdates(
-        //        async ((EstateAggregate estateAggregate, MerchantAggregate merchantAggregate) aggregates) => {
+                    Result result =
+                        this.ValidateEstateAndMerchant(aggregates.estateAggregate, aggregates.merchantAggregate);
+                    if (result.IsFailed)
+                        return ResultHelpers.CreateFailure(result);
 
-        //            Result result =
-        //                this.ValidateEstateAndMerchant(aggregates.estateAggregate, aggregates.merchantAggregate);
-        //            if (result.IsFailed)
-        //                return ResultHelpers.CreateFailure(result);
+                    Result<MerchantDepositListAggregate> getDepositListResult = await this.MerchantDepositListAggregateRepository.GetLatestVersion(command.MerchantId, cancellationToken);
+                    Result<MerchantDepositListAggregate> merchantDepositListAggregateResult =
+                        DomainServiceHelper.HandleGetAggregateResult(getDepositListResult, command.MerchantId, false);
+                    if (merchantDepositListAggregateResult.IsFailed)
+                        return ResultHelpers.CreateFailure(merchantDepositListAggregateResult);
 
-        //            Result<MerchantDepositListAggregate> getDepositListResult = await this.MerchantDepositListAggregateRepository.GetLatestVersion(command.MerchantId, cancellationToken);
-        //            Result<MerchantDepositListAggregate> merchantDepositListAggregateResult =
-        //                DomainServiceHelper.HandleGetAggregateResult(getDepositListResult, command.MerchantId, false);
-        //            if (merchantDepositListAggregateResult.IsFailed)
-        //                return ResultHelpers.CreateFailure(merchantDepositListAggregateResult);
+                    MerchantDepositListAggregate merchantDepositListAggregate = merchantDepositListAggregateResult.Data;
+                    if (merchantDepositListAggregate.IsCreated == false)
+                    {
+                        return Result.Invalid($"Merchant [{command.MerchantId}] has not made any deposits yet");
+                    }
 
-        //            MerchantDepositListAggregate merchantDepositListAggregate = merchantDepositListAggregateResult.Data;
-        //            if (merchantDepositListAggregate.IsCreated == false)
-        //            {
-        //                return Result.Invalid($"Merchant [{command.MerchantId}] has not made any deposits yet");
-        //            }
+                    // Now we need to check the merchants balance to ensure they have funds to withdraw
+                    Result<String> getBalanceResult = await this.EventStoreContext.GetPartitionStateFromProjection("MerchantBalanceProjection", $"MerchantBalance-{command.MerchantId:N}", cancellationToken);
+                    if (getBalanceResult.IsFailed)
+                    {
+                        Result.Invalid($"Failed to get Merchant Balance.");
+                    }
 
-        //            // Now we need to check the merchants balance to ensure they have funds to withdraw
-        //            this.TokenResponse = await Helpers.GetToken(this.TokenResponse, this.SecurityServiceClient, cancellationToken);
-        //            MerchantBalanceResponse merchantBalance = await this.TransactionProcessorClient.GetMerchantBalance(this.TokenResponse.AccessToken, command.EstateId, command.MerchantId, cancellationToken);
+                    MerchantBalanceProjectionState1 projectionState = JsonConvert.DeserializeObject<MerchantBalanceProjectionState1>(getBalanceResult.Data);
 
-        //            if (command.RequestDto.Amount > merchantBalance.Balance)
-        //            {
-        //                return Result.Invalid($"Not enough credit available for withdrawal of [{command.RequestDto.Amount}]. Balance is {merchantBalance}");
-        //            }
+                    if (command.RequestDto.Amount > projectionState.merchant.balance)
+                    {
+                        return Result.Invalid($"Not enough credit available for withdrawal of [{command.RequestDto.Amount}]. Balance is {projectionState.merchant.balance}");
+                    }
 
-        //            // If we are here we have enough credit to withdraw
-        //            PositiveMoney amount = PositiveMoney.Create(Money.Create(command.RequestDto.Amount));
+                    // If we are here we have enough credit to withdraw
+                    PositiveMoney amount = PositiveMoney.Create(Money.Create(command.RequestDto.Amount));
 
-        //            merchantDepositListAggregate.MakeWithdrawal(command.RequestDto.WithdrawalDateTime, amount);
+                    merchantDepositListAggregate.MakeWithdrawal(command.RequestDto.WithdrawalDateTime, amount);
 
-        //            return Result.Success();
-        //        }, command.EstateId, command.MerchantId, cancellationToken);
+                    return Result.Success();
+                }, command.EstateId, command.MerchantId, cancellationToken);
 
-        //    if (result.IsFailed)
-        //        return ResultHelpers.CreateFailure(result);
+            if (result.IsFailed)
+                return ResultHelpers.CreateFailure(result);
 
-        //    return Result.Success();
-        //}
+            return Result.Success();
+        }
 
         /// <summary>
         /// The token response

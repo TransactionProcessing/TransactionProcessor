@@ -24,7 +24,7 @@ public class SettlementRequestHandlerTests
         SettlementRequestHandler handler = new SettlementRequestHandler(settlementDomainService.Object, settlementAggregateRepository.Object);
         settlementDomainService
             .Setup(s => s.ProcessSettlement(It.IsAny<SettlementCommands.ProcessSettlementCommand>(), It.IsAny<CancellationToken>())).ReturnsAsync(Result.Success());
-        var command = TestData.ProcessSettlementCommand;
+        var command = TestData.Commands.ProcessSettlementCommand;
 
         var result = await handler.Handle(command, CancellationToken.None);
         result.IsSuccess.ShouldBeTrue();
