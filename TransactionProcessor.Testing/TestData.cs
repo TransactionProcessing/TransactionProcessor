@@ -31,10 +31,48 @@ namespace TransactionProcessor.Testing
     using System.Linq;
     using ContractProductTransactionFeeModel = Models.Contract.ContractProductTransactionFee;
     using static TransactionProcessor.DomainEvents.ContractDomainEvents;
+    using TransactionProcessor.Aggregates.Models;
 
     public class TestData
     {
         #region Fields
+        public static Guid TransactionId1 = Guid.Parse("82E1ACE2-EA34-4501-832D-1DB97B8B4294");
+
+        public static DateTime TransactionDateTime1 = new DateTime(2021, 12, 10, 11, 00, 00);
+
+        public static DateTime TransactionDateTime2 = new DateTime(2021, 12, 10, 11, 30, 00);
+        public static Decimal? TransactionAmount1 = 100.00m;
+
+        public static Decimal? TransactionAmount2 = 85.00m;
+
+        public static Decimal SettledFeeAmount1 = 1.00m;
+
+        public static Decimal SettledFeeAmount2 = 0.85m;
+
+        public static DateTime SettledFeeDateTime1 = new DateTime(2021, 12, 17, 00, 00, 00);
+
+        public static DateTime SettledFeeDateTime2 = new DateTime(2021, 12, 17, 01, 00, 00);
+
+        public static Guid SettledFeeId1 = Guid.Parse("B4D429AE-756D-4F04-8941-4D41B1A75060");
+
+        public static Guid SettledFeeId2 = Guid.Parse("85C64CF1-6522-408D-93E3-D156B4D5C45B");
+
+        public static SettledFee SettledFee1 => new SettledFee(TestData.SettledFeeId1, TestData.TransactionId1, TestData.SettledFeeDateTime1, TestData.SettledFeeAmount1);
+        public static SettledFee SettledFee2 => new SettledFee(TestData.SettledFeeId2, TestData.TransactionId2, TestData.SettledFeeDateTime2, TestData.SettledFeeAmount2);
+
+        public static Guid MessageId = Guid.Parse("353FB307-FDD5-41AE-A2AF-C927D57EADBB");
+
+        public static TransactionProcessor.Aggregates.Models.Transaction Transaction1 => new(TransactionId1, TransactionDateTime1, TransactionAmount1.Value);
+        public static TransactionProcessor.Aggregates.Models.Transaction Transaction2 => new(TransactionId2, TransactionDateTime2, TransactionAmount2.Value);
+
+        public static DateTime StatementCreateDate = new DateTime(2021, 12, 10);
+
+        public static DateTime StatementEmailedDate = new DateTime(2021, 12, 12);
+
+        public static DateTime StatementGeneratedDate = new DateTime(2021, 12, 11);
+        public static Guid MerchantStatementId = Guid.Parse("C8CC622C-07D9-48E9-B544-F53BD29DE1E6");
+        public static Guid EventId1 = Guid.Parse("C8CC622C-07D9-48E9-B544-F53BD29DE1E6");
+
         public static DataTransferObjects.Responses.Merchant.SettlementSchedule SettlementScheduleDTO = DataTransferObjects.Responses.Merchant.SettlementSchedule.Monthly;
         public static CreateMerchantRequest CreateMerchantRequest =>
             new CreateMerchantRequest
