@@ -10,6 +10,7 @@ using Shouldly;
 using SimpleResults;
 using TransactionProcessor.Aggregates;
 using TransactionProcessor.BusinessLogic.EventHandling;
+using TransactionProcessor.BusinessLogic.Events;
 using TransactionProcessor.BusinessLogic.Requests;
 using TransactionProcessor.DomainEvents;
 using TransactionProcessor.Repository;
@@ -38,43 +39,43 @@ namespace TransactionProcessor.BusinessLogic.Tests.DomainEventHandlers
                                                                                            this.Mediator.Object);
         }
 
-        //[Fact]
-        //public async Task MerchantDomainEventHandler_Handle_CallbackReceivedEnrichedEvent_Deposit_EventIsHandled()
-        //{
-        //    this.EstateManagementRepository.Setup(e => e.GetMerchantFromReference(It.IsAny<Guid>(), It.IsAny<String>(), It.IsAny<CancellationToken>()))
-        //                              .ReturnsAsync(Result.Success(TestData.MerchantModelWithAddressesContactsDevicesAndOperatorsAndContracts()));
-        //    this.Mediator.Setup(m => m.Send(It.IsAny<MerchantCommands.MakeMerchantDepositCommand>(), It.IsAny<CancellationToken>())).ReturnsAsync(Result.Success);
-        //    CallbackReceivedEnrichedEvent domainEvent = TestData.CallbackReceivedEnrichedEventDeposit;
+        [Fact]
+        public async Task MerchantDomainEventHandler_Handle_CallbackReceivedEnrichedEvent_Deposit_EventIsHandled()
+        {
+            this.EstateManagementRepository.Setup(e => e.GetMerchantFromReference(It.IsAny<Guid>(), It.IsAny<String>(), It.IsAny<CancellationToken>()))
+                                      .ReturnsAsync(Result.Success(TestData.MerchantModelWithAddressesContactsDevicesAndOperatorsAndContracts()));
+            this.Mediator.Setup(m => m.Send(It.IsAny<MerchantCommands.MakeMerchantDepositCommand>(), It.IsAny<CancellationToken>())).ReturnsAsync(Result.Success);
+            CallbackReceivedEnrichedEvent domainEvent = TestData.DomainEvents.CallbackReceivedEnrichedEventDeposit;
 
-        //    var result = await this.DomainEventHandler.Handle(domainEvent, CancellationToken.None);
-        //    result.IsSuccess.ShouldBeTrue();
+            var result = await this.DomainEventHandler.Handle(domainEvent, CancellationToken.None);
+            result.IsSuccess.ShouldBeTrue();
 
-        //}
+        }
 
-        //[Fact]
-        //public async Task MerchantDomainEventHandler_Handle_CallbackReceivedEnrichedEvent_OtherType_EventIsHandled()
-        //{
-        //    this.EstateManagementRepository.Setup(e => e.GetMerchantFromReference(It.IsAny<Guid>(), It.IsAny<String>(), It.IsAny<CancellationToken>()))
-        //        .ReturnsAsync(TestData.MerchantModelWithAddressesContactsDevicesAndOperatorsAndContracts());
+        [Fact]
+        public async Task MerchantDomainEventHandler_Handle_CallbackReceivedEnrichedEvent_OtherType_EventIsHandled()
+        {
+            //this.EstateManagementRepository.Setup(e => e.GetMerchantFromReference(It.IsAny<Guid>(), It.IsAny<String>(), It.IsAny<CancellationToken>()))
+            //    .ReturnsAsync(TestData.MerchantModelWithAddressesContactsDevicesAndOperatorsAndContracts());
 
-        //    CallbackReceivedEnrichedEvent domainEvent = TestData.CallbackReceivedEnrichedEventOtherType;
+            CallbackReceivedEnrichedEvent domainEvent = TestData.DomainEvents.CallbackReceivedEnrichedEventOtherType;
 
-        //    var result = await this.DomainEventHandler.Handle(domainEvent, CancellationToken.None);
-        //    result.IsSuccess.ShouldBeTrue();
-        //}
+            var result = await this.DomainEventHandler.Handle(domainEvent, CancellationToken.None);
+            result.IsSuccess.ShouldBeTrue();
+        }
 
-        //[Fact]
-        //public async Task MerchantDomainEventHandler_Handle_CallbackReceivedEnrichedEvent_Deposit_GetMerchantFailed_ResultIsFailure()
-        //{
-        //    this.EstateManagementRepository.Setup(e => e.GetMerchantFromReference(It.IsAny<Guid>(), It.IsAny<String>(), It.IsAny<CancellationToken>()))
-        //        .ReturnsAsync(Result.Failure());
+        [Fact]
+        public async Task MerchantDomainEventHandler_Handle_CallbackReceivedEnrichedEvent_Deposit_GetMerchantFailed_ResultIsFailure()
+        {
+            this.EstateManagementRepository.Setup(e => e.GetMerchantFromReference(It.IsAny<Guid>(), It.IsAny<String>(), It.IsAny<CancellationToken>()))
+                .ReturnsAsync(Result.Failure());
 
-        //    CallbackReceivedEnrichedEvent domainEvent = TestData.CallbackReceivedEnrichedEventDeposit;
+            CallbackReceivedEnrichedEvent domainEvent = TestData.DomainEvents.CallbackReceivedEnrichedEventDeposit;
 
-        //    var result = await this.DomainEventHandler.Handle(domainEvent, CancellationToken.None);
-        //    result.IsFailed.ShouldBeTrue();
+            var result = await this.DomainEventHandler.Handle(domainEvent, CancellationToken.None);
+            result.IsFailed.ShouldBeTrue();
 
-        //}
+        }
 
         #region Methods
 

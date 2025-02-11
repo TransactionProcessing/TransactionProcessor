@@ -15,6 +15,7 @@ namespace TransactionProcessor.BusinessLogic.Common
     using SecurityService.DataTransferObjects.Responses;
     using Shared.Logger;
 
+    [ExcludeFromCodeCoverage]
     public static class Helpers
     {
         public static Guid CalculateSettlementAggregateId(DateTime settlementDate,

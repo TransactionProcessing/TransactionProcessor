@@ -1,4 +1,7 @@
-﻿using TransactionProcessor.Aggregates;
+﻿using CallbackHandler.DataTransferObjects;
+using Newtonsoft.Json;
+using TransactionProcessor.Aggregates;
+using TransactionProcessor.BusinessLogic.Events;
 using TransactionProcessor.DataTransferObjects.Requests.Contract;
 using TransactionProcessor.DataTransferObjects.Requests.Estate;
 using TransactionProcessor.DataTransferObjects.Requests.Merchant;
@@ -7,9 +10,14 @@ using TransactionProcessor.DataTransferObjects.Responses.Estate;
 using TransactionProcessor.DataTransferObjects.Responses.Merchant;
 using TransactionProcessor.DomainEvents;
 using TransactionProcessor.Models.Contract;
+using TransactionProcessor.Models.Merchant;
 using Address = TransactionProcessor.DataTransferObjects.Requests.Merchant.Address;
 using AssignOperatorRequest = TransactionProcessor.DataTransferObjects.Requests.Estate.AssignOperatorRequest;
 using Contact = TransactionProcessor.DataTransferObjects.Requests.Merchant.Contact;
+using Contract = TransactionProcessor.Models.Merchant.Contract;
+using Deposit = CallbackHandler.DataTransferObjects.Deposit;
+using MerchantDepositSource = TransactionProcessor.DataTransferObjects.Requests.Merchant.MerchantDepositSource;
+using SettlementSchedule = TransactionProcessor.DataTransferObjects.Responses.Merchant.SettlementSchedule;
 using SettlementScheduleModel = TransactionProcessor.Models.Merchant.SettlementSchedule;
 
 namespace TransactionProcessor.Testing
@@ -30,16 +38,174 @@ namespace TransactionProcessor.Testing
     using TransactionProcessor.Models.Estate;
     using System.Linq;
     using ContractProductTransactionFeeModel = Models.Contract.ContractProductTransactionFee;
-    using static TransactionProcessor.DomainEvents.ContractDomainEvents;
-
+    using Shared.ValueObjects;
+    
     public class TestData
     {
         #region Fields
+        public static List<Models.Contract.Contract> MerchantContractsEmptyList => new List<Models.Contract.Contract>();
+
+        public static List<Models.Contract.Contract> MerchantContracts =>
+            new List<Models.Contract.Contract>{
+                new Models.Contract.Contract{
+                    ContractId = TestData.ContractId,
+                    Description = TestData.ContractDescription,
+                    OperatorId = TestData.OperatorId,
+                    OperatorName = TestData.OperatorName,
+                    Products = new List<Product>{
+                        new Product{
+                            ContractProductId = TestData.ContractProductId,
+                            Value = TestData.ProductFixedValue,
+                            DisplayText = TestData.ProductDisplayText,
+                            Name = TestData.ProductName
+                        }
+                    }
+                }
+            };
+
+        public static List<ContractProductTransactionFeeModel> ProductTransactionFees =>
+            new List<ContractProductTransactionFeeModel>{
+                new ContractProductTransactionFeeModel{
+                    TransactionFeeId = TestData.TransactionFeeId,
+                    Description = TestData.TransactionFeeDescription,
+                    Value = TestData.TransactionFeeValue,
+                    CalculationType = CalculationType.Fixed
+                }
+            };
+
+        public static Models.Merchant.Merchant MerchantModelWithNullAddresses =>
+            new Models.Merchant.Merchant
+            {
+                MerchantId = TestData.MerchantId,
+                MerchantName = TestData.MerchantName,
+                SettlementSchedule = Models.Merchant.SettlementSchedule.Immediate,
+                Addresses = null,
+                Contacts = new List<Models.Merchant.Contact>{
+                    new Models.Merchant.Contact(Guid.NewGuid(), MerchantContactEmailAddress, MerchantContactName, MerchantContactPhoneNumber)
+                },
+                Devices = new List<Device>{
+                    new Device(DeviceId, DeviceIdentifier, true)
+                },
+                Operators = new List<Models.Merchant.Operator>{
+                    new Models.Merchant.Operator(TestData.OperatorId,TestData.OperatorName,TestData.OperatorMerchantNumber,TestData.OperatorTerminalNumber)
+                }
+            };
+
+        public static Models.Merchant.Merchant MerchantModelWithNullContacts=>
+            new Models.Merchant.Merchant
+            {
+                MerchantId = TestData.MerchantId,
+                MerchantName = TestData.MerchantName,
+                SettlementSchedule = Models.Merchant.SettlementSchedule.Immediate,
+                Addresses = new List<Models.Merchant.Address>{
+                    new Models.Merchant.Address(Guid.NewGuid(), MerchantAddressLine1,MerchantAddressLine2,
+                        MerchantAddressLine3,MerchantAddressLine4, MerchantTown,MerchantRegion,
+                        MerchantPostalCode, MerchantCountry)
+                },
+                Contacts = null,
+                Devices = new List<Device>{
+                    new Device(DeviceId, DeviceIdentifier, true)
+                },
+                Operators = new List<Models.Merchant.Operator>{
+                    new Models.Merchant.Operator(TestData.OperatorId,TestData.OperatorName,TestData.OperatorMerchantNumber,TestData.OperatorTerminalNumber)
+                }
+            };
+
+        public static Models.Merchant.Merchant MerchantModelWithNullDevices =>
+            new Models.Merchant.Merchant
+            {
+                MerchantId = TestData.MerchantId,
+                MerchantName = TestData.MerchantName,
+                SettlementSchedule = Models.Merchant.SettlementSchedule.Immediate,
+                Addresses = new List<Models.Merchant.Address>{
+                    new Models.Merchant.Address(Guid.NewGuid(), MerchantAddressLine1,MerchantAddressLine2,
+                        MerchantAddressLine3,MerchantAddressLine4, MerchantTown,MerchantRegion,
+                        MerchantPostalCode, MerchantCountry)
+                },
+                Contacts = new List<Models.Merchant.Contact>{
+                    new Models.Merchant.Contact(Guid.NewGuid(), MerchantContactEmailAddress, MerchantContactName, MerchantContactPhoneNumber)
+                },
+                Devices = null,
+                Operators = new List<Models.Merchant.Operator>{
+                    new Models.Merchant.Operator(TestData.OperatorId,TestData.OperatorName,TestData.OperatorMerchantNumber,TestData.OperatorTerminalNumber)
+                }
+            };
+
+        public static Models.Merchant.Merchant MerchantModelWithNullOperators =>
+            new Models.Merchant.Merchant{
+                                            MerchantId = TestData.MerchantId,
+                                            MerchantName = TestData.MerchantName,
+                                            SettlementSchedule = Models.Merchant.SettlementSchedule.Immediate,
+                                            Addresses = new List<Models.Merchant.Address>{
+                                                                                             new Models.Merchant.Address(Guid.NewGuid(), MerchantAddressLine1,MerchantAddressLine2,
+                                                                                                 MerchantAddressLine3,MerchantAddressLine4, MerchantTown,MerchantRegion,
+                                                                                                 MerchantPostalCode, MerchantCountry)
+                                                                                         },
+                                            Contacts = new List<Models.Merchant.Contact>{
+                                                                                            new Models.Merchant.Contact(Guid.NewGuid(), MerchantContactEmailAddress, MerchantContactName, MerchantContactPhoneNumber)
+                                                                                        },
+                                            Devices = new List<Device>{
+                                                                          new Device(DeviceId, DeviceIdentifier, true)
+                                                                      },
+                                            Operators = null
+                                        };
+
+        public static Models.Contract.Contract ContractModelWithProducts =>
+            new Models.Contract.Contract
+            {
+                OperatorId = TestData.OperatorId,
+                ContractId = TestData.ContractId,
+                Description = TestData.ContractDescription,
+                IsCreated = true,
+                Products = new List<Product>{
+                                                                            new Product{
+                                                                                           Value = TestData.ProductFixedValue,
+                                                                                           ContractProductId = TestData.ContractProductId,
+                                                                                           DisplayText = TestData.ProductDisplayText,
+                                                                                           Name = TestData.ProductName,
+                                                                                           TransactionFees = null
+                                                                                       }
+                                                                        }
+            };
+        
+        public static Models.Contract.Contract ContractModel =>
+            new Models.Contract.Contract
+            {
+                OperatorId = TestData.OperatorId,
+                ContractId = TestData.ContractId,
+                Description = TestData.ContractDescription,
+                IsCreated = true,
+                Products = null
+            };
+
+
+        public static PositiveMoney WithdrawalAmount = PositiveMoney.Create(Money.Create(1000.00m));
+
+        public static PositiveMoney WithdrawalAmount2 = PositiveMoney.Create(Money.Create(1200.00m));
+
+        public static DateTime WithdrawalDateTime = new DateTime(2019, 11, 16);
+
+        public static DateTime WithdrawalDateTime2 = new DateTime(2019, 11, 16);
+
+        public static PositiveMoney DepositAmount = PositiveMoney.Create(Money.Create(1000.00m));
+
+        public static PositiveMoney DepositAmount2 = PositiveMoney.Create(Money.Create(1200.00m));
+
+        public static DateTime DepositDateTime = new DateTime(2019, 11, 16);
+
+        public static DateTime DepositDateTime2 = new DateTime(2019, 11, 16);
+        public static String DepositReference = "Test Deposit 1";
+
+        public static String DepositReference2 = "Test Deposit 2";
+        public static MerchantDepositSource MerchantDepositSourceManualDTO = MerchantDepositSource.Manual;
+        public static MerchantDepositSource MerchantDepositSourceAutomaticDTO = MerchantDepositSource.Automatic;
+        public static Models.Merchant.MerchantDepositSource MerchantDepositSourceManual = Models.Merchant.MerchantDepositSource.Manual;
+        public static Models.Merchant.MerchantDepositSource MerchantDepositSourceAutomatic = Models.Merchant.MerchantDepositSource.Automatic;
         public static DataTransferObjects.Responses.Merchant.SettlementSchedule SettlementScheduleDTO = DataTransferObjects.Responses.Merchant.SettlementSchedule.Monthly;
         public static CreateMerchantRequest CreateMerchantRequest =>
             new CreateMerchantRequest
             {
-                Address = new Address
+                Address = new TransactionProcessor.DataTransferObjects.Requests.Merchant.Address
                 {
                     AddressLine1 = TestData.MerchantAddressLine1,
                     AddressLine2 = TestData.MerchantAddressLine2,
@@ -50,7 +216,7 @@ namespace TransactionProcessor.Testing
                     Region = TestData.MerchantRegion,
                     Town = TestData.MerchantTown
                 },
-                Contact = new Contact
+                Contact = new TransactionProcessor.DataTransferObjects.Requests.Merchant.Contact
                 {
                     ContactName = TestData.MerchantContactName,
                     EmailAddress = TestData.MerchantContactEmailAddress,
@@ -591,7 +757,7 @@ namespace TransactionProcessor.Testing
                                                                                                                                      }
                                                                                               }
                                                               },
-                SettlementSchedule = SettlementSchedule.Monthly
+                SettlementSchedule = TransactionProcessor.DataTransferObjects.Responses.Merchant.SettlementSchedule.Monthly
             };
 
         public static DataTransferObjects.Responses.Merchant.MerchantResponse GetMerchantResponseWithOperator1ImmediateSettlement =>
@@ -621,7 +787,7 @@ namespace TransactionProcessor.Testing
                         }
                     }
                 },
-                SettlementSchedule = SettlementSchedule.Immediate
+                SettlementSchedule = TransactionProcessor.DataTransferObjects.Responses.Merchant.SettlementSchedule.Immediate
             };
 
         public static DataTransferObjects.Responses.Merchant.MerchantResponse GetMerchantResponseWithOperator1AndNullContracts =>
@@ -807,63 +973,16 @@ namespace TransactionProcessor.Testing
                 EstateId = TestData.EstateId,
                 MerchantId = TestData.MerchantId,
                 MerchantName = TestData.MerchantName,
-                SettlementSchedule = SettlementSchedule.Immediate
+                SettlementSchedule = TransactionProcessor.DataTransferObjects.Responses.Merchant.SettlementSchedule.Immediate
             };
 
-        public static TransactionCommands.ProcessLogonTransactionCommand ProcessLogonTransactionCommand =>
-            new(TestData.TransactionId,
-                                                  TestData.EstateId,
-                                                  TestData.MerchantId,
-                                                  TestData.DeviceIdentifier,
-                                                  TestData.TransactionTypeLogon.ToString(),
-                                                  TestData.TransactionDateTime,
-                                                  TestData.TransactionNumber);
-
-        public static SettlementCommands.ProcessSettlementCommand ProcessSettlementCommand =>
-            new(TestData.SettlementDate,
-                                            TestData.MerchantId,
-                                            TestData.EstateId);
-
+        
         public static ProcessLogonTransactionResponse ProcessLogonTransactionResponseModel =>
             new ProcessLogonTransactionResponse
             {
                 ResponseMessage = TestData.ResponseMessage,
                 ResponseCode = TestData.ResponseCode
             };
-
-        public static MerchantQueries.GetMerchantBalanceQuery GetMerchantBalanceQuery => new(EstateId, MerchantId);
-
-        public static MerchantQueries.GetMerchantLiveBalanceQuery GetMerchantLiveBalanceQuery => new(MerchantId);
-
-        public static MerchantQueries.GetMerchantBalanceHistoryQuery GetMerchantBalanceHistoryQuery => new MerchantQueries.GetMerchantBalanceHistoryQuery(EstateId, MerchantId, DateTime.MinValue, DateTime.MaxValue);
-
-        public static SettlementCommands.AddMerchantFeePendingSettlementCommand AddMerchantFeePendingSettlementCommand => new(TransactionId, CalculatedFeeValue, TransactionFeeCalculateDateTime, CalculationType.Fixed, TransactionFeeId, CalculatedFeeValue, TransactionFeeSettlementDueDate, MerchantId, EstateId);
-        public static SettlementCommands.AddSettledFeeToSettlementCommand AddSettledFeeToSettlementCommand => new(SettlementDate,MerchantId,EstateId,TransactionFeeId, TransactionId);
-
-        public static FloatActivityCommands.RecordCreditPurchaseCommand RecordCreditPurchaseCommand => new(EstateId, FloatAggregateId, CreditPurchasedDateTime, FloatCreditAmount, FloatCreditId);
-        public static FloatActivityCommands.RecordTransactionCommand RecordTransactionCommand => new(EstateId, TransactionId);
-        public static TransactionCommands.CalculateFeesForTransactionCommand CalculateFeesForTransactionCommand => new(TransactionId, TransactionDateTime, EstateId, MerchantId);
-
-        public static TransactionCommands.AddSettledMerchantFeeCommand AddSettledMerchantFeeCommand => new(TransactionId, CalculatedFeeValue, TransactionFeeCalculateDateTime, CalculationType.Percentage, TransactionFeeId, TransactionFeeValue, SettlementDate, SettlementAggregateId);
-
-        public static VoucherQueries.GetVoucherByVoucherCodeQuery GetVoucherByVoucherCodeQuery => new(EstateId, VoucherCode);
-        public static VoucherQueries.GetVoucherByTransactionIdQuery GetVoucherByTransactionIdQuery => new(EstateId, TransactionId);
-
-        public static SettlementQueries.GetPendingSettlementQuery GetPendingSettlementQuery => new(SettlementDate, MerchantId, EstateId);
-        public static TransactionCommands.ProcessSaleTransactionCommand ProcessSaleTransactionCommand =>
-            new(TestData.TransactionId,
-                                                 TestData.EstateId,
-                                                 TestData.MerchantId,
-                                                 TestData.DeviceIdentifier,
-                                                 TestData.TransactionTypeLogon.ToString(),
-                                                 TestData.TransactionDateTime,
-                                                 TestData.TransactionNumber,
-                                                 TestData.OperatorId,
-                                                 TestData.CustomerEmailAddress,
-                                                 TestData.AdditionalTransactionMetaDataForMobileTopup(),
-                                                 TestData.ContractId,
-                                                 TestData.ProductId,
-                                                 TestData.TransactionSource);
 
         public static ProcessSaleTransactionResponse ProcessSaleTransactionResponseModel =>
             new ProcessSaleTransactionResponse
@@ -887,8 +1006,7 @@ namespace TransactionProcessor.Testing
                 Pin = "1234"
             };
 
-        public static TransactionCommands.ProcessReconciliationCommand ProcessReconciliationCommand =>
-            new(TestData.TransactionId, TestData.EstateId, TestData.MerchantId, TestData.DeviceIdentifier, TestData.TransactionDateTime, TestData.ReconciliationTransactionCount, TestData.ReconciliationTransactionValue);
+        
 
         public static ProcessReconciliationTransactionResponse ProcessReconciliationTransactionResponseModel =>
             new ProcessReconciliationTransactionResponse
@@ -1395,9 +1513,6 @@ namespace TransactionProcessor.Testing
 
         public static MerchantBalanceProjectionState1 MerchantBalanceProjectionStateNoCredit => new MerchantBalanceProjectionState1(TestData.MerchantStateNoCredit);
         
-        public static TransactionCommands.ResendTransactionReceiptCommand ResendTransactionReceiptCommand => new(TestData.TransactionId,
-                                                                                                                                TestData.EstateId);
-
         public static List<DataTransferObjects.Responses.Contract.ContractProductTransactionFee> ContractProductTransactionFees =>
             new List<DataTransferObjects.Responses.Contract.ContractProductTransactionFee>
             {
@@ -1828,6 +1943,26 @@ namespace TransactionProcessor.Testing
                 Password = TestData.MerchantUserPassword
             };
 
+        public static MakeMerchantDepositRequest MakeMerchantDepositRequest =>
+            new MakeMerchantDepositRequest
+            {
+                DepositDateTime = TestData.DepositDateTime,
+                Amount = TestData.DepositAmount.Value,
+                Reference = TestData.DepositReference
+            };
+
+
+
+        public static MakeMerchantWithdrawalRequest MakeMerchantWithdrawalRequest =>
+            new MakeMerchantWithdrawalRequest
+            {
+                WithdrawalDateTime = TestData.WithdrawalDateTime,
+                Amount = TestData.WithdrawalAmount.Value,
+                Reference = TestData.WithdrawalReference
+            };
+
+        public static String WithdrawalReference = "Withdraw1";
+
         public static String MerchantUserFamilyName = "Merchant";
 
         public static String MerchantUserGivenName = "Test";
@@ -1881,8 +2016,8 @@ namespace TransactionProcessor.Testing
         public static String PostCode = "PostCode";
         public static String Region = "Region";
         public static String Town = "Town";
-        public static Address Address =>
-            new Address
+        public static TransactionProcessor.DataTransferObjects.Requests.Merchant.Address Address =>
+            new TransactionProcessor.DataTransferObjects.Requests.Merchant.Address
             {
                 AddressLine1 = TestData.AddressLine1,
                 AddressLine2 = TestData.AddressLine2,
@@ -1894,16 +2029,63 @@ namespace TransactionProcessor.Testing
                 Town = TestData.Town
             };
 
-        public static Contact Contact =>
-            new Contact
+        public static TransactionProcessor.DataTransferObjects.Requests.Merchant.Contact Contact =>
+            new TransactionProcessor.DataTransferObjects.Requests.Merchant.Contact
             {
                 ContactName = TestData.ContactName,
                 EmailAddress = TestData.ContactEmail,
                 PhoneNumber = TestData.ContactPhone
             };
+
+        public static Guid EventId = Guid.Parse("0F537961-A19C-4A29-80DC-68889474142B");
         #endregion
 
         public static class Commands {
+            public static TransactionCommands.ResendTransactionReceiptCommand ResendTransactionReceiptCommand => new(TestData.TransactionId,
+                TestData.EstateId);
+
+            public static SettlementCommands.AddMerchantFeePendingSettlementCommand AddMerchantFeePendingSettlementCommand => new(TransactionId, CalculatedFeeValue, TransactionFeeCalculateDateTime, CalculationType.Fixed, TransactionFeeId, CalculatedFeeValue, TransactionFeeSettlementDueDate, MerchantId, EstateId);
+            public static SettlementCommands.AddSettledFeeToSettlementCommand AddSettledFeeToSettlementCommand => new(SettlementDate, MerchantId, EstateId, TransactionFeeId, TransactionId);
+
+            public static FloatActivityCommands.RecordCreditPurchaseCommand RecordCreditPurchaseCommand => new(EstateId, FloatAggregateId, CreditPurchasedDateTime, FloatCreditAmount, FloatCreditId);
+            public static FloatActivityCommands.RecordTransactionCommand RecordTransactionCommand => new(EstateId, TransactionId);
+            public static TransactionCommands.CalculateFeesForTransactionCommand CalculateFeesForTransactionCommand => new(TransactionId, TransactionDateTime, EstateId, MerchantId);
+
+            public static TransactionCommands.AddSettledMerchantFeeCommand AddSettledMerchantFeeCommand => new(TransactionId, CalculatedFeeValue, TransactionFeeCalculateDateTime, CalculationType.Percentage, TransactionFeeId, TransactionFeeValue, SettlementDate, SettlementAggregateId);
+            
+            public static TransactionCommands.ProcessSaleTransactionCommand ProcessSaleTransactionCommand =>
+                new(TestData.TransactionId,
+                                                     TestData.EstateId,
+                                                     TestData.MerchantId,
+                                                     TestData.DeviceIdentifier,
+                                                     TestData.TransactionTypeLogon.ToString(),
+                                                     TestData.TransactionDateTime,
+                                                     TestData.TransactionNumber,
+                                                     TestData.OperatorId,
+                                                     TestData.CustomerEmailAddress,
+                                                     TestData.AdditionalTransactionMetaDataForMobileTopup(),
+                                                     TestData.ContractId,
+                                                     TestData.ProductId,
+                                                     TestData.TransactionSource);
+            public static TransactionCommands.ProcessReconciliationCommand ProcessReconciliationCommand =>
+                new(TestData.TransactionId, TestData.EstateId, TestData.MerchantId, TestData.DeviceIdentifier, TestData.TransactionDateTime, TestData.ReconciliationTransactionCount, TestData.ReconciliationTransactionValue);
+            public static TransactionCommands.ProcessLogonTransactionCommand ProcessLogonTransactionCommand =>
+                new(TestData.TransactionId,
+                    TestData.EstateId,
+                    TestData.MerchantId,
+                    TestData.DeviceIdentifier,
+                    TestData.TransactionTypeLogon.ToString(),
+                    TestData.TransactionDateTime,
+                    TestData.TransactionNumber);
+
+            public static SettlementCommands.ProcessSettlementCommand ProcessSettlementCommand =>
+                new(TestData.SettlementDate,
+                    TestData.MerchantId,
+                    TestData.EstateId);
+
+
+            public static TransactionCommands.SendCustomerEmailReceiptCommand SendCustomerEmailReceiptCommand => new TransactionCommands.SendCustomerEmailReceiptCommand(EstateId, TransactionId, EventId, CustomerEmailAddress);
+
             public static MerchantCommands.RemoveMerchantContractCommand RemoveMerchantContractCommand =>
                 new MerchantCommands.RemoveMerchantContractCommand(TestData.EstateId,
                     TestData.MerchantId,
@@ -1983,10 +2165,39 @@ namespace TransactionProcessor.Testing
             public static OperatorCommands.CreateOperatorCommand CreateOperatorCommand => new(TestData.EstateId, TestData.CreateOperatorRequest);
 
             public static OperatorCommands.UpdateOperatorCommand UpdateOperatorCommand => new(TestData.EstateId, TestData.OperatorId, TestData.UpdateOperatorRequest);
+            public static MerchantCommands.MakeMerchantWithdrawalCommand MakeMerchantWithdrawalCommand =>
+                new(TestData.EstateId,
+                    TestData.MerchantId,
+                    TestData.MakeMerchantWithdrawalRequest);
 
+            public static MerchantCommands.MakeMerchantDepositCommand MakeMerchantDepositCommand =>
+                new(TestData.EstateId,
+                    TestData.MerchantId,
+                    MerchantDepositSourceManualDTO,
+                    TestData.MakeMerchantDepositRequest);
         }
 
         public static class Queries {
+            public static VoucherQueries.GetVoucherByVoucherCodeQuery GetVoucherByVoucherCodeQuery => new(EstateId, VoucherCode);
+            public static VoucherQueries.GetVoucherByTransactionIdQuery GetVoucherByTransactionIdQuery => new(EstateId, TransactionId);
+
+            public static SettlementQueries.GetPendingSettlementQuery GetPendingSettlementQuery => new(SettlementDate, MerchantId, EstateId);
+
+            public static MerchantQueries.GetMerchantBalanceQuery GetMerchantBalanceQuery => new(EstateId, MerchantId);
+
+            public static MerchantQueries.GetMerchantLiveBalanceQuery GetMerchantLiveBalanceQuery => new(MerchantId);
+
+            public static MerchantQueries.GetMerchantBalanceHistoryQuery GetMerchantBalanceHistoryQuery => new MerchantQueries.GetMerchantBalanceHistoryQuery(EstateId, MerchantId, DateTime.MinValue, DateTime.MaxValue);
+
+            public static MerchantQueries.GetTransactionFeesForProductQuery GetTransactionFeesForProductQuery =>
+                new MerchantQueries.GetTransactionFeesForProductQuery(TestData.EstateId,
+                    TestData.MerchantId,
+                    TestData.ContractId,
+                    TestData.ContractProductId);
+            public static MerchantQueries.GetMerchantContractsQuery GetMerchantContractsQuery => new MerchantQueries.GetMerchantContractsQuery(TestData.EstateId, TestData.MerchantId);
+            public static MerchantQueries.GetMerchantQuery GetMerchantQuery => new MerchantQueries.GetMerchantQuery(TestData.EstateId, TestData.MerchantId);
+
+            public static MerchantQueries.GetMerchantsQuery GetMerchantsQuery => new MerchantQueries.GetMerchantsQuery(TestData.EstateId);
             public static EstateQueries.GetEstateQuery GetEstateQuery => new(TestData.EstateId);
             public static EstateQueries.GetEstatesQuery GetEstatesQuery => new(TestData.EstateId);
 
@@ -1997,6 +2208,48 @@ namespace TransactionProcessor.Testing
         }
 
         public static class Aggregates {
+            public static MerchantAggregate MerchantAggregateWithAddress()
+            {
+                MerchantAggregate merchantAggregate = MerchantAggregate.Create(TestData.MerchantId);
+
+                merchantAggregate.Create(TestData.EstateId, TestData.MerchantName, TestData.DateMerchantCreated);
+                merchantAggregate.AddAddress(TestData.MerchantAddressLine1,
+                    TestData.MerchantAddressLine2,
+                    TestData.MerchantAddressLine3,
+                    TestData.MerchantAddressLine4,
+                    TestData.MerchantTown,
+                    TestData.MerchantRegion,
+                    TestData.MerchantPostalCode,
+                    TestData.MerchantCountry);
+
+                return merchantAggregate;
+            }
+
+            public static MerchantAggregate MerchantAggregateWithContact()
+            {
+                MerchantAggregate merchantAggregate = MerchantAggregate.Create(TestData.MerchantId);
+
+                merchantAggregate.Create(TestData.EstateId, TestData.MerchantName, TestData.DateMerchantCreated);
+                merchantAggregate.AddContact(TestData.MerchantContactName,
+                    TestData.MerchantContactPhoneNumber,
+                    TestData.MerchantContactEmailAddress);
+
+                return merchantAggregate;
+            }
+
+            public static MerchantDepositListAggregate EmptyMerchantDepositListAggregate = new MerchantDepositListAggregate();
+
+            public static MerchantDepositListAggregate CreatedMerchantDepositListAggregate()
+            {
+                MerchantAggregate merchantAggregate = MerchantAggregate.Create(TestData.MerchantId);
+
+                merchantAggregate.Create(TestData.EstateId, TestData.MerchantName, TestData.DateMerchantCreated);
+
+                MerchantDepositListAggregate merchantDepositListAggregate = MerchantDepositListAggregate.Create(TestData.MerchantId);
+                merchantDepositListAggregate.Create(merchantAggregate, TestData.DateMerchantCreated);
+
+                return merchantDepositListAggregate;
+            }
             public static MerchantAggregate MerchantAggregateWithDevice()
             {
                 MerchantAggregate merchantAggregate = MerchantAggregate.Create(TestData.MerchantId);
@@ -2017,7 +2270,7 @@ namespace TransactionProcessor.Testing
                 return merchantAggregate;
             }
 
-            public static MerchantAggregate MerchantAggregateWithEverything(SettlementScheduleModel settlementSchedule)
+            public static MerchantAggregate MerchantAggregateWithEverything(Models.Merchant.SettlementSchedule settlementSchedule)
             {
                 MerchantAggregate merchantAggregate = MerchantAggregate.Create(TestData.MerchantId);
 
@@ -2207,7 +2460,82 @@ namespace TransactionProcessor.Testing
         public static Guid AddressId = Guid.Parse("B1C68246-F867-43CC-ACA9-37D15D6437C6");
         public static Guid ContactId = Guid.Parse("B1C68246-F867-43CC-ACA9-37D15D6437C6");
         public static Guid MerchantSecurityUserId = Guid.Parse("DFCE7A95-CB6D-442A-928A-F1B41D2AA4A9");
+
+        public static Guid CallbackId = Guid.Parse("ABC603D3-360E-4F58-8BB9-827EE7A1CB03");
+
+        public static String CallbackMessage = "Message1";
+
+        public static Int32 CallbackMessageFormat = 1;
+
+        public static String CallbackReference = "Estate1-Merchant1";
+
+        public static String CallbackTypeString = "CallbackHandler.DataTransferObjects.Deposit";
+        public static Guid DepositId = Guid.Parse("A15460B1-9665-4C3E-861D-3B65D0EBEF19");
+        public static String DepositAccountNumber = "12345678";
+        public static Guid DepositHostIdentifier = Guid.Parse("1D1BD9F0-D953-4B2A-9969-98D3C0CDFA2A");
+        public static String DepositSortCode = "112233";
+
+        public static Models.Merchant.Merchant MerchantModelWithAddressesContactsDevicesAndOperatorsAndContracts(Models.Merchant.SettlementSchedule settlementSchedule = Models.Merchant.SettlementSchedule.Immediate) =>
+            new Models.Merchant.Merchant
+            {
+                EstateId = TestData.EstateId,
+                MerchantId = TestData.MerchantId,
+                MerchantName = TestData.MerchantName,
+                SettlementSchedule = settlementSchedule,
+                Addresses = new List<Models.Merchant.Address>{
+                    new Models.Merchant.Address(Guid.NewGuid(), MerchantAddressLine1,MerchantAddressLine2,
+                        MerchantAddressLine3,MerchantAddressLine4, MerchantTown,MerchantRegion,
+                        MerchantPostalCode, MerchantCountry)
+                },
+                Contacts = new List<Models.Merchant.Contact>{
+                    new Models.Merchant.Contact(Guid.NewGuid(), MerchantContactEmailAddress, MerchantContactName, MerchantContactPhoneNumber)
+                },
+                Devices = new List<Device>{ new Device(DeviceId, DeviceIdentifier)},
+                Operators= new List<Models.Merchant.Operator>() {
+                    new Models.Merchant.Operator(OperatorId, OperatorName, OperatorMerchantNumber, OperatorTerminalNumber)
+                },
+                Contracts = new List<Models.Merchant.Contract>() {
+                    new Contract(ContractId) {
+                        ContractProducts = new List<Guid> {
+                            Guid.Parse("8EF716B9-422D-4FC6-B5A7-22FC4BABDD97")
+                        }
+                    }
+                }
+            };
+
+        public static Deposit Deposit =>
+            new Deposit
+            {
+                Reference = TestData.CallbackReference,
+                Amount = TestData.DepositAmount.Value,
+                DateTime = TestData.DepositDateTime,
+                DepositId = TestData.DepositId,
+                AccountNumber = TestData.DepositAccountNumber,
+                HostIdentifier = TestData.DepositHostIdentifier,
+                SortCode = TestData.DepositSortCode
+            };
+
         public static class DomainEvents {
+            public static CallbackReceivedEnrichedEvent CallbackReceivedEnrichedEventDeposit =>
+                new CallbackReceivedEnrichedEvent(TestData.CallbackId)
+                {
+                    Reference = TestData.CallbackReference,
+                    CallbackMessage = JsonConvert.SerializeObject(TestData.Deposit),
+                    EstateId = TestData.EstateId,
+                    MessageFormat = TestData.CallbackMessageFormat,
+                    TypeString = TestData.CallbackTypeString
+                };
+
+            public static CallbackReceivedEnrichedEvent CallbackReceivedEnrichedEventOtherType =>
+                new CallbackReceivedEnrichedEvent(TestData.CallbackId)
+                {
+                    Reference = TestData.CallbackReference,
+                    CallbackMessage = JsonConvert.SerializeObject(TestData.Deposit),
+                    EstateId = TestData.EstateId,
+                    MessageFormat = TestData.CallbackMessageFormat,
+                    TypeString = "OtherType"
+                };
+
             public static MerchantDomainEvents.ContractAddedToMerchantEvent ContractAddedToMerchantEvent =>
                 new MerchantDomainEvents.ContractAddedToMerchantEvent(TestData.MerchantId,
                     TestData.EstateId,
@@ -2272,8 +2600,8 @@ namespace TransactionProcessor.Testing
             public static MerchantDomainEvents.MerchantRegionUpdatedEvent MerchantRegionUpdatedEvent => new MerchantDomainEvents.MerchantRegionUpdatedEvent(TestData.MerchantId, TestData.EstateId, TestData.AddressId, TestData.Region);
             public static MerchantDomainEvents.MerchantTownUpdatedEvent MerchantTownUpdatedEvent => new MerchantDomainEvents.MerchantTownUpdatedEvent(TestData.MerchantId, TestData.EstateId, TestData.AddressId, TestData.Town);
 
-            public static TransactionFeeForProductAddedToContractEvent TransactionFeeForProductAddedToContractEvent =>
-                new TransactionFeeForProductAddedToContractEvent(TestData.ContractId,
+            public static ContractDomainEvents.TransactionFeeForProductAddedToContractEvent TransactionFeeForProductAddedToContractEvent =>
+                new ContractDomainEvents.TransactionFeeForProductAddedToContractEvent(TestData.ContractId,
                     TestData.EstateId,
                     TestData.ContractProductId,
                     TestData.TransactionFeeId,
@@ -2282,8 +2610,8 @@ namespace TransactionProcessor.Testing
                     TestData.FeeType,
                     TestData.FeeValue);
 
-            public static TransactionFeeForProductDisabledEvent TransactionFeeForProductDisabledEvent => new TransactionFeeForProductDisabledEvent(TestData.ContractId, TestData.EstateId, TestData.ContractProductId, TestData.TransactionFeeId);
-            public static VariableValueProductAddedToContractEvent VariableValueProductAddedToContractEvent => new VariableValueProductAddedToContractEvent(TestData.ContractId, TestData.EstateId, TestData.ContractProductId, TestData.ProductName, TestData.ProductDisplayText, (Int32)TestData.ProductTypeMobileTopup);
+            public static ContractDomainEvents.TransactionFeeForProductDisabledEvent TransactionFeeForProductDisabledEvent => new ContractDomainEvents.TransactionFeeForProductDisabledEvent(TestData.ContractId, TestData.EstateId, TestData.ContractProductId, TestData.TransactionFeeId);
+            public static ContractDomainEvents.VariableValueProductAddedToContractEvent VariableValueProductAddedToContractEvent => new ContractDomainEvents.VariableValueProductAddedToContractEvent(TestData.ContractId, TestData.EstateId, TestData.ContractProductId, TestData.ProductName, TestData.ProductDisplayText, (Int32)TestData.ProductTypeMobileTopup);
             public static ContractDomainEvents.FixedValueProductAddedToContractEvent FixedValueProductAddedToContractEvent =>
                 new ContractDomainEvents.FixedValueProductAddedToContractEvent(TestData.ContractId,
                     TestData.EstateId,
