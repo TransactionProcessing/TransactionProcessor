@@ -105,10 +105,7 @@ namespace TransactionProcessor.IntegrationTests.Common
         public override async Task CreateSubscriptions(){
             List<(String streamName, String groupName, Int32 maxRetries)> subscriptions = new();
             subscriptions.AddRange(MessagingService.IntegrationTesting.Helpers.SubscriptionsHelper.GetSubscriptions());
-            //var estateSubscriptions = EstateManagement.IntegrationTesting.Helpers.SubscriptionsHelper.GetSubscriptions();
-            //subscriptions.AddRange(estateSubscriptions.Where(e => e.streamName != "$ce-EstateAggregate"));
             subscriptions.AddRange(TransactionProcessor.IntegrationTesting.Helpers.SubscriptionsHelper.GetSubscriptions());
-
             foreach ((String streamName, String groupName, Int32 maxRetries) subscription in subscriptions)
             {
                 var x = subscription;

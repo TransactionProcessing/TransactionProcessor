@@ -18,14 +18,14 @@ public class EstateDomainEventHandlerTests
 
     private Mock<ITransactionProcessorReadModelRepository> EstateReportingRepository;
 
-    private EstateDomainEventHandler DomainEventHandler;
+    private ReadModelDomainEventHandler DomainEventHandler;
 
     public EstateDomainEventHandlerTests()
     {
         Logger.Initialise(NullLogger.Instance);
         this.EstateReportingRepository = new Mock<ITransactionProcessorReadModelRepository>();
 
-        this.DomainEventHandler = new EstateDomainEventHandler(this.EstateReportingRepository.Object);
+        this.DomainEventHandler = new ReadModelDomainEventHandler(this.EstateReportingRepository.Object);
     }
     [Fact]
     public void EstateDomainEventHandler_EstateCreatedEvent_EventIsHandled()

@@ -1,6 +1,7 @@
 ﻿using Shared.EventStore.Aggregate;
 using Shared.Results;
 using SimpleResults;
+using Swashbuckle.AspNetCore.Filters;
 using TransactionProcessor.BusinessLogic.Requests;
 
 namespace TransactionProcessor.Controllers
@@ -10,7 +11,6 @@ namespace TransactionProcessor.Controllers
     using System.Threading;
     using System.Threading.Tasks;
     using BusinessLogic.Manager;
-    using Common.Examples;
     using DataTransferObjects;
     using Factories;
     using MediatR;
@@ -19,7 +19,7 @@ namespace TransactionProcessor.Controllers
     using Models;
     using Shared.General;
     using Swashbuckle.AspNetCore.Annotations;
-    using Swashbuckle.AspNetCore.Filters;
+    using TransactionProcessor.Common.Examples;
     using static Microsoft.EntityFrameworkCore.DbLoggerCategory.Database;
     using IssueVoucherResponse = Models.IssueVoucherResponse;
     using RedeemVoucherResponse = Models.RedeemVoucherResponse;
@@ -74,7 +74,7 @@ namespace TransactionProcessor.Controllers
 
             Result<RedeemVoucherResponse> result = await this.Mediator.Send(command, cancellationToken);
             if (result.IsFailed)
-                ResultHelpers.CreateFailure(result).ToActionResultX();
+                return ResultHelpers.CreateFailure(result).ToActionResultX();
 
             return ModelFactory.ConvertFrom(result.Data).ToActionResultX();
         }
@@ -103,7 +103,7 @@ namespace TransactionProcessor.Controllers
                 // By code is priority
                 Result<Voucher> getVoucherByCodeResult = await this.Mediator.Send(queryByVoucherCode, cancellationToken);
                 if (getVoucherByCodeResult.IsFailed)
-                    ResultHelpers.CreateFailure(getVoucherByCodeResult).ToActionResultX();
+                    return ResultHelpers.CreateFailure(getVoucherByCodeResult).ToActionResultX();
 
                 return ModelFactory.ConvertFrom(getVoucherByCodeResult.Data).ToActionResultX();
             }
@@ -113,7 +113,7 @@ namespace TransactionProcessor.Controllers
                 VoucherQueries.GetVoucherByTransactionIdQuery queryByTransactionId = new(estateId, transactionId);
                 Result<Voucher> getVoucherByTransactionIdResult = await this.Mediator.Send(queryByTransactionId, cancellationToken);
                 if (getVoucherByTransactionIdResult.IsFailed)
-                    ResultHelpers.CreateFailure(getVoucherByTransactionIdResult).ToActionResultX();
+                    return ResultHelpers.CreateFailure(getVoucherByTransactionIdResult).ToActionResultX();
 
                 return ModelFactory.ConvertFrom(getVoucherByTransactionIdResult.Data).ToActionResultX();
             }

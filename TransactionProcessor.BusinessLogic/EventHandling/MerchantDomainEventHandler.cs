@@ -51,32 +51,7 @@ namespace TransactionProcessor.BusinessLogic.EventHandling
                                  CancellationToken cancellationToken)
         {
             Task<Result> t = domainEvent switch{
-                MerchantDomainEvents.MerchantCreatedEvent de => this.EstateReportingRepository.AddMerchant(de, cancellationToken),
-                MerchantDomainEvents.MerchantNameUpdatedEvent de => this.EstateReportingRepository.UpdateMerchant(de, cancellationToken),
-                MerchantDomainEvents.AddressAddedEvent de => this.EstateReportingRepository.AddMerchantAddress(de, cancellationToken),
-                MerchantDomainEvents.ContactAddedEvent de => this.EstateReportingRepository.AddMerchantContact(de, cancellationToken),
-                MerchantDomainEvents.SecurityUserAddedToMerchantEvent de => this.EstateReportingRepository.AddMerchantSecurityUser(de, cancellationToken),
-                MerchantDomainEvents.DeviceAddedToMerchantEvent de => this.EstateReportingRepository.AddMerchantDevice(de, cancellationToken),
-                MerchantDomainEvents.OperatorAssignedToMerchantEvent de => this.EstateReportingRepository.AddMerchantOperator(de, cancellationToken),
-                MerchantDomainEvents.SettlementScheduleChangedEvent de => this.EstateReportingRepository.UpdateMerchant(de, cancellationToken),
-                MerchantDomainEvents.MerchantReferenceAllocatedEvent de => this.EstateReportingRepository.UpdateMerchant(de, cancellationToken),
-                //StatementGeneratedEvent de => this.EstateReportingRepository.UpdateMerchant(de, cancellationToken),
-                TransactionDomainEvents.TransactionHasBeenCompletedEvent de => this.EstateReportingRepository.UpdateMerchant(de, cancellationToken),
-                MerchantDomainEvents.ContractAddedToMerchantEvent de => this.EstateReportingRepository.AddContractToMerchant(de, cancellationToken),
                 CallbackReceivedEnrichedEvent de => this.HandleSpecificDomainEvent(de, cancellationToken),
-                MerchantDomainEvents.DeviceSwappedForMerchantEvent de => this.EstateReportingRepository.SwapMerchantDevice(de, cancellationToken),
-                MerchantDomainEvents.OperatorRemovedFromMerchantEvent de => this.EstateReportingRepository.RemoveOperatorFromMerchant(de, cancellationToken),
-                MerchantDomainEvents.MerchantAddressLine1UpdatedEvent de => this.EstateReportingRepository.UpdateMerchantAddress(de,cancellationToken),
-                MerchantDomainEvents.MerchantAddressLine2UpdatedEvent de => this.EstateReportingRepository.UpdateMerchantAddress(de, cancellationToken),
-                MerchantDomainEvents.MerchantAddressLine3UpdatedEvent de => this.EstateReportingRepository.UpdateMerchantAddress(de, cancellationToken),
-                MerchantDomainEvents.MerchantAddressLine4UpdatedEvent de => this.EstateReportingRepository.UpdateMerchantAddress(de, cancellationToken),
-                MerchantDomainEvents.MerchantCountyUpdatedEvent de => this.EstateReportingRepository.UpdateMerchantAddress(de, cancellationToken),
-                MerchantDomainEvents.MerchantRegionUpdatedEvent de => this.EstateReportingRepository.UpdateMerchantAddress(de, cancellationToken),
-                MerchantDomainEvents.MerchantTownUpdatedEvent de => this.EstateReportingRepository.UpdateMerchantAddress(de, cancellationToken),
-                MerchantDomainEvents.MerchantPostalCodeUpdatedEvent de => this.EstateReportingRepository.UpdateMerchantAddress(de, cancellationToken),
-                MerchantDomainEvents.MerchantContactNameUpdatedEvent de => this.EstateReportingRepository.UpdateMerchantContact(de, cancellationToken),
-                MerchantDomainEvents.MerchantContactEmailAddressUpdatedEvent de => this.EstateReportingRepository.UpdateMerchantContact(de, cancellationToken),
-                MerchantDomainEvents.MerchantContactPhoneNumberUpdatedEvent de => this.EstateReportingRepository.UpdateMerchantContact(de, cancellationToken),
                 _ => null
             };
             if (t != null)

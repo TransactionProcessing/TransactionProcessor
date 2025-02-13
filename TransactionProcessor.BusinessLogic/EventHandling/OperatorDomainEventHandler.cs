@@ -1,4 +1,4 @@
-﻿using Shared.DomainDrivenDesign.EventSourcing;
+﻿/*using Shared.DomainDrivenDesign.EventSourcing;
 using Shared.EventStore.EventHandling;
 using SimpleResults;
 using System;
@@ -55,4 +55,4 @@ namespace TransactionProcessor.BusinessLogic.EventHandling
 
         #endregion
     }
-}
+}*/

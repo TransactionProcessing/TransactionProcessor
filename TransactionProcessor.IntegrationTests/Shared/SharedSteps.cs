@@ -606,5 +606,45 @@ namespace TransactionProcessor.IntegrationTests.Shared
                 merchantName,
                 operatorName);
         }
+
+        [When(@"I get the Estate Settlement Report for Estate '([^']*)' with the Start Date '([^']*)' and the End Date '([^']*)' the following data is returned")]
+        public async Task WhenIGetTheEstateSettlementReportForEstateWithTheStartDateAndTheEndDateTheFollowingDataIsReturned(string estateName,
+                                                                                                                            string startDateString,
+                                                                                                                            string endDateString,
+                                                                                                                            DataTable table)
+        {
+            DateTime stateDate = ReqnrollTableHelper.GetDateForDateString(startDateString, DateTime.UtcNow.Date);
+            DateTime endDate = ReqnrollTableHelper.GetDateForDateString(endDateString, DateTime.UtcNow.Date);
+
+            ReqnrollExtensions.SettlementDetails settlementDetails = table.Rows.ToSettlementDetails(estateName, this.TestingContext.Estates);
+            await this.TransactionProcessorSteps.WhenIGetTheEstateSettlementReportForEstateForMerchantWithTheStartDateAndTheEndDateTheFollowingDataIsReturned(this.TestingContext.AccessToken, stateDate, endDate, settlementDetails);
+        }
+
+        [When(@"I get the Estate Settlement Report for Estate '([^']*)' for Merchant '([^']*)' with the Start Date '([^']*)' and the End Date '([^']*)' the following data is returned")]
+        public async Task WhenIGetTheEstateSettlementReportForEstateForMerchantWithTheStartDateAndTheEndDateTheFollowingDataIsReturned(string estateName,
+            string merchantName,
+            string startDateString,
+            string endDateString,
+            DataTable table)
+        {
+
+            DateTime stateDate = ReqnrollTableHelper.GetDateForDateString(startDateString, DateTime.UtcNow.Date);
+            DateTime endDate = ReqnrollTableHelper.GetDateForDateString(endDateString, DateTime.UtcNow.Date);
+            ReqnrollExtensions.SettlementDetails settlementDetails = table.Rows.ToSettlementDetails(estateName, merchantName, this.TestingContext.Estates);
+            await this.TransactionProcessorSteps.WhenIGetTheEstateSettlementReportForEstateForMerchantWithTheStartDateAndTheEndDateTheFollowingDataIsReturned(this.TestingContext.AccessToken,
+                                                                                                                                                          stateDate, endDate,
+                                                                                                                                                          settlementDetails);
+        }
+
+        [When(@"I get the Estate Settlement Report for Estate '([^']*)' for Merchant '([^']*)' with the Date '([^']*)' the following fees are settled")]
+        public async Task WhenIGetTheEstateSettlementReportForEstateForMerchantWithTheDateTheFollowingFeesAreSettled(string estateName,
+            string merchantName,
+            string settlementDateString,
+            DataTable table)
+        {
+
+            List<ReqnrollExtensions.SettlementFeeDetails> settlementFeeDetailsList = table.Rows.ToSettlementFeeDetails(estateName, merchantName, settlementDateString, this.TestingContext.Estates);
+            await this.TransactionProcessorSteps.WhenIGetTheEstateSettlementReportForEstateForMerchantWithTheDateTheFollowingFeesAreSettled(this.TestingContext.AccessToken, settlementFeeDetailsList);
+        }
     }
 }

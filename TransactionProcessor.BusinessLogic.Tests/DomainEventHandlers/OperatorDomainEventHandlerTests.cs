@@ -13,13 +13,13 @@ namespace TransactionProcessor.BusinessLogic.Tests.DomainEventHandlers;
 public class OperatorDomainEventHandlerTests
 {
     private Mock<ITransactionProcessorReadModelRepository> EstateReportingRepository;
-    private OperatorDomainEventHandler DomainEventHandler;
+    private ReadModelDomainEventHandler DomainEventHandler;
 
     public OperatorDomainEventHandlerTests()
     {
         Logger.Initialise(NullLogger.Instance);
         this.EstateReportingRepository = new Mock<ITransactionProcessorReadModelRepository>();
-        this.DomainEventHandler = new OperatorDomainEventHandler(this.EstateReportingRepository.Object);
+        this.DomainEventHandler = new ReadModelDomainEventHandler(this.EstateReportingRepository.Object);
     }
 
     [Fact]
@@ -52,13 +52,5 @@ public class OperatorDomainEventHandlerTests
         OperatorDomainEvents.OperatorRequireCustomTerminalNumberChangedEvent operatorCreatedEvent = TestData.DomainEvents.OperatorRequireCustomTerminalNumberChangedEvent;
 
         Should.NotThrow(async () => { await this.DomainEventHandler.Handle(operatorCreatedEvent, CancellationToken.None); });
-    }
-
-    [Fact]
-    public void OperatorDomainEventHandler_EstateCreatedEvent_EventIsHandled()
-    {
-        EstateDomainEvents.EstateCreatedEvent domainEvent = TestData.DomainEvents.EstateCreatedEvent;
-
-        Should.NotThrow(async () => { await this.DomainEventHandler.Handle(domainEvent, CancellationToken.None); });
     }
 }

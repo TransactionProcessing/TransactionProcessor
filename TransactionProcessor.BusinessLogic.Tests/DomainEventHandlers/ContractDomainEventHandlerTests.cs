@@ -16,11 +16,11 @@ public class ContractDomainEventHandlerTests
 
     private Mock<ITransactionProcessorReadModelRepository> EstateReportingRepository;
 
-    private ContractDomainEventHandler DomainEventHandler;
+    private ReadModelDomainEventHandler DomainEventHandler;
     public ContractDomainEventHandlerTests() {
         Logger.Initialise(NullLogger.Instance);
         this.EstateReportingRepository= new Mock<ITransactionProcessorReadModelRepository>();
-        this.DomainEventHandler = new ContractDomainEventHandler(this.EstateReportingRepository.Object);
+        this.DomainEventHandler = new ReadModelDomainEventHandler(this.EstateReportingRepository.Object);
     }
         
     [Fact]

@@ -28,6 +28,7 @@
             this.AddSingleton<IOperatorDomainService, OperatorDomainService>();
             this.AddSingleton<IContractDomainService, ContractDomainService>();
             this.AddSingleton<IMerchantDomainService, MerchantDomainService>();
+            this.AddSingleton<IMerchantStatementDomainService, MerchantStatementDomainService>();
         }
 
         #endregion

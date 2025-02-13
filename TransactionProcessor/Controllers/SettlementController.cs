@@ -2,6 +2,7 @@
 using EstateManagement.DataTransferObjects.Responses.Settlement;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Newtonsoft.Json;
 using SecurityService.Client;
 using SecurityService.DataTransferObjects.Responses;
 using Shared.Results;
@@ -30,7 +31,7 @@ namespace TransactionProcessor.Controllers
     [ExcludeFromCodeCoverage]
     [Route(SettlementController.ControllerRoute)]
     [ApiController]
-    [Authorize]
+    //[Authorize]
     public class SettlementController : ControllerBase
     {
         private readonly IAggregateRepository<SettlementAggregate, DomainEvent> SettlmentAggregateRepository;
@@ -49,7 +50,7 @@ namespace TransactionProcessor.Controllers
         /// <summary>
         /// The controller route
         /// </summary>
-        private const String ControllerRoute = "api/" + SettlementController.ControllerName;
+        private const String ControllerRoute = "api/estates/{estateId}/" + SettlementController.ControllerName;
 
         public SettlementController(IAggregateRepository<SettlementAggregate, DomainEvent> settlementAggregateRepository,
                                     IMediator mediator,
@@ -63,7 +64,7 @@ namespace TransactionProcessor.Controllers
         }
 
         [HttpGet]
-        [Route("{settlementDate}/estates/{estateId}/merchants/{merchantId}/pending")]
+        [Route("{settlementDate}/merchants/{merchantId}/pending")]
         public async Task<IActionResult> GetPendingSettlement([FromRoute] DateTime settlementDate,
                                                               [FromRoute] Guid estateId,
                                                               [FromRoute] Guid merchantId,
@@ -101,7 +102,7 @@ namespace TransactionProcessor.Controllers
         }
 
         [HttpPost]
-        [Route("{settlementDate}/estates/{estateId}/merchants/{merchantId}")]
+        [Route("{settlementDate}/merchants/{merchantId}")]
         public async Task<IActionResult> ProcessSettlement([FromRoute] DateTime settlementDate,
                                                            [FromRoute] Guid estateId,
                                                            [FromRoute] Guid merchantId,

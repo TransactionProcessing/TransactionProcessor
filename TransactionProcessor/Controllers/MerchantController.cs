@@ -786,4 +786,26 @@ public class MerchantController : ControllerBase
         // return the result
         return result.ToActionResultX();
     }
+
+    [HttpPost]
+    [Route("{merchantId}/statements")]
+    public async Task<IActionResult> GenerateMerchantStatement([FromRoute] Guid estateId,
+                                                               [FromRoute] Guid merchantId,
+                                                               [FromBody] GenerateMerchantStatementRequest generateMerchantStatementRequest,
+                                                               CancellationToken cancellationToken)
+    {
+        bool isRequestAllowed = PerformStandardChecks(estateId);
+        if (isRequestAllowed == false)
+        {
+            return Forbid();
+        }
+
+        MerchantCommands.GenerateMerchantStatementCommand command = new(estateId, merchantId, generateMerchantStatementRequest);
+
+        // Route the command
+        Result result = await Mediator.Send(command, cancellationToken);
+
+        // return the result
+        return result.ToActionResultX();
+    }
 }
