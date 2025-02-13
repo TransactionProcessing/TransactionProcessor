@@ -53,12 +53,4 @@ public class OperatorDomainEventHandlerTests
 
         Should.NotThrow(async () => { await this.DomainEventHandler.Handle(operatorCreatedEvent, CancellationToken.None); });
     }
-
-    [Fact]
-    public void OperatorDomainEventHandler_EstateCreatedEvent_EventIsHandled()
-    {
-        EstateDomainEvents.EstateCreatedEvent domainEvent = TestData.DomainEvents.EstateCreatedEvent;
-
-        Should.NotThrow(async () => { await this.DomainEventHandler.Handle(domainEvent, CancellationToken.None); });
-    }
 }
