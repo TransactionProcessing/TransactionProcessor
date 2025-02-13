@@ -7,6 +7,7 @@ using TransactionProcessor.DataTransferObjects.Requests.Operator;
 using TransactionProcessor.DataTransferObjects.Responses.Contract;
 using TransactionProcessor.DataTransferObjects.Responses.Estate;
 using TransactionProcessor.DataTransferObjects.Responses.Operator;
+using TransactionProcessor.DataTransferObjects.Responses.Settlement;
 
 namespace TransactionProcessor.IntegrationTesting.Helpers;
 
@@ -34,6 +35,76 @@ public class TransactionProcessorSteps
         this.TestHostHttpClient = testHostHttpClient;
         this.ProjectionManagementClient = projectionManagementClient;
     }
+
+    public async Task WhenIGetTheEstateSettlementReportForEstateForMerchantWithTheStartDateAndTheEndDateTheFollowingDataIsReturned(String accessToken, DateTime stateDate, DateTime endDate, ReqnrollExtensions.SettlementDetails expectedSettlementDetails)
+    {
+        await Retry.For(async () => {
+                Result<List<DataTransferObjects.Responses.Settlement.SettlementResponse>>? settlementList =
+                    await this.TransactionProcessorClient.GetSettlements(accessToken,
+                        expectedSettlementDetails.EstateId,
+                        expectedSettlementDetails.MerchantId,
+                        stateDate.ToString("yyyyMMdd"),
+                        endDate.ToString("yyyyMMdd"),
+                        CancellationToken.None);
+
+                settlementList.Data.ShouldNotBeNull();
+                settlementList.Data.ShouldNotBeEmpty();
+
+                DataTransferObjects.Responses.Settlement.SettlementResponse? settlement =
+                    settlementList.Data.SingleOrDefault(s => s.SettlementDate == expectedSettlementDetails.SettlementDate &&
+                                                             s.NumberOfFeesSettled == expectedSettlementDetails.NumberOfFeesSettled &&
+                                                             s.ValueOfFeesSettled == expectedSettlementDetails.ValueOfFeesSettled && s.IsCompleted == expectedSettlementDetails.IsCompleted);
+
+                settlement.ShouldNotBeNull();
+            },
+            TimeSpan.FromMinutes(2));
+    }
+
+    public async Task WhenIGetTheEstateSettlementReportForEstateForMerchantWithTheDateTheFollowingFeesAreSettled(String accessToken, List<ReqnrollExtensions.SettlementFeeDetails> settlementFeeDetailsList)
+    {
+        var settlements = settlementFeeDetailsList.DistinctBy(d => new {
+            d.EstateId,
+            d.MerchantId,
+            d.SettlementId
+        }).Select(s => new {
+            s.EstateId,
+            s.MerchantId,
+            s.SettlementId
+        });
+
+        foreach (var settlementFeeDetails in settlements)
+        {
+            await Retry.For(async () => {
+                Result<DataTransferObjects.Responses.Settlement.SettlementResponse>? settlement =
+                    await this.TransactionProcessorClient.GetSettlement(accessToken,
+                                                          settlementFeeDetails.EstateId,
+                                                          settlementFeeDetails.MerchantId,
+                                                          settlementFeeDetails.SettlementId,
+                                                          CancellationToken.None);
+
+                settlement.ShouldNotBeNull();
+
+                settlement.Data.SettlementFees.ShouldNotBeNull();
+                settlement.Data.SettlementFees.ShouldNotBeEmpty();
+
+                var settlementFees = settlementFeeDetailsList.Where(s => s.EstateId == settlementFeeDetails.EstateId &&
+                                                                         s.MerchantId == settlementFeeDetails.MerchantId &&
+                                                                         s.SettlementId == settlementFeeDetails.SettlementId).ToList();
+
+                foreach (ReqnrollExtensions.SettlementFeeDetails feeDetails in settlementFees)
+                {
+                    SettlementFeeResponse settlementFee =
+                        settlement.Data.SettlementFees.SingleOrDefault(sf => sf.FeeDescription == feeDetails.FeeDescription && sf.IsSettled == feeDetails.IsSettled &&
+                                                                             sf.OperatorIdentifier == feeDetails.Operator &&
+                                                                             sf.CalculatedValue == feeDetails.CalculatedValue);
+
+                    settlementFee.ShouldNotBeNull();
+                }
+            },
+                            TimeSpan.FromMinutes(3));
+        }
+    }
+
     public async Task WhenIGetTheMerchantsForThenMerchantsWillBeReturned(String accessToken, String estateName, List<EstateDetails> estateDetailsList, Int32 expectedMerchantCount)
     {
         Guid estateId = Guid.NewGuid();
@@ -355,6 +426,7 @@ public class TransactionProcessorSteps
                                                                                                       estate.EstateId,
                                                                                                       transactionResponse.TransactionId,
                                                                                                       CancellationToken.None);
+                            voucher.ShouldNotBeNull();
                         });
         return voucher;
     }
@@ -373,6 +445,7 @@ public class TransactionProcessorSteps
                             RedeemVoucherResponse response = await this.TransactionProcessorClient
                                                                        .RedeemVoucher(accessToken, redeemVoucherRequest, CancellationToken.None)
                                                                        .ConfigureAwait(false);
+                            response.ShouldNotBeNull();
                             response.RemainingBalance.ShouldBe(expectedBalance);
                         });
     }
@@ -429,7 +502,7 @@ public class TransactionProcessorSteps
                                                                                               request.Item1.EstateId,
                                                                                               request.Item2,
                                                                                               CancellationToken.None);
-
+                                settlements.ShouldNotBeNull();
                                 settlements.NumberOfFeesPendingSettlement.ShouldBe(request.Item4, $"Settlement date {request.Item3}");
                             },
                             TimeSpan.FromMinutes(3));

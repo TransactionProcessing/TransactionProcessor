@@ -5,8 +5,6 @@ using Microsoft.AspNetCore.Mvc;
 using Shared.Exceptions;
 using Shared.General;
 using SimpleResults;
-using Swashbuckle.AspNetCore.Annotations;
-using Swashbuckle.AspNetCore.Filters;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Security.Claims;

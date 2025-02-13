@@ -252,7 +252,7 @@ public class TransactionProcessorClient : ClientProxyBase, ITransactionProcessor
                                                                       Guid estateId,
                                                                       Guid merchantId,
                                                                       CancellationToken cancellationToken) {
-        String requestUri = this.BuildRequestUrl($"/api/settlements/{settlementDate.Date:yyyy-MM-dd}/estates/{estateId}/merchants/{merchantId}/pending");
+        String requestUri = this.BuildRequestUrl($"/api/estates/{estateId}/settlements/{settlementDate.Date:yyyy-MM-dd}/merchants/{merchantId}/pending");
         try {
             // Add the access token to the client headers
             this.HttpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", accessToken);
@@ -384,7 +384,7 @@ public class TransactionProcessorClient : ClientProxyBase, ITransactionProcessor
                                                 Guid estateId,
                                                 Guid merchantId,
                                                 CancellationToken cancellationToken) {
-        String requestUri = this.BuildRequestUrl($"/api/settlements/{settlementDate.Date:yyyy-MM-dd}/estates/{estateId}/merchants/{merchantId}");
+        String requestUri = this.BuildRequestUrl($"/api/estates/{estateId}/settlements/{settlementDate.Date:yyyy-MM-dd}/merchants/{merchantId}");
 
         try {
             StringContent httpContent = new(String.Empty, Encoding.UTF8, "application/json");
@@ -1256,12 +1256,12 @@ public class TransactionProcessorClient : ClientProxyBase, ITransactionProcessor
         return response;
     }
 
-    public async Task<Result<SettlementResponse>> GetSettlement(String accessToken,
-                                                                Guid estateId,
-                                                                Guid? merchantId,
-                                                                Guid settlementId,
-                                                                CancellationToken cancellationToken) {
-        SettlementResponse response = null;
+    public async Task<Result<DataTransferObjects.Responses.Settlement.SettlementResponse>> GetSettlement(String accessToken,
+                                                                                                         Guid estateId,
+                                                                                                         Guid? merchantId,
+                                                                                                         Guid settlementId,
+                                                                                                         CancellationToken cancellationToken) {
+        DataTransferObjects.Responses.Settlement.SettlementResponse response = null;
 
         String requestUri = this.BuildRequestUrl($"/api/estates/{estateId}/settlements/{settlementId}?merchantId={merchantId}");
 
@@ -1278,7 +1278,7 @@ public class TransactionProcessorClient : ClientProxyBase, ITransactionProcessor
             if (result.IsFailed)
                 return ResultHelpers.CreateFailure(result);
 
-            ResponseData<SettlementResponse> responseData = this.HandleResponseContent<SettlementResponse>(result.Data);
+            ResponseData<DataTransferObjects.Responses.Settlement.SettlementResponse> responseData = this.HandleResponseContent<DataTransferObjects.Responses.Settlement.SettlementResponse>(result.Data);
 
             return Result.Success(responseData.Data);
         }
@@ -1292,15 +1292,15 @@ public class TransactionProcessorClient : ClientProxyBase, ITransactionProcessor
         return response;
     }
 
-    public async Task<Result<List<SettlementResponse>>> GetSettlements(String accessToken,
-                                                                       Guid estateId,
-                                                                       Guid? merchantId,
-                                                                       String startDate,
-                                                                       String endDate,
-                                                                       CancellationToken cancellationToken) {
-        List<SettlementResponse> response = null;
+    public async Task<Result<List<DataTransferObjects.Responses.Settlement.SettlementResponse>>> GetSettlements(String accessToken,
+                                                                                                                Guid estateId,
+                                                                                                                Guid? merchantId,
+                                                                                                                String startDate,
+                                                                                                                String endDate,
+                                                                                                                CancellationToken cancellationToken) {
+        List<DataTransferObjects.Responses.Settlement.SettlementResponse> response = null;
 
-        String requestUri = this.BuildRequestUrl($"/api/estates/{estateId}/settlements/?merchantId={merchantId}&start_date={startDate}&end_date={endDate}");
+        String requestUri = this.BuildRequestUrl($"/api/estates/{estateId}/settlements?merchantId={merchantId}&start_date={startDate}&end_date={endDate}");
 
         try {
             // Add the access token to the client headers
@@ -1315,7 +1315,7 @@ public class TransactionProcessorClient : ClientProxyBase, ITransactionProcessor
             if (result.IsFailed)
                 return ResultHelpers.CreateFailure(result);
 
-            ResponseData<List<SettlementResponse>> responseData = this.HandleResponseContent<List<SettlementResponse>>(result.Data);
+            ResponseData<List<DataTransferObjects.Responses.Settlement.SettlementResponse>> responseData = this.HandleResponseContent<List<DataTransferObjects.Responses.Settlement.SettlementResponse>>(result.Data);
 
             return Result.Success(responseData.Data);
         }

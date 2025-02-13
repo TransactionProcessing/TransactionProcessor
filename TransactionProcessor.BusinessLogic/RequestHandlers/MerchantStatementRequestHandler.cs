@@ -1,21 +1,12 @@
-﻿using TransactionProcessor.BusinessLogic.Requests;
+﻿using System.Threading;
+using System.Threading.Tasks;
+using MediatR;
+using SimpleResults;
+using TransactionProcessor.BusinessLogic.Requests;
+using TransactionProcessor.BusinessLogic.Services;
 
-namespace EstateManagement.BusinessLogic.RequestHandlers
+namespace TransactionProcessor.BusinessLogic.RequestHandlers
 {
-    using System;
-    using System.Threading;
-    using System.Threading.Tasks;
-    using MediatR;
-    using Services;
-    using SimpleResults;
-    using static Microsoft.EntityFrameworkCore.DbLoggerCategory.Database;
-
-    /// <summary>
-    /// 
-    /// </summary>
-    /// <seealso cref="MediatR.IRequestHandler&lt;EstateManagement.BusinessLogic.Requests.AddTransactionToMerchantStatementRequest&gt;" />
-    /// <seealso cref="MediatR.IRequestHandler&lt;EstateManagement.BusinessLogic.Requests.AddSettledFeeToMerchantStatementRequest&gt;" />
-    /// <seealso cref="MediatR.IRequestHandler&lt;EstateManagement.BusinessLogic.Requests.AddTransactionToMerchantStatementRequest&gt;" />
     public class MerchantStatementRequestHandler : IRequestHandler<MerchantStatementCommands.AddTransactionToMerchantStatementCommand, Result>, 
                                                    IRequestHandler<MerchantStatementCommands.AddSettledFeeToMerchantStatementCommand,Result>,
                                                    IRequestHandler<MerchantCommands.GenerateMerchantStatementCommand, Result>,

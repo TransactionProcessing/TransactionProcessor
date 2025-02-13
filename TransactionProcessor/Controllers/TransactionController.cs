@@ -100,7 +100,8 @@ namespace TransactionProcessor.Controllers
         }
 
         [HttpPost]
-        [Route("/api/{estateId}/transactions/{transactionId}/resendreceipt")][SwaggerResponseExample(201, typeof(TransactionResponseExample))]
+        [Route("/api/{estateId}/transactions/{transactionId}/resendreceipt")]
+        [SwaggerResponseExample(201, typeof(TransactionResponseExample))]
         public async Task<IActionResult> ResendTransactionReceipt([FromRoute] Guid estateId, 
                                                                   [FromRoute] Guid transactionId,
                                                                   CancellationToken cancellationToken)

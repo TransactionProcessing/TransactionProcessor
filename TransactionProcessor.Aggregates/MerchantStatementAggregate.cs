@@ -19,8 +19,8 @@ namespace TransactionProcessor.Aggregates
             // Create statement id required
             aggregate.CreateStatement(statementId, createdDate, estateId, merchantId);
 
-            SettledFeeAddedToStatementEvent settledFeeAddedToStatementEvent =
-                new SettledFeeAddedToStatementEvent(aggregate.AggregateId,
+            MerchantStatementDomainEvents.SettledFeeAddedToStatementEvent settledFeeAddedToStatementEvent =
+                new MerchantStatementDomainEvents.SettledFeeAddedToStatementEvent(aggregate.AggregateId,
                                                     eventId,
                                                     aggregate.EstateId,
                                                     aggregate.MerchantId,
@@ -42,7 +42,7 @@ namespace TransactionProcessor.Aggregates
             // Create statement id required
             aggregate.CreateStatement(statementId, createdDate, estateId, merchantId);
 
-            TransactionAddedToStatementEvent transactionAddedToStatementEvent = new TransactionAddedToStatementEvent(aggregate.AggregateId,
+            MerchantStatementDomainEvents.TransactionAddedToStatementEvent transactionAddedToStatementEvent = new MerchantStatementDomainEvents.TransactionAddedToStatementEvent(aggregate.AggregateId,
                                                                                                                      eventId,
                                                                                                                      aggregate.EstateId,
                                                                                                                      aggregate.MerchantId,
@@ -65,7 +65,7 @@ namespace TransactionProcessor.Aggregates
                 Guard.ThrowIfInvalidGuid(estateId, nameof(estateId));
                 Guard.ThrowIfInvalidGuid(merchantId, nameof(merchantId));
 
-                StatementCreatedEvent statementCreatedEvent = new StatementCreatedEvent(statementId, estateId, merchantId, createdDate);
+                MerchantStatementDomainEvents.StatementCreatedEvent statementCreatedEvent = new MerchantStatementDomainEvents.StatementCreatedEvent(statementId, estateId, merchantId, createdDate);
 
                 aggregate.ApplyAndAppend(statementCreatedEvent);
             }
@@ -78,7 +78,7 @@ namespace TransactionProcessor.Aggregates
             aggregate.EnsureStatementHasBeenCreated();
             aggregate.EnsureStatementHasBeenGenerated();
 
-            StatementEmailedEvent statementEmailedEvent = new StatementEmailedEvent(aggregate.AggregateId, aggregate.EstateId, aggregate.MerchantId, emailedDateTime, messageId);
+            MerchantStatementDomainEvents.StatementEmailedEvent statementEmailedEvent = new MerchantStatementDomainEvents.StatementEmailedEvent(aggregate.AggregateId, aggregate.EstateId, aggregate.MerchantId, emailedDateTime, messageId);
 
             aggregate.ApplyAndAppend(statementEmailedEvent);
         }
@@ -93,7 +93,7 @@ namespace TransactionProcessor.Aggregates
                 throw new InvalidOperationException("Statement has no transactions or settled fees");
             }
 
-            StatementGeneratedEvent statementGeneratedEvent = new StatementGeneratedEvent(aggregate.AggregateId, aggregate.EstateId, aggregate.MerchantId, generatedDateTime);
+            MerchantStatementDomainEvents.StatementGeneratedEvent statementGeneratedEvent = new MerchantStatementDomainEvents.StatementGeneratedEvent(aggregate.AggregateId, aggregate.EstateId, aggregate.MerchantId, generatedDateTime);
 
             aggregate.ApplyAndAppend(statementGeneratedEvent);
         }
@@ -164,7 +164,7 @@ namespace TransactionProcessor.Aggregates
             }
         }
 
-        public static void PlayEvent(this MerchantStatementAggregate aggregate, StatementCreatedEvent domainEvent)
+        public static void PlayEvent(this MerchantStatementAggregate aggregate, MerchantStatementDomainEvents.StatementCreatedEvent domainEvent)
         {
             aggregate.IsCreated = true;
             aggregate.EstateId = domainEvent.EstateId;
@@ -172,7 +172,7 @@ namespace TransactionProcessor.Aggregates
             aggregate.CreatedDateTime = domainEvent.DateCreated;
         }
 
-        public static void PlayEvent(this MerchantStatementAggregate aggregate, TransactionAddedToStatementEvent domainEvent)
+        public static void PlayEvent(this MerchantStatementAggregate aggregate, MerchantStatementDomainEvents.TransactionAddedToStatementEvent domainEvent)
         {
             aggregate.EstateId = domainEvent.EstateId;
             aggregate.MerchantId = domainEvent.MerchantId;
@@ -180,7 +180,7 @@ namespace TransactionProcessor.Aggregates
             aggregate.Transactions.Add(new Transaction(domainEvent.TransactionId, domainEvent.TransactionDateTime, domainEvent.TransactionValue));
         }
 
-        public static void PlayEvent(this MerchantStatementAggregate aggregate, SettledFeeAddedToStatementEvent domainEvent)
+        public static void PlayEvent(this MerchantStatementAggregate aggregate, MerchantStatementDomainEvents.SettledFeeAddedToStatementEvent domainEvent)
         {
             aggregate.EstateId = domainEvent.EstateId;
             aggregate.MerchantId = domainEvent.MerchantId;
@@ -188,13 +188,13 @@ namespace TransactionProcessor.Aggregates
             aggregate.SettledFees.Add(new SettledFee(domainEvent.SettledFeeId, domainEvent.TransactionId, domainEvent.SettledDateTime, domainEvent.SettledValue));
         }
 
-        public static void PlayEvent(this MerchantStatementAggregate aggregate, StatementGeneratedEvent domainEvent)
+        public static void PlayEvent(this MerchantStatementAggregate aggregate, MerchantStatementDomainEvents.StatementGeneratedEvent domainEvent)
         {
             aggregate.IsGenerated = true;
             aggregate.GeneratedDateTime = domainEvent.DateGenerated;
         }
 
-        public static void PlayEvent(this MerchantStatementAggregate aggregate, StatementEmailedEvent domainEvent)
+        public static void PlayEvent(this MerchantStatementAggregate aggregate, MerchantStatementDomainEvents.StatementEmailedEvent domainEvent)
         {
             aggregate.HasBeenEmailed = true;
             aggregate.EmailedDateTime = domainEvent.DateEmailed;

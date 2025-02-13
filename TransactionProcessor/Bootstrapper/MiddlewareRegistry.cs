@@ -47,7 +47,8 @@
                                tags:new[] {"db", "eventstore"}).AddSecurityService(this.ApiEndpointHttpHandler).AddEstateManagementService();
 
             this.AddSwaggerGen(c =>
-                               {
+                               { 
+                                   c.CustomSchemaIds(type => type.FullName); // Uses the full namespace as schema ID
                                    c.SwaggerDoc("v1",
                                                 new OpenApiInfo
                                                 {

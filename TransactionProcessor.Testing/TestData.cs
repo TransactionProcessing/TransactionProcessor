@@ -1,5 +1,6 @@
 ﻿using CallbackHandler.DataTransferObjects;
 using Newtonsoft.Json;
+using Shared.ValueObjects;
 using TransactionProcessor.Aggregates;
 using TransactionProcessor.BusinessLogic.Events;
 using TransactionProcessor.DataTransferObjects.Requests.Contract;
@@ -2076,9 +2077,25 @@ namespace TransactionProcessor.Testing
             };
 
         public static Guid EventId = Guid.Parse("0F537961-A19C-4A29-80DC-68889474142B");
+        
+        public static Boolean IsAuthorisedFalse = false;
+
+        public static Boolean IsAuthorisedTrue = true;
+
+        public static GenerateMerchantStatementRequest GenerateMerchantStatementRequest =>
+            new GenerateMerchantStatementRequest
+            {
+                MerchantStatementDate = TestData.StatementCreateDate
+            };
         #endregion
 
         public static class Commands {
+            public static MerchantCommands.GenerateMerchantStatementCommand GenerateMerchantStatementCommand => new(TestData.EstateId, TestData.MerchantId, TestData.GenerateMerchantStatementRequest);
+
+            public static MerchantStatementCommands.AddTransactionToMerchantStatementCommand AddTransactionToMerchantStatementCommand => new(EstateId, MerchantId, TransactionDateTime, TransactionAmount, IsAuthorisedTrue, TransactionId);
+            public static MerchantStatementCommands.EmailMerchantStatementCommand EmailMerchantStatementCommand => new(EstateId, MerchantId, MerchantStatementId);
+            public static MerchantStatementCommands.AddSettledFeeToMerchantStatementCommand AddSettledFeeToMerchantStatementCommand => new(EstateId, MerchantId, TransactionDateTime, SettledFeeAmount1, TransactionId, SettledFeeId1);
+
             public static TransactionCommands.ResendTransactionReceiptCommand ResendTransactionReceiptCommand => new(TestData.TransactionId,
                 TestData.EstateId);
 
@@ -2554,6 +2571,9 @@ namespace TransactionProcessor.Testing
             };
 
         public static class DomainEvents {
+            public static MerchantStatementDomainEvents.StatementCreatedEvent StatementCreatedEvent => new MerchantStatementDomainEvents.StatementCreatedEvent(TestData.MerchantStatementId, TestData.EstateId, TestData.MerchantId, TestData.StatementCreateDate);
+
+            public static MerchantStatementDomainEvents.StatementGeneratedEvent StatementGeneratedEvent => new MerchantStatementDomainEvents.StatementGeneratedEvent(TestData.MerchantStatementId, TestData.EstateId, TestData.MerchantId, TestData.StatementGeneratedDate);
             public static CallbackReceivedEnrichedEvent CallbackReceivedEnrichedEventDeposit =>
                 new CallbackReceivedEnrichedEvent(TestData.CallbackId)
                 {

@@ -16,10 +16,15 @@ using System.Linq;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using SecurityService.DataTransferObjects.Responses;
+using Shared.Logger;
 using TransactionProcessor.Aggregates.Models;
 using TransactionProcessor.Aggregates;
+using TransactionProcessor.BusinessLogic.Common;
 using TransactionProcessor.BusinessLogic.Requests;
 using TransactionProcessor.Database.Entities;
+using TransactionProcessor.Repository;
+using Transaction = TransactionProcessor.Aggregates.Models.Transaction;
 
 namespace TransactionProcessor.BusinessLogic.Services
 {
@@ -54,9 +59,9 @@ namespace TransactionProcessor.BusinessLogic.Services
 
         private readonly IAggregateRepository<EstateAggregate, DomainEvent> EstateAggregateRepository;
 
-        private readonly ITransactionRe EstateManagementRepository;
+        private readonly ITransactionProcessorReadModelRepository EstateManagementRepository;
 
-        private readonly IStatementBuilder StatementBuilder;
+        //private readonly IStatementBuilder StatementBuilder;
 
         private readonly IMessagingServiceClient MessagingServiceClient;
 
@@ -64,7 +69,7 @@ namespace TransactionProcessor.BusinessLogic.Services
 
         private readonly IFileSystem FileSystem;
 
-        private readonly IPDFGenerator PdfGenerator;
+        //private readonly IPDFGenerator PdfGenerator;
 
         #endregion
 
@@ -83,21 +88,21 @@ namespace TransactionProcessor.BusinessLogic.Services
         /// <param name="pdfGenerator">The PDF generator.</param>
         public MerchantStatementDomainService(IAggregateRepository<MerchantAggregate, DomainEvent> merchantAggregateRepository,
                                               IAggregateRepository<MerchantStatementAggregate, DomainEvent> merchantStatementAggregateRepository,
-                                              IEstateManagementRepository estateManagementRepository,
-                                              IStatementBuilder statementBuilder,
+                                              ITransactionProcessorReadModelRepository estateManagementRepository,
+                                              //IStatementBuilder statementBuilder,
                                               IMessagingServiceClient messagingServiceClient,
                                               ISecurityServiceClient securityServiceClient,
-                                              IFileSystem fileSystem,
-                                              IPDFGenerator pdfGenerator)
+                                              IFileSystem fileSystem)//,
+                                              //IPDFGenerator pdfGenerator)
         {
             this.MerchantAggregateRepository = merchantAggregateRepository;
             this.MerchantStatementAggregateRepository = merchantStatementAggregateRepository;
             this.EstateManagementRepository = estateManagementRepository;
-            this.StatementBuilder = statementBuilder;
+            //this.StatementBuilder = statementBuilder;
             this.MessagingServiceClient = messagingServiceClient;
             this.SecurityServiceClient = securityServiceClient;
             this.FileSystem = fileSystem;
-            this.PdfGenerator = pdfGenerator;
+            //this.PdfGenerator = pdfGenerator;
         }
 
         #endregion
@@ -164,13 +169,7 @@ namespace TransactionProcessor.BusinessLogic.Services
             Result result = await ApplyUpdates(
                 async (MerchantStatementAggregate merchantStatementAggregate) => {
 
-                    SettledFee settledFee = new SettledFee
-                    {
-                        DateTime = command.SettledDateTime,
-                        Amount = command.SettledAmount,
-                        TransactionId = command.TransactionId,
-                        SettledFeeId = settlementFeeId
-                    };
+                    SettledFee settledFee = new SettledFee(settlementFeeId, command.TransactionId, command.SettledDateTime, command.SettledAmount);
 
                     Guid eventId = IdGenerationService.GenerateEventId(new
                     {
@@ -237,50 +236,50 @@ namespace TransactionProcessor.BusinessLogic.Services
             Result result = await ApplyUpdates(
                 async (MerchantStatementAggregate merchantStatementAggregate) => {
 
-                    StatementHeader statementHeader = await this.EstateManagementRepository.GetStatement(command.EstateId, command.MerchantStatementId, cancellationToken);
+                    //StatementHeader statementHeader = await this.EstateManagementRepository.GetStatement(command.EstateId, command.MerchantStatementId, cancellationToken);
 
-                    String html = await this.StatementBuilder.GetStatementHtml(statementHeader, cancellationToken);
+                    //String html = await this.StatementBuilder.GetStatementHtml(statementHeader, cancellationToken);
 
-                    String base64 = await this.PdfGenerator.CreatePDF(html, cancellationToken);
+                    //String base64 = await this.PdfGenerator.CreatePDF(html, cancellationToken);
 
-                    SendEmailRequest sendEmailRequest = new SendEmailRequest
-                    {
-                        Body = "<html><body>Please find attached this months statement.</body></html>",
-                        ConnectionIdentifier = command.EstateId,
-                        FromAddress = "golfhandicapping@btinternet.com", // TODO: lookup from config
-                        IsHtml = true,
-                        Subject = $"Merchant Statement for {statementHeader.StatementDate}",
-                        // MessageId = command.MerchantStatementId,
-                        ToAddresses = new List<String>
-                        {
-                            statementHeader.MerchantEmail
-                        },
-                        EmailAttachments = new List<EmailAttachment>
-                        {
-                            new EmailAttachment
-                            {
-                                FileData = base64,
-                                FileType = FileType.PDF,
-                                Filename = $"merchantstatement{statementHeader.StatementDate}.pdf"
-                            }
-                        }
-                    };
+                    //SendEmailRequest sendEmailRequest = new SendEmailRequest
+                    //{
+                    //    Body = "<html><body>Please find attached this months statement.</body></html>",
+                    //    ConnectionIdentifier = command.EstateId,
+                    //    FromAddress = "golfhandicapping@btinternet.com", // TODO: lookup from config
+                    //    IsHtml = true,
+                    //    Subject = $"Merchant Statement for {statementHeader.StatementDate}",
+                    //    // MessageId = command.MerchantStatementId,
+                    //    ToAddresses = new List<String>
+                    //    {
+                    //        statementHeader.MerchantEmail
+                    //    },
+                    //    EmailAttachments = new List<EmailAttachment>
+                    //    {
+                    //        new EmailAttachment
+                    //        {
+                    //            FileData = base64,
+                    //            FileType = FileType.PDF,
+                    //            Filename = $"merchantstatement{statementHeader.StatementDate}.pdf"
+                    //        }
+                    //    }
+                    //};
 
-                    Guid messageId = IdGenerationService.GenerateEventId(new
-                    {
-                        command.MerchantStatementId,
-                        DateTime.Now
-                    });
+                    //Guid messageId = IdGenerationService.GenerateEventId(new
+                    //{
+                    //    command.MerchantStatementId,
+                    //    DateTime.Now
+                    //});
 
-                    sendEmailRequest.MessageId = messageId;
+                    //sendEmailRequest.MessageId = messageId;
 
-                    this.TokenResponse = await Helpers.GetToken(this.TokenResponse, this.SecurityServiceClient, cancellationToken);
+                    //this.TokenResponse = await Helpers.GetToken(this.TokenResponse, this.SecurityServiceClient, cancellationToken);
 
-                    var sendEmailResponseResult = await this.MessagingServiceClient.SendEmail(this.TokenResponse.AccessToken, sendEmailRequest, cancellationToken);
-                    //if (sendEmailResponseResult.IsFailed) {
-                    //    // TODO: record a failed event??
-                    //}
-                    merchantStatementAggregate.EmailStatement(DateTime.Now, messageId);
+                    //var sendEmailResponseResult = await this.MessagingServiceClient.SendEmail(this.TokenResponse.AccessToken, sendEmailRequest, cancellationToken);
+                    ////if (sendEmailResponseResult.IsFailed) {
+                    ////    // TODO: record a failed event??
+                    ////}
+                    //merchantStatementAggregate.EmailStatement(DateTime.Now, messageId);
 
                     return Result.Success();
                 },
@@ -315,12 +314,7 @@ namespace TransactionProcessor.BusinessLogic.Services
                 async (MerchantStatementAggregate merchantStatementAggregate) => {
 
                     // Add transaction to statement
-                    Models.MerchantStatement.Transaction transaction = new()
-                    {
-                        DateTime = command.TransactionDateTime,
-                        Amount = command.TransactionAmount.GetValueOrDefault(0),
-                        TransactionId = command.TransactionId
-                    };
+                    Transaction transaction = new(command.TransactionId, command.TransactionDateTime, command.TransactionAmount.GetValueOrDefault(0));
 
                     Guid eventId = IdGenerationService.GenerateEventId(new
                     {

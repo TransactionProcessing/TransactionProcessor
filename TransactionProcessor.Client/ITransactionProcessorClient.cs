@@ -20,7 +20,6 @@ namespace TransactionProcessor.Client
     public interface ITransactionProcessorClient
     {
         #region Methods
-        
         Task<Result<SerialisedMessage>> PerformTransaction(String accessToken, 
                                                            SerialisedMessage transactionRequest,
                                                            CancellationToken cancellationToken);
@@ -240,18 +239,18 @@ namespace TransactionProcessor.Client
                                             MakeMerchantWithdrawalRequest makeMerchantWithdrawalRequest,
                                             CancellationToken cancellationToken);
 
-        Task<Result<SettlementResponse>> GetSettlement(String accessToken,
+        Task<Result<DataTransferObjects.Responses.Settlement.SettlementResponse>> GetSettlement(String accessToken,
                                                        Guid estateId,
                                                        Guid? merchantId,
                                                        Guid settlementId,
                                                        CancellationToken cancellationToken);
 
-        Task<Result<List<SettlementResponse>>> GetSettlements(String accessToken,
-                                                              Guid estateId,
-                                                              Guid? merchantId,
-                                                              String startDate,
-                                                              String endDate,
-                                                              CancellationToken cancellationToken);
+        Task<Result<List<DataTransferObjects.Responses.Settlement.SettlementResponse>>> GetSettlements(String accessToken,
+                                                                                                       Guid estateId,
+                                                                                                       Guid? merchantId,
+                                                                                                       String startDate,
+                                                                                                       String endDate,
+                                                                                                       CancellationToken cancellationToken);
 
         Task<Result<List<MerchantResponse>>> GetMerchants(String accessToken,
                                                           Guid estateId,

@@ -1,4 +1,5 @@
-﻿using Shouldly;
+﻿using Shared.Extensions;
+using Shouldly;
 using TransactionProcessor.DataTransferObjects.Requests.Contract;
 using TransactionProcessor.DataTransferObjects.Requests.Estate;
 using TransactionProcessor.DataTransferObjects.Requests.Merchant;
@@ -14,6 +15,7 @@ using Newtonsoft.Json;
 using Reqnroll;
 using AssignOperatorToMerchantRequest = DataTransferObjects.Requests.Merchant.AssignOperatorRequest;
 using AssignOperatorToEstateRequest = DataTransferObjects.Requests.Estate.AssignOperatorRequest;
+using Shared.General;
 
 public static class ReqnrollTableHelper
 {
@@ -98,6 +100,101 @@ public static class ReqnrollTableHelper
 }
 
 public static class ReqnrollExtensions{
+    public class SettlementDetails
+    {
+        public Guid EstateId { get; set; }
+        public Guid MerchantId { get; set; }
+        public DateTime SettlementDate { get; set; }
+        public Int32 NumberOfFeesSettled { get; set; }
+        public Decimal ValueOfFeesSettled { get; set; }
+        public Boolean IsCompleted { get; set; }
+    }
+
+    public class SettlementFeeDetails
+    {
+        public Guid EstateId { get; set; }
+        public Guid MerchantId { get; set; }
+        public Guid SettlementId { get; set; }
+        public String FeeDescription { get; set; }
+        public Boolean IsSettled { get; set; }
+        public String Operator { get; set; }
+        public Decimal CalculatedValue { get; set; }
+    }
+
+    public static SettlementDetails ToSettlementDetails(this DataTableRows tableRows, string estateName, List<EstateDetails> estateDetailsList)
+    {
+        SettlementDetails result = new SettlementDetails();
+
+        EstateDetails estateDetails = estateDetailsList.SingleOrDefault(e => e.EstateName == estateName);
+        estateDetails.ShouldNotBeNull();
+        result.EstateId = estateDetails.EstateId;
+
+        foreach (DataTableRow tableRow in tableRows)
+        {
+            result.SettlementDate = ReqnrollTableHelper.GetDateForDateString(ReqnrollTableHelper.GetStringRowValue(tableRow, "SettlementDate"), DateTime.UtcNow.Date);
+            result.NumberOfFeesSettled = ReqnrollTableHelper.GetIntValue(tableRow, "NumberOfFeesSettled");
+            result.ValueOfFeesSettled = ReqnrollTableHelper.GetDecimalValue(tableRow, "ValueOfFeesSettled");
+            result.IsCompleted = ReqnrollTableHelper.GetBooleanValue(tableRow, "IsCompleted");
+        }
+
+        return result;
+    }
+
+    public static Guid CalculateSettlementAggregateId(DateTime settlementDate,
+                                                      Guid merchantId,
+                                                      Guid estateId)
+    {
+        Guid aggregateId = GuidCalculator.Combine(estateId, merchantId, settlementDate.ToGuid());
+        return aggregateId;
+    }
+
+    public static SettlementDetails ToSettlementDetails(this DataTableRows tableRows, string estateName,
+                                                        string merchantName, List<EstateDetails> estateDetailsList)
+    {
+        SettlementDetails result = new SettlementDetails();
+
+        EstateDetails estateDetails = estateDetailsList.SingleOrDefault(e => e.EstateName == estateName);
+        estateDetails.ShouldNotBeNull();
+        result.EstateId = estateDetails.EstateId;
+        // Lookup the merchant id
+        result.MerchantId = estateDetails.GetMerchant(merchantName).MerchantId;
+
+        foreach (DataTableRow tableRow in tableRows)
+        {
+            result.SettlementDate = ReqnrollTableHelper.GetDateForDateString(ReqnrollTableHelper.GetStringRowValue(tableRow, "SettlementDate"), DateTime.UtcNow.Date);
+            result.NumberOfFeesSettled = ReqnrollTableHelper.GetIntValue(tableRow, "NumberOfFeesSettled");
+            result.ValueOfFeesSettled = ReqnrollTableHelper.GetDecimalValue(tableRow, "ValueOfFeesSettled");
+            result.IsCompleted = ReqnrollTableHelper.GetBooleanValue(tableRow, "IsCompleted");
+        }
+
+        return result;
+    }
+
+    public static List<SettlementFeeDetails> ToSettlementFeeDetails(this DataTableRows tableRows, string estateName,
+                                                                    string merchantName,
+                                                                    String settlementDateString,
+                                                                    List<EstateDetails> estateDetailsList)
+    {
+        List<SettlementFeeDetails> settlementFeeDetailsList = new List<SettlementFeeDetails>();
+        EstateDetails estateDetails = estateDetailsList.SingleOrDefault(e => e.EstateName == estateName);
+        estateDetails.ShouldNotBeNull();
+
+        foreach (DataTableRow tableRow in tableRows)
+        {
+            SettlementFeeDetails settlementFeeDetails = new SettlementFeeDetails();
+            DateTime settlementDate = ReqnrollTableHelper.GetDateForDateString(settlementDateString, DateTime.UtcNow.Date);
+            Guid settlementId = ReqnrollExtensions.CalculateSettlementAggregateId(settlementDate, estateDetails.GetMerchant(merchantName).MerchantId, estateDetails.EstateId);
+            settlementFeeDetails.SettlementId = settlementId;
+            settlementFeeDetails.EstateId = estateDetails.EstateId;
+            settlementFeeDetails.MerchantId = estateDetails.GetMerchant(merchantName).MerchantId;
+            settlementFeeDetails.FeeDescription = ReqnrollTableHelper.GetStringRowValue(tableRow, "FeeDescription");
+            settlementFeeDetails.IsSettled = ReqnrollTableHelper.GetBooleanValue(tableRow, "IsSettled");
+            settlementFeeDetails.Operator = ReqnrollTableHelper.GetStringRowValue(tableRow, "Operator");
+            settlementFeeDetails.CalculatedValue = ReqnrollTableHelper.GetDecimalValue(tableRow, "CalculatedValue");
+        }
+        return settlementFeeDetailsList;
+    }
+
     public static List<(EstateDetails, MerchantResponse, Guid, Address)> ToAddressUpdates(this DataTableRows tableRows, List<EstateDetails> estateDetailsList)
     {
 

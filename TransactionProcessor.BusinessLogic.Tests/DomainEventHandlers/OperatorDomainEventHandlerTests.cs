@@ -13,13 +13,13 @@ namespace TransactionProcessor.BusinessLogic.Tests.DomainEventHandlers;
 public class OperatorDomainEventHandlerTests
 {
     private Mock<ITransactionProcessorReadModelRepository> EstateReportingRepository;
-    private OperatorDomainEventHandler DomainEventHandler;
+    private ReadModelDomainEventHandler DomainEventHandler;
 
     public OperatorDomainEventHandlerTests()
     {
         Logger.Initialise(NullLogger.Instance);
         this.EstateReportingRepository = new Mock<ITransactionProcessorReadModelRepository>();
-        this.DomainEventHandler = new OperatorDomainEventHandler(this.EstateReportingRepository.Object);
+        this.DomainEventHandler = new ReadModelDomainEventHandler(this.EstateReportingRepository.Object);
     }
 
     [Fact]
