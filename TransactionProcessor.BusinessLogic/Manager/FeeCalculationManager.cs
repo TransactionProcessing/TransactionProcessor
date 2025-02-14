@@ -4,7 +4,6 @@ namespace TransactionProcessor.BusinessLogic.Manager
 {
     using System;
     using System.Collections.Generic;
-    using EventHandling;
     using Models;
 
     /// <summary>

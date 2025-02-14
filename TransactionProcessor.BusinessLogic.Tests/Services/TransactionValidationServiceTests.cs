@@ -7,13 +7,9 @@ using TransactionProcessor.Models.Merchant;
 namespace TransactionProcessor.BusinessLogic.Tests.Services;
 
 using System;
-using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 using BusinessLogic.Services;
-using EstateManagement.Client;
-using EstateManagement.DataTransferObjects.Responses;
-using EstateManagement.DataTransferObjects.Responses.Contract;
 using Microsoft.Extensions.Configuration;
 using Moq;
 using Newtonsoft.Json;
@@ -25,7 +21,6 @@ using Shared.General;
 using Shared.Logger;
 using Shouldly;
 using Testing;
-using TransactionProcessor.BusinessLogic.Common;
 using Xunit;
 
 public class TransactionValidationServiceTests {

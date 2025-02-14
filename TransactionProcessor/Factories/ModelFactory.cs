@@ -3,7 +3,6 @@ using SimpleResults;
 using TransactionProcessor.DataTransferObjects.Responses.Contract;
 using TransactionProcessor.DataTransferObjects.Responses.Merchant;
 using TransactionProcessor.DataTransferObjects.Responses.Operator;
-using TransactionProcessor.Models.Contract;
 using ProductType = TransactionProcessor.DataTransferObjects.Responses.Contract.ProductType;
 //using CalculationType = TransactionProcessor.DataTransferObjects.Responses.Contract.CalculationType;
 
@@ -11,7 +10,6 @@ namespace TransactionProcessor.Factories
 {
     using System;
     using System.Collections.Generic;
-    using BusinessLogic.Requests;
     using DataTransferObjects;
     using Models;
     using Newtonsoft.Json;

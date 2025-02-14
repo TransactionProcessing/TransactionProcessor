@@ -3,7 +3,6 @@ using Shared.DomainDrivenDesign.EventSourcing;
 using Shared.EventStore.Aggregate;
 using Shared.General;
 using TransactionProcessor.DomainEvents;
-using TransactionProcessor.Models;
 
 namespace TransactionProcessor.Aggregates;
 

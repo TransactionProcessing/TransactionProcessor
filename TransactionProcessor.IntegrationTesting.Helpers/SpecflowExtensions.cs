@@ -13,9 +13,9 @@ namespace TransactionProcessor.IntegrationTesting.Helpers;
 using DataTransferObjects;
 using Newtonsoft.Json;
 using Reqnroll;
-using AssignOperatorToMerchantRequest = DataTransferObjects.Requests.Merchant.AssignOperatorRequest;
-using AssignOperatorToEstateRequest = DataTransferObjects.Requests.Estate.AssignOperatorRequest;
 using Shared.General;
+using AssignOperatorToEstateRequest = DataTransferObjects.Requests.Estate.AssignOperatorRequest;
+using AssignOperatorToMerchantRequest = DataTransferObjects.Requests.Merchant.AssignOperatorRequest;
 
 public static class ReqnrollTableHelper
 {

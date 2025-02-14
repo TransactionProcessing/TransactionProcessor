@@ -6,11 +6,12 @@ using SimpleResults;
 using TransactionProcessor.BusinessLogic.Manager;
 using TransactionProcessor.Models.Contract;
 using TransactionProcessor.Models.Merchant;
+using TransactionProcessor.Models.Settlement;
 using Contract = TransactionProcessor.Models.Contract.Contract;
 
 namespace TransactionProcessor.BusinessLogic.Tests.Mediator;
 
-public class DummyEstateManagementManager : IEstateManagementManager {
+public class DummyTransactionProcessorManager : ITransactionProcessorManager {
     public async Task<Result<List<Contract>>> GetMerchantContracts(Guid estateId,
                                                                    Guid merchantId,
                                                                    CancellationToken cancellationToken) {
@@ -66,5 +67,20 @@ public class DummyEstateManagementManager : IEstateManagementManager {
     public async Task<Result<List<Models.Operator.Operator>>> GetOperators(Guid estateId,
                                                                            CancellationToken cancellationToken) {
         return Result.Success(new List<Models.Operator.Operator>());
+    }
+
+    public async Task<Result<SettlementModel>> GetSettlement(Guid estateId,
+                                                             Guid merchantId,
+                                                             Guid settlementId,
+                                                             CancellationToken cancellationToken) {
+        return Result.Success(new SettlementModel());
+    }
+
+    public async Task<Result<List<SettlementModel>>> GetSettlements(Guid estateId,
+                                                                    Guid? merchantId,
+                                                                    String startDate,
+                                                                    String endDate,
+                                                                    CancellationToken cancellationToken) {
+        return Result.Success(new List<SettlementModel>());
     }
 }

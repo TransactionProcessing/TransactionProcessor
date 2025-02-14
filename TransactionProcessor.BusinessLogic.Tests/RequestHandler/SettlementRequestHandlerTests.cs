@@ -6,6 +6,7 @@ using Shared.EventStore.Aggregate;
 using Shouldly;
 using SimpleResults;
 using TransactionProcessor.Aggregates;
+using TransactionProcessor.BusinessLogic.Manager;
 using TransactionProcessor.BusinessLogic.RequestHandlers;
 using TransactionProcessor.BusinessLogic.Requests;
 using TransactionProcessor.BusinessLogic.Services;
@@ -21,7 +22,8 @@ public class SettlementRequestHandlerTests
     {
         Mock<ISettlementDomainService> settlementDomainService = new Mock<ISettlementDomainService>();
         Mock<IAggregateRepository<SettlementAggregate, DomainEvent>> settlementAggregateRepository = new();
-        SettlementRequestHandler handler = new SettlementRequestHandler(settlementDomainService.Object, settlementAggregateRepository.Object);
+        Mock<ITransactionProcessorManager> manager = new Mock<ITransactionProcessorManager>();
+        SettlementRequestHandler handler = new SettlementRequestHandler(settlementDomainService.Object, settlementAggregateRepository.Object, manager.Object);
         settlementDomainService
             .Setup(s => s.ProcessSettlement(It.IsAny<SettlementCommands.ProcessSettlementCommand>(), It.IsAny<CancellationToken>())).ReturnsAsync(Result.Success());
         var command = TestData.Commands.ProcessSettlementCommand;

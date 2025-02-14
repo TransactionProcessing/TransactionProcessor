@@ -1,14 +1,13 @@
-﻿using MediatR;
+﻿using System;
+using System.Collections.Generic;
+using System.Diagnostics;
+using System.Linq;
+using System.Threading.Tasks;
+using MediatR;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Hosting;
 using Moq;
-using System;
-using System.Collections.Generic;
-using System.Diagnostics;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using Shared.EventStore.EventStore;
 using TransactionProcessor.BusinessLogic.Manager;
 using TransactionProcessor.DataTransferObjects.Responses.Contract;
@@ -38,7 +37,6 @@ namespace TransactionProcessor.BusinessLogic.Tests.Mediator
             this.Requests.Add(TestData.Queries.GetMerchantBalanceHistoryQuery);
             this.Requests.Add(TestData.Commands.AddMerchantFeePendingSettlementCommand);
             this.Requests.Add(TestData.Commands.AddSettledFeeToSettlementCommand);
-            this.Requests.Add(TestData.Queries.GetPendingSettlementQuery);
             this.Requests.Add(TestData.Commands.RecordCreditPurchaseCommand);
             this.Requests.Add(TestData.Commands.CalculateFeesForTransactionCommand);
             this.Requests.Add(TestData.Commands.AddSettledMerchantFeeCommand);
@@ -98,6 +96,11 @@ namespace TransactionProcessor.BusinessLogic.Tests.Mediator
             this.Requests.Add(TestData.Commands.AddTransactionToMerchantStatementCommand);
             this.Requests.Add(TestData.Commands.EmailMerchantStatementCommand);
             this.Requests.Add(TestData.Commands.AddSettledFeeToMerchantStatementCommand);
+
+            // Settlement Commands and Queries
+            this.Requests.Add(TestData.Queries.GetSettlementQuery);
+            this.Requests.Add(TestData.Queries.GetSettlementsQuery);
+            this.Requests.Add(TestData.Queries.GetPendingSettlementQuery);
         }
 
         [Fact]
@@ -166,7 +169,7 @@ namespace TransactionProcessor.BusinessLogic.Tests.Mediator
                                           s.AddSingleton<IProjectionStateRepository<MerchantBalanceState>, DummyMerchantBalanceStateRepository>();
                                           s.AddSingleton<ITransactionProcessorReadRepository, DummyTransactionProcessorReadRepository>();
                                           s.AddSingleton<IEstateDomainService, DummyEstateDomainService>();
-                                          s.AddSingleton<IEstateManagementManager, DummyEstateManagementManager>();
+                                          s.AddSingleton<ITransactionProcessorManager, DummyTransactionProcessorManager>();
                                           s.AddSingleton<IOperatorDomainService, DummyOperatorDomainService>();
                 s.AddSingleton<IEventStoreContext, DummyEventStoreContext>();
             });

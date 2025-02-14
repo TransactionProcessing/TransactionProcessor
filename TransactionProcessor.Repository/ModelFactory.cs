@@ -1,25 +1,24 @@
-﻿using TransactionProcessor.Models.Estate;
-using TransactionProcessor.Models.Merchant;
+﻿using TransactionProcessor.Models.Merchant;
 
 namespace TransactionProcessor.Repository
 {
-    using EstateModel = Models.Estate.Estate;
     using EstateEntity = Database.Entities.Estate;
-    using EstateSecurityUserEntity = Database.Entities.EstateSecurityUser;
+    using EstateModel = Models.Estate.Estate;
     using EstateOperatorModel = Models.Estate.Operator;
+    using EstateSecurityUserEntity = Database.Entities.EstateSecurityUser;
     using EstateSecurityUserModel = Models.Estate.SecurityUser;
-    using OperatorEntity = Database.Entities.Operator;
-    using MerchantModel = Models.Merchant.Merchant;
-    using MerchantAddressModel = Models.Merchant.Address;
-    using MerchantContactModel = Models.Merchant.Contact;
-    using MerchantOperatorModel = Models.Merchant.Operator;
-    using MerchantSecurityUserModel = Models.Merchant.SecurityUser;
-    using MerchantEntity = TransactionProcessor.Database.Entities.Merchant;
     using MerchantAddressEntity = TransactionProcessor.Database.Entities.MerchantAddress;
+    using MerchantAddressModel = Models.Merchant.Address;
     using MerchantContactEntity = TransactionProcessor.Database.Entities.MerchantContact;
-    using MerchantOperatorEntity = TransactionProcessor.Database.Entities.MerchantOperator;
+    using MerchantContactModel = Models.Merchant.Contact;
     using MerchantDeviceEntity = TransactionProcessor.Database.Entities.MerchantDevice;
+    using MerchantEntity = TransactionProcessor.Database.Entities.Merchant;
+    using MerchantModel = Models.Merchant.Merchant;
+    using MerchantOperatorEntity = TransactionProcessor.Database.Entities.MerchantOperator;
+    using MerchantOperatorModel = Models.Merchant.Operator;
     using MerchantSecurityUserEntity = TransactionProcessor.Database.Entities.MerchantSecurityUser;
+    using MerchantSecurityUserModel = Models.Merchant.SecurityUser;
+    using OperatorEntity = Database.Entities.Operator;
 
     public static class ModelFactory
     {

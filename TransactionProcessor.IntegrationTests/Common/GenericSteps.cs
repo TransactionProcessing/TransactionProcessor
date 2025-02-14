@@ -1,15 +1,8 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Text;
 
 namespace TransactionProcessor.IntegrationTests.Common
 {
-    using System.Threading;
     using System.Threading.Tasks;
-    using Ductus.FluentDocker.Executors;
-    using Ductus.FluentDocker.Extensions;
-    using Ductus.FluentDocker.Services;
-    using Ductus.FluentDocker.Services.Extensions;
     using global::Shared.IntegrationTesting;
     using global::Shared.Logger;
     using NLog;

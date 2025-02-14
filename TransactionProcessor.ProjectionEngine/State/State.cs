@@ -1,7 +1,5 @@
 ﻿namespace TransactionProcessor.ProjectionEngine.State;
 
-using System.Diagnostics.CodeAnalysis;
-
 //[ExcludeFromCodeCoverage]
 //public record State()
 //{

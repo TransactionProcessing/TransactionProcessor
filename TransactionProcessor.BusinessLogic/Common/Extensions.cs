@@ -1,19 +1,16 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
 
 namespace TransactionProcessor.BusinessLogic.Common
 {
-    using Google.Protobuf.WellKnownTypes;
     using System.Diagnostics.CodeAnalysis;
-    using Shared.General;
-    using Type = System.Type;
     using System.Threading;
     using SecurityService.Client;
     using SecurityService.DataTransferObjects.Responses;
+    using Shared.General;
     using Shared.Logger;
+    using Type = System.Type;
 
     [ExcludeFromCodeCoverage]
     public static class Helpers

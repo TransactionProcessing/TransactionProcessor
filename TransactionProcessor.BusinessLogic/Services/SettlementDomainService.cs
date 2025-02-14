@@ -14,7 +14,6 @@ namespace TransactionProcessor.BusinessLogic.Services
     using System.Threading.Tasks;
     using Common;
     using Models;
-    using SecurityService.Client;
     using Shared.DomainDrivenDesign.EventSourcing;
     using Shared.EventStore.Aggregate;
     using Shared.Exceptions;

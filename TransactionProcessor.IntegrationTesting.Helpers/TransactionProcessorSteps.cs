@@ -11,7 +11,6 @@ using TransactionProcessor.DataTransferObjects.Responses.Settlement;
 
 namespace TransactionProcessor.IntegrationTesting.Helpers;
 
-using System.Diagnostics.Metrics;
 using System.Net;
 using System.Text;
 using System.Text.Json;

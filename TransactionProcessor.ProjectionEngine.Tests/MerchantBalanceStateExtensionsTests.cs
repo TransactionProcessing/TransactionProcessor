@@ -1,9 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using TransactionProcessor.DomainEvents;
+﻿using TransactionProcessor.DomainEvents;
 using TransactionProcessor.ProjectionEngine.State;
 
 namespace TransactionProcessor.ProjectionEngine.Tests

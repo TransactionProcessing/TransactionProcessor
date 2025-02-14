@@ -1,13 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Text;
 using TransactionProcessor.Models.Contract;
 
 namespace TransactionProcessor.BusinessLogic.Tests.Manager
 {
     using System.Linq;
     using BusinessLogic.Manager;
-    using EventHandling;
     using Models;
     using Shouldly;
     using Xunit;

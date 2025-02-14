@@ -1,19 +1,13 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Text;
 using SimpleResults;
 
 namespace TransactionProcessor.BusinessLogic.OperatorInterfaces.VoucherManagement
 {
-    using System.Security.Policy;
     using System.Threading;
     using System.Threading.Tasks;
     using Common;
-    using EstateManagement.DataTransferObjects.Responses.Merchant;
-    using IdentityModel.Client;
     using MediatR;
-    using Microsoft.EntityFrameworkCore.Storage.ValueConversion.Internal;
-    using Microsoft.Identity.Client;
     using Models;
     using Requests;
 

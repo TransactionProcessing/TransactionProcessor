@@ -1,17 +1,12 @@
-﻿using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using System.Threading.Tasks;
 using SimpleResults;
 
 namespace TransactionProcessor.BusinessLogic.RequestHandlers
 {
     using System.Threading;
     using MediatR;
-    using Models;
     using Requests;
-    using Shared.Exceptions;
     using TransactionProcessor.BusinessLogic.Services;
-    using static Microsoft.EntityFrameworkCore.DbLoggerCategory.Database;
 
     public class FloatRequestHandler :IRequestHandler<FloatCommands.CreateFloatForContractProductCommand, Result>,
                                       IRequestHandler<FloatCommands.RecordCreditPurchaseForFloatCommand, Result>,

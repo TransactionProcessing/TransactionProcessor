@@ -3,13 +3,10 @@ using SimpleResults;
 
 namespace TransactionProcessor.ProjectionEngine.Repository;
 
-using Common;
+using System.Diagnostics.CodeAnalysis;
 using Microsoft.EntityFrameworkCore;
 using Shared.DomainDrivenDesign.EventSourcing;
 using State;
-using System.Diagnostics.CodeAnalysis;
-using Newtonsoft.Json;
-using Shared.Logger;
 using TransactionProcessor.ProjectionEngine.Database.Database;
 using TransactionProcessor.ProjectionEngine.Database.Database.Entities;
 using MerchantBalanceProjectionState = Database.Database.Entities.MerchantBalanceProjectionState;

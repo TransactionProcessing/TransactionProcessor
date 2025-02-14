@@ -1,12 +1,7 @@
-﻿using Shared.DomainDrivenDesign.EventSourcing;
+﻿using System.Diagnostics.CodeAnalysis;
+using Shared.DomainDrivenDesign.EventSourcing;
 using Shared.EventStore.Aggregate;
 using Shared.General;
-using System;
-using System.Collections.Generic;
-using System.Diagnostics.CodeAnalysis;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using TransactionProcessor.DomainEvents;
 
 namespace TransactionProcessor.Aggregates

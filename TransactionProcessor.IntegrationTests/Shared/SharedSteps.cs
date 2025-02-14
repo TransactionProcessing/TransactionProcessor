@@ -22,11 +22,6 @@ namespace TransactionProcessor.IntegrationTests.Shared
     using Shouldly;
     using AssignOperatorRequest = DataTransferObjects.Requests.Estate.AssignOperatorRequest;
     using ClientDetails = Common.ClientDetails;
-    using Contract = Common.Contract;
-    using MerchantBalanceResponse = DataTransferObjects.MerchantBalanceResponse;
-    using MerchantOperatorResponse = EstateManagement.DataTransferObjects.Responses.Merchant.MerchantOperatorResponse;
-    using MerchantResponse = EstateManagement.DataTransferObjects.Responses.Merchant.MerchantResponse;
-    using Product = Common.Product;
     using ReqnrollExtensions = IntegrationTesting.Helpers.ReqnrollExtensions;
     
     [Scope(Tag = "shared")]
@@ -38,7 +33,6 @@ namespace TransactionProcessor.IntegrationTests.Shared
 
         private readonly SecurityServiceSteps SecurityServiceSteps;
 
-        //private readonly EstateManagementSteps EstateManagementSteps;
         private readonly TransactionProcessorSteps TransactionProcessorSteps;
 
         public SharedSteps(ScenarioContext scenarioContext,
@@ -46,7 +40,6 @@ namespace TransactionProcessor.IntegrationTests.Shared
             this.ScenarioContext = scenarioContext;
             this.TestingContext = testingContext;
             this.SecurityServiceSteps = new SecurityServiceSteps(testingContext.DockerHelper.SecurityServiceClient);
-            //this.EstateManagementSteps = new EstateManagementSteps(testingContext.DockerHelper.EstateClient.EstateClient, testingContext.DockerHelper.TestHostHttpClient);
             this.TransactionProcessorSteps = new TransactionProcessorSteps(testingContext.DockerHelper.TransactionProcessorClient, testingContext.DockerHelper.TestHostHttpClient,
                 testingContext.DockerHelper.ProjectionManagementClient);
         }

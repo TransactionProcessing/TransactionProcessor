@@ -10,14 +10,11 @@ namespace TransactionProcessor.Bootstrapper
     using Lamar;
     using Microsoft.Extensions.Configuration;
     using Microsoft.Extensions.DependencyInjection;
-    using ProjectionEngine;
-    using ProjectionEngine.Database;
     using ProjectionEngine.Dispatchers;
     using ProjectionEngine.EventHandling;
     using ProjectionEngine.ProjectionHandler;
     using ProjectionEngine.Projections;
     using ProjectionEngine.State;
-    using Shared.EntityFramework;
     using Shared.EventStore.EventHandling;
 
     /// <summary>

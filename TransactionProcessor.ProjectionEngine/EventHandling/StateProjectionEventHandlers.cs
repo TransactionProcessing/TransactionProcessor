@@ -7,13 +7,11 @@ namespace TransactionProcessor.ProjectionEngine.EventHandling;
 
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
-using Database;
 using Database.Database;
 using ProjectionHandler;
 using Shared.DomainDrivenDesign.EventSourcing;
 using Shared.EntityFramework;
 using Shared.EventStore.EventHandling;
-using State;
 
 [ExcludeFromCodeCoverage]
 public class StateProjectionEventHandler<TState> : IDomainEventHandler where TState : Shared.EventStore.ProjectionEngine.State

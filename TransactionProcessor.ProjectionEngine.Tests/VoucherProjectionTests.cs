@@ -1,10 +1,5 @@
 ﻿using Shared.DomainDrivenDesign.EventSourcing;
 using Shouldly;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using TransactionProcessor.DomainEvents;
 using TransactionProcessor.ProjectionEngine.Projections;
 using TransactionProcessor.ProjectionEngine.State;

@@ -25,15 +25,15 @@ namespace TransactionProcessor.BusinessLogic.RequestHandlers
         #region Fields
 
         private readonly IContractDomainService ContractDomainService;
-        private readonly IEstateManagementManager EstateManagementManager;
+        private readonly ITransactionProcessorManager TransactionProcessorManager;
 
         #endregion
 
         #region Constructors
 
-        public ContractRequestHandler(IContractDomainService contractDomainService, IEstateManagementManager estateManagementManager) {
+        public ContractRequestHandler(IContractDomainService contractDomainService, ITransactionProcessorManager transactionProcessorManager) {
             this.ContractDomainService = contractDomainService;
-            this.EstateManagementManager = estateManagementManager;
+            this.TransactionProcessorManager = transactionProcessorManager;
         }
 
         #endregion
@@ -68,13 +68,13 @@ namespace TransactionProcessor.BusinessLogic.RequestHandlers
         public async Task<Result<Models.Contract.Contract>> Handle(ContractQueries.GetContractQuery query,
                                                                    CancellationToken cancellationToken) {
             Result<Models.Contract.Contract> result =
-                await this.EstateManagementManager.GetContract(query.EstateId, query.ContractId, cancellationToken);
+                await this.TransactionProcessorManager.GetContract(query.EstateId, query.ContractId, cancellationToken);
             return result;
         }
 
         public async Task<Result<List<Models.Contract.Contract>>> Handle(ContractQueries.GetContractsQuery query,
                                                                          CancellationToken cancellationToken) {
-            Result<List<Models.Contract.Contract>> result = await this.EstateManagementManager.GetContracts(query.EstateId, cancellationToken);
+            Result<List<Models.Contract.Contract>> result = await this.TransactionProcessorManager.GetContracts(query.EstateId, cancellationToken);
             return result;
         }
     }

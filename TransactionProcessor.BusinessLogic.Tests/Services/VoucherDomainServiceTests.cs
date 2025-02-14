@@ -1,26 +1,20 @@
 ﻿using SimpleResults;
 using TransactionProcessor.Aggregates;
-using TransactionProcessor.BusinessLogic.Common;
 using TransactionProcessor.Database.Contexts;
 
 namespace TransactionProcessor.BusinessLogic.Tests.Services
 {
     using System;
-    using System.Collections.Generic;
     using System.Threading;
     using System.Threading.Tasks;
     using BusinessLogic.Services;
     using DomainEventHandlers;
-    using EstateManagement.Client;
     using Microsoft.EntityFrameworkCore;
     using Microsoft.EntityFrameworkCore.Diagnostics;
     using Microsoft.Extensions.Configuration;
-    using Models;
     using Moq;
-    using SecurityService.Client;
     using Shared.DomainDrivenDesign.EventSourcing;
     using Shared.EventStore.Aggregate;
-    using Shared.Exceptions;
     using Shared.General;
     using Shared.Logger;
     using Shouldly;

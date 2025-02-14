@@ -1,10 +1,7 @@
-﻿using MediatR;
-using SimpleResults;
-using System;
+﻿using System;
 using System.Diagnostics.CodeAnalysis;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+using MediatR;
+using SimpleResults;
 using TransactionProcessor.DataTransferObjects.Requests.Operator;
 
 namespace TransactionProcessor.BusinessLogic.Requests

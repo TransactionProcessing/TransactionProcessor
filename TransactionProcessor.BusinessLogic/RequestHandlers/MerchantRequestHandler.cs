@@ -45,18 +45,18 @@ IRequestHandler<MerchantCommands.SwapMerchantDeviceCommand, Result>,
     private readonly IEventStoreContext EventStoreContext;
     private readonly ITransactionProcessorReadRepository TransactionProcessorReadRepository;
     private readonly IMerchantDomainService MerchantDomainService;
-    private readonly IEstateManagementManager EstateManagementManager;
+    private readonly ITransactionProcessorManager TransactionProcessorManager;
 
     public MerchantRequestHandler(IProjectionStateRepository<MerchantBalanceState> merchantBalanceStateRepository,
                                   IEventStoreContext eventStoreContext,
                                   ITransactionProcessorReadRepository transactionProcessorReadRepository,
                                   IMerchantDomainService merchantDomainService,
-                                  IEstateManagementManager estateManagementManager) {
+                                  ITransactionProcessorManager manager) {
         this.MerchantBalanceStateRepository = merchantBalanceStateRepository;
         this.EventStoreContext = eventStoreContext;
         this.TransactionProcessorReadRepository = transactionProcessorReadRepository;
         this.MerchantDomainService = merchantDomainService;
-        this.EstateManagementManager = estateManagementManager;
+        this.TransactionProcessorManager = manager;
     }
 
     public async Task<Result<MerchantBalanceState>> Handle(MerchantQueries.GetMerchantBalanceQuery query,
@@ -130,22 +130,22 @@ IRequestHandler<MerchantCommands.SwapMerchantDeviceCommand, Result>,
 
     public async Task<Result<Models.Merchant.Merchant>> Handle(MerchantQueries.GetMerchantQuery query, CancellationToken cancellationToken)
     {
-        return await this.EstateManagementManager.GetMerchant(query.EstateId, query.MerchantId, cancellationToken);
+        return await this.TransactionProcessorManager.GetMerchant(query.EstateId, query.MerchantId, cancellationToken);
     }
 
     public async Task<Result<List<Models.Contract.Contract>>> Handle(MerchantQueries.GetMerchantContractsQuery query, CancellationToken cancellationToken)
     {
-        return await this.EstateManagementManager.GetMerchantContracts(query.EstateId, query.MerchantId, cancellationToken);
+        return await this.TransactionProcessorManager.GetMerchantContracts(query.EstateId, query.MerchantId, cancellationToken);
     }
 
     public async Task<Result<List<Merchant>>> Handle(MerchantQueries.GetMerchantsQuery query, CancellationToken cancellationToken)
     {
-        return await this.EstateManagementManager.GetMerchants(query.EstateId, cancellationToken);
+        return await this.TransactionProcessorManager.GetMerchants(query.EstateId, cancellationToken);
     }
 
     public async Task<Result<List<ContractProductTransactionFee>>> Handle(MerchantQueries.GetTransactionFeesForProductQuery query, CancellationToken cancellationToken)
     {
-        return await this.EstateManagementManager.GetTransactionFeesForProduct(query.EstateId, query.MerchantId, query.ContractId, query.ProductId, cancellationToken);
+        return await this.TransactionProcessorManager.GetTransactionFeesForProduct(query.EstateId, query.MerchantId, query.ContractId, query.ProductId, cancellationToken);
     }
 
     public async Task<Result> Handle(MerchantCommands.UpdateMerchantCommand command, CancellationToken cancellationToken)

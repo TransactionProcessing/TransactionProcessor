@@ -1,14 +1,10 @@
-﻿using Shared.EventStore.EventHandling;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading;
+﻿using System.Threading;
 using System.Threading.Tasks;
 using Shared.DomainDrivenDesign.EventSourcing;
+using Shared.EventStore.EventHandling;
 using SimpleResults;
-using TransactionProcessor.Repository;
 using TransactionProcessor.DomainEvents;
+using TransactionProcessor.Repository;
 using static TransactionProcessor.DomainEvents.FloatDomainEvents;
 
 namespace TransactionProcessor.BusinessLogic.EventHandling

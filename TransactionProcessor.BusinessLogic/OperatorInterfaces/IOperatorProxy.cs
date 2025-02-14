@@ -1,5 +1,4 @@
 ﻿using SimpleResults;
-using TransactionProcessor.DataTransferObjects.Responses.Merchant;
 
 namespace TransactionProcessor.BusinessLogic.OperatorInterfaces
 {

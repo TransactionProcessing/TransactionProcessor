@@ -1,22 +1,13 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
 using SimpleResults;
 using TransactionProcessor.BusinessLogic.Requests;
-using TransactionProcessor.Database.Entities;
 
 namespace TransactionProcessor.BusinessLogic.Tests.Services
 {
     using System.Threading;
-    using EstateManagement.Client;
-    using EstateManagement.DataTransferObjects.Responses;
-    using EstateManagement.DataTransferObjects.Responses.Contract;
     using Microsoft.Extensions.Configuration;
-    using Models;
     using Moq;
-    using SecurityService.Client;
     using Shared.DomainDrivenDesign.EventSourcing;
     using Shared.EventStore.Aggregate;
     using Shared.General;
@@ -24,7 +15,6 @@ namespace TransactionProcessor.BusinessLogic.Tests.Services
     using Shouldly;
     using Testing;
     using TransactionProcessor.Aggregates;
-    using TransactionProcessor.BusinessLogic.Common;
     using TransactionProcessor.BusinessLogic.Services;
     using Xunit;
 

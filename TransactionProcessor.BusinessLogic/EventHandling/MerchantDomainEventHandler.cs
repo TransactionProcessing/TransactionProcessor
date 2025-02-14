@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Threading;
 using System.Threading.Tasks;
-using EstateManagement.DataTransferObjects.Requests.Merchant;
 using MediatR;
 using Newtonsoft.Json;
 using Shared.DomainDrivenDesign.EventSourcing;
@@ -12,12 +11,9 @@ using SimpleResults;
 using TransactionProcessor.Aggregates;
 using TransactionProcessor.BusinessLogic.Events;
 using TransactionProcessor.BusinessLogic.Requests;
-using TransactionProcessor.DomainEvents;
 using TransactionProcessor.Models.Merchant;
 using TransactionProcessor.Repository;
-using TransactionProcessor.DomainEvents;
 using MakeMerchantDepositRequest = TransactionProcessor.DataTransferObjects.Requests.Merchant.MakeMerchantDepositRequest;
-using MerchantDepositSource = EstateManagement.DataTransferObjects.Requests.Merchant.MerchantDepositSource;
 
 namespace TransactionProcessor.BusinessLogic.EventHandling
 {

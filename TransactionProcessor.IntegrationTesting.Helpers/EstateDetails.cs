@@ -1,13 +1,10 @@
-﻿using EstateManagement.DataTransferObjects.Responses.Merchant;
-using TransactionProcessor.DataTransferObjects.Responses.Contract;
+﻿using TransactionProcessor.DataTransferObjects.Responses.Contract;
 
 namespace TransactionProcessor.IntegrationTesting.Helpers
 {
     using System;
     using System.Collections.Generic;
-    using System.Diagnostics;
     using System.Linq;
-    using TransactionProcessor.DataTransferObjects;
 
     public class EstateDetails
     {

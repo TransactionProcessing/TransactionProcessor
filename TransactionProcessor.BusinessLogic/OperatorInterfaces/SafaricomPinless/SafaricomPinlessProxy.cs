@@ -4,7 +4,6 @@ namespace TransactionProcessor.BusinessLogic.OperatorInterfaces.SafaricomPinless
 {
     using System;
     using System.Collections.Generic;
-    using System.Diagnostics.CodeAnalysis;
     using System.IO;
     using System.Net.Http;
     using System.Text;
@@ -13,7 +12,6 @@ namespace TransactionProcessor.BusinessLogic.OperatorInterfaces.SafaricomPinless
     using System.Xml;
     using System.Xml.Serialization;
     using Common;
-    using TransactionProcessor.DataTransferObjects.Responses.Merchant;
     using Shared.Logger;
 
     /// <summary>

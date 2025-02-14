@@ -1,6 +1,4 @@
-﻿using EstateManagement.DataTransferObjects.Requests.Merchant;
-using EstateManagement.DataTransferObjects.Responses.Merchant;
-using Newtonsoft.Json;
+﻿using Newtonsoft.Json;
 using Shared.Exceptions;
 using Shared.Results;
 using SimpleResults;
@@ -9,7 +7,6 @@ using TransactionProcessor.Models.Contract;
 using TransactionProcessor.Models.Estate;
 using TransactionProcessor.Models.Merchant;
 using Contract = TransactionProcessor.Models.Contract.Contract;
-using ContractProductTransactionFee = EstateManagement.DataTransferObjects.Responses.Contract.ContractProductTransactionFee;
 using Operator = TransactionProcessor.Models.Estate.Operator;
 
 namespace TransactionProcessor.BusinessLogic.Services{
@@ -22,7 +19,6 @@ namespace TransactionProcessor.BusinessLogic.Services{
     using Common;
     using MessagingService.Client;
     using MessagingService.DataTransferObjects;
-    using Microsoft.AspNetCore.Mvc.RazorPages;
     using Microsoft.Extensions.Caching.Memory;
     using Models;
     using OperatorInterfaces;
@@ -34,7 +30,6 @@ namespace TransactionProcessor.BusinessLogic.Services{
     using Shared.Logger;
     using TransactionProcessor.BusinessLogic.Manager;
     using TransactionProcessor.BusinessLogic.Requests;
-    using static Microsoft.EntityFrameworkCore.DbLoggerCategory.Database;
 
     public interface ITransactionDomainService
     {

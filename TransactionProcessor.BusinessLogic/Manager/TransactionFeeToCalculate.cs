@@ -4,7 +4,6 @@ namespace TransactionProcessor.BusinessLogic.Manager
 {
     using System;
     using System.Diagnostics.CodeAnalysis;
-    using Models;
 
     /// <summary>
     /// 

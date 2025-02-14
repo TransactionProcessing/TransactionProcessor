@@ -1,16 +1,15 @@
-﻿using SimpleResults;
-using TransactionProcessor.BusinessLogic.EventHandling;
-using TransactionProcessor.Testing;
-
-namespace EstateManagement.BusinessLogic.Tests.EventHandling;
-
-using System.Threading;
+﻿using System.Threading;
 using System.Threading.Tasks;
 using MediatR;
 using Moq;
 using Shared.Logger;
 using Shouldly;
+using SimpleResults;
+using TransactionProcessor.BusinessLogic.EventHandling;
+using TransactionProcessor.Testing;
 using Xunit;
+
+namespace TransactionProcessor.BusinessLogic.Tests.DomainEventHandlers;
 
 public class MerchantStatementDomainEventHandlerTests
 {
