@@ -1,14 +1,5 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-
-namespace TransactionProcessor.Common
+﻿namespace TransactionProcessor.Common
 {
-    using System.Diagnostics.CodeAnalysis;
-    using System.Security.Claims;
-    using Shared.Exceptions;
-
     //[ExcludeFromCodeCoverage]
     /*public class ClaimsHelper
     {

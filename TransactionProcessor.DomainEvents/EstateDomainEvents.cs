@@ -1,5 +1,5 @@
-﻿using Shared.DomainDrivenDesign.EventSourcing;
-using System.Diagnostics.CodeAnalysis;
+﻿using System.Diagnostics.CodeAnalysis;
+using Shared.DomainDrivenDesign.EventSourcing;
 
 namespace TransactionProcessor.DomainEvents;
 

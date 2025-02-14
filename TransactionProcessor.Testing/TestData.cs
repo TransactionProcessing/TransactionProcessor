@@ -1,5 +1,4 @@
-﻿using CallbackHandler.DataTransferObjects;
-using Newtonsoft.Json;
+﻿using Newtonsoft.Json;
 using Shared.ValueObjects;
 using TransactionProcessor.Aggregates;
 using TransactionProcessor.BusinessLogic.Events;
@@ -12,9 +11,7 @@ using TransactionProcessor.DataTransferObjects.Responses.Merchant;
 using TransactionProcessor.DomainEvents;
 using TransactionProcessor.Models.Contract;
 using TransactionProcessor.Models.Merchant;
-using Address = TransactionProcessor.DataTransferObjects.Requests.Merchant.Address;
 using AssignOperatorRequest = TransactionProcessor.DataTransferObjects.Requests.Estate.AssignOperatorRequest;
-using Contact = TransactionProcessor.DataTransferObjects.Requests.Merchant.Contact;
 using Contract = TransactionProcessor.Models.Merchant.Contract;
 using Deposit = CallbackHandler.DataTransferObjects.Deposit;
 using MerchantDepositSource = TransactionProcessor.DataTransferObjects.Requests.Merchant.MerchantDepositSource;
@@ -25,7 +22,7 @@ namespace TransactionProcessor.Testing
 {
     using System;
     using System.Collections.Generic;
-    using System.Reflection.Metadata;
+    using System.Linq;
     using BusinessLogic.OperatorInterfaces;
     using BusinessLogic.OperatorInterfaces.PataPawaPostPay;
     using BusinessLogic.OperatorInterfaces.SafaricomPinless;
@@ -35,12 +32,10 @@ namespace TransactionProcessor.Testing
     using PataPawaPostPay;
     using ProjectionEngine.State;
     using SecurityService.DataTransferObjects.Responses;
-    using Shared.DomainDrivenDesign.EventSourcing;
-    using TransactionProcessor.Models.Estate;
-    using System.Linq;
-    using ContractProductTransactionFeeModel = Models.Contract.ContractProductTransactionFee;
-    using static TransactionProcessor.DomainEvents.ContractDomainEvents;
     using TransactionProcessor.Aggregates.Models;
+    using TransactionProcessor.Database.Entities;
+    using TransactionProcessor.Models.Estate;
+    using ContractProductTransactionFeeModel = Models.Contract.ContractProductTransactionFee;
 
     public class TestData
     {
@@ -1528,7 +1523,7 @@ namespace TransactionProcessor.Testing
 
         public static String MerchantStateId = "Merchant1";
 
-        public static Merchant MerchantState = new Merchant(TestData.MerchantStateId,
+        public static ProjectionEngine.State.Merchant MerchantState = new ProjectionEngine.State.Merchant(TestData.MerchantStateId,
                                                             TestData.MerchantName,
                                                             1,
                                                             TestData.AvailableBalance,
@@ -1538,7 +1533,7 @@ namespace TransactionProcessor.Testing
                                                             new DeclinedSales(0, 0, null),
                                                             new Fees(0, 0));
 
-        public static Merchant MerchantStateNoCredit = new Merchant(TestData.MerchantStateId,
+        public static ProjectionEngine.State.Merchant MerchantStateNoCredit = new ProjectionEngine.State.Merchant(TestData.MerchantStateId,
                                                             TestData.MerchantName,
                                                             1,
                                                             0,
@@ -1851,7 +1846,7 @@ namespace TransactionProcessor.Testing
 
         public static String EstateUserPassword = "123456";
 
-        public static Estate EstateModel =>
+        public static Models.Estate.Estate EstateModel =>
             new Models.Estate.Estate()
             {
                 EstateId = TestData.EstateId,
@@ -1860,7 +1855,7 @@ namespace TransactionProcessor.Testing
                 SecurityUsers = null
             };
 
-        public static Estate EstateModelWithOperators =>
+        public static Models.Estate.Estate EstateModelWithOperators =>
             new Models.Estate.Estate()
             {
                 EstateId = TestData.EstateId,
@@ -1873,7 +1868,7 @@ namespace TransactionProcessor.Testing
                 SecurityUsers = null
             };
 
-        public static Estate EstateModelWithOperatorsAndSecurityUsers =>
+        public static Models.Estate.Estate EstateModelWithOperatorsAndSecurityUsers =>
             new Models.Estate.Estate()
             {
                 EstateId = TestData.EstateId,
@@ -1891,7 +1886,7 @@ namespace TransactionProcessor.Testing
                                                                               }
             };
 
-        public static Estate EstateModelWithSecurityUsers =>
+        public static Models.Estate.Estate EstateModelWithSecurityUsers =>
             new Models.Estate.Estate()
             {
                 EstateId = TestData.EstateId,
@@ -2231,8 +2226,15 @@ namespace TransactionProcessor.Testing
                     MerchantDepositSourceManualDTO,
                     TestData.MakeMerchantDepositRequest);
         }
-
+        public static Guid SettlementId = Guid.Parse("7CF02BE4-4BF0-4BB2-93C1-D6E5EC769E56");
+        public static String StartDate = "20210104";
+        public static String EndDate = "20210105";
         public static class Queries {
+            public static SettlementQueries.GetSettlementQuery GetSettlementQuery =>
+                new SettlementQueries.GetSettlementQuery(EstateId, MerchantId, SettlementId);
+
+            public static SettlementQueries.GetSettlementsQuery GetSettlementsQuery =>
+                new SettlementQueries.GetSettlementsQuery(EstateId, MerchantId, StartDate, EndDate);
             public static VoucherQueries.GetVoucherByVoucherCodeQuery GetVoucherByVoucherCodeQuery => new(EstateId, VoucherCode);
             public static VoucherQueries.GetVoucherByTransactionIdQuery GetVoucherByTransactionIdQuery => new(EstateId, TransactionId);
 
@@ -2550,7 +2552,7 @@ namespace TransactionProcessor.Testing
                     new Models.Merchant.Operator(OperatorId, OperatorName, OperatorMerchantNumber, OperatorTerminalNumber)
                 },
                 Contracts = new List<Models.Merchant.Contract>() {
-                    new Contract(ContractId) {
+                    new (ContractId) {
                         ContractProducts = new List<Guid> {
                             Guid.Parse("8EF716B9-422D-4FC6-B5A7-22FC4BABDD97")
                         }

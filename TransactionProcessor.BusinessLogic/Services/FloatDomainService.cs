@@ -1,32 +1,16 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
-using IdentityModel.Client;
 using Shared.Results;
 using SimpleResults;
 using TransactionProcessor.BusinessLogic.Requests;
 
 namespace TransactionProcessor.BusinessLogic.Services
 {
-    using System.Diagnostics.CodeAnalysis;
-    using System.Diagnostics.Contracts;
-    using System.Runtime.InteropServices;
     using System.Threading;
-    using Common;
-    using EstateManagement.Client;
-    using EstateManagement.DataTransferObjects.Responses;
-    using EstateManagement.DataTransferObjects.Responses.Contract;
-    using EstateManagement.DataTransferObjects.Responses.Estate;
-    using Models;
-    using SecurityService.Client;
-    using SecurityService.DataTransferObjects.Responses;
     using Shared.DomainDrivenDesign.EventSourcing;
     using Shared.EventStore.Aggregate;
     using Shared.Exceptions;
-    using Shared.General;
-    using Shared.Logger;
     using TransactionProcessor.Aggregates;
 
     public interface IFloatDomainService {

@@ -10,7 +10,6 @@ namespace TransactionProcessor.BusinessLogic.OperatorInterfaces.PataPawaPostPay
     using Common;
     using global::PataPawaPostPay;
     using Microsoft.Extensions.Caching.Memory;
-    using Shared.Logger;
 
     public class PataPawaPostPayProxy : IOperatorProxy
     {

@@ -1,5 +1,4 @@
-﻿using Shared.EventStore.Aggregate;
-using Shared.Results;
+﻿using Shared.Results;
 using SimpleResults;
 using Swashbuckle.AspNetCore.Filters;
 using TransactionProcessor.BusinessLogic.Requests;
@@ -20,8 +19,6 @@ namespace TransactionProcessor.Controllers
     using Shared.General;
     using Swashbuckle.AspNetCore.Annotations;
     using TransactionProcessor.Common.Examples;
-    using static Microsoft.EntityFrameworkCore.DbLoggerCategory.Database;
-    using IssueVoucherResponse = Models.IssueVoucherResponse;
     using RedeemVoucherResponse = Models.RedeemVoucherResponse;
 
     [ExcludeFromCodeCoverage]

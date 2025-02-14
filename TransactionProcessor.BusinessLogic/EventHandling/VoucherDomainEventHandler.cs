@@ -9,7 +9,6 @@ namespace TransactionProcessor.BusinessLogic.EventHandling;
 
 using System;
 using System.Collections.Generic;
-using System.Diagnostics.CodeAnalysis;
 using System.IO.Abstractions;
 using System.Reflection;
 using System.Threading;
@@ -23,8 +22,6 @@ using SecurityService.DataTransferObjects.Responses;
 using Shared.DomainDrivenDesign.EventSourcing;
 using Shared.EventStore.Aggregate;
 using Shared.EventStore.EventHandling;
-using Shared.General;
-using Shared.Logger;
 
 public class VoucherDomainEventHandler : IDomainEventHandler
 {

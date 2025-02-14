@@ -1,7 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
+﻿using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 using MediatR;
@@ -19,12 +16,12 @@ namespace TransactionProcessor.BusinessLogic.RequestHandlers
     {
         private readonly IOperatorDomainService OperatorDomainService;
 
-        private readonly IEstateManagementManager EstateManagementManager;
+        private readonly ITransactionProcessorManager TransactionProcessorManager;
 
-        public OperatorRequestHandler(IOperatorDomainService operatorDomainService, IEstateManagementManager estateManagementManager)
+        public OperatorRequestHandler(IOperatorDomainService operatorDomainService, ITransactionProcessorManager manager)
         {
             this.OperatorDomainService = operatorDomainService;
-            this.EstateManagementManager = estateManagementManager;
+            this.TransactionProcessorManager = manager;
         }
         public async Task<Result> Handle(OperatorCommands.CreateOperatorCommand command, CancellationToken cancellationToken)
         {
@@ -33,12 +30,12 @@ namespace TransactionProcessor.BusinessLogic.RequestHandlers
 
         public async Task<Result<Models.Operator.Operator>> Handle(OperatorQueries.GetOperatorQuery query, CancellationToken cancellationToken)
         {
-            return await this.EstateManagementManager.GetOperator(query.EstateId, query.OperatorId, cancellationToken);
+            return await this.TransactionProcessorManager.GetOperator(query.EstateId, query.OperatorId, cancellationToken);
         }
 
         public async Task<Result<List<Models.Operator.Operator>>> Handle(OperatorQueries.GetOperatorsQuery query, CancellationToken cancellationToken)
         {
-            return await this.EstateManagementManager.GetOperators(query.EstateId, cancellationToken);
+            return await this.TransactionProcessorManager.GetOperators(query.EstateId, cancellationToken);
         }
 
         public async Task<Result> Handle(OperatorCommands.UpdateOperatorCommand command, CancellationToken cancellationToken)

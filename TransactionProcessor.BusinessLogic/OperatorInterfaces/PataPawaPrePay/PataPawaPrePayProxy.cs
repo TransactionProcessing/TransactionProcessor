@@ -1,7 +1,5 @@
 ﻿using System.Diagnostics.CodeAnalysis;
-using System.Reflection.Metadata.Ecma335;
 using SimpleResults;
-using TransactionProcessor.DataTransferObjects.Responses.Merchant;
 
 namespace TransactionProcessor.BusinessLogic.OperatorInterfaces.PataPawaPrePay;
 

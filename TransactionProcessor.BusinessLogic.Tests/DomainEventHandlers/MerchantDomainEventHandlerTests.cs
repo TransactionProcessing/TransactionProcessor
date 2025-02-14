@@ -22,7 +22,7 @@ namespace TransactionProcessor.BusinessLogic.Tests.DomainEventHandlers
     public class MerchantDomainEventHandlerTests
     {
         private Mock<IAggregateRepository<MerchantAggregate, DomainEvent>> MerchantAggregateRepository;
-        private Mock<ITransactionProcessorReadModelRepository> EstateManagementRepository;
+        private Mock<ITransactionProcessorReadModelRepository> TransactionProcessorReadModelRepository;
         private Mock<IMediator> Mediator;
 
         private MerchantDomainEventHandler DomainEventHandler;
@@ -32,17 +32,17 @@ namespace TransactionProcessor.BusinessLogic.Tests.DomainEventHandlers
 
             this.Mediator = new Mock<IMediator>();
             this.MerchantAggregateRepository = new Mock<IAggregateRepository<MerchantAggregate, DomainEvent>>();
-            this.EstateManagementRepository = new Mock<ITransactionProcessorReadModelRepository>();
+            this.TransactionProcessorReadModelRepository = new Mock<ITransactionProcessorReadModelRepository>();
 
             this.DomainEventHandler = new MerchantDomainEventHandler(this.MerchantAggregateRepository.Object,
-                                                                                           this.EstateManagementRepository.Object,
+                                                                                           this.TransactionProcessorReadModelRepository.Object,
                                                                                            this.Mediator.Object);
         }
 
         [Fact]
         public async Task MerchantDomainEventHandler_Handle_CallbackReceivedEnrichedEvent_Deposit_EventIsHandled()
         {
-            this.EstateManagementRepository.Setup(e => e.GetMerchantFromReference(It.IsAny<Guid>(), It.IsAny<String>(), It.IsAny<CancellationToken>()))
+            this.TransactionProcessorReadModelRepository.Setup(e => e.GetMerchantFromReference(It.IsAny<Guid>(), It.IsAny<String>(), It.IsAny<CancellationToken>()))
                                       .ReturnsAsync(Result.Success(TestData.MerchantModelWithAddressesContactsDevicesAndOperatorsAndContracts()));
             this.Mediator.Setup(m => m.Send(It.IsAny<MerchantCommands.MakeMerchantDepositCommand>(), It.IsAny<CancellationToken>())).ReturnsAsync(Result.Success);
             CallbackReceivedEnrichedEvent domainEvent = TestData.DomainEvents.CallbackReceivedEnrichedEventDeposit;
@@ -55,9 +55,6 @@ namespace TransactionProcessor.BusinessLogic.Tests.DomainEventHandlers
         [Fact]
         public async Task MerchantDomainEventHandler_Handle_CallbackReceivedEnrichedEvent_OtherType_EventIsHandled()
         {
-            //this.EstateManagementRepository.Setup(e => e.GetMerchantFromReference(It.IsAny<Guid>(), It.IsAny<String>(), It.IsAny<CancellationToken>()))
-            //    .ReturnsAsync(TestData.MerchantModelWithAddressesContactsDevicesAndOperatorsAndContracts());
-
             CallbackReceivedEnrichedEvent domainEvent = TestData.DomainEvents.CallbackReceivedEnrichedEventOtherType;
 
             var result = await this.DomainEventHandler.Handle(domainEvent, CancellationToken.None);
@@ -67,7 +64,7 @@ namespace TransactionProcessor.BusinessLogic.Tests.DomainEventHandlers
         [Fact]
         public async Task MerchantDomainEventHandler_Handle_CallbackReceivedEnrichedEvent_Deposit_GetMerchantFailed_ResultIsFailure()
         {
-            this.EstateManagementRepository.Setup(e => e.GetMerchantFromReference(It.IsAny<Guid>(), It.IsAny<String>(), It.IsAny<CancellationToken>()))
+            this.TransactionProcessorReadModelRepository.Setup(e => e.GetMerchantFromReference(It.IsAny<Guid>(), It.IsAny<String>(), It.IsAny<CancellationToken>()))
                 .ReturnsAsync(Result.Failure());
 
             CallbackReceivedEnrichedEvent domainEvent = TestData.DomainEvents.CallbackReceivedEnrichedEventDeposit;

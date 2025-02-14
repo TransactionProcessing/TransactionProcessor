@@ -10,18 +10,14 @@ namespace TransactionProcessor.BusinessLogic.Tests.Services
     using System.Threading;
     using System.Threading.Tasks;
     using BusinessLogic.Services;
-    using EstateManagement.Client;
     using Microsoft.Extensions.Configuration;
-    using Models;
     using Moq;
-    using SecurityService.Client;
     using Shared.DomainDrivenDesign.EventSourcing;
     using Shared.EventStore.Aggregate;
     using Shared.General;
     using Shared.Logger;
     using Shouldly;
     using Testing;
-    using TransactionProcessor.BusinessLogic.Common;
     using Xunit;
 
     public class SettlementDomainServiceTests

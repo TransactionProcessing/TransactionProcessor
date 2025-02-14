@@ -1,7 +1,4 @@
-﻿using Microsoft.EntityFrameworkCore.Storage;
-using Shared.EventStore.Aggregate;
-using Shared.EventStore.ProjectionEngine;
-using Shared.Results;
+﻿using Shared.Results;
 using SimpleResults;
 
 namespace TransactionProcessor.ProjectionEngine.ProjectionHandler;
@@ -9,13 +6,10 @@ namespace TransactionProcessor.ProjectionEngine.ProjectionHandler;
 using System.Diagnostics;
 using System.Text;
 using Dispatchers;
-using Newtonsoft.Json;
 using Projections;
 using Repository;
 using Shared.DomainDrivenDesign.EventSourcing;
-using Shared.General;
 using Shared.Logger;
-using State;
 
 public class ProjectionHandler<TState> : IProjectionHandler where TState : Shared.EventStore.ProjectionEngine.State
 {

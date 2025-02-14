@@ -1,10 +1,4 @@
-﻿using Newtonsoft.Json;
-using Shared.DomainDrivenDesign.EventSourcing;
-using Shared.General;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
+﻿using Shared.DomainDrivenDesign.EventSourcing;
 using SimpleResults;
 
 namespace TransactionProcessor.ProjectionEngine.ProjectionHandler

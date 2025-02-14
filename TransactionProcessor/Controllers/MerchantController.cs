@@ -1,21 +1,11 @@
-﻿using EstateManagement.Client;
-using EstateManagement.DataTransferObjects.Responses.Contract;
-using EstateManagement.DataTransferObjects.Responses.Merchant;
-using MediatR;
-using Microsoft.CodeAnalysis.Elfie.Diagnostics;
+﻿using MediatR;
 using SecurityService.Client;
-using SecurityService.DataTransferObjects.Responses;
 using Shared.Results;
 using SimpleResults;
-using TransactionProcessor.BusinessLogic.Common;
 using TransactionProcessor.BusinessLogic.Requests;
 using TransactionProcessor.DataTransferObjects.Requests.Merchant;
+using TransactionProcessor.DataTransferObjects.Responses.Merchant;
 using TransactionProcessor.Factories;
-using Address = EstateManagement.DataTransferObjects.Requests.Merchant.Address;
-using CalculationType = TransactionProcessor.DataTransferObjects.Responses.Contract.CalculationType;
-using Contact = EstateManagement.DataTransferObjects.Requests.Merchant.Contact;
-using FeeType = TransactionProcessor.DataTransferObjects.Responses.Contract.FeeType;
-using ProductType = TransactionProcessor.DataTransferObjects.Responses.Contract.ProductType;
 
 namespace TransactionProcessor.Controllers;
 
@@ -25,13 +15,10 @@ using System.Diagnostics.CodeAnalysis;
 using System.Security.Claims;
 using System.Threading;
 using System.Threading.Tasks;
-using Common;
 using DataTransferObjects;
-using EventStore.Client;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-using Newtonsoft.Json;
 using ProjectionEngine.Models;
 using ProjectionEngine.Repository;
 using ProjectionEngine.State;
@@ -39,7 +26,6 @@ using Shared.EventStore.EventStore;
 using Shared.Exceptions;
 using Shared.General;
 using Swashbuckle.AspNetCore.Annotations;
-using TransactionProcessor.Database.Entities;
 
 [ExcludeFromCodeCoverage]
 [Route(MerchantController.ControllerRoute)]
@@ -49,12 +35,7 @@ public class MerchantController : ControllerBase
 {
     private readonly IMediator Mediator;
 
-    public MerchantController(IProjectionStateRepository<MerchantBalanceState> merchantBalanceStateRepository,
-                              ITransactionProcessorReadRepository transactionProcessorReadRepository,
-                              IEventStoreContext eventStoreContext,
-                              IMediator mediator,
-                              IEstateClient estateClient,
-                              ISecurityServiceClient securityServiceClient) {
+    public MerchantController(IMediator mediator) {
         this.Mediator = mediator;
     }
 

@@ -1,9 +1,9 @@
 ﻿namespace TransactionProcessor.Bootstrapper
 {
+    using System.Diagnostics.CodeAnalysis;
     using BusinessLogic.Services;
     using Lamar;
     using Microsoft.Extensions.DependencyInjection;
-    using System.Diagnostics.CodeAnalysis;
 
     /// <summary>
     /// 

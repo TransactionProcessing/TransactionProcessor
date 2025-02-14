@@ -1,7 +1,6 @@
 ﻿using System.Reflection;
 using Shared.DomainDrivenDesign.EventSourcing;
 using Shouldly;
-using TransactionProcessor.Aggregates;
 using TransactionProcessor.Models.Merchant;
 using TransactionProcessor.Testing;
 

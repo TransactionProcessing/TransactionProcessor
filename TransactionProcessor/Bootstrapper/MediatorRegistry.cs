@@ -1,19 +1,19 @@
 ﻿using System;
 using SimpleResults;
 using TransactionProcessor.Aggregates;
-using TransactionProcessor.DataTransferObjects;
+using TransactionProcessor.Models.Settlement;
 using TransactionProcessor.ProjectionEngine.Models;
 
 namespace TransactionProcessor.Bootstrapper
 {
+    using System.Collections.Generic;
+    using System.Diagnostics.CodeAnalysis;
     using BusinessLogic.RequestHandlers;
     using BusinessLogic.Requests;
     using Lamar;
     using MediatR;
     using Microsoft.Extensions.DependencyInjection;
     using Models;
-    using System.Collections.Generic;
-    using System.Diagnostics.CodeAnalysis;
     using TransactionProcessor.ProjectionEngine.State;
 
     /// <summary>
@@ -107,6 +107,8 @@ namespace TransactionProcessor.Bootstrapper
             this.AddSingleton<IRequestHandler<SettlementCommands.AddMerchantFeePendingSettlementCommand, Result>, SettlementRequestHandler>();
             this.AddSingleton<IRequestHandler<SettlementCommands.AddSettledFeeToSettlementCommand, Result>, SettlementRequestHandler>();
             this.AddSingleton<IRequestHandler<SettlementQueries.GetPendingSettlementQuery, Result<SettlementAggregate>>, SettlementRequestHandler>();
+            this.AddSingleton<IRequestHandler<SettlementQueries.GetSettlementQuery, Result<SettlementModel>>, SettlementRequestHandler>();
+            this.AddSingleton<IRequestHandler<SettlementQueries.GetSettlementsQuery, Result<List<SettlementModel>>>, SettlementRequestHandler>();
         }
 
         private void RegisterTransactionRequestHandler() {

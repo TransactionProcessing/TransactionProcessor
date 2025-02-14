@@ -1,25 +1,20 @@
-﻿using Microsoft.AspNetCore.Http;
+﻿using System;
+using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
+using System.Security.Claims;
+using System.Threading;
+using System.Threading.Tasks;
+using MediatR;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Shared.General;
-using SimpleResults;
-using System.Collections.Generic;
-using System.Security.Claims;
-using System.Threading.Tasks;
-using System.Threading;
-using System;
 using Shared.Results;
-using TransactionProcessor.DataTransferObjects.Responses.Contract;
-using TransactionProcessor.Factories;
-using Microsoft.AspNetCore.Authorization;
-using System.Diagnostics.CodeAnalysis;
+using SimpleResults;
 using TransactionProcessor.BusinessLogic.Requests;
-using MediatR;
 using TransactionProcessor.DataTransferObjects.Requests.Contract;
+using TransactionProcessor.Factories;
 using TransactionProcessor.Models.Contract;
-using CalculationType = TransactionProcessor.DataTransferObjects.Responses.Contract.CalculationType;
-using ContractProductTransactionFee = TransactionProcessor.DataTransferObjects.Responses.Contract.ContractProductTransactionFee;
-using FeeType = TransactionProcessor.DataTransferObjects.Responses.Contract.FeeType;
-using ProductType = TransactionProcessor.DataTransferObjects.Responses.Contract.ProductType;
 
 namespace TransactionProcessor.Controllers {
     [ExcludeFromCodeCoverage]

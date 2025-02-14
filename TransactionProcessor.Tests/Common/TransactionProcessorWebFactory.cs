@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Text;
 
 namespace TransactionProcessor.Tests.Common
@@ -12,7 +11,6 @@ namespace TransactionProcessor.Tests.Common
     using Microsoft.AspNetCore.Mvc.Authorization;
     using Microsoft.AspNetCore.Mvc.Testing;
     using Microsoft.Extensions.DependencyInjection;
-    using Models;
     using Moq;
     using Newtonsoft.Json;
     using Xunit;

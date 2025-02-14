@@ -1,17 +1,14 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Text;
 
 namespace TransactionProcessor.BusinessLogic.Tests.Services
 {
     using System.IO;
-    using System.IO.Abstractions;
     using System.IO.Abstractions.TestingHelpers;
     using System.Reflection;
     using System.Threading;
     using System.Threading.Tasks;
     using BusinessLogic.Services;
-    using EstateManagement.DataTransferObjects.Responses;
     using Models;
     using Shouldly;
     using Testing;

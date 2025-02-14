@@ -1,12 +1,9 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Text;
 
 namespace TransactionProcessor.IntegrationTests
 {
     using System.Threading;
     using System.Threading.Tasks;
-    using global::Shared.Logger;
 
     public static class Retry
     {

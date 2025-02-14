@@ -1,30 +1,21 @@
 ﻿using Shared.Results;
 using TransactionProcessor.Aggregates;
 using TransactionProcessor.Database.Contexts;
+using TransactionProcessor.DataTransferObjects.Responses.Estate;
 using TransactionProcessor.Models.Estate;
 
 namespace TransactionProcessor.BusinessLogic.Services;
 
 using System;
-using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using Common;
-using EstateManagement.Client;
-using EstateManagement.DataTransferObjects.Responses;
-using EstateManagement.DataTransferObjects.Responses.Estate;
-using Google.Protobuf.WellKnownTypes;
 using Microsoft.EntityFrameworkCore;
 using Models;
 using NetBarcode;
-using SecurityService.Client;
-using SecurityService.DataTransferObjects.Responses;
 using Shared.DomainDrivenDesign.EventSourcing;
 using Shared.EventStore.Aggregate;
 using Shared.Exceptions;
-using Shared.General;
-using Shared.Logger;
 using SimpleResults;
 
 public interface IVoucherDomainService

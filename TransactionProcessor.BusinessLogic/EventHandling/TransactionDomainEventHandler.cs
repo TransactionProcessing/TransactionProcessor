@@ -1,6 +1,5 @@
 ﻿using System.Diagnostics;
 using MediatR;
-using Shared.Exceptions;
 using SimpleResults;
 using TransactionProcessor.BusinessLogic.Requests;
 using TransactionProcessor.DomainEvents;
@@ -8,35 +7,14 @@ using TransactionProcessor.Models.Contract;
 
 namespace TransactionProcessor.BusinessLogic.EventHandling
 {
-    using System;
-    using System.Collections.Generic;
-    using System.Diagnostics.CodeAnalysis;
-    using System.Linq;
     using System.Threading;
     using System.Threading.Tasks;
-    using Common;
-    using EstateManagement.Client;
-    using EstateManagement.DataTransferObjects;
-    using EstateManagement.DataTransferObjects.Responses;
-    using EstateManagement.DataTransferObjects.Responses.Estate;
-    using Manager;
-    using MessagingService.Client;
-    using MessagingService.DataTransferObjects;
-    using Microsoft.Extensions.Caching.Memory;
-    using Models;
-    using SecurityService.Client;
     using SecurityService.DataTransferObjects.Responses;
-    using Services;
     using Shared.DomainDrivenDesign.EventSourcing;
-    using Shared.EventStore.Aggregate;
     using Shared.EventStore.EventHandling;
-    using Shared.General;
     using Shared.Logger;
     using static TransactionProcessor.BusinessLogic.Requests.SettlementCommands;
     using static TransactionProcessor.BusinessLogic.Requests.TransactionCommands;
-    using ContractProductTransactionFee = EstateManagement.DataTransferObjects.Responses.Contract.ContractProductTransactionFee;
-    using MerchantResponse = EstateManagement.DataTransferObjects.Responses.Merchant.MerchantResponse;
-    using Transaction = Models.Transaction;
 
     /// <summary>
     /// 

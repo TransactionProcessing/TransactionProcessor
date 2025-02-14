@@ -1,5 +1,4 @@
 ﻿using SimpleResults;
-using TransactionProcessor.DataTransferObjects;
 
 namespace TransactionProcessor.BusinessLogic.Tests.OperatorInterfaces
 {
@@ -10,7 +9,6 @@ namespace TransactionProcessor.BusinessLogic.Tests.OperatorInterfaces
     using BusinessLogic.OperatorInterfaces;
     using BusinessLogic.OperatorInterfaces.VoucherManagement;
     using MediatR;
-    using Models;
     using Moq;
     using Requests;
     using Shouldly;

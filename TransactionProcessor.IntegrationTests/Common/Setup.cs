@@ -1,21 +1,10 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Text;
 
 namespace TransactionProcessor.IntegrationTests.Common
 {
-    using System.Collections.Immutable;
-    using System.Data;
-    using System.IO;
-    using System.Net;
-    using System.Threading;
     using System.Threading.Tasks;
-    using Ductus.FluentDocker.Builders;
     using Ductus.FluentDocker.Services;
     using Ductus.FluentDocker.Services.Extensions;
-    using global::Shared.Logger;
-    using Microsoft.Data.SqlClient;
-    using NLog;
     using Reqnroll;
     using Shouldly;
 

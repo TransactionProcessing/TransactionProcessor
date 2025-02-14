@@ -1,6 +1,4 @@
 ﻿using System;
-using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
 using SimpleResults;
 
@@ -8,11 +6,8 @@ namespace TransactionProcessor.BusinessLogic.Tests.OperatorInterfaces
 {
     using System.Threading;
     using Common;
-    using EstateManagement.DataTransferObjects.Responses.Operator;
-    using Microsoft.Data.SqlClient;
     using Microsoft.Extensions.Caching.Memory;
     using Moq;
-    using NuGet.Protocol.Plugins;
     using PataPawaPostPay;
     using Shouldly;
     using Testing;

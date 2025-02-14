@@ -11,7 +11,6 @@ namespace TransactionProcessor.Controllers
     using BusinessLogic.Requests;
     using MediatR;
     using Microsoft.AspNetCore.Authorization;
-    using Models;
 
     [ExcludeFromCodeCoverage]
     [Route(FloatController.ControllerRoute)]

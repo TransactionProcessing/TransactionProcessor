@@ -5,11 +5,12 @@ using System.Threading.Tasks;
 using SimpleResults;
 using TransactionProcessor.Models.Contract;
 using TransactionProcessor.Models.Merchant;
+using TransactionProcessor.Models.Settlement;
 using Contract = TransactionProcessor.Models.Contract.Contract;
 
 namespace TransactionProcessor.BusinessLogic.Manager
 {
-    public interface IEstateManagementManager
+    public interface ITransactionProcessorManager
     {
         #region Methods
 
@@ -47,6 +48,17 @@ namespace TransactionProcessor.BusinessLogic.Manager
                                CancellationToken cancellationToken);
 
         Task<Result<List<Models.Operator.Operator>>> GetOperators(Guid estateId, CancellationToken cancellationToken);
+
+        Task<Result<SettlementModel>> GetSettlement(Guid estateId,
+                                                    Guid merchantId,
+                                                    Guid settlementId,
+                                                    CancellationToken cancellationToken);
+
+        Task<Result<List<SettlementModel>>> GetSettlements(Guid estateId,
+                                                           Guid? merchantId,
+                                                           String startDate,
+                                                           String endDate,
+                                                           CancellationToken cancellationToken);
 
         #endregion
     }

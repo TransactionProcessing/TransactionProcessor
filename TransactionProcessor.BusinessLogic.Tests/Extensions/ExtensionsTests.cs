@@ -1,13 +1,8 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace TransactionProcessor.BusinessLogic.Tests.Extensions
 {
     using Common;
-    using Shared.Exceptions;
     using Shouldly;
     using Xunit;
 

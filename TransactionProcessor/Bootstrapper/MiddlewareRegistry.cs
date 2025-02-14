@@ -44,7 +44,7 @@
                                userCredentials: eventStoreClientSettings.DefaultCredentials,
                                name:"Eventstore",
                                failureStatus:HealthStatus.Unhealthy,
-                               tags:new[] {"db", "eventstore"}).AddSecurityService(this.ApiEndpointHttpHandler).AddEstateManagementService();
+                               tags:new[] {"db", "eventstore"}).AddSecurityService(this.ApiEndpointHttpHandler);
 
             this.AddSwaggerGen(c =>
                                { 

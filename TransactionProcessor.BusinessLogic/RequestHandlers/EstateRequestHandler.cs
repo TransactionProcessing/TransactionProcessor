@@ -1,11 +1,8 @@
-﻿using MediatR;
-using SimpleResults;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
+﻿using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
+using MediatR;
+using SimpleResults;
 using TransactionProcessor.BusinessLogic.Manager;
 using TransactionProcessor.BusinessLogic.Requests;
 using TransactionProcessor.BusinessLogic.Services;
@@ -23,15 +20,15 @@ namespace TransactionProcessor.BusinessLogic.RequestHandlers
 
         private readonly IEstateDomainService EstateDomainService;
 
-        private readonly IEstateManagementManager EstateManagementManager;
+        private readonly ITransactionProcessorManager TransactionProcessorManager;
 
         #endregion
 
         #region Constructors
 
-        public EstateRequestHandler(IEstateDomainService estateDomainService, IEstateManagementManager manager) {
+        public EstateRequestHandler(IEstateDomainService estateDomainService, ITransactionProcessorManager manager) {
             this.EstateDomainService = estateDomainService;
-            this.EstateManagementManager = manager;
+            this.TransactionProcessorManager = manager;
         }
 
         #endregion
@@ -61,12 +58,12 @@ namespace TransactionProcessor.BusinessLogic.RequestHandlers
 
         public async Task<Result<Models.Estate.Estate>> Handle(EstateQueries.GetEstateQuery query, CancellationToken cancellationToken)
         {
-            return await this.EstateManagementManager.GetEstate(query.EstateId, cancellationToken);
+            return await this.TransactionProcessorManager.GetEstate(query.EstateId, cancellationToken);
         }
 
         public async Task<Result<List<Models.Estate.Estate>>> Handle(EstateQueries.GetEstatesQuery query, CancellationToken cancellationToken)
         {
-            return await this.EstateManagementManager.GetEstates(query.EstateId, cancellationToken);
+            return await this.TransactionProcessorManager.GetEstates(query.EstateId, cancellationToken);
         }
         #endregion
     }

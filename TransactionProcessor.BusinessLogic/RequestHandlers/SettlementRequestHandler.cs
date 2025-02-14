@@ -1,34 +1,38 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
 using SimpleResults;
 using TransactionProcessor.Aggregates;
 using TransactionProcessor.BusinessLogic.Common;
+using TransactionProcessor.BusinessLogic.Manager;
+using TransactionProcessor.Models.Settlement;
 
 namespace TransactionProcessor.BusinessLogic.RequestHandlers
 {
     using System.Threading;
     using MediatR;
-    using Models;
     using Requests;
     using Services;
     using Shared.DomainDrivenDesign.EventSourcing;
     using Shared.EventStore.Aggregate;
-    using static Microsoft.EntityFrameworkCore.DbLoggerCategory.Database;
 
     public class SettlementRequestHandler : IRequestHandler<SettlementCommands.ProcessSettlementCommand, Result<Guid>>,
                                             IRequestHandler<SettlementCommands.AddMerchantFeePendingSettlementCommand, Result>,
                                             IRequestHandler<SettlementCommands.AddSettledFeeToSettlementCommand, Result>,
-                                            IRequestHandler<SettlementQueries.GetPendingSettlementQuery, Result<SettlementAggregate>> {
+                                            IRequestHandler<SettlementQueries.GetPendingSettlementQuery, Result<SettlementAggregate>>,
+                                            IRequestHandler<SettlementQueries.GetSettlementQuery, Result<SettlementModel>>,
+                                            IRequestHandler<SettlementQueries.GetSettlementsQuery, Result<List<SettlementModel>>>
+    {
         private readonly ISettlementDomainService SettlementDomainService;
         private readonly IAggregateRepository<SettlementAggregate, DomainEvent> SettlementAggregateRepository;
+        private readonly ITransactionProcessorManager TransactionProcessorManager;
 
         public SettlementRequestHandler(ISettlementDomainService settlementDomainService,
-                                        IAggregateRepository<SettlementAggregate, DomainEvent> settlementAggregateRepository) {
+                                        IAggregateRepository<SettlementAggregate, DomainEvent> settlementAggregateRepository,
+                                        ITransactionProcessorManager transactionProcessorManager) {
             this.SettlementDomainService = settlementDomainService;
             this.SettlementAggregateRepository = settlementAggregateRepository;
+            this.TransactionProcessorManager = transactionProcessorManager;
         }
 
         public async Task<Result<Guid>> Handle(SettlementCommands.ProcessSettlementCommand command,
@@ -60,6 +64,16 @@ namespace TransactionProcessor.BusinessLogic.RequestHandlers
             SettlementAggregate settlementAggregate = getSettlementResult.Data;
 
             return Result.Success(settlementAggregate);
+        }
+
+        public async Task<Result<SettlementModel>> Handle(SettlementQueries.GetSettlementQuery request,
+                                                          CancellationToken cancellationToken) {
+            return await this.TransactionProcessorManager.GetSettlement(request.EstateId, request.MerchantId, request.SettlementId, cancellationToken);
+        }
+
+        public async Task<Result<List<SettlementModel>>> Handle(SettlementQueries.GetSettlementsQuery request,
+                                                                CancellationToken cancellationToken) {
+            return await this.TransactionProcessorManager.GetSettlements(request.EstateId, request.MerchantId, request.StartDate, request.EndDate, cancellationToken);
         }
     }
 }

@@ -1,10 +1,7 @@
-﻿using Moq;
-using Shouldly;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
+﻿using System;
 using System.Threading.Tasks;
+using Moq;
+using Shouldly;
 using TransactionProcessor.BusinessLogic.Manager;
 using TransactionProcessor.BusinessLogic.RequestHandlers;
 using TransactionProcessor.BusinessLogic.Services;
@@ -13,7 +10,6 @@ using Xunit;
 namespace TransactionProcessor.BusinessLogic.Tests.RequestHandler
 {
     using System.Threading;
-    using Requests;
     using Testing;
 
     public class VoucherManagementRequestHandlerTests

@@ -1,5 +1,4 @@
-﻿using Shared.EventStore.Aggregate;
-using Shared.Results;
+﻿using Shared.Results;
 using SimpleResults;
 
 namespace TransactionProcessor.Controllers
@@ -7,15 +6,11 @@ namespace TransactionProcessor.Controllers
     using System;
     using System.Collections.Generic;
     using System.Diagnostics.CodeAnalysis;
-    using System.Net;
-    using System.Security.Claims;
     using System.Threading;
     using System.Threading.Tasks;
     using BusinessLogic.Requests;
-    using Common;
     using Common.Examples;
     using DataTransferObjects;
-    using EstateManagement.DataTransferObjects.Responses;
     using Factories;
     using MediatR;
     using Microsoft.AspNetCore.Authorization;

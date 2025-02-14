@@ -1,11 +1,7 @@
-﻿using System.Runtime.CompilerServices;
-using EstateManagement.DataTransferObjects.Responses.Merchant;
-using Shared.DomainDrivenDesign.EventSourcing;
+﻿using Shared.DomainDrivenDesign.EventSourcing;
 using Shared.EventStore.Aggregate;
-using Shared.Results;
 using SimpleResults;
 using TransactionProcessor.Aggregates;
-using TransactionProcessor.Models;
 using TransactionProcessor.Models.Merchant;
 
 namespace TransactionProcessor.BusinessLogic.Services;
@@ -16,20 +12,9 @@ using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using Common;
-using EstateManagement.Client;
-using EstateManagement.DataTransferObjects.Responses;
-using EstateManagement.DataTransferObjects.Responses.Estate;
-using EventStore.Client;
 using Newtonsoft.Json;
-using ProjectionEngine.Repository;
 using ProjectionEngine.State;
-using SecurityService.Client;
-using SecurityService.DataTransferObjects.Responses;
 using Shared.EventStore.EventStore;
-using Shared.EventStore.ProjectionEngine;
-using Shared.General;
-using Shared.Logger;
 
 public interface ITransactionValidationService
 {

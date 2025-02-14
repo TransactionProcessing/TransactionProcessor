@@ -1,5 +1,4 @@
 ﻿using MessagingService.DataTransferObjects;
-using Microsoft.Extensions.Caching.Memory;
 using SimpleResults;
 using TransactionProcessor.Aggregates;
 using TransactionProcessor.BusinessLogic.Common;
@@ -27,7 +26,6 @@ namespace TransactionProcessor.BusinessLogic.Tests.Services{
     using Shouldly;
     using Testing;
     using Xunit;
-    using static Microsoft.EntityFrameworkCore.DbLoggerCategory.Database;
 
     public class TransactionDomainServiceTests{
         #region Fields

@@ -4,10 +4,10 @@ using SimpleResults;
 
 namespace TransactionProcessor.ProjectionEngine.Repository;
 
+using System.Diagnostics.CodeAnalysis;
 using Database.Database;
 using Microsoft.EntityFrameworkCore;
 using Models;
-using System.Diagnostics.CodeAnalysis;
 using TransactionProcessor.ProjectionEngine.Database.Database.ViewEntities;
 
 [ExcludeFromCodeCoverage]

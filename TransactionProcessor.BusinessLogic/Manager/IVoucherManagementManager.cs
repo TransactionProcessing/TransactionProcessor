@@ -1,9 +1,9 @@
-﻿using Shared.DomainDrivenDesign.EventSourcing;
-using Shared.EventStore.Aggregate;
-using Shared.Exceptions;
-using System;
+﻿using System;
 using System.Threading;
 using System.Threading.Tasks;
+using Shared.DomainDrivenDesign.EventSourcing;
+using Shared.EventStore.Aggregate;
+using Shared.Exceptions;
 using SimpleResults;
 using TransactionProcessor.Aggregates;
 

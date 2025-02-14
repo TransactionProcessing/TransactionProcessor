@@ -1,12 +1,10 @@
-﻿using System;
-using TransactionProcessor.DomainEvents;
+﻿using TransactionProcessor.DomainEvents;
 
 namespace TransactionProcessor.Aggregates
 {
     using System.Diagnostics.CodeAnalysis;
     using Shared.DomainDrivenDesign.EventSourcing;
     using Shared.EventStore.Aggregate;
-    using Shared.EventStore.EventStore;
     using Shared.General;
 
     public static class ReconciliationAggregateExtensions{

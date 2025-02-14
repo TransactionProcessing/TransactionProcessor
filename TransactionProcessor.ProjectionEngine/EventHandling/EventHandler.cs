@@ -1,20 +1,12 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using SimpleResults;
+﻿using SimpleResults;
 
 namespace TransactionProcessor.ProjectionEngine.EventHandling
 {
     using System.Diagnostics.CodeAnalysis;
+    using System.Reflection;
     using Shared.DomainDrivenDesign.EventSourcing;
     using Shared.EventStore.EventHandling;
-    using System.Reflection;
-    using Database;
-    using Microsoft.AspNetCore.Hosting;
     using Shared.General;
-    using State;
 
     [ExcludeFromCodeCoverage]
     public class EventHandler : IDomainEventHandler

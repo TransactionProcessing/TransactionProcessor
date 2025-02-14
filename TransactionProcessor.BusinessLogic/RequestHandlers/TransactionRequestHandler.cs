@@ -8,7 +8,6 @@ namespace TransactionProcessor.BusinessLogic.RequestHandlers
     using Models;
     using Requests;
     using Services;
-    using static Microsoft.EntityFrameworkCore.DbLoggerCategory.Database;
 
     public class TransactionRequestHandler : IRequestHandler<TransactionCommands.ProcessLogonTransactionCommand, Result<ProcessLogonTransactionResponse>>,
                                              IRequestHandler<TransactionCommands.ProcessSaleTransactionCommand, Result<ProcessSaleTransactionResponse>>,

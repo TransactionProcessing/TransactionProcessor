@@ -5,7 +5,6 @@
     using System.Reflection;
     using System.Threading;
     using System.Threading.Tasks;
-    using EstateManagement.DataTransferObjects.Responses;
     using Models;
 
     public interface ITransactionReceiptBuilder

@@ -1,4 +1,9 @@
-﻿using Newtonsoft.Json;
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading;
+using System.Threading.Tasks;
+using Newtonsoft.Json;
 using SecurityService.Client;
 using SecurityService.DataTransferObjects;
 using Shared.DomainDrivenDesign.EventSourcing;
@@ -8,18 +13,11 @@ using Shared.Exceptions;
 using Shared.Results;
 using Shared.ValueObjects;
 using SimpleResults;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading;
-using System.Threading.Tasks;
 using TransactionProcessor.Aggregates;
 using TransactionProcessor.BusinessLogic.Requests;
 using TransactionProcessor.Models.Estate;
 using TransactionProcessor.Models.Merchant;
 using TransactionProcessor.ProjectionEngine.State;
-using Operator = TransactionProcessor.Models.Operator.Operator;
 
 namespace TransactionProcessor.BusinessLogic.Services
 {

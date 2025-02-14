@@ -4,11 +4,7 @@ namespace TransactionProcessor.Bootstrapper
 {
     using System;
     using System.Diagnostics.CodeAnalysis;
-    using System.Net.Http;
     using System.ServiceModel;
-    using System.ServiceModel.Channels;
-    using System.ServiceModel.Description;
-    using System.ServiceModel.Dispatcher;
     using BusinessLogic.OperatorInterfaces;
     using BusinessLogic.OperatorInterfaces.PataPawaPostPay;
     using BusinessLogic.OperatorInterfaces.PataPawaPrePay;
@@ -16,8 +12,6 @@ namespace TransactionProcessor.Bootstrapper
     using BusinessLogic.OperatorInterfaces.VoucherManagement;
     using Common;
     using Lamar;
-    using Microsoft.Data.SqlClient;
-    using Microsoft.Extensions.Caching.Memory;
     using Microsoft.Extensions.Configuration;
     using Microsoft.Extensions.DependencyInjection;
     //using Org.BouncyCastle.Security;

@@ -1,28 +1,23 @@
-﻿using MessagingService.Client;
-using MessagingService.DataTransferObjects;
+﻿using System;
+using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
+using System.IO.Abstractions;
+using System.Threading;
+using System.Threading.Tasks;
+using MessagingService.Client;
 using SecurityService.Client;
+using SecurityService.DataTransferObjects.Responses;
 using Shared.DomainDrivenDesign.EventSourcing;
 using Shared.EventStore.Aggregate;
 using Shared.Exceptions;
 using Shared.General;
+using Shared.Logger;
 using Shared.Results;
 using SimpleResults;
-using System;
-using System.Collections.Generic;
-using System.Diagnostics.CodeAnalysis;
-using System.Diagnostics;
-using System.IO.Abstractions;
-using System.Linq;
-using System.Text;
-using System.Threading;
-using System.Threading.Tasks;
-using SecurityService.DataTransferObjects.Responses;
-using Shared.Logger;
-using TransactionProcessor.Aggregates.Models;
 using TransactionProcessor.Aggregates;
+using TransactionProcessor.Aggregates.Models;
 using TransactionProcessor.BusinessLogic.Common;
 using TransactionProcessor.BusinessLogic.Requests;
-using TransactionProcessor.Database.Entities;
 using TransactionProcessor.Repository;
 using Transaction = TransactionProcessor.Aggregates.Models.Transaction;
 
@@ -47,62 +42,19 @@ namespace TransactionProcessor.BusinessLogic.Services
     {
         #region Fields
 
-        /// <summary>
-        /// The merchant aggregate repository
-        /// </summary>
         private readonly IAggregateRepository<MerchantAggregate, DomainEvent> MerchantAggregateRepository;
 
-        /// <summary>
-        /// The merchant statement aggregate repository
-        /// </summary>
         private readonly IAggregateRepository<MerchantStatementAggregate, DomainEvent> MerchantStatementAggregateRepository;
-
-        private readonly IAggregateRepository<EstateAggregate, DomainEvent> EstateAggregateRepository;
-
-        private readonly ITransactionProcessorReadModelRepository EstateManagementRepository;
-
-        //private readonly IStatementBuilder StatementBuilder;
-
-        private readonly IMessagingServiceClient MessagingServiceClient;
-
-        private readonly ISecurityServiceClient SecurityServiceClient;
-
-        private readonly IFileSystem FileSystem;
-
-        //private readonly IPDFGenerator PdfGenerator;
-
+        
         #endregion
 
         #region Constructors
 
-        /// <summary>
-        /// Initializes a new instance of the <see cref="MerchantStatementDomainService" /> class.
-        /// </summary>
-        /// <param name="merchantAggregateRepository">The merchant aggregate repository.</param>
-        /// <param name="merchantStatementAggregateRepository">The merchant statement aggregate repository.</param>
-        /// <param name="estateManagementRepository">The estate management repository.</param>
-        /// <param name="statementBuilder">The statement builder.</param>
-        /// <param name="messagingServiceClient">The messaging service client.</param>
-        /// <param name="securityServiceClient">The security service client.</param>
-        /// <param name="fileSystem">The file system.</param>
-        /// <param name="pdfGenerator">The PDF generator.</param>
         public MerchantStatementDomainService(IAggregateRepository<MerchantAggregate, DomainEvent> merchantAggregateRepository,
-                                              IAggregateRepository<MerchantStatementAggregate, DomainEvent> merchantStatementAggregateRepository,
-                                              ITransactionProcessorReadModelRepository estateManagementRepository,
-                                              //IStatementBuilder statementBuilder,
-                                              IMessagingServiceClient messagingServiceClient,
-                                              ISecurityServiceClient securityServiceClient,
-                                              IFileSystem fileSystem)//,
-                                              //IPDFGenerator pdfGenerator)
+                                              IAggregateRepository<MerchantStatementAggregate, DomainEvent> merchantStatementAggregateRepository)
         {
             this.MerchantAggregateRepository = merchantAggregateRepository;
             this.MerchantStatementAggregateRepository = merchantStatementAggregateRepository;
-            this.EstateManagementRepository = estateManagementRepository;
-            //this.StatementBuilder = statementBuilder;
-            this.MessagingServiceClient = messagingServiceClient;
-            this.SecurityServiceClient = securityServiceClient;
-            this.FileSystem = fileSystem;
-            //this.PdfGenerator = pdfGenerator;
         }
 
         #endregion

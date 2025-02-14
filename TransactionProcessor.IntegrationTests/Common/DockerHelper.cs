@@ -1,20 +1,15 @@
-﻿using TransactionProcessor.BusinessLogic.Common;
-using TransactionProcessor.Database.Contexts;
+﻿using TransactionProcessor.Database.Contexts;
 
 namespace TransactionProcessor.IntegrationTests.Common
 {
     using System;
     using System.Collections.Generic;
-    using System.IO;
-    using System.Linq;
-    using System.Net;
     using System.Net.Http;
     using System.Text;
     using System.Threading;
     using System.Threading.Tasks;
     using Client;
     using Ductus.FluentDocker.Builders;
-    using EstateManagement.Client;
     using EventStore.Client;
     using global::Shared.IntegrationTesting;
     using Newtonsoft.Json;
@@ -123,7 +118,6 @@ namespace TransactionProcessor.IntegrationTests.Common
             await base.StartContainersForScenarioRun(scenarioName, dockerServices);
             
             // Setup the base address resolvers
-            String EstateManagementBaseAddressResolver(String api) => $"http://127.0.0.1:{this.EstateManagementPort}";
             String SecurityServiceBaseAddressResolver(String api) => $"https://127.0.0.1:{this.SecurityServicePort}";
             String TransactionProcessorBaseAddressResolver(String api) => $"http://127.0.0.1:{this.TransactionProcessorPort}";
 
@@ -138,7 +132,6 @@ namespace TransactionProcessor.IntegrationTests.Common
                                                                                               }
                                               };
             HttpClient httpClient = new HttpClient(clientHandler);
-            //this.EstateClient = new IntermediateEstateClient(new EstateClient(EstateManagementBaseAddressResolver, httpClient,2));
             this.SecurityServiceClient = new SecurityServiceClient(SecurityServiceBaseAddressResolver, httpClient);
             this.TransactionProcessorClient = new TransactionProcessorClient(TransactionProcessorBaseAddressResolver, httpClient);
             this.TestHostHttpClient= new HttpClient(clientHandler);

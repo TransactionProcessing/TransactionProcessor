@@ -7,25 +7,25 @@ namespace TransactionProcessor.Bootstrapper
     using System;
     using System.Data.Common;
     using System.Diagnostics.CodeAnalysis;
-    using System.Threading.Tasks;
     using System.Threading;
+    using System.Threading.Tasks;
     using Lamar;
     using Microsoft.Data.SqlClient;
     using Microsoft.Extensions.Configuration;
     using Microsoft.Extensions.DependencyInjection;
     using MySqlConnector;
+    using ProjectionEngine.Database.Database;
     using ProjectionEngine.Projections;
+    using ProjectionEngine.Repository;
+    using ProjectionEngine.State;
     using Shared.DomainDrivenDesign.EventSourcing;
     using Shared.EntityFramework;
     using Shared.EntityFramework.ConnectionStringConfiguration;
     using Shared.EventStore.Aggregate;
     using Shared.EventStore.EventStore;
+    using Shared.EventStore.SubscriptionWorker;
     using Shared.General;
     using Shared.Repositories;
-    using ProjectionEngine.Database.Database;
-    using ProjectionEngine.Repository;
-    using ProjectionEngine.State;
-    using Shared.EventStore.SubscriptionWorker;
 
     /// <summary>
     /// 

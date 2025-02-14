@@ -2,17 +2,14 @@
 
 namespace TransactionProcessor.Bootstrapper
 {
-    using System.Collections.Generic;
     using System;
     using System.Diagnostics.CodeAnalysis;
     using System.IO.Abstractions;
     using BusinessLogic.Common;
     using BusinessLogic.Manager;
     using BusinessLogic.Services;
-    using Factories;
     using Lamar;
     using Microsoft.Extensions.DependencyInjection;
-    using NuGet.Protocol.Plugins;
     using Shared.General;
     using Shared.Middleware;
 
@@ -34,7 +31,7 @@ namespace TransactionProcessor.Bootstrapper
             this.AddSingleton<IFileSystem, FileSystem>();
             this.AddSingleton<IFeeCalculationManager, FeeCalculationManager>();
             this.AddSingleton<IVoucherManagementManager, VoucherManagementManager>();
-            this.AddSingleton<IEstateManagementManager, EstateManagementManager>();
+            this.AddSingleton<ITransactionProcessorManager, TransactionProcessorManager>();
             this.AddSingleton<IMemoryCacheWrapper, MemoryCacheWrapper>();
 
             bool logRequests = ConfigurationReader.GetValueOrDefault<Boolean>("MiddlewareLogging", "LogRequests", true);

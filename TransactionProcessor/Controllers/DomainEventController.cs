@@ -7,7 +7,6 @@ namespace TransactionProcessor.Controllers
 {
     using System.Diagnostics.CodeAnalysis;
     using System.Threading;
-    using Microsoft.AspNetCore.Components.Web;
     using Microsoft.AspNetCore.Mvc;
     using Newtonsoft.Json;
     using Newtonsoft.Json.Linq;

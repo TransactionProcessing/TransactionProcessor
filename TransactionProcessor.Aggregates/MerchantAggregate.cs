@@ -1,24 +1,22 @@
 ﻿using System.Diagnostics.CodeAnalysis;
-using System.Diagnostics.Metrics;
 using Shared.DomainDrivenDesign.EventSourcing;
 using Shared.EventStore.Aggregate;
 using Shared.General;
 using TransactionProcessor.DomainEvents;
 using TransactionProcessor.Models.Contract;
-using TransactionProcessor.Models.Estate;
 using TransactionProcessor.Models.Merchant;
 using Address = TransactionProcessor.Aggregates.Models.Address;
-using Contact = TransactionProcessor.Aggregates.Models.Contact;
-using Contract = TransactionProcessor.Aggregates.Models.Contract;
-using Device = TransactionProcessor.Aggregates.Models.Device;
-using Operator = TransactionProcessor.Aggregates.Models.Operator;
-using SecurityUser = TransactionProcessor.Aggregates.Models.SecurityUser;
 using AddressModel = TransactionProcessor.Models.Merchant.Address;
+using Contact = TransactionProcessor.Aggregates.Models.Contact;
 using ContactModel = TransactionProcessor.Models.Merchant.Contact;
-using DeviceModel = TransactionProcessor.Models.Merchant.Device;
-using OperatorModel = TransactionProcessor.Models.Merchant.Operator;
-using SecurityUserModel = TransactionProcessor.Models.Merchant.SecurityUser;
+using Contract = TransactionProcessor.Aggregates.Models.Contract;
 using ContractModel = TransactionProcessor.Models.Merchant.Contract;
+using Device = TransactionProcessor.Aggregates.Models.Device;
+using DeviceModel = TransactionProcessor.Models.Merchant.Device;
+using Operator = TransactionProcessor.Aggregates.Models.Operator;
+using OperatorModel = TransactionProcessor.Models.Merchant.Operator;
+using SecurityUser = TransactionProcessor.Aggregates.Models.SecurityUser;
+using SecurityUserModel = TransactionProcessor.Models.Merchant.SecurityUser;
 
 
 namespace TransactionProcessor.Aggregates

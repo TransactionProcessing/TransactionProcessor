@@ -10,7 +10,7 @@ using SimpleResults;
 using TransactionProcessor.Aggregates;
 using TransactionProcessor.Models.Contract;
 using TransactionProcessor.Models.Merchant;
-using TransactionProcessor.ProjectionEngine.Repository;
+using TransactionProcessor.Models.Settlement;
 using TransactionProcessor.Repository;
 using Contract = TransactionProcessor.Models.Contract.Contract;
 using Operator = TransactionProcessor.Models.Estate.Operator;
@@ -20,12 +20,12 @@ namespace TransactionProcessor.BusinessLogic.Manager
     /// <summary>
     /// 
     /// </summary>
-    /// <seealso cref="IEstateManagementManager" />
-    public class EstateManagementManager : IEstateManagementManager
+    /// <seealso cref="ITransactionProcessorManager" />
+    public class TransactionProcessorManager : ITransactionProcessorManager
     {
         #region Fields
         
-        private readonly ITransactionProcessorReadModelRepository EstateManagementRepository;
+        private readonly ITransactionProcessorReadModelRepository TransactionProcessorReadModelRepository;
 
         private readonly IAggregateRepository<EstateAggregate, DomainEvent> EstateAggregateRepository;
 
@@ -39,13 +39,13 @@ namespace TransactionProcessor.BusinessLogic.Manager
 
         #region Constructors
         
-        public EstateManagementManager(ITransactionProcessorReadModelRepository estateManagementRepository,
+        public TransactionProcessorManager(ITransactionProcessorReadModelRepository transactionProcessorReadModelRepository,
                                        IAggregateRepository<EstateAggregate, DomainEvent> estateAggregateRepository,
                                        IAggregateRepository<ContractAggregate,DomainEvent> contractAggregateRepository,
                                        IAggregateRepository<MerchantAggregate, DomainEvent> merchantAggregateRepository,
                                        IAggregateRepository<OperatorAggregate, DomainEvent> operatorAggregateRepository)
         {
-            this.EstateManagementRepository = estateManagementRepository;
+            this.TransactionProcessorReadModelRepository = transactionProcessorReadModelRepository;
             this.EstateAggregateRepository = estateAggregateRepository;
             this.ContractAggregateRepository = contractAggregateRepository;
             this.MerchantAggregateRepository = merchantAggregateRepository;
@@ -59,7 +59,7 @@ namespace TransactionProcessor.BusinessLogic.Manager
         public async Task<Result<List<Contract>>> GetContracts(Guid estateId,
                                                                     CancellationToken cancellationToken)
         {
-            Result<List<Contract>> getContractsResult = await this.EstateManagementRepository.GetContracts(estateId, cancellationToken);
+            Result<List<Contract>> getContractsResult = await this.TransactionProcessorReadModelRepository.GetContracts(estateId, cancellationToken);
 
             if (getContractsResult.IsFailed)
                 return ResultHelpers.CreateFailure(getContractsResult);
@@ -114,7 +114,7 @@ namespace TransactionProcessor.BusinessLogic.Manager
 
         public async Task<Result<List<Models.Estate.Estate>>> GetEstates(Guid estateId,
                                                    CancellationToken cancellationToken){
-            Result<Models.Estate.Estate> getEstateResult= await this.EstateManagementRepository.GetEstate(estateId, cancellationToken);
+            Result<Models.Estate.Estate> getEstateResult= await this.TransactionProcessorReadModelRepository.GetEstate(estateId, cancellationToken);
             if (getEstateResult.IsFailed)
                 return Result.NotFound($"No estate found with Id [{estateId}]");
             
@@ -157,7 +157,7 @@ namespace TransactionProcessor.BusinessLogic.Manager
                                                                Guid merchantId,
                                                                CancellationToken cancellationToken)
         {
-            Result<List<Contract>> getMerchantContractsResult = await this.EstateManagementRepository.GetMerchantContracts(estateId, merchantId, cancellationToken);
+            Result<List<Contract>> getMerchantContractsResult = await this.TransactionProcessorReadModelRepository.GetMerchantContracts(estateId, merchantId, cancellationToken);
             if (getMerchantContractsResult.IsFailed)
                 return ResultHelpers.CreateFailure(getMerchantContractsResult);
 
@@ -171,7 +171,7 @@ namespace TransactionProcessor.BusinessLogic.Manager
         public async Task<Result<List<Merchant>>> GetMerchants(Guid estateId,
                                                        CancellationToken cancellationToken)
         {
-            var getMerchantsResult = await this.EstateManagementRepository.GetMerchants(estateId, cancellationToken);
+            var getMerchantsResult = await this.TransactionProcessorReadModelRepository.GetMerchants(estateId, cancellationToken);
             if (getMerchantsResult.IsFailed)
                 return ResultHelpers.CreateFailure(getMerchantsResult);
             var merchants = getMerchantsResult.Data;
@@ -239,11 +239,28 @@ namespace TransactionProcessor.BusinessLogic.Manager
 
         public async Task<Result<List<Models.Operator.Operator>>> GetOperators(Guid estateId, CancellationToken cancellationToken)
         {
-            Result<List<Models.Operator.Operator>> getOperatorsResult = await this.EstateManagementRepository.GetOperators(estateId, cancellationToken);
+            Result<List<Models.Operator.Operator>> getOperatorsResult = await this.TransactionProcessorReadModelRepository.GetOperators(estateId, cancellationToken);
             if (getOperatorsResult.IsFailed)
                 return ResultHelpers.CreateFailure(getOperatorsResult);
 
             return Result.Success(getOperatorsResult.Data);
+        }
+
+        public async Task<Result<SettlementModel>> GetSettlement(Guid estateId,
+                                                                 Guid merchantId,
+                                                                 Guid settlementId,
+                                                                 CancellationToken cancellationToken)
+        {
+            return await this.TransactionProcessorReadModelRepository.GetSettlement(estateId, merchantId, settlementId, cancellationToken);
+        }
+
+        public async Task<Result<List<SettlementModel>>> GetSettlements(Guid estateId,
+                                                                        Guid? merchantId,
+                                                                        String startDate,
+                                                                        String endDate,
+                                                                        CancellationToken cancellationToken)
+        {
+            return await this.TransactionProcessorReadModelRepository.GetSettlements(estateId, merchantId, startDate, endDate, cancellationToken);
         }
 
         #endregion
