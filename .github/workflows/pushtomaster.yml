@@ -50,7 +50,9 @@ jobs:
         dotnet nuget push Nugets/TransactionProcessor.DomainEvents.${{ steps.next_version.outputs.VERSION }}.nupkg --api-key ${{ secrets.PRIVATEFEED_APIKEY }} --source ${{ secrets.PRIVATEFEED_URL }}
         dotnet pack "TransactionProcessor.IntegrationTesting.Helpers\TransactionProcessor.IntegrationTesting.Helpers.csproj" /p:PackageVersion=${{ steps.next_version.outputs.VERSION }} --output Nugets
         dotnet nuget push Nugets/TransactionProcessor.IntegrationTesting.Helpers.${{ steps.next_version.outputs.VERSION }}.nupkg --api-key ${{ secrets.PRIVATEFEED_APIKEY }} --source ${{ secrets.PRIVATEFEED_URL }}
-
+        dotnet pack "TransactionProcessor.Database\TransactionProcessor.Database.csproj" /p:PackageVersion=${{ steps.next_version.outputs.VERSION }} --output Nugets -c Release
+        dotnet nuget push Nugets/TransactionProcessor.Database.${{ steps.next_version.outputs.VERSION }}.nupkg --api-key ${{ secrets.PRIVATEFEED_APIKEY }} --source ${{ secrets.PRIVATEFEED_URL }}
+                
     - name: Publish Images to Docker Hub
       run: |
         docker build . --file TransactionProcessor/Dockerfile --tag stuartferguson/transactionprocessor:master
