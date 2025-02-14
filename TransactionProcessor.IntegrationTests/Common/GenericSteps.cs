@@ -32,7 +32,7 @@ namespace TransactionProcessor.IntegrationTests.Common
             logger.Initialise(LogManager.GetLogger(scenarioName), scenarioName);
             LogManager.AddHiddenAssembly(typeof(NlogLogger).Assembly);
 
-            DockerServices dockerServices = DockerServices.CallbackHandler | DockerServices.EstateManagement | DockerServices.EventStore |
+            DockerServices dockerServices = DockerServices.CallbackHandler | DockerServices.EventStore |
                                             DockerServices.FileProcessor | DockerServices.MessagingService | DockerServices.SecurityService |
                                             DockerServices.SqlServer | DockerServices.TestHost | DockerServices.TransactionProcessor |
                                             DockerServices.TransactionProcessorAcl;
