@@ -1,4 +1,5 @@
-﻿using SimpleResults;
+﻿using Shared.Logger;
+using SimpleResults;
 
 namespace TransactionProcessor.BusinessLogic.Tests.OperatorInterfaces
 {
@@ -17,6 +18,10 @@ namespace TransactionProcessor.BusinessLogic.Tests.OperatorInterfaces
 
     public class VoucherManagementProxyTests
     {
+        public VoucherManagementProxyTests() {
+            Logger.Initialise(new NullLogger());
+        }
+
         [Fact]
         public async Task VoucherManagementProxy_ProcessLogonMessage_NullReturned() {
             Mock<IMediator> mediator = new Mock<IMediator>();
@@ -50,7 +55,25 @@ namespace TransactionProcessor.BusinessLogic.Tests.OperatorInterfaces
             operatorResponse.AdditionalTransactionResponseMetadata.ShouldContainKey("VoucherCode");
             operatorResponse.AdditionalTransactionResponseMetadata.ShouldContainKey("VoucherExpiryDate");
         }
-        
+
+        [Fact]
+        public async Task VoucherManagementProxy_ProcessSaleMessage_VoucherIssueFailed_FailedResultReturned()
+        {
+            Mock<IMediator> mediator = new Mock<IMediator>();
+            mediator.Setup(m => m.Send(It.IsAny<VoucherCommands.IssueVoucherCommand>(), It.IsAny<CancellationToken>())).ReturnsAsync(Result.Failure("Some grim error"));
+            IOperatorProxy voucherManagementProxy = new VoucherManagementProxy(mediator.Object);
+
+            var result = await voucherManagementProxy.ProcessSaleMessage(TestData.TransactionId,
+                TestData.OperatorId,
+                TestData.Merchant,
+                TestData.TransactionDateTime,
+                TestData.TransactionReference,
+                TestData.AdditionalTransactionMetaDataForVoucher(),
+                CancellationToken.None);
+            
+            result.IsFailed.ShouldBeTrue();
+        }
+
         [Theory]
         [InlineData("")]
         [InlineData(null)]
