@@ -1272,7 +1272,7 @@ namespace TransactionProcessor.Repository {
 
             await context.TransactionsAdditionalRequestData.AddAsync(additionalRequestData, cancellationToken);
 
-            return await context.SaveChangesAsync(cancellationToken);
+            return await context.SaveChangesWithDuplicateHandling(cancellationToken);
         }
 
         public async Task<Result> RecordTransactionAdditionalResponseData(TransactionDomainEvents.AdditionalResponseDataRecordedEvent domainEvent,
@@ -1301,7 +1301,7 @@ namespace TransactionProcessor.Repository {
 
             await context.TransactionsAdditionalResponseData.AddAsync(additionalResponseData, cancellationToken);
 
-            return await context.SaveChangesAsync(cancellationToken);
+            return await context.SaveChangesWithDuplicateHandling(cancellationToken);
         }
 
         public async Task<Result> SetTransactionAmount(TransactionDomainEvents.AdditionalRequestDataRecordedEvent domainEvent,
@@ -1374,7 +1374,7 @@ namespace TransactionProcessor.Repository {
             await context.AddAsync(t, cancellationToken);
 
             Logger.LogDebug($"Transaction Loaded with Id [{domainEvent.TransactionId}]");
-            return await context.SaveChangesAsync(cancellationToken);
+            return await context.SaveChangesWithDuplicateHandling(cancellationToken);
         }
 
         public async Task<Result> UpdateEstate(EstateDomainEvents.EstateReferenceAllocatedEvent domainEvent,
