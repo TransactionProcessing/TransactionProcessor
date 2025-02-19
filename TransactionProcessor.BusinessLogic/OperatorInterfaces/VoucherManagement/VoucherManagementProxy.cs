@@ -1,5 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
+using Shared.Logger;
+using Shared.Results;
 using SimpleResults;
 
 namespace TransactionProcessor.BusinessLogic.OperatorInterfaces.VoucherManagement
@@ -62,28 +64,30 @@ namespace TransactionProcessor.BusinessLogic.OperatorInterfaces.VoucherManagemen
                                                                      recipientMobile);
 
             Result<IssueVoucherResponse> result= await this.Mediator.Send(command, cancellationToken);
-            
-            if (result.IsSuccess) {
-                // Build the response metadata
-                Dictionary<String, String> additionalTransactionResponseMetadata = new Dictionary<String, String>();
-                additionalTransactionResponseMetadata.Add("VoucherCode", result.Data.VoucherCode);
-                additionalTransactionResponseMetadata.Add("VoucherMessage", result.Data.Message);
-                additionalTransactionResponseMetadata.Add("VoucherExpiryDate", result.Data.ExpiryDate.ToString("yyyy-MM-dd"));
 
-                return Result.Success(new OperatorResponse
-                {
-                    TransactionId = transactionId.ToString("N"),
-                    ResponseCode = "0000",
-                    ResponseMessage = "SUCCESS",
-                    // This may contain the voucher details to be logged with the transaction, and for possible receipt email/print
-                    AdditionalTransactionResponseMetadata = additionalTransactionResponseMetadata,
-                    AuthorisationCode = "ABCD1234",
-                    IsSuccessful = true
-                });
+            if (result.IsFailed) {
+                Logger.LogWarning($"Error issuing voucher {result.Message}");
+                return ResultHelpers.CreateFailure(result);
             }
 
-            // TODO: handle a failed issue case
-            return null;
+            // Build the response metadata
+            Dictionary<String, String> additionalTransactionResponseMetadata = new Dictionary<String, String>();
+            additionalTransactionResponseMetadata.Add("VoucherCode", result.Data.VoucherCode);
+            additionalTransactionResponseMetadata.Add("VoucherMessage", result.Data.Message);
+            additionalTransactionResponseMetadata.Add("VoucherExpiryDate", result.Data.ExpiryDate.ToString("yyyy-MM-dd"));
+
+            return Result.Success(new OperatorResponse
+            {
+                TransactionId = transactionId.ToString("N"),
+                ResponseCode = "0000",
+                ResponseMessage = "SUCCESS",
+                // This may contain the voucher details to be logged with the transaction, and for possible receipt email/print
+                AdditionalTransactionResponseMetadata = additionalTransactionResponseMetadata,
+                AuthorisationCode = "ABCD1234",
+                IsSuccessful = true
+            });
+            
+            
         }
     }
 }
