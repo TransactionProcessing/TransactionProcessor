@@ -141,6 +141,11 @@ public class VoucherDomainEventHandler : IDomainEventHandler
         EstateManagementGenericContext context = await this.DbContextFactory.GetContext(voucherModel.EstateId, ConnectionStringIdentifier, cancellationToken);
 
         Database.Entities.Transaction transaction = await context.Transactions.SingleOrDefaultAsync(t => t.TransactionId == voucherModel.TransactionId, cancellationToken);
+        if (transaction == null)
+        {
+            throw new Exception($"Transaction not found Transaction Id {voucherModel.TransactionId}");
+        }
+
         Contract contract = await context.Contracts.SingleOrDefaultAsync(c => c.ContractId == transaction.ContractId, cancellationToken);
 
         return contract.Description;
