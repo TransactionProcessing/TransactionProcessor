@@ -1,5 +1,6 @@
 ﻿using Shared.Exceptions;
 using SimpleResults;
+using TransactionProcessor.Database.Contexts;
 
 namespace TransactionProcessor.ProjectionEngine.Repository;
 
@@ -16,13 +17,13 @@ public class MerchantBalanceStateRepository : IProjectionStateRepository<Merchan
 {
     #region Fields
 
-    private readonly Shared.EntityFramework.IDbContextFactory<TransactionProcessorGenericContext> ContextFactory;
+    private readonly Shared.EntityFramework.IDbContextFactory<EstateManagementGenericContext> ContextFactory;
 
     #endregion
 
     #region Constructors
 
-    public MerchantBalanceStateRepository(Shared.EntityFramework.IDbContextFactory<TransactionProcessorGenericContext> contextFactory) {
+    public MerchantBalanceStateRepository(Shared.EntityFramework.IDbContextFactory<EstateManagementGenericContext> contextFactory) {
         this.ContextFactory = contextFactory;
     }
 
@@ -62,7 +63,7 @@ public class MerchantBalanceStateRepository : IProjectionStateRepository<Merchan
                                                  CancellationToken cancellationToken) {
 
         var estateId = GetEstateId(domainEvent);
-        await using TransactionProcessorGenericContext context =
+        await using EstateManagementGenericContext context =
             await this.ContextFactory.GetContext(estateId, MerchantBalanceStateRepository.ConnectionStringIdentifier, cancellationToken);
         // Note: we don't want to select the state again here....
         MerchantBalanceProjectionState entity = MerchantBalanceStateRepository.CreateMerchantBalanceProjectionState(state);
@@ -123,7 +124,7 @@ public class MerchantBalanceStateRepository : IProjectionStateRepository<Merchan
     private async Task<Result<MerchantBalanceState>> LoadHelper(Guid estateId,
                                                         Guid merchantId,
                                                         CancellationToken cancellationToken) {
-        await using TransactionProcessorGenericContext context =
+        await using EstateManagementGenericContext context =
             await this.ContextFactory.GetContext(estateId, MerchantBalanceStateRepository.ConnectionStringIdentifier, cancellationToken);
 
         MerchantBalanceProjectionState? entity = await context.MerchantBalanceProjectionState.Where(m => m.MerchantId == merchantId).SingleOrDefaultAsync(cancellationToken: cancellationToken);
@@ -162,7 +163,7 @@ public class MerchantBalanceStateRepository : IProjectionStateRepository<Merchan
 
     #region Others
 
-    private const String ConnectionStringIdentifier = "TransactionProcessorReadModel";
+    private const String ConnectionStringIdentifier = "EstateReportingReadModel";
 
     #endregion
 }

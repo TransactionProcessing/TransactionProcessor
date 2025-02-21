@@ -294,21 +294,21 @@ public static class Extensions{
     }
 
     public static ModelBuilder SetupVoucher(this ModelBuilder modelBuilder){
-        modelBuilder.Entity<Voucher>().HasKey(t => new{
+        modelBuilder.Entity<VoucherProjectionState>().HasKey(t => new{
                                                           t.VoucherId
                                                       });
 
-        modelBuilder.Entity<Voucher>().HasIndex(t => new {
+        modelBuilder.Entity<VoucherProjectionState>().HasIndex(t => new {
                                                            t.VoucherCode
                                                        });
 
-        modelBuilder.Entity<Voucher>().HasIndex(t => new {
+        modelBuilder.Entity<VoucherProjectionState>().HasIndex(t => new {
                                                              t.TransactionId
         });
 
-        modelBuilder.Entity<Voucher>(e => { e.Property(p => p.IssuedDate).IsDateOnly(); });
-        modelBuilder.Entity<Voucher>(e => { e.Property(p => p.GenerateDate).IsDateOnly(); });
-        modelBuilder.Entity<Voucher>(e => { e.Property(p => p.ExpiryDate).IsDateOnly(); });
+        modelBuilder.Entity<VoucherProjectionState>(e => { e.Property(p => p.IssuedDate).IsDateOnly(); });
+        modelBuilder.Entity<VoucherProjectionState>(e => { e.Property(p => p.GenerateDate).IsDateOnly(); });
+        modelBuilder.Entity<VoucherProjectionState>(e => { e.Property(p => p.ExpiryDate).IsDateOnly(); });
 
         return modelBuilder;
     }

@@ -1,6 +1,7 @@
 ﻿using Shared.Exceptions;
 using Shared.Logger;
 using SimpleResults;
+using TransactionProcessor.Database.Contexts;
 using TransactionProcessor.DomainEvents;
 
 namespace TransactionProcessor.ProjectionEngine.EventHandling;
@@ -20,14 +21,14 @@ public class StateProjectionEventHandler<TState> : IDomainEventHandler where TSt
 
     private readonly IProjectionHandler ProjectionHandler;
 
-    private readonly IDbContextFactory<TransactionProcessorGenericContext> ContextFactory;
+    private readonly IDbContextFactory<EstateManagementGenericContext> ContextFactory;
 
     #endregion
 
     #region Constructors
 
     public StateProjectionEventHandler(ProjectionHandler<TState> projectionHandler,
-                                       IDbContextFactory<TransactionProcessorGenericContext> contextFactory) {
+                                       IDbContextFactory<EstateManagementGenericContext> contextFactory) {
         this.ProjectionHandler = projectionHandler;
         this.ContextFactory = contextFactory;
     }
@@ -53,7 +54,7 @@ public class StateProjectionEventHandler<TState> : IDomainEventHandler where TSt
 
     private async Task<Result> MigrateDatabase(EstateDomainEvents.EstateCreatedEvent domainEvent, CancellationToken cancellationToken) {
         try {
-            TransactionProcessorGenericContext? context = await this.ContextFactory.GetContext(domainEvent.EstateId,
+            EstateManagementGenericContext? context = await this.ContextFactory.GetContext(domainEvent.EstateId,
                 "TransactionProcessorReadModel", cancellationToken);
             await context.MigrateAsync(cancellationToken);
             return Result.Success();
