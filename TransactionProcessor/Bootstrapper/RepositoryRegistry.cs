@@ -87,22 +87,8 @@ namespace TransactionProcessor.Bootstrapper
             this.AddSingleton<ITransactionProcessorReadModelRepository, TransactionProcessorReadModelRepository>();
             this.AddSingleton<IProjection<MerchantBalanceState>, MerchantBalanceProjection>();
 
-            this.AddSingleton<IDbContextFactory<TransactionProcessorGenericContext>, DbContextFactory<TransactionProcessorGenericContext>>();
             this.AddSingleton<IDbContextFactory<EstateManagementGenericContext>, DbContextFactory<EstateManagementGenericContext>>();
 
-            this.AddSingleton<Func<String, TransactionProcessorGenericContext>>(cont => connectionString =>
-                                                                                   {
-                                                                                       String databaseEngine =
-                                                                                           ConfigurationReader.GetValue("AppSettings", "DatabaseEngine");
-
-                                                                                       return databaseEngine switch
-                                                                                       {
-                                                                                           "MySql" => new TransactionProcessorMySqlContext(connectionString),
-                                                                                           "SqlServer" => new TransactionProcessorSqlServerContext(connectionString),
-                                                                                           _ => throw new
-                                                                                               NotSupportedException($"Unsupported Database Engine {databaseEngine}")
-                                                                                       };
-                                                                                   });
             this.AddSingleton<Func<String, EstateManagementGenericContext>>(cont => connectionString =>
                                                                                     {
                                                                                         String databaseEngine =

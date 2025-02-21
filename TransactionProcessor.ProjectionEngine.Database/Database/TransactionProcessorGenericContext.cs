@@ -38,9 +38,7 @@ public abstract class TransactionProcessorGenericContext : DbContext
     public DbSet<MerchantBalanceHistoryViewEntry> MerchantBalanceHistoryViewEntry { get; set; }
 
     public DbSet<MerchantBalanceProjectionState> MerchantBalanceProjectionState { get; set; }
-
-    public DbSet<VoucherProjectionState> VoucherProjectionState { get; set; }
-
+    
     public DbSet<Event> Events { get; set; }
     #endregion
 
@@ -72,10 +70,6 @@ public abstract class TransactionProcessorGenericContext : DbContext
         modelBuilder.Entity<MerchantBalanceChangedEntry>().HasKey(c => new {
                                                                                c.AggregateId,
                                                                                c.OriginalEventId
-                                                                           });
-
-        modelBuilder.Entity<VoucherProjectionState>().HasKey(c => new {
-                                                                               c.VoucherId
                                                                            });
 
         modelBuilder.Entity<MerchantBalanceHistoryViewEntry>().HasNoKey().ToView("uvwMerchantBalanceHistory");

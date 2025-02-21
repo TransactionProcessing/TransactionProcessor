@@ -3,17 +3,20 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using TransactionProcessor.Database.Contexts;
 
 #nullable disable
 
-namespace EstateManagement.Database.Migrations.MySql
+namespace TransactionProcessor.Database.Migrations.MySql
 {
     [DbContext(typeof(EstateManagementMySqlContext))]
-    partial class EstateManagementMySqlContextModelSnapshot : ModelSnapshot
+    [Migration("20250221134619_move_over_projection_states")]
+    partial class move_over_projection_states
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder

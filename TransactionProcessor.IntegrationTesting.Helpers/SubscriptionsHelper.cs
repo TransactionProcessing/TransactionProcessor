@@ -18,12 +18,13 @@ public static class SubscriptionsHelper
                                                                                                ("$ce-FloatAggregate", "Transaction Processor", 0),
                                                                                                ("$ce-MerchantStatementAggregate", "Transaction Processor", 0),
                                                                                                ("$ce-ReconciliationAggregate", "Transaction Processor", 0),
-                                                                                               ("$ce-VoucherAggregate", "Transaction Processor", 0),
+                                                                                               //("$ce-VoucherAggregate", "Transaction Processor", 0),
 
                                                                                                // Ordered
-                                                                                               ("$ce-EstateAggregate", "Transaction Processor - Ordered", 2),
+                                                                                               //("$ce-EstateAggregate", "Transaction Processor - Ordered", 2),
                                                                                                ("$ce-MerchantAggregate", "Transaction Processor - Ordered", 2),
-                                                                                               ("$ce-MerchantDepositListAggregate", "Transaction Processor - Ordered", 2),
+                                                                                               ("" +
+                                                                                                "$ce-MerchantDepositListAggregate", "Transaction Processor - Ordered", 2),
                                                                                                ("$ce-TransactionAggregate", "Transaction Processor - Ordered", 2),
                                                                                                ("$ce-VoucherAggregate", "Transaction Processor - Ordered", 2),
                                                                                                ("$ce-MerchantStatementAggregate", "Transaction Processor - Ordered", 0)

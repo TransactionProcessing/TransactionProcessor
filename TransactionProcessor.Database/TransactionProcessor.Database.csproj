@@ -40,8 +40,14 @@
 		<None Update="StoredProcedures\SqlServer\spBuildTodaysTransactions.sql">
 			<CopyToOutputDirectory>Always</CopyToOutputDirectory>
 		</None>
+		<None Update="Views\MySql\Priority1\uvwMerchantBalanceHistory.View.sql">
+		  <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+		</None>
 		<None Update="Views\MySql\Priority1\uvwSettlements.View.sql">
 			<CopyToOutputDirectory>Always</CopyToOutputDirectory>
+		</None>
+		<None Update="Views\SqlServer\Priority1\uvwMerchantBalanceHistory.View.sql">
+		  <CopyToOutputDirectory>Always</CopyToOutputDirectory>
 		</None>
 		<None Update="Views\SqlServer\Priority1\uvwSettlements.View.sql">
 			<CopyToOutputDirectory>Always</CopyToOutputDirectory>
