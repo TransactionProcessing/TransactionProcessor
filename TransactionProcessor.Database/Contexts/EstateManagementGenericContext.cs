@@ -1,13 +1,15 @@
-﻿using System.Reflection;
-using EntityFramework.Exceptions.Common;
+﻿using EntityFramework.Exceptions.Common;
 using Microsoft.EntityFrameworkCore;
 using Shared.DomainDrivenDesign.EventSourcing;
 using Shared.Exceptions;
 using Shared.Logger;
 using SimpleResults;
+using System.Reflection;
 using TransactionProcessor.Database.Entities;
 using TransactionProcessor.Database.Entities.Summary;
 using TransactionProcessor.Database.ViewEntities;
+using TransactionProcessor.ProjectionEngine.Database.Database.Entities;
+using TransactionProcessor.ProjectionEngine.Database.Database.ViewEntities;
 using File = TransactionProcessor.Database.Entities.File;
 
 namespace TransactionProcessor.Database.Contexts;
@@ -40,6 +42,11 @@ public abstract class EstateManagementGenericContext : DbContext
     #endregion
 
     #region Properties
+    public DbSet<MerchantBalanceChangedEntry> MerchantBalanceChangedEntry { get; set; }
+
+    public DbSet<MerchantBalanceHistoryViewEntry> MerchantBalanceHistoryViewEntry { get; set; }
+
+    public DbSet<MerchantBalanceProjectionState> MerchantBalanceProjectionState { get; set; }
 
     public DbSet<Calendar> Calendar { get; set; }
 
@@ -97,13 +104,15 @@ public abstract class EstateManagementGenericContext : DbContext
 
     public DbSet<TransactionAdditionalResponseData> TransactionsAdditionalResponseData { get; set; }
 
-    public DbSet<Voucher> Vouchers { get; set; }
+    public DbSet<VoucherProjectionState> VoucherProjectionStates { get; set; }
 
     public DbSet<MerchantContract> MerchantContracts { get; set; }
 
     public DbSet<SettlementSummary> SettlementSummary { get; set; }
     public DbSet<TodayTransaction> TodayTransactions { get; set; }
     public DbSet<TransactionHistory> TransactionHistory { get; set; }
+
+    public DbSet<Event> Events { get; set; }
 
     #endregion
 
@@ -261,13 +270,31 @@ public abstract class EstateManagementGenericContext : DbContext
         
         modelBuilder.SetupViewEntities();
 
+        modelBuilder.Entity<MerchantBalanceProjectionState>().HasKey(c => new {
+            c.EstateId,
+            c.MerchantId
+        });
+
+        modelBuilder.Entity<MerchantBalanceChangedEntry>().HasKey(c => new {
+            c.AggregateId,
+            c.OriginalEventId
+        });
+
+        modelBuilder.Entity<MerchantBalanceHistoryViewEntry>().HasNoKey().ToView("uvwMerchantBalanceHistory");
+
+        modelBuilder.Entity<Event>().HasKey(t => new {
+            t.EventId,
+            t.Type
+        }).IsClustered();
+
         base.OnModelCreating(modelBuilder);
     }
 
     protected virtual async Task SetIgnoreDuplicates(CancellationToken cancellationToken)
     {
         EstateManagementGenericContext.TablesToIgnoreDuplicates = new List<String> {
-                                                                                      nameof(this.ResponseCodes)
+                                                                                      nameof(this.ResponseCodes),
+                                                                                      nameof(this.MerchantBalanceProjectionState),
                                                                                   };
     }
 
@@ -458,17 +485,17 @@ public static class EstateManagementGenericContextExtensions {
         };
     }
 
-    public static async Task<Result<Voucher>> LoadVoucher(this EstateManagementGenericContext context, IDomainEvent domainEvent, CancellationToken cancellationToken)
-    {
-        Guid voucherId = DomainEventHelper.GetVoucherId(domainEvent);
-        Voucher voucher = await context.Vouchers.SingleOrDefaultAsync(v => v.VoucherId == voucherId, cancellationToken);
+    //public static async Task<Result<Voucher>> LoadVoucher(this EstateManagementGenericContext context, IDomainEvent domainEvent, CancellationToken cancellationToken)
+    //{
+    //    Guid voucherId = DomainEventHelper.GetVoucherId(domainEvent);
+    //    Voucher voucher = await context.Vouchers.SingleOrDefaultAsync(v => v.VoucherId == voucherId, cancellationToken);
 
-        return voucher switch
-        {
-            null => Result.NotFound($"Voucher not found with Id {voucherId}"),
-            _ => Result.Success(voucher)
-        };
-    }
+    //    return voucher switch
+    //    {
+    //        null => Result.NotFound($"Voucher not found with Id {voucherId}"),
+    //        _ => Result.Success(voucher)
+    //    };
+    //}
 
     public static async Task<Result<Entities.Contract>> LoadContract(this EstateManagementGenericContext context, IDomainEvent domainEvent, CancellationToken cancellationToken)
     {

@@ -1,6 +1,7 @@
 ﻿using Shared.Exceptions;
 using Shared.Logger;
 using SimpleResults;
+using TransactionProcessor.Database.Contexts;
 
 namespace TransactionProcessor.ProjectionEngine.Repository;
 
@@ -13,17 +14,17 @@ using TransactionProcessor.ProjectionEngine.Database.Database.ViewEntities;
 [ExcludeFromCodeCoverage]
 public class TransactionProcessorReadRepository : ITransactionProcessorReadRepository
 {
-    private readonly Shared.EntityFramework.IDbContextFactory<TransactionProcessorGenericContext> ContextFactory;
+    private readonly Shared.EntityFramework.IDbContextFactory<EstateManagementGenericContext> ContextFactory;
 
-    private const String ConnectionStringIdentifier = "TransactionProcessorReadModel";
-    public TransactionProcessorReadRepository(Shared.EntityFramework.IDbContextFactory<TransactionProcessorGenericContext> contextFactory) {
+    private const String ConnectionStringIdentifier = "EstateReportingReadModel";
+    public TransactionProcessorReadRepository(Shared.EntityFramework.IDbContextFactory<EstateManagementGenericContext> contextFactory) {
         this.ContextFactory = contextFactory;
     }
     public async Task<Result> AddMerchantBalanceChangedEntry(MerchantBalanceChangedEntry entry,
                                                              CancellationToken cancellationToken) {
 
         Logger.LogInformation($"About to add entry {entry.Reference}");
-        await using TransactionProcessorGenericContext context = await this.ContextFactory.GetContext(entry.EstateId, TransactionProcessorReadRepository.ConnectionStringIdentifier, cancellationToken);
+        await using EstateManagementGenericContext context = await this.ContextFactory.GetContext(entry.EstateId, TransactionProcessorReadRepository.ConnectionStringIdentifier, cancellationToken);
 
         ProjectionEngine.Database.Database.Entities.MerchantBalanceChangedEntry entity = new() {
                                                                                                    ChangeAmount = entry.ChangeAmount,
@@ -64,7 +65,7 @@ public class TransactionProcessorReadRepository : ITransactionProcessorReadRepos
                                                                                    DateTime startDate,
                                                                                    DateTime endDate,
                                                                                    CancellationToken cancellationToken) {
-        await using TransactionProcessorGenericContext context = await this.ContextFactory.GetContext(estateId, TransactionProcessorReadRepository.ConnectionStringIdentifier, cancellationToken);
+        await using EstateManagementGenericContext context = await this.ContextFactory.GetContext(estateId, TransactionProcessorReadRepository.ConnectionStringIdentifier, cancellationToken);
 
         List<MerchantBalanceHistoryViewEntry> entries = await context.MerchantBalanceHistoryViewEntry
                                                                      .Where(v => v.MerchantId == merchantId && v.EntryDateTime >= startDate && v.EntryDateTime <= endDate)

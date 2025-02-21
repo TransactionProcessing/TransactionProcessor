@@ -1,12 +1,13 @@
-﻿using System.ComponentModel.DataAnnotations.Schema;
+﻿using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 
 namespace TransactionProcessor.Database.Entities
 {
     /// <summary>
     /// 
     /// </summary>
-    [Table("voucher")]
-    public class Voucher
+    [Table("voucherprojectionstate")]
+    public class VoucherProjectionState
     {
         #region Properties
         
@@ -30,7 +31,7 @@ namespace TransactionProcessor.Database.Entities
         public String VoucherCode { get; set; }
 
         public Guid VoucherId { get; set; }
-
+        public Guid EstateId { get; set; }
         public Guid TransactionId { get; set; }
 
         public DateTime GenerateDateTime { get; set; }
@@ -44,6 +45,9 @@ namespace TransactionProcessor.Database.Entities
         public DateTime IssuedDate { get; set; }
 
         public DateTime RedeemedDate { get; set; }
+        [Timestamp]
+        public Byte[] Timestamp { get; set; }
+        public String Barcode { get; set; }
 
         #endregion
     }

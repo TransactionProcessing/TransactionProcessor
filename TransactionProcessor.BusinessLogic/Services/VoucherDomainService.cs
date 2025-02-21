@@ -179,7 +179,7 @@ public class VoucherDomainService : IVoucherDomainService
         // Find the voucher based on the voucher code
         EstateManagementGenericContext context = await this.DbContextFactory.GetContext(estateId, VoucherDomainService.ConnectionStringIdentifier, cancellationToken);
 
-        TransactionProcessor.Database.Entities.Voucher voucher = await context.Vouchers.SingleOrDefaultAsync(v => v.VoucherCode == voucherCode, cancellationToken);
+        TransactionProcessor.Database.Entities.VoucherProjectionState voucher = await context.VoucherProjectionStates.SingleOrDefaultAsync(v => v.VoucherCode == voucherCode, cancellationToken);
 
         if (voucher == null)
         {

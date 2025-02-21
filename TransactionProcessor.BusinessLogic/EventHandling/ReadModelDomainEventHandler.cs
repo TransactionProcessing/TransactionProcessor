@@ -76,9 +76,9 @@ namespace TransactionProcessor.BusinessLogic.EventHandling
                 ReconciliationDomainEvents.ReconciliationHasBeenLocallyAuthorisedEvent de => this.EstateReportingRepository.UpdateReconciliationStatus(de, cancellationToken),
                 ReconciliationDomainEvents.ReconciliationHasBeenLocallyDeclinedEvent de => this.EstateReportingRepository.UpdateReconciliationStatus(de, cancellationToken),
                 ReconciliationDomainEvents.ReconciliationHasCompletedEvent de => this.EstateReportingRepository.CompleteReconciliation(de, cancellationToken),
-                VoucherDomainEvents.VoucherGeneratedEvent de => this.EstateReportingRepository.AddGeneratedVoucher(de, cancellationToken),
-                VoucherDomainEvents.VoucherIssuedEvent de => this.EstateReportingRepository.UpdateVoucherIssueDetails(de, cancellationToken),
-                VoucherDomainEvents.VoucherFullyRedeemedEvent de => this.EstateReportingRepository.UpdateVoucherRedemptionDetails(de, cancellationToken),
+                //VoucherDomainEvents.VoucherGeneratedEvent de => this.EstateReportingRepository.AddGeneratedVoucher(de, cancellationToken),
+                //VoucherDomainEvents.VoucherIssuedEvent de => this.EstateReportingRepository.UpdateVoucherIssueDetails(de, cancellationToken),
+                //VoucherDomainEvents.VoucherFullyRedeemedEvent de => this.EstateReportingRepository.UpdateVoucherRedemptionDetails(de, cancellationToken),
 
                 FileProcessor.FileImportLog.DomainEvents.ImportLogCreatedEvent de => this.EstateReportingRepository.AddFileImportLog(de, cancellationToken),
                 FileProcessor.FileImportLog.DomainEvents.FileAddedToImportLogEvent de => this.EstateReportingRepository.AddFileToImportLog(de, cancellationToken),

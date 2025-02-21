@@ -22,7 +22,7 @@ namespace EstateManagement.Database.Migrations.SqlServer
 
             SqlServerModelBuilderExtensions.UseIdentityColumns(modelBuilder);
 
-            modelBuilder.Entity("EstateManagement.Database.Entities.Calendar", b =>
+            modelBuilder.Entity("TransactionProcessor.Database.Entities.Calendar", b =>
                 {
                     b.Property<DateTime>("Date")
                         .HasColumnType("datetime2");
@@ -68,7 +68,7 @@ namespace EstateManagement.Database.Migrations.SqlServer
                     b.ToTable("calendar");
                 });
 
-            modelBuilder.Entity("EstateManagement.Database.Entities.Contract", b =>
+            modelBuilder.Entity("TransactionProcessor.Database.Entities.Contract", b =>
                 {
                     b.Property<Guid>("EstateId")
                         .HasColumnType("uniqueidentifier");
@@ -94,7 +94,7 @@ namespace EstateManagement.Database.Migrations.SqlServer
                     b.ToTable("contract");
                 });
 
-            modelBuilder.Entity("EstateManagement.Database.Entities.ContractProduct", b =>
+            modelBuilder.Entity("TransactionProcessor.Database.Entities.ContractProduct", b =>
                 {
                     b.Property<int>("ContractProductReportingId")
                         .ValueGeneratedOnAdd()
@@ -130,7 +130,7 @@ namespace EstateManagement.Database.Migrations.SqlServer
                     b.ToTable("contractproduct");
                 });
 
-            modelBuilder.Entity("EstateManagement.Database.Entities.ContractProductTransactionFee", b =>
+            modelBuilder.Entity("TransactionProcessor.Database.Entities.ContractProductTransactionFee", b =>
                 {
                     b.Property<int>("ContractProductTransactionFeeReportingId")
                         .ValueGeneratedOnAdd()
@@ -168,7 +168,7 @@ namespace EstateManagement.Database.Migrations.SqlServer
                     b.ToTable("contractproducttransactionfee");
                 });
 
-            modelBuilder.Entity("EstateManagement.Database.Entities.Estate", b =>
+            modelBuilder.Entity("TransactionProcessor.Database.Entities.Estate", b =>
                 {
                     b.Property<int>("EstateReportingId")
                         .ValueGeneratedOnAdd()
@@ -197,7 +197,7 @@ namespace EstateManagement.Database.Migrations.SqlServer
                     b.ToTable("estate");
                 });
 
-            modelBuilder.Entity("EstateManagement.Database.Entities.EstateSecurityUser", b =>
+            modelBuilder.Entity("TransactionProcessor.Database.Entities.EstateSecurityUser", b =>
                 {
                     b.Property<Guid>("SecurityUserId")
                         .HasColumnType("uniqueidentifier");
@@ -217,7 +217,7 @@ namespace EstateManagement.Database.Migrations.SqlServer
                     b.ToTable("estatesecurityuser");
                 });
 
-            modelBuilder.Entity("EstateManagement.Database.Entities.File", b =>
+            modelBuilder.Entity("TransactionProcessor.Database.Entities.File", b =>
                 {
                     b.Property<int>("FileReportingId")
                         .ValueGeneratedOnAdd()
@@ -264,7 +264,7 @@ namespace EstateManagement.Database.Migrations.SqlServer
                     b.ToTable("file");
                 });
 
-            modelBuilder.Entity("EstateManagement.Database.Entities.FileImportLog", b =>
+            modelBuilder.Entity("TransactionProcessor.Database.Entities.FileImportLog", b =>
                 {
                     b.Property<Guid>("EstateId")
                         .HasColumnType("uniqueidentifier");
@@ -292,7 +292,7 @@ namespace EstateManagement.Database.Migrations.SqlServer
                     b.ToTable("fileimportlog");
                 });
 
-            modelBuilder.Entity("EstateManagement.Database.Entities.FileImportLogFile", b =>
+            modelBuilder.Entity("TransactionProcessor.Database.Entities.FileImportLogFile", b =>
                 {
                     b.Property<Guid>("FileImportLogId")
                         .HasColumnType("uniqueidentifier");
@@ -328,7 +328,7 @@ namespace EstateManagement.Database.Migrations.SqlServer
                     b.ToTable("fileimportlogfile");
                 });
 
-            modelBuilder.Entity("EstateManagement.Database.Entities.FileLine", b =>
+            modelBuilder.Entity("TransactionProcessor.Database.Entities.FileLine", b =>
                 {
                     b.Property<Guid>("FileId")
                         .HasColumnType("uniqueidentifier");
@@ -354,7 +354,7 @@ namespace EstateManagement.Database.Migrations.SqlServer
                     b.ToTable("fileline");
                 });
 
-            modelBuilder.Entity("EstateManagement.Database.Entities.Float", b =>
+            modelBuilder.Entity("TransactionProcessor.Database.Entities.Float", b =>
                 {
                     b.Property<Guid>("FloatId")
                         .ValueGeneratedOnAdd()
@@ -386,7 +386,7 @@ namespace EstateManagement.Database.Migrations.SqlServer
                     b.ToTable("Floats");
                 });
 
-            modelBuilder.Entity("EstateManagement.Database.Entities.FloatActivity", b =>
+            modelBuilder.Entity("TransactionProcessor.Database.Entities.FloatActivity", b =>
                 {
                     b.Property<Guid>("EventId")
                         .ValueGeneratedOnAdd()
@@ -422,7 +422,7 @@ namespace EstateManagement.Database.Migrations.SqlServer
                     b.ToTable("FloatActivity");
                 });
 
-            modelBuilder.Entity("EstateManagement.Database.Entities.Merchant", b =>
+            modelBuilder.Entity("TransactionProcessor.Database.Entities.Merchant", b =>
                 {
                     b.Property<int>("MerchantReportingId")
                         .ValueGeneratedOnAdd()
@@ -466,7 +466,7 @@ namespace EstateManagement.Database.Migrations.SqlServer
                     b.ToTable("merchant");
                 });
 
-            modelBuilder.Entity("EstateManagement.Database.Entities.MerchantAddress", b =>
+            modelBuilder.Entity("TransactionProcessor.Database.Entities.MerchantAddress", b =>
                 {
                     b.Property<Guid>("MerchantId")
                         .HasColumnType("uniqueidentifier");
@@ -507,7 +507,7 @@ namespace EstateManagement.Database.Migrations.SqlServer
                     b.ToTable("merchantaddress");
                 });
 
-            modelBuilder.Entity("EstateManagement.Database.Entities.MerchantContact", b =>
+            modelBuilder.Entity("TransactionProcessor.Database.Entities.MerchantContact", b =>
                 {
                     b.Property<Guid>("MerchantId")
                         .HasColumnType("uniqueidentifier");
@@ -533,7 +533,7 @@ namespace EstateManagement.Database.Migrations.SqlServer
                     b.ToTable("merchantcontact");
                 });
 
-            modelBuilder.Entity("EstateManagement.Database.Entities.MerchantContract", b =>
+            modelBuilder.Entity("TransactionProcessor.Database.Entities.MerchantContract", b =>
                 {
                     b.Property<Guid>("MerchantId")
                         .HasColumnType("uniqueidentifier");
@@ -549,7 +549,7 @@ namespace EstateManagement.Database.Migrations.SqlServer
                     b.ToTable("MerchantContracts");
                 });
 
-            modelBuilder.Entity("EstateManagement.Database.Entities.MerchantDevice", b =>
+            modelBuilder.Entity("TransactionProcessor.Database.Entities.MerchantDevice", b =>
                 {
                     b.Property<Guid>("MerchantId")
                         .HasColumnType("uniqueidentifier");
@@ -569,7 +569,7 @@ namespace EstateManagement.Database.Migrations.SqlServer
                     b.ToTable("merchantdevice");
                 });
 
-            modelBuilder.Entity("EstateManagement.Database.Entities.MerchantOperator", b =>
+            modelBuilder.Entity("TransactionProcessor.Database.Entities.MerchantOperator", b =>
                 {
                     b.Property<Guid>("MerchantId")
                         .HasColumnType("uniqueidentifier");
@@ -595,7 +595,7 @@ namespace EstateManagement.Database.Migrations.SqlServer
                     b.ToTable("merchantoperator");
                 });
 
-            modelBuilder.Entity("EstateManagement.Database.Entities.MerchantSecurityUser", b =>
+            modelBuilder.Entity("TransactionProcessor.Database.Entities.MerchantSecurityUser", b =>
                 {
                     b.Property<Guid>("MerchantId")
                         .HasColumnType("uniqueidentifier");
@@ -615,7 +615,7 @@ namespace EstateManagement.Database.Migrations.SqlServer
                     b.ToTable("merchantsecurityuser");
                 });
 
-            modelBuilder.Entity("EstateManagement.Database.Entities.MerchantSettlementFee", b =>
+            modelBuilder.Entity("TransactionProcessor.Database.Entities.MerchantSettlementFee", b =>
                 {
                     b.Property<Guid>("SettlementId")
                         .HasColumnType("uniqueidentifier");
@@ -646,7 +646,7 @@ namespace EstateManagement.Database.Migrations.SqlServer
                     b.ToTable("merchantsettlementfee");
                 });
 
-            modelBuilder.Entity("EstateManagement.Database.Entities.Operator", b =>
+            modelBuilder.Entity("TransactionProcessor.Database.Entities.Operator", b =>
                 {
                     b.Property<int>("OperatorReportingId")
                         .ValueGeneratedOnAdd()
@@ -678,7 +678,7 @@ namespace EstateManagement.Database.Migrations.SqlServer
                     b.ToTable("operator");
                 });
 
-            modelBuilder.Entity("EstateManagement.Database.Entities.Reconciliation", b =>
+            modelBuilder.Entity("TransactionProcessor.Database.Entities.Reconciliation", b =>
                 {
                     b.Property<int>("TransactionReportingId")
                         .ValueGeneratedOnAdd()
@@ -738,7 +738,7 @@ namespace EstateManagement.Database.Migrations.SqlServer
                     b.ToTable("reconciliation");
                 });
 
-            modelBuilder.Entity("EstateManagement.Database.Entities.ResponseCodes", b =>
+            modelBuilder.Entity("TransactionProcessor.Database.Entities.ResponseCodes", b =>
                 {
                     b.Property<int>("ResponseCode")
                         .ValueGeneratedOnAdd()
@@ -755,7 +755,7 @@ namespace EstateManagement.Database.Migrations.SqlServer
                     b.ToTable("responsecodes");
                 });
 
-            modelBuilder.Entity("EstateManagement.Database.Entities.Settlement", b =>
+            modelBuilder.Entity("TransactionProcessor.Database.Entities.Settlement", b =>
                 {
                     b.Property<int>("SettlementReportingId")
                         .ValueGeneratedOnAdd()
@@ -800,7 +800,7 @@ namespace EstateManagement.Database.Migrations.SqlServer
                     b.ToTable("settlement");
                 });
 
-            modelBuilder.Entity("EstateManagement.Database.Entities.StatementHeader", b =>
+            modelBuilder.Entity("TransactionProcessor.Database.Entities.StatementHeader", b =>
                 {
                     b.Property<Guid>("MerchantId")
                         .HasColumnType("uniqueidentifier");
@@ -837,7 +837,7 @@ namespace EstateManagement.Database.Migrations.SqlServer
                     b.ToTable("statementheader");
                 });
 
-            modelBuilder.Entity("EstateManagement.Database.Entities.StatementLine", b =>
+            modelBuilder.Entity("TransactionProcessor.Database.Entities.StatementLine", b =>
                 {
                     b.Property<Guid>("StatementId")
                         .HasColumnType("uniqueidentifier");
@@ -868,7 +868,7 @@ namespace EstateManagement.Database.Migrations.SqlServer
                     b.ToTable("statementline");
                 });
 
-            modelBuilder.Entity("EstateManagement.Database.Entities.Summary.SettlementSummary", b =>
+            modelBuilder.Entity("TransactionProcessor.Database.Entities.Summary.SettlementSummary", b =>
                 {
                     b.Property<int>("ContractProductReportingId")
                         .HasColumnType("int");
@@ -910,7 +910,7 @@ namespace EstateManagement.Database.Migrations.SqlServer
                     b.ToTable("SettlementSummary");
                 });
 
-            modelBuilder.Entity("EstateManagement.Database.Entities.Summary.TodayTransaction", b =>
+            modelBuilder.Entity("TransactionProcessor.Database.Entities.Summary.TodayTransaction", b =>
                 {
                     b.Property<string>("AuthorisationCode")
                         .IsRequired()
@@ -992,7 +992,7 @@ namespace EstateManagement.Database.Migrations.SqlServer
                     b.ToTable("TodayTransactions");
                 });
 
-            modelBuilder.Entity("EstateManagement.Database.Entities.Summary.TransactionHistory", b =>
+            modelBuilder.Entity("TransactionProcessor.Database.Entities.Summary.TransactionHistory", b =>
                 {
                     b.Property<string>("AuthorisationCode")
                         .IsRequired()
@@ -1074,7 +1074,7 @@ namespace EstateManagement.Database.Migrations.SqlServer
                     b.ToTable("TransactionHistory");
                 });
 
-            modelBuilder.Entity("EstateManagement.Database.Entities.Transaction", b =>
+            modelBuilder.Entity("TransactionProcessor.Database.Entities.Transaction", b =>
                 {
                     b.Property<int>("TransactionReportingId")
                         .ValueGeneratedOnAdd()
@@ -1155,7 +1155,7 @@ namespace EstateManagement.Database.Migrations.SqlServer
                     b.ToTable("transaction");
                 });
 
-            modelBuilder.Entity("EstateManagement.Database.Entities.TransactionAdditionalRequestData", b =>
+            modelBuilder.Entity("TransactionProcessor.Database.Entities.TransactionAdditionalRequestData", b =>
                 {
                     b.Property<Guid>("TransactionId")
                         .HasColumnType("uniqueidentifier");
@@ -1171,7 +1171,7 @@ namespace EstateManagement.Database.Migrations.SqlServer
                     b.ToTable("transactionadditionalrequestdata");
                 });
 
-            modelBuilder.Entity("EstateManagement.Database.Entities.TransactionAdditionalResponseData", b =>
+            modelBuilder.Entity("TransactionProcessor.Database.Entities.TransactionAdditionalResponseData", b =>
                 {
                     b.Property<Guid>("TransactionId")
                         .HasColumnType("uniqueidentifier");
@@ -1184,10 +1184,17 @@ namespace EstateManagement.Database.Migrations.SqlServer
                     b.ToTable("transactionadditionalresponsedata");
                 });
 
-            modelBuilder.Entity("EstateManagement.Database.Entities.Voucher", b =>
+            modelBuilder.Entity("TransactionProcessor.Database.Entities.VoucherProjectionState", b =>
                 {
                     b.Property<Guid>("VoucherId")
                         .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("Barcode")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<Guid>("EstateId")
                         .HasColumnType("uniqueidentifier");
 
                     b.Property<DateTime>("ExpiryDate")
@@ -1232,6 +1239,12 @@ namespace EstateManagement.Database.Migrations.SqlServer
                     b.Property<DateTime>("RedeemedDateTime")
                         .HasColumnType("datetime2");
 
+                    b.Property<byte[]>("Timestamp")
+                        .IsConcurrencyToken()
+                        .IsRequired()
+                        .ValueGeneratedOnAddOrUpdate()
+                        .HasColumnType("rowversion");
+
                     b.Property<Guid>("TransactionId")
                         .HasColumnType("uniqueidentifier");
 
@@ -1248,10 +1261,10 @@ namespace EstateManagement.Database.Migrations.SqlServer
 
                     b.HasIndex("VoucherCode");
 
-                    b.ToTable("voucher");
+                    b.ToTable("voucherprojectionstate");
                 });
 
-            modelBuilder.Entity("EstateManagement.Database.ViewEntities.SettlementView", b =>
+            modelBuilder.Entity("TransactionProcessor.Database.ViewEntities.SettlementView", b =>
                 {
                     b.Property<decimal>("Amount")
                         .HasColumnType("decimal(18,2)");
@@ -1312,6 +1325,164 @@ namespace EstateManagement.Database.Migrations.SqlServer
                     b.ToTable((string)null);
 
                     b.ToView("uvwSettlements", (string)null);
+                });
+
+            modelBuilder.Entity("TransactionProcessor.ProjectionEngine.Database.Database.Entities.Event", b =>
+                {
+                    b.Property<Guid>("EventId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("Type")
+                        .HasColumnType("nvarchar(450)");
+
+                    b.Property<DateTime>("Date")
+                        .HasColumnType("date");
+
+                    b.HasKey("EventId", "Type");
+
+                    SqlServerKeyBuilderExtensions.IsClustered(b.HasKey("EventId", "Type"));
+
+                    b.ToTable("Events");
+                });
+
+            modelBuilder.Entity("TransactionProcessor.ProjectionEngine.Database.Database.Entities.MerchantBalanceChangedEntry", b =>
+                {
+                    b.Property<Guid>("AggregateId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<Guid>("OriginalEventId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<Guid>("CauseOfChangeId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<decimal>("ChangeAmount")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<DateTime>("DateTime")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("DebitOrCredit")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<Guid>("EstateId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<Guid>("MerchantId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("Reference")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.HasKey("AggregateId", "OriginalEventId");
+
+                    b.ToTable("MerchantBalanceChangedEntry");
+                });
+
+            modelBuilder.Entity("TransactionProcessor.ProjectionEngine.Database.Database.Entities.MerchantBalanceProjectionState", b =>
+                {
+                    b.Property<Guid>("EstateId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<Guid>("MerchantId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<decimal>("AuthorisedSales")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<decimal>("AvailableBalance")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<decimal>("Balance")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<int>("CompletedTransactionCount")
+                        .HasColumnType("int");
+
+                    b.Property<decimal>("DeclinedSales")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<int>("DepositCount")
+                        .HasColumnType("int");
+
+                    b.Property<int>("FeeCount")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime>("LastDeposit")
+                        .HasColumnType("datetime2");
+
+                    b.Property<DateTime>("LastFee")
+                        .HasColumnType("datetime2");
+
+                    b.Property<DateTime>("LastSale")
+                        .HasColumnType("datetime2");
+
+                    b.Property<DateTime>("LastWithdrawal")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("MerchantName")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<int>("SaleCount")
+                        .HasColumnType("int");
+
+                    b.Property<int>("StartedTransactionCount")
+                        .HasColumnType("int");
+
+                    b.Property<byte[]>("Timestamp")
+                        .IsConcurrencyToken()
+                        .IsRequired()
+                        .ValueGeneratedOnAddOrUpdate()
+                        .HasColumnType("rowversion");
+
+                    b.Property<decimal>("TotalDeposited")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<decimal>("TotalWithdrawn")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<decimal>("ValueOfFees")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<int>("WithdrawalCount")
+                        .HasColumnType("int");
+
+                    b.HasKey("EstateId", "MerchantId");
+
+                    b.ToTable("MerchantBalanceProjectionState");
+                });
+
+            modelBuilder.Entity("TransactionProcessor.ProjectionEngine.Database.Database.ViewEntities.MerchantBalanceHistoryViewEntry", b =>
+                {
+                    b.Property<decimal>("Balance")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<decimal>("ChangeAmount")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<string>("DebitOrCredit")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime>("EntryDateTime")
+                        .HasColumnType("datetime2");
+
+                    b.Property<Guid>("MerchantId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<Guid>("OriginalEventId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("Reference")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.ToTable((string)null);
+
+                    b.ToView("uvwMerchantBalanceHistory", (string)null);
                 });
 #pragma warning restore 612, 618
         }

@@ -171,10 +171,12 @@ namespace TransactionProcessor.BusinessLogic.Tests.Services
             EstateAggregateRepository.Setup(f => f.GetLatestVersion(It.IsAny<Guid>(), It.IsAny<CancellationToken>())).ReturnsAsync(Result.Failure());
 
             EstateManagementGenericContext context = await this.GetContext(Guid.NewGuid().ToString("N"));
-            context.Vouchers.Add(new TransactionProcessor.Database.Entities.Voucher {
+            context.VoucherProjectionStates.Add(new TransactionProcessor.Database.Entities.VoucherProjectionState() {
                                                  VoucherCode = TestData.VoucherCode,
-                                                 OperatorIdentifier = TestData.OperatorIdentifier
-                                             });
+                                                 OperatorIdentifier = TestData.OperatorIdentifier,
+                                                 Barcode = TestData.Barcode,
+                                                 Timestamp = BitConverter.GetBytes(DateTime.UtcNow.Ticks)
+            });
             await context.SaveChangesAsync();
             DbContextFactory.Setup(d => d.GetContext(It.IsAny<Guid>(), It.IsAny<String>(), It.IsAny<CancellationToken>())).ReturnsAsync(context);
 
@@ -195,10 +197,12 @@ namespace TransactionProcessor.BusinessLogic.Tests.Services
             EstateAggregateRepository.Setup(f => f.GetLatestVersion(It.IsAny<Guid>(), It.IsAny<CancellationToken>())).ReturnsAsync(Result.Success(TestData.Aggregates.CreatedEstateAggregate()));
 
             EstateManagementGenericContext context = await this.GetContext(Guid.NewGuid().ToString("N"));
-            context.Vouchers.Add(new TransactionProcessor.Database.Entities.Voucher {
+            context.VoucherProjectionStates.Add(new TransactionProcessor.Database.Entities.VoucherProjectionState() {
                                                  VoucherCode = TestData.VoucherCode,
-                                                 OperatorIdentifier = TestData.OperatorIdentifier
-                                             });
+                                                 OperatorIdentifier = TestData.OperatorIdentifier,
+                                                 Barcode = TestData.Barcode,
+                                                 Timestamp = BitConverter.GetBytes(DateTime.UtcNow.Ticks)
+            });
             await context.SaveChangesAsync();
             DbContextFactory.Setup(d => d.GetContext(It.IsAny<Guid>(), It.IsAny<String>(), It.IsAny<CancellationToken>())).ReturnsAsync(context);
 

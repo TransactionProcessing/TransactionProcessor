@@ -72,8 +72,8 @@ namespace TransactionProcessor.Repository {
         Task<Result> AddFileToImportLog(FileAddedToImportLogEvent domainEvent,
                                         CancellationToken cancellationToken);
 
-        Task<Result> AddGeneratedVoucher(VoucherDomainEvents.VoucherGeneratedEvent domainEvent,
-                                         CancellationToken cancellationToken);
+        //Task<Result> AddGeneratedVoucher(VoucherDomainEvents.VoucherGeneratedEvent domainEvent,
+        //                                 CancellationToken cancellationToken);
 
         Task<Result> AddMerchant(MerchantDomainEvents.MerchantCreatedEvent domainEvent,
                                 CancellationToken cancellationToken);
@@ -219,11 +219,11 @@ namespace TransactionProcessor.Repository {
         Task<Result> UpdateTransactionAuthorisation(TransactionDomainEvents.TransactionDeclinedByOperatorEvent domainEvent,
                                                     CancellationToken cancellationToken);
 
-        Task<Result> UpdateVoucherIssueDetails(VoucherDomainEvents.VoucherIssuedEvent domainEvent,
-                                               CancellationToken cancellationToken);
+        //Task<Result> UpdateVoucherIssueDetails(VoucherDomainEvents.VoucherIssuedEvent domainEvent,
+        //                                       CancellationToken cancellationToken);
 
-        Task<Result> UpdateVoucherRedemptionDetails(VoucherDomainEvents.VoucherFullyRedeemedEvent domainEvent,
-                                                    CancellationToken cancellationToken);
+        //Task<Result> UpdateVoucherRedemptionDetails(VoucherDomainEvents.VoucherFullyRedeemedEvent domainEvent,
+        //                                            CancellationToken cancellationToken);
 
         Task<Result> RemoveOperatorFromMerchant(MerchantDomainEvents.OperatorRemovedFromMerchantEvent domainEvent,
                                                 CancellationToken cancellationToken);
@@ -649,30 +649,30 @@ namespace TransactionProcessor.Repository {
             return await context.SaveChangesAsync(cancellationToken);
         }
 
-        public async Task<Result> AddGeneratedVoucher(VoucherDomainEvents.VoucherGeneratedEvent domainEvent,
-                                                      CancellationToken cancellationToken)
-        {
-            EstateManagementGenericContext context = await this.GetContextFromDomainEvent(domainEvent, cancellationToken);
+        //public async Task<Result> AddGeneratedVoucher(VoucherDomainEvents.VoucherGeneratedEvent domainEvent,
+        //                                              CancellationToken cancellationToken)
+        //{
+        //    EstateManagementGenericContext context = await this.GetContextFromDomainEvent(domainEvent, cancellationToken);
 
-            Voucher voucher = new Voucher
-            {
-                ExpiryDateTime = domainEvent.ExpiryDateTime,
-                ExpiryDate = domainEvent.ExpiryDateTime.Date,
-                IsGenerated = true,
-                IsIssued = false,
-                OperatorIdentifier = domainEvent.OperatorId.ToString(),
-                Value = domainEvent.Value,
-                VoucherCode = domainEvent.VoucherCode,
-                VoucherId = domainEvent.VoucherId,
-                TransactionId = domainEvent.TransactionId,
-                GenerateDateTime = domainEvent.GeneratedDateTime,
-                GenerateDate = domainEvent.GeneratedDateTime.Date
-            };
+        //    Voucher voucher = new Voucher
+        //    {
+        //        ExpiryDateTime = domainEvent.ExpiryDateTime,
+        //        ExpiryDate = domainEvent.ExpiryDateTime.Date,
+        //        IsGenerated = true,
+        //        IsIssued = false,
+        //        OperatorIdentifier = domainEvent.OperatorId.ToString(),
+        //        Value = domainEvent.Value,
+        //        VoucherCode = domainEvent.VoucherCode,
+        //        VoucherId = domainEvent.VoucherId,
+        //        TransactionId = domainEvent.TransactionId,
+        //        GenerateDateTime = domainEvent.GeneratedDateTime,
+        //        GenerateDate = domainEvent.GeneratedDateTime.Date
+        //    };
 
-            await context.Vouchers.AddAsync(voucher, cancellationToken);
+        //    await context.Vouchers.AddAsync(voucher, cancellationToken);
 
-            return await context.SaveChangesAsync(cancellationToken);
-        }
+        //    return await context.SaveChangesAsync(cancellationToken);
+        //}
 
         public async Task<Result> UpdateMerchantContact(MerchantContactNameUpdatedEvent domainEvent, CancellationToken cancellationToken)
         {
@@ -1524,38 +1524,38 @@ namespace TransactionProcessor.Repository {
             return await context.SaveChangesAsync(cancellationToken); ;
         }
 
-        public async Task<Result> UpdateVoucherIssueDetails(VoucherDomainEvents.VoucherIssuedEvent domainEvent,
-                                                            CancellationToken cancellationToken) {
-            EstateManagementGenericContext context = await this.GetContextFromDomainEvent(domainEvent, cancellationToken);
+        //public async Task<Result> UpdateVoucherIssueDetails(VoucherDomainEvents.VoucherIssuedEvent domainEvent,
+        //                                                    CancellationToken cancellationToken) {
+        //    EstateManagementGenericContext context = await this.GetContextFromDomainEvent(domainEvent, cancellationToken);
 
-            var getVoucherResult = await context.LoadVoucher(domainEvent, cancellationToken);
-            if (getVoucherResult.IsFailed)
-                return ResultHelpers.CreateFailure(getVoucherResult);
-            var voucher = getVoucherResult.Data;
-            voucher.IsIssued = true;
-            voucher.RecipientEmail = domainEvent.RecipientEmail;
-            voucher.RecipientMobile = domainEvent.RecipientMobile;
-            voucher.IssuedDateTime = domainEvent.IssuedDateTime;
-            voucher.IssuedDate = domainEvent.IssuedDateTime.Date;
+        //    var getVoucherResult = await context.LoadVoucher(domainEvent, cancellationToken);
+        //    if (getVoucherResult.IsFailed)
+        //        return ResultHelpers.CreateFailure(getVoucherResult);
+        //    var voucher = getVoucherResult.Data;
+        //    voucher.IsIssued = true;
+        //    voucher.RecipientEmail = domainEvent.RecipientEmail;
+        //    voucher.RecipientMobile = domainEvent.RecipientMobile;
+        //    voucher.IssuedDateTime = domainEvent.IssuedDateTime;
+        //    voucher.IssuedDate = domainEvent.IssuedDateTime.Date;
 
-            return await context.SaveChangesAsync(cancellationToken);
-        }
+        //    return await context.SaveChangesAsync(cancellationToken);
+        //}
 
-        public async Task<Result> UpdateVoucherRedemptionDetails(VoucherDomainEvents.VoucherFullyRedeemedEvent domainEvent,
-                                                                 CancellationToken cancellationToken) {
-            EstateManagementGenericContext context = await this.GetContextFromDomainEvent(domainEvent, cancellationToken);
+        //public async Task<Result> UpdateVoucherRedemptionDetails(VoucherDomainEvents.VoucherFullyRedeemedEvent domainEvent,
+        //                                                         CancellationToken cancellationToken) {
+        //    EstateManagementGenericContext context = await this.GetContextFromDomainEvent(domainEvent, cancellationToken);
 
-            var getVoucherResult = await context.LoadVoucher(domainEvent, cancellationToken);
-            if (getVoucherResult.IsFailed)
-                return ResultHelpers.CreateFailure(getVoucherResult);
-            var voucher = getVoucherResult.Data;
+        //    var getVoucherResult = await context.LoadVoucher(domainEvent, cancellationToken);
+        //    if (getVoucherResult.IsFailed)
+        //        return ResultHelpers.CreateFailure(getVoucherResult);
+        //    var voucher = getVoucherResult.Data;
 
-            voucher.IsRedeemed = true;
-            voucher.RedeemedDateTime = domainEvent.RedeemedDateTime;
-            voucher.RedeemedDate = domainEvent.RedeemedDateTime.Date;
+        //    voucher.IsRedeemed = true;
+        //    voucher.RedeemedDateTime = domainEvent.RedeemedDateTime;
+        //    voucher.RedeemedDate = domainEvent.RedeemedDateTime.Date;
 
-            return await context.SaveChangesAsync(cancellationToken);
-        }
+        //    return await context.SaveChangesAsync(cancellationToken);
+        //}
 
         public async Task<Result<List<Models.Operator.Operator>>> GetOperators(Guid estateId, CancellationToken cancellationToken)
         {

@@ -29,8 +29,6 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TransactionProcessor.Projec
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TransactionProcessor.ProjectionEngine.Tests", "TransactionProcessor.ProjectionEngine.Tests\TransactionProcessor.ProjectionEngine.Tests.csproj", "{7E770B14-0BF6-40B7-A36C-7AF403CE3C60}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TransactionProcessor.ProjectionEngine.Database", "TransactionProcessor.ProjectionEngine.Database\TransactionProcessor.ProjectionEngine.Database.csproj", "{410F1B15-7932-41E9-847E-0476EFCDB0F3}"
-EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TransactionProcessor.IntegrationTesting.Helpers", "TransactionProcessor.IntegrationTesting.Helpers\TransactionProcessor.IntegrationTesting.Helpers.csproj", "{128605FE-2953-4FF5-8AE1-E2D83F6F8548}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TransactionProcessor.Aggregates", "TransactionProcessor.Aggregates\TransactionProcessor.Aggregates.csproj", "{7CA3DF65-5E3C-4839-A0DB-8A757F267CF5}"
@@ -93,10 +91,6 @@ Global
 		{7E770B14-0BF6-40B7-A36C-7AF403CE3C60}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{7E770B14-0BF6-40B7-A36C-7AF403CE3C60}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{7E770B14-0BF6-40B7-A36C-7AF403CE3C60}.Release|Any CPU.Build.0 = Release|Any CPU
-		{410F1B15-7932-41E9-847E-0476EFCDB0F3}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{410F1B15-7932-41E9-847E-0476EFCDB0F3}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{410F1B15-7932-41E9-847E-0476EFCDB0F3}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{410F1B15-7932-41E9-847E-0476EFCDB0F3}.Release|Any CPU.Build.0 = Release|Any CPU
 		{128605FE-2953-4FF5-8AE1-E2D83F6F8548}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{128605FE-2953-4FF5-8AE1-E2D83F6F8548}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{128605FE-2953-4FF5-8AE1-E2D83F6F8548}.Release|Any CPU.ActiveCfg = Release|Any CPU
@@ -137,7 +131,6 @@ Global
 		{DAF20F25-8BD1-4FA5-ADAD-71B068CDF393} = {749ADE74-A6F0-4469-A638-8FD7E82A8667}
 		{6AE953A8-6400-456B-858A-454F78A28436} = {749ADE74-A6F0-4469-A638-8FD7E82A8667}
 		{7E770B14-0BF6-40B7-A36C-7AF403CE3C60} = {71B30DC4-AB27-4D30-8481-B4C326D074CB}
-		{410F1B15-7932-41E9-847E-0476EFCDB0F3} = {749ADE74-A6F0-4469-A638-8FD7E82A8667}
 		{128605FE-2953-4FF5-8AE1-E2D83F6F8548} = {71B30DC4-AB27-4D30-8481-B4C326D074CB}
 		{7CA3DF65-5E3C-4839-A0DB-8A757F267CF5} = {749ADE74-A6F0-4469-A638-8FD7E82A8667}
 		{5A4FD1FE-2D82-4D9A-A498-8047F0E05E23} = {71B30DC4-AB27-4D30-8481-B4C326D074CB}

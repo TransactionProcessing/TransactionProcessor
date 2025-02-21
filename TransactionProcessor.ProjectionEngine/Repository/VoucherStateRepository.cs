@@ -1,26 +1,29 @@
-﻿using SimpleResults;
+﻿using EventStore.Client;
+using SimpleResults;
+using TransactionProcessor.Database.Contexts;
+using TransactionProcessor.Database.Entities;
 
 namespace TransactionProcessor.ProjectionEngine.Repository;
 
-using System.Diagnostics.CodeAnalysis;
-using Database.Database;
 using Database.Database.Entities;
 using Microsoft.EntityFrameworkCore;
 using Shared.DomainDrivenDesign.EventSourcing;
+using Shared.EventStore.ProjectionEngine;
 using State;
+using System.Diagnostics.CodeAnalysis;
 
 [ExcludeFromCodeCoverage]
 public class VoucherStateRepository : IProjectionStateRepository<VoucherState>
 {
     #region Fields
 
-    private readonly Shared.EntityFramework.IDbContextFactory<TransactionProcessorGenericContext> ContextFactory;
+    private readonly Shared.EntityFramework.IDbContextFactory<EstateManagementGenericContext> ContextFactory;
 
     #endregion
 
     #region Constructors
 
-    public VoucherStateRepository(Shared.EntityFramework.IDbContextFactory<TransactionProcessorGenericContext> contextFactory)
+    public VoucherStateRepository(Shared.EntityFramework.IDbContextFactory<EstateManagementGenericContext> contextFactory)
     {
         this.ContextFactory = contextFactory;
     }
@@ -30,7 +33,7 @@ public class VoucherStateRepository : IProjectionStateRepository<VoucherState>
     #region Methods
 
     public static Event Create(String type,
-                               IDomainEvent domainEvent)
+                                                             IDomainEvent domainEvent)
     {
         return new()
                {
@@ -65,7 +68,7 @@ public class VoucherStateRepository : IProjectionStateRepository<VoucherState>
                                                  CancellationToken cancellationToken)
     {
 
-        await using TransactionProcessorGenericContext context =
+        await using EstateManagementGenericContext context =
             await this.ContextFactory.GetContext(state.EstateId, VoucherStateRepository.ConnectionStringIdentifier, cancellationToken);
         // Note: we don't want to select the state again here....
         VoucherProjectionState entity = VoucherStateRepository.CreateVoucherProjectionState(state);
@@ -73,14 +76,14 @@ public class VoucherStateRepository : IProjectionStateRepository<VoucherState>
         if (state.IsInitialised)
         {
             // handle updates here
-            context.VoucherProjectionState.Update(entity);
+            context.VoucherProjectionStates.Update(entity);
         }
         else
         {
-            await context.VoucherProjectionState.AddAsync(entity, cancellationToken);
+            await context.VoucherProjectionStates.AddAsync(entity, cancellationToken);
         }
 
-        Event @event = MerchantBalanceStateRepository.Create(state.GetType().Name, domainEvent);
+        var @event = VoucherStateRepository.Create(state.GetType().Name, domainEvent);
 
         await context.Events.AddAsync(@event, cancellationToken);
 
@@ -99,16 +102,31 @@ public class VoucherStateRepository : IProjectionStateRepository<VoucherState>
 
         return state;
     }
-
+    
     private static VoucherProjectionState CreateVoucherProjectionState(VoucherState state){
         VoucherProjectionState entity = new(){
-                                                 EstateId = state.EstateId,
-                                                 Timestamp = state.Version,
+            EstateId = state.EstateId,
+            Timestamp = state.Version,
                                                  VoucherCode = state.VoucherCode,
                                                  TransactionId = state.TransactionId,
                                                  Barcode = String.IsNullOrEmpty(state.Barcode) ? "" : state.Barcode,
                                                  VoucherId = state.VoucherId,
-                                             };
+                                                 Value = state.Value,
+                                                 OperatorIdentifier = state.OperatorIdentifier,
+                                                 ExpiryDate = state.ExpiryDate,
+                                                 ExpiryDateTime = state.ExpiryDateTime,
+                                                 GenerateDate = state.GenerateDate,
+                                                 GenerateDateTime = state.GenerateDateTime,
+                                                 IsGenerated = state.IsGenerated,
+                                                 IsIssued = state.IsIssued,
+                                                 IsRedeemed = state.IsRedeemed,
+                                                 IssuedDate = state.IssuedDate,
+                                                 IssuedDateTime = state.IssuedDateTime,
+                                                 RecipientEmail = state.RecipientEmail,
+                                                 RecipientMobile = state.RecipientMobile,
+                                                 RedeemedDate = state.RedeemedDate,
+                                                 RedeemedDateTime = state.RedeemedDateTime
+        };
         return entity;
     }
 
@@ -116,10 +134,10 @@ public class VoucherStateRepository : IProjectionStateRepository<VoucherState>
                                                         Guid voucherId,
                                                         CancellationToken cancellationToken)
     {
-        await using TransactionProcessorGenericContext context =
+        await using EstateManagementGenericContext? context =
             await this.ContextFactory.GetContext(estateId, VoucherStateRepository.ConnectionStringIdentifier, cancellationToken);
 
-        VoucherProjectionState? entity = await context.VoucherProjectionState.Where(m => m.VoucherId == voucherId).SingleOrDefaultAsync();
+        VoucherProjectionState? entity = await context.VoucherProjectionStates.Where(m => m.VoucherId == voucherId).SingleOrDefaultAsync(cancellationToken: cancellationToken);
 
         if (entity == null)
         {
@@ -129,20 +147,35 @@ public class VoucherStateRepository : IProjectionStateRepository<VoucherState>
         // We have located a state record so we need to translate to the Model type
         return new VoucherState
         {
-                   Version = entity.Timestamp,
-                   VoucherCode = entity.VoucherCode,
-                   TransactionId = entity.TransactionId,
-                   Barcode = entity.Barcode,
-                   VoucherId = entity.VoucherId,
-                   EstateId = entity.EstateId,
-               };
+            EstateId = entity.EstateId,
+            Version = entity.Timestamp,
+            VoucherCode = entity.VoucherCode,
+            TransactionId = entity.TransactionId,
+            Barcode = entity.Barcode,
+            VoucherId = entity.VoucherId,
+            Value = entity.Value,
+            OperatorIdentifier = entity.OperatorIdentifier,
+            ExpiryDate = entity.ExpiryDate,
+            ExpiryDateTime = entity.ExpiryDateTime,
+            GenerateDate = entity.GenerateDate,
+            GenerateDateTime = entity.GenerateDateTime,
+            IsGenerated = entity.IsGenerated,
+            IsIssued = entity.IsIssued,
+            IsRedeemed = entity.IsRedeemed,
+            IssuedDate = entity.IssuedDate,
+            IssuedDateTime = entity.IssuedDateTime,
+            RecipientEmail = entity.RecipientEmail,
+            RecipientMobile = entity.RecipientMobile,
+            RedeemedDate = entity.RedeemedDate,
+            RedeemedDateTime = entity.RedeemedDateTime
+        };
     }
 
     #endregion
 
     #region Others
 
-    private const String ConnectionStringIdentifier = "TransactionProcessorReadModel";
+    private const String ConnectionStringIdentifier = "EstateReportingReadModel";
 
     #endregion
 }
