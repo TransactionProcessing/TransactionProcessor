@@ -2573,6 +2573,9 @@ namespace TransactionProcessor.Testing
             };
 
         public static class DomainEvents {
+
+            public static SettlementDomainEvents.MerchantFeeSettledEvent MerchantFeeSettledEvent => new(SettlementId, EstateId, MerchantId, TransactionId, CalculatedFeeValue, FeeCalculationType, SettledFeeId1, FeeValue, TransactionFeeCalculateDateTime, SettlementDate);
+
             public static MerchantStatementDomainEvents.StatementCreatedEvent StatementCreatedEvent => new MerchantStatementDomainEvents.StatementCreatedEvent(TestData.MerchantStatementId, TestData.EstateId, TestData.MerchantId, TestData.StatementCreateDate);
 
             public static MerchantStatementDomainEvents.StatementGeneratedEvent StatementGeneratedEvent => new MerchantStatementDomainEvents.StatementGeneratedEvent(TestData.MerchantStatementId, TestData.EstateId, TestData.MerchantId, TestData.StatementGeneratedDate);
