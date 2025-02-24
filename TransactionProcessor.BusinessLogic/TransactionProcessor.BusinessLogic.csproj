@@ -9,6 +9,7 @@
     <PackageReference Include="ClientProxyBase" Version="2025.2.1" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.Relational" Version="8.0.3" />
     <PackageReference Include="MessagingService.Client" Version="2025.1.4" />
+    <PackageReference Include="Polly" Version="8.5.2" />
     <PackageReference Include="SecurityService.Client" Version="2025.1.1" />
     <PackageReference Include="Shared.DomainDrivenDesign" Version="2025.2.1" />
     <PackageReference Include="Shared.EventStore" Version="2025.2.1" />
