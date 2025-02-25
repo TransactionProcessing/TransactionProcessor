@@ -1,14 +1,16 @@
-﻿using System;
-using System.Threading;
-using System.Threading.Tasks;
-using MediatR;
+﻿using MediatR;
 using Newtonsoft.Json;
+using Polly;
 using Shared.DomainDrivenDesign.EventSourcing;
 using Shared.EventStore.Aggregate;
 using Shared.EventStore.EventHandling;
 using Shared.Results;
 using SimpleResults;
+using System;
+using System.Threading;
+using System.Threading.Tasks;
 using TransactionProcessor.Aggregates;
+using TransactionProcessor.BusinessLogic.Common;
 using TransactionProcessor.BusinessLogic.Events;
 using TransactionProcessor.BusinessLogic.Requests;
 using TransactionProcessor.Models.Merchant;
@@ -59,34 +61,27 @@ namespace TransactionProcessor.BusinessLogic.EventHandling
         private async Task<Result> HandleSpecificDomainEvent(CallbackReceivedEnrichedEvent domainEvent,
                                                      CancellationToken cancellationToken)
         {
-            if (domainEvent.TypeString == typeof(CallbackHandler.DataTransferObjects.Deposit).ToString())
-            {
-                // Work out the merchant id from the reference field (second part, split on hyphen)
-                String merchantReference = domainEvent.Reference.Split("-")[1];
+            IAsyncPolicy<Result> retryPolicy = PolicyFactory.CreatePolicy(2, policyTag: "MerchantSettlementDomainEventHandler - MerchantFeeSettledEvent");
 
-                Result<Merchant> result = await this.EstateReportingRepository.GetMerchantFromReference(domainEvent.EstateId, merchantReference, cancellationToken);
-                if (result.IsFailed)
-                    return ResultHelpers.CreateFailure(result);
+            return await retryPolicy.ExecuteAsync(async () => {
+                if (domainEvent.TypeString == typeof(CallbackHandler.DataTransferObjects.Deposit).ToString()) {
+                    // Work out the merchant id from the reference field (second part, split on hyphen)
+                    String merchantReference = domainEvent.Reference.Split("-")[1];
 
-                // We now need to deserialise the message from the callback
-                CallbackHandler.DataTransferObjects.Deposit callbackMessage = JsonConvert.DeserializeObject<CallbackHandler.DataTransferObjects.Deposit>(domainEvent.CallbackMessage);
+                    Result<Merchant> result = await this.EstateReportingRepository.GetMerchantFromReference(domainEvent.EstateId, merchantReference, cancellationToken);
+                    if (result.IsFailed)
+                        return ResultHelpers.CreateFailure(result);
 
-                MerchantCommands.MakeMerchantDepositCommand command = new(domainEvent.EstateId,
-                                                                          result.Data.MerchantId,
-                                                                          DataTransferObjects.Requests.Merchant.MerchantDepositSource.Automatic,
-                                                                          new MakeMerchantDepositRequest
-                                                                          {
-                                                                              DepositDateTime = callbackMessage.DateTime,
-                                                                              Reference = callbackMessage.Reference,
-                                                                              Amount = callbackMessage.Amount,
-                                                                          });
-                return await this.Mediator.Send(command, cancellationToken);
-            }
-            return Result.Success();
+                    // We now need to deserialise the message from the callback
+                    CallbackHandler.DataTransferObjects.Deposit callbackMessage = JsonConvert.DeserializeObject<CallbackHandler.DataTransferObjects.Deposit>(domainEvent.CallbackMessage);
+
+                    MerchantCommands.MakeMerchantDepositCommand command = new(domainEvent.EstateId, result.Data.MerchantId, DataTransferObjects.Requests.Merchant.MerchantDepositSource.Automatic, new MakeMerchantDepositRequest { DepositDateTime = callbackMessage.DateTime, Reference = callbackMessage.Reference, Amount = callbackMessage.Amount, });
+                    return await this.Mediator.Send(command, cancellationToken);
+                }
+
+                return Result.Success();
+            });
         }
-
-
-
 
         #endregion
     }
