@@ -35,24 +35,22 @@ namespace TransactionProcessor.BusinessLogic.Tests.DomainEventHandlers
         [Fact]
         public async Task MerchantSettlementDomainEventHandler_Handle_MerchantFeeSettledEvent_EventIsHandled()
         {
-            MerchantFeeSettledEvent domainEvent = TestData.DomainEvents.MerchantFeeSettledEvent;
-            this.Mediator.Setup(m => m.Send(It.IsAny<MerchantStatementCommands.AddSettledFeeToMerchantStatementCommand>(), It.IsAny<CancellationToken>()))
+            this.Mediator.Setup(m => m.Send(It.IsAny<IRequest<Result>>(), It.IsAny<CancellationToken>()))
                 .ReturnsAsync(Result.Success());
 
-            Result result = await this.EventHandler.Handle(domainEvent, CancellationToken.None);
+            Result result = await this.EventHandler.Handle(TestData.DomainEvents.MerchantFeeSettledEvent, CancellationToken.None);
             result.IsSuccess.ShouldBeTrue();
         }
 
         [Fact]
         public async Task MerchantSettlementDomainEventHandler_Handle_MerchantFeeSettledEvent_Retry_EventIsHandled()
         {
-            MerchantFeeSettledEvent domainEvent = TestData.DomainEvents.MerchantFeeSettledEvent;
-            this.Mediator.SetupSequence(m => m.Send(It.IsAny<MerchantStatementCommands.AddSettledFeeToMerchantStatementCommand>(), It.IsAny<CancellationToken>()))
+            this.Mediator.SetupSequence(m => m.Send(It.IsAny<IRequest<Result>>(), It.IsAny<CancellationToken>()))
                 .ThrowsAsync(new WrongExpectedVersionException("Stream1", StreamRevision.None, StreamRevision.None))
                 .ThrowsAsync(new RpcException(new Status(StatusCode.DeadlineExceeded, "Deadline Exceeded")))
                 .ReturnsAsync(Result.Success());                       
 
-            Result result = await this.EventHandler.Handle(domainEvent, CancellationToken.None);
+            Result result = await this.EventHandler.Handle(TestData.DomainEvents.MerchantFeeSettledEvent, CancellationToken.None);
             result.IsSuccess.ShouldBeTrue();
         }
     }

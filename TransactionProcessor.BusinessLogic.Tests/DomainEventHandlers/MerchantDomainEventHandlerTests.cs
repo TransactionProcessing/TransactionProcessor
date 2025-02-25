@@ -151,7 +151,7 @@ namespace TransactionProcessor.BusinessLogic.Tests.DomainEventHandlers
         [Fact]
         public void MerchantDomainEventHandler_TransactionHasBeenCompletedEvent_EventIsHandled()
         {
-            TransactionDomainEvents.TransactionHasBeenCompletedEvent domainEvent = TestData.TransactionHasBeenCompletedEvent;
+            TransactionDomainEvents.TransactionHasBeenCompletedEvent domainEvent = TestData.DomainEvents.TransactionHasBeenCompletedEvent;
 
             Should.NotThrow(async () => { await this.DomainEventHandler.Handle(domainEvent, CancellationToken.None); });
         }
