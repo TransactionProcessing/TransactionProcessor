@@ -1389,16 +1389,6 @@ namespace TransactionProcessor.Testing
                                                                                                                                                                                        TestData.SettlementAggregateId,
                                                                                                                                                                                        TestData.TransactionDateTime);
 
-        public static TransactionDomainEvents.TransactionHasBeenCompletedEvent TransactionHasBeenCompletedEvent = new TransactionDomainEvents.TransactionHasBeenCompletedEvent(TestData.TransactionId,
-                                                                                                                                  TestData.EstateId,
-                                                                                                                                  TestData.MerchantId,
-                                                                                                                                  TestData.ResponseCode,
-                                                                                                                                  TestData.ResponseMessage,
-                                                                                                                                  TestData.IsAuthorised,
-                                                                                                                                  TestData.TransactionDateTime,
-                                                                                                                                  TestData.TransactionAmount,
-                                                                                                                                  TestData.TransactionDateTime);
-
         public static Guid TransactionFeeId = Guid.Parse("B83FCCCE-0D45-4FC2-8952-ED277A124BDB");
 
         public static Guid TransactionFeeId2 = Guid.Parse("CA2D5119-1232-41D6-B6FD-9D84B9B5460C");
@@ -2573,6 +2563,16 @@ namespace TransactionProcessor.Testing
             };
 
         public static class DomainEvents {
+
+            public static TransactionDomainEvents.TransactionHasBeenCompletedEvent TransactionHasBeenCompletedEvent => new TransactionDomainEvents.TransactionHasBeenCompletedEvent(TestData.TransactionId,
+                TestData.EstateId,
+                TestData.MerchantId,
+                TestData.ResponseCode,
+                TestData.ResponseMessage,
+                TestData.IsAuthorised,
+                TestData.TransactionDateTime,
+                TestData.TransactionAmount,
+                TestData.TransactionDateTime);
 
             public static SettlementDomainEvents.MerchantFeeSettledEvent MerchantFeeSettledEvent => new(SettlementId, EstateId, MerchantId, TransactionId, CalculatedFeeValue, FeeCalculationType, SettledFeeId1, FeeValue, TransactionFeeCalculateDateTime, SettlementDate);
 

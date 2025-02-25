@@ -1,9 +1,11 @@
-﻿using System.Threading;
-using System.Threading.Tasks;
-using MediatR;
+﻿using MediatR;
+using Polly;
 using Shared.DomainDrivenDesign.EventSourcing;
 using Shared.EventStore.EventHandling;
 using SimpleResults;
+using System.Threading;
+using System.Threading.Tasks;
+using TransactionProcessor.BusinessLogic.Common;
 using TransactionProcessor.BusinessLogic.Requests;
 using TransactionProcessor.DomainEvents;
 
@@ -49,22 +51,25 @@ namespace TransactionProcessor.BusinessLogic.EventHandling
         /// <param name="cancellationToken">The cancellation token.</param>
         private async Task<Result> HandleSpecificDomainEvent(MerchantStatementDomainEvents.StatementGeneratedEvent domainEvent,
                                                              CancellationToken cancellationToken) {
-            MerchantStatementCommands.EmailMerchantStatementCommand command = new(domainEvent.EstateId,
-                domainEvent.MerchantId, domainEvent.MerchantStatementId);
-            
-            return await this.Mediator.Send(command, cancellationToken);
+
+            IAsyncPolicy<Result> retryPolicy = PolicyFactory.CreatePolicy(2, policyTag: "MerchantStatementDomainEventHandler - StatementGeneratedEvent");
+
+            return await retryPolicy.ExecuteAsync(async () => {
+                MerchantStatementCommands.EmailMerchantStatementCommand command = new(domainEvent.EstateId, domainEvent.MerchantId, domainEvent.MerchantStatementId);
+
+                return await this.Mediator.Send(command, cancellationToken);
+            });
         }
 
         private async Task<Result> HandleSpecificDomainEvent(TransactionDomainEvents.TransactionHasBeenCompletedEvent domainEvent,
                                                              CancellationToken cancellationToken) {
-            MerchantStatementCommands.AddTransactionToMerchantStatementCommand command = new(domainEvent.EstateId,
-                domainEvent.MerchantId,
-                domainEvent.CompletedDateTime,
-                domainEvent.TransactionAmount,
-                domainEvent.IsAuthorised,
-                domainEvent.TransactionId);
+            IAsyncPolicy<Result> retryPolicy = PolicyFactory.CreatePolicy(2, policyTag: "MerchantStatementDomainEventHandler - TransactionHasBeenCompletedEvent");
 
-            return await this.Mediator.Send(command, cancellationToken);
+            return await retryPolicy.ExecuteAsync(async () => {
+                MerchantStatementCommands.AddTransactionToMerchantStatementCommand command = new(domainEvent.EstateId, domainEvent.MerchantId, domainEvent.CompletedDateTime, domainEvent.TransactionAmount, domainEvent.IsAuthorised, domainEvent.TransactionId);
+
+                return await this.Mediator.Send(command, cancellationToken);
+            });
         }
 
         #endregion
