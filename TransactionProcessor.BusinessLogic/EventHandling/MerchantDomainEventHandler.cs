@@ -63,7 +63,7 @@ namespace TransactionProcessor.BusinessLogic.EventHandling
         {
             IAsyncPolicy<Result> retryPolicy = PolicyFactory.CreatePolicy(2, policyTag: "MerchantSettlementDomainEventHandler - MerchantFeeSettledEvent");
 
-            return await retryPolicy.ExecuteAsync(async () => {
+            return await PolicyFactory.ExecuteWithPolicyAsync(async () => {
                 if (domainEvent.TypeString == typeof(CallbackHandler.DataTransferObjects.Deposit).ToString()) {
                     // Work out the merchant id from the reference field (second part, split on hyphen)
                     String merchantReference = domainEvent.Reference.Split("-")[1];
@@ -80,7 +80,7 @@ namespace TransactionProcessor.BusinessLogic.EventHandling
                 }
 
                 return Result.Success();
-            });
+            }, retryPolicy, "MerchantSettlementDomainEventHandler - MerchantFeeSettledEvent");
         }
 
         #endregion

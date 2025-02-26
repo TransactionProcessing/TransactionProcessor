@@ -34,10 +34,10 @@ public class MerchantSettlementDomainEventHandler : IDomainEventHandler {
                                                          CancellationToken cancellationToken) {
         IAsyncPolicy<Result> retryPolicy = PolicyFactory.CreatePolicy(2, policyTag: "MerchantSettlementDomainEventHandler - MerchantFeeSettledEvent");
 
-        return await retryPolicy.ExecuteAsync(async () => {
+        return await PolicyFactory.ExecuteWithPolicyAsync(async () => {
             MerchantStatementCommands.AddSettledFeeToMerchantStatementCommand command = new(domainEvent.EstateId, domainEvent.MerchantId, domainEvent.FeeCalculatedDateTime, domainEvent.CalculatedValue, domainEvent.TransactionId, domainEvent.FeeId);
 
             return await this.Mediator.Send(command, cancellationToken);
-        });
+        }, retryPolicy, "MerchantSettlementDomainEventHandler - MerchantFeeSettledEvent");
     }
 }
