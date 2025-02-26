@@ -54,22 +54,22 @@ namespace TransactionProcessor.BusinessLogic.EventHandling
 
             IAsyncPolicy<Result> retryPolicy = PolicyFactory.CreatePolicy(2, policyTag: "MerchantStatementDomainEventHandler - StatementGeneratedEvent");
 
-            return await retryPolicy.ExecuteAsync(async () => {
+            return await PolicyFactory.ExecuteWithPolicyAsync(async () => {
                 MerchantStatementCommands.EmailMerchantStatementCommand command = new(domainEvent.EstateId, domainEvent.MerchantId, domainEvent.MerchantStatementId);
 
                 return await this.Mediator.Send(command, cancellationToken);
-            });
+            }, retryPolicy, "MerchantStatementDomainEventHandler - StatementGeneratedEvent");
         }
 
         private async Task<Result> HandleSpecificDomainEvent(TransactionDomainEvents.TransactionHasBeenCompletedEvent domainEvent,
                                                              CancellationToken cancellationToken) {
             IAsyncPolicy<Result> retryPolicy = PolicyFactory.CreatePolicy(2, policyTag: "MerchantStatementDomainEventHandler - TransactionHasBeenCompletedEvent");
 
-            return await retryPolicy.ExecuteAsync(async () => {
+            return await PolicyFactory.ExecuteWithPolicyAsync(async () => {
                 MerchantStatementCommands.AddTransactionToMerchantStatementCommand command = new(domainEvent.EstateId, domainEvent.MerchantId, domainEvent.CompletedDateTime, domainEvent.TransactionAmount, domainEvent.IsAuthorised, domainEvent.TransactionId);
 
                 return await this.Mediator.Send(command, cancellationToken);
-            });
+            },retryPolicy, "MerchantStatementDomainEventHandler - TransactionHasBeenCompletedEvent");
         }
 
         #endregion
