@@ -22,57 +22,16 @@ using Xunit.Sdk;
 
 namespace TransactionProcessor.BusinessLogic.Tests.DomainEventHandlers
 {
-    public class TestLogger : ILogger {
-        private ITestOutputHelper t = null;
-        public TestLogger(ITestOutputHelper helper) {
-            this.t = helper;
-        }
-        public void LogCritical(Exception exception) {
-            t.WriteLine(exception.Message);
-        }
-
-        public void LogCritical(String message,
-                                Exception exception) {
-            t.WriteLine(message);
-        }
-
-        public void LogDebug(String message) {
-            t.WriteLine(message);
-        }
-
-        public void LogError(Exception exception) {
-            t.WriteLine(exception.Message);
-        }
-
-        public void LogError(String message,
-                             Exception exception) {
-            t.WriteLine(message);
-        }
-
-        public void LogInformation(String message) {
-            t.WriteLine(message);
-        }
-
-        public void LogTrace(String message) {
-            t.WriteLine(message);
-        }
-
-        public void LogWarning(String message) {
-            t.WriteLine(message);
-        }
-
-        public Boolean IsInitialised { get; set; }
-    }
     public class MerchantSettlementDomainEventHandlerTests
     {
         private readonly MerchantSettlementDomainEventHandler EventHandler;
         private readonly Mock<IMediator> Mediator;
 
-        public MerchantSettlementDomainEventHandlerTests(ITestOutputHelper helper)
+        public MerchantSettlementDomainEventHandlerTests()
         {
             this.Mediator = new Mock<IMediator>();
             this.EventHandler = new MerchantSettlementDomainEventHandler(this.Mediator.Object);
-            Logger.Initialise(new TestLogger(helper));
+            Logger.Initialise(new NullLogger());
         }
 
         [Fact]
