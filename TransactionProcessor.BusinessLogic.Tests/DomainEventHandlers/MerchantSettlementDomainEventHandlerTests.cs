@@ -17,6 +17,8 @@ using Shared.Logger;
 using SimpleResults;
 using TransactionProcessor.BusinessLogic.Requests;
 using Grpc.Core;
+using Xunit.Abstractions;
+using Xunit.Sdk;
 
 namespace TransactionProcessor.BusinessLogic.Tests.DomainEventHandlers
 {

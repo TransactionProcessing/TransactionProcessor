@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Threading.Tasks;
 using EventStore.Client;
 using Grpc.Core;
 using Polly;
@@ -17,15 +18,25 @@ public static class PolicyFactory{
 
         AsyncRetryPolicy<Result> retryPolicy = CreateRetryPolicy(retryCount, retryDelayValue, policyTag);
 
-        return withFallBack switch {
+        IAsyncPolicy<Result> policyWrap = withFallBack switch {
             true => CreateFallbackPolicy(policyTag, retryPolicy),
             _ => retryPolicy
         };
+        return policyWrap;
+    }
+
+    public static async Task<Result> ExecuteWithPolicyAsync(Func<Task<Result>> action, IAsyncPolicy<Result> policy, String policyTag = "")
+    {
+        Result result = await policy.ExecuteAsync(action);
+        
+        // Log success if no retries were required
+        Logger.LogWarning($"{policyTag} - Execution succeeded without retries.");
+
+        return result;
     }
 
     private static AsyncRetryPolicy<Result> CreateRetryPolicy(int retryCount, TimeSpan retryDelay, String policyTag)
     {
-        //
         return Policy<Result>
             .Handle<WrongExpectedVersionException>()
             .Or<RpcException>(ex => ex.StatusCode == StatusCode.DeadlineExceeded)
@@ -39,15 +50,15 @@ public static class PolicyFactory{
 
     private static AsyncPolicyWrap<Result> CreateFallbackPolicy(String policyTag, AsyncRetryPolicy<Result> retryPolicy)
     {
-        AsyncFallbackPolicy<Result> fallbackPolicy = Policy<Result>
-            .Handle<WrongExpectedVersionException>()
-            .Or<TimeoutException>()
-            .FallbackAsync(async (cancellationToken) =>
-            {
-                Logger.LogWarning($"{policyTag}  -All retries failed. Executing fallback action...");
-                // Log failure, notify monitoring system, or enqueue for later processing
-                return Result.Failure("Fallback action executed");
-            });
+        var fallbackPolicy = Policy<Result>
+            .Handle<Exception>() // Catch-all for exceptions that aren't retried
+            .FallbackAsync(
+                fallbackValue: Result.Failure("An error occurred, no retry required."), // Ensure a valid Result return
+                onFallbackAsync: (exception, context) =>
+                {
+                    Logger.LogWarning($"{policyTag} - Non-retryable exception encountered: {exception.GetType().Name}");
+                    return Task.CompletedTask;
+                });
 
         return fallbackPolicy.WrapAsync(retryPolicy);
     }
