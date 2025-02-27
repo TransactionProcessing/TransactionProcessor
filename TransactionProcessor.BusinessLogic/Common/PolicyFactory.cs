@@ -1,6 +1,4 @@
-﻿using System;
-using System.Threading.Tasks;
-using EventStore.Client;
+﻿using EventStore.Client;
 using Grpc.Core;
 using Polly;
 using Polly.Fallback;
@@ -8,6 +6,9 @@ using Polly.Retry;
 using Polly.Wrap;
 using Shared.Logger;
 using SimpleResults;
+using System;
+using System.Linq;
+using System.Threading.Tasks;
 
 namespace TransactionProcessor.BusinessLogic.Common;
 
@@ -29,10 +30,17 @@ public static class PolicyFactory{
     {
         var context = new Context();
         context["RetryCount"] = 0;
-        //Result result = await policy.ExecuteAsync(action);
+
         Result result = await policy.ExecuteAsync((ctx) => action(), context);
+        
         int retryCount = (int)context["RetryCount"];
-        String message = result.IsSuccess ? "Execution succeeded." : $"Execution failed with error: {result.Message}";
+        String message = result switch
+        {
+            { IsSuccess: true } => "Success",
+            { IsSuccess: false, Message: not "" } => result.Message,
+            { IsSuccess: false, Message: "", Errors: var errors } when errors.Any() => string.Join(", ", errors),
+            _ => "Unknown Error"
+        };
         String retryMessage = retryCount > 0 ? $" after {retryCount} retries." : "";
         // Log success if no retries were required
 
