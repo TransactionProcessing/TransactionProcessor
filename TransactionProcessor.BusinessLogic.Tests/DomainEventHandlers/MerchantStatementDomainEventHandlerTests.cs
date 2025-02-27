@@ -10,18 +10,15 @@ using SimpleResults;
 using TransactionProcessor.BusinessLogic.EventHandling;
 using TransactionProcessor.Testing;
 using Xunit;
+using Xunit.Abstractions;
 
 namespace TransactionProcessor.BusinessLogic.Tests.DomainEventHandlers;
 
-public class MerchantStatementDomainEventHandlerTests
+public class MerchantStatementDomainEventHandlerTests : DomainEventHandlerTests
 {
-    private Mock<IMediator> Mediator;
-
-    private MerchantStatementDomainEventHandler EventHandler;
-    public MerchantStatementDomainEventHandlerTests()
+    private readonly MerchantStatementDomainEventHandler EventHandler;
+    public MerchantStatementDomainEventHandlerTests(ITestOutputHelper testOutputHelper) : base(testOutputHelper)
     {
-        Logger.Initialise(NullLogger.Instance);
-        this.Mediator = new Mock<IMediator>();
         this.EventHandler = new MerchantStatementDomainEventHandler(this.Mediator.Object);
     }
 

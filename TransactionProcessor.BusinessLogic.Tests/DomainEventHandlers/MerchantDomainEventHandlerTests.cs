@@ -16,27 +16,23 @@ using TransactionProcessor.DomainEvents;
 using TransactionProcessor.Repository;
 using TransactionProcessor.Testing;
 using Xunit;
+using Xunit.Abstractions;
 
 namespace TransactionProcessor.BusinessLogic.Tests.DomainEventHandlers
 {
-    public class MerchantDomainEventHandlerTests
+    public class MerchantDomainEventHandlerTests : DomainEventHandlerTests
     {
-        private Mock<IAggregateRepository<MerchantAggregate, DomainEvent>> MerchantAggregateRepository;
-        private Mock<ITransactionProcessorReadModelRepository> TransactionProcessorReadModelRepository;
-        private Mock<IMediator> Mediator;
+        private readonly Mock<IAggregateRepository<MerchantAggregate, DomainEvent>> MerchantAggregateRepository;
+        private readonly Mock<ITransactionProcessorReadModelRepository> TransactionProcessorReadModelRepository;
+        private readonly MerchantDomainEventHandler DomainEventHandler;
 
-        private MerchantDomainEventHandler DomainEventHandler;
-
-        public MerchantDomainEventHandlerTests() {
-            Logger.Initialise(NullLogger.Instance);
-
-            this.Mediator = new Mock<IMediator>();
+        public MerchantDomainEventHandlerTests(ITestOutputHelper testOutputHelper) : base(testOutputHelper)  {
             this.MerchantAggregateRepository = new Mock<IAggregateRepository<MerchantAggregate, DomainEvent>>();
             this.TransactionProcessorReadModelRepository = new Mock<ITransactionProcessorReadModelRepository>();
 
             this.DomainEventHandler = new MerchantDomainEventHandler(this.MerchantAggregateRepository.Object,
-                                                                                           this.TransactionProcessorReadModelRepository.Object,
-                                                                                           this.Mediator.Object);
+                                                                     this.TransactionProcessorReadModelRepository.Object,
+                                                                     this.Mediator.Object);
         }
 
         [Fact]

@@ -22,16 +22,13 @@ using Xunit.Sdk;
 
 namespace TransactionProcessor.BusinessLogic.Tests.DomainEventHandlers
 {
-    public class MerchantSettlementDomainEventHandlerTests
+    public class MerchantSettlementDomainEventHandlerTests : DomainEventHandlerTests
     {
         private readonly MerchantSettlementDomainEventHandler EventHandler;
-        private readonly Mock<IMediator> Mediator;
-
-        public MerchantSettlementDomainEventHandlerTests()
+        
+        public MerchantSettlementDomainEventHandlerTests(ITestOutputHelper testOutputHelper) : base(testOutputHelper)
         {
-            this.Mediator = new Mock<IMediator>();
             this.EventHandler = new MerchantSettlementDomainEventHandler(this.Mediator.Object);
-            Logger.Initialise(new NullLogger());
         }
 
         [Fact]
