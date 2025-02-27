@@ -12,7 +12,7 @@ using SimpleResults;
 namespace TransactionProcessor.BusinessLogic.Common;
 
 public static class PolicyFactory{
-    public static IAsyncPolicy<Result> CreatePolicy(Int32 retryCount=5, TimeSpan? retryDelay = null, String policyTag="", Boolean withFallBack=false) {
+    public static IAsyncPolicy<Result> CreatePolicy(Int32 retryCount=5, TimeSpan? retryDelay = null, String policyTag="", Boolean withFallBack=true) {
 
         TimeSpan retryDelayValue = retryDelay.GetValueOrDefault(TimeSpan.FromSeconds(1));
 
@@ -27,10 +27,16 @@ public static class PolicyFactory{
 
     public static async Task<Result> ExecuteWithPolicyAsync(Func<Task<Result>> action, IAsyncPolicy<Result> policy, String policyTag = "")
     {
-        Result result = await policy.ExecuteAsync(action);
-        
+        var context = new Context();
+        context["RetryCount"] = 0;
+        //Result result = await policy.ExecuteAsync(action);
+        Result result = await policy.ExecuteAsync((ctx) => action(), context);
+        int retryCount = (int)context["RetryCount"];
+        String message = result.IsSuccess ? "Execution succeeded." : $"Execution failed with error: {result.Message}";
+        String retryMessage = retryCount > 0 ? $" after {retryCount} retries." : "";
         // Log success if no retries were required
-        Logger.LogWarning($"{policyTag} - Execution succeeded without retries.");
+
+        Logger.LogWarning($"{policyTag} - {message} {retryMessage}");
 
         return result;
     }
@@ -44,7 +50,8 @@ public static class PolicyFactory{
                 _ => retryDelay, // Fixed delay
                 (exception, timeSpan, retryCount, context) =>
                 {
-                    Logger.LogWarning($"{policyTag} - Retry {retryCount} due to {exception.GetType().Name}. Waiting {timeSpan} before retrying...");
+                    context["RetryCount"] = retryCount;
+                    Logger.LogWarning($"{policyTag} - Retry {retryCount} due to {exception.Exception.GetType().Name}. Waiting {timeSpan} before retrying...");
                 });
     }
 
@@ -56,7 +63,7 @@ public static class PolicyFactory{
                 fallbackValue: Result.Failure("An error occurred, no retry required."), // Ensure a valid Result return
                 onFallbackAsync: (exception, context) =>
                 {
-                    Logger.LogWarning($"{policyTag} - Non-retryable exception encountered: {exception.GetType().Name}");
+                    Logger.LogWarning($"{policyTag} - Non-retryable exception encountered: {exception.Exception.GetType().Name}");
                     return Task.CompletedTask;
                 });
 
