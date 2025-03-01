@@ -32,7 +32,7 @@ public class MerchantSettlementDomainEventHandler : IDomainEventHandler {
 
     private async Task<Result> HandleSpecificDomainEvent(SettlementDomainEvents.MerchantFeeSettledEvent domainEvent,
                                                          CancellationToken cancellationToken) {
-        IAsyncPolicy<Result> retryPolicy = PolicyFactory.CreatePolicy(2, policyTag: "MerchantSettlementDomainEventHandler - MerchantFeeSettledEvent");
+        IAsyncPolicy<Result> retryPolicy = PolicyFactory.CreatePolicy(policyTag: "MerchantSettlementDomainEventHandler - MerchantFeeSettledEvent");
 
         return await PolicyFactory.ExecuteWithPolicyAsync(async () => {
             MerchantStatementCommands.AddSettledFeeToMerchantStatementCommand command = new(domainEvent.EstateId, domainEvent.MerchantId, domainEvent.FeeCalculatedDateTime, domainEvent.CalculatedValue, domainEvent.TransactionId, domainEvent.FeeId);
