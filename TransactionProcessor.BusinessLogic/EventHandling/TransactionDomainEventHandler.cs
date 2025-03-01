@@ -59,7 +59,7 @@ namespace TransactionProcessor.BusinessLogic.EventHandling
         private async Task<Result> HandleSpecificDomainEvent(FloatDomainEvents.FloatCreditPurchasedEvent domainEvent,
                                                      CancellationToken cancellationToken) {
            
-            IAsyncPolicy<Result> retryPolicy = PolicyFactory.CreatePolicy(2, policyTag: "TransactionDomainEventHandler - FloatCreditPurchasedEvent");
+            IAsyncPolicy<Result> retryPolicy = PolicyFactory.CreatePolicy(policyTag: "TransactionDomainEventHandler - FloatCreditPurchasedEvent");
 
             return await PolicyFactory.ExecuteWithPolicyAsync(async () => {
                 FloatActivityCommands.RecordCreditPurchaseCommand command =
@@ -72,7 +72,7 @@ namespace TransactionProcessor.BusinessLogic.EventHandling
 
         private async Task<Result> HandleSpecificDomainEvent(TransactionDomainEvents.TransactionCostInformationRecordedEvent domainEvent, CancellationToken cancellationToken){
             
-            IAsyncPolicy<Result> retryPolicy = PolicyFactory.CreatePolicy(2, policyTag: "TransactionDomainEventHandler - TransactionCostInformationRecordedEvent");
+            IAsyncPolicy<Result> retryPolicy = PolicyFactory.CreatePolicy(policyTag: "TransactionDomainEventHandler - TransactionCostInformationRecordedEvent");
 
             return await PolicyFactory.ExecuteWithPolicyAsync(async () => {
                 FloatActivityCommands.RecordTransactionCommand command = new(domainEvent.EstateId,
@@ -84,14 +84,19 @@ namespace TransactionProcessor.BusinessLogic.EventHandling
 
         private async Task<Result> HandleSpecificDomainEvent(TransactionDomainEvents.TransactionHasBeenCompletedEvent domainEvent,
                                                              CancellationToken cancellationToken) {
-            CalculateFeesForTransactionCommand command = new(domainEvent.TransactionId, domainEvent.CompletedDateTime, domainEvent.EstateId, domainEvent.MerchantId);
+            
+            IAsyncPolicy<Result> retryPolicy = PolicyFactory.CreatePolicy(policyTag: "TransactionDomainEventHandler - TransactionHasBeenCompletedEvent");
 
-            return await this.Mediator.Send(command, cancellationToken);
+            return await PolicyFactory.ExecuteWithPolicyAsync(async () => {
+                CalculateFeesForTransactionCommand command = new(domainEvent.TransactionId, domainEvent.CompletedDateTime, domainEvent.EstateId, domainEvent.MerchantId);
+
+                return await this.Mediator.Send(command, cancellationToken);
+            }, retryPolicy, "TransactionDomainEventHandler - TransactionHasBeenCompletedEvent");
         }
 
         private async Task<Result> HandleSpecificDomainEvent(TransactionDomainEvents.MerchantFeePendingSettlementAddedToTransactionEvent domainEvent,
                                                              CancellationToken cancellationToken) {
-            IAsyncPolicy<Result> retryPolicy = PolicyFactory.CreatePolicy(2, policyTag: "TransactionDomainEventHandler - MerchantFeePendingSettlementAddedToTransactionEvent");
+            IAsyncPolicy<Result> retryPolicy = PolicyFactory.CreatePolicy(policyTag: "TransactionDomainEventHandler - MerchantFeePendingSettlementAddedToTransactionEvent");
 
             return await PolicyFactory.ExecuteWithPolicyAsync(async () => {
                 SettlementCommands.AddMerchantFeePendingSettlementCommand command =
@@ -105,7 +110,7 @@ namespace TransactionProcessor.BusinessLogic.EventHandling
 
         private async Task<Result> HandleSpecificDomainEvent(TransactionDomainEvents.SettledMerchantFeeAddedToTransactionEvent domainEvent,
                                                              CancellationToken cancellationToken) {
-            IAsyncPolicy<Result> retryPolicy = PolicyFactory.CreatePolicy(2, policyTag: "TransactionDomainEventHandler - SettledMerchantFeeAddedToTransactionEvent");
+            IAsyncPolicy<Result> retryPolicy = PolicyFactory.CreatePolicy(policyTag: "TransactionDomainEventHandler - SettledMerchantFeeAddedToTransactionEvent");
 
             return await PolicyFactory.ExecuteWithPolicyAsync(async () => {
                 AddSettledFeeToSettlementCommand command = new AddSettledFeeToSettlementCommand(
@@ -117,7 +122,7 @@ namespace TransactionProcessor.BusinessLogic.EventHandling
         private async Task<Result> HandleSpecificDomainEvent(SettlementDomainEvents.MerchantFeeSettledEvent domainEvent,
                                                              CancellationToken cancellationToken)
         {
-            IAsyncPolicy<Result> retryPolicy = PolicyFactory.CreatePolicy(2, policyTag: "TransactionDomainEventHandler - MerchantFeeSettledEvent");
+            IAsyncPolicy<Result> retryPolicy = PolicyFactory.CreatePolicy(policyTag: "TransactionDomainEventHandler - MerchantFeeSettledEvent");
 
             return await PolicyFactory.ExecuteWithPolicyAsync(async () => {
                 AddSettledMerchantFeeCommand command = new(domainEvent.TransactionId, domainEvent.CalculatedValue,
