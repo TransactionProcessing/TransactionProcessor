@@ -48,7 +48,7 @@ jobs:
     - name: Extract Failed Tests (PowerShell)
       if: ${{ failure() }}
       run: |
-        $xml = [xml](Get-Content test-results.trx)
+        $xml = [xml](Get-Content /home/runner/work/TransactionProcessor/TransactionProcessor/TransactionProcessor.IntegrationTests/test-results.trx)
         $failedTests = $xml.TestRun.Results.UnitTestResult | Where-Object { $_.outcome -eq "Failed" }
         if ($failedTests) {
           Write-Host "::error::Failed Tests:"
