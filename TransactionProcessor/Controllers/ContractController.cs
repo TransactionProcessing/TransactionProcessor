@@ -10,6 +10,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Shared.General;
 using Shared.Results;
+using Shared.Results.Web;
 using SimpleResults;
 using TransactionProcessor.BusinessLogic.Requests;
 using TransactionProcessor.DataTransferObjects.Requests.Contract;

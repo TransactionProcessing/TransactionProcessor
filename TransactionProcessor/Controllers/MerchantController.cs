@@ -1,6 +1,7 @@
 ﻿using MediatR;
 using SecurityService.Client;
 using Shared.Results;
+using Shared.Results.Web;
 using SimpleResults;
 using TransactionProcessor.BusinessLogic.Requests;
 using TransactionProcessor.DataTransferObjects.Requests.Merchant;

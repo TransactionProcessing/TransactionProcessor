@@ -63,9 +63,11 @@ namespace TransactionProcessor
             String eventStoreConnectionString = ConfigurationReader.GetValue("EventStoreSettings", "ConnectionString");
 
             IDomainEventHandlerResolver mainEventHandlerResolver = Startup.Container.GetInstance<IDomainEventHandlerResolver>("Main");
+            IDomainEventHandlerResolver domainEventHandlerResolver = Startup.Container.GetInstance<IDomainEventHandlerResolver>("Domain");
             IDomainEventHandlerResolver orderedEventHandlerResolver = Startup.Container.GetInstance<IDomainEventHandlerResolver>("Ordered");
 
-            Dictionary<String, IDomainEventHandlerResolver> eventHandlerResolvers = new Dictionary<String, IDomainEventHandlerResolver> { { "Main", mainEventHandlerResolver }, { "Ordered", orderedEventHandlerResolver } };
+            Dictionary<String, IDomainEventHandlerResolver> eventHandlerResolvers = new Dictionary<String, IDomainEventHandlerResolver> { { "Main", mainEventHandlerResolver },
+                { "Domain", domainEventHandlerResolver }, { "Ordered", orderedEventHandlerResolver } };
 
 
             Func<String, Int32, ISubscriptionRepository> subscriptionRepositoryResolver = Startup.Container.GetInstance<Func<String, Int32, ISubscriptionRepository>>();

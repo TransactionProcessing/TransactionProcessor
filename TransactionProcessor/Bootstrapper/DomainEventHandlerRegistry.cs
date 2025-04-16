@@ -32,6 +32,7 @@ namespace TransactionProcessor.Bootstrapper
         public DomainEventHandlerRegistry()
         {
             Dictionary<String, String[]> eventHandlersConfiguration = new Dictionary<String, String[]>();
+            Dictionary<String, String[]> eventHandlersConfigurationDomain= new Dictionary<String, String[]>();
             Dictionary<String, String[]> eventHandlersConfigurationOrdered = new Dictionary<String, String[]>();
 
             if (Startup.Configuration != null)
@@ -45,6 +46,15 @@ namespace TransactionProcessor.Bootstrapper
 
                 //this.AddSingleton(eventHandlersConfiguration);
                 this.Use(eventHandlersConfiguration).Named("EventHandlerConfiguration");
+
+                section = Startup.Configuration.GetSection("AppSettings:EventHandlerConfigurationDomain");
+
+                if (section != null)
+                {
+                    Startup.Configuration.GetSection("AppSettings:EventHandlerConfigurationDomain").Bind(eventHandlersConfigurationDomain);
+                }
+
+                this.Use(eventHandlersConfigurationDomain).Named("EventHandlerConfigurationDomain");
 
                 section = Startup.Configuration.GetSection("AppSettings:EventHandlerConfigurationOrdered");
 
@@ -86,6 +96,8 @@ namespace TransactionProcessor.Bootstrapper
 
             this.For<IDomainEventHandlerResolver>().Use<DomainEventHandlerResolver>().Named("Main")
                 .Ctor<Dictionary<String, String[]>>().Is(eventHandlersConfiguration).Singleton();
+            this.For<IDomainEventHandlerResolver>().Use<DomainEventHandlerResolver>().Named("Domain")
+                .Ctor<Dictionary<String, String[]>>().Is(eventHandlersConfigurationDomain).Singleton();
             this.For<IDomainEventHandlerResolver>().Use<DomainEventHandlerResolver>().Named("Ordered")
                 .Ctor<Dictionary<String, String[]>>().Is(eventHandlersConfigurationOrdered).Singleton();
 

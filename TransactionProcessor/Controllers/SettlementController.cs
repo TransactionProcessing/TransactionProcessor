@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using SecurityService.DataTransferObjects.Responses;
 using Shared.Results;
+using Shared.Results.Web;
 using SimpleResults;
 using TransactionProcessor.Aggregates;
 using TransactionProcessor.DataTransferObjects.Responses.Settlement;

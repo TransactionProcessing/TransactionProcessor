@@ -9,6 +9,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using SecurityService.DataTransferObjects.Responses;
 using Shared.Results;
+using Shared.Results.Web;
 using SimpleResults;
 using Swashbuckle.AspNetCore.Annotations;
 using TransactionProcessor.BusinessLogic.Requests;

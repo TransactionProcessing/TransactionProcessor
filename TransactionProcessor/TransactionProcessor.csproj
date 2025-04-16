@@ -5,17 +5,12 @@
     <DockerDefaultTargetOS>Linux</DockerDefaultTargetOS>
   </PropertyGroup>
 
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
-    <DocumentationFile>D:\Projects\StuartFerguson\TransactionProcessor\TransactionProcessor\TransactionProcessor.xml</DocumentationFile>
-    <WarningsAsErrors />
-  </PropertyGroup>
-
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
     <WarningsAsErrors />
   </PropertyGroup>
 
   <ItemGroup>
-	  <PackageReference Include="ClientProxyBase" Version="2025.3.1" />
+	  <PackageReference Include="ClientProxyBase" Version="2025.4.2" />
 	  <PackageReference Include="Lamar" Version="14.0.1" />
 	  <PackageReference Include="Lamar.Microsoft.DependencyInjection" Version="14.0.1" />
 	  <PackageReference Include="AspNetCore.HealthChecks.SqlServer" Version="9.0.0" />
@@ -38,9 +33,10 @@
     <PackageReference Include="NLog.Extensions.Logging" Version="5.4.0" />
     <PackageReference Include="Pomelo.EntityFrameworkCore.MySql" Version="8.0.3" />
     <PackageReference Include="SecurityService.Client" Version="2025.1.1" />
-    <PackageReference Include="Shared" Version="2025.3.1" />
-    <PackageReference Include="Shared.EventStore" Version="2025.3.1" />
+    <PackageReference Include="Shared" Version="2025.4.2" />
+    <PackageReference Include="Shared.EventStore" Version="2025.4.2" />
       <PackageReference Include="Microsoft.Extensions.Hosting.WindowsServices" Version="8.0.0" />
+      <PackageReference Include="Shared.Results.Web" Version="2025.4.2" />
 	  <PackageReference Include="Swashbuckle.AspNetCore" Version="7.3.1" />
 	  <PackageReference Include="Swashbuckle.AspNetCore.Annotations" Version="7.3.1" />
 	  <PackageReference Include="Swashbuckle.AspNetCore.Filters" Version="8.0.2" />
@@ -60,6 +56,9 @@
   </ItemGroup>
 
   <ItemGroup>
+    <Content Update="appsettings.json">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
     <Content Update="appsettings.preproduction.Development.json">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
