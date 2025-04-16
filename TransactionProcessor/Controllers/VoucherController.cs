@@ -1,4 +1,5 @@
 ﻿using Shared.Results;
+using Shared.Results.Web;
 using SimpleResults;
 using Swashbuckle.AspNetCore.Filters;
 using TransactionProcessor.BusinessLogic.Requests;

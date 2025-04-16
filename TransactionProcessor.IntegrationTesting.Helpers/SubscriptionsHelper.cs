@@ -19,6 +19,13 @@ public static class SubscriptionsHelper
                                                                                                ("$ce-SettlementAggregate", "Transaction Processor", 0),
                                                                                                ("$ce-TransactionAggregate", "Transaction Processor", 0),
 
+                                                                                               // Domain Only
+                                                                                               ("$ce-FloatAggregate", "Transaction Processor - Domain", 0),
+                                                                                               ("$ce-TransactionAggregate", "Transaction Processor - Domain", 0),
+                                                                                               ("$ce-SettlementAggregate", "Transaction Processor - Domain", 0),
+                                                                                               ("$ce-CallbackMessageAggregate", "Transaction Processor - Domain", 0),
+                                                                                               ("$ce-MerchantStatementAggregate", "Transaction Processor - Domain", 0),
+
                                                                                                // Ordered
                                                                                                ("$ce-MerchantAggregate", "Transaction Processor - Ordered", 2),
                                                                                                ("$ce-MerchantStatementAggregate", "Transaction Processor - Ordered", 0),
