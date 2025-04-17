@@ -35,21 +35,15 @@ namespace TransactionProcessor.BusinessLogic.Services
 
         #region Fields
         
-        private readonly IAggregateRepository<ContractAggregate, DomainEvent> ContractAggregateRepository;
+        private readonly IAggregateService AggregateService;
         private readonly IEventStoreContext Context;
-
-        private readonly IAggregateRepository<EstateAggregate, DomainEvent> EstateAggregateRepository;
 
         #endregion
 
         #region Constructors
 
-        public ContractDomainService(IAggregateRepository<EstateAggregate, DomainEvent> estateAggregateRepository,
-                                     IAggregateRepository<ContractAggregate, DomainEvent> contractAggregateRepository,
-                                     IEventStoreContext context)
-        {
-            this.EstateAggregateRepository = estateAggregateRepository;
-            this.ContractAggregateRepository = contractAggregateRepository;
+        public ContractDomainService(IAggregateService aggregateService, IEventStoreContext context) {
+            this.AggregateService = aggregateService;
             this.Context = context;
         }
 
@@ -61,12 +55,11 @@ namespace TransactionProcessor.BusinessLogic.Services
         {
             try
             {
-                Result<EstateAggregate> getEstateResult = await this.EstateAggregateRepository.GetLatestVersion(estateId, cancellationToken);
-                if (getEstateResult.IsFailed)
-                    return ResultHelpers.CreateFailure(getEstateResult);
-                EstateAggregate estateAggregate = getEstateResult.Data;
-
-                Result<ContractAggregate> getContractResult = await this.ContractAggregateRepository.GetLatestVersion(contractId, cancellationToken);
+                EstateAggregate estateAggregate = await this.AggregateService.Get<EstateAggregate>(estateId, cancellationToken);
+                if (estateAggregate.IsCreated == false)
+                    return Result.Failure("Estate is noty created");
+                
+                Result<ContractAggregate> getContractResult = await this.AggregateService.GetLatest<ContractAggregate>(contractId, cancellationToken);
                 Result<ContractAggregate> contractAggregateResult =
                     DomainServiceHelper.HandleGetAggregateResult(getContractResult, contractId, isNotFoundError);
                 if (contractAggregateResult.IsFailed)
@@ -77,7 +70,7 @@ namespace TransactionProcessor.BusinessLogic.Services
                 if (result.IsFailed)
                     return ResultHelpers.CreateFailure(result);
 
-                Result saveResult = await this.ContractAggregateRepository.SaveChanges(contractAggregate, cancellationToken);
+                Result saveResult = await this.AggregateService.Save(contractAggregate, cancellationToken);
                 if (saveResult.IsFailed)
                     return ResultHelpers.CreateFailure(saveResult);
 
