@@ -5,6 +5,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using SecurityService.Client;
 using SecurityService.DataTransferObjects;
+using SecurityService.DataTransferObjects.Responses;
 using Shared.DomainDrivenDesign.EventSourcing;
 using Shared.EventStore.Aggregate;
 using Shared.Exceptions;
@@ -34,18 +35,16 @@ namespace TransactionProcessor.BusinessLogic.Services
     {
         #region Fields
 
-        private readonly IAggregateRepository<EstateAggregate, DomainEvent> EstateAggregateRepository;
-
+        private readonly IAggregateService AggregateService;
         private readonly ISecurityServiceClient SecurityServiceClient;
 
         #endregion
 
         #region Constructors
                 
-        public EstateDomainService(IAggregateRepository<EstateAggregate, DomainEvent> estateAggregateRepository,
-                                   ISecurityServiceClient securityServiceClient)
-        {
-            this.EstateAggregateRepository = estateAggregateRepository;
+        public EstateDomainService(IAggregateService aggregateService,
+                                   ISecurityServiceClient securityServiceClient) {
+            this.AggregateService = aggregateService;
             this.SecurityServiceClient = securityServiceClient;
         }
 
@@ -57,7 +56,7 @@ namespace TransactionProcessor.BusinessLogic.Services
         {
             try
             {
-                Result<EstateAggregate> getLatestVersionResult = await this.EstateAggregateRepository.GetLatestVersion(estateId, cancellationToken);
+                Result<EstateAggregate> getLatestVersionResult = await this.AggregateService.GetLatest<EstateAggregate>(estateId, cancellationToken);
                 Result<EstateAggregate> estateAggregateResult =
                     DomainServiceHelper.HandleGetAggregateResult(getLatestVersionResult, estateId, isNotFoundError);
                 if (estateAggregateResult.IsFailed)
@@ -67,7 +66,7 @@ namespace TransactionProcessor.BusinessLogic.Services
 
                 action(estateAggregate);
 
-                Result saveResult = await this.EstateAggregateRepository.SaveChanges(estateAggregate, cancellationToken);
+                Result saveResult = await this.AggregateService.Save(estateAggregate, cancellationToken);
                 if (saveResult.IsFailed)
                     return ResultHelpers.CreateFailure(saveResult);
 
@@ -122,11 +121,11 @@ namespace TransactionProcessor.BusinessLogic.Services
             if (createUserResult.IsFailed)
                 return ResultHelpers.CreateFailure(createUserResult);
 
-            var userDetailsResult = await this.SecurityServiceClient.GetUsers(createUserRequest.EmailAddress, cancellationToken);
+            Result<List<UserDetails>> userDetailsResult = await this.SecurityServiceClient.GetUsers(createUserRequest.EmailAddress, cancellationToken);
             if (userDetailsResult.IsFailed)
                 return ResultHelpers.CreateFailure(userDetailsResult);
 
-            var user = userDetailsResult.Data.SingleOrDefault();
+            UserDetails user = userDetailsResult.Data.SingleOrDefault();
             if (user == null)
                 return Result.Failure($"Unable to get user details for username {createUserRequest.EmailAddress}");
 
