@@ -255,7 +255,7 @@ namespace TransactionProcessor.BusinessLogic.Services {
         public static readonly ConcurrentDictionary<String, Histogram> DynamicHistogram = new();
 
         private static readonly Func<String, String, String> FormatMetricName = (methodName,
-                                                                                 metricType) => $"eposity_{methodName}_{metricType}";
+                                                                                 metricType) => $"{methodName}_{metricType}";
 
         public static Histogram GetHistogramMetric(String methodName)
         {
