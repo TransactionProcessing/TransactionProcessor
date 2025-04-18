@@ -626,17 +626,7 @@ namespace TransactionProcessor.BusinessLogic.Services{
                                                                                 Dictionary<String, String> additionalTransactionMetadata,
                                                                                 String transactionReference,
                                                                                 CancellationToken cancellationToken) {
-
-            // TODO: introduce some kind of mapping in here to link operator id to the name
-            //Result<EstateAggregate> getEstateResult = await this.AggregateService.Get<EstateAggregate>(merchant.EstateId, cancellationToken);
-            //if (getEstateResult.IsFailed)
-            //{
-            //    return ResultHelpers.CreateFailure(getEstateResult);
-            //}
-            //EstateAggregate estateAggregate = getEstateResult.Data;
-            //Models.Estate.Estate estate = estateAggregate.GetEstate();
-            //Models.Estate.Operator @operator = estate.Operators.SingleOrDefault(o => o.OperatorId == operatorId);
-
+            
             Result<OperatorAggregate> getOperatorResult= await this.AggregateService.Get<OperatorAggregate>(operatorId, cancellationToken);
             if (getOperatorResult.IsFailed)
                 return ResultHelpers.CreateFailure(getOperatorResult);

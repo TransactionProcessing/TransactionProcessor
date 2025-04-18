@@ -220,7 +220,6 @@ namespace TransactionProcessor.BusinessLogic.Services {
             String g = typeof(TAggregate).Name;
             String m = $"AggregateService";
             Counter counterCalls = AggregateService.GetCounterMetric($"{m}_{g}_times_saved");
-            Counter counterEvents = AggregateService.GetCounterMetric($"{m}_{g}_total_pending_events");
             Histogram histogramMetric = AggregateService.GetHistogramMetric($"{m}_{g}");
 
             counterCalls.Inc();
