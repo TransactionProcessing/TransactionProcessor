@@ -628,18 +628,19 @@ namespace TransactionProcessor.BusinessLogic.Services{
                                                                                 CancellationToken cancellationToken) {
 
             // TODO: introduce some kind of mapping in here to link operator id to the name
-            Result<EstateAggregate> getEstateResult = await this.AggregateService.Get<EstateAggregate>(merchant.EstateId, cancellationToken);
-            if (getEstateResult.IsFailed)
-            {
-                return ResultHelpers.CreateFailure(getEstateResult);
-            }
-            EstateAggregate estateAggregate = getEstateResult.Data;
-            Models.Estate.Estate estate = estateAggregate.GetEstate();
-            Models.Estate.Operator @operator = estate.Operators.SingleOrDefault(o => o.OperatorId == operatorId);
+            //Result<EstateAggregate> getEstateResult = await this.AggregateService.Get<EstateAggregate>(merchant.EstateId, cancellationToken);
+            //if (getEstateResult.IsFailed)
+            //{
+            //    return ResultHelpers.CreateFailure(getEstateResult);
+            //}
+            //EstateAggregate estateAggregate = getEstateResult.Data;
+            //Models.Estate.Estate estate = estateAggregate.GetEstate();
+            //Models.Estate.Operator @operator = estate.Operators.SingleOrDefault(o => o.OperatorId == operatorId);
 
-            OperatorAggregate operatorResult = await this.AggregateService.Get<OperatorAggregate>(operatorId, cancellationToken);
-            if (operatorResult.IsCreated == false)
-                return Result.Failure("Operator not created");
+            Result<OperatorAggregate> getOperatorResult= await this.AggregateService.Get<OperatorAggregate>(operatorId, cancellationToken);
+            if (getOperatorResult.IsFailed)
+                return ResultHelpers.CreateFailure(getOperatorResult);
+            Models.Operator.Operator operatorResult = getOperatorResult.Data.GetOperator();
             IOperatorProxy operatorProxy = this.OperatorProxyResolver(operatorResult.Name.Replace(" ", ""));
             try {
                 Result<OperatorResponse> saleResult = await operatorProxy.ProcessSaleMessage(transactionId, operatorId, merchant, transactionDateTime, transactionReference, additionalTransactionMetadata, cancellationToken);

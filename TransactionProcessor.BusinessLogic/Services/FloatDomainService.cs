@@ -162,7 +162,6 @@ namespace TransactionProcessor.BusinessLogic.Services
 
         public async Task<Result> RecordTransaction(FloatActivityCommands.RecordTransactionCommand command,
                                                     CancellationToken cancellationToken) {
-            //Result<TransactionAggregate> getTransactionResult = await this.TransactionAggregateRepository.GetLatestVersion(command.TransactionId, cancellationToken);
             Result<TransactionAggregate> getTransactionResult = await this.AggregateService.GetLatest<TransactionAggregate>(command.TransactionId, cancellationToken);
             if (getTransactionResult.IsFailed)
                 return ResultHelpers.CreateFailure(getTransactionResult);

@@ -397,12 +397,12 @@ namespace TransactionProcessor.BusinessLogic.Services
                     if (result.IsFailed)
                         return ResultHelpers.CreateFailure(result);
 
-                    ContractAggregate contractAggregate = await this.AggregateService.Get<ContractAggregate>(command.RequestDto.ContractId, cancellationToken);
-                    if (contractAggregate.IsCreated == false)
-                    {
-                        return Result.Failure("Contract not created");
+                    var getContractResult = await this.AggregateService.Get<ContractAggregate>(command.RequestDto.ContractId, cancellationToken);
+                    if (getContractResult.IsFailed) {
+                        return ResultHelpers.CreateFailure(getContractResult);
                     }
 
+                    ContractAggregate contractAggregate = getContractResult.Data;
                     if (contractAggregate.IsCreated == false)
                     {
                         return Result.Invalid($"Contract Id {command.RequestDto.ContractId} has not been created");

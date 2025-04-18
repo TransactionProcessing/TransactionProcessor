@@ -314,9 +314,7 @@ public class AggregateMemoryCache
             {
                 // Register a callback to remove the item from our internal tracking
                 memoryCacheEntryOptions.RegisterPostEvictionCallback((evictedKey,
-                                                                      evictedValue,
-                                                                      reason,
-                                                                      state) => {
+                                                                      _, _, _) => {
                                                                           this.KeyTracker.TryRemove(evictedKey.ToString(), out _);
                                                                       });
 

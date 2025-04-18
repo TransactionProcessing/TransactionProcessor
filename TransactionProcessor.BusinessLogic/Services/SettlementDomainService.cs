@@ -111,10 +111,11 @@ namespace TransactionProcessor.BusinessLogic.Services
                     return Result.Success();
                 }
 
-                MerchantAggregate merchant = await this.AggregateService.Get<MerchantAggregate>(command.MerchantId, cancellationToken);
-                if (merchant.IsCreated==  false)
-                    return Result.Failure("Merchant not created");
+                Result<MerchantAggregate> getMerchantResult = await this.AggregateService.Get<MerchantAggregate>(command.MerchantId, cancellationToken);
+                if (getMerchantResult.IsFailed)
+                    return ResultHelpers.CreateFailure(getMerchantResult);
 
+                MerchantAggregate merchant = getMerchantResult.Data;
                 if (merchant.SettlementSchedule == SettlementSchedule.Immediate)
                 {
                     // Mark the settlement as completed
@@ -205,9 +206,11 @@ namespace TransactionProcessor.BusinessLogic.Services
             Guid aggregateId = Helpers.CalculateSettlementAggregateId(command.SettledDate.Date, command.MerchantId, command.EstateId);
             Result result = await ApplySettlementUpdates(async (SettlementAggregate settlementAggregate) => {
 
-                MerchantAggregate merchant = await this.AggregateService.Get<MerchantAggregate>(command.MerchantId, cancellationToken);
-                if (merchant.IsCreated == false)
-                    return Result.Failure("Merchant not created");
+                Result<MerchantAggregate> getMerchantResult = await this.AggregateService.Get<MerchantAggregate>(command.MerchantId, cancellationToken);
+                if (getMerchantResult.IsFailed)
+                    return ResultHelpers.CreateFailure(getMerchantResult);
+
+                MerchantAggregate merchant = getMerchantResult.Data;
 
                 if (merchant.SettlementSchedule == SettlementSchedule.Immediate){
                     settlementAggregate.ImmediatelyMarkFeeAsSettled(command.MerchantId, command.TransactionId, command.FeeId);
