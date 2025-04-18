@@ -31,9 +31,7 @@ namespace TransactionProcessor.BusinessLogic.Services
     }
     public class SettlementDomainService : ISettlementDomainService
     {
-        private readonly IAggregateRepository<TransactionAggregate, DomainEvent> TransactionAggregateRepository;
-        private readonly IAggregateRepository<SettlementAggregate, DomainEvent> SettlementAggregateRepository;
-        private readonly IAggregateRepository<MerchantAggregate, DomainEvent> MerchantAggregateRepository;
+        private readonly IAggregateService AggregateService;
         
         private async Task<Result> ApplySettlementUpdates(Func<SettlementAggregate, Task<Result>> action,
                                                      Guid settlementId,
@@ -43,7 +41,7 @@ namespace TransactionProcessor.BusinessLogic.Services
             try
             {
 
-                Result<SettlementAggregate> getSettlementResult = await this.SettlementAggregateRepository.GetLatestVersion(settlementId, cancellationToken);
+                Result<SettlementAggregate> getSettlementResult = await this.AggregateService.GetLatest<SettlementAggregate>(settlementId, cancellationToken);
                 Result<SettlementAggregate> settlementAggregateResult =
                     DomainServiceHelper.HandleGetAggregateResult(getSettlementResult, settlementId, isNotFoundError);
 
@@ -56,7 +54,7 @@ namespace TransactionProcessor.BusinessLogic.Services
                 if (result.IsFailed)
                     return ResultHelpers.CreateFailure(result);
                 Logger.LogInformation("In ApplySettlementUpdates - action successful");
-                Result saveResult = await this.SettlementAggregateRepository.SaveChanges(settlementAggregate, cancellationToken);
+                Result saveResult = await this.AggregateService.Save(settlementAggregate, cancellationToken);
                 if (saveResult.IsFailed)
                     return ResultHelpers.CreateFailure(saveResult);
                 Logger.LogInformation("In ApplySettlementUpdates - save successful");
@@ -77,7 +75,7 @@ namespace TransactionProcessor.BusinessLogic.Services
             try
             {
 
-                Result<TransactionAggregate> getTransactionResult = await this.TransactionAggregateRepository.GetLatestVersion(transactionId, cancellationToken);
+                Result<TransactionAggregate> getTransactionResult = await this.AggregateService.GetLatest<TransactionAggregate>(transactionId, cancellationToken);
                 Result<TransactionAggregate> transactionAggregateResult =
                     DomainServiceHelper.HandleGetAggregateResult(getTransactionResult, transactionId, isNotFoundError);
 
@@ -86,7 +84,7 @@ namespace TransactionProcessor.BusinessLogic.Services
                 if (result.IsFailed)
                     return ResultHelpers.CreateFailure(result);
 
-                Result saveResult = await this.TransactionAggregateRepository.SaveChanges(transactionAggregate, cancellationToken);
+                Result saveResult = await this.AggregateService.Save(transactionAggregate, cancellationToken);
                 if (saveResult.IsFailed)
                     return ResultHelpers.CreateFailure(saveResult);
                 return Result.Success();
@@ -113,17 +111,16 @@ namespace TransactionProcessor.BusinessLogic.Services
                     return Result.Success();
                 }
 
-                Result<MerchantAggregate> merchantResult = await this.MerchantAggregateRepository.GetLatestVersion(command.MerchantId, cancellationToken);
-                if (merchantResult.IsFailed)
-                    return ResultHelpers.CreateFailure(merchantResult);
+                MerchantAggregate merchant = await this.AggregateService.Get<MerchantAggregate>(command.MerchantId, cancellationToken);
+                if (merchant.IsCreated==  false)
+                    return Result.Failure("Merchant not created");
 
-                MerchantAggregate merchant = merchantResult.Data;
                 if (merchant.SettlementSchedule == SettlementSchedule.Immediate)
                 {
                     // Mark the settlement as completed
                     settlementAggregate.StartProcessing(DateTime.Now);
                     settlementAggregate.ManuallyComplete();
-                    Result result = await this.SettlementAggregateRepository.SaveChanges(settlementAggregate, cancellationToken);
+                    Result result = await this.AggregateService.Save(settlementAggregate, cancellationToken);
                     return result;
                 }
 
@@ -133,7 +130,7 @@ namespace TransactionProcessor.BusinessLogic.Services
                 {
                     // Record the process call
                     settlementAggregate.StartProcessing(DateTime.Now);
-                    return await this.SettlementAggregateRepository.SaveChanges(settlementAggregate, cancellationToken);
+                    return await this.AggregateService.Save(settlementAggregate, cancellationToken);
                 }
 
                 return Result.Success();
@@ -208,11 +205,10 @@ namespace TransactionProcessor.BusinessLogic.Services
             Guid aggregateId = Helpers.CalculateSettlementAggregateId(command.SettledDate.Date, command.MerchantId, command.EstateId);
             Result result = await ApplySettlementUpdates(async (SettlementAggregate settlementAggregate) => {
 
-                Result<MerchantAggregate> merchantResult = await this.MerchantAggregateRepository.GetLatestVersion(command.MerchantId, cancellationToken);
-                if (merchantResult.IsFailed)
-                    return ResultHelpers.CreateFailure(merchantResult);
+                MerchantAggregate merchant = await this.AggregateService.Get<MerchantAggregate>(command.MerchantId, cancellationToken);
+                if (merchant.IsCreated == false)
+                    return Result.Failure("Merchant not created");
 
-                MerchantAggregate merchant = merchantResult.Data;
                 if (merchant.SettlementSchedule == SettlementSchedule.Immediate){
                     settlementAggregate.ImmediatelyMarkFeeAsSettled(command.MerchantId, command.TransactionId, command.FeeId);
                 }
@@ -226,13 +222,9 @@ namespace TransactionProcessor.BusinessLogic.Services
             return result;
         }
 
-        public SettlementDomainService(IAggregateRepository<TransactionAggregate, DomainEvent> transactionAggregateRepository,
-                                       IAggregateRepository<SettlementAggregate, DomainEvent> settlementAggregateRepository,
-                                       IAggregateRepository<MerchantAggregate, DomainEvent> merchantAggregateRepository)
+        public SettlementDomainService(IAggregateService aggregateService)
         {
-            this.TransactionAggregateRepository = transactionAggregateRepository;
-            this.SettlementAggregateRepository = settlementAggregateRepository;
-            this.MerchantAggregateRepository = merchantAggregateRepository;
+            this.AggregateService = aggregateService;
         }
     }
 }

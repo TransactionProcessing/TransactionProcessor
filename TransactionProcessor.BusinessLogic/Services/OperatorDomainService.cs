@@ -20,27 +20,21 @@ namespace TransactionProcessor.BusinessLogic.Services
 
     public class OperatorDomainService : IOperatorDomainService
     {
-        private readonly IAggregateRepository<EstateAggregate, DomainEvent> EstateAggregateRepository;
+        private readonly IAggregateService AggregateService;
 
-        private readonly IAggregateRepository<OperatorAggregate, DomainEvent> OperatorAggregateRepository;
-
-        public OperatorDomainService(IAggregateRepository<EstateAggregate, DomainEvent> estateAggregateRepository,
-                                     IAggregateRepository<OperatorAggregate, DomainEvent> operatorAggregateRepository)
-        {
-            this.EstateAggregateRepository = estateAggregateRepository;
-            this.OperatorAggregateRepository = operatorAggregateRepository;
+        public OperatorDomainService(IAggregateService aggregateService) {
+            this.AggregateService = aggregateService;
         }
 
         private async Task<Result> ApplyUpdates(Func<(EstateAggregate, OperatorAggregate), Result> action, Guid estateId, Guid operatorId, CancellationToken cancellationToken, Boolean isNotFoundError = true)
         {
             try
             {
-                Result<EstateAggregate> getEstateResult = await this.EstateAggregateRepository.GetLatestVersion(estateId, cancellationToken);
-                if (getEstateResult.IsFailed)
-                    return ResultHelpers.CreateFailure(getEstateResult);
-                EstateAggregate estateAggregate = getEstateResult.Data;
+                EstateAggregate estateAggregate = await this.AggregateService.Get<EstateAggregate>(estateId, cancellationToken);
+                if (estateAggregate.IsCreated == false)
+                    return Result.Failure("Estate not created");
 
-                Result<OperatorAggregate> getOperatorResult = await this.OperatorAggregateRepository.GetLatestVersion(operatorId, cancellationToken);
+                Result<OperatorAggregate> getOperatorResult = await this.AggregateService.GetLatest<OperatorAggregate>(operatorId, cancellationToken);
                 Result<OperatorAggregate> operatorAggregateResult =
                     DomainServiceHelper.HandleGetAggregateResult(getOperatorResult, operatorId, isNotFoundError);
                 if (operatorAggregateResult.IsFailed)
@@ -52,7 +46,7 @@ namespace TransactionProcessor.BusinessLogic.Services
                 if (result.IsFailed)
                     return ResultHelpers.CreateFailure(result);
 
-                Result saveResult = await this.OperatorAggregateRepository.SaveChanges(operatorAggregate, cancellationToken);
+                Result saveResult = await this.AggregateService.Save(operatorAggregate, cancellationToken);
                 if (saveResult.IsFailed)
                     return ResultHelpers.CreateFailure(saveResult);
 
