@@ -25,8 +25,7 @@ namespace TransactionProcessor.BusinessLogic.Tests.Services
     {
         #region Methods
 
-        private Mock<IAggregateRepository<VoucherAggregate, DomainEvent>> VoucherAggregateRepository;
-        private Mock<IAggregateRepository<EstateAggregate, DomainEvent>> EstateAggregateRepository;
+        private Mock<IAggregateService> AggregateService;
         private Mock<Shared.EntityFramework.IDbContextFactory<EstateManagementGenericContext>> DbContextFactory;
         private VoucherDomainService VoucherDomainService;
         public VoucherDomainServiceTests() {
@@ -35,21 +34,18 @@ namespace TransactionProcessor.BusinessLogic.Tests.Services
 
             Logger.Initialise(NullLogger.Instance);
 
-            this.VoucherAggregateRepository  = new Mock<IAggregateRepository<VoucherAggregate, DomainEvent>>();
-            this.EstateAggregateRepository = new Mock<IAggregateRepository<EstateAggregate, DomainEvent>>();
+            this.AggregateService  = new Mock<IAggregateService>();
             this.DbContextFactory = new Mock<Shared.EntityFramework.IDbContextFactory<EstateManagementGenericContext>>();
-            this.VoucherDomainService = new VoucherDomainService(VoucherAggregateRepository.Object,
-                DbContextFactory.Object,
-                EstateAggregateRepository.Object);
+            this.VoucherDomainService = new VoucherDomainService(this.AggregateService.Object, DbContextFactory.Object);
         }
 
         [Fact]
         public async Task VoucherDomainService_IssueVoucher_EstateWithNoOperators_ErrorThrown() {
             
-            VoucherAggregateRepository.Setup(v => v.GetLatestVersion(It.IsAny<Guid>(), It.IsAny<CancellationToken>())).ReturnsAsync(new VoucherAggregate());
+            this.AggregateService.Setup(v => v.GetLatest<VoucherAggregate>(It.IsAny<Guid>(), It.IsAny<CancellationToken>())).ReturnsAsync(Result.Success(new VoucherAggregate()));
             EstateManagementGenericContext context = await this.GetContext(Guid.NewGuid().ToString("N"));
             DbContextFactory.Setup(d => d.GetContext(It.IsAny<Guid>(), It.IsAny<String>(), It.IsAny<CancellationToken>())).ReturnsAsync(context);
-            EstateAggregateRepository.Setup(f => f.GetLatestVersion(It.IsAny<Guid>(), It.IsAny<CancellationToken>())).ReturnsAsync(Result.Success(TestData.Aggregates.CreatedEstateAggregate()));
+            this.AggregateService.Setup(f => f.Get<EstateAggregate>(It.IsAny<Guid>(), It.IsAny<CancellationToken>())).ReturnsAsync(TestData.Aggregates.CreatedEstateAggregate());
             var result = await this.VoucherDomainService.IssueVoucher(TestData.VoucherId,
                                                                                  TestData.OperatorId,
                                                                                  TestData.EstateId,
@@ -101,8 +97,8 @@ namespace TransactionProcessor.BusinessLogic.Tests.Services
 
         [Fact]
         public async Task VoucherDomainService_IssueVoucher_InvalidEstate_ErrorThrown() {
-            VoucherAggregateRepository.Setup(v => v.GetLatestVersion(It.IsAny<Guid>(), It.IsAny<CancellationToken>())).ReturnsAsync(new VoucherAggregate());
-            EstateAggregateRepository.Setup(f => f.GetLatestVersion(It.IsAny<Guid>(), It.IsAny<CancellationToken>())).ReturnsAsync(Result.Failure());
+            this.AggregateService.Setup(v => v.GetLatest<VoucherAggregate>(It.IsAny<Guid>(), It.IsAny<CancellationToken>())).ReturnsAsync(Result.Success(new VoucherAggregate()));
+            this.AggregateService.Setup(f => f.Get<EstateAggregate>(It.IsAny<Guid>(), It.IsAny<CancellationToken>())).ReturnsAsync(TestData.Aggregates.EmptyEstateAggregate);
 
             EstateManagementGenericContext context = await this.GetContext(Guid.NewGuid().ToString("N"));
             DbContextFactory.Setup(d => d.GetContext(It.IsAny<Guid>(), It.IsAny<String>(), It.IsAny<CancellationToken>())).ReturnsAsync(context);
@@ -121,8 +117,8 @@ namespace TransactionProcessor.BusinessLogic.Tests.Services
 
         [Fact]
         public async Task VoucherDomainService_IssueVoucher_OperatorNotSupportedByEstate_ErrorThrown() {
-            VoucherAggregateRepository.Setup(v => v.GetLatestVersion(It.IsAny<Guid>(), It.IsAny<CancellationToken>())).ReturnsAsync(new VoucherAggregate());
-            EstateAggregateRepository.Setup(f => f.GetLatestVersion(It.IsAny<Guid>(), It.IsAny<CancellationToken>())).ReturnsAsync(Result.Success(TestData.Aggregates.EstateAggregateWithOperator()));
+            this.AggregateService.Setup(v => v.GetLatest<VoucherAggregate>(It.IsAny<Guid>(), It.IsAny<CancellationToken>())).ReturnsAsync(Result.Success(new VoucherAggregate()));
+            this.AggregateService.Setup(f => f.Get<EstateAggregate>(It.IsAny<Guid>(), It.IsAny<CancellationToken>())).ReturnsAsync(Result.Success(TestData.Aggregates.EstateAggregateWithOperator()));
 
             EstateManagementGenericContext context = await this.GetContext(Guid.NewGuid().ToString("N"));
             DbContextFactory.Setup(d => d.GetContext(It.IsAny<Guid>(), It.IsAny<String>(), It.IsAny<CancellationToken>())).ReturnsAsync(context);
@@ -142,9 +138,9 @@ namespace TransactionProcessor.BusinessLogic.Tests.Services
         [Fact]
         public async Task VoucherDomainService_IssueVoucher_VoucherIssued() {
 
-            VoucherAggregateRepository.Setup(v => v.GetLatestVersion(It.IsAny<Guid>(), It.IsAny<CancellationToken>())).ReturnsAsync(new VoucherAggregate());
-            VoucherAggregateRepository.Setup(v => v.SaveChanges(It.IsAny<VoucherAggregate>(), It.IsAny<CancellationToken>())).ReturnsAsync(Result.Success);
-            EstateAggregateRepository.Setup(f => f.GetLatestVersion(It.IsAny<Guid>(), It.IsAny<CancellationToken>())).ReturnsAsync(Result.Success(TestData.Aggregates.EstateAggregateWithOperator()));
+            this.AggregateService.Setup(v => v.GetLatest<VoucherAggregate>(It.IsAny<Guid>(), It.IsAny<CancellationToken>())).ReturnsAsync(Result.Success(new VoucherAggregate()));
+            this.AggregateService.Setup(v => v.Save(It.IsAny<VoucherAggregate>(), It.IsAny<CancellationToken>())).ReturnsAsync(Result.Success);
+            this.AggregateService.Setup(f => f.Get<EstateAggregate>(It.IsAny<Guid>(), It.IsAny<CancellationToken>())).ReturnsAsync(Result.Success(TestData.Aggregates.EstateAggregateWithOperator()));
 
             EstateManagementGenericContext context = await this.GetContext(Guid.NewGuid().ToString("N"));
             DbContextFactory.Setup(d => d.GetContext(It.IsAny<Guid>(), It.IsAny<String>(), It.IsAny<CancellationToken>())).ReturnsAsync(context);
@@ -165,10 +161,10 @@ namespace TransactionProcessor.BusinessLogic.Tests.Services
 
         [Fact]
         public async Task VoucherDomainService_RedeemVoucher_InvalidEstate_ErrorThrown() {
-            
-            VoucherAggregateRepository.Setup(v => v.GetLatestVersion(It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
+
+            AggregateService.Setup(v => v.GetLatest<VoucherAggregate>(It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
                                       .ReturnsAsync(Result.Success(TestData.GetVoucherAggregateWithRecipientMobile()));
-            EstateAggregateRepository.Setup(f => f.GetLatestVersion(It.IsAny<Guid>(), It.IsAny<CancellationToken>())).ReturnsAsync(Result.Failure());
+            this.AggregateService.Setup(f => f.Get<EstateAggregate>(It.IsAny<Guid>(), It.IsAny<CancellationToken>())).ReturnsAsync(TestData.Aggregates.EmptyEstateAggregate);
 
             EstateManagementGenericContext context = await this.GetContext(Guid.NewGuid().ToString("N"));
             context.VoucherProjectionStates.Add(new TransactionProcessor.Database.Entities.VoucherProjectionState() {
@@ -190,11 +186,11 @@ namespace TransactionProcessor.BusinessLogic.Tests.Services
         [Fact]
         public async Task VoucherDomainService_RedeemVoucher_VoucherRedeemed() {
 
-            VoucherAggregateRepository.Setup(v => v.GetLatestVersion(It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
+            this.AggregateService.Setup(v => v.GetLatest<VoucherAggregate>(It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
                                       .ReturnsAsync(Result.Success(TestData.GetVoucherAggregateWithRecipientMobile()));
-            VoucherAggregateRepository.Setup(v => v.SaveChanges(It.IsAny<VoucherAggregate>(), It.IsAny<CancellationToken>()))
+            this.AggregateService.Setup(v => v.Save(It.IsAny<VoucherAggregate>(), It.IsAny<CancellationToken>()))
                 .ReturnsAsync(Result.Success);
-            EstateAggregateRepository.Setup(f => f.GetLatestVersion(It.IsAny<Guid>(), It.IsAny<CancellationToken>())).ReturnsAsync(Result.Success(TestData.Aggregates.CreatedEstateAggregate()));
+            this.AggregateService.Setup(f => f.Get<EstateAggregate>(It.IsAny<Guid>(), It.IsAny<CancellationToken>())).ReturnsAsync(Result.Success(TestData.Aggregates.CreatedEstateAggregate()));
 
             EstateManagementGenericContext context = await this.GetContext(Guid.NewGuid().ToString("N"));
             context.VoucherProjectionStates.Add(new TransactionProcessor.Database.Entities.VoucherProjectionState() {
@@ -217,9 +213,9 @@ namespace TransactionProcessor.BusinessLogic.Tests.Services
 
         [Fact]
         public async Task VoucherDomainService_RedeemVoucher_VoucherNotFound_ErrorThrown() {
-            VoucherAggregateRepository.Setup(v => v.GetLatestVersion(It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
+            this.AggregateService.Setup(v => v.GetLatest<VoucherAggregate>(It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
                                       .ReturnsAsync(Result.Success(TestData.GetVoucherAggregateWithRecipientMobile()));
-            EstateAggregateRepository.Setup(f => f.GetLatestVersion(It.IsAny<Guid>(), It.IsAny<CancellationToken>())).ReturnsAsync(Result.Success(TestData.Aggregates.CreatedEstateAggregate()));
+            this.AggregateService.Setup(f => f.Get<EstateAggregate>(It.IsAny<Guid>(), It.IsAny<CancellationToken>())).ReturnsAsync(Result.Success(TestData.Aggregates.CreatedEstateAggregate()));
 
             EstateManagementGenericContext context = await this.GetContext(Guid.NewGuid().ToString("N"));
             DbContextFactory.Setup(d => d.GetContext(It.IsAny<Guid>(), It.IsAny<String>(), It.IsAny<CancellationToken>())).ReturnsAsync(context);

@@ -12,6 +12,7 @@ using TransactionProcessor.Aggregates;
 using TransactionProcessor.BusinessLogic.EventHandling;
 using TransactionProcessor.BusinessLogic.Events;
 using TransactionProcessor.BusinessLogic.Requests;
+using TransactionProcessor.BusinessLogic.Services;
 using TransactionProcessor.DomainEvents;
 using TransactionProcessor.Repository;
 using TransactionProcessor.Testing;
@@ -22,16 +23,13 @@ namespace TransactionProcessor.BusinessLogic.Tests.DomainEventHandlers
 {
     public class MerchantDomainEventHandlerTests : DomainEventHandlerTests
     {
-        private readonly Mock<IAggregateRepository<MerchantAggregate, DomainEvent>> MerchantAggregateRepository;
         private readonly Mock<ITransactionProcessorReadModelRepository> TransactionProcessorReadModelRepository;
         private readonly MerchantDomainEventHandler DomainEventHandler;
 
         public MerchantDomainEventHandlerTests(ITestOutputHelper testOutputHelper) : base(testOutputHelper)  {
-            this.MerchantAggregateRepository = new Mock<IAggregateRepository<MerchantAggregate, DomainEvent>>();
             this.TransactionProcessorReadModelRepository = new Mock<ITransactionProcessorReadModelRepository>();
 
-            this.DomainEventHandler = new MerchantDomainEventHandler(this.MerchantAggregateRepository.Object,
-                                                                     this.TransactionProcessorReadModelRepository.Object,
+            this.DomainEventHandler = new MerchantDomainEventHandler(this.TransactionProcessorReadModelRepository.Object,
                                                                      this.Mediator.Object);
         }
 

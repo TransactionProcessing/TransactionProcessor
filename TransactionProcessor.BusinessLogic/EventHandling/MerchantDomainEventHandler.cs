@@ -13,6 +13,7 @@ using TransactionProcessor.Aggregates;
 using TransactionProcessor.BusinessLogic.Common;
 using TransactionProcessor.BusinessLogic.Events;
 using TransactionProcessor.BusinessLogic.Requests;
+using TransactionProcessor.BusinessLogic.Services;
 using TransactionProcessor.Models.Merchant;
 using TransactionProcessor.Repository;
 using MakeMerchantDepositRequest = TransactionProcessor.DataTransferObjects.Requests.Merchant.MakeMerchantDepositRequest;
@@ -24,19 +25,14 @@ namespace TransactionProcessor.BusinessLogic.EventHandling
         #region Fields
 
         private readonly IMediator Mediator;
-
-        private readonly IAggregateRepository<MerchantAggregate, DomainEvent> MerchantAggregateRepository;
-
         private readonly ITransactionProcessorReadModelRepository EstateReportingRepository;
         #endregion
 
         #region Constructors
 
-        public MerchantDomainEventHandler(IAggregateRepository<MerchantAggregate, DomainEvent> merchantAggregateRepository,
-                                          ITransactionProcessorReadModelRepository estateReportingRepository,
+        public MerchantDomainEventHandler(ITransactionProcessorReadModelRepository estateReportingRepository,
                                           IMediator mediator)
         {
-            this.MerchantAggregateRepository = merchantAggregateRepository;
             this.EstateReportingRepository = estateReportingRepository;
             this.Mediator = mediator;
         }

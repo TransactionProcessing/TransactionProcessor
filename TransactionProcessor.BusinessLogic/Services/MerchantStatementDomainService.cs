@@ -40,21 +40,13 @@ namespace TransactionProcessor.BusinessLogic.Services
 
     public class MerchantStatementDomainService : IMerchantStatementDomainService
     {
-        #region Fields
-
-        private readonly IAggregateRepository<MerchantAggregate, DomainEvent> MerchantAggregateRepository;
-
-        private readonly IAggregateRepository<MerchantStatementAggregate, DomainEvent> MerchantStatementAggregateRepository;
+        private readonly IAggregateService AggregateService;
         
-        #endregion
-
         #region Constructors
 
-        public MerchantStatementDomainService(IAggregateRepository<MerchantAggregate, DomainEvent> merchantAggregateRepository,
-                                              IAggregateRepository<MerchantStatementAggregate, DomainEvent> merchantStatementAggregateRepository)
+        public MerchantStatementDomainService(IAggregateService aggregateService)
         {
-            this.MerchantAggregateRepository = merchantAggregateRepository;
-            this.MerchantStatementAggregateRepository = merchantStatementAggregateRepository;
+            this.AggregateService = aggregateService;
         }
 
         #endregion
@@ -65,7 +57,7 @@ namespace TransactionProcessor.BusinessLogic.Services
         {
             try
             {
-                Result<MerchantStatementAggregate> getMerchantStatementResult = await this.GetLatestVersion(statementId, cancellationToken);
+                Result<MerchantStatementAggregate> getMerchantStatementResult = await this.AggregateService.GetLatest<MerchantStatementAggregate>(statementId, cancellationToken);
 
                 Result<MerchantStatementAggregate> merchantStatementAggregateResult =
                     DomainServiceHelper.HandleGetAggregateResult(getMerchantStatementResult, statementId, isNotFoundError);
@@ -78,7 +70,7 @@ namespace TransactionProcessor.BusinessLogic.Services
                 if (result.IsFailed)
                     return ResultHelpers.CreateFailure(result);
 
-                Result saveResult = await this.MerchantStatementAggregateRepository.SaveChanges(merchantStatementAggregate, cancellationToken);
+                Result saveResult = await this.AggregateService.Save(merchantStatementAggregate, cancellationToken);
                 if (saveResult.IsFailed)
                     return ResultHelpers.CreateFailure(saveResult);
 
@@ -88,25 +80,6 @@ namespace TransactionProcessor.BusinessLogic.Services
             {
                 return Result.Failure(ex.GetExceptionMessages());
             }
-        }
-
-        [ExcludeFromCodeCoverage(Justification = "This will get replaced by metrics soon")]
-        private async Task<Result<MerchantStatementAggregate>> GetLatestVersion(Guid statementId, CancellationToken cancellationToken)
-        {
-            Stopwatch sw = Stopwatch.StartNew();
-
-            Result<MerchantStatementAggregate> merchantStatementAggregate =
-                await this.MerchantStatementAggregateRepository.GetLatestVersion(statementId, cancellationToken);
-
-            sw.Stop();
-            Int64 elapsedTime = sw.ElapsedMilliseconds;
-
-            if (elapsedTime > 1000)
-            {
-                Logger.LogWarning($"Rehydration of MerchantStatementAggregate Id [{statementId}] took {elapsedTime} ms");
-            }
-
-            return merchantStatementAggregate;
         }
 
         public async Task<Result> AddSettledFeeToStatement(MerchantStatementCommands.AddSettledFeeToMerchantStatementCommand command,

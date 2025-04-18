@@ -44,17 +44,14 @@ public interface ITransactionValidationService
 public class TransactionValidationService : ITransactionValidationService{
     #region Fields
     private readonly IEventStoreContext EventStoreContext;
-    private readonly IAggregateRepository<EstateAggregate, DomainEvent> EstateAggregateRepository;
-    private readonly IAggregateRepository<MerchantAggregate, DomainEvent> MerchantAggregateRepository;
+    private readonly IAggregateService AggregateService;
     #endregion
 
     public TransactionValidationService(IEventStoreContext eventStoreContext,
-                                        IAggregateRepository<EstateAggregate, DomainEvent> estateAggregateRepository,
-                                        IAggregateRepository<MerchantAggregate, DomainEvent> merchantAggregateRepository)
+                                        IAggregateService aggregateService)
     {
         this.EventStoreContext = eventStoreContext;
-        this.EstateAggregateRepository = estateAggregateRepository;
-        this.MerchantAggregateRepository = merchantAggregateRepository;
+        this.AggregateService = aggregateService;
     }
 
     #region Methods
@@ -164,7 +161,7 @@ public class TransactionValidationService : ITransactionValidationService{
 
     private async Task<Result<TransactionValidationResult<EstateAggregate>>> ValidateEstate(Guid estateId, CancellationToken cancellationToken)
     {
-        Result<EstateAggregate> getEstateResult = await this.EstateAggregateRepository.GetLatestVersion(estateId, cancellationToken);
+        var getEstateResult= await this.AggregateService.Get<EstateAggregate>(estateId, cancellationToken);
         if (getEstateResult.IsFailed) {
             TransactionValidationResult transactionValidationResult = getEstateResult.Status switch
             {
@@ -196,7 +193,7 @@ public class TransactionValidationService : ITransactionValidationService{
 
     private async Task<Result<TransactionValidationResult<MerchantAggregate>>> ValidateMerchant(Guid estateId, String estateName, Guid merchantId, CancellationToken cancellationToken)
     {
-        Result<MerchantAggregate> getMerchantResult = await this.MerchantAggregateRepository.GetLatestVersion(merchantId, cancellationToken);
+        Result<MerchantAggregate> getMerchantResult = await this.AggregateService.Get<MerchantAggregate>(merchantId, cancellationToken);
         if (getMerchantResult.IsFailed)
         {
             TransactionValidationResult transactionValidationResult = getMerchantResult.Status switch

@@ -1,4 +1,5 @@
 ﻿using TransactionProcessor.Aggregates;
+using TransactionProcessor.BusinessLogic.Services;
 using TransactionProcessor.Database.Contexts;
 using TransactionProcessor.Repository;
 
@@ -64,7 +65,9 @@ namespace TransactionProcessor.Bootstrapper
             }
 
             this.AddTransient<IEventStoreContext, EventStoreContext>();
-            
+
+            this.AddSingleton<IAggregateService, AggregateService>();
+            this.AddSingleton<IAggregateRepositoryResolver, AggregateRepositoryResolver>();
             this.AddSingleton<IAggregateRepository<TransactionAggregate, DomainEvent>,
                 AggregateRepository<TransactionAggregate, DomainEvent>>();
             this.AddSingleton<IAggregateRepository<ReconciliationAggregate, DomainEvent>,
@@ -86,7 +89,7 @@ namespace TransactionProcessor.Bootstrapper
             this.AddSingleton<ITransactionProcessorReadRepository, TransactionProcessorReadRepository>();
             this.AddSingleton<ITransactionProcessorReadModelRepository, TransactionProcessorReadModelRepository>();
             this.AddSingleton<IProjection<MerchantBalanceState>, MerchantBalanceProjection>();
-
+            
             this.AddSingleton<IDbContextFactory<EstateManagementGenericContext>, DbContextFactory<EstateManagementGenericContext>>();
 
             this.AddSingleton<Func<String, EstateManagementGenericContext>>(cont => connectionString =>

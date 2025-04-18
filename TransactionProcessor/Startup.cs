@@ -1,3 +1,5 @@
+using Prometheus;
+
 namespace TransactionProcessor
 {
     using System;
@@ -133,7 +135,8 @@ namespace TransactionProcessor
 
             app.UseAuthentication();
             app.UseAuthorization();
-
+            app.UseMetricServer(s => {
+            });
             app.UseEndpoints(endpoints => {
                                  endpoints.MapControllers();
                                  endpoints.MapHealthChecks("health",

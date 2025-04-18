@@ -27,32 +27,18 @@ namespace TransactionProcessor.BusinessLogic.Services
     }
 
     public class FloatDomainService : IFloatDomainService{
-        private readonly IAggregateRepository<FloatAggregate, DomainEvent> FloatAggregateRepository;
-        private readonly IAggregateRepository<FloatActivityAggregate, DomainEvent> FloatActivityAggregateRepository;
-        private readonly IAggregateRepository<TransactionAggregate, DomainEvent> TransactionAggregateRepository;
-        private readonly IAggregateRepository<EstateAggregate, DomainEvent> EstateAggregateRepository;
-        private readonly IAggregateRepository<ContractAggregate, DomainEvent> ContractAggregateRepository;
+        private readonly IAggregateService AggregateService;
 
-        public FloatDomainService(IAggregateRepository<FloatAggregate, DomainEvent> floatAggregateRepository,
-                                  IAggregateRepository<FloatActivityAggregate, DomainEvent> floatActivityAggregateRepository,
-                                  IAggregateRepository<TransactionAggregate,DomainEvent> transactionAggregateRepository,
-                                  IAggregateRepository<EstateAggregate, DomainEvent> estateAggregateRepository,
-                                  IAggregateRepository<ContractAggregate, DomainEvent> contractAggregateRepository)
+        public FloatDomainService(IAggregateService aggregateService)
         {
-            this.FloatAggregateRepository = floatAggregateRepository;
-            this.FloatActivityAggregateRepository = floatActivityAggregateRepository;
-            this.TransactionAggregateRepository = transactionAggregateRepository;
-            this.EstateAggregateRepository = estateAggregateRepository;
-            this.ContractAggregateRepository = contractAggregateRepository;
+            this.AggregateService = aggregateService;
         }
-        
-        //private TokenResponse TokenResponse;
 
         private async Task<Result> ApplyFloatUpdates(Func<FloatAggregate, Result> action, Guid floatId, CancellationToken cancellationToken, Boolean isNotFoundError = true)
         {
             try
             {
-                Result<FloatAggregate> getFloatResult = await this.FloatAggregateRepository.GetLatestVersion(floatId, cancellationToken);
+                Result<FloatAggregate> getFloatResult = await this.AggregateService.GetLatest<FloatAggregate>(floatId, cancellationToken);
                 Result<FloatAggregate> floatAggregateResult = DomainServiceHelper.HandleGetAggregateResult(getFloatResult, floatId, isNotFoundError);
 
                 if (floatAggregateResult.IsFailed)
@@ -64,7 +50,7 @@ namespace TransactionProcessor.BusinessLogic.Services
                 if (result.IsFailed)
                     return ResultHelpers.CreateFailure(result);
 
-                Result saveResult = await this.FloatAggregateRepository.SaveChanges(floatAggregate, cancellationToken);
+                Result saveResult = await this.AggregateService.Save(floatAggregate, cancellationToken);
                 if (saveResult.IsFailed)
                     return ResultHelpers.CreateFailure(saveResult);
 
@@ -80,7 +66,7 @@ namespace TransactionProcessor.BusinessLogic.Services
         {
             try
             {
-                Result<FloatActivityAggregate> getFloatResult = await this.FloatActivityAggregateRepository.GetLatestVersion(floatId, cancellationToken);
+                Result<FloatActivityAggregate> getFloatResult = await this.AggregateService.GetLatest<FloatActivityAggregate>(floatId, cancellationToken);
                 Result<FloatActivityAggregate> floatActivityAggregateResult = DomainServiceHelper.HandleGetAggregateResult(getFloatResult, floatId, isNotFoundError);
 
                 if (floatActivityAggregateResult.IsFailed)
@@ -92,7 +78,7 @@ namespace TransactionProcessor.BusinessLogic.Services
                 if (result.IsFailed)
                     return ResultHelpers.CreateFailure(result);
 
-                Result saveResult = await this.FloatActivityAggregateRepository.SaveChanges(floatActivityAggregate, cancellationToken);
+                Result saveResult = await this.AggregateService.Save(floatActivityAggregate, cancellationToken);
                 if (saveResult.IsFailed)
                     return ResultHelpers.CreateFailure(saveResult);
 
@@ -107,23 +93,23 @@ namespace TransactionProcessor.BusinessLogic.Services
 
         private async Task<Result> ValidateEstate(Guid estateId, CancellationToken cancellationToken)
         {
-            Result<EstateAggregate> result = await this.EstateAggregateRepository.GetLatestVersion(estateId, cancellationToken);
+            Result<EstateAggregate> getEstateResult= await this.AggregateService.Get<EstateAggregate>(estateId, cancellationToken);
 
-            if (result.IsFailed) {
-                return ResultHelpers.CreateFailure(result);
+            if (getEstateResult.IsFailed) {
+                return ResultHelpers.CreateFailure(getEstateResult);
             }
             return Result.Success();
         }
 
         private async Task<Result> ValidateContractProduct(Guid estateId, Guid contractId, Guid productId, CancellationToken cancellationToken)
         {
-            Result<ContractAggregate> getContractResult = await this.ContractAggregateRepository.GetLatestVersion(contractId, cancellationToken);
+            Result<ContractAggregate> getContractResult = await this.AggregateService.Get<ContractAggregate>(contractId, cancellationToken);
             if (getContractResult.IsFailed)
             {
                 return ResultHelpers.CreateFailure(getContractResult);
             }
-
-            Models.Contract.Contract contract = getContractResult.Data.GetContract();
+            ContractAggregate contractAggregate = getContractResult.Data;
+            Models.Contract.Contract contract = contractAggregate.GetContract();
             Boolean productExists = contract.Products.Any(cp => cp.ContractProductId == productId);
 
             return productExists switch {
@@ -176,7 +162,7 @@ namespace TransactionProcessor.BusinessLogic.Services
 
         public async Task<Result> RecordTransaction(FloatActivityCommands.RecordTransactionCommand command,
                                                     CancellationToken cancellationToken) {
-            Result<TransactionAggregate> getTransactionResult = await this.TransactionAggregateRepository.GetLatestVersion(command.TransactionId, cancellationToken);
+            Result<TransactionAggregate> getTransactionResult = await this.AggregateService.GetLatest<TransactionAggregate>(command.TransactionId, cancellationToken);
             if (getTransactionResult.IsFailed)
                 return ResultHelpers.CreateFailure(getTransactionResult);
 

@@ -46,15 +46,8 @@ namespace TransactionProcessor.BusinessLogic.Services
     public class MerchantDomainService : IMerchantDomainService
     {
         #region Fields
-
-        private readonly IAggregateRepository<EstateAggregate, DomainEvent> EstateAggregateRepository;
-
-        private readonly IAggregateRepository<MerchantAggregate, DomainEvent> MerchantAggregateRepository;
-
-        private readonly IAggregateRepository<MerchantDepositListAggregate, DomainEvent> MerchantDepositListAggregateRepository;
-
-        private readonly IAggregateRepository<ContractAggregate, DomainEvent> ContractAggregateRepository;
-
+        
+        private readonly IAggregateService AggregateService;
         private readonly ISecurityServiceClient SecurityServiceClient;
         private readonly IEventStoreContext EventStoreContext;
 
@@ -62,17 +55,11 @@ namespace TransactionProcessor.BusinessLogic.Services
 
         #region Constructors
 
-        public MerchantDomainService(IAggregateRepository<EstateAggregate, DomainEvent> estateAggregateRepository,
-                                     IAggregateRepository<MerchantAggregate, DomainEvent> merchantAggregateRepository,
-                                     IAggregateRepository<MerchantDepositListAggregate, DomainEvent> merchantDepositListAggregateRepository,
-                                     IAggregateRepository<ContractAggregate, DomainEvent> contractAggregateRepository,
+        public MerchantDomainService(IAggregateService aggregateService,
                                      ISecurityServiceClient securityServiceClient,
                                      IEventStoreContext eventStoreContext)
         {
-            this.EstateAggregateRepository = estateAggregateRepository;
-            this.MerchantAggregateRepository = merchantAggregateRepository;
-            this.MerchantDepositListAggregateRepository = merchantDepositListAggregateRepository;
-            this.ContractAggregateRepository = contractAggregateRepository;
+            this.AggregateService = aggregateService;
             this.SecurityServiceClient = securityServiceClient;
             this.EventStoreContext = eventStoreContext;
         }
@@ -85,12 +72,12 @@ namespace TransactionProcessor.BusinessLogic.Services
         {
             try
             {
-                Result<EstateAggregate> getEstateResult = await this.EstateAggregateRepository.GetLatestVersion(estateId, cancellationToken);
-                if (getEstateResult.IsFailed)
+                Result<EstateAggregate> getEstateResult = await this.AggregateService.Get<EstateAggregate>(estateId, cancellationToken);
+                if (getEstateResult.IsFailed) {
                     return ResultHelpers.CreateFailure(getEstateResult);
+                }
                 EstateAggregate estateAggregate = getEstateResult.Data;
-
-                Result<MerchantAggregate> getMerchantResult = await this.MerchantAggregateRepository.GetLatestVersion(merchantId, cancellationToken);
+                Result<MerchantAggregate> getMerchantResult = await this.AggregateService.GetLatest<MerchantAggregate>(merchantId, cancellationToken);
                 Result<MerchantAggregate> merchantAggregateResult =
                     DomainServiceHelper.HandleGetAggregateResult(getMerchantResult, merchantId, isNotFoundError);
                 if (merchantAggregateResult.IsFailed)
@@ -102,7 +89,7 @@ namespace TransactionProcessor.BusinessLogic.Services
                 if (result.IsFailed)
                     return ResultHelpers.CreateFailure(result);
 
-                Result saveResult = await this.MerchantAggregateRepository.SaveChanges(merchantAggregate, cancellationToken);
+                Result saveResult = await this.AggregateService.Save(merchantAggregate, cancellationToken);
                 if (saveResult.IsFailed)
                     return ResultHelpers.CreateFailure(saveResult);
 
@@ -305,7 +292,7 @@ namespace TransactionProcessor.BusinessLogic.Services
                     if (result.IsFailed)
                         return ResultHelpers.CreateFailure(result);
 
-                    Result<MerchantDepositListAggregate> getDepositListResult = await this.MerchantDepositListAggregateRepository.GetLatestVersion(command.MerchantId, cancellationToken);
+                    Result<MerchantDepositListAggregate> getDepositListResult = await this.AggregateService.GetLatest<MerchantDepositListAggregate>(command.MerchantId, cancellationToken);
                     Result<MerchantDepositListAggregate> merchantDepositListAggregateResult =
                         DomainServiceHelper.HandleGetAggregateResult(getDepositListResult, command.MerchantId, false);
                     if (merchantDepositListAggregateResult.IsFailed)
@@ -325,7 +312,7 @@ namespace TransactionProcessor.BusinessLogic.Services
                     };
                     merchantDepositListAggregate.MakeDeposit(depositSource, command.RequestDto.Reference, command.RequestDto.DepositDateTime, amount);
 
-                    Result saveResult = await this.MerchantDepositListAggregateRepository.SaveChanges(merchantDepositListAggregate, cancellationToken);
+                    Result saveResult = await this.AggregateService.Save(merchantDepositListAggregate, cancellationToken);
                     if (saveResult.IsFailed)
                         return ResultHelpers.CreateFailure(saveResult);
 
@@ -351,7 +338,7 @@ namespace TransactionProcessor.BusinessLogic.Services
                     if (result.IsFailed)
                         return ResultHelpers.CreateFailure(result);
 
-                    Result<MerchantDepositListAggregate> getDepositListResult = await this.MerchantDepositListAggregateRepository.GetLatestVersion(command.MerchantId, cancellationToken);
+                    Result<MerchantDepositListAggregate> getDepositListResult = await this.AggregateService.GetLatest<MerchantDepositListAggregate>(command.MerchantId, cancellationToken);
                     Result<MerchantDepositListAggregate> merchantDepositListAggregateResult =
                         DomainServiceHelper.HandleGetAggregateResult(getDepositListResult, command.MerchantId, false);
                     if (merchantDepositListAggregateResult.IsFailed)
@@ -382,6 +369,10 @@ namespace TransactionProcessor.BusinessLogic.Services
 
                     merchantDepositListAggregate.MakeWithdrawal(command.RequestDto.WithdrawalDateTime, amount);
 
+                    Result saveResult = await this.AggregateService.Save(merchantDepositListAggregate, cancellationToken);
+                    if (saveResult.IsFailed)
+                        return ResultHelpers.CreateFailure(saveResult);
+
                     return Result.Success();
                 }, command.EstateId, command.MerchantId, cancellationToken);
 
@@ -406,9 +397,8 @@ namespace TransactionProcessor.BusinessLogic.Services
                     if (result.IsFailed)
                         return ResultHelpers.CreateFailure(result);
 
-                    Result<ContractAggregate> getContractResult = await this.ContractAggregateRepository.GetLatestVersion(command.RequestDto.ContractId, cancellationToken);
-                    if (getContractResult.IsFailed)
-                    {
+                    var getContractResult = await this.AggregateService.Get<ContractAggregate>(command.RequestDto.ContractId, cancellationToken);
+                    if (getContractResult.IsFailed) {
                         return ResultHelpers.CreateFailure(getContractResult);
                     }
 

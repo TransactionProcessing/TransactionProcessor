@@ -8,7 +8,6 @@ namespace TransactionProcessor.Aggregates
 {
     public static class FloatActivityAggregateExtensions
     {
-
         public static void PlayEvent(this FloatActivityAggregate aggregate,
                                      FloatActivityDomainEvents.FloatAggregateCreditedEvent domainEvent)
         {
