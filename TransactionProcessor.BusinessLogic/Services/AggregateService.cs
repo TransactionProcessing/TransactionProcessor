@@ -37,7 +37,7 @@ namespace TransactionProcessor.BusinessLogic.Services {
     }
 
     public interface IAggregateService {
-        Task<TAggregate> Get<TAggregate>(Guid aggregateId,
+        Task<Result<TAggregate>> Get<TAggregate>(Guid aggregateId,
                                          CancellationToken cancellationToken) where TAggregate : Aggregate, new();
 
         Task<SimpleResults.Result<TAggregate>> GetLatest<TAggregate>(Guid aggregateId,
@@ -107,9 +107,10 @@ namespace TransactionProcessor.BusinessLogic.Services {
             this.Cache.Set<TAggregate>(key, aggregate, aggregateType.Item2);
         }
 
-        public async Task<TAggregate> Get<TAggregate>(Guid aggregateId,
-                                                  CancellationToken cancellationToken) where TAggregate : Aggregate, new()
+        public async Task<Result<TAggregate>> Get<TAggregate>(Guid aggregateId,
+                                                              CancellationToken cancellationToken) where TAggregate : Aggregate, new()
         {
+            Debug.WriteLine("In Get");
             (Type, MemoryCacheEntryOptions, Object) at = GetAggregateType<TAggregate>();
             TAggregate aggregate = default;
             String g = typeof(TAggregate).Name;
@@ -118,23 +119,19 @@ namespace TransactionProcessor.BusinessLogic.Services {
             // Check the cache
             if (at != default && this.Cache.TryGetValue(key, out aggregate))
             {
-                return aggregate;
+                return Result.Success(aggregate);
             }
 
             if (at == default)
             {
                 // We don't use caching for this aggregate so just hit GetLatest
-                aggregate = await this.GetLatest<TAggregate>(aggregateId, cancellationToken);
+                Result<TAggregate> getResult = await this.GetLatest<TAggregate>(aggregateId, cancellationToken);
 
-                if (aggregate == null)
-                {
-                    //We have encountered the situation where a timeout from the ES results in a null being pushed back through our aggregate repo
-                    //Don't want to change the library for a edge case situation, so compensating for this here.
-                    //We will ensure
-                    aggregate = new TAggregate();
+                if (getResult.IsFailed) {
+                    return getResult;
                 }
 
-                return aggregate;
+                return Result.Success(getResult.Data);
             }
 
             try
@@ -144,7 +141,7 @@ namespace TransactionProcessor.BusinessLogic.Services {
 
                 if (this.Cache.TryGetValueWithMetrics<TAggregate>(key, out TAggregate cachedAggregate))
                 {
-                    return cachedAggregate;
+                    return Result.Success(cachedAggregate);
                 }
                 else
                 {
@@ -155,10 +152,12 @@ namespace TransactionProcessor.BusinessLogic.Services {
                     {
                         aggregate = aggregateResult.Data;
                         this.SetCache<TAggregate>(at, aggregateResult.Data);
+                        return Result.Success(aggregate);
                     }
                     else
                     {
                         Logger.LogWarning($"aggregateResult failed {aggregateResult.Message}");
+                        return aggregateResult;
                     }
                 }
             }
@@ -167,8 +166,6 @@ namespace TransactionProcessor.BusinessLogic.Services {
                 // Release
                 Monitor.Exit(at.Item3);
             }
-
-            return aggregate;
         }
 
         public async Task<SimpleResults.Result<TAggregate>> GetLatest<TAggregate>(Guid aggregateId,

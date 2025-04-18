@@ -21,9 +21,9 @@ public class SettlementRequestHandlerTests
     public async Task SettlementRequestHandler_ProcessSettlementRequest_IsHandled()
     {
         Mock<ISettlementDomainService> settlementDomainService = new Mock<ISettlementDomainService>();
-        Mock<IAggregateRepository<SettlementAggregate, DomainEvent>> settlementAggregateRepository = new();
+        Mock<IAggregateService> aggregateService = new();
         Mock<ITransactionProcessorManager> manager = new Mock<ITransactionProcessorManager>();
-        SettlementRequestHandler handler = new SettlementRequestHandler(settlementDomainService.Object, settlementAggregateRepository.Object, manager.Object);
+        SettlementRequestHandler handler = new SettlementRequestHandler(settlementDomainService.Object, aggregateService.Object, manager.Object);
         settlementDomainService
             .Setup(s => s.ProcessSettlement(It.IsAny<SettlementCommands.ProcessSettlementCommand>(), It.IsAny<CancellationToken>())).ReturnsAsync(Result.Success());
         var command = TestData.Commands.ProcessSettlementCommand;

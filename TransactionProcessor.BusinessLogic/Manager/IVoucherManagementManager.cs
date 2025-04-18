@@ -4,8 +4,10 @@ using System.Threading.Tasks;
 using Shared.DomainDrivenDesign.EventSourcing;
 using Shared.EventStore.Aggregate;
 using Shared.Exceptions;
+using Shared.Results;
 using SimpleResults;
 using TransactionProcessor.Aggregates;
+using TransactionProcessor.BusinessLogic.Services;
 using TransactionProcessor.Database.Contexts;
 using TransactionProcessor.Database.Entities;
 
@@ -47,10 +49,7 @@ namespace TransactionProcessor.BusinessLogic.Manager
         /// </summary>
         private readonly Shared.EntityFramework.IDbContextFactory<EstateManagementGenericContext> DbContextFactory;
 
-        /// <summary>
-        /// The voucher aggregate repository
-        /// </summary>
-        private readonly IAggregateRepository<VoucherAggregate, DomainEvent> VoucherAggregateRepository;
+        private readonly IAggregateService AggregateService;
 
         private const String ConnectionStringIdentifier = "EstateReportingReadModel";
 
@@ -58,16 +57,11 @@ namespace TransactionProcessor.BusinessLogic.Manager
 
         #region Constructors
 
-        /// <summary>
-        /// Initializes a new instance of the <see cref="VoucherManagementManager"/> class.
-        /// </summary>
-        /// <param name="dbContextFactory">The database context factory.</param>
-        /// <param name="voucherAggregateRepository">The voucher aggregate repository.</param>
         public VoucherManagementManager(Shared.EntityFramework.IDbContextFactory<EstateManagementGenericContext> dbContextFactory,
-                                        IAggregateRepository<VoucherAggregate, DomainEvent> voucherAggregateRepository)
+                                        IAggregateService aggregateService)
         {
             this.DbContextFactory = dbContextFactory;
-            this.VoucherAggregateRepository = voucherAggregateRepository;
+            this.AggregateService = aggregateService;
         }
 
         #endregion
@@ -96,9 +90,13 @@ namespace TransactionProcessor.BusinessLogic.Manager
             }
 
             // Get the aggregate
-            VoucherAggregate voucherAggregate = await this.VoucherAggregateRepository.GetLatestVersion(voucher.VoucherId, cancellationToken);
+            Result<VoucherAggregate> result= await this.AggregateService.Get<VoucherAggregate>(voucher.VoucherId, cancellationToken);
 
-            return voucherAggregate.GetVoucher();
+            if (result.IsFailed) {
+                return ResultHelpers.CreateFailure(result);
+            }
+
+            return result.Data.GetVoucher();
         }
 
         public async Task<Result<Voucher>> GetVoucherByTransactionId(Guid estateId,
@@ -114,9 +112,14 @@ namespace TransactionProcessor.BusinessLogic.Manager
             }
 
             // Get the aggregate
-            VoucherAggregate voucherAggregate = await this.VoucherAggregateRepository.GetLatestVersion(voucher.VoucherId, cancellationToken);
+            Result<VoucherAggregate> result = await this.AggregateService.Get<VoucherAggregate>(voucher.VoucherId, cancellationToken);
 
-            return voucherAggregate.GetVoucher();
+            if (result.IsFailed)
+            {
+                return ResultHelpers.CreateFailure(result);
+            }
+
+            return result.Data.GetVoucher();
         }
 
         #endregion

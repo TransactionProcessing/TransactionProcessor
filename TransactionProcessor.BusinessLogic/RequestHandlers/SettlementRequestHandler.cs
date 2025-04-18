@@ -24,14 +24,14 @@ namespace TransactionProcessor.BusinessLogic.RequestHandlers
                                             IRequestHandler<SettlementQueries.GetSettlementsQuery, Result<List<SettlementModel>>>
     {
         private readonly ISettlementDomainService SettlementDomainService;
-        private readonly IAggregateRepository<SettlementAggregate, DomainEvent> SettlementAggregateRepository;
+        private readonly IAggregateService AggregateService;
         private readonly ITransactionProcessorManager TransactionProcessorManager;
 
         public SettlementRequestHandler(ISettlementDomainService settlementDomainService,
-                                        IAggregateRepository<SettlementAggregate, DomainEvent> settlementAggregateRepository,
+                                        IAggregateService aggregateService,
                                         ITransactionProcessorManager transactionProcessorManager) {
             this.SettlementDomainService = settlementDomainService;
-            this.SettlementAggregateRepository = settlementAggregateRepository;
+            this.AggregateService = aggregateService;
             this.TransactionProcessorManager = transactionProcessorManager;
         }
 
@@ -57,7 +57,7 @@ namespace TransactionProcessor.BusinessLogic.RequestHandlers
             // Convert the date passed in to a guid
             Guid aggregateId = Helpers.CalculateSettlementAggregateId(query.SettlementDate, query.MerchantId, query.EstateId);
             
-            Result<SettlementAggregate> getSettlementResult = await this.SettlementAggregateRepository.GetLatestVersion(aggregateId, cancellationToken);
+            Result<SettlementAggregate> getSettlementResult = await this.AggregateService.GetLatest<SettlementAggregate>(aggregateId, cancellationToken);
             if (getSettlementResult.IsFailed)
                 return getSettlementResult;
 

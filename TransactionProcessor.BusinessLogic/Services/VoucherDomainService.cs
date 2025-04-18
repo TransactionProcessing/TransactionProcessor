@@ -199,9 +199,12 @@ public class VoucherDomainService : IVoucherDomainService
     private async Task<Result> ValidateVoucherIssue(Guid estateId, Guid operatorId, CancellationToken cancellationToken)
     {
         // Validate the Estate Record is a valid estate
-        EstateAggregate estateAggregate = await this.AggregateService.Get<EstateAggregate>(estateId, cancellationToken);
-        if (estateAggregate.IsCreated == false)
-            return Result.Failure("Estate not created");
+        Result<EstateAggregate> getEstateResult = await this.AggregateService.Get<EstateAggregate>(estateId, cancellationToken);
+        if (getEstateResult.IsFailed)
+        {
+            return ResultHelpers.CreateFailure(getEstateResult);
+        }
+        EstateAggregate estateAggregate = getEstateResult.Data;
 
         Estate estate = estateAggregate.GetEstate();
         if (estate.Operators == null || estate.Operators.Any() == false)
@@ -221,9 +224,10 @@ public class VoucherDomainService : IVoucherDomainService
     private async Task<Result> ValidateVoucherRedemption(Guid estateId, CancellationToken cancellationToken)
     {
         // Validate the Estate Record is a valid estate
-        EstateAggregate estateAggregate = await this.AggregateService.Get<EstateAggregate>(estateId, cancellationToken);
-        if (estateAggregate.IsCreated == false)
-            return Result.Failure("Estate not created");
+        Result<EstateAggregate> getEstateResult = await this.AggregateService.Get<EstateAggregate>(estateId, cancellationToken);
+        if (getEstateResult.IsFailed) {
+            return ResultHelpers.CreateFailure(getEstateResult);
+        }
 
         return Result.Success();
     }

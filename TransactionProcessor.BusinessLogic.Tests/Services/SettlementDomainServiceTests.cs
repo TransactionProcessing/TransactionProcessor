@@ -318,7 +318,7 @@ namespace TransactionProcessor.BusinessLogic.Tests.Services
                 .Setup(s => s.Save(It.IsAny<SettlementAggregate>(), It.IsAny<CancellationToken>()))
                 .ReturnsAsync(Result.Success);
             this.AggregateService.Setup(e => e.Get<MerchantAggregate>(It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
-                .ReturnsAsync(TestData.Aggregates.EmptyMerchantAggregate);
+                .ReturnsAsync(Result.NotFound());
 
             SettlementCommands.AddSettledFeeToSettlementCommand command = new(TestData.SettlementDate, TestData.MerchantId, TestData.EstateId, TestData.TransactionFeeId, TestData.TransactionId);
 

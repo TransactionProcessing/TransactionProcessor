@@ -10,6 +10,7 @@ using Shouldly;
 using SimpleResults;
 using TransactionProcessor.Aggregates;
 using TransactionProcessor.BusinessLogic.Manager;
+using TransactionProcessor.BusinessLogic.Services;
 using TransactionProcessor.BusinessLogic.Tests.DomainEventHandlers;
 using TransactionProcessor.Database.Contexts;
 using TransactionProcessor.Database.Entities;
@@ -65,10 +66,10 @@ namespace TransactionProcessor.BusinessLogic.Tests.Manager
             Mock<IDbContextFactory<EstateManagementGenericContext>> dbContextFactory = this.GetMockDbContextFactory();
             dbContextFactory.Setup(d => d.GetContext(It.IsAny<Guid>(), It.IsAny<String>(), It.IsAny<CancellationToken>())).ReturnsAsync(context);
 
-            Mock<IAggregateRepository<VoucherAggregate, DomainEvent>> voucherAggregateRepository = new Mock<IAggregateRepository<VoucherAggregate, DomainEvent>>();
-            voucherAggregateRepository.Setup(v => v.GetLatestVersion(It.IsAny<Guid>(), It.IsAny<CancellationToken>())).ReturnsAsync(Result.Success(TestData.GetVoucherAggregateWithRecipientMobile()));
+            Mock<IAggregateService> aggregateService = new();
+            aggregateService.Setup(v => v.Get<VoucherAggregate>(It.IsAny<Guid>(), It.IsAny<CancellationToken>())).ReturnsAsync(Result.Success(TestData.GetVoucherAggregateWithRecipientMobile()));
 
-            VoucherManagementManager manager = new VoucherManagementManager(dbContextFactory.Object, voucherAggregateRepository.Object);
+            VoucherManagementManager manager = new VoucherManagementManager(dbContextFactory.Object, aggregateService.Object);
 
             Models.Voucher voucher = await manager.GetVoucherByCode(TestData.EstateId, TestData.VoucherCode, CancellationToken.None);
 
@@ -85,9 +86,10 @@ namespace TransactionProcessor.BusinessLogic.Tests.Manager
             Mock<IDbContextFactory<EstateManagementGenericContext>> dbContextFactory = this.GetMockDbContextFactory();
             dbContextFactory.Setup(d => d.GetContext(It.IsAny<Guid>(), It.IsAny<String>(), It.IsAny<CancellationToken>())).ReturnsAsync(context);
 
-            Mock<IAggregateRepository<VoucherAggregate, DomainEvent>> voucherAggregateRepository = new Mock<IAggregateRepository<VoucherAggregate, DomainEvent>>();
+            Mock<IAggregateService> aggregateService = new();
+            aggregateService.Setup(v => v.GetLatest<VoucherAggregate>(It.IsAny<Guid>(), It.IsAny<CancellationToken>())).ReturnsAsync(Result.NotFound());
 
-            VoucherManagementManager manager = new VoucherManagementManager(dbContextFactory.Object, voucherAggregateRepository.Object);
+            VoucherManagementManager manager = new VoucherManagementManager(dbContextFactory.Object, aggregateService.Object);
 
             Should.Throw<NotFoundException>(async () =>
             {
@@ -114,10 +116,10 @@ namespace TransactionProcessor.BusinessLogic.Tests.Manager
             Mock<IDbContextFactory<EstateManagementGenericContext>> dbContextFactory = this.GetMockDbContextFactory();
             dbContextFactory.Setup(d => d.GetContext(It.IsAny<Guid>(), It.IsAny<String>(), It.IsAny<CancellationToken>())).ReturnsAsync(context);
 
-            Mock<IAggregateRepository<VoucherAggregate, DomainEvent>> voucherAggregateRepository = new Mock<IAggregateRepository<VoucherAggregate, DomainEvent>>();
-            voucherAggregateRepository.Setup(v => v.GetLatestVersion(It.IsAny<Guid>(), It.IsAny<CancellationToken>())).ReturnsAsync(Result.Success(TestData.GetVoucherAggregateWithRecipientMobile()));
+            Mock<IAggregateService> aggregateService = new();
+            aggregateService.Setup(v => v.Get<VoucherAggregate>(It.IsAny<Guid>(), It.IsAny<CancellationToken>())).ReturnsAsync(Result.Success(TestData.GetVoucherAggregateWithRecipientMobile()));
 
-            VoucherManagementManager manager = new VoucherManagementManager(dbContextFactory.Object, voucherAggregateRepository.Object);
+            VoucherManagementManager manager = new VoucherManagementManager(dbContextFactory.Object, aggregateService.Object);
 
             Models.Voucher voucher = await manager.GetVoucherByTransactionId(TestData.EstateId, TestData.TransactionId, CancellationToken.None);
 
@@ -134,9 +136,10 @@ namespace TransactionProcessor.BusinessLogic.Tests.Manager
             Mock<IDbContextFactory<EstateManagementGenericContext>> dbContextFactory = this.GetMockDbContextFactory();
             dbContextFactory.Setup(d => d.GetContext(It.IsAny<Guid>(), It.IsAny<String>(), It.IsAny<CancellationToken>())).ReturnsAsync(context);
 
-            Mock<IAggregateRepository<VoucherAggregate, DomainEvent>> voucherAggregateRepository = new Mock<IAggregateRepository<VoucherAggregate, DomainEvent>>();
+            Mock<IAggregateService> aggregateService = new();
+            aggregateService.Setup(v => v.GetLatest<VoucherAggregate>(It.IsAny<Guid>(), It.IsAny<CancellationToken>())).ReturnsAsync(Result.NotFound());
 
-            VoucherManagementManager manager = new VoucherManagementManager(dbContextFactory.Object, voucherAggregateRepository.Object);
+            VoucherManagementManager manager = new VoucherManagementManager(dbContextFactory.Object, aggregateService.Object);
 
             Should.Throw<NotFoundException>(async () =>
             {

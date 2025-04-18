@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Net.WebSockets;
 using System.Threading;
 using System.Threading.Tasks;
 using Shared.DomainDrivenDesign.EventSourcing;
@@ -30,10 +31,11 @@ namespace TransactionProcessor.BusinessLogic.Services
         {
             try
             {
-                EstateAggregate estateAggregate = await this.AggregateService.Get<EstateAggregate>(estateId, cancellationToken);
-                if (estateAggregate.IsCreated == false)
-                    return Result.Failure("Estate not created");
-
+                Result<EstateAggregate> getEstateResult = await this.AggregateService.Get<EstateAggregate>(estateId, cancellationToken);
+                if (getEstateResult.IsFailed) {
+                    return ResultHelpers.CreateFailure(getEstateResult);
+                }
+                EstateAggregate estateAggregate = getEstateResult.Data;
                 Result<OperatorAggregate> getOperatorResult = await this.AggregateService.GetLatest<OperatorAggregate>(operatorId, cancellationToken);
                 Result<OperatorAggregate> operatorAggregateResult =
                     DomainServiceHelper.HandleGetAggregateResult(getOperatorResult, operatorId, isNotFoundError);

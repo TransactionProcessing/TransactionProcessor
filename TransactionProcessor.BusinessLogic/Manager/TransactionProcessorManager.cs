@@ -8,6 +8,7 @@ using Shared.EventStore.Aggregate;
 using Shared.Results;
 using SimpleResults;
 using TransactionProcessor.Aggregates;
+using TransactionProcessor.BusinessLogic.Services;
 using TransactionProcessor.Models.Contract;
 using TransactionProcessor.Models.Merchant;
 using TransactionProcessor.Models.Settlement;
@@ -26,30 +27,17 @@ namespace TransactionProcessor.BusinessLogic.Manager
         #region Fields
         
         private readonly ITransactionProcessorReadModelRepository TransactionProcessorReadModelRepository;
-
-        private readonly IAggregateRepository<EstateAggregate, DomainEvent> EstateAggregateRepository;
-
-        private readonly IAggregateRepository<ContractAggregate, DomainEvent> ContractAggregateRepository;
-
-        private readonly IAggregateRepository<MerchantAggregate, DomainEvent> MerchantAggregateRepository;
-
-        private readonly IAggregateRepository<OperatorAggregate, DomainEvent> OperatorAggregateRepository;
+        private readonly IAggregateService AggregateService;
 
         #endregion
 
         #region Constructors
         
         public TransactionProcessorManager(ITransactionProcessorReadModelRepository transactionProcessorReadModelRepository,
-                                       IAggregateRepository<EstateAggregate, DomainEvent> estateAggregateRepository,
-                                       IAggregateRepository<ContractAggregate,DomainEvent> contractAggregateRepository,
-                                       IAggregateRepository<MerchantAggregate, DomainEvent> merchantAggregateRepository,
-                                       IAggregateRepository<OperatorAggregate, DomainEvent> operatorAggregateRepository)
+                                       IAggregateService aggregateService)
         {
             this.TransactionProcessorReadModelRepository = transactionProcessorReadModelRepository;
-            this.EstateAggregateRepository = estateAggregateRepository;
-            this.ContractAggregateRepository = contractAggregateRepository;
-            this.MerchantAggregateRepository = merchantAggregateRepository;
-            this.OperatorAggregateRepository = operatorAggregateRepository;
+            this.AggregateService = aggregateService;
         }
 
         #endregion
@@ -71,7 +59,7 @@ namespace TransactionProcessor.BusinessLogic.Manager
                                                 Guid contractId,
                                                 CancellationToken cancellationToken)
         {
-            Result<ContractAggregate> getContractResult = await this.ContractAggregateRepository.GetLatestVersion(contractId, cancellationToken);
+            Result<ContractAggregate> getContractResult = await this.AggregateService.GetLatest<ContractAggregate>(contractId, cancellationToken);
             if (getContractResult.IsFailed)
                 return ResultHelpers.CreateFailure(getContractResult);
 
@@ -89,7 +77,7 @@ namespace TransactionProcessor.BusinessLogic.Manager
         public async Task<Result<Models.Estate.Estate>> GetEstate(Guid estateId,
                                                   CancellationToken cancellationToken){
 
-            Result<EstateAggregate> getEstateResult = await this.EstateAggregateRepository.GetLatestVersion(estateId, cancellationToken);
+            Result<EstateAggregate> getEstateResult = await this.AggregateService.GetLatest<EstateAggregate>(estateId, cancellationToken);
             if (getEstateResult.IsFailed)
                 return ResultHelpers.CreateFailure(getEstateResult);
             
@@ -104,7 +92,7 @@ namespace TransactionProcessor.BusinessLogic.Manager
             {
                 foreach (Operator @operator in estateModel.Operators)
                 {
-                    OperatorAggregate operatorAggregate = await this.OperatorAggregateRepository.GetLatestVersion(@operator.OperatorId, cancellationToken);
+                    OperatorAggregate operatorAggregate = await this.AggregateService.GetLatest<OperatorAggregate>(@operator.OperatorId, cancellationToken);
                     @operator.Name = operatorAggregate.Name;
                 }
             }
@@ -127,7 +115,7 @@ namespace TransactionProcessor.BusinessLogic.Manager
                                                 Guid merchantId,
                                                 CancellationToken cancellationToken)
         {
-            Result<MerchantAggregate> getMerchantResult = await this.MerchantAggregateRepository.GetLatestVersion(merchantId, cancellationToken);
+            Result<MerchantAggregate> getMerchantResult = await this.AggregateService.GetLatest<MerchantAggregate>(merchantId, cancellationToken);
             if (getMerchantResult.IsFailed)
                 return ResultHelpers.CreateFailure(getMerchantResult);
 
@@ -141,11 +129,11 @@ namespace TransactionProcessor.BusinessLogic.Manager
 
             if (merchantModel.Operators != null)
             {
-                var operators = new List<Models.Merchant.Operator>();
+                List<Models.Merchant.Operator> operators = new();
                 foreach (Models.Merchant.Operator @operator in merchantModel.Operators)
                 {
-                    OperatorAggregate operatorAggregate = await this.OperatorAggregateRepository.GetLatestVersion(@operator.OperatorId, cancellationToken);
-                    var newOperator = @operator with { Name = operatorAggregate.Name };
+                    OperatorAggregate operatorAggregate = await this.AggregateService.GetLatest<OperatorAggregate>(@operator.OperatorId, cancellationToken);
+                    Models.Merchant.Operator newOperator = @operator with { Name = operatorAggregate.Name };
                     operators.Add(newOperator);
                 }
             }
@@ -161,7 +149,7 @@ namespace TransactionProcessor.BusinessLogic.Manager
             if (getMerchantContractsResult.IsFailed)
                 return ResultHelpers.CreateFailure(getMerchantContractsResult);
 
-            var contractModels = getMerchantContractsResult.Data;
+            List<Contract> contractModels = getMerchantContractsResult.Data;
             if (contractModels.Any() == false)
                 return Result.NotFound($"No contracts for Estate {estateId} and Merchant {merchantId}");
 
@@ -171,10 +159,10 @@ namespace TransactionProcessor.BusinessLogic.Manager
         public async Task<Result<List<Merchant>>> GetMerchants(Guid estateId,
                                                        CancellationToken cancellationToken)
         {
-            var getMerchantsResult = await this.TransactionProcessorReadModelRepository.GetMerchants(estateId, cancellationToken);
+            Result<List<Merchant>> getMerchantsResult = await this.TransactionProcessorReadModelRepository.GetMerchants(estateId, cancellationToken);
             if (getMerchantsResult.IsFailed)
                 return ResultHelpers.CreateFailure(getMerchantsResult);
-            var merchants = getMerchantsResult.Data;
+            List<Merchant> merchants = getMerchantsResult.Data;
             if (merchants == null || merchants.Any() == false)
             {
                 return Result.NotFound($"No Merchants found for estate Id {estateId}");
@@ -191,7 +179,7 @@ namespace TransactionProcessor.BusinessLogic.Manager
         {
             // TODO: this will need updated to handle merchant specific fees when that is available
 
-            Result<ContractAggregate> getContractResult = await this.ContractAggregateRepository.GetLatestVersion(contractId, cancellationToken);
+            Result<ContractAggregate> getContractResult = await this.AggregateService.GetLatest<ContractAggregate>(contractId, cancellationToken);
             if (getContractResult.IsFailed)
                 return ResultHelpers.CreateFailure(getContractResult);
             ContractAggregate contract = getContractResult.Data;
@@ -210,23 +198,14 @@ namespace TransactionProcessor.BusinessLogic.Manager
             }
 
             return Result.Success(product.TransactionFees);
-
         }
-
-        //public async Task<Result<File>> GetFileDetails(Guid estateId, Guid fileId, CancellationToken cancellationToken){
-        //    var getFileDetailsResult= await this.EstateManagementRepository.GetFileDetails(estateId, fileId, cancellationToken);
-        //    if (getFileDetailsResult.IsFailed)
-        //        return ResultHelpers.CreateFailure(getFileDetailsResult);
-
-        //    return Result.Success(getFileDetailsResult.Data);
-        //}
 
         public async Task<Result<Models.Operator.Operator>> GetOperator(Guid estateId, Guid operatorId, CancellationToken cancellationToken)
         {
-            var getOperatorResult = await this.OperatorAggregateRepository.GetLatestVersion(operatorId, cancellationToken);
+            Result<OperatorAggregate> getOperatorResult = await this.AggregateService.GetLatest<OperatorAggregate>(operatorId, cancellationToken);
             if (getOperatorResult.IsFailed)
                 return ResultHelpers.CreateFailure(getOperatorResult);
-            var operatorAggregate = getOperatorResult.Data;
+            OperatorAggregate operatorAggregate = getOperatorResult.Data;
             if (operatorAggregate.IsCreated == false)
             {
                 return Result.NotFound($"No operator found with Id [{operatorId}]");

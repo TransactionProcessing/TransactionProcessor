@@ -1,6 +1,7 @@
 ﻿using Shared.Results;
 using SimpleResults;
 using TransactionProcessor.Aggregates;
+using TransactionProcessor.BusinessLogic.Services;
 using TransactionProcessor.Database.Contexts;
 using TransactionProcessor.Database.Entities;
 using TransactionProcessor.DomainEvents;
@@ -47,15 +48,9 @@ public class VoucherDomainEventHandler : IDomainEventHandler
     /// </summary>
     private readonly ISecurityServiceClient SecurityServiceClient;
 
-    /// <summary>
-    /// The token response
-    /// </summary>
-    private TokenResponse TokenResponse;
+    private readonly IAggregateService AggregateService;
 
-    /// <summary>
-    /// The voucher aggregate repository
-    /// </summary>
-    private readonly IAggregateRepository<VoucherAggregate, DomainEvent> VoucherAggregateRepository;
+    private TokenResponse TokenResponse;
 
     private const String ConnectionStringIdentifier = "EstateReportingReadModel";
 
@@ -63,22 +58,14 @@ public class VoucherDomainEventHandler : IDomainEventHandler
 
     #region Constructors
 
-    /// <summary>
-    /// Initializes a new instance of the <see cref="VoucherDomainEventHandler" /> class.
-    /// </summary>
-    /// <param name="securityServiceClient">The security service client.</param>
-    /// <param name="voucherAggregateRepository">The voucher aggregate repository.</param>
-    /// <param name="dbContextFactory">The database context factory.</param>
-    /// <param name="messagingServiceClient">The messaging service client.</param>
-    /// <param name="fileSystem">The file system.</param>
     public VoucherDomainEventHandler(ISecurityServiceClient securityServiceClient,
-                                     IAggregateRepository<VoucherAggregate, DomainEvent> voucherAggregateRepository,
+                                     IAggregateService aggregateService,
                                      Shared.EntityFramework.IDbContextFactory<EstateManagementGenericContext> dbContextFactory,
                                      IMessagingServiceClient messagingServiceClient,
                                      IFileSystem fileSystem)
     {
         this.SecurityServiceClient = securityServiceClient;
-        this.VoucherAggregateRepository = voucherAggregateRepository;
+        this.AggregateService = aggregateService;
         this.DbContextFactory = dbContextFactory;
         this.MessagingServiceClient = messagingServiceClient;
         this.FileSystem = fileSystem;
@@ -160,7 +147,7 @@ public class VoucherDomainEventHandler : IDomainEventHandler
                                                          CancellationToken cancellationToken)
     {
         // Get the voucher aggregate
-        Result<VoucherAggregate> voucherAggregateResult = await this.VoucherAggregateRepository.GetLatestVersion(domainEvent.VoucherId, cancellationToken);
+        Result<VoucherAggregate> voucherAggregateResult = await this.AggregateService.Get<VoucherAggregate>(domainEvent.VoucherId, cancellationToken);
         if (voucherAggregateResult.IsFailed)
             return ResultHelpers.CreateFailure(voucherAggregateResult);
 

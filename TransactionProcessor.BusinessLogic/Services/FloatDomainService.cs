@@ -93,22 +93,22 @@ namespace TransactionProcessor.BusinessLogic.Services
 
         private async Task<Result> ValidateEstate(Guid estateId, CancellationToken cancellationToken)
         {
-            EstateAggregate estateAggregate = await this.AggregateService.Get<EstateAggregate>(estateId, cancellationToken);
+            Result<EstateAggregate> getEstateResult= await this.AggregateService.Get<EstateAggregate>(estateId, cancellationToken);
 
-            if (estateAggregate.IsCreated == false) {
-                return Result.Failure("Estate Is Not Created");
+            if (getEstateResult.IsFailed) {
+                return ResultHelpers.CreateFailure(getEstateResult);
             }
             return Result.Success();
         }
 
         private async Task<Result> ValidateContractProduct(Guid estateId, Guid contractId, Guid productId, CancellationToken cancellationToken)
         {
-            ContractAggregate contractAggregate = await this.AggregateService.Get<ContractAggregate>(contractId, cancellationToken);
-            if (contractAggregate.IsCreated == false)
+            Result<ContractAggregate> getContractResult = await this.AggregateService.Get<ContractAggregate>(contractId, cancellationToken);
+            if (getContractResult.IsFailed)
             {
-                return Result.Failure("Contract not created");
+                return ResultHelpers.CreateFailure(getContractResult);
             }
-
+            ContractAggregate contractAggregate = getContractResult.Data;
             Models.Contract.Contract contract = contractAggregate.GetContract();
             Boolean productExists = contract.Products.Any(cp => cp.ContractProductId == productId);
 

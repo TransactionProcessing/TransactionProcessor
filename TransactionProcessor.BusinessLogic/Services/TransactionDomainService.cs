@@ -10,12 +10,6 @@ using Contract = TransactionProcessor.Models.Contract.Contract;
 using Operator = TransactionProcessor.Models.Estate.Operator;
 
 namespace TransactionProcessor.BusinessLogic.Services{
-    using System;
-    using System.Collections.Generic;
-    using System.Diagnostics.CodeAnalysis;
-    using System.Linq;
-    using System.Threading;
-    using System.Threading.Tasks;
     using Common;
     using MessagingService.Client;
     using MessagingService.DataTransferObjects;
@@ -28,6 +22,12 @@ namespace TransactionProcessor.BusinessLogic.Services{
     using Shared.EventStore.Aggregate;
     using Shared.General;
     using Shared.Logger;
+    using System;
+    using System.Collections.Generic;
+    using System.Diagnostics.CodeAnalysis;
+    using System.Linq;
+    using System.Threading;
+    using System.Threading.Tasks;
     using TransactionProcessor.BusinessLogic.Manager;
     using TransactionProcessor.BusinessLogic.Requests;
 
@@ -470,12 +470,15 @@ namespace TransactionProcessor.BusinessLogic.Services{
             Result<Merchant> merchantResult = await this.GetMerchant(transaction.MerchantId, cancellationToken);
             if (merchantResult.IsFailed)
                 return ResultHelpers.CreateFailure(merchantResult);
-
-            EstateAggregate estateAggregate = await this.AggregateService.Get<EstateAggregate>(command.EstateId, cancellationToken);
-            if (estateAggregate.IsCreated == false)
-                return Result.Failure("Estate is not created");
-            Estate estate = estateAggregate.GetEstate();
-            Operator @operator = estate.Operators.Single(o => o.OperatorId == transaction.OperatorId);
+            
+            Result<EstateAggregate> getEstateResult = await this.AggregateService.Get<EstateAggregate>(command.EstateId, cancellationToken);
+            if (getEstateResult.IsFailed)
+            {
+                return ResultHelpers.CreateFailure(getEstateResult);
+            }
+            EstateAggregate estateAggregate = getEstateResult.Data;
+            Models.Estate.Estate estate = estateAggregate.GetEstate();
+            Models.Estate.Operator @operator = estate.Operators.Single(o => o.OperatorId == transaction.OperatorId);
 
             // Determine the body of the email
             String receiptMessage = await this.TransactionReceiptBuilder.GetEmailReceiptMessage(transaction, merchantResult.Data, @operator.Name, cancellationToken);
@@ -607,11 +610,11 @@ namespace TransactionProcessor.BusinessLogic.Services{
 
         private async Task<Result<Merchant>> GetMerchant(Guid merchantId,
                                                          CancellationToken cancellationToken) {
-            MerchantAggregate merchantAggregate = await this.AggregateService.Get<MerchantAggregate>(merchantId, cancellationToken);
+            Result<MerchantAggregate> getMerchantResult= await this.AggregateService.Get<MerchantAggregate>(merchantId, cancellationToken);
 
-            if (merchantAggregate.IsCreated == false)
-                return Result.Failure("Merchant not created");
-            Merchant merchant = merchantAggregate.GetMerchant();
+            if (getMerchantResult.IsFailed)
+                return ResultHelpers.CreateFailure(getMerchantResult);
+            Models.Merchant.Merchant merchant = getMerchantResult.Data.GetMerchant();
 
             return merchant;
         }
@@ -625,11 +628,14 @@ namespace TransactionProcessor.BusinessLogic.Services{
                                                                                 CancellationToken cancellationToken) {
 
             // TODO: introduce some kind of mapping in here to link operator id to the name
-            EstateAggregate estateAggregate = await this.AggregateService.Get<EstateAggregate>(merchant.EstateId, cancellationToken);
-            if (estateAggregate.IsCreated == false)
-                return Result.Failure("Estate not created");
-            Estate estate = estateAggregate.GetEstate();
-            Operator @operator = estate.Operators.SingleOrDefault(o => o.OperatorId == operatorId);
+            Result<EstateAggregate> getEstateResult = await this.AggregateService.Get<EstateAggregate>(merchant.EstateId, cancellationToken);
+            if (getEstateResult.IsFailed)
+            {
+                return ResultHelpers.CreateFailure(getEstateResult);
+            }
+            EstateAggregate estateAggregate = getEstateResult.Data;
+            Models.Estate.Estate estate = estateAggregate.GetEstate();
+            Models.Estate.Operator @operator = estate.Operators.SingleOrDefault(o => o.OperatorId == operatorId);
 
             OperatorAggregate operatorResult = await this.AggregateService.Get<OperatorAggregate>(operatorId, cancellationToken);
             if (operatorResult.IsCreated == false)
@@ -711,11 +717,11 @@ namespace TransactionProcessor.BusinessLogic.Services{
         private async Task<Result<List<Models.Contract.ContractProductTransactionFee>>> GetTransactionFeesForProduct(Guid contractId,
                                                                                                                      Guid productId,
                                                                                                                      CancellationToken cancellationToken) {
-            ContractAggregate contractAggregateResult = await this.AggregateService.Get<ContractAggregate>(contractId, CancellationToken.None);
-            if (contractAggregateResult.IsCreated == false)
-                return Result.Failure("Contract not created");
+            Result<ContractAggregate> contractAggregateResult = await this.AggregateService.Get<ContractAggregate>(contractId, CancellationToken.None);
+            if (contractAggregateResult.IsFailed)
+                return ResultHelpers.CreateFailure(contractAggregateResult);
 
-            Contract contract = contractAggregateResult.GetContract();
+            Models.Contract.Contract contract = contractAggregateResult.Data.GetContract();
 
             Product product = contract.Products.SingleOrDefault(p => p.ContractProductId == productId);
             if (product == null)

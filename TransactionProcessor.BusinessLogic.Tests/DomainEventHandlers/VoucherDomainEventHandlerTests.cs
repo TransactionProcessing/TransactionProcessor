@@ -1,5 +1,6 @@
 ﻿using SimpleResults;
 using TransactionProcessor.Aggregates;
+using TransactionProcessor.BusinessLogic.Services;
 using TransactionProcessor.Database.Contexts;
 using TransactionProcessor.Database.Entities;
 
@@ -67,8 +68,8 @@ public class VoucherDomainEventHandlerTests
         Mock<ISecurityServiceClient> securityServiceClient = new Mock<ISecurityServiceClient>();
         securityServiceClient.Setup(s => s.GetToken(It.IsAny<String>(), It.IsAny<String>(), It.IsAny<CancellationToken>())).ReturnsAsync(Result.Success(TestData.TokenResponse()));
 
-        Mock<IAggregateRepository<VoucherAggregate, DomainEvent>> voucherAggregateRepository = new Mock<IAggregateRepository<VoucherAggregate, DomainEvent>>();
-        voucherAggregateRepository.Setup(t => t.GetLatestVersion(It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
+        Mock<IAggregateService> aggregateService = new();
+        aggregateService.Setup(t => t.Get<VoucherAggregate>(It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
                                   .ReturnsAsync(Result.Success(TestData.GetVoucherAggregateWithRecipientEmail()));
 
         EstateManagementGenericContext context = await this.GetContext(Guid.NewGuid().ToString("N"), TestDatabaseType.InMemory);
@@ -98,7 +99,7 @@ public class VoucherDomainEventHandlerTests
                                                        });
 
         VoucherDomainEventHandler voucherDomainEventHandler = new VoucherDomainEventHandler(securityServiceClient.Object,
-                                                                                            voucherAggregateRepository.Object,
+                                                                                            aggregateService.Object,
                                                                                             dbContextFactory.Object,
                                                                                             messagingServiceClient.Object,
                                                                                             fileSystem);
@@ -116,8 +117,8 @@ public class VoucherDomainEventHandlerTests
         Mock<ISecurityServiceClient> securityServiceClient = new Mock<ISecurityServiceClient>();
         securityServiceClient.Setup(s => s.GetToken(It.IsAny<String>(), It.IsAny<String>(), It.IsAny<CancellationToken>())).ReturnsAsync(Result.Success(TestData.TokenResponse()));
 
-        Mock<IAggregateRepository<VoucherAggregate, DomainEvent>> voucherAggregateRepository = new Mock<IAggregateRepository<VoucherAggregate, DomainEvent>>();
-        voucherAggregateRepository.Setup(t => t.GetLatestVersion(It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
+        Mock<IAggregateService> aggregateService = new ();
+        aggregateService.Setup(t => t.Get<VoucherAggregate>(It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
                                   .ReturnsAsync(Result.Success(TestData.GetVoucherAggregateWithRecipientMobile()));
 
         EstateManagementGenericContext context = await this.GetContext(Guid.NewGuid().ToString("N"), TestDatabaseType.InMemory);
@@ -147,7 +148,7 @@ public class VoucherDomainEventHandlerTests
                                                        });
 
         VoucherDomainEventHandler voucherDomainEventHandler = new VoucherDomainEventHandler(securityServiceClient.Object,
-                                                                                            voucherAggregateRepository.Object,
+                                                                                            aggregateService.Object,
                                                                                             dbContextFactory.Object,
                                                                                             messagingServiceClient.Object,
                                                                                             fileSystem);

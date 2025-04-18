@@ -72,10 +72,11 @@ namespace TransactionProcessor.BusinessLogic.Services
         {
             try
             {
-                EstateAggregate estateAggregate = await this.AggregateService.Get<EstateAggregate>(estateId, cancellationToken);
-                if (estateAggregate.IsCreated == false)
-                    return Result.Failure("Estate not created");
-                
+                Result<EstateAggregate> getEstateResult = await this.AggregateService.Get<EstateAggregate>(estateId, cancellationToken);
+                if (getEstateResult.IsFailed) {
+                    return ResultHelpers.CreateFailure(getEstateResult);
+                }
+                EstateAggregate estateAggregate = getEstateResult.Data;
                 Result<MerchantAggregate> getMerchantResult = await this.AggregateService.GetLatest<MerchantAggregate>(merchantId, cancellationToken);
                 Result<MerchantAggregate> merchantAggregateResult =
                     DomainServiceHelper.HandleGetAggregateResult(getMerchantResult, merchantId, isNotFoundError);

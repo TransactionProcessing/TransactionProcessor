@@ -53,7 +53,7 @@ namespace TransactionProcessor.BusinessLogic.Tests.Services
         [Fact]
         public async Task FloatDomainService_CreateFloatForContractProduct_InvalidEstate_ErrorThrown()
         {
-            this.AggregateService.Setup(f => f.Get<EstateAggregate>(It.IsAny<Guid>(), It.IsAny<CancellationToken>())).ReturnsAsync(TestData.Aggregates.EmptyEstateAggregate);
+            this.AggregateService.Setup(f => f.Get<EstateAggregate>(It.IsAny<Guid>(), It.IsAny<CancellationToken>())).ReturnsAsync(Result.NotFound());
             FloatCommands.CreateFloatForContractProductCommand command = new FloatCommands.CreateFloatForContractProductCommand(TestData.EstateId, TestData.ContractId,
                 TestData.ProductId, TestData.FloatCreatedDateTime);
             Result result = await this.FloatDomainService.CreateFloatForContractProduct(command, CancellationToken.None);
@@ -64,7 +64,7 @@ namespace TransactionProcessor.BusinessLogic.Tests.Services
         public async Task FloatDomainService_CreateFloatForContractProduct_InvalidContract_ErrorThrown()
         {
             this.AggregateService.Setup(f => f.Get<EstateAggregate>(It.IsAny<Guid>(), It.IsAny<CancellationToken>())).ReturnsAsync(Result.Success(TestData.Aggregates.EstateAggregateWithOperator()));
-            this.AggregateService.Setup(f => f.Get<ContractAggregate>(It.IsAny<Guid>(), It.IsAny<CancellationToken>())).ReturnsAsync(TestData.Aggregates.EmptyContractAggregate);
+            this.AggregateService.Setup(f => f.Get<ContractAggregate>(It.IsAny<Guid>(), It.IsAny<CancellationToken>())).ReturnsAsync(Result.NotFound());
 
             FloatCommands.CreateFloatForContractProductCommand command = new FloatCommands.CreateFloatForContractProductCommand(TestData.EstateId, TestData.ContractId,
                 TestData.ProductId, TestData.FloatCreatedDateTime);

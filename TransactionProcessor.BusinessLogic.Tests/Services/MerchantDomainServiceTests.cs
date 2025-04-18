@@ -788,7 +788,7 @@ public class MerchantDomainServiceTests {
             .Setup(m => m.Save(It.IsAny<MerchantAggregate>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(Result.Success);
         this.AggregateService.Setup(c => c.Get<ContractAggregate>(It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
-            .ReturnsAsync(TestData.Aggregates.EmptyContractAggregate);
+            .ReturnsAsync(Result.NotFound());
 
         var result = await this.DomainService.AddContractToMerchant(TestData.Commands.AddMerchantContractCommand, CancellationToken.None);
         result.IsFailed.ShouldBeTrue();
