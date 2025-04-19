@@ -1,6 +1,8 @@
 ﻿using MediatR;
 using SimpleResults;
+using System;
 using System.Diagnostics;
+using Prometheus;
 using TransactionProcessor.BusinessLogic.Requests;
 using TransactionProcessor.DomainEvents;
 using TransactionProcessor.Models.Contract;
@@ -15,6 +17,7 @@ namespace TransactionProcessor.BusinessLogic.EventHandling
     using System.Threading;
     using System.Threading.Tasks;
     using TransactionProcessor.BusinessLogic.Common;
+    using TransactionProcessor.BusinessLogic.Services;
     using static TransactionProcessor.BusinessLogic.Requests.SettlementCommands;
     using static TransactionProcessor.BusinessLogic.Requests.TransactionCommands;
 
@@ -46,90 +49,72 @@ namespace TransactionProcessor.BusinessLogic.EventHandling
 
         public async Task<Result> Handle(IDomainEvent domainEvent,
                                          CancellationToken cancellationToken) {
-
-            Logger.LogWarning($"|{domainEvent.EventId}|Transaction Domain Event Handler - Inside Handle {domainEvent.EventType}");
             Stopwatch sw = Stopwatch.StartNew();
-            var result = await this.HandleSpecificDomainEvent((dynamic)domainEvent, cancellationToken);
-            sw.Stop();
-            Logger.LogWarning($"|{domainEvent.EventId}|Transaction Domain Event Handler - after HandleSpecificDomainEvent {domainEvent.EventType} time {sw.ElapsedMilliseconds}ms");
+            String g = domainEvent.GetType().Name;
+            String m = this.GetType().Name;
+            Counter counterCalls = AggregateService.GetCounterMetric($"{m}_{g}_events_processed");
+            Histogram histogramMetric = AggregateService.GetHistogramMetric($"{m}_{g}");
+            counterCalls.Inc();
 
+            Task<Result> t = domainEvent switch
+            {
+                FloatDomainEvents.FloatCreditPurchasedEvent fcpe => this.HandleSpecificDomainEvent(fcpe, cancellationToken),
+                TransactionDomainEvents.TransactionCostInformationRecordedEvent tcire => this.HandleSpecificDomainEvent(tcire, cancellationToken),
+                TransactionDomainEvents.TransactionHasBeenCompletedEvent thbce => this.HandleSpecificDomainEvent(thbce, cancellationToken),
+                TransactionDomainEvents.MerchantFeePendingSettlementAddedToTransactionEvent mfpse => this.HandleSpecificDomainEvent(mfpse, cancellationToken),
+                TransactionDomainEvents.SettledMerchantFeeAddedToTransactionEvent smfate => this.HandleSpecificDomainEvent(smfate, cancellationToken),
+                TransactionDomainEvents.CustomerEmailReceiptRequestedEvent ce => this.HandleSpecificDomainEvent(ce, cancellationToken),
+                TransactionDomainEvents.CustomerEmailReceiptResendRequestedEvent cer => this.HandleSpecificDomainEvent(cer, cancellationToken),
+                _ => null
+            };
+
+            Result result = Result.Success();
+            if (t != null)
+                result = await t;
+            sw.Stop();
+            histogramMetric.Observe(sw.Elapsed.TotalSeconds);
             return result;
         }
 
         private async Task<Result> HandleSpecificDomainEvent(FloatDomainEvents.FloatCreditPurchasedEvent domainEvent,
-                                                     CancellationToken cancellationToken) {
-           
-            IAsyncPolicy<Result> retryPolicy = PolicyFactory.CreatePolicy(policyTag: "TransactionDomainEventHandler - FloatCreditPurchasedEvent");
+                                                             CancellationToken cancellationToken) {
+            FloatActivityCommands.RecordCreditPurchaseCommand command = new(domainEvent.EstateId, domainEvent.FloatId, domainEvent.CreditPurchasedDateTime, domainEvent.Amount, domainEvent.EventId);
 
-            return await PolicyFactory.ExecuteWithPolicyAsync(async () => {
-                FloatActivityCommands.RecordCreditPurchaseCommand command =
-                    new(domainEvent.EstateId, domainEvent.FloatId,
-                        domainEvent.CreditPurchasedDateTime, domainEvent.Amount, domainEvent.EventId);
-
-                return await this.Mediator.Send(command, cancellationToken);
-            },retryPolicy, "TransactionDomainEventHandler - FloatCreditPurchasedEvent");
+            return await this.Mediator.Send(command, cancellationToken);
         }
 
-        private async Task<Result> HandleSpecificDomainEvent(TransactionDomainEvents.TransactionCostInformationRecordedEvent domainEvent, CancellationToken cancellationToken){
-            
-            IAsyncPolicy<Result> retryPolicy = PolicyFactory.CreatePolicy(policyTag: "TransactionDomainEventHandler - TransactionCostInformationRecordedEvent");
+        private async Task<Result> HandleSpecificDomainEvent(TransactionDomainEvents.TransactionCostInformationRecordedEvent domainEvent,
+                                                             CancellationToken cancellationToken) {
 
-            return await PolicyFactory.ExecuteWithPolicyAsync(async () => {
-                FloatActivityCommands.RecordTransactionCommand command = new(domainEvent.EstateId,
-                    domainEvent.TransactionId);
+            FloatActivityCommands.RecordTransactionCommand command = new(domainEvent.EstateId, domainEvent.TransactionId);
 
-                return await this.Mediator.Send(command, cancellationToken);
-            }, retryPolicy, "TransactionDomainEventHandler - TransactionCostInformationRecordedEvent");
+            return await this.Mediator.Send(command, cancellationToken);
         }
 
         private async Task<Result> HandleSpecificDomainEvent(TransactionDomainEvents.TransactionHasBeenCompletedEvent domainEvent,
                                                              CancellationToken cancellationToken) {
-            
-            IAsyncPolicy<Result> retryPolicy = PolicyFactory.CreatePolicy(policyTag: "TransactionDomainEventHandler - TransactionHasBeenCompletedEvent");
 
-            return await PolicyFactory.ExecuteWithPolicyAsync(async () => {
-                CalculateFeesForTransactionCommand command = new(domainEvent.TransactionId, domainEvent.CompletedDateTime, domainEvent.EstateId, domainEvent.MerchantId);
+            CalculateFeesForTransactionCommand command = new(domainEvent.TransactionId, domainEvent.CompletedDateTime, domainEvent.EstateId, domainEvent.MerchantId);
 
-                return await this.Mediator.Send(command, cancellationToken);
-            }, retryPolicy, "TransactionDomainEventHandler - TransactionHasBeenCompletedEvent");
+            return await this.Mediator.Send(command, cancellationToken);
         }
 
         private async Task<Result> HandleSpecificDomainEvent(TransactionDomainEvents.MerchantFeePendingSettlementAddedToTransactionEvent domainEvent,
                                                              CancellationToken cancellationToken) {
-            IAsyncPolicy<Result> retryPolicy = PolicyFactory.CreatePolicy(policyTag: "TransactionDomainEventHandler - MerchantFeePendingSettlementAddedToTransactionEvent");
-
-            return await PolicyFactory.ExecuteWithPolicyAsync(async () => {
-                SettlementCommands.AddMerchantFeePendingSettlementCommand command =
-                    new SettlementCommands.AddMerchantFeePendingSettlementCommand(domainEvent.TransactionId,
-                        domainEvent.CalculatedValue, domainEvent.FeeCalculatedDateTime,
-                        (CalculationType)domainEvent.FeeCalculationType, domainEvent.FeeId, domainEvent.FeeValue,
-                        domainEvent.SettlementDueDate, domainEvent.MerchantId, domainEvent.EstateId);
-                return await this.Mediator.Send(command, cancellationToken);
-            }, retryPolicy, "TransactionDomainEventHandler - MerchantFeePendingSettlementAddedToTransactionEvent");
+            SettlementCommands.AddMerchantFeePendingSettlementCommand command = new SettlementCommands.AddMerchantFeePendingSettlementCommand(domainEvent.TransactionId, domainEvent.CalculatedValue, domainEvent.FeeCalculatedDateTime, (CalculationType)domainEvent.FeeCalculationType, domainEvent.FeeId, domainEvent.FeeValue, domainEvent.SettlementDueDate, domainEvent.MerchantId, domainEvent.EstateId);
+            return await this.Mediator.Send(command, cancellationToken);
         }
 
         private async Task<Result> HandleSpecificDomainEvent(TransactionDomainEvents.SettledMerchantFeeAddedToTransactionEvent domainEvent,
                                                              CancellationToken cancellationToken) {
-            IAsyncPolicy<Result> retryPolicy = PolicyFactory.CreatePolicy(policyTag: "TransactionDomainEventHandler - SettledMerchantFeeAddedToTransactionEvent");
-
-            return await PolicyFactory.ExecuteWithPolicyAsync(async () => {
-                AddSettledFeeToSettlementCommand command = new AddSettledFeeToSettlementCommand(
-                    domainEvent.SettledDateTime.Date, domainEvent.MerchantId, domainEvent.EstateId, domainEvent.FeeId, domainEvent.TransactionId);
-                return await this.Mediator.Send(command, cancellationToken);
-            },retryPolicy, "TransactionDomainEventHandler - SettledMerchantFeeAddedToTransactionEvent");
+            AddSettledFeeToSettlementCommand command = new AddSettledFeeToSettlementCommand(domainEvent.SettledDateTime.Date, domainEvent.MerchantId, domainEvent.EstateId, domainEvent.FeeId, domainEvent.TransactionId);
+            return await this.Mediator.Send(command, cancellationToken);
         }
 
         private async Task<Result> HandleSpecificDomainEvent(SettlementDomainEvents.MerchantFeeSettledEvent domainEvent,
-                                                             CancellationToken cancellationToken)
-        {
-            IAsyncPolicy<Result> retryPolicy = PolicyFactory.CreatePolicy(policyTag: "TransactionDomainEventHandler - MerchantFeeSettledEvent");
-
-            return await PolicyFactory.ExecuteWithPolicyAsync(async () => {
-                AddSettledMerchantFeeCommand command = new(domainEvent.TransactionId, domainEvent.CalculatedValue,
-                    domainEvent.FeeCalculatedDateTime, (CalculationType)domainEvent.FeeCalculationType, domainEvent.FeeId,
-                    domainEvent.FeeValue, domainEvent.SettledDateTime, domainEvent.SettlementId);
-                return await this.Mediator.Send(command, cancellationToken);
-            }, retryPolicy, "TransactionDomainEventHandler - MerchantFeeSettledEvent");
+                                                             CancellationToken cancellationToken) {
+            AddSettledMerchantFeeCommand command = new(domainEvent.TransactionId, domainEvent.CalculatedValue, domainEvent.FeeCalculatedDateTime, (CalculationType)domainEvent.FeeCalculationType, domainEvent.FeeId, domainEvent.FeeValue, domainEvent.SettledDateTime, domainEvent.SettlementId);
+            return await this.Mediator.Send(command, cancellationToken);
         }
 
         private async Task<Result> HandleSpecificDomainEvent(TransactionDomainEvents.CustomerEmailReceiptRequestedEvent domainEvent,

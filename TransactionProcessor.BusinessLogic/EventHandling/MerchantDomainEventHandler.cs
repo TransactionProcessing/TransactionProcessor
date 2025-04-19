@@ -55,28 +55,23 @@ namespace TransactionProcessor.BusinessLogic.EventHandling
         }
 
         private async Task<Result> HandleSpecificDomainEvent(CallbackReceivedEnrichedEvent domainEvent,
-                                                     CancellationToken cancellationToken)
-        {
-            IAsyncPolicy<Result> retryPolicy = PolicyFactory.CreatePolicy(policyTag: "MerchantSettlementDomainEventHandler - MerchantFeeSettledEvent");
+                                                             CancellationToken cancellationToken) {
+            if (domainEvent.TypeString == typeof(CallbackHandler.DataTransferObjects.Deposit).ToString()) {
+                // Work out the merchant id from the reference field (second part, split on hyphen)
+                String merchantReference = domainEvent.Reference.Split("-")[1];
 
-            return await PolicyFactory.ExecuteWithPolicyAsync(async () => {
-                if (domainEvent.TypeString == typeof(CallbackHandler.DataTransferObjects.Deposit).ToString()) {
-                    // Work out the merchant id from the reference field (second part, split on hyphen)
-                    String merchantReference = domainEvent.Reference.Split("-")[1];
+                Result<Merchant> result = await this.EstateReportingRepository.GetMerchantFromReference(domainEvent.EstateId, merchantReference, cancellationToken);
+                if (result.IsFailed)
+                    return ResultHelpers.CreateFailure(result);
 
-                    Result<Merchant> result = await this.EstateReportingRepository.GetMerchantFromReference(domainEvent.EstateId, merchantReference, cancellationToken);
-                    if (result.IsFailed)
-                        return ResultHelpers.CreateFailure(result);
+                // We now need to deserialise the message from the callback
+                CallbackHandler.DataTransferObjects.Deposit callbackMessage = JsonConvert.DeserializeObject<CallbackHandler.DataTransferObjects.Deposit>(domainEvent.CallbackMessage);
 
-                    // We now need to deserialise the message from the callback
-                    CallbackHandler.DataTransferObjects.Deposit callbackMessage = JsonConvert.DeserializeObject<CallbackHandler.DataTransferObjects.Deposit>(domainEvent.CallbackMessage);
+                MerchantCommands.MakeMerchantDepositCommand command = new(domainEvent.EstateId, result.Data.MerchantId, DataTransferObjects.Requests.Merchant.MerchantDepositSource.Automatic, new MakeMerchantDepositRequest { DepositDateTime = callbackMessage.DateTime, Reference = callbackMessage.Reference, Amount = callbackMessage.Amount, });
+                return await this.Mediator.Send(command, cancellationToken);
+            }
 
-                    MerchantCommands.MakeMerchantDepositCommand command = new(domainEvent.EstateId, result.Data.MerchantId, DataTransferObjects.Requests.Merchant.MerchantDepositSource.Automatic, new MakeMerchantDepositRequest { DepositDateTime = callbackMessage.DateTime, Reference = callbackMessage.Reference, Amount = callbackMessage.Amount, });
-                    return await this.Mediator.Send(command, cancellationToken);
-                }
-
-                return Result.Success();
-            }, retryPolicy, "MerchantSettlementDomainEventHandler - MerchantFeeSettledEvent");
+            return Result.Success();
         }
 
         #endregion

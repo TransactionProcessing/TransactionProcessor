@@ -44,5 +44,13 @@ namespace TransactionProcessor.BusinessLogic.Services
                                                         contractId,
                                                         productId
                                                     });
+
+        public static Guid GenerateFloatActivityAggregateId(Guid estateId, Guid floatId, DateTime dateTime) =>
+            IdGenerationService.GenerateUniqueId(new
+            {
+                estateId,
+                floatId,
+                dateTime
+            });
     }
 }
