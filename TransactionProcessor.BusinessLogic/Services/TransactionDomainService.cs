@@ -515,58 +515,17 @@ namespace TransactionProcessor.BusinessLogic.Services{
         private async Task<List<TransactionFeeToCalculate>> GetTransactionFeesForCalculation(TransactionAggregate transactionAggregate,
                                                                                              CancellationToken cancellationToken) {
             // TODO: convert to result??
-
-            Boolean contractProductFeeCacheEnabled;
-            String contractProductFeeCacheEnabledValue = ConfigurationReader.GetValue("ContractProductFeeCacheEnabled");
-            if (String.IsNullOrEmpty(contractProductFeeCacheEnabledValue)) {
-                contractProductFeeCacheEnabled = false;
-            }
-            else {
-                contractProductFeeCacheEnabled = Boolean.Parse(contractProductFeeCacheEnabledValue);
+            // Get the fees to be calculated
+            Result<List<ContractProductTransactionFee>> feesForProduct = await this.GetTransactionFeesForProduct(transactionAggregate.ContractId, transactionAggregate.ProductId, cancellationToken);
+        
+            if (feesForProduct.IsFailed) {
+                Logger.LogWarning($"Failed to get fees {feesForProduct.Message}");
+                return null;
             }
 
-            Boolean feesInCache;
-            Result<List<Models.Contract.ContractProductTransactionFee>> feesForProduct = null;
-            if (contractProductFeeCacheEnabled == false) {
-                feesInCache = false;
-            }
-            else {
-                // Ok we should have filtered out the not applicable transactions
-                // Check if we have fees for this product in the cache
-                feesInCache = this.MemoryCache.TryGetValue((transactionAggregate.EstateId, transactionAggregate.ContractId, transactionAggregate.ProductId), out feesForProduct);
-            }
+            Logger.LogInformation($"After getting Fees {feesForProduct.Data.Count} returned");
 
-            if (feesInCache == false) {
-                Logger.LogInformation($"Fees for Key: Estate Id {transactionAggregate.EstateId} Contract Id {transactionAggregate.ContractId} ProductId {transactionAggregate.ProductId} not found in the cache");
-
-                // Nothing in cache so we need to make a remote call
-                // Get the fees to be calculated
-                feesForProduct = await this.GetTransactionFeesForProduct(transactionAggregate.ContractId, transactionAggregate.ProductId, cancellationToken);
-
-
-                if (feesForProduct.IsFailed) {
-                    Logger.LogWarning($"Failed to get fees {feesForProduct.Message}");
-                    return null;
-                }
-
-                Logger.LogInformation($"After getting Fees {feesForProduct.Data.Count} returned");
-
-                if (contractProductFeeCacheEnabled == true) {
-                    // Now add this the result to the cache
-                    String contractProductFeeCacheExpiryInHours = ConfigurationReader.GetValue("ContractProductFeeCacheExpiryInHours");
-                    if (String.IsNullOrEmpty(contractProductFeeCacheExpiryInHours)) {
-                        contractProductFeeCacheExpiryInHours = "168"; // 7 Days default
-                    }
-
-                    this.MemoryCache.Set((transactionAggregate.EstateId, transactionAggregate.ContractId, transactionAggregate.ProductId), feesForProduct.Data, new MemoryCacheEntryOptions() { AbsoluteExpirationRelativeToNow = TimeSpan.FromHours(Int32.Parse(contractProductFeeCacheExpiryInHours)) });
-                    Logger.LogInformation($"Fees for Key: Estate Id {transactionAggregate.EstateId} Contract Id {transactionAggregate.ContractId} ProductId {transactionAggregate.ProductId} added to cache");
-                }
-            }
-            else {
-                Logger.LogInformation($"Fees for Key: Estate Id {transactionAggregate.EstateId} Contract Id {transactionAggregate.ContractId} ProductId {transactionAggregate.ProductId} found in the cache");
-            }
-
-            List<TransactionFeeToCalculate> feesForCalculation = new List<TransactionFeeToCalculate>();
+            List<TransactionFeeToCalculate> feesForCalculation = new();
 
             foreach (Models.Contract.ContractProductTransactionFee contractProductTransactionFee in feesForProduct.Data) {
                 TransactionFeeToCalculate transactionFeeToCalculate = new TransactionFeeToCalculate { FeeId = contractProductTransactionFee.TransactionFeeId, Value = contractProductTransactionFee.Value, FeeType = (TransactionProcessor.Models.Contract.FeeType)contractProductTransactionFee.FeeType, CalculationType = (TransactionProcessor.Models.Contract.CalculationType)contractProductTransactionFee.CalculationType };

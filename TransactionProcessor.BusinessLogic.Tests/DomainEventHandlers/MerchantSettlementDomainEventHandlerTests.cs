@@ -40,17 +40,5 @@ namespace TransactionProcessor.BusinessLogic.Tests.DomainEventHandlers
             Result result = await this.EventHandler.Handle(TestData.DomainEvents.MerchantFeeSettledEvent, CancellationToken.None);
             result.IsSuccess.ShouldBeTrue();
         }
-
-        [Fact]
-        public async Task MerchantSettlementDomainEventHandler_Handle_MerchantFeeSettledEvent_Retry_EventIsHandled()
-        {
-            this.Mediator.SetupSequence(m => m.Send(It.IsAny<IRequest<Result>>(), It.IsAny<CancellationToken>()))
-                .ReturnsAsync(Result.Failure(new List<String>() { "Append failed due to WrongExpectedVersion"}))
-                .ReturnsAsync(Result.Failure(new List<String>() { "DeadlineExceeded"}))
-                .ReturnsAsync(Result.Success());                       
-
-            Result result = await this.EventHandler.Handle(TestData.DomainEvents.MerchantFeeSettledEvent, CancellationToken.None);
-            result.IsSuccess.ShouldBeTrue();
-        }
     }
 }

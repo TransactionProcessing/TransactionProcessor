@@ -73,6 +73,8 @@ namespace TransactionProcessor.BusinessLogic.Services {
                 .RegisterPostEvictionCallback(AggregateService.EvictionCallback);
 
             this.AggregateTypes.Add((typeof(EstateAggregate), memoryCacheEntryOptions, new Object()));
+            this.AggregateTypes.Add((typeof(ContractAggregate), memoryCacheEntryOptions, new Object()));
+            this.AggregateTypes.Add((typeof(OperatorAggregate), memoryCacheEntryOptions, new Object()));
         }
 
         internal static void EvictionCallback(Object key,
@@ -191,7 +193,7 @@ namespace TransactionProcessor.BusinessLogic.Services {
             String g = typeof(TAggregate).Name;
             String m = $"AggregateService";
             Counter counterCalls = AggregateService.GetCounterMetric($"{m}_{g}_times_rehydrated");
-            Histogram histogramMetric = AggregateService.GetHistogramMetric($"{m}_{g}");
+            Histogram histogramMetric = AggregateService.GetHistogramMetric($"{m}_{g}_rehydrated");
 
             counterCalls.Inc();
             TAggregate aggregate = null;
@@ -220,7 +222,7 @@ namespace TransactionProcessor.BusinessLogic.Services {
             String g = typeof(TAggregate).Name;
             String m = $"AggregateService";
             Counter counterCalls = AggregateService.GetCounterMetric($"{m}_{g}_times_saved");
-            Histogram histogramMetric = AggregateService.GetHistogramMetric($"{m}_{g}");
+            Histogram histogramMetric = AggregateService.GetHistogramMetric($"{m}_{g}_saved");
 
             counterCalls.Inc();
 

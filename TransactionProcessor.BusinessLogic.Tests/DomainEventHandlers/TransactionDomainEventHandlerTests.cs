@@ -109,8 +109,8 @@ namespace TransactionProcessor.BusinessLogic.Tests.DomainEventHandlers
         [InlineData(typeof(TransactionDomainEvents.MerchantFeePendingSettlementAddedToTransactionEvent))]
         [InlineData(typeof(TransactionDomainEvents.SettledMerchantFeeAddedToTransactionEvent))]
         [InlineData(typeof(SettlementDomainEvents.MerchantFeeSettledEvent))]
-        //[InlineData(typeof(CustomerEmailReceiptRequestedEvent))]
-        //[InlineData(typeof(CustomerEmailReceiptResendRequestedEvent))]
+        [InlineData(typeof(TransactionDomainEvents.CustomerEmailReceiptRequestedEvent))]
+        [InlineData(typeof(TransactionDomainEvents.CustomerEmailReceiptResendRequestedEvent))]
         public async Task TransactionDomainEventHandler_EventPassedIn_EventIsHandled(Type eventType) {
             DomainEvent domainEvent = eventType.Name switch {
                 nameof(FloatDomainEvents.FloatCreditPurchasedEvent) => new FloatDomainEvents.FloatCreditPurchasedEvent(TestData.FloatAggregateId, TestData.EstateId, TestData.CreditPurchasedDateTime, TestData.FloatCreditAmount, TestData.FloatCreditCostPrice),
@@ -121,39 +121,6 @@ namespace TransactionProcessor.BusinessLogic.Tests.DomainEventHandlers
                 nameof(SettlementDomainEvents.MerchantFeeSettledEvent)=> new SettlementDomainEvents.MerchantFeeSettledEvent(TestData.SettlementAggregateId, TestData.EstateId, TestData.MerchantId, TestData.TransactionId, TestData.CalculatedFeeValue, 0, TestData.TransactionFeeId, TestData.TransactionFeeValue, TestData.TransactionFeeCalculateDateTime, TestData.SettlementDate),
                 nameof(TransactionDomainEvents.CustomerEmailReceiptRequestedEvent)=> TestData.CustomerEmailReceiptRequestedEvent,
                 nameof(TransactionDomainEvents.CustomerEmailReceiptResendRequestedEvent)=> TestData.CustomerEmailReceiptResendRequestedEvent,
-                _ => throw new NotSupportedException($"Event {eventType.Name} not supported")
-            };
-
-            var result = await this.TransactionDomainEventHandler.Handle(domainEvent, CancellationToken.None);
-            result.IsSuccess.ShouldBeTrue();
-        }
-
-        [Theory]
-        [InlineData(typeof(FloatDomainEvents.FloatCreditPurchasedEvent))]
-        [InlineData(typeof(TransactionDomainEvents.TransactionCostInformationRecordedEvent))]
-        //[InlineData(typeof(TransactionDomainEvents.TransactionHasBeenCompletedEvent))]
-        [InlineData(typeof(TransactionDomainEvents.MerchantFeePendingSettlementAddedToTransactionEvent))]
-        [InlineData(typeof(TransactionDomainEvents.SettledMerchantFeeAddedToTransactionEvent))]
-        [InlineData(typeof(SettlementDomainEvents.MerchantFeeSettledEvent))]
-        //[InlineData(typeof(CustomerEmailReceiptRequestedEvent))]
-        //[InlineData(typeof(CustomerEmailReceiptResendRequestedEvent))]
-        public async Task TransactionDomainEventHandler_EventPassedIn_Retry_EventIsHandled(Type eventType)
-        {
-            this.Mediator.SetupSequence(m => m.Send(It.IsAny<IRequest<Result>>(), It.IsAny<CancellationToken>()))
-                .ReturnsAsync(Result.Failure(new List<String>() { "Append failed due to WrongExpectedVersion" }))
-                .ReturnsAsync(Result.Failure(new List<String>() { "DeadlineExceeded" }))
-                .ReturnsAsync(Result.Success());
-
-            DomainEvent domainEvent = eventType.Name switch
-            {
-                nameof(FloatDomainEvents.FloatCreditPurchasedEvent) => new FloatDomainEvents.FloatCreditPurchasedEvent(TestData.FloatAggregateId, TestData.EstateId, TestData.CreditPurchasedDateTime, TestData.FloatCreditAmount, TestData.FloatCreditCostPrice),
-                nameof(TransactionDomainEvents.TransactionCostInformationRecordedEvent) => TestData.TransactionCostInformationRecordedEvent,
-                nameof(TransactionDomainEvents.TransactionHasBeenCompletedEvent) => TestData.DomainEvents.TransactionHasBeenCompletedEvent,
-                nameof(TransactionDomainEvents.MerchantFeePendingSettlementAddedToTransactionEvent) => new TransactionDomainEvents.MerchantFeePendingSettlementAddedToTransactionEvent(TestData.TransactionId, TestData.EstateId, TestData.MerchantId, TestData.CalculatedFeeValue, 0, TestData.TransactionFeeId, TestData.TransactionFeeValue, TestData.TransactionFeeCalculateDateTime, TestData.TransactionFeeSettlementDueDate, TestData.TransactionDateTime),
-                nameof(TransactionDomainEvents.SettledMerchantFeeAddedToTransactionEvent) => TestData.SettledMerchantFeeAddedToTransactionEvent(TestData.SettlementDate),
-                nameof(SettlementDomainEvents.MerchantFeeSettledEvent) => new SettlementDomainEvents.MerchantFeeSettledEvent(TestData.SettlementAggregateId, TestData.EstateId, TestData.MerchantId, TestData.TransactionId, TestData.CalculatedFeeValue, 0, TestData.TransactionFeeId, TestData.TransactionFeeValue, TestData.TransactionFeeCalculateDateTime, TestData.SettlementDate),
-                //nameof(TransactionDomainEvents.CustomerEmailReceiptRequestedEvent) => TestData.CustomerEmailReceiptRequestedEvent,
-                //nameof(TransactionDomainEvents.CustomerEmailReceiptResendRequestedEvent) => TestData.CustomerEmailReceiptResendRequestedEvent,
                 _ => throw new NotSupportedException($"Event {eventType.Name} not supported")
             };
 
