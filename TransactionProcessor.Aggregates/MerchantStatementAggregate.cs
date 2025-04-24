@@ -1,63 +1,111 @@
-﻿using System.Diagnostics.CodeAnalysis;
-using Shared.DomainDrivenDesign.EventSourcing;
+﻿using Shared.DomainDrivenDesign.EventSourcing;
 using Shared.EventStore.Aggregate;
 using Shared.General;
+using System.Diagnostics.CodeAnalysis;
+using System.Runtime.CompilerServices;
 using TransactionProcessor.Aggregates.Models;
 using TransactionProcessor.DomainEvents;
 using TransactionProcessor.Models.Merchant;
 
 namespace TransactionProcessor.Aggregates
 {
-    public static class MerchantStatementAggregateExtenions{
-        public static void AddSettledFeeToStatement(this MerchantStatementAggregate aggregate,
-                                                    Guid statementId,
-                                                    Guid eventId,
-                                                    DateTime createdDate,
-                                                    Guid estateId,
-                                                    Guid merchantId,
-                                                    SettledFee settledFee){
-            // Create statement id required
-            aggregate.CreateStatement(statementId, createdDate, estateId, merchantId);
+    public record MerchantStatementAggregate : Aggregate
+    {
+        #region Fields
 
-            MerchantStatementDomainEvents.SettledFeeAddedToStatementEvent settledFeeAddedToStatementEvent =
-                new MerchantStatementDomainEvents.SettledFeeAddedToStatementEvent(aggregate.AggregateId,
-                                                    eventId,
-                                                    aggregate.EstateId,
-                                                    aggregate.MerchantId,
-                                                    settledFee.SettledFeeId,
-                                                    settledFee.TransactionId,
-                                                    settledFee.DateTime,
-                                                    settledFee.Amount);
+        internal DateTime StatementDate;
 
-            aggregate.ApplyAndAppend(settledFeeAddedToStatementEvent);
+        internal DateTime EmailedDateTime;
+
+        internal Guid EmailMessageId;
+
+        internal Guid EstateId;
+
+        internal DateTime GeneratedDateTime;
+
+        internal Boolean HasBeenEmailed;
+
+        internal Boolean IsCreated;
+
+        internal Boolean IsGenerated;
+
+        internal Guid MerchantId;
+
+        internal List<(Guid merchantStatementForDateId, DateTime activityDate)> ActivityDates;
+        #endregion
+
+        #region Constructors
+
+        [ExcludeFromCodeCoverage]
+        public MerchantStatementAggregate()
+        {
+            // Nothing here
+            this.ActivityDates = new();
         }
 
-        public static void AddTransactionToStatement(this MerchantStatementAggregate aggregate,
-                                                     Guid statementId,
-                                                     Guid eventId,
-                                                     DateTime createdDate,
-                                                     Guid estateId,
-                                                     Guid merchantId,
-                                                     Transaction transaction){
-            // Create statement id required
-            aggregate.CreateStatement(statementId, createdDate, estateId, merchantId);
+        private MerchantStatementAggregate(Guid aggregateId)
+        {
+            Guard.ThrowIfInvalidGuid(aggregateId, "Aggregate Id cannot be an Empty Guid");
 
-            MerchantStatementDomainEvents.TransactionAddedToStatementEvent transactionAddedToStatementEvent = new MerchantStatementDomainEvents.TransactionAddedToStatementEvent(aggregate.AggregateId,
-                                                                                                                     eventId,
-                                                                                                                     aggregate.EstateId,
-                                                                                                                     aggregate.MerchantId,
-                                                                                                                     transaction.TransactionId,
-                                                                                                                     transaction.DateTime,
-                                                                                                                     transaction.Amount);
-
-            aggregate.ApplyAndAppend(transactionAddedToStatementEvent);
+            this.AggregateId = aggregateId;
+            this.ActivityDates = new();
         }
 
-        private static void CreateStatement(this MerchantStatementAggregate aggregate, 
-                                            Guid statementId,
-                                            DateTime createdDate,
-                                            Guid estateId,
-                                            Guid merchantId)
+        #endregion
+
+        #region Methods
+
+        public static MerchantStatementAggregate Create(Guid aggregateId)
+        {
+            return new MerchantStatementAggregate(aggregateId);
+        }
+
+        public override void PlayEvent(IDomainEvent domainEvent) => MerchantStatementAggregateExtensions.PlayEvent(this, (dynamic)domainEvent);
+
+        [ExcludeFromCodeCoverage]
+        protected override Object GetMetadata()
+        {
+            return null;
+        }
+
+        #endregion
+    }
+
+    public static class MerchantStatementAggregateExtensions
+    {
+        public static void PlayEvent(this MerchantStatementAggregate aggregate, MerchantStatementDomainEvents.StatementCreatedEvent domainEvent)
+        {
+            aggregate.IsCreated = true;
+            aggregate.EstateId = domainEvent.EstateId;
+            aggregate.MerchantId = domainEvent.MerchantId;
+            aggregate.StatementDate = domainEvent.StatementDate;
+        }
+
+        //public static void PlayEvent(this MerchantStatementAggregate aggregate, MerchantStatementDomainEvents.StatementGeneratedEvent domainEvent)
+        //{
+        //    aggregate.IsGenerated = true;
+        //    aggregate.GeneratedDateTime = domainEvent.DateGenerated;
+        //}
+
+        //public static void PlayEvent(this MerchantStatementAggregate aggregate, MerchantStatementDomainEvents.StatementEmailedEvent domainEvent)
+        //{
+        //    aggregate.HasBeenEmailed = true;
+        //    aggregate.EmailedDateTime = domainEvent.DateEmailed;
+        //    aggregate.EmailMessageId = domainEvent.MessageId;
+        //}
+
+        public static void PlayEvent(this MerchantStatementAggregate aggregate,
+                                     MerchantStatementDomainEvents.ActivityDateAddedToStatementEvent domainEvent) {
+            aggregate.ActivityDates.Add((domainEvent.MerchantStatementForDateId, domainEvent.ActivityDate));
+        }
+
+        public static void RecordActivityDateOnStatement(this MerchantStatementAggregate aggregate,
+                                                         Guid statementId,
+                                                         DateTime statementDate,
+                                                         Guid estateId,
+                                                         Guid merchantId,
+                                                         Guid merchantStatementForDateId,
+                                                         DateTime activityDate)
         {
             if (aggregate.IsCreated == false)
             {
@@ -65,247 +113,89 @@ namespace TransactionProcessor.Aggregates
                 Guard.ThrowIfInvalidGuid(estateId, nameof(estateId));
                 Guard.ThrowIfInvalidGuid(merchantId, nameof(merchantId));
 
-                MerchantStatementDomainEvents.StatementCreatedEvent statementCreatedEvent = new MerchantStatementDomainEvents.StatementCreatedEvent(statementId, estateId, merchantId, createdDate);
+                MerchantStatementDomainEvents.StatementCreatedEvent statementCreatedEvent = new(statementId, estateId, merchantId, statementDate);
 
                 aggregate.ApplyAndAppend(statementCreatedEvent);
             }
-        }
 
-        public static void EmailStatement(this MerchantStatementAggregate aggregate, 
-                                          DateTime emailedDateTime,
-                                          Guid messageId)
-        {
-            aggregate.EnsureStatementHasBeenCreated();
-            aggregate.EnsureStatementHasBeenGenerated();
-
-            MerchantStatementDomainEvents.StatementEmailedEvent statementEmailedEvent = new MerchantStatementDomainEvents.StatementEmailedEvent(aggregate.AggregateId, aggregate.EstateId, aggregate.MerchantId, emailedDateTime, messageId);
-
-            aggregate.ApplyAndAppend(statementEmailedEvent);
-        }
-
-        public static void GenerateStatement(this MerchantStatementAggregate aggregate, 
-                                             DateTime generatedDateTime)
-        {
-            aggregate.EnsureStatementHasNotAlreadyBeenGenerated();
-
-            if (aggregate.Transactions.Any() == false && aggregate.SettledFees.Any() == false)
+            if (aggregate.ActivityDates.SingleOrDefault(a => a.activityDate == activityDate) != default)
             {
-                throw new InvalidOperationException("Statement has no transactions or settled fees");
+                // Activity date already exists
+                return;
             }
 
-            MerchantStatementDomainEvents.StatementGeneratedEvent statementGeneratedEvent = new MerchantStatementDomainEvents.StatementGeneratedEvent(aggregate.AggregateId, aggregate.EstateId, aggregate.MerchantId, generatedDateTime);
-
-            aggregate.ApplyAndAppend(statementGeneratedEvent);
+            MerchantStatementDomainEvents.ActivityDateAddedToStatementEvent activityDateAddedToStatementEvent = new(statementId, estateId, merchantId, merchantStatementForDateId, activityDate);
+            aggregate.ApplyAndAppend(activityDateAddedToStatementEvent);
         }
 
-        public static MerchantStatement GetStatement(this MerchantStatementAggregate aggregate, Boolean includeStatementLines = false)
+        public static MerchantStatement GetStatement(this MerchantStatementAggregate aggregate)
         {
-            MerchantStatement merchantStatement = new MerchantStatement
+            MerchantStatement merchantStatement = new()
             {
                 EstateId = aggregate.EstateId,
                 MerchantId = aggregate.MerchantId,
-                MerchantStatementId = aggregate.AggregateId,
                 IsCreated = aggregate.IsCreated,
-                IsGenerated = aggregate.IsGenerated,
-                HasBeenEmailed = aggregate.HasBeenEmailed,
-                StatementCreatedDateTime = aggregate.CreatedDateTime,
-                StatementGeneratedDateTime = aggregate.GeneratedDateTime
+                StatementDate = aggregate.StatementDate,
+                MerchantStatementId = aggregate.AggregateId,
             };
 
-            if (includeStatementLines)
-            {
-                foreach (Transaction transaction in aggregate.Transactions)
-                {
-                    merchantStatement.AddStatementLine(new MerchantStatementLine
-                    {
-                        Amount = transaction.Amount,
-                        DateTime = transaction.DateTime,
-                        Description = string.Empty,
-                        LineType = 1 // Transaction
-                    });
-                }
-
-                foreach (SettledFee settledFee in aggregate.SettledFees)
-                {
-                    merchantStatement.AddStatementLine(new MerchantStatementLine
-                    {
-                        Amount = settledFee.Amount,
-                        DateTime = settledFee.DateTime,
-                        Description = string.Empty,
-                        LineType = 2 // Settled Fee
-                    });
-                }
+            foreach ((Guid merchantStatementForDateId, DateTime activityDate) aggregateActivityDate in aggregate.ActivityDates) {
+                merchantStatement.AddStatementActivityDate(aggregateActivityDate.merchantStatementForDateId, aggregateActivityDate.activityDate);
             }
 
             return merchantStatement;
         }
 
-        private static void EnsureStatementHasBeenCreated(this MerchantStatementAggregate aggregate)
-        {
-            if (aggregate.IsCreated == false)
-            {
-                throw new InvalidOperationException("Statement has not been created");
-            }
-        }
+        //public static void EmailStatement(this MerchantStatementAggregate aggregate,
+        //                                  DateTime emailedDateTime,
+        //                                  Guid messageId)
+        //{
+        //    aggregate.EnsureStatementHasBeenCreated();
+        //    aggregate.EnsureStatementHasBeenGenerated();
 
-        private static void EnsureStatementHasBeenGenerated(this MerchantStatementAggregate aggregate)
-        {
-            if (aggregate.IsGenerated == false)
-            {
-                throw new InvalidOperationException("Statement has not been generated");
-            }
-        }
+        //    MerchantStatementDomainEvents.StatementEmailedEvent statementEmailedEvent = new(aggregate.AggregateId, aggregate.EstateId, aggregate.MerchantId, emailedDateTime, messageId);
 
-        private static void EnsureStatementHasNotAlreadyBeenGenerated(this MerchantStatementAggregate aggregate)
-        {
-            if (aggregate.IsGenerated)
-            {
-                throw new InvalidOperationException("Statement has already been generated");
-            }
-        }
+        //    aggregate.ApplyAndAppend(statementEmailedEvent);
+        //}
 
-        public static void PlayEvent(this MerchantStatementAggregate aggregate, MerchantStatementDomainEvents.StatementCreatedEvent domainEvent)
-        {
-            aggregate.IsCreated = true;
-            aggregate.EstateId = domainEvent.EstateId;
-            aggregate.MerchantId = domainEvent.MerchantId;
-            aggregate.CreatedDateTime = domainEvent.DateCreated;
-        }
+        //public static void GenerateStatement(this MerchantStatementAggregate aggregate,
+        //                                     DateTime generatedDateTime)
+        //{
+        //    aggregate.EnsureStatementHasNotAlreadyBeenGenerated();
 
-        public static void PlayEvent(this MerchantStatementAggregate aggregate, MerchantStatementDomainEvents.TransactionAddedToStatementEvent domainEvent)
-        {
-            aggregate.EstateId = domainEvent.EstateId;
-            aggregate.MerchantId = domainEvent.MerchantId;
+        //    // TODO: Validate days have been added
+        //    //if (aggregate.Transactions.Any() == false && aggregate.SettledFees.Any() == false)
+        //    //{
+        //    //    throw new InvalidOperationException("Statement has no transactions or settled fees");
+        //    //}
 
-            aggregate.Transactions.Add(new Transaction(domainEvent.TransactionId, domainEvent.TransactionDateTime, domainEvent.TransactionValue));
-        }
+        //    MerchantStatementDomainEvents.StatementGeneratedEvent statementGeneratedEvent = new(aggregate.AggregateId, aggregate.EstateId, aggregate.MerchantId, generatedDateTime);
 
-        public static void PlayEvent(this MerchantStatementAggregate aggregate, MerchantStatementDomainEvents.SettledFeeAddedToStatementEvent domainEvent)
-        {
-            aggregate.EstateId = domainEvent.EstateId;
-            aggregate.MerchantId = domainEvent.MerchantId;
+        //    aggregate.ApplyAndAppend(statementGeneratedEvent);
+        //}
 
-            aggregate.SettledFees.Add(new SettledFee(domainEvent.SettledFeeId, domainEvent.TransactionId, domainEvent.SettledDateTime, domainEvent.SettledValue));
-        }
+        //private static void EnsureStatementHasBeenCreated(this MerchantStatementAggregate aggregate)
+        //{
+        //    if (aggregate.IsCreated == false)
+        //    {
+        //        throw new InvalidOperationException("Statement header has not been created");
+        //    }
+        //}
 
-        public static void PlayEvent(this MerchantStatementAggregate aggregate, MerchantStatementDomainEvents.StatementGeneratedEvent domainEvent)
-        {
-            aggregate.IsGenerated = true;
-            aggregate.GeneratedDateTime = domainEvent.DateGenerated;
-        }
+        //private static void EnsureStatementHasBeenGenerated(this MerchantStatementAggregate aggregate)
+        //{
+        //    if (aggregate.IsGenerated == false)
+        //    {
+        //        throw new InvalidOperationException("Statement header has not been generated");
+        //    }
+        //}
 
-        public static void PlayEvent(this MerchantStatementAggregate aggregate, MerchantStatementDomainEvents.StatementEmailedEvent domainEvent)
-        {
-            aggregate.HasBeenEmailed = true;
-            aggregate.EmailedDateTime = domainEvent.DateEmailed;
-            aggregate.EmailMessageId = domainEvent.MessageId;
-        }
-    }
-
-    public record MerchantStatementAggregate : Aggregate
-    {
-        #region Fields
-
-        /// <summary>
-        /// The created date time
-        /// </summary>
-        internal DateTime CreatedDateTime;
-
-        /// <summary>
-        /// The emailed date time
-        /// </summary>
-        internal DateTime EmailedDateTime;
-
-        /// <summary>
-        /// The email message identifier
-        /// </summary>
-        internal Guid EmailMessageId;
-
-        /// <summary>
-        /// The estate identifier
-        /// </summary>
-        internal Guid EstateId;
-
-        /// <summary>
-        /// The generated date time
-        /// </summary>
-        internal DateTime GeneratedDateTime;
-
-        /// <summary>
-        /// The has been emailed
-        /// </summary>
-        internal Boolean HasBeenEmailed;
-
-        /// <summary>
-        /// The is created
-        /// </summary>
-        internal Boolean IsCreated;
-
-        /// <summary>
-        /// The is generated
-        /// </summary>
-        internal Boolean IsGenerated;
-
-        /// <summary>
-        /// The merchant identifier
-        /// </summary>
-        internal Guid MerchantId;
-
-        /// <summary>
-        /// The settled fees
-        /// </summary>
-        internal readonly List<SettledFee> SettledFees;
-
-        /// <summary>
-        /// The transactions
-        /// </summary>
-        internal readonly List<Transaction> Transactions;
-
-        #endregion
-
-        #region Constructors
-
-        /// <summary>
-        /// Initializes a new instance of the <see cref="MerchantStatementAggregate"/> class.
-        /// </summary>
-        [ExcludeFromCodeCoverage]
-        public MerchantStatementAggregate()
-        {
-            // Nothing here
-            this.Transactions = new List<Transaction>();
-            this.SettledFees = new List<SettledFee>();
-        }
-
-        /// <summary>
-        /// Initializes a new instance of the <see cref="MerchantStatementAggregate"/> class.
-        /// </summary>
-        /// <param name="aggregateId">The aggregate identifier.</param>
-        private MerchantStatementAggregate(Guid aggregateId)
-        {
-            Guard.ThrowIfInvalidGuid(aggregateId, "Aggregate Id cannot be an Empty Guid");
-
-            this.AggregateId = aggregateId;
-            this.Transactions = new List<Transaction>();
-            this.SettledFees = new List<SettledFee>();
-        }
-
-        #endregion
-
-        #region Methods
-        
-        public static MerchantStatementAggregate Create(Guid aggregateId)
-        {
-            return new MerchantStatementAggregate(aggregateId);
-        }
-
-        public override void PlayEvent(IDomainEvent domainEvent) => MerchantStatementAggregateExtenions.PlayEvent(this, (dynamic)domainEvent);
-        
-        [ExcludeFromCodeCoverage]
-        protected override Object GetMetadata()
-        {
-            return null;
-        }
-        
-        #endregion
+        //private static void EnsureStatementHasNotAlreadyBeenGenerated(this MerchantStatementAggregate aggregate)
+        //{
+        //    if (aggregate.IsGenerated)
+        //    {
+        //        throw new InvalidOperationException("Statement header has already been generated");
+        //    }
+        //}
     }
 }

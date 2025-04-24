@@ -52,5 +52,22 @@ namespace TransactionProcessor.BusinessLogic.Services
                 floatId,
                 dateTime
             });
+
+        public static Guid GenerateMerchantStatementForDateAggregateId(Guid estateId, Guid merchantId, DateTime nextStatementDateTime, DateTime activityDateTime) =>
+            IdGenerationService.GenerateUniqueId(new
+            {
+                estateId,
+                merchantId,
+                nextStatementDate = nextStatementDateTime.Date,
+                activityDate = activityDateTime.Date
+            });
+
+        public static Guid GenerateMerchantStatementAggregateId(Guid estateId, Guid merchantId, DateTime nextStatementDateTime) =>
+            IdGenerationService.GenerateUniqueId(new
+            {
+                estateId,
+                merchantId,
+                nextStatementDate = nextStatementDateTime.Date
+            });
     }
 }

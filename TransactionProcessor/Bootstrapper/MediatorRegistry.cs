@@ -23,11 +23,6 @@ namespace TransactionProcessor.Bootstrapper
     [ExcludeFromCodeCoverage]
     public class MediatorRegistry : ServiceRegistry
     {
-        #region Constructors
-
-        /// <summary>
-        /// Initializes a new instance of the <see cref="MediatorRegistry"/> class.
-        /// </summary>
         public MediatorRegistry()
         {
             this.AddTransient<IMediator, Mediator>();
@@ -47,12 +42,11 @@ namespace TransactionProcessor.Bootstrapper
         private void RegisterMerchantStatementRequestHandler() {
             this.AddSingleton<IRequestHandler<MerchantStatementCommands.AddTransactionToMerchantStatementCommand, Result>, MerchantStatementRequestHandler>();
             this.AddSingleton<IRequestHandler<MerchantStatementCommands.AddSettledFeeToMerchantStatementCommand, Result>, MerchantStatementRequestHandler>();
-            this.AddSingleton<IRequestHandler<MerchantCommands.GenerateMerchantStatementCommand, Result>, MerchantStatementRequestHandler>();
-            this.AddSingleton<IRequestHandler<MerchantStatementCommands.EmailMerchantStatementCommand, Result>, MerchantStatementRequestHandler>();
+            //this.AddSingleton<IRequestHandler<MerchantCommands.GenerateMerchantStatementCommand, Result>, MerchantStatementRequestHandler>();
+            //this.AddSingleton<IRequestHandler<MerchantStatementCommands.EmailMerchantStatementCommand, Result>, MerchantStatementRequestHandler>();
+            this.AddSingleton<IRequestHandler<MerchantStatementCommands.RecordActivityDateOnMerchantStatementCommand, Result>, MerchantStatementRequestHandler>();
         }
-
-        #endregion
-
+        
         private void RegisterMerchantRequestHandler() {
             this.AddSingleton<IRequestHandler<MerchantCommands.CreateMerchantCommand, Result>, MerchantRequestHandler>();
             this.AddSingleton<IRequestHandler<MerchantCommands.AssignOperatorToMerchantCommand, Result>, MerchantRequestHandler>();

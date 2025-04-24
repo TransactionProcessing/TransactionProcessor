@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using SimpleResults;
 
 namespace TransactionProcessor.Controllers
 {
@@ -74,16 +75,19 @@ namespace TransactionProcessor.Controllers
                     return this.Ok();
                 }
 
-                List<Task> tasks = new List<Task>();
+                List<Task<Result>> tasks = new();
                 foreach (IDomainEventHandler domainEventHandler in eventHandlers)
                 {
                     tasks.Add(domainEventHandler.Handle(domainEvent, cancellationToken));
                 }
 
                 Task.WaitAll(tasks.ToArray());
+                var anyFailed = tasks.Any(t => t.Result.IsFailed);
+                if (anyFailed)
+                    return this.StatusCode(500);
 
                 Logger.LogWarning($"Finished processing event - ID [{domainEvent.EventId}]");
-
+                
                 return this.Ok();
             }
             catch (Exception ex)

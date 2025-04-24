@@ -44,4 +44,23 @@ public class MerchantStatementDomainEventHandlerTests : DomainEventHandlerTests
         result.IsSuccess.ShouldBeTrue();
     }
 
+    [Fact]
+    public async Task MerchantStatementDomainEventHandler_Handle_MerchantFeeSettledEvent_EventIsHandled()
+    {
+        this.Mediator.Setup(m => m.Send(It.IsAny<IRequest<Result>>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(Result.Success());
+
+        Result result = await this.EventHandler.Handle(TestData.DomainEvents.MerchantFeeSettledEvent, CancellationToken.None);
+        result.IsSuccess.ShouldBeTrue();
+    }
+
+    [Fact]
+    public async Task MerchantStatementDomainEventHandler_Handle_StatementCreatedForDateEvent_EventIsHandled()
+    {
+        this.Mediator.Setup(m => m.Send(It.IsAny<IRequest<Result>>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(Result.Success());
+
+        Result result = await this.EventHandler.Handle(TestData.DomainEvents.StatementCreatedForDateEvent, CancellationToken.None);
+        result.IsSuccess.ShouldBeTrue();
+    }
 }

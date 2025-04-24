@@ -2,16 +2,25 @@
 using Shared.DomainDrivenDesign.EventSourcing;
 
 namespace TransactionProcessor.DomainEvents {
+
     [ExcludeFromCodeCoverage]
     public class MerchantStatementDomainEvents {
-        public record SettledFeeAddedToStatementEvent(Guid MerchantStatementId, Guid EventId, Guid EstateId, Guid MerchantId, Guid SettledFeeId, Guid TransactionId, DateTime SettledDateTime, Decimal SettledValue) : DomainEvent(MerchantStatementId, EventId);
-
-        public record TransactionAddedToStatementEvent(Guid MerchantStatementId, Guid EventId, Guid EstateId, Guid MerchantId, Guid TransactionId, DateTime TransactionDateTime, Decimal TransactionValue) : DomainEvent(MerchantStatementId, EventId);
-
         public record StatementGeneratedEvent(Guid MerchantStatementId, Guid EstateId, Guid MerchantId, DateTime DateGenerated) : DomainEvent(MerchantStatementId, Guid.NewGuid());
 
         public record StatementEmailedEvent(Guid MerchantStatementId, Guid EstateId, Guid MerchantId, DateTime DateEmailed, Guid MessageId) : DomainEvent(MerchantStatementId, Guid.NewGuid());
 
-        public record StatementCreatedEvent(Guid MerchantStatementId, Guid EstateId, Guid MerchantId, DateTime DateCreated) : DomainEvent(MerchantStatementId, Guid.NewGuid());
+        public record StatementCreatedEvent(Guid MerchantStatementId, Guid EstateId, Guid MerchantId, DateTime StatementDate) : DomainEvent(MerchantStatementId, Guid.NewGuid());
+
+        public record ActivityDateAddedToStatementEvent(Guid MerchantStatementId, Guid EstateId, Guid MerchantId, Guid MerchantStatementForDateId, DateTime ActivityDate) : DomainEvent(MerchantStatementId, Guid.NewGuid());
+    }
+
+    [ExcludeFromCodeCoverage]
+    public class MerchantStatementForDateDomainEvents {
+        public record StatementCreatedForDateEvent(Guid MerchantStatementForDateId, DateTime ActivityDate, DateTime MerchantStatementDate, Guid MerchantStatementId, Guid EstateId, Guid MerchantId) : DomainEvent(MerchantStatementForDateId, Guid.NewGuid());
+
+        public record SettledFeeAddedToStatementForDateEvent(Guid MerchantStatementForDateId, Guid EventId, Guid EstateId, Guid MerchantId, Guid SettledFeeId, Guid TransactionId, DateTime SettledDateTime, Decimal SettledValue) : DomainEvent(MerchantStatementForDateId, EventId);
+
+        public record TransactionAddedToStatementForDateEvent(Guid MerchantStatementForDateId, Guid EventId, Guid EstateId, Guid MerchantId, Guid TransactionId, DateTime TransactionDateTime, Decimal TransactionValue) : DomainEvent(MerchantStatementForDateId, EventId);
+
     }
 }

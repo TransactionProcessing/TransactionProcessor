@@ -105,8 +105,9 @@ namespace TransactionProcessor.Repository {
         Task<Result> AddProductDetailsToTransaction(TransactionDomainEvents.ProductDetailsAddedToTransactionEvent domainEvent,
                                                     CancellationToken cancellationToken);
 
-        Task<Result> AddSettledFeeToStatement(SettledFeeAddedToStatementEvent domainEvent,
-                                              CancellationToken cancellationToken);
+        // TODO@ Add this back in
+        //Task<Result> AddSettledFeeToStatement(SettledFeeAddedToStatementEvent domainEvent,
+        //                                      CancellationToken cancellationToken);
 
         Task<Result> AddSettledMerchantFeeToSettlement(TransactionDomainEvents.SettledMerchantFeeAddedToTransactionEvent domainEvent,
                                                        CancellationToken cancellationToken);
@@ -114,8 +115,9 @@ namespace TransactionProcessor.Repository {
         Task<Result> AddSourceDetailsToTransaction(TransactionDomainEvents.TransactionSourceAddedToTransactionEvent domainEvent,
                                                    CancellationToken cancellationToken);
 
-        Task<Result> AddTransactionToStatement(TransactionAddedToStatementEvent domainEvent,
-                                               CancellationToken cancellationToken);
+        // TODO@ Add this back in
+        //Task<Result> AddTransactionToStatement(TransactionAddedToStatementEvent domainEvent,
+        //                                       CancellationToken cancellationToken);
 
         Task<Result> CompleteReconciliation(ReconciliationDomainEvents.ReconciliationHasCompletedEvent domainEvent,
                                             CancellationToken cancellationToken);
@@ -1708,37 +1710,38 @@ namespace TransactionProcessor.Repository {
             return await context.SaveChangesAsync(cancellationToken);
         }
 
-        public async Task<Result> AddSettledFeeToStatement(SettledFeeAddedToStatementEvent domainEvent,
-                                                           CancellationToken cancellationToken)
-        {
-            EstateManagementGenericContext context = await this.GetContextFromDomainEvent(domainEvent, cancellationToken);
+        // TODO@ Add this back in
+        //public async Task<Result> AddSettledFeeToStatement(SettledFeeAddedToStatementEvent domainEvent,
+        //                                                   CancellationToken cancellationToken)
+        //{
+        //    EstateManagementGenericContext context = await this.GetContextFromDomainEvent(domainEvent, cancellationToken);
 
-            // Find the corresponding transaction
-            var getTransactionResult = await context.LoadTransaction(domainEvent, cancellationToken);
-            if (getTransactionResult.IsFailed)
-                return ResultHelpers.CreateFailure(getTransactionResult);
-            var transaction = getTransactionResult.Data;
+        //    // Find the corresponding transaction
+        //    var getTransactionResult = await context.LoadTransaction(domainEvent, cancellationToken);
+        //    if (getTransactionResult.IsFailed)
+        //        return ResultHelpers.CreateFailure(getTransactionResult);
+        //    var transaction = getTransactionResult.Data;
 
-            Result<Operator> operatorResult = await context.LoadOperator(transaction.OperatorId, cancellationToken);
-            if (operatorResult.IsFailed)
-                return ResultHelpers.CreateFailure(operatorResult);
-            var @operator = operatorResult.Data;
+        //    Result<Operator> operatorResult = await context.LoadOperator(transaction.OperatorId, cancellationToken);
+        //    if (operatorResult.IsFailed)
+        //        return ResultHelpers.CreateFailure(operatorResult);
+        //    var @operator = operatorResult.Data;
 
-            StatementLine line = new StatementLine
-            {
-                StatementId = domainEvent.MerchantStatementId,
-                ActivityDateTime = domainEvent.SettledDateTime,
-                ActivityDate = domainEvent.SettledDateTime.Date,
-                ActivityDescription = $"{@operator.Name} Transaction Fee",
-                ActivityType = 2, // Transaction Fee
-                TransactionId = domainEvent.TransactionId,
-                InAmount = domainEvent.SettledValue
-            };
+        //    StatementLine line = new StatementLine
+        //    {
+        //        StatementId = domainEvent.MerchantStatementId,
+        //        ActivityDateTime = domainEvent.SettledDateTime,
+        //        ActivityDate = domainEvent.SettledDateTime.Date,
+        //        ActivityDescription = $"{@operator.Name} Transaction Fee",
+        //        ActivityType = 2, // Transaction Fee
+        //        TransactionId = domainEvent.TransactionId,
+        //        InAmount = domainEvent.SettledValue
+        //    };
 
-            await context.StatementLines.AddAsync(line, cancellationToken);
+        //    await context.StatementLines.AddAsync(line, cancellationToken);
 
-            return await context.SaveChangesWithDuplicateHandling(cancellationToken);
-        }
+        //    return await context.SaveChangesWithDuplicateHandling(cancellationToken);
+        //}
 
         public async Task<Result> CreateStatement(StatementCreatedEvent domainEvent,
                                                   CancellationToken cancellationToken)
@@ -1748,8 +1751,8 @@ namespace TransactionProcessor.Repository {
             StatementHeader header = new StatementHeader
             {
                 MerchantId = domainEvent.MerchantId,
-                StatementCreatedDateTime = domainEvent.DateCreated,
-                StatementCreatedDate = domainEvent.DateCreated.Date,
+                StatementCreatedDateTime = domainEvent.StatementDate,
+                StatementCreatedDate = domainEvent.StatementDate.Date,
                 StatementId = domainEvent.MerchantStatementId
             };
 
@@ -1758,38 +1761,39 @@ namespace TransactionProcessor.Repository {
             return await context.SaveChangesAsync(cancellationToken);
         }
 
-        public async Task<Result> AddTransactionToStatement(TransactionAddedToStatementEvent domainEvent,
-                                                            CancellationToken cancellationToken)
-        {
-            EstateManagementGenericContext context = await this.GetContextFromDomainEvent(domainEvent, cancellationToken);
+        // TODO@ Add this back in
+        //public async Task<Result> AddTransactionToStatement(TransactionAddedToStatementEvent domainEvent,
+        //                                                    CancellationToken cancellationToken)
+        //{
+        //    EstateManagementGenericContext context = await this.GetContextFromDomainEvent(domainEvent, cancellationToken);
 
-            // Find the corresponding transaction
-            Result<Transaction> transactionResult = await context.LoadTransaction(domainEvent, cancellationToken);
-            if (transactionResult.IsFailed)
-                return ResultHelpers.CreateFailure(transactionResult);
+        //    // Find the corresponding transaction
+        //    Result<Transaction> transactionResult = await context.LoadTransaction(domainEvent, cancellationToken);
+        //    if (transactionResult.IsFailed)
+        //        return ResultHelpers.CreateFailure(transactionResult);
 
-            Transaction transaction = transactionResult.Data;
+        //    Transaction transaction = transactionResult.Data;
 
-            Result<Operator> operatorResult = await context.LoadOperator(transaction.OperatorId, cancellationToken);
-            if (operatorResult.IsFailed)
-                return ResultHelpers.CreateFailure(operatorResult);
-            Operator @operator = operatorResult.Data;
+        //    Result<Operator> operatorResult = await context.LoadOperator(transaction.OperatorId, cancellationToken);
+        //    if (operatorResult.IsFailed)
+        //        return ResultHelpers.CreateFailure(operatorResult);
+        //    Operator @operator = operatorResult.Data;
 
-            StatementLine line = new StatementLine
-            {
-                StatementId = domainEvent.MerchantStatementId,
-                ActivityDateTime = domainEvent.TransactionDateTime,
-                ActivityDate = domainEvent.TransactionDateTime.Date,
-                ActivityDescription = $"{@operator.Name} Transaction",
-                ActivityType = 1, // Transaction
-                TransactionId = domainEvent.TransactionId,
-                OutAmount = domainEvent.TransactionValue
-            };
+        //    StatementLine line = new StatementLine
+        //    {
+        //        StatementId = domainEvent.MerchantStatementId,
+        //        ActivityDateTime = domainEvent.TransactionDateTime,
+        //        ActivityDate = domainEvent.TransactionDateTime.Date,
+        //        ActivityDescription = $"{@operator.Name} Transaction",
+        //        ActivityType = 1, // Transaction
+        //        TransactionId = domainEvent.TransactionId,
+        //        OutAmount = domainEvent.TransactionValue
+        //    };
 
-            await context.StatementLines.AddAsync(line, cancellationToken);
+        //    await context.StatementLines.AddAsync(line, cancellationToken);
 
-            return await context.SaveChangesWithDuplicateHandling(cancellationToken);
-        }
+        //    return await context.SaveChangesWithDuplicateHandling(cancellationToken);
+        //}
 
         public async Task<Result> AddFile(FileCreatedEvent domainEvent,
                               CancellationToken cancellationToken)

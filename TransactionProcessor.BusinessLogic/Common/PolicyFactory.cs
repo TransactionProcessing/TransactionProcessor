@@ -7,11 +7,13 @@ using Polly.Wrap;
 using Shared.Logger;
 using SimpleResults;
 using System;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Threading.Tasks;
 
 namespace TransactionProcessor.BusinessLogic.Common;
 
+[ExcludeFromCodeCoverage]
 public static class PolicyFactory{
     public static IAsyncPolicy<Result> CreatePolicy(Int32 retryCount=5, TimeSpan? retryDelay = null, String policyTag="", Boolean withFallBack=false) {
 

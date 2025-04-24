@@ -1,4 +1,5 @@
-﻿using SimpleResults;
+﻿using Shared.Logger;
+using SimpleResults;
 using TransactionProcessor.DomainEvents;
 using TransactionProcessor.ProjectionEngine.Models;
 
@@ -202,6 +203,7 @@ public class MerchantBalanceStateDispatcherTests
     public MerchantBalanceStateDispatcherTests() {
         this.Repository = new Mock<ITransactionProcessorReadRepository>();
         this.Dispatcher = new MerchantBalanceStateDispatcher(this.Repository.Object);
+        Logger.Initialise(new NullLogger());
     }
 
     [Theory]
