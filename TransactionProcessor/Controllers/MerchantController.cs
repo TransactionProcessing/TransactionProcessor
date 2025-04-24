@@ -614,6 +614,9 @@ public class MerchantController : ControllerBase
 
         Result<List<Models.Contract.Contract>> result = await Mediator.Send(query, cancellationToken);
 
+        if (result.IsFailed)
+            return result.ToActionResultX();
+
         return ModelFactory.ConvertFrom(result.Data).ToActionResultX();
     }
 
