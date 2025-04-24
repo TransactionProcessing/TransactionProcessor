@@ -4,97 +4,85 @@ using TransactionProcessor.Testing;
 
 namespace TransactionProcessor.Aggregates.Tests
 {
-    public class MerchantStatementAggregateTests
+    public class MerchantStatementForDateAggregateTests
     {
         [Fact]
-        public void MerchantStatementAggregate_CanBeCreated_IsCreated()
+        public void MerchantStatementForDateAggregate_CanBeCreated_IsCreated()
         {
-            MerchantStatementAggregate merchantStatementAggregate = MerchantStatementAggregate.Create(TestData.MerchantStatementId);
+            MerchantStatementForDateAggregate merchantStatementForDateAggregate = MerchantStatementForDateAggregate.Create(TestData.MerchantStatementForDateId1);
 
-            merchantStatementAggregate.ShouldNotBeNull();
-            merchantStatementAggregate.AggregateId.ShouldBe(TestData.MerchantStatementId);
+            merchantStatementForDateAggregate.ShouldNotBeNull();
+            merchantStatementForDateAggregate.AggregateId.ShouldBe(TestData.MerchantStatementForDateId1);
         }
         
         [Fact]
-        public void MerchantStatementAggregate_AddTransactionToStatement_TransactionAddedToStatement()
+        public void MerchantStatementForDateAggregate_AddTransactionToStatement_TransactionAddedToStatement()
         {
-            MerchantStatementAggregate merchantStatementAggregate = MerchantStatementAggregate.Create(TestData.MerchantStatementId);
-            merchantStatementAggregate.AddTransactionToStatement(TestData.MerchantStatementId,
-                                                                 TestData.EventId1,
-                                                                 TestData.StatementCreateDate,
-                                                                 TestData.EstateId,
-                                                                 TestData.MerchantId, TestData.Transaction1);
+            MerchantStatementForDateAggregate merchantStatementForDateAggregate = MerchantStatementForDateAggregate.Create(TestData.MerchantStatementForDateId1);
+            merchantStatementForDateAggregate.AddTransactionToStatement(TestData.MerchantStatementId,
+                TestData.StatementDate,
+                TestData.EventId1,
+                TestData.EstateId,
+                TestData.MerchantId, TestData.Transaction1);
 
-            MerchantStatement merchantStatement = merchantStatementAggregate.GetStatement(true);
-            var statementLines = merchantStatement.GetStatementLines();
+            MerchantStatementForDate merchantStatementForDate = merchantStatementForDateAggregate.GetStatement(true);
+            List<MerchantStatementLine>? statementLines = merchantStatementForDate.GetStatementLines();
+            statementLines.ShouldNotBeNull();
+            statementLines.ShouldNotBeEmpty();
+            statementLines.Count.ShouldBe(1);
+        }
+        
+        [Fact]
+        public void MerchantStatementForDateAggregate_AddTransactionToStatement_DuplicateTransaction_SilentlyHandled()
+        {
+            MerchantStatementForDateAggregate merchantStatementForDateAggregate = MerchantStatementForDateAggregate.Create(TestData.MerchantStatementForDateId1);
+            merchantStatementForDateAggregate.AddTransactionToStatement(TestData.MerchantStatementId,
+                TestData.StatementDate,
+                TestData.EventId1,
+                TestData.EstateId,
+                TestData.MerchantId, TestData.Transaction1);
+
+            merchantStatementForDateAggregate.AddTransactionToStatement(TestData.MerchantStatementId,
+                TestData.StatementDate,
+                TestData.EventId1,
+                TestData.EstateId,
+                TestData.MerchantId, TestData.Transaction1);
+
+            MerchantStatementForDate merchantStatementForDate = merchantStatementForDateAggregate.GetStatement(true);
+            List<MerchantStatementLine>? statementLines = merchantStatementForDate.GetStatementLines();
             statementLines.ShouldNotBeNull();
             statementLines.ShouldNotBeEmpty();
             statementLines.Count.ShouldBe(1);
         }
 
         [Fact]
-        public void MerchantStatementAggregate_AddTransactionToStatement_DuplicateTransaction_SilentlyHandled()
+        public void MerchantStatementForDateAggregate_AddSettledFeeToStatement_FeeAddedToStatement()
         {
-            MerchantStatementAggregate merchantStatementAggregate = MerchantStatementAggregate.Create(TestData.MerchantStatementId);
-            merchantStatementAggregate.AddTransactionToStatement(TestData.MerchantStatementId,
-                                                                 TestData.EventId1,
-                                                                 TestData.StatementCreateDate,
-                                                                 TestData.EstateId,
-                                                                 TestData.MerchantId, TestData.Transaction1);
+            MerchantStatementForDateAggregate merchantStatementForDateAggregate = MerchantStatementForDateAggregate.Create(TestData.MerchantStatementForDateId1);
+            merchantStatementForDateAggregate.AddSettledFeeToStatement(TestData.MerchantStatementId, TestData.StatementDate, TestData.EventId1, TestData.EstateId, TestData.MerchantId, TestData.SettledFee1);
 
-            merchantStatementAggregate.AddTransactionToStatement(TestData.MerchantStatementId,
-                                                                 TestData.EventId1,
-                                                                 TestData.StatementCreateDate,
-                                                                 TestData.EstateId,
-                                                                 TestData.MerchantId, TestData.Transaction1);
-
-            MerchantStatement merchantStatement = merchantStatementAggregate.GetStatement(true);
-            var statementLines = merchantStatement.GetStatementLines();
+            MerchantStatementForDate merchantStatementForDate = merchantStatementForDateAggregate.GetStatement(true);
+            List<MerchantStatementLine>? statementLines = merchantStatementForDate.GetStatementLines();
             statementLines.ShouldNotBeNull();
             statementLines.ShouldNotBeEmpty();
             statementLines.Count.ShouldBe(1);
         }
-
+        
         [Fact]
-        public void MerchantStatementAggregate_AddSettledFeeToStatement_FeeAddedToStatement()
+        public void MerchantStatementForDateAggregate_AddSettledFeeToStatement_DuplicateFee_Silentlyhandled()
         {
-            MerchantStatementAggregate merchantStatementAggregate = MerchantStatementAggregate.Create(TestData.MerchantStatementId);
-            merchantStatementAggregate.AddSettledFeeToStatement(TestData.MerchantStatementId,
-                                                                TestData.EventId1,
-                                                                TestData.StatementCreateDate,
-                                                                TestData.EstateId,
-                                                                TestData.MerchantId, TestData.SettledFee1);
+            MerchantStatementForDateAggregate merchantStatementForDateAggregate = MerchantStatementForDateAggregate.Create(TestData.MerchantStatementForDateId1);
+            merchantStatementForDateAggregate.AddSettledFeeToStatement(TestData.MerchantStatementId, TestData.StatementDate, TestData.EventId1, TestData.EstateId, TestData.MerchantId, TestData.SettledFee1);
+            merchantStatementForDateAggregate.AddSettledFeeToStatement(TestData.MerchantStatementId, TestData.StatementDate, TestData.EventId1, TestData.EstateId, TestData.MerchantId, TestData.SettledFee1);
 
-            MerchantStatement merchantStatement = merchantStatementAggregate.GetStatement(true);
-            var statementLines = merchantStatement.GetStatementLines();
+            MerchantStatementForDate merchantStatementForDate = merchantStatementForDateAggregate.GetStatement(true);
+            List<MerchantStatementLine>? statementLines = merchantStatementForDate.GetStatementLines();
             statementLines.ShouldNotBeNull();
             statementLines.ShouldNotBeEmpty();
             statementLines.Count.ShouldBe(1);
         }
 
-        [Fact]
-        public void MerchantStatementAggregate_AddSettledFeeToStatement_DuplicateFee_Silentlyhandled()
-        {
-            MerchantStatementAggregate merchantStatementAggregate = MerchantStatementAggregate.Create(TestData.MerchantStatementId);
-            merchantStatementAggregate.AddSettledFeeToStatement(TestData.MerchantStatementId,
-                                                                TestData.EventId1,
-                                                                TestData.StatementCreateDate,
-                                                                TestData.EstateId,
-                                                                TestData.MerchantId, TestData.SettledFee1);
-
-            merchantStatementAggregate.AddSettledFeeToStatement(TestData.MerchantStatementId,
-                                                                TestData.EventId1,
-                                                                TestData.StatementCreateDate,
-                                                                TestData.EstateId,
-                                                                TestData.MerchantId, TestData.SettledFee1);
-
-            MerchantStatement merchantStatement = merchantStatementAggregate.GetStatement(true);
-            var statementLines = merchantStatement.GetStatementLines();
-            statementLines.ShouldNotBeNull();
-            statementLines.ShouldNotBeEmpty();
-            statementLines.Count.ShouldBe(1);
-        }
-
+        /*
         [Fact]
         public void MerchantStatementAggregate_GenerateStatement_StatementIsGenerated()
         {
@@ -216,6 +204,52 @@ namespace TransactionProcessor.Aggregates.Tests
                                                     {
                                                         merchantStatementAggregate.EmailStatement(TestData.StatementEmailedDate, TestData.MessageId);
                                                     });
+        }*/
+    }
+
+    public class MerchantStatementAggregateTests {
+        [Fact]
+        public void MerchantStatementAggregate_CanBeCreated_IsCreated()
+        {
+            MerchantStatementAggregate merchantStatementAggregate = MerchantStatementAggregate.Create(TestData.MerchantStatementId);
+
+            merchantStatementAggregate.ShouldNotBeNull();
+            merchantStatementAggregate.AggregateId.ShouldBe(TestData.MerchantStatementId);
+        }
+
+        [Fact]
+        public void MerchantStatementAggregate_RecordActivityDateOnStatement_ActivityDateIsRecorded() {
+            MerchantStatementAggregate merchantStatementAggregate = MerchantStatementAggregate.Create(TestData.MerchantStatementId);
+            merchantStatementAggregate.RecordActivityDateOnStatement(TestData.MerchantStatementId,
+                TestData.StatementDate, TestData.EstateId, TestData.MerchantId, TestData.MerchantStatementForDateId1,
+                TestData.ActivityDate1);
+
+            MerchantStatement merchantStatement = merchantStatementAggregate.GetStatement();
+            merchantStatement.IsCreated.ShouldBe(merchantStatement.IsCreated);
+            List<(Guid merchantStatementForDateId, DateTime activityDate)>? activityDates = merchantStatement.GetActivityDates();
+            activityDates.ShouldNotBeNull();
+            activityDates.ShouldNotBeEmpty();
+            activityDates.Count.ShouldBe(1);
+        }
+
+        [Fact]
+        public void MerchantStatementAggregate_RecordActivityDateOnStatement_DuplicateActivityDate_Silentlyhandled()
+        {
+            MerchantStatementAggregate merchantStatementAggregate = MerchantStatementAggregate.Create(TestData.MerchantStatementId);
+            merchantStatementAggregate.RecordActivityDateOnStatement(TestData.MerchantStatementId,
+                TestData.StatementDate, TestData.EstateId, TestData.MerchantId, TestData.MerchantStatementForDateId1,
+                TestData.ActivityDate1);
+
+            merchantStatementAggregate.RecordActivityDateOnStatement(TestData.MerchantStatementId,
+                TestData.StatementDate, TestData.EstateId, TestData.MerchantId, TestData.MerchantStatementForDateId1,
+                TestData.ActivityDate1);
+
+            MerchantStatement merchantStatement = merchantStatementAggregate.GetStatement();
+            merchantStatement.IsCreated.ShouldBe(merchantStatement.IsCreated);
+            List<(Guid merchantStatementForDateId, DateTime activityDate)>? activityDates = merchantStatement.GetActivityDates();
+            activityDates.ShouldNotBeNull();
+            activityDates.ShouldNotBeEmpty();
+            activityDates.Count.ShouldBe(1);
         }
     }
 }

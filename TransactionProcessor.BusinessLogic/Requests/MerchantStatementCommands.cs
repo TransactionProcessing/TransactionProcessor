@@ -24,4 +24,11 @@ public record MerchantStatementCommands {
                                                           Decimal SettledAmount,
                                                           Guid TransactionId,
                                                           Guid SettledFeeId) : IRequest<Result>;
+
+    public record RecordActivityDateOnMerchantStatementCommand(Guid EstateId,
+                                                 Guid MerchantId,
+                                                 Guid MerchantStatementId,
+                                                 DateTime StatementDate,
+                                                 Guid MerchantStatementForDateId,
+                                                 DateTime StatementActivityDate) : IRequest<Result>;
 }

@@ -1,4 +1,5 @@
 ﻿using SimpleResults;
+using TransactionProcessor.BusinessLogic.Manager;
 
 namespace TransactionProcessor.BusinessLogic.Tests.Mediator;
 
@@ -27,6 +28,29 @@ public class DummyVoucherDomainService : IVoucherDomainService
                                                                    DateTime redeemedDateTime,
                                                                    CancellationToken cancellationToken) {
         return Result.Success(new RedeemVoucherResponse());
+    }
+}
+
+public class DummyVoucherManagementManager : IVoucherManagementManager {
+    public async Task<Result<Voucher>> GetVoucherByCode(Guid estateId,
+                                                        String voucherCode,
+                                                        CancellationToken cancellationToken) {
+        return Result.Success(new Voucher
+        {
+            ExpiryDate = DateTime.UtcNow.AddDays(30),
+            VoucherCode = voucherCode,
+        });
+    }
+
+    public async Task<Result<Voucher>> GetVoucherByTransactionId(Guid estateId,
+                                                                 Guid transactionId,
+                                                                 CancellationToken cancellationToken) {
+        return Result.Success(new Voucher
+        {
+            ExpiryDate = DateTime.UtcNow.AddDays(30),
+            VoucherCode = "TEST-VOUCHER-CODE",
+            TransactionId = transactionId,
+        });
     }
 }
 

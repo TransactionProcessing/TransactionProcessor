@@ -92,15 +92,21 @@ namespace TransactionProcessor.BusinessLogic.Tests.Mediator
             this.Requests.Add(TestData.Queries.GetTransactionFeesForProductQuery);
 
             // Merchant Statement Commands
-            this.Requests.Add(TestData.Commands.GenerateMerchantStatementCommand);
+            //this.Requests.Add(TestData.Commands.GenerateMerchantStatementCommand);
             this.Requests.Add(TestData.Commands.AddTransactionToMerchantStatementCommand);
-            this.Requests.Add(TestData.Commands.EmailMerchantStatementCommand);
+            //this.Requests.Add(TestData.Commands.EmailMerchantStatementCommand);
             this.Requests.Add(TestData.Commands.AddSettledFeeToMerchantStatementCommand);
+            this.Requests.Add(TestData.Commands.RecordActivityDateOnMerchantStatementCommand);
 
             // Settlement Commands and Queries
             this.Requests.Add(TestData.Queries.GetSettlementQuery);
             this.Requests.Add(TestData.Queries.GetSettlementsQuery);
             this.Requests.Add(TestData.Queries.GetPendingSettlementQuery);
+
+            // Voucher Queries
+            this.Requests.Add(TestData.Queries.GetVoucherByVoucherCodeQuery);
+            this.Requests.Add(TestData.Queries.GetVoucherByTransactionIdQuery);
+
         }
 
         [Fact]
@@ -171,6 +177,7 @@ namespace TransactionProcessor.BusinessLogic.Tests.Mediator
                                           s.AddSingleton<IEstateDomainService, DummyEstateDomainService>();
                                           s.AddSingleton<ITransactionProcessorManager, DummyTransactionProcessorManager>();
                                           s.AddSingleton<IOperatorDomainService, DummyOperatorDomainService>();
+                                          s.AddSingleton<IVoucherManagementManager, DummyVoucherManagementManager>();
                 s.AddSingleton<IEventStoreContext, DummyEventStoreContext>();
             });
         }

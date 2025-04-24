@@ -54,8 +54,10 @@ namespace TransactionProcessor.BusinessLogic.EventHandling
 
             Task<Result> t = domainEvent switch
             {
+                SettlementDomainEvents.MerchantFeeSettledEvent de => this.HandleSpecificDomainEvent(de, cancellationToken),
                 MerchantStatementDomainEvents.StatementGeneratedEvent de => this.HandleSpecificDomainEvent(de, cancellationToken),
                 TransactionDomainEvents.TransactionHasBeenCompletedEvent de => this.HandleSpecificDomainEvent(de, cancellationToken),
+                MerchantStatementForDateDomainEvents.StatementCreatedForDateEvent de => this.HandleSpecificDomainEvent(de, cancellationToken),
                 _ => null
             };
 
@@ -65,6 +67,13 @@ namespace TransactionProcessor.BusinessLogic.EventHandling
             sw.Stop();
             histogramMetric.Observe(sw.Elapsed.TotalSeconds);
             return result;
+        }
+
+        private async Task<Result> HandleSpecificDomainEvent(MerchantStatementForDateDomainEvents.StatementCreatedForDateEvent domainEvent,
+                                                       CancellationToken cancellationToken) {
+            MerchantStatementCommands.RecordActivityDateOnMerchantStatementCommand command = new(domainEvent.EstateId, domainEvent.MerchantId, domainEvent.MerchantStatementId, domainEvent.MerchantStatementDate,
+                domainEvent.MerchantStatementForDateId, domainEvent.ActivityDate);
+            return await this.Mediator.Send(command, cancellationToken);
         }
 
         /// <summary>
@@ -82,6 +91,14 @@ namespace TransactionProcessor.BusinessLogic.EventHandling
         private async Task<Result> HandleSpecificDomainEvent(TransactionDomainEvents.TransactionHasBeenCompletedEvent domainEvent,
                                                              CancellationToken cancellationToken) {
             MerchantStatementCommands.AddTransactionToMerchantStatementCommand command = new(domainEvent.EstateId, domainEvent.MerchantId, domainEvent.CompletedDateTime, domainEvent.TransactionAmount, domainEvent.IsAuthorised, domainEvent.TransactionId);
+
+            return await this.Mediator.Send(command, cancellationToken);
+        }
+
+        private async Task<Result> HandleSpecificDomainEvent(SettlementDomainEvents.MerchantFeeSettledEvent domainEvent,
+                                                             CancellationToken cancellationToken)
+        {
+            MerchantStatementCommands.AddSettledFeeToMerchantStatementCommand command = new(domainEvent.EstateId, domainEvent.MerchantId, domainEvent.FeeCalculatedDateTime, domainEvent.CalculatedValue, domainEvent.TransactionId, domainEvent.FeeId);
 
             return await this.Mediator.Send(command, cancellationToken);
         }
