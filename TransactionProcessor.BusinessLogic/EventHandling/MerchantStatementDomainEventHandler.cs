@@ -8,6 +8,7 @@ using System.Diagnostics;
 using System.Threading;
 using System.Threading.Tasks;
 using Prometheus;
+using Shared.Logger;
 using TransactionProcessor.BusinessLogic.Common;
 using TransactionProcessor.BusinessLogic.Requests;
 using TransactionProcessor.BusinessLogic.Services;
@@ -92,7 +93,13 @@ namespace TransactionProcessor.BusinessLogic.EventHandling
                                                              CancellationToken cancellationToken) {
             MerchantStatementCommands.AddTransactionToMerchantStatementCommand command = new(domainEvent.EstateId, domainEvent.MerchantId, domainEvent.CompletedDateTime, domainEvent.TransactionAmount, domainEvent.IsAuthorised, domainEvent.TransactionId);
 
-            return await this.Mediator.Send(command, cancellationToken);
+            //return await this.Mediator.Send(command, cancellationToken);
+            var result = await this.Mediator.Send(command, cancellationToken);
+            if (result.Status == ResultStatus.CriticalError) {
+                Logger.LogWarning($"Domain Events is {domainEvent}");
+                return result;
+            }
+            return result;
         }
 
         private async Task<Result> HandleSpecificDomainEvent(SettlementDomainEvents.MerchantFeeSettledEvent domainEvent,
@@ -100,7 +107,14 @@ namespace TransactionProcessor.BusinessLogic.EventHandling
         {
             MerchantStatementCommands.AddSettledFeeToMerchantStatementCommand command = new(domainEvent.EstateId, domainEvent.MerchantId, domainEvent.FeeCalculatedDateTime, domainEvent.CalculatedValue, domainEvent.TransactionId, domainEvent.FeeId);
 
-            return await this.Mediator.Send(command, cancellationToken);
+            //return await this.Mediator.Send(command, cancellationToken);
+            var result = await this.Mediator.Send(command, cancellationToken);
+            if (result.Status == ResultStatus.CriticalError)
+            {
+                Logger.LogWarning($"Domain Events is {domainEvent}");
+                return result;
+            }
+            return result;
         }
 
         #endregion

@@ -18,6 +18,7 @@ using SimpleResults;
 using TransactionProcessor.Aggregates;
 using TransactionProcessor.BusinessLogic.Requests;
 using TransactionProcessor.BusinessLogic.Services;
+using TransactionProcessor.DomainEvents;
 using TransactionProcessor.Models.Contract;
 using TransactionProcessor.Models.Merchant;
 using TransactionProcessor.Testing;
@@ -1056,5 +1057,13 @@ public class MerchantDomainServiceTests {
 
         var result = await this.DomainService.RemoveContractFromMerchant(TestData.Commands.RemoveMerchantContractCommand, CancellationToken.None);
         result.IsFailed.ShouldBeTrue();
+    }
+
+    [Fact]
+    public void Test1() {
+        var domainEvent = JsonConvert.DeserializeObject<SettlementDomainEvents.MerchantFeeSettledEvent>("{\r\n  \"transactionId\": \"a4702780-03a3-4f9d-8ed0-5b5c88f276ba\",\r\n  \"estateId\": \"435613ac-a468-47a3-ac4f-649d89764c22\",\r\n  \"merchantId\": \"8bc8434d-41f9-4cc3-83bc-e73f20c02e1d\",\r\n  \"calculatedValue\": 0.5,\r\n  \"feeId\": \"957939ba-7bec-48b6-adb8-0277faf752ba\",\r\n  \"feeValue\": 0.5,\r\n  \"feeCalculatedDateTime\": \"2025-01-01T09:17:40\",\r\n  \"settledDateTime\": \"2025-01-01T00:00:00\",\r\n  \"settlementId\": \"0a4f96f9-0e58-9b43-2f0b-4bdca9367a3f\",\r\n  \"transactionDateTime\": \"2025-01-01T09:17:40\",\t\t\t\r\n  \"eventId\": \"435613ac-a468-47a3-ac4f-649d89764c22\"\r\n}");
+
+        var statementDate = MerchantStatementDomainService.CalculateStatementDate(domainEvent.FeeCalculatedDateTime);
+        statementDate.ShouldBe(new DateTime(2025,2,1));
     }
 }
