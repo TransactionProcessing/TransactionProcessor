@@ -36,19 +36,6 @@ jobs:
     - name: Run Integration Tests
       run: dotnet test "TransactionProcessor.IntegrationTests\TransactionProcessor.IntegrationTests.csproj"  --filter Category=PRTest --logger "trx;LogFileName=test-results.trx"
 
-    - name: Extract Failed Tests (PowerShell)
-      if: ${{ failure() }}
-      run: |
-        $xml = [xml](Get-Content test-results.trx)
-        $failedTests = $xml.TestRun.Results.UnitTestResult | Where-Object { $_.outcome -eq "Failed" }
-        if ($failedTests) {
-          Write-Host "::error::Failed Tests:"
-          foreach ($test in $failedTests) {
-            Write-Host "::error::- $($test.testName)"
-          }
-        }
-      shell: pwsh
-
     - uses: actions/upload-artifact@v4.4.0
       if: ${{ failure() }}
       with:

@@ -21,63 +21,6 @@ namespace TransactionProcessor.BusinessLogic.Tests.DomainEventHandlers
     using Testing;
     using Xunit;
     
-    public class TestLogger : ILogger
-    {
-        private readonly ITestOutputHelper TestOutputHelper;
-
-        public TestLogger(ITestOutputHelper testOutputHelper) {
-            this.TestOutputHelper = testOutputHelper;
-        }
-        public void LogCritical(string message)
-        {
-            this.TestOutputHelper.WriteLine(message);
-        }
-
-        public void LogCritical(Exception exception) {
-            this.TestOutputHelper.WriteLine(exception.Message);
-        }
-
-        public void LogCritical(String message,
-                                Exception exception) {
-            this.TestOutputHelper.WriteLine(message);
-            this.TestOutputHelper.WriteLine(exception.Message);
-        }
-
-        public void LogDebug(string message)
-        {
-            this.TestOutputHelper.WriteLine(message);
-        }
-
-        public void LogError(Exception exception) {
-            this.TestOutputHelper.WriteLine(exception.Message);
-        }
-
-        public void LogError(String message,
-                             Exception exception) {
-            this.TestOutputHelper.WriteLine(message);
-            this.TestOutputHelper.WriteLine(exception.Message);
-        }
-
-        public void LogError(string message)
-        {
-            this.TestOutputHelper.WriteLine(message);
-        }
-        public void LogInformation(string message)
-        {
-            this.TestOutputHelper.WriteLine(message);
-        }
-        public void LogTrace(string message)
-        {
-            this.TestOutputHelper.WriteLine(message);
-        }
-        public void LogWarning(string message)
-        {
-            this.TestOutputHelper.WriteLine(message);
-        }
-
-        public Boolean IsInitialised { get; set; }
-    }
-
     [Collection("Sequential")]
     public abstract class DomainEventHandlerTests
     {
@@ -87,7 +30,6 @@ namespace TransactionProcessor.BusinessLogic.Tests.DomainEventHandlers
             this.Mediator = new Mock<IMediator>();
             IConfigurationRoot configurationRoot = new ConfigurationBuilder().AddInMemoryCollection(TestData.DefaultAppSettings).Build();
             ConfigurationReader.Initialise(configurationRoot);
-            Logger.Initialise(new TestLogger(testOutputHelper));
             this.Mediator.Setup(s => s.Send(It.IsAny<IRequest<Result>>(), It.IsAny<CancellationToken>())).ReturnsAsync(Result.Success());
         }
     }
