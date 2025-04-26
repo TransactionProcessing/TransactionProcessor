@@ -20,16 +20,7 @@
         /// </value>
         [JsonProperty("device_identifier")]
         public String DeviceIdentifier { get; set; }
-
-        /// <summary>
-        /// Gets or sets the transaction date time.
-        /// </summary>
-        /// <value>
-        /// The transaction date time.
-        /// </value>
-        [JsonProperty("transaction_date_time")]
-        public DateTime TransactionDateTime { get; set; }
-
+        
         /// <summary>
         /// Gets or sets the transaction number.
         /// </summary>

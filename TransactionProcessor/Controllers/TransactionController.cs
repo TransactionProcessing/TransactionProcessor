@@ -4,15 +4,11 @@ using SimpleResults;
 
 namespace TransactionProcessor.Controllers
 {
-    using System;
-    using System.Collections.Generic;
-    using System.Diagnostics.CodeAnalysis;
-    using System.Threading;
-    using System.Threading.Tasks;
     using BusinessLogic.Requests;
     using Common.Examples;
     using DataTransferObjects;
     using Factories;
+    using Humanizer;
     using MediatR;
     using Microsoft.AspNetCore.Authorization;
     using Microsoft.AspNetCore.Mvc;
@@ -21,6 +17,11 @@ namespace TransactionProcessor.Controllers
     using Shared.General;
     using Swashbuckle.AspNetCore.Annotations;
     using Swashbuckle.AspNetCore.Filters;
+    using System;
+    using System.Collections.Generic;
+    using System.Diagnostics.CodeAnalysis;
+    using System.Threading;
+    using System.Threading.Tasks;
 
     /// <summary>
     /// 
@@ -81,8 +82,13 @@ namespace TransactionProcessor.Controllers
                                                                                        {
                                                                                            TypeNameHandling = TypeNameHandling.Auto
                                                                                        });
+
             dto.MerchantId = merchantId;
             dto.EstateId = estateId;
+            if (dto.TransactionDateTime.Kind == DateTimeKind.Utc)
+            {
+                dto.TransactionDateTime = new DateTime(dto.TransactionDateTime.Ticks, DateTimeKind.Unspecified);
+            }
 
             Result<SerialisedMessage> transactionResult = dto switch {
                 LogonTransactionRequest ltr => await this.ProcessSpecificMessage(ltr, cancellationToken),
@@ -124,7 +130,7 @@ namespace TransactionProcessor.Controllers
                                                                              CancellationToken cancellationToken)
         {
             Guid transactionId = Guid.NewGuid();
-
+            
             TransactionCommands.ProcessLogonTransactionCommand command = new(transactionId,
                                                                                                        logonTransactionRequest.EstateId,
                                                                                                        logonTransactionRequest.MerchantId,
