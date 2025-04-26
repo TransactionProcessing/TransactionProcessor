@@ -45,6 +45,18 @@ namespace TransactionProcessor.Aggregates.Tests
             
             aggregate.AggregateId.ShouldBe(TestData.SettlementAggregateId);
             aggregate.GetNumberOfFeesPendingSettlement().ShouldBe(1);
+            var fee = aggregate.GetFeesToBeSettled().SingleOrDefault();
+            fee.ShouldNotBe(default);
+            fee.merchantId.ShouldBe(TestData.MerchantId);
+            fee.transactionId.ShouldBe(TestData.TransactionId);
+            fee.calculatedFee.CalculatedValue.ShouldBe(TestData.CalculatedFeeMerchantFee().CalculatedValue);
+            fee.calculatedFee.FeeCalculationType.ShouldBe(TestData.CalculatedFeeMerchantFee().FeeCalculationType);
+            fee.calculatedFee.FeeId.ShouldBe(TestData.CalculatedFeeMerchantFee().FeeId);
+            fee.calculatedFee.FeeValue.ShouldBe(TestData.CalculatedFeeMerchantFee().FeeValue);
+            fee.calculatedFee.FeeType.ShouldBe(TestData.CalculatedFeeMerchantFee().FeeType);
+            fee.calculatedFee.FeeCalculatedDateTime.ShouldBe(TestData.CalculatedFeeMerchantFee().FeeCalculatedDateTime);
+            fee.calculatedFee.IsSettled.ShouldBe(TestData.CalculatedFeeMerchantFee().IsSettled);
+            fee.calculatedFee.SettlementDueDate.ShouldBe(TestData.CalculatedFeeMerchantFee().SettlementDueDate);
         }
         
         [Fact]

@@ -1570,7 +1570,10 @@ namespace TransactionProcessor.Testing
                 FeeCalculationType = CalculationType.Fixed,
                 FeeId = TestData.TransactionFeeId,
                 FeeValue = TestData.TransactionFeeValue,
-                FeeType = TransactionProcessor.Models.Contract.FeeType.Merchant
+                FeeType = TransactionProcessor.Models.Contract.FeeType.Merchant,
+                FeeCalculatedDateTime = TransactionFeeCalculateDateTime,
+                IsSettled = false,
+                SettlementDueDate = DateTime.MinValue
             };
 
         public static CalculatedFee CalculatedFeeMerchantFee(Guid transactionFeeId) =>

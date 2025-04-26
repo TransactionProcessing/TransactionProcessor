@@ -230,7 +230,8 @@ namespace TransactionProcessor.Aggregates
                                                                   FeeId = domainEvent.FeeId,
                                                                   FeeType = FeeType.Merchant,
                                                                   FeeValue = domainEvent.FeeValue,
-                                                                  FeeCalculationType = (CalculationType)domainEvent.FeeCalculationType
+                                                                  FeeCalculationType = (CalculationType)domainEvent.FeeCalculationType,
+                                                                  FeeCalculatedDateTime = domainEvent.FeeCalculatedDateTime
                                                               }));
         }
 
