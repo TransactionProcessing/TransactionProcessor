@@ -27,10 +27,7 @@
 
         [JsonProperty("product_id")]
         public Guid ProductId { get; set; }
-
-        [JsonProperty("transaction_date_time")]
-        public DateTime TransactionDateTime { get; set; }
-
+        
         [JsonProperty("transaction_number")]
         public String TransactionNumber { get; set; }
 
