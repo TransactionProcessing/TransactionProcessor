@@ -1851,7 +1851,7 @@ namespace TransactionProcessor.Repository {
 
             await context.FileLines.AddAsync(fileLine, cancellationToken);
 
-            return await context.SaveChangesAsync(cancellationToken);
+            return await context.SaveChangesWithDuplicateHandling(cancellationToken);
         }
 
         public async Task<Result> AddFileToImportLog(FileAddedToImportLogEvent domainEvent,
