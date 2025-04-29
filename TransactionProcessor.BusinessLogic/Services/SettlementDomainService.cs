@@ -7,17 +7,18 @@ using TransactionProcessor.Models.Merchant;
 
 namespace TransactionProcessor.BusinessLogic.Services
 {
+    using Common;
+    using Models;
+    using Polly;
+    using Shared.DomainDrivenDesign.EventSourcing;
+    using Shared.EventStore.Aggregate;
+    using Shared.Exceptions;
+    using Shared.Logger;
     using System;
     using System.Collections.Generic;
     using System.Linq;
     using System.Threading;
     using System.Threading.Tasks;
-    using Common;
-    using Models;
-    using Shared.DomainDrivenDesign.EventSourcing;
-    using Shared.EventStore.Aggregate;
-    using Shared.Exceptions;
-    using Shared.Logger;
 
     public interface ISettlementDomainService
     {
@@ -98,56 +99,53 @@ namespace TransactionProcessor.BusinessLogic.Services
         // TODO: Add in a Get Settlement 
 
         public async Task<Result<Guid>> ProcessSettlement(SettlementCommands.ProcessSettlementCommand command,
-                                                              CancellationToken cancellationToken)
-        {
-            Guid settlementAggregateId = Helpers.CalculateSettlementAggregateId(command.SettlementDate, command.MerchantId,command.EstateId);
-            List<(Guid transactionId, Guid merchantId, CalculatedFee calculatedFee)> feesToBeSettled = new();
+                                                          CancellationToken cancellationToken) {
+            IAsyncPolicy<Result<Guid>> retryPolicy = PolicyFactory.CreatePolicy<Guid>(policyTag: "SettlementDomainService - ProcessSettlement");
 
-            Result settlementResult = await ApplySettlementUpdates(async (SettlementAggregate settlementAggregate) => {
-                if (settlementAggregate.IsCreated == false)
-                {
-                    Logger.LogInformation($"No pending settlement for {command.SettlementDate:yyyy-MM-dd}");
-                    // Not pending settlement for this date
+            return await PolicyFactory.ExecuteWithPolicyAsync<Guid>(async () => {
+                Guid settlementAggregateId = Helpers.CalculateSettlementAggregateId(command.SettlementDate, command.MerchantId, command.EstateId);
+                List<(Guid transactionId, Guid merchantId, CalculatedFee calculatedFee)> feesToBeSettled = new();
+
+                Result settlementResult = await ApplySettlementUpdates(async (SettlementAggregate settlementAggregate) => {
+                    if (settlementAggregate.IsCreated == false) {
+                        Logger.LogInformation($"No pending settlement for {command.SettlementDate:yyyy-MM-dd}");
+                        // Not pending settlement for this date
+                        return Result.Success();
+                    }
+
+                    Result<MerchantAggregate> getMerchantResult = await this.AggregateService.Get<MerchantAggregate>(command.MerchantId, cancellationToken);
+                    if (getMerchantResult.IsFailed)
+                        return ResultHelpers.CreateFailure(getMerchantResult);
+
+                    MerchantAggregate merchant = getMerchantResult.Data;
+                    if (merchant.SettlementSchedule == SettlementSchedule.Immediate) {
+                        // Mark the settlement as completed
+                        settlementAggregate.StartProcessing(DateTime.Now);
+                        settlementAggregate.ManuallyComplete();
+                        Result result = await this.AggregateService.Save(settlementAggregate, cancellationToken);
+                        return result;
+                    }
+
+                    feesToBeSettled = settlementAggregate.GetFeesToBeSettled();
+
+                    if (feesToBeSettled.Any()) {
+                        // Record the process call
+                        settlementAggregate.StartProcessing(DateTime.Now);
+                        return await this.AggregateService.Save(settlementAggregate, cancellationToken);
+                    }
+
                     return Result.Success();
-                }
 
-                Result<MerchantAggregate> getMerchantResult = await this.AggregateService.Get<MerchantAggregate>(command.MerchantId, cancellationToken);
-                if (getMerchantResult.IsFailed)
-                    return ResultHelpers.CreateFailure(getMerchantResult);
+                }, settlementAggregateId, cancellationToken);
 
-                MerchantAggregate merchant = getMerchantResult.Data;
-                if (merchant.SettlementSchedule == SettlementSchedule.Immediate)
-                {
-                    // Mark the settlement as completed
-                    settlementAggregate.StartProcessing(DateTime.Now);
-                    settlementAggregate.ManuallyComplete();
-                    Result result = await this.AggregateService.Save(settlementAggregate, cancellationToken);
-                    return result;
-                }
+                if (settlementResult.IsFailed)
+                    return settlementResult;
 
-                feesToBeSettled = settlementAggregate.GetFeesToBeSettled();
-                
-                if (feesToBeSettled.Any())
-                {
-                    // Record the process call
-                    settlementAggregate.StartProcessing(DateTime.Now);
-                    return await this.AggregateService.Save(settlementAggregate, cancellationToken);
-                }
-
-                return Result.Success();
-
-            }, settlementAggregateId, cancellationToken);
-
-            if (settlementResult.IsFailed)
-                return settlementResult;
-
-            List<Result> failedResults = new();
-            foreach ((Guid transactionId, Guid merchantId, CalculatedFee calculatedFee) feeToSettle in feesToBeSettled) {
-                Result transactionResult = await ApplyTransactionUpdates(
-                    async (TransactionAggregate transactionAggregate) => {
+                List<Result> failedResults = new();
+                foreach ((Guid transactionId, Guid merchantId, CalculatedFee calculatedFee) feeToSettle in feesToBeSettled) {
+                    Result transactionResult = await ApplyTransactionUpdates(async (TransactionAggregate transactionAggregate) => {
                         try {
-                            transactionAggregate.AddSettledFee(feeToSettle.calculatedFee, command.SettlementDate,
-                                settlementAggregateId);
+                            transactionAggregate.AddSettledFee(feeToSettle.calculatedFee, command.SettlementDate, settlementAggregateId);
                             return Result.Success();
                         }
                         catch (Exception ex) {
@@ -156,15 +154,17 @@ namespace TransactionProcessor.BusinessLogic.Services
                         }
                     }, feeToSettle.transactionId, cancellationToken);
 
-                if (transactionResult.IsFailed) {
-                    failedResults.Add(transactionResult);
+                    if (transactionResult.IsFailed) {
+                        failedResults.Add(transactionResult);
+                    }
                 }
-            }
 
-            if (failedResults.Any()) {
-                return Result.Failure($"Not all fees were processed successfully {failedResults.Count} have failed");
-            }
-            return Result.Success(settlementAggregateId);
+                if (failedResults.Any()) {
+                    return Result.Failure($"Not all fees were processed successfully {failedResults.Count} have failed");
+                }
+
+                return Result.Success(settlementAggregateId);
+            }, retryPolicy, "SettlementDomainService - ProcessSettlement");
         }
 
         public async Task<Result> AddMerchantFeePendingSettlement(SettlementCommands.AddMerchantFeePendingSettlementCommand command,
