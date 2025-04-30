@@ -100,9 +100,6 @@ namespace TransactionProcessor.BusinessLogic.Services
 
         public async Task<Result<Guid>> ProcessSettlement(SettlementCommands.ProcessSettlementCommand command,
                                                           CancellationToken cancellationToken) {
-            IAsyncPolicy<Result<Guid>> retryPolicy = PolicyFactory.CreatePolicy<Guid>(policyTag: "SettlementDomainService - ProcessSettlement");
-
-            return await PolicyFactory.ExecuteWithPolicyAsync<Guid>(async () => {
                 Guid settlementAggregateId = Helpers.CalculateSettlementAggregateId(command.SettlementDate, command.MerchantId, command.EstateId);
                 List<(Guid transactionId, Guid merchantId, CalculatedFee calculatedFee)> feesToBeSettled = new();
 
@@ -164,7 +161,6 @@ namespace TransactionProcessor.BusinessLogic.Services
                 }
 
                 return Result.Success(settlementAggregateId);
-            }, retryPolicy, "SettlementDomainService - ProcessSettlement");
         }
 
         public async Task<Result> AddMerchantFeePendingSettlement(SettlementCommands.AddMerchantFeePendingSettlementCommand command,
