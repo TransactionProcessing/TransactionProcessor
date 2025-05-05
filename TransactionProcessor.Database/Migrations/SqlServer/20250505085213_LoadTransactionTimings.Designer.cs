@@ -3,17 +3,20 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using TransactionProcessor.Database.Contexts;
 
 #nullable disable
 
-namespace EstateManagement.Database.Migrations.SqlServer
+namespace TransactionProcessor.Database.Migrations.SqlServer
 {
     [DbContext(typeof(EstateManagementSqlServerContext))]
-    partial class EstateManagementSqlServerContextModelSnapshot : ModelSnapshot
+    [Migration("20250505085213_LoadTransactionTimings")]
+    partial class LoadTransactionTimings
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder

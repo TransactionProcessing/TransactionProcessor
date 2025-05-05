@@ -16,7 +16,8 @@ public record TransactionCommands {
                                                  String DeviceIdentifier,
                                                  String TransactionType,
                                                  DateTime TransactionDateTime,
-                                                 String TransactionNumber)
+                                                 String TransactionNumber,
+                                                 DateTime TransactionReceivedDateTime)
         : IRequest<Result<ProcessLogonTransactionResponse>>;
 
     public record ProcessReconciliationCommand(Guid TransactionId,
@@ -40,7 +41,8 @@ public record TransactionCommands {
                                                 Dictionary<String, String> AdditionalTransactionMetadata,
                                                 Guid ContractId,
                                                 Guid ProductId,
-                                                Int32 TransactionSource)
+                                                Int32 TransactionSource,
+                                                DateTime TransactionReceivedDateTime)
         : IRequest<Result<ProcessSaleTransactionResponse>>;
 
     public record ResendTransactionReceiptCommand(Guid TransactionId, Guid EstateId) : IRequest<Result>;

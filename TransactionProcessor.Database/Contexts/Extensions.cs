@@ -254,6 +254,14 @@ public static class Extensions{
         return modelBuilder;
     }
 
+    public static ModelBuilder SetupTransactionTimings(this ModelBuilder modelBuilder) {
+        modelBuilder.Entity<TransactionTimings>().HasKey(t => new {
+            t.TransactionId
+        }).IsClustered(false);
+
+        return modelBuilder;
+    }
+
     public static ModelBuilder SetupTransaction(this ModelBuilder modelBuilder){
         modelBuilder.Entity<Transaction>().HasKey(t => new {
                                                                t.TransactionReportingId,
