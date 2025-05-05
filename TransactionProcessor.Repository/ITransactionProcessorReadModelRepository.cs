@@ -12,9 +12,12 @@ using TransactionProcessor.Database.Entities;
 using TransactionProcessor.Database.ViewEntities;
 using TransactionProcessor.DomainEvents;
 using TransactionProcessor.Models.Contract;
+using TransactionProcessor.Models.Estate;
 using TransactionProcessor.Models.Settlement;
 using static TransactionProcessor.DomainEvents.MerchantDomainEvents;
 using static TransactionProcessor.DomainEvents.MerchantStatementDomainEvents;
+using Estate = TransactionProcessor.Database.Entities.Estate;
+using Operator = TransactionProcessor.Database.Entities.Operator;
 using Contract = TransactionProcessor.Database.Entities.Contract;
 using ContractModel = TransactionProcessor.Models.Contract.Contract;
 using ContractProductTransactionFee = TransactionProcessor.Database.Entities.ContractProductTransactionFee;
@@ -292,6 +295,9 @@ namespace TransactionProcessor.Repository {
                                                            String startDate,
                                                            String endDate,
                                                            CancellationToken cancellationToken);
+
+        Task<Result> RecordTransactionTimings(TransactionDomainEvents.TransactionTimingsAddedToTransactionEvent de,
+                                              CancellationToken cancellationToken);
     }
 
     [ExcludeFromCodeCoverage]
@@ -2053,6 +2059,32 @@ namespace TransactionProcessor.Repository {
                                                       .ToListAsync(cancellationToken);
 
             return Result.Success(result);
+        }
+
+        public async Task<Result> RecordTransactionTimings(TransactionDomainEvents.TransactionTimingsAddedToTransactionEvent domainEvent,
+                                                           CancellationToken cancellationToken) {
+            // Calculate the timings for the transaction
+            TimeSpan totalTime = domainEvent.TransactionCompletedDateTime.Subtract(domainEvent.TransactionStartedDateTime);
+            // Calculte the timings for the operator communications
+            TimeSpan operatorCommunicationsTime = domainEvent.OperatorCommunicationsCompletedEvent?.Subtract(domainEvent.OperatorCommunicationsStartedEvent ?? DateTime.MinValue) ?? TimeSpan.Zero;
+            // Calculate the timings for the transaction without operator timings
+            TimeSpan transactionTime = totalTime.Subtract(operatorCommunicationsTime);
+
+            // Load this information to the database
+            EstateManagementGenericContext context = await this.DbContextFactory.GetContext(domainEvent.EstateId, ConnectionStringIdentifier, cancellationToken);
+
+            TransactionTimings timings = new() {
+                TransactionStartedDateTime = domainEvent.TransactionStartedDateTime,
+                TransactionCompletedDateTime = domainEvent.TransactionCompletedDateTime,
+                OperatorCommunicationsCompletedDateTime = domainEvent.OperatorCommunicationsCompletedEvent,
+                OperatorCommunicationsStartedDateTime = domainEvent.OperatorCommunicationsStartedEvent,
+                TransactionId = domainEvent.TransactionId,
+                OperatorCommunicationsDurationInMilliseconds = operatorCommunicationsTime.TotalMilliseconds,
+                TotalTransactionInMilliseconds = totalTime.TotalMilliseconds,
+                TransactionProcessingDurationInMilliseconds = transactionTime.TotalMilliseconds
+            };
+            await context.TransactionTimings.AddAsync(timings, cancellationToken);
+            return await context.SaveChangesWithDuplicateHandling(cancellationToken);
         }
     }
 }

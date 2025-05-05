@@ -21,4 +21,7 @@ public class TransactionDomainEvents {
     public record TransactionHasBeenLocallyDeclinedEvent(Guid TransactionId, Guid EstateId, Guid MerchantId, String ResponseCode, String ResponseMessage, DateTime TransactionDateTime) : DomainEvent(TransactionId, Guid.NewGuid());
     public record TransactionHasStartedEvent(Guid TransactionId, Guid EstateId, Guid MerchantId, DateTime TransactionDateTime, String TransactionNumber, String TransactionType, String TransactionReference, String DeviceIdentifier, Decimal? TransactionAmount) : DomainEvent(TransactionId, Guid.NewGuid());
     public record TransactionSourceAddedToTransactionEvent(Guid TransactionId, Guid EstateId, Guid MerchantId, Int32 TransactionSource, DateTime TransactionDateTime) : DomainEvent(TransactionId, Guid.NewGuid());
+
+    public record TransactionTimingsAddedToTransactionEvent(Guid TransactionId, Guid EstateId, Guid MerchantId, DateTime TransactionStartedDateTime, DateTime? OperatorCommunicationsStartedEvent,
+                                                            DateTime? OperatorCommunicationsCompletedEvent, DateTime TransactionCompletedDateTime) : DomainEvent(TransactionId, Guid.NewGuid());
 }
