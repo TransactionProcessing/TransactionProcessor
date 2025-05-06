@@ -424,7 +424,11 @@ namespace TransactionProcessor.IntegrationTests.Shared
             String clientId = ReqnrollTableHelper.GetStringRowValue(firstRow, "ClientId");
             ClientDetails clientDetails = this.TestingContext.GetClientDetails(clientId);
 
-            this.TestingContext.AccessToken = await this.SecurityServiceSteps.GetClientToken(clientDetails.ClientId, clientDetails.ClientSecret, CancellationToken.None);
+            //this.TestingContext.AccessToken = await this.SecurityServiceSteps.GetClientToken(clientDetails.ClientId, clientDetails.ClientSecret, CancellationToken.None);
+            var token = await this.TestingContext.DockerHelper.SecurityServiceClient.GetToken(clientDetails.ClientId, clientDetails.ClientSecret, CancellationToken.None);
+            token.IsSuccess.ShouldBeTrue();
+            this.TestingContext.AccessToken = token.Data.AccessToken;
+
         }
 
         [When(@"I create the following security users")]
