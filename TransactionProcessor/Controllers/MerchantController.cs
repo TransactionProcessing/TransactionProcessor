@@ -236,7 +236,6 @@ public class MerchantController : ControllerBase
         // Get the Estate Id claim from the user
         Result<Claim> estateIdClaimResult = ClaimsHelper.GetUserClaim(GetUser(), "EstateId",estateId.ToString());
         if (estateIdClaimResult.IsFailed)
-            //return Result.Forbidden("User estate id claim is not valid");
             return false; // TODO: Shoudl this be a result?
         Claim estateIdClaim = estateIdClaimResult.Data;
 

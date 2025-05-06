@@ -728,6 +728,7 @@ public class TransactionProcessorSteps
                 request.Item2.ContractId,
                 request.Item3,
                 CancellationToken.None);
+            result.IsSuccess.ShouldBeTrue();
             estateContractProducts.Add((request.Item1, request.Item2, request.Item3));
         }
 
@@ -762,6 +763,7 @@ public class TransactionProcessorSteps
                                                                           request.Item3.ProductId,
                                                                           request.Item4,
                                                                           CancellationToken.None);
+            result.IsSuccess.ShouldBeTrue();
         }
 
         foreach ((EstateDetails, Contract, Product, AddTransactionFeeForProductToContractRequest) estateContractProductsFee in estateContractProductsFees)
