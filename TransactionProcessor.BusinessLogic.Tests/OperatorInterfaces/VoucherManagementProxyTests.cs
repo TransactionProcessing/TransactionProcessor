@@ -28,8 +28,9 @@ namespace TransactionProcessor.BusinessLogic.Tests.OperatorInterfaces
             
             IOperatorProxy voucherManagementProxy = new VoucherManagementProxy(mediator.Object);
 
-            OperatorResponse operatorResponse = await voucherManagementProxy.ProcessLogonMessage(CancellationToken.None);
-
+            var processLogonMessageResult = await voucherManagementProxy.ProcessLogonMessage(CancellationToken.None);
+            processLogonMessageResult.IsSuccess.ShouldBeTrue();
+            OperatorResponse operatorResponse = processLogonMessageResult.Data;
             operatorResponse.ShouldBeNull();
         }
         

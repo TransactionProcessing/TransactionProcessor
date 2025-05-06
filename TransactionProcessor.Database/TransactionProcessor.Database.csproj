@@ -20,9 +20,9 @@
 		<PackageReference Include="Microsoft.EntityFrameworkCore.Relational" Version="8.0.14" />
 		<PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="8.0.2" />
 		<PackageReference Include="Pomelo.EntityFrameworkCore.MySql" Version="8.0.3" />
-		<PackageReference Include="Shared" Version="2025.4.2" />
+		<PackageReference Include="Shared" Version="2025.5.2" />
 		<PackageReference Include="Microsoft.EntityFrameworkCore.Sqlite" Version="8.0.14" />
-		<PackageReference Include="Shared.DomainDrivenDesign" Version="2025.4.2" />
+		<PackageReference Include="Shared.DomainDrivenDesign" Version="2025.5.2" />
 	</ItemGroup>
 
 	<ItemGroup>

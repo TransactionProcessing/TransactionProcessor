@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using Shared.Results;
+using SimpleResults;
 
 namespace TransactionProcessor.BusinessLogic.Common
 {
@@ -23,7 +25,7 @@ namespace TransactionProcessor.BusinessLogic.Common
             return aggregateId;
         }
 
-        public static async Task<TokenResponse> GetToken(TokenResponse currentToken, ISecurityServiceClient securityServiceClient, CancellationToken cancellationToken)
+        public static async Task<Result<TokenResponse>> GetToken(TokenResponse currentToken, ISecurityServiceClient securityServiceClient, CancellationToken cancellationToken)
         {
             // Get a token to talk to the estate service
             String clientId = ConfigurationReader.GetValue("AppSettings", "ClientId");
@@ -33,20 +35,26 @@ namespace TransactionProcessor.BusinessLogic.Common
 
             if (currentToken == null)
             {
-                TokenResponse token = await securityServiceClient.GetToken(clientId, clientSecret, cancellationToken);
+                Result<TokenResponse> tokenResult= await securityServiceClient.GetToken(clientId, clientSecret, cancellationToken);
+                if (tokenResult.IsFailed)
+                    return ResultHelpers.CreateFailure(tokenResult);
+                TokenResponse token =tokenResult.Data;
                 Logger.LogDebug($"Token is {token.AccessToken}");
-                return token;
+                return Result.Success(token);
             }
 
             if (currentToken.Expires.UtcDateTime.Subtract(DateTime.UtcNow) < TimeSpan.FromMinutes(2))
             {
                 Logger.LogDebug($"Token is about to expire at {currentToken.Expires.DateTime:O}");
-                TokenResponse token = await securityServiceClient.GetToken(clientId, clientSecret, cancellationToken);
+                Result<TokenResponse> tokenResult = await securityServiceClient.GetToken(clientId, clientSecret, cancellationToken);
+                if (tokenResult.IsFailed)
+                    return ResultHelpers.CreateFailure(tokenResult);
+                TokenResponse token = tokenResult.Data;
                 Logger.LogDebug($"Token is {token.AccessToken}");
-                return token;
+                return Result.Success(token);
             }
 
-            return currentToken;
+            return Result.Success(currentToken);
         }
     }
     

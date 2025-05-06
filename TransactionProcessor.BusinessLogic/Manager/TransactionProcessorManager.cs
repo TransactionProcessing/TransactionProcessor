@@ -92,8 +92,11 @@ namespace TransactionProcessor.BusinessLogic.Manager
             {
                 foreach (Operator @operator in estateModel.Operators)
                 {
-                    OperatorAggregate operatorAggregate = await this.AggregateService.GetLatest<OperatorAggregate>(@operator.OperatorId, cancellationToken);
-                    @operator.Name = operatorAggregate.Name;
+                    var getOperatorResult = await this.AggregateService.GetLatest<OperatorAggregate>(@operator.OperatorId, cancellationToken);
+                    if (getOperatorResult.IsSuccess) {
+                        OperatorAggregate operatorAggregate = getOperatorResult.Data;
+                        @operator.Name = operatorAggregate.Name;
+                    }
                 }
             }
 
@@ -132,7 +135,10 @@ namespace TransactionProcessor.BusinessLogic.Manager
                 List<Models.Merchant.Operator> operators = new();
                 foreach (Models.Merchant.Operator @operator in merchantModel.Operators)
                 {
-                    OperatorAggregate operatorAggregate = await this.AggregateService.GetLatest<OperatorAggregate>(@operator.OperatorId, cancellationToken);
+                    var getOperatorResult = await this.AggregateService.GetLatest<OperatorAggregate>(@operator.OperatorId, cancellationToken);
+                    if (getOperatorResult.IsFailed)
+                        return ResultHelpers.CreateFailure(getOperatorResult);
+                    OperatorAggregate operatorAggregate = getOperatorResult.Data;
                     Models.Merchant.Operator newOperator = @operator with { Name = operatorAggregate.Name };
                     operators.Add(newOperator);
                 }

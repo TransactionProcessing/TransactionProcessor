@@ -458,8 +458,10 @@ namespace TransactionProcessor.BusinessLogic.Services{
 
         public async Task<Result> SendCustomerEmailReceipt(TransactionCommands.SendCustomerEmailReceiptCommand command,
                                                            CancellationToken cancellationToken) {
-            this.TokenResponse = await Helpers.GetToken(this.TokenResponse, this.SecurityServiceClient, cancellationToken);
-
+            Result<TokenResponse> getTokenResult = await Helpers.GetToken(this.TokenResponse, this.SecurityServiceClient, cancellationToken);
+            if (getTokenResult.IsFailed)
+                return ResultHelpers.CreateFailure(getTokenResult);
+            this.TokenResponse = getTokenResult.Data;
             Result<TransactionAggregate> transactionAggregateResult = await this.AggregateService.GetLatest<TransactionAggregate>(command.TransactionId, cancellationToken);
 
             if (transactionAggregateResult.IsFailed)
@@ -489,7 +491,10 @@ namespace TransactionProcessor.BusinessLogic.Services{
 
         public async Task<Result> ResendCustomerEmailReceipt(TransactionCommands.ResendCustomerEmailReceiptCommand command,
                                                              CancellationToken cancellationToken) {
-            this.TokenResponse = await Helpers.GetToken(this.TokenResponse, this.SecurityServiceClient, cancellationToken);
+            Result<TokenResponse> getTokenResult = await Helpers.GetToken(this.TokenResponse, this.SecurityServiceClient, cancellationToken);
+            if (getTokenResult.IsFailed)
+                return ResultHelpers.CreateFailure(getTokenResult);
+            this.TokenResponse = getTokenResult.Data;
 
             Result<TransactionAggregate> transactionAggregateResult = await this.AggregateService.GetLatest<TransactionAggregate>(command.TransactionId, cancellationToken);
 

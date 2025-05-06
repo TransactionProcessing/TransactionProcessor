@@ -1171,7 +1171,10 @@ namespace TransactionProcessor.Repository {
                                                                        CancellationToken cancellationToken) {
             EstateManagementGenericContext context = await this.GetContextFromDomainEvent(domainEvent, cancellationToken);
 
-            ContractProductTransactionFee transactionFee = await context.LoadContractProductTransactionFee(domainEvent, cancellationToken);
+            Result<ContractProductTransactionFee> loadContractProductTransactionFeeResult = await context.LoadContractProductTransactionFee(domainEvent, cancellationToken);
+            // TODO: Check the result value
+
+            ContractProductTransactionFee transactionFee = loadContractProductTransactionFeeResult.Data;
 
             transactionFee.IsEnabled = false;
 

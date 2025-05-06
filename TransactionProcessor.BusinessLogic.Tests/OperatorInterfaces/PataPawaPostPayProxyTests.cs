@@ -44,8 +44,9 @@ namespace TransactionProcessor.BusinessLogic.Tests.OperatorInterfaces
 
             PataPawaPostPayService.Setup(s => s.getLoginRequestAsync(It.IsAny<String>(), It.IsAny<String>())).ReturnsAsync(TestData.PataPawaPostPaidSuccessfulLoginResponse);
 
-            BusinessLogic.OperatorInterfaces.OperatorResponse logonResponse = await PataPawaPostPayProxy.ProcessLogonMessage(CancellationToken.None);
-
+            var logonResponseResult = await PataPawaPostPayProxy.ProcessLogonMessage(CancellationToken.None);
+            logonResponseResult.IsSuccess.ShouldBeTrue();
+            BusinessLogic.OperatorInterfaces.OperatorResponse logonResponse = logonResponseResult.Data;
             logonResponse.ShouldNotBeNull();
             logonResponse.IsSuccessful.ShouldBeTrue();
             logonResponse.ResponseMessage.ShouldBe(TestData.PataPawaPostPaidSuccessfulLoginResponse.message);
@@ -88,7 +89,7 @@ namespace TransactionProcessor.BusinessLogic.Tests.OperatorInterfaces
                                   .ReturnsAsync(TestData.PataPawaPostPaidSuccessfulVerifyAccountResponse);
             MemoryCache.Set("PataPawaPostPayLogon", TestData.PataPawaPostPaidSuccessfulLoginOperatorResponse);
             
-            BusinessLogic.OperatorInterfaces.OperatorResponse saleResponse = await this.PataPawaPostPayProxy.ProcessSaleMessage(TestData.TransactionId,
+            var processSaleMessageResult = await this.PataPawaPostPayProxy.ProcessSaleMessage(TestData.TransactionId,
                                                                                                 TestData.OperatorId,
                                                                                                 TestData.Merchant,
                                                                                                 TestData.TransactionDateTime,
@@ -96,6 +97,8 @@ namespace TransactionProcessor.BusinessLogic.Tests.OperatorInterfaces
                                                                                                 TestData.AdditionalTransactionMetaDataForPataPawaVerifyAccount(),
                                                                                                 CancellationToken.None);
 
+            processSaleMessageResult.IsSuccess.ShouldBeTrue();
+            BusinessLogic.OperatorInterfaces.OperatorResponse saleResponse = processSaleMessageResult.Data;
             saleResponse.ShouldNotBeNull();
             saleResponse.IsSuccessful.ShouldBeTrue();
             saleResponse.ResponseMessage.ShouldBe("SUCCESS");
@@ -206,7 +209,7 @@ namespace TransactionProcessor.BusinessLogic.Tests.OperatorInterfaces
                 .ReturnsAsync(TestData.PataPawaPostPaidSuccessfulProcessBillResponse);
             this.MemoryCache.Set("PataPawaPostPayLogon", TestData.PataPawaPostPaidSuccessfulLoginOperatorResponse);
 
-            BusinessLogic.OperatorInterfaces.OperatorResponse saleResponse = await this.PataPawaPostPayProxy.ProcessSaleMessage(
+            var processSaleMessageResult = await this.PataPawaPostPayProxy.ProcessSaleMessage(
                                                                                                 TestData.TransactionId,
                                                                                                 TestData.OperatorId,
                                                                                                 TestData.Merchant,
@@ -214,7 +217,8 @@ namespace TransactionProcessor.BusinessLogic.Tests.OperatorInterfaces
                                                                                                 TestData.TransactionReference,
                                                                                                 TestData.AdditionalTransactionMetaDataForPataPawaProcessBill(),
                                                                                                 CancellationToken.None);
-
+            processSaleMessageResult.IsSuccess.ShouldBeTrue();
+            BusinessLogic.OperatorInterfaces.OperatorResponse saleResponse = processSaleMessageResult.Data;
             saleResponse.ShouldNotBeNull();
             saleResponse.IsSuccessful.ShouldBeTrue();
             saleResponse.ResponseMessage.ShouldBe(TestData.PataPawaPostPaidSuccessfulProcessBillResponse.msg);

@@ -6,6 +6,6 @@
     <Nullable>enable</Nullable>
   </PropertyGroup>
 	<ItemGroup>
-		<PackageReference Include="Shared.DomainDrivenDesign" Version="2025.4.2" />
+		<PackageReference Include="Shared.DomainDrivenDesign" Version="2025.5.2" />
 	</ItemGroup>
 </Project>

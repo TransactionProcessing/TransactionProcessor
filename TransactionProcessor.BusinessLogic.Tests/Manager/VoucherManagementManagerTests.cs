@@ -71,8 +71,9 @@ namespace TransactionProcessor.BusinessLogic.Tests.Manager
 
             VoucherManagementManager manager = new VoucherManagementManager(dbContextFactory.Object, aggregateService.Object);
 
-            Models.Voucher voucher = await manager.GetVoucherByCode(TestData.EstateId, TestData.VoucherCode, CancellationToken.None);
-
+            var result = await manager.GetVoucherByCode(TestData.EstateId, TestData.VoucherCode, CancellationToken.None);
+            result.IsSuccess.ShouldBeTrue();
+            Models.Voucher voucher = result.Data;
             voucher.ShouldNotBeNull();
         }
 
@@ -121,8 +122,9 @@ namespace TransactionProcessor.BusinessLogic.Tests.Manager
 
             VoucherManagementManager manager = new VoucherManagementManager(dbContextFactory.Object, aggregateService.Object);
 
-            Models.Voucher voucher = await manager.GetVoucherByTransactionId(TestData.EstateId, TestData.TransactionId, CancellationToken.None);
-
+            var result = await manager.GetVoucherByTransactionId(TestData.EstateId, TestData.TransactionId, CancellationToken.None);
+            result.IsSuccess.ShouldBeTrue();
+            Models.Voucher voucher = result.Data;
             voucher.ShouldNotBeNull();
         }
 

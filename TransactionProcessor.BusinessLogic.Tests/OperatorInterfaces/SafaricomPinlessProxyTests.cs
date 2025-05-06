@@ -34,7 +34,9 @@ namespace TransactionProcessor.BusinessLogic.Tests.OperatorInterfaces
             HttpClient httpClient = SetupMockHttpClient(responseMessage);
 
             IOperatorProxy safaricomPinlessproxy = new SafaricomPinlessProxy(safaricomConfiguration, httpClient);
-            OperatorResponse operatorResponse = await safaricomPinlessproxy.ProcessLogonMessage(CancellationToken.None);
+            var processLogonMessageResult = await safaricomPinlessproxy.ProcessLogonMessage(CancellationToken.None);
+            processLogonMessageResult.IsSuccess.ShouldBeTrue();
+            OperatorResponse operatorResponse = processLogonMessageResult.Data;
             operatorResponse.ShouldBeNull();
 
         }

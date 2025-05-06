@@ -55,9 +55,12 @@ namespace TransactionProcessor.BusinessLogic.Services
         {
             try
             {
-                EstateAggregate estateAggregate = await this.AggregateService.Get<EstateAggregate>(estateId, cancellationToken);
+                Result<EstateAggregate> getResult = await this.AggregateService.Get<EstateAggregate>(estateId, cancellationToken);
+                if (getResult.IsFailed)
+                    return ResultHelpers.CreateFailure(getResult);
+                EstateAggregate estateAggregate = getResult.Data;
                 if (estateAggregate.IsCreated == false)
-                    return Result.Failure("Estate is noty created");
+                    return Result.Failure("Estate is not created");
                 
                 Result<ContractAggregate> getContractResult = await this.AggregateService.GetLatest<ContractAggregate>(contractId, cancellationToken);
                 Result<ContractAggregate> contractAggregateResult =
@@ -160,8 +163,10 @@ namespace TransactionProcessor.BusinessLogic.Services
                 String projection =
                     $"fromCategory(\"ContractAggregate\")\n.when({{\n    $init: function (s, e) {{\n                        return {{\n                            total: 0,\n                            contractId: 0\n                        }};\n                    }},\n    'ContractCreatedEvent': function(s,e){{\n        // Check if it matches\n        if (e.data.description === '{command.RequestDTO.Description}' \n            && e.data.operatorId === '{command.RequestDTO.OperatorId}'){{\n            s.total += 1;\n            s.contractId = e.data.contractId\n        }}\n    }}\n}})";
 
-                Result<String> resultString = await this.Context.RunTransientQuery(projection, cancellationToken);
-
+                Result<String> result = await this.Context.RunTransientQuery(projection, cancellationToken);
+                if (result.IsFailed)
+                    return ResultHelpers.CreateFailure(result);
+                String resultString = result.Data;
                 if (String.IsNullOrEmpty(resultString) == false)
                 {
                     JObject jsonResult = JObject.Parse(resultString);
