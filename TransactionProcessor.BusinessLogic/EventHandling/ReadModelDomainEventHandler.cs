@@ -71,6 +71,7 @@ namespace TransactionProcessor.BusinessLogic.EventHandling
                 TransactionDomainEvents.TransactionSourceAddedToTransactionEvent de => this.EstateReportingRepository.AddSourceDetailsToTransaction(de, cancellationToken),
                 TransactionDomainEvents.ProductDetailsAddedToTransactionEvent de => this.EstateReportingRepository.AddProductDetailsToTransaction(de, cancellationToken),
                 TransactionDomainEvents.TransactionHasBeenCompletedEvent de => this.EstateReportingRepository.CompleteTransaction(de, cancellationToken),
+                TransactionDomainEvents.TransactionTimingsAddedToTransactionEvent de => this.EstateReportingRepository.RecordTransactionTimings(de, cancellationToken),
                 ReconciliationDomainEvents.ReconciliationHasStartedEvent de => this.EstateReportingRepository.StartReconciliation(de, cancellationToken),
                 ReconciliationDomainEvents.OverallTotalsRecordedEvent de => this.EstateReportingRepository.UpdateReconciliationOverallTotals(de, cancellationToken),
                 ReconciliationDomainEvents.ReconciliationHasBeenLocallyAuthorisedEvent de => this.EstateReportingRepository.UpdateReconciliationStatus(de, cancellationToken),

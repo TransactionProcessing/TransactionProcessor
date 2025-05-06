@@ -408,6 +408,8 @@ namespace TransactionProcessor.Testing
 
         public static String TransactionNumber = "0001";
 
+        public static DateTime TransactionReceivedDateTime;
+
         public static TransactionType TransactionTypeLogon = TransactionType.Logon;
 
         public static String TransactionReference = "ABCDEFGHI";
@@ -2116,7 +2118,8 @@ namespace TransactionProcessor.Testing
                                                      TestData.AdditionalTransactionMetaDataForMobileTopup(),
                                                      TestData.ContractId,
                                                      TestData.ProductId,
-                                                     TestData.TransactionSource);
+                                                     TestData.TransactionSource,
+                                                     TestData.TransactionReceivedDateTime);
             public static TransactionCommands.ProcessReconciliationCommand ProcessReconciliationCommand =>
                 new(TestData.TransactionId, TestData.EstateId, TestData.MerchantId, TestData.DeviceIdentifier, TestData.TransactionDateTime, TestData.ReconciliationTransactionCount, TestData.ReconciliationTransactionValue);
             public static TransactionCommands.ProcessLogonTransactionCommand ProcessLogonTransactionCommand =>
@@ -2126,7 +2129,8 @@ namespace TransactionProcessor.Testing
                     TestData.DeviceIdentifier,
                     TestData.TransactionTypeLogon.ToString(),
                     TestData.TransactionDateTime,
-                    TestData.TransactionNumber);
+                    TestData.TransactionNumber,
+                    TestData.TransactionReceivedDateTime);
 
             public static SettlementCommands.ProcessSettlementCommand ProcessSettlementCommand =>
                 new(TestData.SettlementDate,

@@ -203,8 +203,10 @@ namespace TransactionProcessor.BusinessLogic.Services{
                     // Record the failure
                     transactionAggregate.DeclineTransactionLocally(((Int32)validationResult.Data.ResponseCode).ToString().PadLeft(4, '0'), validationResult.Data.ResponseMessage);
                 }
-
+                
                 transactionAggregate.CompleteTransaction();
+
+                transactionAggregate.RecordTransactionTimings(command.TransactionReceivedDateTime, null, null,DateTime.Now);
 
                 return Result.Success(new ProcessLogonTransactionResponse {
                     ResponseMessage = transactionAggregate.ResponseMessage,
@@ -237,7 +239,7 @@ namespace TransactionProcessor.BusinessLogic.Services{
                     // Record the failure
                     reconciliationAggregate.Decline(((Int32)validationResult.Data.ResponseCode).ToString().PadLeft(4, '0'), validationResult.Data.ResponseMessage);
                 }
-
+                
                 reconciliationAggregate.CompleteReconciliation();
 
                 return Result.Success(new ProcessReconciliationTransactionResponse {
@@ -292,7 +294,8 @@ namespace TransactionProcessor.BusinessLogic.Services{
 
                 // Add the transaction source
                 transactionAggregate.AddTransactionSource(transactionSourceValue);
-
+                DateTime? operatorStartDateTime = null;
+                DateTime? operatorEndDateTime = null;
                 if (validationResult.Data.ResponseCode == TransactionResponseCode.Success) {
                     // Record any additional request metadata
                     transactionAggregate.RecordAdditionalRequestData(command.OperatorId, command.AdditionalTransactionMetadata);
@@ -301,8 +304,9 @@ namespace TransactionProcessor.BusinessLogic.Services{
                     Result<Merchant> merchantResult = await this.GetMerchant(command.MerchantId, cancellationToken);
                     if (merchantResult.IsFailed)
                         return ResultHelpers.CreateFailure(merchantResult);
+                    operatorStartDateTime =DateTime.Now;
                     Result<OperatorResponse> operatorResult = await this.ProcessMessageWithOperator(merchantResult.Data, command.TransactionId, command.TransactionDateTime, command.OperatorId, command.AdditionalTransactionMetadata, transactionReference, cancellationToken);
-
+                    operatorEndDateTime = DateTime.Now;
                     // Act on the operator response
                     // TODO: see if we still need this case...
                     //if (operatorResult.IsFailed) {
@@ -337,6 +341,8 @@ namespace TransactionProcessor.BusinessLogic.Services{
                     // Record the failure
                     transactionAggregate.DeclineTransactionLocally(((Int32)validationResult.Data.ResponseCode).ToString().PadLeft(4, '0'), validationResult.Data.ResponseMessage);
                 }
+
+                transactionAggregate.RecordTransactionTimings(command.TransactionReceivedDateTime, operatorStartDateTime, operatorEndDateTime, DateTime.Now);;
 
                 transactionAggregate.CompleteTransaction();
 

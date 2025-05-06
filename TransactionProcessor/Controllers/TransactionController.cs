@@ -69,6 +69,8 @@ namespace TransactionProcessor.Controllers
         public async Task<IActionResult> PerformTransaction([FromBody] SerialisedMessage transactionRequest,
                                                             CancellationToken cancellationToken)
         {
+            DateTime transactionReceivedDateTime = DateTime.Now;
+
             // Reject password tokens
             if (ClaimsHelper.IsPasswordToken(this.User)) {
                 return this.Forbid();
@@ -91,8 +93,8 @@ namespace TransactionProcessor.Controllers
             }
 
             Result<SerialisedMessage> transactionResult = dto switch {
-                LogonTransactionRequest ltr => await this.ProcessSpecificMessage(ltr, cancellationToken),
-                SaleTransactionRequest str => await this.ProcessSpecificMessage(str, cancellationToken),
+                LogonTransactionRequest ltr => await this.ProcessSpecificMessage(ltr, transactionReceivedDateTime, cancellationToken),
+                SaleTransactionRequest str => await this.ProcessSpecificMessage(str, transactionReceivedDateTime,cancellationToken),
                 ReconciliationRequest rr => await this.ProcessSpecificMessage(rr, cancellationToken),
                 _ => Result.Invalid($"DTO Type {dto.GetType().Name} not supported)")
             };
@@ -127,6 +129,7 @@ namespace TransactionProcessor.Controllers
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns></returns>
         private async Task<Result<SerialisedMessage>> ProcessSpecificMessage(LogonTransactionRequest logonTransactionRequest,
+                                                                             DateTime transactionReceivedDateTime,
                                                                              CancellationToken cancellationToken)
         {
             Guid transactionId = Guid.NewGuid();
@@ -137,7 +140,8 @@ namespace TransactionProcessor.Controllers
                                                                                                        logonTransactionRequest.DeviceIdentifier,
                                                                                                        logonTransactionRequest.TransactionType,
                                                                                                        logonTransactionRequest.TransactionDateTime,
-                                                                                                       logonTransactionRequest.TransactionNumber);
+                                                                                                       logonTransactionRequest.TransactionNumber,
+                                                                                                       transactionReceivedDateTime);
 
             var result =  await this.Mediator.Send(command, cancellationToken);
             if (result.IsFailed)
@@ -153,6 +157,7 @@ namespace TransactionProcessor.Controllers
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns></returns>
         private async Task<Result<SerialisedMessage>> ProcessSpecificMessage(SaleTransactionRequest saleTransactionRequest,
+                                                                             DateTime transactionReceivedDateTime,
                                                                              CancellationToken cancellationToken)
         {
             Guid transactionId = Guid.NewGuid();
@@ -170,7 +175,8 @@ namespace TransactionProcessor.Controllers
                                                                                          saleTransactionRequest.ContractId,
                                                                                          saleTransactionRequest.ProductId,
                                                                                          // Default to an online sale
-                                                                                         saleTransactionRequest.TransactionSource.GetValueOrDefault(1));
+                                                                                         saleTransactionRequest.TransactionSource.GetValueOrDefault(1),
+                                                                                         transactionReceivedDateTime);
 
             var result= await this.Mediator.Send(command, cancellationToken);
             if (result.IsFailed)

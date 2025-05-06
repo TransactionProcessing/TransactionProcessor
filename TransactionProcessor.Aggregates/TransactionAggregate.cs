@@ -277,6 +277,23 @@ namespace TransactionProcessor.Aggregates
             aggregate.ApplyAndAppend(transactionHasBeenCompletedEvent);
         }
 
+        public static void RecordTransactionTimings(this TransactionAggregate aggregate,
+                                                    DateTime TransactionStartedDateTime,
+                                                    DateTime? OperatorCommunicationsStartedEvent,
+                                                    DateTime? OperatorCommunicationsCompletedEvent,
+                                                    DateTime TransactionCompletedDateTime) {
+            TransactionDomainEvents.TransactionTimingsAddedToTransactionEvent transactionTimingsAddedToTransactionEvent =
+                new (aggregate.AggregateId,
+                     aggregate.EstateId,
+                     aggregate.MerchantId,
+                     TransactionStartedDateTime,
+                     OperatorCommunicationsStartedEvent,
+                     OperatorCommunicationsCompletedEvent,
+                     TransactionCompletedDateTime);
+
+            aggregate.ApplyAndAppend(transactionTimingsAddedToTransactionEvent);
+        }
+
         public static void RecordAdditionalRequestData(this TransactionAggregate aggregate, 
                                                        Guid operatorId,
                                                        Dictionary<String, String> additionalTransactionRequestMetadata)
@@ -660,6 +677,11 @@ namespace TransactionProcessor.Aggregates
                                              FeeValue = domainEvent.FeeValue,
                                              FeeCalculationType = (CalculationType)domainEvent.FeeCalculationType
                                          });
+        }
+
+        public static void PlayEvent(this TransactionAggregate aggregate,
+                                     TransactionDomainEvents.TransactionTimingsAddedToTransactionEvent domainEvent) {
+            // Nothing to do here, just a marker for the event
         }
     }
 

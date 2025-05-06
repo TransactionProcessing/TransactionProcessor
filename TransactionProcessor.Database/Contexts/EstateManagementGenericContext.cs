@@ -112,6 +112,8 @@ public abstract class EstateManagementGenericContext : DbContext
     public DbSet<TodayTransaction> TodayTransactions { get; set; }
     public DbSet<TransactionHistory> TransactionHistory { get; set; }
 
+    public DbSet<TransactionTimings> TransactionTimings { get; set; }
+
     public DbSet<Event> Events { get; set; }
 
     #endregion
@@ -266,7 +268,8 @@ public abstract class EstateManagementGenericContext : DbContext
                     .SetupOperator()
                     .SetupSettlementSummary()
                     .SetupTransactionHistory()
-                    .SetupTodaysTransactions();
+                    .SetupTodaysTransactions()
+                    .SetupTransactionTimings();
         
         modelBuilder.SetupViewEntities();
 

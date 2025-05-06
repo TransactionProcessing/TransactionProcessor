@@ -17,7 +17,7 @@ namespace EstateManagement.Database.Migrations.MySql
         {
 #pragma warning disable 612, 618
             modelBuilder
-                .HasAnnotation("ProductVersion", "8.0.3")
+                .HasAnnotation("ProductVersion", "8.0.14")
                 .HasAnnotation("Relational:MaxIdentifierLength", 64);
 
             MySqlModelBuilderExtensions.AutoIncrementColumns(modelBuilder);
@@ -1163,6 +1163,39 @@ namespace EstateManagement.Database.Migrations.MySql
                     b.HasKey("TransactionId");
 
                     b.ToTable("transactionadditionalresponsedata");
+                });
+
+            modelBuilder.Entity("TransactionProcessor.Database.Entities.TransactionTimings", b =>
+                {
+                    b.Property<Guid>("TransactionId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("char(36)");
+
+                    b.Property<DateTime?>("OperatorCommunicationsCompletedDateTime")
+                        .HasColumnType("datetime(6)");
+
+                    b.Property<double>("OperatorCommunicationsDurationInMilliseconds")
+                        .HasColumnType("double");
+
+                    b.Property<DateTime?>("OperatorCommunicationsStartedDateTime")
+                        .HasColumnType("datetime(6)");
+
+                    b.Property<double>("TotalTransactionInMilliseconds")
+                        .HasColumnType("double");
+
+                    b.Property<DateTime>("TransactionCompletedDateTime")
+                        .HasColumnType("datetime(6)");
+
+                    b.Property<double>("TransactionProcessingDurationInMilliseconds")
+                        .HasColumnType("double");
+
+                    b.Property<DateTime>("TransactionStartedDateTime")
+                        .HasColumnType("datetime(6)");
+
+                    b.HasKey("TransactionId")
+                        .HasAnnotation("SqlServer:Clustered", false);
+
+                    b.ToTable("transactiontimings");
                 });
 
             modelBuilder.Entity("TransactionProcessor.Database.Entities.VoucherProjectionState", b =>

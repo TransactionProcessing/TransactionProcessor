@@ -93,7 +93,7 @@ namespace TransactionProcessor.BusinessLogic.Tests.Services{
                 TestData.DeviceIdentifier,
                 TestData.TransactionTypeLogon.ToString(),
                 TestData.TransactionDateTime,
-                TestData.TransactionNumber);
+                TestData.TransactionNumber, TestData.TransactionReceivedDateTime);
             
             var result = await this.TransactionDomainService.ProcessLogonTransaction(command, CancellationToken.None);
             
@@ -122,7 +122,7 @@ namespace TransactionProcessor.BusinessLogic.Tests.Services{
                 TestData.DeviceIdentifier,
                 TestData.TransactionTypeLogon.ToString(),
                 TestData.TransactionDateTime,
-                TestData.TransactionNumber);
+                TestData.TransactionNumber, TestData.TransactionReceivedDateTime);
 
             var result = await this.TransactionDomainService.ProcessLogonTransaction(command, CancellationToken.None);
 
@@ -153,7 +153,7 @@ namespace TransactionProcessor.BusinessLogic.Tests.Services{
                 TestData.DeviceIdentifier,
                 TestData.TransactionTypeLogon.ToString(),
                 TestData.TransactionDateTime,
-                TestData.TransactionNumber);
+                TestData.TransactionNumber, TestData.TransactionReceivedDateTime);
 
             Result<ProcessLogonTransactionResponse> result = await this.TransactionDomainService.ProcessLogonTransaction(command, CancellationToken.None);
 
@@ -261,7 +261,7 @@ namespace TransactionProcessor.BusinessLogic.Tests.Services{
                     TestData.MerchantId, TestData.DeviceIdentifier, TestData.TransactionTypeSale.ToString(),
                     TestData.TransactionDateTime, TestData.TransactionNumber, TestData.OperatorId,
                     TestData.CustomerEmailAddress, TestData.AdditionalTransactionMetaDataForMobileTopup(),
-                    TestData.ContractId, TestData.ProductId, TestData.TransactionSource);
+                    TestData.ContractId, TestData.ProductId, TestData.TransactionSource, TestData.TransactionReceivedDateTime);
             
             var result = await this.TransactionDomainService.ProcessSaleTransaction(command, CancellationToken.None);
             result.IsSuccess.ShouldBeTrue();
@@ -304,7 +304,7 @@ namespace TransactionProcessor.BusinessLogic.Tests.Services{
                     TestData.MerchantId, TestData.DeviceIdentifier, TestData.TransactionTypeSale.ToString(),
                     TestData.TransactionDateTime, TestData.TransactionNumber, TestData.OperatorId,
                     TestData.CustomerEmailAddress, TestData.AdditionalTransactionMetaDataForMobileTopup(),
-                    TestData.ContractId, TestData.ProductId, TestData.TransactionSource);
+                    TestData.ContractId, TestData.ProductId, TestData.TransactionSource, TestData.TransactionReceivedDateTime);
 
             var result = await this.TransactionDomainService.ProcessSaleTransaction(command, CancellationToken.None);
             result.IsSuccess.ShouldBeTrue();
@@ -364,7 +364,7 @@ namespace TransactionProcessor.BusinessLogic.Tests.Services{
                     TestData.MerchantId, TestData.DeviceIdentifier, TestData.TransactionTypeSale.ToString(),
                     TestData.TransactionDateTime, TestData.TransactionNumber, TestData.OperatorId,
                     TestData.CustomerEmailAddress, TestData.AdditionalTransactionMetaDataForMobileTopup(),
-                    TestData.ContractId, TestData.ProductId, TestData.TransactionSource);
+                    TestData.ContractId, TestData.ProductId, TestData.TransactionSource, TestData.TransactionReceivedDateTime);
 
             var result = await this.TransactionDomainService.ProcessSaleTransaction(command, CancellationToken.None);
             result.IsSuccess.ShouldBeTrue();
@@ -428,7 +428,7 @@ namespace TransactionProcessor.BusinessLogic.Tests.Services{
                     TestData.MerchantId, TestData.DeviceIdentifier, TestData.TransactionTypeSale.ToString(),
                     TestData.TransactionDateTime, TestData.TransactionNumber, TestData.OperatorId,
                     TestData.CustomerEmailAddress, TestData.AdditionalTransactionMetaDataForMobileTopup(),
-                    TestData.ContractId, TestData.ProductId, TestData.TransactionSource);
+                    TestData.ContractId, TestData.ProductId, TestData.TransactionSource, TestData.TransactionReceivedDateTime);
 
             var result = await this.TransactionDomainService.ProcessSaleTransaction(command, CancellationToken.None);
             result.IsSuccess.ShouldBeTrue();
@@ -472,7 +472,7 @@ namespace TransactionProcessor.BusinessLogic.Tests.Services{
                     TestData.MerchantId, TestData.DeviceIdentifier, TestData.TransactionTypeSale.ToString(),
                     TestData.TransactionDateTime, TestData.TransactionNumber, TestData.OperatorId,
                     TestData.CustomerEmailAddress, TestData.AdditionalTransactionMetaDataForMobileTopup(),
-                    TestData.ContractId, TestData.ProductId, TestData.TransactionSource);
+                    TestData.ContractId, TestData.ProductId, TestData.TransactionSource, TestData.TransactionReceivedDateTime);
 
             var result = await this.TransactionDomainService.ProcessSaleTransaction(command, CancellationToken.None);
             result.IsSuccess.ShouldBeTrue();
