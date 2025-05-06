@@ -484,8 +484,8 @@ namespace TransactionProcessor.IntegrationTests.Shared
 
             //String tokenResponse = await this.SecurityServiceSteps
             //    .GetPasswordToken(clientId, clientDetails.ClientSecret, username, password, CancellationToken.None).ConfigureAwait(false);
-            Result<TokenResponse> token = await this.TestingContext.DockerHelper.SecurityServiceClient.GetToken(clientId, clientDetails.ClientSecret,
-                username,password, CancellationToken.None);
+            Result<TokenResponse> token = await this.TestingContext.DockerHelper.SecurityServiceClient.GetToken(username, password, clientId, clientDetails.ClientSecret,
+                CancellationToken.None);
             token.IsSuccess.ShouldBeTrue();
             this.TestingContext.AccessToken = token.Data.AccessToken;
             estateDetails.SetEstateUserToken(token.Data.AccessToken);
