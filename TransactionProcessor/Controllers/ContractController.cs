@@ -50,8 +50,10 @@ namespace TransactionProcessor.Controllers {
 
         private Result StandardSecurityChecks(Guid estateId) {
             // Get the Estate Id claim from the user
-            Claim estateIdClaim = ClaimsHelper.GetUserClaim(GetUser(), "EstateId", estateId.ToString());
-
+            Result<Claim> estateIdClaimResult = ClaimsHelper.GetUserClaim(GetUser(), "EstateId", estateId.ToString());
+            if (estateIdClaimResult.IsFailed)
+                return Result.Forbidden("User estate id claim is not valid");
+            Claim estateIdClaim = estateIdClaimResult.Data;
             string estateRoleName = Environment.GetEnvironmentVariable("EstateRoleName");
             if (ClaimsHelper.IsUserRolesValid(GetUser(), new[] { string.IsNullOrEmpty(estateRoleName) ? "Estate" : estateRoleName }) == false) {
                 return Result.Forbidden("User role is not valid");

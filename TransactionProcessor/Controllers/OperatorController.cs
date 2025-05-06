@@ -15,6 +15,7 @@ using Swashbuckle.AspNetCore.Annotations;
 using TransactionProcessor.BusinessLogic.Requests;
 using TransactionProcessor.DataTransferObjects.Requests.Operator;
 using TransactionProcessor.Factories;
+using TransactionProcessor.Models.Operator;
 
 namespace TransactionProcessor.Controllers;
 
@@ -98,8 +99,11 @@ public class OperatorController : ControllerBase
         OperatorQueries.GetOperatorQuery query = new(estateId, operatorId);
 
         // Route the command
-        Models.Operator.Operator @operator = await Mediator.Send(query, cancellationToken);
+        Result<Operator> getOperatorResult = await Mediator.Send(query, cancellationToken);
+        if (getOperatorResult.IsFailed)
+            return getOperatorResult.ToActionResultX();
 
+        Models.Operator.Operator @operator = getOperatorResult.Data;
         return ModelFactory.ConvertFrom(@operator).ToActionResultX();
     }
 
@@ -112,8 +116,11 @@ public class OperatorController : ControllerBase
         OperatorQueries.GetOperatorsQuery query = new(estateId);
 
         // Route the command
-        List<Models.Operator.Operator> @operatorList = await Mediator.Send(query, cancellationToken);
+        Result<List<Operator>> getOperatorResult = await Mediator.Send(query, cancellationToken);
+        if (getOperatorResult.IsFailed)
+            return getOperatorResult.ToActionResultX();
 
+        List<Models.Operator.Operator> @operatorList = getOperatorResult.Data;
         return ModelFactory.ConvertFrom(@operatorList).ToActionResultX();
     }
 

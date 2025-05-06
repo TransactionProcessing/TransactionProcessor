@@ -61,7 +61,7 @@ public class ProjectionHandlerTests{
         projection.Setup(p => p.ShouldIHandleEvent(It.IsAny<IDomainEvent>())).Returns(true);
         projection.Setup(p =>
                 p.Handle(It.IsAny<MerchantBalanceState>(), It.IsAny<IDomainEvent>(), It.IsAny<CancellationToken>()))
-            .ReturnsAsync(Result.Success(state));
+            .ReturnsAsync(state);
         repo.Setup(r => r.Load(It.IsAny<IDomainEvent>(), It.IsAny<CancellationToken>())).ReturnsAsync(Result.Success(state));
         var result = await ph.Handle(TestData.MerchantCreatedEvent, CancellationToken.None);
         result.IsSuccess.ShouldBeTrue();
@@ -99,7 +99,7 @@ public class ProjectionHandlerTests{
         MerchantBalanceState newState = new MerchantBalanceState();
         newState = newState.HandleMerchantCreated(TestData.MerchantCreatedEvent);
         projection.Setup(p => p.ShouldIHandleEvent(It.IsAny<IDomainEvent>())).Returns(true);
-        projection.Setup(p => p.Handle(It.IsAny<MerchantBalanceState>(), It.IsAny<IDomainEvent>(), It.IsAny<CancellationToken>())).ReturnsAsync(Result.Success(newState));
+        projection.Setup(p => p.Handle(It.IsAny<MerchantBalanceState>(), It.IsAny<IDomainEvent>(), It.IsAny<CancellationToken>())).ReturnsAsync(newState);
             
         repo.Setup(r => r.Load(It.IsAny<IDomainEvent>(), It.IsAny<CancellationToken>())).ReturnsAsync(state);
         repo.Setup(r => r.Save(It.IsAny<MerchantBalanceState>(),It.IsAny<IDomainEvent>(), It.IsAny<CancellationToken>())).ReturnsAsync(Result.Success(state));
@@ -121,7 +121,7 @@ public class ProjectionHandlerTests{
         MerchantBalanceState newState = new MerchantBalanceState();
         newState = newState.HandleMerchantCreated(TestData.MerchantCreatedEvent);
         projection.Setup(p => p.ShouldIHandleEvent(It.IsAny<IDomainEvent>())).Returns(true);
-        projection.Setup(p => p.Handle(It.IsAny<MerchantBalanceState>(), It.IsAny<IDomainEvent>(), It.IsAny<CancellationToken>())).ReturnsAsync(Result.Success(newState));
+        projection.Setup(p => p.Handle(It.IsAny<MerchantBalanceState>(), It.IsAny<IDomainEvent>(), It.IsAny<CancellationToken>())).ReturnsAsync(newState);
 
         repo.Setup(r => r.Load(It.IsAny<IDomainEvent>(), It.IsAny<CancellationToken>())).ReturnsAsync(Result.Failure());
         //repo.Setup(r => r.Save(It.IsAny<MerchantBalanceState>(), It.IsAny<IDomainEvent>(), It.IsAny<CancellationToken>())).ReturnsAsync(Result.Success(state));
@@ -143,7 +143,7 @@ public class ProjectionHandlerTests{
         MerchantBalanceState newState = new MerchantBalanceState();
         newState = newState.HandleMerchantCreated(TestData.MerchantCreatedEvent);
         projection.Setup(p => p.ShouldIHandleEvent(It.IsAny<IDomainEvent>())).Returns(true);
-        projection.Setup(p => p.Handle(It.IsAny<MerchantBalanceState>(), It.IsAny<IDomainEvent>(), It.IsAny<CancellationToken>())).ReturnsAsync(Result.Success(newState));
+        projection.Setup(p => p.Handle(It.IsAny<MerchantBalanceState>(), It.IsAny<IDomainEvent>(), It.IsAny<CancellationToken>())).ReturnsAsync(newState);
 
         repo.Setup(r => r.Load(It.IsAny<IDomainEvent>(), It.IsAny<CancellationToken>())).ReturnsAsync(state);
         repo.Setup(r => r.Save(It.IsAny<MerchantBalanceState>(), It.IsAny<IDomainEvent>(), It.IsAny<CancellationToken>())).ReturnsAsync(Result.Failure());
@@ -165,7 +165,7 @@ public class ProjectionHandlerTests{
         MerchantBalanceState newState = new MerchantBalanceState();
         newState = newState.HandleMerchantCreated(TestData.MerchantCreatedEvent);
         projection.Setup(p => p.ShouldIHandleEvent(It.IsAny<IDomainEvent>())).Returns(true);
-        projection.Setup(p => p.Handle(It.IsAny<MerchantBalanceState>(), It.IsAny<IDomainEvent>(), It.IsAny<CancellationToken>())).ReturnsAsync(Result.Success(newState));
+        projection.Setup(p => p.Handle(It.IsAny<MerchantBalanceState>(), It.IsAny<IDomainEvent>(), It.IsAny<CancellationToken>())).ReturnsAsync(newState);
 
         repo.Setup(r => r.Load(It.IsAny<IDomainEvent>(), It.IsAny<CancellationToken>())).ReturnsAsync(state);
         repo.Setup(r => r.Save(It.IsAny<MerchantBalanceState>(), It.IsAny<IDomainEvent>(), It.IsAny<CancellationToken>())).ReturnsAsync(Result.Success(state));

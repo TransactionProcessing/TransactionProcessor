@@ -180,8 +180,9 @@ namespace TransactionProcessor.BusinessLogic.Tests.Services{
                     TestData.MerchantId, TestData.DeviceIdentifier, TestData.TransactionDateTime,
                     TestData.ReconciliationTransactionCount, TestData.ReconciliationTransactionValue);
 
-            ProcessReconciliationTransactionResponse response = await this.TransactionDomainService.ProcessReconciliationTransaction(command, CancellationToken.None);
-            ;
+            var result  = await this.TransactionDomainService.ProcessReconciliationTransaction(command, CancellationToken.None);
+            result.IsSuccess.ShouldBeTrue();
+            ProcessReconciliationTransactionResponse response = result.Data;
 
             response.EstateId.ShouldBe(TestData.EstateId);
             response.MerchantId.ShouldBe(TestData.MerchantId);
@@ -209,8 +210,9 @@ namespace TransactionProcessor.BusinessLogic.Tests.Services{
                     TestData.MerchantId, TestData.DeviceIdentifier, TestData.TransactionDateTime,
                     TestData.ReconciliationTransactionCount, TestData.ReconciliationTransactionValue);
 
-            ProcessReconciliationTransactionResponse response = await this.TransactionDomainService.ProcessReconciliationTransaction(command, CancellationToken.None);
-            ;
+            var result = await this.TransactionDomainService.ProcessReconciliationTransaction(command, CancellationToken.None);
+            result.IsSuccess.ShouldBeTrue();
+            var response = result.Data;
 
             response.EstateId.ShouldBe(TestData.EstateId);
             response.MerchantId.ShouldBe(TestData.MerchantId);
@@ -261,7 +263,9 @@ namespace TransactionProcessor.BusinessLogic.Tests.Services{
                     TestData.CustomerEmailAddress, TestData.AdditionalTransactionMetaDataForMobileTopup(),
                     TestData.ContractId, TestData.ProductId, TestData.TransactionSource, TestData.TransactionReceivedDateTime);
             
-            ProcessSaleTransactionResponse response = await this.TransactionDomainService.ProcessSaleTransaction(command, CancellationToken.None);
+            var result = await this.TransactionDomainService.ProcessSaleTransaction(command, CancellationToken.None);
+            result.IsSuccess.ShouldBeTrue();
+            var response = result.Data;
 
             response.EstateId.ShouldBe(TestData.EstateId);
             response.MerchantId.ShouldBe(TestData.MerchantId);
@@ -302,7 +306,9 @@ namespace TransactionProcessor.BusinessLogic.Tests.Services{
                     TestData.CustomerEmailAddress, TestData.AdditionalTransactionMetaDataForMobileTopup(),
                     TestData.ContractId, TestData.ProductId, TestData.TransactionSource, TestData.TransactionReceivedDateTime);
 
-            ProcessSaleTransactionResponse response = await this.TransactionDomainService.ProcessSaleTransaction(command, CancellationToken.None);
+            var result = await this.TransactionDomainService.ProcessSaleTransaction(command, CancellationToken.None);
+            result.IsSuccess.ShouldBeTrue();
+            var response = result.Data;
 
             response.EstateId.ShouldBe(TestData.EstateId);
             response.MerchantId.ShouldBe(TestData.MerchantId);
@@ -360,7 +366,9 @@ namespace TransactionProcessor.BusinessLogic.Tests.Services{
                     TestData.CustomerEmailAddress, TestData.AdditionalTransactionMetaDataForMobileTopup(),
                     TestData.ContractId, TestData.ProductId, TestData.TransactionSource, TestData.TransactionReceivedDateTime);
 
-            ProcessSaleTransactionResponse response = await this.TransactionDomainService.ProcessSaleTransaction(command, CancellationToken.None);
+            var result = await this.TransactionDomainService.ProcessSaleTransaction(command, CancellationToken.None);
+            result.IsSuccess.ShouldBeTrue();
+            var response = result.Data;
 
             response.EstateId.ShouldBe(TestData.EstateId);
             response.MerchantId.ShouldBe(TestData.MerchantId);
@@ -422,7 +430,9 @@ namespace TransactionProcessor.BusinessLogic.Tests.Services{
                     TestData.CustomerEmailAddress, TestData.AdditionalTransactionMetaDataForMobileTopup(),
                     TestData.ContractId, TestData.ProductId, TestData.TransactionSource, TestData.TransactionReceivedDateTime);
 
-            ProcessSaleTransactionResponse response = await this.TransactionDomainService.ProcessSaleTransaction(command, CancellationToken.None);
+            var result = await this.TransactionDomainService.ProcessSaleTransaction(command, CancellationToken.None);
+            result.IsSuccess.ShouldBeTrue();
+            var response = result.Data;
 
             response.EstateId.ShouldBe(TestData.EstateId);
             response.MerchantId.ShouldBe(TestData.MerchantId);
@@ -464,7 +474,9 @@ namespace TransactionProcessor.BusinessLogic.Tests.Services{
                     TestData.CustomerEmailAddress, TestData.AdditionalTransactionMetaDataForMobileTopup(),
                     TestData.ContractId, TestData.ProductId, TestData.TransactionSource, TestData.TransactionReceivedDateTime);
 
-            ProcessSaleTransactionResponse response = await this.TransactionDomainService.ProcessSaleTransaction(command, CancellationToken.None);
+            var result = await this.TransactionDomainService.ProcessSaleTransaction(command, CancellationToken.None);
+            result.IsSuccess.ShouldBeTrue();
+            var response = result.Data;
 
             response.EstateId.ShouldBe(TestData.EstateId);
             response.MerchantId.ShouldBe(TestData.MerchantId);

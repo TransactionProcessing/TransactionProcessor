@@ -152,7 +152,10 @@ public class VoucherDomainEventHandler : IDomainEventHandler
             return ResultHelpers.CreateFailure(voucherAggregateResult);
 
         Models.Voucher voucherModel = voucherAggregateResult.Data.GetVoucher();
-        this.TokenResponse = await Helpers.GetToken(this.TokenResponse, this.SecurityServiceClient, cancellationToken);
+        Result<TokenResponse> getTokenResult = await Helpers.GetToken(this.TokenResponse, this.SecurityServiceClient, cancellationToken);
+        if (getTokenResult.IsFailed)
+            return ResultHelpers.CreateFailure(getTokenResult);
+        this.TokenResponse = getTokenResult.Data;
         if (string.IsNullOrEmpty(voucherModel.RecipientEmail) == false)
         {
             String message = await this.GetEmailVoucherMessage(voucherModel, cancellationToken);

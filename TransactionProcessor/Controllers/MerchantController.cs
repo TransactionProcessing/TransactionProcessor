@@ -7,6 +7,7 @@ using TransactionProcessor.BusinessLogic.Requests;
 using TransactionProcessor.DataTransferObjects.Requests.Merchant;
 using TransactionProcessor.DataTransferObjects.Responses.Merchant;
 using TransactionProcessor.Factories;
+using TransactionProcessor.Models.Contract;
 
 namespace TransactionProcessor.Controllers;
 
@@ -74,14 +75,23 @@ public class MerchantController : ControllerBase
         {
             // Estate user
             // Get the Estate Id claim from the user
-            estateIdClaim = ClaimsHelper.GetUserClaim(this.User, "EstateId");
+            Result<Claim> estateIdClaimResult = ClaimsHelper.GetUserClaim(GetUser(), "EstateId");
+            if (estateIdClaimResult.IsFailed)
+                return Result.Forbidden("User estate id claim is not valid");
+            estateIdClaim = estateIdClaimResult.Data;
         }
 
         if (this.User.IsInRole(merchantRoleName))
         {
             // Get the merchant Id claim from the user
-            estateIdClaim = ClaimsHelper.GetUserClaim(this.User, "EstateId");
-            merchantIdClaim = ClaimsHelper.GetUserClaim(this.User, "MerchantId");
+            Result<Claim> estateIdClaimResult = ClaimsHelper.GetUserClaim(GetUser(), "EstateId");
+            if (estateIdClaimResult.IsFailed)
+                return Result.Forbidden("User estate id claim is not valid");
+            estateIdClaim = estateIdClaimResult.Data;
+            Result<Claim> merchantIdClaimResult = ClaimsHelper.GetUserClaim(GetUser(), "MerchantId");
+            if (estateIdClaimResult.IsFailed)
+                return Result.Forbidden("User merchant id claim is not valid");
+            merchantIdClaim = merchantIdClaimResult.Data;
         }
 
         if (ClaimsHelper.ValidateRouteParameter(estateId, estateIdClaim) == false) {
@@ -224,7 +234,10 @@ public class MerchantController : ControllerBase
     private bool PerformStandardChecks(Guid estateId)
     {
         // Get the Estate Id claim from the user
-        Claim estateIdClaim = ClaimsHelper.GetUserClaim(GetUser(), "EstateId", estateId.ToString());
+        Result<Claim> estateIdClaimResult = ClaimsHelper.GetUserClaim(GetUser(), "EstateId",estateId.ToString());
+        if (estateIdClaimResult.IsFailed)
+            return false; // TODO: Shoudl this be a result?
+        Claim estateIdClaim = estateIdClaimResult.Data;
 
         string estateRoleName = Environment.GetEnvironmentVariable("EstateRoleName");
         if (ClaimsHelper.IsUserRolesValid(GetUser(), new[] { string.IsNullOrEmpty(estateRoleName) ? "Estate" : estateRoleName }) == false)
@@ -486,8 +499,10 @@ public class MerchantController : ControllerBase
             return false;
         }
 
-        Claim merchantIdClaim = ClaimsHelper.GetUserClaim(GetUser(), "MerchantId");
-
+        Result<Claim> getMerchantIdClaimResult = ClaimsHelper.GetUserClaim(GetUser(), "MerchantId");
+        if (getMerchantIdClaimResult.IsFailed)
+            return false; // TODO: Shoudl this be a result?
+        Claim merchantIdClaim = getMerchantIdClaimResult.Data;
         if (ClaimsHelper.ValidateRouteParameter(merchantId, merchantIdClaim) == false)
         {
             return false;
@@ -654,8 +669,10 @@ public class MerchantController : ControllerBase
 
         MerchantQueries.GetTransactionFeesForProductQuery query = new(estateId, merchantId, contractId, productId);
 
-        List<Models.Contract.ContractProductTransactionFee> transactionFees = await Mediator.Send(query, cancellationToken);
-
+        Result<List<ContractProductTransactionFee>> transactionFeesResult = await Mediator.Send(query, cancellationToken);
+        if (transactionFeesResult.IsFailed)
+            return transactionFeesResult.ToActionResultX();
+        List<ContractProductTransactionFee> transactionFees = transactionFeesResult.Data;
         return ModelFactory.ConvertFrom(transactionFees).ToActionResultX();
     }
 

@@ -1,5 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
+using SecurityService.DataTransferObjects.Responses;
+using SimpleResults;
 using TransactionProcessor.DataTransferObjects.Requests.Contract;
 using TransactionProcessor.DataTransferObjects.Requests.Merchant;
 using TransactionProcessor.DataTransferObjects.Requests.Operator;
@@ -424,7 +426,11 @@ namespace TransactionProcessor.IntegrationTests.Shared
             String clientId = ReqnrollTableHelper.GetStringRowValue(firstRow, "ClientId");
             ClientDetails clientDetails = this.TestingContext.GetClientDetails(clientId);
 
-            this.TestingContext.AccessToken = await this.SecurityServiceSteps.GetClientToken(clientDetails.ClientId, clientDetails.ClientSecret, CancellationToken.None);
+            //this.TestingContext.AccessToken = await this.SecurityServiceSteps.GetClientToken(clientDetails.ClientId, clientDetails.ClientSecret, CancellationToken.None);
+            var token = await this.TestingContext.DockerHelper.SecurityServiceClient.GetToken(clientDetails.ClientId, clientDetails.ClientSecret, CancellationToken.None);
+            token.IsSuccess.ShouldBeTrue();
+            this.TestingContext.AccessToken = token.Data.AccessToken;
+
         }
 
         [When(@"I create the following security users")]
@@ -476,10 +482,13 @@ namespace TransactionProcessor.IntegrationTests.Shared
             EstateDetails estateDetails = this.TestingContext.GetEstateDetails(estateName);
             ClientDetails clientDetails = this.TestingContext.GetClientDetails(clientId);
 
-            String tokenResponse = await this.SecurityServiceSteps
-                .GetPasswordToken(clientId, clientDetails.ClientSecret, username, password, CancellationToken.None).ConfigureAwait(false);
-
-            estateDetails.SetEstateUserToken(tokenResponse);
+            //String tokenResponse = await this.SecurityServiceSteps
+            //    .GetPasswordToken(clientId, clientDetails.ClientSecret, username, password, CancellationToken.None).ConfigureAwait(false);
+            Result<TokenResponse> token = await this.TestingContext.DockerHelper.SecurityServiceClient.GetToken(username, password, clientId, clientDetails.ClientSecret,
+                CancellationToken.None);
+            token.IsSuccess.ShouldBeTrue();
+            this.TestingContext.AccessToken = token.Data.AccessToken;
+            estateDetails.SetEstateUserToken(token.Data.AccessToken);
         }
 
         [When("I remove the operator {string} from estate {string} the operator is removed")]

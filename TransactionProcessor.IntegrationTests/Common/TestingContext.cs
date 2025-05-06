@@ -204,12 +204,14 @@ namespace TransactionProcessor.IntegrationTests.Common
 
             GetVoucherResponse voucher = null;
             await Retry.For(async () => {
-                voucher = await this.DockerHelper.TransactionProcessorClient.GetVoucherByTransactionId(this.AccessToken,
+                var getVoucherByTransactionIdResult = await this.DockerHelper.TransactionProcessorClient.GetVoucherByTransactionId(this.AccessToken,
                                                                                                                                           estate.EstateId,
                                                                                                                                           transactionResponse.TransactionId,
                                                                                                                                           CancellationToken.None);
+                getVoucherByTransactionIdResult.IsSuccess.ShouldBeTrue();
+                voucher = getVoucherByTransactionIdResult.Data;
 
-                            });
+            });
             return voucher;
         }
     }
