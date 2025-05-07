@@ -13,6 +13,7 @@ using TransactionProcessor.BusinessLogic.Common;
 using TransactionProcessor.BusinessLogic.Requests;
 using TransactionProcessor.BusinessLogic.Services;
 using TransactionProcessor.DomainEvents;
+using Shared.EventStore.Aggregate;
 
 namespace TransactionProcessor.BusinessLogic.EventHandling
 {

@@ -1,16 +1,11 @@
 using SimpleResults;
+using TransactionProcessor.Aggregates;
 
 namespace TransactionProcessor
 {
-    using System;
-    using System.Collections.Generic;
-    using System.Diagnostics;
-    using System.Diagnostics.CodeAnalysis;
-    using System.Linq;
-    using System.Threading;
-    using System.Threading.Tasks;
     using EventStore.Client;
     using Microsoft.AspNetCore.Builder;
+    using Microsoft.Extensions.Caching.Memory;
     using Microsoft.Extensions.Configuration;
     using Microsoft.Extensions.DependencyInjection;
     using Microsoft.Extensions.Hosting;
@@ -20,6 +15,13 @@ namespace TransactionProcessor
     using Shared.EventStore.SubscriptionWorker;
     using Shared.General;
     using Shared.Logger;
+    using System;
+    using System.Collections.Generic;
+    using System.Diagnostics;
+    using System.Diagnostics.CodeAnalysis;
+    using System.Linq;
+    using System.Threading;
+    using System.Threading.Tasks;
     using TransactionProcessor.BusinessLogic.OperatorInterfaces;
 
     [ExcludeFromCodeCoverage]
@@ -76,6 +78,13 @@ namespace TransactionProcessor
             EventStoreClientSettings eventStoreClientSettings = EventStoreClientSettings.Create(connectionString);
 
             applicationBuilder.ConfigureSubscriptionService(subscriptionWorkersRoot, eventStoreConnectionString, eventHandlerResolvers, Extensions.log, subscriptionRepositoryResolver).Wait(CancellationToken.None);
+
+            // Setup the aggregate service caching
+            IAggregateService aggregateService = Startup.ServiceProvider.GetService<IAggregateService>();
+            aggregateService.AddCachedAggregate(typeof(EstateAggregate),null);
+            aggregateService.AddCachedAggregate(typeof(ContractAggregate), null);
+            aggregateService.AddCachedAggregate(typeof(OperatorAggregate), null);
+
         }
 
     }
