@@ -92,7 +92,7 @@ namespace TransactionProcessor.BusinessLogic.Tests.Mediator
             this.Requests.Add(TestData.Queries.GetTransactionFeesForProductQuery);
 
             // Merchant Statement Commands
-            //this.Requests.Add(TestData.Commands.GenerateMerchantStatementCommand);
+            this.Requests.Add(TestData.Commands.GenerateMerchantStatementCommand);
             this.Requests.Add(TestData.Commands.AddTransactionToMerchantStatementCommand);
             //this.Requests.Add(TestData.Commands.EmailMerchantStatementCommand);
             this.Requests.Add(TestData.Commands.AddSettledFeeToMerchantStatementCommand);

@@ -82,27 +82,54 @@ namespace TransactionProcessor.Aggregates.Tests
             statementLines.Count.ShouldBe(1);
         }
 
-        /*
+        [Fact]
+        public void MerchantStatementAggregate_AddDailySummaryRecord_RecordIsAdded() {
+            MerchantStatementAggregate merchantStatementAggregate = MerchantStatementAggregate.Create(TestData.MerchantStatementId);
+            Should.NotThrow(() => { merchantStatementAggregate.AddDailySummaryRecord(TestData.TransactionDateTime.Date, 1, 100.00m, 1, 0.10m); });
+        }
+
+        [Fact]
+        public void MerchantStatementAggregate_AddDailySummaryRecord_DuplicateAdd_ExceptionIsThrown()
+        {
+            MerchantStatementAggregate merchantStatementAggregate = MerchantStatementAggregate.Create(TestData.MerchantStatementId);
+            merchantStatementAggregate.AddDailySummaryRecord(TestData.TransactionDateTime.Date, 1, 100.00m, 1, 0.10m);
+            Should.Throw<InvalidOperationException>(() => { merchantStatementAggregate.AddDailySummaryRecord(TestData.TransactionDateTime.Date, 1, 100.00m, 1, 0.10m); });
+        }
+
+        
         [Fact]
         public void MerchantStatementAggregate_GenerateStatement_StatementIsGenerated()
         {
             MerchantStatementAggregate merchantStatementAggregate = MerchantStatementAggregate.Create(TestData.MerchantStatementId);
-            merchantStatementAggregate.AddTransactionToStatement(TestData.MerchantStatementId,
-                                                                 TestData.EventId1,
-                                                                 TestData.StatementCreateDate,
-                                                                 TestData.EstateId,
-                                                                 TestData.MerchantId, TestData.Transaction1);
-            merchantStatementAggregate.AddSettledFeeToStatement(TestData.MerchantStatementId,
-                                                                TestData.EventId1,
-                                                                TestData.StatementCreateDate,
-                                                                TestData.EstateId,
-                                                                TestData.MerchantId, TestData.SettledFee1);
+            merchantStatementAggregate.AddDailySummaryRecord(TestData.TransactionDateTime.Date, 1, 100.00m, 1, 0.10m);
             merchantStatementAggregate.GenerateStatement(TestData.StatementGeneratedDate);
 
-            var merchantStatement = merchantStatementAggregate.GetStatement();
+            MerchantStatement merchantStatement = merchantStatementAggregate.GetStatement();
             merchantStatement.IsGenerated.ShouldBeTrue();
         }
 
+        [Fact]
+        public void MerchantStatementAggregate_GenerateStatement_StatementIsAlreadGenerated_ExceptionThrown()
+        {
+            MerchantStatementAggregate merchantStatementAggregate = MerchantStatementAggregate.Create(TestData.MerchantStatementId);
+            merchantStatementAggregate.AddDailySummaryRecord(TestData.TransactionDateTime.Date, 1, 100.00m, 1, 0.10m);
+            merchantStatementAggregate.GenerateStatement(TestData.StatementGeneratedDate);
+            Should.Throw<InvalidOperationException>(() => {
+                merchantStatementAggregate.GenerateStatement(TestData.StatementGeneratedDate);
+            });
+        }
+
+        [Fact]
+        public void MerchantStatementAggregate_GenerateStatement_NoSummaries_ExceptionThrown()
+        {
+            MerchantStatementAggregate merchantStatementAggregate = MerchantStatementAggregate.Create(TestData.MerchantStatementId);
+            
+            Should.Throw<InvalidOperationException>(() => {
+                merchantStatementAggregate.GenerateStatement(TestData.StatementGeneratedDate);
+            });
+        }
+
+        /*
         [Fact]
         public void MerchantStatementAggregate_GenerateStatement_StatementNotCreated_ErrorThrown()
         {
@@ -140,13 +167,13 @@ namespace TransactionProcessor.Aggregates.Tests
         public void MerchantStatementAggregate_GenerateStatement_StatementHasNoTransactionsOrSettledFees_ErrorThrown()
         {
             MerchantStatementAggregate merchantStatementAggregate = MerchantStatementAggregate.Create(TestData.MerchantStatementId);
-            
+
             Should.Throw<InvalidOperationException>(() =>
                                                     {
                                                         merchantStatementAggregate.GenerateStatement(TestData.StatementGeneratedDate);
                                                     });
         }
-        
+
         [Fact]
         public void MerchantStatementAggregate_EmailStatement_StatementHasBeenEmailed()
         {

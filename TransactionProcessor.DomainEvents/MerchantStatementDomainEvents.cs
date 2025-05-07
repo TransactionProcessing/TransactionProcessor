@@ -12,6 +12,9 @@ namespace TransactionProcessor.DomainEvents {
         public record StatementCreatedEvent(Guid MerchantStatementId, Guid EstateId, Guid MerchantId, DateTime StatementDate) : DomainEvent(MerchantStatementId, Guid.NewGuid());
 
         public record ActivityDateAddedToStatementEvent(Guid MerchantStatementId, Guid EstateId, Guid MerchantId, Guid MerchantStatementForDateId, DateTime ActivityDate) : DomainEvent(MerchantStatementId, Guid.NewGuid());
+
+        public record StatementSummaryForDateEvent(Guid MerchantStatementId, Guid EstateId, Guid MerchantId, DateTime ActivityDate, Int32 LineNumber,
+                                                   Int32 NumberOfTransactions, Decimal ValueOfTransactions, Int32 NumberOfSettledFees, Decimal ValueOfSettledFees) : DomainEvent(MerchantStatementId, Guid.NewGuid());
     }
 
     [ExcludeFromCodeCoverage]

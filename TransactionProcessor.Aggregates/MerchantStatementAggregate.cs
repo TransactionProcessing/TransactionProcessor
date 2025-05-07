@@ -32,6 +32,8 @@ namespace TransactionProcessor.Aggregates
         internal Guid MerchantId;
 
         internal List<(Guid merchantStatementForDateId, DateTime activityDate)> ActivityDates;
+
+        internal List<MerchantStatementSummary> MerchantStatementSummaries;
         #endregion
 
         #region Constructors
@@ -41,6 +43,7 @@ namespace TransactionProcessor.Aggregates
         {
             // Nothing here
             this.ActivityDates = new();
+            this.MerchantStatementSummaries = new();
         }
 
         private MerchantStatementAggregate(Guid aggregateId)
@@ -49,6 +52,7 @@ namespace TransactionProcessor.Aggregates
 
             this.AggregateId = aggregateId;
             this.ActivityDates = new();
+            this.MerchantStatementSummaries = new();
         }
 
         #endregion
@@ -81,11 +85,11 @@ namespace TransactionProcessor.Aggregates
             aggregate.StatementDate = domainEvent.StatementDate;
         }
 
-        //public static void PlayEvent(this MerchantStatementAggregate aggregate, MerchantStatementDomainEvents.StatementGeneratedEvent domainEvent)
-        //{
-        //    aggregate.IsGenerated = true;
-        //    aggregate.GeneratedDateTime = domainEvent.DateGenerated;
-        //}
+        public static void PlayEvent(this MerchantStatementAggregate aggregate, MerchantStatementDomainEvents.StatementGeneratedEvent domainEvent)
+        {
+            aggregate.IsGenerated = true;
+            aggregate.GeneratedDateTime = domainEvent.DateGenerated;
+        }
 
         //public static void PlayEvent(this MerchantStatementAggregate aggregate, MerchantStatementDomainEvents.StatementEmailedEvent domainEvent)
         //{
@@ -97,6 +101,13 @@ namespace TransactionProcessor.Aggregates
         public static void PlayEvent(this MerchantStatementAggregate aggregate,
                                      MerchantStatementDomainEvents.ActivityDateAddedToStatementEvent domainEvent) {
             aggregate.ActivityDates.Add((domainEvent.MerchantStatementForDateId, domainEvent.ActivityDate));
+        }
+        
+        public static void PlayEvent(this MerchantStatementAggregate aggregate,
+                                     MerchantStatementDomainEvents.StatementSummaryForDateEvent domainEvent)
+        {
+            aggregate.MerchantStatementSummaries.Add(new MerchantStatementSummary(domainEvent.ActivityDate,domainEvent.NumberOfTransactions,domainEvent.ValueOfTransactions,
+                domainEvent.NumberOfSettledFees,domainEvent.ValueOfTransactions));
         }
 
         public static void RecordActivityDateOnStatement(this MerchantStatementAggregate aggregate,
@@ -137,6 +148,7 @@ namespace TransactionProcessor.Aggregates
                 IsCreated = aggregate.IsCreated,
                 StatementDate = aggregate.StatementDate,
                 MerchantStatementId = aggregate.AggregateId,
+                IsGenerated = aggregate.IsGenerated,
             };
 
             foreach ((Guid merchantStatementForDateId, DateTime activityDate) aggregateActivityDate in aggregate.ActivityDates) {
@@ -158,21 +170,21 @@ namespace TransactionProcessor.Aggregates
         //    aggregate.ApplyAndAppend(statementEmailedEvent);
         //}
 
-        //public static void GenerateStatement(this MerchantStatementAggregate aggregate,
-        //                                     DateTime generatedDateTime)
-        //{
-        //    aggregate.EnsureStatementHasNotAlreadyBeenGenerated();
+        public static void GenerateStatement(this MerchantStatementAggregate aggregate,
+                                             DateTime generatedDateTime)
+        {
+            aggregate.EnsureStatementHasNotAlreadyBeenGenerated();
 
-        //    // TODO: Validate days have been added
-        //    //if (aggregate.Transactions.Any() == false && aggregate.SettledFees.Any() == false)
-        //    //{
-        //    //    throw new InvalidOperationException("Statement has no transactions or settled fees");
-        //    //}
+            // Validate days have been added
+            if (aggregate.MerchantStatementSummaries.Any() == false)
+            {
+                throw new InvalidOperationException("Statement has no transactions or settled fees");
+            }
 
-        //    MerchantStatementDomainEvents.StatementGeneratedEvent statementGeneratedEvent = new(aggregate.AggregateId, aggregate.EstateId, aggregate.MerchantId, generatedDateTime);
+            MerchantStatementDomainEvents.StatementGeneratedEvent statementGeneratedEvent = new(aggregate.AggregateId, aggregate.EstateId, aggregate.MerchantId, generatedDateTime);
 
-        //    aggregate.ApplyAndAppend(statementGeneratedEvent);
-        //}
+            aggregate.ApplyAndAppend(statementGeneratedEvent);
+        }
 
         //private static void EnsureStatementHasBeenCreated(this MerchantStatementAggregate aggregate)
         //{
@@ -190,12 +202,23 @@ namespace TransactionProcessor.Aggregates
         //    }
         //}
 
-        //private static void EnsureStatementHasNotAlreadyBeenGenerated(this MerchantStatementAggregate aggregate)
-        //{
-        //    if (aggregate.IsGenerated)
-        //    {
-        //        throw new InvalidOperationException("Statement header has already been generated");
-        //    }
-        //}
+        private static void EnsureStatementHasNotAlreadyBeenGenerated(this MerchantStatementAggregate aggregate)
+        {
+            if (aggregate.IsGenerated)
+            {
+                throw new InvalidOperationException("Statement header has already been generated");
+            }
+        }
+
+        public static void AddDailySummaryRecord(this MerchantStatementAggregate aggregate, DateTime activityDate, Int32 numberOfTransactions, Decimal valueOfTransactions, Int32 numberOfSettledFees, Decimal valueOfSettledFees) {
+            if (aggregate.MerchantStatementSummaries.Any(s => s.ActivityDate == activityDate)) {
+                throw new InvalidOperationException($"Summary Data for Activity Date {activityDate:yyyy-MM-dd} already exists");
+            }
+            MerchantStatementDomainEvents.StatementSummaryForDateEvent statementSummaryForDateEvent = new(aggregate.AggregateId, aggregate.EstateId, aggregate.MerchantId, activityDate,aggregate.MerchantStatementSummaries.Count +1
+                ,numberOfTransactions, valueOfTransactions, numberOfSettledFees, valueOfSettledFees);
+            aggregate.ApplyAndAppend(statementSummaryForDateEvent);
+        }
     }
+
+    public record MerchantStatementSummary(DateTime ActivityDate, Int32 NumberOfTransactions, Decimal ValueOfTransactions, Int32 NumberOfSettledFees, Decimal ValueOfSettledFees);
 }
