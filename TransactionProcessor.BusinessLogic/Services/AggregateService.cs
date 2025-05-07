@@ -17,7 +17,7 @@ using System.Threading.Tasks;
 using Shared.Logger;
 using TransactionProcessor.Aggregates;
 using TransactionProcessor.BusinessLogic.Services;
-
+/*
 namespace TransactionProcessor.BusinessLogic.Services {
     public interface IAggregateRepositoryResolver {
         IAggregateRepository<TAggregate, TEvent> Resolve<TAggregate, TEvent>() where TAggregate : Aggregate where TEvent : DomainEvent;
@@ -359,3 +359,4 @@ public class AggregateMemoryCache
         return this.MemoryCache.TryGetValue(key, out aggregate);
     }
 }
+*/

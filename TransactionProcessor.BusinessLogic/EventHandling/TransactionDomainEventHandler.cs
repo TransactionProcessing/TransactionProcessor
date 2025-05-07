@@ -3,6 +3,7 @@ using SimpleResults;
 using System;
 using System.Diagnostics;
 using Prometheus;
+using Shared.EventStore.Aggregate;
 using TransactionProcessor.BusinessLogic.Requests;
 using TransactionProcessor.DomainEvents;
 using TransactionProcessor.Models.Contract;
