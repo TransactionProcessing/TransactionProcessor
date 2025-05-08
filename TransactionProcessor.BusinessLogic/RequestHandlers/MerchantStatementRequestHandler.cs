@@ -9,7 +9,7 @@ namespace TransactionProcessor.BusinessLogic.RequestHandlers
 {
     public class MerchantStatementRequestHandler : IRequestHandler<MerchantStatementCommands.AddTransactionToMerchantStatementCommand, Result>, 
                                                    IRequestHandler<MerchantStatementCommands.AddSettledFeeToMerchantStatementCommand,Result>,
-                                                   //IRequestHandler<MerchantCommands.GenerateMerchantStatementCommand, Result>,
+                                                   IRequestHandler<MerchantCommands.GenerateMerchantStatementCommand, Result>,
                                                    //IRequestHandler<MerchantStatementCommands.EmailMerchantStatementCommand, Result>,
                                                    IRequestHandler<MerchantStatementCommands.RecordActivityDateOnMerchantStatementCommand, Result> {
         #region Fields
@@ -64,10 +64,10 @@ namespace TransactionProcessor.BusinessLogic.RequestHandlers
 
         #endregion
 
-        //public async Task<Result> Handle(MerchantCommands.GenerateMerchantStatementCommand command, CancellationToken cancellationToken)
-        //{
-        //    return await this.MerchantStatementDomainService.GenerateStatement(command, cancellationToken);
-        //}
+        public async Task<Result> Handle(MerchantCommands.GenerateMerchantStatementCommand command, CancellationToken cancellationToken)
+        {
+            return await this.MerchantStatementDomainService.GenerateStatement(command, cancellationToken);
+        }
 
         //public async Task<Result> Handle(MerchantStatementCommands.EmailMerchantStatementCommand command,
         //                                 CancellationToken cancellationToken)

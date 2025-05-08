@@ -2076,16 +2076,16 @@ namespace TransactionProcessor.Testing
         public static Boolean IsAuthorisedFalse = false;
 
         public static Boolean IsAuthorisedTrue = true;
-
-        //public static GenerateMerchantStatementRequest GenerateMerchantStatementRequest =>
-        //    new GenerateMerchantStatementRequest
-        //    {
-        //        MerchantStatementDate = TestData.StatementCreateDate
-        //    };
+        public static DateTime StatementCreateDate = new DateTime(2025, 5, 1);
+        public static GenerateMerchantStatementRequest GenerateMerchantStatementRequest =>
+            new GenerateMerchantStatementRequest
+            {
+                MerchantStatementDate = TestData.StatementCreateDate
+            };
         #endregion
 
         public static class Commands {
-            //public static MerchantCommands.GenerateMerchantStatementCommand GenerateMerchantStatementCommand => new(TestData.EstateId, TestData.MerchantId, TestData.GenerateMerchantStatementRequest);
+            public static MerchantCommands.GenerateMerchantStatementCommand GenerateMerchantStatementCommand => new(TestData.EstateId, TestData.MerchantId, TestData.GenerateMerchantStatementRequest);
 
             public static MerchantStatementCommands.AddTransactionToMerchantStatementCommand AddTransactionToMerchantStatementCommand => new(EstateId, MerchantId, TransactionDateTime, TransactionAmount, IsAuthorisedTrue, TransactionId);
             //public static MerchantStatementCommands.EmailMerchantStatementCommand EmailMerchantStatementCommand => new(EstateId, MerchantId, MerchantStatementId);

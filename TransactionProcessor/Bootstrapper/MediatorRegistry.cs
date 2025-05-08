@@ -42,7 +42,7 @@ namespace TransactionProcessor.Bootstrapper
         private void RegisterMerchantStatementRequestHandler() {
             this.AddSingleton<IRequestHandler<MerchantStatementCommands.AddTransactionToMerchantStatementCommand, Result>, MerchantStatementRequestHandler>();
             this.AddSingleton<IRequestHandler<MerchantStatementCommands.AddSettledFeeToMerchantStatementCommand, Result>, MerchantStatementRequestHandler>();
-            //this.AddSingleton<IRequestHandler<MerchantCommands.GenerateMerchantStatementCommand, Result>, MerchantStatementRequestHandler>();
+            this.AddSingleton<IRequestHandler<MerchantCommands.GenerateMerchantStatementCommand, Result>, MerchantStatementRequestHandler>();
             //this.AddSingleton<IRequestHandler<MerchantStatementCommands.EmailMerchantStatementCommand, Result>, MerchantStatementRequestHandler>();
             this.AddSingleton<IRequestHandler<MerchantStatementCommands.RecordActivityDateOnMerchantStatementCommand, Result>, MerchantStatementRequestHandler>();
         }

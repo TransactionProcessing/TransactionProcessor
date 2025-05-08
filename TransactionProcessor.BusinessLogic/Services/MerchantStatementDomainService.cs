@@ -9,9 +9,11 @@ using Shared.Logger;
 using Shared.Results;
 using SimpleResults;
 using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.IO.Abstractions;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Google.Protobuf.Reflection;
@@ -164,29 +166,52 @@ namespace TransactionProcessor.BusinessLogic.Services
             return new DateTime(calculatedDateTime.Year, calculatedDateTime.Month, 1);
         }
 
-        /// <summary>
-        /// Generates the statement.
-        /// </summary>
-        /// <param name="estateId">The estate identifier.</param>
-        /// <param name="merchantId">The merchant identifier.</param>
-        /// <param name="statementDate">The statement date.</param>
-        /// <param name="cancellationToken">The cancellation token.</param>
-        /// <returns></returns>
         public async Task<Result> GenerateStatement(MerchantCommands.GenerateMerchantStatementCommand command, CancellationToken cancellationToken)
         {
-            //Guid statementId = GuidCalculator.Combine(command.MerchantId, command.RequestDto.MerchantStatementDate.ToGuid());
+            // Need to rebuild the date time from the command as the Kind is Utc which is different from the date time used to generate the statement id
+            DateTime dt = new DateTime(command.RequestDto.MerchantStatementDate.Year, command.RequestDto.MerchantStatementDate.Month, command.RequestDto.MerchantStatementDate.Day);
+            Guid merchantStatementId = IdGenerationService.GenerateMerchantStatementAggregateId(command.EstateId, command.MerchantId, dt);
+            
+            Result result = await ApplyUpdates(
+                async (MerchantStatementAggregate merchantStatementAggregate) =>
+                {
+                    MerchantStatement statement = merchantStatementAggregate.GetStatement();
+                    List<(Guid merchantStatementForDateId, DateTime activityDate)> activityDates = statement.GetActivityDates();
 
-            //Result result = await ApplyUpdates(
-            //    async (MerchantStatementAggregate merchantStatementAggregate) => {
+                    List<MerchantStatementForDate> statementForDateAggregates = new();
+                    foreach ((Guid merchantStatementForDateId, DateTime activityDate) activityDate in activityDates)
+                    {
+                        Result<MerchantStatementForDateAggregate> statementForDateResult = await this.AggregateService.GetLatest<MerchantStatementForDateAggregate>(activityDate.merchantStatementForDateId, cancellationToken);
+                        if (statementForDateResult.IsFailed)
+                            return ResultHelpers.CreateFailure(statementForDateResult);
+                        MerchantStatementForDate dailyStatement = statementForDateResult.Data.GetStatement(true);
+                        statementForDateAggregates.Add(dailyStatement);
+                    }
 
-            //        merchantStatementAggregate.GenerateStatement(DateTime.Now);
+                    // Ok so now we have the daily statements we need to add a summary line to the statement aggregate
+                    foreach (MerchantStatementForDate merchantStatementForDateAggregate in statementForDateAggregates)
+                    {
+                        // Build the summary event
+                        var transactionsResult = merchantStatementForDateAggregate.GetStatementLines()
+                            .Where(sl => sl.LineType == 1)
+                            .Aggregate(new { Count = 0, TotalAmount = 0m },
+                                (acc, sl) => new { Count = acc.Count + 1, TotalAmount = acc.TotalAmount + sl.Amount });
+                        var settledFeesResult = merchantStatementForDateAggregate.GetStatementLines()
+                            .Where(sl => sl.LineType == 2)
+                            .Aggregate(new { Count = 0, TotalAmount = 0m },
+                                (acc, sl) => new { Count = acc.Count + 1, TotalAmount = acc.TotalAmount + sl.Amount });
+                        merchantStatementAggregate.AddDailySummaryRecord(merchantStatementForDateAggregate.ActivityDate, transactionsResult.Count, transactionsResult.TotalAmount, settledFeesResult.Count,
+                            settledFeesResult.TotalAmount);
+                    }
 
-            //        return Result.Success();
-            //    },
-            //    command.EstateId, statementId, cancellationToken, false);
+                    merchantStatementAggregate.GenerateStatement(DateTime.Now);
 
-            //if (result.IsFailed)
-            //    return ResultHelpers.CreateFailure(result);
+                    return Result.Success();
+                },
+                merchantStatementId, cancellationToken, false);
+
+            if (result.IsFailed)
+                return ResultHelpers.CreateFailure(result);
 
             return Result.Success();
         }
