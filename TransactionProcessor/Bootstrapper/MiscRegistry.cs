@@ -18,15 +18,13 @@ namespace TransactionProcessor.Bootstrapper
     /// </summary>
     /// <seealso cref="Lamar.ServiceRegistry" />
     [ExcludeFromCodeCoverage]
-    public class MiscRegistry : ServiceRegistry
-    {
+    public class MiscRegistry : ServiceRegistry {
         #region Constructors
 
         /// <summary>
         /// Initializes a new instance of the <see cref="MiscRegistry"/> class.
         /// </summary>
-        public MiscRegistry()
-        {
+        public MiscRegistry() {
             this.AddSingleton<ITransactionReceiptBuilder, TransactionReceiptBuilder>();
             this.AddSingleton<IFileSystem, FileSystem>();
             this.AddSingleton<IFeeCalculationManager, FeeCalculationManager>();
@@ -34,40 +32,16 @@ namespace TransactionProcessor.Bootstrapper
             this.AddSingleton<ITransactionProcessorManager, TransactionProcessorManager>();
             this.AddSingleton<IMemoryCacheWrapper, MemoryCacheWrapper>();
             this.AddSingleton<IStatementBuilder, StatementBuilder>();
-            //this.AddSingleton<IPDFGenerator, PDFGenerator>();
 
             bool logRequests = ConfigurationReader.GetValueOrDefault<Boolean>("MiddlewareLogging", "LogRequests", true);
             bool logResponses = ConfigurationReader.GetValueOrDefault<Boolean>("MiddlewareLogging", "LogResponses", true);
             LogLevel middlewareLogLevel = ConfigurationReader.GetValueOrDefault<LogLevel>("MiddlewareLogging", "MiddlewareLogLevel", LogLevel.Warning);
 
-            RequestResponseMiddlewareLoggingConfig config =
-            new RequestResponseMiddlewareLoggingConfig(middlewareLogLevel, logRequests, logResponses);
+            RequestResponseMiddlewareLoggingConfig config = new RequestResponseMiddlewareLoggingConfig(middlewareLogLevel, logRequests, logResponses);
 
             this.AddSingleton(config);
         }
 
         #endregion
     }
-
-    //public static class ConfigurationReaderExtensions
-    //{
-    //    public static T GetValueOrDefault<T>(String sectionName, String keyName, T defaultValue)
-    //    {
-    //        try
-    //        {
-    //            var value = ConfigurationReader.GetValue(sectionName, keyName);
-
-    //            if (String.IsNullOrEmpty(value))
-    //            {
-    //                return defaultValue;
-    //            }
-
-    //            return (T)Convert.ChangeType(value, typeof(T));
-    //        }
-    //        catch (KeyNotFoundException kex)
-    //        {
-    //            return defaultValue;
-    //        }
-    //    }
-    //}
 }

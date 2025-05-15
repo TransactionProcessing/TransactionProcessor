@@ -79,20 +79,14 @@ namespace TransactionProcessor.Controllers
                     return this.Ok();
                 }
 
-                //List<Task<Result>> tasks = new();
-                List<Func<Task<Result>>> taskFactories = new();
-                foreach (IDomainEventHandler domainEventHandler in eventHandlers) {
-                    //Func<Task<Result>> t = () => domainEventHandler.Handle(domainEvent, cancellationToken);
-                    //tasks.Add(t);
-                    taskFactories.Add(() => domainEventHandler.Handle(domainEvent, cancellationToken));
+                List<Task<Result>> tasks = new();
+                foreach (IDomainEventHandler domainEventHandler in eventHandlers)
+                {
+                    tasks.Add(domainEventHandler.Handle(domainEvent, cancellationToken));
                 }
 
-                // Now trigger the execution
-                List<Task<Result>> runningTasks = taskFactories.Select(factory => factory()).ToList();
-
-                //Task.WaitAll(tasks.ToArray(), cancellationToken);
-                await Task.WhenAll(runningTasks).WaitAsync(cancellationToken);
-                var anyFailed = runningTasks.Any(t => t.Result.IsFailed);
+                Task.WaitAll(tasks.ToArray());
+                var anyFailed = tasks.Any(t => t.Result.IsFailed);
                 if (anyFailed)
                     return this.StatusCode(500);
 
