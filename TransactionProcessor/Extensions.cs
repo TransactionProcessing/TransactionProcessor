@@ -120,6 +120,8 @@ namespace TransactionProcessor
         public void Start() {
             foreach (FileProfile fileProfile in this.FileProfiles) {
                 Logger.LogWarning($"File Profile: {fileProfile.Name} Listening on Folder: [{fileProfile.ListeningDirectory}] IsEnabled: {fileProfile.IsEnabled}");
+                Directory.CreateDirectory(fileProfile.ListeningDirectory);
+
                 FileSystemWatcher fileSystemWatcher = new FileSystemWatcher
                 {
                     Path = fileProfile.ListeningDirectory,
