@@ -467,11 +467,18 @@ namespace TransactionProcessor.IntegrationTests.Shared
             await this.TransactionProcessorSteps.WhenIGetTheEstateTheEstateSecurityUserDetailsAreReturnedAsFollows(this.TestingContext.AccessToken, estateName, this.TestingContext.Estates, securityUsers);
         }
 
-        [When(@"I get the estate ""(.*)"" an error is returned")]
-        public async Task WhenIGetTheEstateAnErrorIsReturned(String estateName)
+        //[When(@"I get the estate ""(.*)"" an error is returned")]
+        //public async Task WhenIGetTheEstateAnErrorIsReturned(String estateName)
+        //{
+        //    await this.TransactionProcessorSteps.WhenIGetTheEstateAnErrorIsReturned(this.TestingContext.AccessToken, estateName, this.TestingContext.Estates);
+        //}
+
+        [When("I get the estate {string} a {string} error is returned")]
+        public async Task WhenIGetTheEstateAErrorIsReturned(String estateName, string errorStatus)
         {
-            await this.TransactionProcessorSteps.WhenIGetTheEstateAnErrorIsReturned(this.TestingContext.AccessToken, estateName, this.TestingContext.Estates);
+            await this.TransactionProcessorSteps.WhenIGetTheEstateAnErrorIsReturned(this.TestingContext.AccessToken, estateName, this.TestingContext.Estates, errorStatus);
         }
+
 
         [Given(@"I am logged in as ""(.*)"" with password ""(.*)"" for Estate ""(.*)"" with client ""(.*)""")]
         public async Task GivenIAmLoggedInAsWithPasswordForEstate(String username,

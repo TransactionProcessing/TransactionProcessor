@@ -259,7 +259,7 @@ await this.FeatureBackgroundAsync();
                         " follows", ((string)(null)), table36, "When ");
 #line hidden
 #line 53
- await testRunner.WhenAsync("I get the estate \"Test Estate 2\" an error is returned", ((string)(null)), ((global::Reqnroll.Table)(null)), "When ");
+ await testRunner.WhenAsync("I get the estate \"Test Estate 2\" a \"NotFound\" error is returned", ((string)(null)), ((global::Reqnroll.Table)(null)), "When ");
 #line hidden
 #line 54
  await testRunner.GivenAsync("I am logged in as \"estateuser1@testestate1.co.uk\" with password \"123456\" for Esta" +
@@ -293,7 +293,7 @@ await this.FeatureBackgroundAsync();
                         " follows", ((string)(null)), table39, "When ");
 #line hidden
 #line 66
- await testRunner.WhenAsync("I get the estate \"Test Estate 2\" an error is returned", ((string)(null)), ((global::Reqnroll.Table)(null)), "When ");
+ await testRunner.WhenAsync("I get the estate \"Test Estate 2\" a \"Failure\" error is returned", ((string)(null)), ((global::Reqnroll.Table)(null)), "When ");
 #line hidden
             }
             await this.ScenarioCleanupAsync();

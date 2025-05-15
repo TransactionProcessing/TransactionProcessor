@@ -995,12 +995,13 @@ public class TransactionProcessorSteps
         }
     }
 
-    public async Task WhenIGetTheEstateAnErrorIsReturned(String accessToken, String estateName, List<EstateDetails> estateDetailsList)
+    public async Task WhenIGetTheEstateAnErrorIsReturned(String accessToken, String estateName, List<EstateDetails> estateDetailsList, String errorStatus)
     {
         Guid estateId = Guid.NewGuid();
         Result<EstateResponse>? result = await this.TransactionProcessorClient.GetEstate(accessToken, estateId, CancellationToken.None).ConfigureAwait(false);
         result.IsSuccess.ShouldBeFalse();
-        result.Status.ShouldBe(ResultStatus.NotFound);
+        ResultStatus status = Enum.Parse<ResultStatus>(errorStatus);
+        result.Status.ShouldBe(status);
     }
 
     public async Task WhenIRemoveTheOperatorFromEstateTheOperatorIsRemoved(String accessToken, List<EstateDetails> estateDetailsList, String estateName, String operatorName)
