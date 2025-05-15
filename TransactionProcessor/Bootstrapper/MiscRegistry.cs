@@ -33,6 +33,8 @@ namespace TransactionProcessor.Bootstrapper
             this.AddSingleton<IVoucherManagementManager, VoucherManagementManager>();
             this.AddSingleton<ITransactionProcessorManager, TransactionProcessorManager>();
             this.AddSingleton<IMemoryCacheWrapper, MemoryCacheWrapper>();
+            this.AddSingleton<IStatementBuilder, StatementBuilder>();
+            //this.AddSingleton<IPDFGenerator, PDFGenerator>();
 
             bool logRequests = ConfigurationReader.GetValueOrDefault<Boolean>("MiddlewareLogging", "LogRequests", true);
             bool logResponses = ConfigurationReader.GetValueOrDefault<Boolean>("MiddlewareLogging", "LogResponses", true);

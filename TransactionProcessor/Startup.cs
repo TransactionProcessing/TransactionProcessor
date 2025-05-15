@@ -1,4 +1,6 @@
+using System.Threading;
 using Prometheus;
+using TransactionProcessor.BusinessLogic.Services;
 
 namespace TransactionProcessor
 {
@@ -158,6 +160,9 @@ namespace TransactionProcessor
 
             app.PreWarm();
             
+            //Environment.SetEnvironmentVariable("SYNCFUSION_LICENSE_LOGGING", "1");
+            //Syncfusion.Licensing.SyncfusionLicenseProvider.RegisterLicense("Mgo+DSMBMAY9C3t2XFhhQlJHfV5AQmBIYVp/TGpJfl96cVxMZVVBJAtUQF1hTH5WdkxiWH9ec31QTmldWkZ/");
+
         }
 
         public void ConfigureContainer(ServiceRegistry services) {

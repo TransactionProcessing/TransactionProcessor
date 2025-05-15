@@ -5,6 +5,8 @@ using Shared.DomainDrivenDesign.EventSourcing;
 using Shared.EventStore.EventHandling;
 using SimpleResults;
 using System.Diagnostics;
+using System.IO;
+using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
 using Prometheus;
@@ -25,13 +27,11 @@ namespace TransactionProcessor.BusinessLogic.EventHandling
         /// The mediator
         /// </summary>
         private readonly IMediator Mediator;
-
         #endregion
 
         #region Constructors
 
-        public MerchantStatementDomainEventHandler(IMediator mediator)
-        {
+        public MerchantStatementDomainEventHandler(IMediator mediator) {
             this.Mediator = mediator;
         }
 
@@ -60,6 +60,7 @@ namespace TransactionProcessor.BusinessLogic.EventHandling
                 MerchantStatementDomainEvents.StatementGeneratedEvent de => this.HandleSpecificDomainEvent(de, cancellationToken),
                 TransactionDomainEvents.TransactionHasBeenCompletedEvent de => this.HandleSpecificDomainEvent(de, cancellationToken),
                 MerchantStatementForDateDomainEvents.StatementCreatedForDateEvent de => this.HandleSpecificDomainEvent(de, cancellationToken),
+                MerchantStatementDomainEvents.StatementBuiltEvent de => this.HandleSpecificDomainEvent(de, cancellationToken),
                 _ => null
             };
 
@@ -71,8 +72,19 @@ namespace TransactionProcessor.BusinessLogic.EventHandling
             return result;
         }
 
-        private async Task<Result> HandleSpecificDomainEvent(MerchantStatementForDateDomainEvents.StatementCreatedForDateEvent domainEvent,
+        private async Task<Result> HandleSpecificDomainEvent(MerchantStatementDomainEvents.StatementBuiltEvent domainEvent,
                                                        CancellationToken cancellationToken) {
+            var statementData = domainEvent.statementData;
+            // Decode thebase64 string to a byte array
+            byte[] data = Convert.FromBase64String(statementData);
+            // Convert the byte array to a string
+            string statementDataHtml = System.Text.Encoding.UTF8.GetString(data);
+            await File.WriteAllTextAsync($"C:\\Temp\\statements\\inbound\\{domainEvent.MerchantStatementId}.html", statementDataHtml, cancellationToken);
+            return Result.Success();
+        }
+
+        private async Task<Result> HandleSpecificDomainEvent(MerchantStatementForDateDomainEvents.StatementCreatedForDateEvent domainEvent,
+                                                             CancellationToken cancellationToken) {
             MerchantStatementCommands.RecordActivityDateOnMerchantStatementCommand command = new(domainEvent.EstateId, domainEvent.MerchantId, domainEvent.MerchantStatementId, domainEvent.MerchantStatementDate,
                 domainEvent.MerchantStatementForDateId, domainEvent.ActivityDate);
             return await this.Mediator.Send(command, cancellationToken);
@@ -85,7 +97,7 @@ namespace TransactionProcessor.BusinessLogic.EventHandling
         /// <param name="cancellationToken">The cancellation token.</param>
         private async Task<Result> HandleSpecificDomainEvent(MerchantStatementDomainEvents.StatementGeneratedEvent domainEvent,
                                                              CancellationToken cancellationToken) {
-            MerchantStatementCommands.EmailMerchantStatementCommand command = new(domainEvent.EstateId, domainEvent.MerchantId, domainEvent.MerchantStatementId);
+            MerchantStatementCommands.BuildMerchantStatementCommand command = new(domainEvent.EstateId, domainEvent.MerchantId, domainEvent.MerchantStatementId);
 
             return await this.Mediator.Send(command, cancellationToken);
         }
@@ -94,12 +106,7 @@ namespace TransactionProcessor.BusinessLogic.EventHandling
                                                              CancellationToken cancellationToken) {
             MerchantStatementCommands.AddTransactionToMerchantStatementCommand command = new(domainEvent.EstateId, domainEvent.MerchantId, domainEvent.CompletedDateTime, domainEvent.TransactionAmount, domainEvent.IsAuthorised, domainEvent.TransactionId);
 
-            //return await this.Mediator.Send(command, cancellationToken);
-            var result = await this.Mediator.Send(command, cancellationToken);
-            if (result.Status == ResultStatus.CriticalError) {
-                Logger.LogWarning($"Domain Events is {domainEvent}");
-                return result;
-            }
+            Result result = await this.Mediator.Send(command, cancellationToken);
             return result;
         }
 
@@ -109,12 +116,7 @@ namespace TransactionProcessor.BusinessLogic.EventHandling
             MerchantStatementCommands.AddSettledFeeToMerchantStatementCommand command = new(domainEvent.EstateId, domainEvent.MerchantId, domainEvent.FeeCalculatedDateTime, domainEvent.CalculatedValue, domainEvent.TransactionId, domainEvent.FeeId);
 
             //return await this.Mediator.Send(command, cancellationToken);
-            var result = await this.Mediator.Send(command, cancellationToken);
-            if (result.Status == ResultStatus.CriticalError)
-            {
-                Logger.LogWarning($"Domain Events is {domainEvent}");
-                return result;
-            }
+            Result result = await this.Mediator.Send(command, cancellationToken);
             return result;
         }
 

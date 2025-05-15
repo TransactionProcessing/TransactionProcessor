@@ -1,4 +1,5 @@
-﻿using Newtonsoft.Json;
+﻿using System.Text;
+using Newtonsoft.Json;
 using Shared.ValueObjects;
 using TransactionProcessor.Aggregates;
 using TransactionProcessor.BusinessLogic.Events;
@@ -39,6 +40,8 @@ namespace TransactionProcessor.Testing
 
     public class TestData
     {
+        public static String StatementData = "StatementData";
+
         #region Fields
         public static Guid TransactionId1 = Guid.Parse("82E1ACE2-EA34-4501-832D-1DB97B8B4294");
 
@@ -74,6 +77,7 @@ namespace TransactionProcessor.Testing
         public static DateTime StatementEmailedDate = new DateTime(2021, 12, 12);
 
         public static DateTime StatementGeneratedDate = new DateTime(2021, 12, 11);
+        public static DateTime StatementBuiltDate = new DateTime(2021, 12, 11);
         public static Guid MerchantStatementId = Guid.Parse("C8CC622C-07D9-48E9-B544-F53BD29DE1E6");
         public static Guid MerchantStatementForDateId1 = Guid.Parse("9AE8455F-72A7-4876-8403-D6FBEF6EBDBF");
         public static DateTime ActivityDate1 = new DateTime(2021, 1, 10);
@@ -2595,6 +2599,9 @@ namespace TransactionProcessor.Testing
             public static MerchantStatementDomainEvents.StatementCreatedEvent StatementCreatedEvent => new(TestData.MerchantStatementId, TestData.EstateId, TestData.MerchantId, StatementDate);
 
             public static MerchantStatementDomainEvents.StatementGeneratedEvent StatementGeneratedEvent => new MerchantStatementDomainEvents.StatementGeneratedEvent(TestData.MerchantStatementId, TestData.EstateId, TestData.MerchantId, TestData.StatementGeneratedDate);
+
+            public static MerchantStatementDomainEvents.StatementBuiltEvent StatementBuiltEvent => new MerchantStatementDomainEvents.StatementBuiltEvent(TestData.MerchantStatementId, TestData.EstateId, TestData.MerchantId, TestData.StatementGeneratedDate, Convert.ToBase64String(ASCIIEncoding.Default.GetBytes(StatementData)));
+
             public static CallbackReceivedEnrichedEvent CallbackReceivedEnrichedEventDeposit =>
                 new CallbackReceivedEnrichedEvent(TestData.CallbackId)
                 {

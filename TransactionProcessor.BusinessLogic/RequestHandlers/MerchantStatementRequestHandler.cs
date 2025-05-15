@@ -10,8 +10,10 @@ namespace TransactionProcessor.BusinessLogic.RequestHandlers
     public class MerchantStatementRequestHandler : IRequestHandler<MerchantStatementCommands.AddTransactionToMerchantStatementCommand, Result>, 
                                                    IRequestHandler<MerchantStatementCommands.AddSettledFeeToMerchantStatementCommand,Result>,
                                                    IRequestHandler<MerchantCommands.GenerateMerchantStatementCommand, Result>,
-                                                   //IRequestHandler<MerchantStatementCommands.EmailMerchantStatementCommand, Result>,
-                                                   IRequestHandler<MerchantStatementCommands.RecordActivityDateOnMerchantStatementCommand, Result> {
+                                                   IRequestHandler<MerchantStatementCommands.BuildMerchantStatementCommand, Result>,
+                                                   IRequestHandler<MerchantStatementCommands.RecordActivityDateOnMerchantStatementCommand, Result>,
+                                                   IRequestHandler<MerchantStatementCommands.EmailMerchantStatementCommand, Result>
+    {
         #region Fields
 
         /// <summary>
@@ -69,11 +71,17 @@ namespace TransactionProcessor.BusinessLogic.RequestHandlers
             return await this.MerchantStatementDomainService.GenerateStatement(command, cancellationToken);
         }
 
-        //public async Task<Result> Handle(MerchantStatementCommands.EmailMerchantStatementCommand command,
-        //                                 CancellationToken cancellationToken)
-        //{
-        //    return await this.MerchantStatementDomainService.EmailStatement(command, cancellationToken);
-        //}
+        public async Task<Result> Handle(MerchantStatementCommands.BuildMerchantStatementCommand command,
+                                         CancellationToken cancellationToken)
+        {
+            return await this.MerchantStatementDomainService.BuildStatement(command, cancellationToken);
+        }
+
+        public async Task<Result> Handle(MerchantStatementCommands.EmailMerchantStatementCommand command,
+                                         CancellationToken cancellationToken)
+        {
+            return await this.MerchantStatementDomainService.EmailStatement(command, cancellationToken);
+        }
 
         public async Task<Result> Handle(MerchantStatementCommands.RecordActivityDateOnMerchantStatementCommand request,
                                          CancellationToken cancellationToken) {

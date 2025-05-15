@@ -1,13 +1,11 @@
-﻿using System;
+﻿using SimpleResults;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using SimpleResults;
 
 namespace TransactionProcessor.Controllers
 {
-    using System.Diagnostics.CodeAnalysis;
-    using System.Threading;
     using Microsoft.AspNetCore.Mvc;
     using Newtonsoft.Json;
     using Newtonsoft.Json.Linq;
@@ -17,6 +15,9 @@ namespace TransactionProcessor.Controllers
     using Shared.General;
     using Shared.Logger;
     using Shared.Serialisation;
+    using System.Diagnostics.CodeAnalysis;
+    using System.Threading;
+    using TransactionProcessor.BusinessLogic.Services;
 
     [Route(DomainEventController.ControllerRoute)]
     [ApiController]
@@ -58,6 +59,9 @@ namespace TransactionProcessor.Controllers
         public async Task<IActionResult> PostEventAsync([FromBody] Object request,
                                                         CancellationToken cancellationToken)
         {
+            //PDFGenerator pdf = new PDFGenerator();
+            //await pdf.CreatePDF("", CancellationToken.None);
+
             IDomainEvent domainEvent = await this.GetDomainEvent(request);
 
             List<IDomainEventHandler> eventHandlers = this.GetDomainEventHandlers(domainEvent);
@@ -75,14 +79,20 @@ namespace TransactionProcessor.Controllers
                     return this.Ok();
                 }
 
-                List<Task<Result>> tasks = new();
-                foreach (IDomainEventHandler domainEventHandler in eventHandlers)
-                {
-                    tasks.Add(domainEventHandler.Handle(domainEvent, cancellationToken));
+                //List<Task<Result>> tasks = new();
+                List<Func<Task<Result>>> taskFactories = new();
+                foreach (IDomainEventHandler domainEventHandler in eventHandlers) {
+                    //Func<Task<Result>> t = () => domainEventHandler.Handle(domainEvent, cancellationToken);
+                    //tasks.Add(t);
+                    taskFactories.Add(() => domainEventHandler.Handle(domainEvent, cancellationToken));
                 }
 
-                Task.WaitAll(tasks.ToArray());
-                var anyFailed = tasks.Any(t => t.Result.IsFailed);
+                // Now trigger the execution
+                List<Task<Result>> runningTasks = taskFactories.Select(factory => factory()).ToList();
+
+                //Task.WaitAll(tasks.ToArray(), cancellationToken);
+                await Task.WhenAll(runningTasks).WaitAsync(cancellationToken);
+                var anyFailed = runningTasks.Any(t => t.Result.IsFailed);
                 if (anyFailed)
                     return this.StatusCode(500);
 

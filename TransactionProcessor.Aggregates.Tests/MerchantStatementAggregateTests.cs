@@ -109,7 +109,7 @@ namespace TransactionProcessor.Aggregates.Tests
         }
 
         [Fact]
-        public void MerchantStatementAggregate_GenerateStatement_StatementIsAlreadGenerated_ExceptionThrown()
+        public void MerchantStatementAggregate_GenerateStatement_StatementIsAlreadyGenerated_ExceptionThrown()
         {
             MerchantStatementAggregate merchantStatementAggregate = MerchantStatementAggregate.Create(TestData.MerchantStatementId);
             merchantStatementAggregate.AddDailySummaryRecord(TestData.TransactionDateTime.Date, 1, 100.00m, 1, 0.10m);
@@ -126,6 +126,82 @@ namespace TransactionProcessor.Aggregates.Tests
             
             Should.Throw<InvalidOperationException>(() => {
                 merchantStatementAggregate.GenerateStatement(TestData.StatementGeneratedDate);
+            });
+        }
+
+        [Fact]
+        public void MerchantStatementAggregate_BuildStatement_StatementIsBuilt()
+        {
+            MerchantStatementAggregate merchantStatementAggregate = MerchantStatementAggregate.Create(TestData.MerchantStatementId);
+            merchantStatementAggregate.AddDailySummaryRecord(TestData.TransactionDateTime.Date, 1, 100.00m, 1, 0.10m);
+            merchantStatementAggregate.GenerateStatement(TestData.StatementGeneratedDate);
+            merchantStatementAggregate.BuildStatement(TestData.StatementBuiltDate,TestData.StatementData);
+
+            MerchantStatement merchantStatement = merchantStatementAggregate.GetStatement();
+            merchantStatement.BuiltDateTime.ShouldBe(TestData.StatementBuiltDate);
+        }
+
+        [Fact]
+        public void MerchantStatementAggregate_BuildStatement_StatementIsAlreadyBuilt_ExceptionThrown()
+        {
+            MerchantStatementAggregate merchantStatementAggregate = MerchantStatementAggregate.Create(TestData.MerchantStatementId);
+            merchantStatementAggregate.AddDailySummaryRecord(TestData.TransactionDateTime.Date, 1, 100.00m, 1, 0.10m);
+            merchantStatementAggregate.GenerateStatement(TestData.StatementGeneratedDate);
+            merchantStatementAggregate.BuildStatement(TestData.StatementBuiltDate, TestData.StatementData);
+
+            Should.Throw<InvalidOperationException>(() => {
+                merchantStatementAggregate.BuildStatement(TestData.StatementBuiltDate, TestData.StatementData);
+            });
+        }
+
+        [Fact]
+        public void MerchantStatementAggregate_BuildStatement_StatementIsNotGenerated_ExceptionThrown()
+        {
+            MerchantStatementAggregate merchantStatementAggregate = MerchantStatementAggregate.Create(TestData.MerchantStatementId);
+            merchantStatementAggregate.AddDailySummaryRecord(TestData.TransactionDateTime.Date, 1, 100.00m, 1, 0.10m);
+
+            Should.Throw<InvalidOperationException>(() => {
+                merchantStatementAggregate.BuildStatement(TestData.StatementBuiltDate, TestData.StatementData);
+            });
+        }
+
+        [Fact]
+        public void MerchantStatementAggregate_EmailStatement_StatementIsEmailed()
+        {
+            MerchantStatementAggregate merchantStatementAggregate = MerchantStatementAggregate.Create(TestData.MerchantStatementId);
+            merchantStatementAggregate.AddDailySummaryRecord(TestData.TransactionDateTime.Date, 1, 100.00m, 1, 0.10m);
+            merchantStatementAggregate.GenerateStatement(TestData.StatementGeneratedDate);
+            merchantStatementAggregate.BuildStatement(TestData.StatementBuiltDate, TestData.StatementData);
+
+            merchantStatementAggregate.EmailStatement(TestData.StatementEmailedDate, TestData.MessageId);
+
+            MerchantStatement merchantStatement = merchantStatementAggregate.GetStatement();
+            merchantStatement.HasBeenEmailed.ShouldBeTrue();
+        }
+
+        [Fact]
+        public void MerchantStatementAggregate_EmailStatement_StatementIsAlreadyEmailed_ExceptionThrown()
+        {
+            MerchantStatementAggregate merchantStatementAggregate = MerchantStatementAggregate.Create(TestData.MerchantStatementId);
+            merchantStatementAggregate.AddDailySummaryRecord(TestData.TransactionDateTime.Date, 1, 100.00m, 1, 0.10m);
+            merchantStatementAggregate.GenerateStatement(TestData.StatementGeneratedDate);
+            merchantStatementAggregate.BuildStatement(TestData.StatementBuiltDate, TestData.StatementData);
+            merchantStatementAggregate.EmailStatement(TestData.StatementEmailedDate, TestData.MessageId);
+
+            Should.Throw<InvalidOperationException>(() => {
+                merchantStatementAggregate.EmailStatement(TestData.StatementEmailedDate, TestData.MessageId);
+            });
+        }
+
+        [Fact]
+        public void MerchantStatementAggregate_EmailStatement_StatementIsNotBuilt_ExceptionThrown()
+        {
+            MerchantStatementAggregate merchantStatementAggregate = MerchantStatementAggregate.Create(TestData.MerchantStatementId);
+            merchantStatementAggregate.AddDailySummaryRecord(TestData.TransactionDateTime.Date, 1, 100.00m, 1, 0.10m);
+            merchantStatementAggregate.GenerateStatement(TestData.StatementGeneratedDate);
+
+            Should.Throw<InvalidOperationException>(() => {
+                merchantStatementAggregate.EmailStatement(TestData.StatementEmailedDate, TestData.MessageId);
             });
         }
 

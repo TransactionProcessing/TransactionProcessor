@@ -7,6 +7,8 @@ namespace TransactionProcessor.DomainEvents {
     public class MerchantStatementDomainEvents {
         public record StatementGeneratedEvent(Guid MerchantStatementId, Guid EstateId, Guid MerchantId, DateTime DateGenerated) : DomainEvent(MerchantStatementId, Guid.NewGuid());
 
+        public record StatementBuiltEvent(Guid MerchantStatementId, Guid EstateId, Guid MerchantId, DateTime DateBuilt, String statementData) : DomainEvent(MerchantStatementId, Guid.NewGuid());
+        
         public record StatementEmailedEvent(Guid MerchantStatementId, Guid EstateId, Guid MerchantId, DateTime DateEmailed, Guid MessageId) : DomainEvent(MerchantStatementId, Guid.NewGuid());
 
         public record StatementCreatedEvent(Guid MerchantStatementId, Guid EstateId, Guid MerchantId, DateTime StatementDate) : DomainEvent(MerchantStatementId, Guid.NewGuid());
