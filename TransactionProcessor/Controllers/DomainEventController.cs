@@ -1,13 +1,11 @@
-﻿using System;
+﻿using SimpleResults;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using SimpleResults;
 
 namespace TransactionProcessor.Controllers
 {
-    using System.Diagnostics.CodeAnalysis;
-    using System.Threading;
     using Microsoft.AspNetCore.Mvc;
     using Newtonsoft.Json;
     using Newtonsoft.Json.Linq;
@@ -17,6 +15,9 @@ namespace TransactionProcessor.Controllers
     using Shared.General;
     using Shared.Logger;
     using Shared.Serialisation;
+    using System.Diagnostics.CodeAnalysis;
+    using System.Threading;
+    using TransactionProcessor.BusinessLogic.Services;
 
     [Route(DomainEventController.ControllerRoute)]
     [ApiController]

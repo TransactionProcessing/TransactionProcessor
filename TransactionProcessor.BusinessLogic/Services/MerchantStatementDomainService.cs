@@ -14,9 +14,11 @@ using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.IO.Abstractions;
 using System.Linq;
+using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using Google.Protobuf.Reflection;
+using MessagingService.DataTransferObjects;
 using TransactionProcessor.Aggregates;
 using TransactionProcessor.Aggregates.Models;
 using TransactionProcessor.BusinessLogic.Common;
@@ -36,8 +38,8 @@ namespace TransactionProcessor.BusinessLogic.Services
         Task<Result> AddSettledFeeToStatement(MerchantStatementCommands.AddSettledFeeToMerchantStatementCommand command, CancellationToken cancellationToken);
 
         Task<Result> GenerateStatement(MerchantCommands.GenerateMerchantStatementCommand command, CancellationToken cancellationToken);
-
         Task<Result> EmailStatement(MerchantStatementCommands.EmailMerchantStatementCommand command, CancellationToken cancellationToken);
+        Task<Result> BuildStatement(MerchantStatementCommands.BuildMerchantStatementCommand command, CancellationToken cancellationToken);
         Task<Result> RecordActivityDateOnMerchantStatement(MerchantStatementCommands.RecordActivityDateOnMerchantStatementCommand command, CancellationToken cancellationToken);
 
         #endregion
@@ -46,12 +48,18 @@ namespace TransactionProcessor.BusinessLogic.Services
     public class MerchantStatementDomainService : IMerchantStatementDomainService
     {
         private readonly IAggregateService AggregateService;
-        
+        private readonly IStatementBuilder StatementBuilder;
+        private readonly IMessagingServiceClient MessagingServiceClient;
+        private readonly ISecurityServiceClient SecurityServiceClient;
+
         #region Constructors
 
-        public MerchantStatementDomainService(IAggregateService aggregateService)
-        {
+        public MerchantStatementDomainService(IAggregateService aggregateService, IStatementBuilder statementBuilder,
+                                              IMessagingServiceClient messagingServiceClient, ISecurityServiceClient securityServiceClient) {
             this.AggregateService = aggregateService;
+            this.StatementBuilder = statementBuilder;
+            this.MessagingServiceClient = messagingServiceClient;
+            this.SecurityServiceClient = securityServiceClient;
         }
 
         #endregion
@@ -217,62 +225,96 @@ namespace TransactionProcessor.BusinessLogic.Services
         }
 
         public async Task<Result> EmailStatement(MerchantStatementCommands.EmailMerchantStatementCommand command,
+                                                 CancellationToken cancellationToken) {
+            Result result = await ApplyUpdates(async (MerchantStatementAggregate merchantStatementAggregate) => {
+                MerchantStatement statement = merchantStatementAggregate.GetStatement();
+                // Get the merchant
+                Result<MerchantAggregate> getMerchantResult = await this.AggregateService.Get<MerchantAggregate>(statement.MerchantId, cancellationToken);
+                if (getMerchantResult.IsFailed)
+                    return ResultHelpers.CreateFailure(getMerchantResult);
+                Merchant merchantModel = getMerchantResult.Data.GetMerchant();
+                List<String> emailAddresses = merchantModel.Contacts.Select(c => c.ContactEmailAddress).ToList();
+                
+                SendEmailRequest sendEmailRequest = new SendEmailRequest
+                {
+                    Body = "<html><body>Please find attached this months statement.</body></html>",
+                    ConnectionIdentifier = command.EstateId,
+                    FromAddress = "golfhandicapping@btinternet.com", // TODO: lookup from config
+                    IsHtml = true,
+                    Subject = $"Merchant Statement for {statement.StatementDate}",
+                    ToAddresses = emailAddresses,
+                    EmailAttachments = new List<EmailAttachment>
+                    {
+                        new EmailAttachment
+                        {
+                            FileData = command.pdfData,
+                            FileType = FileType.PDF,
+                            Filename = $"merchantstatement{statement.StatementDate}.pdf"
+                        }
+                    }
+                };
+
+                Guid messageId = IdGenerationService.GenerateEventId(new
+                {
+                    command.MerchantStatementId,
+                    DateTime.Now
+                });
+
+                sendEmailRequest.MessageId = messageId;
+
+                var getTokenResult = await Helpers.GetToken(this.TokenResponse, this.SecurityServiceClient, cancellationToken);
+                if (getTokenResult.IsFailed)
+                    return ResultHelpers.CreateFailure(getTokenResult);
+
+                var sendEmailResponseResult = await this.MessagingServiceClient.SendEmail(this.TokenResponse.AccessToken, sendEmailRequest, cancellationToken);
+                //if (sendEmailResponseResult.IsFailed) {
+                //    // TODO: record a failed event??
+                //}
+
+                merchantStatementAggregate.EmailStatement(DateTime.Now, messageId);
+
+                return Result.Success();
+            }, command.MerchantStatementId, cancellationToken, false);
+
+            return result;
+        }
+        private TokenResponse TokenResponse;
+
+        [ExcludeFromCodeCoverage]
+        static String EncodeTo64(String toEncode)
+        {
+            Byte[] toEncodeAsBytes = ASCIIEncoding.ASCII.GetBytes(toEncode);
+            String returnValue = Convert.ToBase64String(toEncodeAsBytes);
+            return returnValue;
+        }
+
+        public async Task<Result> BuildStatement(MerchantStatementCommands.BuildMerchantStatementCommand command,
                                                  CancellationToken cancellationToken)
         {
-            //Result result = await ApplyUpdates(
-            //    async (MerchantStatementAggregate merchantStatementAggregate) => {
+            Result result = await ApplyUpdates(
+                async (MerchantStatementAggregate merchantStatementAggregate) => {
 
-            //        //StatementHeader statementHeader = await this.EstateManagementRepository.GetStatement(command.EstateId, command.MerchantStatementId, cancellationToken);
+                    MerchantStatement statement = merchantStatementAggregate.GetStatement();
+                    Result<MerchantAggregate> getMerchantResult = await this.AggregateService.Get<MerchantAggregate>(statement.MerchantId, cancellationToken);
 
-            //        //String html = await this.StatementBuilder.GetStatementHtml(statementHeader, cancellationToken);
+                    if (getMerchantResult.IsFailed)
+                        return ResultHelpers.CreateFailure(getMerchantResult);
+                    MerchantAggregate merchantAggregate = getMerchantResult.Data;
+                    Merchant m = merchantAggregate.GetMerchant();
 
-            //        //String base64 = await this.PdfGenerator.CreatePDF(html, cancellationToken);
+                    String html = await this.StatementBuilder.GetStatementHtml(merchantStatementAggregate, m, cancellationToken);
+                    // TODO: Record the html to the statement aggregate so we can use it later if needed
 
-            //        //SendEmailRequest sendEmailRequest = new SendEmailRequest
-            //        //{
-            //        //    Body = "<html><body>Please find attached this months statement.</body></html>",
-            //        //    ConnectionIdentifier = command.EstateId,
-            //        //    FromAddress = "golfhandicapping@btinternet.com", // TODO: lookup from config
-            //        //    IsHtml = true,
-            //        //    Subject = $"Merchant Statement for {statementHeader.StatementDate}",
-            //        //    // MessageId = command.MerchantStatementId,
-            //        //    ToAddresses = new List<String>
-            //        //    {
-            //        //        statementHeader.MerchantEmail
-            //        //    },
-            //        //    EmailAttachments = new List<EmailAttachment>
-            //        //    {
-            //        //        new EmailAttachment
-            //        //        {
-            //        //            FileData = base64,
-            //        //            FileType = FileType.PDF,
-            //        //            Filename = $"merchantstatement{statementHeader.StatementDate}.pdf"
-            //        //        }
-            //        //    }
-            //        //};
+                    String base64 = EncodeTo64(html);
 
-            //        //Guid messageId = IdGenerationService.GenerateEventId(new
-            //        //{
-            //        //    command.MerchantStatementId,
-            //        //    DateTime.Now
-            //        //});
+                    merchantStatementAggregate.BuildStatement(DateTime.Now, base64);
 
-            //        //sendEmailRequest.MessageId = messageId;
+                    return Result.Success();
+             },
+                command.MerchantStatementId, cancellationToken);
 
-            //        //this.TokenResponse = await Helpers.GetToken(this.TokenResponse, this.SecurityServiceClient, cancellationToken);
-
-            //        //var sendEmailResponseResult = await this.MessagingServiceClient.SendEmail(this.TokenResponse.AccessToken, sendEmailRequest, cancellationToken);
-            //        ////if (sendEmailResponseResult.IsFailed) {
-            //        ////    // TODO: record a failed event??
-            //        ////}
-            //        //merchantStatementAggregate.EmailStatement(DateTime.Now, messageId);
-
-            //        return Result.Success();
-            //    },
-            //    command.EstateId, command.MerchantStatementId, cancellationToken);
-
-            //if (result.IsFailed)
-            //    return ResultHelpers.CreateFailure(result);
+            if (result.IsFailed)
+                return ResultHelpers.CreateFailure(result);
 
             return Result.Success();
         }

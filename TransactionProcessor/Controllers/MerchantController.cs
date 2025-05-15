@@ -11,12 +11,6 @@ using TransactionProcessor.Models.Contract;
 
 namespace TransactionProcessor.Controllers;
 
-using System;
-using System.Collections.Generic;
-using System.Diagnostics.CodeAnalysis;
-using System.Security.Claims;
-using System.Threading;
-using System.Threading.Tasks;
 using DataTransferObjects;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
@@ -24,10 +18,17 @@ using Microsoft.AspNetCore.Mvc;
 using ProjectionEngine.Models;
 using ProjectionEngine.Repository;
 using ProjectionEngine.State;
+using Shared.DomainDrivenDesign.EventSourcing;
 using Shared.EventStore.EventStore;
 using Shared.Exceptions;
 using Shared.General;
 using Swashbuckle.AspNetCore.Annotations;
+using System;
+using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
+using System.Security.Claims;
+using System.Threading;
+using System.Threading.Tasks;
 
 [ExcludeFromCodeCoverage]
 [Route(MerchantController.ControllerRoute)]

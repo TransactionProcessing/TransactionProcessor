@@ -14,9 +14,13 @@ public record MerchantStatementCommands {
                                                            Boolean IsAuthorised,
                                                            Guid TransactionId) : IRequest<Result>;
 
-    public record EmailMerchantStatementCommand(Guid EstateId,
+    public record BuildMerchantStatementCommand(Guid EstateId,
                                                 Guid MerchantId,
                                                 Guid MerchantStatementId) : IRequest<Result>;
+
+    public record EmailMerchantStatementCommand(Guid EstateId,
+                                                Guid MerchantStatementId,
+        String pdfData) : IRequest<Result>;
 
     public record AddSettledFeeToMerchantStatementCommand(Guid EstateId,
                                                           Guid MerchantId,

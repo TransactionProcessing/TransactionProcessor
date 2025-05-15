@@ -1,4 +1,6 @@
+using System.Threading;
 using Prometheus;
+using TransactionProcessor.BusinessLogic.Services;
 
 namespace TransactionProcessor
 {
@@ -157,7 +159,6 @@ namespace TransactionProcessor
             app.UseSwaggerUI();
 
             app.PreWarm();
-            
         }
 
         public void ConfigureContainer(ServiceRegistry services) {
