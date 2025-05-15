@@ -27,8 +27,6 @@ public class MerchantStatementForDate
 
     public Guid EstateId { get; set; }
     public Boolean IsCreated { get; set; }
-    //public Boolean IsGenerated { get; set; }
-    //public Boolean HasBeenEmailed { get; set; }
     public Guid MerchantId { get; set; }
     public Guid MerchantStatementId { get; set; }
     public Guid MerchantStatementForDateId { get; set; }
@@ -110,7 +108,6 @@ public class MerchantStatement
 
     public List<(Int32 lineNumber, MerchantStatementLine statementLine)> GetStatementLines() {
         List<(Int32 lineNumber, MerchantStatementLine statementLine)> result = new List<(Int32 lineNumber, MerchantStatementLine statementLine)>();
-        //return this.StatementLines.OrderBy(s => s.Key).ToList();
         foreach (KeyValuePair<Int32, MerchantStatementLine> merchantStatementLine in this.StatementLines) {
             result.Add((merchantStatementLine.Key, merchantStatementLine.Value));    
         }

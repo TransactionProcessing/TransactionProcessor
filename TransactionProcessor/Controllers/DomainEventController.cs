@@ -59,9 +59,6 @@ namespace TransactionProcessor.Controllers
         public async Task<IActionResult> PostEventAsync([FromBody] Object request,
                                                         CancellationToken cancellationToken)
         {
-            //PDFGenerator pdf = new PDFGenerator();
-            //await pdf.CreatePDF("", CancellationToken.None);
-
             IDomainEvent domainEvent = await this.GetDomainEvent(request);
 
             List<IDomainEventHandler> eventHandlers = this.GetDomainEventHandlers(domainEvent);
