@@ -130,10 +130,6 @@ namespace TransactionProcessor.BusinessLogic.Services
             // Work out the next statement date
             DateTime nextStatementDate = CalculateStatementDate(command.SettledDateTime);
 
-            if (nextStatementDate.Year == 1) {
-                return Result.CriticalError($"Error in statement date generation Generated date is {nextStatementDate}");
-            }
-
             Guid merchantStatementId = IdGenerationService.GenerateMerchantStatementAggregateId(command.EstateId, command.MerchantId, nextStatementDate);
             Guid merchantStatementForDateId = IdGenerationService.GenerateMerchantStatementForDateAggregateId(command.EstateId, command.MerchantId, nextStatementDate, command.SettledDateTime);
             Guid settlementFeeId = GuidCalculator.Combine(command.TransactionId, command.SettledFeeId);
@@ -265,6 +261,7 @@ namespace TransactionProcessor.BusinessLogic.Services
                 var getTokenResult = await Helpers.GetToken(this.TokenResponse, this.SecurityServiceClient, cancellationToken);
                 if (getTokenResult.IsFailed)
                     return ResultHelpers.CreateFailure(getTokenResult);
+                this.TokenResponse = getTokenResult.Data;
 
                 var sendEmailResponseResult = await this.MessagingServiceClient.SendEmail(this.TokenResponse.AccessToken, sendEmailRequest, cancellationToken);
                 //if (sendEmailResponseResult.IsFailed) {
@@ -348,12 +345,7 @@ namespace TransactionProcessor.BusinessLogic.Services
 
             // Work out the next statement date
             DateTime nextStatementDate = CalculateStatementDate(command.TransactionDateTime);
-
-            if (nextStatementDate.Year == 1)
-            {
-                return Result.CriticalError($"Error in statement date generation Generated date is {nextStatementDate}");
-            }
-
+            
             Guid merchantStatementId = IdGenerationService.GenerateMerchantStatementAggregateId(command.EstateId, command.MerchantId, nextStatementDate);
             Guid merchantStatementForDateId = IdGenerationService.GenerateMerchantStatementForDateAggregateId(command.EstateId, command.MerchantId, nextStatementDate, command.TransactionDateTime);
 

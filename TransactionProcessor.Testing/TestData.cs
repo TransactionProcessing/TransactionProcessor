@@ -1,5 +1,6 @@
 ﻿using System.Text;
 using Newtonsoft.Json;
+using Shared.EventStore.ProjectionEngine;
 using Shared.ValueObjects;
 using TransactionProcessor.Aggregates;
 using TransactionProcessor.BusinessLogic.Events;
@@ -2090,8 +2091,11 @@ namespace TransactionProcessor.Testing
 
         public static class Commands {
             public static MerchantCommands.GenerateMerchantStatementCommand GenerateMerchantStatementCommand => new(TestData.EstateId, TestData.MerchantId, TestData.GenerateMerchantStatementRequest);
-
+            public static MerchantStatementCommands.BuildMerchantStatementCommand BuildMerchantStatementCommand => new(EstateId, MerchantId, MerchantStatementId);
+            public static MerchantStatementCommands.EmailMerchantStatementCommand EmailMerchantStatementCommand => new(EstateId, MerchantStatementId,StatementData);
             public static MerchantStatementCommands.AddTransactionToMerchantStatementCommand AddTransactionToMerchantStatementCommand => new(EstateId, MerchantId, TransactionDateTime, TransactionAmount, IsAuthorisedTrue, TransactionId);
+            public static MerchantStatementCommands.AddTransactionToMerchantStatementCommand AddTransactionNotAuthorisedToMerchantStatementCommand => new(EstateId, MerchantId, TransactionDateTime, TransactionAmount, IsAuthorisedFalse, TransactionId);
+            public static MerchantStatementCommands.AddTransactionToMerchantStatementCommand AddTransactionWithNoAmountToMerchantStatementCommand => new(EstateId, MerchantId, TransactionDateTime, null, IsAuthorisedTrue, TransactionId);
             //public static MerchantStatementCommands.EmailMerchantStatementCommand EmailMerchantStatementCommand => new(EstateId, MerchantId, MerchantStatementId);
             public static MerchantStatementCommands.AddSettledFeeToMerchantStatementCommand AddSettledFeeToMerchantStatementCommand => new(EstateId, MerchantId, TransactionDateTime, SettledFeeAmount1, TransactionId, SettledFeeId1);
 
@@ -2518,6 +2522,42 @@ namespace TransactionProcessor.Testing
                 estateAggregate.RemoveOperator(TestData.OperatorId);
 
                 return estateAggregate;
+            }
+
+            public static MerchantStatementForDateAggregate EmptyMerchantStatementForDateAggregate = MerchantStatementForDateAggregate.Create(MerchantStatementForDateId1);
+
+            public static MerchantStatementForDateAggregate MerchantStatementForDateAggregateWithTransactionAndFee() {
+                MerchantStatementForDateAggregate aggregate = MerchantStatementForDateAggregate.Create(MerchantStatementForDateId1);
+                aggregate.AddTransactionToStatement(MerchantStatementForDateId1, StatementDate, Guid.NewGuid(), EstateId,MerchantId, Transaction1);
+                aggregate.AddSettledFeeToStatement(MerchantStatementForDateId1, StatementDate, Guid.NewGuid(), EstateId, MerchantId, SettledFee1);
+                return aggregate;
+            }
+
+            public static MerchantStatementAggregate EmptyMerchantStatementAggregate = MerchantStatementAggregate.Create(MerchantStatementId);
+
+            public static MerchantStatementAggregate MerchantStatementAggregateWithActivityDates() {
+                MerchantStatementAggregate aggregate = MerchantStatementAggregate.Create(MerchantStatementId);
+                aggregate.RecordActivityDateOnStatement(MerchantStatementId, StatementDate, EstateId, MerchantId, MerchantStatementForDateId1, ActivityDate1);
+                return aggregate;
+            }
+
+            public static MerchantStatementAggregate GeneratedMerchantStatementAggregate()
+            {
+                MerchantStatementAggregate aggregate = MerchantStatementAggregate.Create(MerchantStatementId);
+                aggregate.RecordActivityDateOnStatement(MerchantStatementId, StatementDate, EstateId, MerchantId, MerchantStatementForDateId1, ActivityDate1);
+                aggregate.AddDailySummaryRecord(ActivityDate1, 1, 100, 1,0.10m);
+                aggregate.GenerateStatement(StatementGeneratedDate);
+                return aggregate;
+            }
+
+            public static MerchantStatementAggregate BuiltMerchantStatementAggregate()
+            {
+                MerchantStatementAggregate aggregate = MerchantStatementAggregate.Create(MerchantStatementId);
+                aggregate.RecordActivityDateOnStatement(MerchantStatementId, StatementDate, EstateId, MerchantId, MerchantStatementForDateId1, ActivityDate1);
+                aggregate.AddDailySummaryRecord(ActivityDate1, 1, 100, 1, 0.10m);
+                aggregate.GenerateStatement(StatementGeneratedDate);
+                aggregate.BuildStatement(StatementBuiltDate,StatementData);
+                return aggregate;
             }
         }
         public static DateTime NextSettlementDate = new DateTime(2021, 8, 30);
