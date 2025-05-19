@@ -16,6 +16,7 @@ using TransactionProcessor.BusinessLogic.Requests;
 using TransactionProcessor.BusinessLogic.Services;
 using TransactionProcessor.DomainEvents;
 using Shared.EventStore.Aggregate;
+using Shared.ValueObjects;
 
 namespace TransactionProcessor.BusinessLogic.EventHandling
 {
@@ -61,6 +62,9 @@ namespace TransactionProcessor.BusinessLogic.EventHandling
                 TransactionDomainEvents.TransactionHasBeenCompletedEvent de => this.HandleSpecificDomainEvent(de, cancellationToken),
                 MerchantStatementForDateDomainEvents.StatementCreatedForDateEvent de => this.HandleSpecificDomainEvent(de, cancellationToken),
                 MerchantStatementDomainEvents.StatementBuiltEvent de => this.HandleSpecificDomainEvent(de, cancellationToken),
+                MerchantDomainEvents.AutomaticDepositMadeEvent de => this.HandleSpecificDomainEvent(de, cancellationToken),
+                MerchantDomainEvents.ManualDepositMadeEvent de => this.HandleSpecificDomainEvent(de, cancellationToken),
+                MerchantDomainEvents.WithdrawalMadeEvent de => this.HandleSpecificDomainEvent(de, cancellationToken),
                 _ => null
             };
 
@@ -104,8 +108,35 @@ namespace TransactionProcessor.BusinessLogic.EventHandling
 
         private async Task<Result> HandleSpecificDomainEvent(TransactionDomainEvents.TransactionHasBeenCompletedEvent domainEvent,
                                                              CancellationToken cancellationToken) {
-            MerchantStatementCommands.AddTransactionToMerchantStatementCommand command = new(domainEvent.EstateId, domainEvent.MerchantId, domainEvent.CompletedDateTime, domainEvent.TransactionAmount, domainEvent.IsAuthorised, domainEvent.TransactionId);
+            MerchantStatementCommands.AddTransactionToMerchantStatementCommand command = new(domainEvent.EstateId, domainEvent.MerchantId, domainEvent.CompletedDateTime,
+                Money.Create(domainEvent.TransactionAmount.GetValueOrDefault(0)), domainEvent.IsAuthorised, domainEvent.TransactionId);
 
+            Result result = await this.Mediator.Send(command, cancellationToken);
+            return result;
+        }
+
+        private async Task<Result> HandleSpecificDomainEvent(MerchantDomainEvents.AutomaticDepositMadeEvent domainEvent,
+                                                             CancellationToken cancellationToken) {
+            MerchantStatementCommands.AddDepositToMerchantStatementCommand command = new(domainEvent.EstateId, domainEvent.MerchantId, domainEvent.DepositId, domainEvent.Reference, domainEvent.DepositDateTime,
+                PositiveMoney.Create(Money.Create(domainEvent.Amount)));
+            Result result = await this.Mediator.Send(command, cancellationToken);
+            return result;
+        }
+
+        private async Task<Result> HandleSpecificDomainEvent(MerchantDomainEvents.ManualDepositMadeEvent domainEvent,
+                                                            CancellationToken cancellationToken)
+        {
+            MerchantStatementCommands.AddDepositToMerchantStatementCommand command = new(domainEvent.EstateId, domainEvent.MerchantId, domainEvent.DepositId, domainEvent.Reference, domainEvent.DepositDateTime, 
+                PositiveMoney.Create(Money.Create(domainEvent.Amount)));
+            Result result = await this.Mediator.Send(command, cancellationToken);
+            return result;
+        }
+
+        private async Task<Result> HandleSpecificDomainEvent(MerchantDomainEvents.WithdrawalMadeEvent domainEvent,
+                                                             CancellationToken cancellationToken)
+        {
+            MerchantStatementCommands.AddWithdrawalToMerchantStatementCommand command = new(domainEvent.EstateId, domainEvent.MerchantId, domainEvent.WithdrawalId, domainEvent.WithdrawalDateTime,
+                PositiveMoney.Create(Money.Create(domainEvent.Amount)));
             Result result = await this.Mediator.Send(command, cancellationToken);
             return result;
         }
@@ -113,7 +144,8 @@ namespace TransactionProcessor.BusinessLogic.EventHandling
         private async Task<Result> HandleSpecificDomainEvent(SettlementDomainEvents.MerchantFeeSettledEvent domainEvent,
                                                              CancellationToken cancellationToken)
         {
-            MerchantStatementCommands.AddSettledFeeToMerchantStatementCommand command = new(domainEvent.EstateId, domainEvent.MerchantId, domainEvent.FeeCalculatedDateTime, domainEvent.CalculatedValue, domainEvent.TransactionId, domainEvent.FeeId);
+            MerchantStatementCommands.AddSettledFeeToMerchantStatementCommand command = new(domainEvent.EstateId, domainEvent.MerchantId, domainEvent.FeeCalculatedDateTime, 
+                PositiveMoney.Create(Money.Create(domainEvent.CalculatedValue)), domainEvent.TransactionId, domainEvent.FeeId);
 
             //return await this.Mediator.Send(command, cancellationToken);
             Result result = await this.Mediator.Send(command, cancellationToken);
