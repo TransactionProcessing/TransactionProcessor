@@ -7,4 +7,6 @@ namespace TransactionProcessor.Aggregates.Models
 
     [ExcludeFromCodeCoverage]
     public record Transaction(Guid TransactionId, DateTime DateTime, Decimal Amount);
+
+    
 }

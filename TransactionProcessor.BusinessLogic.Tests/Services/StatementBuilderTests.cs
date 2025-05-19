@@ -35,8 +35,9 @@ public class StatementBuilderTests
             TestData.EstateId, TestData.MerchantId, TestData.MerchantStatementForDateId1, new DateTime(2025,5,1));
         merchantStatementAggregate.RecordActivityDateOnStatement(TestData.MerchantStatementId, TestData.StatementDate,
             TestData.EstateId, TestData.MerchantId, TestData.MerchantStatementForDateId2, new DateTime(2025, 5, 2));
-        merchantStatementAggregate.AddDailySummaryRecord(new DateTime(2025, 5, 1), 100, 1000.00m, 100, 10.00m);
-        merchantStatementAggregate.AddDailySummaryRecord(new DateTime(2025, 5, 2), 200, 2000.00m, 200, 20.00m);
+        merchantStatementAggregate.AddDailySummaryRecord(new DateTime(2025, 5, 1), 100, 1000.00m, 100, 10.00m,
+            1, 1000, 1, 200);
+        merchantStatementAggregate.AddDailySummaryRecord(new DateTime(2025, 5, 2), 200, 2000.00m, 200, 20.00m, 2, 1000, 2, 200);
         merchantStatementAggregate.GenerateStatement(TestData.GeneratedDateTime);
 
         // Setup file system mocks for templates and CSS

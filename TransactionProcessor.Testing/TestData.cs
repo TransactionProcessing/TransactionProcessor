@@ -1,4 +1,5 @@
 ﻿using System.Text;
+using Microsoft.IdentityModel.Tokens;
 using Newtonsoft.Json;
 using Shared.EventStore.ProjectionEngine;
 using Shared.ValueObjects;
@@ -2000,6 +2001,8 @@ namespace TransactionProcessor.Testing
                 Reference = TestData.WithdrawalReference
             };
 
+        public static Guid WithdrawalId = Guid.Parse("C5913183-78AE-41C8-9EAE-903F5748DE9A");
+
         public static String WithdrawalReference = "Withdraw1";
 
         public static String MerchantUserFamilyName = "Merchant";
@@ -2093,29 +2096,24 @@ namespace TransactionProcessor.Testing
             public static MerchantCommands.GenerateMerchantStatementCommand GenerateMerchantStatementCommand => new(TestData.EstateId, TestData.MerchantId, TestData.GenerateMerchantStatementRequest);
             public static MerchantStatementCommands.BuildMerchantStatementCommand BuildMerchantStatementCommand => new(EstateId, MerchantId, MerchantStatementId);
             public static MerchantStatementCommands.EmailMerchantStatementCommand EmailMerchantStatementCommand => new(EstateId, MerchantStatementId,StatementData);
-            public static MerchantStatementCommands.AddTransactionToMerchantStatementCommand AddTransactionToMerchantStatementCommand => new(EstateId, MerchantId, TransactionDateTime, TransactionAmount, IsAuthorisedTrue, TransactionId);
-            public static MerchantStatementCommands.AddTransactionToMerchantStatementCommand AddTransactionNotAuthorisedToMerchantStatementCommand => new(EstateId, MerchantId, TransactionDateTime, TransactionAmount, IsAuthorisedFalse, TransactionId);
+            public static MerchantStatementCommands.AddTransactionToMerchantStatementCommand AddTransactionToMerchantStatementCommand => new(EstateId, MerchantId, TransactionDateTime, Money.Create(TransactionAmount), IsAuthorisedTrue, TransactionId);
+            public static MerchantStatementCommands.AddTransactionToMerchantStatementCommand AddTransactionNotAuthorisedToMerchantStatementCommand => new(EstateId, MerchantId, TransactionDateTime, Money.Create(TransactionAmount), IsAuthorisedFalse, TransactionId);
             public static MerchantStatementCommands.AddTransactionToMerchantStatementCommand AddTransactionWithNoAmountToMerchantStatementCommand => new(EstateId, MerchantId, TransactionDateTime, null, IsAuthorisedTrue, TransactionId);
-            //public static MerchantStatementCommands.EmailMerchantStatementCommand EmailMerchantStatementCommand => new(EstateId, MerchantId, MerchantStatementId);
-            public static MerchantStatementCommands.AddSettledFeeToMerchantStatementCommand AddSettledFeeToMerchantStatementCommand => new(EstateId, MerchantId, TransactionDateTime, SettledFeeAmount1, TransactionId, SettledFeeId1);
+            public static MerchantStatementCommands.AddSettledFeeToMerchantStatementCommand AddSettledFeeToMerchantStatementCommand => new(EstateId, MerchantId, TransactionDateTime, PositiveMoney.Create(Money.Create(SettledFeeAmount1)), TransactionId, SettledFeeId1);
+
+            public static MerchantStatementCommands.AddDepositToMerchantStatementCommand AddDepositToMerchantStatementCommand => new(EstateId, MerchantId, DepositId, DepositReference, DepositDateTime, DepositAmount);
+            public static MerchantStatementCommands.AddWithdrawalToMerchantStatementCommand AddWithdrawalToMerchantStatementCommand => new(EstateId, MerchantId, WithdrawalId, WithdrawalDateTime, WithdrawalAmount);
 
             public static MerchantStatementCommands.RecordActivityDateOnMerchantStatementCommand RecordActivityDateOnMerchantStatementCommand => new(EstateId, MerchantId, MerchantStatementId,StatementDate,MerchantStatementForDateId1,ActivityDate1);
-
-            public static TransactionCommands.ResendTransactionReceiptCommand ResendTransactionReceiptCommand => new(TestData.TransactionId,
-                TestData.EstateId);
-
+            public static TransactionCommands.ResendTransactionReceiptCommand ResendTransactionReceiptCommand => new(TestData.TransactionId, TestData.EstateId);
             public static SettlementCommands.AddMerchantFeePendingSettlementCommand AddMerchantFeePendingSettlementCommand => new(TransactionId, CalculatedFeeValue, TransactionFeeCalculateDateTime, CalculationType.Fixed, TransactionFeeId, CalculatedFeeValue, TransactionFeeSettlementDueDate, MerchantId, EstateId);
             public static SettlementCommands.AddSettledFeeToSettlementCommand AddSettledFeeToSettlementCommand => new(SettlementDate, MerchantId, EstateId, TransactionFeeId, TransactionId);
-
             public static FloatActivityCommands.RecordCreditPurchaseCommand RecordCreditPurchaseCommand => new(EstateId, FloatAggregateId, CreditPurchasedDateTime, FloatCreditAmount, FloatCreditId);
             public static FloatActivityCommands.RecordTransactionCommand RecordTransactionCommand => new(EstateId, TransactionId);
             public static TransactionCommands.CalculateFeesForTransactionCommand CalculateFeesForTransactionCommand => new(TransactionId, TransactionDateTime, EstateId, MerchantId);
-
             public static TransactionCommands.AddSettledMerchantFeeCommand AddSettledMerchantFeeCommand => new(TransactionId, CalculatedFeeValue, TransactionFeeCalculateDateTime, CalculationType.Percentage, TransactionFeeId, TransactionFeeValue, SettlementDate, SettlementAggregateId);
-            
             public static TransactionCommands.ProcessSaleTransactionCommand ProcessSaleTransactionCommand =>
-                new(TestData.TransactionId,
-                                                     TestData.EstateId,
+                new(TestData.TransactionId, TestData.EstateId,
                                                      TestData.MerchantId,
                                                      TestData.DeviceIdentifier,
                                                      TestData.TransactionTypeLogon.ToString(),
@@ -2545,7 +2543,7 @@ namespace TransactionProcessor.Testing
             {
                 MerchantStatementAggregate aggregate = MerchantStatementAggregate.Create(MerchantStatementId);
                 aggregate.RecordActivityDateOnStatement(MerchantStatementId, StatementDate, EstateId, MerchantId, MerchantStatementForDateId1, ActivityDate1);
-                aggregate.AddDailySummaryRecord(ActivityDate1, 1, 100, 1,0.10m);
+                aggregate.AddDailySummaryRecord(ActivityDate1, 1, 100, 1,0.10m, 1,1000, 1,200);
                 aggregate.GenerateStatement(StatementGeneratedDate);
                 return aggregate;
             }
@@ -2554,7 +2552,7 @@ namespace TransactionProcessor.Testing
             {
                 MerchantStatementAggregate aggregate = MerchantStatementAggregate.Create(MerchantStatementId);
                 aggregate.RecordActivityDateOnStatement(MerchantStatementId, StatementDate, EstateId, MerchantId, MerchantStatementForDateId1, ActivityDate1);
-                aggregate.AddDailySummaryRecord(ActivityDate1, 1, 100, 1, 0.10m);
+                aggregate.AddDailySummaryRecord(ActivityDate1, 1, 100, 1, 0.10m, 1, 1000, 1, 200);
                 aggregate.GenerateStatement(StatementGeneratedDate);
                 aggregate.BuildStatement(StatementBuiltDate,StatementData);
                 return aggregate;
@@ -2632,6 +2630,10 @@ namespace TransactionProcessor.Testing
                 TestData.TransactionAmount,
                 TestData.TransactionDateTime);
 
+            public static MerchantDomainEvents.AutomaticDepositMadeEvent AutomaticDepositMadeEvent => new(MerchantId, EstateId, DepositId, DepositReference, DepositDateTime, DepositAmount.Value);
+            public static MerchantDomainEvents.ManualDepositMadeEvent ManualDepositMadeEvent => new(MerchantId, EstateId, DepositId, DepositReference, DepositDateTime, DepositAmount.Value);
+
+            public static MerchantDomainEvents.WithdrawalMadeEvent WithdrawalMadeEvent => new(MerchantId, EstateId, WithdrawalId, WithdrawalDateTime, WithdrawalAmount.Value);
             public static MerchantStatementForDateDomainEvents.StatementCreatedForDateEvent StatementCreatedForDateEvent => new(MerchantStatementForDateId1, ActivityDate1, StatementDate, MerchantStatementId, EstateId, MerchantId);
 
             public static SettlementDomainEvents.MerchantFeeSettledEvent MerchantFeeSettledEvent => new(SettlementId, EstateId, MerchantId, TransactionId, CalculatedFeeValue, FeeCalculationType, SettledFeeId1, FeeValue, TransactionFeeCalculateDateTime, SettlementDate);

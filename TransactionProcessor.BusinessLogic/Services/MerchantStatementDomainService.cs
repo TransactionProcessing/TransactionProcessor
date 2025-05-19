@@ -1,4 +1,6 @@
-﻿using MessagingService.Client;
+﻿using Google.Protobuf.Reflection;
+using MessagingService.Client;
+using MessagingService.DataTransferObjects;
 using SecurityService.Client;
 using SecurityService.DataTransferObjects.Responses;
 using Shared.DomainDrivenDesign.EventSourcing;
@@ -7,6 +9,7 @@ using Shared.Exceptions;
 using Shared.General;
 using Shared.Logger;
 using Shared.Results;
+using Shared.ValueObjects;
 using SimpleResults;
 using System;
 using System.Collections.Generic;
@@ -17,8 +20,6 @@ using System.Linq;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
-using Google.Protobuf.Reflection;
-using MessagingService.DataTransferObjects;
 using TransactionProcessor.Aggregates;
 using TransactionProcessor.Aggregates.Models;
 using TransactionProcessor.BusinessLogic.Common;
@@ -41,6 +42,9 @@ namespace TransactionProcessor.BusinessLogic.Services
         Task<Result> EmailStatement(MerchantStatementCommands.EmailMerchantStatementCommand command, CancellationToken cancellationToken);
         Task<Result> BuildStatement(MerchantStatementCommands.BuildMerchantStatementCommand command, CancellationToken cancellationToken);
         Task<Result> RecordActivityDateOnMerchantStatement(MerchantStatementCommands.RecordActivityDateOnMerchantStatementCommand command, CancellationToken cancellationToken);
+
+        Task<Result> AddDepositToStatement(MerchantStatementCommands.AddDepositToMerchantStatementCommand command, CancellationToken cancellationToken);
+        Task<Result> AddWithdrawalToStatement(MerchantStatementCommands.AddWithdrawalToMerchantStatementCommand command, CancellationToken cancellationToken);
 
         #endregion
     }
@@ -137,7 +141,7 @@ namespace TransactionProcessor.BusinessLogic.Services
             Result result = await ApplyUpdates(
                 async (MerchantStatementForDateAggregate merchantStatementForDateAggregate) => {
 
-                    SettledFee settledFee = new SettledFee(settlementFeeId, command.TransactionId, command.SettledDateTime, command.SettledAmount);
+                    SettledFee settledFee = new SettledFee(settlementFeeId, command.TransactionId, command.SettledDateTime, command.SettledAmount.Value);
 
                     Guid eventId = IdGenerationService.GenerateEventId(new
                     {
@@ -204,8 +208,19 @@ namespace TransactionProcessor.BusinessLogic.Services
                             .Where(sl => sl.LineType == 2)
                             .Aggregate(new { Count = 0, TotalAmount = 0m },
                                 (acc, sl) => new { Count = acc.Count + 1, TotalAmount = acc.TotalAmount + sl.Amount });
-                        merchantStatementAggregate.AddDailySummaryRecord(merchantStatementForDateAggregate.ActivityDate, transactionsResult.Count, transactionsResult.TotalAmount, settledFeesResult.Count,
-                            settledFeesResult.TotalAmount);
+                        var depositsResult = merchantStatementForDateAggregate.GetStatementLines()
+                            .Where(sl => sl.LineType == 3)
+                            .Aggregate(new { Count = 0, TotalAmount = 0m },
+                                (acc, sl) => new { Count = acc.Count + 1, TotalAmount = acc.TotalAmount + sl.Amount });
+                        var withdrawalsResult = merchantStatementForDateAggregate.GetStatementLines()
+                            .Where(sl => sl.LineType == 4)
+                            .Aggregate(new { Count = 0, TotalAmount = 0m },
+                                (acc, sl) => new { Count = acc.Count + 1, TotalAmount = acc.TotalAmount + sl.Amount });
+                        merchantStatementAggregate.AddDailySummaryRecord(merchantStatementForDateAggregate.ActivityDate, 
+                            transactionsResult.Count, transactionsResult.TotalAmount, 
+                            settledFeesResult.Count, settledFeesResult.TotalAmount,
+                            depositsResult.Count,depositsResult.TotalAmount,
+                            withdrawalsResult.Count, withdrawalsResult.TotalAmount);
                     }
 
                     merchantStatementAggregate.GenerateStatement(DateTime.Now);
@@ -334,13 +349,75 @@ namespace TransactionProcessor.BusinessLogic.Services
             return Result.Success();
         }
 
+        public async Task<Result> AddDepositToStatement(MerchantStatementCommands.AddDepositToMerchantStatementCommand command,
+                                                        CancellationToken cancellationToken) {
+            // Work out the next statement date
+            DateTime nextStatementDate = CalculateStatementDate(command.DepositDateTime.Date);
+
+            Guid merchantStatementId = IdGenerationService.GenerateMerchantStatementAggregateId(command.EstateId, command.MerchantId, nextStatementDate);
+            Guid merchantStatementForDateId = IdGenerationService.GenerateMerchantStatementForDateAggregateId(command.EstateId, command.MerchantId, nextStatementDate, command.DepositDateTime.Date);
+            
+            Result result = await ApplyUpdates(
+                async (MerchantStatementForDateAggregate merchantStatementForDateAggregate) => {
+
+                    Deposit deposit = new Deposit { DepositId = command.DepositId, Reference = command.Reference, DepositDateTime = command.DepositDateTime, Amount = command.Amount.Value };
+                    
+                    Guid eventId = IdGenerationService.GenerateEventId(new
+                    {
+                        command.DepositId,
+                        deposit,
+                        command.DepositDateTime,
+                    });
+
+                    merchantStatementForDateAggregate.AddDepositToStatement(merchantStatementId, nextStatementDate, eventId, command.EstateId, command.MerchantId, deposit);
+
+                    return Result.Success();
+                }, merchantStatementForDateId, cancellationToken, false);
+
+            if (result.IsFailed)
+                return ResultHelpers.CreateFailure(result);
+
+            return Result.Success();
+        }
+
+        public async Task<Result> AddWithdrawalToStatement(MerchantStatementCommands.AddWithdrawalToMerchantStatementCommand command,
+                                                           CancellationToken cancellationToken) {
+            // Work out the next statement date
+            DateTime nextStatementDate = CalculateStatementDate(command.WithdrawalDateTime.Date);
+
+            Guid merchantStatementId = IdGenerationService.GenerateMerchantStatementAggregateId(command.EstateId, command.MerchantId, nextStatementDate);
+            Guid merchantStatementForDateId = IdGenerationService.GenerateMerchantStatementForDateAggregateId(command.EstateId, command.MerchantId, nextStatementDate, command.WithdrawalDateTime.Date);
+
+            Result result = await ApplyUpdates(
+                async (MerchantStatementForDateAggregate merchantStatementForDateAggregate) => {
+
+                    Withdrawal withdrawal = new Withdrawal() { WithdrawalId = command.WithdrawalId, WithdrawalDateTime = command.WithdrawalDateTime, Amount = command.Amount.Value };
+
+                    Guid eventId = IdGenerationService.GenerateEventId(new
+                    {
+                        command.WithdrawalId,
+                        withdrawal,
+                        command.WithdrawalDateTime,
+                    });
+
+                    merchantStatementForDateAggregate.AddWithdrawalToStatement(merchantStatementId, nextStatementDate, eventId, command.EstateId, command.MerchantId, withdrawal);
+
+                    return Result.Success();
+                }, merchantStatementForDateId, cancellationToken, false);
+
+            if (result.IsFailed)
+                return ResultHelpers.CreateFailure(result);
+
+            return Result.Success();
+        }
+
         public async Task<Result> AddTransactionToStatement(MerchantStatementCommands.AddTransactionToMerchantStatementCommand command,
                                                             CancellationToken cancellationToken)
         {
             // Transaction Completed arrives(if this is a logon transaction or failed then return)
             if (command.IsAuthorised == false)
                 return Result.Success();
-            if (command.TransactionAmount.HasValue == false)
+            if (command.TransactionAmount == null)
                 return Result.Success();
 
             // Work out the next statement date
@@ -353,12 +430,12 @@ namespace TransactionProcessor.BusinessLogic.Services
                 async (MerchantStatementForDateAggregate merchantStatementForDateAggregate) => {
 
                     // Add transaction to statement
-                    Transaction transaction = new(command.TransactionId, command.TransactionDateTime, command.TransactionAmount.GetValueOrDefault(0));
+                    Transaction transaction = new(command.TransactionId, command.TransactionDateTime, command.TransactionAmount.Value);
 
                     Guid eventId = IdGenerationService.GenerateEventId(new
                     {
                         command.TransactionId,
-                        TransactionAmount = command.TransactionAmount.GetValueOrDefault(0),
+                        TransactionAmount = command.TransactionAmount.Value,
                         command.TransactionDateTime,
                     });
 

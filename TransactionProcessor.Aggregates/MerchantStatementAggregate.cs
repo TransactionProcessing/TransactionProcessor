@@ -213,14 +213,6 @@ namespace TransactionProcessor.Aggregates
             aggregate.ApplyAndAppend(statementGeneratedEvent);
         }
 
-        private static void EnsureStatementHasBeenCreated(this MerchantStatementAggregate aggregate)
-        {
-            if (aggregate.IsCreated == false)
-            {
-                throw new InvalidOperationException("Statement header has not been created");
-            }
-        }
-
         private static void EnsureStatementHasBeenGenerated(this MerchantStatementAggregate aggregate)
         {
             if (aggregate.IsGenerated == false)
@@ -261,7 +253,11 @@ namespace TransactionProcessor.Aggregates
             }
         }
 
-        public static void AddDailySummaryRecord(this MerchantStatementAggregate aggregate, DateTime activityDate, Int32 numberOfTransactions, Decimal valueOfTransactions, Int32 numberOfSettledFees, Decimal valueOfSettledFees) {
+        public static void AddDailySummaryRecord(this MerchantStatementAggregate aggregate, DateTime activityDate, 
+                                                 Int32 numberOfTransactions, Decimal valueOfTransactions, 
+                                                 Int32 numberOfSettledFees, Decimal valueOfSettledFees,
+                                                 Int32 numberOfDepoits, Decimal valueOfDepoits,
+                                                 Int32 numberOfWithdrawals, Decimal valueOfWithdrawals) {
             if (aggregate.MerchantStatementSummaries.Any(s => s.ActivityDate == activityDate)) {
                 throw new InvalidOperationException($"Summary Data for Activity Date {activityDate:yyyy-MM-dd} already exists");
             }
@@ -269,7 +265,7 @@ namespace TransactionProcessor.Aggregates
             // TODO: should this check the date has been added to the statement, before allowing the summary?
 
             MerchantStatementDomainEvents.StatementSummaryForDateEvent statementSummaryForDateEvent = new(aggregate.AggregateId, aggregate.EstateId, aggregate.MerchantId, activityDate,aggregate.MerchantStatementSummaries.Count +1
-                ,numberOfTransactions, valueOfTransactions, numberOfSettledFees, valueOfSettledFees);
+                ,numberOfTransactions, valueOfTransactions, numberOfSettledFees, valueOfSettledFees, numberOfDepoits, valueOfDepoits, numberOfWithdrawals, valueOfWithdrawals);
             aggregate.ApplyAndAppend(statementSummaryForDateEvent);
         }
     }

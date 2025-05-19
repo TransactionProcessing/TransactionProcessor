@@ -12,7 +12,9 @@ namespace TransactionProcessor.BusinessLogic.RequestHandlers
                                                    IRequestHandler<MerchantCommands.GenerateMerchantStatementCommand, Result>,
                                                    IRequestHandler<MerchantStatementCommands.BuildMerchantStatementCommand, Result>,
                                                    IRequestHandler<MerchantStatementCommands.RecordActivityDateOnMerchantStatementCommand, Result>,
-                                                   IRequestHandler<MerchantStatementCommands.EmailMerchantStatementCommand, Result>
+                                                   IRequestHandler<MerchantStatementCommands.EmailMerchantStatementCommand, Result>,
+                                                   IRequestHandler<MerchantStatementCommands.AddDepositToMerchantStatementCommand, Result>,
+                                                   IRequestHandler<MerchantStatementCommands.AddWithdrawalToMerchantStatementCommand, Result>
     {
         #region Fields
 
@@ -87,6 +89,16 @@ namespace TransactionProcessor.BusinessLogic.RequestHandlers
                                          CancellationToken cancellationToken) {
             return await this.MerchantStatementDomainService.RecordActivityDateOnMerchantStatement(request,
                                                                                                  cancellationToken);
+        }
+
+        public async Task<Result> Handle(MerchantStatementCommands.AddDepositToMerchantStatementCommand request,
+                                         CancellationToken cancellationToken) {
+            return await this.MerchantStatementDomainService.AddDepositToStatement(request, cancellationToken);
+        }
+
+        public async Task<Result> Handle(MerchantStatementCommands.AddWithdrawalToMerchantStatementCommand request,
+                                         CancellationToken cancellationToken) {
+            return await this.MerchantStatementDomainService.AddWithdrawalToStatement(request, cancellationToken);
         }
     }
 }

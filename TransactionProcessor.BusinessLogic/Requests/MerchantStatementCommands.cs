@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Diagnostics.CodeAnalysis;
 using MediatR;
+using Shared.ValueObjects;
 using SimpleResults;
 
 namespace TransactionProcessor.BusinessLogic.Requests;
@@ -10,9 +11,22 @@ public record MerchantStatementCommands {
     public record AddTransactionToMerchantStatementCommand(Guid EstateId,
                                                            Guid MerchantId,
                                                            DateTime TransactionDateTime,
-                                                           Decimal? TransactionAmount,
+                                                           Money? TransactionAmount,
                                                            Boolean IsAuthorised,
                                                            Guid TransactionId) : IRequest<Result>;
+
+    public record AddDepositToMerchantStatementCommand(Guid EstateId,
+                                                       Guid MerchantId,
+                                                       Guid DepositId,
+                                                       String Reference, 
+                                                       DateTime DepositDateTime, 
+                                                       PositiveMoney Amount) : IRequest<Result>;
+
+    public record AddWithdrawalToMerchantStatementCommand(Guid EstateId,
+                                                          Guid MerchantId,
+                                                          Guid WithdrawalId, 
+                                                          DateTime WithdrawalDateTime,
+                                                          PositiveMoney Amount) : IRequest<Result>;
 
     public record BuildMerchantStatementCommand(Guid EstateId,
                                                 Guid MerchantId,
@@ -25,7 +39,7 @@ public record MerchantStatementCommands {
     public record AddSettledFeeToMerchantStatementCommand(Guid EstateId,
                                                           Guid MerchantId,
                                                           DateTime SettledDateTime,
-                                                          Decimal SettledAmount,
+                                                          PositiveMoney SettledAmount,
                                                           Guid TransactionId,
                                                           Guid SettledFeeId) : IRequest<Result>;
 
