@@ -115,7 +115,7 @@ public class MerchantStatementForDateAggregateTests
             TestData.StatementDate,
             TestData.EventId1,
             TestData.EstateId,
-            TestData.MerchantId, new Withdrawal()
+            TestData.MerchantId, new Withdrawal
             {
                 WithdrawalDateTime = TestData.WithdrawalDateTime,
                 Amount = TestData.WithdrawalAmount.Value,

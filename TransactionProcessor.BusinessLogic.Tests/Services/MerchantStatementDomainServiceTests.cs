@@ -21,11 +21,11 @@ namespace TransactionProcessor.BusinessLogic.Tests.Services;
 
 public class MerchantStatementDomainServiceTests {
 
-    private Mock<IAggregateService> AggregateService;
-    private Mock<IStatementBuilder> StatementBuilder;
-    private Mock<IMessagingServiceClient> MessagingServiceClient;
-    private Mock<ISecurityServiceClient> SecurityServiceClient;
-    private MerchantStatementDomainService DomainService;
+    private readonly Mock<IAggregateService> AggregateService;
+    private readonly Mock<IStatementBuilder> StatementBuilder;
+    private readonly Mock<IMessagingServiceClient> MessagingServiceClient;
+    private readonly Mock<ISecurityServiceClient> SecurityServiceClient;
+    private readonly MerchantStatementDomainService DomainService;
     public MerchantStatementDomainServiceTests() {
         this.AggregateService = new Mock<IAggregateService>();
         this.StatementBuilder = new Mock<IStatementBuilder>();
