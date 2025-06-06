@@ -9,7 +9,7 @@ using TransactionProcessor.Database.Contexts;
 
 namespace TransactionProcessor.Database.Migrations.SqlServer
 {
-    [DbContext(typeof(EstateManagementSqlServerContext))]
+    [DbContext(typeof(EstateManagementContext))]
     [Migration("20240501154042_make_voucher_operatoridentifier_nullable")]
     partial class make_voucher_operatoridentifier_nullable
     {

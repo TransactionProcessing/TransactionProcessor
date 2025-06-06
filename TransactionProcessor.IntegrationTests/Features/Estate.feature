@@ -8,16 +8,16 @@ Background:
 
 	Given I create the following api scopes
 	| Name             | DisplayName                  | Description                        |
-	| estateManagement | Estate Managememt REST Scope | A scope for Estate Managememt REST |
+	| transactionProcessor | Estate Managememt REST Scope | A scope for Estate Managememt REST |
 
 	Given the following api resources exist
 	| Name     | DisplayName            | Secret  | Scopes           | UserClaims                 |
-	| estateManagement | Estate Managememt REST | Secret1 | estateManagement | merchantId, estateId, role |
+	| transactionProcessor | Estate Managememt REST | Secret1 | transactionProcessor | merchantId, estateId, role |
 
 	Given the following clients exist
 	| ClientId      | ClientName     | Secret  | Scopes    | GrantTypes  |
-	| serviceClient | Service Client | Secret1 | estateManagement | client_credentials |
-	| estateClient  | Estate Client  | Secret1 | estateManagement | password           |
+	| serviceClient | Service Client | Secret1 | transactionProcessor | client_credentials |
+	| estateClient  | Estate Client  | Secret1 | transactionProcessor | password           |
 
 	Given I have a token to access the estate management resource
 	| ClientId      | 

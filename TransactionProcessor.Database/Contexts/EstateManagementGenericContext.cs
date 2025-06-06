@@ -1,4 +1,5 @@
 ﻿using EntityFramework.Exceptions.Common;
+using EntityFramework.Exceptions.SqlServer;
 using Microsoft.EntityFrameworkCore;
 using Shared.DomainDrivenDesign.EventSourcing;
 using Shared.Exceptions;
@@ -14,13 +15,11 @@ using File = TransactionProcessor.Database.Entities.File;
 
 namespace TransactionProcessor.Database.Contexts;
 
-public abstract class EstateManagementGenericContext : DbContext
+public class EstateManagementContext : DbContext
 {
     #region Fields
 
     protected readonly String ConnectionString;
-
-    protected readonly String DatabaseEngine;
 
     protected static List<String> TablesToIgnoreDuplicates = new List<String>();
 
@@ -28,14 +27,12 @@ public abstract class EstateManagementGenericContext : DbContext
 
     #region Constructors
 
-    protected EstateManagementGenericContext(String databaseEngine,
-                                            String connectionString)
+    public EstateManagementContext(String connectionString)
     {
-        this.DatabaseEngine = databaseEngine;
         this.ConnectionString = connectionString;
     }
 
-    public EstateManagementGenericContext(DbContextOptions dbContextOptions) : base(dbContextOptions)
+    public EstateManagementContext(DbContextOptions dbContextOptions) : base(dbContextOptions)
     {
     }
 
@@ -125,7 +122,7 @@ public abstract class EstateManagementGenericContext : DbContext
         String executingAssemblyLocation = Assembly.GetExecutingAssembly().Location;
         String executingAssemblyFolder = Path.GetDirectoryName(executingAssemblyLocation);
 
-        String scriptsFolder = $@"{executingAssemblyFolder}/StoredProcedures/{this.DatabaseEngine}";
+        String scriptsFolder = $@"{executingAssemblyFolder}/StoredProcedures";
 
         String[] directories = Directory.GetDirectories(scriptsFolder);
         if (directories.Length == 0)
@@ -152,9 +149,19 @@ public abstract class EstateManagementGenericContext : DbContext
                 // Create the new view using the original sql from file
                 await this.Database.ExecuteSqlRawAsync(sql, cancellationToken);
 
-                Logger.LogInformation($"Created Stored Procedure [{sqlFile}] successfully.");
+                Logger.LogWarning($"Created Stored Procedure [{sqlFile}] successfully.");
             }
         }
+    }
+
+    protected override void OnConfiguring(DbContextOptionsBuilder options)
+    {
+        if (!string.IsNullOrWhiteSpace(this.ConnectionString))
+        {
+            options.UseSqlServer(this.ConnectionString);
+        }
+
+        options.UseExceptionProcessor();
     }
 
     private async Task CreateViews(CancellationToken cancellationToken)
@@ -162,9 +169,9 @@ public abstract class EstateManagementGenericContext : DbContext
         String executingAssemblyLocation = Assembly.GetExecutingAssembly().Location;
         String executingAssemblyFolder = Path.GetDirectoryName(executingAssemblyLocation);
 
-        String scriptsFolder = $@"{executingAssemblyFolder}/Views/{this.DatabaseEngine}";
+        String scriptsFolder = $@"{executingAssemblyFolder}/Views";
 
-        String[] directiories = Directory.GetDirectories(scriptsFolder);
+        String[] directiories = Directory.GetDirectories(scriptsFolder, "", SearchOption.AllDirectories);
         directiories = directiories.OrderBy(d => d).ToArray();
 
         foreach (String directiory in directiories)
@@ -184,7 +191,7 @@ public abstract class EstateManagementGenericContext : DbContext
                 // Create the new view using the original sql from file
                 await this.Database.ExecuteSqlRawAsync(sql, cancellationToken);
 
-                Logger.LogInformation($"Created View [{sqlFile}] successfully.");
+                Logger.LogWarning($"Created View [{sqlFile}] successfully.");
             }
         }
     }
@@ -194,7 +201,7 @@ public abstract class EstateManagementGenericContext : DbContext
         String executingAssemblyLocation = Assembly.GetExecutingAssembly().Location;
         String executingAssemblyFolder = Path.GetDirectoryName(executingAssemblyLocation);
 
-        String scriptsFolder = $@"{executingAssemblyFolder}/SeedingScripts"; ///{this.DatabaseEngine}";
+        String scriptsFolder = $@"{executingAssemblyFolder}/SeedingScripts";
 
         String[] sqlFiles = Directory.GetFiles(scriptsFolder, "*.sql");
         foreach (String sqlFile in sqlFiles.OrderBy(x => x))
@@ -211,25 +218,21 @@ public abstract class EstateManagementGenericContext : DbContext
             // Create the new view using the original sql from file
             await this.Database.ExecuteSqlRawAsync(sql, cancellationToken);
 
-            Logger.LogInformation($"Run Seeding Script [{sqlFile}] successfully.");
+            Logger.LogWarning($"Run Seeding Script [{sqlFile}] successfully.");
         }
     }
 
     public static Boolean IsDuplicateInsertsIgnored(String tableName) =>
-        EstateManagementGenericContext.TablesToIgnoreDuplicates.Contains(tableName.Trim(), StringComparer.InvariantCultureIgnoreCase);
+        EstateManagementContext.TablesToIgnoreDuplicates.Contains(tableName.Trim(), StringComparer.InvariantCultureIgnoreCase);
 
     public virtual async Task MigrateAsync(CancellationToken cancellationToken)
     {
-        if (this.Database.IsSqlServer() || this.Database.IsMySql())
+        if (this.Database.IsSqlServer())
         {
             await this.Database.MigrateAsync(cancellationToken);
             await this.SetIgnoreDuplicates(cancellationToken);
             await this.CreateViews(cancellationToken);
             await this.SeedStandingData(cancellationToken);
-        }
-
-        if (this.Database.IsSqlServer())
-        {
             await this.CreateStoredProcedures(cancellationToken);
         }
     }
@@ -295,10 +298,16 @@ public abstract class EstateManagementGenericContext : DbContext
 
     protected virtual async Task SetIgnoreDuplicates(CancellationToken cancellationToken)
     {
-        EstateManagementGenericContext.TablesToIgnoreDuplicates = new List<String> {
+        EstateManagementContext.TablesToIgnoreDuplicates = new List<String> {
                                                                                       nameof(this.ResponseCodes),
                                                                                       nameof(this.MerchantBalanceProjectionState),
                                                                                   };
+
+        var tableList = EstateManagementContext.TablesToIgnoreDuplicates.Select(x => $"ALTER TABLE [{x}]  REBUILD WITH (IGNORE_DUP_KEY = ON)").ToList();
+
+        String sql = string.Join(";", tableList);
+
+        await this.Database.ExecuteSqlRawAsync(sql, cancellationToken);
     }
 
     public new async Task<Result> SaveChangesAsync(CancellationToken cancellationToken) {
@@ -343,8 +352,9 @@ public abstract class EstateManagementGenericContext : DbContext
     #endregion
 }
 
-public static class EstateManagementGenericContextExtensions {
-    public static async Task<Result<Estate>> LoadEstate(this EstateManagementGenericContext context, IDomainEvent domainEvent, CancellationToken cancellationToken)
+public static class EstateManagementContextExtensions
+{
+    public static async Task<Result<Estate>> LoadEstate(this EstateManagementContext context, IDomainEvent domainEvent, CancellationToken cancellationToken)
     {
         Guid estateId = DomainEventHelper.GetEstateId(domainEvent);
         Estate estate = await context.Estates.SingleOrDefaultAsync(e => e.EstateId == estateId, cancellationToken);
@@ -355,7 +365,7 @@ public static class EstateManagementGenericContextExtensions {
         };
     }
 
-    public static async Task<Result<Operator>> LoadOperator(this EstateManagementGenericContext context, Guid operatorId, CancellationToken cancellationToken)
+    public static async Task<Result<Operator>> LoadOperator(this EstateManagementContext context, Guid operatorId, CancellationToken cancellationToken)
     {
         Operator @operator = await context.Operators.SingleOrDefaultAsync(e => e.OperatorId == operatorId, cancellationToken);
 
@@ -366,7 +376,7 @@ public static class EstateManagementGenericContextExtensions {
         };
     }
 
-    public static async Task<Result<Operator>> LoadOperator(this EstateManagementGenericContext context, IDomainEvent domainEvent, CancellationToken cancellationToken)
+    public static async Task<Result<Operator>> LoadOperator(this EstateManagementContext context, IDomainEvent domainEvent, CancellationToken cancellationToken)
     {
         Guid operatorId = DomainEventHelper.GetOperatorId(domainEvent);
         Result<Operator> loadOperatorResult = await context.LoadOperator(operatorId, cancellationToken);
@@ -374,7 +384,7 @@ public static class EstateManagementGenericContextExtensions {
         return loadOperatorResult;
     }
 
-    public static async Task<Result<MerchantDevice>> LoadMerchantDevice(this EstateManagementGenericContext context, IDomainEvent domainEvent, CancellationToken cancellationToken)
+    public static async Task<Result<MerchantDevice>> LoadMerchantDevice(this EstateManagementContext context, IDomainEvent domainEvent, CancellationToken cancellationToken)
     {
         Guid merchantId = DomainEventHelper.GetMerchantId(domainEvent);
         Guid deviceId = DomainEventHelper.GetDeviceId(domainEvent);
@@ -388,7 +398,7 @@ public static class EstateManagementGenericContextExtensions {
         };
     }
 
-    public static async Task<Result<File>> LoadFile(this EstateManagementGenericContext context, IDomainEvent domainEvent, CancellationToken cancellationToken)
+    public static async Task<Result<File>> LoadFile(this EstateManagementContext context, IDomainEvent domainEvent, CancellationToken cancellationToken)
     {
         Guid fileId = DomainEventHelper.GetFileId(domainEvent);
         File file = await context.Files.SingleOrDefaultAsync(e => e.FileId == fileId, cancellationToken: cancellationToken);
@@ -400,7 +410,7 @@ public static class EstateManagementGenericContextExtensions {
         };
     }
 
-    public static async Task<Result<Merchant>> LoadMerchant(this EstateManagementGenericContext context, IDomainEvent domainEvent, CancellationToken cancellationToken)
+    public static async Task<Result<Merchant>> LoadMerchant(this EstateManagementContext context, IDomainEvent domainEvent, CancellationToken cancellationToken)
     {
         Guid merchantId = DomainEventHelper.GetMerchantId(domainEvent);
         Merchant merchant = await context.Merchants.SingleOrDefaultAsync(e => e.MerchantId == merchantId, cancellationToken: cancellationToken);
@@ -411,7 +421,7 @@ public static class EstateManagementGenericContextExtensions {
         };
     }
 
-    public static async Task<Result<MerchantAddress>> LoadMerchantAddress(this EstateManagementGenericContext context, IDomainEvent domainEvent, CancellationToken cancellationToken)
+    public static async Task<Result<MerchantAddress>> LoadMerchantAddress(this EstateManagementContext context, IDomainEvent domainEvent, CancellationToken cancellationToken)
     {
         Guid merchantId = DomainEventHelper.GetMerchantId(domainEvent);
         Guid addressId = DomainEventHelper.GetAddressId(domainEvent);
@@ -426,7 +436,7 @@ public static class EstateManagementGenericContextExtensions {
         };
     }
 
-    public static async Task<Result<MerchantContact>> LoadMerchantContact(this EstateManagementGenericContext context, IDomainEvent domainEvent, CancellationToken cancellationToken)
+    public static async Task<Result<MerchantContact>> LoadMerchantContact(this EstateManagementContext context, IDomainEvent domainEvent, CancellationToken cancellationToken)
     {
         Guid merchantId = DomainEventHelper.GetMerchantId(domainEvent);
 
@@ -440,7 +450,7 @@ public static class EstateManagementGenericContextExtensions {
         };
     }
 
-    public static async Task<Result<Reconciliation>> LoadReconcilation(this EstateManagementGenericContext context, IDomainEvent domainEvent, CancellationToken cancellationToken)
+    public static async Task<Result<Reconciliation>> LoadReconcilation(this EstateManagementContext context, IDomainEvent domainEvent, CancellationToken cancellationToken)
     {
         Guid transactionId = DomainEventHelper.GetTransactionId(domainEvent);
         Reconciliation reconciliation =
@@ -452,7 +462,7 @@ public static class EstateManagementGenericContextExtensions {
         };
     }
 
-    public static async Task<Result<Settlement>> LoadSettlement(this EstateManagementGenericContext context, IDomainEvent domainEvent, CancellationToken cancellationToken)
+    public static async Task<Result<Settlement>> LoadSettlement(this EstateManagementContext context, IDomainEvent domainEvent, CancellationToken cancellationToken)
     {
         Guid settlementId = DomainEventHelper.GetSettlementId(domainEvent);
         Settlement settlement = await context.Settlements.SingleOrDefaultAsync(e => e.SettlementId == settlementId, cancellationToken: cancellationToken);
@@ -464,7 +474,7 @@ public static class EstateManagementGenericContextExtensions {
         };
     }
 
-    public static async Task<Result<StatementHeader>> LoadStatementHeader(this EstateManagementGenericContext context, IDomainEvent domainEvent, CancellationToken cancellationToken)
+    public static async Task<Result<StatementHeader>> LoadStatementHeader(this EstateManagementContext context, IDomainEvent domainEvent, CancellationToken cancellationToken)
     {
         Guid statementHeaderId = DomainEventHelper.GetStatementHeaderId(domainEvent);
         StatementHeader statementHeader = await context.StatementHeaders.SingleOrDefaultAsync(e => e.StatementId == statementHeaderId, cancellationToken: cancellationToken);
@@ -476,7 +486,7 @@ public static class EstateManagementGenericContextExtensions {
         };
     }
 
-    public static async Task<Result<Transaction>> LoadTransaction(this EstateManagementGenericContext context, IDomainEvent domainEvent, CancellationToken cancellationToken)
+    public static async Task<Result<Transaction>> LoadTransaction(this EstateManagementContext context, IDomainEvent domainEvent, CancellationToken cancellationToken)
     {
         Guid transactionId = DomainEventHelper.GetTransactionId(domainEvent);
         Transaction transaction = await context.Transactions.SingleOrDefaultAsync(e => e.TransactionId == transactionId, cancellationToken: cancellationToken);
@@ -500,7 +510,7 @@ public static class EstateManagementGenericContextExtensions {
     //    };
     //}
 
-    public static async Task<Result<Entities.Contract>> LoadContract(this EstateManagementGenericContext context, IDomainEvent domainEvent, CancellationToken cancellationToken)
+    public static async Task<Result<Entities.Contract>> LoadContract(this EstateManagementContext context, IDomainEvent domainEvent, CancellationToken cancellationToken)
     {
         Guid contractId = DomainEventHelper.GetContractId(domainEvent);
         Entities.Contract contract = await context.Contracts.SingleOrDefaultAsync(e => e.ContractId == contractId, cancellationToken: cancellationToken);
@@ -512,7 +522,7 @@ public static class EstateManagementGenericContextExtensions {
         };
     }
 
-    public static async Task<Result<ContractProductTransactionFee>> LoadContractProductTransactionFee(this EstateManagementGenericContext context, IDomainEvent domainEvent, CancellationToken cancellationToken)
+    public static async Task<Result<ContractProductTransactionFee>> LoadContractProductTransactionFee(this EstateManagementContext context, IDomainEvent domainEvent, CancellationToken cancellationToken)
     {
         Guid contractProductTransactionFeeId = DomainEventHelper.GetContractProductTransactionFeeId(domainEvent);
         ContractProductTransactionFee contractProductTransactionFee = await context.ContractProductTransactionFees.SingleOrDefaultAsync(e => e.ContractProductTransactionFeeId == contractProductTransactionFeeId, cancellationToken: cancellationToken);

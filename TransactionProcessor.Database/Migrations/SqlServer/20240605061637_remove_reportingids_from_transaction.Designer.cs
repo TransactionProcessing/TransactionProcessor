@@ -9,7 +9,7 @@ using TransactionProcessor.Database.Contexts;
 
 namespace TransactionProcessor.Database.Migrations.SqlServer
 {
-    [DbContext(typeof(EstateManagementSqlServerContext))]
+    [DbContext(typeof(EstateManagementContext))]
     [Migration("20240605061637_remove_reportingids_from_transaction")]
     partial class remove_reportingids_from_transaction
     {

@@ -9,7 +9,7 @@ using TransactionProcessor.Database.Contexts;
 
 namespace TransactionProcessor.Database.Migrations.SqlServer
 {
-    [DbContext(typeof(EstateManagementSqlServerContext))]
+    [DbContext(typeof(EstateManagementContext))]
     [Migration("20230721142728_addmerchanttosettlementtable")]
     partial class addmerchanttosettlementtable
     {

@@ -26,7 +26,7 @@ namespace TransactionProcessor.BusinessLogic.Tests.Services
         #region Methods
 
         private Mock<IAggregateService> AggregateService;
-        private Mock<Shared.EntityFramework.IDbContextFactory<EstateManagementGenericContext>> DbContextFactory;
+        private Mock<Shared.EntityFramework.IDbContextFactory<EstateManagementContext>> DbContextFactory;
         private VoucherDomainService VoucherDomainService;
         public VoucherDomainServiceTests() {
             IConfigurationRoot configurationRoot = new ConfigurationBuilder().AddInMemoryCollection(TestData.DefaultAppSettings).Build();
@@ -35,7 +35,7 @@ namespace TransactionProcessor.BusinessLogic.Tests.Services
             Logger.Initialise(NullLogger.Instance);
 
             this.AggregateService  = new Mock<IAggregateService>();
-            this.DbContextFactory = new Mock<Shared.EntityFramework.IDbContextFactory<EstateManagementGenericContext>>();
+            this.DbContextFactory = new Mock<Shared.EntityFramework.IDbContextFactory<EstateManagementContext>>();
             this.VoucherDomainService = new VoucherDomainService(this.AggregateService.Object, DbContextFactory.Object);
         }
 
@@ -43,7 +43,7 @@ namespace TransactionProcessor.BusinessLogic.Tests.Services
         public async Task VoucherDomainService_IssueVoucher_EstateWithNoOperators_ErrorThrown() {
             
             this.AggregateService.Setup(v => v.GetLatest<VoucherAggregate>(It.IsAny<Guid>(), It.IsAny<CancellationToken>())).ReturnsAsync(Result.Success(new VoucherAggregate()));
-            EstateManagementGenericContext context = await this.GetContext(Guid.NewGuid().ToString("N"));
+            EstateManagementContext context = await this.GetContext(Guid.NewGuid().ToString("N"));
             DbContextFactory.Setup(d => d.GetContext(It.IsAny<Guid>(), It.IsAny<String>(), It.IsAny<CancellationToken>())).ReturnsAsync(context);
             this.AggregateService.Setup(f => f.Get<EstateAggregate>(It.IsAny<Guid>(), It.IsAny<CancellationToken>())).ReturnsAsync(TestData.Aggregates.CreatedEstateAggregate());
             var result = await this.VoucherDomainService.IssueVoucher(TestData.VoucherId,
@@ -100,7 +100,7 @@ namespace TransactionProcessor.BusinessLogic.Tests.Services
             this.AggregateService.Setup(v => v.GetLatest<VoucherAggregate>(It.IsAny<Guid>(), It.IsAny<CancellationToken>())).ReturnsAsync(Result.Success(new VoucherAggregate()));
             this.AggregateService.Setup(f => f.Get<EstateAggregate>(It.IsAny<Guid>(), It.IsAny<CancellationToken>())).ReturnsAsync(TestData.Aggregates.EmptyEstateAggregate);
 
-            EstateManagementGenericContext context = await this.GetContext(Guid.NewGuid().ToString("N"));
+            EstateManagementContext context = await this.GetContext(Guid.NewGuid().ToString("N"));
             DbContextFactory.Setup(d => d.GetContext(It.IsAny<Guid>(), It.IsAny<String>(), It.IsAny<CancellationToken>())).ReturnsAsync(context);
 
             var result = await this.VoucherDomainService.IssueVoucher(TestData.VoucherId,
@@ -120,7 +120,7 @@ namespace TransactionProcessor.BusinessLogic.Tests.Services
             this.AggregateService.Setup(v => v.GetLatest<VoucherAggregate>(It.IsAny<Guid>(), It.IsAny<CancellationToken>())).ReturnsAsync(Result.Success(new VoucherAggregate()));
             this.AggregateService.Setup(f => f.Get<EstateAggregate>(It.IsAny<Guid>(), It.IsAny<CancellationToken>())).ReturnsAsync(Result.Success(TestData.Aggregates.EstateAggregateWithOperator()));
 
-            EstateManagementGenericContext context = await this.GetContext(Guid.NewGuid().ToString("N"));
+            EstateManagementContext context = await this.GetContext(Guid.NewGuid().ToString("N"));
             DbContextFactory.Setup(d => d.GetContext(It.IsAny<Guid>(), It.IsAny<String>(), It.IsAny<CancellationToken>())).ReturnsAsync(context);
 
             var result = await this.VoucherDomainService.IssueVoucher(TestData.VoucherId,
@@ -142,7 +142,7 @@ namespace TransactionProcessor.BusinessLogic.Tests.Services
             this.AggregateService.Setup(v => v.Save(It.IsAny<VoucherAggregate>(), It.IsAny<CancellationToken>())).ReturnsAsync(Result.Success);
             this.AggregateService.Setup(f => f.Get<EstateAggregate>(It.IsAny<Guid>(), It.IsAny<CancellationToken>())).ReturnsAsync(Result.Success(TestData.Aggregates.EstateAggregateWithOperator()));
 
-            EstateManagementGenericContext context = await this.GetContext(Guid.NewGuid().ToString("N"));
+            EstateManagementContext context = await this.GetContext(Guid.NewGuid().ToString("N"));
             DbContextFactory.Setup(d => d.GetContext(It.IsAny<Guid>(), It.IsAny<String>(), It.IsAny<CancellationToken>())).ReturnsAsync(context);
 
             var result = await this.VoucherDomainService.IssueVoucher(TestData.VoucherId,
@@ -166,7 +166,7 @@ namespace TransactionProcessor.BusinessLogic.Tests.Services
                                       .ReturnsAsync(Result.Success(TestData.GetVoucherAggregateWithRecipientMobile()));
             this.AggregateService.Setup(f => f.Get<EstateAggregate>(It.IsAny<Guid>(), It.IsAny<CancellationToken>())).ReturnsAsync(TestData.Aggregates.EmptyEstateAggregate);
 
-            EstateManagementGenericContext context = await this.GetContext(Guid.NewGuid().ToString("N"));
+            EstateManagementContext context = await this.GetContext(Guid.NewGuid().ToString("N"));
             context.VoucherProjectionStates.Add(new TransactionProcessor.Database.Entities.VoucherProjectionState() {
                                                  VoucherCode = TestData.VoucherCode,
                                                  OperatorIdentifier = TestData.OperatorIdentifier,
@@ -192,7 +192,7 @@ namespace TransactionProcessor.BusinessLogic.Tests.Services
                 .ReturnsAsync(Result.Success);
             this.AggregateService.Setup(f => f.Get<EstateAggregate>(It.IsAny<Guid>(), It.IsAny<CancellationToken>())).ReturnsAsync(Result.Success(TestData.Aggregates.CreatedEstateAggregate()));
 
-            EstateManagementGenericContext context = await this.GetContext(Guid.NewGuid().ToString("N"));
+            EstateManagementContext context = await this.GetContext(Guid.NewGuid().ToString("N"));
             context.VoucherProjectionStates.Add(new TransactionProcessor.Database.Entities.VoucherProjectionState() {
                                                  VoucherCode = TestData.VoucherCode,
                                                  OperatorIdentifier = TestData.OperatorIdentifier,
@@ -217,7 +217,7 @@ namespace TransactionProcessor.BusinessLogic.Tests.Services
                                       .ReturnsAsync(Result.Success(TestData.GetVoucherAggregateWithRecipientMobile()));
             this.AggregateService.Setup(f => f.Get<EstateAggregate>(It.IsAny<Guid>(), It.IsAny<CancellationToken>())).ReturnsAsync(Result.Success(TestData.Aggregates.CreatedEstateAggregate()));
 
-            EstateManagementGenericContext context = await this.GetContext(Guid.NewGuid().ToString("N"));
+            EstateManagementContext context = await this.GetContext(Guid.NewGuid().ToString("N"));
             DbContextFactory.Setup(d => d.GetContext(It.IsAny<Guid>(), It.IsAny<String>(), It.IsAny<CancellationToken>())).ReturnsAsync(context);
 
             var result = await this.VoucherDomainService.RedeemVoucher(TestData.EstateId,
@@ -227,14 +227,14 @@ namespace TransactionProcessor.BusinessLogic.Tests.Services
             result.IsFailed.ShouldBeTrue();
         }
 
-        private async Task<EstateManagementGenericContext> GetContext(String databaseName,
+        private async Task<EstateManagementContext> GetContext(String databaseName,
                                                                       TestDatabaseType databaseType = TestDatabaseType.InMemory) {
-            EstateManagementGenericContext context = null;
+            EstateManagementContext context = null;
             if (databaseType == TestDatabaseType.InMemory) {
-                DbContextOptionsBuilder<EstateManagementGenericContext> builder = new DbContextOptionsBuilder<EstateManagementGenericContext>()
+                DbContextOptionsBuilder<EstateManagementContext> builder = new DbContextOptionsBuilder<EstateManagementContext>()
                                                                                   .UseInMemoryDatabase(databaseName)
                                                                                   .ConfigureWarnings(w => w.Ignore(InMemoryEventId.TransactionIgnoredWarning));
-                context = new EstateManagementSqlServerContext(builder.Options);
+                context = new EstateManagementContext(builder.Options);
             }
             else {
                 throw new NotSupportedException($"Database type [{databaseType}] not supported");

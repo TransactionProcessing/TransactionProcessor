@@ -65,14 +65,14 @@ public class VoucherDomainService : IVoucherDomainService
 {
     private readonly IAggregateService AggregateService;
 
-    private readonly Shared.EntityFramework.IDbContextFactory<EstateManagementGenericContext> DbContextFactory;
+    private readonly Shared.EntityFramework.IDbContextFactory<EstateManagementContext> DbContextFactory;
 
     private const String ConnectionStringIdentifier = "EstateReportingReadModel";
 
     #region Constructors
 
     public VoucherDomainService(IAggregateService aggregateService,
-                                Shared.EntityFramework.IDbContextFactory<EstateManagementGenericContext> dbContextFactory)
+                                Shared.EntityFramework.IDbContextFactory<EstateManagementContext> dbContextFactory)
     {
         this.AggregateService = aggregateService;
         this.DbContextFactory = dbContextFactory;
@@ -160,7 +160,7 @@ public class VoucherDomainService : IVoucherDomainService
                                                            CancellationToken cancellationToken)
     {
         // Find the voucher based on the voucher code
-        EstateManagementGenericContext context = await this.DbContextFactory.GetContext(estateId, VoucherDomainService.ConnectionStringIdentifier, cancellationToken);
+        EstateManagementContext context = await this.DbContextFactory.GetContext(estateId, VoucherDomainService.ConnectionStringIdentifier, cancellationToken);
 
         TransactionProcessor.Database.Entities.VoucherProjectionState voucher = await context.VoucherProjectionStates.SingleOrDefaultAsync(v => v.VoucherCode == voucherCode, cancellationToken);
 
