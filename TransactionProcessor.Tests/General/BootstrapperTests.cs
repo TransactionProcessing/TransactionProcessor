@@ -53,6 +53,7 @@
             configuration.Add("AppSettings:VoucherManagementApi", "http://localhost");
             configuration.Add("AppSettings:SecurityService", "http://localhost");
             configuration.Add("SecurityConfiguration:Authority", "http://localhost");
+            configuration.Add("ConnectionStrings:TransactionProcessorReadModel", "dbconnstring");
 
             builder.AddInMemoryCollection(configuration);
 

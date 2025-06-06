@@ -687,7 +687,6 @@ namespace TransactionProcessor.Testing
                 ["AppSettings:SecurityService"] = "http://127.0.0.1",
                 ["AppSettings:ContractProductFeeCacheExpiryInHours"] = "",
                 ["AppSettings:ContractProductFeeCacheEnabled"] = "",
-                ["AppSettings:DatabaseEngine"] = "SqlServer",
                 ["ConnectionStrings:HealthCheck"] = "HealthCheck",
                 ["ConnectionStrings:EstateReportingReadModel"] = "",
                 ["ConnectionStrings:TransactionProcessorReadModel"] = ""

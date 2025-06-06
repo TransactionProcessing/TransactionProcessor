@@ -109,6 +109,53 @@ namespace TransactionProcessor.IntegrationTests.Common
             }
         }
 
+        public override ContainerBuilder SetupSecurityServiceContainer()
+        {
+            this.Trace("About to Start Security Container");
+
+            List<String> environmentVariables = this.GetCommonEnvironmentVariables();
+            environmentVariables.Add($"ServiceOptions:PublicOrigin=https://{this.SecurityServiceContainerName}:{DockerPorts.SecurityServiceDockerPort}");
+            environmentVariables.Add($"ServiceOptions:IssuerUrl=https://{this.SecurityServiceContainerName}:{DockerPorts.SecurityServiceDockerPort}");
+            //environmentVariables.Add("ASPNETCORE_ENVIRONMENT=IntegrationTest");
+            environmentVariables.Add($"urls=https://*:{DockerPorts.SecurityServiceDockerPort}");
+
+            environmentVariables.Add("ServiceOptions:PasswordOptions:RequiredLength=6");
+            environmentVariables.Add("ServiceOptions:PasswordOptions:RequireDigit=false");
+            environmentVariables.Add("ServiceOptions:PasswordOptions:RequireUpperCase=false");
+            environmentVariables.Add("ServiceOptions:UserOptions:RequireUniqueEmail=false");
+            environmentVariables.Add("ServiceOptions:SignInOptions:RequireConfirmedEmail=false");
+
+            environmentVariables.Add(this.SetConnectionString("ConnectionStrings:PersistedGrantDbContext", $"PersistedGrantStore-{this.TestId}", this.UseSecureSqlServerDatabase));
+            environmentVariables.Add(this.SetConnectionString("ConnectionStrings:ConfigurationDbContext", $"Configuration-{this.TestId}", this.UseSecureSqlServerDatabase));
+            environmentVariables.Add(this.SetConnectionString("ConnectionStrings:AuthenticationDbContext", $"Authentication-{this.TestId}", this.UseSecureSqlServerDatabase));
+
+            List<String> additionalEnvironmentVariables = this.GetAdditionalVariables(ContainerType.SecurityService);
+
+            if (additionalEnvironmentVariables != null)
+            {
+                environmentVariables.AddRange(additionalEnvironmentVariables);
+            }
+
+            ContainerBuilder securityServiceContainer = new Builder().UseContainer().WithName(this.SecurityServiceContainerName)
+                                                                     .WithEnvironment(environmentVariables.ToArray())
+                                                                     .UseImageDetails(this.GetImageDetails(ContainerType.SecurityService))
+                                                                     .MountHostFolder(this.DockerPlatform, this.HostTraceFolder)
+                                                                     .SetDockerCredentials(this.DockerCredentials);
+
+            Int32? hostPort = this.GetHostPort(ContainerType.SecurityService);
+            if (hostPort == null)
+            {
+                securityServiceContainer = securityServiceContainer.ExposePort(DockerPorts.SecurityServiceDockerPort);
+            }
+            else
+            {
+                securityServiceContainer = securityServiceContainer.ExposePort(hostPort.Value, DockerPorts.SecurityServiceDockerPort);
+            }
+
+            // Now build and return the container                
+            return securityServiceContainer;
+        }
+
         /// <summary>
         /// Starts the containers for scenario run.
         /// </summary>
@@ -167,7 +214,7 @@ namespace TransactionProcessor.IntegrationTests.Common
                                 {
                                     // Build the connection string (to master)
                                     String connectionString = Setup.GetLocalConnectionString(databaseName);
-                                    EstateManagementSqlServerContext context = new EstateManagementSqlServerContext(connectionString);
+                                    EstateManagementContext context = new EstateManagementContext(connectionString);
                                     await context.Database.EnsureDeletedAsync(CancellationToken.None);
                                 });
             }

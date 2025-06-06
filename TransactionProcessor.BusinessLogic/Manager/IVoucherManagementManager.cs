@@ -47,7 +47,7 @@ namespace TransactionProcessor.BusinessLogic.Manager
         /// <summary>
         /// The database context factory
         /// </summary>
-        private readonly Shared.EntityFramework.IDbContextFactory<EstateManagementGenericContext> DbContextFactory;
+        private readonly Shared.EntityFramework.IDbContextFactory<EstateManagementContext> DbContextFactory;
 
         private readonly IAggregateService AggregateService;
 
@@ -57,7 +57,7 @@ namespace TransactionProcessor.BusinessLogic.Manager
 
         #region Constructors
 
-        public VoucherManagementManager(Shared.EntityFramework.IDbContextFactory<EstateManagementGenericContext> dbContextFactory,
+        public VoucherManagementManager(Shared.EntityFramework.IDbContextFactory<EstateManagementContext> dbContextFactory,
                                         IAggregateService aggregateService)
         {
             this.DbContextFactory = dbContextFactory;
@@ -80,7 +80,7 @@ namespace TransactionProcessor.BusinessLogic.Manager
                                                             String voucherCode,
                                                             CancellationToken cancellationToken)
         {
-            EstateManagementGenericContext context = await this.DbContextFactory.GetContext(estateId,VoucherManagementManager.ConnectionStringIdentifier, cancellationToken);
+            EstateManagementContext context = await this.DbContextFactory.GetContext(estateId,VoucherManagementManager.ConnectionStringIdentifier, cancellationToken);
 
             VoucherProjectionState voucher = await context.VoucherProjectionStates.SingleOrDefaultAsync(v => v.VoucherCode == voucherCode, cancellationToken);
 
@@ -103,7 +103,7 @@ namespace TransactionProcessor.BusinessLogic.Manager
                                                                      Guid transactionId,
                                                                      CancellationToken cancellationToken)
         {
-            EstateManagementGenericContext context = await this.DbContextFactory.GetContext(estateId, ConnectionStringIdentifier, cancellationToken);
+            EstateManagementContext context = await this.DbContextFactory.GetContext(estateId, ConnectionStringIdentifier, cancellationToken);
             VoucherProjectionState voucher = await context.VoucherProjectionStates.SingleOrDefaultAsync(v => v.TransactionId == transactionId, cancellationToken);
 
             if (voucher == null)

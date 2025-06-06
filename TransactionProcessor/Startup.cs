@@ -1,3 +1,4 @@
+using System.Linq;
 using System.Threading;
 using Prometheus;
 using TransactionProcessor.BusinessLogic.Services;
@@ -159,6 +160,17 @@ namespace TransactionProcessor
             app.UseSwaggerUI();
 
             app.PreWarm();
+
+            var _ = typeof(Microsoft.IdentityModel.Tokens.TokenValidationResult); // Force load
+            var loadedTokensAssemblies = AppDomain.CurrentDomain
+                .GetAssemblies()
+                .Where(a => a.GetName().Name == "Microsoft.IdentityModel.Tokens")
+                .ToList();
+
+            foreach (var asm in loadedTokensAssemblies)
+            {
+                Console.WriteLine($"[Trace] Tokens Assembly: {asm.Location} — Version: {asm.GetName().Version}");
+            }
         }
 
         public void ConfigureContainer(ServiceRegistry services) {

@@ -10,7 +10,7 @@ using TransactionProcessor.Database.Contexts;
 
 namespace EstateManagement.Database.Migrations.SqlServer
 {
-    [DbContext(typeof(EstateManagementSqlServerContext))]
+    [DbContext(typeof(EstateManagementContext))]
     partial class EstateManagementSqlServerContextModelSnapshot : ModelSnapshot
     {
         protected override void BuildModel(ModelBuilder modelBuilder)

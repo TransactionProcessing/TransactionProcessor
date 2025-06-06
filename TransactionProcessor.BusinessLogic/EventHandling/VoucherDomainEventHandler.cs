@@ -31,7 +31,7 @@ public class VoucherDomainEventHandler : IDomainEventHandler
     /// <summary>
     /// The database context factory
     /// </summary>
-    private readonly Shared.EntityFramework.IDbContextFactory<EstateManagementGenericContext> DbContextFactory;
+    private readonly Shared.EntityFramework.IDbContextFactory<EstateManagementContext> DbContextFactory;
 
     /// <summary>
     /// The file system
@@ -60,7 +60,7 @@ public class VoucherDomainEventHandler : IDomainEventHandler
 
     public VoucherDomainEventHandler(ISecurityServiceClient securityServiceClient,
                                      IAggregateService aggregateService,
-                                     Shared.EntityFramework.IDbContextFactory<EstateManagementGenericContext> dbContextFactory,
+                                     Shared.EntityFramework.IDbContextFactory<EstateManagementContext> dbContextFactory,
                                      IMessagingServiceClient messagingServiceClient,
                                      IFileSystem fileSystem)
     {
@@ -125,7 +125,7 @@ public class VoucherDomainEventHandler : IDomainEventHandler
     {
         // TODO: Can this be done in a better way than direct db access ?
 
-        EstateManagementGenericContext context = await this.DbContextFactory.GetContext(voucherModel.EstateId, ConnectionStringIdentifier, cancellationToken);
+        EstateManagementContext context = await this.DbContextFactory.GetContext(voucherModel.EstateId, ConnectionStringIdentifier, cancellationToken);
 
         Database.Entities.Transaction transaction = await context.Transactions.SingleOrDefaultAsync(t => t.TransactionId == voucherModel.TransactionId, cancellationToken);
         if (transaction == null)

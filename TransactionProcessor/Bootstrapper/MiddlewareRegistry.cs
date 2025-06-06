@@ -1,4 +1,7 @@
-﻿namespace TransactionProcessor.Bootstrapper
+﻿using Microsoft.IdentityModel.Logging;
+using Microsoft.IdentityModel.Tokens;
+
+namespace TransactionProcessor.Bootstrapper
 {
     using System;
     using System.Diagnostics.CodeAnalysis;
@@ -12,8 +15,6 @@
     using Microsoft.Extensions.Configuration;
     using Microsoft.Extensions.DependencyInjection;
     using Microsoft.Extensions.Diagnostics.HealthChecks;
-    using Microsoft.IdentityModel.Logging;
-    using Microsoft.IdentityModel.Tokens;
     using Microsoft.OpenApi.Models;
     using Newtonsoft.Json;
     using Newtonsoft.Json.Serialization;
@@ -98,13 +99,13 @@
                                                        options.Audience = ConfigurationReader.GetValue("SecurityConfiguration", "ApiName");
 
                                                        options.TokenValidationParameters = new TokenValidationParameters
-                                                                                           {
-                                                                                               ValidateAudience = false,
-                                                                                               ValidAudience =
+                                                       {
+                                                           ValidateAudience = false,
+                                                           ValidAudience =
                                                                                                    ConfigurationReader.GetValue("SecurityConfiguration", "ApiName"),
-                                                                                               ValidIssuer =
+                                                           ValidIssuer =
                                                                                                    ConfigurationReader.GetValue("SecurityConfiguration", "Authority"),
-                                                                                           };
+                                                       };
                                                        options.IncludeErrorDetails = true;
                                                    });
 

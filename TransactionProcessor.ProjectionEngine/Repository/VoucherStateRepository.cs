@@ -17,13 +17,13 @@ public class VoucherStateRepository : IProjectionStateRepository<VoucherState>
 {
     #region Fields
 
-    private readonly Shared.EntityFramework.IDbContextFactory<EstateManagementGenericContext> ContextFactory;
+    private readonly Shared.EntityFramework.IDbContextFactory<EstateManagementContext> ContextFactory;
 
     #endregion
 
     #region Constructors
 
-    public VoucherStateRepository(Shared.EntityFramework.IDbContextFactory<EstateManagementGenericContext> contextFactory)
+    public VoucherStateRepository(Shared.EntityFramework.IDbContextFactory<EstateManagementContext> contextFactory)
     {
         this.ContextFactory = contextFactory;
     }
@@ -68,7 +68,7 @@ public class VoucherStateRepository : IProjectionStateRepository<VoucherState>
                                                  CancellationToken cancellationToken)
     {
 
-        await using EstateManagementGenericContext context =
+        await using EstateManagementContext context =
             await this.ContextFactory.GetContext(state.EstateId, VoucherStateRepository.ConnectionStringIdentifier, cancellationToken);
         // Note: we don't want to select the state again here....
         VoucherProjectionState entity = VoucherStateRepository.CreateVoucherProjectionState(state);
@@ -134,7 +134,7 @@ public class VoucherStateRepository : IProjectionStateRepository<VoucherState>
                                                         Guid voucherId,
                                                         CancellationToken cancellationToken)
     {
-        await using EstateManagementGenericContext? context =
+        await using EstateManagementContext? context =
             await this.ContextFactory.GetContext(estateId, VoucherStateRepository.ConnectionStringIdentifier, cancellationToken);
 
         VoucherProjectionState? entity = await context.VoucherProjectionStates.Where(m => m.VoucherId == voucherId).SingleOrDefaultAsync(cancellationToken: cancellationToken);

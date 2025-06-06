@@ -21,14 +21,14 @@ public class StateProjectionEventHandler<TState> : IDomainEventHandler where TSt
 
     private readonly IProjectionHandler ProjectionHandler;
 
-    private readonly IDbContextFactory<EstateManagementGenericContext> ContextFactory;
+    private readonly IDbContextFactory<EstateManagementContext> ContextFactory;
 
     #endregion
 
     #region Constructors
 
     public StateProjectionEventHandler(ProjectionHandler<TState> projectionHandler,
-                                       IDbContextFactory<EstateManagementGenericContext> contextFactory) {
+                                       IDbContextFactory<EstateManagementContext> contextFactory) {
         this.ProjectionHandler = projectionHandler;
         this.ContextFactory = contextFactory;
     }
@@ -54,7 +54,7 @@ public class StateProjectionEventHandler<TState> : IDomainEventHandler where TSt
 
     private async Task<Result> MigrateDatabase(EstateDomainEvents.EstateCreatedEvent domainEvent, CancellationToken cancellationToken) {
         try {
-            EstateManagementGenericContext? context = await this.ContextFactory.GetContext(domainEvent.EstateId,
+            EstateManagementContext? context = await this.ContextFactory.GetContext(domainEvent.EstateId,
                 "TransactionProcessorReadModel", cancellationToken);
             await context.MigrateAsync(cancellationToken);
             return Result.Success();

@@ -5,16 +5,12 @@ using TransactionProcessor.Repository;
 
 namespace TransactionProcessor.Bootstrapper
 {
-    using System;
-    using System.Data.Common;
-    using System.Diagnostics.CodeAnalysis;
-    using System.Threading;
-    using System.Threading.Tasks;
     using Lamar;
     using Microsoft.Data.SqlClient;
+    using Microsoft.EntityFrameworkCore;
     using Microsoft.Extensions.Configuration;
     using Microsoft.Extensions.DependencyInjection;
-    using MySqlConnector;
+    using Microsoft.Extensions.Hosting;
     using ProjectionEngine.Database.Database;
     using ProjectionEngine.Projections;
     using ProjectionEngine.Repository;
@@ -27,6 +23,11 @@ namespace TransactionProcessor.Bootstrapper
     using Shared.EventStore.SubscriptionWorker;
     using Shared.General;
     using Shared.Repositories;
+    using System;
+    using System.Data.Common;
+    using System.Diagnostics.CodeAnalysis;
+    using System.Threading;
+    using System.Threading.Tasks;
 
     /// <summary>
     /// 
@@ -91,21 +92,21 @@ namespace TransactionProcessor.Bootstrapper
             this.AddSingleton<ITransactionProcessorReadModelRepository, TransactionProcessorReadModelRepository>();
             this.AddSingleton<IProjection<MerchantBalanceState>, MerchantBalanceProjection>();
             
-            this.AddSingleton<IDbContextFactory<EstateManagementGenericContext>, DbContextFactory<EstateManagementGenericContext>>();
-
-            this.AddSingleton<Func<String, EstateManagementGenericContext>>(cont => connectionString =>
-                                                                                    {
-                                                                                        String databaseEngine =
-                                                                                            ConfigurationReader.GetValue("AppSettings", "DatabaseEngine");
-
-                                                                                        return databaseEngine switch
-                                                                                        {
-                                                                                            "MySql" => new EstateManagementMySqlContext(connectionString),
-                                                                                            "SqlServer" => new EstateManagementSqlServerContext(connectionString),
-                                                                                            _ => throw new
-                                                                                                NotSupportedException($"Unsupported Database Engine {databaseEngine}")
-                                                                                        };
-                                                                                    });
+            this.AddSingleton<Shared.EntityFramework.IDbContextFactory<EstateManagementContext>, DbContextFactory<EstateManagementContext>>();
+            
+            if (Startup.WebHostEnvironment.IsEnvironment("IntegrationTest") || Startup.Configuration.GetValue<Boolean>("ServiceOptions:UseInMemoryDatabase") == true)
+            {
+                this.AddDbContext<EstateManagementContext>(builder => builder.UseInMemoryDatabase("EstateManagementReadModel"));
+                DbContextOptionsBuilder<EstateManagementContext> contextBuilder = new DbContextOptionsBuilder<EstateManagementContext>();
+                contextBuilder = contextBuilder.UseInMemoryDatabase("EstateManagementReadModel");
+                this.AddSingleton<Func<String, EstateManagementContext>>(cont => (connectionString) => { return new EstateManagementContext(contextBuilder.Options); });
+            }
+            else
+            {
+                String connectionString = ConfigurationReader.GetConnectionString("TransactionProcessorReadModel");
+                this.AddDbContext<EstateManagementContext>(builder => builder.UseSqlServer(connectionString));
+                this.AddSingleton<Func<String, EstateManagementContext>>(cont => (connectionString) => { return new EstateManagementContext(connectionString); });
+            }
 
             this.AddSingleton<Func<String, Int32, ISubscriptionRepository>>(cont => (esConnString, cacheDuration) => {
                                                                                        return SubscriptionRepository.Create(esConnString, cacheDuration);
@@ -148,22 +149,12 @@ namespace TransactionProcessor.Bootstrapper
                     connectionString = ConfigurationReader.GetConnectionString(connectionStringIdentifier);
 
             DbConnectionStringBuilder builder = null;
-
-            if (databaseEngine == "MySql")
+            
+            // Default to SQL Server
+            builder = new SqlConnectionStringBuilder(connectionString)
             {
-                builder = new MySqlConnectionStringBuilder(connectionString)
-                {
-                    Database = databaseName
-                };
-            }
-            else
-            {
-                // Default to SQL Server
-                builder = new SqlConnectionStringBuilder(connectionString)
-                {
-                    InitialCatalog = databaseName
-                };
-            }
+                InitialCatalog = databaseName
+            };
 
             return builder.ToString();
         }
