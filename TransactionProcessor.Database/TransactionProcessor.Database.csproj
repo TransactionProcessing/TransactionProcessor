@@ -4,7 +4,7 @@
 	  <TargetFramework>net9.0</TargetFramework>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
-	  <DebugType>None</DebugType>
+	  <DebugType>Full</DebugType>
   </PropertyGroup>
 
 	<ItemGroup>
@@ -39,12 +39,6 @@
 			<CopyToOutputDirectory>Always</CopyToOutputDirectory>
 		</None>
 		<None Update="StoredProcedures\SqlServer\spBuildTodaysTransactions.sql">
-			<CopyToOutputDirectory>Always</CopyToOutputDirectory>
-		</None>
-		<None Update="Views\MySql\Priority1\uvwMerchantBalanceHistory.View.sql">
-		  <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-		</None>
-		<None Update="Views\MySql\Priority1\uvwSettlements.View.sql">
 			<CopyToOutputDirectory>Always</CopyToOutputDirectory>
 		</None>
 		<None Update="Views\SqlServer\Priority1\uvwMerchantBalanceHistory.View.sql">

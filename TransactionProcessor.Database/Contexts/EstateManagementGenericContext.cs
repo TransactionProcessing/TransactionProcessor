@@ -149,7 +149,7 @@ public class EstateManagementContext : DbContext
                 // Create the new view using the original sql from file
                 await this.Database.ExecuteSqlRawAsync(sql, cancellationToken);
 
-                Logger.LogInformation($"Created Stored Procedure [{sqlFile}] successfully.");
+                Logger.LogWarning($"Created Stored Procedure [{sqlFile}] successfully.");
             }
         }
     }
@@ -169,9 +169,9 @@ public class EstateManagementContext : DbContext
         String executingAssemblyLocation = Assembly.GetExecutingAssembly().Location;
         String executingAssemblyFolder = Path.GetDirectoryName(executingAssemblyLocation);
 
-        String scriptsFolder = $@"{executingAssemblyFolder}/Views/";
+        String scriptsFolder = $@"{executingAssemblyFolder}/Views";
 
-        String[] directiories = Directory.GetDirectories(scriptsFolder);
+        String[] directiories = Directory.GetDirectories(scriptsFolder, "", SearchOption.AllDirectories);
         directiories = directiories.OrderBy(d => d).ToArray();
 
         foreach (String directiory in directiories)
@@ -191,7 +191,7 @@ public class EstateManagementContext : DbContext
                 // Create the new view using the original sql from file
                 await this.Database.ExecuteSqlRawAsync(sql, cancellationToken);
 
-                Logger.LogInformation($"Created View [{sqlFile}] successfully.");
+                Logger.LogWarning($"Created View [{sqlFile}] successfully.");
             }
         }
     }
@@ -218,7 +218,7 @@ public class EstateManagementContext : DbContext
             // Create the new view using the original sql from file
             await this.Database.ExecuteSqlRawAsync(sql, cancellationToken);
 
-            Logger.LogInformation($"Run Seeding Script [{sqlFile}] successfully.");
+            Logger.LogWarning($"Run Seeding Script [{sqlFile}] successfully.");
         }
     }
 
