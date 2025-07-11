@@ -1,13 +1,19 @@
+using System;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Logging;
+using NLog.Extensions.Logging;
+using Shared.Logger;
+using Shared.Middleware;
 
 namespace TransactionProcessor
 {
-    using System.Diagnostics.CodeAnalysis;
-    using System.IO;
     using Lamar.Microsoft.DependencyInjection;
     using Microsoft.Extensions.DependencyInjection;
+    using NLog;
+    using System.Diagnostics.CodeAnalysis;
+    using System.IO;
 
     [ExcludeFromCodeCoverage]
     public class Program
@@ -27,6 +33,20 @@ namespace TransactionProcessor
                                                                   .AddJsonFile("hosting.development.json", optional: true)
                                                                   .AddEnvironmentVariables().Build();
 
+            String contentRoot = Directory.GetCurrentDirectory();
+            String nlogConfigPath = Path.Combine(contentRoot, "nlog.config");
+
+            LogManager.Setup(b =>
+            {
+                b.SetupLogFactory(setup =>
+                {
+                    setup.AddCallSiteHiddenAssembly(typeof(NlogLogger).Assembly);
+                    setup.AddCallSiteHiddenAssembly(typeof(Shared.Logger.Logger).Assembly);
+                    setup.AddCallSiteHiddenAssembly(typeof(TenantMiddleware).Assembly);
+                });
+                b.LoadConfigurationFromFile(nlogConfigPath);
+            });
+
             IHostBuilder hostBuilder = Host.CreateDefaultBuilder(args);
             hostBuilder.UseWindowsService();
             hostBuilder.UseLamar();
@@ -36,7 +56,11 @@ namespace TransactionProcessor
                                                      webBuilder.UseConfiguration(config);
                                                      webBuilder.UseKestrel();
                                                  });
+            hostBuilder.ConfigureLogging(logging => {
+                logging.AddConsole();
+                logging.AddNLog();
 
+            });
             hostBuilder.ConfigureServices(services =>
                                           {
                                               services.AddHostedService<AutoLogonWorkerService>(provider =>

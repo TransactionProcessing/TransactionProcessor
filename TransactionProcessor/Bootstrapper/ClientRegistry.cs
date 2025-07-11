@@ -1,13 +1,14 @@
 ﻿namespace TransactionProcessor.Bootstrapper
 {
-    using System;
-    using System.Diagnostics.CodeAnalysis;
-    using System.Net.Http;
+    using ClientProxyBase;
     using Lamar;
     using MessagingService.Client;
     using Microsoft.Extensions.DependencyInjection;
     using SecurityService.Client;
     using Shared.General;
+    using System;
+    using System.Diagnostics.CodeAnalysis;
+    using System.Net.Http;
 
     /// <summary>
     /// 
@@ -23,26 +24,12 @@
         /// </summary>
         public ClientRegistry()
         {
-            this.AddSingleton<ISecurityServiceClient, SecurityServiceClient>();
-            this.AddSingleton<IMessagingServiceClient, MessagingServiceClient>();
-            
-            Func<String, String> resolver(IServiceProvider container) => serviceName => { return ConfigurationReader.GetBaseServerUri(serviceName).OriginalString; };
-            Func<String, String> resolver1() => serviceName => { return ConfigurationReader.GetBaseServerUri(serviceName).OriginalString; };
+            this.AddHttpContextAccessor();
+            this.RegisterHttpClient<ISecurityServiceClient, SecurityServiceClient>();
+            this.RegisterHttpClient<IMessagingServiceClient, MessagingServiceClient>();
 
+            Func<String, String> resolver(IServiceProvider container) => serviceName => ConfigurationReader.GetBaseServerUri(serviceName).OriginalString;
             this.AddSingleton<Func<String, String>>(resolver);
-
-            var httpMessageHandler = new SocketsHttpHandler
-                                     {
-                                         SslOptions =
-                                         {
-                                             RemoteCertificateValidationCallback = (sender,
-                                                                                    certificate,
-                                                                                    chain,
-                                                                                    errors) => true,
-                                         }
-                                     };
-            HttpClient httpClient = new HttpClient(httpMessageHandler);
-            this.AddSingleton(httpClient);
         }
 
         #endregion
