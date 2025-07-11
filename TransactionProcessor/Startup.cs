@@ -1,15 +1,10 @@
+using Prometheus;
 using System.Linq;
 using System.Threading;
-using Prometheus;
 using TransactionProcessor.BusinessLogic.Services;
 
 namespace TransactionProcessor
 {
-    using System;
-    using System.Collections.Generic;
-    using System.Diagnostics.CodeAnalysis;
-    using System.IO;
-    using System.Reflection;
     using Bootstrapper;
     using HealthChecks.UI.Client;
     using Lamar;
@@ -25,6 +20,12 @@ namespace TransactionProcessor
     using Shared.EventStore.Aggregate;
     using Shared.Extensions;
     using Shared.General;
+    using Shared.Middleware;
+    using System;
+    using System.Collections.Generic;
+    using System.Diagnostics.CodeAnalysis;
+    using System.IO;
+    using System.Reflection;
     using ILogger = Microsoft.Extensions.Logging.ILogger;
     using Logger = Shared.Logger.Logger;
 
@@ -99,27 +100,11 @@ namespace TransactionProcessor
                               IWebHostEnvironment env,
                               ILoggerFactory loggerFactory) {
             ConfigurationReader.Initialise(Startup.Configuration);
-
-            String nlogConfigFilename = "nlog.config";
-
+            
             if (env.IsDevelopment()) {
                 app.UseDeveloperExceptionPage();
-                string directoryPath = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location);
-                LogManager.AddHiddenAssembly(Assembly.LoadFrom(Path.Combine(directoryPath, "Shared.dll")));
-
-                var developmentNlogConfigFilename = "nlog.development.config";
-                if (File.Exists(Path.Combine(env.ContentRootPath, developmentNlogConfigFilename)))
-                {
-                    nlogConfigFilename = developmentNlogConfigFilename;
-                }
-            }
-            else{
-                LogManager.AddHiddenAssembly(Assembly.LoadFrom(Path.Combine(env.ContentRootPath, "Shared.dll")));
             }
             
-            loggerFactory.ConfigureNLog(Path.Combine(env.ContentRootPath, nlogConfigFilename));
-            loggerFactory.AddNLog();
-
             ILogger logger = loggerFactory.CreateLogger("TransactionProcessor");
 
             Logger.Initialise(logger);
@@ -129,7 +114,7 @@ namespace TransactionProcessor
             foreach (KeyValuePair<Type, String> type in TypeMap.Map) {
                 Logger.LogInformation($"Type name {type.Value} mapped to {type.Key.Name}");
             }
-
+            app.UseMiddleware<TenantMiddleware>();
             app.AddRequestLogging();
             app.AddResponseLogging();
             app.AddExceptionHandler();

@@ -6,8 +6,8 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="ClientProxyBase" Version="2025.6.2" />
-    <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="9.0.5" />
+    <PackageReference Include="ClientProxyBase" Version="2025.7.9" />
+    <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="9.0.7" />
     <PackageReference Include="SecurityService.Client" Version="2025.5.2-build82" />
     <PackageReference Include="System.ServiceModel.Federation" Version="8.1.2" />
     <PackageReference Include="Microsoft.IdentityModel.Tokens" Version="8.12.0" />
