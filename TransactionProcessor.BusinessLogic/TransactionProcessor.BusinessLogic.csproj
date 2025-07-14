@@ -5,16 +5,16 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="CallbackHandler.DataTransferObjects" Version="2025.3.2-build71" />
-    <PackageReference Include="ClientProxyBase" Version="2025.7.9" />
+    <PackageReference Include="CallbackHandler.DataTransferObjects" Version="2025.7.2-build73" />
+    <PackageReference Include="ClientProxyBase" Version="2025.7.10" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.Relational" Version="9.0.5" />
     <PackageReference Include="MessagingService.Client" Version="2025.3.2-build77" />
     <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="9.0.7" />
     <PackageReference Include="Polly" Version="8.5.2" />
     <PackageReference Include="prometheus-net" Version="8.2.1" />
     <PackageReference Include="SecurityService.Client" Version="2025.5.2-build82" />
-    <PackageReference Include="Shared.DomainDrivenDesign" Version="2025.7.9" />
-    <PackageReference Include="Shared.EventStore" Version="2025.7.9" />
+    <PackageReference Include="Shared.DomainDrivenDesign" Version="2025.7.10" />
+    <PackageReference Include="Shared.EventStore" Version="2025.7.10" />
     <PackageReference Include="MediatR" Version="12.5.0" />
     <PackageReference Include="Syncfusion.HtmlToPdfConverter.Net.Windows" Version="29.2.9" />
     <PackageReference Include="System.IO.Abstractions" Version="22.0.14" />

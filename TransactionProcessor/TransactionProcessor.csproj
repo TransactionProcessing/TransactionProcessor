@@ -10,7 +10,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-	  <PackageReference Include="ClientProxyBase" Version="2025.7.9" />
+	  <PackageReference Include="ClientProxyBase" Version="2025.7.10" />
 	  <PackageReference Include="Lamar" Version="15.0.0" />
 	  <PackageReference Include="Lamar.Microsoft.DependencyInjection" Version="15.0.0" />
 	  <PackageReference Include="AspNetCore.HealthChecks.SqlServer" Version="9.0.0" />
@@ -33,11 +33,11 @@
     <PackageReference Include="NLog.Extensions.Logging" Version="5.5.0" />
 	  <PackageReference Include="prometheus-net" Version="8.2.1" />
 	  <PackageReference Include="prometheus-net.AspNetCore" Version="8.2.1" />
-    <PackageReference Include="SecurityService.Client" Version="2025.5.2-build82" />
-    <PackageReference Include="Shared" Version="2025.7.9" />
-    <PackageReference Include="Shared.EventStore" Version="2025.7.9" />
+    <PackageReference Include="SecurityService.Client" Version="2025.7.2-build89" />
+    <PackageReference Include="Shared" Version="2025.7.10" />
+    <PackageReference Include="Shared.EventStore" Version="2025.7.10" />
       <PackageReference Include="Microsoft.Extensions.Hosting.WindowsServices" Version="9.0.5" />
-      <PackageReference Include="Shared.Results.Web" Version="2025.7.9" />
+      <PackageReference Include="Shared.Results.Web" Version="2025.7.10" />
 	  <PackageReference Include="Swashbuckle.AspNetCore" Version="8.1.4" />
 	  <PackageReference Include="Swashbuckle.AspNetCore.Annotations" Version="8.1.4" />
 	  <PackageReference Include="Swashbuckle.AspNetCore.Filters" Version="8.0.3" />
