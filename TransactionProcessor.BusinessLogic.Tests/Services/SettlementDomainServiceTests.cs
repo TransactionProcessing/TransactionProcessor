@@ -83,6 +83,106 @@ namespace TransactionProcessor.BusinessLogic.Tests.Services
         }
 
         [Fact]
+        public async Task SettlementDomainService_ProcessSettlement_RunOutOfRetries_SettlementIsNotProcessed()
+        {
+            this.AggregateService.Setup(s => s.GetLatest<SettlementAggregate>(It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
+                                         .ReturnsAsync(Result.Success(TestData.GetSettlementAggregateWithPendingMerchantFees(10)));
+            this.AggregateService.SetupSequence(s => s.GetLatest<TransactionAggregate>(It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
+                .ReturnsAsync(Result.Success(TestData.GetCompletedAuthorisedSaleTransactionAggregateWithPendingFee(TestData.FeeIds.GetValueOrDefault(0))))
+                .ReturnsAsync(Result.Success(TestData.GetCompletedAuthorisedSaleTransactionAggregateWithPendingFee(TestData.FeeIds.GetValueOrDefault(1))))
+                .ReturnsAsync(Result.Success(TestData.GetCompletedAuthorisedSaleTransactionAggregateWithPendingFee(TestData.FeeIds.GetValueOrDefault(2))))
+                .ReturnsAsync(Result.Success(TestData.GetCompletedAuthorisedSaleTransactionAggregateWithPendingFee(TestData.FeeIds.GetValueOrDefault(3))))
+                .ReturnsAsync(Result.Success(TestData.GetCompletedAuthorisedSaleTransactionAggregateWithPendingFee(TestData.FeeIds.GetValueOrDefault(4))))
+                .ReturnsAsync(Result.Success(TestData.GetCompletedAuthorisedSaleTransactionAggregateWithPendingFee(TestData.FeeIds.GetValueOrDefault(5))))
+                .ReturnsAsync(Result.Success(TestData.GetCompletedAuthorisedSaleTransactionAggregateWithPendingFee(TestData.FeeIds.GetValueOrDefault(6))))
+                .ReturnsAsync(Result.Success(TestData.GetCompletedAuthorisedSaleTransactionAggregateWithPendingFee(TestData.FeeIds.GetValueOrDefault(7))))
+                .ReturnsAsync(Result.Success(TestData.GetCompletedAuthorisedSaleTransactionAggregateWithPendingFee(TestData.FeeIds.GetValueOrDefault(8))))
+                .ReturnsAsync(Result.Success(TestData.GetCompletedAuthorisedSaleTransactionAggregateWithPendingFee(TestData.FeeIds.GetValueOrDefault(9))));
+            this.AggregateService.SetupSequence(s => s.Save(It.IsAny<SettlementAggregate>(), It.IsAny<CancellationToken>()))
+                .ReturnsAsync(Result.Success())
+                .ReturnsAsync(Result.Failure(new List<String>() { "WrongExpectedVersion" }))
+                .ReturnsAsync(Result.Success())
+                .ReturnsAsync(Result.Failure(new List<String>() { "WrongExpectedVersion" }))
+                .ReturnsAsync(Result.Success())
+                .ReturnsAsync(Result.Failure(new List<String>() { "WrongExpectedVersion" }))
+                .ReturnsAsync(Result.Success())
+                .ReturnsAsync(Result.Failure(new List<String>() { "WrongExpectedVersion" }))
+                .ReturnsAsync(Result.Success())
+                .ReturnsAsync(Result.Failure(new List<String>() { "WrongExpectedVersion" }))
+                .ReturnsAsync(Result.Failure(new List<String>() { "WrongExpectedVersion" }));
+            this.AggregateService.SetupSequence(s => s.Save(It.IsAny<TransactionAggregate>(), It.IsAny<CancellationToken>()))
+                .ReturnsAsync(Result.Success())
+                .ReturnsAsync(Result.Success())
+                .ReturnsAsync(Result.Success())
+                .ReturnsAsync(Result.Success())
+                .ReturnsAsync(Result.Success())
+                .ReturnsAsync(Result.Success())
+                .ReturnsAsync(Result.Success())
+                .ReturnsAsync(Result.Success())
+                .ReturnsAsync(Result.Success())
+                .ReturnsAsync(Result.Success());
+
+            this.AggregateService.Setup(e => e.Get<MerchantAggregate>(It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
+                .ReturnsAsync(TestData.Aggregates.CreatedMerchantAggregate());
+
+            SettlementCommands.ProcessSettlementCommand command =
+                new(TestData.SettlementDate, TestData.MerchantId,
+                    TestData.EstateId);
+
+            Result<Guid> result = await settlementDomainService.ProcessSettlement(command, CancellationToken.None);
+
+            result.IsSuccess.ShouldBeFalse();
+            this.AggregateService.Verify(s => s.Save(It.IsAny<SettlementAggregate>(), It.IsAny<CancellationToken>()), Times.Exactly(11));
+        }
+
+        [Fact]
+        public async Task SettlementDomainService_ProcessSettlement_RetryOnWrongExpected_SettlementIsProcessed()
+        {
+            this.AggregateService.Setup(s => s.GetLatest<SettlementAggregate>(It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
+                                         .ReturnsAsync(Result.Success(TestData.GetSettlementAggregateWithPendingMerchantFees(10)));
+            this.AggregateService.SetupSequence(s => s.GetLatest<TransactionAggregate>(It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
+                .ReturnsAsync(Result.Success(TestData.GetCompletedAuthorisedSaleTransactionAggregateWithPendingFee(TestData.FeeIds.GetValueOrDefault(0))))
+                .ReturnsAsync(Result.Success(TestData.GetCompletedAuthorisedSaleTransactionAggregateWithPendingFee(TestData.FeeIds.GetValueOrDefault(1))))
+                .ReturnsAsync(Result.Success(TestData.GetCompletedAuthorisedSaleTransactionAggregateWithPendingFee(TestData.FeeIds.GetValueOrDefault(2))))
+                .ReturnsAsync(Result.Success(TestData.GetCompletedAuthorisedSaleTransactionAggregateWithPendingFee(TestData.FeeIds.GetValueOrDefault(3))))
+                .ReturnsAsync(Result.Success(TestData.GetCompletedAuthorisedSaleTransactionAggregateWithPendingFee(TestData.FeeIds.GetValueOrDefault(4))))
+                .ReturnsAsync(Result.Success(TestData.GetCompletedAuthorisedSaleTransactionAggregateWithPendingFee(TestData.FeeIds.GetValueOrDefault(5))))
+                .ReturnsAsync(Result.Success(TestData.GetCompletedAuthorisedSaleTransactionAggregateWithPendingFee(TestData.FeeIds.GetValueOrDefault(6))))
+                .ReturnsAsync(Result.Success(TestData.GetCompletedAuthorisedSaleTransactionAggregateWithPendingFee(TestData.FeeIds.GetValueOrDefault(7))))
+                .ReturnsAsync(Result.Success(TestData.GetCompletedAuthorisedSaleTransactionAggregateWithPendingFee(TestData.FeeIds.GetValueOrDefault(8))))
+                .ReturnsAsync(Result.Success(TestData.GetCompletedAuthorisedSaleTransactionAggregateWithPendingFee(TestData.FeeIds.GetValueOrDefault(9))));
+            this.AggregateService.SetupSequence(s => s.Save(It.IsAny<SettlementAggregate>(), It.IsAny<CancellationToken>()))
+                .ReturnsAsync(Result.Success())
+                .ReturnsAsync(Result.Failure(new List<String>(){ "WrongExpectedVersion" }))
+                .ReturnsAsync(Result.Success())
+                .ReturnsAsync(Result.Success());
+            this.AggregateService.SetupSequence(s => s.Save(It.IsAny<TransactionAggregate>(), It.IsAny<CancellationToken>()))
+                .ReturnsAsync(Result.Success())
+                .ReturnsAsync(Result.Success())
+                .ReturnsAsync(Result.Success())
+                .ReturnsAsync(Result.Success())
+                .ReturnsAsync(Result.Success())
+                .ReturnsAsync(Result.Success())
+                .ReturnsAsync(Result.Success())
+                .ReturnsAsync(Result.Success())
+                .ReturnsAsync(Result.Success())
+                .ReturnsAsync(Result.Success());
+
+            this.AggregateService.Setup(e => e.Get<MerchantAggregate>(It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
+                .ReturnsAsync(TestData.Aggregates.CreatedMerchantAggregate());
+
+            SettlementCommands.ProcessSettlementCommand command =
+                new(TestData.SettlementDate, TestData.MerchantId,
+                    TestData.EstateId);
+
+            Result<Guid> result = await settlementDomainService.ProcessSettlement(command, CancellationToken.None);
+
+            result.IsSuccess.ShouldBeTrue();
+            result.Data.ShouldNotBe(Guid.Empty);
+            this.AggregateService.Verify(s => s.Save(It.IsAny<SettlementAggregate>(), It.IsAny<CancellationToken>()), Times.Exactly(4));
+        }
+
+        [Fact]
         public async Task SettlementDomainService_ProcessSettlement_MerchantWithImmediateSettlement_SettlementIsProcessed()
         {
             this.AggregateService.Setup(s => s.GetLatest<SettlementAggregate>(It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
