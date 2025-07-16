@@ -100,16 +100,16 @@ namespace TransactionProcessor.BusinessLogic.Tests.Services
                 .ReturnsAsync(Result.Success(TestData.GetCompletedAuthorisedSaleTransactionAggregateWithPendingFee(TestData.FeeIds.GetValueOrDefault(9))));
             this.AggregateService.SetupSequence(s => s.Save(It.IsAny<SettlementAggregate>(), It.IsAny<CancellationToken>()))
                 .ReturnsAsync(Result.Success())
-                .ReturnsAsync(Result.Failure(new List<String>() { "WrongExpectedVersion" }))
+                .ReturnsAsync(Result.Failure(new List<String> { "WrongExpectedVersion" }))
                 .ReturnsAsync(Result.Success())
-                .ReturnsAsync(Result.Failure(new List<String>() { "WrongExpectedVersion" }))
+                .ReturnsAsync(Result.Failure(new List<String> { "WrongExpectedVersion" }))
                 .ReturnsAsync(Result.Success())
-                .ReturnsAsync(Result.Failure(new List<String>() { "WrongExpectedVersion" }))
+                .ReturnsAsync(Result.Failure(new List<String> { "WrongExpectedVersion" }))
                 .ReturnsAsync(Result.Success())
-                .ReturnsAsync(Result.Failure(new List<String>() { "WrongExpectedVersion" }))
+                .ReturnsAsync(Result.Failure(new List<String> { "WrongExpectedVersion" }))
                 .ReturnsAsync(Result.Success())
-                .ReturnsAsync(Result.Failure(new List<String>() { "WrongExpectedVersion" }))
-                .ReturnsAsync(Result.Failure(new List<String>() { "WrongExpectedVersion" }));
+                .ReturnsAsync(Result.Failure(new List<String> { "WrongExpectedVersion" }))
+                .ReturnsAsync(Result.Failure(new List<String> { "WrongExpectedVersion" }));
             this.AggregateService.SetupSequence(s => s.Save(It.IsAny<TransactionAggregate>(), It.IsAny<CancellationToken>()))
                 .ReturnsAsync(Result.Success())
                 .ReturnsAsync(Result.Success())
@@ -153,7 +153,7 @@ namespace TransactionProcessor.BusinessLogic.Tests.Services
                 .ReturnsAsync(Result.Success(TestData.GetCompletedAuthorisedSaleTransactionAggregateWithPendingFee(TestData.FeeIds.GetValueOrDefault(9))));
             this.AggregateService.SetupSequence(s => s.Save(It.IsAny<SettlementAggregate>(), It.IsAny<CancellationToken>()))
                 .ReturnsAsync(Result.Success())
-                .ReturnsAsync(Result.Failure(new List<String>(){ "WrongExpectedVersion" }))
+                .ReturnsAsync(Result.Failure(new List<String>{ "WrongExpectedVersion" }))
                 .ReturnsAsync(Result.Success())
                 .ReturnsAsync(Result.Success());
             this.AggregateService.SetupSequence(s => s.Save(It.IsAny<TransactionAggregate>(), It.IsAny<CancellationToken>()))
