@@ -6,6 +6,19 @@ using TransactionProcessor.Database.Entities;
 
 namespace TransactionProcessor.BusinessLogic.Tests.DomainEventHandlers;
 
+using EventHandling;
+using MessagingService.Client;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Diagnostics;
+using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.DependencyInjection;
+using Moq;
+using SecurityService.Client;
+using Shared.DomainDrivenDesign.EventSourcing;
+using Shared.EntityFramework;
+using Shared.EventStore.Aggregate;
+using Shared.General;
+using Shared.Logger;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -13,17 +26,6 @@ using System.IO.Abstractions.TestingHelpers;
 using System.Reflection;
 using System.Threading;
 using System.Threading.Tasks;
-using EventHandling;
-using MessagingService.Client;
-using Microsoft.EntityFrameworkCore;
-using Microsoft.EntityFrameworkCore.Diagnostics;
-using Microsoft.Extensions.Configuration;
-using Moq;
-using SecurityService.Client;
-using Shared.DomainDrivenDesign.EventSourcing;
-using Shared.EventStore.Aggregate;
-using Shared.General;
-using Shared.Logger;
 using Testing;
 using Xunit;
 
@@ -35,124 +37,99 @@ public enum TestDatabaseType
 
 public class VoucherDomainEventHandlerTests
 {
-    private Mock<Shared.EntityFramework.IDbContextFactory<EstateManagementContext>> GetMockDbContextFactory()
-    {
-        return new Mock<Shared.EntityFramework.IDbContextFactory<EstateManagementContext>>();
-    }
+    private readonly Mock<IAggregateService> AggregateService;
+    private readonly Mock<IDbContextResolver<EstateManagementContext>> DbContextFactory;
+    private readonly EstateManagementContext Context;
+    private readonly Mock<ISecurityServiceClient> SecurityServiceClient;
+    private readonly Mock<IMessagingServiceClient> MessagingServiceClient;
+    private readonly VoucherDomainEventHandler VoucherDomainEventHandler;
 
-    private async Task<EstateManagementContext> GetContext(String databaseName, TestDatabaseType databaseType = TestDatabaseType.InMemory)
+    private EstateManagementContext GetContext(String databaseName)
     {
         EstateManagementContext context = null;
-        if (databaseType == TestDatabaseType.InMemory)
-        {
-            DbContextOptionsBuilder<EstateManagementContext> builder = new DbContextOptionsBuilder<EstateManagementContext>()
-                                                                              .UseInMemoryDatabase(databaseName)
-                                                                              .ConfigureWarnings(w => w.Ignore(InMemoryEventId.TransactionIgnoredWarning));
-            context = new EstateManagementContext(builder.Options);
-        }
-        else
-        {
-            throw new NotSupportedException($"Database type [{databaseType}] not supported");
-        }
+        DbContextOptionsBuilder<EstateManagementContext> builder = new DbContextOptionsBuilder<EstateManagementContext>().UseInMemoryDatabase(databaseName).ConfigureWarnings(w => w.Ignore(InMemoryEventId.TransactionIgnoredWarning));
+        return new EstateManagementContext(builder.Options);
+    }
 
-        return context;
+    public VoucherDomainEventHandlerTests() {
+        IConfigurationRoot configurationRoot = new ConfigurationBuilder().AddInMemoryCollection(TestData.DefaultAppSettings).Build();
+        ConfigurationReader.Initialise(configurationRoot);
+        Logger.Initialise(NullLogger.Instance);
+
+        SecurityServiceClient = new Mock<ISecurityServiceClient>();
+        MessagingServiceClient = new Mock<IMessagingServiceClient>();
+
+        DirectoryInfo path = Directory.GetParent(Assembly.GetExecutingAssembly().Location);
+        MockFileSystem fileSystem = new MockFileSystem(new Dictionary<string, MockFileData>
+        {
+            { $"{path}/VoucherMessages/VoucherEmail.html", new MockFileData("Transaction Number: [TransactionNumber]") },
+            { $"{path}/VoucherMessages/VoucherSMS.txt", new MockFileData("Transaction Number: [TransactionNumber]") }
+        });
+
+        this.AggregateService = new Mock<IAggregateService>();
+        this.DbContextFactory = new Mock<IDbContextResolver<EstateManagementContext>>();
+        this.Context = this.GetContext(Guid.NewGuid().ToString("N"));
+        var services = new ServiceCollection();
+        services.AddTransient<EstateManagementContext>(_ => this.Context);
+        var serviceProvider = services.BuildServiceProvider();
+        var scope = serviceProvider.CreateScope();
+        this.DbContextFactory.Setup(d => d.Resolve(It.IsAny<String>(), It.IsAny<String>())).Returns(new ResolvedDbContext<EstateManagementContext>(scope));
+
+        VoucherDomainEventHandler = new VoucherDomainEventHandler(this.SecurityServiceClient.Object,
+                                                                                            this.AggregateService.Object,
+                                                                                            this.DbContextFactory.Object,
+                                                                                            this.MessagingServiceClient.Object,
+                                                                                            fileSystem);
+
     }
 
     [Fact]
     public async Task VoucherDomainEventHandler_VoucherIssuedEvent_WithEmailAddress_IsHandled()
     {
-        IConfigurationRoot configurationRoot = new ConfigurationBuilder().AddInMemoryCollection(TestData.DefaultAppSettings).Build();
-        ConfigurationReader.Initialise(configurationRoot);
-        Logger.Initialise(NullLogger.Instance);
+        this.SecurityServiceClient.Setup(s => s.GetToken(It.IsAny<String>(), It.IsAny<String>(), It.IsAny<CancellationToken>())).ReturnsAsync(Result.Success(TestData.TokenResponse()));
 
-        Mock<ISecurityServiceClient> securityServiceClient = new Mock<ISecurityServiceClient>();
-        securityServiceClient.Setup(s => s.GetToken(It.IsAny<String>(), It.IsAny<String>(), It.IsAny<CancellationToken>())).ReturnsAsync(Result.Success(TestData.TokenResponse()));
-
-        Mock<IAggregateService> aggregateService = new();
-        aggregateService.Setup(t => t.Get<VoucherAggregate>(It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
+        this.AggregateService.Setup(t => t.Get<VoucherAggregate>(It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
                                   .ReturnsAsync(Result.Success(TestData.GetVoucherAggregateWithRecipientEmail()));
 
-        EstateManagementContext context = await this.GetContext(Guid.NewGuid().ToString("N"), TestDatabaseType.InMemory);
-        context.Transactions.Add(new Database.Entities.Transaction()
+        this.Context.Transactions.Add(new Database.Entities.Transaction()
         {
                                      TransactionId = TestData.TransactionId,
                                      MerchantId = TestData.MerchantId,
                                      ContractId = TestData.ContractId
                                  });
-        context.Contracts.Add(new Contract
+        this.Context.Contracts.Add(new Contract
                               {
                                   ContractId = TestData.ContractId,
                                   EstateId = TestData.EstateId,
                                   Description = TestData.OperatorIdentifier
                               });
-        await context.SaveChangesAsync(CancellationToken.None);
+        await this.Context.SaveChangesAsync(CancellationToken.None);
 
-        var dbContextFactory = this.GetMockDbContextFactory();
-        dbContextFactory.Setup(d => d.GetContext(It.IsAny<Guid>(),It.IsAny<String>(), It.IsAny<CancellationToken>())).ReturnsAsync(context);
-
-        Mock<IMessagingServiceClient> messagingServiceClient = new Mock<IMessagingServiceClient>();
-
-        DirectoryInfo path = Directory.GetParent(Assembly.GetExecutingAssembly().Location);
-        MockFileSystem fileSystem = new MockFileSystem(new Dictionary<string, MockFileData>
-                                                       {
-                                                           { $"{path}/VoucherMessages/VoucherEmail.html", new MockFileData("Transaction Number: [TransactionNumber]") }
-                                                       });
-
-        VoucherDomainEventHandler voucherDomainEventHandler = new VoucherDomainEventHandler(securityServiceClient.Object,
-                                                                                            aggregateService.Object,
-                                                                                            dbContextFactory.Object,
-                                                                                            messagingServiceClient.Object,
-                                                                                            fileSystem);
-
-        await voucherDomainEventHandler.Handle(TestData.VoucherIssuedEvent, CancellationToken.None);
+        await this.VoucherDomainEventHandler.Handle(TestData.VoucherIssuedEvent, CancellationToken.None);
     }
-
+    
     [Fact]
     public async Task VoucherDomainEventHandler_VoucherIssuedEvent_WithRecipientMobile_IsHandled()
     {
-        IConfigurationRoot configurationRoot = new ConfigurationBuilder().AddInMemoryCollection(TestData.DefaultAppSettings).Build();
-        ConfigurationReader.Initialise(configurationRoot);
-        Logger.Initialise(NullLogger.Instance);
+        this.SecurityServiceClient.Setup(s => s.GetToken(It.IsAny<String>(), It.IsAny<String>(), It.IsAny<CancellationToken>())).ReturnsAsync(Result.Success(TestData.TokenResponse()));
 
-        Mock<ISecurityServiceClient> securityServiceClient = new Mock<ISecurityServiceClient>();
-        securityServiceClient.Setup(s => s.GetToken(It.IsAny<String>(), It.IsAny<String>(), It.IsAny<CancellationToken>())).ReturnsAsync(Result.Success(TestData.TokenResponse()));
-
-        Mock<IAggregateService> aggregateService = new ();
-        aggregateService.Setup(t => t.Get<VoucherAggregate>(It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
+        this.AggregateService.Setup(t => t.Get<VoucherAggregate>(It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
                                   .ReturnsAsync(Result.Success(TestData.GetVoucherAggregateWithRecipientMobile()));
 
-        EstateManagementContext context = await this.GetContext(Guid.NewGuid().ToString("N"), TestDatabaseType.InMemory);
-        context.Transactions.Add(new Database.Entities.Transaction()
+        this.Context.Transactions.Add(new Database.Entities.Transaction()
                                  {
                                      TransactionId = TestData.TransactionId,
                                      MerchantId = TestData.MerchantId,
                                      ContractId = TestData.ContractId
         });
-        context.Contracts.Add(new Contract
+        this.Context.Contracts.Add(new Contract
                               {
                                   ContractId = TestData.ContractId,
                                   EstateId = TestData.EstateId,
                                   Description = TestData.OperatorIdentifier
                               });
-        await context.SaveChangesAsync(CancellationToken.None);
+        await this.Context.SaveChangesAsync(CancellationToken.None);
 
-        Mock<Shared.EntityFramework.IDbContextFactory<EstateManagementContext>> dbContextFactory = this.GetMockDbContextFactory();
-        dbContextFactory.Setup(d => d.GetContext(It.IsAny<Guid>(), It.IsAny<String>(), It.IsAny<CancellationToken>())).ReturnsAsync(context);
-
-        Mock<IMessagingServiceClient> messagingServiceClient = new Mock<IMessagingServiceClient>();
-
-        DirectoryInfo path = Directory.GetParent(Assembly.GetExecutingAssembly().Location);
-        MockFileSystem fileSystem = new MockFileSystem(new Dictionary<string, MockFileData>
-                                                       {
-                                                           { $"{path}/VoucherMessages/VoucherSMS.txt", new MockFileData("Transaction Number: [TransactionNumber]") }
-                                                       });
-
-        VoucherDomainEventHandler voucherDomainEventHandler = new VoucherDomainEventHandler(securityServiceClient.Object,
-                                                                                            aggregateService.Object,
-                                                                                            dbContextFactory.Object,
-                                                                                            messagingServiceClient.Object,
-                                                                                            fileSystem);
-
-        await voucherDomainEventHandler.Handle(TestData.VoucherIssuedEvent, CancellationToken.None);
+        await VoucherDomainEventHandler.Handle(TestData.VoucherIssuedEvent, CancellationToken.None);
     }
 }

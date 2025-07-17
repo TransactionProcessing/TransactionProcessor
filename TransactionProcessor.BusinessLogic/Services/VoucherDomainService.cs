@@ -6,17 +6,18 @@ using TransactionProcessor.Models.Estate;
 
 namespace TransactionProcessor.BusinessLogic.Services;
 
-using System;
-using System.Linq;
-using System.Threading;
-using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
 using Models;
 using NetBarcode;
 using Shared.DomainDrivenDesign.EventSourcing;
+using Shared.EntityFramework;
 using Shared.EventStore.Aggregate;
 using Shared.Exceptions;
 using SimpleResults;
+using System;
+using System.Linq;
+using System.Threading;
+using System.Threading.Tasks;
 
 public interface IVoucherDomainService
 {
@@ -63,19 +64,20 @@ public interface IVoucherDomainService
 
 public class VoucherDomainService : IVoucherDomainService
 {
-    private readonly IAggregateService AggregateService;
+    private readonly IDbContextResolver<EstateManagementContext> Resolver;
+    private static readonly String EstateManagementDatabaseName = "TransactionProcessorReadModel";
 
-    private readonly Shared.EntityFramework.IDbContextFactory<EstateManagementContext> DbContextFactory;
+    private readonly IAggregateService AggregateService;
 
     private const String ConnectionStringIdentifier = "EstateReportingReadModel";
 
     #region Constructors
 
     public VoucherDomainService(IAggregateService aggregateService,
-                                Shared.EntityFramework.IDbContextFactory<EstateManagementContext> dbContextFactory)
+                                IDbContextResolver<EstateManagementContext> resolver)
     {
         this.AggregateService = aggregateService;
-        this.DbContextFactory = dbContextFactory;
+        this.Resolver = resolver;
     }
     #endregion
 
@@ -160,7 +162,8 @@ public class VoucherDomainService : IVoucherDomainService
                                                            CancellationToken cancellationToken)
     {
         // Find the voucher based on the voucher code
-        EstateManagementContext context = await this.DbContextFactory.GetContext(estateId, VoucherDomainService.ConnectionStringIdentifier, cancellationToken);
+        using ResolvedDbContext<EstateManagementContext>? resolvedContext = this.Resolver.Resolve(EstateManagementDatabaseName, estateId.ToString());
+        await using EstateManagementContext context = resolvedContext.Context;
 
         TransactionProcessor.Database.Entities.VoucherProjectionState voucher = await context.VoucherProjectionStates.SingleOrDefaultAsync(v => v.VoucherCode == voucherCode, cancellationToken);
 

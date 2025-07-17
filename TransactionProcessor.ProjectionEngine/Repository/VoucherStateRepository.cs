@@ -8,6 +8,7 @@ namespace TransactionProcessor.ProjectionEngine.Repository;
 using Database.Database.Entities;
 using Microsoft.EntityFrameworkCore;
 using Shared.DomainDrivenDesign.EventSourcing;
+using Shared.EntityFramework;
 using Shared.EventStore.ProjectionEngine;
 using State;
 using System.Diagnostics.CodeAnalysis;
@@ -15,21 +16,13 @@ using System.Diagnostics.CodeAnalysis;
 [ExcludeFromCodeCoverage]
 public class VoucherStateRepository : IProjectionStateRepository<VoucherState>
 {
-    #region Fields
-
-    private readonly Shared.EntityFramework.IDbContextFactory<EstateManagementContext> ContextFactory;
-
-    #endregion
-
-    #region Constructors
-
-    public VoucherStateRepository(Shared.EntityFramework.IDbContextFactory<EstateManagementContext> contextFactory)
+    private readonly IDbContextResolver<EstateManagementContext> Resolver;
+    private static readonly String EstateManagementDatabaseName = "TransactionProcessorReadModel";
+    public VoucherStateRepository(IDbContextResolver<EstateManagementContext> resolver)
     {
-        this.ContextFactory = contextFactory;
+        this.Resolver = resolver;
     }
-
-    #endregion
-
+    
     #region Methods
 
     public static Event Create(String type,
@@ -68,8 +61,8 @@ public class VoucherStateRepository : IProjectionStateRepository<VoucherState>
                                                  CancellationToken cancellationToken)
     {
 
-        await using EstateManagementContext context =
-            await this.ContextFactory.GetContext(state.EstateId, VoucherStateRepository.ConnectionStringIdentifier, cancellationToken);
+        using ResolvedDbContext<EstateManagementContext>? resolvedContext = this.Resolver.Resolve(EstateManagementDatabaseName);
+        await using EstateManagementContext context = resolvedContext.Context;
         // Note: we don't want to select the state again here....
         VoucherProjectionState entity = VoucherStateRepository.CreateVoucherProjectionState(state);
 
@@ -134,8 +127,8 @@ public class VoucherStateRepository : IProjectionStateRepository<VoucherState>
                                                         Guid voucherId,
                                                         CancellationToken cancellationToken)
     {
-        await using EstateManagementContext? context =
-            await this.ContextFactory.GetContext(estateId, VoucherStateRepository.ConnectionStringIdentifier, cancellationToken);
+        using ResolvedDbContext<EstateManagementContext>? resolvedContext = this.Resolver.Resolve(EstateManagementDatabaseName, estateId.ToString());
+        await using EstateManagementContext context = resolvedContext.Context;
 
         VoucherProjectionState? entity = await context.VoucherProjectionStates.Where(m => m.VoucherId == voucherId).SingleOrDefaultAsync(cancellationToken: cancellationToken);
 

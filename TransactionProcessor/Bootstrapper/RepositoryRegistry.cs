@@ -43,26 +43,26 @@ namespace TransactionProcessor.Bootstrapper
         /// </summary>
         public RepositoryRegistry()
         {
-            Boolean useConnectionStringConfig = bool.Parse(ConfigurationReader.GetValue("AppSettings", "UseConnectionStringConfig"));
+            String eventStoreConnectionString = Startup.Configuration.GetValue<String>("EventStoreSettings:ConnectionString");
 
-            if (useConnectionStringConfig)
+            this.AddEventStoreProjectionManagementClient(eventStoreConnectionString);
+            this.AddEventStorePersistentSubscriptionsClient(eventStoreConnectionString);
+
+            this.AddEventStoreClient(eventStoreConnectionString);
+
+            this.AddSingleton<Func<String, Int32, ISubscriptionRepository>>(cont => (esConnString, cacheDuration) => {
+                return SubscriptionRepository.Create(esConnString, cacheDuration);
+            });
+
+            this.AddSingleton(typeof(IDbContextResolver<>), typeof(DbContextResolver<>));
+            if (Startup.WebHostEnvironment.IsEnvironment("IntegrationTest") || Startup.Configuration.GetValue<Boolean>("ServiceOptions:UseInMemoryDatabase") == true)
             {
-                String connectionStringConfigurationConnString = ConfigurationReader.GetConnectionString("ConnectionStringConfiguration");
-                this.AddSingleton<IConnectionStringConfigurationRepository, ConnectionStringConfigurationRepository>();
-                this.AddTransient(c => { return new ConnectionStringConfigurationContext(connectionStringConfigurationConnString); });
-
-                // TODO: Read this from a the database and set
+                this.AddDbContext<EstateManagementContext>(builder => builder.UseInMemoryDatabase("TransactionProcessorReadModel"));
             }
             else
             {
-                String connectionString = Startup.Configuration.GetValue<String>("EventStoreSettings:ConnectionString");
-
-                this.AddEventStoreProjectionManagementClient(connectionString);
-                this.AddEventStorePersistentSubscriptionsClient(connectionString);
-
-                this.AddEventStoreClient(connectionString);
-
-                this.AddSingleton<IConnectionStringConfigurationRepository, ConfigurationReaderConnectionStringRepository>();
+                this.AddDbContext<EstateManagementContext>(options =>
+                    options.UseSqlServer(ConfigurationReader.GetConnectionString("TransactionProcessorReadModel")));
             }
 
             this.AddTransient<IEventStoreContext, EventStoreContext>();
@@ -91,26 +91,6 @@ namespace TransactionProcessor.Bootstrapper
             this.AddSingleton<ITransactionProcessorReadRepository, TransactionProcessorReadRepository>();
             this.AddSingleton<ITransactionProcessorReadModelRepository, TransactionProcessorReadModelRepository>();
             this.AddSingleton<IProjection<MerchantBalanceState>, MerchantBalanceProjection>();
-            
-            this.AddSingleton<Shared.EntityFramework.IDbContextFactory<EstateManagementContext>, DbContextFactory<EstateManagementContext>>();
-            
-            if (Startup.WebHostEnvironment.IsEnvironment("IntegrationTest") || Startup.Configuration.GetValue<Boolean>("ServiceOptions:UseInMemoryDatabase") == true)
-            {
-                this.AddDbContext<EstateManagementContext>(builder => builder.UseInMemoryDatabase("EstateManagementReadModel"));
-                DbContextOptionsBuilder<EstateManagementContext> contextBuilder = new DbContextOptionsBuilder<EstateManagementContext>();
-                contextBuilder = contextBuilder.UseInMemoryDatabase("EstateManagementReadModel");
-                this.AddSingleton<Func<String, EstateManagementContext>>(cont => (connectionString) => { return new EstateManagementContext(contextBuilder.Options); });
-            }
-            else
-            {
-                String connectionString = ConfigurationReader.GetConnectionString("TransactionProcessorReadModel");
-                this.AddDbContext<EstateManagementContext>(builder => builder.UseSqlServer(connectionString));
-                this.AddSingleton<Func<String, EstateManagementContext>>(cont => (connectionString) => { return new EstateManagementContext(connectionString); });
-            }
-
-            this.AddSingleton<Func<String, Int32, ISubscriptionRepository>>(cont => (esConnString, cacheDuration) => {
-                                                                                       return SubscriptionRepository.Create(esConnString, cacheDuration);
-                                                                                   });
         }
 
         #endregion

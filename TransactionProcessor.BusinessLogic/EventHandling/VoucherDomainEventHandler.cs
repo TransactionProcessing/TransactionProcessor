@@ -8,12 +8,6 @@ using TransactionProcessor.DomainEvents;
 
 namespace TransactionProcessor.BusinessLogic.EventHandling;
 
-using System;
-using System.Collections.Generic;
-using System.IO.Abstractions;
-using System.Reflection;
-using System.Threading;
-using System.Threading.Tasks;
 using Common;
 using MessagingService.Client;
 using MessagingService.DataTransferObjects;
@@ -21,17 +15,19 @@ using Microsoft.EntityFrameworkCore;
 using SecurityService.Client;
 using SecurityService.DataTransferObjects.Responses;
 using Shared.DomainDrivenDesign.EventSourcing;
+using Shared.EntityFramework;
 using Shared.EventStore.Aggregate;
 using Shared.EventStore.EventHandling;
+using System;
+using System.Collections.Generic;
+using System.IO.Abstractions;
+using System.Reflection;
+using System.Threading;
+using System.Threading.Tasks;
 
 public class VoucherDomainEventHandler : IDomainEventHandler
 {
     #region Fields
-
-    /// <summary>
-    /// The database context factory
-    /// </summary>
-    private readonly Shared.EntityFramework.IDbContextFactory<EstateManagementContext> DbContextFactory;
 
     /// <summary>
     /// The file system
@@ -49,24 +45,24 @@ public class VoucherDomainEventHandler : IDomainEventHandler
     private readonly ISecurityServiceClient SecurityServiceClient;
 
     private readonly IAggregateService AggregateService;
+    private readonly IDbContextResolver<EstateManagementContext> Resolver;
 
     private TokenResponse TokenResponse;
 
-    private const String ConnectionStringIdentifier = "EstateReportingReadModel";
-
+    private static readonly String EstateManagementDatabaseName = "TransactionProcessorReadModel";
     #endregion
 
     #region Constructors
 
     public VoucherDomainEventHandler(ISecurityServiceClient securityServiceClient,
                                      IAggregateService aggregateService,
-                                     Shared.EntityFramework.IDbContextFactory<EstateManagementContext> dbContextFactory,
+                                     IDbContextResolver<EstateManagementContext> resolver,
                                      IMessagingServiceClient messagingServiceClient,
                                      IFileSystem fileSystem)
     {
         this.SecurityServiceClient = securityServiceClient;
         this.AggregateService = aggregateService;
-        this.DbContextFactory = dbContextFactory;
+        this.Resolver = resolver;
         this.MessagingServiceClient = messagingServiceClient;
         this.FileSystem = fileSystem;
     }
@@ -125,7 +121,8 @@ public class VoucherDomainEventHandler : IDomainEventHandler
     {
         // TODO: Can this be done in a better way than direct db access ?
 
-        EstateManagementContext context = await this.DbContextFactory.GetContext(voucherModel.EstateId, ConnectionStringIdentifier, cancellationToken);
+        using ResolvedDbContext<EstateManagementContext>? resolvedContext = this.Resolver.Resolve(EstateManagementDatabaseName, voucherModel.EstateId.ToString());
+        await using EstateManagementContext context = resolvedContext.Context;
 
         Database.Entities.Transaction transaction = await context.Transactions.SingleOrDefaultAsync(t => t.TransactionId == voucherModel.TransactionId, cancellationToken);
         if (transaction == null)
