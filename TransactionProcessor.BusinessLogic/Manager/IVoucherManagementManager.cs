@@ -1,11 +1,11 @@
-﻿using System;
-using System.Threading;
-using System.Threading.Tasks;
-using Shared.DomainDrivenDesign.EventSourcing;
+﻿using Shared.DomainDrivenDesign.EventSourcing;
 using Shared.EventStore.Aggregate;
 using Shared.Exceptions;
 using Shared.Results;
 using SimpleResults;
+using System;
+using System.Threading;
+using System.Threading.Tasks;
 using TransactionProcessor.Aggregates;
 using TransactionProcessor.BusinessLogic.Services;
 using TransactionProcessor.Database.Contexts;
@@ -16,6 +16,7 @@ namespace TransactionProcessor.BusinessLogic.Manager
     using Microsoft.EntityFrameworkCore;
     using ProjectionEngine.Database.Database;
     using ProjectionEngine.Database.Database.Entities;
+    using Shared.EntityFramework;
     using Voucher = Models.Voucher;
 
     public interface IVoucherManagementManager
@@ -42,29 +43,16 @@ namespace TransactionProcessor.BusinessLogic.Manager
 
     public class VoucherManagementManager : IVoucherManagementManager
     {
-        #region Fields
-
-        /// <summary>
-        /// The database context factory
-        /// </summary>
-        private readonly Shared.EntityFramework.IDbContextFactory<EstateManagementContext> DbContextFactory;
-
+        private readonly IDbContextResolver<EstateManagementContext> Resolver;
+        private static readonly String EstateManagementDatabaseName = "TransactionProcessorReadModel";
         private readonly IAggregateService AggregateService;
-
-        private const String ConnectionStringIdentifier = "EstateReportingReadModel";
-
-        #endregion
-
-        #region Constructors
-
-        public VoucherManagementManager(Shared.EntityFramework.IDbContextFactory<EstateManagementContext> dbContextFactory,
-                                        IAggregateService aggregateService)
+        
+        public VoucherManagementManager(IAggregateService aggregateService,
+                                        IDbContextResolver<EstateManagementContext> resolver)
         {
-            this.DbContextFactory = dbContextFactory;
             this.AggregateService = aggregateService;
+            this.Resolver = resolver;
         }
-
-        #endregion
 
         #region Methods
 
@@ -80,7 +68,8 @@ namespace TransactionProcessor.BusinessLogic.Manager
                                                             String voucherCode,
                                                             CancellationToken cancellationToken)
         {
-            EstateManagementContext context = await this.DbContextFactory.GetContext(estateId,VoucherManagementManager.ConnectionStringIdentifier, cancellationToken);
+            using ResolvedDbContext<EstateManagementContext>? resolvedContext = this.Resolver.Resolve(EstateManagementDatabaseName, estateId.ToString());
+            await using EstateManagementContext context = resolvedContext.Context;
 
             VoucherProjectionState voucher = await context.VoucherProjectionStates.SingleOrDefaultAsync(v => v.VoucherCode == voucherCode, cancellationToken);
 
@@ -103,7 +92,8 @@ namespace TransactionProcessor.BusinessLogic.Manager
                                                                      Guid transactionId,
                                                                      CancellationToken cancellationToken)
         {
-            EstateManagementContext context = await this.DbContextFactory.GetContext(estateId, ConnectionStringIdentifier, cancellationToken);
+            using ResolvedDbContext<EstateManagementContext>? resolvedContext = this.Resolver.Resolve(EstateManagementDatabaseName, estateId.ToString());
+            await using EstateManagementContext context = resolvedContext.Context;
             VoucherProjectionState voucher = await context.VoucherProjectionStates.SingleOrDefaultAsync(v => v.TransactionId == transactionId, cancellationToken);
 
             if (voucher == null)

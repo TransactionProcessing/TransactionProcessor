@@ -5,26 +5,27 @@ using TransactionProcessor.Database.Contexts;
 
 namespace TransactionProcessor.ProjectionEngine.Repository;
 
-using System.Diagnostics.CodeAnalysis;
 using Database.Database;
 using Microsoft.EntityFrameworkCore;
 using Models;
+using Shared.EntityFramework;
+using System.Diagnostics.CodeAnalysis;
 using TransactionProcessor.ProjectionEngine.Database.Database.ViewEntities;
 
 [ExcludeFromCodeCoverage]
 public class TransactionProcessorReadRepository : ITransactionProcessorReadRepository
 {
-    private readonly Shared.EntityFramework.IDbContextFactory<EstateManagementContext> ContextFactory;
-
-    private const String ConnectionStringIdentifier = "EstateReportingReadModel";
-    public TransactionProcessorReadRepository(Shared.EntityFramework.IDbContextFactory<EstateManagementContext> contextFactory) {
-        this.ContextFactory = contextFactory;
+    private readonly IDbContextResolver<EstateManagementContext> Resolver;
+    private static readonly String EstateManagementDatabaseName = "TransactionProcessorReadModel";
+    public TransactionProcessorReadRepository(IDbContextResolver<EstateManagementContext> resolver) {
+        this.Resolver = resolver;
     }
     public async Task<Result> AddMerchantBalanceChangedEntry(MerchantBalanceChangedEntry entry,
                                                              CancellationToken cancellationToken) {
 
         Logger.LogInformation($"About to add entry {entry.Reference}");
-        await using EstateManagementContext context = await this.ContextFactory.GetContext(entry.EstateId, TransactionProcessorReadRepository.ConnectionStringIdentifier, cancellationToken);
+        using ResolvedDbContext<EstateManagementContext>? resolvedContext = this.Resolver.Resolve(EstateManagementDatabaseName, entry.EstateId.ToString());
+        await using EstateManagementContext context = resolvedContext.Context;
 
         ProjectionEngine.Database.Database.Entities.MerchantBalanceChangedEntry entity = new() {
                                                                                                    ChangeAmount = entry.ChangeAmount,
@@ -65,7 +66,8 @@ public class TransactionProcessorReadRepository : ITransactionProcessorReadRepos
                                                                                    DateTime startDate,
                                                                                    DateTime endDate,
                                                                                    CancellationToken cancellationToken) {
-        await using EstateManagementContext context = await this.ContextFactory.GetContext(estateId, TransactionProcessorReadRepository.ConnectionStringIdentifier, cancellationToken);
+        using ResolvedDbContext<EstateManagementContext>? resolvedContext = this.Resolver.Resolve(EstateManagementDatabaseName, estateId.ToString());
+        await using EstateManagementContext context = resolvedContext.Context;
 
         List<MerchantBalanceHistoryViewEntry> entries = await context.MerchantBalanceHistoryViewEntry
                                                                      .Where(v => v.MerchantId == merchantId && v.EntryDateTime >= startDate && v.EntryDateTime <= endDate)

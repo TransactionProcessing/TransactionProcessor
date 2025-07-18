@@ -17,24 +17,16 @@ using Shared.EventStore.EventHandling;
 [ExcludeFromCodeCoverage]
 public class StateProjectionEventHandler<TState> : IDomainEventHandler where TState : Shared.EventStore.ProjectionEngine.State
 {
-    #region Fields
-
     private readonly IProjectionHandler ProjectionHandler;
-
-    private readonly IDbContextFactory<EstateManagementContext> ContextFactory;
-
-    #endregion
-
-    #region Constructors
+    private readonly IDbContextResolver<EstateManagementContext> Resolver;
+    private static readonly String EstateManagementDatabaseName = "TransactionProcessorReadModel";
 
     public StateProjectionEventHandler(ProjectionHandler<TState> projectionHandler,
-                                       IDbContextFactory<EstateManagementContext> contextFactory) {
+                                       IDbContextResolver<EstateManagementContext> resolver) {
         this.ProjectionHandler = projectionHandler;
-        this.ContextFactory = contextFactory;
+        this.Resolver = resolver;
     }
-
-    #endregion
-
+    
     #region Methods
 
     public async Task<Result> Handle(IDomainEvent domainEvent,
@@ -54,8 +46,8 @@ public class StateProjectionEventHandler<TState> : IDomainEventHandler where TSt
 
     private async Task<Result> MigrateDatabase(EstateDomainEvents.EstateCreatedEvent domainEvent, CancellationToken cancellationToken) {
         try {
-            EstateManagementContext? context = await this.ContextFactory.GetContext(domainEvent.EstateId,
-                "TransactionProcessorReadModel", cancellationToken);
+            using ResolvedDbContext<EstateManagementContext>? resolvedContext = this.Resolver.Resolve(EstateManagementDatabaseName, domainEvent.EstateId.ToString());
+            await using EstateManagementContext context = resolvedContext.Context;
             await context.MigrateAsync(cancellationToken);
             return Result.Success();
         }

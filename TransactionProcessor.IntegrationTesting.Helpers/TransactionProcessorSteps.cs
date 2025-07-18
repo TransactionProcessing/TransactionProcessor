@@ -594,12 +594,12 @@ public class TransactionProcessorSteps
         List<(EstateDetails estate, Guid merchantId, Guid operatorId)> merchantOperators = new();
         foreach ((EstateDetails estate, Guid merchantId, DataTransferObjects.Requests.Merchant.AssignOperatorRequest request) request in requests)
         {
-            await this.TransactionProcessorClient.AssignOperatorToMerchant(accessToken,
+            var assignOperatorToMerchantResult = await this.TransactionProcessorClient.AssignOperatorToMerchant(accessToken,
                     request.estate.EstateId,
                     request.merchantId,
                     request.request,
                     CancellationToken.None).ConfigureAwait(false);
-
+            assignOperatorToMerchantResult.IsSuccess.ShouldBeTrue();
             merchantOperators.Add((request.estate, request.merchantId, request.request.OperatorId));
         }
 

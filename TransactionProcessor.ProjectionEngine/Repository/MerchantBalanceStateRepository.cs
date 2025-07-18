@@ -4,10 +4,11 @@ using TransactionProcessor.Database.Contexts;
 
 namespace TransactionProcessor.ProjectionEngine.Repository;
 
-using System.Diagnostics.CodeAnalysis;
 using Microsoft.EntityFrameworkCore;
 using Shared.DomainDrivenDesign.EventSourcing;
+using Shared.EntityFramework;
 using State;
+using System.Diagnostics.CodeAnalysis;
 using TransactionProcessor.ProjectionEngine.Database.Database;
 using TransactionProcessor.ProjectionEngine.Database.Database.Entities;
 using MerchantBalanceProjectionState = Database.Database.Entities.MerchantBalanceProjectionState;
@@ -15,19 +16,11 @@ using MerchantBalanceProjectionState = Database.Database.Entities.MerchantBalanc
 [ExcludeFromCodeCoverage]
 public class MerchantBalanceStateRepository : IProjectionStateRepository<MerchantBalanceState>
 {
-    #region Fields
-
-    private readonly Shared.EntityFramework.IDbContextFactory<EstateManagementContext> ContextFactory;
-
-    #endregion
-
-    #region Constructors
-
-    public MerchantBalanceStateRepository(Shared.EntityFramework.IDbContextFactory<EstateManagementContext> contextFactory) {
-        this.ContextFactory = contextFactory;
+    private readonly IDbContextResolver<EstateManagementContext> Resolver;
+    private static readonly String EstateManagementDatabaseName = "TransactionProcessorReadModel";
+    public MerchantBalanceStateRepository(IDbContextResolver<EstateManagementContext> resolver) {
+        this.Resolver = resolver;
     }
-
-    #endregion
 
     #region Methods
 
@@ -57,14 +50,14 @@ public class MerchantBalanceStateRepository : IProjectionStateRepository<Merchan
                                                  CancellationToken cancellationToken) {
         return await this.LoadHelper(estateId, stateId, cancellationToken);
     }
-
+    
     public async Task<Result<MerchantBalanceState>> Save(MerchantBalanceState state,
                                                  IDomainEvent domainEvent,
                                                  CancellationToken cancellationToken) {
+        Guid estateId = GetEstateId(domainEvent);
 
-        var estateId = GetEstateId(domainEvent);
-        await using EstateManagementContext context =
-            await this.ContextFactory.GetContext(estateId, MerchantBalanceStateRepository.ConnectionStringIdentifier, cancellationToken);
+        using ResolvedDbContext<EstateManagementContext>? resolvedContext = this.Resolver.Resolve(EstateManagementDatabaseName, estateId.ToString());
+        await using EstateManagementContext context = resolvedContext.Context;
         // Note: we don't want to select the state again here....
         MerchantBalanceProjectionState entity = MerchantBalanceStateRepository.CreateMerchantBalanceProjectionState(state);
 
@@ -124,8 +117,8 @@ public class MerchantBalanceStateRepository : IProjectionStateRepository<Merchan
     private async Task<Result<MerchantBalanceState>> LoadHelper(Guid estateId,
                                                         Guid merchantId,
                                                         CancellationToken cancellationToken) {
-        await using EstateManagementContext context =
-            await this.ContextFactory.GetContext(estateId, MerchantBalanceStateRepository.ConnectionStringIdentifier, cancellationToken);
+        using ResolvedDbContext<EstateManagementContext>? resolvedContext = this.Resolver.Resolve(EstateManagementDatabaseName, estateId.ToString());
+        await using EstateManagementContext context = resolvedContext.Context;
 
         MerchantBalanceProjectionState? entity = await context.MerchantBalanceProjectionState.Where(m => m.MerchantId == merchantId).SingleOrDefaultAsync(cancellationToken: cancellationToken);
 
