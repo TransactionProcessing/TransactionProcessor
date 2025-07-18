@@ -66,7 +66,7 @@ public class TransactionProcessorReadRepository : ITransactionProcessorReadRepos
                                                                                    DateTime startDate,
                                                                                    DateTime endDate,
                                                                                    CancellationToken cancellationToken) {
-        using ResolvedDbContext<EstateManagementContext>? resolvedContext = this.Resolver.Resolve(EstateManagementDatabaseName);
+        using ResolvedDbContext<EstateManagementContext>? resolvedContext = this.Resolver.Resolve(EstateManagementDatabaseName, estateId.ToString());
         await using EstateManagementContext context = resolvedContext.Context;
 
         List<MerchantBalanceHistoryViewEntry> entries = await context.MerchantBalanceHistoryViewEntry
