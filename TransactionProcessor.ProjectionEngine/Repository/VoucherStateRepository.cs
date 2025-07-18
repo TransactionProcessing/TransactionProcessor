@@ -60,8 +60,8 @@ public class VoucherStateRepository : IProjectionStateRepository<VoucherState>
                                                  IDomainEvent domainEvent,
                                                  CancellationToken cancellationToken)
     {
-
-        using ResolvedDbContext<EstateManagementContext>? resolvedContext = this.Resolver.Resolve(EstateManagementDatabaseName);
+        var estateId = VoucherStateRepository.GetEstateId(domainEvent);
+        using ResolvedDbContext<EstateManagementContext>? resolvedContext = this.Resolver.Resolve(EstateManagementDatabaseName, estateId.ToString());
         await using EstateManagementContext context = resolvedContext.Context;
         // Note: we don't want to select the state again here....
         VoucherProjectionState entity = VoucherStateRepository.CreateVoucherProjectionState(state);
