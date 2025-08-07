@@ -1,4 +1,5 @@
-﻿using Shared.Results;
+﻿using Shared.Logger;
+using Shared.Results;
 using Shared.Results.Web;
 using SimpleResults;
 
@@ -22,6 +23,7 @@ namespace TransactionProcessor.Controllers
     using System.Diagnostics.CodeAnalysis;
     using System.Threading;
     using System.Threading.Tasks;
+    using TransactionProcessor.BusinessLogic.Common;
 
     /// <summary>
     /// 
@@ -178,9 +180,28 @@ namespace TransactionProcessor.Controllers
                                                                                          saleTransactionRequest.TransactionSource.GetValueOrDefault(1),
                                                                                          transactionReceivedDateTime);
 
-            var result= await this.Mediator.Send(command, cancellationToken);
+            Result<ProcessSaleTransactionResponse> result= await this.Mediator.Send(command, cancellationToken);
             if (result.IsFailed)
                 return ResultHelpers.CreateFailure(result);
+
+            // Kick off a background command to do the balance processing
+            // TODO: maybe add in some retry logic here or offload to another process to retry?
+            FireAndForgetHelper.Run(
+                async () => {
+                    ProcessSaleTransactionResponse response = result.Data;
+                    Decimal? transactionAmount = command.AdditionalTransactionMetadata.ExtractFieldFromMetadata<Decimal?>("Amount");
+                    IRequest<Result> balanceCommand = response.TransactionIsAuthorised switch {
+                        true => new MerchantBalanceCommands.RecordAuthorisedSaleCommand(response.EstateId, response.MerchantId, response.TransactionId, transactionAmount.GetValueOrDefault(), saleTransactionRequest.TransactionDateTime),
+                        _ => new MerchantBalanceCommands.RecordDeclinedSaleCommand(response.EstateId, response.MerchantId, response.TransactionId, transactionAmount.GetValueOrDefault(), saleTransactionRequest.TransactionDateTime)
+                    };
+                    Result balanceResult = await this.Mediator.Send(balanceCommand, cancellationToken);
+                    if (balanceResult.IsFailed)
+                    {
+                        throw new Exception(($"Failed to record balance for transaction {response.TransactionId} with error: {balanceResult.Message}"));
+                    }
+                },
+                $"Balance Recording for Transaction {transactionId}"
+            );
 
             return ModelFactory.ConvertFrom(result.Data);
         }
@@ -221,5 +242,24 @@ namespace TransactionProcessor.Controllers
         private const String ControllerRoute = "api/" + TransactionController.ControllerName;
 
         #endregion
+    }
+
+    [ExcludeFromCodeCoverage]
+    public static class FireAndForgetHelper
+    {
+        public static void Run(Func<Task> action, string contextDescription = "background task")
+        {
+            _ = Task.Run(async () =>
+            {
+                try
+                {
+                    await action();
+                }
+                catch (Exception ex) {
+                    Exception e = new Exception($"Unhandled exception in {contextDescription}", ex);
+                    Logger.LogError(e);
+                }
+            });
+        }
     }
 }

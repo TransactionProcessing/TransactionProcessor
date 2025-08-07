@@ -7,6 +7,15 @@ using TransactionProcessor.DataTransferObjects.Requests.Merchant;
 namespace TransactionProcessor.BusinessLogic.Requests
 {
     [ExcludeFromCodeCoverage]
+    public class MerchantBalanceCommands {
+        public record RecordDepositCommand(Guid EstateId, Guid MerchantId, Guid DepositId, Decimal DepositAmount, DateTime DepositDateTime) : IRequest<Result>;
+        public record RecordWithdrawalCommand(Guid EstateId, Guid MerchantId, Guid WithdrawalId, Decimal WithdrawalAmount, DateTime WithdrawalDateTime) : IRequest<Result>;
+        public record RecordAuthorisedSaleCommand(Guid EstateId, Guid MerchantId,Guid TransactionId, Decimal TransactionAmount, DateTime TransactionDateTime) : IRequest<Result>;
+        public record RecordDeclinedSaleCommand(Guid EstateId, Guid MerchantId, Guid TransactionId, Decimal TransactionAmount, DateTime TransactionDateTime) : IRequest<Result>;
+        public record RecordSettledFeeCommand(Guid EstateId, Guid MerchantId, Guid FeeId, Decimal FeeAmount, DateTime FeeDateTime) : IRequest<Result>;
+    }
+
+    [ExcludeFromCodeCoverage]
     public class MerchantCommands{
 
         public record CreateMerchantCommand(Guid EstateId, CreateMerchantRequest RequestDto) : IRequest<Result>;
