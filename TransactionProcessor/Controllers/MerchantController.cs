@@ -3,6 +3,7 @@ using SecurityService.Client;
 using Shared.Results;
 using Shared.Results.Web;
 using SimpleResults;
+using System.Security.Cryptography;
 using TransactionProcessor.BusinessLogic.Requests;
 using TransactionProcessor.DataTransferObjects.Requests.Merchant;
 using TransactionProcessor.DataTransferObjects.Responses.Merchant;
@@ -19,6 +20,7 @@ using ProjectionEngine.Models;
 using ProjectionEngine.Repository;
 using ProjectionEngine.State;
 using Shared.DomainDrivenDesign.EventSourcing;
+using Shared.EventStore.Aggregate;
 using Shared.EventStore.EventStore;
 using Shared.Exceptions;
 using Shared.General;
@@ -26,7 +28,9 @@ using Swashbuckle.AspNetCore.Annotations;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
+using System.Linq;
 using System.Security.Claims;
+using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -424,13 +428,40 @@ public class MerchantController : ControllerBase
         }
 
         // This will always be a manual deposit as auto ones come in via another route
-        MerchantCommands.MakeMerchantDepositCommand command = new(estateId, merchantId, DataTransferObjects.Requests.Merchant.MerchantDepositSource.Manual, makeMerchantDepositRequest);
+        MerchantCommands.MakeMerchantDepositCommand command = new(estateId, merchantId, MerchantDepositSource.Manual, makeMerchantDepositRequest);
 
         // Route the command
         Result result = await Mediator.Send(command, cancellationToken);
 
+        if (result.IsFailed)
+        {
+            return result.ToActionResultX();
+        }
+
+        // Now we need to record the deposit against the balance
+        String depositData = $"{makeMerchantDepositRequest.DepositDateTime:yyyyMMdd hh:mm:ss.fff}-{makeMerchantDepositRequest.Reference}-{makeMerchantDepositRequest.Amount:N2}-{MerchantDepositSource.Manual}";
+        Guid depositId = GenerateGuidFromString(depositData);
+        MerchantBalanceCommands.RecordDepositCommand recordDepositCommand = new(estateId, merchantId, depositId, makeMerchantDepositRequest.Amount, makeMerchantDepositRequest.DepositDateTime);
+
+        // Route the command
+        result = await Mediator.Send(recordDepositCommand, cancellationToken);
+        
         // return the result
         return result.ToActionResultX();
+    }
+
+    public static Guid GenerateGuidFromString(String input)
+    {
+        using (SHA256 sha256Hash = SHA256.Create())
+        {
+            //Generate hash from the key
+            Byte[] bytes = sha256Hash.ComputeHash(Encoding.UTF8.GetBytes(input));
+
+            Byte[] j = bytes.Skip(Math.Max(0, bytes.Count() - 16)).ToArray(); //Take last 16
+
+            //Create our Guid.
+            return new Guid(j);
+        }
     }
 
     [HttpPost]
@@ -452,6 +483,19 @@ public class MerchantController : ControllerBase
 
         // Route the command
         Result result = await Mediator.Send(command, cancellationToken);
+
+        if (result.IsFailed)
+        {
+            return result.ToActionResultX();
+        }
+
+        // Now we need to record the deposit against the balance
+        String depositData = $"{makeMerchantWithdrawalRequest.WithdrawalDateTime:yyyyMMdd hh:mm:ss.fff}-{makeMerchantWithdrawalRequest.Amount:N2}";
+        Guid withdrawalId = GenerateGuidFromString(depositData);
+        MerchantBalanceCommands.RecordWithdrawalCommand recordWithdrawalCommand = new(estateId, merchantId, withdrawalId, makeMerchantWithdrawalRequest.Amount, makeMerchantWithdrawalRequest.WithdrawalDateTime);
+
+        // Route the command
+        result = await Mediator.Send(recordWithdrawalCommand, cancellationToken);
 
         // return the result
         return result.ToActionResultX();

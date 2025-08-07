@@ -23,6 +23,8 @@ namespace TransactionProcessor.BusinessLogic.RequestHandlers
         /// </summary>
         private readonly ITransactionDomainService TransactionDomainService;
 
+        private readonly IMerchantDomainService MerchantDomainService;
+
         #endregion
 
         #region Constructors
@@ -31,8 +33,7 @@ namespace TransactionProcessor.BusinessLogic.RequestHandlers
         /// Initializes a new instance of the <see cref="TransactionRequestHandler"/> class.
         /// </summary>
         /// <param name="transactionDomainService">The transaction domain service.</param>
-        public TransactionRequestHandler(ITransactionDomainService transactionDomainService)
-        {
+        public TransactionRequestHandler(ITransactionDomainService transactionDomainService) {
             this.TransactionDomainService = transactionDomainService;
         }
 
