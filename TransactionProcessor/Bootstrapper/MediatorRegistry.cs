@@ -81,7 +81,7 @@ namespace TransactionProcessor.Bootstrapper
             this.AddSingleton<IRequestHandler<MerchantQueries.GetMerchantContractsQuery, Result<List<Models.Contract.Contract>>>, MerchantRequestHandler>();
             this.AddSingleton<IRequestHandler<MerchantQueries.GetMerchantsQuery, Result<List<Models.Merchant.Merchant>>>, MerchantRequestHandler>();
             this.AddSingleton<IRequestHandler<MerchantQueries.GetTransactionFeesForProductQuery, Result<List<Models.Contract.ContractProductTransactionFee>>>, MerchantRequestHandler>();
-            this.AddSingleton<IRequestHandler<MerchantQueries.GetMerchantLiveBalanceQuery, Result<MerchantBalanceProjectionState1>>, MerchantRequestHandler>();
+            this.AddSingleton<IRequestHandler<MerchantQueries.GetMerchantLiveBalanceQuery, Result<Decimal>>, MerchantRequestHandler>();
             this.AddSingleton<IRequestHandler<MerchantQueries.GetMerchantBalanceQuery, Result<MerchantBalanceState>>, MerchantRequestHandler>();
             this.AddSingleton<IRequestHandler<MerchantQueries.GetMerchantBalanceHistoryQuery, Result<List<MerchantBalanceChangedEntry>>>, MerchantRequestHandler>();
         }

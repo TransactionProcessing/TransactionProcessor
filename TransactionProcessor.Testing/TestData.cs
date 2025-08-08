@@ -2264,7 +2264,7 @@ namespace TransactionProcessor.Testing
 
             public static MerchantQueries.GetMerchantBalanceQuery GetMerchantBalanceQuery => new(EstateId, MerchantId);
 
-            public static MerchantQueries.GetMerchantLiveBalanceQuery GetMerchantLiveBalanceQuery => new(MerchantId);
+            public static MerchantQueries.GetMerchantLiveBalanceQuery GetMerchantLiveBalanceQuery => new(EstateId, MerchantId);
 
             public static MerchantQueries.GetMerchantBalanceHistoryQuery GetMerchantBalanceHistoryQuery => new MerchantQueries.GetMerchantBalanceHistoryQuery(EstateId, MerchantId, DateTime.MinValue, DateTime.MaxValue);
 

@@ -12,6 +12,12 @@ using Contract = TransactionProcessor.Models.Contract.Contract;
 namespace TransactionProcessor.BusinessLogic.Tests.Mediator;
 
 public class DummyTransactionProcessorManager : ITransactionProcessorManager {
+    public async Task<Result<Decimal>> GetMerchantLiveBalance(Guid estateId,
+                                                              Guid merchantId,
+                                                              CancellationToken cancellationToken) {
+        return Result.Success(1000.00m); // Dummy balance
+    }
+
     public async Task<Result<List<Contract>>> GetMerchantContracts(Guid estateId,
                                                                    Guid merchantId,
                                                                    CancellationToken cancellationToken) {
