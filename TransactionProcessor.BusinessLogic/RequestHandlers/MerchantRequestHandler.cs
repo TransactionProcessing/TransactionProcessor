@@ -67,14 +67,6 @@ IRequestHandler<MerchantCommands.SwapMerchantDeviceCommand, Result>,
     public async Task<Result<Decimal>> Handle(MerchantQueries.GetMerchantLiveBalanceQuery query,
                                                                       CancellationToken cancellationToken) {
         return await this.TransactionProcessorManager.GetMerchantLiveBalance(query.EstateId, query.MerchantId, cancellationToken);
-        //Result<String> result = await this.EventStoreContext.GetPartitionStateFromProjection("MerchantBalanceProjection", $"MerchantBalance-{query.MerchantId:N}", cancellationToken);
-        //if (result.IsFailed)
-        //    return Result.NotFound(
-        //        $"Merchant Balance not found for Merchant {query.MerchantId} on MerchantBalanceProjection");
-
-        //MerchantBalanceProjectionState1 projectionState = JsonConvert.DeserializeObject<MerchantBalanceProjectionState1>(result.Data);
-
-        //return Result.Success(projectionState);
     }
 
     public async Task<Result<List<MerchantBalanceChangedEntry>>> Handle(MerchantQueries.GetMerchantBalanceHistoryQuery query,
