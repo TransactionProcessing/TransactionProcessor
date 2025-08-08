@@ -42,15 +42,11 @@ public interface ITransactionValidationService
 }
 
 public class TransactionValidationService : ITransactionValidationService{
-    #region Fields
-    private readonly IEventStoreContext EventStoreContext;
-    private readonly IAggregateService AggregateService;
-    #endregion
 
-    public TransactionValidationService(IEventStoreContext eventStoreContext,
-                                        IAggregateService aggregateService)
+    private readonly IAggregateService AggregateService;
+
+    public TransactionValidationService(IAggregateService aggregateService)
     {
-        this.EventStoreContext = eventStoreContext;
         this.AggregateService = aggregateService;
     }
 
@@ -297,16 +293,17 @@ public class TransactionValidationService : ITransactionValidationService{
             return CreateFailedResult(new TransactionValidationResult(TransactionResponseCode.InvalidSaleTransactionAmount, "Transaction Amount must be greater than 0"));
         }
 
-        Result<String> getBalanceResult = await this.EventStoreContext.GetPartitionStateFromProjection("MerchantBalanceProjection", $"MerchantBalance-{merchantId:N}", cancellationToken);
+        Result<MerchantBalanceAggregate> getBalanceResult = await this.AggregateService.GetLatest<MerchantBalanceAggregate>(merchantId, cancellationToken);
         if (getBalanceResult.IsFailed)
         {
-            return CreateFailedResult(new TransactionValidationResult(TransactionResponseCode.UnknownFailure, $"Error getting balance for Merchant [{merchantName}]"));
+            return CreateFailedResult(new TransactionValidationResult(TransactionResponseCode.ErrorGettingMerchantBalance, $"Error getting balance for Merchant [{merchantName}]"));
         }
 
-        MerchantBalanceProjectionState1 projectionState = JsonConvert.DeserializeObject<MerchantBalanceProjectionState1>(getBalanceResult.Data);
-        if (projectionState.merchant.balance < transactionAmount)
+        MerchantBalanceAggregate aggregate = getBalanceResult.Data;
+
+        if (aggregate.Balance < transactionAmount)
         {
-            return CreateFailedResult(new TransactionValidationResult(TransactionResponseCode.MerchantDoesNotHaveEnoughCredit, $"Merchant [{merchantName}] does not have enough credit available [{projectionState.merchant.balance:0.00}] to perform transaction amount [{transactionAmount}]"));
+            return CreateFailedResult(new TransactionValidationResult(TransactionResponseCode.MerchantDoesNotHaveEnoughCredit, $"Merchant [{merchantName}] does not have enough credit available [{aggregate.Balance:0.00}] to perform transaction amount [{transactionAmount}]"));
         }
 
         return Result.Success(new TransactionValidationResult(TransactionResponseCode.Success, "SUCCESS"));
