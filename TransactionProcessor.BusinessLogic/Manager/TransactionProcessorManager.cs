@@ -151,11 +151,15 @@ namespace TransactionProcessor.BusinessLogic.Manager
                                                                   Guid merchantId,
                                                                   CancellationToken cancellationToken) {
             Result<MerchantBalanceAggregate> getMerchantBalanceResult = await this.AggregateService.GetLatest<MerchantBalanceAggregate>(merchantId, cancellationToken);
+
+            if (getMerchantBalanceResult.Status == ResultStatus.NotFound)
+                return Result.Success(0.0m);
+
             if (getMerchantBalanceResult.IsFailed)
                 return ResultHelpers.CreateFailure(getMerchantBalanceResult);
 
             MerchantBalanceAggregate aggregate = getMerchantBalanceResult.Data;
-            return aggregate.Balance;
+            return Result.Success(aggregate.Balance);
         }
 
         public async Task<Result<List<Contract>>> GetMerchantContracts(Guid estateId,
