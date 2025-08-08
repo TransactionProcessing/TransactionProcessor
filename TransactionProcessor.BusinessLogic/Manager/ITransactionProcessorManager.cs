@@ -14,6 +14,10 @@ namespace TransactionProcessor.BusinessLogic.Manager
     {
         #region Methods
 
+        Task<Result<Decimal>> GetMerchantLiveBalance(Guid estateId,
+                                        Guid merchantId,
+                                        CancellationToken cancellationToken);
+
         Task<Result<List<Contract>>> GetMerchantContracts(Guid estateId,
                                                           Guid merchantId,
                                                           CancellationToken cancellationToken);

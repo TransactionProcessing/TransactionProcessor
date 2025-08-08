@@ -147,9 +147,20 @@ namespace TransactionProcessor.BusinessLogic.Manager
             return Result.Success(merchantModel);
         }
 
+        public async Task<Result<Decimal>> GetMerchantLiveBalance(Guid estateId,
+                                                                  Guid merchantId,
+                                                                  CancellationToken cancellationToken) {
+            Result<MerchantBalanceAggregate> getMerchantBalanceResult = await this.AggregateService.GetLatest<MerchantBalanceAggregate>(merchantId, cancellationToken);
+            if (getMerchantBalanceResult.IsFailed)
+                return ResultHelpers.CreateFailure(getMerchantBalanceResult);
+
+            MerchantBalanceAggregate aggregate = getMerchantBalanceResult.Data;
+            return aggregate.Balance;
+        }
+
         public async Task<Result<List<Contract>>> GetMerchantContracts(Guid estateId,
-                                                               Guid merchantId,
-                                                               CancellationToken cancellationToken)
+                                                                       Guid merchantId,
+                                                                       CancellationToken cancellationToken)
         {
             Result<List<Contract>> getMerchantContractsResult = await this.TransactionProcessorReadModelRepository.GetMerchantContracts(estateId, merchantId, cancellationToken);
             if (getMerchantContractsResult.IsFailed)
