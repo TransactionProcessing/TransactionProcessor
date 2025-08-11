@@ -353,16 +353,14 @@ namespace TransactionProcessor.BusinessLogic.Services{
 
                 // Get the model from the aggregate
                 Models.Transaction transaction = transactionAggregate.GetTransaction();
-                
+
                 return Result.Success(new ProcessSaleTransactionResponse {
                     ResponseMessage = transaction.ResponseMessage,
                     ResponseCode = transaction.ResponseCode,
                     EstateId = command.EstateId,
                     MerchantId = command.MerchantId,
                     AdditionalTransactionMetadata = transaction.AdditionalResponseMetadata,
-                    TransactionId = command.TransactionId,
-                    TransactionIsAuthorised = transaction.IsAuthorised,
-                    TransactionIsComplete = transaction.IsComplete
+                    TransactionId = command.TransactionId
                 });
             }, command.TransactionId, cancellationToken, false);
 

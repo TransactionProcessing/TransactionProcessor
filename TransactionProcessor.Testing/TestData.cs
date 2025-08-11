@@ -2229,19 +2229,6 @@ namespace TransactionProcessor.Testing
                     TestData.MerchantId,
                     TestData.MakeMerchantWithdrawalRequest);
 
-            public static MerchantBalanceCommands.RecordDepositCommand RecordDepositCommand =>  new(TestData.EstateId,
-                    TestData.MerchantId,
-                    TestData.DepositId,
-                    TestData.DepositAmount.Value,
-                    TestData.DepositDateTime);
-
-            public static MerchantBalanceCommands.RecordWithdrawalCommand RecordWithdrawalCommand => new(TestData.EstateId,TestData.MerchantId,TestData.WithdrawalId, TestData.WithdrawalAmount.Value, TestData.WithdrawalDateTime);
-
-            public static MerchantBalanceCommands.RecordAuthorisedSaleCommand RecordAuthorisedSaleCommand => new(TestData.EstateId, TestData.MerchantId, TestData.TransactionId, TestData.TransactionAmount, TestData.TransactionDateTime);
-
-            public static MerchantBalanceCommands.RecordDeclinedSaleCommand RecordDeclinedSaleCommand => new(TestData.EstateId, TestData.MerchantId, TestData.TransactionId, TestData.TransactionAmount, TestData.TransactionDateTime);
-            public static MerchantBalanceCommands.RecordDeclinedSaleCommand RecordSettledFeeCommand => new(TestData.EstateId, TestData.MerchantId, SettledFeeId1, CalculatedFeeValue, SettledFeeDateTime1);
-
             public static MerchantCommands.MakeMerchantDepositCommand MakeMerchantDepositCommand =>
                 new(TestData.EstateId,
                     TestData.MerchantId,
@@ -2415,13 +2402,6 @@ namespace TransactionProcessor.Testing
                 merchantAggregate.AddDevice(TestData.DeviceId, TestData.DeviceIdentifier);
                 merchantAggregate.RemoveOperator(TestData.OperatorId);
                 return merchantAggregate;
-            }
-
-            public static MerchantBalanceAggregate EmptyMerchantBalanceAggregate()
-            {
-                MerchantBalanceAggregate merchantBalanceAggregate = MerchantBalanceAggregate.Create(TestData.MerchantId);
-
-                return merchantBalanceAggregate;
             }
 
             public static MerchantAggregate CreatedMerchantAggregate()

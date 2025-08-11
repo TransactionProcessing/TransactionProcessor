@@ -107,12 +107,6 @@ namespace TransactionProcessor.BusinessLogic.Tests.Mediator
             this.Requests.Add(TestData.Queries.GetVoucherByVoucherCodeQuery);
             this.Requests.Add(TestData.Queries.GetVoucherByTransactionIdQuery);
 
-            // Merchant Balance Commands
-            this.Requests.Add(TestData.Commands.RecordDepositCommand);
-            this.Requests.Add(TestData.Commands.RecordWithdrawalCommand);
-            this.Requests.Add(TestData.Commands.RecordAuthorisedSaleCommand);
-            this.Requests.Add(TestData.Commands.RecordDeclinedSaleCommand);
-            this.Requests.Add(TestData.Commands.RecordSettledFeeCommand);
         }
 
         [Fact]

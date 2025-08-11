@@ -37,16 +37,6 @@ namespace TransactionProcessor.Bootstrapper
             this.RegisterOperatorRequestHandler();
             this.RegisterContractRequestHandler();
             this.RegisterMerchantStatementRequestHandler();
-            this.RegisterMerchantBalanceRequestHandler();
-        }
-
-        private void RegisterMerchantBalanceRequestHandler()
-        {
-            this.AddSingleton<IRequestHandler<MerchantBalanceCommands.RecordDepositCommand, Result>, MerchantBalanceRequestHandler>();
-            this.AddSingleton<IRequestHandler<MerchantBalanceCommands.RecordWithdrawalCommand, Result>, MerchantBalanceRequestHandler>();
-            this.AddSingleton<IRequestHandler<MerchantBalanceCommands.RecordAuthorisedSaleCommand, Result>, MerchantBalanceRequestHandler>();
-            this.AddSingleton<IRequestHandler<MerchantBalanceCommands.RecordDeclinedSaleCommand, Result>, MerchantBalanceRequestHandler>();
-            this.AddSingleton<IRequestHandler<MerchantBalanceCommands.RecordSettledFeeCommand, Result>, MerchantBalanceRequestHandler>();
         }
 
         private void RegisterMerchantStatementRequestHandler() {

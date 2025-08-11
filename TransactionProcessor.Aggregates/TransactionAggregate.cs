@@ -73,8 +73,7 @@ namespace TransactionProcessor.Aggregates
                 AdditionalRequestMetadata = aggregate.AdditionalTransactionRequestMetadata,
                 AdditionalResponseMetadata = aggregate.AdditionalTransactionResponseMetadata,
                 ResponseCode = aggregate.ResponseCode,
-                IsComplete = aggregate.IsCompleted,
-                IsAuthorised = aggregate.IsAuthorised || aggregate.IsLocallyAuthorised
+                IsComplete = aggregate.IsCompleted
             };
         }
 

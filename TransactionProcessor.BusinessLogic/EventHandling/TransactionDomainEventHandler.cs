@@ -1,9 +1,9 @@
 ﻿using MediatR;
-using Prometheus;
-using Shared.EventStore.Aggregate;
 using SimpleResults;
 using System;
 using System.Diagnostics;
+using Prometheus;
+using Shared.EventStore.Aggregate;
 using TransactionProcessor.BusinessLogic.Requests;
 using TransactionProcessor.DomainEvents;
 using TransactionProcessor.Models.Contract;
@@ -15,13 +15,10 @@ namespace TransactionProcessor.BusinessLogic.EventHandling
     using Shared.DomainDrivenDesign.EventSourcing;
     using Shared.EventStore.EventHandling;
     using Shared.Logger;
-    using System.Diagnostics.CodeAnalysis;
     using System.Threading;
     using System.Threading.Tasks;
     using TransactionProcessor.BusinessLogic.Common;
     using TransactionProcessor.BusinessLogic.Services;
-    using TransactionProcessor.DataTransferObjects;
-    using TransactionProcessor.Models;
     using static TransactionProcessor.BusinessLogic.Requests.SettlementCommands;
     using static TransactionProcessor.BusinessLogic.Requests.TransactionCommands;
 
@@ -112,26 +109,7 @@ namespace TransactionProcessor.BusinessLogic.EventHandling
         private async Task<Result> HandleSpecificDomainEvent(TransactionDomainEvents.SettledMerchantFeeAddedToTransactionEvent domainEvent,
                                                              CancellationToken cancellationToken) {
             AddSettledFeeToSettlementCommand command = new AddSettledFeeToSettlementCommand(domainEvent.SettledDateTime.Date, domainEvent.MerchantId, domainEvent.EstateId, domainEvent.FeeId, domainEvent.TransactionId);
-            var result = await this.Mediator.Send(command, cancellationToken);
-            if (result.IsFailed) {
-                return result;
-            }
-
-            // Kick off a background command to do the balance processing
-            // TODO: maybe add in some retry logic here or offload to another process to retry?
-            FireAndForgetHelper.Run(
-                async () => {
-                    MerchantBalanceCommands.RecordSettledFeeCommand balanceCommand = new MerchantBalanceCommands.RecordSettledFeeCommand(domainEvent.EstateId, domainEvent.MerchantId, domainEvent.FeeId, domainEvent.CalculatedValue, domainEvent.SettledDateTime);
-                    Result balanceResult = await this.Mediator.Send(balanceCommand, cancellationToken);
-                    if (balanceResult.IsFailed)
-                    {
-                        throw new Exception($"Failed to record balance for transaction {domainEvent.TransactionId} fee {domainEvent.FeeId} with error: {balanceResult.Message}");
-                    }
-                },
-                $"Balance Recording for Transaction {domainEvent.TransactionId} Fee {domainEvent.FeeId}"
-            );
-
-            return result;
+            return await this.Mediator.Send(command, cancellationToken);
         }
 
         private async Task<Result> HandleSpecificDomainEvent(SettlementDomainEvents.MerchantFeeSettledEvent domainEvent,
@@ -155,25 +133,5 @@ namespace TransactionProcessor.BusinessLogic.EventHandling
         }
         
         #endregion
-    }
-
-    [ExcludeFromCodeCoverage]
-    public static class FireAndForgetHelper
-    {
-        public static void Run(Func<Task> action, string contextDescription = "background task")
-        {
-            _ = Task.Run(async () =>
-            {
-                try
-                {
-                    await action();
-                }
-                catch (Exception ex)
-                {
-                    Exception e = new Exception($"Unhandled exception in {contextDescription}", ex);
-                    Logger.LogError(e);
-                }
-            });
-        }
     }
 }

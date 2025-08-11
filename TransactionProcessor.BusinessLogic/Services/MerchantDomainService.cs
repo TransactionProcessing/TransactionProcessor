@@ -1,4 +1,9 @@
-﻿using Newtonsoft.Json;
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading;
+using System.Threading.Tasks;
+using Newtonsoft.Json;
 using SecurityService.Client;
 using SecurityService.DataTransferObjects;
 using Shared.DomainDrivenDesign.EventSourcing;
@@ -8,21 +13,11 @@ using Shared.Exceptions;
 using Shared.Results;
 using Shared.ValueObjects;
 using SimpleResults;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Security.Cryptography;
-using System.Text;
-using System.Threading;
-using System.Threading.Tasks;
 using TransactionProcessor.Aggregates;
-using TransactionProcessor.BusinessLogic.Common;
 using TransactionProcessor.BusinessLogic.Requests;
-using TransactionProcessor.Models;
 using TransactionProcessor.Models.Estate;
 using TransactionProcessor.Models.Merchant;
 using TransactionProcessor.ProjectionEngine.State;
-using static Microsoft.EntityFrameworkCore.DbLoggerCategory.Database;
 
 namespace TransactionProcessor.BusinessLogic.Services
 {
@@ -44,15 +39,6 @@ namespace TransactionProcessor.BusinessLogic.Services
         Task<Result> UpdateMerchantContact(MerchantCommands.UpdateMerchantContactCommand command, CancellationToken cancellationToken);
         Task<Result> RemoveOperatorFromMerchant(MerchantCommands.RemoveOperatorFromMerchantCommand command, CancellationToken cancellationToken);
         Task<Result> RemoveContractFromMerchant(MerchantCommands.RemoveMerchantContractCommand command, CancellationToken cancellationToken);
-
-        Task<Result> RecordDepositAgainstBalance(MerchantBalanceCommands.RecordDepositCommand command,
-                                                 CancellationToken cancellationToken);
-        Task<Result> RecordWithdrawalAgainstBalance(MerchantBalanceCommands.RecordWithdrawalCommand command,
-                                                    CancellationToken cancellationToken);
-
-        Task<Result> RecordTransactionAgainstBalance(MerchantBalanceCommands.RecordAuthorisedSaleCommand command, CancellationToken cancellationToken);
-        Task<Result> RecordTransactionAgainstBalance(MerchantBalanceCommands.RecordDeclinedSaleCommand command, CancellationToken cancellationToken);
-        Task<Result> RecordSettledFeeAgainstBalance(MerchantBalanceCommands.RecordSettledFeeCommand command, CancellationToken cancellationToken);
 
         #endregion
     }
@@ -104,41 +90,6 @@ namespace TransactionProcessor.BusinessLogic.Services
                     return ResultHelpers.CreateFailure(result);
 
                 Result saveResult = await this.AggregateService.Save(merchantAggregate, cancellationToken);
-                if (saveResult.IsFailed)
-                    return ResultHelpers.CreateFailure(saveResult);
-
-                return Result.Success();
-            }
-            catch (Exception ex)
-            {
-                return Result.Failure(ex.GetExceptionMessages());
-            }
-        }
-
-        private async Task<Result> ApplyUpdates(Func<(MerchantAggregate merchantAggregate, MerchantBalanceAggregate merchantBalanceAggregate), Task<Result>> action, Guid estateId, Guid merchantId, CancellationToken cancellationToken, Boolean isNotFoundError = true)
-        {
-            try
-            {
-                Result<MerchantAggregate> getMerchantResult = await this.AggregateService.Get<MerchantAggregate>(merchantId, cancellationToken);
-                if (getMerchantResult.IsFailed)
-                {
-                    return ResultHelpers.CreateFailure(getMerchantResult);
-                }
-                MerchantAggregate merchantAggregate = getMerchantResult.Data;
-                
-                Result<MerchantBalanceAggregate> getMerchantBalanceResult = await this.AggregateService.GetLatest<MerchantBalanceAggregate>(merchantId, cancellationToken);
-                Result<MerchantBalanceAggregate> merchantBalanceAggregateResult =
-                    DomainServiceHelper.HandleGetAggregateResult(getMerchantBalanceResult, merchantId, isNotFoundError);
-                if (merchantBalanceAggregateResult.IsFailed)
-                        return ResultHelpers.CreateFailure(merchantBalanceAggregateResult);
-
-                MerchantBalanceAggregate merchantBalanceAggregate = merchantBalanceAggregateResult.Data;
-
-                Result result = await action((merchantAggregate, merchantBalanceAggregate));
-                if (result.IsFailed)
-                    return ResultHelpers.CreateFailure(result);
-
-                Result saveResult = await this.AggregateService.Save(merchantBalanceAggregate, cancellationToken);
                 if (saveResult.IsFailed)
                     return ResultHelpers.CreateFailure(saveResult);
 
@@ -631,86 +582,7 @@ namespace TransactionProcessor.BusinessLogic.Services
                     aggregates.merchantAggregate.RemoveContract(command.ContractId);
 
                     return Result.Success();
-                }, command.EstateId, command.MerchantId, cancellationToken, false);
-
-            if (result.IsFailed)
-                return ResultHelpers.CreateFailure(result);
-
-            return Result.Success();
-        }
-        
-        public async Task<Result> RecordDepositAgainstBalance(MerchantBalanceCommands.RecordDepositCommand command,
-                                                              CancellationToken cancellationToken) {
-            Result result = await ApplyUpdates(
-                async ((MerchantAggregate merchantAggregate, MerchantBalanceAggregate merchantBalanceAggregate) aggregates) => {
-                    aggregates.merchantBalanceAggregate.RecordMerchantDeposit(aggregates.merchantAggregate, command.DepositId, command.DepositAmount, command.DepositDateTime);
-
-                    return Result.Success();
-                }, command.EstateId, command.MerchantId, cancellationToken, false);
-
-            if (result.IsFailed)
-                return ResultHelpers.CreateFailure(result);
-
-            return Result.Success();
-        }
-
-        public async Task<Result> RecordSettledFeeAgainstBalance(MerchantBalanceCommands.RecordSettledFeeCommand command,
-                                                              CancellationToken cancellationToken)
-        {
-            Result result = await ApplyUpdates(
-                async ((MerchantAggregate merchantAggregate, MerchantBalanceAggregate merchantBalanceAggregate) aggregates) => {
-                    aggregates.merchantBalanceAggregate.RecordSettledFee(aggregates.merchantAggregate, command.FeeId, command.FeeAmount, command.FeeDateTime);
-
-                    return Result.Success();
-                }, command.EstateId, command.MerchantId, cancellationToken, false);
-
-            if (result.IsFailed)
-                return ResultHelpers.CreateFailure(result);
-
-            return Result.Success();
-        }
-
-        public async Task<Result> RecordWithdrawalAgainstBalance(MerchantBalanceCommands.RecordWithdrawalCommand command,
-                                                                 CancellationToken cancellationToken) {
-            Result result = await ApplyUpdates(
-                async ((MerchantAggregate merchantAggregate, MerchantBalanceAggregate merchantBalanceAggregate) aggregates) => {
-                    
-                    aggregates.merchantBalanceAggregate.RecordMerchantWithdrawal(aggregates.merchantAggregate, command.WithdrawalId, command.WithdrawalAmount, command.WithdrawalDateTime);
-
-                    return Result.Success();
-                }, command.EstateId, command.MerchantId, cancellationToken, false);
-
-            if (result.IsFailed)
-                return ResultHelpers.CreateFailure(result);
-
-            return Result.Success();
-        }
-
-        public async Task<Result> RecordTransactionAgainstBalance(MerchantBalanceCommands.RecordAuthorisedSaleCommand command, CancellationToken cancellationToken)
-        {
-            Result result = await ApplyUpdates(
-                async ((MerchantAggregate merchantAggregate, MerchantBalanceAggregate merchantBalanceAggregate) aggregates) => {
-
-                    // Record the sale against the balance
-                    aggregates.merchantBalanceAggregate.RecordCompletedTransaction(aggregates.merchantAggregate, command.TransactionId, command.TransactionAmount, command.TransactionDateTime, true);
-                    return Result.Success();
-                }, command.EstateId, command.MerchantId, cancellationToken, false);
-
-            if (result.IsFailed)
-                return ResultHelpers.CreateFailure(result);
-
-            return Result.Success();
-        }
-
-        public async Task<Result> RecordTransactionAgainstBalance(MerchantBalanceCommands.RecordDeclinedSaleCommand command, CancellationToken cancellationToken)
-        {
-            Result result = await ApplyUpdates(
-                async ((MerchantAggregate merchantAggregate, MerchantBalanceAggregate merchantBalanceAggregate) aggregates) => {
-
-                    // Record the sale against the balance
-                    aggregates.merchantBalanceAggregate.RecordCompletedTransaction(aggregates.merchantAggregate, command.TransactionId, command.TransactionAmount, command.TransactionDateTime, false);
-                    return Result.Success();
-                }, command.EstateId, command.MerchantId, cancellationToken, false);
+                }, command.EstateId, command.MerchantId, cancellationToken);
 
             if (result.IsFailed)
                 return ResultHelpers.CreateFailure(result);
