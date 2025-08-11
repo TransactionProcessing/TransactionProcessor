@@ -251,12 +251,12 @@ namespace TransactionProcessor.IntegrationTests.Shared
 
             foreach ((EstateDetails, Guid, MakeMerchantDepositRequest) request in requests)
             {
-                Decimal previousMerchantBalance = await this.GetMerchantBalance(request.Item1.EstateId, request.Item2);
+                Decimal previousMerchantBalance = await this.GetMerchantBalance(request.Item2);
 
                 await this.TransactionProcessorSteps.GivenIMakeTheFollowingManualMerchantDeposits(this.TestingContext.AccessToken, request);
 
                 await Retry.For(async () => {
-                    Decimal currentMerchantBalance = await this.GetMerchantBalance(request.Item1.EstateId, request.Item2);
+                    Decimal currentMerchantBalance = await this.GetMerchantBalance(request.Item2);
 
                     currentMerchantBalance.ShouldBe(previousMerchantBalance + request.Item3.Amount);
 
@@ -374,12 +374,12 @@ namespace TransactionProcessor.IntegrationTests.Shared
             await this.TransactionProcessorSteps.WhenIAddTheFollowingContractsToTheFollowingMerchants(this.TestingContext.AccessToken, requests);
         }
 
-        private async Task<Decimal> GetMerchantBalance(Guid estateId, Guid merchantId)
+        private async Task<Decimal> GetMerchantBalance(Guid merchantId)
         {
-            Result<MerchantBalanceResponse> result = await this.TestingContext.DockerHelper.TransactionProcessorClient.GetMerchantBalance(this.TestingContext.AccessToken, estateId, merchantId, CancellationToken.None, liveBalance: true);
-            if (result.IsFailed)
-                throw new Exception($"Error gettin merchant balance for merchant id {merchantId}");
-            return result.Data.Balance;
+            JsonElement jsonElement = (JsonElement)await this.TestingContext.DockerHelper.ProjectionManagementClient.GetStateAsync<dynamic>("MerchantBalanceProjection", $"MerchantBalance-{merchantId:N}");
+            JObject jsonObject = JObject.Parse(jsonElement.GetRawText());
+            decimal balanceValue = jsonObject.SelectToken("merchant.balance").Value<decimal>();
+            return balanceValue;
         }
 
         
