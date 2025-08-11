@@ -26,6 +26,7 @@ using Xunit;
 public class TransactionValidationServiceTests {
     private readonly TransactionValidationService TransactionValidationService;
     private readonly Mock<ISecurityServiceClient> SecurityServiceClient;
+    private readonly Mock<IEventStoreContext> EventStoreContext;
     private readonly Mock<IAggregateService> AggregateService;
     public TransactionValidationServiceTests() {
         IConfigurationRoot configurationRoot = new ConfigurationBuilder().AddInMemoryCollection(TestData.DefaultAppSettings).Build();
@@ -34,11 +35,12 @@ public class TransactionValidationServiceTests {
         Logger.Initialise(NullLogger.Instance);
 
         this.SecurityServiceClient = new Mock<ISecurityServiceClient>();
+        this.EventStoreContext = new Mock<IEventStoreContext>();
         this.AggregateService = new Mock<IAggregateService>();
 
         this.SecurityServiceClient.Setup(s => s.GetToken(It.IsAny<String>(), It.IsAny<String>(), It.IsAny<CancellationToken>())).ReturnsAsync(Result.Success(TestData.TokenResponse()));
 
-        this.TransactionValidationService = new TransactionValidationService(this.AggregateService.Object);
+        this.TransactionValidationService = new TransactionValidationService(this.EventStoreContext.Object, this.AggregateService.Object);
     }
 
     [Fact]
@@ -401,6 +403,9 @@ public class TransactionValidationServiceTests {
         this.AggregateService.Setup(e => e.Get<MerchantAggregate>(It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(TestData.Aggregates.MerchantAggregateWithEverything(SettlementSchedule.Immediate));
 
+        this.EventStoreContext.Setup(e => e.GetPartitionStateFromProjection(It.IsAny<String>(), It.IsAny<String>(), It.IsAny<CancellationToken>()))
+       .ReturnsAsync(JsonConvert.SerializeObject(TestData.MerchantBalanceProjectionState));
+
         var result = await this.TransactionValidationService.ValidateSaleTransaction(TestData.EstateId,
                                                                                                                                                   TestData.MerchantId,
                                                                                                                                                   Guid.Empty,
@@ -422,6 +427,9 @@ public class TransactionValidationServiceTests {
         this.AggregateService.Setup(e => e.Get<EstateAggregate>(It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(Result.Success(TestData.Aggregates.EstateAggregateWithOperator()));
         this.AggregateService.Setup(e => e.Get<MerchantAggregate>(It.IsAny<Guid>(), It.IsAny<CancellationToken>())).ReturnsAsync(TestData.Aggregates.MerchantAggregateWithEverything(SettlementSchedule.Immediate));
+
+        this.EventStoreContext.Setup(e => e.GetPartitionStateFromProjection(It.IsAny<String>(), It.IsAny<String>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(JsonConvert.SerializeObject(TestData.MerchantBalanceProjectionState));
 
         var result = await this.TransactionValidationService.ValidateSaleTransaction(TestData.EstateId,
                                                                                                                                                   TestData.MerchantId,
@@ -491,7 +499,10 @@ public class TransactionValidationServiceTests {
         this.AggregateService.Setup(e => e.Get<EstateAggregate>(It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(Result.Success(TestData.Aggregates.EstateAggregateWithOperator()));
         this.AggregateService.Setup(e => e.Get<MerchantAggregate>(It.IsAny<Guid>(), It.IsAny<CancellationToken>())).ReturnsAsync(TestData.Aggregates.MerchantAggregateWithEverything(SettlementSchedule.Immediate));
-        
+
+        this.EventStoreContext.Setup(e => e.GetPartitionStateFromProjection(It.IsAny<String>(), It.IsAny<String>(), It.IsAny<CancellationToken>()))
+       .ReturnsAsync(JsonConvert.SerializeObject(TestData.MerchantBalanceProjectionState));
+
         var result = await this.TransactionValidationService.ValidateSaleTransaction(TestData.EstateId,
                                                                                                                                                   TestData.MerchantId,
                                                                                                                                                   TestData.ContractId1,
@@ -514,6 +525,11 @@ public class TransactionValidationServiceTests {
             .ReturnsAsync(Result.Success(TestData.Aggregates.EstateAggregateWithOperator()));
         this.AggregateService.Setup(e => e.Get<MerchantAggregate>(It.IsAny<Guid>(), It.IsAny<CancellationToken>())).ReturnsAsync(TestData.Aggregates.MerchantAggregateWithNoContracts(SettlementSchedule.Immediate));
 
+
+
+        this.EventStoreContext.Setup(e => e.GetPartitionStateFromProjection(It.IsAny<String>(), It.IsAny<String>(), It.IsAny<CancellationToken>()))
+       .ReturnsAsync(JsonConvert.SerializeObject(TestData.MerchantBalanceProjectionState));
+
         var result = await this.TransactionValidationService.ValidateSaleTransaction(TestData.EstateId,
                                                                                                                                                   TestData.MerchantId,
                                                                                                                                                   TestData.ContractId,
@@ -535,7 +551,9 @@ public class TransactionValidationServiceTests {
         this.AggregateService.Setup(e => e.Get<EstateAggregate>(It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(Result.Success(TestData.Aggregates.EstateAggregateWithOperator()));
         this.AggregateService.Setup(m => m.Get<MerchantAggregate>(It.IsAny<Guid>(), It.IsAny<CancellationToken>())).ReturnsAsync(TestData.Aggregates.MerchantAggregateWithEverything(SettlementSchedule.Immediate));
-        this.AggregateService.Setup(e => e.GetLatest<MerchantBalanceAggregate>(It.IsAny<Guid>(), It.IsAny<CancellationToken>())).ReturnsAsync(TestData.Aggregates.EmptyMerchantBalanceAggregate());
+        this.EventStoreContext.Setup(e => e.GetPartitionStateFromProjection(It.IsAny<String>(), It.IsAny<String>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(JsonConvert.SerializeObject(TestData.MerchantBalanceProjectionStateNoCredit));
+
         var result = await this.TransactionValidationService.ValidateSaleTransaction(TestData.EstateId,
                                                                                                                                                   TestData.MerchantId,
                                                                                                                                                   TestData.ContractId,
@@ -558,7 +576,8 @@ public class TransactionValidationServiceTests {
             .ReturnsAsync(Result.Success(TestData.Aggregates.EstateAggregateWithOperator()));
         this.AggregateService.Setup(e => e.Get<MerchantAggregate>(It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(Result.NotFound("Merchant not found"));
-        
+
+
         var result = await this.TransactionValidationService.ValidateSaleTransaction(TestData.EstateId,
                                                                                                                                                   TestData.MerchantId,
                                                                                                                                                   TestData.ContractId,
@@ -607,6 +626,9 @@ public class TransactionValidationServiceTests {
             .ReturnsAsync(Result.Success(TestData.Aggregates.MerchantAggregateWithEverything(SettlementSchedule.Immediate)))
             .ReturnsAsync(Result.NotFound());
 
+        this.EventStoreContext.Setup(e => e.GetPartitionStateFromProjection(It.IsAny<String>(), It.IsAny<String>(), It.IsAny<CancellationToken>()))
+       .ReturnsAsync(JsonConvert.SerializeObject(TestData.MerchantBalanceProjectionState));
+
         var result = await this.TransactionValidationService.ValidateSaleTransaction(TestData.EstateId,
                                                                                                                                                   TestData.MerchantId,
                                                                                                                                                   TestData.ContractId,
@@ -630,7 +652,10 @@ public class TransactionValidationServiceTests {
         this.AggregateService.SetupSequence(m => m.Get<MerchantAggregate>(It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(Result.Success(TestData.Aggregates.MerchantAggregateWithEverything(SettlementSchedule.Immediate)))
             .ReturnsAsync(Result.NotFound());
-        
+
+        this.EventStoreContext.Setup(e => e.GetPartitionStateFromProjection(It.IsAny<String>(), It.IsAny<String>(), It.IsAny<CancellationToken>()))
+       .ReturnsAsync(JsonConvert.SerializeObject(TestData.MerchantBalanceProjectionState));
+
         var result = await this.TransactionValidationService.ValidateSaleTransaction(TestData.EstateId,
                                                                                                                                                   TestData.MerchantId,
                                                                                                                                                   TestData.ContractId,
@@ -722,7 +747,10 @@ public class TransactionValidationServiceTests {
         this.AggregateService.Setup(e => e.Get<EstateAggregate>(It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(Result.Success(TestData.Aggregates.EstateAggregateWithOperator()));
         this.AggregateService.Setup(e => e.Get<MerchantAggregate>(It.IsAny<Guid>(), It.IsAny<CancellationToken>())).ReturnsAsync(TestData.Aggregates.MerchantAggregateWithEverything(SettlementSchedule.Immediate));
-        
+
+        this.EventStoreContext.Setup(e => e.GetPartitionStateFromProjection(It.IsAny<String>(), It.IsAny<String>(), It.IsAny<CancellationToken>()))
+       .ReturnsAsync(JsonConvert.SerializeObject(TestData.MerchantBalanceProjectionState));
+
         var result = await this.TransactionValidationService.ValidateSaleTransaction(TestData.EstateId,
                                                                                                                                                   TestData.MerchantId,
                                                                                                                                                   TestData.ContractId,
@@ -744,7 +772,10 @@ public class TransactionValidationServiceTests {
         this.AggregateService.Setup(e => e.Get<EstateAggregate>(It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(Result.Success(TestData.Aggregates.EstateAggregateWithOperator()));
         this.AggregateService.SetupSequence(m => m.Get<MerchantAggregate>(It.IsAny<Guid>(), It.IsAny<CancellationToken>())).ReturnsAsync(TestData.Aggregates.MerchantAggregateWithEverything(SettlementSchedule.Immediate));
-        this.AggregateService.Setup(e => e.GetLatest<MerchantBalanceAggregate>(It.IsAny<Guid>(), It.IsAny<CancellationToken>())).ReturnsAsync(TestData.Aggregates.MerchantBalanceAggregateWithCredit());
+
+        this.EventStoreContext.Setup(e => e.GetPartitionStateFromProjection(It.IsAny<String>(), It.IsAny<String>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(JsonConvert.SerializeObject(TestData.MerchantBalanceProjectionState));
+
         var result = await this.TransactionValidationService.ValidateSaleTransaction(TestData.EstateId,
                                                                                                                                                   TestData.MerchantId,
                                                                                                                                                   TestData.ContractId,
@@ -758,7 +789,7 @@ public class TransactionValidationServiceTests {
     }
 
     [Fact]
-    public async Task TransactionValidationService_ValidateSaleTransaction_FailedGettingMerchantBalance_ResponseIsErrorGettingMerchantBalance()
+    public async Task TransactionValidationService_ValidateSaleTransaction_FailedGettingMerchantBalance_ResponseIsInvalidMerchantId()
     {
         this.SecurityServiceClient.Setup(s => s.GetToken(It.IsAny<String>(), It.IsAny<String>(), It.IsAny<CancellationToken>())).ReturnsAsync(Result.Success(TestData.TokenResponse()));
 
@@ -766,8 +797,11 @@ public class TransactionValidationServiceTests {
             .ReturnsAsync(Result.Success(TestData.Aggregates.EstateAggregateWithOperator()));
         this.AggregateService.Setup(e => e.Get<MerchantAggregate>(It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(TestData.Aggregates.MerchantAggregateWithEverything(SettlementSchedule.Immediate));
-        this.AggregateService.Setup(e => e.GetLatest<MerchantBalanceAggregate>(It.IsAny<Guid>(), It.IsAny<CancellationToken>())).ReturnsAsync(Result.Failure());
-        Result<TransactionValidationResult> result = await this.TransactionValidationService.ValidateSaleTransaction(TestData.EstateId,
+
+        this.EventStoreContext.Setup(e => e.GetPartitionStateFromProjection(It.IsAny<String>(), It.IsAny<String>(), It.IsAny<CancellationToken>()))
+       .ReturnsAsync(Result.Failure());
+
+        var result = await this.TransactionValidationService.ValidateSaleTransaction(TestData.EstateId,
                                                                                                                                                   TestData.MerchantId,
                                                                                                                                                   TestData.ContractId,
                                                                                                                                                   TestData.ProductId,
@@ -777,7 +811,7 @@ public class TransactionValidationServiceTests {
                                                                                                                                                   CancellationToken.None);
 
         result.IsFailed.ShouldBeTrue();
-        result.Data.ResponseCode.ShouldBe(TransactionResponseCode.ErrorGettingMerchantBalance);
+        result.Data.ResponseCode.ShouldBe(TransactionResponseCode.UnknownFailure);
     }
 }
 

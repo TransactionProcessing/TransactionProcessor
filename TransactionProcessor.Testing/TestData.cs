@@ -2424,13 +2424,6 @@ namespace TransactionProcessor.Testing
                 return merchantBalanceAggregate;
             }
 
-            public static MerchantBalanceAggregate MerchantBalanceAggregateWithCredit()
-            {
-                MerchantBalanceAggregate merchantBalanceAggregate = MerchantBalanceAggregate.Create(TestData.MerchantId);
-                merchantBalanceAggregate.RecordMerchantDeposit(CreatedMerchantAggregate(), DepositId, DepositAmount.Value, DepositDateTime);
-                return merchantBalanceAggregate;
-            }
-
             public static MerchantAggregate CreatedMerchantAggregate()
             {
                 MerchantAggregate merchantAggregate = MerchantAggregate.Create(TestData.MerchantId);
