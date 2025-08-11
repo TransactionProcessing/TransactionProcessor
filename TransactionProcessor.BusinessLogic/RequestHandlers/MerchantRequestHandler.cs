@@ -19,7 +19,7 @@ namespace TransactionProcessor.BusinessLogic.RequestHandlers;
 
 public class MerchantRequestHandler :
     IRequestHandler<MerchantQueries.GetMerchantBalanceQuery, Result<MerchantBalanceState>>,
-    IRequestHandler<MerchantQueries.GetMerchantLiveBalanceQuery, Result<Decimal>>,
+    IRequestHandler<MerchantQueries.GetMerchantLiveBalanceQuery, Result<MerchantBalanceProjectionState1>>,
     IRequestHandler<MerchantQueries.GetMerchantBalanceHistoryQuery, Result<List<MerchantBalanceChangedEntry>>>,
 IRequestHandler<MerchantCommands.SwapMerchantDeviceCommand, Result>,
                                           IRequestHandler<MerchantCommands.AddMerchantContractCommand, Result>,
@@ -64,17 +64,17 @@ IRequestHandler<MerchantCommands.SwapMerchantDeviceCommand, Result>,
         return await this.MerchantBalanceStateRepository.Load(query.EstateId, query.MerchantId, cancellationToken);
     }
 
-    public async Task<Result<Decimal>> Handle(MerchantQueries.GetMerchantLiveBalanceQuery query,
+    public async Task<Result<MerchantBalanceProjectionState1>> Handle(MerchantQueries.GetMerchantLiveBalanceQuery query,
                                                                       CancellationToken cancellationToken) {
-        return await this.TransactionProcessorManager.GetMerchantLiveBalance(query.EstateId, query.MerchantId, cancellationToken);
-        //Result<String> result = await this.EventStoreContext.GetPartitionStateFromProjection("MerchantBalanceProjection", $"MerchantBalance-{query.MerchantId:N}", cancellationToken);
-        //if (result.IsFailed)
-        //    return Result.NotFound(
-        //        $"Merchant Balance not found for Merchant {query.MerchantId} on MerchantBalanceProjection");
 
-        //MerchantBalanceProjectionState1 projectionState = JsonConvert.DeserializeObject<MerchantBalanceProjectionState1>(result.Data);
+        Result<String> result = await this.EventStoreContext.GetPartitionStateFromProjection("MerchantBalanceProjection", $"MerchantBalance-{query.MerchantId:N}", cancellationToken);
+        if (result.IsFailed)
+            return Result.NotFound(
+                $"Merchant Balance not found for Merchant {query.MerchantId} on MerchantBalanceProjection");
+        
+        MerchantBalanceProjectionState1 projectionState = JsonConvert.DeserializeObject<MerchantBalanceProjectionState1>(result.Data);
 
-        //return Result.Success(projectionState);
+        return Result.Success(projectionState);
     }
 
     public async Task<Result<List<MerchantBalanceChangedEntry>>> Handle(MerchantQueries.GetMerchantBalanceHistoryQuery query,

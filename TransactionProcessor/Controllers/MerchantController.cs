@@ -157,15 +157,22 @@ public class MerchantController : ControllerBase
             return this.Forbid();
         }
 
-        MerchantQueries.GetMerchantLiveBalanceQuery query = new MerchantQueries.GetMerchantLiveBalanceQuery(estateId, merchantId);
+        MerchantQueries.GetMerchantLiveBalanceQuery query = new MerchantQueries.GetMerchantLiveBalanceQuery(merchantId);
 
-        Result<Decimal> getLiveMerchantBalanceResult = await this.Mediator.Send(query, cancellationToken);
+        Result<MerchantBalanceProjectionState1> getLiveMerchantBalanceResult = await this.Mediator.Send(query, cancellationToken);
 
-        if (getLiveMerchantBalanceResult.IsFailed) {
+        if (getLiveMerchantBalanceResult.IsFailed)
+        {
             return getLiveMerchantBalanceResult.ToActionResultX();
         }
 
-        Result<MerchantBalanceResponse> result = Result.Success(new MerchantBalanceResponse { Balance = getLiveMerchantBalanceResult.Data, MerchantId = merchantId, AvailableBalance = getLiveMerchantBalanceResult.Data, EstateId = estateId });
+        Result<MerchantBalanceResponse> result = Result.Success(new MerchantBalanceResponse
+        {
+            Balance = getLiveMerchantBalanceResult.Data.merchant.balance,
+            MerchantId = merchantId,
+            AvailableBalance = getLiveMerchantBalanceResult.Data.merchant.balance,
+            EstateId = estateId
+        });
 
         return result.ToActionResultX();
     }
