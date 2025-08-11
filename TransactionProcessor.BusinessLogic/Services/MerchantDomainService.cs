@@ -349,19 +349,18 @@ namespace TransactionProcessor.BusinessLogic.Services
                     {
                         return Result.Invalid($"Merchant [{command.MerchantId}] has not made any deposits yet");
                     }
+                    
+                    Result<MerchantBalanceAggregate> getMerchantBalanceResult = await this.AggregateService.GetLatest<MerchantBalanceAggregate>(command.MerchantId, cancellationToken);
+                    Result<MerchantBalanceAggregate> merchantBalanceAggregateResult =
+                        DomainServiceHelper.HandleGetAggregateResult(getMerchantBalanceResult, command.MerchantId, false);
+                    if (merchantBalanceAggregateResult.IsFailed)
+                        return ResultHelpers.CreateFailure(merchantBalanceAggregateResult);
 
-                    // Now we need to check the merchants balance to ensure they have funds to withdraw
-                    Result<String> getBalanceResult = await this.EventStoreContext.GetPartitionStateFromProjection("MerchantBalanceProjection", $"MerchantBalance-{command.MerchantId:N}", cancellationToken);
-                    if (getBalanceResult.IsFailed)
+                    MerchantBalanceAggregate merchantBalanceAggregate = merchantBalanceAggregateResult.Data;
+
+                    if (command.RequestDto.Amount > merchantBalanceAggregate.Balance)
                     {
-                        Result.Invalid($"Failed to get Merchant Balance.");
-                    }
-
-                    MerchantBalanceProjectionState1 projectionState = JsonConvert.DeserializeObject<MerchantBalanceProjectionState1>(getBalanceResult.Data);
-
-                    if (command.RequestDto.Amount > projectionState.merchant.balance)
-                    {
-                        return Result.Invalid($"Not enough credit available for withdrawal of [{command.RequestDto.Amount}]. Balance is {projectionState.merchant.balance}");
+                        return Result.Invalid($"Not enough credit available for withdrawal of [{command.RequestDto.Amount}]. Balance is {merchantBalanceAggregate.Balance}");
                     }
 
                     // If we are here we have enough credit to withdraw

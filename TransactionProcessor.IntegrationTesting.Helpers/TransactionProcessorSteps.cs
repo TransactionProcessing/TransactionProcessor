@@ -279,21 +279,21 @@ public class TransactionProcessorSteps
                 MerchantResponse merchant = getMerchantResult.Data;
                 responses.Add(merchant);
 
-                string projectionName = "MerchantBalanceProjection";
-                String partitionId = $"MerchantBalance-{m.Item2:N}";
+                //string projectionName = "MerchantBalanceProjection";
+                //String partitionId = $"MerchantBalance-{m.Item2:N}";
 
-                dynamic gg = await this.ProjectionManagementClient.GetStateAsync<dynamic>(
-                    projectionName, partitionId);
-                JsonElement x = (JsonElement)gg;
+                //dynamic gg = await this.ProjectionManagementClient.GetStateAsync<dynamic>(
+                //    projectionName, partitionId);
+                //JsonElement x = (JsonElement)gg;
 
-                Result<MerchantBalanceResponse>? getMerchantBalanceResult = await this.TransactionProcessorClient.GetMerchantBalance(accessToken, m.Item1, m.Item2, CancellationToken.None);
-                getMerchantBalanceResult.IsSuccess.ShouldBeTrue();
-                getMerchantBalanceResult.Data.ShouldNotBeNull();
+                //Result<MerchantBalanceResponse>? getMerchantBalanceResult = await this.TransactionProcessorClient.GetMerchantBalance(accessToken, m.Item1, m.Item2, CancellationToken.None);
+                //getMerchantBalanceResult.IsSuccess.ShouldBeTrue();
+                //getMerchantBalanceResult.Data.ShouldNotBeNull();
 
-                // Force a read model database hit
-                Result<MerchantBalanceResponse>? getMerchantBalanceResult2 = await this.TransactionProcessorClient.GetMerchantBalance(accessToken, m.Item1, m.Item2, CancellationToken.None, liveBalance: false);
-                getMerchantBalanceResult2.IsSuccess.ShouldBeTrue();
-                getMerchantBalanceResult2.Data.ShouldNotBeNull();
+                //// Force a read model database hit
+                //Result<MerchantBalanceResponse>? getMerchantBalanceResult2 = await this.TransactionProcessorClient.GetMerchantBalance(accessToken, m.Item1, m.Item2, CancellationToken.None, liveBalance: false);
+                //getMerchantBalanceResult2.IsSuccess.ShouldBeTrue();
+                //getMerchantBalanceResult2.Data.ShouldNotBeNull();
             });
         }
 

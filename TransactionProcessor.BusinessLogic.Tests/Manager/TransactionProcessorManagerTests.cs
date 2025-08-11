@@ -479,5 +479,23 @@ namespace TransactionProcessor.BusinessLogic.Tests.Manager
             Result<List<Merchant>> getMerchantsResult = await this.TransactionProcessorManager.GetMerchants(TestData.EstateId, CancellationToken.None);
             getMerchantsResult.IsFailed.ShouldBeTrue();
         }
+
+        [Fact]
+        public async Task TransactionProcessorManager_GetMerchantLiveBalance_ResultSuccess()
+        {
+            this.AggregateService.Setup(a => a.GetLatest<MerchantBalanceAggregate>(It.IsAny<Guid>(), It.IsAny<CancellationToken>())).ReturnsAsync(Result.Success(TestData.Aggregates.MerchantBalanceAggregateWithCredit()));
+
+            Result<Decimal> getLiveMerchantBalanceResult = await this.TransactionProcessorManager.GetMerchantLiveBalance(TestData.EstateId, TestData.MerchantId, CancellationToken.None);
+            getLiveMerchantBalanceResult.IsSuccess.ShouldBeTrue();
+        }
+
+        [Fact]
+        public async Task TransactionProcessorManager_GetMerchantLiveBalance_GetFailed_ResultFailed()
+        {
+            this.AggregateService.Setup(a => a.GetLatest<MerchantBalanceAggregate>(It.IsAny<Guid>(), It.IsAny<CancellationToken>())).ReturnsAsync(Result.Failure());
+
+            Result<Decimal> getLiveMerchantBalanceResult = await this.TransactionProcessorManager.GetMerchantLiveBalance(TestData.EstateId, TestData.MerchantId, CancellationToken.None);
+            getLiveMerchantBalanceResult.IsFailed.ShouldBeTrue();
+        }
     }
 }
