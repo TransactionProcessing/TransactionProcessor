@@ -31,8 +31,8 @@ namespace TransactionProcessor.BusinessLogic.Tests.Services
             Logger.Initialise(NullLogger.Instance);
 
             this.AggregateService = new Mock<IAggregateService>();
-
-            this.FloatDomainService = new FloatDomainService(this.AggregateService.Object);
+            IAggregateService AggregateServiceResolver() => this.AggregateService.Object;
+            this.FloatDomainService = new FloatDomainService(AggregateServiceResolver);
         }
 
         [Fact]

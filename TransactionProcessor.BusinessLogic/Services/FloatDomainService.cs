@@ -29,9 +29,9 @@ namespace TransactionProcessor.BusinessLogic.Services
     public class FloatDomainService : IFloatDomainService{
         private readonly IAggregateService AggregateService;
 
-        public FloatDomainService(IAggregateService aggregateService)
+        public FloatDomainService(Func<IAggregateService> aggregateService)
         {
-            this.AggregateService = aggregateService;
+            this.AggregateService = aggregateService();
         }
 
         private async Task<Result> ApplyFloatUpdates(Func<FloatAggregate, Result> action, Guid floatId, CancellationToken cancellationToken, Boolean isNotFoundError = true)

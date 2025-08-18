@@ -42,10 +42,13 @@ public class MerchantDomainServiceTests {
 
         Logger.Initialise(new NullLogger());
 
+        
+
         this.AggregateService = new Mock<IAggregateService>();
         this.SecurityServiceClient = new Mock<ISecurityServiceClient>();
         this.EventStoreContext = new Mock<IEventStoreContext>();
-        this.DomainService = new MerchantDomainService(this.AggregateService.Object,
+        Func<IAggregateService> aggregateServiceResolver = () => this.AggregateService.Object;
+        this.DomainService = new MerchantDomainService(aggregateServiceResolver,
             this.SecurityServiceClient.Object, this.EventStoreContext.Object);
     }
 
@@ -425,11 +428,8 @@ public class MerchantDomainServiceTests {
         this.AggregateService.Setup(e => e.Get<EstateAggregate>(It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(TestData.Aggregates.CreatedEstateAggregate());
 
-        this.AggregateService.Setup(m => m.GetLatest<MerchantAggregate>(It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
+        this.AggregateService.Setup(m => m.Get<MerchantAggregate>(It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(Result.Success(TestData.Aggregates.CreatedMerchantAggregate()));
-        this.AggregateService
-            .Setup(m => m.Save(It.IsAny<MerchantAggregate>(), It.IsAny<CancellationToken>()))
-            .ReturnsAsync(Result.Success);
 
         this.AggregateService
             .Setup(m => m.GetLatest<MerchantDepositListAggregate>(It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
@@ -523,12 +523,9 @@ public class MerchantDomainServiceTests {
         this.AggregateService.Setup(e => e.Get<EstateAggregate>(It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(TestData.Aggregates.CreatedEstateAggregate());
 
-        this.AggregateService.Setup(m => m.GetLatest<MerchantAggregate>(It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
+        this.AggregateService.Setup(m => m.Get<MerchantAggregate>(It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(Result.Success(TestData.Aggregates.CreatedMerchantAggregate()));
-        this.AggregateService
-            .Setup(m => m.Save(It.IsAny<MerchantAggregate>(), It.IsAny<CancellationToken>()))
-            .ReturnsAsync(Result.Success);
-
+       
         this.AggregateService
             .Setup(m => m.GetLatest<MerchantDepositListAggregate>(It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(Result.Success(TestData.Aggregates.EmptyMerchantDepositListAggregate));
@@ -581,7 +578,7 @@ public class MerchantDomainServiceTests {
             .Setup(m => m.Save(It.IsAny<MerchantAggregate>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(Result.Success);
 
-        var result = await this.DomainService.SwapMerchantDevice(TestData.Commands.SwapMerchantDeviceCommand, CancellationToken.None);
+        Result result = await this.DomainService.SwapMerchantDevice(TestData.Commands.SwapMerchantDeviceCommand, CancellationToken.None);
         result.IsFailed.ShouldBeTrue();
     }
 
@@ -590,12 +587,9 @@ public class MerchantDomainServiceTests {
         this.AggregateService.Setup(e => e.Get<EstateAggregate>(It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(TestData.Aggregates.CreatedEstateAggregate());
 
-        this.AggregateService.Setup(m => m.GetLatest<MerchantAggregate>(It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
+        this.AggregateService.Setup(m => m.Get<MerchantAggregate>(It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(Result.Success(TestData.Aggregates.CreatedMerchantAggregate()));
-        this.AggregateService
-            .Setup(m => m.Save(It.IsAny<MerchantAggregate>(), It.IsAny<CancellationToken>()))
-            .ReturnsAsync(Result.Success);
-
+       
         this.AggregateService
             .Setup(m => m.GetLatest<MerchantDepositListAggregate>(It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(Result.Success(TestData.Aggregates.CreatedMerchantDepositListAggregate()));

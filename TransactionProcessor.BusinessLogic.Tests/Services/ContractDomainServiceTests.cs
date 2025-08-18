@@ -23,7 +23,8 @@ namespace TransactionProcessor.BusinessLogic.Tests.Services
         public ContractDomainServiceTests() {
             this.AggregateService = new Mock<IAggregateService>();
             this.EventStoreContext = new Mock<IEventStoreContext>();
-            this.DomainService = new ContractDomainService(this.AggregateService.Object, this.EventStoreContext.Object);
+            IAggregateService AggregateServiceResolver() => this.AggregateService.Object;
+            this.DomainService = new ContractDomainService(AggregateServiceResolver, this.EventStoreContext.Object);
         }
 
         [Fact]

@@ -24,7 +24,8 @@ namespace TransactionProcessor.BusinessLogic.Tests.Services
         public EstateDomainServiceTests() {
             this.AggregateService= new Mock<IAggregateService>();
             this.SecurityServiceClient = new Mock<ISecurityServiceClient>();
-            this.DomainService = new EstateDomainService(this.AggregateService.Object, this.SecurityServiceClient.Object);
+            IAggregateService AggregateServiceResolver() => this.AggregateService.Object;
+            this.DomainService = new EstateDomainService(AggregateServiceResolver, this.SecurityServiceClient.Object);
         }
 
         [Fact]

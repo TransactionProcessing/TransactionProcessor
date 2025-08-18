@@ -58,8 +58,8 @@ namespace TransactionProcessor.BusinessLogic.Tests.Services{
             this.FeeCalculationManager = new Mock<IFeeCalculationManager>();
             this.TransactionReceiptBuilder = new Mock<ITransactionReceiptBuilder>();
             this.MessagingServiceClient = new Mock<IMessagingServiceClient>();
-            
-            this.TransactionDomainService = new TransactionDomainService(this.AggregateService.Object,
+            IAggregateService AggregateServiceResolver() => this.AggregateService.Object;
+            this.TransactionDomainService = new TransactionDomainService(AggregateServiceResolver,
                                                                          operatorProxyResolver,
                                                                          this.TransactionValidationService.Object,
                                                                          this.SecurityServiceClient.Object,

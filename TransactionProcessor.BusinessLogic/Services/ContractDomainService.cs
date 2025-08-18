@@ -42,8 +42,8 @@ namespace TransactionProcessor.BusinessLogic.Services
 
         #region Constructors
 
-        public ContractDomainService(IAggregateService aggregateService, IEventStoreContext context) {
-            this.AggregateService = aggregateService;
+        public ContractDomainService(Func<IAggregateService> aggregateService, IEventStoreContext context) {
+            this.AggregateService = aggregateService();
             this.Context = context;
         }
 

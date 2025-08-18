@@ -228,9 +228,9 @@ namespace TransactionProcessor.BusinessLogic.Services
             return result;
         }
 
-        public SettlementDomainService(IAggregateService aggregateService)
+        public SettlementDomainService(Func<IAggregateService> aggregateService)
         {
-            this.AggregateService = aggregateService;
+            this.AggregateService = aggregateService();
         }
     }
 }

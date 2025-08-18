@@ -66,7 +66,14 @@ namespace TransactionProcessor.Bootstrapper
             }
 
             this.AddTransient<IEventStoreContext, EventStoreContext>();
-
+            this.AddSingleton<Func<IAggregateService>>(c => () => {
+                IAggregateService aggregateService = Startup.ServiceProvider.GetService<IAggregateService>();
+                aggregateService.AddCachedAggregate(typeof(EstateAggregate), null);
+                aggregateService.AddCachedAggregate(typeof(ContractAggregate), null);
+                aggregateService.AddCachedAggregate(typeof(OperatorAggregate), null);
+                aggregateService.AddCachedAggregate(typeof(MerchantAggregate), null);
+                return aggregateService;
+            });
             this.AddSingleton<IAggregateService, AggregateService>();
             this.AddSingleton<IAggregateRepositoryResolver, AggregateRepositoryResolver>();
             this.AddSingleton<IAggregateRepository<TransactionAggregate, DomainEvent>,

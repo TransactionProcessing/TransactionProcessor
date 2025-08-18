@@ -31,7 +31,8 @@ public class MerchantStatementDomainServiceTests {
         this.StatementBuilder = new Mock<IStatementBuilder>();
         this.MessagingServiceClient = new Mock<IMessagingServiceClient>();
         this.SecurityServiceClient = new Mock<ISecurityServiceClient>();
-        this.DomainService = new MerchantStatementDomainService(this.AggregateService.Object, this.StatementBuilder.Object, this.MessagingServiceClient.Object, this.SecurityServiceClient.Object);
+        IAggregateService AggregateServiceResolver() => this.AggregateService.Object;
+        this.DomainService = new MerchantStatementDomainService(AggregateServiceResolver, this.StatementBuilder.Object, this.MessagingServiceClient.Object, this.SecurityServiceClient.Object);
 
         IConfigurationRoot configurationRoot =
             new ConfigurationBuilder().AddInMemoryCollection(TestData.DefaultAppSettings).Build();

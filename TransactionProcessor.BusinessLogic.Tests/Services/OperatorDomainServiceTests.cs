@@ -20,7 +20,8 @@ public class OperatorDomainServiceTests{
 
     public OperatorDomainServiceTests(){
         this.AggregateService = new Mock<IAggregateService>();
-        this.OperatorDomainService = new OperatorDomainService(this.AggregateService.Object);
+        IAggregateService AggregateServiceResolver() => this.AggregateService.Object;
+        this.OperatorDomainService = new OperatorDomainService(AggregateServiceResolver);
     }
 
     [Fact]
