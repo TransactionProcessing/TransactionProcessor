@@ -34,7 +34,7 @@ namespace TransactionProcessor.BusinessLogic.Services
                 if (estateResult.IsFailed)
                     return ResultHelpers.CreateFailure(estateResult);
 
-                Result<OperatorAggregate> operatorResult = await DomainServiceHelper.GetAggregateOrFailure(ct => this.AggregateService.GetLatest<OperatorAggregate>(command.RequestDto.OperatorId, ct), command.RequestDto.OperatorId, cancellationToken);
+                Result<OperatorAggregate> operatorResult = await DomainServiceHelper.GetAggregateOrFailure(ct => this.AggregateService.GetLatest<OperatorAggregate>(command.RequestDto.OperatorId, ct), command.RequestDto.OperatorId, cancellationToken, false);
                 if (estateResult.IsFailed)
                     return ResultHelpers.CreateFailure(operatorResult);
 
