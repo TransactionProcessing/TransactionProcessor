@@ -76,6 +76,7 @@ namespace TransactionProcessor.Bootstrapper
                     aggregateService.AddCachedAggregate(typeof(ContractAggregate), null);
                     aggregateService.AddCachedAggregate(typeof(OperatorAggregate), null);
                     aggregateService.AddCachedAggregate(typeof(MerchantAggregate), null);
+                    CachedAggregatesAdded=true;
                 }
                 
                 return aggregateService;
