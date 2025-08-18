@@ -298,7 +298,7 @@ namespace TransactionProcessor.BusinessLogic.Services
                 if (estateResult.IsFailed)
                     return ResultHelpers.CreateFailure(estateResult);
 
-                Result<MerchantAggregate> merchantResult = await this.GetAggregateOrFailure(ct => this.AggregateService.Get<MerchantAggregate>(command.MerchantId, ct), command.MerchantId, cancellationToken, false);
+                Result<MerchantAggregate> merchantResult = await this.GetAggregateOrFailure(ct => this.AggregateService.Get<MerchantAggregate>(command.MerchantId, ct), command.MerchantId, cancellationToken);
                 if (estateResult.IsFailed)
                     return ResultHelpers.CreateFailure(merchantResult);
 
@@ -310,7 +310,7 @@ namespace TransactionProcessor.BusinessLogic.Services
                 if (validateResult.IsFailed)
                     return ResultHelpers.CreateFailure(validateResult);
 
-                Result<MerchantDepositListAggregate> getDepositListResult = await this.GetAggregateOrFailure(ct => this.AggregateService.GetLatest<MerchantDepositListAggregate>(command.MerchantId, ct), command.MerchantId, cancellationToken).ConfigureAwait(false);
+                Result<MerchantDepositListAggregate> getDepositListResult = await this.GetAggregateOrFailure(ct => this.AggregateService.GetLatest<MerchantDepositListAggregate>(command.MerchantId, ct), command.MerchantId, cancellationToken, false).ConfigureAwait(false);
                 if (getDepositListResult.IsFailed)
                     return ResultHelpers.CreateFailure(getDepositListResult);
 
