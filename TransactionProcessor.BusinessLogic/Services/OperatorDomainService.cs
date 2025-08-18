@@ -26,27 +26,65 @@ namespace TransactionProcessor.BusinessLogic.Services
         public OperatorDomainService(Func<IAggregateService> aggregateService) {
             this.AggregateService = aggregateService();
         }
+        
+        public async Task<Result> CreateOperator(OperatorCommands.CreateOperatorCommand command, CancellationToken cancellationToken)
+        {
+            try {
+                Result<EstateAggregate> estateResult = await DomainServiceHelper.GetAggregateOrFailure(ct => this.AggregateService.Get<EstateAggregate>(command.EstateId, ct), command.EstateId, cancellationToken).ConfigureAwait(false);
+                if (estateResult.IsFailed)
+                    return ResultHelpers.CreateFailure(estateResult);
 
-        private async Task<Result> ApplyUpdates(Func<(EstateAggregate, OperatorAggregate), Result> action, Guid estateId, Guid operatorId, CancellationToken cancellationToken, Boolean isNotFoundError = true)
+                Result<OperatorAggregate> operatorResult = await DomainServiceHelper.GetAggregateOrFailure(ct => this.AggregateService.GetLatest<OperatorAggregate>(command.RequestDto.OperatorId, ct), command.RequestDto.OperatorId, cancellationToken, false);
+                if (estateResult.IsFailed)
+                    return ResultHelpers.CreateFailure(operatorResult);
+
+                EstateAggregate estateAggregate = estateResult.Data;
+                OperatorAggregate operatorAggregate = operatorResult.Data;
+
+                if (estateAggregate.IsCreated == false) {
+                    return Result.Forbidden($"Estate with Id {command.EstateId} not created");
+                }
+
+                if (operatorAggregate.IsCreated) {
+                    return Result.Forbidden($"Operator with Id {command.RequestDto.OperatorId} already created");
+                }
+
+                operatorAggregate.Create(command.EstateId, command.RequestDto.Name, command.RequestDto.RequireCustomMerchantNumber.GetValueOrDefault(), command.RequestDto.RequireCustomTerminalNumber.GetValueOrDefault());
+
+                Result saveResult = await this.AggregateService.Save(operatorAggregate, cancellationToken);
+                if (saveResult.IsFailed)
+                    return ResultHelpers.CreateFailure(saveResult);
+
+                return Result.Success();
+            }
+            catch (Exception ex) {
+                return Result.Failure(ex.GetExceptionMessages());
+            }
+        }
+
+        public async Task<Result> UpdateOperator(OperatorCommands.UpdateOperatorCommand command, CancellationToken cancellationToken)
         {
             try
             {
-                Result<EstateAggregate> getEstateResult = await this.AggregateService.Get<EstateAggregate>(estateId, cancellationToken);
-                if (getEstateResult.IsFailed) {
-                    return ResultHelpers.CreateFailure(getEstateResult);
+                Result<EstateAggregate> estateResult = await DomainServiceHelper.GetAggregateOrFailure(ct => this.AggregateService.Get<EstateAggregate>(command.EstateId, ct), command.EstateId, cancellationToken).ConfigureAwait(false);
+                if (estateResult.IsFailed)
+                    return ResultHelpers.CreateFailure(estateResult);
+
+                Result<OperatorAggregate> operatorResult = await DomainServiceHelper.GetAggregateOrFailure(ct => this.AggregateService.GetLatest<OperatorAggregate>(command.OperatorId, ct), command.OperatorId, cancellationToken);
+                if (estateResult.IsFailed)
+                    return ResultHelpers.CreateFailure(operatorResult);
+
+                EstateAggregate estateAggregate = estateResult.Data;
+                OperatorAggregate operatorAggregate = operatorResult.Data;
+
+                if (estateAggregate.IsCreated == false)
+                {
+                    return Result.Forbidden($"Estate with Id {command.EstateId} not created");
                 }
-                EstateAggregate estateAggregate = getEstateResult.Data;
-                Result<OperatorAggregate> getOperatorResult = await this.AggregateService.GetLatest<OperatorAggregate>(operatorId, cancellationToken);
-                Result<OperatorAggregate> operatorAggregateResult =
-                    DomainServiceHelper.HandleGetAggregateResult(getOperatorResult, operatorId, isNotFoundError);
-                if (operatorAggregateResult.IsFailed)
-                    return ResultHelpers.CreateFailure(operatorAggregateResult);
 
-                OperatorAggregate operatorAggregate = operatorAggregateResult.Data;
-
-                Result result = action((estateAggregate, operatorAggregate));
-                if (result.IsFailed)
-                    return ResultHelpers.CreateFailure(result);
+                operatorAggregate.UpdateOperator(command.RequestDto.Name,
+                        command.RequestDto.RequireCustomMerchantNumber.GetValueOrDefault(),
+                        command.RequestDto.RequireCustomTerminalNumber.GetValueOrDefault());
 
                 Result saveResult = await this.AggregateService.Save(operatorAggregate, cancellationToken);
                 if (saveResult.IsFailed)
@@ -58,44 +96,7 @@ namespace TransactionProcessor.BusinessLogic.Services
             {
                 return Result.Failure(ex.GetExceptionMessages());
             }
-        }
 
-        public async Task<Result> CreateOperator(OperatorCommands.CreateOperatorCommand command, CancellationToken cancellationToken)
-        {
-            Result result = await ApplyUpdates(((EstateAggregate estateAggregate, OperatorAggregate operatorAggregate) aggregates) => {
-                if (aggregates.estateAggregate.IsCreated == false)
-                {
-                    return Result.Forbidden($"Estate with Id {command.EstateId} not created");
-                }
-
-                if (aggregates.operatorAggregate.IsCreated)
-                {
-                    return Result.Forbidden($"Operator with Id {command.RequestDto.OperatorId} already created");
-                }
-
-                aggregates.operatorAggregate.Create(command.EstateId, command.RequestDto.Name,
-                    command.RequestDto.RequireCustomMerchantNumber.GetValueOrDefault(),
-                    command.RequestDto.RequireCustomTerminalNumber.GetValueOrDefault());
-
-                return Result.Success();
-
-            }, command.EstateId, command.RequestDto.OperatorId, cancellationToken, isNotFoundError: false);
-
-            return result;
-        }
-
-        public async Task<Result> UpdateOperator(OperatorCommands.UpdateOperatorCommand command, CancellationToken cancellationToken)
-        {
-            Result result = await ApplyUpdates(((EstateAggregate estateAggregate, OperatorAggregate operatorAggregate) aggregates) => {
-                aggregates.operatorAggregate.UpdateOperator(command.RequestDto.Name,
-                    command.RequestDto.RequireCustomMerchantNumber.GetValueOrDefault(),
-                    command.RequestDto.RequireCustomTerminalNumber.GetValueOrDefault());
-
-                return Result.Success();
-
-            }, command.EstateId, command.OperatorId, cancellationToken);
-
-            return result;
         }
     }
 }
