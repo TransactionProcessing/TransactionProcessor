@@ -298,7 +298,7 @@ namespace TransactionProcessor.BusinessLogic.Services
                 if (estateResult.IsFailed)
                     return ResultHelpers.CreateFailure(estateResult);
 
-                Result<MerchantAggregate> merchantResult = await this.GetAggregateOrFailure(ct => this.AggregateService.Get<MerchantAggregate>(command.MerchantId, ct), command.MerchantId, cancellationToken);
+                Result<MerchantAggregate> merchantResult = await this.GetAggregateOrFailure(ct => this.AggregateService.Get<MerchantAggregate>(command.MerchantId, ct), command.MerchantId, cancellationToken, false);
                 if (estateResult.IsFailed)
                     return ResultHelpers.CreateFailure(merchantResult);
 
