@@ -28,9 +28,9 @@ namespace TransactionProcessor.BusinessLogic.Tests.Services
         public SettlementDomainServiceTests() {
             this.AggregateService =
                 new Mock<IAggregateService>();
-            
+            IAggregateService AggregateServiceResolver() => this.AggregateService.Object;
             this.settlementDomainService =
-                new SettlementDomainService(this.AggregateService.Object);
+                new SettlementDomainService(AggregateServiceResolver);
 
             IConfigurationRoot configurationRoot = new ConfigurationBuilder().AddInMemoryCollection(TestData.DefaultAppSettings).Build();
             ConfigurationReader.Initialise(configurationRoot);

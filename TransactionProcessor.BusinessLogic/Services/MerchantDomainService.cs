@@ -1,9 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading;
-using System.Threading.Tasks;
-using Newtonsoft.Json;
+﻿using Newtonsoft.Json;
 using SecurityService.Client;
 using SecurityService.DataTransferObjects;
 using Shared.DomainDrivenDesign.EventSourcing;
@@ -13,11 +8,19 @@ using Shared.Exceptions;
 using Shared.Results;
 using Shared.ValueObjects;
 using SimpleResults;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading;
+using System.Threading.Tasks;
+using SecurityService.DataTransferObjects.Responses;
 using TransactionProcessor.Aggregates;
 using TransactionProcessor.BusinessLogic.Requests;
+using TransactionProcessor.Database.Entities;
 using TransactionProcessor.Models.Estate;
 using TransactionProcessor.Models.Merchant;
 using TransactionProcessor.ProjectionEngine.State;
+using Estate = TransactionProcessor.Models.Estate.Estate;
 
 namespace TransactionProcessor.BusinessLogic.Services
 {
@@ -55,11 +58,11 @@ namespace TransactionProcessor.BusinessLogic.Services
 
         #region Constructors
 
-        public MerchantDomainService(IAggregateService aggregateService,
+        public MerchantDomainService(Func<IAggregateService> aggregateService,
                                      ISecurityServiceClient securityServiceClient,
                                      IEventStoreContext eventStoreContext)
         {
-            this.AggregateService = aggregateService;
+            this.AggregateService = aggregateService();
             this.SecurityServiceClient = securityServiceClient;
             this.EventStoreContext = eventStoreContext;
         }
@@ -68,111 +71,105 @@ namespace TransactionProcessor.BusinessLogic.Services
 
         #region Methods
 
-        private async Task<Result> ApplyUpdates(Func<(EstateAggregate estateAggregate, MerchantAggregate merchantAggregate), Task<Result>> action, Guid estateId, Guid merchantId, CancellationToken cancellationToken, Boolean isNotFoundError = true)
+        private async Task<Result<TAggregate>> GetAggregateOrFailure<TAggregate>(Func<CancellationToken, Task<Result<TAggregate>>> fetchFunc,
+                                                                                 Guid aggregateId,
+                                                                                 CancellationToken cancellationToken,
+                                                                                 Boolean isNotFoundError = true) where TAggregate : Aggregate, new()
         {
-            try
-            {
-                Result<EstateAggregate> getEstateResult = await this.AggregateService.Get<EstateAggregate>(estateId, cancellationToken);
-                if (getEstateResult.IsFailed) {
-                    return ResultHelpers.CreateFailure(getEstateResult);
-                }
-                EstateAggregate estateAggregate = getEstateResult.Data;
-                Result<MerchantAggregate> getMerchantResult = await this.AggregateService.GetLatest<MerchantAggregate>(merchantId, cancellationToken);
-                Result<MerchantAggregate> merchantAggregateResult =
-                    DomainServiceHelper.HandleGetAggregateResult(getMerchantResult, merchantId, isNotFoundError);
-                if (merchantAggregateResult.IsFailed)
-                    return ResultHelpers.CreateFailure(merchantAggregateResult);
+            Result<TAggregate> result = await fetchFunc(cancellationToken);
+            return result.IsFailed switch {
+                true => DomainServiceHelper.HandleGetAggregateResult(result, aggregateId, isNotFoundError),
+                _ => Result.Success(result.Data)
+            };
+        }
 
-                MerchantAggregate merchantAggregate = merchantAggregateResult.Data;
+        public async Task<Result> AddDeviceToMerchant(MerchantCommands.AddMerchantDeviceCommand command, CancellationToken cancellationToken) {
+            try {
+                Result<EstateAggregate> estateResult = await this.GetAggregateOrFailure(ct => this.AggregateService.Get<EstateAggregate>(command.EstateId, ct), command.EstateId, cancellationToken).ConfigureAwait(false);
+                if (estateResult.IsFailed)
+                    return ResultHelpers.CreateFailure(estateResult);
 
-                Result result = await action((estateAggregate, merchantAggregate));
+                Result<MerchantAggregate> merchantResult = await this.GetAggregateOrFailure(ct => this.AggregateService.GetLatest<MerchantAggregate>(command.MerchantId, ct), command.MerchantId, cancellationToken);
+                if (estateResult.IsFailed)
+                    return ResultHelpers.CreateFailure(merchantResult);
+
+                EstateAggregate estateAggregate = estateResult.Data;
+                MerchantAggregate merchantAggregate = merchantResult.Data;
+
+                Result result = this.ValidateEstateAndMerchant(estateAggregate, merchantAggregate);
                 if (result.IsFailed)
                     return ResultHelpers.CreateFailure(result);
+
+                Guid deviceId = Guid.NewGuid();
+                merchantAggregate.AddDevice(deviceId, command.RequestDto.DeviceIdentifier);
 
                 Result saveResult = await this.AggregateService.Save(merchantAggregate, cancellationToken);
                 if (saveResult.IsFailed)
                     return ResultHelpers.CreateFailure(saveResult);
 
-                return Result.Success();
+                return saveResult;
             }
-            catch (Exception ex)
-            {
+            catch (Exception ex) {
                 return Result.Failure(ex.GetExceptionMessages());
             }
-        }
-
-        public async Task<Result> AddDeviceToMerchant(MerchantCommands.AddMerchantDeviceCommand command, CancellationToken cancellationToken)
-        {
-            Result result = await ApplyUpdates(
-                async ((EstateAggregate estateAggregate, MerchantAggregate merchantAggregate) aggregates) => {
-
-                    Result result =
-                        this.ValidateEstateAndMerchant(aggregates.estateAggregate, aggregates.merchantAggregate);
-                    if (result.IsFailed)
-                        return ResultHelpers.CreateFailure(result);
-
-                    Guid deviceId = Guid.NewGuid();
-                    aggregates.merchantAggregate.AddDevice(deviceId, command.RequestDto.DeviceIdentifier);
-
-                    return Result.Success();
-                },
-                command.EstateId, command.MerchantId, cancellationToken);
-
-            if (result.IsFailed)
-                return ResultHelpers.CreateFailure(result);
-
-            return Result.Success();
         }
 
         public async Task<Result> AssignOperatorToMerchant(MerchantCommands.AssignOperatorToMerchantCommand command,
                                                                  CancellationToken cancellationToken)
         {
+            try {
+                Result<EstateAggregate> estateResult = await GetAggregateOrFailure(ct => this.AggregateService.Get<EstateAggregate>(command.EstateId, ct), command.EstateId, cancellationToken);
+                if (estateResult.IsFailed)
+                    return ResultHelpers.CreateFailure(estateResult);
 
-            Result result = await ApplyUpdates(
-                async ((EstateAggregate estateAggregate, MerchantAggregate merchantAggregate) aggregates) => {
+                Result<MerchantAggregate> merchantResult = await GetAggregateOrFailure(ct => this.AggregateService.GetLatest<MerchantAggregate>(command.MerchantId, ct), command.MerchantId, cancellationToken);
+                if (estateResult.IsFailed)
+                    return ResultHelpers.CreateFailure(merchantResult);
 
-                    Result result =
-                        this.ValidateEstateAndMerchant(aggregates.estateAggregate, aggregates.merchantAggregate);
-                    if (result.IsFailed)
-                        return ResultHelpers.CreateFailure(result);
+                EstateAggregate estateAggregate = estateResult.Data;
+                MerchantAggregate merchantAggregate = merchantResult.Data;
 
-                    // Is the operator valid for this estate
-                    Estate estate = aggregates.estateAggregate.GetEstate();
-                    Models.Estate.Operator @operator = estate.Operators?.SingleOrDefault(o => o.OperatorId == command.RequestDto.OperatorId);
-                    if (@operator == null)
-                    {
-                        return Result.Invalid($"Operator Id {command.RequestDto.OperatorId} is not supported on Estate [{estate.Name}]");
-                    }
+                Result result = this.ValidateEstateAndMerchant(estateAggregate, merchantAggregate);
+                if (result.IsFailed)
+                    return ResultHelpers.CreateFailure(result);
 
-                    // TODO: Reintroduce when we have an Operator Aggregate
-                    // https://github.com/TransactionProcessing/EstateManagement/issues/558
-                    // Operator has been validated, now check the rules of the operator against the passed in data
-                    //if (@operator.RequireCustomMerchantNumber) {
-                    //    // requested addition must have a merchant number supplied
-                    //    if (String.IsNullOrEmpty(command.RequestDto.MerchantNumber)) {
-                    //        throw new InvalidOperationException($"Operator Id {command.RequestDto.OperatorId} requires that a merchant number is provided");
-                    //    }
-                    //}
+                // Is the operator valid for this estate
+                Estate estate = estateAggregate.GetEstate();
+                Models.Estate.Operator @operator = estate.Operators?.SingleOrDefault(o => o.OperatorId == command.RequestDto.OperatorId);
+                if (@operator == null) {
+                    return Result.Invalid($"Operator Id {command.RequestDto.OperatorId} is not supported on Estate [{estate.Name}]");
+                }
 
-                    //if (@operator.RequireCustomTerminalNumber) {
-                    //    // requested addition must have a terminal number supplied
-                    //    if (String.IsNullOrEmpty(command.RequestDto.TerminalNumber)) {
-                    //        throw new InvalidOperationException($"Operator Id {command.RequestDto.OperatorId} requires that a terminal number is provided");
-                    //    }
-                    //}
+                // TODO: Reintroduce when we have an Operator Aggregate
+                // https://github.com/TransactionProcessing/EstateManagement/issues/558
+                // Operator has been validated, now check the rules of the operator against the passed in data
+                //if (@operator.RequireCustomMerchantNumber) {
+                //    // requested addition must have a merchant number supplied
+                //    if (String.IsNullOrEmpty(command.RequestDto.MerchantNumber)) {
+                //        throw new InvalidOperationException($"Operator Id {command.RequestDto.OperatorId} requires that a merchant number is provided");
+                //    }
+                //}
 
-                    // Assign the operator
-                    // TODO: Swap second parameter to name
-                    aggregates.merchantAggregate.AssignOperator(command.RequestDto.OperatorId, @operator.Name, command.RequestDto.MerchantNumber, command.RequestDto.TerminalNumber);
+                //if (@operator.RequireCustomTerminalNumber) {
+                //    // requested addition must have a terminal number supplied
+                //    if (String.IsNullOrEmpty(command.RequestDto.TerminalNumber)) {
+                //        throw new InvalidOperationException($"Operator Id {command.RequestDto.OperatorId} requires that a terminal number is provided");
+                //    }
+                //}
 
-                    return Result.Success();
-                },
-                command.EstateId, command.MerchantId, cancellationToken);
+                // Assign the operator
+                // TODO: Swap second parameter to name
+                merchantAggregate.AssignOperator(command.RequestDto.OperatorId, @operator.Name, command.RequestDto.MerchantNumber, command.RequestDto.TerminalNumber);
 
-            if (result.IsFailed)
-                return ResultHelpers.CreateFailure(result);
+                Result saveResult = await this.AggregateService.Save(merchantAggregate, cancellationToken);
+                if (saveResult.IsFailed)
+                    return ResultHelpers.CreateFailure(saveResult);
 
-            return Result.Success();
+                return saveResult;
+            }
+            catch (Exception ex) {
+                return Result.Failure(ex.GetExceptionMessages());
+            }
         }
 
         private SettlementSchedule ConvertSettlementSchedule(DataTransferObjects.Responses.Merchant.SettlementSchedule settlementSchedule) =>
@@ -186,274 +183,326 @@ namespace TransactionProcessor.BusinessLogic.Services
 
         public async Task<Result> CreateMerchant(MerchantCommands.CreateMerchantCommand command, CancellationToken cancellationToken)
         {
-            // Check if we have been sent a merchant id to use
-            Guid merchantId = command.RequestDto.MerchantId ?? Guid.NewGuid();
+            try {
+                // Check if we have been sent a merchant id to use
+                Guid merchantId = command.RequestDto.MerchantId ?? Guid.NewGuid();
 
-            Result result = await ApplyUpdates(
-                async ((EstateAggregate estateAggregate, MerchantAggregate merchantAggregate) aggregates) => {
-                    if (aggregates.estateAggregate.IsCreated == false)
-                    {
-                        return Result.Forbidden($"Estate Id {command.EstateId} has not been created");
-                    }
+                Result<EstateAggregate> estateResult = await GetAggregateOrFailure(ct => this.AggregateService.Get<EstateAggregate>(command.EstateId, ct), command.EstateId, cancellationToken);
+                if (estateResult.IsFailed)
+                    return ResultHelpers.CreateFailure(estateResult);
 
-                    if (aggregates.merchantAggregate.IsCreated)
-                    {
-                        aggregates.merchantAggregate.Create(command.EstateId, command.RequestDto.Name, aggregates.merchantAggregate.DateCreated);
-                    }
-                    else
-                    {
-                        aggregates.merchantAggregate.Create(command.EstateId, command.RequestDto.Name, command.RequestDto.CreatedDateTime.GetValueOrDefault(DateTime.Now));
-                        aggregates.merchantAggregate.GenerateReference();
+                EstateAggregate estateAggregate = estateResult.Data;
+                // Estate Id is a valid estate
+                if (estateAggregate.IsCreated == false)
+                {
+                    return Result.Invalid($"Estate Id {estateAggregate.AggregateId} has not been created");
+                }
 
-                        // Add the address 
-                        aggregates.merchantAggregate.AddAddress(command.RequestDto.Address.AddressLine1, command.RequestDto.Address.AddressLine2, command.RequestDto.Address.AddressLine3,
-                                                         command.RequestDto.Address.AddressLine4, command.RequestDto.Address.Town, command.RequestDto.Address.Region,
-                                                         command.RequestDto.Address.PostalCode, command.RequestDto.Address.Country);
+                Result<MerchantAggregate> merchantResult = await GetAggregateOrFailure(ct => this.AggregateService.GetLatest<MerchantAggregate>(merchantId, ct), merchantId, cancellationToken, false);
+                if (estateResult.IsFailed)
+                    return ResultHelpers.CreateFailure(merchantResult);
 
-                        // Add the contact
-                        aggregates.merchantAggregate.AddContact(command.RequestDto.Contact.ContactName, command.RequestDto.Contact.PhoneNumber, command.RequestDto.Contact.EmailAddress);
+                MerchantAggregate merchantAggregate = merchantResult.Data;
 
-                        // Set the settlement schedule
-                        SettlementSchedule settlementSchedule = ConvertSettlementSchedule(command.RequestDto.SettlementSchedule);
-                        aggregates.merchantAggregate.SetSettlementSchedule(settlementSchedule);
-                    }
-                    return Result.Success();
-                },
-                command.EstateId, merchantId, cancellationToken, false);
+                merchantAggregate.Create(command.EstateId, command.RequestDto.Name, command.RequestDto.CreatedDateTime.GetValueOrDefault(DateTime.Now));
+                merchantAggregate.GenerateReference();
 
-            if (result.IsFailed)
-                return ResultHelpers.CreateFailure(result);
+                // Add the address 
+                merchantAggregate.AddAddress(command.RequestDto.Address.AddressLine1, command.RequestDto.Address.AddressLine2, command.RequestDto.Address.AddressLine3, command.RequestDto.Address.AddressLine4, command.RequestDto.Address.Town, command.RequestDto.Address.Region, command.RequestDto.Address.PostalCode, command.RequestDto.Address.Country);
 
-            return Result.Success();
+                // Add the contact
+                merchantAggregate.AddContact(command.RequestDto.Contact.ContactName, command.RequestDto.Contact.PhoneNumber, command.RequestDto.Contact.EmailAddress);
+
+                // Set the settlement schedule
+                SettlementSchedule settlementSchedule = ConvertSettlementSchedule(command.RequestDto.SettlementSchedule);
+                merchantAggregate.SetSettlementSchedule(settlementSchedule);
+
+                Result saveResult = await this.AggregateService.Save(merchantAggregate, cancellationToken);
+                if (saveResult.IsFailed)
+                    return ResultHelpers.CreateFailure(saveResult);
+
+                return saveResult;
+            }
+            catch (Exception ex) {
+                return Result.Failure(ex.GetExceptionMessages());
+            }
         }
 
         public async Task<Result> CreateMerchantUser(MerchantCommands.CreateMerchantUserCommand command, CancellationToken cancellationToken)
         {
+            try {
+                CreateUserRequest createUserRequest = new() {
+                    EmailAddress = command.RequestDto.EmailAddress,
+                    FamilyName = command.RequestDto.FamilyName,
+                    GivenName = command.RequestDto.GivenName,
+                    MiddleName = command.RequestDto.MiddleName,
+                    Password = command.RequestDto.Password,
+                    PhoneNumber = "123456", // Is this really needed :|
+                    Roles = new List<String>(),
+                    Claims = new Dictionary<String, String>()
+                };
 
-            CreateUserRequest createUserRequest = new CreateUserRequest
-            {
-                EmailAddress = command.RequestDto.EmailAddress,
-                FamilyName = command.RequestDto.FamilyName,
-                GivenName = command.RequestDto.GivenName,
-                MiddleName = command.RequestDto.MiddleName,
-                Password = command.RequestDto.Password,
-                PhoneNumber = "123456", // Is this really needed :|
-                Roles = new List<String>(),
-                Claims = new Dictionary<String, String>()
-            };
+                String merchantRoleName = Environment.GetEnvironmentVariable("MerchantRoleName");
+                createUserRequest.Roles.Add(String.IsNullOrEmpty(merchantRoleName) ? "Merchant" : merchantRoleName);
+                createUserRequest.Claims.Add("estateId", command.EstateId.ToString());
+                createUserRequest.Claims.Add("merchantId", command.MerchantId.ToString());
 
-            String merchantRoleName = Environment.GetEnvironmentVariable("MerchantRoleName");
-            createUserRequest.Roles.Add(String.IsNullOrEmpty(merchantRoleName) ? "Merchant" : merchantRoleName);
-            createUserRequest.Claims.Add("estateId", command.EstateId.ToString());
-            createUserRequest.Claims.Add("merchantId", command.MerchantId.ToString());
+                Result<EstateAggregate> estateResult = await GetAggregateOrFailure(ct => this.AggregateService.Get<EstateAggregate>(command.EstateId, ct), command.EstateId, cancellationToken);
+                if (estateResult.IsFailed)
+                    return ResultHelpers.CreateFailure(estateResult);
 
-            Result result = await ApplyUpdates(
-                async ((EstateAggregate estateAggregate, MerchantAggregate merchantAggregate) aggregates) => {
+                Result<MerchantAggregate> merchantResult = await GetAggregateOrFailure(ct => this.AggregateService.GetLatest<MerchantAggregate>(command.MerchantId, ct), command.MerchantId, cancellationToken);
+                if (estateResult.IsFailed)
+                    return ResultHelpers.CreateFailure(merchantResult);
 
-                    Result result =
-                        this.ValidateEstateAndMerchant(aggregates.estateAggregate, aggregates.merchantAggregate);
-                    if (result.IsFailed)
-                        return ResultHelpers.CreateFailure(result);
+                EstateAggregate estateAggregate = estateResult.Data;
+                MerchantAggregate merchantAggregate = merchantResult.Data;
 
-                    Result createUserResult = await this.SecurityServiceClient.CreateUser(createUserRequest, cancellationToken);
-                    if (createUserResult.IsFailed)
-                        return ResultHelpers.CreateFailure(createUserResult);
+                Result validateResult = this.ValidateEstateAndMerchant(estateAggregate, merchantAggregate);
+                if (validateResult.IsFailed)
+                    return ResultHelpers.CreateFailure(validateResult);
 
-                    var userDetailsResult = await this.SecurityServiceClient.GetUsers(createUserRequest.EmailAddress, cancellationToken);
-                    if (userDetailsResult.IsFailed)
-                        return ResultHelpers.CreateFailure(userDetailsResult);
+                Result createUserResult = await this.SecurityServiceClient.CreateUser(createUserRequest, cancellationToken);
+                if (createUserResult.IsFailed)
+                    return ResultHelpers.CreateFailure(createUserResult);
 
-                    var user = userDetailsResult.Data.SingleOrDefault();
-                    if (user == null)
-                        return Result.Failure($"Unable to get user details for username {createUserRequest.EmailAddress}");
+                Result<List<UserDetails>> userDetailsResult = await this.SecurityServiceClient.GetUsers(createUserRequest.EmailAddress, cancellationToken);
+                if (userDetailsResult.IsFailed)
+                    return ResultHelpers.CreateFailure(userDetailsResult);
 
-                    // Add the user to the aggregate 
-                    aggregates.merchantAggregate.AddSecurityUser(user.UserId,
-                        command.RequestDto.EmailAddress);
+                UserDetails user = userDetailsResult.Data.SingleOrDefault();
+                if (user == null)
+                    return Result.Failure($"Unable to get user details for username {createUserRequest.EmailAddress}");
 
-                    // TODO: add a delete user here in case the aggregate add fails...
+                // Add the user to the aggregate 
+                merchantAggregate.AddSecurityUser(user.UserId, command.RequestDto.EmailAddress);
 
-                    return Result.Success();
-                }, command.EstateId, command.MerchantId, cancellationToken);
+                // TODO: add a delete user here in case the aggregate add fails...
 
-            if (result.IsFailed)
-                return ResultHelpers.CreateFailure(result);
+                Result saveResult = await this.AggregateService.Save(merchantAggregate, cancellationToken);
+                if (saveResult.IsFailed)
+                    return ResultHelpers.CreateFailure(saveResult);
 
-            return Result.Success();
+                return saveResult;
+            }
+            catch (Exception ex) {
+                return Result.Failure(ex.GetExceptionMessages());
+            }
         }
 
         public async Task<Result> MakeMerchantDeposit(MerchantCommands.MakeMerchantDepositCommand command, CancellationToken cancellationToken)
         {
-            Result result = await ApplyUpdates(
-                async ((EstateAggregate estateAggregate, MerchantAggregate merchantAggregate) aggregates) => {
+            try
+            {
+                Result<EstateAggregate> estateResult = await this.GetAggregateOrFailure(ct => this.AggregateService.Get<EstateAggregate>(command.EstateId, ct), command.EstateId, cancellationToken).ConfigureAwait(false);
+                if (estateResult.IsFailed)
+                    return ResultHelpers.CreateFailure(estateResult);
 
-                    Result result =
-                        this.ValidateEstateAndMerchant(aggregates.estateAggregate, aggregates.merchantAggregate);
-                    if (result.IsFailed)
-                        return ResultHelpers.CreateFailure(result);
+                Result<MerchantAggregate> merchantResult = await this.GetAggregateOrFailure(ct => this.AggregateService.Get<MerchantAggregate>(command.MerchantId, ct), command.MerchantId, cancellationToken);
+                if (estateResult.IsFailed)
+                    return ResultHelpers.CreateFailure(merchantResult);
 
-                    Result<MerchantDepositListAggregate> getDepositListResult = await this.AggregateService.GetLatest<MerchantDepositListAggregate>(command.MerchantId, cancellationToken);
-                    Result<MerchantDepositListAggregate> merchantDepositListAggregateResult =
-                        DomainServiceHelper.HandleGetAggregateResult(getDepositListResult, command.MerchantId, false);
-                    if (merchantDepositListAggregateResult.IsFailed)
-                        return ResultHelpers.CreateFailure(merchantDepositListAggregateResult);
+                EstateAggregate estateAggregate = estateResult.Data;
+                MerchantAggregate merchantAggregate = merchantResult.Data;
 
-                    MerchantDepositListAggregate merchantDepositListAggregate = merchantDepositListAggregateResult.Data;
-                    if (merchantDepositListAggregate.IsCreated == false)
-                    {
-                        merchantDepositListAggregate.Create(aggregates.merchantAggregate, command.RequestDto.DepositDateTime);
-                    }
+                Result validateResult =
+                    this.ValidateEstateAndMerchant(estateAggregate, merchantAggregate);
+                if (validateResult.IsFailed)
+                    return ResultHelpers.CreateFailure(validateResult);
 
-                    PositiveMoney amount = PositiveMoney.Create(Money.Create(command.RequestDto.Amount));
-                    MerchantDepositSource depositSource = command.DepositSource switch
-                    {
-                        DataTransferObjects.Requests.Merchant.MerchantDepositSource.Manual => Models.Merchant.MerchantDepositSource.Manual,
-                        _ => Models.Merchant.MerchantDepositSource.Automatic,
-                    };
-                    merchantDepositListAggregate.MakeDeposit(depositSource, command.RequestDto.Reference, command.RequestDto.DepositDateTime, amount);
+                Result<MerchantDepositListAggregate> getDepositListResult = await this.GetAggregateOrFailure(ct => this.AggregateService.GetLatest<MerchantDepositListAggregate>(command.MerchantId, ct), command.MerchantId, cancellationToken, false).ConfigureAwait(false);
+                if (getDepositListResult.IsFailed)
+                    return ResultHelpers.CreateFailure(getDepositListResult);
 
-                    Result saveResult = await this.AggregateService.Save(merchantDepositListAggregate, cancellationToken);
-                    if (saveResult.IsFailed)
-                        return ResultHelpers.CreateFailure(saveResult);
+                MerchantDepositListAggregate merchantDepositListAggregate = getDepositListResult.Data;
+                if (merchantDepositListAggregate.IsCreated == false)
+                {
+                    merchantDepositListAggregate.Create(merchantAggregate, command.RequestDto.DepositDateTime);
+                }
 
-                    return Result.Success();
-                }, command.EstateId, command.MerchantId, cancellationToken);
+                PositiveMoney amount = PositiveMoney.Create(Money.Create(command.RequestDto.Amount));
+                MerchantDepositSource depositSource = command.DepositSource switch
+                {
+                    DataTransferObjects.Requests.Merchant.MerchantDepositSource.Manual => Models.Merchant.MerchantDepositSource.Manual,
+                    _ => Models.Merchant.MerchantDepositSource.Automatic,
+                };
+                merchantDepositListAggregate.MakeDeposit(depositSource, command.RequestDto.Reference, command.RequestDto.DepositDateTime, amount);
 
-            if (result.IsFailed)
-                return ResultHelpers.CreateFailure(result);
+                Result saveResult = await this.AggregateService.Save(merchantDepositListAggregate, cancellationToken);
+                if (saveResult.IsFailed)
+                    return ResultHelpers.CreateFailure(saveResult);
 
-            return Result.Success();
+                return saveResult;
+            }
+            catch (Exception ex)
+            {
+                return Result.Failure(ex.GetExceptionMessages());
+            }
         }
 
         public async Task<Result> MakeMerchantWithdrawal(MerchantCommands.MakeMerchantWithdrawalCommand command,
                                                                CancellationToken cancellationToken)
         {
 
-            Result result = await ApplyUpdates(
-                async ((EstateAggregate estateAggregate, MerchantAggregate merchantAggregate) aggregates) =>
+            try
+            {
+                Result<EstateAggregate> estateResult = await this.GetAggregateOrFailure(ct => this.AggregateService.Get<EstateAggregate>(command.EstateId, ct), command.EstateId, cancellationToken).ConfigureAwait(false);
+                if (estateResult.IsFailed)
+                    return ResultHelpers.CreateFailure(estateResult);
+
+                Result<MerchantAggregate> merchantResult = await this.GetAggregateOrFailure(ct => this.AggregateService.Get<MerchantAggregate>(command.MerchantId, ct), command.MerchantId, cancellationToken);
+                if (estateResult.IsFailed)
+                    return ResultHelpers.CreateFailure(merchantResult);
+
+                EstateAggregate estateAggregate = estateResult.Data;
+                MerchantAggregate merchantAggregate = merchantResult.Data;
+
+                Result validateResult =
+                    this.ValidateEstateAndMerchant(estateAggregate, merchantAggregate);
+                if (validateResult.IsFailed)
+                    return ResultHelpers.CreateFailure(validateResult);
+
+                Result<MerchantDepositListAggregate> getDepositListResult = await this.GetAggregateOrFailure(ct => this.AggregateService.GetLatest<MerchantDepositListAggregate>(command.MerchantId, ct), command.MerchantId, cancellationToken).ConfigureAwait(false);
+                if (getDepositListResult.IsFailed)
+                    return ResultHelpers.CreateFailure(getDepositListResult);
+                
+                MerchantDepositListAggregate merchantDepositListAggregate = getDepositListResult.Data;
+                if (merchantDepositListAggregate.IsCreated == false)
                 {
+                    return Result.Invalid($"Merchant [{command.MerchantId}] has not made any deposits yet");
+                }
 
-                    Result result =
-                        this.ValidateEstateAndMerchant(aggregates.estateAggregate, aggregates.merchantAggregate);
-                    if (result.IsFailed)
-                        return ResultHelpers.CreateFailure(result);
+                // Now we need to check the merchants balance to ensure they have funds to withdraw
+                Result<String> getBalanceResult = await this.EventStoreContext.GetPartitionStateFromProjection("MerchantBalanceProjection", $"MerchantBalance-{command.MerchantId:N}", cancellationToken);
+                if (getBalanceResult.IsFailed)
+                {
+                    Result.Invalid($"Failed to get Merchant Balance.");
+                }
 
-                    Result<MerchantDepositListAggregate> getDepositListResult = await this.AggregateService.GetLatest<MerchantDepositListAggregate>(command.MerchantId, cancellationToken);
-                    Result<MerchantDepositListAggregate> merchantDepositListAggregateResult =
-                        DomainServiceHelper.HandleGetAggregateResult(getDepositListResult, command.MerchantId, false);
-                    if (merchantDepositListAggregateResult.IsFailed)
-                        return ResultHelpers.CreateFailure(merchantDepositListAggregateResult);
+                MerchantBalanceProjectionState1 projectionState = JsonConvert.DeserializeObject<MerchantBalanceProjectionState1>(getBalanceResult.Data);
 
-                    MerchantDepositListAggregate merchantDepositListAggregate = merchantDepositListAggregateResult.Data;
-                    if (merchantDepositListAggregate.IsCreated == false)
-                    {
-                        return Result.Invalid($"Merchant [{command.MerchantId}] has not made any deposits yet");
-                    }
+                if (command.RequestDto.Amount > projectionState.merchant.balance)
+                {
+                    return Result.Invalid($"Not enough credit available for withdrawal of [{command.RequestDto.Amount}]. Balance is {projectionState.merchant.balance}");
+                }
 
-                    // Now we need to check the merchants balance to ensure they have funds to withdraw
-                    Result<String> getBalanceResult = await this.EventStoreContext.GetPartitionStateFromProjection("MerchantBalanceProjection", $"MerchantBalance-{command.MerchantId:N}", cancellationToken);
-                    if (getBalanceResult.IsFailed)
-                    {
-                        Result.Invalid($"Failed to get Merchant Balance.");
-                    }
 
-                    MerchantBalanceProjectionState1 projectionState = JsonConvert.DeserializeObject<MerchantBalanceProjectionState1>(getBalanceResult.Data);
+                // If we are here we have enough credit to withdraw
+                PositiveMoney amount = PositiveMoney.Create(Money.Create(command.RequestDto.Amount));
 
-                    if (command.RequestDto.Amount > projectionState.merchant.balance)
-                    {
-                        return Result.Invalid($"Not enough credit available for withdrawal of [{command.RequestDto.Amount}]. Balance is {projectionState.merchant.balance}");
-                    }
+                merchantDepositListAggregate.MakeWithdrawal(command.RequestDto.WithdrawalDateTime, amount);
 
-                    // If we are here we have enough credit to withdraw
-                    PositiveMoney amount = PositiveMoney.Create(Money.Create(command.RequestDto.Amount));
+                Result saveResult = await this.AggregateService.Save(merchantDepositListAggregate, cancellationToken);
+                if (saveResult.IsFailed)
+                    return ResultHelpers.CreateFailure(saveResult);
 
-                    merchantDepositListAggregate.MakeWithdrawal(command.RequestDto.WithdrawalDateTime, amount);
-
-                    Result saveResult = await this.AggregateService.Save(merchantDepositListAggregate, cancellationToken);
-                    if (saveResult.IsFailed)
-                        return ResultHelpers.CreateFailure(saveResult);
-
-                    return Result.Success();
-                }, command.EstateId, command.MerchantId, cancellationToken);
-
-            if (result.IsFailed)
-                return ResultHelpers.CreateFailure(result);
-
-            return Result.Success();
+                return saveResult;
+            }
+            catch (Exception ex)
+            {
+                return Result.Failure(ex.GetExceptionMessages());
+            }
         }
-
-        /// <summary>
-        /// The token response
-        /// </summary>
-        //private TokenResponse TokenResponse;
 
         public async Task<Result> AddContractToMerchant(MerchantCommands.AddMerchantContractCommand command, CancellationToken cancellationToken)
         {
-            Result result = await ApplyUpdates(
-                async ((EstateAggregate estateAggregate, MerchantAggregate merchantAggregate) aggregates) => {
+            try {
+                Result<EstateAggregate> estateResult = await this.GetAggregateOrFailure(ct => this.AggregateService.Get<EstateAggregate>(command.EstateId, ct), command.EstateId, cancellationToken).ConfigureAwait(false);
+                if (estateResult.IsFailed)
+                    return ResultHelpers.CreateFailure(estateResult);
 
-                    Result result =
-                        this.ValidateEstateAndMerchant(aggregates.estateAggregate, aggregates.merchantAggregate);
-                    if (result.IsFailed)
-                        return ResultHelpers.CreateFailure(result);
+                Result<MerchantAggregate> merchantResult = await this.GetAggregateOrFailure(ct => this.AggregateService.GetLatest<MerchantAggregate>(command.MerchantId, ct), command.MerchantId, cancellationToken);
+                if (estateResult.IsFailed)
+                    return ResultHelpers.CreateFailure(merchantResult);
 
-                    var getContractResult = await this.AggregateService.Get<ContractAggregate>(command.RequestDto.ContractId, cancellationToken);
-                    if (getContractResult.IsFailed) {
-                        return ResultHelpers.CreateFailure(getContractResult);
-                    }
+                EstateAggregate estateAggregate = estateResult.Data;
+                MerchantAggregate merchantAggregate = merchantResult.Data;
 
-                    ContractAggregate contractAggregate = getContractResult.Data;
-                    if (contractAggregate.IsCreated == false)
-                    {
-                        return Result.Invalid($"Contract Id {command.RequestDto.ContractId} has not been created");
-                    }
+                Result validateResult = this.ValidateEstateAndMerchant(estateAggregate, merchantAggregate);
+                if (validateResult.IsFailed)
+                    return ResultHelpers.CreateFailure(validateResult);
 
-                    aggregates.merchantAggregate.AddContract(contractAggregate);
+                Result<ContractAggregate> getContractResult = await this.AggregateService.Get<ContractAggregate>(command.RequestDto.ContractId, cancellationToken);
+                if (getContractResult.IsFailed) {
+                    return ResultHelpers.CreateFailure(getContractResult);
+                }
 
-                    return Result.Success();
-                }, command.EstateId, command.MerchantId, cancellationToken);
+                ContractAggregate contractAggregate = getContractResult.Data;
+                if (contractAggregate.IsCreated == false) {
+                    return Result.Invalid($"Contract Id {command.RequestDto.ContractId} has not been created");
+                }
 
-            if (result.IsFailed)
-                return ResultHelpers.CreateFailure(result);
+                merchantAggregate.AddContract(contractAggregate);
 
-            return Result.Success();
+                Result saveResult = await this.AggregateService.Save(merchantAggregate, cancellationToken);
+                if (saveResult.IsFailed)
+                    return ResultHelpers.CreateFailure(saveResult);
+
+                return saveResult;
+            }
+            catch (Exception ex) {
+                return Result.Failure(ex.GetExceptionMessages());
+            }
         }
 
         public async Task<Result> UpdateMerchant(MerchantCommands.UpdateMerchantCommand command, CancellationToken cancellationToken)
         {
-            Result result = await ApplyUpdates(
-                async ((EstateAggregate estateAggregate, MerchantAggregate merchantAggregate) aggregates) => {
+            try
+            {
+                Result<EstateAggregate> estateResult = await this.GetAggregateOrFailure(ct => this.AggregateService.Get<EstateAggregate>(command.EstateId, ct), command.EstateId, cancellationToken).ConfigureAwait(false);
+                if (estateResult.IsFailed)
+                    return ResultHelpers.CreateFailure(estateResult);
 
-                    Result result =
-                        this.ValidateEstateAndMerchant(aggregates.estateAggregate, aggregates.merchantAggregate);
+                Result<MerchantAggregate> merchantResult = await this.GetAggregateOrFailure(ct => this.AggregateService.GetLatest<MerchantAggregate>(command.MerchantId, ct), command.MerchantId, cancellationToken);
+                if (estateResult.IsFailed)
+                    return ResultHelpers.CreateFailure(merchantResult);
+
+                EstateAggregate estateAggregate = estateResult.Data;
+                MerchantAggregate merchantAggregate = merchantResult.Data;
+
+                Result result =
+                        this.ValidateEstateAndMerchant(estateAggregate, merchantAggregate);
                     if (result.IsFailed)
                         return ResultHelpers.CreateFailure(result);
 
-                    aggregates.merchantAggregate.UpdateMerchant(command.RequestDto.Name);
+                    merchantAggregate.UpdateMerchant(command.RequestDto.Name);
 
                     SettlementSchedule settlementSchedule = ConvertSettlementSchedule(command.RequestDto.SettlementSchedule);
-                    aggregates.merchantAggregate.SetSettlementSchedule(settlementSchedule);
+                    merchantAggregate.SetSettlementSchedule(settlementSchedule);
 
-                    return Result.Success();
-                }, command.EstateId, command.MerchantId, cancellationToken);
+                Result saveResult = await this.AggregateService.Save(merchantAggregate, cancellationToken);
+                if (saveResult.IsFailed)
+                    return ResultHelpers.CreateFailure(saveResult);
 
-            if (result.IsFailed)
-                return ResultHelpers.CreateFailure(result);
-
-            return Result.Success();
+                return saveResult;
+            }
+            catch (Exception ex)
+            {
+                return Result.Failure(ex.GetExceptionMessages());
+            }
         }
 
         public async Task<Result> AddMerchantAddress(MerchantCommands.AddMerchantAddressCommand command, CancellationToken cancellationToken)
         {
-            Result result = await ApplyUpdates(
-                async ((EstateAggregate estateAggregate, MerchantAggregate merchantAggregate) aggregates) => {
+            try
+            {
+                Result<EstateAggregate> estateResult = await this.GetAggregateOrFailure(ct => this.AggregateService.Get<EstateAggregate>(command.EstateId, ct), command.EstateId, cancellationToken).ConfigureAwait(false);
+                if (estateResult.IsFailed)
+                    return ResultHelpers.CreateFailure(estateResult);
 
-                    Result result =
-                        this.ValidateEstateAndMerchant(aggregates.estateAggregate, aggregates.merchantAggregate);
-                    if (result.IsFailed)
-                        return ResultHelpers.CreateFailure(result);
+                Result<MerchantAggregate> merchantResult = await this.GetAggregateOrFailure(ct => this.AggregateService.GetLatest<MerchantAggregate>(command.MerchantId, ct), command.MerchantId, cancellationToken);
+                if (estateResult.IsFailed)
+                    return ResultHelpers.CreateFailure(merchantResult);
 
-                    aggregates.merchantAggregate.AddAddress(command.RequestDto.AddressLine1,
+                EstateAggregate estateAggregate = estateResult.Data;
+                MerchantAggregate merchantAggregate = merchantResult.Data;
+
+                Result result =
+                    this.ValidateEstateAndMerchant(estateAggregate, merchantAggregate);
+                if (result.IsFailed)
+                    return ResultHelpers.CreateFailure(result);
+
+                merchantAggregate.AddAddress(command.RequestDto.AddressLine1,
                                                                  command.RequestDto.AddressLine2,
                                                                  command.RequestDto.AddressLine3,
                                                                  command.RequestDto.AddressLine4,
@@ -462,26 +511,39 @@ namespace TransactionProcessor.BusinessLogic.Services
                                                                  command.RequestDto.PostalCode,
                                                                  command.RequestDto.Country);
 
-                    return Result.Success();
-                }, command.EstateId, command.MerchantId, cancellationToken);
+                Result saveResult = await this.AggregateService.Save(merchantAggregate, cancellationToken);
+                if (saveResult.IsFailed)
+                    return ResultHelpers.CreateFailure(saveResult);
 
-            if (result.IsFailed)
-                return ResultHelpers.CreateFailure(result);
-
-            return Result.Success();
+                return saveResult;
+            }
+            catch (Exception ex)
+            {
+                return Result.Failure(ex.GetExceptionMessages());
+            }
         }
 
         public async Task<Result> UpdateMerchantAddress(MerchantCommands.UpdateMerchantAddressCommand command, CancellationToken cancellationToken)
         {
-            Result result = await ApplyUpdates(
-                async ((EstateAggregate estateAggregate, MerchantAggregate merchantAggregate) aggregates) => {
+            try
+            {
+                Result<EstateAggregate> estateResult = await this.GetAggregateOrFailure(ct => this.AggregateService.Get<EstateAggregate>(command.EstateId, ct), command.EstateId, cancellationToken).ConfigureAwait(false);
+                if (estateResult.IsFailed)
+                    return ResultHelpers.CreateFailure(estateResult);
 
-                    Result result =
-                        this.ValidateEstateAndMerchant(aggregates.estateAggregate, aggregates.merchantAggregate);
-                    if (result.IsFailed)
-                        return ResultHelpers.CreateFailure(result);
+                Result<MerchantAggregate> merchantResult = await this.GetAggregateOrFailure(ct => this.AggregateService.GetLatest<MerchantAggregate>(command.MerchantId, ct), command.MerchantId, cancellationToken);
+                if (estateResult.IsFailed)
+                    return ResultHelpers.CreateFailure(merchantResult);
 
-                    aggregates.merchantAggregate.UpdateAddress(command.AddressId,
+                EstateAggregate estateAggregate = estateResult.Data;
+                MerchantAggregate merchantAggregate = merchantResult.Data;
+
+                Result result =
+                    this.ValidateEstateAndMerchant(estateAggregate, merchantAggregate);
+                if (result.IsFailed)
+                    return ResultHelpers.CreateFailure(result);
+
+                merchantAggregate.UpdateAddress(command.AddressId,
                                                                  command.RequestDto.AddressLine1,
                                                                  command.RequestDto.AddressLine2,
                                                                  command.RequestDto.AddressLine3,
@@ -491,103 +553,149 @@ namespace TransactionProcessor.BusinessLogic.Services
                                                                  command.RequestDto.PostalCode,
                                                                  command.RequestDto.Country);
 
-                    return Result.Success();
-                }, command.EstateId, command.MerchantId, cancellationToken);
+                Result saveResult = await this.AggregateService.Save(merchantAggregate, cancellationToken);
+                if (saveResult.IsFailed)
+                    return ResultHelpers.CreateFailure(saveResult);
 
-            if (result.IsFailed)
-                return ResultHelpers.CreateFailure(result);
-
-            return Result.Success();
+                return saveResult;
+            }
+            catch (Exception ex)
+            {
+                return Result.Failure(ex.GetExceptionMessages());
+            }
         }
 
         public async Task<Result> AddMerchantContact(MerchantCommands.AddMerchantContactCommand command, CancellationToken cancellationToken)
         {
-            Result result = await ApplyUpdates(
-                async ((EstateAggregate estateAggregate, MerchantAggregate merchantAggregate) aggregates) => {
+            try
+            {
+                Result<EstateAggregate> estateResult = await this.GetAggregateOrFailure(ct => this.AggregateService.Get<EstateAggregate>(command.EstateId, ct), command.EstateId, cancellationToken).ConfigureAwait(false);
+                if (estateResult.IsFailed)
+                    return ResultHelpers.CreateFailure(estateResult);
 
-                    Result result =
-                        this.ValidateEstateAndMerchant(aggregates.estateAggregate, aggregates.merchantAggregate);
-                    if (result.IsFailed)
-                        return ResultHelpers.CreateFailure(result);
+                Result<MerchantAggregate> merchantResult = await this.GetAggregateOrFailure(ct => this.AggregateService.GetLatest<MerchantAggregate>(command.MerchantId, ct), command.MerchantId, cancellationToken);
+                if (estateResult.IsFailed)
+                    return ResultHelpers.CreateFailure(merchantResult);
 
-                    aggregates.merchantAggregate.AddContact(command.RequestDto.ContactName,
+                EstateAggregate estateAggregate = estateResult.Data;
+                MerchantAggregate merchantAggregate = merchantResult.Data;
+
+                Result result =
+                    this.ValidateEstateAndMerchant(estateAggregate, merchantAggregate);
+                if (result.IsFailed)
+                    return ResultHelpers.CreateFailure(result);
+
+                merchantAggregate.AddContact(command.RequestDto.ContactName,
                                                                  command.RequestDto.PhoneNumber,
                                                                  command.RequestDto.EmailAddress);
 
-                    return Result.Success();
-                }, command.EstateId, command.MerchantId, cancellationToken);
+                Result saveResult = await this.AggregateService.Save(merchantAggregate, cancellationToken);
+                if (saveResult.IsFailed)
+                    return ResultHelpers.CreateFailure(saveResult);
 
-            if (result.IsFailed)
-                return ResultHelpers.CreateFailure(result);
-
-            return Result.Success();
+                return saveResult;
+            }
+            catch (Exception ex)
+            {
+                return Result.Failure(ex.GetExceptionMessages());
+            }
         }
 
-        public async Task<Result> UpdateMerchantContact(MerchantCommands.UpdateMerchantContactCommand command, CancellationToken cancellationToken)
-        {
-            Result result = await ApplyUpdates(
-                 async ((EstateAggregate estateAggregate, MerchantAggregate merchantAggregate) aggregates) => {
+        public async Task<Result> UpdateMerchantContact(MerchantCommands.UpdateMerchantContactCommand command,
+                                                        CancellationToken cancellationToken) {
+            try {
+                Result<EstateAggregate> estateResult = await this.GetAggregateOrFailure(ct => this.AggregateService.Get<EstateAggregate>(command.EstateId, ct), command.EstateId, cancellationToken).ConfigureAwait(false);
+                if (estateResult.IsFailed)
+                    return ResultHelpers.CreateFailure(estateResult);
 
-                     Result result =
-                         this.ValidateEstateAndMerchant(aggregates.estateAggregate, aggregates.merchantAggregate);
-                     if (result.IsFailed)
-                         return ResultHelpers.CreateFailure(result);
+                Result<MerchantAggregate> merchantResult = await this.GetAggregateOrFailure(ct => this.AggregateService.GetLatest<MerchantAggregate>(command.MerchantId, ct), command.MerchantId, cancellationToken);
+                if (estateResult.IsFailed)
+                    return ResultHelpers.CreateFailure(merchantResult);
 
-                     aggregates.merchantAggregate.UpdateContact(command.ContactId,
-                         command.RequestDto.ContactName,
-                         command.RequestDto.EmailAddress,
-                         command.RequestDto.PhoneNumber
-                     ); ;
+                EstateAggregate estateAggregate = estateResult.Data;
+                MerchantAggregate merchantAggregate = merchantResult.Data;
 
-                     return Result.Success();
-                 }, command.EstateId, command.MerchantId, cancellationToken);
+                Result result = this.ValidateEstateAndMerchant(estateAggregate, merchantAggregate);
+                if (result.IsFailed)
+                    return ResultHelpers.CreateFailure(result);
 
-            if (result.IsFailed)
-                return ResultHelpers.CreateFailure(result);
+                merchantAggregate.UpdateContact(command.ContactId, command.RequestDto.ContactName, command.RequestDto.EmailAddress, command.RequestDto.PhoneNumber);
+                ;
 
-            return Result.Success();
+                Result saveResult = await this.AggregateService.Save(merchantAggregate, cancellationToken);
+                if (saveResult.IsFailed)
+                    return ResultHelpers.CreateFailure(saveResult);
+
+                return saveResult;
+            }
+            catch (Exception ex) {
+                return Result.Failure(ex.GetExceptionMessages());
+            }
         }
 
         public async Task<Result> RemoveOperatorFromMerchant(MerchantCommands.RemoveOperatorFromMerchantCommand command, CancellationToken cancellationToken)
         {
-            Result result = await ApplyUpdates(
-                async ((EstateAggregate estateAggregate, MerchantAggregate merchantAggregate) aggregates) => {
+            try {
+                Result<EstateAggregate> estateResult = await this.GetAggregateOrFailure(ct => this.AggregateService.Get<EstateAggregate>(command.EstateId, ct), command.EstateId, cancellationToken).ConfigureAwait(false);
+                if (estateResult.IsFailed)
+                    return ResultHelpers.CreateFailure(estateResult);
 
-                    Result result =
-                        this.ValidateEstateAndMerchant(aggregates.estateAggregate, aggregates.merchantAggregate);
-                    if (result.IsFailed)
-                        return ResultHelpers.CreateFailure(result);
+                Result<MerchantAggregate> merchantResult = await this.GetAggregateOrFailure(ct => this.AggregateService.GetLatest<MerchantAggregate>(command.MerchantId, ct), command.MerchantId, cancellationToken);
+                if (estateResult.IsFailed)
+                    return ResultHelpers.CreateFailure(merchantResult);
 
-                    aggregates.merchantAggregate.RemoveOperator(command.OperatorId);
+                EstateAggregate estateAggregate = estateResult.Data;
+                MerchantAggregate merchantAggregate = merchantResult.Data;
 
-                    return Result.Success();
-                }, command.EstateId, command.MerchantId, cancellationToken);
+                Result result = this.ValidateEstateAndMerchant(estateAggregate, merchantAggregate);
+                if (result.IsFailed)
+                    return ResultHelpers.CreateFailure(result);
 
-            if (result.IsFailed)
-                return ResultHelpers.CreateFailure(result);
+                merchantAggregate.RemoveOperator(command.OperatorId);
 
-            return Result.Success();
+                Result saveResult = await this.AggregateService.Save(merchantAggregate, cancellationToken);
+                if (saveResult.IsFailed)
+                    return ResultHelpers.CreateFailure(saveResult);
+
+                return saveResult;
+            }
+            catch (Exception ex) {
+                return Result.Failure(ex.GetExceptionMessages());
+            }
         }
 
         public async Task<Result> RemoveContractFromMerchant(MerchantCommands.RemoveMerchantContractCommand command, CancellationToken cancellationToken)
         {
-            Result result = await ApplyUpdates(
-                async ((EstateAggregate estateAggregate, MerchantAggregate merchantAggregate) aggregates) => {
+            try
+            {
+                Result<EstateAggregate> estateResult = await this.GetAggregateOrFailure(ct => this.AggregateService.Get<EstateAggregate>(command.EstateId, ct), command.EstateId, cancellationToken).ConfigureAwait(false);
+                if (estateResult.IsFailed)
+                    return ResultHelpers.CreateFailure(estateResult);
 
-                    Result result =
-                        this.ValidateEstateAndMerchant(aggregates.estateAggregate, aggregates.merchantAggregate);
-                    if (result.IsFailed)
-                        return ResultHelpers.CreateFailure(result);
+                Result<MerchantAggregate> merchantResult = await this.GetAggregateOrFailure(ct => this.AggregateService.GetLatest<MerchantAggregate>(command.MerchantId, ct), command.MerchantId, cancellationToken);
+                if (estateResult.IsFailed)
+                    return ResultHelpers.CreateFailure(merchantResult);
 
-                    aggregates.merchantAggregate.RemoveContract(command.ContractId);
+                EstateAggregate estateAggregate = estateResult.Data;
+                MerchantAggregate merchantAggregate = merchantResult.Data;
 
-                    return Result.Success();
-                }, command.EstateId, command.MerchantId, cancellationToken);
+                Result result =
+                    this.ValidateEstateAndMerchant(estateAggregate, merchantAggregate);
+                if (result.IsFailed)
+                    return ResultHelpers.CreateFailure(result);
 
-            if (result.IsFailed)
-                return ResultHelpers.CreateFailure(result);
+                merchantAggregate.RemoveContract(command.ContractId);
 
-            return Result.Success();
+                Result saveResult = await this.AggregateService.Save(merchantAggregate, cancellationToken);
+                if (saveResult.IsFailed)
+                    return ResultHelpers.CreateFailure(saveResult);
+
+                return saveResult;
+            }
+            catch (Exception ex)
+            {
+                return Result.Failure(ex.GetExceptionMessages());
+            }
         }
 
         private Result ValidateEstateAndMerchant(EstateAggregate estateAggregate, MerchantAggregate merchantAggregate)
@@ -610,23 +718,35 @@ namespace TransactionProcessor.BusinessLogic.Services
         public async Task<Result> SwapMerchantDevice(MerchantCommands.SwapMerchantDeviceCommand command,
                                                    CancellationToken cancellationToken)
         {
-            Result result = await ApplyUpdates(
-                async ((EstateAggregate estateAggregate, MerchantAggregate merchantAggregate) aggregates) => {
+            try
+            {
+                Result<EstateAggregate> estateResult = await this.GetAggregateOrFailure(ct => this.AggregateService.Get<EstateAggregate>(command.EstateId, ct), command.EstateId, cancellationToken).ConfigureAwait(false);
+                if (estateResult.IsFailed)
+                    return ResultHelpers.CreateFailure(estateResult);
 
-                    Result result =
-                        this.ValidateEstateAndMerchant(aggregates.estateAggregate, aggregates.merchantAggregate);
-                    if (result.IsFailed)
-                        return ResultHelpers.CreateFailure(result);
+                Result<MerchantAggregate> merchantResult = await this.GetAggregateOrFailure(ct => this.AggregateService.GetLatest<MerchantAggregate>(command.MerchantId, ct), command.MerchantId, cancellationToken);
+                if (estateResult.IsFailed)
+                    return ResultHelpers.CreateFailure(merchantResult);
 
-                    aggregates.merchantAggregate.SwapDevice(command.DeviceIdentifier, command.RequestDto.NewDeviceIdentifier);
+                EstateAggregate estateAggregate = estateResult.Data;
+                MerchantAggregate merchantAggregate = merchantResult.Data;
 
-                    return Result.Success();
-                }, command.EstateId, command.MerchantId, cancellationToken);
+                Result result =
+                    this.ValidateEstateAndMerchant(estateAggregate, merchantAggregate);
+                if (result.IsFailed)
+                    return ResultHelpers.CreateFailure(result);
 
-            if (result.IsFailed)
-                return ResultHelpers.CreateFailure(result);
+                merchantAggregate.SwapDevice(command.DeviceIdentifier, command.RequestDto.NewDeviceIdentifier);
+                Result saveResult = await this.AggregateService.Save(merchantAggregate, cancellationToken);
+                if (saveResult.IsFailed)
+                    return ResultHelpers.CreateFailure(saveResult);
 
-            return Result.Success();
+                return saveResult;
+            }
+            catch (Exception ex)
+            {
+                return Result.Failure(ex.GetExceptionMessages());
+            }
         }
 
         #endregion

@@ -38,6 +38,7 @@ namespace TransactionProcessor.Bootstrapper
     {
         #region Constructors
 
+        private static Boolean CachedAggregatesAdded;
         /// <summary>
         /// Initializes a new instance of the <see cref="RepositoryRegistry"/> class.
         /// </summary>
@@ -66,7 +67,20 @@ namespace TransactionProcessor.Bootstrapper
             }
 
             this.AddTransient<IEventStoreContext, EventStoreContext>();
-
+            this.AddSingleton<Func<IAggregateService>>(c => () => {
+                
+                IAggregateService aggregateService = Startup.ServiceProvider.GetService<IAggregateService>();
+                if (CachedAggregatesAdded == false)
+                {
+                    aggregateService.AddCachedAggregate(typeof(EstateAggregate), null);
+                    aggregateService.AddCachedAggregate(typeof(ContractAggregate), null);
+                    aggregateService.AddCachedAggregate(typeof(OperatorAggregate), null);
+                    aggregateService.AddCachedAggregate(typeof(MerchantAggregate), null);
+                    CachedAggregatesAdded=true;
+                }
+                
+                return aggregateService;
+            });
             this.AddSingleton<IAggregateService, AggregateService>();
             this.AddSingleton<IAggregateRepositoryResolver, AggregateRepositoryResolver>();
             this.AddSingleton<IAggregateRepository<TransactionAggregate, DomainEvent>,

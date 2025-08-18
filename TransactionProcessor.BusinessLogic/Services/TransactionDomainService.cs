@@ -78,7 +78,7 @@ namespace TransactionProcessor.BusinessLogic.Services{
 
         #region Constructors
 
-        public TransactionDomainService(IAggregateService aggregateService,
+        public TransactionDomainService(Func<IAggregateService> aggregateService,
                                         Func<String, IOperatorProxy> operatorProxyResolver,
                                         ITransactionValidationService transactionValidationService,
                                         ISecurityServiceClient securityServiceClient,
@@ -86,7 +86,7 @@ namespace TransactionProcessor.BusinessLogic.Services{
                                         IFeeCalculationManager feeCalculationManager,
                                         ITransactionReceiptBuilder transactionReceiptBuilder,
                                         IMessagingServiceClient messagingServiceClient) {
-            this.AggregateService = aggregateService;
+            this.AggregateService = aggregateService();
             this.OperatorProxyResolver = operatorProxyResolver;
             this.TransactionValidationService = transactionValidationService;
             this.SecurityServiceClient = securityServiceClient;

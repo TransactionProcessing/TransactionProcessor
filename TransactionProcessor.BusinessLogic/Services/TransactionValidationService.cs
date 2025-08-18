@@ -48,10 +48,10 @@ public class TransactionValidationService : ITransactionValidationService{
     #endregion
 
     public TransactionValidationService(IEventStoreContext eventStoreContext,
-                                        IAggregateService aggregateService)
+                                        Func<IAggregateService> aggregateService)
     {
         this.EventStoreContext = eventStoreContext;
-        this.AggregateService = aggregateService;
+        this.AggregateService = aggregateService();
     }
 
     #region Methods

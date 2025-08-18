@@ -85,10 +85,8 @@ namespace TransactionProcessor
             applicationBuilder.ConfigureSubscriptionService(subscriptionWorkersRoot, eventStoreConnectionString, eventHandlerResolvers, Extensions.log, subscriptionRepositoryResolver).Wait(CancellationToken.None);
 
             // Setup the aggregate service caching
-            IAggregateService aggregateService = Startup.ServiceProvider.GetService<IAggregateService>();
-            aggregateService.AddCachedAggregate(typeof(EstateAggregate),null);
-            aggregateService.AddCachedAggregate(typeof(ContractAggregate), null);
-            aggregateService.AddCachedAggregate(typeof(OperatorAggregate), null);
+            
+            
 
             IMediator mediator = Startup.Container.GetInstance<IMediator>();
             StatementFilePollerService statementFilePollerService = new(mediator);

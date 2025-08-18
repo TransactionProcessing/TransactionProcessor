@@ -37,10 +37,10 @@ public class TransactionValidationServiceTests {
         this.SecurityServiceClient = new Mock<ISecurityServiceClient>();
         this.EventStoreContext = new Mock<IEventStoreContext>();
         this.AggregateService = new Mock<IAggregateService>();
-
+        IAggregateService AggregateServiceResolver() => this.AggregateService.Object;
         this.SecurityServiceClient.Setup(s => s.GetToken(It.IsAny<String>(), It.IsAny<String>(), It.IsAny<CancellationToken>())).ReturnsAsync(Result.Success(TestData.TokenResponse()));
 
-        this.TransactionValidationService = new TransactionValidationService(this.EventStoreContext.Object, this.AggregateService.Object);
+        this.TransactionValidationService = new TransactionValidationService(this.EventStoreContext.Object, AggregateServiceResolver);
     }
 
     [Fact]

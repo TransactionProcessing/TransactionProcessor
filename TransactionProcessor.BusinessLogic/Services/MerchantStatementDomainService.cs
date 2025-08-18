@@ -58,9 +58,9 @@ namespace TransactionProcessor.BusinessLogic.Services
 
         #region Constructors
 
-        public MerchantStatementDomainService(IAggregateService aggregateService, IStatementBuilder statementBuilder,
+        public MerchantStatementDomainService(Func<IAggregateService> aggregateService, IStatementBuilder statementBuilder,
                                               IMessagingServiceClient messagingServiceClient, ISecurityServiceClient securityServiceClient) {
-            this.AggregateService = aggregateService;
+            this.AggregateService = aggregateService();
             this.StatementBuilder = statementBuilder;
             this.MessagingServiceClient = messagingServiceClient;
             this.SecurityServiceClient = securityServiceClient;

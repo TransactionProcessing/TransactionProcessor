@@ -42,9 +42,9 @@ namespace TransactionProcessor.BusinessLogic.Services
 
         #region Constructors
                 
-        public EstateDomainService(IAggregateService aggregateService,
+        public EstateDomainService(Func<IAggregateService> aggregateService,
                                    ISecurityServiceClient securityServiceClient) {
-            this.AggregateService = aggregateService;
+            this.AggregateService = aggregateService();
             this.SecurityServiceClient = securityServiceClient;
         }
 

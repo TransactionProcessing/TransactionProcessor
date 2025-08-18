@@ -73,10 +73,10 @@ public class VoucherDomainService : IVoucherDomainService
 
     #region Constructors
 
-    public VoucherDomainService(IAggregateService aggregateService,
+    public VoucherDomainService(Func<IAggregateService> aggregateService,
                                 IDbContextResolver<EstateManagementContext> resolver)
     {
-        this.AggregateService = aggregateService;
+        this.AggregateService = aggregateService();
         this.Resolver = resolver;
     }
     #endregion

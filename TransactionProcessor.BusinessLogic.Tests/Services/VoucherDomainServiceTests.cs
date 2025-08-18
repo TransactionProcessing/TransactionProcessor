@@ -40,6 +40,7 @@ namespace TransactionProcessor.BusinessLogic.Tests.Services
             Logger.Initialise(NullLogger.Instance);
 
             this.AggregateService  = new Mock<IAggregateService>();
+            IAggregateService AggregateServiceResolver() => this.AggregateService.Object;
             this.DbContextFactory = new Mock<IDbContextResolver<EstateManagementContext>>();
             this.Context = this.GetContext(Guid.NewGuid().ToString("N"));
             var services = new ServiceCollection();
@@ -47,7 +48,7 @@ namespace TransactionProcessor.BusinessLogic.Tests.Services
             var serviceProvider = services.BuildServiceProvider();
             var scope = serviceProvider.CreateScope();
             this.DbContextFactory.Setup(d => d.Resolve(It.IsAny<String>(), It.IsAny<String>())).Returns(new ResolvedDbContext<EstateManagementContext>(scope));
-            this.VoucherDomainService = new VoucherDomainService(this.AggregateService.Object, DbContextFactory.Object);
+            this.VoucherDomainService = new VoucherDomainService(AggregateServiceResolver, DbContextFactory.Object);
         }
 
         [Fact]

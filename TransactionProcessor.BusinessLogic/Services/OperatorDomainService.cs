@@ -23,8 +23,8 @@ namespace TransactionProcessor.BusinessLogic.Services
     {
         private readonly IAggregateService AggregateService;
 
-        public OperatorDomainService(IAggregateService aggregateService) {
-            this.AggregateService = aggregateService;
+        public OperatorDomainService(Func<IAggregateService> aggregateService) {
+            this.AggregateService = aggregateService();
         }
 
         private async Task<Result> ApplyUpdates(Func<(EstateAggregate, OperatorAggregate), Result> action, Guid estateId, Guid operatorId, CancellationToken cancellationToken, Boolean isNotFoundError = true)
