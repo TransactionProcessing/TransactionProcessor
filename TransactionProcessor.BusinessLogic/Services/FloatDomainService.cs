@@ -186,6 +186,19 @@ namespace TransactionProcessor.BusinessLogic.Services
 
     public static class DomainServiceHelper
     {
+        public static async Task<Result<TAggregate>> GetAggregateOrFailure<TAggregate>(Func<CancellationToken, Task<Result<TAggregate>>> fetchFunc,
+                                                                                 Guid aggregateId,
+                                                                                 CancellationToken cancellationToken,
+                                                                                 Boolean isNotFoundError = true) where TAggregate : Aggregate, new()
+        {
+            Result<TAggregate> result = await fetchFunc(cancellationToken);
+            return result.IsFailed switch
+            {
+                true => DomainServiceHelper.HandleGetAggregateResult(result, aggregateId, isNotFoundError),
+                _ => Result.Success(result.Data)
+            };
+        }
+
         public static Result<T> HandleGetAggregateResult<T>(Result<T> result, Guid aggregateId, bool isNotFoundError = true)
             where T : Aggregate, new()  // Constraint: T is a subclass of Aggregate and has a parameterless constructor
         {
