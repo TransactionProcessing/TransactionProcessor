@@ -52,20 +52,45 @@ namespace TransactionProcessor.BusinessLogic.Services
         #endregion
 
         #region Methods
+        
+        public async Task<Result> CreateEstate(EstateCommands.CreateEstateCommand command,
+                                               CancellationToken cancellationToken) {
+            try {
+                Result<EstateAggregate> estateResult = await DomainServiceHelper.GetAggregateOrFailure(ct => this.AggregateService.GetLatest<EstateAggregate>(command.RequestDto.EstateId, ct), command.RequestDto.EstateId, cancellationToken, false);
+                if (estateResult.IsFailed)
+                    return ResultHelpers.CreateFailure(estateResult);
 
-        private async Task<Result> ApplyUpdates(Action<EstateAggregate> action, Guid estateId, CancellationToken cancellationToken, Boolean isNotFoundError = true)
+                EstateAggregate estateAggregate = estateResult.Data;
+
+                estateAggregate.Create(command.RequestDto.EstateName);
+                estateAggregate.GenerateReference();
+
+                Result saveResult = await this.AggregateService.Save(estateAggregate, cancellationToken);
+                if (saveResult.IsFailed)
+                    return ResultHelpers.CreateFailure(saveResult);
+
+                return Result.Success();
+            }
+            catch (Exception ex) {
+                return Result.Failure(ex.GetExceptionMessages());
+            }
+        }
+
+        public async Task<Result> AddOperatorToEstate(EstateCommands.AddOperatorToEstateCommand command, CancellationToken cancellationToken)
         {
             try
             {
-                Result<EstateAggregate> getLatestVersionResult = await this.AggregateService.GetLatest<EstateAggregate>(estateId, cancellationToken);
-                Result<EstateAggregate> estateAggregateResult =
-                    DomainServiceHelper.HandleGetAggregateResult(getLatestVersionResult, estateId, isNotFoundError);
-                if (estateAggregateResult.IsFailed)
-                    return ResultHelpers.CreateFailure(estateAggregateResult);
+                Result<OperatorAggregate> operatorResult = await DomainServiceHelper.GetAggregateOrFailure(ct => this.AggregateService.Get<OperatorAggregate>(command.RequestDto.OperatorId, ct), command.RequestDto.OperatorId, cancellationToken);
+                if (operatorResult.IsFailed)
+                    return ResultHelpers.CreateFailure(operatorResult);
 
-                EstateAggregate estateAggregate = estateAggregateResult.Data;
+                Result<EstateAggregate> estateResult = await DomainServiceHelper.GetAggregateOrFailure(ct => this.AggregateService.GetLatest<EstateAggregate>(command.EstateId, ct), command.EstateId, cancellationToken);
+                if (estateResult.IsFailed)
+                    return ResultHelpers.CreateFailure(estateResult);
 
-                action(estateAggregate);
+                EstateAggregate estateAggregate = estateResult.Data;
+
+                estateAggregate.AddOperator(command.RequestDto.OperatorId);
 
                 Result saveResult = await this.AggregateService.Save(estateAggregate, cancellationToken);
                 if (saveResult.IsFailed)
@@ -79,72 +104,81 @@ namespace TransactionProcessor.BusinessLogic.Services
             }
         }
 
-
-        public async Task<Result> CreateEstate(EstateCommands.CreateEstateCommand command, CancellationToken cancellationToken)
-        {
-            Result result = await ApplyUpdates((estateAggregate) => {
-                estateAggregate.Create(command.RequestDto.EstateName);
-                estateAggregate.GenerateReference();
-            }, command.RequestDto.EstateId, cancellationToken, false);
-
-            return result;
-        }
-
-        public async Task<Result> AddOperatorToEstate(EstateCommands.AddOperatorToEstateCommand command, CancellationToken cancellationToken)
-        {
-            Result result = await ApplyUpdates((estateAggregate) => {
-                estateAggregate.AddOperator(command.RequestDto.OperatorId);
-            }, command.EstateId, cancellationToken);
-
-            return result;
-        }
-
         public async Task<Result> CreateEstateUser(EstateCommands.CreateEstateUserCommand command, CancellationToken cancellationToken)
         {
-            CreateUserRequest createUserRequest = new CreateUserRequest
+            try
             {
-                EmailAddress = command.RequestDto.EmailAddress,
-                FamilyName = command.RequestDto.FamilyName,
-                GivenName = command.RequestDto.GivenName,
-                MiddleName = command.RequestDto.MiddleName,
-                Password = command.RequestDto.Password,
-                PhoneNumber = "123456", // Is this really needed :|
-                Roles = new List<String>(),
-                Claims = new Dictionary<String, String>()
-            };
+                CreateUserRequest createUserRequest = new CreateUserRequest
+                {
+                    EmailAddress = command.RequestDto.EmailAddress,
+                    FamilyName = command.RequestDto.FamilyName,
+                    GivenName = command.RequestDto.GivenName,
+                    MiddleName = command.RequestDto.MiddleName,
+                    Password = command.RequestDto.Password,
+                    PhoneNumber = "123456", // Is this really needed :|
+                    Roles = new List<String>(),
+                    Claims = new Dictionary<String, String>()
+                };
 
-            // Check if role has been overridden
-            String estateRoleName = Environment.GetEnvironmentVariable("EstateRoleName");
-            createUserRequest.Roles.Add(String.IsNullOrEmpty(estateRoleName) ? "Estate" : estateRoleName);
-            createUserRequest.Claims.Add("estateId", command.EstateId.ToString());
+                // Check if role has been overridden
+                String estateRoleName = Environment.GetEnvironmentVariable("EstateRoleName");
+                createUserRequest.Roles.Add(String.IsNullOrEmpty(estateRoleName) ? "Estate" : estateRoleName);
+                createUserRequest.Claims.Add("estateId", command.EstateId.ToString());
 
-            Result createUserResult = await this.SecurityServiceClient.CreateUser(createUserRequest, cancellationToken);
-            if (createUserResult.IsFailed)
-                return ResultHelpers.CreateFailure(createUserResult);
+                Result createUserResult = await this.SecurityServiceClient.CreateUser(createUserRequest, cancellationToken);
+                if (createUserResult.IsFailed)
+                    return ResultHelpers.CreateFailure(createUserResult);
 
-            Result<List<UserDetails>> userDetailsResult = await this.SecurityServiceClient.GetUsers(createUserRequest.EmailAddress, cancellationToken);
-            if (userDetailsResult.IsFailed)
-                return ResultHelpers.CreateFailure(userDetailsResult);
+                Result<List<UserDetails>> userDetailsResult = await this.SecurityServiceClient.GetUsers(createUserRequest.EmailAddress, cancellationToken);
+                if (userDetailsResult.IsFailed)
+                    return ResultHelpers.CreateFailure(userDetailsResult);
 
-            UserDetails user = userDetailsResult.Data.SingleOrDefault();
-            if (user == null)
-                return Result.Failure($"Unable to get user details for username {createUserRequest.EmailAddress}");
+                UserDetails user = userDetailsResult.Data.SingleOrDefault();
+                if (user == null)
+                    return Result.Failure($"Unable to get user details for username {createUserRequest.EmailAddress}");
 
-            Result result = await ApplyUpdates((estateAggregate) => {
-                // Add the user to the aggregate 
+                Result<EstateAggregate> estateResult = await DomainServiceHelper.GetAggregateOrFailure(ct => this.AggregateService.GetLatest<EstateAggregate>(command.EstateId, ct), command.EstateId, cancellationToken);
+                if (estateResult.IsFailed)
+                    return ResultHelpers.CreateFailure(estateResult);
+
+                EstateAggregate estateAggregate = estateResult.Data;
+
                 estateAggregate.AddSecurityUser(user.UserId, command.RequestDto.EmailAddress);
-            }, command.EstateId, cancellationToken);
 
-            return result;
+                Result saveResult = await this.AggregateService.Save(estateAggregate, cancellationToken);
+                if (saveResult.IsFailed)
+                    return ResultHelpers.CreateFailure(saveResult);
+
+                return Result.Success();
+            }
+            catch (Exception ex)
+            {
+                return Result.Failure(ex.GetExceptionMessages());
+            }
         }
 
         public async Task<Result> RemoveOperatorFromEstate(EstateCommands.RemoveOperatorFromEstateCommand command, CancellationToken cancellationToken)
         {
-            Result result = await ApplyUpdates((estateAggregate) => {
-                estateAggregate.RemoveOperator(command.OperatorId);
-            }, command.EstateId, cancellationToken);
+            try
+            {
+                Result<EstateAggregate> estateResult = await DomainServiceHelper.GetAggregateOrFailure(ct => this.AggregateService.GetLatest<EstateAggregate>(command.EstateId, ct), command.EstateId, cancellationToken);
+                if (estateResult.IsFailed)
+                    return ResultHelpers.CreateFailure(estateResult);
 
-            return result;
+                EstateAggregate estateAggregate = estateResult.Data;
+
+                estateAggregate.RemoveOperator(command.OperatorId);
+
+                Result saveResult = await this.AggregateService.Save(estateAggregate, cancellationToken);
+                if (saveResult.IsFailed)
+                    return ResultHelpers.CreateFailure(saveResult);
+
+                return Result.Success();
+            }
+            catch (Exception ex)
+            {
+                return Result.Failure(ex.GetExceptionMessages());
+            }
         }
 
         #endregion

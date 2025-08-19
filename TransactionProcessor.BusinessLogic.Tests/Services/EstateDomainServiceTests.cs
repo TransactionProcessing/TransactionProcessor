@@ -45,6 +45,9 @@ namespace TransactionProcessor.BusinessLogic.Tests.Services
         [Fact]
         public async Task EstateDomainService_AddOperatorEstate_OperatorIsAdded()
         {
+            this.AggregateService.Setup(m => m.Get<OperatorAggregate>(It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
+                .ReturnsAsync(SimpleResults.Result.Success(TestData.Aggregates.CreatedOperatorAggregate()));
+
             this.AggregateService.Setup(m => m.GetLatest<EstateAggregate>(It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
                 .ReturnsAsync(SimpleResults.Result.Success(TestData.Aggregates.CreatedEstateAggregate()));
             this.AggregateService.Setup(m => m.Save(It.IsAny<EstateAggregate>(), It.IsAny<CancellationToken>())).ReturnsAsync(SimpleResults.Result.Success());
