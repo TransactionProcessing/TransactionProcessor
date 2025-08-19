@@ -10,7 +10,6 @@ namespace TransactionProcessor.BusinessLogic.Services;
 using Microsoft.EntityFrameworkCore;
 using Models;
 using NetBarcode;
-using Shared.DomainDrivenDesign.EventSourcing;
 using Shared.EntityFramework;
 using Shared.EventStore.Aggregate;
 using Shared.Exceptions;
@@ -69,9 +68,7 @@ public class VoucherDomainService : IVoucherDomainService
     private static readonly String EstateManagementDatabaseName = "TransactionProcessorReadModel";
 
     private readonly IAggregateService AggregateService;
-
-    private const String ConnectionStringIdentifier = "EstateReportingReadModel";
-
+    
     #region Constructors
 
     public VoucherDomainService(Func<IAggregateService> aggregateService,
@@ -83,30 +80,43 @@ public class VoucherDomainService : IVoucherDomainService
     #endregion
 
     #region Methods
+    
+    public async Task<Result<IssueVoucherResponse>> IssueVoucher(Guid voucherId, Guid operatorId, Guid estateId,
+                                                         Guid transactionId,
+                                                         DateTime issuedDateTime,
+                                                         Decimal value,
+                                                         String recipientEmail, String recipientMobile, CancellationToken cancellationToken) {
+        try{
+            Result<EstateResponse> validateResult = await this.ValidateVoucherIssue(estateId, operatorId, cancellationToken);
+            if (validateResult.IsFailed)
+                return ResultHelpers.CreateFailure(validateResult);
 
-    private async Task<Result<T>> ApplyUpdates<T>(Func<VoucherAggregate, Task<Result<T>>> action,
-                                                  Guid voucherId,
-                                                  CancellationToken cancellationToken,
-                                                  Boolean isNotFoundError = true)
-    {
-        try
-        {
-            Result<VoucherAggregate> getVoucherResult = await this.AggregateService.GetLatest<VoucherAggregate>(voucherId, cancellationToken);
-            Result<VoucherAggregate> voucherAggregateResult =
-                DomainServiceHelper.HandleGetAggregateResult(getVoucherResult, voucherId, isNotFoundError);
+            Result<VoucherAggregate> voucherResult = await DomainServiceHelper.GetAggregateOrFailure(ct => this.AggregateService.GetLatest<VoucherAggregate>(voucherId, ct), voucherId, cancellationToken, false);
+            if (voucherResult.IsFailed)
+                return ResultHelpers.CreateFailure(voucherResult);
 
-            if (voucherAggregateResult.IsFailed)
-                return ResultHelpers.CreateFailure(voucherAggregateResult);
+            VoucherAggregate voucherAggregate = voucherResult.Data;
 
-            VoucherAggregate voucherAggregate = voucherAggregateResult.Data;
-            Result<T> result = await action(voucherAggregate);
-            if (result.IsFailed)
-                return ResultHelpers.CreateFailure(result);
+            voucherAggregate.Generate(operatorId, estateId, transactionId, issuedDateTime, value);
+
+            Models.Voucher voucherModel = voucherAggregate.GetVoucher();
+
+            // Generate the barcode
+            Barcode barcode = new Barcode(voucherModel.VoucherCode);
+            voucherAggregate.AddBarcode(barcode.GetBase64Image());
+            voucherAggregate.Issue(recipientEmail, recipientMobile, issuedDateTime);
 
             Result saveResult = await this.AggregateService.Save(voucherAggregate, cancellationToken);
             if (saveResult.IsFailed)
                 return ResultHelpers.CreateFailure(saveResult);
-            return Result.Success(result.Data);
+
+            return Result.Success(new IssueVoucherResponse
+            {
+                ExpiryDate = voucherModel.ExpiryDate,
+                Message = voucherModel.Message,
+                VoucherCode = voucherModel.VoucherCode,
+                VoucherId = voucherId
+            });
         }
         catch (Exception ex)
         {
@@ -114,76 +124,42 @@ public class VoucherDomainService : IVoucherDomainService
         }
     }
 
-    public async Task<Result<IssueVoucherResponse>> IssueVoucher(Guid voucherId, Guid operatorId, Guid estateId,
-                                                         Guid transactionId,
-                                                         DateTime issuedDateTime,
-                                                         Decimal value,
-                                                         String recipientEmail, String recipientMobile, CancellationToken cancellationToken) {
-        Result<IssueVoucherResponse> result = await ApplyUpdates<IssueVoucherResponse>(
-            async (VoucherAggregate voucherAggregate) => {
-
-                Result<EstateResponse> validateResult = await this.ValidateVoucherIssue(estateId, operatorId, cancellationToken);
-                if (validateResult.IsFailed)
-                    return ResultHelpers.CreateFailure(validateResult);
-
-                voucherAggregate.Generate(operatorId, estateId, transactionId, issuedDateTime, value);
-
-                Models.Voucher voucherModel = voucherAggregate.GetVoucher();
-
-                // Generate the barcode
-                Barcode barcode = new Barcode(voucherModel.VoucherCode);
-                voucherAggregate.AddBarcode(barcode.GetBase64Image());
-                voucherAggregate.Issue(recipientEmail, recipientMobile, issuedDateTime);
-
-                return Result.Success(new IssueVoucherResponse
-                {
-                    ExpiryDate = voucherModel.ExpiryDate,
-                    Message = voucherModel.Message,
-                    VoucherCode = voucherModel.VoucherCode,
-                    VoucherId = voucherId
-                });
-
-            }, voucherId, cancellationToken, false);
-
-        return result;
-    }
-
-    /// <summary>
-    /// Redeems the voucher.
-    /// </summary>
-    /// <param name="estateId">The estate identifier.</param>
-    /// <param name="voucherCode">The voucher code.</param>
-    /// <param name="redeemedDateTime">The redeemed date time.</param>
-    /// <param name="cancellationToken">The cancellation token.</param>
-    /// <returns></returns>
-    /// <exception cref="NotFoundException">No voucher found with voucher code [{voucherCode}]</exception>
     public async Task<Result<RedeemVoucherResponse>> RedeemVoucher(Guid estateId,
                                                            String voucherCode,
                                                            DateTime redeemedDateTime,
                                                            CancellationToken cancellationToken)
     {
-        // Find the voucher based on the voucher code
-        using ResolvedDbContext<EstateManagementContext>? resolvedContext = this.Resolver.Resolve(EstateManagementDatabaseName, estateId.ToString());
-        await using EstateManagementContext context = resolvedContext.Context;
-
-        TransactionProcessor.Database.Entities.VoucherProjectionState voucher = await context.VoucherProjectionStates.SingleOrDefaultAsync(v => v.VoucherCode == voucherCode, cancellationToken);
-
-        if (voucher == null)
+        try
         {
-            return Result.NotFound($"No voucher found with voucher code [{voucherCode}]");
-        }
+            // Find the voucher based on the voucher code
+            using ResolvedDbContext<EstateManagementContext>? resolvedContext = this.Resolver.Resolve(EstateManagementDatabaseName, estateId.ToString());
+            await using EstateManagementContext context = resolvedContext.Context;
 
-        Result<RedeemVoucherResponse> result = await ApplyUpdates<RedeemVoucherResponse>(
-        async (VoucherAggregate voucherAggregate) => {
+            TransactionProcessor.Database.Entities.VoucherProjectionState voucher = await context.VoucherProjectionStates.SingleOrDefaultAsync(v => v.VoucherCode == voucherCode, cancellationToken);
+
+            if (voucher == null)
+            {
+                return Result.NotFound($"No voucher found with voucher code [{voucherCode}]");
+            }
+
             Result<EstateResponse> validateResult = await this.ValidateVoucherRedemption(estateId, cancellationToken);
             if (validateResult.IsFailed)
                 return ResultHelpers.CreateFailure(validateResult);
-            
+
+
+
+            Result<VoucherAggregate> voucherResult = await DomainServiceHelper.GetAggregateOrFailure(ct => this.AggregateService.GetLatest<VoucherAggregate>(voucher.VoucherId, ct), voucher.VoucherId, cancellationToken);
+            if (voucherResult.IsFailed)
+                return ResultHelpers.CreateFailure(voucherResult);
+
+            VoucherAggregate voucherAggregate = voucherResult.Data;
+
             // Redeem the voucher
             voucherAggregate.Redeem(redeemedDateTime);
 
-            // Save the changes
-            await this.AggregateService.Save(voucherAggregate, cancellationToken);
+            Result saveResult = await this.AggregateService.Save(voucherAggregate, cancellationToken);
+            if (saveResult.IsFailed)
+                return ResultHelpers.CreateFailure(saveResult);
 
             Models.Voucher voucherModel = voucherAggregate.GetVoucher();
 
@@ -194,21 +170,21 @@ public class VoucherDomainService : IVoucherDomainService
                 VoucherCode = voucherModel.VoucherCode
             });
 
-        }, voucher.VoucherId, cancellationToken);
-
-        return result;
+        }
+        catch (Exception ex)
+        {
+            return Result.Failure(ex.GetExceptionMessages());
+        }
     }
 
     
     private async Task<Result> ValidateVoucherIssue(Guid estateId, Guid operatorId, CancellationToken cancellationToken)
     {
         // Validate the Estate Record is a valid estate
-        Result<EstateAggregate> getEstateResult = await this.AggregateService.Get<EstateAggregate>(estateId, cancellationToken);
-        if (getEstateResult.IsFailed)
-        {
-            return ResultHelpers.CreateFailure(getEstateResult);
-        }
-        EstateAggregate estateAggregate = getEstateResult.Data;
+        Result<EstateAggregate> estateResult = await DomainServiceHelper.GetAggregateOrFailure(ct => this.AggregateService.Get<EstateAggregate>(estateId, ct), estateId, cancellationToken);
+        if (estateResult.IsFailed)
+            return ResultHelpers.CreateFailure(estateResult);
+        EstateAggregate estateAggregate = estateResult.Data;
 
         Estate estate = estateAggregate.GetEstate();
         if (estate.Operators == null || estate.Operators.Any() == false)
@@ -228,10 +204,9 @@ public class VoucherDomainService : IVoucherDomainService
     private async Task<Result> ValidateVoucherRedemption(Guid estateId, CancellationToken cancellationToken)
     {
         // Validate the Estate Record is a valid estate
-        Result<EstateAggregate> getEstateResult = await this.AggregateService.Get<EstateAggregate>(estateId, cancellationToken);
-        if (getEstateResult.IsFailed) {
-            return ResultHelpers.CreateFailure(getEstateResult);
-        }
+        Result<EstateAggregate> estateResult = await DomainServiceHelper.GetAggregateOrFailure(ct => this.AggregateService.Get<EstateAggregate>(estateId, ct), estateId, cancellationToken);
+        if (estateResult.IsFailed)
+            return ResultHelpers.CreateFailure(estateResult);
 
         return Result.Success();
     }
