@@ -3,6 +3,7 @@ using Shared.DomainDrivenDesign.EventSourcing;
 using Shared.EventStore.Aggregate;
 using Shouldly;
 using SimpleResults;
+using TransactionProcessor.BusinessLogic.Common;
 using TransactionProcessor.BusinessLogic.Services;
 using Xunit;
 
