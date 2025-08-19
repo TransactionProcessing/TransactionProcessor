@@ -69,104 +69,43 @@ namespace TransactionProcessor.BusinessLogic.Services
         #endregion
 
         #region Methods
-
-        private async Task<Result> ApplyUpdates(Func<MerchantStatementAggregate, Task<Result>> action, Guid statementId, CancellationToken cancellationToken, Boolean isNotFoundError = true)
-        {
-            try
-            {
-                Result<MerchantStatementAggregate> getMerchantStatementResult = await this.AggregateService.GetLatest<MerchantStatementAggregate>(statementId, cancellationToken);
-
-                Result<MerchantStatementAggregate> merchantStatementAggregateResult =
-                    DomainServiceHelper.HandleGetAggregateResult(getMerchantStatementResult, statementId, isNotFoundError);
-                if (merchantStatementAggregateResult.IsFailed)
-                    return ResultHelpers.CreateFailure(merchantStatementAggregateResult);
-
-                MerchantStatementAggregate merchantStatementAggregate = merchantStatementAggregateResult.Data;
-
-                Result result = await action(merchantStatementAggregate);
-                if (result.IsFailed)
-                    return ResultHelpers.CreateFailure(result);
-
-                Result saveResult = await this.AggregateService.Save(merchantStatementAggregate, cancellationToken);
-                if (saveResult.IsFailed)
-                    return ResultHelpers.CreateFailure(saveResult);
-
-                return Result.Success();
-            }
-            catch (Exception ex)
-            {
-                return Result.Failure(ex.GetExceptionMessages());
-            }
-        }
-
-        private async Task<Result> ApplyUpdates(Func<MerchantStatementForDateAggregate, Task<Result>> action, Guid statementId, CancellationToken cancellationToken, Boolean isNotFoundError = true)
-        {
-            try
-            {
-                Result<MerchantStatementForDateAggregate> getMerchantStatementResult = await this.AggregateService.GetLatest<MerchantStatementForDateAggregate>(statementId, cancellationToken);
-
-                Result<MerchantStatementForDateAggregate> merchantStatementAggregateResult =
-                    DomainServiceHelper.HandleGetAggregateResult(getMerchantStatementResult, statementId, isNotFoundError);
-                if (merchantStatementAggregateResult.IsFailed)
-                    return ResultHelpers.CreateFailure(merchantStatementAggregateResult);
-
-                MerchantStatementForDateAggregate merchantStatementAggregate = merchantStatementAggregateResult.Data;
-
-                Result result = await action(merchantStatementAggregate);
-                if (result.IsFailed)
-                    return ResultHelpers.CreateFailure(result);
-
-                Result saveResult = await this.AggregateService.Save(merchantStatementAggregate, cancellationToken);
-                if (saveResult.IsFailed)
-                    return ResultHelpers.CreateFailure(saveResult);
-
-                return Result.Success();
-            }
-            catch (Exception ex)
-            {
-                return Result.Failure(ex.GetExceptionMessages());
-            }
-        }
-
+        
         public async Task<Result> AddSettledFeeToStatement(MerchantStatementCommands.AddSettledFeeToMerchantStatementCommand command,
                                                            CancellationToken cancellationToken)
         {
-            // Work out the next statement date
-            DateTime nextStatementDate = CalculateStatementDate(command.SettledDateTime);
+            try {
+                // Work out the next statement date
+                DateTime nextStatementDate = CalculateStatementDate(command.SettledDateTime);
 
-            Guid merchantStatementId = IdGenerationService.GenerateMerchantStatementAggregateId(command.EstateId, command.MerchantId, nextStatementDate);
-            Guid merchantStatementForDateId = IdGenerationService.GenerateMerchantStatementForDateAggregateId(command.EstateId, command.MerchantId, nextStatementDate, command.SettledDateTime);
-            Guid settlementFeeId = GuidCalculator.Combine(command.TransactionId, command.SettledFeeId);
+                Guid merchantStatementId = IdGenerationService.GenerateMerchantStatementAggregateId(command.EstateId, command.MerchantId, nextStatementDate);
+                Guid merchantStatementForDateId = IdGenerationService.GenerateMerchantStatementForDateAggregateId(command.EstateId, command.MerchantId, nextStatementDate, command.SettledDateTime);
+                Guid settlementFeeId = GuidCalculator.Combine(command.TransactionId, command.SettledFeeId);
 
-            Result result = await ApplyUpdates(
-                async (MerchantStatementForDateAggregate merchantStatementForDateAggregate) => {
+                Result<MerchantStatementForDateAggregate> getMerchantStatementForDateResult = await DomainServiceHelper.GetAggregateOrFailure(ct => this.AggregateService.GetLatest<MerchantStatementForDateAggregate>(merchantStatementForDateId, ct), merchantStatementForDateId, cancellationToken, false);
+                if (getMerchantStatementForDateResult.IsFailed)
+                    return ResultHelpers.CreateFailure(getMerchantStatementForDateResult);
 
-                    SettledFee settledFee = new SettledFee(settlementFeeId, command.TransactionId, command.SettledDateTime, command.SettledAmount.Value);
+                MerchantStatementForDateAggregate merchantStatementForDateAggregate = getMerchantStatementForDateResult.Data;
 
-                    Guid eventId = IdGenerationService.GenerateEventId(new
-                    {
-                        command.TransactionId,
-                        settlementFeeId,
-                        settledFee,
-                        command.SettledDateTime,
-                    });
+                SettledFee settledFee = new SettledFee(settlementFeeId, command.TransactionId, command.SettledDateTime, command.SettledAmount.Value);
 
-                    merchantStatementForDateAggregate.AddSettledFeeToStatement(merchantStatementId, nextStatementDate, eventId, command.EstateId, command.MerchantId, settledFee);
+                Guid eventId = IdGenerationService.GenerateEventId(new {
+                    command.TransactionId, settlementFeeId, settledFee, command.SettledDateTime,
+                });
 
-                    return Result.Success();
-                }, merchantStatementForDateId, cancellationToken, false);
+                merchantStatementForDateAggregate.AddSettledFeeToStatement(merchantStatementId, nextStatementDate, eventId, command.EstateId, command.MerchantId, settledFee);
 
-            if (result.IsFailed)
-                return ResultHelpers.CreateFailure(result);
+                Result saveResult = await this.AggregateService.Save(merchantStatementForDateAggregate, cancellationToken);
+                if (saveResult.IsFailed)
+                    return ResultHelpers.CreateFailure(saveResult);
 
-            return Result.Success();
+                return Result.Success();
+            }
+            catch (Exception ex) {
+                return Result.Failure(ex.GetExceptionMessages());
+            }
         }
 
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="eventDateTime"></param>
-        /// <returns></returns>
         internal static DateTime CalculateStatementDate(DateTime eventDateTime)
         {
             DateTime calculatedDateTime = eventDateTime.Date.AddMonths(1);
@@ -174,78 +113,76 @@ namespace TransactionProcessor.BusinessLogic.Services
             return new DateTime(calculatedDateTime.Year, calculatedDateTime.Month, 1);
         }
 
-        public async Task<Result> GenerateStatement(MerchantCommands.GenerateMerchantStatementCommand command, CancellationToken cancellationToken)
-        {
-            // Need to rebuild the date time from the command as the Kind is Utc which is different from the date time used to generate the statement id
-            DateTime dt = new DateTime(command.RequestDto.MerchantStatementDate.Year, command.RequestDto.MerchantStatementDate.Month, command.RequestDto.MerchantStatementDate.Day);
-            Guid merchantStatementId = IdGenerationService.GenerateMerchantStatementAggregateId(command.EstateId, command.MerchantId, dt);
-            
-            Result result = await ApplyUpdates(
-                async (MerchantStatementAggregate merchantStatementAggregate) =>
-                {
-                    MerchantStatement statement = merchantStatementAggregate.GetStatement();
-                    List<(Guid merchantStatementForDateId, DateTime activityDate)> activityDates = statement.GetActivityDates();
+        public async Task<Result> GenerateStatement(MerchantCommands.GenerateMerchantStatementCommand command,
+                                                    CancellationToken cancellationToken) {
+            try {
+                // Need to rebuild the date time from the command as the Kind is Utc which is different from the date time used to generate the statement id
+                DateTime dt = new DateTime(command.RequestDto.MerchantStatementDate.Year, command.RequestDto.MerchantStatementDate.Month, command.RequestDto.MerchantStatementDate.Day);
+                Guid merchantStatementId = IdGenerationService.GenerateMerchantStatementAggregateId(command.EstateId, command.MerchantId, dt);
 
-                    List<MerchantStatementForDate> statementForDateAggregates = new();
-                    foreach ((Guid merchantStatementForDateId, DateTime activityDate) activityDate in activityDates)
-                    {
-                        Result<MerchantStatementForDateAggregate> statementForDateResult = await this.AggregateService.GetLatest<MerchantStatementForDateAggregate>(activityDate.merchantStatementForDateId, cancellationToken);
-                        if (statementForDateResult.IsFailed)
-                            return ResultHelpers.CreateFailure(statementForDateResult);
-                        MerchantStatementForDate dailyStatement = statementForDateResult.Data.GetStatement(true);
-                        statementForDateAggregates.Add(dailyStatement);
-                    }
+                Result<MerchantStatementAggregate> getMerchantStatementResult = await DomainServiceHelper.GetAggregateOrFailure(ct => this.AggregateService.GetLatest<MerchantStatementAggregate>(merchantStatementId, ct), merchantStatementId, cancellationToken);
+                if (getMerchantStatementResult.IsFailed)
+                    return ResultHelpers.CreateFailure(getMerchantStatementResult);
 
-                    // Ok so now we have the daily statements we need to add a summary line to the statement aggregate
-                    foreach (MerchantStatementForDate merchantStatementForDateAggregate in statementForDateAggregates)
-                    {
-                        // Build the summary event
-                        var transactionsResult = merchantStatementForDateAggregate.GetStatementLines()
-                            .Where(sl => sl.LineType == 1)
-                            .Aggregate(new { Count = 0, TotalAmount = 0m },
-                                (acc, sl) => new { Count = acc.Count + 1, TotalAmount = acc.TotalAmount + sl.Amount });
-                        var settledFeesResult = merchantStatementForDateAggregate.GetStatementLines()
-                            .Where(sl => sl.LineType == 2)
-                            .Aggregate(new { Count = 0, TotalAmount = 0m },
-                                (acc, sl) => new { Count = acc.Count + 1, TotalAmount = acc.TotalAmount + sl.Amount });
-                        var depositsResult = merchantStatementForDateAggregate.GetStatementLines()
-                            .Where(sl => sl.LineType == 3)
-                            .Aggregate(new { Count = 0, TotalAmount = 0m },
-                                (acc, sl) => new { Count = acc.Count + 1, TotalAmount = acc.TotalAmount + sl.Amount });
-                        var withdrawalsResult = merchantStatementForDateAggregate.GetStatementLines()
-                            .Where(sl => sl.LineType == 4)
-                            .Aggregate(new { Count = 0, TotalAmount = 0m },
-                                (acc, sl) => new { Count = acc.Count + 1, TotalAmount = acc.TotalAmount + sl.Amount });
-                        merchantStatementAggregate.AddDailySummaryRecord(merchantStatementForDateAggregate.ActivityDate, 
-                            transactionsResult.Count, transactionsResult.TotalAmount, 
-                            settledFeesResult.Count, settledFeesResult.TotalAmount,
-                            depositsResult.Count,depositsResult.TotalAmount,
-                            withdrawalsResult.Count, withdrawalsResult.TotalAmount);
-                    }
+                MerchantStatementAggregate merchantStatementAggregate = getMerchantStatementResult.Data;
 
-                    merchantStatementAggregate.GenerateStatement(DateTime.Now);
+                MerchantStatement statement = merchantStatementAggregate.GetStatement();
+                List<(Guid merchantStatementForDateId, DateTime activityDate)> activityDates = statement.GetActivityDates();
 
-                    return Result.Success();
-                },
-                merchantStatementId, cancellationToken, false);
+                List<MerchantStatementForDate> statementForDateAggregates = new();
+                foreach ((Guid merchantStatementForDateId, DateTime activityDate) activityDate in activityDates) {
+                    Result<MerchantStatementForDateAggregate> statementForDateResult = await this.AggregateService.GetLatest<MerchantStatementForDateAggregate>(activityDate.merchantStatementForDateId, cancellationToken);
+                    if (statementForDateResult.IsFailed)
+                        return ResultHelpers.CreateFailure(statementForDateResult);
+                    MerchantStatementForDate dailyStatement = statementForDateResult.Data.GetStatement(true);
+                    statementForDateAggregates.Add(dailyStatement);
+                }
 
-            if (result.IsFailed)
-                return ResultHelpers.CreateFailure(result);
+                // Ok so now we have the daily statements we need to add a summary line to the statement aggregate
+                foreach (MerchantStatementForDate merchantStatementForDateAggregate in statementForDateAggregates) {
+                    // Build the summary event
+                    var transactionsResult = merchantStatementForDateAggregate.GetStatementLines().Where(sl => sl.LineType == 1).Aggregate(new { Count = 0, TotalAmount = 0m }, (acc,
+                                                                                                                                                                                 sl) => new { Count = acc.Count + 1, TotalAmount = acc.TotalAmount + sl.Amount });
+                    var settledFeesResult = merchantStatementForDateAggregate.GetStatementLines().Where(sl => sl.LineType == 2).Aggregate(new { Count = 0, TotalAmount = 0m }, (acc,
+                                                                                                                                                                                sl) => new { Count = acc.Count + 1, TotalAmount = acc.TotalAmount + sl.Amount });
+                    var depositsResult = merchantStatementForDateAggregate.GetStatementLines().Where(sl => sl.LineType == 3).Aggregate(new { Count = 0, TotalAmount = 0m }, (acc,
+                                                                                                                                                                             sl) => new { Count = acc.Count + 1, TotalAmount = acc.TotalAmount + sl.Amount });
+                    var withdrawalsResult = merchantStatementForDateAggregate.GetStatementLines().Where(sl => sl.LineType == 4).Aggregate(new { Count = 0, TotalAmount = 0m }, (acc,
+                                                                                                                                                                                sl) => new { Count = acc.Count + 1, TotalAmount = acc.TotalAmount + sl.Amount });
+                    merchantStatementAggregate.AddDailySummaryRecord(merchantStatementForDateAggregate.ActivityDate, transactionsResult.Count, transactionsResult.TotalAmount, settledFeesResult.Count, settledFeesResult.TotalAmount, depositsResult.Count, depositsResult.TotalAmount, withdrawalsResult.Count, withdrawalsResult.TotalAmount);
+                }
 
-            return Result.Success();
+                merchantStatementAggregate.GenerateStatement(DateTime.Now);
+
+                Result saveResult = await this.AggregateService.Save(merchantStatementAggregate, cancellationToken);
+                if (saveResult.IsFailed)
+                    return ResultHelpers.CreateFailure(saveResult);
+
+                return Result.Success();
+            }
+            catch (Exception ex) {
+                return Result.Failure(ex.GetExceptionMessages());
+            }
         }
 
         public async Task<Result> EmailStatement(MerchantStatementCommands.EmailMerchantStatementCommand command,
                                                  CancellationToken cancellationToken) {
-            Result result = await ApplyUpdates(async (MerchantStatementAggregate merchantStatementAggregate) => {
+            try
+            {
+                // Work out the next statement date
+                Result<MerchantStatementAggregate> getMerchantStatementResult = await DomainServiceHelper.GetAggregateOrFailure(ct => this.AggregateService.GetLatest<MerchantStatementAggregate>(command.MerchantStatementId, ct), command.MerchantStatementId, cancellationToken);
+                if (getMerchantStatementResult.IsFailed)
+                    return ResultHelpers.CreateFailure(getMerchantStatementResult);
+
+                MerchantStatementAggregate merchantStatementAggregate = getMerchantStatementResult.Data;
                 MerchantStatement statement = merchantStatementAggregate.GetStatement();
-                // Get the merchant
-                Result<MerchantAggregate> getMerchantResult = await this.AggregateService.Get<MerchantAggregate>(statement.MerchantId, cancellationToken);
+                Result<MerchantAggregate> getMerchantResult = await DomainServiceHelper.GetAggregateOrFailure(ct => this.AggregateService.Get<MerchantAggregate>(statement.MerchantId, ct), statement.MerchantId, cancellationToken);
                 if (getMerchantResult.IsFailed)
                     return ResultHelpers.CreateFailure(getMerchantResult);
+
                 Merchant merchantModel = getMerchantResult.Data.GetMerchant();
                 List<String> emailAddresses = merchantModel.Contacts.Select(c => c.ContactEmailAddress).ToList();
-                
+
                 SendEmailRequest sendEmailRequest = new SendEmailRequest
                 {
                     Body = "<html><body>Please find attached this months statement.</body></html>",
@@ -285,10 +222,16 @@ namespace TransactionProcessor.BusinessLogic.Services
 
                 merchantStatementAggregate.EmailStatement(DateTime.Now, messageId);
 
-                return Result.Success();
-            }, command.MerchantStatementId, cancellationToken, false);
+                Result saveResult = await this.AggregateService.Save(merchantStatementAggregate, cancellationToken);
+                if (saveResult.IsFailed)
+                    return ResultHelpers.CreateFailure(saveResult);
 
-            return result;
+                return Result.Success();
+            }
+            catch (Exception ex)
+            {
+                return Result.Failure(ex.GetExceptionMessages());
+            }
         }
         private TokenResponse TokenResponse;
 
@@ -301,153 +244,189 @@ namespace TransactionProcessor.BusinessLogic.Services
         }
 
         public async Task<Result> BuildStatement(MerchantStatementCommands.BuildMerchantStatementCommand command,
-                                                 CancellationToken cancellationToken)
-        {
-            Result result = await ApplyUpdates(
-                async (MerchantStatementAggregate merchantStatementAggregate) => {
+                                                 CancellationToken cancellationToken) {
+            try {
+                // Work out the next statement date
+                Result<MerchantStatementAggregate> getMerchantStatementResult = await DomainServiceHelper.GetAggregateOrFailure(ct => this.AggregateService.GetLatest<MerchantStatementAggregate>(command.MerchantStatementId, ct), command.MerchantStatementId, cancellationToken);
+                if (getMerchantStatementResult.IsFailed)
+                    return ResultHelpers.CreateFailure(getMerchantStatementResult);
 
-                    MerchantStatement statement = merchantStatementAggregate.GetStatement();
-                    Result<MerchantAggregate> getMerchantResult = await this.AggregateService.Get<MerchantAggregate>(statement.MerchantId, cancellationToken);
+                MerchantStatementAggregate merchantStatementAggregate = getMerchantStatementResult.Data;
+                MerchantStatement statement = merchantStatementAggregate.GetStatement();
+                Result<MerchantAggregate> getMerchantResult = await DomainServiceHelper.GetAggregateOrFailure(ct => this.AggregateService.Get<MerchantAggregate>(statement.MerchantId, ct), statement.MerchantId, cancellationToken);
+                if (getMerchantResult.IsFailed)
+                    return ResultHelpers.CreateFailure(getMerchantResult);
 
-                    if (getMerchantResult.IsFailed)
-                        return ResultHelpers.CreateFailure(getMerchantResult);
-                    MerchantAggregate merchantAggregate = getMerchantResult.Data;
-                    Merchant m = merchantAggregate.GetMerchant();
+                Merchant merchantModel = getMerchantResult.Data.GetMerchant();
 
-                    String html = await this.StatementBuilder.GetStatementHtml(merchantStatementAggregate, m, cancellationToken);
-                    // TODO: Record the html to the statement aggregate so we can use it later if needed
+                String html = await this.StatementBuilder.GetStatementHtml(merchantStatementAggregate, merchantModel, cancellationToken);
+                // TODO: Record the html to the statement aggregate so we can use it later if needed
 
-                    String base64 = EncodeTo64(html);
+                String base64 = EncodeTo64(html);
 
-                    merchantStatementAggregate.BuildStatement(DateTime.Now, base64);
+                merchantStatementAggregate.BuildStatement(DateTime.Now, base64);
 
-                    return Result.Success();
-             },
-                command.MerchantStatementId, cancellationToken);
+                Result saveResult = await this.AggregateService.Save(merchantStatementAggregate, cancellationToken);
+                if (saveResult.IsFailed)
+                    return ResultHelpers.CreateFailure(saveResult);
 
-            if (result.IsFailed)
-                return ResultHelpers.CreateFailure(result);
-
-            return Result.Success();
+                return Result.Success();
+            }
+            catch (Exception ex) {
+                return Result.Failure(ex.GetExceptionMessages());
+            }
         }
 
         public async Task<Result> RecordActivityDateOnMerchantStatement(MerchantStatementCommands.RecordActivityDateOnMerchantStatementCommand command,
                                                                         CancellationToken cancellationToken) {
-            Result result = await ApplyUpdates(
-                async (MerchantStatementAggregate merchantStatementAggregate) => {
+            try
+            {
+                // Work out the next statement date
+                Result<MerchantStatementAggregate> getMerchantStatementResult = await DomainServiceHelper.GetAggregateOrFailure(ct => this.AggregateService.GetLatest<MerchantStatementAggregate>(command.MerchantStatementId, ct), command.MerchantStatementId, cancellationToken);
+                if (getMerchantStatementResult.IsFailed)
+                    return ResultHelpers.CreateFailure(getMerchantStatementResult);
 
-                    merchantStatementAggregate.RecordActivityDateOnStatement(command.MerchantStatementId, command.StatementDate,
+                MerchantStatementAggregate merchantStatementAggregate = getMerchantStatementResult.Data;
+
+                merchantStatementAggregate.RecordActivityDateOnStatement(command.MerchantStatementId, command.StatementDate,
                         command.EstateId, command.MerchantId,
                         command.MerchantStatementForDateId, command.StatementActivityDate);
-                    
-                    return Result.Success();
-                }, command.MerchantStatementId, cancellationToken, false);
 
-            if (result.IsFailed)
-                return ResultHelpers.CreateFailure(result);
+                Result saveResult = await this.AggregateService.Save(merchantStatementAggregate, cancellationToken);
+                if (saveResult.IsFailed)
+                    return ResultHelpers.CreateFailure(saveResult);
 
-            return Result.Success();
+                return Result.Success();
+            }
+            catch (Exception ex)
+            {
+                return Result.Failure(ex.GetExceptionMessages());
+            }
         }
 
         public async Task<Result> AddDepositToStatement(MerchantStatementCommands.AddDepositToMerchantStatementCommand command,
                                                         CancellationToken cancellationToken) {
-            // Work out the next statement date
-            DateTime nextStatementDate = CalculateStatementDate(command.DepositDateTime.Date);
+            try
+            {
+                // Work out the next statement date
+                DateTime nextStatementDate = CalculateStatementDate(command.DepositDateTime.Date);
 
-            Guid merchantStatementId = IdGenerationService.GenerateMerchantStatementAggregateId(command.EstateId, command.MerchantId, nextStatementDate);
-            Guid merchantStatementForDateId = IdGenerationService.GenerateMerchantStatementForDateAggregateId(command.EstateId, command.MerchantId, nextStatementDate, command.DepositDateTime.Date);
-            
-            Result result = await ApplyUpdates(
-                async (MerchantStatementForDateAggregate merchantStatementForDateAggregate) => {
+                Guid merchantStatementId = IdGenerationService.GenerateMerchantStatementAggregateId(command.EstateId, command.MerchantId, nextStatementDate);
+                Guid merchantStatementForDateId = IdGenerationService.GenerateMerchantStatementForDateAggregateId(command.EstateId, command.MerchantId, nextStatementDate, command.DepositDateTime.Date);
 
-                    Deposit deposit = new Deposit { DepositId = command.DepositId, Reference = command.Reference, DepositDateTime = command.DepositDateTime, Amount = command.Amount.Value };
-                    
-                    Guid eventId = IdGenerationService.GenerateEventId(new
-                    {
-                        command.DepositId,
-                        deposit,
-                        command.DepositDateTime,
-                    });
+                Result<MerchantStatementForDateAggregate> getMerchantStatementForDateResult = await DomainServiceHelper.GetAggregateOrFailure(ct => this.AggregateService.GetLatest<MerchantStatementForDateAggregate>(merchantStatementForDateId, ct), merchantStatementForDateId, cancellationToken, false);
+                if (getMerchantStatementForDateResult.IsFailed)
+                    return ResultHelpers.CreateFailure(getMerchantStatementForDateResult);
 
-                    merchantStatementForDateAggregate.AddDepositToStatement(merchantStatementId, nextStatementDate, eventId, command.EstateId, command.MerchantId, deposit);
+                MerchantStatementForDateAggregate merchantStatementForDateAggregate = getMerchantStatementForDateResult.Data;
 
-                    return Result.Success();
-                }, merchantStatementForDateId, cancellationToken, false);
+                Deposit deposit = new Deposit { DepositId = command.DepositId, Reference = command.Reference, DepositDateTime = command.DepositDateTime, Amount = command.Amount.Value };
 
-            if (result.IsFailed)
-                return ResultHelpers.CreateFailure(result);
+                Guid eventId = IdGenerationService.GenerateEventId(new
+                {
+                    command.DepositId,
+                    deposit,
+                    command.DepositDateTime,
+                });
 
-            return Result.Success();
+                merchantStatementForDateAggregate.AddDepositToStatement(merchantStatementId, nextStatementDate, eventId, command.EstateId, command.MerchantId, deposit);
+
+                Result saveResult = await this.AggregateService.Save(merchantStatementForDateAggregate, cancellationToken);
+                if (saveResult.IsFailed)
+                    return ResultHelpers.CreateFailure(saveResult);
+
+                return Result.Success();
+            }
+            catch (Exception ex)
+            {
+                return Result.Failure(ex.GetExceptionMessages());
+            }
         }
 
         public async Task<Result> AddWithdrawalToStatement(MerchantStatementCommands.AddWithdrawalToMerchantStatementCommand command,
                                                            CancellationToken cancellationToken) {
-            // Work out the next statement date
-            DateTime nextStatementDate = CalculateStatementDate(command.WithdrawalDateTime.Date);
+            try
+            {
+                // Work out the next statement date
+                DateTime nextStatementDate = CalculateStatementDate(command.WithdrawalDateTime.Date);
 
-            Guid merchantStatementId = IdGenerationService.GenerateMerchantStatementAggregateId(command.EstateId, command.MerchantId, nextStatementDate);
-            Guid merchantStatementForDateId = IdGenerationService.GenerateMerchantStatementForDateAggregateId(command.EstateId, command.MerchantId, nextStatementDate, command.WithdrawalDateTime.Date);
+                Guid merchantStatementId = IdGenerationService.GenerateMerchantStatementAggregateId(command.EstateId, command.MerchantId, nextStatementDate);
+                Guid merchantStatementForDateId = IdGenerationService.GenerateMerchantStatementForDateAggregateId(command.EstateId, command.MerchantId, nextStatementDate, command.WithdrawalDateTime.Date);
 
-            Result result = await ApplyUpdates(
-                async (MerchantStatementForDateAggregate merchantStatementForDateAggregate) => {
+                Result<MerchantStatementForDateAggregate> getMerchantStatementForDateResult = await DomainServiceHelper.GetAggregateOrFailure(ct => this.AggregateService.GetLatest<MerchantStatementForDateAggregate>(merchantStatementForDateId, ct), merchantStatementForDateId, cancellationToken, false);
+                if (getMerchantStatementForDateResult.IsFailed)
+                    return ResultHelpers.CreateFailure(getMerchantStatementForDateResult);
 
-                    Withdrawal withdrawal = new Withdrawal() { WithdrawalId = command.WithdrawalId, WithdrawalDateTime = command.WithdrawalDateTime, Amount = command.Amount.Value };
+                MerchantStatementForDateAggregate merchantStatementForDateAggregate = getMerchantStatementForDateResult.Data;
 
-                    Guid eventId = IdGenerationService.GenerateEventId(new
-                    {
-                        command.WithdrawalId,
-                        withdrawal,
-                        command.WithdrawalDateTime,
-                    });
+                Withdrawal withdrawal = new Withdrawal() { WithdrawalId = command.WithdrawalId, WithdrawalDateTime = command.WithdrawalDateTime, Amount = command.Amount.Value };
 
-                    merchantStatementForDateAggregate.AddWithdrawalToStatement(merchantStatementId, nextStatementDate, eventId, command.EstateId, command.MerchantId, withdrawal);
+                Guid eventId = IdGenerationService.GenerateEventId(new
+                {
+                    command.WithdrawalId,
+                    withdrawal,
+                    command.WithdrawalDateTime,
+                });
 
-                    return Result.Success();
-                }, merchantStatementForDateId, cancellationToken, false);
+                merchantStatementForDateAggregate.AddWithdrawalToStatement(merchantStatementId, nextStatementDate, eventId, command.EstateId, command.MerchantId, withdrawal);
 
-            if (result.IsFailed)
-                return ResultHelpers.CreateFailure(result);
+                Result saveResult = await this.AggregateService.Save(merchantStatementForDateAggregate, cancellationToken);
+                if (saveResult.IsFailed)
+                    return ResultHelpers.CreateFailure(saveResult);
 
-            return Result.Success();
+                return Result.Success();
+            }
+            catch (Exception ex)
+            {
+                return Result.Failure(ex.GetExceptionMessages());
+            }
         }
 
         public async Task<Result> AddTransactionToStatement(MerchantStatementCommands.AddTransactionToMerchantStatementCommand command,
                                                             CancellationToken cancellationToken)
         {
-            // Transaction Completed arrives(if this is a logon transaction or failed then return)
-            if (command.IsAuthorised == false)
-                return Result.Success();
-            if (command.TransactionAmount == null)
-                return Result.Success();
-
-            // Work out the next statement date
-            DateTime nextStatementDate = CalculateStatementDate(command.TransactionDateTime);
-            
-            Guid merchantStatementId = IdGenerationService.GenerateMerchantStatementAggregateId(command.EstateId, command.MerchantId, nextStatementDate);
-            Guid merchantStatementForDateId = IdGenerationService.GenerateMerchantStatementForDateAggregateId(command.EstateId, command.MerchantId, nextStatementDate, command.TransactionDateTime);
-
-            Result result = await ApplyUpdates(
-                async (MerchantStatementForDateAggregate merchantStatementForDateAggregate) => {
-
-                    // Add transaction to statement
-                    Transaction transaction = new(command.TransactionId, command.TransactionDateTime, command.TransactionAmount.Value);
-
-                    Guid eventId = IdGenerationService.GenerateEventId(new
-                    {
-                        command.TransactionId,
-                        TransactionAmount = command.TransactionAmount.Value,
-                        command.TransactionDateTime,
-                    });
-
-                    merchantStatementForDateAggregate.AddTransactionToStatement(merchantStatementId, nextStatementDate, eventId, command.EstateId, command.MerchantId, transaction);
-
+            try
+            {
+                // Transaction Completed arrives(if this is a logon transaction or failed then return)
+                if (command.IsAuthorised == false)
                     return Result.Success();
-                }, merchantStatementForDateId, cancellationToken, false);
+                if (command.TransactionAmount == null)
+                    return Result.Success();
 
-            if (result.IsFailed)
-                return ResultHelpers.CreateFailure(result);
+                // Work out the next statement date
+                DateTime nextStatementDate = CalculateStatementDate(command.TransactionDateTime);
 
-            return Result.Success();
+                Guid merchantStatementId = IdGenerationService.GenerateMerchantStatementAggregateId(command.EstateId, command.MerchantId, nextStatementDate);
+                Guid merchantStatementForDateId = IdGenerationService.GenerateMerchantStatementForDateAggregateId(command.EstateId, command.MerchantId, nextStatementDate, command.TransactionDateTime);
+
+                Result<MerchantStatementForDateAggregate> getMerchantStatementForDateResult = await DomainServiceHelper.GetAggregateOrFailure(ct => this.AggregateService.GetLatest<MerchantStatementForDateAggregate>(merchantStatementForDateId, ct), merchantStatementForDateId, cancellationToken, false);
+                if (getMerchantStatementForDateResult.IsFailed)
+                    return ResultHelpers.CreateFailure(getMerchantStatementForDateResult);
+
+                MerchantStatementForDateAggregate merchantStatementForDateAggregate = getMerchantStatementForDateResult.Data;
+
+                // Add transaction to statement
+                Transaction transaction = new(command.TransactionId, command.TransactionDateTime, command.TransactionAmount.Value);
+
+                Guid eventId = IdGenerationService.GenerateEventId(new
+                {
+                    command.TransactionId,
+                    TransactionAmount = command.TransactionAmount.Value,
+                    command.TransactionDateTime,
+                });
+
+                merchantStatementForDateAggregate.AddTransactionToStatement(merchantStatementId, nextStatementDate, eventId, command.EstateId, command.MerchantId, transaction);
+
+                Result saveResult = await this.AggregateService.Save(merchantStatementForDateAggregate, cancellationToken);
+                if (saveResult.IsFailed)
+                    return ResultHelpers.CreateFailure(saveResult);
+
+                return Result.Success();
+            }
+            catch (Exception ex)
+            {
+                return Result.Failure(ex.GetExceptionMessages());
+            }
         }
 
         #endregion
