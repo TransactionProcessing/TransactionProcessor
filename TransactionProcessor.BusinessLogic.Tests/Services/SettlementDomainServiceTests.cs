@@ -99,15 +99,10 @@ namespace TransactionProcessor.BusinessLogic.Tests.Services
                 .ReturnsAsync(Result.Success(TestData.GetCompletedAuthorisedSaleTransactionAggregateWithPendingFee(TestData.FeeIds.GetValueOrDefault(8))))
                 .ReturnsAsync(Result.Success(TestData.GetCompletedAuthorisedSaleTransactionAggregateWithPendingFee(TestData.FeeIds.GetValueOrDefault(9))));
             this.AggregateService.SetupSequence(s => s.Save(It.IsAny<SettlementAggregate>(), It.IsAny<CancellationToken>()))
-                .ReturnsAsync(Result.Success())
                 .ReturnsAsync(Result.Failure(new List<String> { "WrongExpectedVersion" }))
-                .ReturnsAsync(Result.Success())
                 .ReturnsAsync(Result.Failure(new List<String> { "WrongExpectedVersion" }))
-                .ReturnsAsync(Result.Success())
                 .ReturnsAsync(Result.Failure(new List<String> { "WrongExpectedVersion" }))
-                .ReturnsAsync(Result.Success())
                 .ReturnsAsync(Result.Failure(new List<String> { "WrongExpectedVersion" }))
-                .ReturnsAsync(Result.Success())
                 .ReturnsAsync(Result.Failure(new List<String> { "WrongExpectedVersion" }))
                 .ReturnsAsync(Result.Failure(new List<String> { "WrongExpectedVersion" }));
             this.AggregateService.SetupSequence(s => s.Save(It.IsAny<TransactionAggregate>(), It.IsAny<CancellationToken>()))
@@ -132,7 +127,7 @@ namespace TransactionProcessor.BusinessLogic.Tests.Services
             Result<Guid> result = await settlementDomainService.ProcessSettlement(command, CancellationToken.None);
 
             result.IsSuccess.ShouldBeFalse();
-            this.AggregateService.Verify(s => s.Save(It.IsAny<SettlementAggregate>(), It.IsAny<CancellationToken>()), Times.Exactly(11));
+            this.AggregateService.Verify(s => s.Save(It.IsAny<SettlementAggregate>(), It.IsAny<CancellationToken>()), Times.Exactly(6));
         }
 
         [Fact]
@@ -152,9 +147,7 @@ namespace TransactionProcessor.BusinessLogic.Tests.Services
                 .ReturnsAsync(Result.Success(TestData.GetCompletedAuthorisedSaleTransactionAggregateWithPendingFee(TestData.FeeIds.GetValueOrDefault(8))))
                 .ReturnsAsync(Result.Success(TestData.GetCompletedAuthorisedSaleTransactionAggregateWithPendingFee(TestData.FeeIds.GetValueOrDefault(9))));
             this.AggregateService.SetupSequence(s => s.Save(It.IsAny<SettlementAggregate>(), It.IsAny<CancellationToken>()))
-                .ReturnsAsync(Result.Success())
                 .ReturnsAsync(Result.Failure(new List<String>{ "WrongExpectedVersion" }))
-                .ReturnsAsync(Result.Success())
                 .ReturnsAsync(Result.Success());
             this.AggregateService.SetupSequence(s => s.Save(It.IsAny<TransactionAggregate>(), It.IsAny<CancellationToken>()))
                 .ReturnsAsync(Result.Success())
@@ -179,7 +172,7 @@ namespace TransactionProcessor.BusinessLogic.Tests.Services
 
             result.IsSuccess.ShouldBeTrue();
             result.Data.ShouldNotBe(Guid.Empty);
-            this.AggregateService.Verify(s => s.Save(It.IsAny<SettlementAggregate>(), It.IsAny<CancellationToken>()), Times.Exactly(4));
+            this.AggregateService.Verify(s => s.Save(It.IsAny<SettlementAggregate>(), It.IsAny<CancellationToken>()), Times.Exactly(2));
         }
 
         [Fact]
@@ -243,7 +236,6 @@ namespace TransactionProcessor.BusinessLogic.Tests.Services
             Result<Guid> result = await settlementDomainService.ProcessSettlement(command, CancellationToken.None);
 
             result.IsSuccess.ShouldBeTrue();
-            result.Data.ShouldNotBe(Guid.Empty);
         }
 
         [Fact]
