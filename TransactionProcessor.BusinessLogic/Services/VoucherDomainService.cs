@@ -91,7 +91,7 @@ public class VoucherDomainService : IVoucherDomainService
             if (validateResult.IsFailed)
                 return ResultHelpers.CreateFailure(validateResult);
 
-            Result<VoucherAggregate> voucherResult = await DomainServiceHelper.GetAggregateOrFailure(ct => this.AggregateService.GetLatest<VoucherAggregate>(voucherId, ct), voucherId, cancellationToken);
+            Result<VoucherAggregate> voucherResult = await DomainServiceHelper.GetAggregateOrFailure(ct => this.AggregateService.GetLatest<VoucherAggregate>(voucherId, ct), voucherId, cancellationToken, false);
             if (voucherResult.IsFailed)
                 return ResultHelpers.CreateFailure(voucherResult);
 
