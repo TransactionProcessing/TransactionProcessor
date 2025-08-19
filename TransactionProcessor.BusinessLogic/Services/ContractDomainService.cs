@@ -160,7 +160,7 @@ namespace TransactionProcessor.BusinessLogic.Services
                 if (estateResult.IsFailed)
                     return ResultHelpers.CreateFailure(estateResult);
 
-                Result<ContractAggregate> contractResult = await DomainServiceHelper.GetAggregateOrFailure(ct => this.AggregateService.GetLatest<ContractAggregate>(command.ContractId, ct), command.ContractId, cancellationToken);
+                Result<ContractAggregate> contractResult = await DomainServiceHelper.GetAggregateOrFailure(ct => this.AggregateService.GetLatest<ContractAggregate>(command.ContractId, ct), command.ContractId, cancellationToken, false);
                 if (contractResult.IsFailed)
                     return ResultHelpers.CreateFailure(contractResult);
 
