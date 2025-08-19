@@ -51,34 +51,37 @@ namespace TransactionProcessor.BusinessLogic.Services
         #endregion
 
         #region Methods
-
-        private async Task<Result> ApplyUpdates(Func<(EstateAggregate estateAggregate, ContractAggregate contractAggregate), Task<Result>> action, Guid estateId, Guid contractId, CancellationToken cancellationToken, Boolean isNotFoundError = true)
+        
+        public async Task<Result> AddProductToContract(ContractCommands.AddProductToContractCommand command, CancellationToken cancellationToken)
         {
+            Models.Contract.ProductType productType = (Models.Contract.ProductType)command.RequestDTO.ProductType;
+
             try
             {
-                Result<EstateAggregate> getResult = await this.AggregateService.Get<EstateAggregate>(estateId, cancellationToken);
-                if (getResult.IsFailed)
-                    return ResultHelpers.CreateFailure(getResult);
-                EstateAggregate estateAggregate = getResult.Data;
-                if (estateAggregate.IsCreated == false)
-                    return Result.Failure("Estate is not created");
-                
-                Result<ContractAggregate> getContractResult = await this.AggregateService.GetLatest<ContractAggregate>(contractId, cancellationToken);
-                Result<ContractAggregate> contractAggregateResult =
-                    DomainServiceHelper.HandleGetAggregateResult(getContractResult, contractId, isNotFoundError);
-                if (contractAggregateResult.IsFailed)
-                    return ResultHelpers.CreateFailure(contractAggregateResult);
+                Result<ContractAggregate> contractResult = await DomainServiceHelper.GetAggregateOrFailure(ct => this.AggregateService.GetLatest<ContractAggregate>(command.ContractId, ct), command.ContractId, cancellationToken);
+                if (contractResult.IsFailed)
+                    return ResultHelpers.CreateFailure(contractResult);
 
-                ContractAggregate contractAggregate = contractAggregateResult.Data;
-                Result result = await action((estateAggregate, contractAggregate));
-                if (result.IsFailed)
-                    return ResultHelpers.CreateFailure(result);
+                ContractAggregate contractAggregate = contractResult.Data;
+                
+                if (contractAggregate.IsCreated == false) {
+                    return Result.Forbidden($"Contract Id [{command.ContractId}] must be created to add products");
+                }
+
+                if (command.RequestDTO.Value.HasValue) {
+                    contractAggregate.AddFixedValueProduct(command.ProductId, command.RequestDTO.ProductName,
+                        command.RequestDTO.DisplayText, command.RequestDTO.Value.Value, productType);
+                }
+                else {
+                    contractAggregate.AddVariableValueProduct(command.ProductId, command.RequestDTO.ProductName,
+                        command.RequestDTO.DisplayText, productType);
+                }
 
                 Result saveResult = await this.AggregateService.Save(contractAggregate, cancellationToken);
                 if (saveResult.IsFailed)
                     return ResultHelpers.CreateFailure(saveResult);
 
-                return Result.Success();
+                return saveResult;
             }
             catch (Exception ex)
             {
@@ -86,75 +89,86 @@ namespace TransactionProcessor.BusinessLogic.Services
             }
         }
 
-        public async Task<Result> AddProductToContract(ContractCommands.AddProductToContractCommand command, CancellationToken cancellationToken)
-        {
-            Models.Contract.ProductType productType = (Models.Contract.ProductType)command.RequestDTO.ProductType;
-
-            Result result = await this.ApplyUpdates(async ((EstateAggregate estateAggregate, ContractAggregate contractAggregate) aggregates) => {
-                if (aggregates.estateAggregate.IsCreated == false) {
-                    return Result.Forbidden($"Estate with Id {command.EstateId} not created");
-                }
-
-                if (aggregates.contractAggregate.IsCreated == false) {
-                    return Result.Forbidden($"Contract Id [{command.ContractId}] must be created to add products");
-                }
-
-                if (command.RequestDTO.Value.HasValue) {
-                    aggregates.contractAggregate.AddFixedValueProduct(command.ProductId, command.RequestDTO.ProductName,
-                        command.RequestDTO.DisplayText, command.RequestDTO.Value.Value, productType);
-                }
-                else {
-                    aggregates.contractAggregate.AddVariableValueProduct(command.ProductId, command.RequestDTO.ProductName,
-                        command.RequestDTO.DisplayText, productType);
-                }
-
-                return Result.Success();
-            }, command.EstateId, command.ContractId, cancellationToken);
-            return result;
-        }
-
         public async Task<Result> AddTransactionFeeForProductToContract(ContractCommands.AddTransactionFeeForProductToContractCommand command, CancellationToken cancellationToken)
         {
             Models.Contract.CalculationType calculationType = (Models.Contract.CalculationType)command.RequestDTO.CalculationType;
             Models.Contract.FeeType feeType = (Models.Contract.FeeType)command.RequestDTO.FeeType;
 
-            Result result = await this.ApplyUpdates(async ((EstateAggregate estateAggregate, ContractAggregate contractAggregate) aggregates) => {
+            try
+            {
+                Result<ContractAggregate> contractResult = await DomainServiceHelper.GetAggregateOrFailure(ct => this.AggregateService.GetLatest<ContractAggregate>(command.ContractId, ct), command.ContractId, cancellationToken);
+                if (contractResult.IsFailed)
+                    return ResultHelpers.CreateFailure(contractResult);
 
-                if (aggregates.contractAggregate.IsCreated == false)
+                ContractAggregate contractAggregate = contractResult.Data;
+                if (contractAggregate.IsCreated == false)
                 {
                     return Result.Forbidden($"Contract Id [{command.ContractId}] must be created to add transaction fees");
                 }
 
-                List<Product> products = aggregates.contractAggregate.GetProducts();
+                List<Product> products = contractAggregate.GetProducts();
                 Product product = products.SingleOrDefault(p => p.ContractProductId == command.ProductId);
                 if (product == null)
                 {
-                    throw new InvalidOperationException($"Product Id [{command.ProductId}] not added to contract [{aggregates.contractAggregate.Description}]");
+                    throw new InvalidOperationException($"Product Id [{command.ProductId}] not added to contract [{contractAggregate.Description}]");
                 }
 
-                aggregates.contractAggregate.AddTransactionFee(product, command.TransactionFeeId, command.RequestDTO.Description, calculationType, feeType, command.RequestDTO.Value);
+                contractAggregate.AddTransactionFee(product, command.TransactionFeeId, command.RequestDTO.Description, calculationType, feeType, command.RequestDTO.Value);
 
-                return Result.Success();
-            }, command.EstateId, command.ContractId, cancellationToken);
-            return result;
+                Result saveResult = await this.AggregateService.Save(contractAggregate, cancellationToken);
+                if (saveResult.IsFailed)
+                    return ResultHelpers.CreateFailure(saveResult);
+
+                return saveResult;
+            }
+            catch (Exception ex)
+            {
+                return Result.Failure(ex.GetExceptionMessages());
+            }
 
         }
 
         public async Task<Result> DisableTransactionFeeForProduct(ContractCommands.DisableTransactionFeeForProductCommand command, CancellationToken cancellationToken)
         {
-            Result result = await this.ApplyUpdates(async ((EstateAggregate estateAggregate, ContractAggregate contractAggregate) aggregates) => {
+            try
+            {
+                Result<ContractAggregate> contractResult = await DomainServiceHelper.GetAggregateOrFailure(ct => this.AggregateService.GetLatest<ContractAggregate>(command.ContractId, ct), command.ContractId, cancellationToken);
+                if (contractResult.IsFailed)
+                    return ResultHelpers.CreateFailure(contractResult);
 
-                aggregates.contractAggregate.DisableTransactionFee(command.ProductId, command.TransactionFeeId);
-                return Result.Success();
-            }, command.EstateId, command.ContractId, cancellationToken);
-            return result;
+                ContractAggregate contractAggregate = contractResult.Data;
+
+                contractAggregate.DisableTransactionFee(command.ProductId, command.TransactionFeeId);
+                
+                Result saveResult = await this.AggregateService.Save(contractAggregate, cancellationToken);
+                if (saveResult.IsFailed)
+                    return ResultHelpers.CreateFailure(saveResult);
+
+                return saveResult;
+            }
+            catch (Exception ex)
+            {
+                return Result.Failure(ex.GetExceptionMessages());
+            }
         }
 
         public async Task<Result> CreateContract(ContractCommands.CreateContractCommand command, CancellationToken cancellationToken)
         {
-            Result result = await this.ApplyUpdates(async ((EstateAggregate estateAggregate, ContractAggregate contractAggregate) aggregates) => {
+            try
+            {
+                Result<EstateAggregate> estateResult = await DomainServiceHelper.GetAggregateOrFailure(ct => this.AggregateService.Get<EstateAggregate>(command.EstateId, ct), command.EstateId, cancellationToken);
+                if (estateResult.IsFailed)
+                    return ResultHelpers.CreateFailure(estateResult);
 
-                Models.Estate.Estate estate = aggregates.estateAggregate.GetEstate();
+                Result<ContractAggregate> contractResult = await DomainServiceHelper.GetAggregateOrFailure(ct => this.AggregateService.GetLatest<ContractAggregate>(command.ContractId, ct), command.ContractId, cancellationToken);
+                if (contractResult.IsFailed)
+                    return ResultHelpers.CreateFailure(contractResult);
+
+                ContractAggregate contractAggregate = contractResult.Data;
+                EstateAggregate estateAggregate = estateResult.Data;
+
+
+                Models.Estate.Estate estate = estateAggregate.GetEstate();
                 if (estate.Operators.Any(o => o.OperatorId == command.RequestDTO.OperatorId) == false)
                 {
                     return Result.NotFound($"Unable to create a contract for an operator that is not setup on estate [{estate.Name}]");
@@ -182,15 +196,22 @@ namespace TransactionProcessor.BusinessLogic.Services
                     }
                 }
 
-                if (aggregates.contractAggregate.IsCreated)
+                if (contractAggregate.IsCreated)
                 {
                     return Result.Forbidden($"Contract Id [{command.ContractId}] already created for estate [{estate.Name}]");
                 }
-                aggregates.contractAggregate.Create(command.EstateId, command.RequestDTO.OperatorId, command.RequestDTO.Description);
+                contractAggregate.Create(command.EstateId, command.RequestDTO.OperatorId, command.RequestDTO.Description);
 
-                return Result.Success();
-            }, command.EstateId, command.ContractId, cancellationToken, false);
-            return result;
+                Result saveResult = await this.AggregateService.Save(contractAggregate, cancellationToken);
+                if (saveResult.IsFailed)
+                    return ResultHelpers.CreateFailure(saveResult);
+
+                return saveResult;
+            }
+            catch (Exception ex)
+            {
+                return Result.Failure(ex.GetExceptionMessages());
+            }
         }
 
         #endregion
