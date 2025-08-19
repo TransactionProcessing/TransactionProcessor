@@ -3,6 +3,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using Shared.Results;
 using SimpleResults;
+using TransactionProcessor.BusinessLogic.Common;
 using TransactionProcessor.BusinessLogic.Requests;
 
 namespace TransactionProcessor.BusinessLogic.Services
@@ -33,67 +34,14 @@ namespace TransactionProcessor.BusinessLogic.Services
         {
             this.AggregateService = aggregateService();
         }
-
-        private async Task<Result> ApplyFloatUpdates(Func<FloatAggregate, Result> action, Guid floatId, CancellationToken cancellationToken, Boolean isNotFoundError = true)
-        {
-            try
-            {
-                Result<FloatAggregate> getFloatResult = await this.AggregateService.GetLatest<FloatAggregate>(floatId, cancellationToken);
-                Result<FloatAggregate> floatAggregateResult = DomainServiceHelper.HandleGetAggregateResult(getFloatResult, floatId, isNotFoundError);
-
-                if (floatAggregateResult.IsFailed)
-                    return ResultHelpers.CreateFailure(floatAggregateResult);
-
-                FloatAggregate floatAggregate = floatAggregateResult.Data;
-                
-                Result result = action(floatAggregate);
-                if (result.IsFailed)
-                    return ResultHelpers.CreateFailure(result);
-
-                Result saveResult = await this.AggregateService.Save(floatAggregate, cancellationToken);
-                if (saveResult.IsFailed)
-                    return ResultHelpers.CreateFailure(saveResult);
-
-                return Result.Success();
-            }
-            catch (Exception ex)
-            {
-                return Result.Failure(ex.GetExceptionMessages());
-            }
-        }
-
-        private async Task<Result> ApplyFloatActivityUpdates(Func<FloatActivityAggregate, Result> action, Guid floatId, CancellationToken cancellationToken, Boolean isNotFoundError = true)
-        {
-            try
-            {
-                Result<FloatActivityAggregate> getFloatResult = await this.AggregateService.GetLatest<FloatActivityAggregate>(floatId, cancellationToken);
-                Result<FloatActivityAggregate> floatActivityAggregateResult = DomainServiceHelper.HandleGetAggregateResult(getFloatResult, floatId, isNotFoundError);
-
-                if (floatActivityAggregateResult.IsFailed)
-                    return ResultHelpers.CreateFailure(floatActivityAggregateResult);
-
-                FloatActivityAggregate floatActivityAggregate = floatActivityAggregateResult.Data;
-
-                Result result = action(floatActivityAggregate);
-                if (result.IsFailed)
-                    return ResultHelpers.CreateFailure(result);
-
-                Result saveResult = await this.AggregateService.Save(floatActivityAggregate, cancellationToken);
-                if (saveResult.IsFailed)
-                    return ResultHelpers.CreateFailure(saveResult);
-
-                return Result.Success();
-            }
-            catch (Exception ex)
-            {
-                return Result.Failure(ex.GetExceptionMessages());
-            }
-        }
-
-
+        
         private async Task<Result> ValidateEstate(Guid estateId, CancellationToken cancellationToken)
         {
-            Result<EstateAggregate> getEstateResult= await this.AggregateService.Get<EstateAggregate>(estateId, cancellationToken);
+            Result<EstateAggregate> getEstateResult= await DomainServiceHelper.GetAggregateOrFailure(
+                (token) => this.AggregateService.Get<EstateAggregate>(estateId, token),
+                estateId,
+                cancellationToken,
+                isNotFoundError: true);
 
             if (getEstateResult.IsFailed) {
                 return ResultHelpers.CreateFailure(getEstateResult);
@@ -103,11 +51,12 @@ namespace TransactionProcessor.BusinessLogic.Services
 
         private async Task<Result> ValidateContractProduct(Guid estateId, Guid contractId, Guid productId, CancellationToken cancellationToken)
         {
-            Result<ContractAggregate> getContractResult = await this.AggregateService.Get<ContractAggregate>(contractId, cancellationToken);
-            if (getContractResult.IsFailed)
-            {
-                return ResultHelpers.CreateFailure(getContractResult);
-            }
+            Result<ContractAggregate> getContractResult = await DomainServiceHelper.GetAggregateOrFailure(
+                (token) => this.AggregateService.Get<ContractAggregate>(contractId, token),
+                contractId,
+                cancellationToken,
+                isNotFoundError: true);
+
             ContractAggregate contractAggregate = getContractResult.Data;
             Models.Contract.Contract contract = contractAggregate.GetContract();
             Boolean productExists = contract.Products.Any(cp => cp.ContractProductId == productId);
@@ -120,105 +69,118 @@ namespace TransactionProcessor.BusinessLogic.Services
 
         public async Task<Result> CreateFloatForContractProduct(FloatCommands.CreateFloatForContractProductCommand command,
                                                                 CancellationToken cancellationToken){
-            
-            Result validateEstateResult = await this.ValidateEstate(command.EstateId, cancellationToken);
-            if (validateEstateResult.IsFailed) {
-                return ResultHelpers.CreateFailure(validateEstateResult);
-            }
 
-            Result validateProductResult = await this.ValidateContractProduct(command.EstateId, command.ContractId, command.ProductId, cancellationToken);
-            if (validateProductResult.IsFailed) {
-                return ResultHelpers.CreateFailure(validateProductResult);
-            }
+            try {
+                Result validateEstateResult = await this.ValidateEstate(command.EstateId, cancellationToken);
+                if (validateEstateResult.IsFailed) {
+                    return ResultHelpers.CreateFailure(validateEstateResult);
+                }
 
-            // Generate the float id
-            Guid floatId = IdGenerationService.GenerateFloatAggregateId(command.EstateId, command.ContractId, command.ProductId);
+                Result validateProductResult = await this.ValidateContractProduct(command.EstateId, command.ContractId, command.ProductId, cancellationToken);
+                if (validateProductResult.IsFailed) {
+                    return ResultHelpers.CreateFailure(validateProductResult);
+                }
 
-            Result result = await this.ApplyFloatUpdates((FloatAggregate floatAggregate) => {
+                // Generate the float id
+                Guid floatId = IdGenerationService.GenerateFloatAggregateId(command.EstateId, command.ContractId, command.ProductId);
+
+                Result<FloatAggregate> getFloatResult = await DomainServiceHelper.GetAggregateOrFailure(ct => this.AggregateService.GetLatest<FloatAggregate>(floatId, ct), floatId, cancellationToken);
+                if (getFloatResult.IsFailed)
+                    return ResultHelpers.CreateFailure(getFloatResult);
+
+                FloatAggregate floatAggregate = getFloatResult.Data;
+
                 floatAggregate.CreateFloat(command.EstateId, command.ContractId, command.ProductId, command.CreateDateTime);
-                return Result.Success();
-            }, floatId,cancellationToken, false);
 
-            return result;
+                Result saveResult = await this.AggregateService.Save(floatAggregate, cancellationToken);
+                if (saveResult.IsFailed)
+                    return ResultHelpers.CreateFailure(saveResult);
+                return saveResult;
+            }
+            catch (Exception ex) {
+                return Result.Failure(ex.GetExceptionMessages());
+            }
         }
 
         public async Task<Result> RecordCreditPurchase(FloatCommands.RecordCreditPurchaseForFloatCommand command, CancellationToken cancellationToken){
-            Result result = await this.ApplyFloatUpdates((FloatAggregate floatAggregate) => {
-                floatAggregate.RecordCreditPurchase(command.PurchaseDateTime, command.CreditAmount, command.CostPrice);
-                return Result.Success();
-            }, command.FloatId, cancellationToken);
 
-            return result;
+            try
+            {
+                Result<FloatAggregate> getFloatResult = await DomainServiceHelper.GetAggregateOrFailure(ct => this.AggregateService.GetLatest<FloatAggregate>(command.FloatId, ct), command.FloatId, cancellationToken);
+                if (getFloatResult.IsFailed)
+                    return ResultHelpers.CreateFailure(getFloatResult);
+
+                FloatAggregate floatAggregate = getFloatResult.Data;
+
+                floatAggregate.RecordCreditPurchase(command.PurchaseDateTime, command.CreditAmount, command.CostPrice);
+
+                Result saveResult = await this.AggregateService.Save(floatAggregate, cancellationToken);
+                if (saveResult.IsFailed)
+                    return ResultHelpers.CreateFailure(saveResult);
+                return saveResult;
+            }
+            catch (Exception ex)
+            {
+                return Result.Failure(ex.GetExceptionMessages());
+            }
         }
 
         public async Task<Result> RecordCreditPurchase(FloatActivityCommands.RecordCreditPurchaseCommand command,
                                                        CancellationToken cancellationToken) {
 
-            // Generate the id for the activity aggregate
-            Guid floatActivityAggregateId = IdGenerationService.GenerateFloatActivityAggregateId(command.EstateId, command.FloatId, command.CreditPurchasedDateTime.Date);
+            try
+            {
+                Guid floatActivityAggregateId = IdGenerationService.GenerateFloatActivityAggregateId(command.EstateId, command.FloatId, command.CreditPurchasedDateTime.Date);
 
-            Result result = await ApplyFloatActivityUpdates((floatAggregate) => {
-                floatAggregate.RecordCreditPurchase(command.EstateId, command.CreditPurchasedDateTime, command.Amount, command.CreditId);
-                return Result.Success();
-            }, floatActivityAggregateId, cancellationToken,false);
-            return result;
+                Result<FloatActivityAggregate> getFloatActivityResult = await DomainServiceHelper.GetAggregateOrFailure(ct => this.AggregateService.GetLatest<FloatActivityAggregate>(floatActivityAggregateId, ct), floatActivityAggregateId, cancellationToken);
+                if (getFloatActivityResult.IsFailed)
+                    return ResultHelpers.CreateFailure(getFloatActivityResult);
+
+                FloatActivityAggregate floatActivityAggregate = getFloatActivityResult.Data;
+
+                floatActivityAggregate.RecordCreditPurchase(command.EstateId, command.CreditPurchasedDateTime, command.Amount, command.CreditId);
+
+                Result saveResult = await this.AggregateService.Save(floatActivityAggregate, cancellationToken);
+                if (saveResult.IsFailed)
+                    return ResultHelpers.CreateFailure(saveResult);
+                return saveResult;
+            }
+            catch (Exception ex)
+            {
+                return Result.Failure(ex.GetExceptionMessages());
+            }
         }
 
         public async Task<Result> RecordTransaction(FloatActivityCommands.RecordTransactionCommand command,
                                                     CancellationToken cancellationToken) {
-            
-            Result<TransactionAggregate> getTransactionResult = await this.AggregateService.GetLatest<TransactionAggregate>(command.TransactionId, cancellationToken);
-            if (getTransactionResult.IsFailed)
-                return ResultHelpers.CreateFailure(getTransactionResult);
 
-            Guid floatId = IdGenerationService.GenerateFloatAggregateId(command.EstateId, getTransactionResult.Data.ContractId, getTransactionResult.Data.ProductId);
+            try {
+                Result<TransactionAggregate> getTransactionResult = await DomainServiceHelper.GetAggregateOrFailure(ct => this.AggregateService.GetLatest<TransactionAggregate>(command.TransactionId, ct), command.TransactionId, cancellationToken);
+                if (getTransactionResult.IsFailed)
+                    return ResultHelpers.CreateFailure(getTransactionResult);
 
-            // Generate the id for the activity aggregate
-            Guid floatActivityAggregateId = IdGenerationService.GenerateFloatActivityAggregateId(command.EstateId, floatId, getTransactionResult.Data.TransactionDateTime.Date);
 
-            Result result = await ApplyFloatActivityUpdates((floatAggregate) => {
-                floatAggregate.RecordTransactionAgainstFloat(command.EstateId, getTransactionResult.Data.TransactionDateTime, getTransactionResult.Data.TransactionAmount.GetValueOrDefault(), command.TransactionId);
-                return Result.Success();
-            }, floatActivityAggregateId, cancellationToken, false);
-            return result;
-        }
-    }
+                Guid floatId = IdGenerationService.GenerateFloatAggregateId(command.EstateId, getTransactionResult.Data.ContractId, getTransactionResult.Data.ProductId);
 
-    public static class DomainServiceHelper
-    {
-        public static async Task<Result<TAggregate>> GetAggregateOrFailure<TAggregate>(Func<CancellationToken, Task<Result<TAggregate>>> fetchFunc,
-                                                                                 Guid aggregateId,
-                                                                                 CancellationToken cancellationToken,
-                                                                                 Boolean isNotFoundError = true) where TAggregate : Aggregate, new()
-        {
-            Result<TAggregate> result = await fetchFunc(cancellationToken);
-            return result.IsFailed switch
-            {
-                true => DomainServiceHelper.HandleGetAggregateResult(result, aggregateId, isNotFoundError),
-                _ => Result.Success(result.Data)
-            };
-        }
+                // Generate the id for the activity aggregate
+                Guid floatActivityAggregateId = IdGenerationService.GenerateFloatActivityAggregateId(command.EstateId, floatId, getTransactionResult.Data.TransactionDateTime.Date);
 
-        public static Result<T> HandleGetAggregateResult<T>(Result<T> result, Guid aggregateId, bool isNotFoundError = true)
-            where T : Aggregate, new()  // Constraint: T is a subclass of Aggregate and has a parameterless constructor
-        {
-            if (result.IsFailed && result.Status != ResultStatus.NotFound)
-            {
-                return ResultHelpers.CreateFailure(result);
+                Result<FloatActivityAggregate> getFloatActivityResult = await DomainServiceHelper.GetAggregateOrFailure(ct => this.AggregateService.GetLatest<FloatActivityAggregate>(floatActivityAggregateId, ct), floatActivityAggregateId, cancellationToken);
+                if (getFloatActivityResult.IsFailed)
+                    return ResultHelpers.CreateFailure(getFloatActivityResult);
+
+                FloatActivityAggregate floatActivityAggregate = getFloatActivityResult.Data;
+
+                floatActivityAggregate.RecordTransactionAgainstFloat(command.EstateId, getTransactionResult.Data.TransactionDateTime, getTransactionResult.Data.TransactionAmount.GetValueOrDefault(), command.TransactionId);
+
+                Result saveResult = await this.AggregateService.Save(floatActivityAggregate, cancellationToken);
+                if (saveResult.IsFailed)
+                    return ResultHelpers.CreateFailure(saveResult);
+                return saveResult;
             }
-
-            if (result.Status == ResultStatus.NotFound && isNotFoundError)
-            {
-                return ResultHelpers.CreateFailure(result);
+            catch (Exception ex) {
+                return Result.Failure(ex.GetExceptionMessages());
             }
-
-            T aggregate = result.Status switch
-            {
-                ResultStatus.NotFound => new T { AggregateId = aggregateId },  // Set AggregateId when creating a new instance
-                _ => result.Data
-            };
-
-            return Result.Success(aggregate);
         }
     }
 }

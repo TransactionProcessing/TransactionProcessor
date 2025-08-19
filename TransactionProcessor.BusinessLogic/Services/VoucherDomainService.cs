@@ -1,5 +1,6 @@
 ﻿using Shared.Results;
 using TransactionProcessor.Aggregates;
+using TransactionProcessor.BusinessLogic.Common;
 using TransactionProcessor.Database.Contexts;
 using TransactionProcessor.DataTransferObjects.Responses.Estate;
 using TransactionProcessor.Models.Estate;
