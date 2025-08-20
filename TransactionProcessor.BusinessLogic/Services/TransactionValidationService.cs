@@ -161,7 +161,7 @@ public class TransactionValidationService : ITransactionValidationService{
 
     private async Task<Result<TransactionValidationResult<EstateAggregate>>> ValidateEstate(Guid estateId, CancellationToken cancellationToken)
     {
-        var getEstateResult= await this.AggregateService.Get<EstateAggregate>(estateId, cancellationToken);
+        Result<EstateAggregate> getEstateResult= await this.AggregateService.Get<EstateAggregate>(estateId, cancellationToken);
         if (getEstateResult.IsFailed) {
             TransactionValidationResult transactionValidationResult = getEstateResult.Status switch
             {
