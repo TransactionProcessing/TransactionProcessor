@@ -30,6 +30,7 @@ namespace TransactionProcessor.BusinessLogic.Services{
     using System.Threading.Tasks;
     using TransactionProcessor.BusinessLogic.Manager;
     using TransactionProcessor.BusinessLogic.Requests;
+    using static Microsoft.EntityFrameworkCore.DbLoggerCategory.Database;
 
     public interface ITransactionDomainService
     {
@@ -98,89 +99,17 @@ namespace TransactionProcessor.BusinessLogic.Services{
 
         #endregion
 
-        private async Task<Result<T>> ApplyUpdates<T>(Func<TransactionAggregate, Task<Result<T>>> action,
-                                                      Guid transactionId,
-                                                      CancellationToken cancellationToken,
-                                                      Boolean isNotFoundError = true) {
-            try {
-
-                Result<TransactionAggregate> getTransactionResult = await this.AggregateService.GetLatest<TransactionAggregate>(transactionId, cancellationToken);
-                Result<TransactionAggregate> transactionAggregateResult = DomainServiceHelper.HandleGetAggregateResult(getTransactionResult, transactionId, isNotFoundError);
-
-                if (transactionAggregateResult.IsFailed)
-                    return ResultHelpers.CreateFailure(transactionAggregateResult);
-
-                TransactionAggregate transactionAggregate = transactionAggregateResult.Data;
-                Result<T> result = await action(transactionAggregate);
-                if (result.IsFailed)
-                    return ResultHelpers.CreateFailure(result);
-
-                Result saveResult = await this.AggregateService.Save(transactionAggregate, cancellationToken);
-                if (saveResult.IsFailed)
-                    return ResultHelpers.CreateFailure(saveResult);
-                return Result.Success(result.Data);
-            }
-            catch (Exception ex) {
-                return Result.Failure(ex.GetExceptionMessages());
-            }
-        }
-
-        private async Task<Result> ApplyUpdates(Func<TransactionAggregate, Task<Result>> action,
-                                                Guid transactionId,
-                                                CancellationToken cancellationToken,
-                                                Boolean isNotFoundError = true) {
-            try {
-
-                Result<TransactionAggregate> getTransactionResult = await this.AggregateService.GetLatest<TransactionAggregate>(transactionId, cancellationToken);
-                Result<TransactionAggregate> transactionAggregateResult = DomainServiceHelper.HandleGetAggregateResult(getTransactionResult, transactionId, isNotFoundError);
-
-                if (transactionAggregateResult.IsFailed)
-                    return ResultHelpers.CreateFailure(transactionAggregateResult);
-
-                TransactionAggregate transactionAggregate = transactionAggregateResult.Data;
-                Result result = await action(transactionAggregate);
-                if (result.IsFailed)
-                    return ResultHelpers.CreateFailure(result);
-
-                Result saveResult = await this.AggregateService.Save(transactionAggregate, cancellationToken);
-                if (saveResult.IsFailed)
-                    return ResultHelpers.CreateFailure(saveResult);
-                return Result.Success();
-            }
-            catch (Exception ex) {
-                return Result.Failure(ex.GetExceptionMessages());
-            }
-        }
-
-        private async Task<Result<T>> ApplyUpdates<T>(Func<ReconciliationAggregate, Task<Result<T>>> action,
-                                                      Guid transactionId,
-                                                      CancellationToken cancellationToken,
-                                                      Boolean isNotFoundError = true) {
-            try {
-
-                Result<ReconciliationAggregate> getTransactionResult = await this.AggregateService.GetLatest<ReconciliationAggregate>(transactionId, cancellationToken);
-                Result<ReconciliationAggregate> reconciliationAggregateResult = DomainServiceHelper.HandleGetAggregateResult(getTransactionResult, transactionId, isNotFoundError);
-
-                ReconciliationAggregate reconciliationAggregate = reconciliationAggregateResult.Data;
-                Result<T> result = await action(reconciliationAggregate);
-                if (result.IsFailed)
-                    return ResultHelpers.CreateFailure(result);
-
-                Result saveResult = await this.AggregateService.Save(reconciliationAggregate, cancellationToken);
-                if (saveResult.IsFailed)
-                    return ResultHelpers.CreateFailure(saveResult);
-                return Result.Success(result.Data);
-            }
-            catch (Exception ex) {
-                return Result.Failure(ex.GetExceptionMessages());
-            }
-        }
-
         #region Methods
 
         public async Task<Result<ProcessLogonTransactionResponse>> ProcessLogonTransaction(TransactionCommands.ProcessLogonTransactionCommand command,
                                                                                            CancellationToken cancellationToken) {
-            Result<ProcessLogonTransactionResponse> result = await ApplyUpdates<ProcessLogonTransactionResponse>(async (TransactionAggregate transactionAggregate) => {
+
+            try {
+                Result<TransactionAggregate> transactionResult = await DomainServiceHelper.GetAggregateOrFailure(ct => this.AggregateService.GetLatest<TransactionAggregate>(command.TransactionId, ct), command.TransactionId, cancellationToken, false);
+                if (transactionResult.IsFailed)
+                    return ResultHelpers.CreateFailure(transactionResult);
+                TransactionAggregate transactionAggregate = transactionResult.Data;
+
                 TransactionType transactionType = TransactionType.Logon;
 
                 // Generate a transaction reference
@@ -203,11 +132,15 @@ namespace TransactionProcessor.BusinessLogic.Services{
                     // Record the failure
                     transactionAggregate.DeclineTransactionLocally(((Int32)validationResult.Data.ResponseCode).ToString().PadLeft(4, '0'), validationResult.Data.ResponseMessage);
                 }
-                
+
                 transactionAggregate.CompleteTransaction();
 
-                transactionAggregate.RecordTransactionTimings(command.TransactionReceivedDateTime, null, null,DateTime.Now);
+                transactionAggregate.RecordTransactionTimings(command.TransactionReceivedDateTime, null, null, DateTime.Now);
 
+
+                Result saveResult = await this.AggregateService.Save(transactionAggregate, cancellationToken);
+                if (saveResult.IsFailed)
+                    return ResultHelpers.CreateFailure(saveResult);
                 return Result.Success(new ProcessLogonTransactionResponse {
                     ResponseMessage = transactionAggregate.ResponseMessage,
                     ResponseCode = transactionAggregate.ResponseCode,
@@ -215,17 +148,22 @@ namespace TransactionProcessor.BusinessLogic.Services{
                     MerchantId = command.MerchantId,
                     TransactionId = command.TransactionId
                 });
-
-            }, command.TransactionId, cancellationToken, false);
-
-            return result;
+            }
+            catch (Exception ex) {
+                return Result.Failure(ex.GetExceptionMessages());
+            }
         }
 
         public async Task<Result<ProcessReconciliationTransactionResponse>> ProcessReconciliationTransaction(TransactionCommands.ProcessReconciliationCommand command,
                                                                                                              CancellationToken cancellationToken) {
+            try{
 
-            Result<ProcessReconciliationTransactionResponse> result = await ApplyUpdates<ProcessReconciliationTransactionResponse>(async (ReconciliationAggregate reconciliationAggregate) => {
-                Result<TransactionValidationResult> validationResult = await this.TransactionValidationService.ValidateReconciliationTransaction(command.EstateId, command.MerchantId, command.DeviceIdentifier, cancellationToken);
+            Result<ReconciliationAggregate> reconciliationResult = await DomainServiceHelper.GetAggregateOrFailure(ct => this.AggregateService.GetLatest<ReconciliationAggregate>(command.TransactionId, ct), command.TransactionId, cancellationToken, false);
+            if (reconciliationResult.IsFailed)
+                return ResultHelpers.CreateFailure(reconciliationResult);
+
+            ReconciliationAggregate reconciliationAggregate = reconciliationResult.Data;
+            Result<TransactionValidationResult> validationResult = await this.TransactionValidationService.ValidateReconciliationTransaction(command.EstateId, command.MerchantId, command.DeviceIdentifier, cancellationToken);
 
                 reconciliationAggregate.StartReconciliation(command.TransactionDateTime, command.EstateId, command.MerchantId);
 
@@ -242,22 +180,35 @@ namespace TransactionProcessor.BusinessLogic.Services{
                 
                 reconciliationAggregate.CompleteReconciliation();
 
-                return Result.Success(new ProcessReconciliationTransactionResponse {
+                Result saveResult = await this.AggregateService.Save(reconciliationAggregate, cancellationToken);
+                if (saveResult.IsFailed)
+                    return ResultHelpers.CreateFailure(saveResult);
+
+                return Result.Success(new ProcessReconciliationTransactionResponse
+                {
                     EstateId = reconciliationAggregate.EstateId,
                     MerchantId = reconciliationAggregate.MerchantId,
                     ResponseCode = reconciliationAggregate.ResponseCode,
                     ResponseMessage = reconciliationAggregate.ResponseMessage,
                     TransactionId = command.TransactionId
                 });
-
-            }, command.TransactionId, cancellationToken, false);
-            return result;
+            }
+            catch (Exception ex)
+            {
+                return Result.Failure(ex.GetExceptionMessages());
+            }
         }
 
         public async Task<Result<ProcessSaleTransactionResponse>> ProcessSaleTransaction(TransactionCommands.ProcessSaleTransactionCommand command,
                                                                                          CancellationToken cancellationToken) {
+            try
+            {
 
-            Result<ProcessSaleTransactionResponse> result = await ApplyUpdates<ProcessSaleTransactionResponse>(async (TransactionAggregate transactionAggregate) => {
+                Result<TransactionAggregate> transactionResult = await DomainServiceHelper.GetAggregateOrFailure(ct => this.AggregateService.GetLatest<TransactionAggregate>(command.TransactionId, ct), command.TransactionId, cancellationToken, false);
+                if (transactionResult.IsFailed)
+                    return ResultHelpers.CreateFailure(transactionResult);
+
+                TransactionAggregate transactionAggregate = transactionResult.Data;
 
                 TransactionType transactionType = TransactionType.Sale;
                 TransactionSource transactionSourceValue = (TransactionSource)command.TransactionSource;
@@ -273,7 +224,7 @@ namespace TransactionProcessor.BusinessLogic.Services{
                 Logger.LogInformation($"Validation response is [{JsonConvert.SerializeObject(validationResult)}]");
 
                 Guid floatAggregateId = IdGenerationService.GenerateFloatAggregateId(command.EstateId, command.ContractId, command.ProductId);
-                Result<FloatAggregate> floatAggregateResult = await this.AggregateService.GetLatest<FloatAggregate>(floatAggregateId, cancellationToken);
+                Result<FloatAggregate> floatAggregateResult = await DomainServiceHelper.GetAggregateOrFailure(ct => this.AggregateService.GetLatest<FloatAggregate>(floatAggregateId, ct), floatAggregateId, cancellationToken, false);
                 Decimal unitCost = 0;
                 Decimal totalCost = 0;
                 if (floatAggregateResult.IsSuccess) {
@@ -335,7 +286,6 @@ namespace TransactionProcessor.BusinessLogic.Services{
 
                     // Record any additional operator response metadata
                     transactionAggregate.RecordAdditionalResponseData(command.OperatorId, operatorResult.Data.AdditionalTransactionResponseMetadata);
-                    //}
                 }
                 else {
                     // Record the failure
@@ -353,8 +303,13 @@ namespace TransactionProcessor.BusinessLogic.Services{
 
                 // Get the model from the aggregate
                 Models.Transaction transaction = transactionAggregate.GetTransaction();
+                
+                Result saveResult = await this.AggregateService.Save(transactionAggregate, cancellationToken);
+                if (saveResult.IsFailed)
+                    return ResultHelpers.CreateFailure(saveResult);
 
-                return Result.Success(new ProcessSaleTransactionResponse {
+                return Result.Success(new ProcessSaleTransactionResponse
+                {
                     ResponseMessage = transaction.ResponseMessage,
                     ResponseCode = transaction.ResponseCode,
                     EstateId = command.EstateId,
@@ -362,20 +317,36 @@ namespace TransactionProcessor.BusinessLogic.Services{
                     AdditionalTransactionMetadata = transaction.AdditionalResponseMetadata,
                     TransactionId = command.TransactionId
                 });
-            }, command.TransactionId, cancellationToken, false);
-
-            return result;
+            }
+            catch (Exception ex)
+            {
+                return Result.Failure(ex.GetExceptionMessages());
+            }
         }
 
         public async Task<Result> ResendTransactionReceipt(TransactionCommands.ResendTransactionReceiptCommand command,
                                                            CancellationToken cancellationToken) {
 
-            Result result = await ApplyUpdates(async (TransactionAggregate transactionAggregate) => {
+            try
+            {
+                Result<TransactionAggregate> transactionResult = await DomainServiceHelper.GetAggregateOrFailure(ct => this.AggregateService.GetLatest<TransactionAggregate>(command.TransactionId, ct), command.TransactionId, cancellationToken, false);
+                if (transactionResult.IsFailed)
+                    return ResultHelpers.CreateFailure(transactionResult);
+
+                TransactionAggregate transactionAggregate = transactionResult.Data;
+
                 transactionAggregate.RequestEmailReceiptResend();
 
+                Result saveResult = await this.AggregateService.Save(transactionAggregate, cancellationToken);
+                if (saveResult.IsFailed)
+                    return ResultHelpers.CreateFailure(saveResult);
+
                 return Result.Success();
-            }, command.TransactionId, cancellationToken);
-            return result;
+            }
+            catch (Exception ex)
+            {
+                return Result.Failure(ex.GetExceptionMessages());
+            }
         }
 
         internal static Boolean RequireFeeCalculation(TransactionAggregate transactionAggregate) {
@@ -391,7 +362,13 @@ namespace TransactionProcessor.BusinessLogic.Services{
 
         public async Task<Result> CalculateFeesForTransaction(TransactionCommands.CalculateFeesForTransactionCommand command,
                                                               CancellationToken cancellationToken) {
-            Result result = await ApplyUpdates(async (TransactionAggregate transactionAggregate) => {
+            try
+            {
+                Result<TransactionAggregate> transactionResult = await DomainServiceHelper.GetAggregateOrFailure(ct => this.AggregateService.GetLatest<TransactionAggregate>(command.TransactionId, ct), command.TransactionId, cancellationToken, false);
+                if (transactionResult.IsFailed)
+                    return ResultHelpers.CreateFailure(transactionResult);
+
+                TransactionAggregate transactionAggregate = transactionResult.Data;
 
                 if (RequireFeeCalculation(transactionAggregate) == false)
                     return Result.Success();
@@ -437,14 +414,27 @@ namespace TransactionProcessor.BusinessLogic.Services{
                     }
                 }
 
+                Result saveResult = await this.AggregateService.Save(transactionAggregate, cancellationToken);
+                if (saveResult.IsFailed)
+                    return ResultHelpers.CreateFailure(saveResult);
+
                 return Result.Success();
-            }, command.TransactionId, cancellationToken);
-            return result;
+            }
+            catch (Exception ex)
+            {
+                return Result.Failure(ex.GetExceptionMessages());
+            }
         }
 
         public async Task<Result> AddSettledMerchantFee(TransactionCommands.AddSettledMerchantFeeCommand command,
                                                         CancellationToken cancellationToken) {
-            Result result = await ApplyUpdates(async (TransactionAggregate transactionAggregate) => {
+            try {
+                Result<TransactionAggregate> transactionResult = await DomainServiceHelper.GetAggregateOrFailure(ct => this.AggregateService.GetLatest<TransactionAggregate>(command.TransactionId, ct), command.TransactionId, cancellationToken, false);
+                if (transactionResult.IsFailed)
+                    return ResultHelpers.CreateFailure(transactionResult);
+
+                TransactionAggregate transactionAggregate = transactionResult.Data;
+
                 CalculatedFee calculatedFee = new CalculatedFee {
                     CalculatedValue = command.CalculatedValue,
                     FeeCalculatedDateTime = command.FeeCalculatedDateTime,
@@ -457,9 +447,15 @@ namespace TransactionProcessor.BusinessLogic.Services{
 
                 transactionAggregate.AddSettledFee(calculatedFee, command.SettledDateTime, command.SettlementId);
 
+                Result saveResult = await this.AggregateService.Save(transactionAggregate, cancellationToken);
+                if (saveResult.IsFailed)
+                    return ResultHelpers.CreateFailure(saveResult);
+
                 return Result.Success();
-            }, command.TransactionId, cancellationToken);
-            return result;
+            }
+            catch (Exception ex) {
+                return Result.Failure(ex.GetExceptionMessages());
+            }
         }
 
         public async Task<Result> SendCustomerEmailReceipt(TransactionCommands.SendCustomerEmailReceiptCommand command,
@@ -468,12 +464,13 @@ namespace TransactionProcessor.BusinessLogic.Services{
             if (getTokenResult.IsFailed)
                 return ResultHelpers.CreateFailure(getTokenResult);
             this.TokenResponse = getTokenResult.Data;
-            Result<TransactionAggregate> transactionAggregateResult = await this.AggregateService.GetLatest<TransactionAggregate>(command.TransactionId, cancellationToken);
+            Result<TransactionAggregate> transactionResult = await DomainServiceHelper.GetAggregateOrFailure(ct => this.AggregateService.GetLatest<TransactionAggregate>(command.TransactionId, ct), command.TransactionId, cancellationToken, false);
+            if (transactionResult.IsFailed)
+                return ResultHelpers.CreateFailure(transactionResult);
 
-            if (transactionAggregateResult.IsFailed)
-                return ResultHelpers.CreateFailure(transactionAggregateResult);
+            TransactionAggregate transactionAggregate = transactionResult.Data;
 
-            Models.Transaction transaction = transactionAggregateResult.Data.GetTransaction();
+            Models.Transaction transaction = transactionAggregate.GetTransaction();
 
             Result<Merchant> merchantResult = await this.GetMerchant(transaction.MerchantId, cancellationToken);
             if (merchantResult.IsFailed)
@@ -502,12 +499,13 @@ namespace TransactionProcessor.BusinessLogic.Services{
                 return ResultHelpers.CreateFailure(getTokenResult);
             this.TokenResponse = getTokenResult.Data;
 
-            Result<TransactionAggregate> transactionAggregateResult = await this.AggregateService.GetLatest<TransactionAggregate>(command.TransactionId, cancellationToken);
+            Result<TransactionAggregate> transactionResult = await DomainServiceHelper.GetAggregateOrFailure(ct => this.AggregateService.GetLatest<TransactionAggregate>(command.TransactionId, ct), command.TransactionId, cancellationToken, false);
+            if (transactionResult.IsFailed)
+                return ResultHelpers.CreateFailure(transactionResult);
 
-            if (transactionAggregateResult.IsFailed)
-                return ResultHelpers.CreateFailure(transactionAggregateResult);
+            TransactionAggregate transactionAggregate = transactionResult.Data;
 
-            return await this.ResendEmailMessage(this.TokenResponse.AccessToken, transactionAggregateResult.Data.ReceiptMessageId, command.EstateId, cancellationToken);
+            return await this.ResendEmailMessage(this.TokenResponse.AccessToken, transactionAggregate.ReceiptMessageId, command.EstateId, cancellationToken);
         }
 
         internal static DateTime CalculateSettlementDate(Models.Merchant.SettlementSchedule merchantSettlementSchedule,
@@ -596,11 +594,13 @@ namespace TransactionProcessor.BusinessLogic.Services{
                                                                                 Dictionary<String, String> additionalTransactionMetadata,
                                                                                 String transactionReference,
                                                                                 CancellationToken cancellationToken) {
-            
-            Result<OperatorAggregate> getOperatorResult= await this.AggregateService.Get<OperatorAggregate>(operatorId, cancellationToken);
+
+            Result<OperatorAggregate> getOperatorResult = await DomainServiceHelper.GetAggregateOrFailure(ct => this.AggregateService.Get<OperatorAggregate>(operatorId, ct), operatorId, cancellationToken, false);
             if (getOperatorResult.IsFailed)
                 return ResultHelpers.CreateFailure(getOperatorResult);
-            Models.Operator.Operator operatorResult = getOperatorResult.Data.GetOperator();
+            OperatorAggregate operatorAggregate = getOperatorResult.Data;
+            
+            Models.Operator.Operator operatorResult = operatorAggregate.GetOperator();
             IOperatorProxy operatorProxy = this.OperatorProxyResolver(operatorResult.Name.Replace(" ", ""));
             try {
                 Result<OperatorResponse> saleResult = await operatorProxy.ProcessSaleMessage(transactionId, operatorId, merchant, transactionDateTime, transactionReference, additionalTransactionMetadata, cancellationToken);
@@ -678,11 +678,16 @@ namespace TransactionProcessor.BusinessLogic.Services{
         private async Task<Result<List<Models.Contract.ContractProductTransactionFee>>> GetTransactionFeesForProduct(Guid contractId,
                                                                                                                      Guid productId,
                                                                                                                      CancellationToken cancellationToken) {
-            Result<ContractAggregate> contractAggregateResult = await this.AggregateService.Get<ContractAggregate>(contractId, CancellationToken.None);
+            //Result<ContractAggregate> contractAggregateResult = await this.AggregateService.Get<ContractAggregate>(contractId, CancellationToken.None);
+            //if (contractAggregateResult.IsFailed)
+            //    return ResultHelpers.CreateFailure(contractAggregateResult);
+            Result<ContractAggregate> contractAggregateResult = await DomainServiceHelper.GetAggregateOrFailure(ct => this.AggregateService.Get<ContractAggregate>(contractId, ct), contractId, cancellationToken, false);
             if (contractAggregateResult.IsFailed)
                 return ResultHelpers.CreateFailure(contractAggregateResult);
+            ContractAggregate contractAggregate = contractAggregateResult.Data;
 
-            Models.Contract.Contract contract = contractAggregateResult.Data.GetContract();
+
+            Models.Contract.Contract contract = contractAggregate.GetContract();
 
             Product product = contract.Products.SingleOrDefault(p => p.ContractProductId == productId);
             if (product == null)
