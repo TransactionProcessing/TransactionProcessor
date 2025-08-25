@@ -4,23 +4,17 @@ using Shared.Results;
 using SimpleResults;
 using TransactionProcessor.Aggregates;
 using TransactionProcessor.Models.Contract;
-using TransactionProcessor.Models.Estate;
 using TransactionProcessor.Models.Merchant;
-using Contract = TransactionProcessor.Models.Contract.Contract;
-using Operator = TransactionProcessor.Models.Estate.Operator;
 
 namespace TransactionProcessor.BusinessLogic.Services{
     using Common;
     using MessagingService.Client;
     using MessagingService.DataTransferObjects;
-    using Microsoft.Extensions.Caching.Memory;
     using Models;
     using OperatorInterfaces;
     using SecurityService.Client;
     using SecurityService.DataTransferObjects.Responses;
-    using Shared.DomainDrivenDesign.EventSourcing;
     using Shared.EventStore.Aggregate;
-    using Shared.General;
     using Shared.Logger;
     using System;
     using System.Collections.Generic;
@@ -30,7 +24,6 @@ namespace TransactionProcessor.BusinessLogic.Services{
     using System.Threading.Tasks;
     using TransactionProcessor.BusinessLogic.Manager;
     using TransactionProcessor.BusinessLogic.Requests;
-    using static Microsoft.EntityFrameworkCore.DbLoggerCategory.Database;
 
     public interface ITransactionDomainService
     {
