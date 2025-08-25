@@ -132,7 +132,7 @@ namespace TransactionProcessor.BusinessLogic.Services
             {
                 Guid floatActivityAggregateId = IdGenerationService.GenerateFloatActivityAggregateId(command.EstateId, command.FloatId, command.CreditPurchasedDateTime.Date);
 
-                Result<FloatActivityAggregate> getFloatActivityResult = await DomainServiceHelper.GetAggregateOrFailure(ct => this.AggregateService.GetLatest<FloatActivityAggregate>(floatActivityAggregateId, ct), floatActivityAggregateId, cancellationToken);
+                Result<FloatActivityAggregate> getFloatActivityResult = await DomainServiceHelper.GetAggregateOrFailure(ct => this.AggregateService.GetLatest<FloatActivityAggregate>(floatActivityAggregateId, ct), floatActivityAggregateId, cancellationToken, false);
                 if (getFloatActivityResult.IsFailed)
                     return ResultHelpers.CreateFailure(getFloatActivityResult);
 
@@ -165,7 +165,7 @@ namespace TransactionProcessor.BusinessLogic.Services
                 // Generate the id for the activity aggregate
                 Guid floatActivityAggregateId = IdGenerationService.GenerateFloatActivityAggregateId(command.EstateId, floatId, getTransactionResult.Data.TransactionDateTime.Date);
 
-                Result<FloatActivityAggregate> getFloatActivityResult = await DomainServiceHelper.GetAggregateOrFailure(ct => this.AggregateService.GetLatest<FloatActivityAggregate>(floatActivityAggregateId, ct), floatActivityAggregateId, cancellationToken);
+                Result<FloatActivityAggregate> getFloatActivityResult = await DomainServiceHelper.GetAggregateOrFailure(ct => this.AggregateService.GetLatest<FloatActivityAggregate>(floatActivityAggregateId, ct), floatActivityAggregateId, cancellationToken, false);
                 if (getFloatActivityResult.IsFailed)
                     return ResultHelpers.CreateFailure(getFloatActivityResult);
 
