@@ -117,7 +117,7 @@ namespace TransactionProcessor.BusinessLogic.Tests.Manager
             contractModel.Description.ShouldBe(TestData.ContractDescription);
             contractModel.OperatorId.ShouldBe(TestData.OperatorId);
             contractModel.Products.ShouldNotBeNull();
-            contractModel.Products.First().ContractProductId.ShouldBe(TestData.ContractProductId);
+            contractModel.Products.First().ContractProductId.ShouldBe(TestData.FixedContractProductId);
             contractModel.Products.First().TransactionFees.ShouldNotBeNull();
             contractModel.Products.First().TransactionFees.First().TransactionFeeId.ShouldBe(TestData.TransactionFeeId);
         }
@@ -166,7 +166,7 @@ namespace TransactionProcessor.BusinessLogic.Tests.Manager
         {
             this.AggregateService.Setup(c => c.GetLatest<ContractAggregate>(It.IsAny<Guid>(), It.IsAny<CancellationToken>())).ReturnsAsync(Result.Success(TestData.Aggregates.CreatedContractAggregateWithAProductAndTransactionFee(CalculationType.Fixed, FeeType.Merchant)));
 
-            Result<List<ContractProductTransactionFee>> getTransactionFeesForProductResult = await this.TransactionProcessorManager.GetTransactionFeesForProduct(TestData.EstateId, TestData.MerchantId, TestData.ContractId, TestData.ContractProductId, CancellationToken.None);
+            Result<List<ContractProductTransactionFee>> getTransactionFeesForProductResult = await this.TransactionProcessorManager.GetTransactionFeesForProduct(TestData.EstateId, TestData.MerchantId, TestData.ContractId, TestData.FixedContractProductId, CancellationToken.None);
             getTransactionFeesForProductResult.IsSuccess.ShouldBeTrue();
             List<ContractProductTransactionFee> transactionFees = getTransactionFeesForProductResult.Data;
             transactionFees.ShouldNotBeNull();
@@ -179,7 +179,7 @@ namespace TransactionProcessor.BusinessLogic.Tests.Manager
         {
             this.AggregateService.Setup(c => c.GetLatest<ContractAggregate>(It.IsAny<Guid>(), It.IsAny<CancellationToken>())).ReturnsAsync(Result.Success(TestData.Aggregates.EmptyContractAggregate()));
 
-            Result<List<ContractProductTransactionFee>> result = await this.TransactionProcessorManager.GetTransactionFeesForProduct(TestData.EstateId, TestData.MerchantId, TestData.ContractId, TestData.ContractProductId, CancellationToken.None);
+            Result<List<ContractProductTransactionFee>> result = await this.TransactionProcessorManager.GetTransactionFeesForProduct(TestData.EstateId, TestData.MerchantId, TestData.ContractId, TestData.FixedContractProductId, CancellationToken.None);
             result.IsFailed.ShouldBeTrue();
         }
 
@@ -188,7 +188,7 @@ namespace TransactionProcessor.BusinessLogic.Tests.Manager
         {
             this.AggregateService.Setup(c => c.GetLatest<ContractAggregate>(It.IsAny<Guid>(), It.IsAny<CancellationToken>())).ReturnsAsync(Result.Success(TestData.Aggregates.CreatedContractAggregate()));
 
-            Result<List<ContractProductTransactionFee>> result = await this.TransactionProcessorManager.GetTransactionFeesForProduct(TestData.EstateId, TestData.MerchantId, TestData.ContractId, TestData.ContractProductId, CancellationToken.None);
+            Result<List<ContractProductTransactionFee>> result = await this.TransactionProcessorManager.GetTransactionFeesForProduct(TestData.EstateId, TestData.MerchantId, TestData.ContractId, TestData.FixedContractProductId, CancellationToken.None);
             result.IsFailed.ShouldBeTrue();
         }
 
@@ -197,7 +197,7 @@ namespace TransactionProcessor.BusinessLogic.Tests.Manager
         {
             this.AggregateService.Setup(c => c.GetLatest<ContractAggregate>(It.IsAny<Guid>(), It.IsAny<CancellationToken>())).ReturnsAsync(Result.Failure());
 
-            Result<List<ContractProductTransactionFee>> result = await this.TransactionProcessorManager.GetTransactionFeesForProduct(TestData.EstateId, TestData.MerchantId, TestData.ContractId, TestData.ContractProductId, CancellationToken.None);
+            Result<List<ContractProductTransactionFee>> result = await this.TransactionProcessorManager.GetTransactionFeesForProduct(TestData.EstateId, TestData.MerchantId, TestData.ContractId, TestData.FixedContractProductId, CancellationToken.None);
             result.IsFailed.ShouldBeTrue();
         }
         /*

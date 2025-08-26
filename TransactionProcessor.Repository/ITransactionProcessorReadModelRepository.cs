@@ -1678,7 +1678,7 @@ namespace TransactionProcessor.Repository {
 
             await context.ContractProducts.AddAsync(contractProduct, cancellationToken);
 
-            return await context.SaveChangesAsync(cancellationToken);
+            return await context.SaveChangesWithDuplicateHandling(cancellationToken);
         }
 
         public async Task<Result> AddContractProduct(ContractDomainEvents.FixedValueProductAddedToContractEvent domainEvent,
@@ -1697,7 +1697,7 @@ namespace TransactionProcessor.Repository {
 
             await context.ContractProducts.AddAsync(contractProduct, cancellationToken);
 
-            return await context.SaveChangesAsync(cancellationToken);
+            return await context.SaveChangesWithDuplicateHandling(cancellationToken);
         }
 
         public async Task<Result> MarkStatementAsGenerated(StatementGeneratedEvent domainEvent,
