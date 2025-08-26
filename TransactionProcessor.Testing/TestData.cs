@@ -2460,13 +2460,13 @@ namespace TransactionProcessor.Testing
                 ContractAggregate contractAggregate = ContractAggregate.Create(TestData.ContractId);
 
                 contractAggregate.Create(TestData.EstateId, TestData.OperatorId, TestData.ContractDescription);
-                contractAggregate.AddFixedValueProduct(TestData.FixedContractProductId,
+                contractAggregate.AddFixedValueProduct(VariableContractProductId,
                                                        TestData.ProductName,
                                                        TestData.ProductDisplayText,
                                                        TestData.ProductFixedValue,
                                                        TestData.ProductTypeMobileTopup);
 
-                Product product = contractAggregate.GetProducts().Single(p => p.ContractProductId == TestData.FixedContractProductId);
+                Product product = contractAggregate.GetProducts().Single(p => p.ContractProductId == VariableContractProductId);
                 contractAggregate.AddTransactionFee(product,
                                                     TestData.TransactionFeeId,
                                                     TestData.TransactionFeeDescription,
