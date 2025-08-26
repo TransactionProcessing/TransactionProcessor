@@ -110,9 +110,7 @@ namespace TransactionProcessor.DatabaseTests
             result = await this.Repository.AddContractProductTransactionFee(TestData.DomainEvents.TransactionFeeForProductAddedToContractEvent, CancellationToken.None);
             result.IsSuccess.ShouldBeTrue();
         }
-    }
-  
-  public class FileEventTests : BaseTest {
+    
         [Fact]
         public async Task AddFileImportLog_FileImportLogIsAdded()
         {
