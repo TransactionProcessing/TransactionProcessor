@@ -13,8 +13,29 @@ using TransactionProcessor.Testing;
 
 namespace TransactionProcessor.DatabaseTests
 {
+
     public class ContractEventTests : BaseTest
     {
+        [Fact]
+        public async Task AddOperator_OperatorIsAdded()
+        {
+            Result result = await this.Repository.AddOperator(TestData.DomainEvents.OperatorCreatedEvent, CancellationToken.None);
+            result.IsSuccess.ShouldBeTrue();
+            EstateManagementContext context = this.GetContext();
+            Operator? @operator = await context.Operators.SingleOrDefaultAsync(c => c.OperatorId == TestData.DomainEvents.OperatorCreatedEvent.OperatorId);
+            @operator.ShouldNotBeNull();
+        }
+
+        [Fact]
+        public async Task AddOperator_OperatorIsAdded_EventReplayHandled()
+        {
+            Result result = await this.Repository.AddOperator(TestData.DomainEvents.OperatorCreatedEvent, CancellationToken.None);
+            result.IsSuccess.ShouldBeTrue();
+
+            result = await this.Repository.AddOperator(TestData.DomainEvents.OperatorCreatedEvent, CancellationToken.None);
+            result.IsSuccess.ShouldBeTrue();
+        }
+
         [Fact]
         public async Task AddContract_ContractIsAdded() {
             Result result = await this.Repository.AddContract(TestData.DomainEvents.ContractCreatedEvent, CancellationToken.None);
