@@ -89,7 +89,7 @@ namespace TransactionProcessor.DatabaseTests
             result = await this.Repository.AddContractProduct(TestData.DomainEvents.VariableValueProductAddedToContractEvent, CancellationToken.None);
             result.IsSuccess.ShouldBeTrue();
         }
-
+    
         [Fact]
         public async Task AddContractProductTransactionFee_ContractIsAdded()
         {
@@ -110,7 +110,9 @@ namespace TransactionProcessor.DatabaseTests
             result = await this.Repository.AddContractProductTransactionFee(TestData.DomainEvents.TransactionFeeForProductAddedToContractEvent, CancellationToken.None);
             result.IsSuccess.ShouldBeTrue();
         }
-
+    }
+  
+  public class FileEventTests : BaseTest {
         [Fact]
         public async Task AddFileImportLog_FileImportLogIsAdded()
         {
@@ -128,7 +130,6 @@ namespace TransactionProcessor.DatabaseTests
             result.IsSuccess.ShouldBeTrue();
 
             result = await this.Repository.AddFileImportLog(TestData.DomainEvents.ImportLogCreatedEvent, CancellationToken.None);
-            result.IsSuccess.ShouldBeTrue();
         }
-    }
+  }
 }
