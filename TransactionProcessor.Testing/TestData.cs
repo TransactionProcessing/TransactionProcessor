@@ -2207,7 +2207,7 @@ namespace TransactionProcessor.Testing
 
             public static ContractCommands.DisableTransactionFeeForProductCommand DisableTransactionFeeForProductCommand =
                 new ContractCommands.DisableTransactionFeeForProductCommand(TestData.EstateId, TestData.ContractId,
-                    TestData.FixedContractProductId, TestData.TransactionFeeId);
+                    TestData.VariableContractProductId, TestData.TransactionFeeId);
 
             public static ContractCommands.AddProductToContractCommand AddProductToContractCommand_FixedValue =>
                 new(EstateId, ContractId, FixedContractProductId, TestData.AddProductToContractRequest_FixedValue);
