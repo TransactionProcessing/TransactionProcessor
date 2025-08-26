@@ -282,7 +282,7 @@ namespace TransactionProcessor.BusinessLogic.Services
             try
             {
                 // Work out the next statement date
-                Result<MerchantStatementAggregate> getMerchantStatementResult = await DomainServiceHelper.GetAggregateOrFailure(ct => this.AggregateService.GetLatest<MerchantStatementAggregate>(command.MerchantStatementId, ct), command.MerchantStatementId, cancellationToken);
+                Result<MerchantStatementAggregate> getMerchantStatementResult = await DomainServiceHelper.GetAggregateOrFailure(ct => this.AggregateService.GetLatest<MerchantStatementAggregate>(command.MerchantStatementId, ct), command.MerchantStatementId, cancellationToken, false);
                 if (getMerchantStatementResult.IsFailed)
                     return ResultHelpers.CreateFailure(getMerchantStatementResult);
 
