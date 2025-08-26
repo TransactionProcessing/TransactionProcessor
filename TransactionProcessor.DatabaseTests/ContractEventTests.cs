@@ -11,8 +11,31 @@ using TransactionProcessor.Database.Entities;
 using TransactionProcessor.Repository;
 using TransactionProcessor.Testing;
 
-namespace TransactionProcessor.DatabaseTests {
-    public class ContractEventTests : BaseTest {
+namespace TransactionProcessor.DatabaseTests
+{
+
+    public class ContractEventTests : BaseTest
+    {
+        [Fact]
+        public async Task AddOperator_OperatorIsAdded()
+        {
+            Result result = await this.Repository.AddOperator(TestData.DomainEvents.OperatorCreatedEvent, CancellationToken.None);
+            result.IsSuccess.ShouldBeTrue();
+            EstateManagementContext context = this.GetContext();
+            Operator? @operator = await context.Operators.SingleOrDefaultAsync(c => c.OperatorId == TestData.DomainEvents.OperatorCreatedEvent.OperatorId);
+            @operator.ShouldNotBeNull();
+        }
+
+        [Fact]
+        public async Task AddOperator_OperatorIsAdded_EventReplayHandled()
+        {
+            Result result = await this.Repository.AddOperator(TestData.DomainEvents.OperatorCreatedEvent, CancellationToken.None);
+            result.IsSuccess.ShouldBeTrue();
+
+            result = await this.Repository.AddOperator(TestData.DomainEvents.OperatorCreatedEvent, CancellationToken.None);
+            result.IsSuccess.ShouldBeTrue();
+        }
+
         [Fact]
         public async Task AddContract_ContractIsAdded() {
             Result result = await this.Repository.AddContract(TestData.DomainEvents.ContractCreatedEvent, CancellationToken.None);
@@ -65,26 +88,26 @@ namespace TransactionProcessor.DatabaseTests {
 
             result = await this.Repository.AddContractProduct(TestData.DomainEvents.VariableValueProductAddedToContractEvent, CancellationToken.None);
             result.IsSuccess.ShouldBeTrue();
-
         }
-    }
 
-    public class FileEventTests : BaseTest {
         [Fact]
-        public async Task AddFileImportLog_FileImportLogIsAdded() {
-            Result result = await this.Repository.AddFileImportLog(TestData.DomainEvents.ImportLogCreatedEvent, CancellationToken.None);
+        public async Task AddContractProductTransactionFee_ContractIsAdded()
+        {
+            Result result = await this.Repository.AddContractProductTransactionFee(TestData.DomainEvents.TransactionFeeForProductAddedToContractEvent, CancellationToken.None);
             result.IsSuccess.ShouldBeTrue();
             EstateManagementContext context = this.GetContext();
-            var fileImportLog = await context.FileImportLogs.SingleOrDefaultAsync(f => f.FileImportLogId == TestData.DomainEvents.ImportLogCreatedEvent.FileImportLogId);
-            fileImportLog.ShouldNotBeNull();
+            ContractProductTransactionFee? contractProductTransactionFee = await context.ContractProductTransactionFees.SingleOrDefaultAsync(c => c.ContractProductId == TestData.DomainEvents.TransactionFeeForProductAddedToContractEvent.ProductId &&
+                                                                                                                                                  c.ContractProductTransactionFeeId == TestData.DomainEvents.TransactionFeeForProductAddedToContractEvent.TransactionFeeId);
+            contractProductTransactionFee.ShouldNotBeNull();
         }
 
         [Fact]
-        public async Task AddFileImportLog_FileImportLogIsAdded_EventReplayHandled() {
-            Result result = await this.Repository.AddFileImportLog(TestData.DomainEvents.ImportLogCreatedEvent, CancellationToken.None);
+        public async Task AddContractProductTransactionFee_ContractIsAdded_EventReplayHandled()
+        {
+            Result result = await this.Repository.AddContractProductTransactionFee(TestData.DomainEvents.TransactionFeeForProductAddedToContractEvent, CancellationToken.None);
             result.IsSuccess.ShouldBeTrue();
 
-            result = await this.Repository.AddFileImportLog(TestData.DomainEvents.ImportLogCreatedEvent, CancellationToken.None);
+            result = await this.Repository.AddContractProductTransactionFee(TestData.DomainEvents.TransactionFeeForProductAddedToContractEvent, CancellationToken.None);
             result.IsSuccess.ShouldBeTrue();
         }
     }
