@@ -13,7 +13,9 @@ using TransactionProcessor.Testing;
 
 namespace TransactionProcessor.DatabaseTests
 {
-    public class OperatorEventTests : BaseTest {
+
+    public class ContractEventTests : BaseTest
+    {
         [Fact]
         public async Task AddOperator_OperatorIsAdded()
         {
@@ -33,10 +35,7 @@ namespace TransactionProcessor.DatabaseTests
             result = await this.Repository.AddOperator(TestData.DomainEvents.OperatorCreatedEvent, CancellationToken.None);
             result.IsSuccess.ShouldBeTrue();
         }
-    }
 
-    public class ContractEventTests : BaseTest
-    {
         [Fact]
         public async Task AddContract_ContractIsAdded() {
             Result result = await this.Repository.AddContract(TestData.DomainEvents.ContractCreatedEvent, CancellationToken.None);
