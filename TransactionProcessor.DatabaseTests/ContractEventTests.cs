@@ -73,7 +73,27 @@ namespace TransactionProcessor.DatabaseTests
             
             result = await this.Repository.AddContractProduct(TestData.DomainEvents.VariableValueProductAddedToContractEvent, CancellationToken.None);
             result.IsSuccess.ShouldBeTrue();
-            
+        }
+
+        [Fact]
+        public async Task AddContractProductTransactionFee_ContractIsAdded()
+        {
+            Result result = await this.Repository.AddContractProductTransactionFee(TestData.DomainEvents.TransactionFeeForProductAddedToContractEvent, CancellationToken.None);
+            result.IsSuccess.ShouldBeTrue();
+            EstateManagementContext context = this.GetContext();
+            ContractProductTransactionFee? contractProductTransactionFee = await context.ContractProductTransactionFees.SingleOrDefaultAsync(c => c.ContractProductId == TestData.DomainEvents.TransactionFeeForProductAddedToContractEvent.ProductId &&
+                                                                                                                                                  c.ContractProductTransactionFeeId == TestData.DomainEvents.TransactionFeeForProductAddedToContractEvent.TransactionFeeId);
+            contractProductTransactionFee.ShouldNotBeNull();
+        }
+
+        [Fact]
+        public async Task AddContractProductTransactionFee_ContractIsAdded_EventReplayHandled()
+        {
+            Result result = await this.Repository.AddContractProductTransactionFee(TestData.DomainEvents.TransactionFeeForProductAddedToContractEvent, CancellationToken.None);
+            result.IsSuccess.ShouldBeTrue();
+
+            result = await this.Repository.AddContractProductTransactionFee(TestData.DomainEvents.TransactionFeeForProductAddedToContractEvent, CancellationToken.None);
+            result.IsSuccess.ShouldBeTrue();
         }
     }
 }
