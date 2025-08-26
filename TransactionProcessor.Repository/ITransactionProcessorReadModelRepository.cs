@@ -960,7 +960,7 @@ namespace TransactionProcessor.Repository {
 
             await context.ContractProductTransactionFees.AddAsync(contractProductTransactionFee, cancellationToken);
 
-            return await context.SaveChangesAsync(cancellationToken);
+            return await context.SaveChangesWithDuplicateHandling(cancellationToken);
         }
 
         public async Task<Result> AddEstate(EstateDomainEvents.EstateCreatedEvent domainEvent,
