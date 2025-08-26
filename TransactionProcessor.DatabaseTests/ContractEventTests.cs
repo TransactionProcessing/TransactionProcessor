@@ -110,5 +110,25 @@ namespace TransactionProcessor.DatabaseTests
             result = await this.Repository.AddContractProductTransactionFee(TestData.DomainEvents.TransactionFeeForProductAddedToContractEvent, CancellationToken.None);
             result.IsSuccess.ShouldBeTrue();
         }
+
+        [Fact]
+        public async Task AddFileImportLog_FileImportLogIsAdded()
+        {
+            Result result = await this.Repository.AddFileImportLog(TestData.DomainEvents.ImportLogCreatedEvent, CancellationToken.None);
+            result.IsSuccess.ShouldBeTrue();
+            EstateManagementContext context = this.GetContext();
+            var fileImportLog = await context.FileImportLogs.SingleOrDefaultAsync(f => f.FileImportLogId == TestData.DomainEvents.ImportLogCreatedEvent.FileImportLogId);
+            fileImportLog.ShouldNotBeNull();
+        }
+
+        [Fact]
+        public async Task AddFileImportLog_FileImportLogIsAdded_EventReplayHandled()
+        {
+            Result result = await this.Repository.AddFileImportLog(TestData.DomainEvents.ImportLogCreatedEvent, CancellationToken.None);
+            result.IsSuccess.ShouldBeTrue();
+
+            result = await this.Repository.AddFileImportLog(TestData.DomainEvents.ImportLogCreatedEvent, CancellationToken.None);
+            result.IsSuccess.ShouldBeTrue();
+        }
     }
 }
