@@ -1659,7 +1659,7 @@ namespace TransactionProcessor.Repository {
 
             await context.Contracts.AddAsync(contract, cancellationToken);
 
-            return await context.SaveChangesAsync(cancellationToken);
+            return await context.SaveChangesWithDuplicateHandling(cancellationToken);
         }
 
         public async Task<Result> AddContractProduct(ContractDomainEvents.VariableValueProductAddedToContractEvent domainEvent,
