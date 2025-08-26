@@ -993,7 +993,7 @@ namespace TransactionProcessor.Repository {
 
             await context.EstateSecurityUsers.AddAsync(estateSecurityUser, cancellationToken);
 
-            return await context.SaveChangesAsync(cancellationToken);
+            return await context.SaveChangesWithDuplicateHandling(cancellationToken);
         }
 
         public async Task<Result> AddProductDetailsToTransaction(TransactionDomainEvents.ProductDetailsAddedToTransactionEvent domainEvent,
