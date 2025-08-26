@@ -99,7 +99,7 @@ namespace TransactionProcessor.Testing
                     OperatorName = TestData.OperatorName,
                     Products = new List<Product>{
                         new Product{
-                            ContractProductId = TestData.ContractProductId,
+                            ContractProductId = VariableContractProductId,
                             Value = TestData.ProductFixedValue,
                             DisplayText = TestData.ProductDisplayText,
                             Name = TestData.ProductName
@@ -205,7 +205,7 @@ namespace TransactionProcessor.Testing
                 Products = new List<Product>{
                                                                             new Product{
                                                                                            Value = TestData.ProductFixedValue,
-                                                                                           ContractProductId = TestData.ContractProductId,
+                                                                                           ContractProductId = FixedContractProductId,
                                                                                            DisplayText = TestData.ProductDisplayText,
                                                                                            Name = TestData.ProductName,
                                                                                            TransactionFees = null
@@ -483,7 +483,7 @@ namespace TransactionProcessor.Testing
                 Products = new List<Product>{
                                                                             new Product{
                                                                                            Value = TestData.ProductFixedValue,
-                                                                                           ContractProductId = TestData.ContractProductId,
+                                                                                           ContractProductId = FixedContractProductId,
                                                                                            DisplayText = TestData.ProductDisplayText,
                                                                                            Name = TestData.ProductName,
                                                                                            TransactionFees = new List<ContractProductTransactionFeeModel>{
@@ -500,7 +500,8 @@ namespace TransactionProcessor.Testing
 
         public static String EmailAddress = "testuser1@testestate1.co.uk";
         public static String ContractDescription = "Test Contract";
-        public static Guid ContractProductId = Guid.Parse("C6309D4C-3182-4D96-AEEA-E9DBBB9DED8F");
+        public static Guid VariableContractProductId = Guid.Parse("C6309D4C-3182-4D96-AEEA-E9DBBB9DED8F");
+        public static Guid FixedContractProductId = Guid.Parse("11F5A576-B2A7-4488-B34B-0392199447F0");
         public static String ProductName = "Product 1";
         public static String ProductDisplayText = "100 KES";
         public static Decimal ProductFixedValue = 100.00m;
@@ -2200,19 +2201,19 @@ namespace TransactionProcessor.Testing
                 x.FeeType = feeType;
 
                 ContractCommands.AddTransactionFeeForProductToContractCommand cmd = new(EstateId, ContractId,
-                    ContractProductId, TransactionFeeId, x);
+                    FixedContractProductId, TransactionFeeId, x);
                 return cmd;
             }
 
             public static ContractCommands.DisableTransactionFeeForProductCommand DisableTransactionFeeForProductCommand =
                 new ContractCommands.DisableTransactionFeeForProductCommand(TestData.EstateId, TestData.ContractId,
-                    TestData.ContractProductId, TestData.TransactionFeeId);
+                    TestData.VariableContractProductId, TestData.TransactionFeeId);
 
             public static ContractCommands.AddProductToContractCommand AddProductToContractCommand_FixedValue =>
-                new(EstateId, ContractId, ContractProductId, TestData.AddProductToContractRequest_FixedValue);
+                new(EstateId, ContractId, FixedContractProductId, TestData.AddProductToContractRequest_FixedValue);
 
             public static ContractCommands.AddProductToContractCommand AddProductToContractCommand_VariableValue =>
-                new(EstateId, ContractId, ContractProductId, TestData.AddProductToContractRequest_VariableValue);
+                new(EstateId, ContractId, VariableContractProductId, TestData.AddProductToContractRequest_VariableValue);
 
             public static ContractCommands.CreateContractCommand CreateContractCommand =>
                 new ContractCommands.CreateContractCommand(EstateId, ContractId, CreateContractRequest);
@@ -2259,7 +2260,7 @@ namespace TransactionProcessor.Testing
                 new MerchantQueries.GetTransactionFeesForProductQuery(TestData.EstateId,
                     TestData.MerchantId,
                     TestData.ContractId,
-                    TestData.ContractProductId);
+                    TestData.FixedContractProductId);
             public static MerchantQueries.GetMerchantContractsQuery GetMerchantContractsQuery => new MerchantQueries.GetMerchantContractsQuery(TestData.EstateId, TestData.MerchantId);
             public static MerchantQueries.GetMerchantQuery GetMerchantQuery => new MerchantQueries.GetMerchantQuery(TestData.EstateId, TestData.MerchantId);
 
@@ -2445,7 +2446,7 @@ namespace TransactionProcessor.Testing
                 ContractAggregate contractAggregate = ContractAggregate.Create(TestData.ContractId);
 
                 contractAggregate.Create(TestData.EstateId, TestData.OperatorId, TestData.ContractDescription);
-                contractAggregate.AddFixedValueProduct(TestData.ContractProductId,
+                contractAggregate.AddFixedValueProduct(TestData.FixedContractProductId,
                                                        TestData.ProductName,
                                                        TestData.ProductDisplayText,
                                                        TestData.ProductFixedValue,
@@ -2459,13 +2460,13 @@ namespace TransactionProcessor.Testing
                 ContractAggregate contractAggregate = ContractAggregate.Create(TestData.ContractId);
 
                 contractAggregate.Create(TestData.EstateId, TestData.OperatorId, TestData.ContractDescription);
-                contractAggregate.AddFixedValueProduct(TestData.ContractProductId,
+                contractAggregate.AddFixedValueProduct(VariableContractProductId,
                                                        TestData.ProductName,
                                                        TestData.ProductDisplayText,
                                                        TestData.ProductFixedValue,
                                                        TestData.ProductTypeMobileTopup);
 
-                Product product = contractAggregate.GetProducts().Single(p => p.ContractProductId == TestData.ContractProductId);
+                Product product = contractAggregate.GetProducts().Single(p => p.ContractProductId == VariableContractProductId);
                 contractAggregate.AddTransactionFee(product,
                                                     TestData.TransactionFeeId,
                                                     TestData.TransactionFeeDescription,
@@ -2730,19 +2731,19 @@ namespace TransactionProcessor.Testing
             public static ContractDomainEvents.TransactionFeeForProductAddedToContractEvent TransactionFeeForProductAddedToContractEvent =>
                 new ContractDomainEvents.TransactionFeeForProductAddedToContractEvent(TestData.ContractId,
                     TestData.EstateId,
-                    TestData.ContractProductId,
+                    TestData.FixedContractProductId,
                     TestData.TransactionFeeId,
                     TestData.TransactionFeeDescription,
                     TestData.FeeCalculationType,
                     TestData.FeeType,
                     TestData.FeeValue);
 
-            public static ContractDomainEvents.TransactionFeeForProductDisabledEvent TransactionFeeForProductDisabledEvent => new ContractDomainEvents.TransactionFeeForProductDisabledEvent(TestData.ContractId, TestData.EstateId, TestData.ContractProductId, TestData.TransactionFeeId);
-            public static ContractDomainEvents.VariableValueProductAddedToContractEvent VariableValueProductAddedToContractEvent => new ContractDomainEvents.VariableValueProductAddedToContractEvent(TestData.ContractId, TestData.EstateId, TestData.ContractProductId, TestData.ProductName, TestData.ProductDisplayText, (Int32)TestData.ProductTypeMobileTopup);
+            public static ContractDomainEvents.TransactionFeeForProductDisabledEvent TransactionFeeForProductDisabledEvent => new ContractDomainEvents.TransactionFeeForProductDisabledEvent(TestData.ContractId, TestData.EstateId, TestData.FixedContractProductId, TestData.TransactionFeeId);
+            public static ContractDomainEvents.VariableValueProductAddedToContractEvent VariableValueProductAddedToContractEvent => new ContractDomainEvents.VariableValueProductAddedToContractEvent(TestData.ContractId, TestData.EstateId, VariableContractProductId, TestData.ProductName, TestData.ProductDisplayText, (Int32)TestData.ProductTypeMobileTopup);
             public static ContractDomainEvents.FixedValueProductAddedToContractEvent FixedValueProductAddedToContractEvent =>
                 new ContractDomainEvents.FixedValueProductAddedToContractEvent(TestData.ContractId,
                     TestData.EstateId,
-                    TestData.ContractProductId,
+                    TestData.FixedContractProductId,
                     TestData.ProductName,
                     TestData.ProductDisplayText,
                     TestData.ProductFixedValue,
