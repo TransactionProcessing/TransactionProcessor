@@ -36,7 +36,7 @@ jobs:
         dotnet test "TransactionProcessor.BusinessLogic.Tests\TransactionProcessor.BusinessLogic.Tests.csproj"
         dotnet test "TransactionProcessor.ProjectionEngine.Tests\TransactionProcessor.ProjectionEngine.Tests.csproj"
         dotnet test "TransactionProcessor.Aggregates.Tests\TransactionProcessor.Aggregates.Tests.csproj"
-        dotnet test "TransactionProcessor.Tests\TransactionProcessor.Tests.csproj"        
+        dotnet test "TransactionProcessor.Tests\TransactionProcessor.Tests.csproj"            
         
     - name: Publish Images to Docker Hub - Pre Release
       if: ${{ github.event.release.prerelease == true }} 
