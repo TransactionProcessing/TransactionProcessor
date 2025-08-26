@@ -27,7 +27,7 @@ namespace TransactionProcessor.DatabaseTests
         }
 
         [Fact]
-        public async Task AddOperator_OperatorIsAdded_EventReplayHandled()
+        public async Task AddOperator_EventReplayHandled()
         {
             Result result = await this.Repository.AddOperator(TestData.DomainEvents.OperatorCreatedEvent, CancellationToken.None);
             result.IsSuccess.ShouldBeTrue();
@@ -46,7 +46,7 @@ namespace TransactionProcessor.DatabaseTests
         }
 
         [Fact]
-        public async Task AddContract_ContractIsAdded_EventReplayHandled() {
+        public async Task AddContract_EventReplayHandled() {
             Result result = await this.Repository.AddContract(TestData.DomainEvents.ContractCreatedEvent, CancellationToken.None);
             result.IsSuccess.ShouldBeTrue();
 
@@ -70,7 +70,7 @@ namespace TransactionProcessor.DatabaseTests
         }
 
         [Fact]
-        public async Task AddContractProduct_ContractProductIsAdded_EventReplayHandled() {
+        public async Task AddContractProduct_EventReplayHandled() {
             Result result = await this.Repository.AddContractProduct(TestData.DomainEvents.FixedValueProductAddedToContractEvent, CancellationToken.None);
             result.IsSuccess.ShouldBeTrue();
             EstateManagementContext context = this.GetContext();
@@ -102,7 +102,7 @@ namespace TransactionProcessor.DatabaseTests
         }
 
         [Fact]
-        public async Task AddContractProductTransactionFee_ContractIsAdded_EventReplayHandled()
+        public async Task AddContractProductTransactionFee_EventReplayHandled()
         {
             Result result = await this.Repository.AddContractProductTransactionFee(TestData.DomainEvents.TransactionFeeForProductAddedToContractEvent, CancellationToken.None);
             result.IsSuccess.ShouldBeTrue();
@@ -122,7 +122,7 @@ namespace TransactionProcessor.DatabaseTests
         }
 
         [Fact]
-        public async Task AddFileImportLog_FileImportLogIsAdded_EventReplayHandled()
+        public async Task AddFileImportLog_EventReplayHandled()
         {
             Result result = await this.Repository.AddFileImportLog(TestData.DomainEvents.ImportLogCreatedEvent, CancellationToken.None);
             result.IsSuccess.ShouldBeTrue();
@@ -148,6 +148,27 @@ namespace TransactionProcessor.DatabaseTests
             result.IsSuccess.ShouldBeTrue();
 
             result = await this.Repository.AddFileToImportLog(TestData.DomainEvents.FileAddedToImportLogEvent, CancellationToken.None);
+            result.IsSuccess.ShouldBeTrue();
+        }
+
+
+        [Fact]
+        public async Task AddEstate_EstateIsAdded()
+        {
+            Result result = await this.Repository.AddEstate(TestData.DomainEvents.EstateCreatedEvent, CancellationToken.None);
+            result.IsSuccess.ShouldBeTrue();
+            EstateManagementContext context = this.GetContext();
+            var estate = await context.Estates.SingleOrDefaultAsync(f => f.EstateId == TestData.DomainEvents.EstateCreatedEvent.EstateId);
+            estate.ShouldNotBeNull();
+        }
+
+        [Fact]
+        public async Task AddEstate_EventReplayHandled()
+        {
+            Result result = await this.Repository.AddEstate(TestData.DomainEvents.EstateCreatedEvent, CancellationToken.None);
+            result.IsSuccess.ShouldBeTrue();
+
+            result = await this.Repository.AddEstate(TestData.DomainEvents.EstateCreatedEvent, CancellationToken.None);
             result.IsSuccess.ShouldBeTrue();
         }
     }
