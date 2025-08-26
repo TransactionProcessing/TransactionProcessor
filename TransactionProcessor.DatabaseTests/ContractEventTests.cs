@@ -128,6 +128,7 @@ namespace TransactionProcessor.DatabaseTests
             result.IsSuccess.ShouldBeTrue();
 
             result = await this.Repository.AddFileImportLog(TestData.DomainEvents.ImportLogCreatedEvent, CancellationToken.None);
+            result.IsSuccess.ShouldBeTrue();
         }
   }
 }
