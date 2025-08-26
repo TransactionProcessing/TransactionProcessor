@@ -1,4 +1,5 @@
 ﻿using System.Text;
+using FileProcessor.FileImportLog.DomainEvents;
 using Microsoft.IdentityModel.Tokens;
 using Newtonsoft.Json;
 using Shared.EventStore.ProjectionEngine;
@@ -450,6 +451,14 @@ namespace TransactionProcessor.Testing
         public static TransactionResponseCode TransactionResponseCodeDeclinedByOperator = TransactionResponseCode.TransactionDeclinedByOperator;
 
         public static Decimal TransactionAmount = 1000.00m;
+
+        public static Guid FileImportLogId = Guid.Parse("2250C12E-B617-4012-8145-33ADD6E8E848");
+        public static Guid FileId = Guid.Parse("3F2A50DE-FD72-4D50-87B0-8F97D1688EFD");
+        public static Guid FileProfileId = Guid.Parse("E1FF239B-908B-497D-AB5B-6BA3148CE80D");
+        public static String FileName = "TestFile1.csv";
+        public static String FilePath = "/uploads/TestFile1.csv";
+        public static DateTime FileUploadedDateTime = new DateTime(2023, 1, 1, 10, 0, 0);
+        public static DateTime ImportLogDateTime = new DateTime(2023, 1, 1, 10, 5, 0);
 
         public static OperatorResponse OperatorResponse =>
             new OperatorResponse
@@ -2764,6 +2773,11 @@ namespace TransactionProcessor.Testing
             public static OperatorDomainEvents.OperatorNameUpdatedEvent OperatorNameUpdatedEvent => new(TestData.OperatorId, TestData.EstateId, TestData.OperatorName2);
             public static OperatorDomainEvents.OperatorRequireCustomMerchantNumberChangedEvent OperatorRequireCustomMerchantNumberChangedEvent => new(TestData.OperatorId, TestData.EstateId, TestData.RequireCustomMerchantNumberFalse);
             public static OperatorDomainEvents.OperatorRequireCustomTerminalNumberChangedEvent OperatorRequireCustomTerminalNumberChangedEvent => new(TestData.OperatorId, TestData.EstateId, TestData.RequireCustomTerminalNumberFalse);
+
+            public static ImportLogCreatedEvent ImportLogCreatedEvent => new ImportLogCreatedEvent(FileImportLogId, EstateId, ImportLogDateTime);
+            public static FileAddedToImportLogEvent FileAddedToImportLogEvent => new FileAddedToImportLogEvent(FileImportLogId, FileId, EstateId, MerchantId, EstateSecurityUserId,
+                FileProfileId, FileName, FilePath, FileUploadedDateTime );
+            
         }
     }
 
