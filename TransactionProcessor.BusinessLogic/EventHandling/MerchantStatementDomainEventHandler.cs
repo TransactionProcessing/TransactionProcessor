@@ -1,22 +1,23 @@
-﻿using System;
-using MediatR;
+﻿using MediatR;
 using Polly;
+using Prometheus;
 using Shared.DomainDrivenDesign.EventSourcing;
+using Shared.EventStore.Aggregate;
 using Shared.EventStore.EventHandling;
+using Shared.Exceptions;
+using Shared.Logger;
+using Shared.ValueObjects;
 using SimpleResults;
+using System;
 using System.Diagnostics;
 using System.IO;
 using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
-using Prometheus;
-using Shared.Logger;
 using TransactionProcessor.BusinessLogic.Common;
 using TransactionProcessor.BusinessLogic.Requests;
 using TransactionProcessor.BusinessLogic.Services;
 using TransactionProcessor.DomainEvents;
-using Shared.EventStore.Aggregate;
-using Shared.ValueObjects;
 
 namespace TransactionProcessor.BusinessLogic.EventHandling
 {
@@ -144,12 +145,32 @@ namespace TransactionProcessor.BusinessLogic.EventHandling
         private async Task<Result> HandleSpecificDomainEvent(SettlementDomainEvents.MerchantFeeSettledEvent domainEvent,
                                                              CancellationToken cancellationToken)
         {
-            MerchantStatementCommands.AddSettledFeeToMerchantStatementCommand command = new(domainEvent.EstateId, domainEvent.MerchantId, domainEvent.FeeCalculatedDateTime, 
-                PositiveMoney.Create(Money.Create(domainEvent.CalculatedValue)), domainEvent.TransactionId, domainEvent.FeeId);
+            IAsyncPolicy<Result> retryPolicy = PolicyFactory.CreatePolicy(policyTag: "MerchantStatementDomainEventHandler - HandleSpecificDomainEvent<SettlementDomainEvents.MerchantFeeSettledEvent>");
 
-            //return await this.Mediator.Send(command, cancellationToken);
-            Result result = await this.Mediator.Send(command, cancellationToken);
-            return result;
+            try
+            {
+                return await PolicyFactory.ExecuteWithPolicyAsync(async () =>
+                {
+                    MerchantStatementCommands.AddSettledFeeToMerchantStatementCommand command = new(domainEvent.EstateId, domainEvent.MerchantId, domainEvent.FeeCalculatedDateTime,
+                        PositiveMoney.Create(Money.Create(domainEvent.CalculatedValue)), domainEvent.TransactionId, domainEvent.FeeId);
+
+                    Result result = await this.Mediator.Send(command, cancellationToken);
+                    return result;
+
+                }, retryPolicy, "MerchantStatementDomainEventHandler - HandleSpecificDomainEvent<SettlementDomainEvents.MerchantFeeSettledEvent>");
+            }
+            catch (Exception ex)
+            {
+                return Result.Failure(ex.GetExceptionMessages());
+            }
+            //MerchantStatementCommands.AddSettledFeeToMerchantStatementCommand command = new(domainEvent.EstateId, domainEvent.MerchantId, domainEvent.FeeCalculatedDateTime,
+            //    PositiveMoney.Create(Money.Create(domainEvent.CalculatedValue)), domainEvent.TransactionId, domainEvent.FeeId);
+
+            ////return await this.Mediator.Send(command, cancellationToken);
+            //Result result = await this.Mediator.Send(command, cancellationToken);
+            //return result;
+
+
         }
 
         #endregion

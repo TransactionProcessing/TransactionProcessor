@@ -22,6 +22,7 @@ public class MerchantStatementDomainEventHandlerTests : DomainEventHandlerTests
     public MerchantStatementDomainEventHandlerTests(ITestOutputHelper testOutputHelper) : base(testOutputHelper)
     {
         this.EventHandler = new MerchantStatementDomainEventHandler(this.Mediator.Object);
+        Logger.Initialise(new NullLogger());
     }
 
     [Fact]
@@ -62,6 +63,37 @@ public class MerchantStatementDomainEventHandlerTests : DomainEventHandlerTests
 
         Result result = await this.EventHandler.Handle(TestData.DomainEvents.MerchantFeeSettledEvent, CancellationToken.None);
         result.IsSuccess.ShouldBeTrue();
+    }
+
+    [Fact]
+    public async Task MerchantStatementDomainEventHandler_Handle_MerchantFeeSettledEvent_WrongExpectedRetried_EventIsHandled()
+    {
+        List<String> errors = new() { "WrongExpectedVersion" };
+
+        this.Mediator.SetupSequence(m => m.Send(It.IsAny<IRequest<Result>>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(Result.Failure(errors))
+            .ReturnsAsync(Result.Success());
+
+        Result result = await this.EventHandler.Handle(TestData.DomainEvents.MerchantFeeSettledEvent, CancellationToken.None);
+        result.IsSuccess.ShouldBeTrue();
+        this.Mediator.Verify(m => m.Send(It.IsAny<IRequest<Result>>(), It.IsAny<CancellationToken>()), Times.Exactly(2));
+    }
+
+    [Fact]
+    public async Task MerchantStatementDomainEventHandler_Handle_MerchantFeeSettledEvent_WrongExpectedRetried_AllRetriesFailed()
+    {
+        List<String> errors = new() { "WrongExpectedVersion" };
+        this.Mediator.SetupSequence(m => m.Send(It.IsAny<IRequest<Result>>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(Result.Failure(errors))
+            .ReturnsAsync(Result.Failure(errors))
+            .ReturnsAsync(Result.Failure(errors))
+            .ReturnsAsync(Result.Failure(errors))
+            .ReturnsAsync(Result.Failure(errors))
+            .ReturnsAsync(Result.Failure(errors));
+
+        Result result = await this.EventHandler.Handle(TestData.DomainEvents.MerchantFeeSettledEvent, CancellationToken.None);
+        result.IsFailed.ShouldBeTrue();
+        this.Mediator.Verify(m => m.Send(It.IsAny<IRequest<Result>>(), It.IsAny<CancellationToken>()), Times.Exactly(6));
     }
 
     [Fact]
