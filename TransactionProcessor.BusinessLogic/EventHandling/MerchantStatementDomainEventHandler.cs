@@ -109,11 +109,24 @@ namespace TransactionProcessor.BusinessLogic.EventHandling
 
         private async Task<Result> HandleSpecificDomainEvent(TransactionDomainEvents.TransactionHasBeenCompletedEvent domainEvent,
                                                              CancellationToken cancellationToken) {
-            MerchantStatementCommands.AddTransactionToMerchantStatementCommand command = new(domainEvent.EstateId, domainEvent.MerchantId, domainEvent.CompletedDateTime,
-                Money.Create(domainEvent.TransactionAmount.GetValueOrDefault(0)), domainEvent.IsAuthorised, domainEvent.TransactionId);
+            IAsyncPolicy<Result> retryPolicy = PolicyFactory.CreatePolicy(policyTag: "MerchantStatementDomainEventHandler - HandleSpecificDomainEvent<SettlementDomainEvents.TransactionHasBeenCompletedEvent>");
 
-            Result result = await this.Mediator.Send(command, cancellationToken);
-            return result;
+            try
+            {
+                return await PolicyFactory.ExecuteWithPolicyAsync(async () =>
+                {
+                    MerchantStatementCommands.AddTransactionToMerchantStatementCommand command = new(domainEvent.EstateId, domainEvent.MerchantId, domainEvent.CompletedDateTime,
+                        Money.Create(domainEvent.TransactionAmount.GetValueOrDefault(0)), domainEvent.IsAuthorised, domainEvent.TransactionId);
+
+                    Result result = await this.Mediator.Send(command, cancellationToken);
+                    return result;
+
+                }, retryPolicy, "MerchantStatementDomainEventHandler - HandleSpecificDomainEvent<SettlementDomainEvents.TransactionHasBeenCompletedEvent>");
+            }
+            catch (Exception ex)
+            {
+                return Result.Failure(ex.GetExceptionMessages());
+            }
         }
 
         private async Task<Result> HandleSpecificDomainEvent(MerchantDomainEvents.AutomaticDepositMadeEvent domainEvent,
@@ -163,14 +176,6 @@ namespace TransactionProcessor.BusinessLogic.EventHandling
             {
                 return Result.Failure(ex.GetExceptionMessages());
             }
-            //MerchantStatementCommands.AddSettledFeeToMerchantStatementCommand command = new(domainEvent.EstateId, domainEvent.MerchantId, domainEvent.FeeCalculatedDateTime,
-            //    PositiveMoney.Create(Money.Create(domainEvent.CalculatedValue)), domainEvent.TransactionId, domainEvent.FeeId);
-
-            ////return await this.Mediator.Send(command, cancellationToken);
-            //Result result = await this.Mediator.Send(command, cancellationToken);
-            //return result;
-
-
         }
 
         #endregion
