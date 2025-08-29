@@ -17,7 +17,7 @@ namespace EstateManagement.Database.Migrations.SqlServer
         {
 #pragma warning disable 612, 618
             modelBuilder
-                .HasAnnotation("ProductVersion", "8.0.14")
+                .HasAnnotation("ProductVersion", "9.0.5")
                 .HasAnnotation("Relational:MaxIdentifierLength", 128);
 
             SqlServerModelBuilderExtensions.UseIdentityColumns(modelBuilder);
@@ -65,7 +65,7 @@ namespace EstateManagement.Database.Migrations.SqlServer
 
                     b.HasKey("Date");
 
-                    b.ToTable("calendar");
+                    b.ToTable("calendar", (string)null);
                 });
 
             modelBuilder.Entity("TransactionProcessor.Database.Entities.Contract", b =>
@@ -91,7 +91,7 @@ namespace EstateManagement.Database.Migrations.SqlServer
 
                     b.HasKey("EstateId", "OperatorId", "ContractId");
 
-                    b.ToTable("contract");
+                    b.ToTable("contract", (string)null);
                 });
 
             modelBuilder.Entity("TransactionProcessor.Database.Entities.ContractProduct", b =>
@@ -127,7 +127,7 @@ namespace EstateManagement.Database.Migrations.SqlServer
                     b.HasIndex("ContractProductId", "ContractId")
                         .IsUnique();
 
-                    b.ToTable("contractproduct");
+                    b.ToTable("contractproduct", (string)null);
                 });
 
             modelBuilder.Entity("TransactionProcessor.Database.Entities.ContractProductTransactionFee", b =>
@@ -165,7 +165,7 @@ namespace EstateManagement.Database.Migrations.SqlServer
                     b.HasIndex("ContractProductTransactionFeeId", "ContractProductId")
                         .IsUnique();
 
-                    b.ToTable("contractproducttransactionfee");
+                    b.ToTable("contractproducttransactionfee", (string)null);
                 });
 
             modelBuilder.Entity("TransactionProcessor.Database.Entities.Estate", b =>
@@ -194,7 +194,7 @@ namespace EstateManagement.Database.Migrations.SqlServer
                     b.HasIndex("EstateId")
                         .IsUnique();
 
-                    b.ToTable("estate");
+                    b.ToTable("estate", (string)null);
                 });
 
             modelBuilder.Entity("TransactionProcessor.Database.Entities.EstateSecurityUser", b =>
@@ -214,7 +214,7 @@ namespace EstateManagement.Database.Migrations.SqlServer
 
                     b.HasKey("SecurityUserId", "EstateId");
 
-                    b.ToTable("estatesecurityuser");
+                    b.ToTable("estatesecurityuser", (string)null);
                 });
 
             modelBuilder.Entity("TransactionProcessor.Database.Entities.File", b =>
@@ -261,7 +261,7 @@ namespace EstateManagement.Database.Migrations.SqlServer
                     b.HasIndex("FileId")
                         .IsUnique();
 
-                    b.ToTable("file");
+                    b.ToTable("file", (string)null);
                 });
 
             modelBuilder.Entity("TransactionProcessor.Database.Entities.FileImportLog", b =>
@@ -289,7 +289,7 @@ namespace EstateManagement.Database.Migrations.SqlServer
                     b.HasIndex("EstateId", "FileImportLogId")
                         .IsUnique();
 
-                    b.ToTable("fileimportlog");
+                    b.ToTable("fileimportlog", (string)null);
                 });
 
             modelBuilder.Entity("TransactionProcessor.Database.Entities.FileImportLogFile", b =>
@@ -325,7 +325,7 @@ namespace EstateManagement.Database.Migrations.SqlServer
 
                     b.HasKey("FileImportLogId", "FileId");
 
-                    b.ToTable("fileimportlogfile");
+                    b.ToTable("fileimportlogfile", (string)null);
                 });
 
             modelBuilder.Entity("TransactionProcessor.Database.Entities.FileLine", b =>
@@ -351,7 +351,7 @@ namespace EstateManagement.Database.Migrations.SqlServer
 
                     SqlServerKeyBuilderExtensions.IsClustered(b.HasKey("FileId", "LineNumber"));
 
-                    b.ToTable("fileline");
+                    b.ToTable("fileline", (string)null);
                 });
 
             modelBuilder.Entity("TransactionProcessor.Database.Entities.Float", b =>
@@ -383,7 +383,7 @@ namespace EstateManagement.Database.Migrations.SqlServer
 
                     SqlServerIndexBuilderExtensions.IsClustered(b.HasIndex("CreatedDate"));
 
-                    b.ToTable("Floats");
+                    b.ToTable("Floats", (string)null);
                 });
 
             modelBuilder.Entity("TransactionProcessor.Database.Entities.FloatActivity", b =>
@@ -419,7 +419,7 @@ namespace EstateManagement.Database.Migrations.SqlServer
 
                     SqlServerIndexBuilderExtensions.IsClustered(b.HasIndex("ActivityDate"));
 
-                    b.ToTable("FloatActivity");
+                    b.ToTable("FloatActivity", (string)null);
                 });
 
             modelBuilder.Entity("TransactionProcessor.Database.Entities.Merchant", b =>
@@ -463,7 +463,7 @@ namespace EstateManagement.Database.Migrations.SqlServer
                     b.HasIndex("EstateId", "MerchantId")
                         .IsUnique();
 
-                    b.ToTable("merchant");
+                    b.ToTable("merchant", (string)null);
                 });
 
             modelBuilder.Entity("TransactionProcessor.Database.Entities.MerchantAddress", b =>
@@ -504,7 +504,7 @@ namespace EstateManagement.Database.Migrations.SqlServer
 
                     b.HasKey("MerchantId", "AddressId");
 
-                    b.ToTable("merchantaddress");
+                    b.ToTable("merchantaddress", (string)null);
                 });
 
             modelBuilder.Entity("TransactionProcessor.Database.Entities.MerchantContact", b =>
@@ -530,7 +530,7 @@ namespace EstateManagement.Database.Migrations.SqlServer
 
                     b.HasKey("MerchantId", "ContactId");
 
-                    b.ToTable("merchantcontact");
+                    b.ToTable("merchantcontact", (string)null);
                 });
 
             modelBuilder.Entity("TransactionProcessor.Database.Entities.MerchantContract", b =>
@@ -546,7 +546,7 @@ namespace EstateManagement.Database.Migrations.SqlServer
 
                     b.HasKey("MerchantId", "ContractId");
 
-                    b.ToTable("MerchantContracts");
+                    b.ToTable("MerchantContracts", (string)null);
                 });
 
             modelBuilder.Entity("TransactionProcessor.Database.Entities.MerchantDevice", b =>
@@ -566,7 +566,7 @@ namespace EstateManagement.Database.Migrations.SqlServer
 
                     b.HasKey("MerchantId", "DeviceId");
 
-                    b.ToTable("merchantdevice");
+                    b.ToTable("merchantdevice", (string)null);
                 });
 
             modelBuilder.Entity("TransactionProcessor.Database.Entities.MerchantOperator", b =>
@@ -592,7 +592,7 @@ namespace EstateManagement.Database.Migrations.SqlServer
 
                     b.HasKey("MerchantId", "OperatorId");
 
-                    b.ToTable("merchantoperator");
+                    b.ToTable("merchantoperator", (string)null);
                 });
 
             modelBuilder.Entity("TransactionProcessor.Database.Entities.MerchantSecurityUser", b =>
@@ -612,7 +612,7 @@ namespace EstateManagement.Database.Migrations.SqlServer
 
                     b.HasKey("MerchantId", "SecurityUserId");
 
-                    b.ToTable("merchantsecurityuser");
+                    b.ToTable("merchantsecurityuser", (string)null);
                 });
 
             modelBuilder.Entity("TransactionProcessor.Database.Entities.MerchantSettlementFee", b =>
@@ -643,7 +643,7 @@ namespace EstateManagement.Database.Migrations.SqlServer
 
                     b.HasKey("SettlementId", "TransactionId", "ContractProductTransactionFeeId");
 
-                    b.ToTable("merchantsettlementfee");
+                    b.ToTable("merchantsettlementfee", (string)null);
                 });
 
             modelBuilder.Entity("TransactionProcessor.Database.Entities.Operator", b =>
@@ -675,7 +675,7 @@ namespace EstateManagement.Database.Migrations.SqlServer
                     b.HasIndex("OperatorId")
                         .IsUnique();
 
-                    b.ToTable("operator");
+                    b.ToTable("operator", (string)null);
                 });
 
             modelBuilder.Entity("TransactionProcessor.Database.Entities.Reconciliation", b =>
@@ -735,7 +735,7 @@ namespace EstateManagement.Database.Migrations.SqlServer
 
                     SqlServerIndexBuilderExtensions.IsClustered(b.HasIndex("TransactionId", "MerchantId"), false);
 
-                    b.ToTable("reconciliation");
+                    b.ToTable("reconciliation", (string)null);
                 });
 
             modelBuilder.Entity("TransactionProcessor.Database.Entities.ResponseCodes", b =>
@@ -752,7 +752,7 @@ namespace EstateManagement.Database.Migrations.SqlServer
 
                     b.HasKey("ResponseCode");
 
-                    b.ToTable("responsecodes");
+                    b.ToTable("responsecodes", (string)null);
                 });
 
             modelBuilder.Entity("TransactionProcessor.Database.Entities.Settlement", b =>
@@ -797,7 +797,7 @@ namespace EstateManagement.Database.Migrations.SqlServer
 
                     SqlServerIndexBuilderExtensions.IsClustered(b.HasIndex("EstateId", "SettlementId"), false);
 
-                    b.ToTable("settlement");
+                    b.ToTable("settlement", (string)null);
                 });
 
             modelBuilder.Entity("TransactionProcessor.Database.Entities.StatementHeader", b =>
@@ -834,7 +834,7 @@ namespace EstateManagement.Database.Migrations.SqlServer
 
                     SqlServerIndexBuilderExtensions.IsClustered(b.HasIndex("StatementGeneratedDate"));
 
-                    b.ToTable("statementheader");
+                    b.ToTable("statementheader", (string)null);
                 });
 
             modelBuilder.Entity("TransactionProcessor.Database.Entities.StatementLine", b =>
@@ -865,7 +865,7 @@ namespace EstateManagement.Database.Migrations.SqlServer
 
                     b.HasKey("StatementId", "TransactionId", "ActivityDateTime", "ActivityType");
 
-                    b.ToTable("statementline");
+                    b.ToTable("statementline", (string)null);
                 });
 
             modelBuilder.Entity("TransactionProcessor.Database.Entities.Summary.SettlementSummary", b =>
@@ -907,7 +907,7 @@ namespace EstateManagement.Database.Migrations.SqlServer
                     b.HasIndex("SettlementDate", "MerchantReportingId", "OperatorReportingId", "ContractProductReportingId", "IsCompleted", "IsSettled")
                         .IsUnique();
 
-                    b.ToTable("SettlementSummary");
+                    b.ToTable("SettlementSummary", (string)null);
                 });
 
             modelBuilder.Entity("TransactionProcessor.Database.Entities.Summary.TodayTransaction", b =>
@@ -989,7 +989,7 @@ namespace EstateManagement.Database.Migrations.SqlServer
                     b.HasIndex("TransactionId")
                         .IsUnique();
 
-                    b.ToTable("TodayTransactions");
+                    b.ToTable("TodayTransactions", (string)null);
                 });
 
             modelBuilder.Entity("TransactionProcessor.Database.Entities.Summary.TransactionHistory", b =>
@@ -1071,7 +1071,7 @@ namespace EstateManagement.Database.Migrations.SqlServer
                     b.HasIndex("TransactionId")
                         .IsUnique();
 
-                    b.ToTable("TransactionHistory");
+                    b.ToTable("TransactionHistory", (string)null);
                 });
 
             modelBuilder.Entity("TransactionProcessor.Database.Entities.Transaction", b =>
@@ -1152,7 +1152,7 @@ namespace EstateManagement.Database.Migrations.SqlServer
 
                     SqlServerIndexBuilderExtensions.IsClustered(b.HasIndex("TransactionId"), false);
 
-                    b.ToTable("transaction");
+                    b.ToTable("transaction", (string)null);
                 });
 
             modelBuilder.Entity("TransactionProcessor.Database.Entities.TransactionAdditionalRequestData", b =>
@@ -1168,7 +1168,7 @@ namespace EstateManagement.Database.Migrations.SqlServer
 
                     b.HasKey("TransactionId");
 
-                    b.ToTable("transactionadditionalrequestdata");
+                    b.ToTable("transactionadditionalrequestdata", (string)null);
                 });
 
             modelBuilder.Entity("TransactionProcessor.Database.Entities.TransactionAdditionalResponseData", b =>
@@ -1181,7 +1181,7 @@ namespace EstateManagement.Database.Migrations.SqlServer
 
                     b.HasKey("TransactionId");
 
-                    b.ToTable("transactionadditionalresponsedata");
+                    b.ToTable("transactionadditionalresponsedata", (string)null);
                 });
 
             modelBuilder.Entity("TransactionProcessor.Database.Entities.TransactionTimings", b =>
@@ -1215,7 +1215,7 @@ namespace EstateManagement.Database.Migrations.SqlServer
 
                     SqlServerKeyBuilderExtensions.IsClustered(b.HasKey("TransactionId"), false);
 
-                    b.ToTable("transactiontimings");
+                    b.ToTable("transactiontimings", (string)null);
                 });
 
             modelBuilder.Entity("TransactionProcessor.Database.Entities.VoucherProjectionState", b =>
@@ -1295,7 +1295,7 @@ namespace EstateManagement.Database.Migrations.SqlServer
 
                     b.HasIndex("VoucherCode");
 
-                    b.ToTable("voucherprojectionstate");
+                    b.ToTable("voucherprojectionstate", (string)null);
                 });
 
             modelBuilder.Entity("TransactionProcessor.Database.ViewEntities.SettlementView", b =>
@@ -1376,7 +1376,7 @@ namespace EstateManagement.Database.Migrations.SqlServer
 
                     SqlServerKeyBuilderExtensions.IsClustered(b.HasKey("EventId", "Type"));
 
-                    b.ToTable("Events");
+                    b.ToTable("Events", (string)null);
                 });
 
             modelBuilder.Entity("TransactionProcessor.ProjectionEngine.Database.Database.Entities.MerchantBalanceChangedEntry", b =>
@@ -1412,7 +1412,7 @@ namespace EstateManagement.Database.Migrations.SqlServer
 
                     b.HasKey("AggregateId", "OriginalEventId");
 
-                    b.ToTable("MerchantBalanceChangedEntry");
+                    b.ToTable("MerchantBalanceChangedEntry", (string)null);
                 });
 
             modelBuilder.Entity("TransactionProcessor.ProjectionEngine.Database.Database.Entities.MerchantBalanceProjectionState", b =>
@@ -1486,7 +1486,7 @@ namespace EstateManagement.Database.Migrations.SqlServer
 
                     b.HasKey("EstateId", "MerchantId");
 
-                    b.ToTable("MerchantBalanceProjectionState");
+                    b.ToTable("MerchantBalanceProjectionState", (string)null);
                 });
 
             modelBuilder.Entity("TransactionProcessor.ProjectionEngine.Database.Database.ViewEntities.MerchantBalanceHistoryViewEntry", b =>

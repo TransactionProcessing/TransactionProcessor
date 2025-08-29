@@ -222,6 +222,46 @@ public class EstateManagementContext : DbContext
         }
     }
 
+    private async Task SetDbInSimpleMode(CancellationToken cancellationToken)
+    {
+        var dbName = this.Database.GetDbConnection().Database;
+
+        var connection = this.Database.GetDbConnection();
+        if (connection.State != System.Data.ConnectionState.Open)
+            await connection.OpenAsync(cancellationToken);
+
+        // 1. Check current recovery model
+        await using var checkCommand = connection.CreateCommand();
+        checkCommand.CommandText = @"
+SELECT recovery_model_desc
+FROM sys.databases
+WHERE name = @dbName;
+";
+        var param = checkCommand.CreateParameter();
+        param.ParameterName = "@dbName";
+        param.Value = dbName;
+        checkCommand.Parameters.Add(param);
+
+        var result = await checkCommand.ExecuteScalarAsync(cancellationToken);
+        var currentRecoveryModel = result?.ToString();
+
+        if (currentRecoveryModel != "SIMPLE")
+        {
+            // 2. Alter database outside transaction
+            await using var alterCommand = connection.CreateCommand();
+            alterCommand.CommandText = $@"
+ALTER DATABASE [{dbName}] SET SINGLE_USER WITH ROLLBACK IMMEDIATE;
+ALTER DATABASE [{dbName}] SET RECOVERY SIMPLE;
+ALTER DATABASE [{dbName}] SET MULTI_USER;
+";
+            // Execute outside EF transaction
+            await alterCommand.ExecuteNonQueryAsync(cancellationToken);
+        }
+    }
+
+
+
+
     public static Boolean IsDuplicateInsertsIgnored(String tableName) =>
         EstateManagementContext.TablesToIgnoreDuplicates.Contains(tableName.Trim(), StringComparer.InvariantCultureIgnoreCase);
 
@@ -234,6 +274,8 @@ public class EstateManagementContext : DbContext
             await this.CreateViews(cancellationToken);
             await this.SeedStandingData(cancellationToken);
             await this.CreateStoredProcedures(cancellationToken);
+            await this.SetDbInSimpleMode(cancellationToken);
+
         }
     }
     
