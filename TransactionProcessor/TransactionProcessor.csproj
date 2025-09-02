@@ -47,7 +47,6 @@
 	  <PackageReference Include="System.ServiceModel.Federation" Version="8.1.2" />
 	  <PackageReference Include="System.ServiceModel.Http" Version="8.1.2" />
 	  <PackageReference Include="System.ServiceModel.NetTcp" Version="8.1.2" />
-	  <PackageReference Include="System.ServiceModel.NetTcp" Version="8.1.2" />
 	  <PackageReference Include="Microsoft.IdentityModel.Tokens" Version="8.12.0" />
 	  <PackageReference Include="Microsoft.IdentityModel.JsonWebTokens" Version="8.12.0" />
   </ItemGroup>

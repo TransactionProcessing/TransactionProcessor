@@ -62,8 +62,9 @@ namespace TransactionProcessor.BusinessLogic.Services
 
                 EstateAggregate estateAggregate = estateResult.Data;
 
-                estateAggregate.Create(command.RequestDto.EstateName);
-                estateAggregate.GenerateReference();
+                Result stateResult = estateAggregate.Create(command.RequestDto.EstateName);
+                if (stateResult.IsFailed)
+                    return ResultHelpers.CreateFailure(stateResult);
 
                 Result saveResult = await this.AggregateService.Save(estateAggregate, cancellationToken);
                 if (saveResult.IsFailed)
@@ -90,7 +91,9 @@ namespace TransactionProcessor.BusinessLogic.Services
 
                 EstateAggregate estateAggregate = estateResult.Data;
 
-                estateAggregate.AddOperator(command.RequestDto.OperatorId);
+                Result stateResult =estateAggregate.AddOperator(command.RequestDto.OperatorId);
+                if (stateResult.IsFailed)
+                    return ResultHelpers.CreateFailure(stateResult);
 
                 Result saveResult = await this.AggregateService.Save(estateAggregate, cancellationToken);
                 if (saveResult.IsFailed)
@@ -143,7 +146,9 @@ namespace TransactionProcessor.BusinessLogic.Services
 
                 EstateAggregate estateAggregate = estateResult.Data;
 
-                estateAggregate.AddSecurityUser(user.UserId, command.RequestDto.EmailAddress);
+                Result stateResult = estateAggregate.AddSecurityUser(user.UserId, command.RequestDto.EmailAddress);
+                if (stateResult.IsFailed)
+                    return ResultHelpers.CreateFailure(stateResult);
 
                 Result saveResult = await this.AggregateService.Save(estateAggregate, cancellationToken);
                 if (saveResult.IsFailed)
@@ -167,7 +172,9 @@ namespace TransactionProcessor.BusinessLogic.Services
 
                 EstateAggregate estateAggregate = estateResult.Data;
 
-                estateAggregate.RemoveOperator(command.OperatorId);
+                Result stateResult = estateAggregate.RemoveOperator(command.OperatorId);
+                if (stateResult.IsFailed)
+                    return ResultHelpers.CreateFailure(stateResult);
 
                 Result saveResult = await this.AggregateService.Save(estateAggregate, cancellationToken);
                 if (saveResult.IsFailed)

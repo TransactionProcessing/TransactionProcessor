@@ -1,4 +1,5 @@
 ﻿using Shouldly;
+using SimpleResults;
 using TransactionProcessor.Models.Estate;
 using TransactionProcessor.Testing;
 
@@ -19,7 +20,6 @@ namespace TransactionProcessor.Aggregates.Tests
         {
             EstateAggregate aggregate = EstateAggregate.Create(TestData.EstateId);
             aggregate.Create(TestData.EstateName);
-            aggregate.GenerateReference();
 
             aggregate.AggregateId.ShouldBe(TestData.EstateId);
             aggregate.EstateName.ShouldBe(TestData.EstateName);
@@ -33,12 +33,12 @@ namespace TransactionProcessor.Aggregates.Tests
         public void EstateAggregate_Create_InvalidEstateName_ErrorThrown(String estateName)
         {
             EstateAggregate aggregate = EstateAggregate.Create(TestData.EstateId);
-            ArgumentNullException exception = Should.Throw<ArgumentNullException>(() =>
-                                                {
-                                                    aggregate.Create(estateName);
-                                                });
+            Result result = aggregate.Create(estateName);
             
-            exception.Message.ShouldContain("Estate name must be provided when registering a new estate");
+            result.IsFailed.ShouldBeTrue();
+            result.Status.ShouldBe(ResultStatus.Invalid);
+
+            result.Message.ShouldContain("Estate name must be provided when registering a new estate");
         }
 
         [Fact]
@@ -47,31 +47,15 @@ namespace TransactionProcessor.Aggregates.Tests
             EstateAggregate aggregate = EstateAggregate.Create(TestData.EstateId);
             aggregate.Create(TestData.EstateName);
 
-            Should.NotThrow(() =>
-                            {
-                                aggregate.Create(TestData.EstateName);
-                            });
+            var result = aggregate.Create(TestData.EstateName);
+            result.IsSuccess.ShouldBeTrue();
         }
-
-        [Fact]
-        public void EstateAggregate_GenerateReference_CalledTwice_NoErrorThrown()
-        {
-            EstateAggregate aggregate = EstateAggregate.Create(TestData.EstateId);
-            aggregate.Create(TestData.EstateName);
-            aggregate.GenerateReference();
-
-            Should.NotThrow(() =>
-                            {
-                                aggregate.GenerateReference();
-                            });
-        }
-
+        
         [Fact]
         public void EstateAggregate_GetEstate_NoOperators_EstateIsReturned()
         {
             EstateAggregate aggregate = EstateAggregate.Create(TestData.EstateId);
             aggregate.Create(TestData.EstateName);
-            aggregate.GenerateReference();
             TransactionProcessor.Models.Estate.Estate model = aggregate.GetEstate();
 
             model.EstateId.ShouldBe(TestData.EstateId);
@@ -85,7 +69,6 @@ namespace TransactionProcessor.Aggregates.Tests
         {
             EstateAggregate aggregate = EstateAggregate.Create(TestData.EstateId);
             aggregate.Create(TestData.EstateName);
-            aggregate.GenerateReference();
             aggregate.AddOperator(TestData.OperatorId);
 
             TransactionProcessor.Models.Estate.Estate model = aggregate.GetEstate();
@@ -104,7 +87,6 @@ namespace TransactionProcessor.Aggregates.Tests
         {
             EstateAggregate aggregate = EstateAggregate.Create(TestData.EstateId);
             aggregate.Create(TestData.EstateName);
-            aggregate.GenerateReference();
             TransactionProcessor.Models.Estate.Estate model = aggregate.GetEstate();
 
             model.EstateId.ShouldBe(TestData.EstateId);
@@ -119,7 +101,6 @@ namespace TransactionProcessor.Aggregates.Tests
         {
             EstateAggregate aggregate = EstateAggregate.Create(TestData.EstateId);
             aggregate.Create(TestData.EstateName);
-            aggregate.GenerateReference();
             aggregate.AddSecurityUser(TestData.SecurityUserId,TestData.EstateUserEmailAddress);
 
             TransactionProcessor.Models.Estate.Estate model = aggregate.GetEstate();
@@ -153,12 +134,12 @@ namespace TransactionProcessor.Aggregates.Tests
         {
             EstateAggregate aggregate = EstateAggregate.Create(TestData.EstateId);
 
-            InvalidOperationException exception = Should.Throw<InvalidOperationException>(() =>
-                                                                                  {
-                                                                                      aggregate.AddOperator(TestData.OperatorId);
-                                                                                  });
+            Result result = aggregate.AddOperator(TestData.OperatorId);
+            
+            result.IsFailed.ShouldBeTrue();
+            result.Status.ShouldBe(ResultStatus.Invalid);
 
-            exception.Message.ShouldContain("Estate has not been created");
+            result.Message.ShouldContain("Estate has not been created");
         }
         
         [Fact]
@@ -168,12 +149,11 @@ namespace TransactionProcessor.Aggregates.Tests
             aggregate.Create(TestData.EstateName);
             aggregate.AddOperator(TestData.OperatorId);
 
-            InvalidOperationException exception = Should.Throw<InvalidOperationException>(() =>
-                                                                                  {
-                                                                                      aggregate.AddOperator(TestData.OperatorId);
-                                                                                  });
+            var result = aggregate.AddOperator(TestData.OperatorId);
+            result.IsFailed.ShouldBeTrue();
+            result.Status.ShouldBe(ResultStatus.Invalid);
 
-            exception.Message.ShouldContain($"Duplicate operator details are not allowed, an operator already exists on this estate with Id [{TestData.OperatorId}]");
+            result.Message.ShouldContain($"Duplicate operator details are not allowed, an operator already exists on this estate with Id [{TestData.OperatorId}]");
         }
 
         [Fact]
@@ -193,12 +173,12 @@ namespace TransactionProcessor.Aggregates.Tests
         {
             EstateAggregate aggregate = EstateAggregate.Create(TestData.EstateId);
 
-            InvalidOperationException exception = Should.Throw<InvalidOperationException>(() =>
-                                                                                          {
-                                                                                              aggregate.AddSecurityUser(TestData.SecurityUserId, TestData.EstateUserEmailAddress);
-                                                                                          });
+            Result result = aggregate.AddSecurityUser(TestData.SecurityUserId, TestData.EstateUserEmailAddress);
 
-            exception.Message.ShouldContain("Estate has not been created");
+            result.IsFailed.ShouldBeTrue();
+            result.Status.ShouldBe(ResultStatus.Invalid);
+
+            result.Message.ShouldContain("Estate has not been created");
         }
 
         [Fact]
@@ -220,12 +200,11 @@ namespace TransactionProcessor.Aggregates.Tests
         {
             EstateAggregate aggregate = EstateAggregate.Create(TestData.EstateId);
 
-            InvalidOperationException exception = Should.Throw<InvalidOperationException>(() =>
-                                                                                          {
-                                                                                              aggregate.RemoveOperator(TestData.OperatorId);
-                                                                                          });
+            Result result = aggregate.RemoveOperator(TestData.OperatorId);
+            result.IsFailed.ShouldBeTrue();
+            result.Status.ShouldBe(ResultStatus.Invalid);
 
-            exception.Message.ShouldContain("Estate has not been created");
+            result.Message.ShouldContain("Estate has not been created");
         }
 
         [Fact]
@@ -233,13 +212,12 @@ namespace TransactionProcessor.Aggregates.Tests
         {
             EstateAggregate aggregate = EstateAggregate.Create(TestData.EstateId);
             aggregate.Create(TestData.EstateName);
+            
+            var result = aggregate.RemoveOperator(TestData.OperatorId);
+            result.IsFailed.ShouldBeTrue();
+            result.Status.ShouldBe(ResultStatus.Invalid);
 
-            InvalidOperationException exception = Should.Throw<InvalidOperationException>(() =>
-                                                                                          {
-                                                                                              aggregate.RemoveOperator(TestData.OperatorId);
-                                                                                          });
-
-            exception.Message.ShouldContain($"Operator not added to this Estate with Id [{TestData.OperatorId}]");
+            result.Message.ShouldContain($"Operator not added to this Estate with Id [{TestData.OperatorId}]");
         }
     }
 }
