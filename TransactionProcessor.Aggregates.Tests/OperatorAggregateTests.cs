@@ -1,4 +1,5 @@
 ﻿using Shouldly;
+using SimpleResults;
 using TransactionProcessor.Testing;
 
 namespace TransactionProcessor.Aggregates.Tests
@@ -23,7 +24,8 @@ namespace TransactionProcessor.Aggregates.Tests
         public void OperatorAggregate_Create_IsCreated()
         {
             OperatorAggregate aggregate = OperatorAggregate.Create(TestData.OperatorId);
-            aggregate.Create(TestData.EstateId, TestData.OperatorName, TestData.RequireCustomMerchantNumber, TestData.RequireCustomTerminalNumber);
+            var result = aggregate.Create(TestData.EstateId, TestData.OperatorName, TestData.RequireCustomMerchantNumber, TestData.RequireCustomTerminalNumber);
+            result.IsSuccess.ShouldBeTrue();
 
             aggregate.AggregateId.ShouldBe(TestData.OperatorId);
             aggregate.Name.ShouldBe(TestData.OperatorName);
@@ -34,10 +36,33 @@ namespace TransactionProcessor.Aggregates.Tests
         }
 
         [Fact]
+        public void OperatorAggregate_Create_EstateIdEmpty_ErrorReturned()
+        {
+            OperatorAggregate aggregate = OperatorAggregate.Create(TestData.OperatorId);
+            var result = aggregate.Create(Guid.Empty, TestData.OperatorName, TestData.RequireCustomMerchantNumber, TestData.RequireCustomTerminalNumber);
+            result.IsFailed.ShouldBeTrue();
+            result.Status.ShouldBe(ResultStatus.Invalid);
+            result.Message.ShouldBe("Estate Id must not be an empty Guid");
+        }
+
+        [Theory]
+        [InlineData(null)]
+        [InlineData("")]
+        public void OperatorAggregate_Create_NameInvalid_ErrorReturned(String operatorName)
+        {
+            OperatorAggregate aggregate = OperatorAggregate.Create(TestData.OperatorId);
+            var result = aggregate.Create(TestData.EstateId, operatorName, TestData.RequireCustomMerchantNumber, TestData.RequireCustomTerminalNumber);
+            result.IsFailed.ShouldBeTrue();
+            result.Status.ShouldBe(ResultStatus.Invalid);
+            result.Message.ShouldBe("Operator name must not be null or empty");
+        }
+
+        [Fact]
         public void OperatorAggregate_GetOperator_OperatorIsReturned()
         {
             OperatorAggregate aggregate = OperatorAggregate.Create(TestData.OperatorId);
             aggregate.Create(TestData.EstateId, TestData.OperatorName, TestData.RequireCustomMerchantNumber, TestData.RequireCustomTerminalNumber);
+            
             TransactionProcessor.Models.Operator.Operator @operator = aggregate.GetOperator();
             @operator.OperatorId.ShouldBe(TestData.OperatorId);
             @operator.Name.ShouldBe(TestData.OperatorName);
@@ -45,21 +70,44 @@ namespace TransactionProcessor.Aggregates.Tests
             @operator.RequireCustomMerchantNumber.ShouldBe(TestData.RequireCustomMerchantNumber);
         }
 
-        [Fact]
-        public void OperatorAggregate_UpdateOperator_IsUpdated()
+        [Theory]
+        [InlineData("Alice", "Bob", "Bob")]
+        [InlineData("alice", "Alice", "alice")]
+        [InlineData("Alice", null, "Alice")]
+        [InlineData("Alice", "", "Alice")]
+        public void OperatorAggregate_UpdateOperator_OperatorName_IsUpdated(String existingName, String newName, String expectedName)
         {
             OperatorAggregate aggregate = OperatorAggregate.Create(TestData.OperatorId);
-            aggregate.Create(TestData.EstateId, TestData.OperatorName, TestData.RequireCustomMerchantNumberFalse, TestData.RequireCustomTerminalNumberFalse);
+            aggregate.Create(TestData.EstateId, existingName, TestData.RequireCustomMerchantNumberTrue, TestData.RequireCustomTerminalNumberTrue);
 
-            aggregate.Name.ShouldBe(TestData.OperatorName);
-            aggregate.RequireCustomTerminalNumber.ShouldBe(TestData.RequireCustomMerchantNumberFalse);
-            aggregate.RequireCustomMerchantNumber.ShouldBe(TestData.RequireCustomTerminalNumberFalse);
+            Result result = aggregate.UpdateOperator(newName, TestData.RequireCustomMerchantNumberTrue, TestData.RequireCustomTerminalNumberTrue);
+            result.IsSuccess.ShouldBeTrue();
+            
+            aggregate.Name.ShouldBe(expectedName);
+        }
 
-            aggregate.UpdateOperator(TestData.OperatorName2, TestData.RequireCustomMerchantNumberTrue, TestData.RequireCustomTerminalNumberTrue);
+        [Fact]
+        public void OperatorAggregate_UpdateOperator_RequireCustomMerchantNumber_IsUpdated()
+        {
+            OperatorAggregate aggregate = OperatorAggregate.Create(TestData.OperatorId);
+            aggregate.Create(TestData.EstateId, TestData.OperatorName, TestData.RequireCustomMerchantNumberTrue, TestData.RequireCustomTerminalNumberTrue);
 
-            aggregate.Name.ShouldBe(TestData.OperatorName2);
-            aggregate.RequireCustomTerminalNumber.ShouldBe(TestData.RequireCustomMerchantNumberTrue);
-            aggregate.RequireCustomMerchantNumber.ShouldBe(TestData.RequireCustomTerminalNumberTrue);
+            Result result = aggregate.UpdateOperator(TestData.OperatorName, TestData.RequireCustomMerchantNumberFalse, TestData.RequireCustomTerminalNumberTrue);
+            result.IsSuccess.ShouldBeTrue();
+
+            aggregate.RequireCustomMerchantNumber.ShouldBe(TestData.RequireCustomMerchantNumberFalse);
+        }
+
+        [Fact]
+        public void OperatorAggregate_UpdateOperator_RequireCustomTerminalNumber_IsUpdated()
+        {
+            OperatorAggregate aggregate = OperatorAggregate.Create(TestData.OperatorId);
+            aggregate.Create(TestData.EstateId, TestData.OperatorName, TestData.RequireCustomMerchantNumberTrue, TestData.RequireCustomTerminalNumberTrue);
+
+            Result result = aggregate.UpdateOperator(TestData.OperatorName, TestData.RequireCustomMerchantNumberTrue, TestData.RequireCustomTerminalNumberFalse);
+            result.IsSuccess.ShouldBeTrue();
+
+            aggregate.RequireCustomTerminalNumber.ShouldBe(TestData.RequireCustomTerminalNumberFalse);
         }
     }
 }
