@@ -1,7 +1,10 @@
 ﻿using System.Diagnostics.CodeAnalysis;
+using System.Diagnostics.Contracts;
+using System.Diagnostics.Tracing;
 using Shared.DomainDrivenDesign.EventSourcing;
 using Shared.EventStore.Aggregate;
 using Shared.General;
+using SimpleResults;
 using TransactionProcessor.DomainEvents;
 
 namespace TransactionProcessor.Aggregates
@@ -37,21 +40,27 @@ namespace TransactionProcessor.Aggregates
             aggregate.RequireCustomTerminalNumber = domainEvent.RequireCustomTerminalNumber;
         }
 
-        public static void Create(this OperatorAggregate aggregate,
+        [Pure]
+        public static Result Create(this OperatorAggregate aggregate,
                                   Guid estateId,
                                   String name,
                                   Boolean requireCustomMerchantNumber,
                                   Boolean requireCustomTerminalNumber)
         {
-            Guard.ThrowIfInvalidGuid(estateId, typeof(ArgumentNullException), "Estate Id must not be an empty Guid");
-            Guard.ThrowIfNullOrEmpty(name, typeof(ArgumentNullException), "Operator name must not be null or empty");
+            if (estateId == Guid.Empty)
+                return Result.Invalid("Estate Id must not be an empty Guid");
+            if (String.IsNullOrEmpty(name))
+                return Result.Invalid("Operator name must not be null or empty");
 
             OperatorDomainEvents.OperatorCreatedEvent operatorCreatedEvent = new(aggregate.AggregateId, estateId, name, requireCustomMerchantNumber, requireCustomTerminalNumber);
 
             aggregate.ApplyAndAppend(operatorCreatedEvent);
+
+            return Result.Success();
         }
 
-        public static void UpdateOperator(this OperatorAggregate aggregate,
+        [Pure]
+        public static Result UpdateOperator(this OperatorAggregate aggregate,
                                           String name,
                                           Boolean requireCustomMerchantNumber,
                                           Boolean requireCustomTerminalNumber)
@@ -74,6 +83,8 @@ namespace TransactionProcessor.Aggregates
                 OperatorDomainEvents.OperatorRequireCustomTerminalNumberChangedEvent operatorRequireCustomTerminalNumberChangedEvent = new(aggregate.AggregateId, aggregate.EstateId, requireCustomTerminalNumber);
                 aggregate.ApplyAndAppend(operatorRequireCustomTerminalNumberChangedEvent);
             }
+
+            return Result.Success();
         }
     }
 
