@@ -15,6 +15,7 @@ using TransactionProcessor.DataTransferObjects.Responses.Merchant;
 using TransactionProcessor.DomainEvents;
 using TransactionProcessor.Models.Contract;
 using TransactionProcessor.Models.Merchant;
+using Address = TransactionProcessor.Models.Merchant.Address;
 using AssignOperatorRequest = TransactionProcessor.DataTransferObjects.Requests.Estate.AssignOperatorRequest;
 using Contract = TransactionProcessor.Models.Merchant.Contract;
 using Deposit = CallbackHandler.DataTransferObjects.Deposit;
@@ -2099,6 +2100,14 @@ namespace TransactionProcessor.Testing
             {
                 MerchantStatementDate = TestData.StatementCreateDate
             };
+
+        public static Models.Merchant.Address AddressModel => new (Guid.Empty, AddressLine1, AddressLine2, AddressLine3, AddressLine4, Town, Region, PostCode, Country);
+
+        public static Models.Merchant.Contact ContactModel => new(Guid.Empty, ContactEmail, ContactName, ContactPhone);
+
+        public static SettlementScheduleModel SettlementScheduleModel => SettlementScheduleModel.Immediate;
+        public static SettlementScheduleModel SettlementScheduleModelNotSet => SettlementScheduleModel.NotSet;
+
         #endregion
 
         public static class Commands {
@@ -2288,15 +2297,8 @@ namespace TransactionProcessor.Testing
             {
                 MerchantAggregate merchantAggregate = MerchantAggregate.Create(TestData.MerchantId);
 
-                merchantAggregate.Create(TestData.EstateId, TestData.MerchantName, TestData.DateMerchantCreated);
-                merchantAggregate.AddAddress(TestData.MerchantAddressLine1,
-                    TestData.MerchantAddressLine2,
-                    TestData.MerchantAddressLine3,
-                    TestData.MerchantAddressLine4,
-                    TestData.MerchantTown,
-                    TestData.MerchantRegion,
-                    TestData.MerchantPostalCode,
-                    TestData.MerchantCountry);
+                merchantAggregate.Create(TestData.EstateId, TestData.MerchantName, TestData.DateMerchantCreated, TestData.AddressModel, TestData.ContactModel,
+                    TestData.SettlementScheduleModel);
 
                 return merchantAggregate;
             }
@@ -2305,10 +2307,8 @@ namespace TransactionProcessor.Testing
             {
                 MerchantAggregate merchantAggregate = MerchantAggregate.Create(TestData.MerchantId);
 
-                merchantAggregate.Create(TestData.EstateId, TestData.MerchantName, TestData.DateMerchantCreated);
-                merchantAggregate.AddContact(TestData.MerchantContactName,
-                    TestData.MerchantContactPhoneNumber,
-                    TestData.MerchantContactEmailAddress);
+                merchantAggregate.Create(TestData.EstateId, TestData.MerchantName, TestData.DateMerchantCreated, TestData.AddressModel, TestData.ContactModel,
+                    TestData.SettlementScheduleModel);
 
                 return merchantAggregate;
             }
@@ -2319,7 +2319,8 @@ namespace TransactionProcessor.Testing
             {
                 MerchantAggregate merchantAggregate = MerchantAggregate.Create(TestData.MerchantId);
 
-                merchantAggregate.Create(TestData.EstateId, TestData.MerchantName, TestData.DateMerchantCreated);
+                merchantAggregate.Create(TestData.EstateId, TestData.MerchantName, TestData.DateMerchantCreated, TestData.AddressModel, TestData.ContactModel,
+                 TestData.SettlementScheduleModel);
 
                 MerchantDepositListAggregate merchantDepositListAggregate = MerchantDepositListAggregate.Create(TestData.MerchantId);
                 merchantDepositListAggregate.Create(merchantAggregate, TestData.DateMerchantCreated);
@@ -2330,7 +2331,8 @@ namespace TransactionProcessor.Testing
             {
                 MerchantAggregate merchantAggregate = MerchantAggregate.Create(TestData.MerchantId);
 
-                merchantAggregate.Create(TestData.EstateId, TestData.MerchantName, TestData.DateMerchantCreated);
+                merchantAggregate.Create(TestData.EstateId, TestData.MerchantName, TestData.DateMerchantCreated, TestData.AddressModel, TestData.ContactModel,
+                 TestData.SettlementScheduleModel);
                 merchantAggregate.AddDevice(TestData.DeviceId, TestData.DeviceIdentifier);
 
                 return merchantAggregate;
@@ -2340,7 +2342,8 @@ namespace TransactionProcessor.Testing
             {
                 MerchantAggregate merchantAggregate = MerchantAggregate.Create(TestData.MerchantId);
 
-                merchantAggregate.Create(TestData.EstateId, TestData.MerchantName, TestData.DateMerchantCreated);
+                merchantAggregate.Create(TestData.EstateId, TestData.MerchantName, TestData.DateMerchantCreated, TestData.AddressModel, TestData.ContactModel,
+                    TestData.SettlementScheduleModel);
                 merchantAggregate.AssignOperator(TestData.OperatorId, TestData.OperatorName, TestData.OperatorMerchantNumber, TestData.OperatorTerminalNumber);
 
                 return merchantAggregate;
@@ -2350,20 +2353,10 @@ namespace TransactionProcessor.Testing
             {
                 MerchantAggregate merchantAggregate = MerchantAggregate.Create(TestData.MerchantId);
 
-                merchantAggregate.Create(TestData.EstateId, TestData.MerchantName, TestData.DateMerchantCreated);
-                merchantAggregate.AddContact(TestData.MerchantContactName,
-                    TestData.MerchantContactPhoneNumber,
-                    TestData.MerchantContactEmailAddress);
-                merchantAggregate.AddAddress(TestData.MerchantAddressLine1,
-                    TestData.MerchantAddressLine2,
-                    TestData.MerchantAddressLine3,
-                    TestData.MerchantAddressLine4,
-                    TestData.MerchantTown,
-                    TestData.MerchantRegion,
-                    TestData.MerchantPostalCode,
-                    TestData.MerchantCountry);
+                merchantAggregate.Create(TestData.EstateId, TestData.MerchantName, TestData.DateMerchantCreated, TestData.AddressModel, TestData.ContactModel,
+                    settlementSchedule);
                 merchantAggregate.AssignOperator(TestData.OperatorId, TestData.OperatorName, TestData.OperatorMerchantNumber, TestData.OperatorTerminalNumber);
-                merchantAggregate.SetSettlementSchedule(settlementSchedule);
+                
                 merchantAggregate.AddDevice(TestData.DeviceId, TestData.DeviceIdentifier);
                 merchantAggregate.AddContract(TestData.Aggregates.CreatedContractAggregateWithAProductAndTransactionFee(CalculationType.Fixed,Models.Contract.FeeType.Merchant));
                 return merchantAggregate;
@@ -2373,20 +2366,9 @@ namespace TransactionProcessor.Testing
             {
                 MerchantAggregate merchantAggregate = MerchantAggregate.Create(TestData.MerchantId);
 
-                merchantAggregate.Create(TestData.EstateId, TestData.MerchantName, TestData.DateMerchantCreated);
-                merchantAggregate.AddContact(TestData.MerchantContactName,
-                    TestData.MerchantContactPhoneNumber,
-                    TestData.MerchantContactEmailAddress);
-                merchantAggregate.AddAddress(TestData.MerchantAddressLine1,
-                    TestData.MerchantAddressLine2,
-                    TestData.MerchantAddressLine3,
-                    TestData.MerchantAddressLine4,
-                    TestData.MerchantTown,
-                    TestData.MerchantRegion,
-                    TestData.MerchantPostalCode,
-                    TestData.MerchantCountry);
+                merchantAggregate.Create(TestData.EstateId, TestData.MerchantName, TestData.DateMerchantCreated, TestData.AddressModel, TestData.ContactModel,
+                    settlementSchedule);
                 merchantAggregate.AssignOperator(TestData.OperatorId, TestData.OperatorName, TestData.OperatorMerchantNumber, TestData.OperatorTerminalNumber);
-                merchantAggregate.SetSettlementSchedule(settlementSchedule);
                 merchantAggregate.AddDevice(TestData.DeviceId, TestData.DeviceIdentifier);
                 return merchantAggregate;
             }
@@ -2395,20 +2377,10 @@ namespace TransactionProcessor.Testing
             {
                 MerchantAggregate merchantAggregate = MerchantAggregate.Create(TestData.MerchantId);
 
-                merchantAggregate.Create(TestData.EstateId, TestData.MerchantName, TestData.DateMerchantCreated);
-                merchantAggregate.AddContact(TestData.MerchantContactName,
-                    TestData.MerchantContactPhoneNumber,
-                    TestData.MerchantContactEmailAddress);
-                merchantAggregate.AddAddress(TestData.MerchantAddressLine1,
-                    TestData.MerchantAddressLine2,
-                    TestData.MerchantAddressLine3,
-                    TestData.MerchantAddressLine4,
-                    TestData.MerchantTown,
-                    TestData.MerchantRegion,
-                    TestData.MerchantPostalCode,
-                    TestData.MerchantCountry);
+                merchantAggregate.Create(TestData.EstateId, TestData.MerchantName, TestData.DateMerchantCreated, TestData.AddressModel, TestData.ContactModel,
+                    settlementSchedule);
                 merchantAggregate.AssignOperator(TestData.OperatorId, TestData.OperatorName, TestData.OperatorMerchantNumber, TestData.OperatorTerminalNumber);
-                merchantAggregate.SetSettlementSchedule(settlementSchedule);
+
                 merchantAggregate.AddDevice(TestData.DeviceId, TestData.DeviceIdentifier);
                 merchantAggregate.RemoveOperator(TestData.OperatorId);
                 return merchantAggregate;
@@ -2418,7 +2390,8 @@ namespace TransactionProcessor.Testing
             {
                 MerchantAggregate merchantAggregate = MerchantAggregate.Create(TestData.MerchantId);
 
-                merchantAggregate.Create(TestData.EstateId, TestData.MerchantName, TestData.DateMerchantCreated);
+                merchantAggregate.Create(TestData.EstateId, TestData.MerchantName, TestData.DateMerchantCreated, TestData.AddressModel, TestData.ContactModel,
+                 TestData.SettlementScheduleModel);
 
                 return merchantAggregate;
             }
@@ -2595,12 +2568,10 @@ namespace TransactionProcessor.Testing
                 MerchantName = TestData.MerchantName,
                 SettlementSchedule = settlementSchedule,
                 Addresses = new List<Models.Merchant.Address>{
-                    new Models.Merchant.Address(Guid.NewGuid(), MerchantAddressLine1,MerchantAddressLine2,
-                        MerchantAddressLine3,MerchantAddressLine4, MerchantTown,MerchantRegion,
-                        MerchantPostalCode, MerchantCountry)
+                    TestData.AddressModel
                 },
                 Contacts = new List<Models.Merchant.Contact>{
-                    new Models.Merchant.Contact(Guid.NewGuid(), MerchantContactEmailAddress, MerchantContactName, MerchantContactPhoneNumber)
+                    ContactModel
                 },
                 Devices = new List<Device>{ new Device(DeviceId, DeviceIdentifier)},
                 Operators= new List<Models.Merchant.Operator>() {

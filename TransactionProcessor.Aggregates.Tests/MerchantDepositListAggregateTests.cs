@@ -1,3 +1,4 @@
+using Shared.EventStore.Aggregate;
 using Shared.ValueObjects;
 using Shouldly;
 using TransactionProcessor.Models.Merchant;
@@ -12,7 +13,8 @@ namespace TransactionProcessor.Aggregates.Tests
         [Fact]
         public void MerchantDepositListAggregate_Create_IsCreated() {
             MerchantAggregate merchantAggregate = MerchantAggregate.Create(TestData.MerchantId);
-            merchantAggregate.Create(TestData.EstateId, TestData.MerchantName, TestData.DateMerchantCreated);
+            merchantAggregate.Create(TestData.EstateId, TestData.MerchantName, TestData.DateMerchantCreated, TestData.AddressModel, TestData.ContactModel,
+                TestData.SettlementScheduleModel);
 
             MerchantDepositListAggregate merchantDepositListAggregate = MerchantDepositListAggregate.Create(TestData.MerchantId);
             merchantDepositListAggregate.Create(merchantAggregate, TestData.DateMerchantCreated);
@@ -26,7 +28,8 @@ namespace TransactionProcessor.Aggregates.Tests
         public void MerchantDepositListAggregate_Create_AlreadyCreated_IsCreated()
         {
             MerchantAggregate merchantAggregate = MerchantAggregate.Create(TestData.MerchantId);
-            merchantAggregate.Create(TestData.EstateId, TestData.MerchantName, TestData.DateMerchantCreated);
+            merchantAggregate.Create(TestData.EstateId, TestData.MerchantName, TestData.DateMerchantCreated, TestData.AddressModel, TestData.ContactModel,
+             TestData.SettlementScheduleModel);
 
             MerchantDepositListAggregate merchantDepositListAggregate = MerchantDepositListAggregate.Create(TestData.MerchantId);
             merchantDepositListAggregate.Create(merchantAggregate, TestData.DateMerchantCreated);
@@ -49,7 +52,8 @@ namespace TransactionProcessor.Aggregates.Tests
         [Fact]
         public void MerchantDepositListAggregate_MakeDeposit_AutomaticDepositSource_DepositMade() {
             MerchantAggregate merchantAggregate = MerchantAggregate.Create(TestData.MerchantId);
-            merchantAggregate.Create(TestData.EstateId, TestData.MerchantName, TestData.DateMerchantCreated);
+            merchantAggregate.Create(TestData.EstateId, TestData.MerchantName, TestData.DateMerchantCreated, TestData.AddressModel, TestData.ContactModel,
+                TestData.SettlementScheduleModel);
 
             MerchantDepositListAggregate merchantDepositListAggregate = MerchantDepositListAggregate.Create(TestData.MerchantId);
             merchantDepositListAggregate.Create(merchantAggregate, TestData.DateMerchantCreated);
@@ -70,7 +74,8 @@ namespace TransactionProcessor.Aggregates.Tests
         [Fact]
         public void MerchantDepositListAggregate_MakeDeposit_DepositMade() {
             MerchantAggregate merchantAggregate = MerchantAggregate.Create(TestData.MerchantId);
-            merchantAggregate.Create(TestData.EstateId, TestData.MerchantName, TestData.DateMerchantCreated);
+            merchantAggregate.Create(TestData.EstateId, TestData.MerchantName, TestData.DateMerchantCreated, TestData.AddressModel, TestData.ContactModel,
+                TestData.SettlementScheduleModel);
 
             MerchantDepositListAggregate merchantDepositListAggregate = MerchantDepositListAggregate.Create(TestData.MerchantId);
             merchantDepositListAggregate.Create(merchantAggregate, TestData.DateMerchantCreated);
@@ -89,7 +94,8 @@ namespace TransactionProcessor.Aggregates.Tests
         [Fact]
         public void MerchantDepositListAggregate_MakeDeposit_DepositSourceNotSet_ErrorThrown() {
             MerchantAggregate merchantAggregate = MerchantAggregate.Create(TestData.MerchantId);
-            merchantAggregate.Create(TestData.EstateId, TestData.MerchantName, TestData.DateMerchantCreated);
+            merchantAggregate.Create(TestData.EstateId, TestData.MerchantName, TestData.DateMerchantCreated, TestData.AddressModel, TestData.ContactModel,
+                TestData.SettlementScheduleModel);
 
             MerchantDepositListAggregate merchantDepositListAggregate = MerchantDepositListAggregate.Create(TestData.MerchantId);
             merchantDepositListAggregate.Create(merchantAggregate, TestData.DateMerchantCreated);
@@ -105,7 +111,8 @@ namespace TransactionProcessor.Aggregates.Tests
         [Fact]
         public void MerchantDepositListAggregate_MakeDeposit_DuplicateDeposit_ErrorThrown() {
             MerchantAggregate merchantAggregate = MerchantAggregate.Create(TestData.MerchantId);
-            merchantAggregate.Create(TestData.EstateId, TestData.MerchantName, TestData.DateMerchantCreated);
+            merchantAggregate.Create(TestData.EstateId, TestData.MerchantName, TestData.DateMerchantCreated, TestData.AddressModel, TestData.ContactModel,
+                TestData.SettlementScheduleModel);
 
             MerchantDepositListAggregate merchantDepositListAggregate = MerchantDepositListAggregate.Create(TestData.MerchantId);
             merchantDepositListAggregate.Create(merchantAggregate, TestData.DateMerchantCreated);
@@ -137,7 +144,8 @@ namespace TransactionProcessor.Aggregates.Tests
         [Fact]
         public void MerchantDepositListAggregate_MakeDeposit_TwoDeposits_BothDepositsMade() {
             MerchantAggregate merchantAggregate = MerchantAggregate.Create(TestData.MerchantId);
-            merchantAggregate.Create(TestData.EstateId, TestData.MerchantName, TestData.DateMerchantCreated);
+            merchantAggregate.Create(TestData.EstateId, TestData.MerchantName, TestData.DateMerchantCreated, TestData.AddressModel, TestData.ContactModel,
+                TestData.SettlementScheduleModel);
 
             MerchantDepositListAggregate merchantDepositListAggregate = MerchantDepositListAggregate.Create(TestData.MerchantId);
             merchantDepositListAggregate.Create(merchantAggregate, TestData.DateMerchantCreated);
@@ -155,7 +163,8 @@ namespace TransactionProcessor.Aggregates.Tests
         [Fact]
         public void MerchantDepositListAggregate_MakeDeposit_TwoDepositsOneMonthApartSameDetails_BothDepositsMade() {
             MerchantAggregate merchantAggregate = MerchantAggregate.Create(TestData.MerchantId);
-            merchantAggregate.Create(TestData.EstateId, TestData.MerchantName, TestData.DateMerchantCreated);
+            merchantAggregate.Create(TestData.EstateId, TestData.MerchantName, TestData.DateMerchantCreated, TestData.AddressModel, TestData.ContactModel,
+                TestData.SettlementScheduleModel);
 
             MerchantDepositListAggregate merchantDepositListAggregate = MerchantDepositListAggregate.Create(TestData.MerchantId);
             merchantDepositListAggregate.Create(merchantAggregate, TestData.DateMerchantCreated);
@@ -176,7 +185,8 @@ namespace TransactionProcessor.Aggregates.Tests
         [Fact]
         public void MerchantDepositListAggregate_MakeDeposit_TwoDepositsSameDetailsApartFromAmounts_BothDepositsMade() {
             MerchantAggregate merchantAggregate = MerchantAggregate.Create(TestData.MerchantId);
-            merchantAggregate.Create(TestData.EstateId, TestData.MerchantName, TestData.DateMerchantCreated);
+            merchantAggregate.Create(TestData.EstateId, TestData.MerchantName, TestData.DateMerchantCreated, TestData.AddressModel, TestData.ContactModel,
+                TestData.SettlementScheduleModel);
 
             MerchantDepositListAggregate merchantDepositListAggregate = MerchantDepositListAggregate.Create(TestData.MerchantId);
             merchantDepositListAggregate.Create(merchantAggregate, TestData.DateMerchantCreated);
@@ -197,7 +207,8 @@ namespace TransactionProcessor.Aggregates.Tests
         [Fact]
         public void MerchantDepositListAggregate_MakeWithdrawal_DuplicateWithdrawal_ErrorThrown() {
             MerchantAggregate merchantAggregate = MerchantAggregate.Create(TestData.MerchantId);
-            merchantAggregate.Create(TestData.EstateId, TestData.MerchantName, TestData.DateMerchantCreated);
+            merchantAggregate.Create(TestData.EstateId, TestData.MerchantName, TestData.DateMerchantCreated, TestData.AddressModel, TestData.ContactModel,
+                TestData.SettlementScheduleModel);
 
             MerchantDepositListAggregate merchantDepositListAggregate = MerchantDepositListAggregate.Create(TestData.MerchantId);
             merchantDepositListAggregate.Create(merchantAggregate, TestData.DateMerchantCreated);
@@ -219,7 +230,8 @@ namespace TransactionProcessor.Aggregates.Tests
         [Fact]
         public void MerchantDepositListAggregate_MakeWithdrawal_TwoWithdrawals_BothWithdrawalsMade() {
             MerchantAggregate merchantAggregate = MerchantAggregate.Create(TestData.MerchantId);
-            merchantAggregate.Create(TestData.EstateId, TestData.MerchantName, TestData.DateMerchantCreated);
+            merchantAggregate.Create(TestData.EstateId, TestData.MerchantName, TestData.DateMerchantCreated, TestData.AddressModel, TestData.ContactModel,
+                TestData.SettlementScheduleModel);
 
             MerchantDepositListAggregate merchantDepositListAggregate = MerchantDepositListAggregate.Create(TestData.MerchantId);
             merchantDepositListAggregate.Create(merchantAggregate, TestData.DateMerchantCreated);
@@ -234,7 +246,8 @@ namespace TransactionProcessor.Aggregates.Tests
         [Fact]
         public void MerchantDepositListAggregate_MakeWithdrawal_TwoWithdrawalsOneMonthApartSameDetails_BothWithdrawalsMade() {
             MerchantAggregate merchantAggregate = MerchantAggregate.Create(TestData.MerchantId);
-            merchantAggregate.Create(TestData.EstateId, TestData.MerchantName, TestData.DateMerchantCreated);
+            merchantAggregate.Create(TestData.EstateId, TestData.MerchantName, TestData.DateMerchantCreated, TestData.AddressModel, TestData.ContactModel,
+                TestData.SettlementScheduleModel);
 
             MerchantDepositListAggregate merchantDepositListAggregate = MerchantDepositListAggregate.Create(TestData.MerchantId);
             merchantDepositListAggregate.Create(merchantAggregate, TestData.DateMerchantCreated);
@@ -249,7 +262,8 @@ namespace TransactionProcessor.Aggregates.Tests
         [Fact]
         public void MerchantDepositListAggregate_MakeWithdrawal_TwoWithdrawalsSameDetailsApartFromAmounts_BothWithdrawalsMade() {
             MerchantAggregate merchantAggregate = MerchantAggregate.Create(TestData.MerchantId);
-            merchantAggregate.Create(TestData.EstateId, TestData.MerchantName, TestData.DateMerchantCreated);
+            merchantAggregate.Create(TestData.EstateId, TestData.MerchantName, TestData.DateMerchantCreated, TestData.AddressModel, TestData.ContactModel,
+                TestData.SettlementScheduleModel);
 
             MerchantDepositListAggregate merchantDepositListAggregate = MerchantDepositListAggregate.Create(TestData.MerchantId);
             merchantDepositListAggregate.Create(merchantAggregate, TestData.DateMerchantCreated);
@@ -264,14 +278,15 @@ namespace TransactionProcessor.Aggregates.Tests
         [Fact]
         public void MerchantDepositListAggregate_MakeWithdrawal_WithdrawalMade() {
             MerchantAggregate merchantAggregate = MerchantAggregate.Create(TestData.MerchantId);
-            merchantAggregate.Create(TestData.EstateId, TestData.MerchantName, TestData.DateMerchantCreated);
+            merchantAggregate.Create(TestData.EstateId, TestData.MerchantName, TestData.DateMerchantCreated, TestData.AddressModel, TestData.ContactModel,
+                TestData.SettlementScheduleModel);
 
             MerchantDepositListAggregate merchantDepositListAggregate = MerchantDepositListAggregate.Create(TestData.MerchantId);
             merchantDepositListAggregate.Create(merchantAggregate, TestData.DateMerchantCreated);
 
             merchantDepositListAggregate.MakeWithdrawal(TestData.WithdrawalDateTime, TestData.WithdrawalAmount);
 
-            var withdrawalListModel = merchantDepositListAggregate.GetWithdrawals();
+            List<Withdrawal> withdrawalListModel = merchantDepositListAggregate.GetWithdrawals();
             withdrawalListModel.ShouldHaveSingleItem();
 
             withdrawalListModel.Single().WithdrawalDateTime.ShouldBe(TestData.WithdrawalDateTime);

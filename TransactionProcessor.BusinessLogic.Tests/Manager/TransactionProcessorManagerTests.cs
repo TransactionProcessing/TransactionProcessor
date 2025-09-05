@@ -333,56 +333,7 @@ namespace TransactionProcessor.BusinessLogic.Tests.Manager
             merchantModel.Operators.Single().TerminalNumber.ShouldBe(expectedModel.Operators.Single().TerminalNumber);
 
         }
-
-        [Fact]
-        public async Task TransactionProcessorManager_GetMerchant_MerchantIsReturnedWithNullAddressesAndContacts()
-        {
-            this.AggregateService.Setup(m => m.GetLatest<MerchantAggregate>(It.IsAny<Guid>(), It.IsAny<CancellationToken>())).ReturnsAsync(Result.Success(TestData.Aggregates.MerchantAggregateWithOperator()));
-            this.AggregateService.Setup(o => o.GetLatest<OperatorAggregate>(It.IsAny<Guid>(), CancellationToken.None)).ReturnsAsync(Result.Success(TestData.Aggregates.EmptyOperatorAggregate()));
-
-            Result<Merchant> getMerchantResult = await this.TransactionProcessorManager.GetMerchant(TestData.EstateId, TestData.MerchantId, CancellationToken.None);
-            getMerchantResult.IsSuccess.ShouldBeTrue();
-            Merchant merchantModel = getMerchantResult.Data;
-
-            merchantModel.ShouldNotBeNull();
-            merchantModel.MerchantId.ShouldBe(TestData.MerchantId);
-            merchantModel.MerchantName.ShouldBe(TestData.MerchantName);
-            merchantModel.Addresses.ShouldBeNull();
-            merchantModel.Contacts.ShouldBeNull();
-        }
-
-        [Fact]
-        public async Task TransactionProcessorManager_GetMerchant_WithAddress_MerchantIsReturnedWithNullContacts()
-        {
-            this.AggregateService.Setup(m => m.GetLatest<MerchantAggregate>(It.IsAny<Guid>(), It.IsAny<CancellationToken>())).ReturnsAsync(Result.Success(TestData.Aggregates.MerchantAggregateWithAddress()));
-
-            Result<Merchant> getMerchantResult = await this.TransactionProcessorManager.GetMerchant(TestData.EstateId, TestData.MerchantId, CancellationToken.None);
-            getMerchantResult.IsSuccess.ShouldBeTrue();
-            Merchant merchantModel = getMerchantResult.Data;
-
-            merchantModel.ShouldNotBeNull();
-            merchantModel.MerchantId.ShouldBe(TestData.MerchantId);
-            merchantModel.MerchantName.ShouldBe(TestData.MerchantName);
-            merchantModel.Addresses.ShouldHaveSingleItem();
-            merchantModel.Contacts.ShouldBeNull();
-        }
-
-        [Fact]
-        public async Task TransactionProcessorManager_GetMerchant_WithContact_MerchantIsReturnedWithNullAddresses()
-        {
-            this.AggregateService.Setup(m => m.GetLatest<MerchantAggregate>(It.IsAny<Guid>(), It.IsAny<CancellationToken>())).ReturnsAsync(Result.Success(TestData.Aggregates.MerchantAggregateWithContact()));
-
-            Result<Merchant> getMerchantResult = await this.TransactionProcessorManager.GetMerchant(TestData.EstateId, TestData.MerchantId, CancellationToken.None);
-            getMerchantResult.IsSuccess.ShouldBeTrue();
-            Merchant merchantModel = getMerchantResult.Data;
-
-            merchantModel.ShouldNotBeNull();
-            merchantModel.MerchantId.ShouldBe(TestData.MerchantId);
-            merchantModel.MerchantName.ShouldBe(TestData.MerchantName);
-            merchantModel.Addresses.ShouldBeNull();
-            merchantModel.Contacts.ShouldHaveSingleItem();
-        }
-
+        
         [Fact]
         public async Task TransactionProcessorManager_GetMerchant_MerchantNotCreated_ErrorThrown()
         {

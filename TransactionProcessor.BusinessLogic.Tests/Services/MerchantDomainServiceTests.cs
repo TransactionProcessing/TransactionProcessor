@@ -56,7 +56,6 @@ public class MerchantDomainServiceTests {
     [InlineData(DataTransferObjects.Responses.Merchant.SettlementSchedule.Immediate)]
     [InlineData(DataTransferObjects.Responses.Merchant.SettlementSchedule.Monthly)]
     [InlineData(DataTransferObjects.Responses.Merchant.SettlementSchedule.Weekly)]
-    [InlineData(DataTransferObjects.Responses.Merchant.SettlementSchedule.NotSet)]
     public async Task MerchantDomainService_CreateMerchant_MerchantIsCreated(
         DataTransferObjects.Responses.Merchant.SettlementSchedule settlementSchedule) {
         this.AggregateService.Setup(m => m.GetLatest<MerchantAggregate>(It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
@@ -829,7 +828,6 @@ public class MerchantDomainServiceTests {
     [InlineData(DataTransferObjects.Responses.Merchant.SettlementSchedule.Immediate)]
     [InlineData(DataTransferObjects.Responses.Merchant.SettlementSchedule.Monthly)]
     [InlineData(DataTransferObjects.Responses.Merchant.SettlementSchedule.Weekly)]
-    [InlineData(DataTransferObjects.Responses.Merchant.SettlementSchedule.NotSet)]
     public async Task MerchantDomainService_UpdateMerchant_MerchantIsUpdated(
         DataTransferObjects.Responses.Merchant.SettlementSchedule settlementSchedule) {
         this.AggregateService.Setup(m => m.GetLatest<MerchantAggregate>(It.IsAny<Guid>(), It.IsAny<CancellationToken>()))

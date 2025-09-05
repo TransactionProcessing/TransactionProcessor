@@ -127,7 +127,7 @@ namespace TransactionProcessor.BusinessLogic.Tests.Services
             Result<Guid> result = await settlementDomainService.ProcessSettlement(command, CancellationToken.None);
 
             result.IsSuccess.ShouldBeFalse();
-            this.AggregateService.Verify(s => s.Save(It.IsAny<SettlementAggregate>(), It.IsAny<CancellationToken>()), Times.Exactly(6));
+            this.AggregateService.Verify(s => s.Save(It.IsAny<SettlementAggregate>(), It.IsAny<CancellationToken>()), Times.Exactly(7));
         }
 
         [Fact]
