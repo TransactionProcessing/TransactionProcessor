@@ -1,7 +1,8 @@
-﻿using System.Diagnostics.CodeAnalysis;
-using Shared.DomainDrivenDesign.EventSourcing;
+﻿using Shared.DomainDrivenDesign.EventSourcing;
 using Shared.EventStore.Aggregate;
 using Shared.General;
+using SimpleResults;
+using System.Diagnostics.CodeAnalysis;
 using TransactionProcessor.DomainEvents;
 using TransactionProcessor.Models.Contract;
 using TransactionProcessor.Models.Merchant;
@@ -23,44 +24,50 @@ namespace TransactionProcessor.Aggregates
 {
     public static class MerchantAggregateExtensions{
 
-        public static void UpdateContact(this MerchantAggregate aggregate,  Guid contactId, String contactName, String contactEmailAddress, String contactPhoneNumber){
-            aggregate.EnsureMerchantHasBeenCreated();
+        public static Result UpdateContact(this MerchantAggregate aggregate,  Guid contactId, String contactName, String contactEmailAddress, String contactPhoneNumber){
+            Result result = aggregate.EnsureMerchantHasBeenCreated();
+            if (result.IsFailed)
+                return result;
 
             Boolean isExistingContact = aggregate.Contacts.ContainsKey(contactId);
 
-            if (isExistingContact == false)
-            {
+            if (isExistingContact == false) {
                 // Not an existing contact, what should we do here ??
-                return;
+                return Result.Success();
             }
 
-            var existingContact = aggregate.Contacts.Single(a => a.Key == contactId).Value;
+            Contact existingContact = aggregate.Contacts.Single(a => a.Key == contactId).Value;
 
-            var updatedContact = new Contact(contactEmailAddress, contactName, contactPhoneNumber);
+            Contact updatedContact = new Contact(contactEmailAddress, contactName, contactPhoneNumber);
 
-            if (updatedContact == existingContact)
-            {
+            if (updatedContact == existingContact) {
                 // No changes
-                return;
+                return Result.Success();
             }
 
             aggregate.HandleContactUpdates(contactId, existingContact, updatedContact);
+
+            return Result.Success();
         }
     
-        public static void UpdateMerchant(this MerchantAggregate aggregate, String name){
-            aggregate.EnsureMerchantHasBeenCreated();
+        public static Result UpdateMerchant(this MerchantAggregate aggregate, String name){
+            Result result = aggregate.EnsureMerchantHasBeenCreated();
+            if (result.IsFailed)
+                return result;
 
             if (String.Compare(name, aggregate.Name, StringComparison.InvariantCultureIgnoreCase) != 0 &&
                 String.IsNullOrEmpty(name) == false){
                 // Name has been updated to raise an event for this
-                MerchantDomainEvents.MerchantNameUpdatedEvent merchantNameUpdatedEvent = new MerchantDomainEvents.MerchantNameUpdatedEvent(aggregate.AggregateId,
+                MerchantDomainEvents.MerchantNameUpdatedEvent merchantNameUpdatedEvent = new(aggregate.AggregateId,
                                                                                                  aggregate.EstateId,
                                                                                                  name);
                 aggregate.ApplyAndAppend(merchantNameUpdatedEvent);
             }
+
+            return Result.Success();
         }
 
-        public static void UpdateAddress(this MerchantAggregate aggregate, Guid addressId,
+        public static Result UpdateAddress(this MerchantAggregate aggregate, Guid addressId,
                                         String addressLine1,
                                         String addressLine2,
                                         String addressLine3,
@@ -70,13 +77,14 @@ namespace TransactionProcessor.Aggregates
                                         String postalCode,
                                         String country)
         {
-            aggregate.EnsureMerchantHasBeenCreated();
-
+            Result result = aggregate.EnsureMerchantHasBeenCreated();
+            if (result.IsFailed)
+                return result;
             Boolean isExistingAddress = aggregate.Addresses.ContainsKey(addressId);
 
             if (isExistingAddress == false){
                 // Not an existing address, what should we do here ??
-                return;
+                return Result.Success();
             }
             Address existingAddress = aggregate.Addresses.Single(a => a.Key == addressId).Value;
 
@@ -84,10 +92,12 @@ namespace TransactionProcessor.Aggregates
             
             if (updatedAddress == existingAddress){
                 // No changes
-                return;
+                return Result.Success();
             }
 
             aggregate.HandleAddressUpdates(addressId,existingAddress, updatedAddress);
+
+            return Result.Success();
         }
 
 
@@ -175,7 +185,7 @@ namespace TransactionProcessor.Aggregates
             }
         }
 
-        public static void AddAddress(this MerchantAggregate aggregate,
+        public static Result AddAddress(this MerchantAggregate aggregate,
                                String addressLine1,
                                String addressLine2,
                                String addressLine3,
@@ -185,12 +195,14 @@ namespace TransactionProcessor.Aggregates
                                String postalCode,
                                String country)
         {
-            aggregate.EnsureMerchantHasBeenCreated();
-            
-            if (IsDuplicateAddress(aggregate, addressLine1,addressLine2, addressLine3, addressLine4, town,region, postalCode, country))
-                return;
+            Result result = aggregate.EnsureMerchantHasBeenCreated();
+            if (result.IsFailed)
+                return result;
 
-            MerchantDomainEvents.AddressAddedEvent addressAddedEvent = new MerchantDomainEvents.AddressAddedEvent(aggregate.AggregateId,
+            if (IsDuplicateAddress(aggregate, addressLine1,addressLine2, addressLine3, addressLine4, town,region, postalCode, country))
+                return Result.Success(); // No need to throw an error, just ignore as we already have this address
+
+            MerchantDomainEvents.AddressAddedEvent addressAddedEvent = new(aggregate.AggregateId,
                                                                         aggregate.EstateId,
                                                                         Guid.NewGuid(), 
                                                                         addressLine1,
@@ -203,89 +215,107 @@ namespace TransactionProcessor.Aggregates
                                                                         country);
 
             aggregate.ApplyAndAppend(addressAddedEvent);
+
+            return Result.Success();
         }
-
-        public static void GenerateReference(this MerchantAggregate aggregate)
-        {
-            // Just return as we already have a reference allocated
-            if (String.IsNullOrEmpty(aggregate.MerchantReference) == false)
-                return;
-
-            aggregate.EnsureMerchantHasBeenCreated();
-
-            String reference = $"{aggregate.AggregateId.GetHashCode():X}";
-
-            MerchantDomainEvents.MerchantReferenceAllocatedEvent merchantReferenceAllocatedEvent = new MerchantDomainEvents.MerchantReferenceAllocatedEvent(aggregate.AggregateId, aggregate.EstateId, reference);
-
-            aggregate.ApplyAndAppend(merchantReferenceAllocatedEvent);
-        }
-
-        public static void RemoveContract(this MerchantAggregate aggregate, Guid contractId){
-            aggregate.EnsureMerchantHasBeenCreated();
-            aggregate.EnsureContractHasBeenAdded(contractId);
+        
+        public static Result RemoveContract(this MerchantAggregate aggregate, Guid contractId){
+            Result result = aggregate.EnsureMerchantHasBeenCreated();
+            if (result.IsFailed)
+                return result;
+            result = aggregate.EnsureContractHasBeenAdded(contractId);
+            if (result.IsFailed)
+                return result;
 
             MerchantDomainEvents.ContractRemovedFromMerchantEvent contractRemovedFromMerchantEvent = new MerchantDomainEvents.ContractRemovedFromMerchantEvent(aggregate.AggregateId, aggregate.EstateId, contractId);
 
             aggregate.ApplyAndAppend(contractRemovedFromMerchantEvent);
+
+            return Result.Success();
         }
 
-        public static void AddContract(this MerchantAggregate aggregate, ContractAggregate contractAggregate){
-            aggregate.EnsureMerchantHasBeenCreated();
-            aggregate.EnsureContractHasNotAlreadyBeenAdded(contractAggregate.AggregateId);
+        public static Result AddContract(this MerchantAggregate aggregate, ContractAggregate contractAggregate){
+            Result result = aggregate.EnsureMerchantHasBeenCreated();
+            if (result.IsFailed)
+                return result;
+            result = aggregate.EnsureContractHasNotAlreadyBeenAdded(contractAggregate.AggregateId);
+            if (result.IsFailed)
+                return result;
 
-            MerchantDomainEvents.ContractAddedToMerchantEvent contractAddedToMerchantEvent = new MerchantDomainEvents.ContractAddedToMerchantEvent(aggregate.AggregateId, aggregate.EstateId, contractAggregate.AggregateId);
+            MerchantDomainEvents.ContractAddedToMerchantEvent contractAddedToMerchantEvent = new(aggregate.AggregateId, aggregate.EstateId, contractAggregate.AggregateId);
 
             aggregate.ApplyAndAppend(contractAddedToMerchantEvent);
 
             foreach (Product product in contractAggregate.GetProducts()){
-                MerchantDomainEvents.ContractProductAddedToMerchantEvent contractProductAddedToMerchantEvent = new MerchantDomainEvents.ContractProductAddedToMerchantEvent(aggregate.AggregateId,
+                MerchantDomainEvents.ContractProductAddedToMerchantEvent contractProductAddedToMerchantEvent = new(aggregate.AggregateId,
                                                                                                                                   aggregate.EstateId,
                                                                                                                                   contractAggregate.AggregateId,
                                                                                                                                   product.ContractProductId);
                 aggregate.ApplyAndAppend(contractProductAddedToMerchantEvent);
             }
+
+            return Result.Success();
         }
 
-        public static void AddContact(this MerchantAggregate aggregate, 
+        public static Result AddContact(this MerchantAggregate aggregate, 
                                       String contactName,
                                       String contactPhoneNumber,
                                       String contactEmailAddress)
         {
-            aggregate.EnsureMerchantHasBeenCreated();
+            Result result = aggregate.EnsureMerchantHasBeenCreated();
+            if (result.IsFailed)
+                return result;
 
             if (IsDuplicateContact(aggregate, contactName, contactEmailAddress, contactPhoneNumber))
-             return;
+                return Result.Success();
 
-            MerchantDomainEvents.ContactAddedEvent contactAddedEvent =
-                new MerchantDomainEvents.ContactAddedEvent(aggregate.AggregateId, aggregate.EstateId, Guid.NewGuid(), contactName, contactPhoneNumber, contactEmailAddress);
+            MerchantDomainEvents.ContactAddedEvent contactAddedEvent = new(aggregate.AggregateId, aggregate.EstateId, Guid.NewGuid(), contactName, contactPhoneNumber, contactEmailAddress);
 
             aggregate.ApplyAndAppend(contactAddedEvent);
+
+            return Result.Success();
         }
 
-        public static void AddDevice(this MerchantAggregate aggregate, 
+        public static Result AddDevice(this MerchantAggregate aggregate, 
                                      Guid deviceId,
                                      String deviceIdentifier)
         {
-            Guard.ThrowIfNullOrEmpty(deviceIdentifier, typeof(ArgumentNullException), "Device Identifier cannot be null or empty");
+            if (String.IsNullOrEmpty(deviceIdentifier))
+                return Result.Invalid("Device Identifier cannot be null or empty");
 
-            aggregate.EnsureMerchantHasBeenCreated();
-            aggregate.EnsureMerchantHasSpaceForDevice();
-            
+            Result result = aggregate.EnsureMerchantHasBeenCreated();
+            if (result.IsFailed)
+                return result;
+            result = aggregate.EnsureMerchantHasSpaceForDevice();
+            if (result.IsFailed)
+                return result;
+
             MerchantDomainEvents.DeviceAddedToMerchantEvent deviceAddedToMerchantEvent = new MerchantDomainEvents.DeviceAddedToMerchantEvent(aggregate.AggregateId, aggregate.EstateId, deviceId, deviceIdentifier);
 
             aggregate.ApplyAndAppend(deviceAddedToMerchantEvent);
+
+            return Result.Success();
         }
 
-        public static void SwapDevice(this MerchantAggregate aggregate, 
+        public static Result SwapDevice(this MerchantAggregate aggregate, 
                                       String originalDeviceIdentifier,
                                       String newDeviceIdentifier)
         {
-            Guard.ThrowIfNullOrEmpty(originalDeviceIdentifier, typeof(ArgumentNullException), "Original Device Identifier cannot be null or empty");
-            Guard.ThrowIfNullOrEmpty(newDeviceIdentifier, typeof(ArgumentNullException), "New Device Identifier cannot be null or empty");
+            if (String.IsNullOrEmpty(originalDeviceIdentifier))
+                return Result.Invalid("Original Device Identifier cannot be null or empty");
 
-            aggregate.EnsureMerchantHasBeenCreated();
-            aggregate.EnsureDeviceBelongsToMerchant(originalDeviceIdentifier);
-            aggregate.EnsureDeviceDoesNotAlreadyBelongToMerchant(newDeviceIdentifier);
+            if (String.IsNullOrEmpty(newDeviceIdentifier))
+                return Result.Invalid("New Device Identifier cannot be null or empty");
+
+            Result result = aggregate.EnsureMerchantHasBeenCreated();
+            if (result.IsFailed)
+                return result;
+            result = aggregate.EnsureDeviceBelongsToMerchant(originalDeviceIdentifier);
+            if (result.IsFailed)
+                return result;
+            result = aggregate.EnsureDeviceDoesNotAlreadyBelongToMerchant(newDeviceIdentifier);
+            if (result.IsFailed)
+                return result;
 
             Guid deviceId = Guid.NewGuid();
             
@@ -293,44 +323,59 @@ namespace TransactionProcessor.Aggregates
                                                                                                             deviceId, originalDeviceIdentifier, newDeviceIdentifier);
 
             aggregate.ApplyAndAppend(deviceSwappedForMerchantEvent);
+
+            return Result.Success();
         }
 
-        public static void AddSecurityUser(this MerchantAggregate aggregate, 
+        public static Result AddSecurityUser(this MerchantAggregate aggregate, 
                                            Guid securityUserId,
                                            String emailAddress)
         {
-            aggregate.EnsureMerchantHasBeenCreated();
+            Result result = aggregate.EnsureMerchantHasBeenCreated();
+            if (result.IsFailed)
+                return result;
 
             MerchantDomainEvents.SecurityUserAddedToMerchantEvent securityUserAddedEvent = new MerchantDomainEvents.SecurityUserAddedToMerchantEvent(aggregate.AggregateId, aggregate.EstateId, securityUserId, emailAddress);
 
             aggregate.ApplyAndAppend(securityUserAddedEvent);
+
+            return Result.Success();
         }
         
-        public static void AssignOperator(this MerchantAggregate aggregate, 
+        public static Result AssignOperator(this MerchantAggregate aggregate, 
                                           Guid operatorId,
                                           String operatorName,
                                           String merchantNumber,
                                           String terminalNumber)
         {
-            aggregate.EnsureMerchantHasBeenCreated();
-            aggregate.EnsureOperatorHasNotAlreadyBeenAssigned(operatorId);
+            Result result = aggregate.EnsureMerchantHasBeenCreated();
+            if (result.IsFailed)
+                return result;
+            result = aggregate.EnsureOperatorHasNotAlreadyBeenAssigned(operatorId);
+            if (result.IsFailed)
+                return result;
 
-            MerchantDomainEvents.OperatorAssignedToMerchantEvent operatorAssignedToMerchantEvent =
-                new MerchantDomainEvents.OperatorAssignedToMerchantEvent(aggregate.AggregateId, aggregate.EstateId, operatorId, operatorName, merchantNumber, terminalNumber);
+            MerchantDomainEvents.OperatorAssignedToMerchantEvent operatorAssignedToMerchantEvent = new(aggregate.AggregateId, aggregate.EstateId, operatorId, operatorName, merchantNumber, terminalNumber);
 
             aggregate.ApplyAndAppend(operatorAssignedToMerchantEvent);
+
+            return Result.Success();
         }
 
-        public static void RemoveOperator(this MerchantAggregate aggregate,
+        public static Result RemoveOperator(this MerchantAggregate aggregate,
                                           Guid operatorId)
         {
-            aggregate.EnsureMerchantHasBeenCreated();
-            aggregate.EnsureOperatorHasBeenAssigned(operatorId);
+            Result result = aggregate.EnsureMerchantHasBeenCreated();
+            if (result.IsFailed)
+                return result;
+            result = aggregate.EnsureOperatorHasBeenAssigned(operatorId);
+            if (result.IsFailed)
+                return result;
 
-            MerchantDomainEvents.OperatorRemovedFromMerchantEvent operatorRemovedFromMerchantEvent =
-                new MerchantDomainEvents.OperatorRemovedFromMerchantEvent(aggregate.AggregateId, aggregate.EstateId, operatorId);
+            MerchantDomainEvents.OperatorRemovedFromMerchantEvent operatorRemovedFromMerchantEvent = new(aggregate.AggregateId, aggregate.EstateId, operatorId);
 
             aggregate.ApplyAndAppend(operatorRemovedFromMerchantEvent);
+            return Result.Success();
         }
 
         public static Merchant GetMerchant(this MerchantAggregate aggregate)
@@ -340,7 +385,7 @@ namespace TransactionProcessor.Aggregates
                 return null;
             }
 
-            Merchant merchantModel = new Merchant();
+            Merchant merchantModel = new();
 
             merchantModel.EstateId = aggregate.EstateId;
             merchantModel.MerchantId = aggregate.AggregateId;
@@ -401,12 +446,8 @@ namespace TransactionProcessor.Aggregates
 
             return merchantModel;
         }
-        
-        public static void SetSettlementSchedule(this MerchantAggregate aggregate, SettlementSchedule settlementSchedule)
-        {
-            // Check if there has actually been a change or not, if not ignore the request
-            if (aggregate.SettlementSchedule == settlementSchedule)
-                return;
+
+        static DateTime CalculateNextSettlementDate(this MerchantAggregate aggregate, SettlementSchedule settlementSchedule) {
             DateTime nextSettlementDate = DateTime.MinValue;
             if (settlementSchedule != SettlementSchedule.Immediate)
             {
@@ -427,25 +468,90 @@ namespace TransactionProcessor.Aggregates
                     nextSettlementDate = dateForCalculation.AddMonths(1);
                 }
             }
+            return nextSettlementDate;
+        }
+        
+        public static Result SetSettlementSchedule(this MerchantAggregate aggregate, SettlementSchedule settlementSchedule)
+        {
+            Result result = aggregate.EnsureMerchantHasBeenCreated();
+            if (result.IsFailed)
+                return result;
 
-            MerchantDomainEvents.SettlementScheduleChangedEvent settlementScheduleChangedEvent =
-                new MerchantDomainEvents.SettlementScheduleChangedEvent(aggregate.AggregateId, aggregate.EstateId, (Int32)settlementSchedule, nextSettlementDate);
+            if (settlementSchedule == SettlementSchedule.NotSet)
+                return Result.Invalid("A valid settlement schedule must be provided");
+
+            // Check if there has actually been a change or not, if not ignore the request
+            if (aggregate.SettlementSchedule == settlementSchedule)
+                return Result.Success();
+
+            DateTime nextSettlementDate = CalculateNextSettlementDate(aggregate, settlementSchedule);
+        
+            MerchantDomainEvents.SettlementScheduleChangedEvent settlementScheduleChangedEvent = new(aggregate.AggregateId, aggregate.EstateId, (Int32)settlementSchedule, nextSettlementDate);
 
             aggregate.ApplyAndAppend(settlementScheduleChangedEvent);
+
+            return Result.Success();
         }
 
-        public static void Create(this MerchantAggregate aggregate, 
+        public static Result Create(this MerchantAggregate aggregate, 
                            Guid estateId,
                            String merchantName,
-                           DateTime dateCreated)
+                           DateTime dateCreated, 
+                           TransactionProcessor.Models.Merchant.Address address,
+                           TransactionProcessor.Models.Merchant.Contact contact,
+                           SettlementSchedule settlementSchedule)
         {
             // Ensure this merchant has not already been created
             if (aggregate.IsCreated)
-                return;
+                return Result.Success();
 
-            MerchantDomainEvents.MerchantCreatedEvent merchantCreatedEvent = new MerchantDomainEvents.MerchantCreatedEvent(aggregate.AggregateId, estateId, merchantName, dateCreated);
+            if (String.IsNullOrEmpty(merchantName))
+                return Result.Invalid("Merchant name must be provided when registering a new merchant");
+
+            if (address == null)
+                return Result.Invalid("An Address must be provided when registering a new merchant");
+
+            if (contact == null)
+                return Result.Invalid("A Contact must be provided when registering a new merchant");
+
+            if (settlementSchedule == SettlementSchedule.NotSet)
+                return Result.Invalid("A valid settlement schedule must be provided when registering a new merchant");
+            
+            MerchantDomainEvents.MerchantCreatedEvent merchantCreatedEvent = new(aggregate.AggregateId, estateId, merchantName, dateCreated);
 
             aggregate.ApplyAndAppend(merchantCreatedEvent);
+
+            String reference = $"{aggregate.AggregateId.GetHashCode():X}";
+
+            MerchantDomainEvents.MerchantReferenceAllocatedEvent merchantReferenceAllocatedEvent = new(aggregate.AggregateId, aggregate.EstateId, reference);
+
+            aggregate.ApplyAndAppend(merchantReferenceAllocatedEvent);
+
+            MerchantDomainEvents.AddressAddedEvent addressAddedEvent = new(aggregate.AggregateId,
+                aggregate.EstateId,
+                Guid.NewGuid(),
+                address.AddressLine1,
+                address.AddressLine2,
+                address.AddressLine3,
+                address.AddressLine4,
+                address.Town,
+                address.Region,
+                address.PostalCode,
+                address.Country);
+
+            aggregate.ApplyAndAppend(addressAddedEvent);
+
+            MerchantDomainEvents.ContactAddedEvent contactAddedEvent = new(aggregate.AggregateId, aggregate.EstateId, Guid.NewGuid(), contact.ContactName, contact.ContactPhoneNumber, contact.ContactEmailAddress);
+
+            aggregate.ApplyAndAppend(contactAddedEvent);
+
+            DateTime nextSettlementDate = CalculateNextSettlementDate(aggregate, settlementSchedule);
+
+            MerchantDomainEvents.SettlementScheduleChangedEvent settlementScheduleChangedEvent = new(aggregate.AggregateId, aggregate.EstateId, (Int32)settlementSchedule, nextSettlementDate);
+
+            aggregate.ApplyAndAppend(settlementScheduleChangedEvent);
+
+            return Result.Success();
         }
 
         public static void PlayEvent(this MerchantAggregate aggregate, MerchantDomainEvents.MerchantReferenceAllocatedEvent domainEvent)
@@ -453,12 +559,11 @@ namespace TransactionProcessor.Aggregates
             aggregate.MerchantReference = domainEvent.MerchantReference;
         }
 
-        private static void EnsureMerchantHasBeenCreated(this MerchantAggregate aggregate)
-        {
-            if (aggregate.IsCreated == false)
-            {
-                throw new InvalidOperationException("Merchant has not been created");
+        private static Result EnsureMerchantHasBeenCreated(this MerchantAggregate aggregate) {
+            if (aggregate.IsCreated == false) {
+                return Result.Invalid("Merchant has not been created");
             }
+            return Result.Success();
         }
 
         private static Boolean IsDuplicateAddress(this MerchantAggregate aggregate, String addressLine1,
@@ -500,60 +605,66 @@ namespace TransactionProcessor.Aggregates
             return false;
         }
 
-        private static void EnsureDeviceBelongsToMerchant(this MerchantAggregate aggregate, String originalDeviceIdentifier)
-        {
-            if (aggregate.Devices.Any(d => d.Value.DeviceIdentifier == originalDeviceIdentifier) == false)
-            {
-                throw new InvalidOperationException("Merchant does not have this device allocated");
+        private static Result EnsureDeviceBelongsToMerchant(this MerchantAggregate aggregate,
+                                                            String originalDeviceIdentifier) {
+            if (aggregate.Devices.Any(d => d.Value.DeviceIdentifier == originalDeviceIdentifier) == false) {
+                return Result.Invalid("Merchant does not have this device allocated");
             }
+
+            return Result.Success();
         }
 
-        private static void EnsureDeviceDoesNotAlreadyBelongToMerchant(this MerchantAggregate aggregate, String newDeviceIdentifier)
-        {
-            if (aggregate.Devices.Any(d => d.Value.DeviceIdentifier == newDeviceIdentifier))
-            {
-                throw new InvalidOperationException("Merchant already has this device allocated");
+        private static Result EnsureDeviceDoesNotAlreadyBelongToMerchant(this MerchantAggregate aggregate,
+                                                                         String newDeviceIdentifier) {
+            if (aggregate.Devices.Any(d => d.Value.DeviceIdentifier == newDeviceIdentifier)) {
+                return Result.Invalid("Merchant already has this device allocated");
             }
-        }
-        
-        private static void EnsureMerchantHasSpaceForDevice(this MerchantAggregate aggregate)
-        {
-            if (aggregate.Devices.Count + 1 > aggregate.MaximumDevices)
-            {
-                throw new InvalidOperationException($"Merchant {aggregate.Name} already has the maximum devices allocated");
-            }
+
+            return Result.Success();
         }
 
-        private static void EnsureOperatorHasNotAlreadyBeenAssigned(this MerchantAggregate aggregate, Guid operatorId)
-        {
-            if (aggregate.Operators.Any(o => o.Key == operatorId))
-            {
-                throw new InvalidOperationException($"Operator {operatorId} has already been assigned to merchant");
+        private static Result EnsureMerchantHasSpaceForDevice(this MerchantAggregate aggregate) {
+            if (aggregate.Devices.Count + 1 > aggregate.MaximumDevices) {
+                return Result.Invalid($"Merchant {aggregate.Name} already has the maximum devices allocated");
             }
+
+            return Result.Success();
         }
 
-        private static void EnsureOperatorHasBeenAssigned(this MerchantAggregate aggregate, Guid operatorId)
-        {
-            if (aggregate.Operators.Any(o => o.Key == operatorId) == false)
-            {
-                throw new InvalidOperationException($"Operator {operatorId} has not been assigned to merchant");
+        private static Result EnsureOperatorHasNotAlreadyBeenAssigned(this MerchantAggregate aggregate,
+                                                                      Guid operatorId) {
+            if (aggregate.Operators.Any(o => o.Key == operatorId)) {
+                return Result.Invalid($"Operator {operatorId} has already been assigned to merchant");
             }
+
+            return Result.Success();
         }
 
-        private static void EnsureContractHasNotAlreadyBeenAdded(this MerchantAggregate aggregate, Guid contractId)
-        {
-            if (aggregate.Contracts.ContainsKey(contractId))
-            {
-                throw new InvalidOperationException($"Contract {contractId} has already been assigned to merchant");
+        private static Result EnsureOperatorHasBeenAssigned(this MerchantAggregate aggregate,
+                                                            Guid operatorId) {
+            if (aggregate.Operators.Any(o => o.Key == operatorId) == false) {
+                return Result.Invalid($"Operator {operatorId} has not been assigned to merchant");
             }
+
+            return Result.Success();
         }
 
-        private static void EnsureContractHasBeenAdded(this MerchantAggregate aggregate, Guid contractId)
-        {
-            if (aggregate.Contracts.ContainsKey(contractId) == false)
-            {
-                throw new InvalidOperationException($"Contract {contractId} has not been assigned to merchant");
+        private static Result EnsureContractHasNotAlreadyBeenAdded(this MerchantAggregate aggregate,
+                                                                   Guid contractId) {
+            if (aggregate.Contracts.ContainsKey(contractId)) {
+                return Result.Invalid($"Contract {contractId} has already been assigned to merchant");
             }
+
+            return Result.Success();
+        }
+
+        private static Result EnsureContractHasBeenAdded(this MerchantAggregate aggregate,
+                                                         Guid contractId) {
+            if (aggregate.Contracts.ContainsKey(contractId) == false) {
+                return Result.Invalid($"Contract {contractId} has not been assigned to merchant");
+            }
+
+            return Result.Success();
         }
 
         public static void PlayEvent(this MerchantAggregate aggregate, MerchantDomainEvents.MerchantCreatedEvent merchantCreatedEvent)
