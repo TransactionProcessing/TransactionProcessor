@@ -541,15 +541,9 @@ namespace TransactionProcessor.BusinessLogic.Services
                 if (result.IsFailed)
                     return ResultHelpers.CreateFailure(result);
 
-                Result stateResult = merchantAggregate.UpdateAddress(command.AddressId,
-                                                                 command.RequestDto.AddressLine1,
-                                                                 command.RequestDto.AddressLine2,
-                                                                 command.RequestDto.AddressLine3,
-                                                                 command.RequestDto.AddressLine4,
-                                                                 command.RequestDto.Town,
-                                                                 command.RequestDto.Region,
-                                                                 command.RequestDto.PostalCode,
-                                                                 command.RequestDto.Country);
+                Address address = new(command.AddressId, command.RequestDto.AddressLine1, command.RequestDto.AddressLine2, command.RequestDto.AddressLine3, command.RequestDto.AddressLine4, command.RequestDto.Town, command.RequestDto.Region, command.RequestDto.PostalCode, command.RequestDto.Country);
+
+                Result stateResult = merchantAggregate.UpdateAddress(address);
                 if (stateResult.IsFailed)
                     return stateResult;
 

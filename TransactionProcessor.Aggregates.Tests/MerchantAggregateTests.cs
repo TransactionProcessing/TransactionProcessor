@@ -583,16 +583,9 @@ namespace TransactionProcessor.Aggregates.Tests
 
             Merchant merchantModel = aggregate.GetMerchant();
             Address? address = merchantModel.Addresses.ShouldHaveSingleItem();
-            
-            Result result = aggregate.UpdateAddress(address.AddressId,
-                                            TestData.MerchantAddressLine1Update,
-                                            TestData.MerchantAddressLine2Update,
-                                            TestData.MerchantAddressLine3Update,
-                                            TestData.MerchantAddressLine4Update,
-                                            TestData.MerchantTownUpdate,
-                                            TestData.MerchantRegionUpdate,
-                                            TestData.MerchantPostalCodeUpdate,
-                                            TestData.MerchantCountryUpdate);
+
+            Address newAddress = new(address.AddressId, TestData.MerchantAddressLine1Update, TestData.MerchantAddressLine2Update, TestData.MerchantAddressLine3Update, TestData.MerchantAddressLine4Update, TestData.MerchantTownUpdate, TestData.MerchantRegionUpdate, TestData.MerchantPostalCodeUpdate, TestData.MerchantCountryUpdate);
+            Result result = aggregate.UpdateAddress(newAddress);
             result.IsSuccess.ShouldBeTrue();
 
             merchantModel = aggregate.GetMerchant();
@@ -611,16 +604,9 @@ namespace TransactionProcessor.Aggregates.Tests
         public void MerchantAggregate_UpdateAddress_MerchantNotCreated_ErrorThrown()
         {
             MerchantAggregate aggregate = MerchantAggregate.Create(TestData.MerchantId);
-            
-            Result result = aggregate.UpdateAddress(Guid.NewGuid(),
-                TestData.MerchantAddressLine1Update,
-                TestData.MerchantAddressLine2Update,
-                TestData.MerchantAddressLine3Update,
-                TestData.MerchantAddressLine4Update,
-                TestData.MerchantTownUpdate,
-                TestData.MerchantRegionUpdate,
-                TestData.MerchantPostalCodeUpdate,
-                TestData.MerchantCountryUpdate);
+
+            Address newAddress = new(Guid.NewGuid(), TestData.MerchantAddressLine1Update, TestData.MerchantAddressLine2Update, TestData.MerchantAddressLine3Update, TestData.MerchantAddressLine4Update, TestData.MerchantTownUpdate, TestData.MerchantRegionUpdate, TestData.MerchantPostalCodeUpdate, TestData.MerchantCountryUpdate);
+            Result result = aggregate.UpdateAddress(newAddress);
             result.IsFailed.ShouldBeTrue();
             result.Status.ShouldBe(ResultStatus.Invalid);
         }
@@ -631,15 +617,9 @@ namespace TransactionProcessor.Aggregates.Tests
             aggregate.Create(TestData.EstateId, TestData.MerchantName, TestData.DateMerchantCreated, TestData.AddressModel, TestData.ContactModel,
                 TestData.SettlementScheduleModel);
 
-            Result result = aggregate.UpdateAddress(Guid.NewGuid(),
-                                                                TestData.MerchantAddressLine1Update,
-                                                                TestData.MerchantAddressLine2Update,
-                                                                TestData.MerchantAddressLine3Update,
-                                                                TestData.MerchantAddressLine4Update,
-                                                                TestData.MerchantTownUpdate,
-                                                                TestData.MerchantRegionUpdate,
-                                                                TestData.MerchantPostalCodeUpdate,
-                                                                TestData.MerchantCountryUpdate);
+            Address newAddress = new(Guid.NewGuid(), TestData.MerchantAddressLine1Update, TestData.MerchantAddressLine2Update, TestData.MerchantAddressLine3Update, TestData.MerchantAddressLine4Update, TestData.MerchantTownUpdate, TestData.MerchantRegionUpdate, TestData.MerchantPostalCodeUpdate, TestData.MerchantCountryUpdate);
+
+            Result result = aggregate.UpdateAddress(newAddress);
             result.IsSuccess.ShouldBeTrue();
         }
 
@@ -652,7 +632,9 @@ namespace TransactionProcessor.Aggregates.Tests
             Merchant merchantModel = aggregate.GetMerchant();
             Address? address = merchantModel.Addresses.ShouldHaveSingleItem();
 
-            Result result = aggregate.UpdateAddress(address.AddressId, address.AddressLine1, address.AddressLine2, address.AddressLine3, address.AddressLine4, address.Town, address.Region, address.PostalCode, address.Country);
+            Address newAddress = new (address.AddressId, address.AddressLine1, address.AddressLine2, address.AddressLine3, address.AddressLine4, address.Town, address.Region, address.PostalCode, address.Country);
+
+            Result result = aggregate.UpdateAddress(newAddress);
 
             result.IsSuccess.ShouldBeTrue();
             merchantModel = aggregate.GetMerchant();

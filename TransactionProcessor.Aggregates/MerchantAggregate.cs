@@ -67,35 +67,28 @@ namespace TransactionProcessor.Aggregates
             return Result.Success();
         }
 
-        public static Result UpdateAddress(this MerchantAggregate aggregate, Guid addressId,
-                                        String addressLine1,
-                                        String addressLine2,
-                                        String addressLine3,
-                                        String addressLine4,
-                                        String town,
-                                        String region,
-                                        String postalCode,
-                                        String country)
+        public static Result UpdateAddress(this MerchantAggregate aggregate, AddressModel address)
         {
             Result result = aggregate.EnsureMerchantHasBeenCreated();
             if (result.IsFailed)
                 return result;
-            Boolean isExistingAddress = aggregate.Addresses.ContainsKey(addressId);
+            Boolean isExistingAddress = aggregate.Addresses.ContainsKey(address.AddressId);
 
             if (isExistingAddress == false){
                 // Not an existing address, what should we do here ??
                 return Result.Success();
             }
-            Address existingAddress = aggregate.Addresses.Single(a => a.Key == addressId).Value;
+            Address existingAddress = aggregate.Addresses.Single(a => a.Key == address.AddressId).Value;
 
-            Address updatedAddress = new Address(addressLine1, addressLine2, addressLine3, addressLine4, town, region, postalCode, country);
+            Address updatedAddress = new Address(address.AddressLine1, address.AddressLine2, address.AddressLine3, address.AddressLine4,
+                address.Town, address.Region, address.PostalCode, address.Country);
             
             if (updatedAddress == existingAddress){
                 // No changes
                 return Result.Success();
             }
 
-            aggregate.HandleAddressUpdates(addressId,existingAddress, updatedAddress);
+            aggregate.HandleAddressUpdates(address.AddressId, existingAddress, updatedAddress);
 
             return Result.Success();
         }
