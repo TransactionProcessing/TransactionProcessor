@@ -3,9 +3,12 @@ using Shared.EventStore.Aggregate;
 using Shouldly;
 using SimpleResults;
 using System.Reflection;
+using TransactionProcessor.DataTransferObjects.Requests.Merchant;
 using TransactionProcessor.Models.Merchant;
 using TransactionProcessor.Testing;
 using static TransactionProcessor.Testing.TestData;
+using Address = TransactionProcessor.Models.Merchant.Address;
+using Contact = TransactionProcessor.Models.Merchant.Contact;
 using SettlementSchedule = TransactionProcessor.Models.Merchant.SettlementSchedule;
 
 namespace TransactionProcessor.Aggregates.Tests
@@ -110,15 +113,17 @@ namespace TransactionProcessor.Aggregates.Tests
             MerchantAggregate aggregate = MerchantAggregate.Create(TestData.MerchantId);
             aggregate.Create(TestData.EstateId, TestData.MerchantName, TestData.DateMerchantCreated, TestData.AddressModel, TestData.ContactModel,
                 TestData.SettlementScheduleModel);
-            
-            Result result = aggregate.AddAddress(TestData.MerchantAddressLine1,
-                                 TestData.MerchantAddressLine2,
-                                 TestData.MerchantAddressLine3,
-                                 TestData.MerchantAddressLine4,
-                                 TestData.MerchantTown,
-                                 TestData.MerchantRegion,
-                                 TestData.MerchantPostalCode,
-                                 TestData.MerchantCountry);
+
+            Address newAddress = new(Guid.Empty, TestData.MerchantAddressLine1,
+                TestData.MerchantAddressLine2,
+                TestData.MerchantAddressLine3,
+                TestData.MerchantAddressLine4,
+                TestData.MerchantTown,
+                TestData.MerchantRegion,
+                TestData.MerchantPostalCode,
+                TestData.MerchantCountry);
+
+            Result result = aggregate.AddAddress(newAddress);
             result.IsSuccess.ShouldBeTrue();
             
             Merchant merchantModel = aggregate.GetMerchant();
@@ -143,14 +148,9 @@ namespace TransactionProcessor.Aggregates.Tests
             aggregate.Create(TestData.EstateId, TestData.MerchantName, TestData.DateMerchantCreated, TestData.AddressModel, TestData.ContactModel,
                 TestData.SettlementScheduleModel);
 
-            Result result = aggregate.AddAddress(TestData.AddressModel.AddressLine1,
-                TestData.AddressModel.AddressLine2,
-                TestData.AddressModel.AddressLine3,
-                TestData.AddressModel.AddressLine4,
-                TestData.AddressModel.Town,
-                TestData.AddressModel.Region,
-                TestData.AddressModel.PostalCode,
-                TestData.AddressModel.Country);
+
+
+            Result result = aggregate.AddAddress(TestData.AddressModel);
             result.IsSuccess.ShouldBeTrue();
             Merchant merchantModel = aggregate.GetMerchant();
             merchantModel.Addresses.ShouldHaveSingleItem();
@@ -160,14 +160,7 @@ namespace TransactionProcessor.Aggregates.Tests
         public void MerchantAggregate_AddAddress_MerchantNotCreated_ErrorThrown(){
             MerchantAggregate aggregate = MerchantAggregate.Create(TestData.MerchantId);
 
-            Result result = aggregate.AddAddress(TestData.MerchantAddressLine1,
-                                                                                                                   TestData.MerchantAddressLine2,
-                                                                                                                   TestData.MerchantAddressLine3,
-                                                                                                                   TestData.MerchantAddressLine4,
-                                                                                                                   TestData.MerchantTown,
-                                                                                                                   TestData.MerchantRegion,
-                                                                                                                   TestData.MerchantPostalCode,
-                                                                                                                   TestData.MerchantCountry);
+            Result result = aggregate.AddAddress(TestData.AddressModel);
             result.IsFailed.ShouldBeTrue();
             result.Status.ShouldBe(ResultStatus.Invalid);
             result.Message.ShouldContain($"Merchant has not been created");

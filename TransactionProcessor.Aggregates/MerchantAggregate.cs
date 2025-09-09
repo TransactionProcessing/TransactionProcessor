@@ -178,34 +178,19 @@ namespace TransactionProcessor.Aggregates
             }
         }
 
-        public static Result AddAddress(this MerchantAggregate aggregate,
-                               String addressLine1,
-                               String addressLine2,
-                               String addressLine3,
-                               String addressLine4,
-                               String town,
-                               String region,
-                               String postalCode,
-                               String country)
+        public static Result AddAddress(this MerchantAggregate aggregate, AddressModel address)
         {
             Result result = aggregate.EnsureMerchantHasBeenCreated();
             if (result.IsFailed)
                 return result;
 
-            if (IsDuplicateAddress(aggregate, addressLine1,addressLine2, addressLine3, addressLine4, town,region, postalCode, country))
+            if (IsDuplicateAddress(aggregate, address.AddressLine1, address.AddressLine2, address.AddressLine3, address.AddressLine4, 
+                    address.Town,address.Region, address.PostalCode, address.Country))
                 return Result.Success(); // No need to throw an error, just ignore as we already have this address
 
-            MerchantDomainEvents.AddressAddedEvent addressAddedEvent = new(aggregate.AggregateId,
-                                                                        aggregate.EstateId,
-                                                                        Guid.NewGuid(), 
-                                                                        addressLine1,
-                                                                        addressLine2,
-                                                                        addressLine3,
-                                                                        addressLine4,
-                                                                        town,
-                                                                        region,
-                                                                        postalCode,
-                                                                        country);
+            MerchantDomainEvents.AddressAddedEvent addressAddedEvent = new(aggregate.AggregateId, aggregate.EstateId, Guid.NewGuid(), 
+                address.AddressLine1, address.AddressLine2, address.AddressLine3, address.AddressLine4, address.Town, 
+                address.Region, address.PostalCode, address.Country);
 
             aggregate.ApplyAndAppend(addressAddedEvent);
 
