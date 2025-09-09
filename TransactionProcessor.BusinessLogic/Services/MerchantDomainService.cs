@@ -90,7 +90,9 @@ namespace TransactionProcessor.BusinessLogic.Services
                     return ResultHelpers.CreateFailure(result);
 
                 Guid deviceId = Guid.NewGuid();
-                merchantAggregate.AddDevice(deviceId, command.RequestDto.DeviceIdentifier);
+                Result stateResult = merchantAggregate.AddDevice(deviceId, command.RequestDto.DeviceIdentifier);
+                if (stateResult.IsFailed)
+                    return stateResult;
 
                 Result saveResult = await this.AggregateService.Save(merchantAggregate, cancellationToken);
                 if (saveResult.IsFailed)
@@ -148,7 +150,9 @@ namespace TransactionProcessor.BusinessLogic.Services
 
                 // Assign the operator
                 // TODO: Swap second parameter to name
-                merchantAggregate.AssignOperator(command.RequestDto.OperatorId, @operator.Name, command.RequestDto.MerchantNumber, command.RequestDto.TerminalNumber);
+                Result stateResult = merchantAggregate.AssignOperator(command.RequestDto.OperatorId, @operator.Name, command.RequestDto.MerchantNumber, command.RequestDto.TerminalNumber);
+                if (stateResult.IsFailed)
+                    return stateResult;
 
                 Result saveResult = await this.AggregateService.Save(merchantAggregate, cancellationToken);
                 if (saveResult.IsFailed)
@@ -193,18 +197,17 @@ namespace TransactionProcessor.BusinessLogic.Services
 
                 MerchantAggregate merchantAggregate = merchantResult.Data;
 
-                merchantAggregate.Create(command.EstateId, command.RequestDto.Name, command.RequestDto.CreatedDateTime.GetValueOrDefault(DateTime.Now));
-                merchantAggregate.GenerateReference();
-
-                // Add the address 
-                merchantAggregate.AddAddress(command.RequestDto.Address.AddressLine1, command.RequestDto.Address.AddressLine2, command.RequestDto.Address.AddressLine3, command.RequestDto.Address.AddressLine4, command.RequestDto.Address.Town, command.RequestDto.Address.Region, command.RequestDto.Address.PostalCode, command.RequestDto.Address.Country);
-
-                // Add the contact
-                merchantAggregate.AddContact(command.RequestDto.Contact.ContactName, command.RequestDto.Contact.PhoneNumber, command.RequestDto.Contact.EmailAddress);
-
+                // Build up the models for the Crete call
+                Address address = new Address(Guid.Empty, command.RequestDto.Address.AddressLine1, command.RequestDto.Address.AddressLine2, command.RequestDto.Address.AddressLine3, command.RequestDto.Address.AddressLine4, command.RequestDto.Address.Town, command.RequestDto.Address.Region, command.RequestDto.Address.PostalCode, command.RequestDto.Address.Country);
+                Contact contact = new Contact(Guid.Empty, command.RequestDto.Contact.EmailAddress, command.RequestDto.Contact.ContactName, command.RequestDto.Contact.PhoneNumber);
                 // Set the settlement schedule
                 SettlementSchedule settlementSchedule = ConvertSettlementSchedule(command.RequestDto.SettlementSchedule);
-                merchantAggregate.SetSettlementSchedule(settlementSchedule);
+
+                var stateResult = merchantAggregate.Create(command.EstateId, command.RequestDto.Name, command.RequestDto.CreatedDateTime.GetValueOrDefault(DateTime.Now),
+                    address, contact, settlementSchedule);
+                if (stateResult.IsFailed)
+                    return stateResult;
+
 
                 Result saveResult = await this.AggregateService.Save(merchantAggregate, cancellationToken);
                 if (saveResult.IsFailed)
@@ -264,7 +267,9 @@ namespace TransactionProcessor.BusinessLogic.Services
                     return Result.Failure($"Unable to get user details for username {createUserRequest.EmailAddress}");
 
                 // Add the user to the aggregate 
-                merchantAggregate.AddSecurityUser(user.UserId, command.RequestDto.EmailAddress);
+                Result stateResult = merchantAggregate.AddSecurityUser(user.UserId, command.RequestDto.EmailAddress);
+                if (stateResult.IsFailed)
+                    return stateResult;
 
                 // TODO: add a delete user here in case the aggregate add fails...
 
@@ -421,7 +426,9 @@ namespace TransactionProcessor.BusinessLogic.Services
                     return Result.Invalid($"Contract Id {command.RequestDto.ContractId} has not been created");
                 }
 
-                merchantAggregate.AddContract(contractAggregate);
+                Result stateResult = merchantAggregate.AddContract(contractAggregate);
+                if (stateResult.IsFailed)
+                    return stateResult;
 
                 Result saveResult = await this.AggregateService.Save(merchantAggregate, cancellationToken);
                 if (saveResult.IsFailed)
@@ -436,8 +443,7 @@ namespace TransactionProcessor.BusinessLogic.Services
 
         public async Task<Result> UpdateMerchant(MerchantCommands.UpdateMerchantCommand command, CancellationToken cancellationToken)
         {
-            try
-            {
+            try {
                 Result<EstateAggregate> estateResult = await DomainServiceHelper.GetAggregateOrFailure(ct => this.AggregateService.Get<EstateAggregate>(command.EstateId, ct), command.EstateId, cancellationToken);
                 if (estateResult.IsFailed)
                     return ResultHelpers.CreateFailure(estateResult);
@@ -449,15 +455,17 @@ namespace TransactionProcessor.BusinessLogic.Services
                 EstateAggregate estateAggregate = estateResult.Data;
                 MerchantAggregate merchantAggregate = merchantResult.Data;
 
-                Result result =
-                        this.ValidateEstateAndMerchant(estateAggregate, merchantAggregate);
-                    if (result.IsFailed)
-                        return ResultHelpers.CreateFailure(result);
+                Result result = this.ValidateEstateAndMerchant(estateAggregate, merchantAggregate);
+                if (result.IsFailed)
+                    return ResultHelpers.CreateFailure(result);
 
-                    merchantAggregate.UpdateMerchant(command.RequestDto.Name);
-
-                    SettlementSchedule settlementSchedule = ConvertSettlementSchedule(command.RequestDto.SettlementSchedule);
-                    merchantAggregate.SetSettlementSchedule(settlementSchedule);
+                Result stateResult = merchantAggregate.UpdateMerchant(command.RequestDto.Name);
+                if (stateResult.IsFailed)
+                    return stateResult;
+                SettlementSchedule settlementSchedule = ConvertSettlementSchedule(command.RequestDto.SettlementSchedule);
+                stateResult = merchantAggregate.SetSettlementSchedule(settlementSchedule);
+                if (stateResult.IsFailed)
+                    return stateResult;
 
                 Result saveResult = await this.AggregateService.Save(merchantAggregate, cancellationToken);
                 if (saveResult.IsFailed)
@@ -465,8 +473,7 @@ namespace TransactionProcessor.BusinessLogic.Services
 
                 return saveResult;
             }
-            catch (Exception ex)
-            {
+            catch (Exception ex) {
                 return Result.Failure(ex.GetExceptionMessages());
             }
         }
@@ -491,14 +498,11 @@ namespace TransactionProcessor.BusinessLogic.Services
                 if (result.IsFailed)
                     return ResultHelpers.CreateFailure(result);
 
-                merchantAggregate.AddAddress(command.RequestDto.AddressLine1,
-                                                                 command.RequestDto.AddressLine2,
-                                                                 command.RequestDto.AddressLine3,
-                                                                 command.RequestDto.AddressLine4,
-                                                                 command.RequestDto.Town,
-                                                                 command.RequestDto.Region,
-                                                                 command.RequestDto.PostalCode,
-                                                                 command.RequestDto.Country);
+                Address address = new(Guid.Empty, command.RequestDto.AddressLine1, command.RequestDto.AddressLine2, command.RequestDto.AddressLine3, command.RequestDto.AddressLine4, command.RequestDto.Town, command.RequestDto.Region, command.RequestDto.PostalCode, command.RequestDto.Country);
+
+                Result stateResult = merchantAggregate.AddAddress(address);
+                if (stateResult.IsFailed)
+                    return stateResult;
 
                 Result saveResult = await this.AggregateService.Save(merchantAggregate, cancellationToken);
                 if (saveResult.IsFailed)
@@ -532,15 +536,11 @@ namespace TransactionProcessor.BusinessLogic.Services
                 if (result.IsFailed)
                     return ResultHelpers.CreateFailure(result);
 
-                merchantAggregate.UpdateAddress(command.AddressId,
-                                                                 command.RequestDto.AddressLine1,
-                                                                 command.RequestDto.AddressLine2,
-                                                                 command.RequestDto.AddressLine3,
-                                                                 command.RequestDto.AddressLine4,
-                                                                 command.RequestDto.Town,
-                                                                 command.RequestDto.Region,
-                                                                 command.RequestDto.PostalCode,
-                                                                 command.RequestDto.Country);
+                Address address = new(command.AddressId, command.RequestDto.AddressLine1, command.RequestDto.AddressLine2, command.RequestDto.AddressLine3, command.RequestDto.AddressLine4, command.RequestDto.Town, command.RequestDto.Region, command.RequestDto.PostalCode, command.RequestDto.Country);
+
+                Result stateResult = merchantAggregate.UpdateAddress(address);
+                if (stateResult.IsFailed)
+                    return stateResult;
 
                 Result saveResult = await this.AggregateService.Save(merchantAggregate, cancellationToken);
                 if (saveResult.IsFailed)
@@ -574,9 +574,11 @@ namespace TransactionProcessor.BusinessLogic.Services
                 if (result.IsFailed)
                     return ResultHelpers.CreateFailure(result);
 
-                merchantAggregate.AddContact(command.RequestDto.ContactName,
+                Result stateResult = merchantAggregate.AddContact(command.RequestDto.ContactName,
                                                                  command.RequestDto.PhoneNumber,
                                                                  command.RequestDto.EmailAddress);
+                if (stateResult.IsFailed)
+                    return stateResult;
 
                 Result saveResult = await this.AggregateService.Save(merchantAggregate, cancellationToken);
                 if (saveResult.IsFailed)
@@ -608,8 +610,9 @@ namespace TransactionProcessor.BusinessLogic.Services
                 if (result.IsFailed)
                     return ResultHelpers.CreateFailure(result);
 
-                merchantAggregate.UpdateContact(command.ContactId, command.RequestDto.ContactName, command.RequestDto.EmailAddress, command.RequestDto.PhoneNumber);
-                ;
+                Result stateResult = merchantAggregate.UpdateContact(command.ContactId, command.RequestDto.ContactName, command.RequestDto.EmailAddress, command.RequestDto.PhoneNumber);
+                if (stateResult.IsFailed)
+                    return stateResult;
 
                 Result saveResult = await this.AggregateService.Save(merchantAggregate, cancellationToken);
                 if (saveResult.IsFailed)
@@ -640,7 +643,9 @@ namespace TransactionProcessor.BusinessLogic.Services
                 if (result.IsFailed)
                     return ResultHelpers.CreateFailure(result);
 
-                merchantAggregate.RemoveOperator(command.OperatorId);
+                Result stateResult = merchantAggregate.RemoveOperator(command.OperatorId);
+                if (stateResult.IsFailed)
+                    return stateResult;
 
                 Result saveResult = await this.AggregateService.Save(merchantAggregate, cancellationToken);
                 if (saveResult.IsFailed)
@@ -673,7 +678,9 @@ namespace TransactionProcessor.BusinessLogic.Services
                 if (result.IsFailed)
                     return ResultHelpers.CreateFailure(result);
 
-                merchantAggregate.RemoveContract(command.ContractId);
+                Result stateResult = merchantAggregate.RemoveContract(command.ContractId);
+                if (stateResult.IsFailed)
+                    return stateResult;
 
                 Result saveResult = await this.AggregateService.Save(merchantAggregate, cancellationToken);
                 if (saveResult.IsFailed)
@@ -687,25 +694,24 @@ namespace TransactionProcessor.BusinessLogic.Services
             }
         }
 
-        private Result ValidateEstateAndMerchant(EstateAggregate estateAggregate, MerchantAggregate merchantAggregate)
-        {
+        private Result ValidateEstateAndMerchant(EstateAggregate estateAggregate,
+                                                 MerchantAggregate merchantAggregate) {
 
             // Check merchant has been created
-            if (merchantAggregate.IsCreated == false)
-            {
+            if (merchantAggregate.IsCreated == false) {
                 return Result.Invalid($"Merchant Id {merchantAggregate.AggregateId} has not been created");
             }
 
             // Estate Id is a valid estate
-            if (estateAggregate.IsCreated == false)
-            {
+            if (estateAggregate.IsCreated == false) {
                 return Result.Invalid($"Estate Id {estateAggregate.AggregateId} has not been created");
             }
+
             return Result.Success();
         }
 
         public async Task<Result> SwapMerchantDevice(MerchantCommands.SwapMerchantDeviceCommand command,
-                                                   CancellationToken cancellationToken)
+                                                     CancellationToken cancellationToken)
         {
             try
             {
@@ -725,7 +731,10 @@ namespace TransactionProcessor.BusinessLogic.Services
                 if (result.IsFailed)
                     return ResultHelpers.CreateFailure(result);
 
-                merchantAggregate.SwapDevice(command.DeviceIdentifier, command.RequestDto.NewDeviceIdentifier);
+                Result stateResult = merchantAggregate.SwapDevice(command.DeviceIdentifier, command.RequestDto.NewDeviceIdentifier);
+                if (stateResult.IsFailed)
+                    return stateResult;
+
                 Result saveResult = await this.AggregateService.Save(merchantAggregate, cancellationToken);
                 if (saveResult.IsFailed)
                     return ResultHelpers.CreateFailure(saveResult);
