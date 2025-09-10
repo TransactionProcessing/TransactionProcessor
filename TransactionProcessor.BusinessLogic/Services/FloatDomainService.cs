@@ -142,8 +142,9 @@ namespace TransactionProcessor.BusinessLogic.Services
 
                 FloatActivityAggregate floatActivityAggregate = getFloatActivityResult.Data;
 
-                floatActivityAggregate.RecordCreditPurchase(command.EstateId, command.CreditPurchasedDateTime, command.Amount, command.CreditId);
-
+                Result stateResult = floatActivityAggregate.RecordCreditPurchase(command.EstateId, command.CreditPurchasedDateTime, command.Amount, command.CreditId);
+                if (stateResult.IsFailed)
+                    return ResultHelpers.CreateFailure(stateResult);
                 Result saveResult = await this.AggregateService.Save(floatActivityAggregate, cancellationToken);
                 if (saveResult.IsFailed)
                     return ResultHelpers.CreateFailure(saveResult);
@@ -174,7 +175,9 @@ namespace TransactionProcessor.BusinessLogic.Services
 
                 FloatActivityAggregate floatActivityAggregate = getFloatActivityResult.Data;
 
-                floatActivityAggregate.RecordTransactionAgainstFloat(command.EstateId, getTransactionResult.Data.TransactionDateTime, getTransactionResult.Data.TransactionAmount.GetValueOrDefault(), command.TransactionId);
+                Result stateResult = floatActivityAggregate.RecordTransactionAgainstFloat(command.EstateId, getTransactionResult.Data.TransactionDateTime, getTransactionResult.Data.TransactionAmount.GetValueOrDefault(), command.TransactionId);
+                if (stateResult.IsFailed)
+                    return ResultHelpers.CreateFailure(stateResult);
 
                 Result saveResult = await this.AggregateService.Save(floatActivityAggregate, cancellationToken);
                 if (saveResult.IsFailed)

@@ -2,6 +2,7 @@
 using Shared.DomainDrivenDesign.EventSourcing;
 using Shared.EventStore.Aggregate;
 using Shared.General;
+using SimpleResults;
 using TransactionProcessor.DomainEvents;
 
 namespace TransactionProcessor.Aggregates
@@ -22,7 +23,7 @@ namespace TransactionProcessor.Aggregates
             aggregate.Debits.Add(domainEvent.DebitId);
         }
 
-        public static void RecordCreditPurchase(this FloatActivityAggregate aggregate,
+        public static Result RecordCreditPurchase(this FloatActivityAggregate aggregate,
                                                 Guid estateId,
                                                 DateTime activityDateTime,
                                                 Decimal creditAmount,
@@ -30,23 +31,27 @@ namespace TransactionProcessor.Aggregates
         {
 
             if (aggregate.Credits.Any(c => c == creditId))
-                return;
+                return Result.Success();
 
             FloatActivityDomainEvents.FloatAggregateCreditedEvent floatAggregateCreditedEvent = new(aggregate.AggregateId, estateId, activityDateTime, creditAmount, creditId);
             aggregate.ApplyAndAppend(floatAggregateCreditedEvent);
+
+            return Result.Success();
         }
 
-        public static void RecordTransactionAgainstFloat(this FloatActivityAggregate aggregate,
-                                                         Guid estateId,
-                                                         DateTime activityDateTime,
-                                                         Decimal transactionAmount,
-                                                         Guid transactionId)
+        public static Result RecordTransactionAgainstFloat(this FloatActivityAggregate aggregate,
+                                                           Guid estateId,
+                                                           DateTime activityDateTime,
+                                                           Decimal transactionAmount,
+                                                           Guid transactionId)
         {
             if (aggregate.Debits.Any(c => c == transactionId))
-                return;
+                return Result.Success();
 
             FloatActivityDomainEvents.FloatAggregateDebitedEvent floatAggregateCreditedEvent = new(aggregate.AggregateId, estateId, activityDateTime, transactionAmount, transactionId);
             aggregate.ApplyAndAppend(floatAggregateCreditedEvent);
+
+            return Result.Success();
         }
     }
 
