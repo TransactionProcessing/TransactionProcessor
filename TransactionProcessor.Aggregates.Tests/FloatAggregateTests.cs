@@ -1,4 +1,5 @@
 using Shouldly;
+using SimpleResults;
 using TransactionProcessor.Testing;
 
 namespace TransactionProcessor.Aggregates.Tests
@@ -17,7 +18,8 @@ namespace TransactionProcessor.Aggregates.Tests
         public void FloatAggregate_CreateFloat_IsCreated()
         {
             Aggregates.FloatAggregate aggregate = Aggregates.FloatAggregate.Create(TestData.FloatAggregateId);
-            aggregate.CreateFloat(TestData.EstateId, TestData.ContractId, TestData.ProductId, TestData.FloatCreatedDateTime);
+            Result result = aggregate.CreateFloat(TestData.EstateId, TestData.ContractId, TestData.ProductId, TestData.FloatCreatedDateTime);
+            result.IsSuccess.ShouldBeTrue();
 
             aggregate.AggregateId.ShouldBe(TestData.FloatAggregateId);
             aggregate.EstateId.ShouldBe(TestData.EstateId);
@@ -27,14 +29,12 @@ namespace TransactionProcessor.Aggregates.Tests
         }
 
         [Fact]
-        public void FloatAggregate_CreateFloat_FloatAlreadyCreated_ErrorThrown()
-        {
+        public void FloatAggregate_CreateFloat_FloatAlreadyCreated_NoErrorThrown() {
             Aggregates.FloatAggregate aggregate = Aggregates.FloatAggregate.Create(TestData.FloatAggregateId);
             aggregate.CreateFloat(TestData.EstateId, TestData.ContractId, TestData.ProductId, TestData.FloatCreatedDateTime);
 
-            Should.Throw<InvalidOperationException>(() => {
-                                                        aggregate.CreateFloat(TestData.EstateId, TestData.ContractId, TestData.ProductId, TestData.FloatCreatedDateTime);
-                                                    });
+            Result result = aggregate.CreateFloat(TestData.EstateId, TestData.ContractId, TestData.ProductId, TestData.FloatCreatedDateTime);
+            result.IsSuccess.ShouldBeTrue();
         }
 
         [Fact]
@@ -42,8 +42,8 @@ namespace TransactionProcessor.Aggregates.Tests
         {
             Aggregates.FloatAggregate aggregate = Aggregates.FloatAggregate.Create(TestData.FloatAggregateId);
             aggregate.CreateFloat(TestData.EstateId, TestData.ContractId, TestData.ProductId, TestData.FloatCreatedDateTime);
-            aggregate.RecordCreditPurchase(DateTime.Now, 1000, 900);
-
+            Result result = aggregate.RecordCreditPurchase(DateTime.Now, 1000, 900);
+            result.IsSuccess.ShouldBeTrue();
             aggregate.NumberOfCreditPurchases.ShouldBe(1);
             aggregate.TotalCostPrice.ShouldBe(900);
             aggregate.UnitCostPrice.ShouldBe(0.9m);
@@ -54,10 +54,11 @@ namespace TransactionProcessor.Aggregates.Tests
         public void FloatAggregate_RecordCreditPurchase_FloatNotCreated_ErrorThrown()
         {
             Aggregates.FloatAggregate aggregate = Aggregates.FloatAggregate.Create(TestData.FloatAggregateId);
+
+            Result result = aggregate.RecordCreditPurchase(DateTime.Now, 1000, 900);
+            result.IsFailed.ShouldBeTrue();
+            result.Status.ShouldBe(ResultStatus.Invalid);
             
-            Should.Throw<InvalidOperationException>(() => {
-                aggregate.RecordCreditPurchase(DateTime.Now, 1000, 900);
-            });
         }
 
         [Fact]
@@ -101,9 +102,11 @@ namespace TransactionProcessor.Aggregates.Tests
             DateTime purchaseDateTime = DateTime.Now;
             aggregate.RecordCreditPurchase(purchaseDateTime, 1000, 900);
 
-            Should.Throw<InvalidOperationException>(() => {
-                                aggregate.RecordCreditPurchase(purchaseDateTime, 1000, 900);
-                            });
+            Result result = aggregate.RecordCreditPurchase(purchaseDateTime, 1000, 900);
+            
+            result.IsFailed.ShouldBeTrue();
+            result.Status.ShouldBe(ResultStatus.Invalid);
+
         }
     }
 }
