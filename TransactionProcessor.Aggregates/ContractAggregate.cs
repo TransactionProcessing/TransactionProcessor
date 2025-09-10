@@ -1,113 +1,140 @@
-﻿using System.Diagnostics.CodeAnalysis;
-using Shared.DomainDrivenDesign.EventSourcing;
+﻿using Shared.DomainDrivenDesign.EventSourcing;
 using Shared.EventStore.Aggregate;
 using Shared.General;
+using SimpleResults;
+using System.Diagnostics.CodeAnalysis;
 using TransactionProcessor.DomainEvents;
 using TransactionProcessor.Models.Contract;
+using static Google.Protobuf.Reflection.FeatureSet.Types;
 
 namespace TransactionProcessor.Aggregates{
     public static class ContractAggregateExtensions{
         #region Methods
 
-        public static void AddFixedValueProduct(this ContractAggregate aggregate,
+        public static Result AddFixedValueProduct(this ContractAggregate aggregate,
                                                 Guid productId,
                                                 String productName,
                                                 String displayText,
                                                 Decimal value,
                                                 ProductType productType){
-            Guard.ThrowIfInvalidGuid(productId, typeof(ArgumentNullException), "Product Id cannot be an empty Guid");
-            Guard.ThrowIfNullOrEmpty(productName, typeof(ArgumentNullException), "Product Name must not be null or empty");
-            Guard.ThrowIfNullOrEmpty(displayText, typeof(ArgumentNullException), "Product Display Text must not be null or empty");
-            Guard.ThrowIfZero(value, typeof(ArgumentOutOfRangeException), "Product value must not be zero");
-            Guard.ThrowIfNegative(value, typeof(ArgumentOutOfRangeException), "Product value must not be negative");
-
+            if (productId == Guid.Empty)
+                return Result.Invalid("Product Id must not be an empty Guid");
+            if (String.IsNullOrEmpty(productName))
+                return Result.Invalid("Product Name must not be null or empty");
+            if (String.IsNullOrEmpty(displayText))
+                return Result.Invalid("Product Display Text must not be null or empty");
+            if (value <= 0)
+                return Result.Invalid("Product value must not be zero or negative");
+            
             // Check product not already added
             if (aggregate.Products.Any(p => p.Name == productName)){
-                throw new InvalidOperationException($"Product Name {productName} has already been added to the contract");
+                return Result.Success();
             }
 
             ContractDomainEvents.FixedValueProductAddedToContractEvent fixedValueProductAddedToContractEvent =
                 new(aggregate.AggregateId, aggregate.EstateId, productId, productName, displayText, value, (Int32)productType);
 
             aggregate.ApplyAndAppend(fixedValueProductAddedToContractEvent);
+
+            return Result.Success();
         }
 
-        public static void AddTransactionFee(this ContractAggregate aggregate,
+        public static Result AddTransactionFee(this ContractAggregate aggregate,
                                              Product product,
                                              Guid transactionFeeId,
                                              String description,
                                              CalculationType calculationType,
                                              FeeType feeType,
                                              Decimal value){
-            Guard.ThrowIfInvalidGuid(transactionFeeId, typeof(ArgumentNullException), "Transaction Fee Id cannot be an empty Guid");
-            Guard.ThrowIfNull(product, typeof(ArgumentNullException), "Product to add fee for cannot be null");
-            Guard.ThrowIfNullOrEmpty(description, typeof(ArgumentNullException), "Transaction Fee description must not be null or empty");
-            Guard.ThrowIfZero(value, typeof(ArgumentOutOfRangeException), "Transaction Fee value cannot be zero");
-            Guard.ThrowIfNegative(value, typeof(ArgumentOutOfRangeException), "Transaction Fee value cannot be negative");
-
+            if (transactionFeeId == Guid.Empty)
+                return Result.Invalid("Transaction Fee Id cannot be an empty Guid");
+            if (product == null)
+                return Result.Invalid("Product to add fee for cannot be null");
+            if (String.IsNullOrEmpty(description))
+                return Result.Invalid("Transaction Fee description must not be null or empty");
+            if (value <= 0)
+                return Result.Invalid("Transaction Fee value must not be zero or negative");
+            
             if (aggregate.Products.Any(p => p.ContractProductId == product.ContractProductId) == false){
-                throw new InvalidOperationException($"Product Id {product.ContractProductId} is not a valid product on this contract");
+                return Result.Invalid($"Product Id {product.ContractProductId} is not a valid product on this contract");
             }
-
-            Guard.ThrowIfInvalidEnum(typeof(CalculationType), calculationType, nameof(calculationType));
-            Guard.ThrowIfInvalidEnum(typeof(FeeType), feeType, nameof(feeType));
-
+            if (Enum.IsDefined(typeof(CalculationType), calculationType) == false)
+                return Result.Invalid("Calculation Type not valid");
+            if (Enum.IsDefined(typeof(FeeType), feeType) == false)
+                return Result.Invalid("Fee Type not valid");
+            
             ContractDomainEvents.TransactionFeeForProductAddedToContractEvent transactionFeeForProductAddedToContractEvent =
-                new ContractDomainEvents.TransactionFeeForProductAddedToContractEvent(aggregate.AggregateId, aggregate.EstateId, product.ContractProductId, transactionFeeId, description, (Int32)calculationType, (Int32)feeType, value);
+                new(aggregate.AggregateId, aggregate.EstateId, product.ContractProductId, transactionFeeId, description, (Int32)calculationType, (Int32)feeType, value);
 
             aggregate.ApplyAndAppend(transactionFeeForProductAddedToContractEvent);
+
+            return Result.Success();
         }
 
-        public static void AddVariableValueProduct(this ContractAggregate aggregate,
+        public static Result AddVariableValueProduct(this ContractAggregate aggregate,
                                                    Guid productId,
                                                    String productName,
                                                    String displayText,
                                                    ProductType productType){
-            Guard.ThrowIfNullOrEmpty(productName, typeof(ArgumentNullException), "Product Name must not be null or empty");
-            Guard.ThrowIfNullOrEmpty(displayText, typeof(ArgumentNullException), "Product Display Text must not be null or empty");
+            if (productId == Guid.Empty)
+                return Result.Invalid("Product Id must not be an empty Guid");
+            if (String.IsNullOrEmpty(productName))
+                return Result.Invalid("Product Name must not be null or empty");
+            if (String.IsNullOrEmpty(displayText))
+                return Result.Invalid("Product Display Text must not be null or empty");
 
             // Check product not already added
             if (aggregate.Products.Any(p => p.Name == productName)){
-                throw new InvalidOperationException($"Product Name {productName} has already been added to the contract");
+                return Result.Success();
             }
 
             ContractDomainEvents.VariableValueProductAddedToContractEvent variableValueProductAddedToContractEvent =
                 new(aggregate.AggregateId, aggregate.EstateId, productId, productName, displayText, (Int32)productType);
 
             aggregate.ApplyAndAppend(variableValueProductAddedToContractEvent);
+            
+            return Result.Success();
         }
 
-        public static void Create(this ContractAggregate aggregate,
+        public static Result Create(this ContractAggregate aggregate,
                                   Guid estateId,
                                   Guid operatorId,
                                   String description){
-            Guard.ThrowIfInvalidGuid(estateId, typeof(ArgumentNullException), "Estate Id must not be an empty Guid");
-            Guard.ThrowIfInvalidGuid(operatorId, typeof(ArgumentNullException), "Operator Id must not be an empty Guid");
-            Guard.ThrowIfNullOrEmpty(description, typeof(ArgumentNullException), "Contract description must not be null or empty");
+            
+            if(estateId == Guid.Empty) 
+                return Result.Invalid("Estate Id must not be an empty Guid");
+            if (operatorId == Guid.Empty)
+                return Result.Invalid("Operator Id must not be an empty Guid");
+            if (String.IsNullOrEmpty(description))
+                return Result.Invalid("Contract description must not be null or empty");
 
-            ContractDomainEvents.ContractCreatedEvent contractCreatedEvent = new ContractDomainEvents.ContractCreatedEvent(aggregate.AggregateId, estateId, operatorId, description);
+            ContractDomainEvents.ContractCreatedEvent contractCreatedEvent = new(aggregate.AggregateId, estateId, operatorId, description);
             aggregate.ApplyAndAppend(contractCreatedEvent);
+
+            return Result.Success();
         }
 
-        public static void DisableTransactionFee(this ContractAggregate aggregate,
+        public static Result DisableTransactionFee(this ContractAggregate aggregate,
                                                  Guid productId,
                                                  Guid transactionFeeId){
             if (aggregate.Products.Any(p => p.ContractProductId == productId) == false){
-                throw new InvalidOperationException($"Product Id {productId} is not a valid product on this contract");
+                return Result.Invalid($"Product Id {productId} is not a valid product on this contract");
             }
 
             Product product = aggregate.Products.Single(p => p.ContractProductId == productId);
 
             if (product.TransactionFees.Any(f => f.TransactionFeeId == transactionFeeId) == false){
-                throw new InvalidOperationException($"Transaction Fee Id {transactionFeeId} is not a valid for product {product.Name} on this contract");
+                return Result.Invalid($"Transaction Fee Id {transactionFeeId} is not a valid for product {product.Name} on this contract");
             }
 
-            ContractDomainEvents.TransactionFeeForProductDisabledEvent transactionFeeForProductDisabledEvent = new ContractDomainEvents.TransactionFeeForProductDisabledEvent(aggregate.AggregateId,
-                                                                                                                                    aggregate.EstateId,
-                                                                                                                                    productId,
-                                                                                                                                    transactionFeeId);
+            ContractDomainEvents.TransactionFeeForProductDisabledEvent transactionFeeForProductDisabledEvent = new(aggregate.AggregateId,
+                                                                                                                   aggregate.EstateId,
+                                                                                                                   productId,
+                                                                                                                   transactionFeeId);
 
             aggregate.ApplyAndAppend(transactionFeeForProductDisabledEvent);
+
+            return Result.Success();
         }
 
         /// <summary>

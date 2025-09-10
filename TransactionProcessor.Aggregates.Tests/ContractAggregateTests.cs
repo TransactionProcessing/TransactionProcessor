@@ -1,4 +1,5 @@
 using Shouldly;
+using SimpleResults;
 using TransactionProcessor.Models.Contract;
 using TransactionProcessor.Testing;
 
@@ -18,7 +19,8 @@ namespace TransactionProcessor.Aggregates.Tests
         public void ContractAggregate_Create_IsCreated()
         {
             ContractAggregate aggregate = ContractAggregate.Create(TestData.ContractId);
-            aggregate.Create(TestData.EstateId, TestData.OperatorId, TestData.ContractDescription);
+            Result result = aggregate.Create(TestData.EstateId, TestData.OperatorId, TestData.ContractDescription);
+            result.IsSuccess.ShouldBeTrue();
 
             aggregate.AggregateId.ShouldBe(TestData.ContractId);
             aggregate.EstateId.ShouldBe(TestData.EstateId);
@@ -32,10 +34,10 @@ namespace TransactionProcessor.Aggregates.Tests
         {
             ContractAggregate aggregate = ContractAggregate.Create(TestData.ContractId);
 
-            Should.Throw<ArgumentNullException>(() =>
-                                                {
-                                                    aggregate.Create(Guid.Empty, TestData.OperatorId, TestData.ContractDescription);
-                                                });
+            Result result = aggregate.Create(Guid.Empty, TestData.OperatorId, TestData.ContractDescription);
+            result.IsFailed.ShouldBeTrue();
+            result.Status.ShouldBe(ResultStatus.Invalid);
+            result.Message.ShouldContain("Estate Id must not be an empty Guid");
         }
 
         [Fact]
@@ -43,10 +45,10 @@ namespace TransactionProcessor.Aggregates.Tests
         {
             ContractAggregate aggregate = ContractAggregate.Create(TestData.ContractId);
 
-            Should.Throw<ArgumentNullException>(() =>
-                                                {
-                                                    aggregate.Create(TestData.EstateId, Guid.Empty, TestData.ContractDescription);
-                                                });
+            Result result = aggregate.Create(TestData.EstateId, Guid.Empty, TestData.ContractDescription);
+            result.IsFailed.ShouldBeTrue();
+            result.Status.ShouldBe(ResultStatus.Invalid);
+            result.Message.ShouldContain("Operator Id must not be an empty Guid");
         }
 
         [Theory]
@@ -56,10 +58,10 @@ namespace TransactionProcessor.Aggregates.Tests
         {
             ContractAggregate aggregate = ContractAggregate.Create(TestData.ContractId);
 
-            Should.Throw<ArgumentNullException>(() =>
-                                                {
-                                                    aggregate.Create(TestData.EstateId, TestData.OperatorId, description);
-                                                });
+            Result result = aggregate.Create(TestData.EstateId, TestData.OperatorId, description);
+            result.IsFailed.ShouldBeTrue();
+            result.Status.ShouldBe(ResultStatus.Invalid);
+            result.Message.ShouldContain("Contract description must not be null or empty");
         }
 
         [Fact]
@@ -68,12 +70,13 @@ namespace TransactionProcessor.Aggregates.Tests
             ContractAggregate aggregate = ContractAggregate.Create(TestData.ContractId);
             aggregate.Create(TestData.EstateId, TestData.OperatorId, TestData.ContractDescription);
 
-            aggregate.AddFixedValueProduct(TestData.FixedContractProductId,
+            Result result = aggregate.AddFixedValueProduct(TestData.FixedContractProductId,
                                            TestData.ProductName,
                                            TestData.ProductDisplayText,
                                            TestData.ProductFixedValue,
                                            TestData.ProductTypeMobileTopup);
-            
+            result.IsSuccess.ShouldBeTrue();
+
             List<Product> products = aggregate.GetProducts();
             products.Count.ShouldBe(1);
             Product product= products.Single();
@@ -86,18 +89,37 @@ namespace TransactionProcessor.Aggregates.Tests
         }
 
         [Fact]
-        public void ContractAggregate_AddFixedValueProduct_DuplicateProduct_ErrorThrown()
+        public void ContractAggregate_AddFixedValueProduct_DuplicateProduct_NoErrorThrown()
         {
             ContractAggregate aggregate = ContractAggregate.Create(TestData.ContractId);
             aggregate.Create(TestData.EstateId, TestData.OperatorId, TestData.ContractDescription);
 
             aggregate.AddFixedValueProduct(TestData.FixedContractProductId, TestData.ProductName, TestData.ProductDisplayText, TestData.ProductFixedValue, TestData.ProductTypeMobileTopup);
+            List<Product> products = aggregate.GetProducts();
+            products.Count.ShouldBe(1);
 
-            Should.Throw<InvalidOperationException>(() =>
-                                                {
-                                                    aggregate.AddFixedValueProduct(TestData.FixedContractProductId, TestData.ProductName, TestData.ProductDisplayText, TestData.ProductFixedValue, TestData.ProductTypeMobileTopup);
-                                                });
+            Result result = aggregate.AddFixedValueProduct(TestData.FixedContractProductId, TestData.ProductName, TestData.ProductDisplayText, TestData.ProductFixedValue, TestData.ProductTypeMobileTopup);
+            result.IsSuccess.ShouldBeTrue();
+            products = aggregate.GetProducts();
+            products.Count.ShouldBe(1);
         }
+
+        [Fact]
+        public void ContractAggregate_AddFixedValueProduct_InvalidProductId_ErrorThrown()
+        {
+            ContractAggregate aggregate = ContractAggregate.Create(TestData.ContractId);
+            aggregate.Create(TestData.EstateId, TestData.OperatorId, TestData.ContractDescription);
+
+            Result result = aggregate.AddFixedValueProduct(Guid.Empty, 
+                TestData.ProductName,
+                TestData.ProductDisplayText,
+                TestData.ProductFixedValue,
+                TestData.ProductTypeMobileTopup);
+            result.IsFailed.ShouldBeTrue();
+            result.Status.ShouldBe(ResultStatus.Invalid);
+            result.Message.ShouldContain("Product Id must not be an empty Guid");
+        }
+
 
         [Theory]
         [InlineData(null)]
@@ -107,10 +129,10 @@ namespace TransactionProcessor.Aggregates.Tests
             ContractAggregate aggregate = ContractAggregate.Create(TestData.ContractId);
             aggregate.Create(TestData.EstateId, TestData.OperatorId, TestData.ContractDescription);
             
-            Should.Throw<ArgumentNullException>(() =>
-                                                {
-                                                    aggregate.AddFixedValueProduct(TestData.FixedContractProductId, productName, TestData.ProductDisplayText, TestData.ProductFixedValue, TestData.ProductTypeMobileTopup);
-                                                });
+            Result result = aggregate.AddFixedValueProduct(TestData.FixedContractProductId, productName, TestData.ProductDisplayText, TestData.ProductFixedValue, TestData.ProductTypeMobileTopup);
+            result.IsFailed.ShouldBeTrue();
+            result.Status.ShouldBe(ResultStatus.Invalid);
+            result.Message.ShouldContain("Product Name must not be null or empty");
         }
 
         [Theory]
@@ -121,10 +143,10 @@ namespace TransactionProcessor.Aggregates.Tests
             ContractAggregate aggregate = ContractAggregate.Create(TestData.ContractId);
             aggregate.Create(TestData.EstateId, TestData.OperatorId, TestData.ContractDescription);
 
-            Should.Throw<ArgumentNullException>(() =>
-                                                {
-                                                    aggregate.AddFixedValueProduct(TestData.FixedContractProductId, TestData.ProductName, displayText, TestData.ProductFixedValue,TestData.ProductTypeMobileTopup);
-                                                });
+            Result result = aggregate.AddFixedValueProduct(TestData.FixedContractProductId, TestData.ProductName, displayText, TestData.ProductFixedValue,TestData.ProductTypeMobileTopup);
+            result.IsFailed.ShouldBeTrue();
+            result.Status.ShouldBe(ResultStatus.Invalid);
+            result.Message.ShouldContain("Product Display Text must not be null or empty");
         }
 
         [Theory]
@@ -135,10 +157,10 @@ namespace TransactionProcessor.Aggregates.Tests
             ContractAggregate aggregate = ContractAggregate.Create(TestData.ContractId);
             aggregate.Create(TestData.EstateId, TestData.OperatorId, TestData.ContractDescription);
 
-            Should.Throw<ArgumentOutOfRangeException>(() =>
-                                                {
-                                                    aggregate.AddFixedValueProduct(TestData.FixedContractProductId, TestData.ProductName, TestData.ProductDisplayText, value, TestData.ProductTypeMobileTopup);
-                                                });
+            Result result =  aggregate.AddFixedValueProduct(TestData.FixedContractProductId, TestData.ProductName, TestData.ProductDisplayText, value, TestData.ProductTypeMobileTopup);
+            result.IsFailed.ShouldBeTrue();
+            result.Status.ShouldBe(ResultStatus.Invalid);
+            result.Message.ShouldContain("Product value must not be zero or negative");
         }
 
         [Fact]
@@ -147,8 +169,9 @@ namespace TransactionProcessor.Aggregates.Tests
             ContractAggregate aggregate = ContractAggregate.Create(TestData.ContractId);
             aggregate.Create(TestData.EstateId, TestData.OperatorId, TestData.ContractDescription);
 
-            aggregate.AddVariableValueProduct(TestData.VariableContractProductId, TestData.ProductName, TestData.ProductDisplayText, TestData.ProductTypeMobileTopup);
-            
+            Result result = aggregate.AddVariableValueProduct(TestData.VariableContractProductId, TestData.ProductName, TestData.ProductDisplayText, TestData.ProductTypeMobileTopup);
+            result.IsSuccess.ShouldBeTrue();
+
             List<Product> products = aggregate.GetProducts();
             products.Count.ShouldBe(1);
             Product product = products.Single();
@@ -167,11 +190,28 @@ namespace TransactionProcessor.Aggregates.Tests
             aggregate.Create(TestData.EstateId, TestData.OperatorId, TestData.ContractDescription);
 
             aggregate.AddVariableValueProduct(TestData.VariableContractProductId, TestData.ProductName, TestData.ProductDisplayText, TestData.ProductTypeMobileTopup);
+            List<Product> products = aggregate.GetProducts();
+            products.Count.ShouldBe(1);
+            
+            Result result = aggregate.AddVariableValueProduct(TestData.VariableContractProductId, TestData.ProductName, TestData.ProductDisplayText, TestData.ProductTypeMobileTopup);
+            result.IsSuccess.ShouldBeTrue();
+            products = aggregate.GetProducts();
+            products.Count.ShouldBe(1);
+        }
 
-            Should.Throw<InvalidOperationException>(() =>
-            {
-                aggregate.AddVariableValueProduct(TestData.VariableContractProductId, TestData.ProductName, TestData.ProductDisplayText, TestData.ProductTypeMobileTopup);
-            });
+        [Fact]
+        public void ContractAggregate_AddVariableValueProduct_InvalidProductId_ErrorThrown()
+        {
+            ContractAggregate aggregate = ContractAggregate.Create(TestData.ContractId);
+            aggregate.Create(TestData.EstateId, TestData.OperatorId, TestData.ContractDescription);
+
+            Result result = aggregate.AddVariableValueProduct(Guid.Empty,
+                TestData.ProductName,
+                TestData.ProductDisplayText,
+                TestData.ProductTypeMobileTopup);
+            result.IsFailed.ShouldBeTrue();
+            result.Status.ShouldBe(ResultStatus.Invalid);
+            result.Message.ShouldContain("Product Id must not be an empty Guid");
         }
 
         [Theory]
@@ -182,10 +222,10 @@ namespace TransactionProcessor.Aggregates.Tests
             ContractAggregate aggregate = ContractAggregate.Create(TestData.ContractId);
             aggregate.Create(TestData.EstateId, TestData.OperatorId, TestData.ContractDescription);
 
-            Should.Throw<ArgumentNullException>(() =>
-            {
-                aggregate.AddVariableValueProduct(TestData.VariableContractProductId, productName, TestData.ProductDisplayText, TestData.ProductTypeMobileTopup);
-            });
+            Result result = aggregate.AddVariableValueProduct(TestData.VariableContractProductId, productName, TestData.ProductDisplayText, TestData.ProductTypeMobileTopup);
+            result.IsFailed.ShouldBeTrue();
+            result.Status.ShouldBe(ResultStatus.Invalid);
+            result.Message.ShouldContain("Product Name must not be null or empty");
         }
 
         [Theory]
@@ -196,10 +236,10 @@ namespace TransactionProcessor.Aggregates.Tests
             ContractAggregate aggregate = ContractAggregate.Create(TestData.ContractId);
             aggregate.Create(TestData.EstateId, TestData.OperatorId, TestData.ContractDescription);
 
-            Should.Throw<ArgumentNullException>(() =>
-            {
-                aggregate.AddVariableValueProduct(TestData.VariableContractProductId, TestData.ProductName, displayText, TestData.ProductTypeMobileTopup);
-            });
+            Result result = aggregate.AddVariableValueProduct(TestData.VariableContractProductId, TestData.ProductName, displayText, TestData.ProductTypeMobileTopup);
+            result.IsFailed.ShouldBeTrue();
+            result.Status.ShouldBe(ResultStatus.Invalid);
+            result.Message.ShouldContain("Product Display Text must not be null or empty");
         }
 
         [Fact]
@@ -230,7 +270,8 @@ namespace TransactionProcessor.Aggregates.Tests
             List<Product> products = aggregate.GetProducts();
             Product product = products.Single();
 
-            aggregate.AddTransactionFee(product, TestData.TransactionFeeId, TestData.TransactionFeeDescription, calculationType, feeType, TestData.TransactionFeeValue);
+            Result result = aggregate.AddTransactionFee(product, TestData.TransactionFeeId, TestData.TransactionFeeDescription, calculationType, feeType, TestData.TransactionFeeValue);
+            result.IsSuccess.ShouldBeTrue();
 
             List<Product> productsAfterFeeAdded = aggregate.GetProducts();
             Product productWithFees = productsAfterFeeAdded.Single();
@@ -258,10 +299,9 @@ namespace TransactionProcessor.Aggregates.Tests
             List<Product> products = aggregate.GetProducts();
             Product product = products.Single();
 
-            Should.Throw<ArgumentNullException>(() =>
-                                                {
-                                                    aggregate.AddTransactionFee(product, Guid.Empty, TestData.TransactionFeeDescription, calculationType, feeType, TestData.TransactionFeeValue);
-                                                });
+            var result = aggregate.AddTransactionFee(product, Guid.Empty, TestData.TransactionFeeDescription, calculationType, feeType, TestData.TransactionFeeValue);
+            result.IsFailed.ShouldBeTrue();
+            result.Status.ShouldBe(ResultStatus.Invalid);
         }
 
         [Theory]
@@ -282,10 +322,9 @@ namespace TransactionProcessor.Aggregates.Tests
             List<Product> products = aggregate.GetProducts();
             Product product = products.Single();
 
-            Should.Throw<ArgumentNullException>(() =>
-                                                {
-                                                    aggregate.AddTransactionFee(product, TestData.TransactionFeeId, feeDescription, calculationType, feeType, TestData.TransactionFeeValue);
-                                                });
+            var result = aggregate.AddTransactionFee(product, TestData.TransactionFeeId, feeDescription, calculationType, feeType, TestData.TransactionFeeValue);
+            result.IsFailed.ShouldBeTrue();
+            result.Status.ShouldBe(ResultStatus.Invalid);
         }
 
         [Theory]
@@ -302,7 +341,8 @@ namespace TransactionProcessor.Aggregates.Tests
             List<Product> products = aggregate.GetProducts();
             Product product = products.Single();
 
-            aggregate.AddTransactionFee(product, TestData.TransactionFeeId, TestData.TransactionFeeDescription, calculationType, feeType, TestData.TransactionFeeValue);
+            var result = aggregate.AddTransactionFee(product, TestData.TransactionFeeId, TestData.TransactionFeeDescription, calculationType, feeType, TestData.TransactionFeeValue);
+            result.IsSuccess.ShouldBeTrue();
 
             List<Product> productsAfterFeeAdded = aggregate.GetProducts();
             Product productWithFees = productsAfterFeeAdded.Single();
@@ -330,10 +370,9 @@ namespace TransactionProcessor.Aggregates.Tests
             List<Product> products = aggregate.GetProducts();
             Product product = products.Single();
 
-            Should.Throw<ArgumentNullException>(() =>
-                                                {
-                                                    aggregate.AddTransactionFee(product, Guid.Empty, TestData.TransactionFeeDescription, calculationType, feeType, TestData.TransactionFeeValue);
-                                                });
+            var result = aggregate.AddTransactionFee(product, Guid.Empty, TestData.TransactionFeeDescription, calculationType, feeType, TestData.TransactionFeeValue);
+            result.IsFailed.ShouldBeTrue();
+            result.Status.ShouldBe(ResultStatus.Invalid);
         }
 
         [Theory]
@@ -354,10 +393,9 @@ namespace TransactionProcessor.Aggregates.Tests
             List<Product> products = aggregate.GetProducts();
             Product product = products.Single();
 
-            Should.Throw<ArgumentNullException>(() =>
-                                                {
-                                                    aggregate.AddTransactionFee(product, TestData.TransactionFeeId, feeDescription, calculationType, feeType, TestData.TransactionFeeValue);
-                                                });
+            var result = aggregate.AddTransactionFee(product, TestData.TransactionFeeId, feeDescription, calculationType, feeType, TestData.TransactionFeeValue);
+            result.IsFailed.ShouldBeTrue();
+            result.Status.ShouldBe(ResultStatus.Invalid);
         }
 
         [Theory]
@@ -370,10 +408,9 @@ namespace TransactionProcessor.Aggregates.Tests
             ContractAggregate aggregate = ContractAggregate.Create(TestData.ContractId);
             aggregate.Create(TestData.EstateId, TestData.OperatorId, TestData.ContractDescription);
 
-            Should.Throw<ArgumentNullException>(() =>
-                                                {
-                                                    aggregate.AddTransactionFee(null, TestData.TransactionFeeId, TestData.TransactionFeeDescription, calculationType, feeType, TestData.TransactionFeeValue);
-                                                });
+            var result = aggregate.AddTransactionFee(null, TestData.TransactionFeeId, TestData.TransactionFeeDescription, calculationType, feeType, TestData.TransactionFeeValue);
+            result.IsFailed.ShouldBeTrue();
+            result.Status.ShouldBe(ResultStatus.Invalid);
         }
 
         [Theory]
@@ -387,10 +424,9 @@ namespace TransactionProcessor.Aggregates.Tests
             aggregate.Create(TestData.EstateId, TestData.OperatorId, TestData.ContractDescription);
             aggregate.AddFixedValueProduct(TestData.FixedContractProductId,TestData.ProductName, TestData.ProductDisplayText, TestData.ProductFixedValue, TestData.ProductTypeMobileTopup);
 
-            Should.Throw<InvalidOperationException>(() =>
-                                                {
-                                                    aggregate.AddTransactionFee(new Product(), TestData.TransactionFeeId, TestData.TransactionFeeDescription, calculationType, feeType,TestData.TransactionFeeValue);
-                                                });
+            var result =  aggregate.AddTransactionFee(new Product(), TestData.TransactionFeeId, TestData.TransactionFeeDescription, calculationType, feeType,TestData.TransactionFeeValue);
+            result.IsFailed.ShouldBeTrue();
+            result.Status.ShouldBe(ResultStatus.Invalid);
         }
 
         [Theory]
@@ -405,10 +441,9 @@ namespace TransactionProcessor.Aggregates.Tests
             List<Product> products = aggregate.GetProducts();
             Product product = products.Single();
 
-            Should.Throw<ArgumentOutOfRangeException>(() =>
-                                                      {
-                                                          aggregate.AddTransactionFee(product, TestData.TransactionFeeId, TestData.TransactionFeeDescription, (CalculationType)99, feeType, TestData.TransactionFeeValue);
-                                                      });
+            var result = aggregate.AddTransactionFee(product, TestData.TransactionFeeId, TestData.TransactionFeeDescription, (CalculationType)99, feeType, TestData.TransactionFeeValue);
+            result.IsFailed.ShouldBeTrue();
+            result.Status.ShouldBe(ResultStatus.Invalid);
         }
 
         [Theory]
@@ -423,10 +458,9 @@ namespace TransactionProcessor.Aggregates.Tests
             List<Product> products = aggregate.GetProducts();
             Product product = products.Single();
 
-            Should.Throw<ArgumentOutOfRangeException>(() =>
-                                                      {
-                                                          aggregate.AddTransactionFee(product, TestData.TransactionFeeId, TestData.TransactionFeeDescription, calculationType, (FeeType)99, TestData.TransactionFeeValue);
-                                                      });
+            var result = aggregate.AddTransactionFee(product, TestData.TransactionFeeId, TestData.TransactionFeeDescription, calculationType, (FeeType)99, TestData.TransactionFeeValue);
+            result.IsFailed.ShouldBeTrue();
+            result.Status.ShouldBe(ResultStatus.Invalid);
         }
 
         [Theory]
@@ -447,10 +481,9 @@ namespace TransactionProcessor.Aggregates.Tests
             List<Product> products = aggregate.GetProducts();
             Product product = products.Single();
 
-            Should.Throw<ArgumentOutOfRangeException>(() =>
-                                                      {
-                                                          aggregate.AddTransactionFee(product, TestData.TransactionFeeId, TestData.TransactionFeeDescription, calculationType, feeType, feeValue);
-                                                      });
+            var result = aggregate.AddTransactionFee(product, TestData.TransactionFeeId, TestData.TransactionFeeDescription, calculationType, feeType, feeValue);
+            result.IsFailed.ShouldBeTrue();
+            result.Status.ShouldBe(ResultStatus.Invalid);
         }
 
         [Theory]
@@ -471,10 +504,10 @@ namespace TransactionProcessor.Aggregates.Tests
             List<Product> products = aggregate.GetProducts();
             Product product = products.Single();
 
-            Should.Throw<ArgumentOutOfRangeException>(() =>
-                                                      {
-                                                          aggregate.AddTransactionFee(product, TestData.TransactionFeeId, TestData.TransactionFeeDescription, calculationType,feeType, feeValue);
-                                                      });
+            var result =  aggregate.AddTransactionFee(product, TestData.TransactionFeeId, TestData.TransactionFeeDescription, calculationType,feeType, feeValue);
+            result.IsFailed.ShouldBeTrue();
+            result.Status.ShouldBe(ResultStatus.Invalid);
+
         }
 
         [Theory]
@@ -489,10 +522,9 @@ namespace TransactionProcessor.Aggregates.Tests
             List<Product> products = aggregate.GetProducts();
             Product product = products.Single();
 
-            Should.Throw<ArgumentOutOfRangeException>(() =>
-                                                      {
-                                                          aggregate.AddTransactionFee(product, TestData.TransactionFeeId, TestData.TransactionFeeDescription, (CalculationType)99, feeType, TestData.TransactionFeeValue);
-                                                      });
+            var result = aggregate.AddTransactionFee(product, TestData.TransactionFeeId, TestData.TransactionFeeDescription, (CalculationType)99, feeType, TestData.TransactionFeeValue);
+            result.IsFailed.ShouldBeTrue();
+            result.Status.ShouldBe(ResultStatus.Invalid);
         }
 
         [Theory]
@@ -507,10 +539,9 @@ namespace TransactionProcessor.Aggregates.Tests
             List<Product> products = aggregate.GetProducts();
             Product product = products.Single();
 
-            Should.Throw<ArgumentOutOfRangeException>(() =>
-                                                      {
-                                                          aggregate.AddTransactionFee(product, TestData.TransactionFeeId, TestData.TransactionFeeDescription, calculationType,(FeeType)99, TestData.TransactionFeeValue);
-                                                      });
+            var result = aggregate.AddTransactionFee(product, TestData.TransactionFeeId, TestData.TransactionFeeDescription, calculationType,(FeeType)99, TestData.TransactionFeeValue);
+            result.IsFailed.ShouldBeTrue();
+            result.Status.ShouldBe(ResultStatus.Invalid);
         }
 
         [Theory]
@@ -535,7 +566,8 @@ namespace TransactionProcessor.Aggregates.Tests
             ContractProductTransactionFee? fee = productWithFees.TransactionFees.Single();
             fee.IsEnabled.ShouldBeTrue();
 
-            aggregate.DisableTransactionFee(TestData.VariableContractProductId, TestData.TransactionFeeId);
+            Result result = aggregate.DisableTransactionFee(TestData.VariableContractProductId, TestData.TransactionFeeId);
+            result.IsSuccess.ShouldBeTrue();
 
             productsAfterFeeAdded = aggregate.GetProducts();
             productWithFees = productsAfterFeeAdded.Single();
@@ -545,15 +577,14 @@ namespace TransactionProcessor.Aggregates.Tests
         }
 
         [Fact]
-        public void ContractAggregate_DisableTransactionFee_ProductNotFound_ErrorThrown()
-        {
+        public void ContractAggregate_DisableTransactionFee_ProductNotFound_ErrorThrown() {
             ContractAggregate aggregate = ContractAggregate.Create(TestData.ContractId);
             aggregate.Create(TestData.EstateId, TestData.OperatorId, TestData.ContractDescription);
 
-            Should.Throw<InvalidOperationException>(() =>
-                                                    {
-                                                        aggregate.DisableTransactionFee(TestData.VariableContractProductId, TestData.TransactionFeeId);
-                                                    });
+            Result result = aggregate.DisableTransactionFee(TestData.VariableContractProductId, TestData.TransactionFeeId);
+
+            result.IsFailed.ShouldBeTrue();
+            result.Status.ShouldBe(ResultStatus.Invalid);
         }
 
         [Fact]
@@ -563,10 +594,9 @@ namespace TransactionProcessor.Aggregates.Tests
             aggregate.Create(TestData.EstateId, TestData.OperatorId, TestData.ContractDescription);
             aggregate.AddVariableValueProduct(TestData.VariableContractProductId, TestData.ProductName, TestData.ProductDisplayText, TestData.ProductTypeMobileTopup);
             
-            Should.Throw<InvalidOperationException>(() =>
-                                                    {
-                                                        aggregate.DisableTransactionFee(TestData.VariableContractProductId, TestData.TransactionFeeId);
-                                                    });
+            Result result = aggregate.DisableTransactionFee(TestData.VariableContractProductId, TestData.TransactionFeeId);
+            result.IsFailed.ShouldBeTrue();
+            result.Status.ShouldBe(ResultStatus.Invalid);
         }
     }
 }

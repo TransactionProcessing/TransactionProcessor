@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net.WebSockets;
 using System.Threading;
 using System.Threading.Tasks;
 using Newtonsoft.Json.Linq;
@@ -68,14 +69,12 @@ namespace TransactionProcessor.BusinessLogic.Services
                     return Result.Forbidden($"Contract Id [{command.ContractId}] must be created to add products");
                 }
 
-                if (command.RequestDTO.Value.HasValue) {
-                    contractAggregate.AddFixedValueProduct(command.ProductId, command.RequestDTO.ProductName,
-                        command.RequestDTO.DisplayText, command.RequestDTO.Value.Value, productType);
-                }
-                else {
-                    contractAggregate.AddVariableValueProduct(command.ProductId, command.RequestDTO.ProductName,
-                        command.RequestDTO.DisplayText, productType);
-                }
+                Result stateResult = command.RequestDTO.Value.HasValue switch {
+                    true => contractAggregate.AddFixedValueProduct(command.ProductId, command.RequestDTO.ProductName, command.RequestDTO.DisplayText, command.RequestDTO.Value.Value, productType),
+                    _ => contractAggregate.AddVariableValueProduct(command.ProductId, command.RequestDTO.ProductName, command.RequestDTO.DisplayText, productType)
+                };
+                if (stateResult.IsFailed)
+                    return ResultHelpers.CreateFailure(stateResult);
 
                 Result saveResult = await this.AggregateService.Save(contractAggregate, cancellationToken);
                 if (saveResult.IsFailed)
@@ -113,7 +112,9 @@ namespace TransactionProcessor.BusinessLogic.Services
                     throw new InvalidOperationException($"Product Id [{command.ProductId}] not added to contract [{contractAggregate.Description}]");
                 }
 
-                contractAggregate.AddTransactionFee(product, command.TransactionFeeId, command.RequestDTO.Description, calculationType, feeType, command.RequestDTO.Value);
+                Result stateResult = contractAggregate.AddTransactionFee(product, command.TransactionFeeId, command.RequestDTO.Description, calculationType, feeType, command.RequestDTO.Value);
+                if (stateResult.IsFailed)
+                    return ResultHelpers.CreateFailure(stateResult);
 
                 Result saveResult = await this.AggregateService.Save(contractAggregate, cancellationToken);
                 if (saveResult.IsFailed)
@@ -138,8 +139,10 @@ namespace TransactionProcessor.BusinessLogic.Services
 
                 ContractAggregate contractAggregate = contractResult.Data;
 
-                contractAggregate.DisableTransactionFee(command.ProductId, command.TransactionFeeId);
-                
+                Result stateResult = contractAggregate.DisableTransactionFee(command.ProductId, command.TransactionFeeId);
+                if (stateResult.IsFailed)
+                    return ResultHelpers.CreateFailure(stateResult);
+
                 Result saveResult = await this.AggregateService.Save(contractAggregate, cancellationToken);
                 if (saveResult.IsFailed)
                     return ResultHelpers.CreateFailure(saveResult);
@@ -200,7 +203,9 @@ namespace TransactionProcessor.BusinessLogic.Services
                 {
                     return Result.Forbidden($"Contract Id [{command.ContractId}] already created for estate [{estate.Name}]");
                 }
-                contractAggregate.Create(command.EstateId, command.RequestDTO.OperatorId, command.RequestDTO.Description);
+                Result stateResult = contractAggregate.Create(command.EstateId, command.RequestDTO.OperatorId, command.RequestDTO.Description);
+                if (stateResult.IsFailed)
+                    return ResultHelpers.CreateFailure(stateResult);
 
                 Result saveResult = await this.AggregateService.Save(contractAggregate, cancellationToken);
                 if (saveResult.IsFailed)
