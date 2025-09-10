@@ -5,6 +5,7 @@ using Shared.DomainDrivenDesign.EventSourcing;
 using Shared.EventStore.Aggregate;
 using Shared.General;
 using Shared.ValueObjects;
+using SimpleResults;
 using TransactionProcessor.DomainEvents;
 using TransactionProcessor.Models.Merchant;
 
@@ -12,24 +13,28 @@ namespace TransactionProcessor.Aggregates{
     public static class MerchantDepositListAggregateExtensions{
         #region Methods
 
-        public static void Create(this MerchantDepositListAggregate aggregate,
+        public static Result Create(this MerchantDepositListAggregate aggregate,
                                   MerchantAggregate merchantAggregate,
                                   DateTime dateCreated){
-            aggregate.EnsureMerchantHasBeenCreated(merchantAggregate);
+            Result result = aggregate.EnsureMerchantHasBeenCreated(merchantAggregate);
+            if (result.IsFailed)
+                return result;
+
             // Ensure this aggregate has not already been created
             if (aggregate.IsCreated)
-                return;
+                return Result.Success();
 
-            MerchantDomainEvents.MerchantDepositListCreatedEvent merchantDepositListCreatedEvent =
-                new MerchantDomainEvents.MerchantDepositListCreatedEvent(aggregate.AggregateId, merchantAggregate.EstateId, dateCreated);
+            MerchantDomainEvents.MerchantDepositListCreatedEvent merchantDepositListCreatedEvent = new(aggregate.AggregateId, merchantAggregate.EstateId, dateCreated);
 
             aggregate.ApplyAndAppend(merchantDepositListCreatedEvent);
+
+            return Result.Success();
         }
 
-        public static List<TransactionProcessor.Models.Merchant.Deposit> GetDeposits(this MerchantDepositListAggregate aggregate){
-            List<TransactionProcessor.Models.Merchant.Deposit> deposits = new ();
+        public static List<Deposit> GetDeposits(this MerchantDepositListAggregate aggregate){
+            List<Deposit> deposits = new ();
             if (aggregate.Deposits.Any()){
-                aggregate.Deposits.ForEach(d => deposits.Add(new TransactionProcessor.Models.Merchant.Deposit {
+                aggregate.Deposits.ForEach(d => deposits.Add(new Deposit {
                     Amount = d.Amount,
                     DepositDateTime = d.DepositDateTime,
                     DepositId = d.DepositId,
@@ -54,42 +59,58 @@ namespace TransactionProcessor.Aggregates{
             return withdrawals;
         }
 
-        public static void MakeDeposit(this MerchantDepositListAggregate aggregate,
+        public static Result MakeDeposit(this MerchantDepositListAggregate aggregate,
                                        MerchantDepositSource source,
                                        String reference,
                                        DateTime depositDateTime,
                                        PositiveMoney amount){
-            String depositData = $"{depositDateTime.ToString("yyyyMMdd hh:mm:ss.fff")}-{reference}-{amount:N2}-{source}";
+            String depositData = $"{depositDateTime:yyyyMMdd hh:mm:ss.fff}-{reference}-{amount:N2}-{source}";
             Guid depositId = aggregate.GenerateGuidFromString(depositData);
 
-            aggregate.EnsureMerchantDepositListHasBeenCreated();
-            aggregate.EnsureNotDuplicateDeposit(depositId);
+            Result result = aggregate.EnsureMerchantDepositListHasBeenCreated();
+            if (result.IsFailed)
+                return result;
+
+            result = aggregate.EnsureNotDuplicateDeposit(depositId);
+            if (result.IsFailed)
+                return result;
+
             // TODO: Change amount to a value object (PositiveAmount VO)
-            aggregate.EnsureDepositSourceHasBeenSet(source);
+            result = aggregate.EnsureDepositSourceHasBeenSet(source);
+            if (result.IsFailed)
+                return result;
 
             if (source == MerchantDepositSource.Manual){
-                MerchantDomainEvents.ManualDepositMadeEvent manualDepositMadeEvent =
-                    new MerchantDomainEvents.ManualDepositMadeEvent(aggregate.AggregateId, aggregate.EstateId, depositId, reference, depositDateTime, amount.Value);
+                MerchantDomainEvents.ManualDepositMadeEvent manualDepositMadeEvent = new(aggregate.AggregateId, aggregate.EstateId, depositId, reference, depositDateTime, amount.Value);
                 aggregate.ApplyAndAppend(manualDepositMadeEvent);
+                return Result.Success();
             }
             else if (source == MerchantDepositSource.Automatic){
-                MerchantDomainEvents.AutomaticDepositMadeEvent automaticDepositMadeEvent =
-                    new MerchantDomainEvents.AutomaticDepositMadeEvent(aggregate.AggregateId, aggregate.EstateId, depositId, reference, depositDateTime, amount.Value);
+                MerchantDomainEvents.AutomaticDepositMadeEvent automaticDepositMadeEvent = new(aggregate.AggregateId, aggregate.EstateId, depositId, reference, depositDateTime, amount.Value);
                 aggregate.ApplyAndAppend(automaticDepositMadeEvent);
+                return Result.Success();
             }
+            
+            return Result.Invalid("Invalid Deposit Source");
         }
 
-        public static void MakeWithdrawal(this MerchantDepositListAggregate aggregate,
+        public static Result MakeWithdrawal(this MerchantDepositListAggregate aggregate,
                                           DateTime withdrawalDateTime,
                                           PositiveMoney amount){
             String depositData = $"{withdrawalDateTime.ToString("yyyyMMdd hh:mm:ss.fff")}-{amount:N2}";
             Guid withdrawalId = aggregate.GenerateGuidFromString(depositData);
 
-            aggregate.EnsureMerchantDepositListHasBeenCreated();
-            aggregate.EnsureNotDuplicateWithdrawal(withdrawalId);
+            Result result = aggregate.EnsureMerchantDepositListHasBeenCreated();
+            if (result.IsFailed)
+                return result;
+            result = aggregate.EnsureNotDuplicateWithdrawal(withdrawalId);
+            if (result.IsFailed)
+                return result;
 
             MerchantDomainEvents.WithdrawalMadeEvent withdrawalMadeEvent = new(aggregate.AggregateId, aggregate.EstateId, withdrawalId, withdrawalDateTime, amount.Value);
             aggregate.ApplyAndAppend(withdrawalMadeEvent);
+
+            return Result.Success();
         }
 
         public static void PlayEvent(this MerchantDepositListAggregate aggregate, MerchantDomainEvents.MerchantDepositListCreatedEvent merchantDepositListCreatedEvent){
@@ -122,34 +143,39 @@ namespace TransactionProcessor.Aggregates{
             aggregate.Withdrawals.Add(withdrawal);
         }
 
-        private static void EnsureDepositSourceHasBeenSet(this MerchantDepositListAggregate aggregate, MerchantDepositSource merchantDepositSource){
+        private static Result EnsureDepositSourceHasBeenSet(this MerchantDepositListAggregate aggregate, MerchantDepositSource merchantDepositSource){
             if (merchantDepositSource == MerchantDepositSource.NotSet){
-                throw new InvalidOperationException("Merchant deposit source must be set");
+                return Result.Invalid("Merchant deposit source must be set");
             }
+            return Result.Success();
         }
 
-        private static void EnsureMerchantDepositListHasBeenCreated(this MerchantDepositListAggregate aggregate){
+        private static Result EnsureMerchantDepositListHasBeenCreated(this MerchantDepositListAggregate aggregate){
             if (aggregate.IsCreated == false){
-                throw new InvalidOperationException("Merchant Deposit List has not been created");
+                return Result.Invalid("Merchant Deposit List has not been created");
             }
+            return Result.Success();
         }
 
-        private static void EnsureMerchantHasBeenCreated(this MerchantDepositListAggregate aggregate, MerchantAggregate merchantAggregate){
+        private static Result EnsureMerchantHasBeenCreated(this MerchantDepositListAggregate aggregate, MerchantAggregate merchantAggregate){
             if (merchantAggregate.IsCreated == false){
-                throw new InvalidOperationException("Merchant has not been created");
+                return Result.Invalid("Merchant has not been created");
             }
+            return Result.Success();
         }
 
-        private static void EnsureNotDuplicateDeposit(this MerchantDepositListAggregate aggregate, Guid depositId){
+        private static Result EnsureNotDuplicateDeposit(this MerchantDepositListAggregate aggregate, Guid depositId){
             if (aggregate.Deposits.Any(d => d.DepositId == depositId)){
-                throw new InvalidOperationException($"Deposit Id [{depositId}] already made for merchant [{aggregate.AggregateId}]");
+                return Result.Invalid($"Deposit Id [{depositId}] already made for merchant [{aggregate.AggregateId}]");
             }
+            return Result.Success();
         }
 
-        private static void EnsureNotDuplicateWithdrawal(this MerchantDepositListAggregate aggregate, Guid withdrawalId){
+        private static Result EnsureNotDuplicateWithdrawal(this MerchantDepositListAggregate aggregate, Guid withdrawalId){
             if (aggregate.Withdrawals.Any(d => d.WithdrawalId == withdrawalId)){
-                throw new InvalidOperationException($"Withdrawal Id [{withdrawalId}] already made for merchant [{aggregate.AggregateId}]");
+                return Result.Invalid($"Withdrawal Id [{withdrawalId}] already made for merchant [{aggregate.AggregateId}]");
             }
+            return Result.Success();
         }
 
         private static Guid GenerateGuidFromString(this MerchantDepositListAggregate aggregate, String input){
