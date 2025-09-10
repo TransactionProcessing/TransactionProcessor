@@ -1,4 +1,5 @@
 using Shouldly;
+using SimpleResults;
 using TransactionProcessor.Testing;
 
 namespace TransactionProcessor.Aggregates.Tests;
@@ -15,7 +16,8 @@ public class FloatActivityAggregateTests {
     [Fact]
     public void FloatActivityAggregate_RecordCreditPurchase_PurchaseRecorded() {
         FloatActivityAggregate aggregate = FloatActivityAggregate.Create(TestData.FloatAggregateId);
-        aggregate.RecordCreditPurchase(TestData.EstateId, TestData.CreditPurchasedDateTime, TestData.FloatCreditAmount, TestData.FloatCreditId);
+        Result result = aggregate.RecordCreditPurchase(TestData.EstateId, TestData.CreditPurchasedDateTime, TestData.FloatCreditAmount, TestData.FloatCreditId);
+        result.IsSuccess.ShouldBeTrue();
         aggregate.CreditCount.ShouldBe(1);
         aggregate.Credits.Contains(TestData.FloatCreditId).ShouldBeTrue();
     }
@@ -26,7 +28,8 @@ public class FloatActivityAggregateTests {
         FloatActivityAggregate aggregate = FloatActivityAggregate.Create(TestData.FloatAggregateId);
         aggregate.RecordCreditPurchase(TestData.EstateId, TestData.CreditPurchasedDateTime, TestData.FloatCreditAmount, TestData.FloatCreditId);
         aggregate.CreditCount.ShouldBe(1);
-        aggregate.RecordCreditPurchase(TestData.EstateId, TestData.CreditPurchasedDateTime, TestData.FloatCreditAmount, TestData.FloatCreditId);
+        Result result = aggregate.RecordCreditPurchase(TestData.EstateId, TestData.CreditPurchasedDateTime, TestData.FloatCreditAmount, TestData.FloatCreditId);
+        result.IsSuccess.ShouldBeTrue();
         aggregate.CreditCount.ShouldBe(1);
     }
 
@@ -34,7 +37,8 @@ public class FloatActivityAggregateTests {
     public void FloatActivityAggregate_RecordTransactionAgainstFloat_TransactionRecorded()
     {
         FloatActivityAggregate aggregate = FloatActivityAggregate.Create(TestData.FloatAggregateId);
-        aggregate.RecordTransactionAgainstFloat(TestData.EstateId, TestData.TransactionDateTime, TestData.TransactionAmount, TestData.TransactionId);
+        Result result = aggregate.RecordTransactionAgainstFloat(TestData.EstateId, TestData.TransactionDateTime, TestData.TransactionAmount, TestData.TransactionId);
+        result.IsSuccess.ShouldBeTrue();
         aggregate.DebitCount.ShouldBe(1);
         aggregate.Debits.Contains(TestData.TransactionId).ShouldBeTrue();
     }
@@ -45,7 +49,8 @@ public class FloatActivityAggregateTests {
         FloatActivityAggregate aggregate = FloatActivityAggregate.Create(TestData.FloatAggregateId);
         aggregate.RecordTransactionAgainstFloat(TestData.EstateId, TestData.TransactionDateTime, TestData.TransactionAmount, TestData.TransactionId);
         aggregate.DebitCount.ShouldBe(1);
-        aggregate.RecordTransactionAgainstFloat(TestData.EstateId, TestData.TransactionDateTime, TestData.TransactionAmount, TestData.TransactionId);
+        Result result = aggregate.RecordTransactionAgainstFloat(TestData.EstateId, TestData.TransactionDateTime, TestData.TransactionAmount, TestData.TransactionId);
+        result.IsSuccess.ShouldBeTrue();
         aggregate.DebitCount.ShouldBe(1);
     }
 }
