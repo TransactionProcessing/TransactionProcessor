@@ -90,7 +90,9 @@ namespace TransactionProcessor.BusinessLogic.Services
 
                 FloatAggregate floatAggregate = getFloatResult.Data;
 
-                floatAggregate.CreateFloat(command.EstateId, command.ContractId, command.ProductId, command.CreateDateTime);
+                Result stateResult = floatAggregate.CreateFloat(command.EstateId, command.ContractId, command.ProductId, command.CreateDateTime);
+                if (stateResult.IsFailed)
+                    return ResultHelpers.CreateFailure(stateResult);
 
                 Result saveResult = await this.AggregateService.Save(floatAggregate, cancellationToken);
                 if (saveResult.IsFailed)
@@ -112,7 +114,9 @@ namespace TransactionProcessor.BusinessLogic.Services
 
                 FloatAggregate floatAggregate = getFloatResult.Data;
 
-                floatAggregate.RecordCreditPurchase(command.PurchaseDateTime, command.CreditAmount, command.CostPrice);
+                Result stateResult = floatAggregate.RecordCreditPurchase(command.PurchaseDateTime, command.CreditAmount, command.CostPrice);
+                if (stateResult.IsFailed)
+                    return ResultHelpers.CreateFailure(stateResult);
 
                 Result saveResult = await this.AggregateService.Save(floatAggregate, cancellationToken);
                 if (saveResult.IsFailed)

@@ -2,6 +2,7 @@
 using Shared.DomainDrivenDesign.EventSourcing;
 using Shared.EventStore.Aggregate;
 using Shared.General;
+using SimpleResults;
 using TransactionProcessor.DomainEvents;
 
 namespace TransactionProcessor.Aggregates
@@ -26,29 +27,41 @@ namespace TransactionProcessor.Aggregates
             aggregate.Credits.Add((domainEvent.CreditPurchasedDateTime, domainEvent.Amount, domainEvent.CostPrice));
         }
 
-        public static void CreateFloat(this FloatAggregate aggregate,
+        public static Result CreateFloat(this FloatAggregate aggregate,
                                                Guid estateId,
                                                Guid contractId,
                                                Guid productId,
                                                DateTime createdDateTime)
         {
-            aggregate.ValidateFloatIsNotAlreadyCreated();
+            if (aggregate.IsCreated) {
+                return Result.Success(); // Idempotent
+            }
 
             FloatDomainEvents.FloatCreatedForContractProductEvent floatCreatedForContractProductEvent = new(aggregate.AggregateId,
                 estateId, contractId, productId, createdDateTime);
 
             aggregate.ApplyAndAppend(floatCreatedForContractProductEvent);
+
+            return Result.Success();
         }
 
-        public static void RecordCreditPurchase(this FloatAggregate aggregate, DateTime creditPurchasedDate, Decimal amount, Decimal costPrice)
+        public static Result RecordCreditPurchase(this FloatAggregate aggregate, DateTime creditPurchasedDate, Decimal amount, Decimal costPrice)
         {
-            aggregate.ValidateFloatIsAlreadyCreated();
-            aggregate.ValidateCreditIsNotADuplicate(creditPurchasedDate, amount, costPrice);
+            Result result = aggregate.ValidateFloatIsAlreadyCreated();
+            if (result.IsFailed) {
+                return result;
+            }
+            result = aggregate.ValidateCreditIsNotADuplicate(creditPurchasedDate, amount, costPrice);
+            if (result.IsFailed) {
+                return result;
+            }
 
             FloatDomainEvents.FloatCreditPurchasedEvent floatCreditPurchasedEvent = new(aggregate.AggregateId, aggregate.EstateId,
                                                                                                 creditPurchasedDate, amount, costPrice);
 
             aggregate.ApplyAndAppend(floatCreditPurchasedEvent);
+
+            return Result.Success();
         }
 
         public static Decimal GetUnitCostPrice(this FloatAggregate aggregate)
@@ -56,29 +69,24 @@ namespace TransactionProcessor.Aggregates
             return Math.Round(aggregate.UnitCostPrice, 4);
         }
 
-        public static void ValidateFloatIsAlreadyCreated(this FloatAggregate aggregate)
-        {
-            if (aggregate.IsCreated == false)
-            {
-                throw new InvalidOperationException($"Float Aggregate Id {aggregate.AggregateId} must be created to perform this operation");
+        public static Result ValidateFloatIsAlreadyCreated(this FloatAggregate aggregate) {
+            if (aggregate.IsCreated == false) {
+                return Result.Invalid($"Float Aggregate Id {aggregate.AggregateId} must be created to perform this operation");
             }
+
+            return Result.Success();
         }
 
-        public static void ValidateFloatIsNotAlreadyCreated(this FloatAggregate aggregate)
-        {
-            if (aggregate.IsCreated == true)
-            {
-                throw new InvalidOperationException($"Float Aggregate Id {aggregate.AggregateId} must not be created to perform this operation");
-            }
-        }
-
-        public static void ValidateCreditIsNotADuplicate(this FloatAggregate aggregate, DateTime creditPurchasedDate, Decimal amount, Decimal costPrice)
-        {
+        public static Result ValidateCreditIsNotADuplicate(this FloatAggregate aggregate,
+                                                           DateTime creditPurchasedDate,
+                                                           Decimal amount,
+                                                           Decimal costPrice) {
             Boolean isDuplicate = aggregate.Credits.Any(c => c.costPrice == costPrice && c.amount == amount && c.creditPurchasedDate == creditPurchasedDate);
-            if (isDuplicate == true)
-            {
-                throw new InvalidOperationException($"Float Aggregate Id {aggregate.AggregateId} already has a credit with this information recorded");
+            if (isDuplicate) {
+                return Result.Invalid($"Float Aggregate Id {aggregate.AggregateId} already has a credit with this information recorded");
             }
+
+            return Result.Success();
         }
     }
 
