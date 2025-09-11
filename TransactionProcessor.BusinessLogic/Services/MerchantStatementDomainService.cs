@@ -149,10 +149,14 @@ namespace TransactionProcessor.BusinessLogic.Services
                                                                                                                                                                              sl) => new { Count = acc.Count + 1, TotalAmount = acc.TotalAmount + sl.Amount });
                     var withdrawalsResult = merchantStatementForDateAggregate.GetStatementLines().Where(sl => sl.LineType == 4).Aggregate(new { Count = 0, TotalAmount = 0m }, (acc,
                                                                                                                                                                                 sl) => new { Count = acc.Count + 1, TotalAmount = acc.TotalAmount + sl.Amount });
-                    merchantStatementAggregate.AddDailySummaryRecord(merchantStatementForDateAggregate.ActivityDate, transactionsResult.Count, transactionsResult.TotalAmount, settledFeesResult.Count, settledFeesResult.TotalAmount, depositsResult.Count, depositsResult.TotalAmount, withdrawalsResult.Count, withdrawalsResult.TotalAmount);
+                    Result result = merchantStatementAggregate.AddDailySummaryRecord(merchantStatementForDateAggregate.ActivityDate, transactionsResult.Count, transactionsResult.TotalAmount, settledFeesResult.Count, settledFeesResult.TotalAmount, depositsResult.Count, depositsResult.TotalAmount, withdrawalsResult.Count, withdrawalsResult.TotalAmount);
+                    if (result.IsFailed)
+                        return ResultHelpers.CreateFailure(result);
                 }
 
-                merchantStatementAggregate.GenerateStatement(DateTime.Now);
+                Result stateResult = merchantStatementAggregate.GenerateStatement(DateTime.Now);
+                if (stateResult.IsFailed)
+                    return ResultHelpers.CreateFailure(stateResult);
 
                 Result saveResult = await this.AggregateService.Save(merchantStatementAggregate, cancellationToken);
                 if (saveResult.IsFailed)
@@ -210,17 +214,19 @@ namespace TransactionProcessor.BusinessLogic.Services
 
                 sendEmailRequest.MessageId = messageId;
 
-                var getTokenResult = await Helpers.GetToken(this.TokenResponse, this.SecurityServiceClient, cancellationToken);
+                Result<TokenResponse> getTokenResult = await Helpers.GetToken(this.TokenResponse, this.SecurityServiceClient, cancellationToken);
                 if (getTokenResult.IsFailed)
                     return ResultHelpers.CreateFailure(getTokenResult);
                 this.TokenResponse = getTokenResult.Data;
 
-                var sendEmailResponseResult = await this.MessagingServiceClient.SendEmail(this.TokenResponse.AccessToken, sendEmailRequest, cancellationToken);
+                Result sendEmailResponseResult = await this.MessagingServiceClient.SendEmail(this.TokenResponse.AccessToken, sendEmailRequest, cancellationToken);
                 //if (sendEmailResponseResult.IsFailed) {
                 //    // TODO: record a failed event??
                 //}
 
-                merchantStatementAggregate.EmailStatement(DateTime.Now, messageId);
+                Result stateResult = merchantStatementAggregate.EmailStatement(DateTime.Now, messageId);
+                if (stateResult.IsFailed)
+                    return ResultHelpers.CreateFailure(stateResult);
 
                 Result saveResult = await this.AggregateService.Save(merchantStatementAggregate, cancellationToken);
                 if (saveResult.IsFailed)
@@ -264,7 +270,9 @@ namespace TransactionProcessor.BusinessLogic.Services
 
                 String base64 = EncodeTo64(html);
 
-                merchantStatementAggregate.BuildStatement(DateTime.Now, base64);
+                Result stateResult = merchantStatementAggregate.BuildStatement(DateTime.Now, base64);
+                if (stateResult.IsFailed)
+                    return ResultHelpers.CreateFailure(stateResult);
 
                 Result saveResult = await this.AggregateService.Save(merchantStatementAggregate, cancellationToken);
                 if (saveResult.IsFailed)
@@ -288,9 +296,11 @@ namespace TransactionProcessor.BusinessLogic.Services
 
                 MerchantStatementAggregate merchantStatementAggregate = getMerchantStatementResult.Data;
 
-                merchantStatementAggregate.RecordActivityDateOnStatement(command.MerchantStatementId, command.StatementDate,
+                Result stateResult = merchantStatementAggregate.RecordActivityDateOnStatement(command.MerchantStatementId, command.StatementDate,
                         command.EstateId, command.MerchantId,
                         command.MerchantStatementForDateId, command.StatementActivityDate);
+                if (stateResult.IsFailed)
+                    return ResultHelpers.CreateFailure(stateResult);
 
                 Result saveResult = await this.AggregateService.Save(merchantStatementAggregate, cancellationToken);
                 if (saveResult.IsFailed)
