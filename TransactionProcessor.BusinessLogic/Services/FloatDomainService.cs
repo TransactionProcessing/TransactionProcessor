@@ -163,8 +163,7 @@ namespace TransactionProcessor.BusinessLogic.Services
                 Result<TransactionAggregate> getTransactionResult = await DomainServiceHelper.GetAggregateOrFailure(ct => this.AggregateService.GetLatest<TransactionAggregate>(command.TransactionId, ct), command.TransactionId, cancellationToken);
                 if (getTransactionResult.IsFailed)
                     return ResultHelpers.CreateFailure(getTransactionResult);
-
-
+                
                 Guid floatId = IdGenerationService.GenerateFloatAggregateId(command.EstateId, getTransactionResult.Data.ContractId, getTransactionResult.Data.ProductId);
 
                 // Generate the id for the activity aggregate

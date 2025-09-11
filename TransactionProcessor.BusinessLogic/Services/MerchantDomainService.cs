@@ -311,16 +311,20 @@ namespace TransactionProcessor.BusinessLogic.Services
                 MerchantDepositListAggregate merchantDepositListAggregate = getDepositListResult.Data;
                 if (merchantDepositListAggregate.IsCreated == false)
                 {
-                    merchantDepositListAggregate.Create(merchantAggregate, command.RequestDto.DepositDateTime);
+                    Result createResult = merchantDepositListAggregate.Create(merchantAggregate, command.RequestDto.DepositDateTime);
+                    if (createResult.IsFailed)
+                        return ResultHelpers.CreateFailure(createResult);
                 }
 
                 PositiveMoney amount = PositiveMoney.Create(Money.Create(command.RequestDto.Amount));
                 MerchantDepositSource depositSource = command.DepositSource switch
                 {
-                    DataTransferObjects.Requests.Merchant.MerchantDepositSource.Manual => Models.Merchant.MerchantDepositSource.Manual,
-                    _ => Models.Merchant.MerchantDepositSource.Automatic,
+                    DataTransferObjects.Requests.Merchant.MerchantDepositSource.Manual => MerchantDepositSource.Manual,
+                    _ => MerchantDepositSource.Automatic,
                 };
-                merchantDepositListAggregate.MakeDeposit(depositSource, command.RequestDto.Reference, command.RequestDto.DepositDateTime, amount);
+                Result stateResult = merchantDepositListAggregate.MakeDeposit(depositSource, command.RequestDto.Reference, command.RequestDto.DepositDateTime, amount);
+                if (stateResult.IsFailed)
+                    return ResultHelpers.CreateFailure(stateResult);
 
                 Result saveResult = await this.AggregateService.Save(merchantDepositListAggregate, cancellationToken);
                 if (saveResult.IsFailed)
@@ -380,11 +384,12 @@ namespace TransactionProcessor.BusinessLogic.Services
                     return Result.Invalid($"Not enough credit available for withdrawal of [{command.RequestDto.Amount}]. Balance is {projectionState.merchant.balance}");
                 }
 
-
                 // If we are here we have enough credit to withdraw
                 PositiveMoney amount = PositiveMoney.Create(Money.Create(command.RequestDto.Amount));
 
-                merchantDepositListAggregate.MakeWithdrawal(command.RequestDto.WithdrawalDateTime, amount);
+                Result stateResult = merchantDepositListAggregate.MakeWithdrawal(command.RequestDto.WithdrawalDateTime, amount);
+                if (stateResult.IsFailed)
+                    return ResultHelpers.CreateFailure(stateResult);
 
                 Result saveResult = await this.AggregateService.Save(merchantDepositListAggregate, cancellationToken);
                 if (saveResult.IsFailed)
