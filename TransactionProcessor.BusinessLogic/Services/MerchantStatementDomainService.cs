@@ -93,7 +93,9 @@ namespace TransactionProcessor.BusinessLogic.Services
                     command.TransactionId, settlementFeeId, settledFee, command.SettledDateTime,
                 });
 
-                merchantStatementForDateAggregate.AddSettledFeeToStatement(merchantStatementId, nextStatementDate, eventId, command.EstateId, command.MerchantId, settledFee);
+                Result stateResult = merchantStatementForDateAggregate.AddSettledFeeToStatement(merchantStatementId, nextStatementDate, eventId, command.EstateId, command.MerchantId, settledFee);
+                if (stateResult.IsFailed)
+                    return ResultHelpers.CreateFailure(stateResult);
 
                 Result saveResult = await this.AggregateService.Save(merchantStatementForDateAggregate, cancellationToken);
                 if (saveResult.IsFailed)
@@ -339,8 +341,10 @@ namespace TransactionProcessor.BusinessLogic.Services
                     command.DepositDateTime,
                 });
 
-                merchantStatementForDateAggregate.AddDepositToStatement(merchantStatementId, nextStatementDate, eventId, command.EstateId, command.MerchantId, deposit);
-
+                Result stateResult = merchantStatementForDateAggregate.AddDepositToStatement(merchantStatementId, nextStatementDate, eventId, command.EstateId, command.MerchantId, deposit);
+                if (stateResult.IsFailed)
+                    return ResultHelpers.CreateFailure(stateResult);
+                
                 Result saveResult = await this.AggregateService.Save(merchantStatementForDateAggregate, cancellationToken);
                 if (saveResult.IsFailed)
                     return ResultHelpers.CreateFailure(saveResult);
@@ -378,7 +382,9 @@ namespace TransactionProcessor.BusinessLogic.Services
                     command.WithdrawalDateTime,
                 });
 
-                merchantStatementForDateAggregate.AddWithdrawalToStatement(merchantStatementId, nextStatementDate, eventId, command.EstateId, command.MerchantId, withdrawal);
+                Result stateResult = merchantStatementForDateAggregate.AddWithdrawalToStatement(merchantStatementId, nextStatementDate, eventId, command.EstateId, command.MerchantId, withdrawal);
+                if(stateResult.IsFailed)
+                    return ResultHelpers.CreateFailure(stateResult);
 
                 Result saveResult = await this.AggregateService.Save(merchantStatementForDateAggregate, cancellationToken);
                 if (saveResult.IsFailed)
@@ -425,7 +431,9 @@ namespace TransactionProcessor.BusinessLogic.Services
                     command.TransactionDateTime,
                 });
 
-                merchantStatementForDateAggregate.AddTransactionToStatement(merchantStatementId, nextStatementDate, eventId, command.EstateId, command.MerchantId, transaction);
+                Result stateResult = merchantStatementForDateAggregate.AddTransactionToStatement(merchantStatementId, nextStatementDate, eventId, command.EstateId, command.MerchantId, transaction);
+                if (stateResult.IsFailed)
+                    return ResultHelpers.CreateFailure(stateResult);
 
                 Result saveResult = await this.AggregateService.Save(merchantStatementForDateAggregate, cancellationToken);
                 if (saveResult.IsFailed)
