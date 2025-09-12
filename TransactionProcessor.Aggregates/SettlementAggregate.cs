@@ -1,4 +1,5 @@
-﻿using TransactionProcessor.DomainEvents;
+﻿using SimpleResults;
+using TransactionProcessor.DomainEvents;
 using TransactionProcessor.Models;
 using TransactionProcessor.Models.Contract;
 
@@ -13,56 +14,65 @@ namespace TransactionProcessor.Aggregates
     using Shared.General;
 
     public static class SettlementAggregateExtensions{
-        public static void StartProcessing(this SettlementAggregate aggregate, DateTime dateTime){
+        public static Result StartProcessing(this SettlementAggregate aggregate, DateTime dateTime){
 
-            aggregate.CheckHasBeenCreated();
+            Result result = aggregate.CheckHasBeenCreated();
+            if (result.IsFailed)
+                return result;
+            if (aggregate.ProcessingStarted)
+                return Result.Success();
 
             SettlementDomainEvents.SettlementProcessingStartedEvent startedEvent = new SettlementDomainEvents.SettlementProcessingStartedEvent(aggregate.AggregateId,
                                                                                                  aggregate.EstateId,
                                                                                                  aggregate.MerchantId,
                                                                                                  dateTime);
             aggregate.ApplyAndAppend(startedEvent);
+
+            return Result.Success();
         }
 
-        public static void ManuallyComplete(this SettlementAggregate aggregate){
-            
-            aggregate.CheckHasBeenCreated();
+        public static Result ManuallyComplete(this SettlementAggregate aggregate){
 
             if (aggregate.SettlementComplete)
-                return;
+                return Result.Success();
+
+            Result result = aggregate.CheckHasBeenCreated();
+            if (result.IsFailed)
+                return result;
 
             SettlementDomainEvents.SettlementCompletedEvent pendingSettlementCompletedEvent = new SettlementDomainEvents.SettlementCompletedEvent(aggregate.AggregateId, aggregate.EstateId, aggregate.MerchantId);
             aggregate.ApplyAndAppend(pendingSettlementCompletedEvent);
+
+            return Result.Success();
         }
 
-        public static void MarkFeeAsSettled(this SettlementAggregate aggregate, Guid merchantId, Guid transactionId, Guid feeId, DateTime settledDate)
+        public static Result MarkFeeAsSettled(this SettlementAggregate aggregate, Guid merchantId, Guid transactionId, Guid feeId, DateTime settledDate)
         {
-            (Guid transactionId, Guid merchantId, CalculatedFee calculatedFee) pendingFee = SettlementAggregateExtensions.GetPendingFee(aggregate, merchantId, transactionId, feeId);
+            (Guid transactionId, Guid merchantId, CalculatedFee calculatedFee) pendingFee = GetPendingFee(aggregate, merchantId, transactionId, feeId);
 
-            (Guid transactionId, Guid merchantId, CalculatedFee calculatedFee) settledFee = SettlementAggregateExtensions.GetSettledFee(aggregate, merchantId, transactionId, feeId);
+            (Guid transactionId, Guid merchantId, CalculatedFee calculatedFee) settledFee = GetSettledFee(aggregate, merchantId, transactionId, feeId);
 
-            if (settledFee != default((Guid, Guid, CalculatedFee)))
-            {
+            if (settledFee != default((Guid, Guid, CalculatedFee))) {
                 // Fee already settled....
-                return;
+                return Result.Success();
             }
 
-            if (pendingFee == default((Guid, Guid, CalculatedFee)))
-            {
+            if (pendingFee == default((Guid, Guid, CalculatedFee))) {
                 // Fee not found....
-                return;
+                return Result.Success();
             }
 
-            SettlementDomainEvents.MerchantFeeSettledEvent merchantFeeSettledEvent = SettlementAggregateExtensions.CreateMerchantFeeSettledEvent(aggregate, pendingFee,settledDate);
+            SettlementDomainEvents.MerchantFeeSettledEvent merchantFeeSettledEvent = CreateMerchantFeeSettledEvent(aggregate, pendingFee,settledDate);
 
             aggregate.ApplyAndAppend(merchantFeeSettledEvent);
 
             if (aggregate.CalculatedFeesPendingSettlement.Any() == false)
             {
                 // Settlement is completed
-                SettlementDomainEvents.SettlementCompletedEvent pendingSettlementCompletedEvent = new SettlementDomainEvents.SettlementCompletedEvent(aggregate.AggregateId, aggregate.EstateId, aggregate.MerchantId);
+                SettlementDomainEvents.SettlementCompletedEvent pendingSettlementCompletedEvent = new(aggregate.AggregateId, aggregate.EstateId, aggregate.MerchantId);
                 aggregate.ApplyAndAppend(pendingSettlementCompletedEvent);
             }
+            return Result.Success();
         }
 
         private static (Guid transactionId, Guid merchantId, CalculatedFee calculatedFee) GetSettledFee(SettlementAggregate aggregate, Guid merchantId, Guid transactionId, Guid feeId){
@@ -86,27 +96,27 @@ namespace TransactionProcessor.Aggregates
             return merchantFeeSettledEvent;
         }
 
-        public static void ImmediatelyMarkFeeAsSettled(this SettlementAggregate aggregate, Guid merchantId, Guid transactionId, Guid feeId)
+        public static Result ImmediatelyMarkFeeAsSettled(this SettlementAggregate aggregate, Guid merchantId, Guid transactionId, Guid feeId)
         {
             (Guid transactionId, Guid merchantId, CalculatedFee calculatedFee) pendingFee = SettlementAggregateExtensions.GetPendingFee(aggregate, merchantId, transactionId, feeId);
 
             (Guid transactionId, Guid merchantId, CalculatedFee calculatedFee) settledFee = SettlementAggregateExtensions.GetSettledFee(aggregate, merchantId, transactionId, feeId);
 
-            if (settledFee != default((Guid, Guid, CalculatedFee)))
-            {
+            if (settledFee != default((Guid, Guid, CalculatedFee))) {
                 // Fee already settled....
-                return;
+                return Result.Success();
             }
 
-            if (pendingFee == default((Guid, Guid, CalculatedFee)))
-            {
+            if (pendingFee == default((Guid, Guid, CalculatedFee))) {
                 // Fee not found....
-                return;
+                return Result.Success();
             }
 
-            SettlementDomainEvents.MerchantFeeSettledEvent merchantFeeSettledEvent = SettlementAggregateExtensions.CreateMerchantFeeSettledEvent(aggregate, pendingFee,DateTime.Now);
+            SettlementDomainEvents.MerchantFeeSettledEvent merchantFeeSettledEvent = CreateMerchantFeeSettledEvent(aggregate, pendingFee,DateTime.Now);
 
             aggregate.ApplyAndAppend(merchantFeeSettledEvent);
+            
+            return Result.Success();
         }
 
         private static (Guid transactionId, Guid merchantId, CalculatedFee calculatedFee) GetPendingFee(SettlementAggregate aggregate, Guid merchantId, Guid transactionId, Guid feeId){
@@ -115,18 +125,25 @@ namespace TransactionProcessor.Aggregates
             return pendingFee;
         }
 
-        public static void AddFee(this SettlementAggregate aggregate,
+        public static Result AddFee(this SettlementAggregate aggregate,
                                   Guid merchantId,
                                   Guid transactionId,
                                   CalculatedFee calculatedFee)
         {
-            Guard.ThrowIfInvalidGuid(merchantId, nameof(merchantId));
-            Guard.ThrowIfInvalidGuid(transactionId, nameof(merchantId));
-            Guard.ThrowIfNull(calculatedFee, nameof(calculatedFee));
+            if (merchantId == Guid.Empty)
+                return Result.Invalid("Merchant Id cannot be an empty Guid");
+            if (transactionId == Guid.Empty) {
+                return Result.Invalid("Merchant Id cannot be an empty Guid");
+            }
+            if (calculatedFee == null)
+                return Result.Invalid("Calculated Fee cannot be null");
 
-            aggregate.CheckHasBeenCreated();
+            Result result = aggregate.CheckHasBeenCreated();
+            if (result.IsFailed)
+                return result;
+
             if (aggregate.HasFeeAlreadyBeenAdded(transactionId, calculatedFee))
-                return;
+                return Result.Success();
 
             DomainEvent @event = null;
             if (calculatedFee.FeeType == FeeType.Merchant)
@@ -144,10 +161,12 @@ namespace TransactionProcessor.Aggregates
             }
             else
             {
-                throw new InvalidOperationException("Unsupported Fee Type");
+                return Result.Invalid("Unsupported Fee Type");
             }
 
             aggregate.ApplyAndAppend(@event);
+
+            return Result.Success();
         }
 
         public static List<(Guid transactionId, Guid merchantId, CalculatedFee calculatedFee)> GetFeesToBeSettled(this SettlementAggregate aggregate)
@@ -155,15 +174,17 @@ namespace TransactionProcessor.Aggregates
             return aggregate.CalculatedFeesPendingSettlement;
         }
 
-        public static void Create(this SettlementAggregate aggregate, Guid estateId,Guid merchantId,
+        public static Result Create(this SettlementAggregate aggregate, Guid estateId,Guid merchantId,
                            DateTime settlementDate)
         {
-            aggregate.CheckHasNotAlreadyBeenCreated();
+            if (aggregate.IsCreated)
+                return Result.Success();
 
-            SettlementDomainEvents.SettlementCreatedForDateEvent pendingSettlementCreatedForDateEvent =
-                new SettlementDomainEvents.SettlementCreatedForDateEvent(aggregate.AggregateId, estateId,merchantId, settlementDate.Date);
+            SettlementDomainEvents.SettlementCreatedForDateEvent pendingSettlementCreatedForDateEvent = new(aggregate.AggregateId, estateId, merchantId, settlementDate.Date);
 
             aggregate.ApplyAndAppend(pendingSettlementCreatedForDateEvent);
+
+            return Result.Success();
         }
 
         public static Int32 GetNumberOfFeesPendingSettlement(this SettlementAggregate aggregate)
@@ -182,20 +203,12 @@ namespace TransactionProcessor.Aggregates
                    aggregate.SettledCalculatedFees.Any(c => c.calculatedFee.FeeId == calculatedFee.FeeId && c.transactionId == transactionId);
         }
 
-        private static void CheckHasBeenCreated(this SettlementAggregate aggregate)
+        private static Result CheckHasBeenCreated(this SettlementAggregate aggregate)
         {
-            if (aggregate.IsCreated == false)
-            {
-                throw new InvalidOperationException($"Pending Settlement not created for this date {aggregate.SettlementDate}");
+            if (aggregate.IsCreated == false) {
+                return Result.Invalid($"Pending Settlement not created for this date {aggregate.SettlementDate}");
             }
-        }
-
-        private static void CheckHasNotAlreadyBeenCreated(this SettlementAggregate aggregate)
-        {
-            if (aggregate.IsCreated)
-            {
-                throw new InvalidOperationException($"Pending Settlement already created for this date {aggregate.SettlementDate}");
-            }
+            return Result.Success();
         }
         
         public static void PlayEvent(this SettlementAggregate aggregate, SettlementDomainEvents.MerchantFeeSettledEvent domainEvent)

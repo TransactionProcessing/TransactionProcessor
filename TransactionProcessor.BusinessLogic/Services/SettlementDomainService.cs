@@ -77,7 +77,9 @@ namespace TransactionProcessor.BusinessLogic.Services
 
                     if (feesToBeSettled.Any()) {
                         // Record the process call
-                        settlementAggregate.StartProcessing(DateTime.Now);
+                        Result stateResult = settlementAggregate.StartProcessing(DateTime.Now);
+                        if (stateResult.IsFailed)
+                            return ResultHelpers.CreateFailure(stateResult);
                         settlementSaveResult = await this.AggregateService.Save(settlementAggregate, cancellationToken);
                     }
 
@@ -136,7 +138,9 @@ namespace TransactionProcessor.BusinessLogic.Services
                 if (settlementAggregate.IsCreated == false)
                 {
                     Logger.LogInformation("In ApplySettlementUpdates - aggregate not created");
-                    settlementAggregate.Create(command.EstateId, command.MerchantId, command.SettlementDueDate.Date);
+                    Result createResult = settlementAggregate.Create(command.EstateId, command.MerchantId, command.SettlementDueDate.Date);
+                    if (createResult.IsFailed)
+                        return ResultHelpers.CreateFailure(createResult);
                 }
 
                 // Create Calculated Fee from the domain event
@@ -151,7 +155,9 @@ namespace TransactionProcessor.BusinessLogic.Services
                     SettlementDueDate = command.SettlementDueDate
                 };
                 Logger.LogInformation("In ApplySettlementUpdates - about to add fee");
-                settlementAggregate.AddFee(command.MerchantId, command.TransactionId, calculatedFee);
+                Result stateResult = settlementAggregate.AddFee(command.MerchantId, command.TransactionId, calculatedFee);
+                if (stateResult.IsFailed)
+                    return ResultHelpers.CreateFailure(stateResult);
 
                 Result saveResult = await this.AggregateService.Save(settlementAggregate, cancellationToken);
                 if (saveResult.IsFailed)
@@ -183,13 +189,17 @@ namespace TransactionProcessor.BusinessLogic.Services
                     return ResultHelpers.CreateFailure(getMerchantResult);
 
                 MerchantAggregate merchant = getMerchantResult.Data;
-
+                Result stateResult = Result.Failure();
                 if (merchant.SettlementSchedule == SettlementSchedule.Immediate) {
-                    settlementAggregate.ImmediatelyMarkFeeAsSettled(command.MerchantId, command.TransactionId, command.FeeId);
+                    stateResult = settlementAggregate.ImmediatelyMarkFeeAsSettled(command.MerchantId, command.TransactionId, command.FeeId);
                 }
                 else {
-                    settlementAggregate.MarkFeeAsSettled(command.MerchantId, command.TransactionId, command.FeeId, command.SettledDate.Date);
+                    stateResult = settlementAggregate.MarkFeeAsSettled(command.MerchantId, command.TransactionId, command.FeeId, command.SettledDate.Date);
                 }
+
+                if (stateResult.IsFailed)
+                    return stateResult;
+
 
                 Result saveResult = await this.AggregateService.Save(settlementAggregate, cancellationToken);
                 if (saveResult.IsFailed)
