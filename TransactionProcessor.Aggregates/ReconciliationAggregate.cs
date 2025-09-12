@@ -1,4 +1,5 @@
-﻿using TransactionProcessor.DomainEvents;
+﻿using SimpleResults;
+using TransactionProcessor.DomainEvents;
 
 namespace TransactionProcessor.Aggregates
 {
@@ -12,7 +13,7 @@ namespace TransactionProcessor.Aggregates
         {
             aggregate.EstateId = domainEvent.EstateId;
             aggregate.MerchantId = domainEvent.MerchantId;
-            aggregate.IsStarted = true;
+            aggregate.HasBeenStarted = true;
             aggregate.TransactionDateTime = domainEvent.TransactionDateTime;
         }
 
@@ -38,123 +39,125 @@ namespace TransactionProcessor.Aggregates
 
         public static void PlayEvent(this ReconciliationAggregate aggregate, ReconciliationDomainEvents.ReconciliationHasCompletedEvent domainEvent)
         {
-            aggregate.IsStarted = false;
             aggregate.IsCompleted = true;
         }
 
-        private static void CheckReconciliationNotAlreadyStarted(this ReconciliationAggregate aggregate)
-        {
-            if (aggregate.IsStarted)
-            {
-                throw new InvalidOperationException($"Reconciliation Id [{aggregate.AggregateId}] has already been started");
+        private static Result CheckReconciliationNotAlreadyCompleted(this ReconciliationAggregate aggregate) {
+            if (aggregate.IsCompleted) {
+                return Result.Invalid($"Reconciliation Id [{aggregate.AggregateId}] has already been completed");
             }
+            return Result.Success();
         }
 
-        private static void CheckReconciliationNotAlreadyCompleted(this ReconciliationAggregate aggregate)
-        {
-            if (aggregate.IsCompleted)
-            {
-                throw new InvalidOperationException($"Reconciliation Id [{aggregate.AggregateId}] has already been completed");
-            }
-        }
-
-        public static void StartReconciliation(this ReconciliationAggregate aggregate, DateTime transactionDateTime,
-                                               Guid estateId,
-                                               Guid merchantId)
-        {
-            Guard.ThrowIfInvalidGuid(estateId, typeof(ArgumentException), $"Estate Id must not be [{Guid.Empty}]");
-            Guard.ThrowIfInvalidGuid(merchantId, typeof(ArgumentException), $"Merchant Id must not be [{Guid.Empty}]");
-            Guard.ThrowIfInvalidDate(transactionDateTime, typeof(ArgumentException), $"Transaction Date Time must not be [{DateTime.MinValue}]");
+        public static Result StartReconciliation(this ReconciliationAggregate aggregate,
+                                                 DateTime transactionDateTime,
+                                                 Guid estateId,
+                                                 Guid merchantId) {
+            if (estateId == Guid.Empty)
+                return Result.Invalid($"Estate Id must not be [{Guid.Empty}]");
+            if (merchantId == Guid.Empty)
+                return Result.Invalid($"Merchant Id must not be [{Guid.Empty}]");
+            if (transactionDateTime == DateTime.MinValue)
+                return Result.Invalid($"Transaction Date Time must not be [{DateTime.MinValue}]");
 
             // TODO: Some rules here
-            aggregate.CheckReconciliationNotAlreadyStarted();
-            aggregate.CheckReconciliationNotAlreadyCompleted();
+            if (aggregate.HasBeenStarted || aggregate.IsCompleted) {
+                return Result.Success();
+            }
 
-            ReconciliationDomainEvents.ReconciliationHasStartedEvent reconciliationHasStartedEvent =
-                new ReconciliationDomainEvents.ReconciliationHasStartedEvent(aggregate.AggregateId, estateId, merchantId, transactionDateTime);
+            ReconciliationDomainEvents.ReconciliationHasStartedEvent reconciliationHasStartedEvent = new(aggregate.AggregateId, estateId, merchantId, transactionDateTime);
 
             aggregate.ApplyAndAppend(reconciliationHasStartedEvent);
+
+            return Result.Success();
         }
 
-        private static void CheckReconciliationHasBeenStarted(this ReconciliationAggregate aggregate)
-        {
-            if (aggregate.IsStarted == false)
-            {
-                throw new InvalidOperationException($"Reconciliation [{aggregate.AggregateId}] has not been started");
+        private static Result CheckReconciliationHasBeenStarted(this ReconciliationAggregate aggregate) {
+            if (aggregate.HasBeenStarted == false) {
+                return Result.Invalid($"Reconciliation [{aggregate.AggregateId}] has not been started");
             }
+            return Result.Success();
         }
 
-        public static void RecordOverallTotals(this ReconciliationAggregate aggregate, Int32 totalCount, Decimal totalValue)
+        public static Result RecordOverallTotals(this ReconciliationAggregate aggregate, Int32 totalCount, Decimal totalValue)
         {
-            // TODO: Rules
-            aggregate.CheckReconciliationHasBeenStarted();
-            aggregate.CheckReconciliationNotAlreadyCompleted();
+            Result result = aggregate.CheckReconciliationHasBeenStarted();
+            if (result.IsFailed)
+                return result;
+            result = aggregate.CheckReconciliationNotAlreadyCompleted();
+            if (result.IsFailed)
+                return result;
 
-            ReconciliationDomainEvents.OverallTotalsRecordedEvent overallTotalsRecordedEvent = new ReconciliationDomainEvents.OverallTotalsRecordedEvent(aggregate.AggregateId, aggregate.EstateId, aggregate.MerchantId, totalCount, totalValue, aggregate.TransactionDateTime);
+            ReconciliationDomainEvents.OverallTotalsRecordedEvent overallTotalsRecordedEvent = new(aggregate.AggregateId, aggregate.EstateId, aggregate.MerchantId, totalCount, totalValue, aggregate.TransactionDateTime);
             aggregate.ApplyAndAppend(overallTotalsRecordedEvent);
+
+            return Result.Success();
         }
 
-        public static void Authorise(this ReconciliationAggregate aggregate, String responseCode, String responseMessage)
+        public static Result Authorise(this ReconciliationAggregate aggregate, String responseCode, String responseMessage)
         {
-            aggregate.CheckReconciliationHasBeenStarted();
-            aggregate.CheckReconciliationNotAlreadyCompleted();
-            aggregate.CheckReconciliationNotAlreadyAuthorised();
-            aggregate.CheckReconciliationNotAlreadyDeclined();
+            if (aggregate.IsAuthorised || aggregate.IsDeclined) {
+                return Result.Success();
+            }
 
-            ReconciliationDomainEvents.ReconciliationHasBeenLocallyAuthorisedEvent reconciliationHasBeenLocallyAuthorisedEvent = new ReconciliationDomainEvents.ReconciliationHasBeenLocallyAuthorisedEvent(aggregate.AggregateId, aggregate.EstateId, aggregate.MerchantId,
+            Result result = aggregate.CheckReconciliationHasBeenStarted();
+            if (result.IsFailed)
+                return result;
+            result = aggregate.CheckReconciliationNotAlreadyCompleted();
+            if (result.IsFailed)
+                return result;
+
+            ReconciliationDomainEvents.ReconciliationHasBeenLocallyAuthorisedEvent reconciliationHasBeenLocallyAuthorisedEvent = new(aggregate.AggregateId, aggregate.EstateId, aggregate.MerchantId,
                                                                                                                                                       responseCode, responseMessage, aggregate.TransactionDateTime);
 
             aggregate.ApplyAndAppend(reconciliationHasBeenLocallyAuthorisedEvent);
+            return Result.Success();
         }
-
-        private static void CheckReconciliationNotAlreadyAuthorised(this ReconciliationAggregate aggregate)
-        {
-            if (aggregate.IsAuthorised)
-            {
-                throw new InvalidOperationException($"Reconciliation [{aggregate.AggregateId}] has already been authorised");
-            }
-        }
-
-        private static void CheckReconciliationNotAlreadyDeclined(this ReconciliationAggregate aggregate)
-        {
-            if (aggregate.IsDeclined)
-            {
-                throw new InvalidOperationException($"Reconciliation [{aggregate.AggregateId}] has already been declined");
-            }
-        }
-
-        private static void CheckReconciliationHasBeenAuthorisedOrDeclined(this ReconciliationAggregate aggregate)
+        
+        private static Result CheckReconciliationHasBeenAuthorisedOrDeclined(this ReconciliationAggregate aggregate)
         {
             if (aggregate.IsAuthorised == false && aggregate.IsDeclined == false)
             {
-                throw new InvalidOperationException($"Reconciliation [{aggregate.AggregateId}] has not been authorised or declined");
+                return Result.Invalid($"Reconciliation [{aggregate.AggregateId}] has not been authorised or declined");
             }
+            return Result.Success();
         }
 
-        public static void Decline(this ReconciliationAggregate aggregate,String responseCode, String responseMessage)
+        public static Result Decline(this ReconciliationAggregate aggregate,String responseCode, String responseMessage)
         {
-            aggregate.CheckReconciliationHasBeenStarted();
-            aggregate.CheckReconciliationNotAlreadyCompleted();
-            aggregate.CheckReconciliationNotAlreadyAuthorised();
-            aggregate.CheckReconciliationNotAlreadyDeclined();
+            if (aggregate.IsAuthorised || aggregate.IsDeclined) {
+                return Result.Success();
+            }
 
-            ReconciliationDomainEvents.ReconciliationHasBeenLocallyDeclinedEvent reconciliationHasBeenLocallyDeclinedEvent = new ReconciliationDomainEvents.ReconciliationHasBeenLocallyDeclinedEvent(aggregate.AggregateId, aggregate.EstateId, aggregate.MerchantId,
+            Result result = aggregate.CheckReconciliationHasBeenStarted();
+            if (result.IsFailed)
+                return result;
+            result = aggregate.CheckReconciliationNotAlreadyCompleted();
+            if (result.IsFailed)
+                return result;
+
+            ReconciliationDomainEvents.ReconciliationHasBeenLocallyDeclinedEvent reconciliationHasBeenLocallyDeclinedEvent = new(aggregate.AggregateId, aggregate.EstateId, aggregate.MerchantId,
                                                                                                                                                 responseCode, responseMessage, aggregate.TransactionDateTime);
 
             aggregate.ApplyAndAppend(reconciliationHasBeenLocallyDeclinedEvent);
+
+            return Result.Success();
         }
 
-        public static void CompleteReconciliation(this ReconciliationAggregate aggregate)
+        public static Result CompleteReconciliation(this ReconciliationAggregate aggregate)
         {
-            aggregate.CheckReconciliationHasBeenStarted();
-            aggregate.CheckReconciliationNotAlreadyCompleted();
-            aggregate.CheckReconciliationHasBeenAuthorisedOrDeclined();
+            if (aggregate.IsCompleted)
+                return Result.Success();
 
-            ReconciliationDomainEvents.ReconciliationHasCompletedEvent reconciliationHasCompletedEvent =
-                new ReconciliationDomainEvents.ReconciliationHasCompletedEvent(aggregate.AggregateId, aggregate.EstateId, aggregate.MerchantId, aggregate.TransactionDateTime);
+            Result result = aggregate.CheckReconciliationHasBeenAuthorisedOrDeclined();
+            if (result.IsFailed)
+                return result;
+
+            ReconciliationDomainEvents.ReconciliationHasCompletedEvent reconciliationHasCompletedEvent = new(aggregate.AggregateId, aggregate.EstateId, aggregate.MerchantId, aggregate.TransactionDateTime);
 
             aggregate.ApplyAndAppend(reconciliationHasCompletedEvent);
 
+            return Result.Success();
         }
 
     }
@@ -189,7 +192,7 @@ namespace TransactionProcessor.Aggregates
 
         public Guid EstateId { get; internal set; }
 
-        public Boolean IsStarted { get; internal set; }
+        public Boolean HasBeenStarted { get; internal set; }
         
         public Guid MerchantId { get; internal set; }
         

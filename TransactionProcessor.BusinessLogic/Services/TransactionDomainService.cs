@@ -27,8 +27,6 @@ namespace TransactionProcessor.BusinessLogic.Services{
 
     public interface ITransactionDomainService
     {
-        #region Methods
-
         Task<Result<ProcessLogonTransactionResponse>> ProcessLogonTransaction(TransactionCommands.ProcessLogonTransactionCommand command,
                                                                               CancellationToken cancellationToken);
 
@@ -43,9 +41,7 @@ namespace TransactionProcessor.BusinessLogic.Services{
 
         Task<Result> CalculateFeesForTransaction(TransactionCommands.CalculateFeesForTransactionCommand command,
                                                  CancellationToken cancellationToken);
-
-        #endregion
-
+        
         Task<Result> AddSettledMerchantFee(TransactionCommands.AddSettledMerchantFeeCommand command,
                                            CancellationToken cancellationToken);
 
@@ -91,8 +87,6 @@ namespace TransactionProcessor.BusinessLogic.Services{
         }
 
         #endregion
-
-        #region Methods
 
         public async Task<Result<ProcessLogonTransactionResponse>> ProcessLogonTransaction(TransactionCommands.ProcessLogonTransactionCommand command,
                                                                                            CancellationToken cancellationToken) {
@@ -158,20 +152,30 @@ namespace TransactionProcessor.BusinessLogic.Services{
             ReconciliationAggregate reconciliationAggregate = reconciliationResult.Data;
             Result<TransactionValidationResult> validationResult = await this.TransactionValidationService.ValidateReconciliationTransaction(command.EstateId, command.MerchantId, command.DeviceIdentifier, cancellationToken);
 
-                reconciliationAggregate.StartReconciliation(command.TransactionDateTime, command.EstateId, command.MerchantId);
+                Result stateResult = reconciliationAggregate.StartReconciliation(command.TransactionDateTime, command.EstateId, command.MerchantId);
+                if (stateResult.IsFailed)
+                    return ResultHelpers.CreateFailure(stateResult);
 
-                reconciliationAggregate.RecordOverallTotals(command.TransactionCount, command.TransactionValue);
+                stateResult = reconciliationAggregate.RecordOverallTotals(command.TransactionCount, command.TransactionValue);
+                if (stateResult.IsFailed)
+                    return ResultHelpers.CreateFailure(stateResult);
 
                 if (validationResult.IsSuccess && validationResult.Data.ResponseCode == TransactionResponseCode.Success) {
                     // Record the successful validation
-                    reconciliationAggregate.Authorise(((Int32)validationResult.Data.ResponseCode).ToString().PadLeft(4, '0'), validationResult.Data.ResponseMessage);
+                    stateResult = reconciliationAggregate.Authorise(((Int32)validationResult.Data.ResponseCode).ToString().PadLeft(4, '0'), validationResult.Data.ResponseMessage);
+                    if (stateResult.IsFailed)
+                        return ResultHelpers.CreateFailure(stateResult);
                 }
                 else {
                     // Record the failure
-                    reconciliationAggregate.Decline(((Int32)validationResult.Data.ResponseCode).ToString().PadLeft(4, '0'), validationResult.Data.ResponseMessage);
+                    stateResult = reconciliationAggregate.Decline(((Int32)validationResult.Data.ResponseCode).ToString().PadLeft(4, '0'), validationResult.Data.ResponseMessage);
+                    if (stateResult.IsFailed)
+                        return ResultHelpers.CreateFailure(stateResult);
                 }
                 
-                reconciliationAggregate.CompleteReconciliation();
+                stateResult = reconciliationAggregate.CompleteReconciliation();
+                if (stateResult.IsFailed)
+                    return ResultHelpers.CreateFailure(stateResult);
 
                 Result saveResult = await this.AggregateService.Save(reconciliationAggregate, cancellationToken);
                 if (saveResult.IsFailed)
@@ -538,13 +542,6 @@ namespace TransactionProcessor.BusinessLogic.Services{
             return feesForCalculation;
         }
 
-        /// <summary>
-        /// Adds the device to merchant.
-        /// </summary>
-        /// <param name="estateId">The estate identifier.</param>
-        /// <param name="merchantId">The merchant identifier.</param>
-        /// <param name="deviceIdentifier">The device identifier.</param>
-        /// <param name="cancellationToken">The cancellation token.</param>
         private async Task AddDeviceToMerchant(Guid merchantId,
                                                String deviceIdentifier,
                                                CancellationToken cancellationToken) {
@@ -555,10 +552,6 @@ namespace TransactionProcessor.BusinessLogic.Services{
             await this.AggregateService.Save(merchantAggregate.Data, cancellationToken);
         }
 
-        /// <summary>
-        /// Generates the transaction reference.
-        /// </summary>
-        /// <returns></returns>
         [ExcludeFromCodeCoverage]
         private String GenerateTransactionReference() {
             Int64 i = 1;
@@ -609,9 +602,7 @@ namespace TransactionProcessor.BusinessLogic.Services{
                 return CreateFailedResult(new OperatorResponse { IsSuccessful = false, ResponseCode = "9999", ResponseMessage = e.GetCombinedExceptionMessages() });
             }
         }
-
-        #endregion
-
+        
         internal static Result<T> CreateFailedResult<T>(T resultData) {
             return new Result<T> { IsSuccess = false, Data = resultData };
         }

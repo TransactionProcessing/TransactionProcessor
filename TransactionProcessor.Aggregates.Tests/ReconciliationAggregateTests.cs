@@ -1,4 +1,5 @@
 ﻿using Shouldly;
+using SimpleResults;
 using TransactionProcessor.Testing;
 
 namespace TransactionProcessor.Aggregates.Tests
@@ -18,9 +19,10 @@ namespace TransactionProcessor.Aggregates.Tests
         {
             Aggregates.ReconciliationAggregate reconciliationAggregate = Aggregates.ReconciliationAggregate.Create(TestData.TransactionId);
 
-            reconciliationAggregate.StartReconciliation(TestData.TransactionDateTime, TestData.EstateId, TestData.MerchantId);
+            Result result = reconciliationAggregate.StartReconciliation(TestData.TransactionDateTime, TestData.EstateId, TestData.MerchantId);
+            result.IsSuccess.ShouldBeTrue();
 
-            reconciliationAggregate.IsStarted.ShouldBeTrue();
+            reconciliationAggregate.HasBeenStarted.ShouldBeTrue();
             reconciliationAggregate.EstateId.ShouldBe(TestData.EstateId);
             reconciliationAggregate.MerchantId.ShouldBe(TestData.MerchantId);
         }
@@ -33,26 +35,26 @@ namespace TransactionProcessor.Aggregates.Tests
                                                                                         Boolean validEstateId,
                                                                                         Boolean validMerchantId)
         {
-            Aggregates.ReconciliationAggregate reconciliationAggregate = Aggregates.ReconciliationAggregate.Create(TestData.TransactionId);
+            ReconciliationAggregate reconciliationAggregate = ReconciliationAggregate.Create(TestData.TransactionId);
 
             DateTime transactionDateTime = validDateTime ? TestData.TransactionDateTime : DateTime.MinValue;
             Guid estateId = validEstateId ? TestData.EstateId : Guid.Empty;
             Guid merchantId = validMerchantId ? TestData.MerchantId : Guid.Empty;
 
-            Should.Throw<ArgumentException>(() => { reconciliationAggregate.StartReconciliation(transactionDateTime, estateId, merchantId); });
+            Result result = reconciliationAggregate.StartReconciliation(transactionDateTime, estateId, merchantId);
+            result.IsFailed.ShouldBeTrue();
+            result.Status.ShouldBe(ResultStatus.Invalid);
         }
 
         [Fact]
-        public void ReconciliationAggregate_StartReconciliation_ReconciliationAlreadyStarted_ErrorThrown()
+        public void ReconciliationAggregate_StartReconciliation_ReconciliationAlreadyStarted_NoErrorThrown()
         {
             Aggregates.ReconciliationAggregate reconciliationAggregate = Aggregates.ReconciliationAggregate.Create(TestData.TransactionId);
 
             reconciliationAggregate.StartReconciliation(TestData.TransactionDateTime, TestData.EstateId, TestData.MerchantId);
 
-            Should.Throw<InvalidOperationException>(() =>
-                                                    {
-                                                        reconciliationAggregate.StartReconciliation(TestData.TransactionDateTime, TestData.EstateId, TestData.MerchantId);
-                                                    });
+            Result result = reconciliationAggregate.StartReconciliation(TestData.TransactionDateTime, TestData.EstateId, TestData.MerchantId);
+            result.IsSuccess.ShouldBeTrue();
         }
 
         [Fact]
@@ -65,12 +67,9 @@ namespace TransactionProcessor.Aggregates.Tests
             reconciliationAggregate.Authorise(TestData.ResponseCode, TestData.ResponseMessage);
             reconciliationAggregate.CompleteReconciliation();
 
-            Should.Throw<InvalidOperationException>(() =>
-                                                    {
-                                                        reconciliationAggregate.StartReconciliation(TestData.TransactionDateTime, TestData.EstateId, TestData.MerchantId);
-                                                    });
+            Result result = reconciliationAggregate.StartReconciliation(TestData.TransactionDateTime, TestData.EstateId, TestData.MerchantId);
+            result.IsSuccess.ShouldBeTrue();
         }
-
 
         [Fact]
         public void ReconciliationAggregate_RecordOverallTotals_OverallTotalsAreRecorded()
@@ -78,8 +77,9 @@ namespace TransactionProcessor.Aggregates.Tests
             Aggregates.ReconciliationAggregate reconciliationAggregate = Aggregates.ReconciliationAggregate.Create(TestData.TransactionId);
 
             reconciliationAggregate.StartReconciliation(TestData.TransactionDateTime, TestData.EstateId, TestData.MerchantId);
-            reconciliationAggregate.RecordOverallTotals(TestData.ReconciliationTransactionCount, TestData.ReconciliationTransactionValue);
-            
+            Result result = reconciliationAggregate.RecordOverallTotals(TestData.ReconciliationTransactionCount, TestData.ReconciliationTransactionValue);
+            result.IsSuccess.ShouldBeTrue();
+
             reconciliationAggregate.TransactionCount.ShouldBe(TestData.ReconciliationTransactionCount);
             reconciliationAggregate.TransactionValue.ShouldBe(TestData.ReconciliationTransactionValue);
         }
@@ -87,30 +87,28 @@ namespace TransactionProcessor.Aggregates.Tests
         [Fact]
         public void ReconciliationAggregate_RecordOverallTotals_ReconciliationNotStarted_ErrorThrown()
         {
-            Aggregates.ReconciliationAggregate reconciliationAggregate = Aggregates.ReconciliationAggregate.Create(TestData.TransactionId);
+            ReconciliationAggregate reconciliationAggregate = ReconciliationAggregate.Create(TestData.TransactionId);
 
-            Should.Throw<InvalidOperationException>(() =>
-                                                    {
-                                                        reconciliationAggregate.RecordOverallTotals(TestData.ReconciliationTransactionCount,
+            Result result = reconciliationAggregate.RecordOverallTotals(TestData.ReconciliationTransactionCount,
                                                                                                     TestData.ReconciliationTransactionValue);
-                                                    });
+            result.IsFailed.ShouldBeTrue();
+            result.Status.ShouldBe(ResultStatus.Invalid);
         }
 
         [Fact]
         public void ReconciliationAggregate_RecordOverallTotals_ReconciliationAlreadyCompleted_ErrorThrown()
         {
-            Aggregates.ReconciliationAggregate reconciliationAggregate = Aggregates.ReconciliationAggregate.Create(TestData.TransactionId);
+            ReconciliationAggregate reconciliationAggregate = ReconciliationAggregate.Create(TestData.TransactionId);
 
             reconciliationAggregate.StartReconciliation(TestData.TransactionDateTime, TestData.EstateId, TestData.MerchantId);
             reconciliationAggregate.RecordOverallTotals(TestData.ReconciliationTransactionCount, TestData.ReconciliationTransactionValue);
             reconciliationAggregate.Authorise(TestData.ResponseCode, TestData.ResponseMessage);
             reconciliationAggregate.CompleteReconciliation();
 
-            Should.Throw<InvalidOperationException>(() =>
-                                                    {
-                                                        reconciliationAggregate.RecordOverallTotals(TestData.ReconciliationTransactionCount,
+            Result result = reconciliationAggregate.RecordOverallTotals(TestData.ReconciliationTransactionCount,
                                                                                                     TestData.ReconciliationTransactionValue);
-                                                    });
+            result.IsFailed.ShouldBeTrue();
+            result.Status.ShouldBe(ResultStatus.Invalid);
         }
 
         [Fact]
@@ -120,7 +118,8 @@ namespace TransactionProcessor.Aggregates.Tests
 
             reconciliationAggregate.StartReconciliation(TestData.TransactionDateTime, TestData.EstateId, TestData.MerchantId);
             reconciliationAggregate.RecordOverallTotals(TestData.ReconciliationTransactionCount, TestData.ReconciliationTransactionValue);
-            reconciliationAggregate.Authorise(TestData.ResponseCode, TestData.ResponseMessage);
+            Result result = reconciliationAggregate.Authorise(TestData.ResponseCode, TestData.ResponseMessage);
+            result.IsSuccess.ShouldBeTrue();
 
             reconciliationAggregate.ResponseCode.ShouldBe(TestData.ResponseCode);
             reconciliationAggregate.ResponseMessage.ShouldBe(TestData.ResponseMessage);
@@ -132,14 +131,13 @@ namespace TransactionProcessor.Aggregates.Tests
         {
             Aggregates.ReconciliationAggregate reconciliationAggregate = Aggregates.ReconciliationAggregate.Create(TestData.TransactionId);
 
-            Should.Throw<InvalidOperationException>(() =>
-                                                    {
-                                                        reconciliationAggregate.Authorise(TestData.ResponseCode, TestData.ResponseMessage);
-                                                    });
+            Result result = reconciliationAggregate.Authorise(TestData.ResponseCode, TestData.ResponseMessage);
+            result.IsFailed.ShouldBeTrue();
+            result.Status.ShouldBe(ResultStatus.Invalid);
         }
 
         [Fact]
-        public void ReconciliationAggregate_Authorise_ReconciliationAlreadyAuthorised_ErrorThrown()
+        public void ReconciliationAggregate_Authorise_ReconciliationAlreadyAuthorised_NoErrorThrown()
         {
             Aggregates.ReconciliationAggregate reconciliationAggregate = Aggregates.ReconciliationAggregate.Create(TestData.TransactionId);
 
@@ -147,10 +145,8 @@ namespace TransactionProcessor.Aggregates.Tests
             reconciliationAggregate.RecordOverallTotals(TestData.ReconciliationTransactionCount, TestData.ReconciliationTransactionValue);
             reconciliationAggregate.Authorise(TestData.ResponseCode, TestData.ResponseMessage);
 
-            Should.Throw<InvalidOperationException>(() =>
-                                                    {
-                                                        reconciliationAggregate.Authorise(TestData.ResponseCode, TestData.ResponseMessage);
-                                                    });
+            Result result = reconciliationAggregate.Authorise(TestData.ResponseCode, TestData.ResponseMessage);
+            result.IsSuccess.ShouldBeTrue();
         }
 
         [Fact]
@@ -162,10 +158,8 @@ namespace TransactionProcessor.Aggregates.Tests
             reconciliationAggregate.RecordOverallTotals(TestData.ReconciliationTransactionCount, TestData.ReconciliationTransactionValue);
             reconciliationAggregate.Decline(TestData.ResponseCode, TestData.ResponseMessage);
 
-            Should.Throw<InvalidOperationException>(() =>
-                                                    {
-                                                        reconciliationAggregate.Authorise(TestData.ResponseCode, TestData.ResponseMessage);
-                                                    });
+            Result result = reconciliationAggregate.Authorise(TestData.ResponseCode, TestData.ResponseMessage);
+            result.IsSuccess.ShouldBeTrue();
         }
 
         [Fact]
@@ -178,10 +172,8 @@ namespace TransactionProcessor.Aggregates.Tests
             reconciliationAggregate.Authorise(TestData.ResponseCode, TestData.ResponseMessage);
             reconciliationAggregate.CompleteReconciliation();
 
-            Should.Throw<InvalidOperationException>(() =>
-                                                    {
-                                                        reconciliationAggregate.Authorise(TestData.ResponseCode, TestData.ResponseMessage);
-                                                    });
+            Result result = reconciliationAggregate.Authorise(TestData.ResponseCode, TestData.ResponseMessage);
+            result.IsSuccess.ShouldBeTrue();
         }
 
         [Fact]
@@ -191,7 +183,8 @@ namespace TransactionProcessor.Aggregates.Tests
 
             reconciliationAggregate.StartReconciliation(TestData.TransactionDateTime, TestData.EstateId, TestData.MerchantId);
             reconciliationAggregate.RecordOverallTotals(TestData.ReconciliationTransactionCount, TestData.ReconciliationTransactionValue);
-            reconciliationAggregate.Decline(TestData.ResponseCode, TestData.ResponseMessage);
+            Result result = reconciliationAggregate.Decline(TestData.ResponseCode, TestData.ResponseMessage);
+            result.IsSuccess.ShouldBeTrue();
 
             reconciliationAggregate.ResponseCode.ShouldBe(TestData.ResponseCode);
             reconciliationAggregate.ResponseMessage.ShouldBe(TestData.ResponseMessage);
@@ -203,10 +196,9 @@ namespace TransactionProcessor.Aggregates.Tests
         {
             Aggregates.ReconciliationAggregate reconciliationAggregate = Aggregates.ReconciliationAggregate.Create(TestData.TransactionId);
 
-            Should.Throw<InvalidOperationException>(() =>
-            {
-                reconciliationAggregate.Decline(TestData.ResponseCode, TestData.ResponseMessage);
-            });
+            Result result = reconciliationAggregate.Decline(TestData.ResponseCode, TestData.ResponseMessage);
+            result.IsFailed.ShouldBeTrue();
+            result.Status.ShouldBe(ResultStatus.Invalid);
         }
 
         [Fact]
@@ -218,14 +210,12 @@ namespace TransactionProcessor.Aggregates.Tests
             reconciliationAggregate.RecordOverallTotals(TestData.ReconciliationTransactionCount, TestData.ReconciliationTransactionValue);
             reconciliationAggregate.Authorise(TestData.ResponseCode, TestData.ResponseMessage);
 
-            Should.Throw<InvalidOperationException>(() =>
-                                                    {
-                                                        reconciliationAggregate.Decline(TestData.ResponseCode, TestData.ResponseMessage);
-                                                    });
+            Result result = reconciliationAggregate.Decline(TestData.ResponseCode, TestData.ResponseMessage);
+            result.IsSuccess.ShouldBeTrue();
         }
 
         [Fact]
-        public void ReconciliationAggregate_Decline_ReconciliationAlreadyDecline_ErrorThrown()
+        public void ReconciliationAggregate_Decline_ReconciliationAlreadyDecline_NoErrorThrown()
         {
             Aggregates.ReconciliationAggregate reconciliationAggregate = Aggregates.ReconciliationAggregate.Create(TestData.TransactionId);
 
@@ -233,14 +223,12 @@ namespace TransactionProcessor.Aggregates.Tests
             reconciliationAggregate.RecordOverallTotals(TestData.ReconciliationTransactionCount, TestData.ReconciliationTransactionValue);
             reconciliationAggregate.Decline(TestData.ResponseCode, TestData.ResponseMessage);
 
-            Should.Throw<InvalidOperationException>(() =>
-            {
-                reconciliationAggregate.Decline(TestData.ResponseCode, TestData.ResponseMessage);
-            });
+            Result result = reconciliationAggregate.Decline(TestData.ResponseCode, TestData.ResponseMessage);
+            result.IsSuccess.ShouldBeTrue();
         }
         
         [Fact]
-        public void ReconciliationAggregate_Decline_ReconciliationAlreadyCompleted_ErrorThrown()
+        public void ReconciliationAggregate_Decline_ReconciliationAlreadyCompleted_NoErrorThrown()
         {
             Aggregates.ReconciliationAggregate reconciliationAggregate = Aggregates.ReconciliationAggregate.Create(TestData.TransactionId);
 
@@ -249,10 +237,8 @@ namespace TransactionProcessor.Aggregates.Tests
             reconciliationAggregate.Decline(TestData.ResponseCode, TestData.ResponseMessage);
             reconciliationAggregate.CompleteReconciliation();
 
-            Should.Throw<InvalidOperationException>(() =>
-            {
-                reconciliationAggregate.Decline(TestData.ResponseCode, TestData.ResponseMessage);
-            });
+            Result result = reconciliationAggregate.Decline(TestData.ResponseCode, TestData.ResponseMessage);
+            result.IsSuccess.ShouldBeTrue();
         }
 
         [Theory]
@@ -273,11 +259,11 @@ namespace TransactionProcessor.Aggregates.Tests
                 reconciliationAggregate.Decline(TestData.ResponseCode, TestData.ResponseMessage);
             }
 
-            reconciliationAggregate.CompleteReconciliation();
+            Result result = reconciliationAggregate.CompleteReconciliation();
+            result.IsSuccess.ShouldBeTrue();
 
             reconciliationAggregate.IsAuthorised.ShouldBe(isAuthorised);
             reconciliationAggregate.IsCompleted.ShouldBeTrue();
-            reconciliationAggregate.IsStarted.ShouldBeFalse();
         }
 
         [Fact]
@@ -285,10 +271,9 @@ namespace TransactionProcessor.Aggregates.Tests
         {
             Aggregates.ReconciliationAggregate reconciliationAggregate = Aggregates.ReconciliationAggregate.Create(TestData.TransactionId);
 
-            Should.Throw<InvalidOperationException>(() =>
-                                                    {
-                                                        reconciliationAggregate.CompleteReconciliation();
-                                                    });
+            Result result = reconciliationAggregate.CompleteReconciliation();
+            result.IsFailed.ShouldBeTrue();
+            result.Status.ShouldBe(ResultStatus.Invalid);
         }
 
         [Fact]
@@ -299,10 +284,9 @@ namespace TransactionProcessor.Aggregates.Tests
             reconciliationAggregate.StartReconciliation(TestData.TransactionDateTime, TestData.EstateId, TestData.MerchantId);
             reconciliationAggregate.RecordOverallTotals(TestData.ReconciliationTransactionCount, TestData.ReconciliationTransactionValue);
 
-            Should.Throw<InvalidOperationException>(() =>
-                                                    {
-                                                        reconciliationAggregate.CompleteReconciliation();
-                                                    });
+            Result result = reconciliationAggregate.CompleteReconciliation();
+            result.IsFailed.ShouldBeTrue();
+            result.Status.ShouldBe(ResultStatus.Invalid);
         }
 
         [Theory]
@@ -325,10 +309,8 @@ namespace TransactionProcessor.Aggregates.Tests
 
             reconciliationAggregate.CompleteReconciliation();
 
-            Should.Throw<InvalidOperationException>(() =>
-                                                    {
-                                                        reconciliationAggregate.CompleteReconciliation();
-                                                    });
+            Result result = reconciliationAggregate.CompleteReconciliation();
+            result.IsSuccess.ShouldBeTrue();                                                    
         }
     }
 }
