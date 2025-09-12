@@ -1,4 +1,6 @@
 using Shouldly;
+using SimpleResults;
+using TransactionProcessor.Models;
 using TransactionProcessor.Testing;
 
 namespace TransactionProcessor.Aggregates.Tests;
@@ -17,9 +19,10 @@ public class VoucherAggregateTests
         public void VoucherAggregate_Generate_VoucherIsGenerated()
         {
             Aggregates.VoucherAggregate aggregate = Aggregates.VoucherAggregate.Create(TestData.VoucherId);
-            aggregate.Generate(TestData.OperatorId, TestData.EstateId, TestData.TransactionId, TestData.GeneratedDateTime, TestData.Value);
-
-            var voucher = aggregate.GetVoucher();
+            Result result = aggregate.Generate(TestData.OperatorId, TestData.EstateId, TestData.TransactionId, TestData.GeneratedDateTime, TestData.Value);
+            result.IsSuccess.ShouldBeTrue();
+            
+            Voucher voucher = aggregate.GetVoucher();
 
             voucher.IsGenerated.ShouldBeTrue();
             voucher.EstateId.ShouldBe(TestData.EstateId);
@@ -35,10 +38,8 @@ public class VoucherAggregateTests
             Aggregates.VoucherAggregate aggregate = Aggregates.VoucherAggregate.Create(TestData.VoucherId);
             aggregate.Generate(TestData.OperatorId, TestData.EstateId, TestData.TransactionId, TestData.GeneratedDateTime, TestData.Value);
 
-            Should.Throw<InvalidOperationException>(() =>
-                                                    {
-                                                        aggregate.Generate(TestData.OperatorId, TestData.EstateId, TestData.TransactionId, TestData.GeneratedDateTime, TestData.Value);
-                                                    });
+            Result result = aggregate.Generate(TestData.OperatorId, TestData.EstateId, TestData.TransactionId, TestData.GeneratedDateTime, TestData.Value);
+            result.IsSuccess.ShouldBeTrue();
         }
 
         [Fact]
@@ -47,10 +48,8 @@ public class VoucherAggregateTests
             Aggregates.VoucherAggregate aggregate = Aggregates.VoucherAggregate.Create(TestData.VoucherId);
             aggregate.Generate(TestData.OperatorId, TestData.EstateId, TestData.TransactionId, TestData.GeneratedDateTime, TestData.Value);
             aggregate.Issue(TestData.RecipientEmail, TestData.RecipientMobile, TestData.IssuedDateTime);
-            Should.Throw<InvalidOperationException>(() =>
-                                                    {
-                                                        aggregate.Generate(TestData.OperatorId, TestData.EstateId, TestData.TransactionId, TestData.IssuedDateTime, TestData.Value);
-                                                    });
+            var result = aggregate.Generate(TestData.OperatorId, TestData.EstateId, TestData.TransactionId, TestData.IssuedDateTime, TestData.Value);
+            result.IsSuccess.ShouldBeTrue();
         }
 
         [Fact]
@@ -58,21 +57,39 @@ public class VoucherAggregateTests
         {
             Aggregates.VoucherAggregate aggregate = Aggregates.VoucherAggregate.Create(TestData.VoucherId);
 
-            Should.Throw<ArgumentNullException>(() =>
-                                                {
-                                                    aggregate.Generate(Guid.Empty, TestData.EstateId, TestData.TransactionId, TestData.GeneratedDateTime, TestData.Value);
-                                                });
+            Result result = aggregate.Generate(Guid.Empty, TestData.EstateId, TestData.TransactionId, TestData.GeneratedDateTime, TestData.Value);
+            result.IsFailed.ShouldBeTrue();
+            result.Status.ShouldBe(ResultStatus.Invalid);
         }
 
-        [Fact]
+    [Fact]
+    public void VoucherAggregate_Generate_InvalidTransactionIdentifier_ErrorIsThrown()
+    {
+        Aggregates.VoucherAggregate aggregate = Aggregates.VoucherAggregate.Create(TestData.VoucherId);
+
+        Result result = aggregate.Generate(TestData.OperatorId, TestData.EstateId, Guid.Empty, TestData.GeneratedDateTime, TestData.Value);
+        result.IsFailed.ShouldBeTrue();
+        result.Status.ShouldBe(ResultStatus.Invalid);
+    }
+
+    [Fact]
+    public void VoucherAggregate_Generate_InvalidGeneratedDateTime_ErrorIsThrown()
+    {
+        Aggregates.VoucherAggregate aggregate = Aggregates.VoucherAggregate.Create(TestData.VoucherId);
+
+        Result result = aggregate.Generate(TestData.OperatorId, TestData.EstateId, TestData.TransactionId, DateTime.MinValue, TestData.Value);
+        result.IsFailed.ShouldBeTrue();
+        result.Status.ShouldBe(ResultStatus.Invalid);
+    }
+
+    [Fact]
         public void VoucherAggregate_Generate_InvalidEstateId_ErrorIsThrown()
         {
             Aggregates.VoucherAggregate aggregate = Aggregates.VoucherAggregate.Create(TestData.VoucherId);
 
-            Should.Throw<ArgumentNullException>(() =>
-                                                {
-                                                    aggregate.Generate(TestData.OperatorId, Guid.Empty, TestData.TransactionId, TestData.GeneratedDateTime, TestData.Value);
-                                                });
+            Result result = aggregate.Generate(TestData.OperatorId, Guid.Empty, TestData.TransactionId, TestData.GeneratedDateTime, TestData.Value);
+            result.IsFailed.ShouldBeTrue();
+            result.Status.ShouldBe(ResultStatus.Invalid);
         }
 
         [Theory]
@@ -82,10 +99,9 @@ public class VoucherAggregateTests
         {
             Aggregates.VoucherAggregate aggregate = Aggregates.VoucherAggregate.Create(TestData.VoucherId);
 
-            Should.Throw<ArgumentOutOfRangeException>(() =>
-                                                      {
-                                                          aggregate.Generate(TestData.OperatorId, TestData.EstateId, TestData.TransactionId, TestData.GeneratedDateTime, value);
-                                                      });
+            Result result = aggregate.Generate(TestData.OperatorId, TestData.EstateId, TestData.TransactionId, TestData.GeneratedDateTime, value);
+            result.IsFailed.ShouldBeTrue();
+            result.Status.ShouldBe(ResultStatus.Invalid);
         }
 
         [Fact]
@@ -93,8 +109,10 @@ public class VoucherAggregateTests
         {
             Aggregates.VoucherAggregate aggregate = Aggregates.VoucherAggregate.Create(TestData.VoucherId);
             aggregate.Generate(TestData.OperatorId, TestData.EstateId, TestData.TransactionId, TestData.GeneratedDateTime, TestData.Value);
-            aggregate.Issue(TestData.RecipientEmail, TestData.RecipientMobile, TestData.IssuedDateTime);
-            var voucher = aggregate.GetVoucher();
+            Result result = aggregate.Issue(TestData.RecipientEmail, TestData.RecipientMobile, TestData.IssuedDateTime);
+            result.IsSuccess.ShouldBeTrue();
+            
+            Voucher voucher = aggregate.GetVoucher();
             voucher.IsIssued.ShouldBeTrue();
         }
 
@@ -103,11 +121,11 @@ public class VoucherAggregateTests
         {
             Aggregates.VoucherAggregate aggregate = Aggregates.VoucherAggregate.Create(TestData.VoucherId);
 
-            Should.Throw<InvalidOperationException>(() =>
-                                                    {
-                                                        aggregate.Issue(TestData.RecipientEmail, TestData.RecipientMobile, TestData.IssuedDateTime);
-                                                    });
+            Result result = aggregate.Issue(TestData.RecipientEmail, TestData.RecipientMobile, TestData.IssuedDateTime);
+            result.IsFailed.ShouldBeTrue();
+            result.Status.ShouldBe(ResultStatus.Invalid);
         }
+
         [Fact]
         public void VoucherAggregate_Issue_VoucherAlreadyIssued_ErrorThrown()
         {
@@ -115,10 +133,8 @@ public class VoucherAggregateTests
             aggregate.Generate(TestData.OperatorId, TestData.EstateId, TestData.TransactionId, TestData.GeneratedDateTime, TestData.Value);
             aggregate.Issue(TestData.RecipientEmail, TestData.RecipientMobile, TestData.IssuedDateTime);
 
-            Should.Throw<InvalidOperationException>(() =>
-                                                    {
-                                                        aggregate.Issue(TestData.RecipientEmail, TestData.RecipientMobile, TestData.IssuedDateTime);
-                                                    });
+            Result result = aggregate.Issue(TestData.RecipientEmail, TestData.RecipientMobile, TestData.IssuedDateTime);
+            result.IsSuccess.ShouldBeTrue();
         }
 
         [Theory]
@@ -130,10 +146,9 @@ public class VoucherAggregateTests
         {
             Aggregates.VoucherAggregate aggregate = Aggregates.VoucherAggregate.Create(TestData.VoucherId);
             aggregate.Generate(TestData.OperatorId, TestData.EstateId, TestData.TransactionId, TestData.GeneratedDateTime, TestData.Value);
-            Should.Throw<ArgumentNullException>(() =>
-                                                {
-                                                    aggregate.Issue(recipientEmail, recipientMobile, TestData.IssuedDateTime);
-                                                });
+            Result result = aggregate.Issue(recipientEmail, recipientMobile, TestData.IssuedDateTime);
+            result.IsFailed.ShouldBeTrue();
+            result.Status.ShouldBe(ResultStatus.Invalid);
         }
 
         [Fact]
@@ -141,23 +156,23 @@ public class VoucherAggregateTests
         {
             Aggregates.VoucherAggregate aggregate = Aggregates.VoucherAggregate.Create(TestData.VoucherId);
             aggregate.Generate(TestData.OperatorId, TestData.EstateId, TestData.TransactionId, TestData.GeneratedDateTime, TestData.Value);
-            aggregate.AddBarcode(TestData.Barcode);
-            var voucher = aggregate.GetVoucher();
+            Result result = aggregate.AddBarcode(TestData.Barcode);
+            result.IsSuccess.ShouldBeTrue();
+
+            Voucher voucher = aggregate.GetVoucher();
             voucher.Barcode.ShouldBe(TestData.Barcode);
         }
 
         [Theory]
         [InlineData(null)]
         [InlineData("")]
-        public void VoucherAggregate_AddBarcode_InvalidBarcode_ErrorThrown(String barcode)
-        {
+        public void VoucherAggregate_AddBarcode_InvalidBarcode_ErrorThrown(String barcode) {
             Aggregates.VoucherAggregate aggregate = Aggregates.VoucherAggregate.Create(TestData.VoucherId);
             aggregate.Generate(TestData.OperatorId, TestData.EstateId, TestData.TransactionId, TestData.GeneratedDateTime, TestData.Value);
 
-            Should.Throw<ArgumentException>(() =>
-                                            {
-                                                aggregate.AddBarcode(barcode);
-                                            });
+            Result result = aggregate.AddBarcode(barcode);
+            result.IsFailed.ShouldBeTrue();
+            result.Status.ShouldBe(ResultStatus.Invalid);
         }
 
         [Fact]
@@ -165,10 +180,20 @@ public class VoucherAggregateTests
         {
             Aggregates.VoucherAggregate aggregate = Aggregates.VoucherAggregate.Create(TestData.VoucherId);
 
-            Should.Throw<InvalidOperationException>(() =>
-                                                    {
-                                                        aggregate.AddBarcode(TestData.Barcode);
-                                                    });
+            Result result = aggregate.AddBarcode(TestData.Barcode);
+            result.IsFailed.ShouldBeTrue();
+            result.Status.ShouldBe(ResultStatus.Invalid);
+        }
+
+        [Fact]
+        public void VoucherAggregate_AddBarcode_AlreadyIssued_ErrorThrown() {
+            Aggregates.VoucherAggregate aggregate = Aggregates.VoucherAggregate.Create(TestData.VoucherId);
+            aggregate.Generate(TestData.OperatorId, TestData.EstateId, TestData.TransactionId, TestData.GeneratedDateTime, TestData.Value);
+            aggregate.Issue(TestData.RecipientEmail, TestData.RecipientMobile, TestData.IssuedDateTime);
+
+            Result result = aggregate.AddBarcode(TestData.Barcode);
+            result.IsFailed.ShouldBeTrue();
+            result.Status.ShouldBe(ResultStatus.Invalid);
         }
 
         [Fact]
@@ -188,22 +213,21 @@ public class VoucherAggregateTests
         {
             Aggregates.VoucherAggregate aggregate = Aggregates.VoucherAggregate.Create(TestData.VoucherId);
 
-            Should.Throw<InvalidOperationException>(() =>
-                                                    {
-                                                        aggregate.Redeem(TestData.RedeemedDateTime);
-                                                    });
-        }
+        Result result = aggregate.Redeem(TestData.RedeemedDateTime);
+        result.IsFailed.ShouldBeTrue();
+        result.Status.ShouldBe(ResultStatus.Invalid);
+    }
 
         [Fact]
         public void VoucherAggregate_Redeem_VoucherNotIssued_ErrorThrown()
         {
             Aggregates.VoucherAggregate aggregate = Aggregates.VoucherAggregate.Create(TestData.VoucherId);
             aggregate.Generate(TestData.OperatorId, TestData.EstateId, TestData.TransactionId, TestData.GeneratedDateTime, TestData.Value);
-            Should.Throw<InvalidOperationException>(() =>
-                                                    {
-                                                        aggregate.Redeem(TestData.RedeemedDateTime);
-                                                    });
-        }
+
+        Result result = aggregate.Redeem(TestData.RedeemedDateTime);
+        result.IsFailed.ShouldBeTrue();
+        result.Status.ShouldBe(ResultStatus.Invalid);
+    }
 
         [Fact]
         public void VoucherAggregate_Redeem_VoucherAlreadyRedeemed_ErrorThrown()
@@ -212,9 +236,9 @@ public class VoucherAggregateTests
             aggregate.Generate(TestData.OperatorId, TestData.EstateId, TestData.TransactionId, TestData.GeneratedDateTime, TestData.Value);
             aggregate.Issue(TestData.RecipientEmail, TestData.RecipientMobile, TestData.IssuedDateTime);
             aggregate.Redeem(TestData.RedeemedDateTime);
-            Should.Throw<InvalidOperationException>(() =>
-                                                    {
-                                                        aggregate.Redeem(TestData.RedeemedDateTime);
-                                                    });
+            
+            Result result = aggregate.Redeem(TestData.RedeemedDateTime);
+            result.IsFailed.ShouldBeTrue();
+            result.Status.ShouldBe(ResultStatus.Invalid);
         }
     }

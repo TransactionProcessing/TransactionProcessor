@@ -97,14 +97,21 @@ public class VoucherDomainService : IVoucherDomainService
 
             VoucherAggregate voucherAggregate = voucherResult.Data;
 
-            voucherAggregate.Generate(operatorId, estateId, transactionId, issuedDateTime, value);
+            Result stateResult = voucherAggregate.Generate(operatorId, estateId, transactionId, issuedDateTime, value);
+            if (stateResult.IsFailed)
+                return ResultHelpers.CreateFailure(stateResult);
 
             Models.Voucher voucherModel = voucherAggregate.GetVoucher();
 
             // Generate the barcode
             Barcode barcode = new Barcode(voucherModel.VoucherCode);
-            voucherAggregate.AddBarcode(barcode.GetBase64Image());
-            voucherAggregate.Issue(recipientEmail, recipientMobile, issuedDateTime);
+            stateResult = voucherAggregate.AddBarcode(barcode.GetBase64Image());
+            if (stateResult.IsFailed)
+                return ResultHelpers.CreateFailure(stateResult);
+            
+            stateResult = voucherAggregate.Issue(recipientEmail, recipientMobile, issuedDateTime);
+            if (stateResult.IsFailed)
+                return ResultHelpers.CreateFailure(stateResult);
 
             Result saveResult = await this.AggregateService.Save(voucherAggregate, cancellationToken);
             if (saveResult.IsFailed)
@@ -145,9 +152,7 @@ public class VoucherDomainService : IVoucherDomainService
             Result<EstateResponse> validateResult = await this.ValidateVoucherRedemption(estateId, cancellationToken);
             if (validateResult.IsFailed)
                 return ResultHelpers.CreateFailure(validateResult);
-
-
-
+            
             Result<VoucherAggregate> voucherResult = await DomainServiceHelper.GetAggregateOrFailure(ct => this.AggregateService.GetLatest<VoucherAggregate>(voucher.VoucherId, ct), voucher.VoucherId, cancellationToken);
             if (voucherResult.IsFailed)
                 return ResultHelpers.CreateFailure(voucherResult);
@@ -155,7 +160,9 @@ public class VoucherDomainService : IVoucherDomainService
             VoucherAggregate voucherAggregate = voucherResult.Data;
 
             // Redeem the voucher
-            voucherAggregate.Redeem(redeemedDateTime);
+            Result stateResult = voucherAggregate.Redeem(redeemedDateTime);
+            if (stateResult.IsFailed)
+                return ResultHelpers.CreateFailure(stateResult);
 
             Result saveResult = await this.AggregateService.Save(voucherAggregate, cancellationToken);
             if (saveResult.IsFailed)
@@ -176,7 +183,6 @@ public class VoucherDomainService : IVoucherDomainService
             return Result.Failure(ex.GetExceptionMessages());
         }
     }
-
     
     private async Task<Result> ValidateVoucherIssue(Guid estateId, Guid operatorId, CancellationToken cancellationToken)
     {
