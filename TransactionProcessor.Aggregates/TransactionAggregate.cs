@@ -1,4 +1,5 @@
-﻿using TransactionProcessor.DomainEvents;
+﻿using SimpleResults;
+using TransactionProcessor.DomainEvents;
 using TransactionProcessor.Models;
 using TransactionProcessor.Models.Contract;
 
@@ -14,19 +15,25 @@ namespace TransactionProcessor.Aggregates
 
     public static class TransactionAggregateExtensions{
 
-        public static void DeclineTransaction(this TransactionAggregate aggregate,
+        public static Result DeclineTransaction(this TransactionAggregate aggregate,
             Guid operatorId,
                                        String operatorResponseCode,
                                        String operatorResponseMessage,
                                        String responseCode,
                                        String responseMessage)
         {
-            aggregate.CheckTransactionHasBeenStarted();
-            aggregate.CheckTransactionNotAlreadyAuthorised();
-            aggregate.CheckTransactionNotAlreadyDeclined();
+            Result result = aggregate.CheckTransactionHasBeenStarted();
+            if (result.IsFailed)
+                return result;
+            result = aggregate.CheckTransactionNotAlreadyAuthorised();
+            if (result.IsFailed)
+                return result;
+            result = aggregate.CheckTransactionNotAlreadyDeclined();
+            if (result.IsFailed)
+                return result;
 
             TransactionDomainEvents.TransactionDeclinedByOperatorEvent transactionDeclinedByOperatorEvent =
-                new TransactionDomainEvents.TransactionDeclinedByOperatorEvent(aggregate.AggregateId,
+                new(aggregate.AggregateId,
                                                        aggregate.EstateId,
                                                        aggregate.MerchantId,
                                                        operatorId,
@@ -36,20 +43,30 @@ namespace TransactionProcessor.Aggregates
                                                        responseMessage, 
                                                        aggregate.TransactionDateTime);
             aggregate.ApplyAndAppend(transactionDeclinedByOperatorEvent);
+
+            return Result.Success();
         }
 
-        public static void DeclineTransactionLocally(this TransactionAggregate aggregate, 
+        public static Result DeclineTransactionLocally(this TransactionAggregate aggregate, 
                                                      String responseCode,
                                                      String responseMessage)
         {
-            aggregate.CheckTransactionHasBeenStarted();
-            aggregate.CheckTransactionNotAlreadyAuthorised();
-            aggregate.CheckTransactionNotAlreadyDeclined();
+            Result result = aggregate.CheckTransactionHasBeenStarted();
+            if (result.IsFailed)
+                return result;
+            result = aggregate.CheckTransactionNotAlreadyAuthorised();
+            if (result.IsFailed)
+                return result;
+            result = aggregate.CheckTransactionNotAlreadyDeclined();
+            if (result.IsFailed)
+                return result;
             TransactionDomainEvents.TransactionHasBeenLocallyDeclinedEvent transactionHasBeenLocallyDeclinedEvent =
-                new TransactionDomainEvents.TransactionHasBeenLocallyDeclinedEvent(aggregate.AggregateId, aggregate.EstateId, aggregate.MerchantId, responseCode, responseMessage,
+                new(aggregate.AggregateId, aggregate.EstateId, aggregate.MerchantId, responseCode, responseMessage,
                     aggregate.TransactionDateTime);
 
             aggregate.ApplyAndAppend(transactionHasBeenLocallyDeclinedEvent);
+
+            return Result.Success();
         }
 
         public static List<CalculatedFee> GetFees(this TransactionAggregate aggregate)
@@ -77,16 +94,23 @@ namespace TransactionProcessor.Aggregates
             };
         }
 
-        public static void AddFee(this TransactionAggregate aggregate, CalculatedFee calculatedFee)
+        public static Result AddFee(this TransactionAggregate aggregate, CalculatedFee calculatedFee)
         {
-            Guard.ThrowIfNull(calculatedFee, nameof(calculatedFee));
-
             if (aggregate.HasFeeAlreadyBeenAdded(calculatedFee))
-                return;
+                return Result.Success();
 
-            aggregate.CheckTransactionHasBeenAuthorised();
-            aggregate.CheckTransactionHasBeenCompleted();
-            aggregate.CheckTransactionCanAttractFees();
+            if (calculatedFee == null)
+                return Result.Invalid("Calculated Fee must not be null");
+
+            Result result = aggregate.CheckTransactionHasBeenAuthorised();
+            if (result.IsFailed)
+                return result;
+            result = aggregate.CheckTransactionHasBeenCompleted();
+            if (result.IsFailed)
+                return result;
+            result =  aggregate.CheckTransactionCanAttractFees();
+            if (result.IsFailed)
+                return result;
 
             DomainEvent @event = null;
             if (calculatedFee.FeeType == FeeType.ServiceProvider)
@@ -104,43 +128,61 @@ namespace TransactionProcessor.Aggregates
             }
             else
             {
-                throw new InvalidOperationException("Unsupported Fee Type");
+                return Result.Invalid("Unsupported Fee Type");
             }
 
             aggregate.ApplyAndAppend(@event);
+            
+            return Result.Success();
         }
 
-        public static void AddProductDetails(this TransactionAggregate aggregate, Guid contractId,
+        public static Result AddProductDetails(this TransactionAggregate aggregate, Guid contractId,
                                              Guid productId)
         {
-            Guard.ThrowIfInvalidGuid(contractId, typeof(ArgumentException), $"Contract Id must not be [{Guid.Empty}]");
-            Guard.ThrowIfInvalidGuid(productId, typeof(ArgumentException), $"Product Id must not be [{Guid.Empty}]");
+            if (contractId == Guid.Empty)
+                return Result.Invalid($"Contract Id must not be [{Guid.Empty}]");
+            if (productId == Guid.Empty)
+                return Result.Invalid($"Product Id must not be [{Guid.Empty}]");
 
-            aggregate.CheckTransactionHasBeenStarted();
-            aggregate.CheckTransactionNotAlreadyCompleted();
-            aggregate.CheckProductDetailsNotAlreadyAdded();
+            Result result = aggregate.CheckTransactionHasBeenStarted();
+            if (result.IsFailed)
+                return result;
+            result = aggregate.CheckTransactionNotAlreadyCompleted();
+            if (result.IsFailed)
+                return result;
+            result = aggregate.CheckProductDetailsNotAlreadyAdded();
+            if (result.IsFailed)
+                return result;
 
             TransactionDomainEvents.ProductDetailsAddedToTransactionEvent productDetailsAddedToTransactionEvent =
-                new TransactionDomainEvents.ProductDetailsAddedToTransactionEvent(aggregate.AggregateId, aggregate.EstateId, aggregate.MerchantId, contractId, productId,
+                new(aggregate.AggregateId, aggregate.EstateId, aggregate.MerchantId, contractId, productId,
                     aggregate.TransactionDateTime);
 
             aggregate.ApplyAndAppend(productDetailsAddedToTransactionEvent);
+
+            return Result.Success();
         }
 
-        public static void AddFeePendingSettlement(this TransactionAggregate aggregate, CalculatedFee calculatedFee,
+        public static Result AddFeePendingSettlement(this TransactionAggregate aggregate, CalculatedFee calculatedFee,
                                              DateTime settlementDueDate)
         {
             if (calculatedFee == null)
             {
-                throw new ArgumentNullException(nameof(calculatedFee));
+                return Result.Invalid("Calculated fee cannot be null");
             }
 
             if (aggregate.HasFeeAlreadyBeenAdded(calculatedFee))
-                return;
+                return Result.Success();
 
-            aggregate.CheckTransactionHasBeenAuthorised();
-            aggregate.CheckTransactionHasBeenCompleted();
-            aggregate.CheckTransactionCanAttractFees();
+            Result result = aggregate.CheckTransactionHasBeenAuthorised();
+            if (result.IsFailed)
+                return result;
+            result = aggregate.CheckTransactionHasBeenCompleted();
+            if (result.IsFailed)
+                return result;
+            result = aggregate.CheckTransactionCanAttractFees();
+            if (result.IsFailed)
+                return result;
 
             DomainEvent @event = null;
             if (calculatedFee.FeeType == FeeType.Merchant){
@@ -157,26 +199,34 @@ namespace TransactionProcessor.Aggregates
             }
             else
             {
-                throw new InvalidOperationException("Unsupported Fee Type");
+                return Result.Invalid("Unsupported Fee Type");
             }
 
             aggregate.ApplyAndAppend(@event);
+
+            return Result.Success();
         }
 
-        public static void AddSettledFee(this TransactionAggregate aggregate, CalculatedFee calculatedFee,
+        public static Result AddSettledFee(this TransactionAggregate aggregate, CalculatedFee calculatedFee,
                                          DateTime settledDateTime, Guid settlementId)
         {
-            if (calculatedFee == null)
-            {
-                throw new ArgumentNullException(nameof(calculatedFee));
+            if (calculatedFee == null) {
+                return Result.Invalid("Calculated fee cannot be null");
             }
 
-            aggregate.CheckTransactionHasBeenAuthorised();
-            aggregate.CheckTransactionHasBeenCompleted();
-            aggregate.CheckTransactionCanAttractFees();
+            if (aggregate.HasFeeAlreadyBeenSettled(calculatedFee))
+                return Result.Success();
 
-            if (aggregate.HasFeeAlreadyBeenSettled(calculatedFee) == true)
-                return;
+            Result result = aggregate.CheckTransactionHasBeenAuthorised();
+            if (result.IsFailed)
+                return result;
+            result = aggregate.CheckTransactionHasBeenCompleted();
+            if (result.IsFailed)
+                return result;
+            result = aggregate.CheckTransactionCanAttractFees();
+            if (result.IsFailed)
+                return result;
+
 
             DomainEvent @event = null;
             if (calculatedFee.FeeType == FeeType.Merchant)
@@ -196,27 +246,31 @@ namespace TransactionProcessor.Aggregates
             }
             else
             {
-                throw new InvalidOperationException("Unsupported Fee Type");
+                return Result.Invalid("Unsupported Fee Type");
             }
             
             aggregate.ApplyAndAppend(@event);
+            return Result.Success();
         }
 
-        public static void AddTransactionSource(this TransactionAggregate aggregate, TransactionSource transactionSource)
+        public static Result AddTransactionSource(this TransactionAggregate aggregate, TransactionSource transactionSource)
         {
-            Guard.ThrowIfInvalidEnum(typeof(TransactionSource), transactionSource, typeof(ArgumentException), "Transaction Source must be a valid source");
-
             if (aggregate.TransactionSource != TransactionSource.NotSet)
-                return;
+                return Result.Success();
+
+            if (Enum.IsDefined(typeof(TransactionSource), transactionSource) == false)
+                return Result.Invalid("Transaction Source must be a valid source");
 
             TransactionDomainEvents.TransactionSourceAddedToTransactionEvent transactionSourceAddedToTransactionEvent =
-                new TransactionDomainEvents.TransactionSourceAddedToTransactionEvent(aggregate.AggregateId, aggregate.EstateId, aggregate.MerchantId, (Int32)transactionSource,
+                new(aggregate.AggregateId, aggregate.EstateId, aggregate.MerchantId, (Int32)transactionSource,
                     aggregate.TransactionDateTime);
 
             aggregate.ApplyAndAppend(transactionSourceAddedToTransactionEvent);
+
+            return Result.Success();
         }
 
-        public static void AuthoriseTransaction(this TransactionAggregate aggregate, 
+        public static Result AuthoriseTransaction(this TransactionAggregate aggregate, 
                                                 Guid operatorId,
                                                 String authorisationCode,
                                                 String operatorResponseCode,
@@ -225,10 +279,14 @@ namespace TransactionProcessor.Aggregates
                                                 String responseCode,
                                                 String responseMessage)
         {
-            aggregate.CheckTransactionHasBeenStarted();
-            aggregate.CheckTransactionNotAlreadyAuthorised();
+            Result result = aggregate.CheckTransactionHasBeenStarted();
+            if (result.IsFailed)
+                return result;
+            result = aggregate.CheckTransactionNotAlreadyAuthorised();
+            if (result.IsFailed)
+                return result;
 
-            TransactionDomainEvents.TransactionAuthorisedByOperatorEvent transactionAuthorisedByOperatorEvent = new TransactionDomainEvents.TransactionAuthorisedByOperatorEvent(aggregate.AggregateId,
+            TransactionDomainEvents.TransactionAuthorisedByOperatorEvent transactionAuthorisedByOperatorEvent = new(aggregate.AggregateId,
                                                                                                                                  aggregate.EstateId,
                                                                                                                                  aggregate.MerchantId,
                                                                                                                                  operatorId,
@@ -240,31 +298,47 @@ namespace TransactionProcessor.Aggregates
                                                                                                                                  responseMessage,
                                                                                                                                  aggregate.TransactionDateTime);
             aggregate.ApplyAndAppend(transactionAuthorisedByOperatorEvent);
+
+            return Result.Success();
         }
 
-        public static void AuthoriseTransactionLocally(this TransactionAggregate aggregate, 
+        public static Result AuthoriseTransactionLocally(this TransactionAggregate aggregate, 
                                                        String authorisationCode,
                                                        String responseCode,
                                                        String responseMessage)
         {
-            aggregate.CheckTransactionHasBeenStarted();
-            aggregate.CheckTransactionNotAlreadyAuthorised();
-            aggregate.CheckTransactionCanBeLocallyAuthorised();
+            var result = aggregate.CheckTransactionHasBeenStarted();
+            if (result.IsFailed)
+                return result;
+            result = aggregate.CheckTransactionNotAlreadyAuthorised();
+            if (result.IsFailed)
+                return result;
+            result = aggregate.CheckTransactionCanBeLocallyAuthorised();
+            if (result.IsFailed)
+                return result;
             TransactionDomainEvents.TransactionHasBeenLocallyAuthorisedEvent transactionHasBeenLocallyAuthorisedEvent =
-                new TransactionDomainEvents.TransactionHasBeenLocallyAuthorisedEvent(aggregate.AggregateId, aggregate.EstateId, aggregate.MerchantId, authorisationCode, responseCode, responseMessage,
+                new(aggregate.AggregateId, aggregate.EstateId, aggregate.MerchantId, authorisationCode, responseCode, responseMessage,
                     aggregate.TransactionDateTime);
 
             aggregate.ApplyAndAppend(transactionHasBeenLocallyAuthorisedEvent);
+
+            return Result.Success();
         }
 
-        public static void CompleteTransaction(this TransactionAggregate aggregate)
+        public static Result CompleteTransaction(this TransactionAggregate aggregate)
         {
-            aggregate.CheckTransactionHasBeenStarted();
-            aggregate.CheckTransactionHasBeenAuthorisedOrDeclined();
-            aggregate.CheckTransactionNotAlreadyCompleted();
+            Result result = aggregate.CheckTransactionHasBeenStarted();
+            if (result.IsFailed)
+                return result;
+            result = aggregate.CheckTransactionHasBeenAuthorisedOrDeclined();
+            if (result.IsFailed)
+                return result;
+            result = aggregate.CheckTransactionNotAlreadyCompleted();
+            if (result.IsFailed)
+                return result;
 
             TransactionDomainEvents.TransactionHasBeenCompletedEvent transactionHasBeenCompletedEvent =
-                new TransactionDomainEvents.TransactionHasBeenCompletedEvent(aggregate.AggregateId,
+                new(aggregate.AggregateId,
                                                      aggregate.EstateId,
                                                      aggregate.MerchantId,
                                                      aggregate.ResponseCode,
@@ -275,9 +349,11 @@ namespace TransactionProcessor.Aggregates
                                                      aggregate.TransactionDateTime);
 
             aggregate.ApplyAndAppend(transactionHasBeenCompletedEvent);
+
+            return Result.Success();
         }
 
-        public static void RecordTransactionTimings(this TransactionAggregate aggregate,
+        public static Result RecordTransactionTimings(this TransactionAggregate aggregate,
                                                     DateTime TransactionStartedDateTime,
                                                     DateTime? OperatorCommunicationsStartedEvent,
                                                     DateTime? OperatorCommunicationsCompletedEvent,
@@ -292,63 +368,92 @@ namespace TransactionProcessor.Aggregates
                      TransactionCompletedDateTime);
 
             aggregate.ApplyAndAppend(transactionTimingsAddedToTransactionEvent);
+
+            return Result.Success();
         }
 
-        public static void RecordAdditionalRequestData(this TransactionAggregate aggregate, 
+        public static Result RecordAdditionalRequestData(this TransactionAggregate aggregate, 
                                                        Guid operatorId,
                                                        Dictionary<String, String> additionalTransactionRequestMetadata)
         {
-            aggregate.CheckTransactionNotAlreadyCompleted();
-            aggregate.CheckTransactionHasBeenStarted();
-            aggregate.CheckTransactionNotAlreadyAuthorised();
-            aggregate.CheckTransactionNotAlreadyDeclined();
-            aggregate.CheckAdditionalRequestDataNotAlreadyRecorded();
+            var result = aggregate.CheckTransactionNotAlreadyCompleted();
+            if (result.IsFailed)
+                return result;
+            result = aggregate.CheckTransactionHasBeenStarted();
+            if (result.IsFailed)
+                return result;
+            result = aggregate.CheckTransactionNotAlreadyAuthorised();
+            if (result.IsFailed)
+                return result;
+            result = aggregate.CheckTransactionNotAlreadyDeclined();
+            if (result.IsFailed)
+                return result;
+            result= aggregate.CheckAdditionalRequestDataNotAlreadyRecorded();
+            if (result.IsFailed)
+                return result;
 
             TransactionDomainEvents.AdditionalRequestDataRecordedEvent additionalRequestDataRecordedEvent =
-                new TransactionDomainEvents.AdditionalRequestDataRecordedEvent(aggregate.AggregateId, aggregate.EstateId, aggregate.MerchantId, operatorId, additionalTransactionRequestMetadata,
+                new(aggregate.AggregateId, aggregate.EstateId, aggregate.MerchantId, operatorId, additionalTransactionRequestMetadata,
                     aggregate.TransactionDateTime);
 
             aggregate.ApplyAndAppend(additionalRequestDataRecordedEvent);
+
+            return Result.Success();
         }
 
-        public static void RecordAdditionalResponseData(this TransactionAggregate aggregate,
+        public static Result RecordAdditionalResponseData(this TransactionAggregate aggregate,
                                                         Guid operatorId,
                                                         Dictionary<String, String> additionalTransactionResponseMetadata)
         {
-            aggregate.CheckTransactionHasBeenStarted();
-            aggregate.CheckAdditionalResponseDataNotAlreadyRecorded();
+            Result result = aggregate.CheckTransactionHasBeenStarted();
+            if (result.IsFailed)
+                return result;
+            result = aggregate.CheckAdditionalResponseDataNotAlreadyRecorded();
+            if (result.IsFailed)
+                return result;
 
             TransactionDomainEvents.AdditionalResponseDataRecordedEvent additionalResponseDataRecordedEvent =
-                new TransactionDomainEvents.AdditionalResponseDataRecordedEvent(aggregate.AggregateId, aggregate.EstateId, aggregate.MerchantId, operatorId, additionalTransactionResponseMetadata,
+                new(aggregate.AggregateId, aggregate.EstateId, aggregate.MerchantId, operatorId, additionalTransactionResponseMetadata,
                     aggregate.TransactionDateTime);
 
             aggregate.ApplyAndAppend(additionalResponseDataRecordedEvent);
+            return Result.Success();
         }
 
-        public static void RequestEmailReceipt(this TransactionAggregate aggregate, String customerEmailAddress)
+        public static Result RequestEmailReceipt(this TransactionAggregate aggregate, String customerEmailAddress)
         {
-            aggregate.CheckTransactionHasBeenCompleted();
-            aggregate.CheckCustomerHasNotAlreadyRequestedEmailReceipt();
+            Result result = aggregate.CheckTransactionHasBeenCompleted();
+            if (result.IsFailed)
+                return result;
+            result = aggregate.CheckCustomerHasNotAlreadyRequestedEmailReceipt();
+            if (result.IsFailed)
+                return result;
 
             TransactionDomainEvents.CustomerEmailReceiptRequestedEvent customerEmailReceiptRequestedEvent =
-                new TransactionDomainEvents.CustomerEmailReceiptRequestedEvent(aggregate.AggregateId, aggregate.EstateId, aggregate.MerchantId, customerEmailAddress,
+                new(aggregate.AggregateId, aggregate.EstateId, aggregate.MerchantId, customerEmailAddress,
                     aggregate.TransactionDateTime);
 
             aggregate.ApplyAndAppend(customerEmailReceiptRequestedEvent);
+
+            return Result.Success();
         }
 
-        public static void RequestEmailReceiptResend(this TransactionAggregate aggregate)
+        public static Result RequestEmailReceiptResend(this TransactionAggregate aggregate)
         {
-            aggregate.CheckCustomerHasAlreadyRequestedEmailReceipt();
+            var result = aggregate.CheckCustomerHasAlreadyRequestedEmailReceipt();
+            if (result.IsFailed)
+                return result;
 
             TransactionDomainEvents.CustomerEmailReceiptResendRequestedEvent customerEmailReceiptResendRequestedEvent =
-                new TransactionDomainEvents.CustomerEmailReceiptResendRequestedEvent(aggregate.AggregateId, aggregate.EstateId, aggregate.MerchantId,
+                new(aggregate.AggregateId, aggregate.EstateId, aggregate.MerchantId,
                     aggregate.TransactionDateTime);
 
             aggregate.ApplyAndAppend(customerEmailReceiptResendRequestedEvent);
+
+            return Result.Success();
         }
 
-        public static void StartTransaction(this TransactionAggregate aggregate,
+        public static Result StartTransaction(this TransactionAggregate aggregate,
                                             DateTime transactionDateTime,
                                             String transactionNumber,
                                             TransactionType transactionType,
@@ -358,24 +463,35 @@ namespace TransactionProcessor.Aggregates
                                             String deviceIdentifier,
                                             Decimal? transactionAmount)
         {
-            Guard.ThrowIfInvalidDate(transactionDateTime, typeof(ArgumentException), $"Transaction Date Time must not be [{DateTime.MinValue}]");
-            Guard.ThrowIfNullOrEmpty(transactionNumber, typeof(ArgumentException), "Transaction Number must not be null or empty");
-            Guard.ThrowIfNullOrEmpty(transactionReference, typeof(ArgumentException), "Transaction Reference must not be null or empty");
-            if (Int32.TryParse(transactionNumber, out Int32 txnnumber) == false)
-            {
-                throw new ArgumentException("Transaction Number must be numeric");
+            if (transactionDateTime == DateTime.MinValue)
+                return Result.Invalid($"Transaction Date Time must not be [{DateTime.MinValue}]");
+            if (String.IsNullOrEmpty(transactionNumber))
+                return Result.Invalid("Transaction Number must not be null or empty");
+            if (String.IsNullOrEmpty(transactionReference))
+                return Result.Invalid("Transaction Reference must not be null or empty");
+
+            if (Int32.TryParse(transactionNumber, out Int32 _) == false) {
+                return Result.Invalid("Transaction Number must be numeric");
             }
 
-            // Validate the transaction Type
-            Guard.ThrowIfInvalidEnum(typeof(TransactionType), transactionType, typeof(ArgumentOutOfRangeException), $"Invalid Transaction Type [{transactionType}]");
+            if (Enum.IsDefined(typeof(TransactionType), transactionType) == false)
+                return Result.Invalid("Transaction Type not valid");
 
-            Guard.ThrowIfInvalidGuid(estateId, typeof(ArgumentException), $"Estate Id must not be [{Guid.Empty}]");
-            Guard.ThrowIfInvalidGuid(merchantId, typeof(ArgumentException), $"Merchant Id must not be [{Guid.Empty}]");
-            Guard.ThrowIfNullOrEmpty(deviceIdentifier, typeof(ArgumentException), "Device Identifier must not be null or empty");
+            if (estateId == Guid.Empty)
+                return Result.Invalid($"Estate Id must not be [{Guid.Empty}]");
+            if (merchantId == Guid.Empty)
+                return Result.Invalid($"Merchant Id must not be [{Guid.Empty}]");
+            if (String.IsNullOrEmpty(deviceIdentifier))
+                return Result.Invalid("Device Identifier must not be null or empty");
 
-            aggregate.CheckTransactionNotAlreadyStarted();
-            aggregate.CheckTransactionNotAlreadyCompleted();
-            TransactionDomainEvents.TransactionHasStartedEvent transactionHasStartedEvent = new TransactionDomainEvents.TransactionHasStartedEvent(aggregate.AggregateId,
+            Result result = aggregate.CheckTransactionNotAlreadyStarted();
+            if (result.IsFailed)
+                return result;
+            result = aggregate.CheckTransactionNotAlreadyCompleted();
+            if (result.IsFailed)
+                return result;
+
+            TransactionDomainEvents.TransactionHasStartedEvent transactionHasStartedEvent = new(aggregate.AggregateId,
                                                                                                    estateId,
                                                                                                    merchantId,
                                                                                                    transactionDateTime,
@@ -386,16 +502,23 @@ namespace TransactionProcessor.Aggregates
                                                                                                    transactionAmount);
 
             aggregate.ApplyAndAppend(transactionHasStartedEvent);
+
+            return Result.Success();
         }
 
-        public static void RecordCostPrice(this TransactionAggregate aggregate, Decimal unitCost, Decimal totalCost){
-            aggregate.CheckTransactionHasBeenStarted();
-            aggregate.CheckCostValuesNotAlreadyRecorded();
-
-            // Dont emit an event when no cost
+        public static Result RecordCostPrice(this TransactionAggregate aggregate, Decimal unitCost, Decimal totalCost){
+            // Don't emit an event when no cost
             if (unitCost == 0 || totalCost == 0)
-                return;
+                return Result.Success();
 
+            Result result = aggregate.CheckTransactionHasBeenStarted();
+            if (result.IsFailed)
+                return result;
+
+            if (aggregate.UnitCost != null && aggregate.TotalCost != null) {
+                return Result.Success();
+            }
+            
             TransactionDomainEvents.TransactionCostInformationRecordedEvent transactionCostInformationRecordedEvent = new TransactionDomainEvents.TransactionCostInformationRecordedEvent(aggregate.AggregateId,
                                                                                                               aggregate.EstateId,
                                                                                                               aggregate.MerchantId,
@@ -404,136 +527,143 @@ namespace TransactionProcessor.Aggregates
                                                                                                               aggregate.TransactionDateTime);
             
             aggregate.ApplyAndAppend(transactionCostInformationRecordedEvent);
+
+            return Result.Success();
         }
 
-        private static void CheckAdditionalRequestDataNotAlreadyRecorded(this TransactionAggregate aggregate)
+        private static Result CheckAdditionalRequestDataNotAlreadyRecorded(this TransactionAggregate aggregate)
         {
             if (aggregate.AdditionalTransactionRequestMetadata != null)
             {
-                throw new InvalidOperationException("Additional Request Data already recorded");
+                return Result.Invalid("Additional Request Data already recorded");
             }
+            return Result.Success();
         }
 
-        private static void CheckAdditionalResponseDataNotAlreadyRecorded(this TransactionAggregate aggregate)
+        private static Result CheckAdditionalResponseDataNotAlreadyRecorded(this TransactionAggregate aggregate)
         {
             if (aggregate.AdditionalTransactionResponseMetadata != null)
             {
-                throw new InvalidOperationException("Additional Response Data already recorded");
+                return Result.Invalid("Additional Response Data already recorded");
             }
+            return Result.Success();
         }
 
-        private static void CheckCostValuesNotAlreadyRecorded(this TransactionAggregate aggregate)
-        {
-            if (aggregate.UnitCost != null && aggregate.TotalCost != null)
-            {
-                throw new InvalidOperationException("Cost information already recorded");
-            }
-        }
-
-        private static void CheckCustomerHasNotAlreadyRequestedEmailReceipt(this TransactionAggregate aggregate)
+        private static Result CheckCustomerHasNotAlreadyRequestedEmailReceipt(this TransactionAggregate aggregate)
         {
             if (aggregate.CustomerEmailReceiptHasBeenRequested)
             {
-                throw new InvalidOperationException($"Customer Email Receipt already requested for Transaction [{aggregate.AggregateId}]");
+                return Result.Invalid($"Customer Email Receipt already requested for Transaction [{aggregate.AggregateId}]");
             }
+            return Result.Success();
         }
 
-        private static void CheckCustomerHasAlreadyRequestedEmailReceipt(this TransactionAggregate aggregate)
+        private static Result CheckCustomerHasAlreadyRequestedEmailReceipt(this TransactionAggregate aggregate)
         {
             if (aggregate.CustomerEmailReceiptHasBeenRequested == false)
             {
-                throw new InvalidOperationException($"Customer Email Receipt not already requested for Transaction [{aggregate.AggregateId}]");
+                return Result.Invalid($"Customer Email Receipt not already requested for Transaction [{aggregate.AggregateId}]");
             }
+            return Result.Success();
         }
 
-        private static void CheckProductDetailsNotAlreadyAdded(this TransactionAggregate aggregate)
+        private static Result CheckProductDetailsNotAlreadyAdded(this TransactionAggregate aggregate)
         {
             if (aggregate.IsProductDetailsAdded)
             {
-                throw new InvalidOperationException("Product details already added");
+                return Result.Invalid("Product details already added");
             }
+            return Result.Success();
         }
 
-        private static void CheckTransactionCanAttractFees(this TransactionAggregate aggregate)
+        private static Result CheckTransactionCanAttractFees(this TransactionAggregate aggregate)
         {
             if (aggregate.TransactionType != TransactionType.Sale)
             {
-                throw new NotSupportedException($"Transactions of type {aggregate.TransactionType} cannot attract fees");
+                return Result.Invalid($"Transactions of type {aggregate.TransactionType} cannot attract fees");
             }
+            return Result.Success();
         }
 
-        private static void CheckTransactionCanBeLocallyAuthorised(this TransactionAggregate aggregate)
+        private static Result CheckTransactionCanBeLocallyAuthorised(this TransactionAggregate aggregate)
         {
             if (aggregate.TransactionType == TransactionType.Sale)
             {
-                throw new InvalidOperationException("Sales cannot be locally authorised");
+                return Result.Invalid("Sales cannot be locally authorised");
             }
+            return Result.Success();
         }
 
-        private static void CheckTransactionHasBeenAuthorised(this TransactionAggregate aggregate)
+        private static Result CheckTransactionHasBeenAuthorised(this TransactionAggregate aggregate)
         {
             if (aggregate.IsLocallyAuthorised == false && aggregate.IsAuthorised == false)
             {
-                throw new InvalidOperationException($"Transaction [{aggregate.AggregateId}] has not been authorised");
+                return Result.Invalid($"Transaction [{aggregate.AggregateId}] has not been authorised");
             }
+            return Result.Success();
         }
 
-        private static void CheckTransactionHasBeenAuthorisedOrDeclined(this TransactionAggregate aggregate)
+        private static Result CheckTransactionHasBeenAuthorisedOrDeclined(this TransactionAggregate aggregate)
         {
             if (aggregate.IsAuthorised == false && aggregate.IsLocallyAuthorised == false && aggregate.IsDeclined == false && aggregate.IsLocallyDeclined == false)
             {
-                throw new InvalidOperationException($"Transaction [{aggregate.AggregateId}] has not been authorised or declined");
+                return Result.Invalid($"Transaction [{aggregate.AggregateId}] has not been authorised or declined");
             }
+            return Result.Success();
         }
 
-        private static void CheckTransactionHasBeenCompleted(this TransactionAggregate aggregate)
+        private static Result CheckTransactionHasBeenCompleted(this TransactionAggregate aggregate)
         {
             if (aggregate.IsCompleted == false)
             {
-                throw new InvalidOperationException($"Transaction [{aggregate.AggregateId}] has not been completed");
+                return Result.Invalid($"Transaction [{aggregate.AggregateId}] has not been completed");
             }
+            return Result.Success();
         }
 
-        private static void CheckTransactionHasBeenStarted(this TransactionAggregate aggregate)
-        {
-            if (aggregate.IsStarted == false)
-            {
-                throw new InvalidOperationException($"Transaction [{aggregate.AggregateId}] has not been started");
+        private static Result CheckTransactionHasBeenStarted(this TransactionAggregate aggregate) {
+            if (aggregate.IsStarted == false) {
+                return Result.Invalid($"Transaction [{aggregate.AggregateId}] has not been started");
             }
+            return Result.Success();
         }
 
-        private static void CheckTransactionNotAlreadyAuthorised(this TransactionAggregate aggregate)
+        private static Result CheckTransactionNotAlreadyAuthorised(this TransactionAggregate aggregate)
         {
             if (aggregate.IsLocallyAuthorised || aggregate.IsAuthorised)
             {
                 String authtype = aggregate.IsLocallyAuthorised ? " locally " : " ";
-                throw new InvalidOperationException($"Transaction [{aggregate.AggregateId}] has already been{authtype}authorised");
+                return Result.Invalid($"Transaction [{aggregate.AggregateId}] has already been{authtype}authorised");
             }
+            return Result.Success();
         }
 
-        private static void CheckTransactionNotAlreadyCompleted(this TransactionAggregate aggregate)
+        private static Result CheckTransactionNotAlreadyCompleted(this TransactionAggregate aggregate)
         {
             if (aggregate.IsCompleted)
             {
-                throw new InvalidOperationException($"Transaction Id [{aggregate.AggregateId}] has already been completed");
+                return Result.Invalid($"Transaction Id [{aggregate.AggregateId}] has already been completed");
             }
+            return Result.Success();
         }
 
-        private static void CheckTransactionNotAlreadyDeclined(this TransactionAggregate aggregate)
+        private static Result CheckTransactionNotAlreadyDeclined(this TransactionAggregate aggregate)
         {
             if (aggregate.IsLocallyDeclined || aggregate.IsDeclined)
             {
                 String authtype = aggregate.IsLocallyDeclined ? " locally " : " ";
-                throw new InvalidOperationException($"Transaction [{aggregate.AggregateId}] has already been{authtype}declined");
+                return Result.Invalid($"Transaction [{aggregate.AggregateId}] has already been{authtype}declined");
             }
+            return Result.Success();
         }
 
-        private static void CheckTransactionNotAlreadyStarted(this TransactionAggregate aggregate)
+        private static Result CheckTransactionNotAlreadyStarted(this TransactionAggregate aggregate)
         {
             if (aggregate.IsStarted)
             {
-                throw new InvalidOperationException($"Transaction Id [{aggregate.AggregateId}] has already been started");
+                return Result.Invalid($"Transaction Id [{aggregate.AggregateId}] has already been started");
             }
+            return Result.Success();
         }
 
         private static Boolean HasFeeAlreadyBeenSettled(this TransactionAggregate aggregate, CalculatedFee calculatedFee)

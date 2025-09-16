@@ -102,7 +102,9 @@ namespace TransactionProcessor.BusinessLogic.Services{
                 // Generate a transaction reference
                 String transactionReference = this.GenerateTransactionReference();
 
-                transactionAggregate.StartTransaction(command.TransactionDateTime, command.TransactionNumber, transactionType, transactionReference, command.EstateId, command.MerchantId, command.DeviceIdentifier, null); // Logon transaction has no amount
+                Result stateResult = transactionAggregate.StartTransaction(command.TransactionDateTime, command.TransactionNumber, transactionType, transactionReference, command.EstateId, command.MerchantId, command.DeviceIdentifier, null); // Logon transaction has no amount
+                if (stateResult.IsFailed)
+                    return ResultHelpers.CreateFailure(stateResult);
 
                 Result<TransactionValidationResult> validationResult = await this.TransactionValidationService.ValidateLogonTransaction(command.EstateId, command.MerchantId, command.DeviceIdentifier, cancellationToken);
 
@@ -113,17 +115,24 @@ namespace TransactionProcessor.BusinessLogic.Services{
 
                     // Record the successful validation
                     // TODO: Generate local authcode
-                    transactionAggregate.AuthoriseTransactionLocally("ABCD1234", ((Int32)validationResult.Data.ResponseCode).ToString().PadLeft(4, '0'), validationResult.Data.ResponseMessage);
+                    stateResult = transactionAggregate.AuthoriseTransactionLocally("ABCD1234", ((Int32)validationResult.Data.ResponseCode).ToString().PadLeft(4, '0'), validationResult.Data.ResponseMessage);
+                    if (stateResult.IsFailed)
+                        return ResultHelpers.CreateFailure(stateResult);
                 }
                 else {
                     // Record the failure
-                    transactionAggregate.DeclineTransactionLocally(((Int32)validationResult.Data.ResponseCode).ToString().PadLeft(4, '0'), validationResult.Data.ResponseMessage);
+                    stateResult = transactionAggregate.DeclineTransactionLocally(((Int32)validationResult.Data.ResponseCode).ToString().PadLeft(4, '0'), validationResult.Data.ResponseMessage);
+                    if (stateResult.IsFailed)
+                        return ResultHelpers.CreateFailure(stateResult);
                 }
 
-                transactionAggregate.CompleteTransaction();
+                stateResult = transactionAggregate.CompleteTransaction();
+                if (stateResult.IsFailed)
+                    return ResultHelpers.CreateFailure(stateResult);
 
-                transactionAggregate.RecordTransactionTimings(command.TransactionReceivedDateTime, null, null, DateTime.Now);
-
+                stateResult = transactionAggregate.RecordTransactionTimings(command.TransactionReceivedDateTime, null, null, DateTime.Now);
+                if (stateResult.IsFailed)
+                    return ResultHelpers.CreateFailure(stateResult);
 
                 Result saveResult = await this.AggregateService.Save(transactionAggregate, cancellationToken);
                 if (saveResult.IsFailed)
@@ -231,22 +240,32 @@ namespace TransactionProcessor.BusinessLogic.Services{
                     totalCost = transactionAmount.GetValueOrDefault() * unitCost;
                 }
 
-                transactionAggregate.StartTransaction(command.TransactionDateTime, command.TransactionNumber, transactionType, transactionReference, command.EstateId, command.MerchantId, command.DeviceIdentifier, transactionAmount);
+                Result stateResult = transactionAggregate.StartTransaction(command.TransactionDateTime, command.TransactionNumber, transactionType, transactionReference, command.EstateId, command.MerchantId, command.DeviceIdentifier, transactionAmount);
+                if (stateResult.IsFailed)
+                    return ResultHelpers.CreateFailure(stateResult);
 
                 // Add the product details (unless invalid estate)
                 if (validationResult.Data.ResponseCode != TransactionResponseCode.InvalidEstateId && validationResult.Data.ResponseCode != TransactionResponseCode.InvalidContractIdValue && validationResult.Data.ResponseCode != TransactionResponseCode.InvalidProductIdValue && validationResult.Data.ResponseCode != TransactionResponseCode.ContractNotValidForMerchant && validationResult.Data.ResponseCode != TransactionResponseCode.ProductNotValidForMerchant) {
-                    transactionAggregate.AddProductDetails(command.ContractId, command.ProductId);
+                    stateResult = transactionAggregate.AddProductDetails(command.ContractId, command.ProductId);
+                    if (stateResult.IsFailed)
+                        return ResultHelpers.CreateFailure(stateResult);
                 }
 
-                transactionAggregate.RecordCostPrice(unitCost, totalCost);
+                stateResult = transactionAggregate.RecordCostPrice(unitCost, totalCost);
+                if (stateResult.IsFailed)
+                    return ResultHelpers.CreateFailure(stateResult);
 
                 // Add the transaction source
-                transactionAggregate.AddTransactionSource(transactionSourceValue);
+                stateResult = transactionAggregate.AddTransactionSource(transactionSourceValue);
+                if (stateResult.IsFailed)
+                    return ResultHelpers.CreateFailure(stateResult);
                 DateTime? operatorStartDateTime = null;
                 DateTime? operatorEndDateTime = null;
                 if (validationResult.Data.ResponseCode == TransactionResponseCode.Success) {
                     // Record any additional request metadata
-                    transactionAggregate.RecordAdditionalRequestData(command.OperatorId, command.AdditionalTransactionMetadata);
+                    stateResult = transactionAggregate.RecordAdditionalRequestData(command.OperatorId, command.AdditionalTransactionMetadata);
+                    if (stateResult.IsFailed)
+                        return ResultHelpers.CreateFailure(stateResult);
 
                     // Do the online processing with the operator here
                     Result<Merchant> merchantResult = await this.GetMerchant(command.MerchantId, cancellationToken);
@@ -272,30 +291,44 @@ namespace TransactionProcessor.BusinessLogic.Services{
                         TransactionResponseCode transactionResponseCode = TransactionResponseCode.Success;
                         String responseMessage = "SUCCESS";
 
-                        transactionAggregate.AuthoriseTransaction(command.OperatorId, operatorResult.Data.AuthorisationCode, operatorResult.Data.ResponseCode, operatorResult.Data.ResponseMessage, operatorResult.Data.TransactionId, ((Int32)transactionResponseCode).ToString().PadLeft(4, '0'), responseMessage);
+                        stateResult= transactionAggregate.AuthoriseTransaction(command.OperatorId, operatorResult.Data.AuthorisationCode, operatorResult.Data.ResponseCode, operatorResult.Data.ResponseMessage, operatorResult.Data.TransactionId, ((Int32)transactionResponseCode).ToString().PadLeft(4, '0'), responseMessage);
+                        if (stateResult.IsFailed)
+                            return ResultHelpers.CreateFailure(stateResult);
                     }
                     else {
                         TransactionResponseCode transactionResponseCode = TransactionResponseCode.TransactionDeclinedByOperator;
                         String responseMessage = "DECLINED BY OPERATOR";
 
-                        transactionAggregate.DeclineTransaction(command.OperatorId, operatorResult.Data.ResponseCode, operatorResult.Data.ResponseMessage, ((Int32)transactionResponseCode).ToString().PadLeft(4, '0'), responseMessage);
+                        stateResult = transactionAggregate.DeclineTransaction(command.OperatorId, operatorResult.Data.ResponseCode, operatorResult.Data.ResponseMessage, ((Int32)transactionResponseCode).ToString().PadLeft(4, '0'), responseMessage);
+                        if (stateResult.IsFailed)
+                            return ResultHelpers.CreateFailure(stateResult);
                     }
 
                     // Record any additional operator response metadata
-                    transactionAggregate.RecordAdditionalResponseData(command.OperatorId, operatorResult.Data.AdditionalTransactionResponseMetadata);
+                    stateResult = transactionAggregate.RecordAdditionalResponseData(command.OperatorId, operatorResult.Data.AdditionalTransactionResponseMetadata);
+                    if (stateResult.IsFailed)
+                        return ResultHelpers.CreateFailure(stateResult);
                 }
                 else {
                     // Record the failure
-                    transactionAggregate.DeclineTransactionLocally(((Int32)validationResult.Data.ResponseCode).ToString().PadLeft(4, '0'), validationResult.Data.ResponseMessage);
+                    stateResult = transactionAggregate.DeclineTransactionLocally(((Int32)validationResult.Data.ResponseCode).ToString().PadLeft(4, '0'), validationResult.Data.ResponseMessage);
+                    if (stateResult.IsFailed)
+                        return ResultHelpers.CreateFailure(stateResult);
                 }
 
-                transactionAggregate.RecordTransactionTimings(command.TransactionReceivedDateTime, operatorStartDateTime, operatorEndDateTime, DateTime.Now);;
+                stateResult = transactionAggregate.RecordTransactionTimings(command.TransactionReceivedDateTime, operatorStartDateTime, operatorEndDateTime, DateTime.Now);;
+                if (stateResult.IsFailed)
+                    return ResultHelpers.CreateFailure(stateResult);
 
-                transactionAggregate.CompleteTransaction();
+                stateResult= transactionAggregate.CompleteTransaction();
+                if (stateResult.IsFailed)
+                    return ResultHelpers.CreateFailure(stateResult);
 
                 // Determine if the email receipt is required
                 if (String.IsNullOrEmpty(command.CustomerEmailAddress) == false) {
-                    transactionAggregate.RequestEmailReceipt(command.CustomerEmailAddress);
+                    stateResult = transactionAggregate.RequestEmailReceipt(command.CustomerEmailAddress);
+                    if (stateResult.IsFailed)
+                        return ResultHelpers.CreateFailure(stateResult);
                 }
 
                 // Get the model from the aggregate
@@ -332,7 +365,9 @@ namespace TransactionProcessor.BusinessLogic.Services{
 
                 TransactionAggregate transactionAggregate = transactionResult.Data;
 
-                transactionAggregate.RequestEmailReceiptResend();
+                Result stateResult = transactionAggregate.RequestEmailReceiptResend();
+                if (stateResult.IsFailed)
+                    return ResultHelpers.CreateFailure(stateResult);
 
                 Result saveResult = await this.AggregateService.Save(transactionAggregate, cancellationToken);
                 if (saveResult.IsFailed)
@@ -399,14 +434,17 @@ namespace TransactionProcessor.BusinessLogic.Services{
                         // Determine when the fee should be applied
                         DateTime settlementDate = CalculateSettlementDate(merchantResult.Data.SettlementSchedule, command.CompletedDateTime);
 
-                        transactionAggregate.AddFeePendingSettlement(calculatedFee, settlementDate);
-
-
+                        Result stateResult = transactionAggregate.AddFeePendingSettlement(calculatedFee, settlementDate);
+                        if (stateResult.IsFailed)
+                            return ResultHelpers.CreateFailure(stateResult);
+                        
                         if (merchantResult.Data.SettlementSchedule == Models.Merchant.SettlementSchedule.Immediate) {
                             Guid settlementId = Helpers.CalculateSettlementAggregateId(settlementDate, command.MerchantId, command.EstateId);
 
                             // Add fees to transaction now if settlement is immediate
-                            transactionAggregate.AddSettledFee(calculatedFee, settlementDate, settlementId);
+                            stateResult =transactionAggregate.AddSettledFee(calculatedFee, settlementDate, settlementId);
+                            if (stateResult.IsFailed)
+                                return ResultHelpers.CreateFailure(stateResult);
                         }
                     }
                 }
@@ -442,7 +480,9 @@ namespace TransactionProcessor.BusinessLogic.Services{
                     IsSettled = true
                 };
 
-                transactionAggregate.AddSettledFee(calculatedFee, command.SettledDateTime, command.SettlementId);
+                Result stateResult = transactionAggregate.AddSettledFee(calculatedFee, command.SettledDateTime, command.SettlementId);
+                if (stateResult.IsFailed)
+                    return ResultHelpers.CreateFailure(stateResult);
 
                 Result saveResult = await this.AggregateService.Save(transactionAggregate, cancellationToken);
                 if (saveResult.IsFailed)
@@ -542,14 +582,18 @@ namespace TransactionProcessor.BusinessLogic.Services{
             return feesForCalculation;
         }
 
-        private async Task AddDeviceToMerchant(Guid merchantId,
+        private async Task<Result> AddDeviceToMerchant(Guid merchantId,
                                                String deviceIdentifier,
                                                CancellationToken cancellationToken) {
             // TODO: Should this be firing a command to add the device??
             // Add the device to the merchant
             Result<MerchantAggregate> merchantAggregate = await this.AggregateService.GetLatest<MerchantAggregate>(merchantId, cancellationToken);
-            merchantAggregate.Data.AddDevice(Guid.NewGuid(), deviceIdentifier);
-            await this.AggregateService.Save(merchantAggregate.Data, cancellationToken);
+            if (merchantAggregate.IsFailed)
+                return ResultHelpers.CreateFailure(merchantAggregate);
+            Result stateResult = merchantAggregate.Data.AddDevice(Guid.NewGuid(), deviceIdentifier);
+            if (stateResult.IsFailed)
+                return ResultHelpers.CreateFailure(stateResult);
+            return await this.AggregateService.Save(merchantAggregate.Data, cancellationToken);
         }
 
         [ExcludeFromCodeCoverage]
