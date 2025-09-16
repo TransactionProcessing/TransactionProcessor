@@ -1,4 +1,5 @@
 using Shouldly;
+using SimpleResults;
 using TransactionProcessor.Models;
 using TransactionProcessor.Models.Contract;
 using TransactionProcessor.Testing;
@@ -17,7 +18,7 @@ namespace TransactionProcessor.Aggregates.Tests{
         [InlineData(TransactionType.Sale)]
         public void TransactionAggregate_StartTransaction_TransactionIsStarted(TransactionType transactionType){
             Aggregates.TransactionAggregate transactionAggregate = Aggregates.TransactionAggregate.Create(TestData.TransactionId);
-            transactionAggregate.StartTransaction(TestData.TransactionDateTime,
+            Result result = transactionAggregate.StartTransaction(TestData.TransactionDateTime,
                                                   TestData.TransactionNumber,
                                                   transactionType,
                                                   TestData.TransactionReference,
@@ -25,6 +26,7 @@ namespace TransactionProcessor.Aggregates.Tests{
                                                   TestData.MerchantId,
                                                   TestData.DeviceIdentifier,
                                                   TestData.TransactionAmount);
+            result.IsSuccess.ShouldBeTrue();
 
             transactionAggregate.IsStarted.ShouldBeTrue();
             transactionAggregate.TransactionDateTime.ShouldBe(TestData.TransactionDateTime);
@@ -44,7 +46,7 @@ namespace TransactionProcessor.Aggregates.Tests{
         [InlineData(TransactionType.Logon)]
         public void TransactionAggregate_StartTransaction_NullAmount_TransactionIsStarted(TransactionType transactionType){
             Aggregates.TransactionAggregate transactionAggregate = Aggregates.TransactionAggregate.Create(TestData.TransactionId);
-            transactionAggregate.StartTransaction(TestData.TransactionDateTime,
+            Result result = transactionAggregate.StartTransaction(TestData.TransactionDateTime,
                                                   TestData.TransactionNumber,
                                                   transactionType,
                                                   TestData.TransactionReference,
@@ -52,6 +54,7 @@ namespace TransactionProcessor.Aggregates.Tests{
                                                   TestData.MerchantId,
                                                   TestData.DeviceIdentifier,
                                                   null);
+            result.IsSuccess.ShouldBeTrue();
 
             transactionAggregate.IsStarted.ShouldBeTrue();
             transactionAggregate.TransactionDateTime.ShouldBe(TestData.TransactionDateTime);
@@ -81,8 +84,7 @@ namespace TransactionProcessor.Aggregates.Tests{
                                                   TestData.DeviceIdentifier,
                                                   TestData.TransactionAmount);
 
-            Should.Throw<InvalidOperationException>(() => {
-                                                        transactionAggregate.StartTransaction(TestData.TransactionDateTime,
+            Result result = transactionAggregate.StartTransaction(TestData.TransactionDateTime,
                                                                                               TestData.TransactionNumber,
                                                                                               transactionType,
                                                                                               TestData.TransactionReference,
@@ -90,7 +92,8 @@ namespace TransactionProcessor.Aggregates.Tests{
                                                                                               TestData.MerchantId,
                                                                                               TestData.DeviceIdentifier,
                                                                                               TestData.TransactionAmount);
-                                                    });
+            result.IsFailed.ShouldBeTrue();
+            result.Status.ShouldBe(ResultStatus.Invalid);
         }
 
         [Theory]
@@ -122,8 +125,7 @@ namespace TransactionProcessor.Aggregates.Tests{
 
             transactionAggregate.CompleteTransaction();
 
-            Should.Throw<InvalidOperationException>(() => {
-                                                        transactionAggregate.StartTransaction(TestData.TransactionDateTime,
+            Result result = transactionAggregate.StartTransaction(TestData.TransactionDateTime,
                                                                                               TestData.TransactionNumber,
                                                                                               transactionType,
                                                                                               TestData.TransactionReference,
@@ -131,7 +133,8 @@ namespace TransactionProcessor.Aggregates.Tests{
                                                                                               TestData.MerchantId,
                                                                                               TestData.DeviceIdentifier,
                                                                                               TestData.TransactionAmount);
-                                                    });
+            result.IsFailed.ShouldBeTrue();
+            result.Status.ShouldBe(ResultStatus.Invalid);
         }
 
         [Theory]
@@ -156,23 +159,22 @@ namespace TransactionProcessor.Aggregates.Tests{
         [InlineData(true, "0001", TransactionType.Sale, "ABCDEFG", true, true, null)]
         [InlineData(true, "0001", TransactionType.Sale, "", true, true, "A1234567890")]
         [InlineData(true, "0001", TransactionType.Sale, null, true, true, "A1234567890")]
-        public void TransactionAggregate_StartTransaction_InvalidData_ErrorThrown(Boolean validTransactionDateTime, String transactionNumber, TransactionType transactionType, String transactionReference, Boolean validEstateId, Boolean validMerchantId, String deviceIdentifier){
+        public void TransactionAggregate_StartTransaction_InvalidData_ErrorThrown(Boolean validTransactionDateTime,
+                                                                                  String transactionNumber,
+                                                                                  TransactionType transactionType,
+                                                                                  String transactionReference,
+                                                                                  Boolean validEstateId,
+                                                                                  Boolean validMerchantId,
+                                                                                  String deviceIdentifier) {
             DateTime transactionDateTime = validTransactionDateTime ? TestData.TransactionDateTime : DateTime.MinValue;
             Guid estateId = validEstateId ? TestData.EstateId : Guid.Empty;
             Guid merchantId = validMerchantId ? TestData.MerchantId : Guid.Empty;
 
             Aggregates.TransactionAggregate transactionAggregate = Aggregates.TransactionAggregate.Create(TestData.TransactionId);
 
-            Should.Throw<ArgumentException>(() => {
-                                                transactionAggregate.StartTransaction(transactionDateTime,
-                                                                                      transactionNumber,
-                                                                                      transactionType,
-                                                                                      transactionReference,
-                                                                                      estateId,
-                                                                                      merchantId,
-                                                                                      deviceIdentifier,
-                                                                                      TestData.TransactionAmount);
-                                            });
+            Result result = transactionAggregate.StartTransaction(transactionDateTime, transactionNumber, transactionType, transactionReference, estateId, merchantId, deviceIdentifier, TestData.TransactionAmount);
+            result.IsFailed.ShouldBeTrue();
+            result.Status.ShouldBe(ResultStatus.Invalid);
         }
 
         [Theory]
@@ -188,7 +190,8 @@ namespace TransactionProcessor.Aggregates.Tests{
                                                   TestData.DeviceIdentifier,
                                                   TestData.TransactionAmount);
 
-            transactionAggregate.AddProductDetails(TestData.ContractId, TestData.ProductId);
+            Result result = transactionAggregate.AddProductDetails(TestData.ContractId, TestData.ProductId);
+            result.IsSuccess.ShouldBeTrue();
 
             transactionAggregate.IsProductDetailsAdded.ShouldBeTrue();
             transactionAggregate.ContractId.ShouldBe(TestData.ContractId);
@@ -210,7 +213,8 @@ namespace TransactionProcessor.Aggregates.Tests{
                                                   TestData.TransactionAmount);
 
             transactionAggregate.AddProductDetails(TestData.ContractId, TestData.ProductId);
-            transactionAggregate.AddTransactionSource(transactionSource);
+            Result result = transactionAggregate.AddTransactionSource(transactionSource);
+            result.IsSuccess.ShouldBeTrue();
 
             transactionAggregate.TransactionSource.ShouldBe(transactionSource);
         }
@@ -228,7 +232,9 @@ namespace TransactionProcessor.Aggregates.Tests{
                                                   TestData.TransactionAmount);
 
             transactionAggregate.AddProductDetails(TestData.ContractId, TestData.ProductId);
-            Should.Throw<ArgumentException>(() => { transactionAggregate.AddTransactionSource((TransactionSource)99); });
+            Result result = transactionAggregate.AddTransactionSource((TransactionSource)99);
+            result.IsFailed.ShouldBeTrue();
+            result.Status.ShouldBe(ResultStatus.Invalid);
         }
 
         [Theory]
@@ -247,7 +253,8 @@ namespace TransactionProcessor.Aggregates.Tests{
 
             transactionAggregate.AddProductDetails(TestData.ContractId, TestData.ProductId);
             transactionAggregate.AddTransactionSource(transactionSource);
-            Should.NotThrow(() => { transactionAggregate.AddTransactionSource(transactionSource); });
+            Result result = transactionAggregate.AddTransactionSource(transactionSource);
+            result.IsSuccess.ShouldBeTrue();
         }
 
         [Theory]
@@ -263,7 +270,9 @@ namespace TransactionProcessor.Aggregates.Tests{
                                                   TestData.DeviceIdentifier,
                                                   TestData.TransactionAmount);
 
-            Should.Throw<ArgumentException>(() => { transactionAggregate.AddProductDetails(Guid.Empty, TestData.ProductId); });
+            Result result = transactionAggregate.AddProductDetails(Guid.Empty, TestData.ProductId);
+            result.IsFailed.ShouldBeTrue();
+            result.Status.ShouldBe(ResultStatus.Invalid);
         }
 
         [Theory]
@@ -279,7 +288,9 @@ namespace TransactionProcessor.Aggregates.Tests{
                                                   TestData.DeviceIdentifier,
                                                   TestData.TransactionAmount);
 
-            Should.Throw<ArgumentException>(() => { transactionAggregate.AddProductDetails(TestData.ContractId, Guid.Empty); });
+            Result result = transactionAggregate.AddProductDetails(TestData.ContractId, Guid.Empty);
+            result.IsFailed.ShouldBeTrue();
+            result.Status.ShouldBe(ResultStatus.Invalid);
         }
 
         [Theory]
@@ -297,7 +308,9 @@ namespace TransactionProcessor.Aggregates.Tests{
 
             transactionAggregate.AddProductDetails(TestData.ContractId, TestData.ProductId);
 
-            Should.Throw<InvalidOperationException>(() => { transactionAggregate.AddProductDetails(TestData.ContractId, TestData.ProductId); });
+            Result result = transactionAggregate.AddProductDetails(TestData.ContractId, TestData.ProductId);
+            result.IsFailed.ShouldBeTrue();
+            result.Status.ShouldBe(ResultStatus.Invalid);result.IsFailed.ShouldBeTrue();
         }
 
         [Theory]
@@ -305,7 +318,9 @@ namespace TransactionProcessor.Aggregates.Tests{
         public void TransactionAggregate_AddProductDetails_TransactionNotStarted_ErrorThrown(TransactionType transactionType){
             Aggregates.TransactionAggregate transactionAggregate = Aggregates.TransactionAggregate.Create(TestData.TransactionId);
 
-            Should.Throw<InvalidOperationException>(() => { transactionAggregate.AddProductDetails(TestData.ContractId, TestData.ProductId); });
+            Result result = transactionAggregate.AddProductDetails(TestData.ContractId, TestData.ProductId);
+            result.IsFailed.ShouldBeTrue();
+            result.Status.ShouldBe(ResultStatus.Invalid);
         }
 
         [Theory]
@@ -339,7 +354,9 @@ namespace TransactionProcessor.Aggregates.Tests{
             transactionAggregate.CompleteTransaction();
 
 
-            Should.Throw<InvalidOperationException>(() => { transactionAggregate.AddProductDetails(TestData.ContractId, TestData.ProductId); });
+            Result result = transactionAggregate.AddProductDetails(TestData.ContractId, TestData.ProductId);
+            result.IsFailed.ShouldBeTrue();
+            result.Status.ShouldBe(ResultStatus.Invalid);
         }
 
         [Theory]
@@ -355,7 +372,8 @@ namespace TransactionProcessor.Aggregates.Tests{
                                                   TestData.DeviceIdentifier,
                                                   TestData.TransactionAmount);
 
-            transactionAggregate.AuthoriseTransactionLocally(TestData.AuthorisationCode, TestData.ResponseCode, TestData.ResponseMessage);
+            Result result = transactionAggregate.AuthoriseTransactionLocally(TestData.AuthorisationCode, TestData.ResponseCode, TestData.ResponseMessage);
+            result.IsSuccess.ShouldBeTrue();
 
             transactionAggregate.IsLocallyAuthorised.ShouldBeTrue();
             transactionAggregate.IsAuthorised.ShouldBeFalse();
@@ -368,11 +386,11 @@ namespace TransactionProcessor.Aggregates.Tests{
         public void TransactionAggregate_AuthoriseTransactionLocally_TransactionNotStarted_ErrorThrown(){
             Aggregates.TransactionAggregate transactionAggregate = Aggregates.TransactionAggregate.Create(TestData.TransactionId);
 
-            Should.Throw<InvalidOperationException>(() => {
-                                                        transactionAggregate.AuthoriseTransactionLocally(TestData.AuthorisationCode,
+            Result result = transactionAggregate.AuthoriseTransactionLocally(TestData.AuthorisationCode,
                                                                                                          TestData.ResponseCode,
                                                                                                          TestData.ResponseMessage);
-                                                    });
+            result.IsFailed.ShouldBeTrue();
+            result.Status.ShouldBe(ResultStatus.Invalid);
         }
 
         [Theory]
@@ -389,11 +407,11 @@ namespace TransactionProcessor.Aggregates.Tests{
                                                   TestData.TransactionAmount);
             transactionAggregate.AuthoriseTransactionLocally(TestData.AuthorisationCode, TestData.ResponseCode, TestData.ResponseMessage);
 
-            Should.Throw<InvalidOperationException>(() => {
-                                                        transactionAggregate.AuthoriseTransactionLocally(TestData.AuthorisationCode,
+            Result result = transactionAggregate.AuthoriseTransactionLocally(TestData.AuthorisationCode,
                                                                                                          TestData.ResponseCode,
                                                                                                          TestData.ResponseMessage);
-                                                    });
+            result.IsFailed.ShouldBeTrue();
+            result.Status.ShouldBe(ResultStatus.Invalid);
         }
 
         [Theory]
@@ -410,11 +428,11 @@ namespace TransactionProcessor.Aggregates.Tests{
                                                   TestData.TransactionAmount);
             transactionAggregate.AuthoriseTransaction(TestData.OperatorId, TestData.OperatorAuthorisationCode, TestData.OperatorResponseCode, TestData.OperatorResponseMessage, TestData.OperatorTransactionId, TestData.ResponseCode, TestData.ResponseMessage);
 
-            Should.Throw<InvalidOperationException>(() => {
-                                                        transactionAggregate.AuthoriseTransactionLocally(TestData.AuthorisationCode,
+            Result result = transactionAggregate.AuthoriseTransactionLocally(TestData.AuthorisationCode,
                                                                                                          TestData.ResponseCode,
                                                                                                          TestData.ResponseMessage);
-                                                    });
+            result.IsFailed.ShouldBeTrue();
+            result.Status.ShouldBe(ResultStatus.Invalid);
         }
 
         [Theory]
@@ -431,11 +449,11 @@ namespace TransactionProcessor.Aggregates.Tests{
                                                   TestData.TransactionAmount);
             transactionAggregate.AddProductDetails(TestData.ContractId, TestData.ProductId);
 
-            Should.Throw<InvalidOperationException>(() => {
-                                                        transactionAggregate.AuthoriseTransactionLocally(TestData.AuthorisationCode,
+            Result result = transactionAggregate.AuthoriseTransactionLocally(TestData.AuthorisationCode,
                                                                                                          TestData.ResponseCode,
                                                                                                          TestData.ResponseMessage);
-                                                    });
+            result.IsFailed.ShouldBeTrue();
+            result.Status.ShouldBe(ResultStatus.Invalid);
         }
 
 
@@ -456,7 +474,8 @@ namespace TransactionProcessor.Aggregates.Tests{
                 transactionAggregate.AddProductDetails(TestData.ContractId, TestData.ProductId);
             }
 
-            transactionAggregate.AuthoriseTransaction(TestData.OperatorId, TestData.OperatorAuthorisationCode, TestData.OperatorResponseCode, TestData.OperatorResponseMessage, TestData.OperatorTransactionId, TestData.ResponseCode, TestData.ResponseMessage);
+            Result result = transactionAggregate.AuthoriseTransaction(TestData.OperatorId, TestData.OperatorAuthorisationCode, TestData.OperatorResponseCode, TestData.OperatorResponseMessage, TestData.OperatorTransactionId, TestData.ResponseCode, TestData.ResponseMessage);
+            result.IsSuccess.ShouldBeTrue();
 
             transactionAggregate.IsLocallyAuthorised.ShouldBeFalse();
             transactionAggregate.IsAuthorised.ShouldBeTrue();
@@ -470,7 +489,9 @@ namespace TransactionProcessor.Aggregates.Tests{
         public void TransactionAggregate_AuthoriseTransaction_TransactionNotStarted_ErrorThrown(){
             Aggregates.TransactionAggregate transactionAggregate = Aggregates.TransactionAggregate.Create(TestData.TransactionId);
 
-            Should.Throw<InvalidOperationException>(() => { transactionAggregate.AuthoriseTransaction(TestData.OperatorId, TestData.OperatorAuthorisationCode, TestData.OperatorResponseCode, TestData.OperatorResponseMessage, TestData.OperatorTransactionId, TestData.ResponseCode, TestData.ResponseMessage); });
+            Result result = transactionAggregate.AuthoriseTransaction(TestData.OperatorId, TestData.OperatorAuthorisationCode, TestData.OperatorResponseCode, TestData.OperatorResponseMessage, TestData.OperatorTransactionId, TestData.ResponseCode, TestData.ResponseMessage);
+            result.IsFailed.ShouldBeTrue();
+            result.Status.ShouldBe(ResultStatus.Invalid);
         }
 
         [Theory]
@@ -492,7 +513,9 @@ namespace TransactionProcessor.Aggregates.Tests{
 
             transactionAggregate.AuthoriseTransaction(TestData.OperatorId, TestData.OperatorAuthorisationCode, TestData.OperatorResponseCode, TestData.OperatorResponseMessage, TestData.OperatorTransactionId, TestData.ResponseCode, TestData.ResponseMessage);
 
-            Should.Throw<InvalidOperationException>(() => { transactionAggregate.AuthoriseTransaction(TestData.OperatorId, TestData.OperatorAuthorisationCode, TestData.OperatorResponseCode, TestData.OperatorResponseMessage, TestData.OperatorTransactionId, TestData.ResponseCode, TestData.ResponseMessage); });
+            Result result = transactionAggregate.AuthoriseTransaction(TestData.OperatorId, TestData.OperatorAuthorisationCode, TestData.OperatorResponseCode, TestData.OperatorResponseMessage, TestData.OperatorTransactionId, TestData.ResponseCode, TestData.ResponseMessage);
+            result.IsFailed.ShouldBeTrue();
+            result.Status.ShouldBe(ResultStatus.Invalid);
         }
 
         [Theory]
@@ -512,7 +535,8 @@ namespace TransactionProcessor.Aggregates.Tests{
                 transactionAggregate.AddProductDetails(TestData.ContractId, TestData.ProductId);
             }
 
-            transactionAggregate.DeclineTransactionLocally(TestData.DeclinedResponseCode, TestData.DeclinedResponseMessage);
+            Result result = transactionAggregate.DeclineTransactionLocally(TestData.DeclinedResponseCode, TestData.DeclinedResponseMessage);
+            result.IsSuccess.ShouldBeTrue();
 
             transactionAggregate.IsAuthorised.ShouldBeFalse();
             transactionAggregate.IsLocallyAuthorised.ShouldBeFalse();
@@ -527,7 +551,9 @@ namespace TransactionProcessor.Aggregates.Tests{
         public void TransactionAggregate_DeclineTransactionLocally_TransactionNotStarted_ErrorThrown(){
             Aggregates.TransactionAggregate transactionAggregate = Aggregates.TransactionAggregate.Create(TestData.TransactionId);
 
-            Should.Throw<InvalidOperationException>(() => { transactionAggregate.DeclineTransactionLocally(TestData.ResponseCode, TestData.ResponseMessage); });
+            Result result = transactionAggregate.DeclineTransactionLocally(TestData.ResponseCode, TestData.ResponseMessage);
+            result.IsFailed.ShouldBeTrue();
+            result.Status.ShouldBe(ResultStatus.Invalid);
         }
 
         [Theory]
@@ -544,7 +570,9 @@ namespace TransactionProcessor.Aggregates.Tests{
                                                   TestData.TransactionAmount);
             transactionAggregate.AuthoriseTransactionLocally(TestData.AuthorisationCode, TestData.ResponseCode, TestData.ResponseMessage);
 
-            Should.Throw<InvalidOperationException>(() => { transactionAggregate.DeclineTransactionLocally(TestData.ResponseCode, TestData.ResponseMessage); });
+            Result result = transactionAggregate.DeclineTransactionLocally(TestData.ResponseCode, TestData.ResponseMessage);
+            result.IsFailed.ShouldBeTrue();
+            result.Status.ShouldBe(ResultStatus.Invalid);
         }
 
         [Theory]
@@ -566,7 +594,9 @@ namespace TransactionProcessor.Aggregates.Tests{
 
             transactionAggregate.AuthoriseTransaction(TestData.OperatorId, TestData.OperatorAuthorisationCode, TestData.OperatorResponseCode, TestData.OperatorResponseMessage, TestData.OperatorTransactionId, TestData.ResponseCode, TestData.ResponseMessage);
 
-            Should.Throw<InvalidOperationException>(() => { transactionAggregate.DeclineTransactionLocally(TestData.ResponseCode, TestData.ResponseMessage); });
+            Result result = transactionAggregate.DeclineTransactionLocally(TestData.ResponseCode, TestData.ResponseMessage);
+            result.IsFailed.ShouldBeTrue();
+            result.Status.ShouldBe(ResultStatus.Invalid);
         }
 
         [Theory]
@@ -588,7 +618,9 @@ namespace TransactionProcessor.Aggregates.Tests{
 
             transactionAggregate.DeclineTransactionLocally(TestData.ResponseCode, TestData.ResponseMessage);
 
-            Should.Throw<InvalidOperationException>(() => { transactionAggregate.DeclineTransactionLocally(TestData.ResponseCode, TestData.ResponseMessage); });
+            Result result = transactionAggregate.DeclineTransactionLocally(TestData.ResponseCode, TestData.ResponseMessage);
+            result.IsFailed.ShouldBeTrue();
+            result.Status.ShouldBe(ResultStatus.Invalid);
         }
 
         [Theory]
@@ -610,7 +642,9 @@ namespace TransactionProcessor.Aggregates.Tests{
 
             transactionAggregate.DeclineTransaction(TestData.OperatorId, TestData.OperatorResponseCode, TestData.OperatorResponseMessage, TestData.DeclinedResponseCode, TestData.DeclinedResponseMessage);
 
-            Should.Throw<InvalidOperationException>(() => { transactionAggregate.DeclineTransactionLocally(TestData.DeclinedResponseCode, TestData.DeclinedResponseMessage); });
+            Result result = transactionAggregate.DeclineTransactionLocally(TestData.DeclinedResponseCode, TestData.DeclinedResponseMessage);
+            result.IsFailed.ShouldBeTrue();
+            result.Status.ShouldBe(ResultStatus.Invalid);
         }
 
         [Theory]
@@ -630,7 +664,8 @@ namespace TransactionProcessor.Aggregates.Tests{
                 transactionAggregate.AddProductDetails(TestData.ContractId, TestData.ProductId);
             }
 
-            transactionAggregate.DeclineTransaction(TestData.OperatorId, TestData.DeclinedOperatorResponseCode, TestData.DeclinedOperatorResponseMessage, TestData.DeclinedResponseCode, TestData.DeclinedResponseMessage);
+            Result result = transactionAggregate.DeclineTransaction(TestData.OperatorId, TestData.DeclinedOperatorResponseCode, TestData.DeclinedOperatorResponseMessage, TestData.DeclinedResponseCode, TestData.DeclinedResponseMessage);
+            result.IsSuccess.ShouldBeTrue();
 
             transactionAggregate.IsAuthorised.ShouldBeFalse();
             transactionAggregate.IsLocallyAuthorised.ShouldBeFalse();
@@ -645,7 +680,9 @@ namespace TransactionProcessor.Aggregates.Tests{
         public void TransactionAggregate_DeclineTransaction_TransactionNotStarted_ErrorThrown(){
             Aggregates.TransactionAggregate transactionAggregate = Aggregates.TransactionAggregate.Create(TestData.TransactionId);
 
-            Should.Throw<InvalidOperationException>(() => { transactionAggregate.DeclineTransaction(TestData.OperatorId, TestData.DeclinedOperatorResponseCode, TestData.DeclinedOperatorResponseMessage, TestData.DeclinedResponseCode, TestData.DeclinedResponseMessage); });
+            Result result = transactionAggregate.DeclineTransaction(TestData.OperatorId, TestData.DeclinedOperatorResponseCode, TestData.DeclinedOperatorResponseMessage, TestData.DeclinedResponseCode, TestData.DeclinedResponseMessage);
+            result.IsFailed.ShouldBeTrue();
+            result.Status.ShouldBe(ResultStatus.Invalid);
         }
 
         //[Theory]
@@ -682,7 +719,9 @@ namespace TransactionProcessor.Aggregates.Tests{
 
             transactionAggregate.AuthoriseTransaction(TestData.OperatorId, TestData.OperatorAuthorisationCode, TestData.OperatorResponseCode, TestData.OperatorResponseMessage, TestData.OperatorTransactionId, TestData.ResponseCode, TestData.ResponseMessage);
 
-            Should.Throw<InvalidOperationException>(() => { transactionAggregate.DeclineTransaction(TestData.OperatorId, TestData.DeclinedOperatorResponseCode, TestData.DeclinedOperatorResponseMessage, TestData.DeclinedResponseCode, TestData.DeclinedResponseMessage); });
+            Result result = transactionAggregate.DeclineTransaction(TestData.OperatorId, TestData.DeclinedOperatorResponseCode, TestData.DeclinedOperatorResponseMessage, TestData.DeclinedResponseCode, TestData.DeclinedResponseMessage);
+            result.IsFailed.ShouldBeTrue();
+            result.Status.ShouldBe(ResultStatus.Invalid);
         }
 
         [Theory]
@@ -704,7 +743,9 @@ namespace TransactionProcessor.Aggregates.Tests{
 
             transactionAggregate.DeclineTransactionLocally(TestData.ResponseCode, TestData.ResponseMessage);
 
-            Should.Throw<InvalidOperationException>(() => { transactionAggregate.DeclineTransaction(TestData.OperatorId, TestData.DeclinedOperatorResponseCode, TestData.DeclinedOperatorResponseMessage, TestData.DeclinedResponseCode, TestData.DeclinedResponseMessage); });
+            Result result = transactionAggregate.DeclineTransaction(TestData.OperatorId, TestData.DeclinedOperatorResponseCode, TestData.DeclinedOperatorResponseMessage, TestData.DeclinedResponseCode, TestData.DeclinedResponseMessage);
+            result.IsFailed.ShouldBeTrue();
+            result.Status.ShouldBe(ResultStatus.Invalid);
         }
 
         [Theory]
@@ -726,7 +767,9 @@ namespace TransactionProcessor.Aggregates.Tests{
 
             transactionAggregate.DeclineTransaction(TestData.OperatorId, TestData.DeclinedOperatorResponseCode, TestData.DeclinedOperatorResponseMessage, TestData.DeclinedResponseCode, TestData.DeclinedResponseMessage);
 
-            Should.Throw<InvalidOperationException>(() => { transactionAggregate.DeclineTransaction(TestData.OperatorId, TestData.DeclinedOperatorResponseCode, TestData.DeclinedOperatorResponseMessage, TestData.DeclinedResponseCode, TestData.DeclinedResponseMessage); });
+            Result result =  transactionAggregate.DeclineTransaction(TestData.OperatorId, TestData.DeclinedOperatorResponseCode, TestData.DeclinedOperatorResponseMessage, TestData.DeclinedResponseCode, TestData.DeclinedResponseMessage);
+            result.IsFailed.ShouldBeTrue();
+            result.Status.ShouldBe(ResultStatus.Invalid);
         }
 
         [Theory]
@@ -759,7 +802,9 @@ namespace TransactionProcessor.Aggregates.Tests{
         public void TransactionAggregate_CompleteTransaction_TransactionNotStarted_ErrorThrown(){
             Aggregates.TransactionAggregate transactionAggregate = Aggregates.TransactionAggregate.Create(TestData.TransactionId);
 
-            Should.Throw<InvalidOperationException>(() => { transactionAggregate.CompleteTransaction(); });
+            Result result = transactionAggregate.CompleteTransaction();
+            result.IsFailed.ShouldBeTrue();
+            result.Status.ShouldBe(ResultStatus.Invalid);
         }
 
         [Theory]
@@ -779,7 +824,9 @@ namespace TransactionProcessor.Aggregates.Tests{
                 transactionAggregate.AddProductDetails(TestData.ContractId, TestData.ProductId);
             }
 
-            Should.Throw<InvalidOperationException>(() => { transactionAggregate.CompleteTransaction(); });
+            Result result = transactionAggregate.CompleteTransaction();
+            result.IsFailed.ShouldBeTrue();
+            result.Status.ShouldBe(ResultStatus.Invalid);
         }
 
         [Theory]
@@ -806,7 +853,9 @@ namespace TransactionProcessor.Aggregates.Tests{
 
             transactionAggregate.CompleteTransaction();
 
-            Should.Throw<InvalidOperationException>(() => { transactionAggregate.CompleteTransaction(); });
+            Result result = transactionAggregate.CompleteTransaction();
+            result.IsFailed.ShouldBeTrue();
+            result.Status.ShouldBe(ResultStatus.Invalid);
         }
 
         [Theory]
@@ -826,8 +875,8 @@ namespace TransactionProcessor.Aggregates.Tests{
                 transactionAggregate.AddProductDetails(TestData.ContractId, TestData.ProductId);
             }
 
-            Should.NotThrow(() => { transactionAggregate.RecordAdditionalRequestData(TestData.OperatorId, TestData.AdditionalTransactionMetaDataForMobileTopup()); });
-
+            Result result = transactionAggregate.RecordAdditionalRequestData(TestData.OperatorId, TestData.AdditionalTransactionMetaDataForMobileTopup());
+            result.IsSuccess.ShouldBeTrue();
         }
 
         [Theory]
@@ -836,7 +885,9 @@ namespace TransactionProcessor.Aggregates.Tests{
         public void TransactionAggregate_RecordAdditionalRequestData_TransactionNotStarted_ErrorThrown(TransactionType transactionType){
             Aggregates.TransactionAggregate transactionAggregate = Aggregates.TransactionAggregate.Create(TestData.TransactionId);
 
-            Should.Throw<InvalidOperationException>(() => { transactionAggregate.RecordAdditionalRequestData(TestData.OperatorId, TestData.AdditionalTransactionMetaDataForMobileTopup()); });
+            Result result = transactionAggregate.RecordAdditionalRequestData(TestData.OperatorId, TestData.AdditionalTransactionMetaDataForMobileTopup());
+            result.IsFailed.ShouldBeTrue();
+            result.Status.ShouldBe(ResultStatus.Invalid);
         }
 
         [Theory]
@@ -858,7 +909,9 @@ namespace TransactionProcessor.Aggregates.Tests{
 
             transactionAggregate.RecordAdditionalRequestData(TestData.OperatorId, TestData.AdditionalTransactionMetaDataForMobileTopup());
 
-            Should.Throw<InvalidOperationException>(() => { transactionAggregate.RecordAdditionalRequestData(TestData.OperatorId, TestData.AdditionalTransactionMetaDataForMobileTopup()); });
+            Result result = transactionAggregate.RecordAdditionalRequestData(TestData.OperatorId, TestData.AdditionalTransactionMetaDataForMobileTopup());
+            result.IsFailed.ShouldBeTrue();
+            result.Status.ShouldBe(ResultStatus.Invalid);
         }
 
         [Theory]
@@ -887,7 +940,9 @@ namespace TransactionProcessor.Aggregates.Tests{
                 transactionAggregate.AuthoriseTransaction(TestData.OperatorId, TestData.OperatorAuthorisationCode, TestData.OperatorResponseCode, TestData.OperatorResponseMessage, TestData.OperatorTransactionId, TestData.ResponseCode, TestData.ResponseMessage);
             }
 
-            Should.Throw<InvalidOperationException>(() => { transactionAggregate.RecordAdditionalRequestData(TestData.OperatorId, TestData.AdditionalTransactionMetaDataForMobileTopup()); });
+            Result result = transactionAggregate.RecordAdditionalRequestData(TestData.OperatorId, TestData.AdditionalTransactionMetaDataForMobileTopup());
+            result.IsFailed.ShouldBeTrue();
+            result.Status.ShouldBe(ResultStatus.Invalid);
         }
 
         [Theory]
@@ -916,7 +971,9 @@ namespace TransactionProcessor.Aggregates.Tests{
                 transactionAggregate.DeclineTransaction(TestData.OperatorId, TestData.OperatorResponseCode, TestData.OperatorResponseMessage, TestData.ResponseCode, TestData.ResponseMessage);
             }
 
-            Should.Throw<InvalidOperationException>(() => { transactionAggregate.RecordAdditionalRequestData(TestData.OperatorId, TestData.AdditionalTransactionMetaDataForMobileTopup()); });
+            Result result = transactionAggregate.RecordAdditionalRequestData(TestData.OperatorId, TestData.AdditionalTransactionMetaDataForMobileTopup());
+            result.IsFailed.ShouldBeTrue();
+            result.Status.ShouldBe(ResultStatus.Invalid);
         }
 
         [Theory]
@@ -946,7 +1003,9 @@ namespace TransactionProcessor.Aggregates.Tests{
 
             transactionAggregate.CompleteTransaction();
 
-            Should.Throw<InvalidOperationException>(() => { transactionAggregate.RecordAdditionalRequestData(TestData.OperatorId, TestData.AdditionalTransactionMetaDataForMobileTopup()); });
+            Result result = transactionAggregate.RecordAdditionalRequestData(TestData.OperatorId, TestData.AdditionalTransactionMetaDataForMobileTopup());
+            result.IsFailed.ShouldBeTrue();
+            result.Status.ShouldBe(ResultStatus.Invalid);
         }
 
         //#######
@@ -976,7 +1035,8 @@ namespace TransactionProcessor.Aggregates.Tests{
                 transactionAggregate.AuthoriseTransaction(TestData.OperatorId, TestData.OperatorAuthorisationCode, TestData.OperatorResponseCode, TestData.OperatorResponseMessage, TestData.OperatorTransactionId, TestData.ResponseCode, TestData.ResponseMessage);
             }
 
-            Should.NotThrow(() => { transactionAggregate.RecordAdditionalResponseData(TestData.OperatorId, TestData.AdditionalTransactionMetaDataForMobileTopup()); });
+            Result result = transactionAggregate.RecordAdditionalResponseData(TestData.OperatorId, TestData.AdditionalTransactionMetaDataForMobileTopup());
+            result.IsSuccess.ShouldBeTrue();
 
         }
 
@@ -986,7 +1046,9 @@ namespace TransactionProcessor.Aggregates.Tests{
         public void TransactionAggregate_RecordAdditionalResponseData_TransactionNotStarted_ErrorThrown(TransactionType transactionType){
             Aggregates.TransactionAggregate transactionAggregate = Aggregates.TransactionAggregate.Create(TestData.TransactionId);
 
-            Should.Throw<InvalidOperationException>(() => { transactionAggregate.RecordAdditionalResponseData(TestData.OperatorId, TestData.AdditionalTransactionMetaDataForMobileTopup()); });
+            Result result = transactionAggregate.RecordAdditionalResponseData(TestData.OperatorId, TestData.AdditionalTransactionMetaDataForMobileTopup());
+            result.IsFailed.ShouldBeTrue();
+            result.Status.ShouldBe(ResultStatus.Invalid);
         }
 
         [Theory]
@@ -1016,7 +1078,9 @@ namespace TransactionProcessor.Aggregates.Tests{
 
             transactionAggregate.RecordAdditionalResponseData(TestData.OperatorId, TestData.AdditionalTransactionMetaDataForMobileTopup());
 
-            Should.Throw<InvalidOperationException>(() => { transactionAggregate.RecordAdditionalResponseData(TestData.OperatorId, TestData.AdditionalTransactionMetaDataForMobileTopup()); });
+            Result result = transactionAggregate.RecordAdditionalResponseData(TestData.OperatorId, TestData.AdditionalTransactionMetaDataForMobileTopup());
+            result.IsFailed.ShouldBeTrue();
+            result.Status.ShouldBe(ResultStatus.Invalid);
         }
 
         [Theory]
@@ -1047,7 +1111,9 @@ namespace TransactionProcessor.Aggregates.Tests{
             transactionAggregate.RecordAdditionalResponseData(TestData.OperatorId, TestData.AdditionalTransactionMetaDataForMobileTopup());
             transactionAggregate.CompleteTransaction();
 
-            Should.Throw<InvalidOperationException>(() => { transactionAggregate.RecordAdditionalResponseData(TestData.OperatorId, TestData.AdditionalTransactionMetaDataForMobileTopup()); });
+            Result result = transactionAggregate.RecordAdditionalResponseData(TestData.OperatorId, TestData.AdditionalTransactionMetaDataForMobileTopup());
+            result.IsFailed.ShouldBeTrue();
+            result.Status.ShouldBe(ResultStatus.Invalid);
         }
 
         [Fact]
@@ -1067,7 +1133,8 @@ namespace TransactionProcessor.Aggregates.Tests{
             transactionAggregate.RecordAdditionalResponseData(TestData.OperatorId, TestData.AdditionalTransactionMetaDataForMobileTopup());
             transactionAggregate.CompleteTransaction();
 
-            transactionAggregate.RequestEmailReceipt(TestData.CustomerEmailAddress);
+            Result result = transactionAggregate.RequestEmailReceipt(TestData.CustomerEmailAddress);
+            result.IsSuccess.ShouldBeTrue();
 
             transactionAggregate.CustomerEmailReceiptHasBeenRequested.ShouldBeTrue();
             transactionAggregate.CustomerEmailAddress.ShouldBe(TestData.CustomerEmailAddress);
@@ -1089,7 +1156,9 @@ namespace TransactionProcessor.Aggregates.Tests{
             transactionAggregate.AuthoriseTransaction(TestData.OperatorId, TestData.OperatorAuthorisationCode, TestData.OperatorResponseCode, TestData.OperatorResponseMessage, TestData.OperatorTransactionId, TestData.ResponseCode, TestData.ResponseMessage);
             transactionAggregate.RecordAdditionalResponseData(TestData.OperatorId, TestData.AdditionalTransactionMetaDataForMobileTopup());
 
-            Should.Throw<InvalidOperationException>(() => { transactionAggregate.RequestEmailReceipt(TestData.CustomerEmailAddress); });
+            Result result = transactionAggregate.RequestEmailReceipt(TestData.CustomerEmailAddress);
+            result.IsFailed.ShouldBeTrue();
+            result.Status.ShouldBe(ResultStatus.Invalid);
         }
 
         [Fact]
@@ -1111,7 +1180,9 @@ namespace TransactionProcessor.Aggregates.Tests{
 
             transactionAggregate.RequestEmailReceipt(TestData.CustomerEmailAddress);
 
-            Should.Throw<InvalidOperationException>(() => { transactionAggregate.RequestEmailReceipt(TestData.CustomerEmailAddress); });
+            Result result = transactionAggregate.RequestEmailReceipt(TestData.CustomerEmailAddress);
+            result.IsFailed.ShouldBeTrue();
+            result.Status.ShouldBe(ResultStatus.Invalid);
         }
 
         [Fact]
@@ -1132,7 +1203,8 @@ namespace TransactionProcessor.Aggregates.Tests{
             transactionAggregate.CompleteTransaction();
 
             transactionAggregate.RequestEmailReceipt(TestData.CustomerEmailAddress);
-            transactionAggregate.RequestEmailReceiptResend();
+            Result result = transactionAggregate.RequestEmailReceiptResend();
+            result.IsSuccess.ShouldBeTrue();
 
             transactionAggregate.ReceiptResendCount.ShouldBe(1);
         }
@@ -1153,7 +1225,9 @@ namespace TransactionProcessor.Aggregates.Tests{
             transactionAggregate.AuthoriseTransaction(TestData.OperatorId, TestData.OperatorAuthorisationCode, TestData.OperatorResponseCode, TestData.OperatorResponseMessage, TestData.OperatorTransactionId, TestData.ResponseCode, TestData.ResponseMessage);
             transactionAggregate.RecordAdditionalResponseData(TestData.OperatorId, TestData.AdditionalTransactionMetaDataForMobileTopup());
 
-            Should.Throw<InvalidOperationException>(() => { transactionAggregate.RequestEmailReceiptResend(); });
+            var result = transactionAggregate.RequestEmailReceiptResend();
+            result.IsFailed.ShouldBeTrue();
+            result.Status.ShouldBe(ResultStatus.Invalid);
         }
 
         [Theory]
@@ -1175,7 +1249,8 @@ namespace TransactionProcessor.Aggregates.Tests{
 
             CalculatedFee calculatedFee = this.GetCalculatedFeeToAdd(feeType);
 
-            transactionAggregate.AddFee(calculatedFee);
+            Result result = transactionAggregate.AddFee(calculatedFee);
+            result.IsSuccess.ShouldBeTrue();
 
             List<CalculatedFee> fees = transactionAggregate.GetFees();
 
@@ -1206,7 +1281,9 @@ namespace TransactionProcessor.Aggregates.Tests{
             transactionAggregate.AuthoriseTransaction(TestData.OperatorId, TestData.OperatorAuthorisationCode, TestData.OperatorResponseCode, TestData.OperatorResponseMessage, TestData.OperatorTransactionId, TestData.ResponseCode, TestData.ResponseMessage);
             transactionAggregate.CompleteTransaction();
 
-            Should.Throw<ArgumentNullException>(() => { transactionAggregate.AddFee(null); });
+            Result result = transactionAggregate.AddFee(null);
+            result.IsFailed.ShouldBeTrue();
+            result.Status.ShouldBe(ResultStatus.Invalid);
         }
 
         [Theory]
@@ -1227,7 +1304,9 @@ namespace TransactionProcessor.Aggregates.Tests{
             transactionAggregate.DeclineTransaction(TestData.OperatorId, TestData.OperatorResponseCode, TestData.OperatorResponseMessage, TestData.ResponseCode, TestData.ResponseMessage);
             transactionAggregate.CompleteTransaction();
 
-            Should.Throw<InvalidOperationException>(() => { transactionAggregate.AddFee(this.GetCalculatedFeeToAdd(feeType)); });
+            Result result = transactionAggregate.AddFee(this.GetCalculatedFeeToAdd(feeType));
+            result.IsFailed.ShouldBeTrue();
+            result.Status.ShouldBe(ResultStatus.Invalid);
         }
 
         private CalculatedFee GetCalculatedFeeToAdd(FeeType feeType){
@@ -1258,7 +1337,9 @@ namespace TransactionProcessor.Aggregates.Tests{
             transactionAggregate.AddProductDetails(TestData.ContractId, TestData.ProductId);
             transactionAggregate.AuthoriseTransaction(TestData.OperatorId, TestData.OperatorAuthorisationCode, TestData.OperatorResponseCode, TestData.OperatorResponseMessage, TestData.OperatorTransactionId, TestData.ResponseCode, TestData.ResponseMessage);
 
-            Should.Throw<InvalidOperationException>(() => { transactionAggregate.AddFee(this.GetCalculatedFeeToAdd(feeType)); });
+            Result result = transactionAggregate.AddFee(this.GetCalculatedFeeToAdd(feeType));
+            result.IsFailed.ShouldBeTrue();
+            result.Status.ShouldBe(ResultStatus.Invalid);
         }
 
         [Theory]
@@ -1279,7 +1360,9 @@ namespace TransactionProcessor.Aggregates.Tests{
             transactionAggregate.CompleteTransaction();
             transactionAggregate.AddFee(this.GetCalculatedFeeToAdd(feeType));
 
-            Should.NotThrow(() => { transactionAggregate.AddFee(this.GetCalculatedFeeToAdd(feeType)); });
+            Result result = transactionAggregate.AddFee(this.GetCalculatedFeeToAdd(feeType));
+            result.IsSuccess.ShouldBeTrue();
+
             transactionAggregate.GetFees().Count.ShouldBe(1);
         }
 
@@ -1300,7 +1383,9 @@ namespace TransactionProcessor.Aggregates.Tests{
             transactionAggregate.AuthoriseTransaction(TestData.OperatorId, TestData.OperatorAuthorisationCode, TestData.OperatorResponseCode, TestData.OperatorResponseMessage, TestData.OperatorTransactionId, TestData.ResponseCode, TestData.ResponseMessage);
             transactionAggregate.CompleteTransaction();
 
-            Should.Throw<InvalidOperationException>(() => { transactionAggregate.AddFee(TestData.CalculatedFeeUnsupportedFee); });
+            Result result = transactionAggregate.AddFee(TestData.CalculatedFeeUnsupportedFee);
+            result.IsFailed.ShouldBeTrue();
+            result.Status.ShouldBe(ResultStatus.Invalid);
         }
 
         [Theory]
@@ -1320,7 +1405,9 @@ namespace TransactionProcessor.Aggregates.Tests{
             transactionAggregate.AuthoriseTransactionLocally(TestData.AuthorisationCode, TestData.ResponseCode, TestData.ResponseMessage);
             transactionAggregate.CompleteTransaction();
 
-            Should.Throw<NotSupportedException>(() => { transactionAggregate.AddFee(this.GetCalculatedFeeToAdd(feeType)); });
+            Result result = transactionAggregate.AddFee(this.GetCalculatedFeeToAdd(feeType));
+            result.IsFailed.ShouldBeTrue();
+            result.Status.ShouldBe(ResultStatus.Invalid);
         }
 
         [Theory]
@@ -1342,7 +1429,8 @@ namespace TransactionProcessor.Aggregates.Tests{
 
             CalculatedFee calculatedFee = this.GetCalculatedFeeToAdd(feeType);
             transactionAggregate.AddFeePendingSettlement(calculatedFee, TestData.TransactionFeeSettlementDueDate);
-            transactionAggregate.AddSettledFee(calculatedFee, TestData.SettlementDate,TestData.SettlementAggregateId);
+            Result result = transactionAggregate.AddSettledFee(calculatedFee, TestData.SettlementDate,TestData.SettlementAggregateId);
+            result.IsSuccess.ShouldBeTrue();
 
             List<CalculatedFee> fees = transactionAggregate.GetFees();
 
@@ -1373,7 +1461,9 @@ namespace TransactionProcessor.Aggregates.Tests{
             transactionAggregate.AuthoriseTransaction(TestData.OperatorId, TestData.OperatorAuthorisationCode, TestData.OperatorResponseCode, TestData.OperatorResponseMessage, TestData.OperatorTransactionId, TestData.ResponseCode, TestData.ResponseMessage);
             transactionAggregate.CompleteTransaction();
 
-            Should.Throw<ArgumentNullException>(() => { transactionAggregate.AddSettledFee(null, TestData.SettlementDate, TestData.SettlementAggregateId); });
+            Result result = transactionAggregate.AddSettledFee(null, TestData.SettlementDate, TestData.SettlementAggregateId);
+            result.IsFailed.ShouldBeTrue();
+            result.Status.ShouldBe(ResultStatus.Invalid);
         }
 
         [Theory]
@@ -1393,7 +1483,9 @@ namespace TransactionProcessor.Aggregates.Tests{
             transactionAggregate.DeclineTransaction(TestData.OperatorId, TestData.OperatorResponseCode, TestData.OperatorResponseMessage, TestData.ResponseCode, TestData.ResponseMessage);
             transactionAggregate.CompleteTransaction();
 
-            Should.Throw<InvalidOperationException>(() => { transactionAggregate.AddSettledFee(this.GetCalculatedFeeToAdd(feeType), TestData.SettlementDate, TestData.SettlementAggregateId); });
+            Result result = transactionAggregate.AddSettledFee(this.GetCalculatedFeeToAdd(feeType), TestData.SettlementDate, TestData.SettlementAggregateId);
+            result.IsFailed.ShouldBeTrue();
+            result.Status.ShouldBe(ResultStatus.Invalid);
         }
 
         [Theory]
@@ -1412,7 +1504,9 @@ namespace TransactionProcessor.Aggregates.Tests{
             transactionAggregate.AddProductDetails(TestData.ContractId, TestData.ProductId);
             transactionAggregate.AuthoriseTransaction(TestData.OperatorId, TestData.OperatorAuthorisationCode, TestData.OperatorResponseCode, TestData.OperatorResponseMessage, TestData.OperatorTransactionId, TestData.ResponseCode, TestData.ResponseMessage);
 
-            Should.Throw<InvalidOperationException>(() => { transactionAggregate.AddSettledFee(this.GetCalculatedFeeToAdd(feeType), TestData.SettlementDate, TestData.SettlementAggregateId); });
+            Result result = transactionAggregate.AddSettledFee(this.GetCalculatedFeeToAdd(feeType), TestData.SettlementDate, TestData.SettlementAggregateId);
+            result.IsFailed.ShouldBeTrue();
+            result.Status.ShouldBe(ResultStatus.Invalid);
         }
 
         [Theory]
@@ -1435,7 +1529,8 @@ namespace TransactionProcessor.Aggregates.Tests{
             transactionAggregate.AddFeePendingSettlement(feeDetails, TestData.TransactionFeeSettlementDueDate);
             transactionAggregate.AddSettledFee(feeDetails, TestData.SettlementDate, TestData.SettlementAggregateId);
 
-            Should.NotThrow(() => { transactionAggregate.AddSettledFee(feeDetails, TestData.SettlementDate, TestData.SettlementAggregateId); });
+            Result result = transactionAggregate.AddSettledFee(feeDetails, TestData.SettlementDate, TestData.SettlementAggregateId);
+            result.IsSuccess.ShouldBeTrue();
 
             transactionAggregate.GetFees().Count.ShouldBe(1);
         }
@@ -1459,9 +1554,9 @@ namespace TransactionProcessor.Aggregates.Tests{
             CalculatedFee feeDetails = this.GetCalculatedFeeToAdd(FeeType.Merchant);
             transactionAggregate.AddFeePendingSettlement(feeDetails, TestData.TransactionFeeSettlementDueDate);
             
-            Should.Throw<InvalidOperationException>(() => {
-                                                        transactionAggregate.AddSettledFee(TestData.CalculatedFeeUnsupportedFee, TestData.SettlementDate, TestData.SettlementAggregateId);
-                                                    });
+            Result result = transactionAggregate.AddSettledFee(TestData.CalculatedFeeUnsupportedFee, TestData.SettlementDate, TestData.SettlementAggregateId);
+            result.IsFailed.ShouldBeTrue();
+            result.Status.ShouldBe(ResultStatus.Invalid);
         }
 
         [Theory]
@@ -1480,7 +1575,9 @@ namespace TransactionProcessor.Aggregates.Tests{
             transactionAggregate.AuthoriseTransactionLocally(TestData.AuthorisationCode, TestData.ResponseCode, TestData.ResponseMessage);
             transactionAggregate.CompleteTransaction();
 
-            Should.Throw<NotSupportedException>(() => { transactionAggregate.AddSettledFee(this.GetCalculatedFeeToAdd(feeType), TestData.SettlementDate, TestData.SettlementAggregateId); });
+            Result result = transactionAggregate.AddSettledFee(this.GetCalculatedFeeToAdd(feeType), TestData.SettlementDate, TestData.SettlementAggregateId);
+            result.IsFailed.ShouldBeTrue();
+            result.Status.ShouldBe(ResultStatus.Invalid);
         }
 
         [Theory]
@@ -1502,7 +1599,8 @@ namespace TransactionProcessor.Aggregates.Tests{
 
             CalculatedFee calculatedFee = this.GetCalculatedFeeToAdd(feeType);
 
-            transactionAggregate.AddFeePendingSettlement(calculatedFee, DateTime.Now);
+            Result result = transactionAggregate.AddFeePendingSettlement(calculatedFee, DateTime.Now);
+            result.IsSuccess.ShouldBeTrue();
 
             List<CalculatedFee> fees = transactionAggregate.GetFees();
 
@@ -1533,7 +1631,9 @@ namespace TransactionProcessor.Aggregates.Tests{
             transactionAggregate.AuthoriseTransaction(TestData.OperatorId, TestData.OperatorAuthorisationCode, TestData.OperatorResponseCode, TestData.OperatorResponseMessage, TestData.OperatorTransactionId, TestData.ResponseCode, TestData.ResponseMessage);
             transactionAggregate.CompleteTransaction();
 
-            Should.Throw<ArgumentNullException>(() => { transactionAggregate.AddFeePendingSettlement(null, DateTime.Now); });
+            Result result = transactionAggregate.AddFeePendingSettlement(null, DateTime.Now);
+            result.IsFailed.ShouldBeTrue();
+            result.Status.ShouldBe(ResultStatus.Invalid);
         }
 
         [Theory]
@@ -1554,7 +1654,9 @@ namespace TransactionProcessor.Aggregates.Tests{
             transactionAggregate.DeclineTransaction(TestData.OperatorId, TestData.OperatorResponseCode, TestData.OperatorResponseMessage, TestData.ResponseCode, TestData.ResponseMessage);
             transactionAggregate.CompleteTransaction();
 
-            Should.Throw<InvalidOperationException>(() => { transactionAggregate.AddFeePendingSettlement(this.GetCalculatedFeeToAdd(feeType), DateTime.Now); });
+            Result result = transactionAggregate.AddFeePendingSettlement(this.GetCalculatedFeeToAdd(feeType), DateTime.Now);
+            result.IsFailed.ShouldBeTrue();
+            result.Status.ShouldBe(ResultStatus.Invalid);
         }
 
 
@@ -1574,7 +1676,9 @@ namespace TransactionProcessor.Aggregates.Tests{
             transactionAggregate.AddProductDetails(TestData.ContractId, TestData.ProductId);
             transactionAggregate.AuthoriseTransaction(TestData.OperatorId, TestData.OperatorAuthorisationCode, TestData.OperatorResponseCode, TestData.OperatorResponseMessage, TestData.OperatorTransactionId, TestData.ResponseCode, TestData.ResponseMessage);
 
-            Should.Throw<InvalidOperationException>(() => { transactionAggregate.AddFeePendingSettlement(this.GetCalculatedFeeToAdd(feeType), DateTime.Now); });
+            Result result = transactionAggregate.AddFeePendingSettlement(this.GetCalculatedFeeToAdd(feeType), DateTime.Now);
+            result.IsFailed.ShouldBeTrue();
+            result.Status.ShouldBe(ResultStatus.Invalid);
         }
 
         [Theory]
@@ -1595,7 +1699,8 @@ namespace TransactionProcessor.Aggregates.Tests{
             transactionAggregate.CompleteTransaction();
             transactionAggregate.AddFeePendingSettlement(this.GetCalculatedFeeToAdd(feeType), DateTime.Now);
 
-            Should.NotThrow(() => { transactionAggregate.AddFeePendingSettlement(this.GetCalculatedFeeToAdd(feeType), DateTime.Now); });
+            var result = transactionAggregate.AddFeePendingSettlement(this.GetCalculatedFeeToAdd(feeType), DateTime.Now);
+            result.IsSuccess.ShouldBeTrue();
             transactionAggregate.GetFees().Count.ShouldBe(1);
         }
 
@@ -1616,7 +1721,9 @@ namespace TransactionProcessor.Aggregates.Tests{
             transactionAggregate.AuthoriseTransaction(TestData.OperatorId, TestData.OperatorAuthorisationCode, TestData.OperatorResponseCode, TestData.OperatorResponseMessage, TestData.OperatorTransactionId, TestData.ResponseCode, TestData.ResponseMessage);
             transactionAggregate.CompleteTransaction();
 
-            Should.Throw<InvalidOperationException>(() => { transactionAggregate.AddFeePendingSettlement(TestData.CalculatedFeeUnsupportedFee, DateTime.Now); });
+            Result result = transactionAggregate.AddFeePendingSettlement(TestData.CalculatedFeeUnsupportedFee, DateTime.Now);
+            result.IsFailed.ShouldBeTrue();
+            result.Status.ShouldBe(ResultStatus.Invalid);
         }
 
         [Theory]
@@ -1636,7 +1743,9 @@ namespace TransactionProcessor.Aggregates.Tests{
             transactionAggregate.AuthoriseTransactionLocally(TestData.AuthorisationCode, TestData.ResponseCode, TestData.ResponseMessage);
             transactionAggregate.CompleteTransaction();
 
-            Should.Throw<NotSupportedException>(() => { transactionAggregate.AddFeePendingSettlement(this.GetCalculatedFeeToAdd(feeType), DateTime.Now); });
+            Result result = transactionAggregate.AddFeePendingSettlement(this.GetCalculatedFeeToAdd(feeType), DateTime.Now);
+            result.IsFailed.ShouldBeTrue();
+            result.Status.ShouldBe(ResultStatus.Invalid);
         }
 
         public static TheoryData<decimal, decimal, decimal?, decimal?, Boolean> TransactionAggregate_RecordCostPrice_SaleTransaction_CostPriceRecorded_Data =>
@@ -1662,7 +1771,8 @@ namespace TransactionProcessor.Aggregates.Tests{
                                                   TestData.DeviceIdentifier,
                                                   TestData.TransactionAmount);
 
-            transactionAggregate.RecordCostPrice(unitCost, totalCost);
+            Result result = transactionAggregate.RecordCostPrice(unitCost, totalCost);
+            result.IsSuccess.ShouldBeTrue();
             
             transactionAggregate.UnitCost.ShouldBe(expectedUnitCost);
             transactionAggregate.TotalCost.ShouldBe(expectedTotalCost);
@@ -1683,14 +1793,17 @@ namespace TransactionProcessor.Aggregates.Tests{
 
             transactionAggregate.RecordCostPrice(TestData.UnitCostPrice, TestData.TotalCostPrice);
 
-            Should.Throw<InvalidOperationException>(() => { transactionAggregate.RecordCostPrice(TestData.UnitCostPrice, TestData.TotalCostPrice); });
+            Result result = transactionAggregate.RecordCostPrice(TestData.UnitCostPrice, TestData.TotalCostPrice);
+            result.IsSuccess.ShouldBeTrue();
         }
 
         [Fact]
         public void TransactionAggregate_RecordCostPrice_SaleTransaction_NotStarted_ErrorThrown(){
             Aggregates.TransactionAggregate transactionAggregate = Aggregates.TransactionAggregate.Create(TestData.TransactionId);
 
-            Should.Throw<InvalidOperationException>(() => { transactionAggregate.RecordCostPrice(TestData.UnitCostPrice, TestData.TotalCostPrice); });
+            Result result = transactionAggregate.RecordCostPrice(TestData.UnitCostPrice, TestData.TotalCostPrice);
+            result.IsFailed.ShouldBeTrue();
+            result.Status.ShouldBe(ResultStatus.Invalid);
         }
     }
 }
