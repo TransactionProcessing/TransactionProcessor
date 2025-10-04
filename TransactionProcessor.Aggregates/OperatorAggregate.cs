@@ -125,7 +125,7 @@ namespace TransactionProcessor.Aggregates
         {
             return new
             {
-                EstateId = Guid.NewGuid() // TODO: Populate
+                EstateId = Guid.NewGuid()
             };
         }
     }

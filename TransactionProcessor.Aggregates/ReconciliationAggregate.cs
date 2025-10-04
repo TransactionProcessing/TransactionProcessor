@@ -60,7 +60,6 @@ namespace TransactionProcessor.Aggregates
             if (transactionDateTime == DateTime.MinValue)
                 return Result.Invalid($"Transaction Date Time must not be [{DateTime.MinValue}]");
 
-            // TODO: Some rules here
             if (aggregate.HasBeenStarted || aggregate.IsCompleted) {
                 return Result.Success();
             }

@@ -256,7 +256,7 @@ namespace TransactionProcessor.Aggregates{
         [ExcludeFromCodeCoverage]
         protected override Object GetMetadata(){
             return new{
-                          EstateId = Guid.NewGuid() // TODO: Populate
+                          EstateId = Guid.NewGuid() 
                       };
         }
 
