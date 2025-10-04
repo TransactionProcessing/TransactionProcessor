@@ -1,4 +1,5 @@
-﻿using Shared.Results;
+﻿using Shared.Exceptions;
+using Shared.Results;
 using SimpleResults;
 using TransactionProcessor.Aggregates;
 using TransactionProcessor.BusinessLogic.Services;
@@ -127,7 +128,7 @@ public class VoucherDomainEventHandler : IDomainEventHandler
         Database.Entities.Transaction transaction = await context.Transactions.SingleOrDefaultAsync(t => t.TransactionId == voucherModel.TransactionId, cancellationToken);
         if (transaction == null)
         {
-            throw new Exception($"Transaction not found Transaction Id {voucherModel.TransactionId}");
+            throw new NotFoundException($"Transaction not found Transaction Id {voucherModel.TransactionId}");
         }
 
         Contract contract = await context.Contracts.SingleOrDefaultAsync(c => c.ContractId == transaction.ContractId, cancellationToken);

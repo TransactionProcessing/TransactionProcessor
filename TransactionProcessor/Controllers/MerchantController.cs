@@ -253,7 +253,7 @@ public class MerchantController : ControllerBase
 
         return true;
     }
-    //private TokenResponse TokenResponse;
+
     [HttpPost]
     [Route("")]
     public async Task<IActionResult> CreateMerchant([FromRoute] Guid estateId,

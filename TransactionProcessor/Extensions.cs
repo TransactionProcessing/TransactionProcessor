@@ -51,6 +51,9 @@ namespace TransactionProcessor
                 case TraceEventType.Verbose:
                     Logger.LogDebug(logMessage);
                     break;
+                default:
+                    Logger.LogDebug(logMessage);
+                    break;
             }
         };
 

@@ -706,9 +706,6 @@ namespace TransactionProcessor.BusinessLogic.Services{
         private async Task<Result<List<Models.Contract.ContractProductTransactionFee>>> GetTransactionFeesForProduct(Guid contractId,
                                                                                                                      Guid productId,
                                                                                                                      CancellationToken cancellationToken) {
-            //Result<ContractAggregate> contractAggregateResult = await this.AggregateService.Get<ContractAggregate>(contractId, CancellationToken.None);
-            //if (contractAggregateResult.IsFailed)
-            //    return ResultHelpers.CreateFailure(contractAggregateResult);
             Result<ContractAggregate> contractAggregateResult = await DomainServiceHelper.GetAggregateOrFailure(ct => this.AggregateService.Get<ContractAggregate>(contractId, ct), contractId, cancellationToken, false);
             if (contractAggregateResult.IsFailed)
                 return ResultHelpers.CreateFailure(contractAggregateResult);

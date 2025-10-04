@@ -14,7 +14,6 @@ namespace TransactionProcessor.Bootstrapper
     using Lamar;
     using Microsoft.Extensions.Configuration;
     using Microsoft.Extensions.DependencyInjection;
-    //using Org.BouncyCastle.Security;
     using PataPawaPostPay;
 
     /// <summary>

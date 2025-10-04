@@ -137,6 +137,9 @@ public static class PolicyFactory
                 string retryMessage = retryCount > 0 ? $" after {retryCount} retries." : "";
                 Logger.LogWarning($"{policyTag} - {message}{retryMessage}");
                 break;
+            default:
+                throw new ArgumentOutOfRangeException(nameof(type), type, null);
+                break;
         }
     }
 }
