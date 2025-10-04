@@ -39,30 +39,25 @@ jobs:
         dotnet test "TransactionProcessor.Tests\TransactionProcessor.Tests.csproj" /p:CollectCoverage=true /p:Exclude="[xunit*]*" /p:ExcludeByAttribute="Obsolete" /p:ExcludeByAttribute="GeneratedCodeAttribute" /p:ExcludeByAttribute="CompilerGeneratedAttribute" /p:ExcludeByAttribute="ExcludeFromCodeCoverageAttribute" /p:CoverletOutput="../lcov4.info" /maxcpucount:1 /p:CoverletOutputFormat="lcov"
         dotnet test "TransactionProcessor.DatabaseTests\TransactionProcessor.DatabaseTests.csproj"  /p:CollectCoverage=true /p:Exclude="[xunit*]*" /p:ExcludeByAttribute="Obsolete" /p:ExcludeByAttribute="GeneratedCodeAttribute" /p:ExcludeByAttribute="CompilerGeneratedAttribute" /p:ExcludeByAttribute="ExcludeFromCodeCoverageAttribute" /p:CoverletOutput="../lcov5.info" /maxcpucount:1 /p:CoverletOutputFormat="lcov"
 
-    - name: Upload coverage reports to Codecov
-      uses: codecov/codecov-action@v3  
+    - name: Install LCOV merger
+      run: npm install -g lcov-result-merger
+
+    - name: Merge LCOV reports
+      run: |
+        mkdir -p coverage
+        lcov-result-merger "*.info" > lcov.info
+
+    - name: Upload merged coverage to Codacy
+      uses: codacy/codacy-coverage-reporter-action@v1
       with:
-        token: ${{ secrets.CODECOV_TOKEN }}
-        files: ./lcov1.info,./lcov2.info,./lcov3.info,./lcov4.info,./lcov5.info
+        project-token: ${{ secrets.CODACY_PROJECT_TOKEN }}
+        coverage-reports: ./lcov.info
         
     - name: Build Docker Image
       run: docker build . --file TransactionProcessor/Dockerfile --tag transactionprocessor:latest
 
     - name: Run Integration Tests
       run: dotnet test "TransactionProcessor.IntegrationTests\TransactionProcessor.IntegrationTests.csproj" --logger "trx;LogFileName=test-results.trx"
-
-    - name: Extract Failed Tests (PowerShell)
-      if: ${{ failure() }}
-      run: |
-        $xml = [xml](Get-Content /home/runner/work/TransactionProcessor/TransactionProcessor/TransactionProcessor.IntegrationTests/test-results.trx)
-        $failedTests = $xml.TestRun.Results.UnitTestResult | Where-Object { $_.outcome -eq "Failed" }
-        if ($failedTests) {
-          Write-Host "::error::Failed Tests:"
-          foreach ($test in $failedTests) {
-            Write-Host "::error::- $($test.testName)"
-          }
-        }
-      shell: pwsh
 
     - uses: actions/upload-artifact@v4.4.0
       if: ${{ failure() }}
