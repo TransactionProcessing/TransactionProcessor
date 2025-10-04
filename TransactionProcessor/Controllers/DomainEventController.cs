@@ -3,6 +3,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Shared.Exceptions;
 
 namespace TransactionProcessor.Controllers
 {
@@ -135,7 +136,7 @@ namespace TransactionProcessor.Controllers
             Type type = TypeMap.GetType(eventType);
 
             if (type == null)
-                throw new Exception($"Failed to find a domain event with type {eventType}");
+                throw new NotFoundException($"Failed to find a domain event with type {eventType}");
 
             JsonIgnoreAttributeIgnorerContractResolver jsonIgnoreAttributeIgnorerContractResolver = new JsonIgnoreAttributeIgnorerContractResolver();
             JsonSerializerSettings jsonSerialiserSettings = new JsonSerializerSettings

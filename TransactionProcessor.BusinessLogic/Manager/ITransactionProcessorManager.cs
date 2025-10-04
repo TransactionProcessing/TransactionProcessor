@@ -41,11 +41,8 @@ namespace TransactionProcessor.BusinessLogic.Manager
                                                                 Guid contractId,
                                                                 Guid productId,
                                                                 CancellationToken cancellationToken);
-
-        //Task<Result<File>> GetFileDetails(Guid estateId, Guid fileId, CancellationToken cancellationToken);
-
         Task<Result<Models.Operator.Operator>> GetOperator(Guid estateId, Guid operatorId,
-                               CancellationToken cancellationToken);
+                                                           CancellationToken cancellationToken);
 
         Task<Result<List<Models.Operator.Operator>>> GetOperators(Guid estateId, CancellationToken cancellationToken);
 

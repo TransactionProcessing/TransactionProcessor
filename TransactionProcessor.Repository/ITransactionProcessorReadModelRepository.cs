@@ -76,9 +76,6 @@ namespace TransactionProcessor.Repository {
         Task<Result> AddFileToImportLog(FileAddedToImportLogEvent domainEvent,
                                         CancellationToken cancellationToken);
 
-        //Task<Result> AddGeneratedVoucher(VoucherDomainEvents.VoucherGeneratedEvent domainEvent,
-        //                                 CancellationToken cancellationToken);
-
         Task<Result> AddMerchant(MerchantDomainEvents.MerchantCreatedEvent domainEvent,
                                 CancellationToken cancellationToken);
 
@@ -109,19 +106,11 @@ namespace TransactionProcessor.Repository {
         Task<Result> AddProductDetailsToTransaction(TransactionDomainEvents.ProductDetailsAddedToTransactionEvent domainEvent,
                                                     CancellationToken cancellationToken);
 
-        // TODO@ Add this back in
-        //Task<Result> AddSettledFeeToStatement(SettledFeeAddedToStatementEvent domainEvent,
-        //                                      CancellationToken cancellationToken);
-
         Task<Result> AddSettledMerchantFeeToSettlement(TransactionDomainEvents.SettledMerchantFeeAddedToTransactionEvent domainEvent,
                                                        CancellationToken cancellationToken);
 
         Task<Result> AddSourceDetailsToTransaction(TransactionDomainEvents.TransactionSourceAddedToTransactionEvent domainEvent,
                                                    CancellationToken cancellationToken);
-
-        // TODO@ Add this back in
-        //Task<Result> AddTransactionToStatement(TransactionAddedToStatementEvent domainEvent,
-        //                                       CancellationToken cancellationToken);
 
         Task<Result> CompleteReconciliation(ReconciliationDomainEvents.ReconciliationHasCompletedEvent domainEvent,
                                             CancellationToken cancellationToken);

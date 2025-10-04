@@ -44,7 +44,6 @@ namespace TransactionProcessor.Bootstrapper
                     Startup.Configuration.GetSection("AppSettings:EventHandlerConfiguration").Bind(eventHandlersConfiguration);
                 }
 
-                //this.AddSingleton(eventHandlersConfiguration);
                 this.Use(eventHandlersConfiguration).Named("EventHandlerConfiguration");
 
                 section = Startup.Configuration.GetSection("AppSettings:EventHandlerConfigurationDomain");

@@ -222,9 +222,6 @@ namespace TransactionProcessor.BusinessLogic.Services
                 this.TokenResponse = getTokenResult.Data;
 
                 Result sendEmailResponseResult = await this.MessagingServiceClient.SendEmail(this.TokenResponse.AccessToken, sendEmailRequest, cancellationToken);
-                //if (sendEmailResponseResult.IsFailed) {
-                //    // TODO: record a failed event??
-                //}
 
                 Result stateResult = merchantStatementAggregate.EmailStatement(DateTime.Now, messageId);
                 if (stateResult.IsFailed)

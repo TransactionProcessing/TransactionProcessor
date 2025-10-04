@@ -89,11 +89,9 @@ public class ProjectionHandler<TState> : IProjectionHandler where TState : Share
 
         builder.Insert(0, $"Total time: {stopwatch.ElapsedMilliseconds}ms|");
 
-        //Int32 projectionTraceThresholdInSeconds = Int32.Parse(ConfigurationReader.GetValue("AppSettings", "ProjectionTraceThresholdInSeconds"));
-        //if (stopwatch.Elapsed.Seconds > projectionTraceThresholdInSeconds){
-            Logger.LogWarning(builder.ToString());
-            Logger.LogInformation($"{@event.EventId}|Event Type {@event.EventType} Id [{@event.EventId}] for state {state.GetType().Name} took {stopwatch.ElapsedMilliseconds}ms to process");
-        //}
+        Logger.LogWarning(builder.ToString());
+        Logger.LogInformation($"{@event.EventId}|Event Type {@event.EventType} Id [{@event.EventId}] for state {state.GetType().Name} took {stopwatch.ElapsedMilliseconds}ms to process");
+        
         return Result.Success();
     }
 }
