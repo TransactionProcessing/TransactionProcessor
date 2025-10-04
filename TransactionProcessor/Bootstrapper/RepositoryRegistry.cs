@@ -70,13 +70,13 @@ namespace TransactionProcessor.Bootstrapper
             this.AddSingleton<Func<IAggregateService>>(c => () => {
                 
                 IAggregateService aggregateService = Startup.ServiceProvider.GetService<IAggregateService>();
-                if (CachedAggregatesAdded == false)
+                if (RepositoryRegistry.CachedAggregatesAdded == false)
                 {
                     aggregateService.AddCachedAggregate(typeof(EstateAggregate), null);
                     aggregateService.AddCachedAggregate(typeof(ContractAggregate), null);
                     aggregateService.AddCachedAggregate(typeof(OperatorAggregate), null);
                     aggregateService.AddCachedAggregate(typeof(MerchantAggregate), null);
-                    CachedAggregatesAdded=true;
+                    RepositoryRegistry.CachedAggregatesAdded=true;
                 }
                 
                 return aggregateService;

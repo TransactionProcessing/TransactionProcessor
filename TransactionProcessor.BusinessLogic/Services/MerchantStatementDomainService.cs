@@ -221,7 +221,7 @@ namespace TransactionProcessor.BusinessLogic.Services
                     return ResultHelpers.CreateFailure(getTokenResult);
                 this.TokenResponse = getTokenResult.Data;
 
-                Result sendEmailResponseResult = await this.MessagingServiceClient.SendEmail(this.TokenResponse.AccessToken, sendEmailRequest, cancellationToken);
+                await this.MessagingServiceClient.SendEmail(this.TokenResponse.AccessToken, sendEmailRequest, cancellationToken);
 
                 Result stateResult = merchantStatementAggregate.EmailStatement(DateTime.Now, messageId);
                 if (stateResult.IsFailed)
