@@ -88,6 +88,11 @@ namespace TransactionProcessor.Aggregates
 
             return Result.Success();
         }
+
+        public static Decimal GetTotalCostPrice(this FloatAggregate aggregate, Decimal transactionAmount)
+        {
+            return transactionAmount * aggregate.UnitCostPrice;
+        }
     }
 
     public record FloatAggregate : Aggregate

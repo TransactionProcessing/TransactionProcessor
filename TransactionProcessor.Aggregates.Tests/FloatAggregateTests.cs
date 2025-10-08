@@ -108,5 +108,19 @@ namespace TransactionProcessor.Aggregates.Tests
             result.Status.ShouldBe(ResultStatus.Invalid);
 
         }
+
+        [Fact]
+        public void FloatAggregate_GetTotalCostPrice_TotalCostReturned()
+        {
+            Aggregates.FloatAggregate aggregate = Aggregates.FloatAggregate.Create(TestData.FloatAggregateId);
+            aggregate.CreateFloat(TestData.EstateId, TestData.ContractId, TestData.ProductId, TestData.FloatCreatedDateTime);
+            DateTime purchaseDateTime = DateTime.Now;
+            aggregate.RecordCreditPurchase(purchaseDateTime, 1000, 900);
+
+            Decimal totalCost = aggregate.GetTotalCostPrice(10);
+
+            totalCost.ShouldBe(9);
+
+        }
     }
 }
