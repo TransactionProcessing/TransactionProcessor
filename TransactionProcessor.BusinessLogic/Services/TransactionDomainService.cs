@@ -1,5 +1,4 @@
-﻿using System.Security.Cryptography;
-using Newtonsoft.Json;
+﻿using Newtonsoft.Json;
 using Shared.Exceptions;
 using Shared.General;
 using Shared.Results;
@@ -92,7 +91,6 @@ namespace TransactionProcessor.BusinessLogic.Services{
 
         public async Task<Result<ProcessLogonTransactionResponse>> ProcessLogonTransaction(TransactionCommands.ProcessLogonTransactionCommand command,
                                                                                            CancellationToken cancellationToken) {
-
             try {
                 Result<TransactionAggregate> transactionResult = await DomainServiceHelper.GetAggregateOrFailure(ct => this.AggregateService.GetLatest<TransactionAggregate>(command.TransactionId, ct), command.TransactionId, cancellationToken, false);
                 if (transactionResult.IsFailed)
@@ -102,7 +100,7 @@ namespace TransactionProcessor.BusinessLogic.Services{
                 TransactionType transactionType = TransactionType.Logon;
 
                 // Generate a transaction reference
-                String transactionReference = this.GenerateTransactionReference();
+                String transactionReference = TransactionHelpers.GenerateTransactionReference();
 
                 Result stateResult = transactionAggregate.StartTransaction(command.TransactionDateTime, command.TransactionNumber, transactionType, transactionReference, command.EstateId, command.MerchantId, command.DeviceIdentifier, null); // Logon transaction has no amount
                 if (stateResult.IsFailed)
@@ -116,7 +114,7 @@ namespace TransactionProcessor.BusinessLogic.Services{
                     }
 
                     // Record the successful validation
-                    stateResult = transactionAggregate.AuthoriseTransactionLocally(GenerateAuthCode(), ((Int32)validationResult.Data.ResponseCode).ToString().PadLeft(4, '0'), validationResult.Data.ResponseMessage);
+                    stateResult = transactionAggregate.AuthoriseTransactionLocally(TransactionHelpers.GenerateAuthCode(), ((Int32)validationResult.Data.ResponseCode).ToString().PadLeft(4, '0'), validationResult.Data.ResponseMessage);
                     if (stateResult.IsFailed)
                         return ResultHelpers.CreateFailure(stateResult);
                 }
@@ -150,16 +148,7 @@ namespace TransactionProcessor.BusinessLogic.Services{
                 return Result.Failure(ex.GetExceptionMessages());
             }
         }
-
-        public static string GenerateAuthCode()
-        {
-            // 8 hex characters == 4 random bytes
-            byte[] bytes = RandomNumberGenerator.GetBytes(4); // .NET 6+; for older frameworks use RandomNumberGenerator.Create().GetBytes(bytes)
-            // Convert to uppercase hex string (0-9, A-F). Convert.ToHexString returns uppercase.
-            string hex = Convert.ToHexString(bytes);
-            return hex.Substring(0, 8);
-        }
-
+        
         public async Task<Result<ProcessReconciliationTransactionResponse>> ProcessReconciliationTransaction(TransactionCommands.ProcessReconciliationCommand command,
                                                                                                              CancellationToken cancellationToken) {
             try{
@@ -219,7 +208,6 @@ namespace TransactionProcessor.BusinessLogic.Services{
                                                                                          CancellationToken cancellationToken) {
             try
             {
-
                 Result<TransactionAggregate> transactionResult = await DomainServiceHelper.GetAggregateOrFailure(ct => this.AggregateService.GetLatest<TransactionAggregate>(command.TransactionId, ct), command.TransactionId, cancellationToken, false);
                 if (transactionResult.IsFailed)
                     return ResultHelpers.CreateFailure(transactionResult);
@@ -230,7 +218,7 @@ namespace TransactionProcessor.BusinessLogic.Services{
                 TransactionSource transactionSourceValue = (TransactionSource)command.TransactionSource;
 
                 // Generate a transaction reference
-                String transactionReference = this.GenerateTransactionReference();
+                String transactionReference = TransactionHelpers.GenerateTransactionReference();
 
                 // Extract the transaction amount from the metadata
                 Decimal? transactionAmount = command.AdditionalTransactionMetadata.ExtractFieldFromMetadata<Decimal?>("Amount");
@@ -379,16 +367,7 @@ namespace TransactionProcessor.BusinessLogic.Services{
             }
         }
 
-        internal static Boolean RequireFeeCalculation(TransactionAggregate transactionAggregate) {
-            return transactionAggregate switch {
-                _ when transactionAggregate.TransactionType == TransactionType.Logon => false,
-                _ when transactionAggregate.IsAuthorised == false => false,
-                _ when transactionAggregate.IsCompleted == false => false,
-                _ when transactionAggregate.ContractId == Guid.Empty => false,
-                _ when transactionAggregate.TransactionAmount == null => false,
-                _ => true
-            };
-        }
+        
 
         public async Task<Result> CalculateFeesForTransaction(TransactionCommands.CalculateFeesForTransactionCommand command,
                                                               CancellationToken cancellationToken) {
@@ -400,7 +379,7 @@ namespace TransactionProcessor.BusinessLogic.Services{
 
                 TransactionAggregate transactionAggregate = transactionResult.Data;
 
-                if (RequireFeeCalculation(transactionAggregate) == false)
+                if (TransactionHelpers.RequireFeeCalculation(transactionAggregate) == false)
                     return Result.Success();
 
                 Result<List<TransactionFeeToCalculate>> feesForCalculationResult = await this.GetTransactionFeesForCalculation(transactionAggregate, cancellationToken);
@@ -429,7 +408,7 @@ namespace TransactionProcessor.BusinessLogic.Services{
 
                     foreach (CalculatedFee calculatedFee in merchantFees) {
                         // Determine when the fee should be applied
-                        DateTime settlementDate = CalculateSettlementDate(merchantResult.Data.SettlementSchedule, command.CompletedDateTime);
+                        DateTime settlementDate = TransactionHelpers.CalculateSettlementDate(merchantResult.Data.SettlementSchedule, command.CompletedDateTime);
 
                         Result stateResult = transactionAggregate.AddFeePendingSettlement(calculatedFee, settlementDate);
                         if (stateResult.IsFailed)
@@ -541,20 +520,7 @@ namespace TransactionProcessor.BusinessLogic.Services{
 
             return await this.ResendEmailMessage(this.TokenResponse.AccessToken, transactionAggregate.ReceiptMessageId, command.EstateId, cancellationToken);
         }
-
-        internal static DateTime CalculateSettlementDate(Models.Merchant.SettlementSchedule merchantSettlementSchedule,
-                                                         DateTime completeDateTime) {
-            if (merchantSettlementSchedule == Models.Merchant.SettlementSchedule.Weekly) {
-                return completeDateTime.Date.AddDays(7).Date;
-            }
-
-            if (merchantSettlementSchedule == Models.Merchant.SettlementSchedule.Monthly) {
-                return completeDateTime.Date.AddMonths(1).Date;
-            }
-
-            return completeDateTime.Date;
-        }
-
+        
         private async Task<Result<List<TransactionFeeToCalculate>>> GetTransactionFeesForCalculation(TransactionAggregate transactionAggregate,
                                                                                              CancellationToken cancellationToken) {
             // Get the fees to be calculated
@@ -591,15 +557,7 @@ namespace TransactionProcessor.BusinessLogic.Services{
             return await this.AggregateService.Save(merchantAggregate.Data, cancellationToken);
         }
 
-        [ExcludeFromCodeCoverage]
-        private String GenerateTransactionReference() {
-            Int64 i = 1;
-            foreach (Byte b in Guid.NewGuid().ToByteArray()) {
-                i *= (b + 1);
-            }
-
-            return $"{i - DateTime.Now.Ticks:x}";
-        }
+        
 
         private async Task<Result<Merchant>> GetMerchant(Guid merchantId,
                                                          CancellationToken cancellationToken) {
@@ -630,7 +588,7 @@ namespace TransactionProcessor.BusinessLogic.Services{
             try {
                 Result<OperatorResponse> saleResult = await operatorProxy.ProcessSaleMessage(transactionId, operatorId, merchant, transactionDateTime, transactionReference, additionalTransactionMetadata, cancellationToken);
                 if (saleResult.IsFailed) {
-                    return CreateFailedResult(new OperatorResponse { IsSuccessful = false, ResponseCode = "9999", ResponseMessage = saleResult.Message });
+                    return ResultHelpers.CreateFailedResult(new OperatorResponse { IsSuccessful = false, ResponseCode = "9999", ResponseMessage = saleResult.Message });
                 }
 
                 return saleResult;
@@ -638,13 +596,13 @@ namespace TransactionProcessor.BusinessLogic.Services{
             catch (Exception e) {
                 // Log out the error
                 Logger.LogError(e);
-                return CreateFailedResult(new OperatorResponse { IsSuccessful = false, ResponseCode = "9999", ResponseMessage = e.GetCombinedExceptionMessages() });
+                return ResultHelpers.CreateFailedResult(new OperatorResponse { IsSuccessful = false, ResponseCode = "9999", ResponseMessage = e.GetCombinedExceptionMessages() });
             }
         }
         
-        internal static Result<T> CreateFailedResult<T>(T resultData) {
-            return new Result<T> { IsSuccess = false, Data = resultData };
-        }
+        //internal static Result<T> CreateFailedResult<T>(T resultData) {
+        //    return new Result<T> { IsSuccess = false, Data = resultData };
+        //}
 
         [ExcludeFromCodeCoverage]
         private async Task<Result> SendEmailMessage(String accessToken,
@@ -693,7 +651,6 @@ namespace TransactionProcessor.BusinessLogic.Services{
 
                 return Result.Success("Duplicate message send");
             }
-
         }
 
         private async Task<Result<List<Models.Contract.ContractProductTransactionFee>>> GetTransactionFeesForProduct(Guid contractId,

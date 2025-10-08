@@ -188,13 +188,13 @@ namespace TransactionProcessor.IntegrationTests.Features
             table7.AddRow(new string[] {
                         "Test Estate 1",
                         "Test Operator 1",
-                        "True",
-                        "True"});
+                        "False",
+                        "False"});
             table7.AddRow(new string[] {
                         "Test Estate 2",
                         "Test Operator 1",
-                        "True",
-                        "True"});
+                        "False",
+                        "False"});
 #line 31
  await testRunner.GivenAsync("I have created the following operators", ((string)(null)), table7, "Given ");
 #line hidden
