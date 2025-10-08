@@ -599,10 +599,6 @@ namespace TransactionProcessor.BusinessLogic.Services{
                 return ResultHelpers.CreateFailedResult(new OperatorResponse { IsSuccessful = false, ResponseCode = "9999", ResponseMessage = e.GetCombinedExceptionMessages() });
             }
         }
-        
-        //internal static Result<T> CreateFailedResult<T>(T resultData) {
-        //    return new Result<T> { IsSuccess = false, Data = resultData };
-        //}
 
         [ExcludeFromCodeCoverage]
         private async Task<Result> SendEmailMessage(String accessToken,
