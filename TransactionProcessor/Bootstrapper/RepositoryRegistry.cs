@@ -65,8 +65,30 @@ namespace TransactionProcessor.Bootstrapper
 
             this.AddTransient<IEventStoreContext, EventStoreContext>();
 
-            // ✅ Move static behavior to a thread-safe static method
-            EnsureCachedAggregatesRegistered();
+            // ✅ Defer to the container — safe and compliant
+            this.AddSingleton<Func<IAggregateService>>(c => () =>
+            {
+                var aggregateService = c.GetService<IAggregateService>();
+
+                // Thread-safe single initialization
+                if (!CachedAggregatesAdded)
+                {
+                    lock (CachedAggregatesLock)
+                    {
+                        if (!CachedAggregatesAdded)
+                        {
+                            aggregateService.AddCachedAggregate(typeof(EstateAggregate), null);
+                            aggregateService.AddCachedAggregate(typeof(ContractAggregate), null);
+                            aggregateService.AddCachedAggregate(typeof(OperatorAggregate), null);
+                            aggregateService.AddCachedAggregate(typeof(MerchantAggregate), null);
+
+                            CachedAggregatesAdded = true;
+                        }
+                    }
+                }
+
+                return aggregateService;
+            });
 
             this.AddSingleton<IAggregateService, AggregateService>();
             this.AddSingleton<IAggregateRepositoryResolver, AggregateRepositoryResolver>();
@@ -88,26 +110,6 @@ namespace TransactionProcessor.Bootstrapper
             this.AddSingleton<ITransactionProcessorReadRepository, TransactionProcessorReadRepository>();
             this.AddSingleton<ITransactionProcessorReadModelRepository, TransactionProcessorReadModelRepository>();
             this.AddSingleton<IProjection<MerchantBalanceState>, MerchantBalanceProjection>();
-        }
-
-        private static void EnsureCachedAggregatesRegistered()
-        {
-            if (CachedAggregatesAdded)
-                return;
-
-            lock (CachedAggregatesLock)
-            {
-                if (CachedAggregatesAdded)
-                    return;
-
-                IAggregateService aggregateService = Startup.ServiceProvider.GetService<IAggregateService>();
-                aggregateService.AddCachedAggregate(typeof(EstateAggregate), null);
-                aggregateService.AddCachedAggregate(typeof(ContractAggregate), null);
-                aggregateService.AddCachedAggregate(typeof(OperatorAggregate), null);
-                aggregateService.AddCachedAggregate(typeof(MerchantAggregate), null);
-
-                CachedAggregatesAdded = true;
-            }
         }
     }
 
