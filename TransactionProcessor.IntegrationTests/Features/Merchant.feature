@@ -32,8 +32,8 @@ Background:
 
 	Given I have created the following operators
 	| EstateName    | OperatorName    | RequireCustomMerchantNumber | RequireCustomTerminalNumber |
-	| Test Estate 1 | Test Operator 1 | True                        | True                        |
-	| Test Estate 2 | Test Operator 1 | True                        | True                        |
+	| Test Estate 1 | Test Operator 1 | False                        | False                        |
+	| Test Estate 2 | Test Operator 1 | False                        | False                        |
 
 	And I have assigned the following operators to the estates
 	| EstateName    | OperatorName    | 

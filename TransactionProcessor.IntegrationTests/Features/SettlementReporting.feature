@@ -28,8 +28,8 @@ Background:
 
 	Given I have created the following operators
 	| EstateName    | OperatorName | RequireCustomMerchantNumber | RequireCustomTerminalNumber |
-	| Test Estate 1 | Safaricom    | True                        | True                        |
-	| Test Estate 2 | Safaricom    | True                        | True                        |
+	| Test Estate 1 | Safaricom    | False                        | False                        |
+	| Test Estate 2 | Safaricom    | False                        | False                        |
 
 	And I have assigned the following operators to the estates
 	| EstateName    | OperatorName    | 
