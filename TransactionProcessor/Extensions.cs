@@ -81,15 +81,9 @@ namespace TransactionProcessor
 
 
             Func<String, Int32, ISubscriptionRepository> subscriptionRepositoryResolver = Startup.Container.GetInstance<Func<String, Int32, ISubscriptionRepository>>();
-
-            String connectionString = Startup.Configuration.GetValue<String>("EventStoreSettings:ConnectionString");
-            
+           
             applicationBuilder.ConfigureSubscriptionService(subscriptionWorkersRoot, eventStoreConnectionString, eventHandlerResolvers, Extensions.log, subscriptionRepositoryResolver).Wait(CancellationToken.None);
-
-            // Setup the aggregate service caching
             
-            
-
             IMediator mediator = Startup.Container.GetInstance<IMediator>();
             StatementFilePollerService statementFilePollerService = new(mediator);
             statementFilePollerService.Start();

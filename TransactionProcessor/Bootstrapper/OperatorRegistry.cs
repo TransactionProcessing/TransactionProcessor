@@ -30,8 +30,6 @@ namespace TransactionProcessor.Bootstrapper
         /// </summary>
         public OperatorRegistry()
         {
-            IConfigurationSection section = Startup.Configuration.GetSection("AppSettings:OperatorConfiguration");
-
             this.ConfigureOperator<SafaricomConfiguration>("Safaricom");
             this.ConfigureOperator<PataPawaPostPaidConfiguration>("PataPawaPostPay");
             this.ConfigureOperator<PataPawaPrePaidConfiguration>("PataPawaPrePay");
