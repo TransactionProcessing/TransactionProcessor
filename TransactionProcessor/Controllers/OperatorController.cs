@@ -129,7 +129,7 @@ public class OperatorController : ControllerBase
     /// <summary>
     /// The controller name
     /// </summary>
-    public const string ControllerName = "operators";
+    private const string ControllerName = "operators";
 
     /// <summary>
     /// The controller route

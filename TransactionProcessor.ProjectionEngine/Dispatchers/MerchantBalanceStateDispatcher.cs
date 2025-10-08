@@ -22,11 +22,11 @@ public class MerchantBalanceStateDispatcher : IStateDispatcher<MerchantBalanceSt
 
         MerchantBalanceChangedEntry entry = @event switch {
             MerchantDomainEvents.MerchantCreatedEvent e => this.CreateOpeningBalanceEntry(e),
-            MerchantDomainEvents.ManualDepositMadeEvent e => this.CreateManualDepositBalanceEntry(state, e),
-            MerchantDomainEvents.AutomaticDepositMadeEvent e => this.CreateAutomaticDepositBalanceEntry(state, e),
-            MerchantDomainEvents.WithdrawalMadeEvent e => this.CreateWithdrawalBalanceEntry(state, e),
-            TransactionDomainEvents.TransactionHasBeenCompletedEvent e => this.CreateTransactionBalanceEntry(state, e),
-            TransactionDomainEvents.SettledMerchantFeeAddedToTransactionEvent e => this.CreateTransactionFeeBalanceEntry(state, e),
+            MerchantDomainEvents.ManualDepositMadeEvent e => this.CreateManualDepositBalanceEntry(e),
+            MerchantDomainEvents.AutomaticDepositMadeEvent e => this.CreateAutomaticDepositBalanceEntry(e),
+            MerchantDomainEvents.WithdrawalMadeEvent e => this.CreateWithdrawalBalanceEntry(e),
+            TransactionDomainEvents.TransactionHasBeenCompletedEvent e => this.CreateTransactionBalanceEntry(e),
+            TransactionDomainEvents.SettledMerchantFeeAddedToTransactionEvent e => this.CreateTransactionFeeBalanceEntry(e),
             _ => null
         };
 
@@ -38,8 +38,7 @@ public class MerchantBalanceStateDispatcher : IStateDispatcher<MerchantBalanceSt
         return await this.TransactionProcessorReadRepository.AddMerchantBalanceChangedEntry(entry, cancellationToken);
     }
 
-    private MerchantBalanceChangedEntry CreateTransactionFeeBalanceEntry(MerchantBalanceState state,
-                                                                         TransactionDomainEvents.SettledMerchantFeeAddedToTransactionEvent @event) =>
+    private MerchantBalanceChangedEntry CreateTransactionFeeBalanceEntry(TransactionDomainEvents.SettledMerchantFeeAddedToTransactionEvent @event) =>
         new MerchantBalanceChangedEntry {
                                             MerchantId = @event.MerchantId,
                                             EstateId = @event.EstateId,
@@ -51,8 +50,7 @@ public class MerchantBalanceStateDispatcher : IStateDispatcher<MerchantBalanceSt
                                             DebitOrCredit = "C"
                                         };
 
-    private MerchantBalanceChangedEntry CreateWithdrawalBalanceEntry(MerchantBalanceState state,
-                                                                         MerchantDomainEvents.WithdrawalMadeEvent @event) =>
+    private MerchantBalanceChangedEntry CreateWithdrawalBalanceEntry(MerchantDomainEvents.WithdrawalMadeEvent @event) =>
         new MerchantBalanceChangedEntry {
                                             MerchantId = @event.MerchantId,
                                             EstateId = @event.EstateId,
@@ -64,7 +62,7 @@ public class MerchantBalanceStateDispatcher : IStateDispatcher<MerchantBalanceSt
                                             DebitOrCredit = "D"
                                         };
 
-    private MerchantBalanceChangedEntry CreateTransactionBalanceEntry(MerchantBalanceState state, TransactionDomainEvents.TransactionHasBeenCompletedEvent @event) {
+    private MerchantBalanceChangedEntry CreateTransactionBalanceEntry(TransactionDomainEvents.TransactionHasBeenCompletedEvent @event) {
         if (@event.IsAuthorised == false)
             return null;
             
@@ -90,8 +88,7 @@ public class MerchantBalanceStateDispatcher : IStateDispatcher<MerchantBalanceSt
                };
     }
 
-    private MerchantBalanceChangedEntry CreateManualDepositBalanceEntry(MerchantBalanceState state,
-                                                                        MerchantDomainEvents.ManualDepositMadeEvent @event) =>
+    private MerchantBalanceChangedEntry CreateManualDepositBalanceEntry(MerchantDomainEvents.ManualDepositMadeEvent @event) =>
         new MerchantBalanceChangedEntry {
                                             MerchantId = @event.MerchantId,
                                             EstateId = @event.EstateId,
@@ -103,8 +100,7 @@ public class MerchantBalanceStateDispatcher : IStateDispatcher<MerchantBalanceSt
                                             DebitOrCredit = "C"
                                         };
 
-    private MerchantBalanceChangedEntry CreateAutomaticDepositBalanceEntry(MerchantBalanceState state,
-                                                                           MerchantDomainEvents.AutomaticDepositMadeEvent @event) =>
+    private MerchantBalanceChangedEntry CreateAutomaticDepositBalanceEntry(MerchantDomainEvents.AutomaticDepositMadeEvent @event) =>
         new MerchantBalanceChangedEntry {
                                             MerchantId = @event.MerchantId,
                                             EstateId = @event.EstateId,

@@ -46,7 +46,6 @@ namespace TransactionProcessor.BusinessLogic.Services
                 return await PolicyFactory.ExecuteWithPolicyAsync<Guid>(async () => {
 
                     Guid settlementAggregateId = Helpers.CalculateSettlementAggregateId(command.SettlementDate, command.MerchantId, command.EstateId);
-                    List<(Guid transactionId, Guid merchantId, CalculatedFee calculatedFee)> feesToBeSettled = new();
 
                     Result<SettlementAggregate> getSettlementResult = await DomainServiceHelper.GetAggregateOrFailure(ct => this.AggregateService.GetLatest<SettlementAggregate>(settlementAggregateId, ct), settlementAggregateId, cancellationToken, false);
                     if (getSettlementResult.IsFailed)
@@ -73,7 +72,7 @@ namespace TransactionProcessor.BusinessLogic.Services
                         settlementSaveResult = await this.AggregateService.Save(settlementAggregate, cancellationToken);
                     }
 
-                    feesToBeSettled = settlementAggregate.GetFeesToBeSettled();
+                    List<(Guid transactionId, Guid merchantId, CalculatedFee calculatedFee)> feesToBeSettled = settlementAggregate.GetFeesToBeSettled();
 
                     if (feesToBeSettled.Any()) {
                         // Record the process call
@@ -189,7 +188,7 @@ namespace TransactionProcessor.BusinessLogic.Services
                     return ResultHelpers.CreateFailure(getMerchantResult);
 
                 MerchantAggregate merchant = getMerchantResult.Data;
-                Result stateResult = Result.Failure();
+                Result stateResult;
                 if (merchant.SettlementSchedule == SettlementSchedule.Immediate) {
                     stateResult = settlementAggregate.ImmediatelyMarkFeeAsSettled(command.MerchantId, command.TransactionId, command.FeeId);
                 }

@@ -235,7 +235,7 @@ namespace TransactionProcessor.Controllers
         /// <summary>
         /// The controller name
         /// </summary>
-        public const string ControllerName = "estates";
+        private const string ControllerName = "estates";
 
         /// <summary>
         /// The controller route

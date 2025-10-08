@@ -74,7 +74,7 @@ public class TransactionValidationService : ITransactionValidationService{
         if (estateValidationResult.IsFailed) return CreateFailedResult(estateValidationResult.Data.validationResult);
 
         // Validate Merchant
-        var merchantValidationResult = await ValidateMerchant(estateId, estateValidationResult.Data.additionalData.EstateName, merchantId, cancellationToken);
+        var merchantValidationResult = await ValidateMerchant(estateValidationResult.Data.additionalData.EstateName, merchantId, cancellationToken);
         if (merchantValidationResult.IsFailed) return CreateFailedResult(merchantValidationResult.Data.validationResult); ;
 
         Models.Merchant.Merchant merchant = merchantValidationResult.Data.additionalData.GetMerchant();
@@ -99,7 +99,7 @@ public class TransactionValidationService : ITransactionValidationService{
         EstateAggregate estate = estateValidationResult.Data.additionalData;
 
         // Validate Merchant
-        Result<TransactionValidationResult<MerchantAggregate>> merchantValidationResult = await ValidateMerchant(estateId, estate.EstateName, merchantId, cancellationToken);
+        Result<TransactionValidationResult<MerchantAggregate>> merchantValidationResult = await ValidateMerchant(estate.EstateName, merchantId, cancellationToken);
         if (merchantValidationResult.IsFailed) return CreateFailedResult(merchantValidationResult.Data.validationResult); ;
 
         var merchant = merchantValidationResult.Data.additionalData.GetMerchant();
@@ -134,7 +134,7 @@ public class TransactionValidationService : ITransactionValidationService{
         if (estateOperatorValidationResult.IsFailed) return estateOperatorValidationResult;
 
         // Validate Merchant
-        Result<TransactionValidationResult<MerchantAggregate>> merchantValidationResult = await ValidateMerchant(estateId, estate.EstateName, merchantId, cancellationToken);
+        Result<TransactionValidationResult<MerchantAggregate>> merchantValidationResult = await ValidateMerchant(estate.EstateName, merchantId, cancellationToken);
         if (merchantValidationResult.IsFailed) return CreateFailedResult(merchantValidationResult.Data.validationResult); ;
 
         Models.Merchant.Merchant merchant = merchantValidationResult.Data.additionalData.GetMerchant();
@@ -148,7 +148,7 @@ public class TransactionValidationService : ITransactionValidationService{
         if (merchantOperatorValidationResult.IsFailed) return merchantOperatorValidationResult;
 
         // Validate Contract and Product
-        Result<TransactionValidationResult> contractProductValidationResult = await ValidateContractAndProduct(merchant, contractId, productId, cancellationToken);
+        Result<TransactionValidationResult> contractProductValidationResult = ValidateContractAndProduct(merchant, contractId, productId);
         if (contractProductValidationResult.IsFailed) return contractProductValidationResult;
 
         // Validate Transaction Amount
@@ -191,7 +191,7 @@ public class TransactionValidationService : ITransactionValidationService{
         return result;
     }
 
-    private async Task<Result<TransactionValidationResult<MerchantAggregate>>> ValidateMerchant(Guid estateId, String estateName, Guid merchantId, CancellationToken cancellationToken)
+    private async Task<Result<TransactionValidationResult<MerchantAggregate>>> ValidateMerchant(String estateName, Guid merchantId, CancellationToken cancellationToken)
     {
         Result<MerchantAggregate> getMerchantResult = await this.AggregateService.Get<MerchantAggregate>(merchantId, cancellationToken);
         if (getMerchantResult.IsFailed)
@@ -257,7 +257,7 @@ public class TransactionValidationService : ITransactionValidationService{
         return result;
     }
 
-    private async Task<Result<TransactionValidationResult>> ValidateContractAndProduct(Models.Merchant.Merchant merchant, Guid contractId, Guid productId, CancellationToken cancellationToken)
+    private Result<TransactionValidationResult> ValidateContractAndProduct(Models.Merchant.Merchant merchant, Guid contractId, Guid productId)
     {
         if (contractId == Guid.Empty)
         {

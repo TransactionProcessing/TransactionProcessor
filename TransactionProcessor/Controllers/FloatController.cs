@@ -26,7 +26,7 @@ namespace TransactionProcessor.Controllers
         /// <summary>
         /// The controller name
         /// </summary>
-        public const String ControllerName = "floats";
+        private const String ControllerName = "floats";
 
         /// <summary>
         /// The controller route

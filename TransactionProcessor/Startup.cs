@@ -146,7 +146,6 @@ namespace TransactionProcessor
 
             app.PreWarm();
 
-            var _ = typeof(Microsoft.IdentityModel.Tokens.TokenValidationResult); // Force load
             var loadedTokensAssemblies = AppDomain.CurrentDomain
                 .GetAssemblies()
                 .Where(a => a.GetName().Name == "Microsoft.IdentityModel.Tokens")

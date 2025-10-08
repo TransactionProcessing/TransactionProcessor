@@ -83,8 +83,7 @@ namespace TransactionProcessor
             Func<String, Int32, ISubscriptionRepository> subscriptionRepositoryResolver = Startup.Container.GetInstance<Func<String, Int32, ISubscriptionRepository>>();
 
             String connectionString = Startup.Configuration.GetValue<String>("EventStoreSettings:ConnectionString");
-            EventStoreClientSettings eventStoreClientSettings = EventStoreClientSettings.Create(connectionString);
-
+            
             applicationBuilder.ConfigureSubscriptionService(subscriptionWorkersRoot, eventStoreConnectionString, eventHandlerResolvers, Extensions.log, subscriptionRepositoryResolver).Wait(CancellationToken.None);
 
             // Setup the aggregate service caching
@@ -130,12 +129,12 @@ namespace TransactionProcessor
                 };
                 fileSystemWatcher.EnableRaisingEvents = fileProfile.IsEnabled;
                 fileSystemWatcher.Created += (sender,
-                                                 e) => FileHandler(sender, e, fileProfile);
+                                                 e) => FileHandler(e, fileProfile);
             }
             
         }
 
-        private void FileHandler(object sender, FileSystemEventArgs e, FileProfile fileProfile)
+        private void FileHandler(FileSystemEventArgs e, FileProfile fileProfile)
         {
             // Fire-and-forget async work
             Task.Run(async () =>

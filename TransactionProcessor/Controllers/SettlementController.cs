@@ -28,12 +28,12 @@ namespace TransactionProcessor.Controllers
     public class SettlementController : ControllerBase
     {
         private readonly IMediator Mediator;
-     #region Others
+        #region Others
 
         /// <summary>
         /// The controller name
         /// </summary>
-        public const String ControllerName = "settlements";
+        private const String ControllerName = "settlements";
 
         /// <summary>
         /// The controller route

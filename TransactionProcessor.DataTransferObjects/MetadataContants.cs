@@ -7,7 +7,7 @@
     /// 
     /// </summary>
     [ExcludeFromCodeCoverage]
-    public class MetadataContants
+    public static class MetadataContants
     {
         #region Others
 
