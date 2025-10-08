@@ -233,6 +233,7 @@ namespace TransactionProcessor.BusinessLogic.Services{
                 Decimal totalCost = 0;
                 if (floatAggregateResult.IsSuccess) {
                     FloatAggregate floatAggregate = floatAggregateResult.Data;
+                    unitCost = floatAggregate.GetUnitCostPrice();
                     totalCost = floatAggregate.GetTotalCostPrice(transactionAmount.GetValueOrDefault());
                 }
 

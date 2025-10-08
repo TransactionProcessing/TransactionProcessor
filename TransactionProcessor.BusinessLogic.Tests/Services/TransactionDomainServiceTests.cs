@@ -333,7 +333,7 @@ namespace TransactionProcessor.BusinessLogic.Tests.Services{
             this.AggregateService.Setup(t => t.Save(It.IsAny<TransactionAggregate>(), It.IsAny<CancellationToken>()))
                 .ReturnsAsync(Result.Success());
 
-            this.AggregateService.Setup(f => f.GetLatest<FloatAggregate>(It.IsAny<Guid>(), It.IsAny<CancellationToken>())).ReturnsAsync(floatAggregate);
+            this.AggregateService.Setup(f => f.GetLatest<FloatAggregate>(It.IsAny<Guid>(), It.IsAny<CancellationToken>())).ReturnsAsync(Result.Success(floatAggregate));
 
             this.TransactionValidationService.Setup(t => t.ValidateSaleTransaction(It.IsAny<Guid>(),
                                                                                    It.IsAny<Guid>(),
