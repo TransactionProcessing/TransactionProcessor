@@ -32,7 +32,6 @@ public class MerchantStatementLine
     /// </value>
     public String Description { get; set; }
 
-    // TODO: maybe make this an enum type
     /// <summary>
     /// Gets or sets the type of the line.
     /// </summary>

@@ -12,18 +12,10 @@ namespace TransactionProcessor.ProjectionEngine.EventHandling
     public class EventHandler : IDomainEventHandler
     {
         private readonly Func<String, IDomainEventHandler> Resolver;
-
-        public static Dictionary<String, Type> StateTypes;
-
+        
         public EventHandler(Func<String, IDomainEventHandler> resolver)
         {
             this.Resolver = resolver;
-            List<Type> subclassTypes = Assembly.GetAssembly(typeof(Shared.EventStore.ProjectionEngine.State))?.GetTypes().Where(t => t.IsSubclassOf(typeof(Shared.EventStore.ProjectionEngine.State))).ToList();
-
-            if (subclassTypes != null)
-            {
-                EventHandler.StateTypes = subclassTypes.ToDictionary(x => x.Name, x => x);
-            }
         }
         
         public async Task<Result> Handle(IDomainEvent domainEvent,

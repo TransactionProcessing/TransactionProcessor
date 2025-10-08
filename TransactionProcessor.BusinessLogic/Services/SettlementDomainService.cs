@@ -35,8 +35,6 @@ namespace TransactionProcessor.BusinessLogic.Services
     {
         private readonly IAggregateService AggregateService;
         
-        // TODO: Add in a Get Settlement 
-
         public async Task<Result<Guid>> ProcessSettlement(SettlementCommands.ProcessSettlementCommand command,
                                                           CancellationToken cancellationToken) {
 

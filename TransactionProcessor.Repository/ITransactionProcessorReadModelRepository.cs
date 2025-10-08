@@ -1161,7 +1161,8 @@ namespace TransactionProcessor.Repository {
             EstateManagementContext context = await this.GetContext(domainEvent.EstateId);
 
             Result<ContractProductTransactionFee> loadContractProductTransactionFeeResult = await context.LoadContractProductTransactionFee(domainEvent, cancellationToken);
-            // TODO: Check the result value
+            if (loadContractProductTransactionFeeResult.IsFailed)
+                return ResultHelpers.CreateFailure(loadContractProductTransactionFeeResult);
 
             ContractProductTransactionFee transactionFee = loadContractProductTransactionFeeResult.Data;
 
@@ -1174,7 +1175,6 @@ namespace TransactionProcessor.Repository {
                                                            CancellationToken cancellationToken) {
             EstateManagementContext context = await this.GetContext(domainEvent.EstateId);
 
-            // TODO: LoadMerchantSettlementFee
             MerchantSettlementFee merchantFee = await context.MerchantSettlementFees.Where(m =>
                     m.MerchantId == domainEvent.MerchantId &&
                     m.TransactionId == domainEvent.TransactionId &&

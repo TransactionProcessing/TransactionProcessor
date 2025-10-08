@@ -36,27 +36,24 @@ namespace TransactionProcessor.Bootstrapper
     [ExcludeFromCodeCoverage]
     public class RepositoryRegistry : ServiceRegistry
     {
-        #region Constructors
+        private static bool CachedAggregatesAdded;
+        private static readonly object CachedAggregatesLock = new();
 
-        private static Boolean CachedAggregatesAdded;
-        /// <summary>
-        /// Initializes a new instance of the <see cref="RepositoryRegistry"/> class.
-        /// </summary>
         public RepositoryRegistry()
         {
-            String eventStoreConnectionString = Startup.Configuration.GetValue<String>("EventStoreSettings:ConnectionString");
+            string eventStoreConnectionString = Startup.Configuration.GetValue<string>("EventStoreSettings:ConnectionString");
 
             this.AddEventStoreProjectionManagementClient(eventStoreConnectionString);
             this.AddEventStorePersistentSubscriptionsClient(eventStoreConnectionString);
-
             this.AddEventStoreClient(eventStoreConnectionString);
 
-            this.AddSingleton<Func<String, Int32, ISubscriptionRepository>>(cont => (esConnString, cacheDuration) => {
-                return SubscriptionRepository.Create(esConnString, cacheDuration);
-            });
+            this.AddSingleton<Func<string, int, ISubscriptionRepository>>(cont => (esConnString, cacheDuration) =>
+                SubscriptionRepository.Create(esConnString, cacheDuration));
 
             this.AddSingleton(typeof(IDbContextResolver<>), typeof(DbContextResolver<>));
-            if (Startup.WebHostEnvironment.IsEnvironment("IntegrationTest") || Startup.Configuration.GetValue<Boolean>("ServiceOptions:UseInMemoryDatabase") == true)
+
+            if (Startup.WebHostEnvironment.IsEnvironment("IntegrationTest") ||
+                Startup.Configuration.GetValue<bool>("ServiceOptions:UseInMemoryDatabase"))
             {
                 this.AddDbContext<EstateManagementContext>(builder => builder.UseInMemoryDatabase("TransactionProcessorReadModel"));
             }
@@ -67,28 +64,37 @@ namespace TransactionProcessor.Bootstrapper
             }
 
             this.AddTransient<IEventStoreContext, EventStoreContext>();
-            this.AddSingleton<Func<IAggregateService>>(c => () => {
-                
-                IAggregateService aggregateService = Startup.ServiceProvider.GetService<IAggregateService>();
-                if (RepositoryRegistry.CachedAggregatesAdded == false)
+
+            // ✅ Defer to the container — safe and compliant
+            this.AddSingleton<Func<IAggregateService>>(c => () =>
+            {
+                var aggregateService = c.GetService<IAggregateService>();
+
+                // Thread-safe single initialization
+                if (!CachedAggregatesAdded)
                 {
-                    aggregateService.AddCachedAggregate(typeof(EstateAggregate), null);
-                    aggregateService.AddCachedAggregate(typeof(ContractAggregate), null);
-                    aggregateService.AddCachedAggregate(typeof(OperatorAggregate), null);
-                    aggregateService.AddCachedAggregate(typeof(MerchantAggregate), null);
-                    RepositoryRegistry.CachedAggregatesAdded=true;
+                    lock (CachedAggregatesLock)
+                    {
+                        if (!CachedAggregatesAdded)
+                        {
+                            aggregateService.AddCachedAggregate(typeof(EstateAggregate), null);
+                            aggregateService.AddCachedAggregate(typeof(ContractAggregate), null);
+                            aggregateService.AddCachedAggregate(typeof(OperatorAggregate), null);
+                            aggregateService.AddCachedAggregate(typeof(MerchantAggregate), null);
+
+                            CachedAggregatesAdded = true;
+                        }
+                    }
                 }
-                
+
                 return aggregateService;
             });
+
             this.AddSingleton<IAggregateService, AggregateService>();
             this.AddSingleton<IAggregateRepositoryResolver, AggregateRepositoryResolver>();
-            this.AddSingleton<IAggregateRepository<TransactionAggregate, DomainEvent>,
-                AggregateRepository<TransactionAggregate, DomainEvent>>();
-            this.AddSingleton<IAggregateRepository<ReconciliationAggregate, DomainEvent>,
-                AggregateRepository<ReconciliationAggregate, DomainEvent>>();
-            this.AddSingleton<IAggregateRepository<SettlementAggregate, DomainEvent>,
-                AggregateRepository<SettlementAggregate, DomainEvent>>();
+            this.AddSingleton<IAggregateRepository<TransactionAggregate, DomainEvent>, AggregateRepository<TransactionAggregate, DomainEvent>>();
+            this.AddSingleton<IAggregateRepository<ReconciliationAggregate, DomainEvent>, AggregateRepository<ReconciliationAggregate, DomainEvent>>();
+            this.AddSingleton<IAggregateRepository<SettlementAggregate, DomainEvent>, AggregateRepository<SettlementAggregate, DomainEvent>>();
             this.AddSingleton<IAggregateRepository<VoucherAggregate, DomainEvent>, AggregateRepository<VoucherAggregate, DomainEvent>>();
             this.AddSingleton<IAggregateRepository<FloatAggregate, DomainEvent>, AggregateRepository<FloatAggregate, DomainEvent>>();
             this.AddSingleton<IAggregateRepository<FloatActivityAggregate, DomainEvent>, AggregateRepository<FloatActivityAggregate, DomainEvent>>();
@@ -99,16 +105,14 @@ namespace TransactionProcessor.Bootstrapper
             this.AddSingleton<IAggregateRepository<MerchantDepositListAggregate, DomainEvent>, AggregateRepository<MerchantDepositListAggregate, DomainEvent>>();
             this.AddSingleton<IAggregateRepository<MerchantStatementAggregate, DomainEvent>, AggregateRepository<MerchantStatementAggregate, DomainEvent>>();
             this.AddSingleton<IAggregateRepository<MerchantStatementForDateAggregate, DomainEvent>, AggregateRepository<MerchantStatementForDateAggregate, DomainEvent>>();
-
             this.AddSingleton<IProjectionStateRepository<MerchantBalanceState>, MerchantBalanceStateRepository>();
             this.AddSingleton<IProjectionStateRepository<VoucherState>, VoucherStateRepository>();
             this.AddSingleton<ITransactionProcessorReadRepository, TransactionProcessorReadRepository>();
             this.AddSingleton<ITransactionProcessorReadModelRepository, TransactionProcessorReadModelRepository>();
             this.AddSingleton<IProjection<MerchantBalanceState>, MerchantBalanceProjection>();
         }
-
-        #endregion
     }
+
 
     [ExcludeFromCodeCoverage]
     public class ConfigurationReaderConnectionStringRepository : IConnectionStringConfigurationRepository

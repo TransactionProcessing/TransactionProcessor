@@ -274,19 +274,7 @@ namespace TransactionProcessor.BusinessLogic.Services{
                     operatorStartDateTime =DateTime.Now;
                     Result<OperatorResponse> operatorResult = await this.ProcessMessageWithOperator(merchantResult.Data, command.TransactionId, command.TransactionDateTime, command.OperatorId, command.AdditionalTransactionMetadata, transactionReference, cancellationToken);
                     operatorEndDateTime = DateTime.Now;
-                    // Act on the operator response
-                    // TODO: see if we still need this case...
-                    //if (operatorResult.IsFailed) {
-                    //    // Failed to perform sed/receive with the operator
-                    //    TransactionResponseCode transactionResponseCode =
-                    //        TransactionResponseCode.OperatorCommsError;
-                    //    String responseMessage = "OPERATOR COMMS ERROR";
-
-                    //    transactionAggregate.DeclineTransactionLocally(
-                    //        ((Int32)transactionResponseCode).ToString().PadLeft(4, '0'), responseMessage);
-                    //}
-                    //else {
-
+                    
                     if (operatorResult.IsSuccess) {
                         TransactionResponseCode transactionResponseCode = TransactionResponseCode.Success;
                         String responseMessage = "SUCCESS";
@@ -405,12 +393,12 @@ namespace TransactionProcessor.BusinessLogic.Services{
                 if (RequireFeeCalculation(transactionAggregate) == false)
                     return Result.Success();
 
-                List<TransactionFeeToCalculate> feesForCalculation = await this.GetTransactionFeesForCalculation(transactionAggregate, cancellationToken);
+                Result<List<TransactionFeeToCalculate>> feesForCalculationResult = await this.GetTransactionFeesForCalculation(transactionAggregate, cancellationToken);
 
-                if (feesForCalculation == null)
-                    return Result.Failure("Error getting transaction fees");
+                if (feesForCalculationResult.IsFailed)
+                    return ResultHelpers.CreateFailure(feesForCalculationResult);
 
-                List<CalculatedFee> resultFees = this.FeeCalculationManager.CalculateFees(feesForCalculation, transactionAggregate.TransactionAmount.Value, command.CompletedDateTime);
+                List<CalculatedFee> resultFees = this.FeeCalculationManager.CalculateFees(feesForCalculationResult.Data, transactionAggregate.TransactionAmount.Value, command.CompletedDateTime);
 
                 IEnumerable<CalculatedFee> nonMerchantFees = resultFees.Where(f => f.FeeType == TransactionProcessor.Models.Contract.FeeType.ServiceProvider);
                 foreach (CalculatedFee calculatedFee in nonMerchantFees) {
@@ -558,15 +546,14 @@ namespace TransactionProcessor.BusinessLogic.Services{
             return completeDateTime.Date;
         }
 
-        private async Task<List<TransactionFeeToCalculate>> GetTransactionFeesForCalculation(TransactionAggregate transactionAggregate,
+        private async Task<Result<List<TransactionFeeToCalculate>>> GetTransactionFeesForCalculation(TransactionAggregate transactionAggregate,
                                                                                              CancellationToken cancellationToken) {
-            // TODO: convert to result??
             // Get the fees to be calculated
             Result<List<ContractProductTransactionFee>> feesForProduct = await this.GetTransactionFeesForProduct(transactionAggregate.ContractId, transactionAggregate.ProductId, cancellationToken);
         
             if (feesForProduct.IsFailed) {
                 Logger.LogWarning($"Failed to get fees {feesForProduct.Message}");
-                return null;
+                return ResultHelpers.CreateFailure(feesForProduct);
             }
 
             Logger.LogInformation($"After getting Fees {feesForProduct.Data.Count} returned");
@@ -579,7 +566,7 @@ namespace TransactionProcessor.BusinessLogic.Services{
                 feesForCalculation.Add(transactionFeeToCalculate);
             }
 
-            return feesForCalculation;
+            return Result.Success(feesForCalculation);
         }
 
         private async Task<Result> AddDeviceToMerchant(Guid merchantId,

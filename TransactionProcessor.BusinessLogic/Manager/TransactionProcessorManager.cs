@@ -183,8 +183,6 @@ namespace TransactionProcessor.BusinessLogic.Manager
                                                                              Guid productId,
                                                                              CancellationToken cancellationToken)
         {
-            // TODO: this will need updated to handle merchant specific fees when that is available
-
             Result<ContractAggregate> getContractResult = await this.AggregateService.GetLatest<ContractAggregate>(contractId, cancellationToken);
             if (getContractResult.IsFailed)
                 return ResultHelpers.CreateFailure(getContractResult);
