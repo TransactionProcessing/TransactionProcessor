@@ -745,7 +745,6 @@ namespace TransactionProcessor.Repository {
         {
             EstateManagementContext context = await this.GetContext(estateId);
 
-            Estate estate = await context.Estates.SingleOrDefaultAsync(e => e.EstateId == estateId, cancellationToken: cancellationToken);
             List<Merchant> merchants = await (from m in context.Merchants where m.EstateId == estateId select m).ToListAsync(cancellationToken);
             List<MerchantAddress> merchantAddresses = await (from a in context.MerchantAddresses where merchants.Select(m => m.MerchantId).Contains(a.MerchantId) select a).ToListAsync(cancellationToken);
             List<MerchantContact> merchantContacts = await (from c in context.MerchantContacts where merchants.Select(m => m.MerchantId).Contains(c.MerchantId) select c).ToListAsync(cancellationToken);
@@ -1406,7 +1405,6 @@ namespace TransactionProcessor.Repository {
 
         public async Task<Result> UpdateReconciliationOverallTotals(ReconciliationDomainEvents.OverallTotalsRecordedEvent domainEvent,
                                                                     CancellationToken cancellationToken) {
-            Guid estateId = domainEvent.EstateId;
 
             EstateManagementContext context = await this.GetContext(domainEvent.EstateId);
 

@@ -82,8 +82,6 @@ public class TransactionProcessorClient : ClientProxyBase, ITransactionProcessor
     public async Task<Result> CreateEstate(String accessToken,
                                            CreateEstateRequest createEstateRequest,
                                            CancellationToken cancellationToken) {
-        CreateEstateResponse response = null;
-
         String requestUri = this.BuildRequestUrl("/api/estates/");
 
         try {
@@ -116,8 +114,6 @@ public class TransactionProcessorClient : ClientProxyBase, ITransactionProcessor
     public async Task<Result<List<EstateResponse>>> GetEstates(String accessToken,
                                                                Guid estateId,
                                                                CancellationToken cancellationToken) {
-        List<EstateResponse> response = null;
-
         String requestUri = this.BuildRequestUrl($"/api/estates/{estateId}/all");
 
         try {
@@ -143,8 +139,6 @@ public class TransactionProcessorClient : ClientProxyBase, ITransactionProcessor
 
             throw exception;
         }
-
-        return response;
     }
 
     public async Task<Result> CreateFloatForContractProduct(String accessToken,
@@ -282,8 +276,6 @@ public class TransactionProcessorClient : ClientProxyBase, ITransactionProcessor
                                                                    Guid estateId,
                                                                    String voucherCode,
                                                                    CancellationToken cancellationToken) {
-        GetVoucherResponse response = null;
-
         String requestUri = this.BuildRequestUrl($"/api/vouchers?estateId={estateId}&voucherCode={voucherCode}");
 
         try {
@@ -316,8 +308,6 @@ public class TransactionProcessorClient : ClientProxyBase, ITransactionProcessor
                                                                             Guid estateId,
                                                                             Guid transactionId,
                                                                             CancellationToken cancellationToken) {
-        GetVoucherResponse response = null;
-
         String requestUri = this.BuildRequestUrl($"/api/vouchers?estateId={estateId}&transactionId={transactionId}");
 
         try {
@@ -453,8 +443,6 @@ public class TransactionProcessorClient : ClientProxyBase, ITransactionProcessor
     public async Task<Result<RedeemVoucherResponse>> RedeemVoucher(String accessToken,
                                                                    RedeemVoucherRequest redeemVoucherRequest,
                                                                    CancellationToken cancellationToken) {
-        RedeemVoucherResponse response = null;
-
         String requestUri = this.BuildRequestUrl($"/api/vouchers");
 
         try {
@@ -849,8 +837,6 @@ public class TransactionProcessorClient : ClientProxyBase, ITransactionProcessor
                                              Guid estateId,
                                              CreateContractRequest createContractRequest,
                                              CancellationToken cancellationToken) {
-        CreateContractResponse response = null;
-
         String requestUri = this.BuildRequestUrl($"/api/estates/{estateId}/contracts/");
 
         try {
@@ -884,8 +870,6 @@ public class TransactionProcessorClient : ClientProxyBase, ITransactionProcessor
                                              Guid estateId,
                                              CreateOperatorRequest createOperatorRequest,
                                              CancellationToken cancellationToken) {
-        CreateOperatorResponse response = null;
-
         String requestUri = this.BuildRequestUrl($"/api/estates/{estateId}/operators");
 
         try {
@@ -953,8 +937,6 @@ public class TransactionProcessorClient : ClientProxyBase, ITransactionProcessor
                                              Guid estateId,
                                              CreateMerchantRequest createMerchantRequest,
                                              CancellationToken cancellationToken) {
-        CreateMerchantResponse response = null;
-
         String requestUri = this.BuildRequestUrl($"/api/estates/{estateId}/merchants");
 
         try {
@@ -1086,8 +1068,6 @@ public class TransactionProcessorClient : ClientProxyBase, ITransactionProcessor
                                                             Guid estateId,
                                                             Guid contractId,
                                                             CancellationToken cancellationToken) {
-        ContractResponse response = null;
-
         String requestUri = this.BuildRequestUrl($"/api/estates/{estateId}/contracts/{contractId}");
 
         try {
@@ -1114,15 +1094,11 @@ public class TransactionProcessorClient : ClientProxyBase, ITransactionProcessor
 
             throw exception;
         }
-
-        return response;
     }
 
     public async Task<Result<List<ContractResponse>>> GetContracts(String accessToken,
                                                                    Guid estateId,
                                                                    CancellationToken cancellationToken) {
-        List<ContractResponse> response = null;
-
         String requestUri = this.BuildRequestUrl($"/api/estates/{estateId}/contracts");
 
         try {
@@ -1148,16 +1124,12 @@ public class TransactionProcessorClient : ClientProxyBase, ITransactionProcessor
 
             throw exception;
         }
-
-        return response;
     }
     
     public async Task<Result<MerchantResponse>> GetMerchant(String accessToken,
                                                             Guid estateId,
                                                             Guid merchantId,
                                                             CancellationToken cancellationToken) {
-        MerchantResponse response = null;
-
         String requestUri = this.BuildRequestUrl($"/api/estates/{estateId}/merchants/{merchantId}");
 
         try {
@@ -1183,16 +1155,12 @@ public class TransactionProcessorClient : ClientProxyBase, ITransactionProcessor
 
             throw exception;
         }
-
-        return response;
     }
 
     public async Task<Result<List<ContractResponse>>> GetMerchantContracts(String accessToken,
                                                                            Guid estateId,
                                                                            Guid merchantId,
                                                                            CancellationToken cancellationToken) {
-        List<ContractResponse> response = null;
-
         String requestUri = this.BuildRequestUrl($"/api/estates/{estateId}/merchants/{merchantId}/contracts");
 
         try {
@@ -1218,15 +1186,11 @@ public class TransactionProcessorClient : ClientProxyBase, ITransactionProcessor
 
             throw exception;
         }
-
-        return response;
     }
 
     public async Task<Result<List<MerchantResponse>>> GetMerchants(String accessToken,
                                                                    Guid estateId,
                                                                    CancellationToken cancellationToken) {
-        List<MerchantResponse> response = null;
-
         String requestUri = this.BuildRequestUrl($"/api/estates/{estateId}/merchants");
 
         try {
@@ -1252,8 +1216,6 @@ public class TransactionProcessorClient : ClientProxyBase, ITransactionProcessor
 
             throw exception;
         }
-
-        return response;
     }
 
     public async Task<Result<DataTransferObjects.Responses.Settlement.SettlementResponse>> GetSettlement(String accessToken,
@@ -1261,8 +1223,6 @@ public class TransactionProcessorClient : ClientProxyBase, ITransactionProcessor
                                                                                                          Guid? merchantId,
                                                                                                          Guid settlementId,
                                                                                                          CancellationToken cancellationToken) {
-        DataTransferObjects.Responses.Settlement.SettlementResponse response = null;
-
         String requestUri = this.BuildRequestUrl($"/api/estates/{estateId}/settlements/{settlementId}?merchantId={merchantId}");
 
         try {
@@ -1288,8 +1248,6 @@ public class TransactionProcessorClient : ClientProxyBase, ITransactionProcessor
 
             throw exception;
         }
-
-        return response;
     }
 
     public async Task<Result<List<DataTransferObjects.Responses.Settlement.SettlementResponse>>> GetSettlements(String accessToken,
@@ -1298,8 +1256,6 @@ public class TransactionProcessorClient : ClientProxyBase, ITransactionProcessor
                                                                                                                 String startDate,
                                                                                                                 String endDate,
                                                                                                                 CancellationToken cancellationToken) {
-        List<DataTransferObjects.Responses.Settlement.SettlementResponse> response = null;
-
         String requestUri = this.BuildRequestUrl($"/api/estates/{estateId}/settlements?merchantId={merchantId}&start_date={startDate}&end_date={endDate}");
 
         try {
@@ -1325,8 +1281,6 @@ public class TransactionProcessorClient : ClientProxyBase, ITransactionProcessor
 
             throw exception;
         }
-
-        return response;
     }
 
     public async Task<Result<List<ContractProductTransactionFee>>> GetTransactionFeesForProduct(String accessToken,
@@ -1335,8 +1289,6 @@ public class TransactionProcessorClient : ClientProxyBase, ITransactionProcessor
                                                                                                 Guid contractId,
                                                                                                 Guid productId,
                                                                                                 CancellationToken cancellationToken) {
-        List<ContractProductTransactionFee> response = null;
-
         String requestUri = this.BuildRequestUrl($"/api/estates/{estateId}/merchants/{merchantId}/contracts/{contractId}/products/{productId}/transactionFees");
 
         try {
@@ -1363,8 +1315,6 @@ public class TransactionProcessorClient : ClientProxyBase, ITransactionProcessor
 
             throw exception;
         }
-
-        return response;
     }
 
     public async Task<Result> MakeMerchantDeposit(String accessToken,
@@ -1406,8 +1356,6 @@ public class TransactionProcessorClient : ClientProxyBase, ITransactionProcessor
                                                      Guid merchantId,
                                                      MakeMerchantWithdrawalRequest makeMerchantWithdrawalRequest,
                                                      CancellationToken cancellationToken) {
-        MakeMerchantWithdrawalResponse response = null;
-
         String requestUri = this.BuildRequestUrl($"/api/estates/{estateId}/merchants/{merchantId}/withdrawals");
 
         try {
@@ -1442,8 +1390,6 @@ public class TransactionProcessorClient : ClientProxyBase, ITransactionProcessor
                                                             Guid merchantId,
                                                             SetSettlementScheduleRequest setSettlementScheduleRequest,
                                                             CancellationToken cancellationToken) {
-        MakeMerchantDepositResponse response = null;
-
         String requestUri = this.BuildRequestUrl($"/api/estates/{estateId}/merchants/{merchantId}");
 
         try {
@@ -1651,8 +1597,6 @@ public class TransactionProcessorClient : ClientProxyBase, ITransactionProcessor
                                                             Guid estateId,
                                                             Guid operatorId,
                                                             CancellationToken cancellationToken) {
-        OperatorResponse response = null;
-
         String requestUri = this.BuildRequestUrl($"/api/estates/{estateId}/operators/{operatorId}");
 
         try {
@@ -1678,15 +1622,11 @@ public class TransactionProcessorClient : ClientProxyBase, ITransactionProcessor
 
             throw exception;
         }
-
-        return response;
     }
 
     public async Task<Result<List<OperatorResponse>>> GetOperators(String accessToken,
                                                                    Guid estateId,
                                                                    CancellationToken cancellationToken) {
-        List<OperatorResponse> response = null;
-
         String requestUri = this.BuildRequestUrl($"/api/estates/{estateId}/operators");
 
         try {
@@ -1712,7 +1652,5 @@ public class TransactionProcessorClient : ClientProxyBase, ITransactionProcessor
 
             throw exception;
         }
-
-        return response;
     }
 }

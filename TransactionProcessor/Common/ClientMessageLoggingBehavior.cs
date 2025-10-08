@@ -31,6 +31,7 @@ internal sealed class ClientMessageLoggingBehavior :
     #region Methods
 
     public void AddBindingParameters(ServiceEndpoint endpoint, BindingParameterCollection bindingParameters){
+        // Not needed for client
     }
 
     public void ApplyClientBehavior(ServiceEndpoint endpoint, ClientRuntime clientRuntime){
@@ -38,9 +39,11 @@ internal sealed class ClientMessageLoggingBehavior :
     }
 
     public void ApplyDispatchBehavior(ServiceEndpoint endpoint, EndpointDispatcher endpointDispatcher){
+        // Not needed for client
     }
 
     public void Validate(ServiceEndpoint endpoint){
+        // Not needed
     }
 
     #endregion

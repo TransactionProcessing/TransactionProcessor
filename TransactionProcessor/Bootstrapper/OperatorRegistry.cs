@@ -30,11 +30,9 @@ namespace TransactionProcessor.Bootstrapper
         /// </summary>
         public OperatorRegistry()
         {
-            IConfigurationSection section = Startup.Configuration.GetSection("AppSettings:OperatorConfiguration");
-
-            this.ConfigureOperator<SafaricomConfiguration>("Safaricom", section);
-            this.ConfigureOperator<PataPawaPostPaidConfiguration>("PataPawaPostPay", section);
-            this.ConfigureOperator<PataPawaPrePaidConfiguration>("PataPawaPrePay", section);
+            this.ConfigureOperator<SafaricomConfiguration>("Safaricom");
+            this.ConfigureOperator<PataPawaPostPaidConfiguration>("PataPawaPostPay");
+            this.ConfigureOperator<PataPawaPrePaidConfiguration>("PataPawaPrePay");
             this.AddSingleton(new PataPawaPostPayServiceClient(PataPawaPostPayServiceClient.EndpointConfiguration.BasicHttpBinding_IPataPawaPostPayService));
 
             this.For<IOperatorProxy>().Add<SafaricomPinlessProxy>().Named("Safaricom").Singleton();
@@ -60,7 +58,7 @@ namespace TransactionProcessor.Bootstrapper
                                                                        });
         }
 
-        private void ConfigureOperator<T>(String operatorId, IConfigurationSection operatorConfigurationSection) where T : class {
+        private void ConfigureOperator<T>(String operatorId) where T : class {
             T configObject = (T)Activator.CreateInstance(typeof(T));
 
             Startup.Configuration.GetSection($"OperatorConfiguration:{operatorId}").Bind(configObject);

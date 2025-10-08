@@ -128,7 +128,6 @@ namespace TransactionProcessor.Aggregates{
         }
 
         public static void PlayEvent(this EstateAggregate aggregate, EstateDomainEvents.OperatorRemovedFromEstateEvent domainEvent){
-            KeyValuePair<Guid, TransactionProcessor.Models.Estate.Operator> @operator = aggregate.Operators.Single(o => o.Key == domainEvent.OperatorId);
             aggregate.Operators[domainEvent.OperatorId].IsDeleted = true;
         }
 

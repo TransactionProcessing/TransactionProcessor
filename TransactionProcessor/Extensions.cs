@@ -81,16 +81,9 @@ namespace TransactionProcessor
 
 
             Func<String, Int32, ISubscriptionRepository> subscriptionRepositoryResolver = Startup.Container.GetInstance<Func<String, Int32, ISubscriptionRepository>>();
-
-            String connectionString = Startup.Configuration.GetValue<String>("EventStoreSettings:ConnectionString");
-            EventStoreClientSettings eventStoreClientSettings = EventStoreClientSettings.Create(connectionString);
-
+           
             applicationBuilder.ConfigureSubscriptionService(subscriptionWorkersRoot, eventStoreConnectionString, eventHandlerResolvers, Extensions.log, subscriptionRepositoryResolver).Wait(CancellationToken.None);
-
-            // Setup the aggregate service caching
             
-            
-
             IMediator mediator = Startup.Container.GetInstance<IMediator>();
             StatementFilePollerService statementFilePollerService = new(mediator);
             statementFilePollerService.Start();
@@ -130,12 +123,12 @@ namespace TransactionProcessor
                 };
                 fileSystemWatcher.EnableRaisingEvents = fileProfile.IsEnabled;
                 fileSystemWatcher.Created += (sender,
-                                                 e) => FileHandler(sender, e, fileProfile);
+                                                 e) => FileHandler(e, fileProfile);
             }
             
         }
 
-        private void FileHandler(object sender, FileSystemEventArgs e, FileProfile fileProfile)
+        private void FileHandler(FileSystemEventArgs e, FileProfile fileProfile)
         {
             // Fire-and-forget async work
             Task.Run(async () =>
@@ -143,13 +136,11 @@ namespace TransactionProcessor
                 String processedFolder = Path.Combine(fileProfile.ListeningDirectory, "processed");
                 String failedFolder = Path.Combine(fileProfile.ListeningDirectory, "failed");
 
-                try
-                {
+                try {
                     Logger.LogInformation($"File detected on profile {fileProfile.Name} File name [{e.Name}]");
 
                     // Make sure the file is not locked by another process
-                    await using (FileStream stream = new FileStream(e.FullPath, FileMode.Open, FileAccess.Read, FileShare.None))
-                    {
+                    await using (FileStream stream = new FileStream(e.FullPath, FileMode.Open, FileAccess.Read, FileShare.None)) {
                         // Wait for the file to be released
                         await Task.Delay(1000);
                     }
@@ -164,8 +155,8 @@ namespace TransactionProcessor
                     if (Guid.TryParse(parts[0], out Guid estateId) == false) {
                         throw new ArgumentException("Invalid estate ID in file name", nameof(e.FullPath));
                     }
-                    if (Guid.TryParse(parts[1], out Guid statementId) == false)
-                    {
+
+                    if (Guid.TryParse(parts[1], out Guid statementId) == false) {
                         throw new ArgumentException("Invalid statement ID in file name", nameof(e.FullPath));
                     }
 
@@ -174,20 +165,19 @@ namespace TransactionProcessor
                     if (String.IsNullOrEmpty(pdfData)) {
                         throw new InvalidDataException("PDF Data is null or Empty");
                     }
+
                     // Create the email statement command
                     EmailMerchantStatementCommand command = new(estateId, statementId, pdfData);
-                    
+
                     Result result = await this.Mediator.Send(command, CancellationToken.None);
-                    if (result.IsFailed)
-                    {
+                    if (result.IsFailed) {
                         // Move the file to the failed folder
                         String failedFilePath = Path.Combine(failedFolder, e.Name);
                         File.Move(e.FullPath, failedFilePath);
                         // Log the error
                         Logger.LogWarning($"Failed to process file [{e.FullPath}]: {result.Message}");
                     }
-                    else
-                    {
+                    else {
                         // Move the file to the processed folder
                         String processedFilePath = Path.Combine(processedFolder, e.Name);
                         File.Move(e.FullPath, processedFilePath);
@@ -195,15 +185,14 @@ namespace TransactionProcessor
                         Logger.LogInformation($"Successfully processed file [{e.FullPath}]");
                     }
                 }
-                catch (Exception ex)
-                {
+                catch (Exception ex) {
                     // Log or handle exception
                     // Move the file to the failed folder
                     String failedFilePath = Path.Combine(failedFolder, e.Name);
                     File.Move(e.FullPath, failedFilePath);
                     // Log the error
                     Console.Error.WriteLine($"Failed to process file [{e.FullPath}]: {ex.Message}");
-                    Logger.LogError($"Failed to process file [{e.FullPath}]",ex);
+                    Logger.LogError($"Failed to process file [{e.FullPath}]", ex);
                 }
             }); 
         }
