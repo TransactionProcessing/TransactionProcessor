@@ -1,5 +1,7 @@
-﻿using Newtonsoft.Json;
+﻿using System.Security.Cryptography;
+using Newtonsoft.Json;
 using Shared.Exceptions;
+using Shared.General;
 using Shared.Results;
 using SimpleResults;
 using TransactionProcessor.Aggregates;
@@ -114,8 +116,7 @@ namespace TransactionProcessor.BusinessLogic.Services{
                     }
 
                     // Record the successful validation
-                    // TODO: Generate local authcode
-                    stateResult = transactionAggregate.AuthoriseTransactionLocally("ABCD1234", ((Int32)validationResult.Data.ResponseCode).ToString().PadLeft(4, '0'), validationResult.Data.ResponseMessage);
+                    stateResult = transactionAggregate.AuthoriseTransactionLocally(GenerateAuthCode(), ((Int32)validationResult.Data.ResponseCode).ToString().PadLeft(4, '0'), validationResult.Data.ResponseMessage);
                     if (stateResult.IsFailed)
                         return ResultHelpers.CreateFailure(stateResult);
                 }
@@ -148,6 +149,15 @@ namespace TransactionProcessor.BusinessLogic.Services{
             catch (Exception ex) {
                 return Result.Failure(ex.GetExceptionMessages());
             }
+        }
+
+        public static string GenerateAuthCode()
+        {
+            // 8 hex characters == 4 random bytes
+            byte[] bytes = RandomNumberGenerator.GetBytes(4); // .NET 6+; for older frameworks use RandomNumberGenerator.Create().GetBytes(bytes)
+            // Convert to uppercase hex string (0-9, A-F). Convert.ToHexString returns uppercase.
+            string hex = Convert.ToHexString(bytes);
+            return hex.Substring(0, 8);
         }
 
         public async Task<Result<ProcessReconciliationTransactionResponse>> ProcessReconciliationTransaction(TransactionCommands.ProcessReconciliationCommand command,
@@ -414,8 +424,7 @@ namespace TransactionProcessor.BusinessLogic.Services{
                     if (merchantResult.IsFailed)
                         return ResultHelpers.CreateFailure(merchantResult);
                     if (merchantResult.Data.SettlementSchedule == Models.Merchant.SettlementSchedule.NotSet) {
-                        // TODO: Result
-                        //throw new NotSupportedException($"Merchant {merchant.MerchantId} does not have a settlement schedule configured");
+                        return Result.Failure($"Merchant {merchantResult.Data.MerchantId} does not have a settlement schedule configured");
                     }
 
                     foreach (CalculatedFee calculatedFee in merchantFees) {
@@ -572,7 +581,6 @@ namespace TransactionProcessor.BusinessLogic.Services{
         private async Task<Result> AddDeviceToMerchant(Guid merchantId,
                                                String deviceIdentifier,
                                                CancellationToken cancellationToken) {
-            // TODO: Should this be firing a command to add the device??
             // Add the device to the merchant
             Result<MerchantAggregate> merchantAggregate = await this.AggregateService.GetLatest<MerchantAggregate>(merchantId, cancellationToken);
             if (merchantAggregate.IsFailed)
@@ -650,14 +658,12 @@ namespace TransactionProcessor.BusinessLogic.Services{
                 MessageId = messageId,
                 Body = body,
                 ConnectionIdentifier = estateId,
-                FromAddress = "golfhandicapping@btinternet.com", // TODO: lookup from config
+                FromAddress = ConfigurationReader.GetValueOrDefault("AppSettings", "FromEmailAddress", "golfhandicapping@btinternet.com"),
                 IsHtml = true,
                 Subject = subject,
                 ToAddresses = new List<String> { emailAddress }
             };
 
-            // TODO: may decide to record the message Id againsts the Transaction Aggregate in future, but for now
-            // we wont do this...
             try {
                 return await this.MessagingServiceClient.SendEmail(accessToken, sendEmailRequest, cancellationToken);
             }
