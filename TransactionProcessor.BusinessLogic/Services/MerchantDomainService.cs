@@ -114,7 +114,7 @@ namespace TransactionProcessor.BusinessLogic.Services
                     return ResultHelpers.CreateFailure(estateResult);
 
                 Result<MerchantAggregate> merchantResult = await DomainServiceHelper.GetAggregateOrFailure(ct => this.AggregateService.GetLatest<MerchantAggregate>(command.MerchantId, ct), command.MerchantId, cancellationToken);
-                if (estateResult.IsFailed)
+                if (merchantResult.IsFailed)
                     return ResultHelpers.CreateFailure(merchantResult);
 
                 EstateAggregate estateAggregate = estateResult.Data;
@@ -131,25 +131,26 @@ namespace TransactionProcessor.BusinessLogic.Services
                     return Result.Invalid($"Operator Id {command.RequestDto.OperatorId} is not supported on Estate [{estate.Name}]");
                 }
 
-                // TODO: Reintroduce when we have an Operator Aggregate
-                // https://github.com/TransactionProcessing/EstateManagement/issues/558
+                Result<OperatorAggregate> operatorResult = await DomainServiceHelper.GetAggregateOrFailure(ct => this.AggregateService.GetLatest<OperatorAggregate>(command.MerchantId, ct), command.RequestDto.OperatorId, cancellationToken);
+                if (operatorResult.IsFailed)
+                    return ResultHelpers.CreateFailure(operatorResult);
+                OperatorAggregate @operatorAggregate = operatorResult.Data;
                 // Operator has been validated, now check the rules of the operator against the passed in data
-                //if (@operator.RequireCustomMerchantNumber) {
-                //    // requested addition must have a merchant number supplied
-                //    if (String.IsNullOrEmpty(command.RequestDto.MerchantNumber)) {
-                //        throw new InvalidOperationException($"Operator Id {command.RequestDto.OperatorId} requires that a merchant number is provided");
-                //    }
-                //}
+                if (@operatorAggregate.RequireCustomMerchantNumber) {
+                    // requested addition must have a merchant number supplied
+                    if (String.IsNullOrEmpty(command.RequestDto.MerchantNumber)) {
+                        return Result.Invalid($"Operator Id {command.RequestDto.OperatorId} requires that a merchant number is provided");
+                    }
+                }
 
-                //if (@operator.RequireCustomTerminalNumber) {
-                //    // requested addition must have a terminal number supplied
-                //    if (String.IsNullOrEmpty(command.RequestDto.TerminalNumber)) {
-                //        throw new InvalidOperationException($"Operator Id {command.RequestDto.OperatorId} requires that a terminal number is provided");
-                //    }
-                //}
+                if (@operatorAggregate.RequireCustomTerminalNumber) {
+                    // requested addition must have a terminal number supplied
+                    if (String.IsNullOrEmpty(command.RequestDto.TerminalNumber)) {
+                        return Result.Invalid($"Operator Id {command.RequestDto.OperatorId} requires that a terminal number is provided");
+                    }
+                }
 
                 // Assign the operator
-                // TODO: Swap second parameter to name
                 Result stateResult = merchantAggregate.AssignOperator(command.RequestDto.OperatorId, @operator.Name, command.RequestDto.MerchantNumber, command.RequestDto.TerminalNumber);
                 if (stateResult.IsFailed)
                     return stateResult;
