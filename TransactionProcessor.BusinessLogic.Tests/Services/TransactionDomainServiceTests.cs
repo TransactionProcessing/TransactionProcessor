@@ -506,7 +506,7 @@ namespace TransactionProcessor.BusinessLogic.Tests.Services{
             transactionAggregate.DeclineTransaction(TestData.OperatorId, "111", "SUCCESS", "0000", "SUCCESS");
 
             // TODO: maybe move this to an extension on aggregate
-            var result = TransactionDomainService.RequireFeeCalculation(transactionAggregate);
+            var result = TransactionHelpers.RequireFeeCalculation(transactionAggregate);
             result.ShouldBeFalse();
         }
 
@@ -520,7 +520,7 @@ namespace TransactionProcessor.BusinessLogic.Tests.Services{
                                                   TestData.TransactionAmount);
             transactionAggregate.AuthoriseTransaction(TestData.OperatorId, "111", "111", "SUCCESS", "1234", "0000", "SUCCESS");
 
-            var result = TransactionDomainService.RequireFeeCalculation(transactionAggregate);
+            var result = TransactionHelpers.RequireFeeCalculation(transactionAggregate);
             result.ShouldBeFalse();
         }
 
@@ -536,7 +536,7 @@ namespace TransactionProcessor.BusinessLogic.Tests.Services{
             transactionAggregate.CompleteTransaction();
 
 
-            var result = TransactionDomainService.RequireFeeCalculation(transactionAggregate);
+            var result = TransactionHelpers.RequireFeeCalculation(transactionAggregate);
             result.ShouldBeFalse();
         }
 
@@ -552,7 +552,7 @@ namespace TransactionProcessor.BusinessLogic.Tests.Services{
             transactionAggregate.CompleteTransaction();
 
 
-            var result = TransactionDomainService.RequireFeeCalculation(transactionAggregate);
+            var result = TransactionHelpers.RequireFeeCalculation(transactionAggregate);
             result.ShouldBeFalse();
         }
 
@@ -569,7 +569,7 @@ namespace TransactionProcessor.BusinessLogic.Tests.Services{
             transactionAggregate.CompleteTransaction();
 
 
-            var result = TransactionDomainService.RequireFeeCalculation(transactionAggregate);
+            var result = TransactionHelpers.RequireFeeCalculation(transactionAggregate);
             result.ShouldBeFalse();
         }
 
@@ -586,7 +586,7 @@ namespace TransactionProcessor.BusinessLogic.Tests.Services{
             transactionAggregate.CompleteTransaction();
 
 
-            var result = TransactionDomainService.RequireFeeCalculation(transactionAggregate);
+            var result = TransactionHelpers.RequireFeeCalculation(transactionAggregate);
             result.ShouldBeTrue();
         }
 
@@ -599,7 +599,7 @@ namespace TransactionProcessor.BusinessLogic.Tests.Services{
 
             DateTime completedDate = DateTime.ParseExact(completedDateString, "yyyy-MM-dd", null);
             DateTime expectedDate = DateTime.ParseExact(expectedDateString, "yyyy-MM-dd", null);
-            DateTime result = TransactionDomainService.CalculateSettlementDate(settlementSchedule, completedDate);
+            DateTime result = TransactionHelpers.CalculateSettlementDate(settlementSchedule, completedDate);
             result.Date.ShouldBe(expectedDate.Date);
         }
 
