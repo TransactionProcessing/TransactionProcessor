@@ -257,8 +257,6 @@ namespace TransactionProcessor.Aggregates
                 return Result.Success();
             }
 
-            // TODO: should this check the date has been added to the statement, before allowing the summary?
-
             MerchantStatementDomainEvents.StatementSummaryForDateEvent statementSummaryForDateEvent = new(aggregate.AggregateId, aggregate.EstateId, aggregate.MerchantId, activityDate,aggregate.MerchantStatementSummaries.Count +1
                 ,numberOfTransactions, valueOfTransactions, numberOfSettledFees, valueOfSettledFees, numberOfDepoits, valueOfDepoits, numberOfWithdrawals, valueOfWithdrawals);
             aggregate.ApplyAndAppend(statementSummaryForDateEvent);

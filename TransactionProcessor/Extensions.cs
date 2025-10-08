@@ -100,7 +100,7 @@ namespace TransactionProcessor
         private readonly IEnumerable<FileProfile> FileProfiles;
         public StatementFilePollerService(IMediator mediator) {
             this.Mediator = mediator;
-            // TODO: File Profiles
+
             // Load up the file configuration
             this.FileProfiles = Startup.Configuration.GetSection("AppSettings:FileProfiles").GetChildren().ToList().Select(x => new
             {

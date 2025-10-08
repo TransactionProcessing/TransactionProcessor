@@ -75,7 +75,6 @@ namespace TransactionProcessor.Aggregates{
             if (result.IsFailed)
                 return result;
 
-            // TODO: Change amount to a value object (PositiveAmount VO)
             result = aggregate.EnsureDepositSourceHasBeenSet(source);
             if (result.IsFailed)
                 return result;

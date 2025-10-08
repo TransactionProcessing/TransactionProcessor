@@ -232,26 +232,26 @@ public class MerchantController : ControllerBase
         };
     }
 
-    private bool PerformStandardChecks(Guid estateId)
+    private Result PerformStandardChecks(Guid estateId)
     {
         // Get the Estate Id claim from the user
         Result<Claim> estateIdClaimResult = ClaimsHelper.GetUserClaim(GetUser(), "EstateId",estateId.ToString());
         if (estateIdClaimResult.IsFailed)
-            return false; // TODO: Shoudl this be a result?
+            return ResultHelpers.CreateFailure(estateIdClaimResult);
         Claim estateIdClaim = estateIdClaimResult.Data;
 
-        string estateRoleName = Environment.GetEnvironmentVariable("EstateRoleName");
+        String estateRoleName = Environment.GetEnvironmentVariable("EstateRoleName");
         if (ClaimsHelper.IsUserRolesValid(GetUser(), new[] { string.IsNullOrEmpty(estateRoleName) ? "Estate" : estateRoleName }) == false)
         {
-            return false;
+            return Result.Invalid("User Roles not valid");
         }
 
         if (ClaimsHelper.ValidateRouteParameter(estateId, estateIdClaim) == false)
         {
-            return false;
+            return Result.Invalid("Route parameter not valid");
         }
 
-        return true;
+        return Result.Success();
     }
 
     [HttpPost]
@@ -261,9 +261,8 @@ public class MerchantController : ControllerBase
                                                     CancellationToken cancellationToken)
     {
 
-        bool isRequestAllowed = PerformStandardChecks(estateId);
-        if (isRequestAllowed == false)
-        {
+        Result isRequestAllowedResult = PerformStandardChecks(estateId);
+        if (isRequestAllowedResult.IsFailed) {
             return Forbid();
         }
 
@@ -285,9 +284,8 @@ public class MerchantController : ControllerBase
                                                     AssignOperatorRequest assignOperatorRequest,
                                                     CancellationToken cancellationToken)
     {
-        bool isRequestAllowed = PerformStandardChecks(estateId);
-        if (isRequestAllowed == false)
-        {
+        Result isRequestAllowedResult = PerformStandardChecks(estateId);
+        if (isRequestAllowedResult.IsFailed) {
             return Forbid();
         }
 
@@ -307,9 +305,8 @@ public class MerchantController : ControllerBase
                                                     [FromRoute] Guid operatorId,
                                                     CancellationToken cancellationToken)
     {
-        bool isRequestAllowed = PerformStandardChecks(estateId);
-        if (isRequestAllowed == false)
-        {
+        Result isRequestAllowedResult = PerformStandardChecks(estateId);
+        if (isRequestAllowedResult.IsFailed) {
             return Forbid();
         }
 
@@ -329,9 +326,8 @@ public class MerchantController : ControllerBase
                                                [FromBody] AddMerchantDeviceRequest addMerchantDeviceRequest,
                                                CancellationToken cancellationToken)
     {
-        bool isRequestAllowed = PerformStandardChecks(estateId);
-        if (isRequestAllowed == false)
-        {
+        Result isRequestAllowedResult = PerformStandardChecks(estateId);
+        if (isRequestAllowedResult.IsFailed) {
             return Forbid();
         }
 
@@ -351,9 +347,8 @@ public class MerchantController : ControllerBase
                                                  [FromBody] AddMerchantContractRequest addMerchantContractRequest,
                                                  CancellationToken cancellationToken)
     {
-        bool isRequestAllowed = PerformStandardChecks(estateId);
-        if (isRequestAllowed == false)
-        {
+        Result isRequestAllowedResult = PerformStandardChecks(estateId);
+        if (isRequestAllowedResult.IsFailed) {
             return Forbid();
         }
 
@@ -373,9 +368,8 @@ public class MerchantController : ControllerBase
                                                     [FromRoute] Guid contractId,
                                                     CancellationToken cancellationToken)
     {
-        bool isRequestAllowed = PerformStandardChecks(estateId);
-        if (isRequestAllowed == false)
-        {
+        Result isRequestAllowedResult = PerformStandardChecks(estateId);
+        if (isRequestAllowedResult.IsFailed) {
             return Forbid();
         }
 
@@ -395,9 +389,8 @@ public class MerchantController : ControllerBase
                                                         [FromBody] CreateMerchantUserRequest createMerchantUserRequest,
                                                         CancellationToken cancellationToken)
     {
-        bool isRequestAllowed = PerformStandardChecks(estateId);
-        if (isRequestAllowed == false)
-        {
+        Result isRequestAllowedResult = PerformStandardChecks(estateId);
+        if (isRequestAllowedResult.IsFailed) {
             return Forbid();
         }
 
@@ -417,9 +410,8 @@ public class MerchantController : ControllerBase
                                                  [FromBody] MakeMerchantDepositRequest makeMerchantDepositRequest,
                                                  CancellationToken cancellationToken)
     {
-        bool isRequestAllowed = PerformStandardChecks(estateId);
-        if (isRequestAllowed == false)
-        {
+        Result isRequestAllowedResult = PerformStandardChecks(estateId);
+        if (isRequestAllowedResult.IsFailed) {
             return Forbid();
         }
 
@@ -442,9 +434,8 @@ public class MerchantController : ControllerBase
                                                     [FromBody] MakeMerchantWithdrawalRequest makeMerchantWithdrawalRequest,
                                                     CancellationToken cancellationToken)
     {
-        bool isRequestAllowed = PerformStandardChecks(estateId);
-        if (isRequestAllowed == false)
-        {
+        Result isRequestAllowedResult = PerformStandardChecks(estateId);
+        if (isRequestAllowedResult.IsFailed) {
             return Forbid();
         }
 
@@ -465,9 +456,8 @@ public class MerchantController : ControllerBase
                                                         [FromBody] SwapMerchantDeviceRequest swapMerchantDeviceRequest,
                                                         CancellationToken cancellationToken)
     {
-        bool isRequestAllowed = PerformStandardChecks(estateId);
-        if (isRequestAllowed == false)
-        {
+        Result isRequestAllowedResult = PerformStandardChecks(estateId);
+        if (isRequestAllowedResult.IsFailed) {
             return Forbid();
         }
 
@@ -480,12 +470,12 @@ public class MerchantController : ControllerBase
         return result.ToActionResultX();
     }
 
-    private bool PerformMerchantUserChecks(Guid estateId, Guid merchantId)
+    private Result PerformMerchantUserChecks(Guid estateId, Guid merchantId)
     {
 
-        if (PerformStandardChecks(estateId) == false)
-        {
-            return false;
+        Result isRequestAllowedResult = PerformStandardChecks(estateId);
+        if (isRequestAllowedResult.IsFailed) {
+            return ResultHelpers.CreateFailure(isRequestAllowedResult);
         }
 
         string merchantRoleName = string.IsNullOrEmpty(Environment.GetEnvironmentVariable("MerchantRoleName"))
@@ -493,23 +483,22 @@ public class MerchantController : ControllerBase
             : Environment.GetEnvironmentVariable("MerchantRoleName");
 
         if (GetUser().IsInRole(merchantRoleName) == false)
-            return true;
+            return Result.Success();
 
-        if (ClaimsHelper.IsUserRolesValid(GetUser(), new[] { merchantRoleName }) == false)
-        {
-            return false;
+        if (ClaimsHelper.IsUserRolesValid(GetUser(), new[] { merchantRoleName }) == false) {
+            return Result.Invalid("User Roles not valid");
         }
 
         Result<Claim> getMerchantIdClaimResult = ClaimsHelper.GetUserClaim(GetUser(), "MerchantId");
         if (getMerchantIdClaimResult.IsFailed)
-            return false; // TODO: Shoudl this be a result?
+            return ResultHelpers.CreateFailure(getMerchantIdClaimResult);
+
         Claim merchantIdClaim = getMerchantIdClaimResult.Data;
-        if (ClaimsHelper.ValidateRouteParameter(merchantId, merchantIdClaim) == false)
-        {
-            return false;
+        if (ClaimsHelper.ValidateRouteParameter(merchantId, merchantIdClaim) == false) {
+            return Result.Invalid("Route parameter not valid");
         }
 
-        return true;
+        return Result.Success();
     }
 
     [HttpGet]
@@ -518,9 +507,8 @@ public class MerchantController : ControllerBase
                                                  [FromRoute] Guid merchantId,
                                                  CancellationToken cancellationToken)
     {
-        bool isRequestAllowed = PerformMerchantUserChecks(estateId, merchantId);
-        if (isRequestAllowed == false)
-        {
+        Result isRequestAllowedResult = PerformMerchantUserChecks(estateId, merchantId);
+        if (isRequestAllowedResult.IsFailed) {
             return Forbid();
         }
 
@@ -620,8 +608,8 @@ public class MerchantController : ControllerBase
                                                           [FromRoute] Guid merchantId,
                                                           CancellationToken cancellationToken)
     {
-        bool isRequestAllowed = PerformMerchantUserChecks(estateId, merchantId);
-        if (isRequestAllowed == false)
+        Result isRequestAllowedResult = PerformMerchantUserChecks(estateId, merchantId);
+        if (isRequestAllowedResult.IsFailed)
         {
             return Forbid();
         }
@@ -641,9 +629,8 @@ public class MerchantController : ControllerBase
     public async Task<IActionResult> GetMerchants([FromRoute] Guid estateId,
                                                   CancellationToken cancellationToken)
     {
-        bool isRequestAllowed = PerformStandardChecks(estateId);
-        if (isRequestAllowed == false)
-        {
+        Result isRequestAllowedResult = PerformStandardChecks(estateId);
+        if (isRequestAllowedResult.IsFailed) {
             return Forbid();
         }
 
@@ -662,9 +649,8 @@ public class MerchantController : ControllerBase
                                                                   [FromRoute] Guid productId,
                                                                   CancellationToken cancellationToken)
     {
-        bool isRequestAllowed = PerformMerchantUserChecks(estateId, merchantId);
-        if (isRequestAllowed == false)
-        {
+        Result isRequestAllowedResult = PerformMerchantUserChecks(estateId, merchantId);
+        if (isRequestAllowedResult.IsFailed) {
             return Forbid();
         }
 
@@ -685,9 +671,8 @@ public class MerchantController : ControllerBase
                                                     CancellationToken cancellationToken)
     {
 
-        bool isRequestAllowed = PerformStandardChecks(estateId);
-        if (isRequestAllowed == false)
-        {
+        Result isRequestAllowedResult = PerformStandardChecks(estateId);
+        if (isRequestAllowedResult.IsFailed) {
             return Forbid();
         }
 
@@ -707,9 +692,8 @@ public class MerchantController : ControllerBase
                                                         [FromBody] DataTransferObjects.Requests.Merchant.Address addAddressRequest,
                                                         CancellationToken cancellationToken)
     {
-        bool isRequestAllowed = PerformStandardChecks(estateId);
-        if (isRequestAllowed == false)
-        {
+        Result isRequestAllowedResult = PerformStandardChecks(estateId);
+        if (isRequestAllowedResult.IsFailed) {
             return Forbid();
         }
 
@@ -730,9 +714,8 @@ public class MerchantController : ControllerBase
                                                            [FromBody] DataTransferObjects.Requests.Merchant.Address updateAddressRequest,
                                                            CancellationToken cancellationToken)
     {
-        bool isRequestAllowed = PerformStandardChecks(estateId);
-        if (isRequestAllowed == false)
-        {
+        Result isRequestAllowedResult = PerformStandardChecks(estateId);
+        if (isRequestAllowedResult.IsFailed) {
             return Forbid();
         }
 
@@ -752,9 +735,8 @@ public class MerchantController : ControllerBase
                                                             [FromBody] DataTransferObjects.Requests.Merchant.Contact addContactRequest,
                                                             CancellationToken cancellationToken)
     {
-        bool isRequestAllowed = PerformStandardChecks(estateId);
-        if (isRequestAllowed == false)
-        {
+        Result isRequestAllowedResult = PerformStandardChecks(estateId);
+        if (isRequestAllowedResult.IsFailed) {
             return Forbid();
         }
 
@@ -775,9 +757,8 @@ public class MerchantController : ControllerBase
                                                            [FromBody] DataTransferObjects.Requests.Merchant.Contact updateContactRequest,
                                                            CancellationToken cancellationToken)
     {
-        bool isRequestAllowed = PerformStandardChecks(estateId);
-        if (isRequestAllowed == false)
-        {
+        Result isRequestAllowedResult = PerformStandardChecks(estateId);
+        if (isRequestAllowedResult.IsFailed) {
             return Forbid();
         }
 
@@ -797,9 +778,8 @@ public class MerchantController : ControllerBase
                                                                [FromBody] GenerateMerchantStatementRequest generateMerchantStatementRequest,
                                                                CancellationToken cancellationToken)
     {
-        bool isRequestAllowed = PerformStandardChecks(estateId);
-        if (isRequestAllowed == false)
-        {
+        Result isRequestAllowedResult = PerformStandardChecks(estateId);
+        if (isRequestAllowedResult.IsFailed) {
             return Forbid();
         }
 

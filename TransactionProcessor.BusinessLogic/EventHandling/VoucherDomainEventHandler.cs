@@ -120,8 +120,6 @@ public class VoucherDomainEventHandler : IDomainEventHandler
     private async Task<String> GetVoucherOperator(Models.Voucher voucherModel,
                                                   CancellationToken cancellationToken)
     {
-        // TODO: Can this be done in a better way than direct db access ?
-
         using ResolvedDbContext<EstateManagementContext>? resolvedContext = this.Resolver.Resolve(EstateManagementDatabaseName, voucherModel.EstateId.ToString());
         await using EstateManagementContext context = resolvedContext.Context;
 
