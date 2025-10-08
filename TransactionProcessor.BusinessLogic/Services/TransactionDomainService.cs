@@ -232,10 +232,8 @@ namespace TransactionProcessor.BusinessLogic.Services{
                 Decimal unitCost = 0;
                 Decimal totalCost = 0;
                 if (floatAggregateResult.IsSuccess) {
-                    // TODO: Move calculation to float
                     FloatAggregate floatAggregate = floatAggregateResult.Data;
-                    unitCost = floatAggregate.GetUnitCostPrice();
-                    totalCost = transactionAmount.GetValueOrDefault() * unitCost;
+                    totalCost = floatAggregate.GetTotalCostPrice(transactionAmount.GetValueOrDefault());
                 }
 
                 Result stateResult = transactionAggregate.StartTransaction(command.TransactionDateTime, command.TransactionNumber, transactionType, transactionReference, command.EstateId, command.MerchantId, command.DeviceIdentifier, transactionAmount);
