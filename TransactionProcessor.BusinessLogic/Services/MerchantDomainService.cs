@@ -131,7 +131,7 @@ namespace TransactionProcessor.BusinessLogic.Services
                     return Result.Invalid($"Operator Id {command.RequestDto.OperatorId} is not supported on Estate [{estate.Name}]");
                 }
 
-                Result<OperatorAggregate> operatorResult = await DomainServiceHelper.GetAggregateOrFailure(ct => this.AggregateService.GetLatest<OperatorAggregate>(command.MerchantId, ct), command.RequestDto.OperatorId, cancellationToken);
+                Result<OperatorAggregate> operatorResult = await DomainServiceHelper.GetAggregateOrFailure(ct => this.AggregateService.GetLatest<OperatorAggregate>(command.RequestDto.OperatorId, ct), command.RequestDto.OperatorId, cancellationToken);
                 if (operatorResult.IsFailed)
                     return ResultHelpers.CreateFailure(operatorResult);
                 OperatorAggregate @operatorAggregate = operatorResult.Data;
