@@ -93,7 +93,7 @@ namespace TransactionProcessor.Aggregates
             return Result.Success();
         }
 
-        public static Result Authorise(this ReconciliationAggregate aggregate, String responseCode, String responseMessage)
+        public static Result Authorise(this ReconciliationAggregate aggregate, TransactionResponseCode responseCode, String responseMessage)
         {
             if (aggregate.IsAuthorised || aggregate.IsDeclined) {
                 return Result.Success();
@@ -107,7 +107,7 @@ namespace TransactionProcessor.Aggregates
                 return result;
 
             ReconciliationDomainEvents.ReconciliationHasBeenLocallyAuthorisedEvent reconciliationHasBeenLocallyAuthorisedEvent = new(aggregate.AggregateId, aggregate.EstateId, aggregate.MerchantId,
-                                                                                                                                                      responseCode, responseMessage, aggregate.TransactionDateTime);
+                                                                                                                                                      responseCode.ToCodeString(), responseMessage, aggregate.TransactionDateTime);
 
             aggregate.ApplyAndAppend(reconciliationHasBeenLocallyAuthorisedEvent);
             return Result.Success();
@@ -122,7 +122,7 @@ namespace TransactionProcessor.Aggregates
             return Result.Success();
         }
 
-        public static Result Decline(this ReconciliationAggregate aggregate,String responseCode, String responseMessage)
+        public static Result Decline(this ReconciliationAggregate aggregate,TransactionResponseCode responseCode, String responseMessage)
         {
             if (aggregate.IsAuthorised || aggregate.IsDeclined) {
                 return Result.Success();
@@ -136,7 +136,7 @@ namespace TransactionProcessor.Aggregates
                 return result;
 
             ReconciliationDomainEvents.ReconciliationHasBeenLocallyDeclinedEvent reconciliationHasBeenLocallyDeclinedEvent = new(aggregate.AggregateId, aggregate.EstateId, aggregate.MerchantId,
-                                                                                                                                                responseCode, responseMessage, aggregate.TransactionDateTime);
+                                                                                                                                                responseCode.ToCodeString(), responseMessage, aggregate.TransactionDateTime);
 
             aggregate.ApplyAndAppend(reconciliationHasBeenLocallyDeclinedEvent);
 

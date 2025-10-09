@@ -13,13 +13,50 @@ namespace TransactionProcessor.Aggregates
     using Shared.EventStore.Aggregate;
     using Shared.General;
 
+    public enum TransactionResponseCode
+    {
+        Success = 0,
+        SuccessNeedToAddDevice = 1,
+
+        InvalidDeviceIdentifier = 1000,
+        InvalidEstateId = 1001,
+        InvalidMerchantId = 1002,
+        NoValidDevices = 1003,
+        NoEstateOperators = 1004,
+        OperatorNotValidForEstate = 1005,
+        NoMerchantOperators = 1006,
+        OperatorNotValidForMerchant = 1007,
+        TransactionDeclinedByOperator = 1008,
+        MerchantDoesNotHaveEnoughCredit = 1009,
+        OperatorCommsError = 1010,
+        InvalidSaleTransactionAmount = 1011,
+        InvalidContractIdValue = 1012,
+        InvalidProductIdValue = 1013,
+        MerchantHasNoContractsConfigured = 1014,
+        ContractNotValidForMerchant = 1015,
+        ProductNotValidForMerchant = 1016,
+        OperatorNotEnabledForEstate = 1017,
+        OperatorNotEnabledForMerchant = 1018,
+
+        // A Catch All generic Error where reason has not been identified
+        UnknownFailure = 9999
+    }
+
+    public static class TransactionResponseCodeExtensions
+    {
+        public static string ToCodeString(this TransactionResponseCode code)
+        {
+            return ((int)code).ToString("D4");
+        }
+    }
+
     public static class TransactionAggregateExtensions{
 
         public static Result DeclineTransaction(this TransactionAggregate aggregate,
             Guid operatorId,
                                        String operatorResponseCode,
                                        String operatorResponseMessage,
-                                       String responseCode,
+                                       TransactionResponseCode responseCode,
                                        String responseMessage)
         {
             Result result = aggregate.CheckTransactionHasBeenStarted();
@@ -32,6 +69,8 @@ namespace TransactionProcessor.Aggregates
             if (result.IsFailed)
                 return result;
 
+            
+
             TransactionDomainEvents.TransactionDeclinedByOperatorEvent transactionDeclinedByOperatorEvent =
                 new(aggregate.AggregateId,
                                                        aggregate.EstateId,
@@ -39,7 +78,7 @@ namespace TransactionProcessor.Aggregates
                                                        operatorId,
                                                        operatorResponseCode,
                                                        operatorResponseMessage,
-                                                       responseCode,
+                                                       responseCode.ToCodeString(),
                                                        responseMessage, 
                                                        aggregate.TransactionDateTime);
             aggregate.ApplyAndAppend(transactionDeclinedByOperatorEvent);
@@ -47,8 +86,8 @@ namespace TransactionProcessor.Aggregates
             return Result.Success();
         }
 
-        public static Result DeclineTransactionLocally(this TransactionAggregate aggregate, 
-                                                     String responseCode,
+        public static Result DeclineTransactionLocally(this TransactionAggregate aggregate,
+                                                       TransactionResponseCode responseCode,
                                                      String responseMessage)
         {
             Result result = aggregate.CheckTransactionHasBeenStarted();
@@ -61,7 +100,7 @@ namespace TransactionProcessor.Aggregates
             if (result.IsFailed)
                 return result;
             TransactionDomainEvents.TransactionHasBeenLocallyDeclinedEvent transactionHasBeenLocallyDeclinedEvent =
-                new(aggregate.AggregateId, aggregate.EstateId, aggregate.MerchantId, responseCode, responseMessage,
+                new(aggregate.AggregateId, aggregate.EstateId, aggregate.MerchantId, responseCode.ToCodeString(), responseMessage,
                     aggregate.TransactionDateTime);
 
             aggregate.ApplyAndAppend(transactionHasBeenLocallyDeclinedEvent);
@@ -276,7 +315,7 @@ namespace TransactionProcessor.Aggregates
                                                 String operatorResponseCode,
                                                 String operatorResponseMessage,
                                                 String operatorTransactionId,
-                                                String responseCode,
+                                                TransactionResponseCode responseCode,
                                                 String responseMessage)
         {
             Result result = aggregate.CheckTransactionHasBeenStarted();
@@ -294,7 +333,7 @@ namespace TransactionProcessor.Aggregates
                                                                                                                                  operatorResponseCode,
                                                                                                                                  operatorResponseMessage,
                                                                                                                                  operatorTransactionId,
-                                                                                                                                 responseCode,
+                                                                                                                                 responseCode.ToCodeString(),
                                                                                                                                  responseMessage,
                                                                                                                                  aggregate.TransactionDateTime);
             aggregate.ApplyAndAppend(transactionAuthorisedByOperatorEvent);
@@ -304,7 +343,7 @@ namespace TransactionProcessor.Aggregates
 
         public static Result AuthoriseTransactionLocally(this TransactionAggregate aggregate, 
                                                        String authorisationCode,
-                                                       String responseCode,
+                                                       TransactionResponseCode responseCode,
                                                        String responseMessage)
         {
             var result = aggregate.CheckTransactionHasBeenStarted();
@@ -317,7 +356,7 @@ namespace TransactionProcessor.Aggregates
             if (result.IsFailed)
                 return result;
             TransactionDomainEvents.TransactionHasBeenLocallyAuthorisedEvent transactionHasBeenLocallyAuthorisedEvent =
-                new(aggregate.AggregateId, aggregate.EstateId, aggregate.MerchantId, authorisationCode, responseCode, responseMessage,
+                new(aggregate.AggregateId, aggregate.EstateId, aggregate.MerchantId, authorisationCode, responseCode.ToCodeString(), responseMessage,
                     aggregate.TransactionDateTime);
 
             aggregate.ApplyAndAppend(transactionHasBeenLocallyAuthorisedEvent);

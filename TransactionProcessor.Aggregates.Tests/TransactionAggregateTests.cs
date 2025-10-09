@@ -378,7 +378,7 @@ namespace TransactionProcessor.Aggregates.Tests{
             transactionAggregate.IsLocallyAuthorised.ShouldBeTrue();
             transactionAggregate.IsAuthorised.ShouldBeFalse();
             transactionAggregate.AuthorisationCode.ShouldBe(TestData.AuthorisationCode);
-            transactionAggregate.ResponseCode.ShouldBe(TestData.ResponseCode);
+            transactionAggregate.ResponseCode.ShouldBe(TestData.ResponseCode.ToCodeString());
             transactionAggregate.ResponseMessage.ShouldBe(TestData.ResponseMessage);
         }
 
@@ -543,7 +543,7 @@ namespace TransactionProcessor.Aggregates.Tests{
             transactionAggregate.IsDeclined.ShouldBeFalse();
             transactionAggregate.IsLocallyDeclined.ShouldBeTrue();
 
-            transactionAggregate.ResponseCode.ShouldBe(TestData.DeclinedResponseCode);
+            transactionAggregate.ResponseCode.ShouldBe(TestData.DeclinedResponseCode.ToCodeString());
             transactionAggregate.ResponseMessage.ShouldBe(TestData.DeclinedResponseMessage);
         }
 

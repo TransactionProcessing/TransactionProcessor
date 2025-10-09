@@ -1,4 +1,6 @@
-﻿namespace TransactionProcessor.BusinessLogic.Services
+﻿using TransactionProcessor.Aggregates;
+
+namespace TransactionProcessor.BusinessLogic.Services
 {
     using System;
     using System.Diagnostics.CodeAnalysis;
