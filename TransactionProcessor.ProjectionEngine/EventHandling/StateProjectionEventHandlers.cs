@@ -19,7 +19,7 @@ public class StateProjectionEventHandler<TState> : IDomainEventHandler where TSt
 {
     private readonly IProjectionHandler ProjectionHandler;
     private readonly IDbContextResolver<EstateManagementContext> Resolver;
-    private static readonly String EstateManagementDatabaseName = "TransactionProcessorReadModel";
+    private const String EstateManagementDatabaseName = "TransactionProcessorReadModel";
 
     public StateProjectionEventHandler(ProjectionHandler<TState> projectionHandler,
                                        IDbContextResolver<EstateManagementContext> resolver) {

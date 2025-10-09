@@ -65,6 +65,35 @@ namespace TransactionProcessor.Bootstrapper
 
             this.AddTransient<IEventStoreContext, EventStoreContext>();
 
+            this.RegisterAggregateCachingFunc();
+
+            this.AddSingleton<IAggregateService, AggregateService>();
+            this.AddSingleton<IAggregateRepositoryResolver, AggregateRepositoryResolver>();
+            this.RegisterAggregateRepositories();
+            this.AddSingleton<IProjectionStateRepository<MerchantBalanceState>, MerchantBalanceStateRepository>();
+            this.AddSingleton<IProjectionStateRepository<VoucherState>, VoucherStateRepository>();
+            this.AddSingleton<ITransactionProcessorReadRepository, TransactionProcessorReadRepository>();
+            this.AddSingleton<ITransactionProcessorReadModelRepository, TransactionProcessorReadModelRepository>();
+            this.AddSingleton<IProjection<MerchantBalanceState>, MerchantBalanceProjection>();
+        }
+
+        private void RegisterAggregateRepositories() {
+            this.AddSingleton<IAggregateRepository<TransactionAggregate, DomainEvent>, AggregateRepository<TransactionAggregate, DomainEvent>>();
+            this.AddSingleton<IAggregateRepository<ReconciliationAggregate, DomainEvent>, AggregateRepository<ReconciliationAggregate, DomainEvent>>();
+            this.AddSingleton<IAggregateRepository<SettlementAggregate, DomainEvent>, AggregateRepository<SettlementAggregate, DomainEvent>>();
+            this.AddSingleton<IAggregateRepository<VoucherAggregate, DomainEvent>, AggregateRepository<VoucherAggregate, DomainEvent>>();
+            this.AddSingleton<IAggregateRepository<FloatAggregate, DomainEvent>, AggregateRepository<FloatAggregate, DomainEvent>>();
+            this.AddSingleton<IAggregateRepository<FloatActivityAggregate, DomainEvent>, AggregateRepository<FloatActivityAggregate, DomainEvent>>();
+            this.AddSingleton<IAggregateRepository<EstateAggregate, DomainEvent>, AggregateRepository<EstateAggregate, DomainEvent>>();
+            this.AddSingleton<IAggregateRepository<OperatorAggregate, DomainEvent>, AggregateRepository<OperatorAggregate, DomainEvent>>();
+            this.AddSingleton<IAggregateRepository<ContractAggregate, DomainEvent>, AggregateRepository<ContractAggregate, DomainEvent>>();
+            this.AddSingleton<IAggregateRepository<MerchantAggregate, DomainEvent>, AggregateRepository<MerchantAggregate, DomainEvent>>();
+            this.AddSingleton<IAggregateRepository<MerchantDepositListAggregate, DomainEvent>, AggregateRepository<MerchantDepositListAggregate, DomainEvent>>();
+            this.AddSingleton<IAggregateRepository<MerchantStatementAggregate, DomainEvent>, AggregateRepository<MerchantStatementAggregate, DomainEvent>>();
+            this.AddSingleton<IAggregateRepository<MerchantStatementForDateAggregate, DomainEvent>, AggregateRepository<MerchantStatementForDateAggregate, DomainEvent>>();
+        }
+
+        private void RegisterAggregateCachingFunc() {
             // ✅ Defer to the container — safe and compliant
             this.AddSingleton<Func<IAggregateService>>(c => () =>
             {
@@ -89,27 +118,6 @@ namespace TransactionProcessor.Bootstrapper
 
                 return aggregateService;
             });
-
-            this.AddSingleton<IAggregateService, AggregateService>();
-            this.AddSingleton<IAggregateRepositoryResolver, AggregateRepositoryResolver>();
-            this.AddSingleton<IAggregateRepository<TransactionAggregate, DomainEvent>, AggregateRepository<TransactionAggregate, DomainEvent>>();
-            this.AddSingleton<IAggregateRepository<ReconciliationAggregate, DomainEvent>, AggregateRepository<ReconciliationAggregate, DomainEvent>>();
-            this.AddSingleton<IAggregateRepository<SettlementAggregate, DomainEvent>, AggregateRepository<SettlementAggregate, DomainEvent>>();
-            this.AddSingleton<IAggregateRepository<VoucherAggregate, DomainEvent>, AggregateRepository<VoucherAggregate, DomainEvent>>();
-            this.AddSingleton<IAggregateRepository<FloatAggregate, DomainEvent>, AggregateRepository<FloatAggregate, DomainEvent>>();
-            this.AddSingleton<IAggregateRepository<FloatActivityAggregate, DomainEvent>, AggregateRepository<FloatActivityAggregate, DomainEvent>>();
-            this.AddSingleton<IAggregateRepository<EstateAggregate, DomainEvent>, AggregateRepository<EstateAggregate, DomainEvent>>();
-            this.AddSingleton<IAggregateRepository<OperatorAggregate, DomainEvent>, AggregateRepository<OperatorAggregate, DomainEvent>>();
-            this.AddSingleton<IAggregateRepository<ContractAggregate, DomainEvent>, AggregateRepository<ContractAggregate, DomainEvent>>();
-            this.AddSingleton<IAggregateRepository<MerchantAggregate, DomainEvent>, AggregateRepository<MerchantAggregate, DomainEvent>>();
-            this.AddSingleton<IAggregateRepository<MerchantDepositListAggregate, DomainEvent>, AggregateRepository<MerchantDepositListAggregate, DomainEvent>>();
-            this.AddSingleton<IAggregateRepository<MerchantStatementAggregate, DomainEvent>, AggregateRepository<MerchantStatementAggregate, DomainEvent>>();
-            this.AddSingleton<IAggregateRepository<MerchantStatementForDateAggregate, DomainEvent>, AggregateRepository<MerchantStatementForDateAggregate, DomainEvent>>();
-            this.AddSingleton<IProjectionStateRepository<MerchantBalanceState>, MerchantBalanceStateRepository>();
-            this.AddSingleton<IProjectionStateRepository<VoucherState>, VoucherStateRepository>();
-            this.AddSingleton<ITransactionProcessorReadRepository, TransactionProcessorReadRepository>();
-            this.AddSingleton<ITransactionProcessorReadModelRepository, TransactionProcessorReadModelRepository>();
-            this.AddSingleton<IProjection<MerchantBalanceState>, MerchantBalanceProjection>();
         }
     }
 

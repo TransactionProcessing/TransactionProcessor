@@ -47,19 +47,10 @@ public class TransactionProcessorClient : ClientProxyBase, ITransactionProcessor
     public async Task<Result<EstateResponse>> GetEstate(String accessToken,
                                                         Guid estateId,
                                                         CancellationToken cancellationToken) {
-        EstateResponse response = null;
-
         String requestUri = this.BuildRequestUrl($"/api/estates/{estateId}");
 
         try {
-            // Add the access token to the client headers
-            this.HttpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", accessToken);
-
-            // Make the Http Call here
-            HttpResponseMessage httpResponse = await this.HttpClient.GetAsync(requestUri, cancellationToken);
-
-            // Process the response
-            Result<String> result = await this.HandleResponseX(httpResponse, cancellationToken);
+            Result<String> result =  await this.SendGetRequest(requestUri, accessToken, cancellationToken);
 
             if (result.IsFailed)
                 return ResultHelpers.CreateFailure(result);
@@ -75,10 +66,81 @@ public class TransactionProcessorClient : ClientProxyBase, ITransactionProcessor
 
             throw exception;
         }
-
-        return response;
     }
-    
+
+    private async Task<Result<String>> SendGetRequest(String uri, String accessToken, CancellationToken cancellationToken) {
+
+        HttpRequestMessage requestMessage = new HttpRequestMessage(HttpMethod.Get, uri);
+        requestMessage.Headers.Authorization = new AuthenticationHeaderValue("Bearer", accessToken);
+
+        // Make the Http Call here
+        HttpResponseMessage httpResponse = await this.HttpClient.SendAsync(requestMessage, cancellationToken);
+
+        // Process the response
+        Result<String> result = await this.HandleResponseX(httpResponse, cancellationToken);
+
+        if (result.IsFailed)
+            return ResultHelpers.CreateFailure(result);
+
+        return Result.Success<String>(result.Data);
+    }
+
+    private async Task<Result<String>> SendPostRequest(String uri, String accessToken, String content, CancellationToken cancellationToken)
+    {
+
+        HttpRequestMessage requestMessage = new HttpRequestMessage(HttpMethod.Post, uri);
+        requestMessage.Headers.Authorization = new AuthenticationHeaderValue("Bearer", accessToken);
+        requestMessage.Content = new StringContent(content, Encoding.UTF8, "application/json");
+
+        // Make the Http Call here
+        HttpResponseMessage httpResponse = await this.HttpClient.SendAsync(requestMessage, cancellationToken);
+
+        // Process the response
+        Result<String> result = await this.HandleResponseX(httpResponse, cancellationToken);
+
+        if (result.IsFailed)
+            return ResultHelpers.CreateFailure(result);
+
+        return Result.Success<String>(result.Data);
+    }
+
+    private async Task<Result<String>> SendPatchRequest(String uri, String accessToken, String content, CancellationToken cancellationToken)
+    {
+
+        HttpRequestMessage requestMessage = new HttpRequestMessage(HttpMethod.Patch, uri);
+        requestMessage.Headers.Authorization = new AuthenticationHeaderValue("Bearer", accessToken);
+        requestMessage.Content = new StringContent(content, Encoding.UTF8, "application/json");
+
+        // Make the Http Call here
+        HttpResponseMessage httpResponse = await this.HttpClient.SendAsync(requestMessage, cancellationToken);
+
+        // Process the response
+        Result<String> result = await this.HandleResponseX(httpResponse, cancellationToken);
+
+        if (result.IsFailed)
+            return ResultHelpers.CreateFailure(result);
+
+        return Result.Success<String>(result.Data);
+    }
+
+    private async Task<Result<String>> SendDeleteRequest(String uri, String accessToken, CancellationToken cancellationToken)
+    {
+
+        HttpRequestMessage requestMessage = new HttpRequestMessage(HttpMethod.Delete, uri);
+        requestMessage.Headers.Authorization = new AuthenticationHeaderValue("Bearer", accessToken);
+
+        // Make the Http Call here
+        HttpResponseMessage httpResponse = await this.HttpClient.SendAsync(requestMessage, cancellationToken);
+
+        // Process the response
+        Result<String> result = await this.HandleResponseX(httpResponse, cancellationToken);
+
+        if (result.IsFailed)
+            return ResultHelpers.CreateFailure(result);
+
+        return Result.Success<String>(result.Data);
+    }
+
     public async Task<Result> CreateEstate(String accessToken,
                                            CreateEstateRequest createEstateRequest,
                                            CancellationToken cancellationToken) {
@@ -86,18 +148,8 @@ public class TransactionProcessorClient : ClientProxyBase, ITransactionProcessor
 
         try {
             String requestSerialised = JsonConvert.SerializeObject(createEstateRequest);
-
-            StringContent httpContent = new(requestSerialised, Encoding.UTF8, "application/json");
-
-            // Add the access token to the client headers
-            this.HttpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", accessToken);
-
-            // Make the Http Call here
-            HttpResponseMessage httpResponse = await this.HttpClient.PostAsync(requestUri, httpContent, cancellationToken);
-
-            // Process the response
-            Result<String> result = await this.HandleResponseX(httpResponse, cancellationToken);
-
+            Result<String> result = await this.SendPostRequest(requestUri, accessToken, requestSerialised, cancellationToken);
+            
             if (result.IsFailed)
                 return ResultHelpers.CreateFailure(result);
 
@@ -117,17 +169,7 @@ public class TransactionProcessorClient : ClientProxyBase, ITransactionProcessor
         String requestUri = this.BuildRequestUrl($"/api/estates/{estateId}/all");
 
         try {
-            // Add the access token to the client headers
-            this.HttpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", accessToken);
-
-            // Make the Http Call here
-            HttpResponseMessage httpResponse = await this.HttpClient.GetAsync(requestUri, cancellationToken);
-
-            // Process the response
-            Result<String> result = await this.HandleResponseX(httpResponse, cancellationToken);
-
-            if (result.IsFailed)
-                return ResultHelpers.CreateFailure(result);
+            Result<String> result = await this.SendGetRequest(requestUri, accessToken, cancellationToken);
 
             ResponseData<List<EstateResponse>> responseData = this.HandleResponseContent<List<EstateResponse>>(result.Data);
 
@@ -150,16 +192,7 @@ public class TransactionProcessorClient : ClientProxyBase, ITransactionProcessor
         try {
             String requestSerialised = JsonConvert.SerializeObject(createFloatForContractProductRequest);
 
-            StringContent httpContent = new(requestSerialised, Encoding.UTF8, "application/json");
-
-            // Add the access token to the client headers
-            this.HttpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", accessToken);
-
-            // Make the Http Call here
-            HttpResponseMessage httpResponse = await this.HttpClient.PostAsync(requestUri, httpContent, cancellationToken);
-
-            // Process the response
-            Result<String> result = await this.HandleResponseX(httpResponse, cancellationToken);
+            Result<String> result = await this.SendPostRequest(requestUri, accessToken, requestSerialised, cancellationToken);
 
             if (result.IsFailed)
                 return ResultHelpers.CreateFailure(result);
@@ -184,14 +217,7 @@ public class TransactionProcessorClient : ClientProxyBase, ITransactionProcessor
         if (liveBalance) requestUri = this.BuildRequestUrl($"/api/estates/{estateId}/merchants/{merchantId}/livebalance");
 
         try {
-            // Add the access token to the client headers
-            this.HttpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", accessToken);
-
-            // Make the Http Call here
-            HttpResponseMessage httpResponse = await this.HttpClient.GetAsync(requestUri, cancellationToken);
-
-            // Process the response
-            Result<String> result = await this.HandleResponseX(httpResponse, cancellationToken);
+            Result<String> result = await this.SendGetRequest(requestUri, accessToken, cancellationToken);
 
             if (result.IsFailed)
                 return ResultHelpers.CreateFailure(result);
@@ -217,14 +243,7 @@ public class TransactionProcessorClient : ClientProxyBase, ITransactionProcessor
         String requestUri = this.BuildRequestUrl($"/api/estates/{estateId}/merchants/{merchantId}/balancehistory?startDate={startDate:yyyy-MM-dd}&endDate={endDate:yyyy-MM-dd}");
 
         try {
-            // Add the access token to the client headers
-            this.HttpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", accessToken);
-
-            // Make the Http Call here
-            HttpResponseMessage httpResponse = await this.HttpClient.GetAsync(requestUri, cancellationToken);
-
-            // Process the response
-            Result<String> result = await this.HandleResponseX(httpResponse, cancellationToken);
+            Result<String> result = await this.SendGetRequest(requestUri, accessToken, cancellationToken);
 
             if (result.IsFailed)
                 return ResultHelpers.CreateFailure(result);
@@ -248,14 +267,7 @@ public class TransactionProcessorClient : ClientProxyBase, ITransactionProcessor
                                                                       CancellationToken cancellationToken) {
         String requestUri = this.BuildRequestUrl($"/api/estates/{estateId}/settlements/{settlementDate.Date:yyyy-MM-dd}/merchants/{merchantId}/pending");
         try {
-            // Add the access token to the client headers
-            this.HttpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", accessToken);
-
-            // Make the Http Call here
-            HttpResponseMessage httpResponse = await this.HttpClient.GetAsync(requestUri, cancellationToken);
-
-            // Process the response
-            Result<String> result = await this.HandleResponseX(httpResponse, cancellationToken);
+            Result<String> result = await this.SendGetRequest(requestUri, accessToken, cancellationToken);
 
             if (result.IsFailed)
                 return ResultHelpers.CreateFailure(result);
@@ -279,17 +291,10 @@ public class TransactionProcessorClient : ClientProxyBase, ITransactionProcessor
         String requestUri = this.BuildRequestUrl($"/api/vouchers?estateId={estateId}&voucherCode={voucherCode}");
 
         try {
-            // Add the access token to the client headers
-            this.HttpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", accessToken);
-
-            // Make the Http Call here
-            HttpResponseMessage httpResponse = await this.HttpClient.GetAsync(requestUri, cancellationToken);
-
-            // Process the response
-            Result<String> result = await this.HandleResponseX(httpResponse, cancellationToken);
+            Result<String> result = await this.SendGetRequest(requestUri, accessToken, cancellationToken);
 
             if (result.IsFailed)
-                return ResultHelpers.CreateFailure(result);
+                return ResultHelpers.CreateFailure(result); ;
 
             ResponseData<GetVoucherResponse> responseData = this.HandleResponseContent<GetVoucherResponse>(result.Data);
 
@@ -311,14 +316,7 @@ public class TransactionProcessorClient : ClientProxyBase, ITransactionProcessor
         String requestUri = this.BuildRequestUrl($"/api/vouchers?estateId={estateId}&transactionId={transactionId}");
 
         try {
-            // Add the access token to the client headers
-            this.HttpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", accessToken);
-
-            // Make the Http Call here
-            HttpResponseMessage httpResponse = await this.HttpClient.GetAsync(requestUri, cancellationToken);
-
-            // Process the response
-            Result<String> result = await this.HandleResponseX(httpResponse, cancellationToken);
+            Result<String> result = await this.SendGetRequest(requestUri, accessToken, cancellationToken);
 
             if (result.IsFailed)
                 return ResultHelpers.CreateFailure(result);
@@ -343,16 +341,7 @@ public class TransactionProcessorClient : ClientProxyBase, ITransactionProcessor
         try {
             String requestSerialised = JsonConvert.SerializeObject(transactionRequest);
 
-            StringContent httpContent = new(requestSerialised, Encoding.UTF8, "application/json");
-
-            // Add the access token to the client headers
-            this.HttpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", accessToken);
-
-            // Make the Http Call here
-            HttpResponseMessage httpResponse = await this.HttpClient.PostAsync(requestUri, httpContent, cancellationToken);
-
-            // Process the response
-            Result<String> result = await this.HandleResponseX(httpResponse, cancellationToken);
+            Result<String> result = await this.SendPostRequest(requestUri, accessToken, requestSerialised, cancellationToken);
 
             if (result.IsFailed)
                 return ResultHelpers.CreateFailure(result);
@@ -377,20 +366,11 @@ public class TransactionProcessorClient : ClientProxyBase, ITransactionProcessor
         String requestUri = this.BuildRequestUrl($"/api/estates/{estateId}/settlements/{settlementDate.Date:yyyy-MM-dd}/merchants/{merchantId}");
 
         try {
-            StringContent httpContent = new(String.Empty, Encoding.UTF8, "application/json");
-
-            // Add the access token to the client headers
-            this.HttpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", accessToken);
-
-            // Make the Http Call here
-            HttpResponseMessage httpResponse = await this.HttpClient.PostAsync(requestUri, httpContent, cancellationToken);
-
-            // Process the response
-            Result<String> result = await this.HandleResponseX(httpResponse, cancellationToken);
+            Result<String> result = await this.SendPostRequest(requestUri, accessToken, String.Empty, cancellationToken);
 
             if (result.IsFailed)
                 return ResultHelpers.CreateFailure(result);
-
+            
             return Result.Success();
         }
         catch (Exception ex) {
@@ -416,16 +396,7 @@ public class TransactionProcessorClient : ClientProxyBase, ITransactionProcessor
         try {
             String requestSerialised = JsonConvert.SerializeObject(recordFloatCreditPurchaseRequest);
 
-            StringContent httpContent = new(requestSerialised, Encoding.UTF8, "application/json");
-
-            // Add the access token to the client headers
-            this.HttpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", accessToken);
-
-            // Make the Http Call here
-            HttpResponseMessage httpResponse = await this.HttpClient.PutAsync(requestUri, httpContent, cancellationToken);
-
-            // Process the response
-            Result<String> result = await this.HandleResponseX(httpResponse, cancellationToken);
+            Result<String> result = await this.SendPostRequest(requestUri, accessToken, requestSerialised, cancellationToken);
 
             if (result.IsFailed)
                 return ResultHelpers.CreateFailure(result);
@@ -448,16 +419,7 @@ public class TransactionProcessorClient : ClientProxyBase, ITransactionProcessor
         try {
             String requestSerialised = JsonConvert.SerializeObject(redeemVoucherRequest);
 
-            StringContent httpContent = new(requestSerialised, Encoding.UTF8, "application/json");
-
-            // Add the access token to the client headers
-            this.HttpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", accessToken);
-
-            // Make the Http Call here
-            HttpResponseMessage httpResponse = await this.HttpClient.PutAsync(requestUri, httpContent, cancellationToken);
-
-            // Process the response
-            Result<String> result = await this.HandleResponseX(httpResponse, cancellationToken);
+            Result<String> result = await this.SendPostRequest(requestUri, accessToken, requestSerialised, cancellationToken);
 
             if (result.IsFailed)
                 return ResultHelpers.CreateFailure(result);
@@ -481,16 +443,7 @@ public class TransactionProcessorClient : ClientProxyBase, ITransactionProcessor
         String requestUri = this.BuildRequestUrl($"/api/{estateId}/transactions/{transactionId}/resendreceipt");
 
         try {
-            StringContent httpContent = new(String.Empty, Encoding.UTF8, "application/json");
-
-            // Add the access token to the client headers
-            this.HttpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", accessToken);
-
-            // Make the Http Call here
-            HttpResponseMessage httpResponse = await this.HttpClient.PostAsync(requestUri, httpContent, cancellationToken);
-
-            // Process the response
-            Result<String> result = await this.HandleResponseX(httpResponse, cancellationToken);
+            Result<String> result = await this.SendPostRequest(requestUri, accessToken, String.Empty, cancellationToken);
 
             if (result.IsFailed)
                 return ResultHelpers.CreateFailure(result);
@@ -515,16 +468,7 @@ public class TransactionProcessorClient : ClientProxyBase, ITransactionProcessor
         try {
             String requestSerialised = JsonConvert.SerializeObject(addMerchantContractRequest);
 
-            StringContent httpContent = new(requestSerialised, Encoding.UTF8, "application/json");
-
-            // Add the access token to the client headers
-            this.HttpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", accessToken);
-
-            // Make the Http Call here
-            HttpResponseMessage httpResponse = await this.HttpClient.PatchAsync(requestUri, httpContent, cancellationToken);
-
-            // Process the response
-            Result<String> result = await this.HandleResponseX(httpResponse, cancellationToken);
+            Result<String> result = await this.SendPatchRequest(requestUri, accessToken, requestSerialised, cancellationToken);
 
             if (result.IsFailed)
                 return ResultHelpers.CreateFailure(result);
@@ -549,16 +493,7 @@ public class TransactionProcessorClient : ClientProxyBase, ITransactionProcessor
         try {
             String requestSerialised = JsonConvert.SerializeObject(addMerchantDeviceRequest);
 
-            StringContent httpContent = new(requestSerialised, Encoding.UTF8, "application/json");
-
-            // Add the access token to the client headers
-            this.HttpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", accessToken);
-
-            // Make the Http Call here
-            HttpResponseMessage httpResponse = await this.HttpClient.PatchAsync(requestUri, httpContent, cancellationToken);
-
-            // Process the response
-            Result<String> result = await this.HandleResponseX(httpResponse, cancellationToken);
+            Result<String> result = await this.SendPatchRequest(requestUri, accessToken, requestSerialised, cancellationToken);
 
             if (result.IsFailed)
                 return ResultHelpers.CreateFailure(result);
@@ -583,16 +518,7 @@ public class TransactionProcessorClient : ClientProxyBase, ITransactionProcessor
         try {
             String requestSerialised = JsonConvert.SerializeObject(newAddressRequest);
 
-            StringContent httpContent = new(requestSerialised, Encoding.UTF8, "application/json");
-
-            // Add the access token to the client headers
-            this.HttpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", accessToken);
-
-            // Make the Http Call here
-            HttpResponseMessage httpResponse = await this.HttpClient.PatchAsync(requestUri, httpContent, cancellationToken);
-
-            // Process the response
-            Result<String> result = await this.HandleResponseX(httpResponse, cancellationToken);
+            Result<String> result = await this.SendPatchRequest(requestUri, accessToken, requestSerialised, cancellationToken);
 
             if (result.IsFailed)
                 return ResultHelpers.CreateFailure(result);
@@ -617,16 +543,7 @@ public class TransactionProcessorClient : ClientProxyBase, ITransactionProcessor
         try {
             String requestSerialised = JsonConvert.SerializeObject(newContactRequest);
 
-            StringContent httpContent = new(requestSerialised, Encoding.UTF8, "application/json");
-
-            // Add the access token to the client headers
-            this.HttpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", accessToken);
-
-            // Make the Http Call here
-            HttpResponseMessage httpResponse = await this.HttpClient.PatchAsync(requestUri, httpContent, cancellationToken);
-
-            // Process the response
-            Result<String> result = await this.HandleResponseX(httpResponse, cancellationToken);
+            Result<String> result = await this.SendPatchRequest(requestUri, accessToken, requestSerialised, cancellationToken);
 
             if (result.IsFailed)
                 return ResultHelpers.CreateFailure(result);
@@ -651,16 +568,7 @@ public class TransactionProcessorClient : ClientProxyBase, ITransactionProcessor
         try {
             String requestSerialised = JsonConvert.SerializeObject(addProductToContractRequest);
 
-            StringContent httpContent = new(requestSerialised, Encoding.UTF8, "application/json");
-
-            // Add the access token to the client headers
-            this.HttpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", accessToken);
-
-            // Make the Http Call here
-            HttpResponseMessage httpResponse = await this.HttpClient.PatchAsync(requestUri, httpContent, cancellationToken);
-
-            // Process the response
-            Result<String> result = await this.HandleResponseX(httpResponse, cancellationToken);
+            Result<String> result = await this.SendPatchRequest(requestUri, accessToken, requestSerialised, cancellationToken);
 
             if (result.IsFailed)
                 return ResultHelpers.CreateFailure(result);
@@ -686,16 +594,7 @@ public class TransactionProcessorClient : ClientProxyBase, ITransactionProcessor
         try {
             String requestSerialised = JsonConvert.SerializeObject(addTransactionFeeForProductToContractRequest);
 
-            StringContent httpContent = new(requestSerialised, Encoding.UTF8, "application/json");
-
-            // Add the access token to the client headers
-            this.HttpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", accessToken);
-
-            // Make the Http Call here
-            HttpResponseMessage httpResponse = await this.HttpClient.PatchAsync(requestUri, httpContent, cancellationToken);
-
-            // Process the response
-            Result<String> result = await this.HandleResponseX(httpResponse, cancellationToken);
+            Result<String> result = await this.SendPatchRequest(requestUri, accessToken, requestSerialised, cancellationToken);
 
             if (result.IsFailed)
                 return ResultHelpers.CreateFailure(result);
@@ -720,16 +619,7 @@ public class TransactionProcessorClient : ClientProxyBase, ITransactionProcessor
         try {
             String requestSerialised = JsonConvert.SerializeObject(assignOperatorRequest);
 
-            StringContent httpContent = new(requestSerialised, Encoding.UTF8, "application/json");
-
-            // Add the access token to the client headers
-            this.HttpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", accessToken);
-
-            // Make the Http Call here
-            HttpResponseMessage httpResponse = await this.HttpClient.PatchAsync(requestUri, httpContent, cancellationToken);
-
-            // Process the response
-            Result<String> result = await this.HandleResponseX(httpResponse, cancellationToken);
+            Result<String> result = await this.SendPatchRequest(requestUri, accessToken, requestSerialised, cancellationToken);
 
             if (result.IsFailed)
                 return ResultHelpers.CreateFailure(result);
@@ -752,14 +642,7 @@ public class TransactionProcessorClient : ClientProxyBase, ITransactionProcessor
         String requestUri = this.BuildRequestUrl($"/api/estates/{estateId}/merchants/{merchantId}/operators/{operatorId}");
 
         try {
-            // Add the access token to the client headers
-            this.HttpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", accessToken);
-
-            // Make the Http Call here
-            HttpResponseMessage httpResponse = await this.HttpClient.DeleteAsync(requestUri, cancellationToken);
-
-            // Process the response
-            Result<String> result = await this.HandleResponseX(httpResponse, cancellationToken);
+            Result<String> result = await this.SendDeleteRequest(requestUri, accessToken, cancellationToken);
 
             if (result.IsFailed)
                 return ResultHelpers.CreateFailure(result);
@@ -781,14 +664,7 @@ public class TransactionProcessorClient : ClientProxyBase, ITransactionProcessor
         String requestUri = this.BuildRequestUrl($"/api/estates/{estateId}/operators/{operatorId}");
 
         try {
-            // Add the access token to the client headers
-            this.HttpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", accessToken);
-
-            // Make the Http Call here
-            HttpResponseMessage httpResponse = await this.HttpClient.DeleteAsync(requestUri, cancellationToken);
-
-            // Process the response
-            Result<String> result = await this.HandleResponseX(httpResponse, cancellationToken);
+            Result<String> result = await this.SendDeleteRequest(requestUri, accessToken, cancellationToken);
 
             if (result.IsFailed)
                 return ResultHelpers.CreateFailure(result);
@@ -811,14 +687,7 @@ public class TransactionProcessorClient : ClientProxyBase, ITransactionProcessor
         String requestUri = this.BuildRequestUrl($"/api/estates/{estateId}/merchants/{merchantId}/contracts/{contractId}");
 
         try {
-            // Add the access token to the client headers
-            this.HttpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", accessToken);
-
-            // Make the Http Call here
-            HttpResponseMessage httpResponse = await this.HttpClient.DeleteAsync(requestUri, cancellationToken);
-
-            // Process the response
-            Result<String> result = await this.HandleResponseX(httpResponse, cancellationToken);
+            Result<String> result = await this.SendDeleteRequest(requestUri, accessToken, cancellationToken);
 
             if (result.IsFailed)
                 return ResultHelpers.CreateFailure(result);
@@ -842,16 +711,7 @@ public class TransactionProcessorClient : ClientProxyBase, ITransactionProcessor
         try {
             String requestSerialised = JsonConvert.SerializeObject(createContractRequest);
 
-            StringContent httpContent = new(requestSerialised, Encoding.UTF8, "application/json");
-
-            // Add the access token to the client headers
-            this.HttpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", accessToken);
-
-            // Make the Http Call here
-            HttpResponseMessage httpResponse = await this.HttpClient.PostAsync(requestUri, httpContent, cancellationToken);
-
-            // Process the response
-            Result<String> result = await this.HandleResponseX(httpResponse, cancellationToken);
+            Result<String> result = await this.SendPostRequest(requestUri, accessToken, requestSerialised, cancellationToken);
 
             if (result.IsFailed)
                 return ResultHelpers.CreateFailure(result);
@@ -875,16 +735,7 @@ public class TransactionProcessorClient : ClientProxyBase, ITransactionProcessor
         try {
             String requestSerialised = JsonConvert.SerializeObject(createOperatorRequest);
 
-            StringContent httpContent = new(requestSerialised, Encoding.UTF8, "application/json");
-
-            // Add the access token to the client headers
-            this.HttpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", accessToken);
-
-            // Make the Http Call here
-            HttpResponseMessage httpResponse = await this.HttpClient.PostAsync(requestUri, httpContent, cancellationToken);
-
-            // Process the response
-            Result<String> result = await this.HandleResponseX(httpResponse, cancellationToken);
+            Result<String> result = await this.SendPostRequest(requestUri, accessToken, requestSerialised, cancellationToken);
 
             if (result.IsFailed)
                 return ResultHelpers.CreateFailure(result);
@@ -908,16 +759,7 @@ public class TransactionProcessorClient : ClientProxyBase, ITransactionProcessor
         try {
             String requestSerialised = JsonConvert.SerializeObject(createEstateUserRequest);
 
-            StringContent httpContent = new(requestSerialised, Encoding.UTF8, "application/json");
-
-            // Add the access token to the client headers
-            this.HttpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", accessToken);
-
-            // Make the Http Call here
-            HttpResponseMessage httpResponse = await this.HttpClient.PatchAsync(requestUri, httpContent, cancellationToken);
-
-            // Process the response
-            Result<String> result = await this.HandleResponseX(httpResponse, cancellationToken);
+            Result<String> result = await this.SendPatchRequest(requestUri, accessToken, requestSerialised, cancellationToken);
 
             if (result.IsFailed)
                 return ResultHelpers.CreateFailure(result);
@@ -942,16 +784,7 @@ public class TransactionProcessorClient : ClientProxyBase, ITransactionProcessor
         try {
             String requestSerialised = JsonConvert.SerializeObject(createMerchantRequest);
 
-            StringContent httpContent = new(requestSerialised, Encoding.UTF8, "application/json");
-
-            // Add the access token to the client headers
-            this.HttpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", accessToken);
-
-            // Make the Http Call here
-            HttpResponseMessage httpResponse = await this.HttpClient.PostAsync(requestUri, httpContent, cancellationToken);
-
-            // Process the response
-            Result<String> result = await this.HandleResponseX(httpResponse, cancellationToken);
+            Result<String> result = await this.SendPostRequest(requestUri, accessToken, requestSerialised, cancellationToken);
 
             if (result.IsFailed)
                 return ResultHelpers.CreateFailure(result);
@@ -976,16 +809,7 @@ public class TransactionProcessorClient : ClientProxyBase, ITransactionProcessor
         try {
             String requestSerialised = JsonConvert.SerializeObject(createMerchantUserRequest);
 
-            StringContent httpContent = new(requestSerialised, Encoding.UTF8, "application/json");
-
-            // Add the access token to the client headers
-            this.HttpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", accessToken);
-
-            // Make the Http Call here
-            HttpResponseMessage httpResponse = await this.HttpClient.PatchAsync(requestUri, httpContent, cancellationToken);
-
-            // Process the response
-            Result<String> result = await this.HandleResponseX(httpResponse, cancellationToken);
+            Result<String> result = await this.SendPatchRequest(requestUri, accessToken, requestSerialised, cancellationToken);
 
             if (result.IsFailed)
                 return ResultHelpers.CreateFailure(result);
@@ -1009,16 +833,7 @@ public class TransactionProcessorClient : ClientProxyBase, ITransactionProcessor
         try {
             String requestSerialised = JsonConvert.SerializeObject(assignOperatorRequest);
 
-            StringContent httpContent = new(requestSerialised, Encoding.UTF8, "application/json");
-
-            // Add the access token to the client headers
-            this.HttpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", accessToken);
-
-            // Make the Http Call here
-            HttpResponseMessage httpResponse = await this.HttpClient.PatchAsync(requestUri, httpContent, cancellationToken);
-
-            // Process the response
-            Result<String> result = await this.HandleResponseX(httpResponse, cancellationToken);
+            Result<String> result = await this.SendPatchRequest(requestUri, accessToken, requestSerialised, cancellationToken);
 
             if (result.IsFailed)
                 return ResultHelpers.CreateFailure(result);
@@ -1042,14 +857,7 @@ public class TransactionProcessorClient : ClientProxyBase, ITransactionProcessor
         String requestUri = this.BuildRequestUrl($"/api/estates/{estateId}/contracts/{contractId}/products/{productId}/transactionFees/{transactionFeeId}");
 
         try {
-            // Add the access token to the client headers
-            this.HttpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", accessToken);
-
-            // Make the Http Call here
-            HttpResponseMessage httpResponse = await this.HttpClient.DeleteAsync(requestUri, cancellationToken);
-
-            // Process the response
-            Result<String> result = await this.HandleResponseX(httpResponse, cancellationToken);
+            Result<String> result = await this.SendDeleteRequest(requestUri, accessToken, cancellationToken);
 
             if (result.IsFailed)
                 return ResultHelpers.CreateFailure(result);
@@ -1071,14 +879,7 @@ public class TransactionProcessorClient : ClientProxyBase, ITransactionProcessor
         String requestUri = this.BuildRequestUrl($"/api/estates/{estateId}/contracts/{contractId}");
 
         try {
-            // Add the access token to the client headers
-            this.HttpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", accessToken);
-
-            // Make the Http Call here
-            HttpResponseMessage httpResponse = await this.HttpClient.GetAsync(requestUri, cancellationToken);
-
-            // Process the response
-            Result<String> result = await this.HandleResponseX(httpResponse, cancellationToken);
+            Result<String> result = await this.SendGetRequest(requestUri, accessToken, cancellationToken);
 
             if (result.IsFailed)
                 return ResultHelpers.CreateFailure(result);
@@ -1102,14 +903,7 @@ public class TransactionProcessorClient : ClientProxyBase, ITransactionProcessor
         String requestUri = this.BuildRequestUrl($"/api/estates/{estateId}/contracts");
 
         try {
-            // Add the access token to the client headers
-            this.HttpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", accessToken);
-
-            // Make the Http Call here
-            HttpResponseMessage httpResponse = await this.HttpClient.GetAsync(requestUri, cancellationToken);
-
-            // Process the response
-            Result<String> result = await this.HandleResponseX(httpResponse, cancellationToken);
+            Result<String> result = await this.SendGetRequest(requestUri, accessToken, cancellationToken);
 
             if (result.IsFailed)
                 return ResultHelpers.CreateFailure(result);
@@ -1133,14 +927,7 @@ public class TransactionProcessorClient : ClientProxyBase, ITransactionProcessor
         String requestUri = this.BuildRequestUrl($"/api/estates/{estateId}/merchants/{merchantId}");
 
         try {
-            // Add the access token to the client headers
-            this.HttpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", accessToken);
-
-            // Make the Http Call here
-            HttpResponseMessage httpResponse = await this.HttpClient.GetAsync(requestUri, cancellationToken);
-
-            // Process the response
-            Result<String> result = await this.HandleResponseX(httpResponse, cancellationToken);
+            Result<String> result = await this.SendGetRequest(requestUri, accessToken, cancellationToken);
 
             if (result.IsFailed)
                 return ResultHelpers.CreateFailure(result);
@@ -1164,14 +951,7 @@ public class TransactionProcessorClient : ClientProxyBase, ITransactionProcessor
         String requestUri = this.BuildRequestUrl($"/api/estates/{estateId}/merchants/{merchantId}/contracts");
 
         try {
-            // Add the access token to the client headers
-            this.HttpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", accessToken);
-
-            // Make the Http Call here
-            HttpResponseMessage httpResponse = await this.HttpClient.GetAsync(requestUri, cancellationToken);
-
-            // Process the response
-            Result<String> result = await this.HandleResponseX(httpResponse, cancellationToken);
+            Result<String> result = await this.SendGetRequest(requestUri, accessToken, cancellationToken);
 
             if (result.IsFailed)
                 return ResultHelpers.CreateFailure(result);
@@ -1194,14 +974,7 @@ public class TransactionProcessorClient : ClientProxyBase, ITransactionProcessor
         String requestUri = this.BuildRequestUrl($"/api/estates/{estateId}/merchants");
 
         try {
-            // Add the access token to the client headers
-            this.HttpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", accessToken);
-
-            // Make the Http Call here
-            HttpResponseMessage httpResponse = await this.HttpClient.GetAsync(requestUri, cancellationToken);
-
-            // Process the response
-            Result<String> result = await this.HandleResponseX(httpResponse, cancellationToken);
+            Result<String> result = await this.SendGetRequest(requestUri, accessToken, cancellationToken);
 
             if (result.IsFailed)
                 return ResultHelpers.CreateFailure(result);
@@ -1226,14 +999,7 @@ public class TransactionProcessorClient : ClientProxyBase, ITransactionProcessor
         String requestUri = this.BuildRequestUrl($"/api/estates/{estateId}/settlements/{settlementId}?merchantId={merchantId}");
 
         try {
-            // Add the access token to the client headers
-            this.HttpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", accessToken);
-
-            // Make the Http Call here
-            HttpResponseMessage httpResponse = await this.HttpClient.GetAsync(requestUri, cancellationToken);
-
-            // Process the response
-            Result<String> result = await this.HandleResponseX(httpResponse, cancellationToken);
+            Result<String> result = await this.SendGetRequest(requestUri, accessToken, cancellationToken);
 
             if (result.IsFailed)
                 return ResultHelpers.CreateFailure(result);
@@ -1259,14 +1025,7 @@ public class TransactionProcessorClient : ClientProxyBase, ITransactionProcessor
         String requestUri = this.BuildRequestUrl($"/api/estates/{estateId}/settlements?merchantId={merchantId}&start_date={startDate}&end_date={endDate}");
 
         try {
-            // Add the access token to the client headers
-            this.HttpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", accessToken);
-
-            // Make the Http Call here
-            HttpResponseMessage httpResponse = await this.HttpClient.GetAsync(requestUri, cancellationToken);
-
-            // Process the response
-            Result<String> result = await this.HandleResponseX(httpResponse, cancellationToken);
+            Result<String> result = await this.SendGetRequest(requestUri, accessToken, cancellationToken);
 
             if (result.IsFailed)
                 return ResultHelpers.CreateFailure(result);
@@ -1292,14 +1051,7 @@ public class TransactionProcessorClient : ClientProxyBase, ITransactionProcessor
         String requestUri = this.BuildRequestUrl($"/api/estates/{estateId}/merchants/{merchantId}/contracts/{contractId}/products/{productId}/transactionFees");
 
         try {
-            // Add the access token to the client headers
-            this.HttpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", accessToken);
-
-            // Make the Http Call here
-            HttpResponseMessage httpResponse = await this.HttpClient.GetAsync(requestUri, cancellationToken);
-
-            // Process the response
-            Result<String> result = await this.HandleResponseX(httpResponse, cancellationToken);
+            Result<String> result = await this.SendGetRequest(requestUri, accessToken, cancellationToken);
 
             if (result.IsFailed)
                 return ResultHelpers.CreateFailure(result);
@@ -1327,16 +1079,7 @@ public class TransactionProcessorClient : ClientProxyBase, ITransactionProcessor
         try {
             String requestSerialised = JsonConvert.SerializeObject(makeMerchantDepositRequest);
 
-            StringContent httpContent = new(requestSerialised, Encoding.UTF8, "application/json");
-
-            // Add the access token to the client headers
-            this.HttpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", accessToken);
-
-            // Make the Http Call here
-            HttpResponseMessage httpResponse = await this.HttpClient.PostAsync(requestUri, httpContent, cancellationToken);
-
-            // Process the response
-            Result<String> result = await this.HandleResponseX(httpResponse, cancellationToken);
+            Result<String> result = await this.SendPostRequest(requestUri, accessToken, requestSerialised, cancellationToken);
 
             if (result.IsFailed)
                 return ResultHelpers.CreateFailure(result);
@@ -1361,16 +1104,7 @@ public class TransactionProcessorClient : ClientProxyBase, ITransactionProcessor
         try {
             String requestSerialised = JsonConvert.SerializeObject(makeMerchantWithdrawalRequest);
 
-            StringContent httpContent = new(requestSerialised, Encoding.UTF8, "application/json");
-
-            // Add the access token to the client headers
-            this.HttpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", accessToken);
-
-            // Make the Http Call here
-            HttpResponseMessage httpResponse = await this.HttpClient.PostAsync(requestUri, httpContent, cancellationToken);
-
-            // Process the response
-            Result<String> result = await this.HandleResponseX(httpResponse, cancellationToken);
+            Result<String> result = await this.SendPostRequest(requestUri, accessToken, requestSerialised, cancellationToken);
 
             if (result.IsFailed)
                 return ResultHelpers.CreateFailure(result);
@@ -1395,17 +1129,7 @@ public class TransactionProcessorClient : ClientProxyBase, ITransactionProcessor
         try {
             String requestSerialised = JsonConvert.SerializeObject(setSettlementScheduleRequest);
 
-            StringContent httpContent = new(requestSerialised, Encoding.UTF8, "application/json");
-
-            // Make the Http Call here
-            HttpRequestMessage requestMessage = new(HttpMethod.Patch, requestUri);
-            requestMessage.Headers.Authorization = new AuthenticationHeaderValue("Bearer", accessToken);
-            requestMessage.Content = httpContent;
-
-            HttpResponseMessage httpResponse = await this.HttpClient.SendAsync(requestMessage, cancellationToken);
-
-            // Process the response
-            Result<String> result = await this.HandleResponseX(httpResponse, cancellationToken);
+            Result<String> result = await this.SendPatchRequest(requestUri, accessToken, requestSerialised, cancellationToken);
 
             if (result.IsFailed)
                 return ResultHelpers.CreateFailure(result);
@@ -1431,16 +1155,7 @@ public class TransactionProcessorClient : ClientProxyBase, ITransactionProcessor
         try {
             String requestSerialised = JsonConvert.SerializeObject(swapMerchantDeviceRequest);
 
-            StringContent httpContent = new(requestSerialised, Encoding.UTF8, "application/json");
-
-            // Add the access token to the client headers
-            this.HttpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", accessToken);
-
-            // Make the Http Call here
-            HttpResponseMessage httpResponse = await this.HttpClient.PatchAsync(requestUri, httpContent, cancellationToken);
-
-            // Process the response
-            Result<String> result = await this.HandleResponseX(httpResponse, cancellationToken);
+            Result<String> result = await this.SendPatchRequest(requestUri, accessToken, requestSerialised, cancellationToken);
 
             if (result.IsFailed)
                 return ResultHelpers.CreateFailure(result);
@@ -1465,16 +1180,7 @@ public class TransactionProcessorClient : ClientProxyBase, ITransactionProcessor
         try {
             String requestSerialised = JsonConvert.SerializeObject(updateMerchantRequest);
 
-            StringContent httpContent = new(requestSerialised, Encoding.UTF8, "application/json");
-
-            // Add the access token to the client headers
-            this.HttpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", accessToken);
-
-            // Make the Http Call here
-            HttpResponseMessage httpResponse = await this.HttpClient.PatchAsync(requestUri, httpContent, cancellationToken);
-
-            // Process the response
-            Result<String> result = await this.HandleResponseX(httpResponse, cancellationToken);
+            Result<String> result = await this.SendPatchRequest(requestUri, accessToken, requestSerialised, cancellationToken);
 
             if (result.IsFailed)
                 return ResultHelpers.CreateFailure(result);
@@ -1500,16 +1206,7 @@ public class TransactionProcessorClient : ClientProxyBase, ITransactionProcessor
         try {
             String requestSerialised = JsonConvert.SerializeObject(updatedAddressRequest);
 
-            StringContent httpContent = new(requestSerialised, Encoding.UTF8, "application/json");
-
-            // Add the access token to the client headers
-            this.HttpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", accessToken);
-
-            // Make the Http Call here
-            HttpResponseMessage httpResponse = await this.HttpClient.PatchAsync(requestUri, httpContent, cancellationToken);
-
-            // Process the response
-            Result<String> result = await this.HandleResponseX(httpResponse, cancellationToken);
+            Result<String> result = await this.SendPatchRequest(requestUri, accessToken, requestSerialised, cancellationToken);
 
             if (result.IsFailed)
                 return ResultHelpers.CreateFailure(result);
@@ -1535,16 +1232,7 @@ public class TransactionProcessorClient : ClientProxyBase, ITransactionProcessor
         try {
             String requestSerialised = JsonConvert.SerializeObject(updatedContactRequest);
 
-            StringContent httpContent = new(requestSerialised, Encoding.UTF8, "application/json");
-
-            // Add the access token to the client headers
-            this.HttpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", accessToken);
-
-            // Make the Http Call here
-            HttpResponseMessage httpResponse = await this.HttpClient.PatchAsync(requestUri, httpContent, cancellationToken);
-
-            // Process the response
-            Result<String> result = await this.HandleResponseX(httpResponse, cancellationToken);
+            Result<String> result = await this.SendPatchRequest(requestUri, accessToken, requestSerialised, cancellationToken);
 
             if (result.IsFailed)
                 return ResultHelpers.CreateFailure(result);
@@ -1569,16 +1257,7 @@ public class TransactionProcessorClient : ClientProxyBase, ITransactionProcessor
         try {
             String requestSerialised = JsonConvert.SerializeObject(updateOperatorRequest);
 
-            StringContent httpContent = new(requestSerialised, Encoding.UTF8, "application/json");
-
-            // Add the access token to the client headers
-            this.HttpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", accessToken);
-
-            // Make the Http Call here
-            HttpResponseMessage httpResponse = await this.HttpClient.PostAsync(requestUri, httpContent, cancellationToken);
-
-            // Process the response
-            Result<String> result = await this.HandleResponseX(httpResponse, cancellationToken);
+            Result<String> result = await this.SendPostRequest(requestUri, accessToken, requestSerialised, cancellationToken);
 
             if (result.IsFailed)
                 return ResultHelpers.CreateFailure(result);
@@ -1600,14 +1279,7 @@ public class TransactionProcessorClient : ClientProxyBase, ITransactionProcessor
         String requestUri = this.BuildRequestUrl($"/api/estates/{estateId}/operators/{operatorId}");
 
         try {
-            // Add the access token to the client headers
-            this.HttpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", accessToken);
-
-            // Make the Http Call here
-            HttpResponseMessage httpResponse = await this.HttpClient.GetAsync(requestUri, cancellationToken);
-
-            // Process the response
-            Result<String> result = await this.HandleResponseX(httpResponse, cancellationToken);
+            Result<String> result = await this.SendGetRequest(requestUri, accessToken, cancellationToken);
 
             if (result.IsFailed)
                 return ResultHelpers.CreateFailure(result);
@@ -1630,14 +1302,7 @@ public class TransactionProcessorClient : ClientProxyBase, ITransactionProcessor
         String requestUri = this.BuildRequestUrl($"/api/estates/{estateId}/operators");
 
         try {
-            // Add the access token to the client headers
-            this.HttpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", accessToken);
-
-            // Make the Http Call here
-            HttpResponseMessage httpResponse = await this.HttpClient.GetAsync(requestUri, cancellationToken);
-
-            // Process the response
-            Result<String> result = await this.HandleResponseX(httpResponse, cancellationToken);
+            Result<String> result = await this.SendGetRequest(requestUri, accessToken, cancellationToken);
 
             if (result.IsFailed)
                 return ResultHelpers.CreateFailure(result);
