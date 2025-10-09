@@ -71,7 +71,7 @@ public class TransactionProcessorClient : ClientProxyBase, ITransactionProcessor
     private async Task<Result<String>> SendGetRequest(String uri, String accessToken, CancellationToken cancellationToken) {
 
         HttpRequestMessage requestMessage = new HttpRequestMessage(HttpMethod.Get, uri);
-        requestMessage.Headers.Authorization = new AuthenticationHeaderValue("Bearer", accessToken);
+        requestMessage.Headers.Authorization = new AuthenticationHeaderValue(AuthenticationSchemes.Bearer, accessToken);
 
         // Make the Http Call here
         HttpResponseMessage httpResponse = await this.HttpClient.SendAsync(requestMessage, cancellationToken);
@@ -89,7 +89,7 @@ public class TransactionProcessorClient : ClientProxyBase, ITransactionProcessor
     {
 
         HttpRequestMessage requestMessage = new HttpRequestMessage(HttpMethod.Post, uri);
-        requestMessage.Headers.Authorization = new AuthenticationHeaderValue("Bearer", accessToken);
+        requestMessage.Headers.Authorization = new AuthenticationHeaderValue(AuthenticationSchemes.Bearer, accessToken);
         requestMessage.Content = new StringContent(content, Encoding.UTF8, "application/json");
 
         // Make the Http Call here
@@ -104,11 +104,16 @@ public class TransactionProcessorClient : ClientProxyBase, ITransactionProcessor
         return Result.Success<String>(result.Data);
     }
 
+    public static class AuthenticationSchemes
+    {
+        public const string Bearer = "Bearer";
+    }
+
     private async Task<Result<String>> SendPatchRequest(String uri, String accessToken, String content, CancellationToken cancellationToken)
     {
 
         HttpRequestMessage requestMessage = new HttpRequestMessage(HttpMethod.Patch, uri);
-        requestMessage.Headers.Authorization = new AuthenticationHeaderValue("Bearer", accessToken);
+        requestMessage.Headers.Authorization = new AuthenticationHeaderValue(AuthenticationSchemes.Bearer, accessToken);
         requestMessage.Content = new StringContent(content, Encoding.UTF8, "application/json");
 
         // Make the Http Call here
@@ -127,7 +132,7 @@ public class TransactionProcessorClient : ClientProxyBase, ITransactionProcessor
     {
 
         HttpRequestMessage requestMessage = new HttpRequestMessage(HttpMethod.Delete, uri);
-        requestMessage.Headers.Authorization = new AuthenticationHeaderValue("Bearer", accessToken);
+        requestMessage.Headers.Authorization = new AuthenticationHeaderValue(AuthenticationSchemes.Bearer, accessToken);
 
         // Make the Http Call here
         HttpResponseMessage httpResponse = await this.HttpClient.SendAsync(requestMessage, cancellationToken);
@@ -294,7 +299,7 @@ public class TransactionProcessorClient : ClientProxyBase, ITransactionProcessor
             Result<String> result = await this.SendGetRequest(requestUri, accessToken, cancellationToken);
 
             if (result.IsFailed)
-                return ResultHelpers.CreateFailure(result); ;
+                return ResultHelpers.CreateFailure(result);
 
             ResponseData<GetVoucherResponse> responseData = this.HandleResponseContent<GetVoucherResponse>(result.Data);
 
