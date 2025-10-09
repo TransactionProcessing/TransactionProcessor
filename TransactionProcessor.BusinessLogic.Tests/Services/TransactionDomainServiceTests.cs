@@ -254,7 +254,8 @@ namespace TransactionProcessor.BusinessLogic.Tests.Services{
                                                                                                                                     AuthorisationCode =
                                                                                                                                         TestData.OperatorAuthorisationCode,
                                                                                                                                     TransactionId = TestData.OperatorTransactionId,
-                                                                                                                                    ResponseCode = TestData.ResponseCode}, IsSuccess = false});
+                                                                                                                                    ResponseCode = TestData.ResponseCode.ToCodeString()
+            }, IsSuccess = false});
 
             TransactionCommands.ProcessSaleTransactionCommand command =
                 new TransactionCommands.ProcessSaleTransactionCommand(TestData.TransactionId, TestData.EstateId,
@@ -356,8 +357,8 @@ namespace TransactionProcessor.BusinessLogic.Tests.Services{
                                                                                                                                     AuthorisationCode =
                                                                                                                                         TestData.OperatorAuthorisationCode,
                                                                                                                                     TransactionId = TestData.OperatorTransactionId,
-                                                                                                                                    ResponseCode = TestData.ResponseCode
-                                                                                                                                });
+                                                                                                                                    ResponseCode = TestData.ResponseCode.ToCodeString()
+                                                               });
 
             TransactionCommands.ProcessSaleTransactionCommand command =
                 new TransactionCommands.ProcessSaleTransactionCommand(TestData.TransactionId, TestData.EstateId,
@@ -420,7 +421,7 @@ namespace TransactionProcessor.BusinessLogic.Tests.Services{
                                                                    AuthorisationCode =
                                                                                                                                         TestData.OperatorAuthorisationCode,
                                                                    TransactionId = TestData.OperatorTransactionId,
-                                                                   ResponseCode = TestData.ResponseCode
+                                                                   ResponseCode = TestData.ResponseCode.ToCodeString()
                                                                });
 
             TransactionCommands.ProcessSaleTransactionCommand command =
@@ -503,7 +504,7 @@ namespace TransactionProcessor.BusinessLogic.Tests.Services{
                                                   TransactionType.Sale, TestData.TransactionReference,
                                                   TestData.EstateId, TestData.MerchantId, TestData.DeviceIdentifier,
                                                   TestData.TransactionAmount);
-            transactionAggregate.DeclineTransaction(TestData.OperatorId, "111", "SUCCESS", "0000", "SUCCESS");
+            transactionAggregate.DeclineTransaction(TestData.OperatorId, "111", "SUCCESS", TransactionResponseCode.Success, "SUCCESS");
 
             // TODO: maybe move this to an extension on aggregate
             var result = TransactionHelpers.RequireFeeCalculation(transactionAggregate);
@@ -518,7 +519,7 @@ namespace TransactionProcessor.BusinessLogic.Tests.Services{
                                                   TransactionType.Sale, TestData.TransactionReference,
                                                   TestData.EstateId, TestData.MerchantId, TestData.DeviceIdentifier,
                                                   TestData.TransactionAmount);
-            transactionAggregate.AuthoriseTransaction(TestData.OperatorId, "111", "111", "SUCCESS", "1234", "0000", "SUCCESS");
+            transactionAggregate.AuthoriseTransaction(TestData.OperatorId, "111", "111", "SUCCESS", "1234", TransactionResponseCode.Success, "SUCCESS");
 
             var result = TransactionHelpers.RequireFeeCalculation(transactionAggregate);
             result.ShouldBeFalse();
@@ -532,7 +533,7 @@ namespace TransactionProcessor.BusinessLogic.Tests.Services{
                                                   TransactionType.Logon, TestData.TransactionReference,
                                                   TestData.EstateId, TestData.MerchantId, TestData.DeviceIdentifier,
                                                   TestData.TransactionAmount);
-            transactionAggregate.AuthoriseTransactionLocally("111", "0001", "SUCCESS");
+            transactionAggregate.AuthoriseTransactionLocally("111", TransactionResponseCode.InvalidDeviceIdentifier, "SUCCESS");
             transactionAggregate.CompleteTransaction();
 
 
@@ -548,7 +549,7 @@ namespace TransactionProcessor.BusinessLogic.Tests.Services{
                                                   TransactionType.Sale, TestData.TransactionReference,
                                                   TestData.EstateId, TestData.MerchantId, TestData.DeviceIdentifier,
                                                   TestData.TransactionAmount);
-            transactionAggregate.AuthoriseTransaction(TestData.OperatorId, "111", "111", "SUCCESS", "1234", "0000", "SUCCESS");
+            transactionAggregate.AuthoriseTransaction(TestData.OperatorId, "111", "111", "SUCCESS", "1234", TransactionResponseCode.Success, "SUCCESS");
             transactionAggregate.CompleteTransaction();
 
 
@@ -565,7 +566,7 @@ namespace TransactionProcessor.BusinessLogic.Tests.Services{
                                                   TestData.EstateId, TestData.MerchantId, TestData.DeviceIdentifier,
                                                   null);
             transactionAggregate.AddProductDetails(TestData.ContractId, TestData.ProductId);
-            transactionAggregate.AuthoriseTransaction(TestData.OperatorId, "111", "111", "SUCCESS", "1234", "0000", "SUCCESS");
+            transactionAggregate.AuthoriseTransaction(TestData.OperatorId, "111", "111", "SUCCESS", "1234", TransactionResponseCode.Success, "SUCCESS");
             transactionAggregate.CompleteTransaction();
 
 
@@ -582,7 +583,7 @@ namespace TransactionProcessor.BusinessLogic.Tests.Services{
                                                   TestData.EstateId, TestData.MerchantId, TestData.DeviceIdentifier,
                                                   TestData.TransactionAmount);
             transactionAggregate.AddProductDetails(TestData.ContractId, TestData.ProductId);
-            transactionAggregate.AuthoriseTransaction(TestData.OperatorId, "111", "111", "SUCCESS", "1234", "0000", "SUCCESS");
+            transactionAggregate.AuthoriseTransaction(TestData.OperatorId, "111", "111", "SUCCESS", "1234", TransactionResponseCode.Success, "SUCCESS");
             transactionAggregate.CompleteTransaction();
 
 

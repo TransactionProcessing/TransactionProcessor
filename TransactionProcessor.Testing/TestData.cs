@@ -348,7 +348,7 @@ namespace TransactionProcessor.Testing
     
         public static String AuthorisationCode = "ABCD1234";
 
-        public static String DeclinedResponseCode = "0001";
+        public static TransactionResponseCode DeclinedResponseCode = TransactionResponseCode.InvalidEstateId;
 
         public static String DeclinedResponseMessage = "DeclinedResponseMessage";
 
@@ -396,7 +396,7 @@ namespace TransactionProcessor.Testing
 
         public static Boolean RequireCustomTerminalNumberTrue = true;
 
-        public static String ResponseCode = "0000";
+        public static TransactionResponseCode ResponseCode = TransactionResponseCode.Success;
 
         public static String ResponseMessage = "SUCCESS";
 
@@ -1038,14 +1038,14 @@ namespace TransactionProcessor.Testing
             new ProcessLogonTransactionResponse
             {
                 ResponseMessage = TestData.ResponseMessage,
-                ResponseCode = TestData.ResponseCode
+                ResponseCode = TestData.ResponseCode.ToCodeString()
             };
 
         public static ProcessSaleTransactionResponse ProcessSaleTransactionResponseModel =>
             new ProcessSaleTransactionResponse
             {
                 ResponseMessage = TestData.ResponseMessage,
-                ResponseCode = TestData.ResponseCode,
+                ResponseCode = TestData.ResponseCode.ToCodeString(),
                 AdditionalTransactionMetadata = new Dictionary<String, String>
                                                 {
                                                     {"OperatorResponseCode", "1000"}
@@ -1069,7 +1069,7 @@ namespace TransactionProcessor.Testing
             new ProcessReconciliationTransactionResponse
             {
                 ResponseMessage = TestData.ResponseMessage,
-                ResponseCode = TestData.ResponseCode
+                ResponseCode = TestData.ResponseCode.ToCodeString()
             };
 
         #endregion
@@ -1335,7 +1335,7 @@ namespace TransactionProcessor.Testing
                                                   TestData.DeviceIdentifier,
                                                   TestData.TransactionAmount);
 
-            transactionAggregate.DeclineTransactionLocally(TestData.GetResponseCodeAsString(transactionResponseCode),
+            transactionAggregate.DeclineTransactionLocally(transactionResponseCode,
                                                            TestData.GetResponseCodeMessage(transactionResponseCode));
 
             return transactionAggregate;
@@ -1357,7 +1357,7 @@ namespace TransactionProcessor.Testing
             transactionAggregate.DeclineTransaction(TestData.OperatorId, 
                                                     TestData.DeclinedOperatorResponseCode,
                                                     TestData.DeclinedOperatorResponseMessage,
-                                                    TestData.GetResponseCodeAsString(transactionResponseCode),
+                                                    transactionResponseCode,
                                                     TestData.GetResponseCodeMessage(transactionResponseCode));
 
             return transactionAggregate;
@@ -2603,7 +2603,7 @@ namespace TransactionProcessor.Testing
             public static TransactionDomainEvents.TransactionHasBeenCompletedEvent TransactionHasBeenCompletedEvent => new TransactionDomainEvents.TransactionHasBeenCompletedEvent(TestData.TransactionId,
                 TestData.EstateId,
                 TestData.MerchantId,
-                TestData.ResponseCode,
+                TestData.ResponseCode.ToCodeString(),
                 TestData.ResponseMessage,
                 TestData.IsAuthorised,
                 TestData.TransactionDateTime,

@@ -1,6 +1,6 @@
 ﻿namespace TransactionProcessor.BusinessLogic.Services
 {
-    public enum TransactionResponseCode
+    public enum TransactionResponseCodeX
     {
         Success = 0,
         SuccessNeedToAddDevice = 1,

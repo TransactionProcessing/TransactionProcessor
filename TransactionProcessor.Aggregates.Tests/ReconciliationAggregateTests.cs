@@ -121,7 +121,7 @@ namespace TransactionProcessor.Aggregates.Tests
             Result result = reconciliationAggregate.Authorise(TestData.ResponseCode, TestData.ResponseMessage);
             result.IsSuccess.ShouldBeTrue();
 
-            reconciliationAggregate.ResponseCode.ShouldBe(TestData.ResponseCode);
+            reconciliationAggregate.ResponseCode.ShouldBe(TestData.ResponseCode.ToCodeString());
             reconciliationAggregate.ResponseMessage.ShouldBe(TestData.ResponseMessage);
             reconciliationAggregate.IsAuthorised.ShouldBeTrue();
         }
@@ -186,7 +186,7 @@ namespace TransactionProcessor.Aggregates.Tests
             Result result = reconciliationAggregate.Decline(TestData.ResponseCode, TestData.ResponseMessage);
             result.IsSuccess.ShouldBeTrue();
 
-            reconciliationAggregate.ResponseCode.ShouldBe(TestData.ResponseCode);
+            reconciliationAggregate.ResponseCode.ShouldBe(TestData.ResponseCode.ToCodeString());
             reconciliationAggregate.ResponseMessage.ShouldBe(TestData.ResponseMessage);
             reconciliationAggregate.IsAuthorised.ShouldBeFalse();
         }
