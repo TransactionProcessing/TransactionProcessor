@@ -56,13 +56,15 @@ public class MerchantController : ControllerBase
 
     #endregion
 
+    private const String MerchantRoleNameKeyName = "MerchantRoleName";
+    private const String EstateRoleNameKeyName = "EstateRoleName";
     private Result PerformSecurityChecks(Guid estateId,Guid merchantId) {
-        String estateRoleName = string.IsNullOrEmpty(Environment.GetEnvironmentVariable("EstateRoleName"))
+        String estateRoleName = string.IsNullOrEmpty(Environment.GetEnvironmentVariable(EstateRoleNameKeyName))
             ? "Estate"
-            : Environment.GetEnvironmentVariable("EstateRoleName");
-        String merchantRoleName = string.IsNullOrEmpty(Environment.GetEnvironmentVariable("MerchantRoleName"))
+            : Environment.GetEnvironmentVariable(EstateRoleNameKeyName);
+        String merchantRoleName = string.IsNullOrEmpty(Environment.GetEnvironmentVariable(MerchantRoleNameKeyName))
             ? "Merchant"
-            : Environment.GetEnvironmentVariable("MerchantRoleName");
+            : Environment.GetEnvironmentVariable(MerchantRoleNameKeyName);
 
         if (ClaimsHelper.IsUserRolesValid(this.User, new[] { estateRoleName, merchantRoleName }) == false) {
             return Result.Forbidden();
@@ -240,7 +242,7 @@ public class MerchantController : ControllerBase
             return ResultHelpers.CreateFailure(estateIdClaimResult);
         Claim estateIdClaim = estateIdClaimResult.Data;
 
-        String estateRoleName = Environment.GetEnvironmentVariable("EstateRoleName");
+        String estateRoleName = Environment.GetEnvironmentVariable(EstateRoleNameKeyName);
         if (ClaimsHelper.IsUserRolesValid(GetUser(), new[] { string.IsNullOrEmpty(estateRoleName) ? "Estate" : estateRoleName }) == false)
         {
             return Result.Invalid("User Roles not valid");
@@ -478,9 +480,9 @@ public class MerchantController : ControllerBase
             return ResultHelpers.CreateFailure(isRequestAllowedResult);
         }
 
-        string merchantRoleName = string.IsNullOrEmpty(Environment.GetEnvironmentVariable("MerchantRoleName"))
+        string merchantRoleName = string.IsNullOrEmpty(Environment.GetEnvironmentVariable(MerchantRoleNameKeyName))
             ? "Merchant"
-            : Environment.GetEnvironmentVariable("MerchantRoleName");
+            : Environment.GetEnvironmentVariable(MerchantRoleNameKeyName);
 
         if (GetUser().IsInRole(merchantRoleName) == false)
             return Result.Success();
@@ -520,88 +522,7 @@ public class MerchantController : ControllerBase
             return result.ToActionResultX();
         return ModelFactory.ConvertFrom(result.Data).ToActionResultX();
     }
-
-    //private static DataTransferObjects.Responses.Merchant.MerchantResponse ConvertMerchant(MerchantResponse merchant) {
-    //    var m = new DataTransferObjects.Responses.Merchant.MerchantResponse()
-    //    {
-    //        Operators = new List<DataTransferObjects.Responses.Merchant.MerchantOperatorResponse>(),
-    //        MerchantId = merchant.MerchantId,
-    //        SettlementSchedule = (DataTransferObjects.Responses.Merchant.SettlementSchedule)merchant.SettlementSchedule,
-    //        EstateId = merchant.EstateId,
-    //        EstateReportingId = merchant.EstateReportingId,
-    //        Addresses = new(),
-    //        Contacts = new(),
-    //        Contracts = new(),
-    //        Devices = new Dictionary<Guid, String>(),
-    //        MerchantName = merchant.MerchantName,
-    //        MerchantReference = merchant.MerchantReference,
-    //        MerchantReportingId = merchant.MerchantReportingId,
-    //        NextStatementDate = merchant.NextStatementDate
-    //    };
-
-    //    if (merchant.Addresses != null) {
-    //        foreach (AddressResponse addressResponse in merchant.Addresses) {
-    //            m.Addresses.Add(new DataTransferObjects.Responses.Merchant.AddressResponse {
-    //                AddressLine3 = addressResponse.AddressLine3,
-    //                AddressLine4 = addressResponse.AddressLine4,
-    //                AddressLine2 = addressResponse.AddressLine2,
-    //                Country = addressResponse.Country,
-    //                PostalCode = addressResponse.PostalCode,
-    //                Region = addressResponse.Region,
-    //                Town = addressResponse.Town,
-    //                AddressLine1 = addressResponse.AddressLine1,
-    //                AddressId = addressResponse.AddressId
-    //            });
-    //        }
-    //    }
-
-    //    if (merchant.Contacts != null)
-    //    {
-    //        foreach (ContactResponse contactResponse in merchant.Contacts)
-    //        {
-    //            m.Contacts.Add(new DataTransferObjects.Responses.Contract.ContactResponse
-    //            {
-    //                ContactId = contactResponse.ContactId,
-    //                ContactName = contactResponse.ContactName,
-    //                ContactEmailAddress = contactResponse.ContactEmailAddress,
-    //                ContactPhoneNumber = contactResponse.ContactPhoneNumber
-    //            });
-    //        }
-    //    }
-
-    //    if (merchant.Contracts != null) {
-    //        foreach (MerchantContractResponse merchantContractResponse in merchant.Contracts) {
-    //            var mcr = new DataTransferObjects.Responses.Merchant.MerchantContractResponse { ContractId = merchantContractResponse.ContractId, ContractProducts = new List<Guid>(), IsDeleted = merchantContractResponse.IsDeleted, };
-    //            foreach (Guid contractProduct in merchantContractResponse.ContractProducts) {
-    //                mcr.ContractProducts.Add(contractProduct);
-    //            }
-
-    //            m.Contracts.Add(mcr);
-    //        }
-    //    }
-
-    //    if (merchant.Devices != null) {
-    //        foreach (KeyValuePair<Guid, String> keyValuePair in merchant.Devices) {
-    //            m.Devices.Add(keyValuePair.Key, keyValuePair.Value);
-    //        }
-    //    }
-
-    //    if (merchant.Operators != null) {
-    //        foreach (MerchantOperatorResponse merchantOperatorResponse in merchant.Operators) {
-    //            m.Operators.Add(new() {
-    //                OperatorId = merchantOperatorResponse.OperatorId, 
-    //                MerchantNumber = merchantOperatorResponse.MerchantNumber, 
-    //                TerminalNumber = merchantOperatorResponse.TerminalNumber,
-    //                IsDeleted = merchantOperatorResponse.IsDeleted,
-    //                Name = merchantOperatorResponse.Name
-
-    //            });
-    //        }
-    //    }
-
-    //    return m;
-    //}
-
+    
     [Route("{merchantId}/contracts")]
     [HttpGet]
     public async Task<IActionResult> GetMerchantContracts([FromRoute] Guid estateId,
