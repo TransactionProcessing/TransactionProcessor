@@ -95,16 +95,16 @@ namespace TransactionProcessor.Bootstrapper
                                                                                                 chain,
                                                                                                 sslPolicyErrors) => true
                                                                                         };
-                                                       options.Authority = ConfigurationReader.GetValue("SecurityConfiguration", "Authority");
-                                                       options.Audience = ConfigurationReader.GetValue("SecurityConfiguration", "ApiName");
+                                                       options.Authority = GetSecurityServiceConfigValue("Authority");
+                                                       options.Audience = GetSecurityServiceConfigValue("ApiName");
 
                                                        options.TokenValidationParameters = new TokenValidationParameters
                                                        {
                                                            ValidateAudience = false,
                                                            ValidAudience =
-                                                                                                   ConfigurationReader.GetValue("SecurityConfiguration", "ApiName"),
+                                                               GetSecurityServiceConfigValue("ApiName"),
                                                            ValidIssuer =
-                                                                                                   ConfigurationReader.GetValue("SecurityConfiguration", "Authority"),
+                                                               GetSecurityServiceConfigValue("Authority"),
                                                        };
                                                        options.IncludeErrorDetails = true;
                                                    });
@@ -123,6 +123,10 @@ namespace TransactionProcessor.Bootstrapper
         }
 
         #endregion
+
+        private String GetSecurityServiceConfigValue(String keyName) {
+            return ConfigurationReader.GetValue("SecurityConfiguration", keyName);
+        }
 
         #region Methods
 

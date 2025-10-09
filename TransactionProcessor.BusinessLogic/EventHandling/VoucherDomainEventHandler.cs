@@ -19,6 +19,7 @@ using Shared.DomainDrivenDesign.EventSourcing;
 using Shared.EntityFramework;
 using Shared.EventStore.Aggregate;
 using Shared.EventStore.EventHandling;
+using Shared.General;
 using System;
 using System.Collections.Generic;
 using System.IO.Abstractions;
@@ -160,8 +161,8 @@ public class VoucherDomainEventHandler : IDomainEventHandler
                                        {
                                            Body = message,
                                            ConnectionIdentifier = domainEvent.EstateId,
-                                           FromAddress = "golfhandicapping@btinternet.com", // TODO: lookup from config
-                                           IsHtml = true,
+                                           FromAddress = ConfigurationReader.GetValueOrDefault("AppSettings", "FromEmailAddress", "golfhandicapping@btinternet.com"),
+                IsHtml = true,
                                            MessageId = domainEvent.EventId,
                                            Subject = "Voucher Issue",
                                            ToAddresses = new List<String>

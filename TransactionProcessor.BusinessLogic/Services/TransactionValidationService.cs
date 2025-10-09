@@ -109,8 +109,10 @@ public class TransactionValidationService : ITransactionValidationService{
         if (deviceValidationResult.IsFailed) return deviceValidationResult;
 
         // Validate the merchant device
-        return Result.Success(new TransactionValidationResult(TransactionResponseCode.Success, "SUCCESS"));
+        return Result.Success(new TransactionValidationResult(TransactionResponseCode.Success, SuccessResponseMessage));
     }
+
+    private const String SuccessResponseMessage = "SUCCESS";
 
     #endregion
 
@@ -156,7 +158,7 @@ public class TransactionValidationService : ITransactionValidationService{
         if (transactionAmountValidationResult.IsFailed) return transactionAmountValidationResult;
 
         // If we get here everything is good
-        return Result.Success(new TransactionValidationResult(TransactionResponseCode.Success, "SUCCESS"));
+        return Result.Success(new TransactionValidationResult(TransactionResponseCode.Success, SuccessResponseMessage));
     }
 
     private async Task<Result<TransactionValidationResult<EstateAggregate>>> ValidateEstate(Guid estateId, CancellationToken cancellationToken)
@@ -186,7 +188,7 @@ public class TransactionValidationService : ITransactionValidationService{
         Result<TransactionValidationResult> result = estateOperatorRecord switch {
             null => CreateFailedResult(new TransactionValidationResult(TransactionResponseCode.OperatorNotValidForEstate, $"Operator {operatorId} not configured for Estate [{estate.EstateName}]")),
             _ when estateOperatorRecord.IsDeleted => CreateFailedResult(new TransactionValidationResult(TransactionResponseCode.OperatorNotEnabledForEstate, $"Operator {operatorId} not enabled for Estate [{estate.EstateName}]")),
-            _ => Result.Success(new TransactionValidationResult(TransactionResponseCode.Success, "SUCCESS"))
+            _ => Result.Success(new TransactionValidationResult(TransactionResponseCode.Success, SuccessResponseMessage))
         };
         return result;
     }
@@ -203,7 +205,7 @@ public class TransactionValidationService : ITransactionValidationService{
             };
             return CreateFailedResult(new TransactionValidationResult<MerchantAggregate>(transactionValidationResult));
         }
-        return Result.Success(new TransactionValidationResult<MerchantAggregate>(new TransactionValidationResult(TransactionResponseCode.Success, "SUCCESS"), getMerchantResult.Data));
+        return Result.Success(new TransactionValidationResult<MerchantAggregate>(new TransactionValidationResult(TransactionResponseCode.Success, SuccessResponseMessage), getMerchantResult.Data));
 
     }
 
@@ -220,14 +222,14 @@ public class TransactionValidationService : ITransactionValidationService{
             return CreateFailedResult(new TransactionValidationResult(TransactionResponseCode.InvalidDeviceIdentifier, $"Device Identifier {deviceIdentifier} not valid for Merchant {merchant.MerchantName}"));
         }
 
-        return Result.Success(new TransactionValidationResult(TransactionResponseCode.Success, "SUCCESS"));
+        return Result.Success(new TransactionValidationResult(TransactionResponseCode.Success, SuccessResponseMessage));
     }
 
     private Result<TransactionValidationResult> ValidateDeviceForLogon(Models.Merchant.Merchant merchant, String deviceIdentifier)
     {
         if (merchant.Devices == null || !merchant.Devices.Any())
         {
-            return Result.Success(new TransactionValidationResult(TransactionResponseCode.SuccessNeedToAddDevice,"SUCCESS"));
+            return Result.Success(new TransactionValidationResult(TransactionResponseCode.SuccessNeedToAddDevice,SuccessResponseMessage));
         }
 
         Device device = merchant.Devices.SingleOrDefault(d => d.DeviceIdentifier == deviceIdentifier);
@@ -236,7 +238,7 @@ public class TransactionValidationService : ITransactionValidationService{
             return CreateFailedResult(new TransactionValidationResult(TransactionResponseCode.InvalidDeviceIdentifier, $"Device Identifier {deviceIdentifier} not valid for Merchant {merchant.MerchantName}"));
         }
 
-        return Result.Success(new TransactionValidationResult(TransactionResponseCode.Success, "SUCCESS"));
+        return Result.Success(new TransactionValidationResult(TransactionResponseCode.Success, SuccessResponseMessage));
     }
 
     private Result<TransactionValidationResult> ValidateMerchantOperator(Models.Merchant.Merchant merchant, Guid operatorId)
@@ -252,7 +254,7 @@ public class TransactionValidationService : ITransactionValidationService{
         {
             null => CreateFailedResult(new TransactionValidationResult(TransactionResponseCode.OperatorNotValidForMerchant, $"Operator {operatorId} not configured for Merchant [{merchant.MerchantName}]")),
             _ when merchantOperatorRecord.IsDeleted => CreateFailedResult(new TransactionValidationResult(TransactionResponseCode.OperatorNotEnabledForMerchant, $"Operator {operatorId} not enabled for Merchant [{merchant.MerchantName}]")),
-            _ => Result.Success(new TransactionValidationResult(TransactionResponseCode.Success, "SUCCESS"))
+            _ => Result.Success(new TransactionValidationResult(TransactionResponseCode.Success, SuccessResponseMessage))
         };
         return result;
     }
@@ -287,7 +289,7 @@ public class TransactionValidationService : ITransactionValidationService{
             return CreateFailedResult(new TransactionValidationResult(TransactionResponseCode.ProductNotValidForMerchant, $"Product Id [{productId}] not valid for Merchant [{merchant.MerchantName}]"));
         }
 
-        return Result.Success(new TransactionValidationResult(TransactionResponseCode.Success, "SUCCESS"));
+        return Result.Success(new TransactionValidationResult(TransactionResponseCode.Success, SuccessResponseMessage));
     }
 
     private async Task<Result<TransactionValidationResult>> ValidateTransactionAmount(Guid merchantId, String merchantName, Decimal? transactionAmount, CancellationToken cancellationToken)
@@ -309,7 +311,7 @@ public class TransactionValidationService : ITransactionValidationService{
             return CreateFailedResult(new TransactionValidationResult(TransactionResponseCode.MerchantDoesNotHaveEnoughCredit, $"Merchant [{merchantName}] does not have enough credit available [{projectionState.merchant.balance:0.00}] to perform transaction amount [{transactionAmount}]"));
         }
 
-        return Result.Success(new TransactionValidationResult(TransactionResponseCode.Success, "SUCCESS"));
+        return Result.Success(new TransactionValidationResult(TransactionResponseCode.Success, SuccessResponseMessage));
     }
 }
 

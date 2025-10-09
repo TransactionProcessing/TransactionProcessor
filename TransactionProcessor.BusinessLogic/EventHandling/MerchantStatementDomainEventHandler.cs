@@ -14,6 +14,7 @@ using System.IO;
 using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
+using Shared.Results;
 using TransactionProcessor.BusinessLogic.Common;
 using TransactionProcessor.BusinessLogic.Requests;
 using TransactionProcessor.BusinessLogic.Services;
@@ -109,7 +110,7 @@ namespace TransactionProcessor.BusinessLogic.EventHandling
 
         private async Task<Result> HandleSpecificDomainEvent(TransactionDomainEvents.TransactionHasBeenCompletedEvent domainEvent,
                                                              CancellationToken cancellationToken) {
-            IAsyncPolicy<Result> retryPolicy = PolicyFactory.CreatePolicy(policyTag: "MerchantStatementDomainEventHandler - HandleSpecificDomainEvent<SettlementDomainEvents.TransactionHasBeenCompletedEvent>");
+            IAsyncPolicy<Result> retryPolicy = PolicyFactory.CreatePolicy<Result>(policyTag: "MerchantStatementDomainEventHandler - HandleSpecificDomainEvent<SettlementDomainEvents.TransactionHasBeenCompletedEvent>");
 
             try
             {
@@ -158,7 +159,7 @@ namespace TransactionProcessor.BusinessLogic.EventHandling
         private async Task<Result> HandleSpecificDomainEvent(SettlementDomainEvents.MerchantFeeSettledEvent domainEvent,
                                                              CancellationToken cancellationToken)
         {
-            IAsyncPolicy<Result> retryPolicy = PolicyFactory.CreatePolicy(policyTag: "MerchantStatementDomainEventHandler - HandleSpecificDomainEvent<SettlementDomainEvents.MerchantFeeSettledEvent>");
+            IAsyncPolicy<Result> retryPolicy = PolicyFactory.CreatePolicy<Result>(policyTag: "MerchantStatementDomainEventHandler - HandleSpecificDomainEvent<SettlementDomainEvents.MerchantFeeSettledEvent>");
 
             try
             {

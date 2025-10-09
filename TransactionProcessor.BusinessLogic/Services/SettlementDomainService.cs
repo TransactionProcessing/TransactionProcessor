@@ -38,10 +38,10 @@ namespace TransactionProcessor.BusinessLogic.Services
         public async Task<Result<Guid>> ProcessSettlement(SettlementCommands.ProcessSettlementCommand command,
                                                           CancellationToken cancellationToken) {
 
-            IAsyncPolicy<Result<Guid>> retryPolicy = PolicyFactory.CreatePolicy<Guid>(policyTag: "SettlementDomainService - ProcessSettlement");
+            IAsyncPolicy<Result<Guid>> retryPolicy = PolicyFactory.CreatePolicy<Result<Guid>>(policyTag: "SettlementDomainService - ProcessSettlement");
 
             try {
-                return await PolicyFactory.ExecuteWithPolicyAsync<Guid>(async () => {
+                return await PolicyFactory.ExecuteWithPolicyAsync(async () => {
 
                     Guid settlementAggregateId = Helpers.CalculateSettlementAggregateId(command.SettlementDate, command.MerchantId, command.EstateId);
 
