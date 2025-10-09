@@ -106,7 +106,7 @@ public class TransactionProcessorClient : ClientProxyBase, ITransactionProcessor
 
     public static class AuthenticationSchemes
     {
-        public const string Bearer = "Bearer";
+        public static readonly String Bearer = "Bearer";
     }
 
     private async Task<Result<String>> SendPatchRequest(String uri, String accessToken, String content, CancellationToken cancellationToken)
