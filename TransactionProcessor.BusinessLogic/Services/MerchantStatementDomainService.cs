@@ -193,7 +193,7 @@ namespace TransactionProcessor.BusinessLogic.Services
                 {
                     Body = "<html><body>Please find attached this months statement.</body></html>",
                     ConnectionIdentifier = command.EstateId,
-                    FromAddress = "golfhandicapping@btinternet.com", // TODO: lookup from config
+                    FromAddress = ConfigurationReader.GetValueOrDefault("AppSettings", "FromEmailAddress", "golfhandicapping@btinternet.com"),
                     IsHtml = true,
                     Subject = $"Merchant Statement for {statement.StatementDate}",
                     ToAddresses = emailAddresses,
