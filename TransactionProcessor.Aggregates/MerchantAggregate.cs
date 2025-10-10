@@ -184,8 +184,7 @@ namespace TransactionProcessor.Aggregates
             if (result.IsFailed)
                 return result;
 
-            if (IsDuplicateAddress(aggregate, address.AddressLine1, address.AddressLine2, address.AddressLine3, address.AddressLine4, 
-                    address.Town,address.Region, address.PostalCode, address.Country))
+            if (IsDuplicateAddress(aggregate, address))
                 return Result.Success(); // No need to throw an error, just ignore as we already have this address
 
             MerchantDomainEvents.AddressAddedEvent addressAddedEvent = new(aggregate.AggregateId, aggregate.EstateId, Guid.NewGuid(), 
@@ -544,17 +543,10 @@ namespace TransactionProcessor.Aggregates
             return Result.Success();
         }
 
-        private static Boolean IsDuplicateAddress(this MerchantAggregate aggregate, String addressLine1,
-                                                  String addressLine2,
-                                                  String addressLine3,
-                                                  String addressLine4,
-                                                  String town,
-                                                  String region,
-                                                  String postalCode,
-                                                  String country)
+        private static Boolean IsDuplicateAddress(this MerchantAggregate aggregate, AddressModel address)
         {
             // create record of "new" address
-            Address newAddress = new Address(addressLine1, addressLine2, addressLine3, addressLine4, town, region, postalCode, country);
+            Address newAddress = new Address(address.AddressLine1, address.AddressLine2, address.AddressLine3, address.AddressLine4, address.Town, address.Region, address.PostalCode, address.Country);
 
             foreach (KeyValuePair<Guid, Address> aggregateAddress in aggregate.Addresses){
                 if (newAddress == aggregateAddress.Value){

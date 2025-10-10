@@ -1,6 +1,7 @@
 ﻿using Shared.Results;
 using TransactionProcessor.Aggregates;
 using TransactionProcessor.BusinessLogic.Common;
+using TransactionProcessor.BusinessLogic.Requests;
 using TransactionProcessor.Database.Contexts;
 using TransactionProcessor.DataTransferObjects.Responses.Estate;
 using TransactionProcessor.Models.Estate;
@@ -23,37 +24,9 @@ public interface IVoucherDomainService
 {
     #region Methods
 
-    /// <summary>
-    /// Issues the voucher.
-    /// </summary>
-    /// <param name="voucherId">The voucher identifier.</param>
-    /// <param name="operatorId">The operator identifier.</param>
-    /// <param name="estateId">The estate identifier.</param>
-    /// <param name="transactionId">The transaction identifier.</param>
-    /// <param name="issuedDateTime">The issued date time.</param>
-    /// <param name="value">The value.</param>
-    /// <param name="recipientEmail">The recipient email.</param>
-    /// <param name="recipientMobile">The recipient mobile.</param>
-    /// <param name="cancellationToken">The cancellation token.</param>
-    /// <returns></returns>
-    Task<Result<IssueVoucherResponse>> IssueVoucher(Guid voucherId,
-                                                    Guid operatorId,
-                                                    Guid estateId,
-                                                    Guid transactionId,
-                                                    DateTime issuedDateTime,
-                                                    Decimal value,
-                                                    String recipientEmail,
-                                                    String recipientMobile,
-                                                    CancellationToken cancellationToken);
+    Task<Result<IssueVoucherResponse>> IssueVoucher(VoucherCommands.IssueVoucherCommand command,
+                                                        CancellationToken cancellationToken);
 
-    /// <summary>
-    /// Redeems the voucher.
-    /// </summary>
-    /// <param name="estateId">The estate identifier.</param>
-    /// <param name="voucherCode">The voucher code.</param>
-    /// <param name="redeemedDateTime">The redeemed date time.</param>
-    /// <param name="cancellationToken">The cancellation token.</param>
-    /// <returns></returns>
     Task<Result<RedeemVoucherResponse>> RedeemVoucher(Guid estateId,
                                               String voucherCode,
                                               DateTime redeemedDateTime,
@@ -81,23 +54,19 @@ public class VoucherDomainService : IVoucherDomainService
 
     #region Methods
     
-    public async Task<Result<IssueVoucherResponse>> IssueVoucher(Guid voucherId, Guid operatorId, Guid estateId,
-                                                         Guid transactionId,
-                                                         DateTime issuedDateTime,
-                                                         Decimal value,
-                                                         String recipientEmail, String recipientMobile, CancellationToken cancellationToken) {
+    public async Task<Result<IssueVoucherResponse>> IssueVoucher(VoucherCommands.IssueVoucherCommand command, CancellationToken cancellationToken) {
         try{
-            Result<EstateResponse> validateResult = await this.ValidateVoucherIssue(estateId, operatorId, cancellationToken);
+            Result<EstateResponse> validateResult = await this.ValidateVoucherIssue(command.EstateId, command.OperatorId, cancellationToken);
             if (validateResult.IsFailed)
                 return ResultHelpers.CreateFailure(validateResult);
 
-            Result<VoucherAggregate> voucherResult = await DomainServiceHelper.GetAggregateOrFailure(ct => this.AggregateService.GetLatest<VoucherAggregate>(voucherId, ct), voucherId, cancellationToken, false);
+            Result<VoucherAggregate> voucherResult = await DomainServiceHelper.GetAggregateOrFailure(ct => this.AggregateService.GetLatest<VoucherAggregate>(command.VoucherId, ct), command.VoucherId, cancellationToken, false);
             if (voucherResult.IsFailed)
                 return ResultHelpers.CreateFailure(voucherResult);
 
             VoucherAggregate voucherAggregate = voucherResult.Data;
 
-            Result stateResult = voucherAggregate.Generate(operatorId, estateId, transactionId, issuedDateTime, value);
+            Result stateResult = voucherAggregate.Generate(command.OperatorId, command.EstateId, command.TransactionId, command.IssuedDateTime, command.Value);
             if (stateResult.IsFailed)
                 return ResultHelpers.CreateFailure(stateResult);
 
@@ -109,7 +78,7 @@ public class VoucherDomainService : IVoucherDomainService
             if (stateResult.IsFailed)
                 return ResultHelpers.CreateFailure(stateResult);
             
-            stateResult = voucherAggregate.Issue(recipientEmail, recipientMobile, issuedDateTime);
+            stateResult = voucherAggregate.Issue(command.RecipientEmail, command.RecipientMobile, command.IssuedDateTime);
             if (stateResult.IsFailed)
                 return ResultHelpers.CreateFailure(stateResult);
 
@@ -122,7 +91,7 @@ public class VoucherDomainService : IVoucherDomainService
                 ExpiryDate = voucherModel.ExpiryDate,
                 Message = voucherModel.Message,
                 VoucherCode = voucherModel.VoucherCode,
-                VoucherId = voucherId
+                VoucherId = command.VoucherId
             });
         }
         catch (Exception ex)
