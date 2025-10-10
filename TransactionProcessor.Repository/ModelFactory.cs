@@ -1,4 +1,5 @@
-﻿using TransactionProcessor.Models.Merchant;
+﻿using TransactionProcessor.Database.Entities;
+using TransactionProcessor.Models.Merchant;
 
 namespace TransactionProcessor.Repository
 {
@@ -81,41 +82,66 @@ namespace TransactionProcessor.Repository
         {
             MerchantModel merchantModel = ModelFactory.ConvertFrom(estateId, merchant);
 
-            if (merchantAddresses != null && merchantAddresses.Any())
-            {
-                merchantModel.Addresses = new List<MerchantAddressModel>();
-                merchantAddresses.ForEach(ma => merchantModel.Addresses.Add(new MerchantAddressModel(ma.AddressId,
-                    ma.AddressLine1,
-                    ma.AddressLine2,
-                    ma.AddressLine3,
-                    ma.AddressLine4,ma.Town,ma.Region, ma.PostalCode, ma.Country)));
-            }
-
-            if (merchantContacts != null && merchantContacts.Any())
-            {
-                merchantModel.Contacts = new List<MerchantContactModel>();
-                merchantContacts.ForEach(mc => merchantModel.Contacts.Add(new MerchantContactModel(mc.ContactId, mc.EmailAddress, mc.Name, mc.PhoneNumber)));
-            }
-
-            if (merchantOperators != null && merchantOperators.Any())
-            {
-                merchantModel.Operators = new List<MerchantOperatorModel>();
-                merchantOperators.ForEach(mo => merchantModel.Operators.Add(new MerchantOperatorModel(mo.OperatorId, mo.Name, mo.MerchantNumber, mo.TerminalNumber, mo.IsDeleted)));
-            }
-
-            if (merchantDevices != null && merchantDevices.Any())
-            {
-                merchantModel.Devices = new List<Device>();
-                merchantDevices.ForEach(md => merchantModel.Devices.Add(new Device(md.DeviceId, md.DeviceIdentifier)));
-            }
-
-            if (merchantSecurityUsers != null && merchantSecurityUsers.Any())
-            {
-                merchantModel.SecurityUsers = new List<MerchantSecurityUserModel>();
-                merchantSecurityUsers.ForEach(msu => merchantModel.SecurityUsers.Add(new MerchantSecurityUserModel(msu.SecurityUserId, msu.EmailAddress)));
-            }
+            merchantModel.Addresses = ConvertFrom(merchantAddresses);
+            merchantModel.Contacts = ConvertFrom(merchantContacts);
+            merchantModel.Operators = ConvertFrom(merchantOperators);
+            merchantModel.Devices = ConvertFrom(merchantDevices);
+            merchantModel.SecurityUsers = ConvertFrom(merchantSecurityUsers);
 
             return merchantModel;
+        }
+
+        private static List<MerchantSecurityUserModel> ConvertFrom(List<MerchantSecurityUserEntity> merchantSecurityUsers)
+        {
+            List<MerchantSecurityUserModel> users = new List<MerchantSecurityUserModel>();
+            if (merchantSecurityUsers != null && merchantSecurityUsers.Any())
+            {
+                merchantSecurityUsers.ForEach(msu => users.Add(new MerchantSecurityUserModel(msu.SecurityUserId, msu.EmailAddress)));
+            }
+
+            return users;
+        }
+
+        private static List<MerchantAddressModel> ConvertFrom(List<MerchantAddressEntity> merchantAddresses) {
+            List<MerchantAddressModel> addresses = new List<MerchantAddressModel>();
+            if (merchantAddresses != null && merchantAddresses.Any()) {
+                merchantAddresses.ForEach(ma => addresses.Add(new MerchantAddressModel(ma.AddressId, ma.AddressLine1, ma.AddressLine2, ma.AddressLine3, ma.AddressLine4, ma.Town, ma.Region, ma.PostalCode, ma.Country)));
+            }
+
+            return addresses;
+        }
+
+        private static List<Device> ConvertFrom(List<MerchantDeviceEntity> merchantDevices)
+        {
+            List<Device> devices = new List<Device> ();
+            if (merchantDevices != null && merchantDevices.Any())
+            {
+                merchantDevices.ForEach(md => devices.Add(new Device(md.DeviceId, md.DeviceIdentifier)));
+            }
+
+            return devices;
+        }
+
+        private static List<MerchantOperatorModel> ConvertFrom(List<MerchantOperatorEntity> merchantOperators)
+        {
+            List<MerchantOperatorModel> operators = new List<MerchantOperatorModel>();
+            if (merchantOperators != null && merchantOperators.Any())
+            {
+                merchantOperators.ForEach(mo => operators.Add(new MerchantOperatorModel(mo.OperatorId, mo.Name, mo.MerchantNumber, mo.TerminalNumber, mo.IsDeleted)));
+            }
+
+            return operators;
+        }
+
+        private static List<MerchantContactModel> ConvertFrom(List<MerchantContactEntity> merchantContacts)
+        {
+            List<MerchantContactModel> contacts = new List<MerchantContactModel>();
+            if (merchantContacts != null && merchantContacts.Any())
+            {
+                merchantContacts.ForEach(mc => contacts.Add(new MerchantContactModel(mc.ContactId, mc.EmailAddress, mc.Name, mc.PhoneNumber)));
+            }
+
+            return contacts;
         }
     }
 }
