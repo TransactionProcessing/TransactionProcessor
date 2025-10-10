@@ -306,8 +306,7 @@ public class TransactionProcessorClient : ClientProxyBase, ITransactionProcessor
         catch (Exception ex) {
             // An exception has occurred, add some additional information to the message
             Exception exception = new("Error getting voucher by code.", ex);
-            ;
-
+            
             throw exception;
         }
     }
