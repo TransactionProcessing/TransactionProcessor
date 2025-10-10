@@ -1,5 +1,6 @@
 ﻿using SimpleResults;
 using TransactionProcessor.BusinessLogic.Manager;
+using TransactionProcessor.BusinessLogic.Requests;
 
 namespace TransactionProcessor.BusinessLogic.Tests.Mediator;
 
@@ -11,14 +12,7 @@ using Models;
 
 public class DummyVoucherDomainService : IVoucherDomainService
 {
-    public async Task<Result<IssueVoucherResponse>> IssueVoucher(Guid voucherId,
-                                                                 Guid operatorId,
-                                                                 Guid estateId,
-                                                                 Guid transactionId,
-                                                                 DateTime issuedDateTime,
-                                                                 Decimal value,
-                                                                 String recipientEmail,
-                                                                 String recipientMobile,
+    public async Task<Result<IssueVoucherResponse>> IssueVoucher(VoucherCommands.IssueVoucherCommand command,
                                                                  CancellationToken cancellationToken) {
         return Result.Success(new IssueVoucherResponse());
     }

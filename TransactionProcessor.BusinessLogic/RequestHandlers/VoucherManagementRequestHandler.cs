@@ -53,14 +53,7 @@ namespace TransactionProcessor.BusinessLogic.RequestHandlers
         public async Task<Result<IssueVoucherResponse>> Handle(VoucherCommands.IssueVoucherCommand command,
                                                        CancellationToken cancellationToken)
         {
-            return await this.VoucherDomainService.IssueVoucher(command.VoucherId,
-                                                                command.OperatorId,
-                                                                command.EstateId,
-                                                                command.TransactionId,
-                                                                command.IssuedDateTime,
-                                                                command.Value,
-                                                                command.RecipientEmail,
-                                                                command.RecipientMobile,
+            return await this.VoucherDomainService.IssueVoucher(command,
                                                                 cancellationToken);
         }
 

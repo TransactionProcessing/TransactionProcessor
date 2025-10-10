@@ -56,14 +56,7 @@ namespace TransactionProcessor.BusinessLogic.Tests.Services
             
             this.AggregateService.Setup(v => v.GetLatest<VoucherAggregate>(It.IsAny<Guid>(), It.IsAny<CancellationToken>())).ReturnsAsync(Result.Success(new VoucherAggregate()));
             this.AggregateService.Setup(f => f.Get<EstateAggregate>(It.IsAny<Guid>(), It.IsAny<CancellationToken>())).ReturnsAsync(TestData.Aggregates.CreatedEstateAggregate());
-            var result = await this.VoucherDomainService.IssueVoucher(TestData.VoucherId,
-                                                                                 TestData.OperatorId,
-                                                                                 TestData.EstateId,
-                                                                                 TestData.TransactionId,
-                                                                                 TestData.IssuedDateTime,
-                                                                                 TestData.Value,
-                                                                                 TestData.RecipientEmail,
-                                                                                 TestData.RecipientMobile,
+            var result = await this.VoucherDomainService.IssueVoucher(TestData.IssueVoucherCommand,
                                                                                  CancellationToken.None);
             result.IsFailed.ShouldBeTrue();
         }
@@ -111,14 +104,7 @@ namespace TransactionProcessor.BusinessLogic.Tests.Services
             this.AggregateService.Setup(v => v.GetLatest<VoucherAggregate>(It.IsAny<Guid>(), It.IsAny<CancellationToken>())).ReturnsAsync(Result.Success(new VoucherAggregate()));
             this.AggregateService.Setup(f => f.Get<EstateAggregate>(It.IsAny<Guid>(), It.IsAny<CancellationToken>())).ReturnsAsync(TestData.Aggregates.EmptyEstateAggregate);
             
-            Result<IssueVoucherResponse> result = await this.VoucherDomainService.IssueVoucher(TestData.VoucherId,
-                                                                                 TestData.OperatorId,
-                                                                                 TestData.EstateId,
-                                                                                 TestData.TransactionId,
-                                                                                 TestData.IssuedDateTime,
-                                                                                 TestData.Value,
-                                                                                 TestData.RecipientEmail,
-                                                                                 TestData.RecipientMobile,
+            Result<IssueVoucherResponse> result = await this.VoucherDomainService.IssueVoucher(TestData.IssueVoucherCommand,
                                                                                  CancellationToken.None);
             result.IsFailed.ShouldBeTrue();
         }
@@ -128,14 +114,7 @@ namespace TransactionProcessor.BusinessLogic.Tests.Services
             this.AggregateService.Setup(v => v.GetLatest<VoucherAggregate>(It.IsAny<Guid>(), It.IsAny<CancellationToken>())).ReturnsAsync(Result.Success(new VoucherAggregate()));
             this.AggregateService.Setup(f => f.Get<EstateAggregate>(It.IsAny<Guid>(), It.IsAny<CancellationToken>())).ReturnsAsync(Result.Success(TestData.Aggregates.EstateAggregateWithOperator()));
 
-            Result<IssueVoucherResponse> result = await this.VoucherDomainService.IssueVoucher(TestData.VoucherId,
-                                                                                 TestData.OperatorId2,
-                                                                                 TestData.EstateId,
-                                                                                 TestData.TransactionId,
-                                                                                 TestData.IssuedDateTime,
-                                                                                 TestData.Value,
-                                                                                 TestData.RecipientEmail,
-                                                                                 TestData.RecipientMobile,
+            Result<IssueVoucherResponse> result = await this.VoucherDomainService.IssueVoucher(TestData.IssueVoucherCommand,
                                                                                  CancellationToken.None);
             result.IsFailed.ShouldBeTrue();
         }
@@ -147,14 +126,7 @@ namespace TransactionProcessor.BusinessLogic.Tests.Services
             this.AggregateService.Setup(v => v.Save(It.IsAny<VoucherAggregate>(), It.IsAny<CancellationToken>())).ReturnsAsync(Result.Success);
             this.AggregateService.Setup(f => f.Get<EstateAggregate>(It.IsAny<Guid>(), It.IsAny<CancellationToken>())).ReturnsAsync(Result.Success(TestData.Aggregates.EstateAggregateWithOperator()));
 
-            Result<IssueVoucherResponse> result = await this.VoucherDomainService.IssueVoucher(TestData.VoucherId,
-                                                                                         TestData.OperatorId,
-                                                                                         TestData.EstateId,
-                                                                                         TestData.TransactionId,
-                                                                                         TestData.IssuedDateTime,
-                                                                                         TestData.Value,
-                                                                                         TestData.RecipientEmail,
-                                                                                         TestData.RecipientMobile,
+            Result<IssueVoucherResponse> result = await this.VoucherDomainService.IssueVoucher(TestData.IssueVoucherCommand,
                                                                                          CancellationToken.None);
 
             result.IsSuccess.ShouldBeTrue();
