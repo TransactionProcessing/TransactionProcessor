@@ -102,6 +102,25 @@ public class TransactionProcessorClient : ClientProxyBase, ITransactionProcessor
         return Result.Success<String>(result.Data);
     }
 
+    private async Task<Result<String>> SendPutRequest(String uri, String accessToken, String content, CancellationToken cancellationToken)
+    {
+
+        HttpRequestMessage requestMessage = new HttpRequestMessage(HttpMethod.Put, uri);
+        requestMessage.Headers.Authorization = new AuthenticationHeaderValue(AuthenticationSchemes.Bearer, accessToken);
+        requestMessage.Content = new StringContent(content, Encoding.UTF8, "application/json");
+
+        // Make the Http Call here
+        HttpResponseMessage httpResponse = await this.HttpClient.SendAsync(requestMessage, cancellationToken);
+
+        // Process the response
+        Result<String> result = await this.HandleResponseX(httpResponse, cancellationToken);
+
+        if (result.IsFailed)
+            return ResultHelpers.CreateFailure(result);
+
+        return Result.Success<String>(result.Data);
+    }
+
     public static class AuthenticationSchemes
     {
         public static readonly String Bearer = "Bearer";
@@ -421,7 +440,7 @@ public class TransactionProcessorClient : ClientProxyBase, ITransactionProcessor
         try {
             String requestSerialised = JsonConvert.SerializeObject(redeemVoucherRequest);
 
-            Result<String> result = await this.SendPostRequest(requestUri, accessToken, requestSerialised, cancellationToken);
+            Result<String> result = await this.SendPutRequest(requestUri, accessToken, requestSerialised, cancellationToken);
 
             if (result.IsFailed)
                 return ResultHelpers.CreateFailure(result);
