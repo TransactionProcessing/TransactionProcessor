@@ -1340,7 +1340,7 @@ namespace TransactionProcessor.Repository {
 
             await context.Reconciliations.AddAsync(reconciliation, cancellationToken);
 
-            return await context.SaveChangesAsync(cancellationToken); ;
+            return await context.SaveChangesAsync(cancellationToken);
         }
 
         public async Task<Result> StartTransaction(TransactionDomainEvents.TransactionHasStartedEvent domainEvent,

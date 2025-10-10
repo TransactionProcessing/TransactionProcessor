@@ -75,7 +75,7 @@ public class TransactionValidationService : ITransactionValidationService{
 
         // Validate Merchant
         var merchantValidationResult = await ValidateMerchant(estateValidationResult.Data.additionalData.EstateName, merchantId, cancellationToken);
-        if (merchantValidationResult.IsFailed) return CreateFailedResult(merchantValidationResult.Data.validationResult); ;
+        if (merchantValidationResult.IsFailed) return CreateFailedResult(merchantValidationResult.Data.validationResult);
 
         Models.Merchant.Merchant merchant = merchantValidationResult.Data.additionalData.GetMerchant();
 
