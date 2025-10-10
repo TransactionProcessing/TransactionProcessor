@@ -25,9 +25,7 @@ using Shared.Results;
 
 public class TransactionProcessorClient : ClientProxyBase, ITransactionProcessorClient {
     #region Fields
-
-    //private readonly String BaseAddress;
-
+    
     private readonly Func<String, String> BaseAddressResolver;
 
     #endregion

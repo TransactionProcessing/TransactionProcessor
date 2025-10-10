@@ -4,7 +4,6 @@ using TransactionProcessor.DataTransferObjects.Responses.Contract;
 using TransactionProcessor.DataTransferObjects.Responses.Merchant;
 using TransactionProcessor.DataTransferObjects.Responses.Operator;
 using ProductType = TransactionProcessor.DataTransferObjects.Responses.Contract.ProductType;
-//using CalculationType = TransactionProcessor.DataTransferObjects.Responses.Contract.CalculationType;
 
 namespace TransactionProcessor.Factories
 {
