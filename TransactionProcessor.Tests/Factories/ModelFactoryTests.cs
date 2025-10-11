@@ -565,7 +565,7 @@ namespace TransactionProcessor.Tests.Factories
             merchantResponse.MerchantId.ShouldBe(merchantModel.MerchantId);
             merchantResponse.MerchantName.ShouldBe(merchantModel.MerchantName);
 
-            merchantResponse.Addresses.ShouldBeNull();
+            merchantResponse.Addresses.ShouldBeEmpty();
 
             merchantResponse.Contacts.ShouldHaveSingleItem();
             ContactResponse contactResponse = merchantResponse.Contacts.Single();
@@ -612,7 +612,7 @@ namespace TransactionProcessor.Tests.Factories
             addressResponse.Country.ShouldBe(merchantModel.Addresses.Single().Country);
             addressResponse.PostalCode.ShouldBe(merchantModel.Addresses.Single().PostalCode);
 
-            merchantResponse.Contacts.ShouldBeNull();
+            merchantResponse.Contacts.ShouldBeEmpty();
 
             merchantResponse.Devices.ShouldHaveSingleItem();
             KeyValuePair<Guid, String> device = merchantResponse.Devices.Single();
@@ -659,7 +659,7 @@ namespace TransactionProcessor.Tests.Factories
             contactResponse.ContactName.ShouldBe(merchantModel.Contacts.Single().ContactName);
             contactResponse.ContactPhoneNumber.ShouldBe(merchantModel.Contacts.Single().ContactPhoneNumber);
 
-            merchantResponse.Devices.ShouldBeNull();
+            merchantResponse.Devices.ShouldBeEmpty();
 
             merchantResponse.Operators.ShouldHaveSingleItem();
             MerchantOperatorResponse operatorDetails = merchantResponse.Operators.Single();
@@ -706,7 +706,7 @@ namespace TransactionProcessor.Tests.Factories
             device.Key.ShouldBe(merchantModel.Devices.Single().DeviceId);
             device.Value.ShouldBe(merchantModel.Devices.Single().DeviceIdentifier);
 
-            merchantResponse.Operators.ShouldBeNull();
+            merchantResponse.Operators.ShouldBeEmpty();
         }
 
         [Fact]

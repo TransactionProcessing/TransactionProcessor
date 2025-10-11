@@ -377,6 +377,93 @@ namespace TransactionProcessor.Factories
 
         #endregion
 
+        private static List<AddressResponse> ConvertFrom(List<Address> addresses) {
+
+            List<AddressResponse> result = new List<AddressResponse>();
+            if (addresses != null && addresses.Any())
+            {
+                addresses.ForEach(a => result.Add(new AddressResponse
+                {
+                    AddressId = a.AddressId,
+                    Town = a.Town,
+                    Region = a.Region,
+                    PostalCode = a.PostalCode,
+                    Country = a.Country,
+                    AddressLine1 = a.AddressLine1,
+                    AddressLine2 = a.AddressLine2,
+                    AddressLine3 = a.AddressLine3,
+                    AddressLine4 = a.AddressLine4
+                }));
+            }
+
+            return result;
+        }
+
+        private static List<ContactResponse> ConvertFrom(List<Contact> contacts) {
+            List<ContactResponse> result = new List<ContactResponse>();
+
+            if (contacts != null && contacts.Any())
+            {
+                contacts.ForEach(c => result.Add(new ContactResponse
+                {
+                    ContactId = c.ContactId,
+                    ContactPhoneNumber = c.ContactPhoneNumber,
+                    ContactEmailAddress = c.ContactEmailAddress,
+                    ContactName = c.ContactName
+                }));
+            }
+
+            return result;
+        }
+
+        public static Dictionary<Guid, String> ConvertFrom(List<Device> devices) {
+            Dictionary<Guid, String> result = new();
+
+            if (devices != null && devices.Any()) {
+                foreach (Device device in devices) {
+                    result.Add(device.DeviceId, device.DeviceIdentifier);
+                }
+            }
+
+            return result;
+        }
+
+        private static List<MerchantOperatorResponse> ConvertFrom(List<Models.Merchant.Operator> operators) {
+            List<MerchantOperatorResponse> result = new List<MerchantOperatorResponse>();
+
+            if (operators != null && operators.Any())
+            {
+                operators.ForEach(a => result.Add(new MerchantOperatorResponse
+                {
+                    Name = a.Name,
+                    MerchantNumber = a.MerchantNumber,
+                    OperatorId = a.OperatorId,
+                    TerminalNumber = a.TerminalNumber,
+                    IsDeleted = a.IsDeleted
+                }));
+            }
+
+            return result;
+        }
+
+        private static List<MerchantContractResponse> ConvertFrom(List<Models.Merchant.Contract> contracts) {
+            List<MerchantContractResponse> result = new();
+
+            if (contracts != null && contracts.Any())
+            {
+                contracts.ForEach(mc => {
+                    result.Add(new MerchantContractResponse()
+                    {
+                        ContractId = mc.ContractId,
+                        ContractProducts = mc.ContractProducts,
+                        IsDeleted = mc.IsDeleted,
+                    });
+                });
+            }
+
+            return result;
+        }
+
         public static Result<MerchantResponse> ConvertFrom(Models.Merchant.Merchant merchant)
         {
             if (merchant == null)
@@ -396,73 +483,11 @@ namespace TransactionProcessor.Factories
                 NextStatementDate = merchant.NextStatementDate
             };
 
-            if (merchant.Addresses != null && merchant.Addresses.Any())
-            {
-                merchantResponse.Addresses = new List<AddressResponse>();
-
-                merchant.Addresses.ForEach(a => merchantResponse.Addresses.Add(new AddressResponse
-                {
-                    AddressId = a.AddressId,
-                    Town = a.Town,
-                    Region = a.Region,
-                    PostalCode = a.PostalCode,
-                    Country = a.Country,
-                    AddressLine1 = a.AddressLine1,
-                    AddressLine2 = a.AddressLine2,
-                    AddressLine3 = a.AddressLine3,
-                    AddressLine4 = a.AddressLine4
-                }));
-            }
-
-            if (merchant.Contacts != null && merchant.Contacts.Any())
-            {
-                merchantResponse.Contacts = new List<ContactResponse>();
-
-                merchant.Contacts.ForEach(c => merchantResponse.Contacts.Add(new ContactResponse
-                {
-                    ContactId = c.ContactId,
-                    ContactPhoneNumber = c.ContactPhoneNumber,
-                    ContactEmailAddress = c.ContactEmailAddress,
-                    ContactName = c.ContactName
-                }));
-            }
-
-            if (merchant.Devices != null && merchant.Devices.Any())
-            {
-                merchantResponse.Devices = new Dictionary<Guid, String>();
-
-                foreach (Device device in merchant.Devices)
-                {
-                    merchantResponse.Devices.Add(device.DeviceId, device.DeviceIdentifier);
-                }
-            }
-
-            if (merchant.Operators != null && merchant.Operators.Any())
-            {
-                merchantResponse.Operators = new List<MerchantOperatorResponse>();
-
-                merchant.Operators.ForEach(a => merchantResponse.Operators.Add(new MerchantOperatorResponse
-                {
-                    Name = a.Name,
-                    MerchantNumber = a.MerchantNumber,
-                    OperatorId = a.OperatorId,
-                    TerminalNumber = a.TerminalNumber,
-                    IsDeleted = a.IsDeleted
-                }));
-            }
-
-            if (merchant.Contracts != null && merchant.Contracts.Any())
-            {
-                merchantResponse.Contracts = new List<MerchantContractResponse>();
-                merchant.Contracts.ForEach(mc => {
-                    merchantResponse.Contracts.Add(new MerchantContractResponse()
-                    {
-                        ContractId = mc.ContractId,
-                        ContractProducts = mc.ContractProducts,
-                        IsDeleted = mc.IsDeleted,
-                    });
-                });
-            }
+            merchantResponse.Addresses = ConvertFrom(merchant.Addresses);
+            merchantResponse.Contacts = ConvertFrom(merchant.Contacts);
+            merchantResponse.Devices = ConvertFrom(merchant.Devices);
+            merchantResponse.Operators = ConvertFrom(merchant.Operators);
+            merchantResponse.Contracts = ConvertFrom(merchant.Contracts);
 
             return merchantResponse;
         }
