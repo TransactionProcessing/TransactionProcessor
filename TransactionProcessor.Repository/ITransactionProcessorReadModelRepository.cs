@@ -293,7 +293,7 @@ namespace TransactionProcessor.Repository {
     [ExcludeFromCodeCoverage]
     public class TransactionProcessorReadModelRepository : ITransactionProcessorReadModelRepository {
         private readonly IDbContextResolver<EstateManagementContext> Resolver;
-        private readonly Shared.EntityFramework.IDbContextFactory<EstateManagementContext> DbContextFactory;
+        private readonly IDbContextFactory<EstateManagementContext> DbContextFactory;
         private static readonly String EstateManagementDatabaseName = "TransactionProcessorReadModel";
 
         public TransactionProcessorReadModelRepository(IDbContextResolver<EstateManagementContext> resolver) {
