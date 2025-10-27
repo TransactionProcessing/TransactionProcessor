@@ -136,9 +136,12 @@ namespace TransactionProcessor.IntegrationTests.Common
                 environmentVariables.AddRange(additionalEnvironmentVariables);
             }
 
+            var imageDetails = this.GetImageDetails(ContainerType.SecurityService);
+            if (imageDetails.IsFailed)
+                throw new Exception(imageDetails.Message);
             ContainerBuilder securityServiceContainer = new Builder().UseContainer().WithName(this.SecurityServiceContainerName)
                                                                      .WithEnvironment(environmentVariables.ToArray())
-                                                                     .UseImageDetails(this.GetImageDetails(ContainerType.SecurityService))
+                                                                     .UseImageDetails(imageDetails.Data)
                                                                      .MountHostFolder(this.DockerPlatform, this.HostTraceFolder)
                                                                      .SetDockerCredentials(this.DockerCredentials);
 

@@ -225,7 +225,8 @@ namespace TransactionProcessor.Aggregates{
         }
 
         private ContractAggregate(Guid aggregateId){
-            Guard.ThrowIfInvalidGuid(aggregateId, "Aggregate Id cannot be an Empty Guid");
+            if (aggregateId == Guid.Empty)
+                throw new ArgumentNullException(nameof(aggregateId));
 
             this.AggregateId = aggregateId;
             this.Products = new List<Product>();

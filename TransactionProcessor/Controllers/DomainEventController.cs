@@ -119,14 +119,20 @@ namespace TransactionProcessor.Controllers
                 var resolver = Startup.Container.GetInstance<IDomainEventHandlerResolver>(eventHandlerType);
                 // We are being told by the caller to use a specific handler
                 var allhandlers = resolver.GetDomainEventHandlers(domainEvent);
-                var handlers = allhandlers.Where(h => h.GetType().Name.Contains(eventHandler));
+
+                if (!allhandlers.IsFailed)
+                    return new List<IDomainEventHandler>();
+
+                var handlers = allhandlers.Data.Where(h => h.GetType().Name.Contains(eventHandler));
                 
                 return handlers.ToList();
 
             }
 
-            List<IDomainEventHandler> eventHandlers = this.DomainEventHandlerResolver.GetDomainEventHandlers(domainEvent);
-            return eventHandlers;
+            var eventHandlersResult = this.DomainEventHandlerResolver.GetDomainEventHandlers(domainEvent);
+            if (eventHandlersResult.IsFailed)
+                return new List<IDomainEventHandler>();
+            return eventHandlersResult.Data;
         }
 
         private async Task<IDomainEvent> GetDomainEvent(Object domainEvent)
