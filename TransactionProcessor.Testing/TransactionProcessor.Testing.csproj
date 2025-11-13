@@ -6,10 +6,10 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="ClientProxyBase" Version="2025.10.2" />
+    <PackageReference Include="ClientProxyBase" Version="2025.11.8" />
     <PackageReference Include="FileProcessor.FileImportLog.DomainEvents" Version="2025.8.1" />
     <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="9.0.10" />
-    <PackageReference Include="SecurityService.Client" Version="2025.8.1" />
+    <PackageReference Include="SecurityService.Client" Version="2025.10.1" />
     <PackageReference Include="System.ServiceModel.Federation" Version="8.1.2" />
     <PackageReference Include="Microsoft.IdentityModel.Tokens" Version="8.14.0" />
     <PackageReference Include="Microsoft.IdentityModel.JsonWebTokens" Version="8.14.0" />

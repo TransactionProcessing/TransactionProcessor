@@ -64,7 +64,7 @@ namespace TransactionProcessor.Client
                                                   Guid transactionId,
                                                   CancellationToken cancellationToken);
 
-        Task<Result<RedeemVoucherResponse>> RedeemVoucher(String accessToken,
+        Task<Result> RedeemVoucher(String accessToken,
                                                   RedeemVoucherRequest redeemVoucherRequest,
                                                   CancellationToken cancellationToken);
 
