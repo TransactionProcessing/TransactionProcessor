@@ -28,11 +28,16 @@ namespace TransactionProcessor.Factories
         #region Methods
         public static List<ContractResponse> ConvertFrom(List<Models.Contract.Contract> contracts)
         {
-            List<Result<ContractResponse>> result = new();
+            List<ContractResponse> result = new();
 
-            contracts.ForEach(c => result.Add(ModelFactory.ConvertFrom(c)));
-            
-            return result.Select(r => r.Data).ToList();
+            contracts.ForEach(c => {
+                ContractResponse converted = ModelFactory.ConvertFrom(c);
+                if (converted != null) {
+                    result.Add(converted);
+                }
+            });
+
+            return result;
         }
 
         public static ContractResponse ConvertFrom(Models.Contract.Contract contract)
@@ -112,12 +117,17 @@ namespace TransactionProcessor.Factories
                 return new List<OperatorResponse>();
             }
 
-            List<Result<OperatorResponse>> result = new();
+            List<OperatorResponse> result = new();
 
-            @operators.ForEach(c => result.Add(ModelFactory.ConvertFrom(c)));
+            @operators.ForEach(c => {
+                var converted = ModelFactory.ConvertFrom(c);
+                if (converted != null) {
+                    result.Add(converted);
+                }
+            });
 
 
-            return result.Select(r => r.Data).ToList();
+            return result.ToList();
         }
 
         public static SerialisedMessage ConvertFrom(ProcessLogonTransactionResponse processLogonTransactionResponse)
@@ -272,14 +282,15 @@ namespace TransactionProcessor.Factories
 
         public static List<EstateResponse> ConvertFrom(List<Estate> estates)
         {
-            List<Result<EstateResponse>> result = new();
+            List<EstateResponse> result = new();
+            
+            estates.ForEach(c => {
+                var converted = ModelFactory.ConvertFrom(c);
+                if (converted != null)
+                    result.Add(converted);
+            });
 
-            estates.ForEach(c => result.Add(ModelFactory.ConvertFrom(c)));
-
-            if (result.Any(c => c.IsFailed))
-                return new List<EstateResponse>();
-
-            return result.Select(r => r.Data).ToList();
+            return result.ToList();
 
         }
 
@@ -304,14 +315,18 @@ namespace TransactionProcessor.Factories
 
         public static List<MerchantResponse> ConvertFrom(List<Models.Merchant.Merchant> merchants)
         {
-            List<Result<MerchantResponse>> result = new();
+            List<MerchantResponse> result = new();
 
             if (merchants == null)
                 return new List<MerchantResponse>();
 
-            merchants.ForEach(c => result.Add(ModelFactory.ConvertFrom(c)));
+            merchants.ForEach(c => {
+                MerchantResponse converted = ModelFactory.ConvertFrom(c); 
+                if (converted!= null)
+                    result.Add(converted);
+            });
             
-            return result.Select(r => r.Data).ToList();
+            return result;
         }
 
         private static TransactionProcessor.DataTransferObjects.Responses.Merchant.SettlementSchedule ConvertFrom(Models.Merchant.SettlementSchedule settlementSchedule)

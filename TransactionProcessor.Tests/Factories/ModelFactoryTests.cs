@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using SimpleResults;
 using TransactionProcessor.Aggregates;
 using TransactionProcessor.DataTransferObjects.Responses.Contract;
 using TransactionProcessor.DataTransferObjects.Responses.Estate;
@@ -32,9 +31,8 @@ namespace TransactionProcessor.Tests.Factories
         {
             Contract contractModel = TestData.ContractModel;
 
-            Result<ContractResponse> result= ModelFactory.ConvertFrom(contractModel);
-            result.IsSuccess.ShouldBeTrue();
-            ContractResponse contractResponse= result.Data;
+            ContractResponse contractResponse = ModelFactory.ConvertFrom(contractModel);
+
             contractResponse.ShouldNotBeNull();
             contractResponse.OperatorId.ShouldBe(contractModel.OperatorId);
             contractResponse.OperatorName.ShouldBe(contractModel.OperatorName);
@@ -48,9 +46,8 @@ namespace TransactionProcessor.Tests.Factories
         {
             Contract contractModel = TestData.ContractModelWithProducts;
 
-            Result<ContractResponse> result = ModelFactory.ConvertFrom(contractModel);
-            result.IsSuccess.ShouldBeTrue();
-            ContractResponse contractResponse = result.Data;
+            ContractResponse contractResponse = ModelFactory.ConvertFrom(contractModel);
+            
             contractResponse.ShouldNotBeNull();
             contractResponse.OperatorId.ShouldBe(contractModel.OperatorId);
             contractResponse.ContractId.ShouldBe(contractModel.ContractId);
@@ -74,11 +71,10 @@ namespace TransactionProcessor.Tests.Factories
         {
             List<Estate> estateModel = [TestData.EstateModel];
 
-            Result<List<EstateResponse>> estateResponse = ModelFactory.ConvertFrom(estateModel);
-            estateResponse.IsSuccess.ShouldBeTrue();
-            estateResponse.Data.Count.ShouldBe(1);
-            estateResponse.Data.Single().EstateId.ShouldBe(TestData.EstateModel.EstateId);
-            estateResponse.Data.Single().EstateName.ShouldBe(TestData.EstateModel.Name);
+            List<EstateResponse> estateResponse = ModelFactory.ConvertFrom(estateModel);
+            estateResponse.Count.ShouldBe(1);
+            estateResponse.Single().EstateId.ShouldBe(TestData.EstateModel.EstateId);
+            estateResponse.Single().EstateName.ShouldBe(TestData.EstateModel.Name);
         }
 
         [Fact]
@@ -86,8 +82,8 @@ namespace TransactionProcessor.Tests.Factories
         {
             List<Estate> estateModel = [null];
 
-            Result<List<EstateResponse>> estateResponse = ModelFactory.ConvertFrom(estateModel);
-            estateResponse.IsFailed.ShouldBeTrue();
+            List<EstateResponse> estateResponse = ModelFactory.ConvertFrom(estateModel);
+            estateResponse.ShouldBeEmpty();
         }
 
         [Fact]
@@ -97,9 +93,7 @@ namespace TransactionProcessor.Tests.Factories
                 TestData.MerchantModelWithAddressesContactsDevicesAndOperatorsAndContracts()
             };
 
-            Result<List<MerchantResponse>> merchantResponseListResult = ModelFactory.ConvertFrom(merchantModelList);
-            merchantResponseListResult.IsSuccess.ShouldBeTrue();
-            List<MerchantResponse> merchantResponseList = merchantResponseListResult.Data;
+            List<MerchantResponse> merchantResponseList = ModelFactory.ConvertFrom(merchantModelList);
             merchantResponseList.ShouldNotBeNull();
             merchantResponseList.ShouldNotBeEmpty();
             merchantResponseList.Count.ShouldBe(merchantModelList.Count);
@@ -109,9 +103,7 @@ namespace TransactionProcessor.Tests.Factories
         public void ModelFactory_MerchantList_NullList_IsConverted() {
             List<Merchant> merchantModelList = null;
 
-            Result<List<MerchantResponse>> merchantResponseListResult = ModelFactory.ConvertFrom(merchantModelList);
-            merchantResponseListResult.IsSuccess.ShouldBeTrue();
-            List<MerchantResponse> merchantResponseList = merchantResponseListResult.Data;
+            List<MerchantResponse> merchantResponseList = ModelFactory.ConvertFrom(merchantModelList);
             merchantResponseList.ShouldNotBeNull();
             merchantResponseList.ShouldBeEmpty();
         }
@@ -123,8 +115,8 @@ namespace TransactionProcessor.Tests.Factories
                 null
             };
 
-            Result<List<MerchantResponse>> result = ModelFactory.ConvertFrom(merchantModelList);
-            result.IsFailed.ShouldBeTrue();
+            List<MerchantResponse> result = ModelFactory.ConvertFrom(merchantModelList);
+            result.ShouldBeEmpty();
         }
 
         [Fact]
@@ -132,9 +124,7 @@ namespace TransactionProcessor.Tests.Factories
         {
             Contract contractModel = TestData.ContractModelWithProductsAndTransactionFees;
 
-            Result<ContractResponse> result = ModelFactory.ConvertFrom(contractModel);
-            result.IsSuccess.ShouldBeTrue();
-            ContractResponse contractResponse = result.Data;
+            ContractResponse contractResponse = ModelFactory.ConvertFrom(contractModel);
 
             contractResponse.ShouldNotBeNull();
             contractResponse.OperatorId.ShouldBe(contractModel.OperatorId);
@@ -170,14 +160,13 @@ namespace TransactionProcessor.Tests.Factories
                 TestData.ContractModel
             };
 
-            Result<List<ContractResponse>> contractResponses = ModelFactory.ConvertFrom(contractModel);
-            contractResponses.IsSuccess.ShouldBeTrue();
-            contractResponses.Data.ShouldNotBeNull();
-            contractResponses.Data.ShouldHaveSingleItem();
-            contractResponses.Data.Single().OperatorId.ShouldBe(contractModel.Single().OperatorId);
-            contractResponses.Data.Single().ContractId.ShouldBe(contractModel.Single().ContractId);
-            contractResponses.Data.Single().Description.ShouldBe(contractModel.Single().Description);
-            contractResponses.Data.Single().Products.ShouldBeNull();
+            List<ContractResponse> contractResponses = ModelFactory.ConvertFrom(contractModel);
+            contractResponses.ShouldNotBeNull();
+            contractResponses.ShouldHaveSingleItem();
+            contractResponses.Single().OperatorId.ShouldBe(contractModel.Single().OperatorId);
+            contractResponses.Single().ContractId.ShouldBe(contractModel.Single().ContractId);
+            contractResponses.Single().Description.ShouldBe(contractModel.Single().Description);
+            contractResponses.Single().Products.ShouldBeNull();
         }
 
         [Fact]
@@ -187,8 +176,8 @@ namespace TransactionProcessor.Tests.Factories
                 null
             };
 
-            Result<List<ContractResponse>> contractResponses = ModelFactory.ConvertFrom(contractModel);
-            contractResponses.IsFailed.ShouldBeTrue();
+            var contractResponses = ModelFactory.ConvertFrom(contractModel);
+            contractResponses.Any().ShouldBeFalse();
         }
 
         [Fact]
@@ -196,9 +185,7 @@ namespace TransactionProcessor.Tests.Factories
         {
             ProcessLogonTransactionResponse processLogonTransactionResponseModel = TestData.ProcessLogonTransactionResponseModel;
 
-            Result<SerialisedMessage> logonTransactionResult = ModelFactory.ConvertFrom(processLogonTransactionResponseModel);
-            logonTransactionResult.IsSuccess.ShouldBeTrue();
-            SerialisedMessage logonTransactionResponse = logonTransactionResult.Data;
+            SerialisedMessage logonTransactionResponse = ModelFactory.ConvertFrom(processLogonTransactionResponseModel);
             logonTransactionResponse.ShouldNotBeNull();
             logonTransactionResponse.Metadata.ShouldContainKey(MetadataContants.KeyNameEstateId);
             logonTransactionResponse.Metadata.ShouldContainKey(MetadataContants.KeyNameMerchantId);
@@ -213,9 +200,8 @@ namespace TransactionProcessor.Tests.Factories
         {
             ProcessLogonTransactionResponse processLogonTransactionResponseModel = null;
 
-            Result<SerialisedMessage> logonTransactionResult = ModelFactory.ConvertFrom(processLogonTransactionResponseModel);
-            logonTransactionResult.IsFailed.ShouldBeTrue();
-            logonTransactionResult.Status.ShouldBe(ResultStatus.Invalid);
+            SerialisedMessage logonTransactionResult = ModelFactory.ConvertFrom(processLogonTransactionResponseModel);
+            logonTransactionResult.ShouldBeNull();
         }
 
         [Fact]
@@ -223,9 +209,7 @@ namespace TransactionProcessor.Tests.Factories
         {
             ProcessSaleTransactionResponse processSaleTransactionResponseModel = TestData.ProcessSaleTransactionResponseModel;
 
-            Result<SerialisedMessage> saleTransactionResult = ModelFactory.ConvertFrom(processSaleTransactionResponseModel);
-            saleTransactionResult.IsSuccess.ShouldBeTrue();
-            SerialisedMessage saleTransactionResponse = saleTransactionResult.Data;
+            SerialisedMessage saleTransactionResponse = ModelFactory.ConvertFrom(processSaleTransactionResponseModel);
 
             saleTransactionResponse.ShouldNotBeNull();
             saleTransactionResponse.Metadata.ShouldContainKey(MetadataContants.KeyNameEstateId);
@@ -241,9 +225,8 @@ namespace TransactionProcessor.Tests.Factories
         {
             ProcessSaleTransactionResponse processSaleTransactionResponseModel = null;
 
-            Result<SerialisedMessage> saleTransactionResult = ModelFactory.ConvertFrom(processSaleTransactionResponseModel);
-            saleTransactionResult.IsFailed.ShouldBeTrue();
-            saleTransactionResult.Status.ShouldBe(ResultStatus.Invalid);
+            SerialisedMessage saleTransactionResult = ModelFactory.ConvertFrom(processSaleTransactionResponseModel);
+            saleTransactionResult.ShouldBeNull();
         }
 
         [Fact]
@@ -251,9 +234,7 @@ namespace TransactionProcessor.Tests.Factories
         {
             ProcessReconciliationTransactionResponse processReconciliationTransactionResponseModel = TestData.ProcessReconciliationTransactionResponseModel;
 
-            Result<SerialisedMessage> reconciliationTransactionResult = ModelFactory.ConvertFrom(processReconciliationTransactionResponseModel);
-            reconciliationTransactionResult.IsSuccess.ShouldBeTrue();
-            SerialisedMessage processReconciliationTransactionResponse = reconciliationTransactionResult.Data;
+            SerialisedMessage processReconciliationTransactionResponse = ModelFactory.ConvertFrom(processReconciliationTransactionResponseModel);
 
             processReconciliationTransactionResponse.ShouldNotBeNull();
             processReconciliationTransactionResponse.Metadata.ShouldContainKey(MetadataContants.KeyNameEstateId);
@@ -269,9 +250,8 @@ namespace TransactionProcessor.Tests.Factories
         {
             ProcessReconciliationTransactionResponse processReconciliationTransactionResponseModel = null;
 
-            Result<SerialisedMessage> reconciliationTransactionResult = ModelFactory.ConvertFrom(processReconciliationTransactionResponseModel);
-            reconciliationTransactionResult.IsFailed.ShouldBeTrue();
-            reconciliationTransactionResult.Status.ShouldBe(ResultStatus.Invalid);
+            SerialisedMessage reconciliationTransactionResult = ModelFactory.ConvertFrom(processReconciliationTransactionResponseModel);
+            reconciliationTransactionResult.ShouldBeNull();
         }
 
         [Fact]
@@ -301,9 +281,7 @@ namespace TransactionProcessor.Tests.Factories
         {
             Voucher model = TestData.GetVoucherAggregateWithRecipientMobile().GetVoucher();
 
-            Result<GetVoucherResponse> result = ModelFactory.ConvertFrom(model);
-            result.IsSuccess.ShouldBeTrue();
-            GetVoucherResponse dto =result.Data;
+            GetVoucherResponse dto = ModelFactory.ConvertFrom(model);
             dto.ShouldNotBeNull();
             dto.TransactionId.ShouldBe(model.TransactionId);
             dto.IssuedDateTime.ShouldBe(model.IssuedDateTime);
@@ -324,19 +302,17 @@ namespace TransactionProcessor.Tests.Factories
         public void ModelFactory_ConvertFrom_VoucherModel_NullInput_IsConverted()
         {
             Voucher model = null;
-            Result<GetVoucherResponse> result = ModelFactory.ConvertFrom(model);
+            GetVoucherResponse result = ModelFactory.ConvertFrom(model);
 
-            result.IsFailed.ShouldBeTrue();
-            result.Status.ShouldBe(ResultStatus.Invalid);
+            result.ShouldBeNull();
         }
 
         [Fact]
         public void ModelFactory_ConvertFrom_RedeemVoucherResponse_IsConverted()
         {
             RedeemVoucherResponse model = TestData.RedeemVoucherResponse;
-            Result<DataTransferObjects.RedeemVoucherResponse> result = ModelFactory.ConvertFrom(model);
-            result.IsSuccess.ShouldBeTrue();
-            DataTransferObjects.RedeemVoucherResponse dto = result.Data;
+            
+            DataTransferObjects.RedeemVoucherResponse dto = ModelFactory.ConvertFrom(model);
             dto.ShouldNotBeNull();
             dto.ExpiryDate.ShouldBe(model.ExpiryDate);
             dto.VoucherCode.ShouldBe(model.VoucherCode);
@@ -347,17 +323,14 @@ namespace TransactionProcessor.Tests.Factories
         public void ModelFactory_ConvertFrom_RedeemVoucherResponse_NullInput_IsConverted()
         {
             RedeemVoucherResponse model = null;
-            Result<DataTransferObjects.RedeemVoucherResponse> result = ModelFactory.ConvertFrom(model);
-            result.IsFailed.ShouldBeTrue();
-            result.Status.ShouldBe(ResultStatus.Invalid);
+            DataTransferObjects.RedeemVoucherResponse result = ModelFactory.ConvertFrom(model);
+            result.ShouldBeNull();
         }
 
         [Fact]
         public void ModelFactory_ConvertFrom_Operator_ModelConverted()
         {
-            Result<OperatorResponse> result = ModelFactory.ConvertFrom(TestData.OperatorModel);
-            result.IsSuccess.ShouldBeTrue();
-            OperatorResponse operatorResponse = result.Data;
+            OperatorResponse operatorResponse = ModelFactory.ConvertFrom(TestData.OperatorModel);
             operatorResponse.ShouldNotBeNull();
             operatorResponse.OperatorId.ShouldBe(TestData.OperatorId);
             operatorResponse.RequireCustomTerminalNumber.ShouldBe(TestData.RequireCustomTerminalNumber);
@@ -370,9 +343,8 @@ namespace TransactionProcessor.Tests.Factories
         {
             TransactionProcessor.Models.Operator.Operator operatorModel = null;
 
-            Result<OperatorResponse> operatorResponseResult = ModelFactory.ConvertFrom(operatorModel);
-            operatorResponseResult.IsFailed.ShouldBeTrue();
-            operatorResponseResult.Status.ShouldBe(ResultStatus.Invalid);
+            OperatorResponse operatorResponseResult = ModelFactory.ConvertFrom(operatorModel);
+            operatorResponseResult.ShouldBeNull();
         }
 
         [Fact]
@@ -382,9 +354,7 @@ namespace TransactionProcessor.Tests.Factories
                                                                 TestData.OperatorModel
                                                             };
 
-            Result<List<OperatorResponse>> operatorResponseResult = ModelFactory.ConvertFrom(operatorList);
-            operatorResponseResult.IsSuccess.ShouldBeTrue();
-            List<OperatorResponse> operatorResponses = operatorResponseResult.Data;
+            List<OperatorResponse> operatorResponses = ModelFactory.ConvertFrom(operatorList);
             operatorResponses.ShouldNotBeNull();
             operatorResponses.ShouldNotBeEmpty();
             operatorResponses.Count.ShouldBe(operatorList.Count);
@@ -404,9 +374,8 @@ namespace TransactionProcessor.Tests.Factories
         {
             List<TransactionProcessor.Models.Operator.Operator> operatorList = null;
 
-            Result<List<OperatorResponse>> operatorResponseResult = ModelFactory.ConvertFrom(operatorList);
-            operatorResponseResult.IsSuccess.ShouldBeTrue();
-            operatorResponseResult.Data.ShouldBeEmpty();
+            List<OperatorResponse> operatorResponse = ModelFactory.ConvertFrom(operatorList);
+            operatorResponse.ShouldBeEmpty();
 
         }
 
@@ -415,9 +384,8 @@ namespace TransactionProcessor.Tests.Factories
         {
             List<TransactionProcessor.Models.Operator.Operator> operatorList = new List<TransactionProcessor.Models.Operator.Operator>();
 
-            Result<List<OperatorResponse>> operatorResponseResult = ModelFactory.ConvertFrom(operatorList);
-            operatorResponseResult.IsSuccess.ShouldBeTrue();
-            operatorResponseResult.Data.ShouldBeEmpty();
+            List<OperatorResponse> operatorResponse = ModelFactory.ConvertFrom(operatorList);
+            operatorResponse.ShouldBeEmpty();
 
         }
 
@@ -428,8 +396,8 @@ namespace TransactionProcessor.Tests.Factories
                 null
             };
 
-            Result<List<OperatorResponse>> result = ModelFactory.ConvertFrom(operatorList);
-            result.IsFailed.ShouldBeTrue();
+            List<OperatorResponse> result = ModelFactory.ConvertFrom(operatorList);
+            result.ShouldBeEmpty();
 
         }
 
@@ -438,10 +406,9 @@ namespace TransactionProcessor.Tests.Factories
         {
             Estate estateModel = null;
 
-            Result<EstateResponse> estateResponseResult = ModelFactory.ConvertFrom(estateModel);
+            EstateResponse estateResponseResult = ModelFactory.ConvertFrom(estateModel);
 
-            estateResponseResult.IsFailed.ShouldBeTrue();
-            estateResponseResult.Status.ShouldBe(ResultStatus.Invalid);
+            estateResponseResult.ShouldBeNull();
         }
 
         [Fact]
@@ -449,9 +416,7 @@ namespace TransactionProcessor.Tests.Factories
         {
             Estate estateModel = TestData.EstateModel;
 
-            Result<EstateResponse> result = ModelFactory.ConvertFrom(estateModel);
-            result.IsSuccess.ShouldBeTrue();
-            EstateResponse estateResponse= result.Data;
+            EstateResponse estateResponse= ModelFactory.ConvertFrom(estateModel);
             estateResponse.ShouldNotBeNull();
             estateResponse.EstateId.ShouldBe(estateModel.EstateId);
             estateResponse.EstateName.ShouldBe(estateModel.Name);
@@ -462,9 +427,8 @@ namespace TransactionProcessor.Tests.Factories
         {
             Estate estateModel = TestData.EstateModelWithOperators;
 
-            Result<EstateResponse> result = ModelFactory.ConvertFrom(estateModel);
-            result.IsSuccess.ShouldBeTrue();
-            EstateResponse estateResponse = result.Data;
+            
+            EstateResponse estateResponse = ModelFactory.ConvertFrom(estateModel);
             estateResponse.ShouldNotBeNull();
             estateResponse.EstateId.ShouldBe(estateModel.EstateId);
             estateResponse.EstateName.ShouldBe(estateModel.Name);
@@ -477,10 +441,8 @@ namespace TransactionProcessor.Tests.Factories
         public void ModelFactory_Estate_WithSecurityUsers_IsConverted()
         {
             Estate estateModel = TestData.EstateModelWithSecurityUsers;
-
-            Result<EstateResponse> result = ModelFactory.ConvertFrom(estateModel);
-            result.IsSuccess.ShouldBeTrue();
-            EstateResponse estateResponse = result.Data;
+            
+            EstateResponse estateResponse = ModelFactory.ConvertFrom(estateModel);
             estateResponse.ShouldNotBeNull();
             estateResponse.EstateId.ShouldBe(estateModel.EstateId);
             estateResponse.EstateName.ShouldBe(estateModel.Name);
@@ -494,9 +456,7 @@ namespace TransactionProcessor.Tests.Factories
         {
             Estate estateModel = TestData.EstateModelWithOperatorsAndSecurityUsers;
 
-            Result<EstateResponse> result  = ModelFactory.ConvertFrom(estateModel);
-            result.IsSuccess.ShouldBeTrue();
-            EstateResponse estateResponse = result.Data;
+            EstateResponse estateResponse = ModelFactory.ConvertFrom(estateModel);
             estateResponse.ShouldNotBeNull();
             estateResponse.EstateId.ShouldBe(estateModel.EstateId);
             estateResponse.EstateName.ShouldBe(estateModel.Name);
@@ -515,9 +475,7 @@ namespace TransactionProcessor.Tests.Factories
         {
             Merchant merchantModel = TestData.MerchantModelWithAddressesContactsDevicesAndOperatorsAndContracts(settlementSchedule);
 
-            Result<MerchantResponse> result = ModelFactory.ConvertFrom(merchantModel);
-            result.IsSuccess.ShouldBeTrue();
-            MerchantResponse merchantResponse = result.Data;
+            MerchantResponse merchantResponse = ModelFactory.ConvertFrom(merchantModel);
             merchantResponse.ShouldNotBeNull();
             merchantResponse.MerchantId.ShouldBe(merchantModel.MerchantId);
             merchantResponse.MerchantName.ShouldBe(merchantModel.MerchantName);
@@ -547,9 +505,8 @@ namespace TransactionProcessor.Tests.Factories
         {
             Merchant merchantModel = null;
 
-            Result<MerchantResponse> result = ModelFactory.ConvertFrom(merchantModel);
-            result.IsFailed.ShouldBeTrue();
-            result.Status.ShouldBe(ResultStatus.Invalid);
+            MerchantResponse result = ModelFactory.ConvertFrom(merchantModel);
+            result.ShouldBeNull();
         }
 
         [Fact]
@@ -557,9 +514,7 @@ namespace TransactionProcessor.Tests.Factories
         {
             Merchant merchantModel = TestData.MerchantModelWithNullAddresses;
 
-            Result<MerchantResponse> result = ModelFactory.ConvertFrom(merchantModel);
-            result.IsSuccess.ShouldBeTrue();
-            MerchantResponse merchantResponse = result.Data;
+            MerchantResponse merchantResponse = ModelFactory.ConvertFrom(merchantModel);
 
             merchantResponse.ShouldNotBeNull();
             merchantResponse.MerchantId.ShouldBe(merchantModel.MerchantId);
@@ -592,9 +547,7 @@ namespace TransactionProcessor.Tests.Factories
         {
             Merchant merchantModel = TestData.MerchantModelWithNullContacts;
 
-            Result<MerchantResponse> result = ModelFactory.ConvertFrom(merchantModel);
-            result.IsSuccess.ShouldBeTrue();
-            MerchantResponse merchantResponse = result.Data;
+            MerchantResponse merchantResponse = ModelFactory.ConvertFrom(merchantModel);
 
             merchantResponse.ShouldNotBeNull();
             merchantResponse.MerchantId.ShouldBe(merchantModel.MerchantId);
@@ -632,9 +585,7 @@ namespace TransactionProcessor.Tests.Factories
         {
             Merchant merchantModel = TestData.MerchantModelWithNullDevices;
 
-            Result<MerchantResponse> result = ModelFactory.ConvertFrom(merchantModel);
-            result.IsSuccess.ShouldBeTrue();
-            MerchantResponse merchantResponse = result.Data;
+            MerchantResponse merchantResponse = ModelFactory.ConvertFrom(merchantModel);
 
             merchantResponse.ShouldNotBeNull();
             merchantResponse.MerchantId.ShouldBe(merchantModel.MerchantId);
@@ -674,9 +625,7 @@ namespace TransactionProcessor.Tests.Factories
         {
             Merchant merchantModel = TestData.MerchantModelWithNullOperators;
 
-            Result<MerchantResponse> result = ModelFactory.ConvertFrom(merchantModel);
-            result.IsSuccess.ShouldBeTrue();
-            MerchantResponse merchantResponse = result.Data;
+            MerchantResponse merchantResponse = ModelFactory.ConvertFrom(merchantModel);
 
             merchantResponse.ShouldNotBeNull();
             merchantResponse.MerchantId.ShouldBe(merchantModel.MerchantId);
@@ -714,9 +663,7 @@ namespace TransactionProcessor.Tests.Factories
         {
             List<Models.Contract.ContractProductTransactionFee> transactionFeeModelList = TestData.ProductTransactionFees;
 
-            Result<List<ContractProductTransactionFee>> result = ModelFactory.ConvertFrom(transactionFeeModelList);
-            result.IsSuccess.ShouldBeTrue();
-            List<DataTransferObjects.Responses.Contract.ContractProductTransactionFee> transactionFeeResponseList = result.Data;
+            List<ContractProductTransactionFee> transactionFeeResponseList = ModelFactory.ConvertFrom(transactionFeeModelList);
             transactionFeeResponseList.ShouldNotBeNull();
             transactionFeeResponseList.ShouldNotBeEmpty();
             transactionFeeResponseList.Count.ShouldBe(transactionFeeModelList.Count);
