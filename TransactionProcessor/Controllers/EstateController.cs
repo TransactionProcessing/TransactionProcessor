@@ -68,13 +68,13 @@ namespace TransactionProcessor.Controllers
         /// <returns></returns>
         [HttpPost]
         [Route("")]
-        public async Task<IActionResult> CreateEstate([FromBody] CreateEstateRequest createEstateRequest,
+        public async Task<IResult> CreateEstate([FromBody] CreateEstateRequest createEstateRequest,
                                                       CancellationToken cancellationToken)
         {
             // Reject password tokens
             if (ClaimsHelper.IsPasswordToken(GetUser()))
             {
-                return Forbid();
+                return ResponseFactory.FromResult(Result.Forbidden());
             }
 
             // Create the command
@@ -83,7 +83,7 @@ namespace TransactionProcessor.Controllers
             // Route the command
             Result result = await Mediator.Send(command, cancellationToken);
 
-            return result.ToActionResultX();
+            return ResponseFactory.FromResult(result);
         }
 
         /// <summary>
@@ -95,68 +95,60 @@ namespace TransactionProcessor.Controllers
         /// <exception cref="NotFoundException">Estate not found with estate Id {estateId}</exception>
         [HttpGet]
         [Route("{estateId}")]
-        public async Task<IActionResult> GetEstate([FromRoute] Guid estateId,
+        public async Task<IResult> GetEstate([FromRoute] Guid estateId,
                                                    CancellationToken cancellationToken)
         {
             // Get the Estate Id claim from the user
             Result<Claim> estateIdClaimResult = ClaimsHelper.GetUserClaim(GetUser(), "EstateId", estateId.ToString());
             if (estateIdClaimResult.IsFailed)
-                return Result.Forbidden("User estate id claim is not valid").ToActionResultX();
+                return ResponseFactory.FromResult(Result.Forbidden("User estate id claim is not valid"));
             Claim estateIdClaim = estateIdClaimResult.Data;
 
             string estateRoleName = Environment.GetEnvironmentVariable("EstateRoleName");
             if (ClaimsHelper.IsUserRolesValid(GetUser(), new[] { string.IsNullOrEmpty(estateRoleName) ? "Estate" : estateRoleName }) == false)
             {
-                return Forbid();
+                return ResponseFactory.FromResult(Result.Forbidden());
             }
 
             if (ClaimsHelper.ValidateRouteParameter(estateId, estateIdClaim) == false)
             {
-                return Forbid();
+                return ResponseFactory.FromResult(Result.Forbidden());
             }
 
             EstateQueries.GetEstateQuery query = new(estateId);
 
             Result<Models.Estate.Estate> result = await Mediator.Send(query, cancellationToken);
-            if (result.IsFailed)
-            {
-                return result.ToActionResultX();
-            }
-
-            return ModelFactory.ConvertFrom(result.Data).ToActionResultX();
+            
+            return ResponseFactory.FromResult(result, ModelFactory.ConvertFrom);
         }
 
         [HttpGet]
         [Route("{estateId}/all")]
-        public async Task<IActionResult> GetEstates([FromRoute] Guid estateId,
+        public async Task<IResult> GetEstates([FromRoute] Guid estateId,
                                                     CancellationToken cancellationToken)
         {
             // Get the Estate Id claim from the user
             Result<Claim> estateIdClaimResult = ClaimsHelper.GetUserClaim(GetUser(), "EstateId", estateId.ToString());
             if (estateIdClaimResult.IsFailed)
-                return Result.Forbidden("User estate id claim is not valid").ToActionResultX();
+                return ResponseFactory.FromResult(Result.Forbidden("User estate id claim is not valid"));
             Claim estateIdClaim = estateIdClaimResult.Data;
 
             string estateRoleName = Environment.GetEnvironmentVariable("EstateRoleName");
             if (ClaimsHelper.IsUserRolesValid(GetUser(), new[] { string.IsNullOrEmpty(estateRoleName) ? "Estate" : estateRoleName }) == false)
             {
-                return Forbid();
+                return ResponseFactory.FromResult(Result.Forbidden());
             }
 
             if (ClaimsHelper.ValidateRouteParameter(estateId, estateIdClaim) == false)
             {
-                return Forbid();
+                return ResponseFactory.FromResult(Result.Forbidden());
             }
 
             EstateQueries.GetEstatesQuery query = new(estateId);
 
             Result<List<Models.Estate.Estate>> result = await Mediator.Send(query, cancellationToken);
-            if (result.IsFailed)
-            {
-                return result.ToActionResultX();
-            }
-
-            return ModelFactory.ConvertFrom(result.Data).ToActionResultX();
+            
+            return ResponseFactory.FromResult(result, ModelFactory.ConvertFrom);
         }
 
         /// <summary>
@@ -167,14 +159,14 @@ namespace TransactionProcessor.Controllers
         /// <param name="cancellationToken">The cancellation token.</param>/// <returns></returns>
         [HttpPatch]
         [Route("{estateId}/users")]
-        public async Task<IActionResult> CreateEstateUser([FromRoute] Guid estateId,
+        public async Task<IResult> CreateEstateUser([FromRoute] Guid estateId,
                                                           [FromBody] CreateEstateUserRequest createEstateUserRequest,
                                                           CancellationToken cancellationToken)
         {
             // Reject password tokens
             if (ClaimsHelper.IsPasswordToken(GetUser()))
             {
-                return Forbid();
+                return ResponseFactory.FromResult(Result.Forbidden());
             }
 
             // Create the command
@@ -184,17 +176,17 @@ namespace TransactionProcessor.Controllers
             Result result = await Mediator.Send(command, cancellationToken);
 
             // return the result
-            return result.ToActionResultX();
+            return ResponseFactory.FromResult(result);
         }
 
         [HttpPatch]
         [Route("{estateId}/operators")]
-        public async Task<IActionResult> AssignOperator([FromRoute] Guid estateId, [FromBody] AssignOperatorRequest assignOperatorRequest, CancellationToken cancellationToken)
+        public async Task<IResult> AssignOperator([FromRoute] Guid estateId, [FromBody] AssignOperatorRequest assignOperatorRequest, CancellationToken cancellationToken)
         {
             // Reject password tokens
             if (ClaimsHelper.IsPasswordToken(GetUser()))
             {
-                return Forbid();
+                return ResponseFactory.FromResult(Result.Forbidden());
             }
 
             // Create the command
@@ -204,19 +196,19 @@ namespace TransactionProcessor.Controllers
             Result result = await Mediator.Send(command, cancellationToken);
 
             // return the result
-            return result.ToActionResultX();
+            return ResponseFactory.FromResult(result);
         }
 
         [HttpDelete]
         [Route("{estateId}/operators/{operatorId}")]
-        public async Task<IActionResult> RemoveOperator([FromRoute] Guid estateId,
+        public async Task<IResult> RemoveOperator([FromRoute] Guid estateId,
                                                         [FromRoute] Guid operatorId,
                                                         CancellationToken cancellationToken)
         {
             // Reject password tokens
             if (ClaimsHelper.IsPasswordToken(GetUser()))
             {
-                return Forbid();
+                return ResponseFactory.FromResult(Result.Forbidden());
             }
 
             EstateCommands.RemoveOperatorFromEstateCommand command = new(estateId, operatorId);
@@ -225,7 +217,7 @@ namespace TransactionProcessor.Controllers
             Result result = await Mediator.Send(command, cancellationToken);
 
             // return the result
-            return result.ToActionResultX();
+            return ResponseFactory.FromResult(result);
         }
 
         #endregion

@@ -120,6 +120,12 @@ namespace TransactionProcessor.Bootstrapper
 
             Assembly assembly = this.GetType().GetTypeInfo().Assembly;
             this.AddMvcCore().AddApplicationPart(assembly).AddControllersAsServices();
+
+            this.ConfigureHttpJsonOptions(options =>
+            {
+                options.SerializerOptions.PropertyNamingPolicy = new SnakeCaseNamingPolicy();
+                options.SerializerOptions.PropertyNameCaseInsensitive = true; // optional, but safer
+            });
         }
 
         #endregion

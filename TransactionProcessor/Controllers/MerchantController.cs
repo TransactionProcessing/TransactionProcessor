@@ -120,103 +120,86 @@ public class MerchantController : ControllerBase
     [HttpGet]
     [Route("{merchantId}/balance")]
     [SwaggerResponse(200, "OK", typeof(MerchantBalanceResponse))]
-    public async Task<IActionResult> GetMerchantBalance([FromRoute] Guid estateId,
+    public async Task<IResult> GetMerchantBalance([FromRoute] Guid estateId,
                                                         [FromRoute] Guid merchantId,
                                                         CancellationToken cancellationToken) {
 
         Result securityChecksResult = PerformSecurityChecks(estateId, merchantId);
-        if (securityChecksResult.Status == ResultStatus.Forbidden){
-            return this.Forbid();
+        if (securityChecksResult.Status == ResultStatus.Forbidden) {
+            return ResponseFactory.FromResult(securityChecksResult);
         }
 
         MerchantQueries.GetMerchantBalanceQuery query = new(estateId, merchantId);
         Result<MerchantBalanceState> getMerchantBalanceResult = await this.Mediator.Send(query, cancellationToken);
 
-        if (getMerchantBalanceResult.IsFailed) {
-            return getMerchantBalanceResult.ToActionResultX();
-        }
-        
-        Result<MerchantBalanceResponse> result = Result.Success(new MerchantBalanceResponse
-        {
-            Balance = getMerchantBalanceResult.Data.Balance,
-            MerchantId = merchantId,
-            AvailableBalance = getMerchantBalanceResult.Data.AvailableBalance,
-            EstateId = estateId
+        return ResponseFactory.FromResult(getMerchantBalanceResult, r => {
+            MerchantBalanceResponse response = new() {
+                Balance = r.Balance, 
+                MerchantId = r.MerchantId, 
+                AvailableBalance = r.AvailableBalance, 
+                EstateId = r.EstateId
+            };
+            return response;
         });
-
-        return result.ToActionResultX();
     }
 
     [HttpGet]
     [Route("{merchantId}/livebalance")]
     [SwaggerResponse(200, "OK", typeof(MerchantBalanceResponse))]
-    public async Task<IActionResult> GetMerchantBalanceLive([FromRoute] Guid estateId,
-                                                        [FromRoute] Guid merchantId,
-                                                        CancellationToken cancellationToken)
+    public async Task<IResult> GetMerchantBalanceLive([FromRoute] Guid estateId,
+                                                      [FromRoute] Guid merchantId,
+                                                      CancellationToken cancellationToken)
     {
         Result securityChecksResult = PerformSecurityChecks(estateId, merchantId);
         if (securityChecksResult.Status == ResultStatus.Forbidden) {
-            return this.Forbid();
+            return ResponseFactory.FromResult(securityChecksResult);
         }
 
         MerchantQueries.GetMerchantLiveBalanceQuery query = new MerchantQueries.GetMerchantLiveBalanceQuery(merchantId);
 
         Result<MerchantBalanceProjectionState1> getLiveMerchantBalanceResult = await this.Mediator.Send(query, cancellationToken);
 
-        if (getLiveMerchantBalanceResult.IsFailed)
-        {
-            return getLiveMerchantBalanceResult.ToActionResultX();
-        }
-
-        Result<MerchantBalanceResponse> result = Result.Success(new MerchantBalanceResponse
-        {
-            Balance = getLiveMerchantBalanceResult.Data.merchant.balance,
-            MerchantId = merchantId,
-            AvailableBalance = getLiveMerchantBalanceResult.Data.merchant.balance,
-            EstateId = estateId
+        return ResponseFactory.FromResult(getLiveMerchantBalanceResult, r => {
+            MerchantBalanceResponse response = new() { 
+                Balance = r.merchant.balance, 
+                MerchantId = Guid.Parse(r.merchant.Id),
+                AvailableBalance = r.merchant.balance, 
+                EstateId = estateId};
+            return response;
         });
-
-        return result.ToActionResultX();
     }
 
     [HttpGet]
     [Route("{merchantId}/balancehistory")]
-    public async Task<IActionResult> GetMerchantBalanceHistory([FromRoute] Guid estateId,
-                                                               [FromRoute] Guid merchantId,
-                                                               [FromQuery] DateTime startDate,
-                                                               [FromQuery] DateTime endDate,
-                                                               CancellationToken cancellationToken) {
+    public async Task<IResult> GetMerchantBalanceHistory([FromRoute] Guid estateId,
+                                                         [FromRoute] Guid merchantId,
+                                                         [FromQuery] DateTime startDate,
+                                                         [FromQuery] DateTime endDate,
+                                                         CancellationToken cancellationToken) {
         Result securityChecksResult = PerformSecurityChecks(estateId, merchantId);
-        if (securityChecksResult.Status == ResultStatus.Forbidden)
-        {
-            return this.Forbid();
+        if (securityChecksResult.Status == ResultStatus.Forbidden) {
+            return ResponseFactory.FromResult(securityChecksResult);
         }
 
-        MerchantQueries.GetMerchantBalanceHistoryQuery query =
-            new MerchantQueries.GetMerchantBalanceHistoryQuery(estateId, merchantId, startDate, endDate); 
+        MerchantQueries.GetMerchantBalanceHistoryQuery query = new(estateId, merchantId, startDate, endDate); 
 
         Result<List<MerchantBalanceChangedEntry>> getMerchantBalanceHistoryResult = await this.Mediator.Send(query, cancellationToken);
-        if (getMerchantBalanceHistoryResult.IsFailed)
-        {
-            return getMerchantBalanceHistoryResult.ToActionResultX();
-        }
 
-
-        List<MerchantBalanceChangedEntryResponse> response = new List<MerchantBalanceChangedEntryResponse>();
-        getMerchantBalanceHistoryResult.Data.ForEach(h => response.Add(new MerchantBalanceChangedEntryResponse {
-                                                                                             Balance = h.Balance,
-                                                                                             MerchantId = h.MerchantId,
-                                                                                             EstateId = h.EstateId,
-                                                                                             DateTime = h.DateTime,
-                                                                                             ChangeAmount = h.ChangeAmount,
-                                                                                             DebitOrCredit = h.DebitOrCredit,
-                                                                                             OriginalEventId = h.OriginalEventId,
-                                                                                             Reference = h.Reference,
-                                                                                         }));
-
-        Result<List<MerchantBalanceChangedEntryResponse>> result = Result.Success(response);
-
-        return result.ToActionResultX();
+        return ResponseFactory.FromResult(getMerchantBalanceHistoryResult, r => {
+            List<MerchantBalanceChangedEntryResponse> response = new();
+            r.ForEach(h => response.Add(new MerchantBalanceChangedEntryResponse
+            {
+                Balance = h.Balance,
+                MerchantId = h.MerchantId,
+                EstateId = h.EstateId,
+                DateTime = h.DateTime,
+                ChangeAmount = h.ChangeAmount,
+                DebitOrCredit = h.DebitOrCredit,
+                OriginalEventId = h.OriginalEventId,
+                Reference = h.Reference,
+            }));
+            return response;
+        });
     }
 
     private ClaimsPrincipal UserOverride;
@@ -258,14 +241,14 @@ public class MerchantController : ControllerBase
 
     [HttpPost]
     [Route("")]
-    public async Task<IActionResult> CreateMerchant([FromRoute] Guid estateId,
-                                                    [FromBody] CreateMerchantRequest createMerchantRequest,
-                                                    CancellationToken cancellationToken)
+    public async Task<IResult> CreateMerchant([FromRoute] Guid estateId,
+                                              [FromBody] CreateMerchantRequest createMerchantRequest,
+                                              CancellationToken cancellationToken)
     {
 
         Result isRequestAllowedResult = PerformStandardChecks(estateId);
         if (isRequestAllowedResult.IsFailed) {
-            return Forbid();
+            return ResponseFactory.FromResult(isRequestAllowedResult);
         }
 
         MerchantCommands.CreateMerchantCommand command = new(estateId, createMerchantRequest);
@@ -274,21 +257,21 @@ public class MerchantController : ControllerBase
         Result result = await Mediator.Send(command, cancellationToken);
 
         // return the result
-        return result.ToActionResultX();
+        return ResponseFactory.FromResult(result);
 
     }
 
     [HttpPatch]
     [Route("{merchantId}/operators")]
     [ProducesResponseType(typeof(AssignOperatorResponse), 201)]
-    public async Task<IActionResult> AssignOperator([FromRoute] Guid estateId,
-                                                    [FromRoute] Guid merchantId,
-                                                    AssignOperatorRequest assignOperatorRequest,
-                                                    CancellationToken cancellationToken)
+    public async Task<IResult> AssignOperator([FromRoute] Guid estateId,
+                                              [FromRoute] Guid merchantId,
+                                              AssignOperatorRequest assignOperatorRequest,
+                                              CancellationToken cancellationToken)
     {
         Result isRequestAllowedResult = PerformStandardChecks(estateId);
         if (isRequestAllowedResult.IsFailed) {
-            return Forbid();
+            return ResponseFactory.FromResult(isRequestAllowedResult);
         }
 
         MerchantCommands.AssignOperatorToMerchantCommand command = new(estateId, merchantId, assignOperatorRequest);
@@ -297,19 +280,19 @@ public class MerchantController : ControllerBase
         Result result = await Mediator.Send(command, cancellationToken);
 
         // return the result
-        return result.ToActionResultX();
+        return ResponseFactory.FromResult(result);
     }
 
     [HttpDelete]
     [Route("{merchantId}/operators/{operatorId}")]
-    public async Task<IActionResult> RemoveOperator([FromRoute] Guid estateId,
-                                                    [FromRoute] Guid merchantId,
-                                                    [FromRoute] Guid operatorId,
-                                                    CancellationToken cancellationToken)
+    public async Task<IResult> RemoveOperator([FromRoute] Guid estateId,
+                                              [FromRoute] Guid merchantId,
+                                              [FromRoute] Guid operatorId,
+                                              CancellationToken cancellationToken)
     {
         Result isRequestAllowedResult = PerformStandardChecks(estateId);
         if (isRequestAllowedResult.IsFailed) {
-            return Forbid();
+            return ResponseFactory.FromResult(isRequestAllowedResult);
         }
 
         MerchantCommands.RemoveOperatorFromMerchantCommand command = new(estateId, merchantId, operatorId);
@@ -318,19 +301,19 @@ public class MerchantController : ControllerBase
         Result result = await Mediator.Send(command, cancellationToken);
 
         // return the result
-        return result.ToActionResultX();
+        return ResponseFactory.FromResult(result);
     }
 
     [HttpPatch]
     [Route("{merchantId}/devices")]
-    public async Task<IActionResult> AddDevice([FromRoute] Guid estateId,
-                                               [FromRoute] Guid merchantId,
-                                               [FromBody] AddMerchantDeviceRequest addMerchantDeviceRequest,
-                                               CancellationToken cancellationToken)
+    public async Task<IResult> AddDevice([FromRoute] Guid estateId,
+                                         [FromRoute] Guid merchantId,
+                                         [FromBody] AddMerchantDeviceRequest addMerchantDeviceRequest,
+                                         CancellationToken cancellationToken)
     {
         Result isRequestAllowedResult = PerformStandardChecks(estateId);
         if (isRequestAllowedResult.IsFailed) {
-            return Forbid();
+            return ResponseFactory.FromResult(isRequestAllowedResult);
         }
 
         MerchantCommands.AddMerchantDeviceCommand command = new(estateId, merchantId, addMerchantDeviceRequest);
@@ -339,19 +322,19 @@ public class MerchantController : ControllerBase
         Result result = await Mediator.Send(command, cancellationToken);
 
         // return the result
-        return result.ToActionResultX();
+        return ResponseFactory.FromResult(result);
     }
 
     [HttpPatch]
     [Route("{merchantId}/contracts")]
-    public async Task<IActionResult> AddContract([FromRoute] Guid estateId,
-                                                 [FromRoute] Guid merchantId,
-                                                 [FromBody] AddMerchantContractRequest addMerchantContractRequest,
-                                                 CancellationToken cancellationToken)
+    public async Task<IResult> AddContract([FromRoute] Guid estateId,
+                                           [FromRoute] Guid merchantId,
+                                           [FromBody] AddMerchantContractRequest addMerchantContractRequest,
+                                           CancellationToken cancellationToken)
     {
         Result isRequestAllowedResult = PerformStandardChecks(estateId);
         if (isRequestAllowedResult.IsFailed) {
-            return Forbid();
+            return ResponseFactory.FromResult(isRequestAllowedResult);
         }
 
         MerchantCommands.AddMerchantContractCommand command = new(estateId, merchantId, addMerchantContractRequest);
@@ -360,19 +343,19 @@ public class MerchantController : ControllerBase
         Result result = await Mediator.Send(command, cancellationToken);
 
         // return the result
-        return result.ToActionResultX();
+        return ResponseFactory.FromResult(result);
     }
 
     [HttpDelete]
     [Route("{merchantId}/contracts/{contractId}")]
-    public async Task<IActionResult> RemoveContract([FromRoute] Guid estateId,
-                                                    [FromRoute] Guid merchantId,
-                                                    [FromRoute] Guid contractId,
-                                                    CancellationToken cancellationToken)
+    public async Task<IResult> RemoveContract([FromRoute] Guid estateId,
+                                              [FromRoute] Guid merchantId,
+                                              [FromRoute] Guid contractId,
+                                              CancellationToken cancellationToken)
     {
         Result isRequestAllowedResult = PerformStandardChecks(estateId);
         if (isRequestAllowedResult.IsFailed) {
-            return Forbid();
+            return ResponseFactory.FromResult(isRequestAllowedResult);
         }
 
         MerchantCommands.RemoveMerchantContractCommand command = new(estateId, merchantId, contractId);
@@ -381,19 +364,19 @@ public class MerchantController : ControllerBase
         Result result = await Mediator.Send(command, cancellationToken);
 
         // return the result
-        return result.ToActionResultX();
+        return ResponseFactory.FromResult(result);
     }
 
     [HttpPatch]
     [Route("{merchantId}/users")]
-    public async Task<IActionResult> CreateMerchantUser([FromRoute] Guid estateId,
-                                                        [FromRoute] Guid merchantId,
-                                                        [FromBody] CreateMerchantUserRequest createMerchantUserRequest,
-                                                        CancellationToken cancellationToken)
+    public async Task<IResult> CreateMerchantUser([FromRoute] Guid estateId,
+                                                  [FromRoute] Guid merchantId,
+                                                  [FromBody] CreateMerchantUserRequest createMerchantUserRequest,
+                                                  CancellationToken cancellationToken)
     {
         Result isRequestAllowedResult = PerformStandardChecks(estateId);
         if (isRequestAllowedResult.IsFailed) {
-            return Forbid();
+            return ResponseFactory.FromResult(isRequestAllowedResult);
         }
 
         MerchantCommands.CreateMerchantUserCommand command = new(estateId, merchantId, createMerchantUserRequest);
@@ -402,19 +385,19 @@ public class MerchantController : ControllerBase
         Result result = await Mediator.Send(command, cancellationToken);
 
         // return the result
-        return result.ToActionResultX();
+        return ResponseFactory.FromResult(result);
     }
 
     [HttpPost]
     [Route("{merchantId}/deposits")]
-    public async Task<IActionResult> MakeDeposit([FromRoute] Guid estateId,
-                                                 [FromRoute] Guid merchantId,
-                                                 [FromBody] MakeMerchantDepositRequest makeMerchantDepositRequest,
-                                                 CancellationToken cancellationToken)
+    public async Task<IResult> MakeDeposit([FromRoute] Guid estateId,
+                                           [FromRoute] Guid merchantId,
+                                           [FromBody] MakeMerchantDepositRequest makeMerchantDepositRequest,
+                                           CancellationToken cancellationToken)
     {
         Result isRequestAllowedResult = PerformStandardChecks(estateId);
         if (isRequestAllowedResult.IsFailed) {
-            return Forbid();
+            return ResponseFactory.FromResult(isRequestAllowedResult);
         }
 
         // This will always be a manual deposit as auto ones come in via another route
@@ -424,21 +407,21 @@ public class MerchantController : ControllerBase
         Result result = await Mediator.Send(command, cancellationToken);
 
         // return the result
-        return result.ToActionResultX();
+        return ResponseFactory.FromResult(result);
     }
 
     [HttpPost]
     [Route("{merchantId}/withdrawals")]
     //[SwaggerResponse(201, "Created", typeof(MakeMerchantDepositResponse))]
     //[SwaggerResponseExample(201, typeof(MakeMerchantDepositResponseExample))]
-    public async Task<IActionResult> MakeWithdrawal([FromRoute] Guid estateId,
-                                                    [FromRoute] Guid merchantId,
-                                                    [FromBody] MakeMerchantWithdrawalRequest makeMerchantWithdrawalRequest,
-                                                    CancellationToken cancellationToken)
+    public async Task<IResult> MakeWithdrawal([FromRoute] Guid estateId,
+                                              [FromRoute] Guid merchantId,
+                                              [FromBody] MakeMerchantWithdrawalRequest makeMerchantWithdrawalRequest,
+                                              CancellationToken cancellationToken)
     {
         Result isRequestAllowedResult = PerformStandardChecks(estateId);
         if (isRequestAllowedResult.IsFailed) {
-            return Forbid();
+            return ResponseFactory.FromResult(isRequestAllowedResult);
         }
 
         MerchantCommands.MakeMerchantWithdrawalCommand command = new(estateId, merchantId, makeMerchantWithdrawalRequest);
@@ -447,20 +430,20 @@ public class MerchantController : ControllerBase
         Result result = await Mediator.Send(command, cancellationToken);
 
         // return the result
-        return result.ToActionResultX();
+        return ResponseFactory.FromResult(result);
     }
 
     [HttpPatch]
     [Route("{merchantId}/devices/{deviceIdentifier}")]
-    public async Task<IActionResult> SwapMerchantDevice([FromRoute] Guid estateId,
-                                                        [FromRoute] Guid merchantId,
-                                                        [FromRoute] string deviceIdentifier,
-                                                        [FromBody] SwapMerchantDeviceRequest swapMerchantDeviceRequest,
-                                                        CancellationToken cancellationToken)
+    public async Task<IResult> SwapMerchantDevice([FromRoute] Guid estateId,
+                                                  [FromRoute] Guid merchantId,
+                                                  [FromRoute] string deviceIdentifier,
+                                                  [FromBody] SwapMerchantDeviceRequest swapMerchantDeviceRequest,
+                                                  CancellationToken cancellationToken)
     {
         Result isRequestAllowedResult = PerformStandardChecks(estateId);
         if (isRequestAllowedResult.IsFailed) {
-            return Forbid();
+            return ResponseFactory.FromResult(isRequestAllowedResult);
         }
 
         MerchantCommands.SwapMerchantDeviceCommand command = new(estateId, merchantId, deviceIdentifier, swapMerchantDeviceRequest);
@@ -469,7 +452,7 @@ public class MerchantController : ControllerBase
         Result result = await Mediator.Send(command, cancellationToken);
 
         // return the result
-        return result.ToActionResultX();
+        return ResponseFactory.FromResult(result);
     }
 
     private Result PerformMerchantUserChecks(Guid estateId, Guid merchantId)
@@ -505,96 +488,90 @@ public class MerchantController : ControllerBase
 
     [HttpGet]
     [Route("{merchantId}")]
-    public async Task<IActionResult> GetMerchant([FromRoute] Guid estateId,
-                                                 [FromRoute] Guid merchantId,
-                                                 CancellationToken cancellationToken)
+    public async Task<IResult> GetMerchant([FromRoute] Guid estateId,
+                                           [FromRoute] Guid merchantId,
+                                           CancellationToken cancellationToken)
     {
         Result isRequestAllowedResult = PerformMerchantUserChecks(estateId, merchantId);
         if (isRequestAllowedResult.IsFailed) {
-            return Forbid();
+            return ResponseFactory.FromResult(isRequestAllowedResult);
         }
 
         MerchantQueries.GetMerchantQuery query = new(estateId, merchantId);
 
         // Route the query
         Result<Models.Merchant.Merchant> result = await Mediator.Send(query, cancellationToken);
-        if (result.IsFailed)
-            return result.ToActionResultX();
-        return ModelFactory.ConvertFrom(result.Data).ToActionResultX();
+
+        return ResponseFactory.FromResult(result, ModelFactory.ConvertFrom);
     }
     
     [Route("{merchantId}/contracts")]
     [HttpGet]
-    public async Task<IActionResult> GetMerchantContracts([FromRoute] Guid estateId,
-                                                          [FromRoute] Guid merchantId,
-                                                          CancellationToken cancellationToken)
+    public async Task<IResult> GetMerchantContracts([FromRoute] Guid estateId,
+                                                    [FromRoute] Guid merchantId,
+                                                    CancellationToken cancellationToken)
     {
         Result isRequestAllowedResult = PerformMerchantUserChecks(estateId, merchantId);
         if (isRequestAllowedResult.IsFailed)
         {
-            return Forbid();
+            return ResponseFactory.FromResult(isRequestAllowedResult);
         }
 
         MerchantQueries.GetMerchantContractsQuery query = new(estateId, merchantId);
 
         Result<List<Models.Contract.Contract>> result = await Mediator.Send(query, cancellationToken);
 
-        if (result.IsFailed)
-            return result.ToActionResultX();
-
-        return ModelFactory.ConvertFrom(result.Data).ToActionResultX();
+        return ResponseFactory.FromResult(result, ModelFactory.ConvertFrom);
     }
 
     [HttpGet]
     [Route("")]
-    public async Task<IActionResult> GetMerchants([FromRoute] Guid estateId,
-                                                  CancellationToken cancellationToken)
+    public async Task<IResult> GetMerchants([FromRoute] Guid estateId,
+                                            CancellationToken cancellationToken)
     {
         Result isRequestAllowedResult = PerformStandardChecks(estateId);
         if (isRequestAllowedResult.IsFailed) {
-            return Forbid();
+            return ResponseFactory.FromResult(isRequestAllowedResult);
         }
 
         MerchantQueries.GetMerchantsQuery query = new(estateId);
 
         Result<List<Models.Merchant.Merchant>> result = await Mediator.Send(query, cancellationToken);
 
-        return ModelFactory.ConvertFrom(result.Data).ToActionResultX();
+        return ResponseFactory.FromResult(result, ModelFactory.ConvertFrom);
     }
 
     [Route("{merchantId}/contracts/{contractId}/products/{productId}/transactionFees")]
     [HttpGet]
-    public async Task<IActionResult> GetTransactionFeesForProduct([FromRoute] Guid estateId,
-                                                                  [FromRoute] Guid merchantId,
-                                                                  [FromRoute] Guid contractId,
-                                                                  [FromRoute] Guid productId,
-                                                                  CancellationToken cancellationToken)
+    public async Task<IResult> GetTransactionFeesForProduct([FromRoute] Guid estateId,
+                                                            [FromRoute] Guid merchantId,
+                                                            [FromRoute] Guid contractId,
+                                                            [FromRoute] Guid productId,
+                                                            CancellationToken cancellationToken)
     {
         Result isRequestAllowedResult = PerformMerchantUserChecks(estateId, merchantId);
         if (isRequestAllowedResult.IsFailed) {
-            return Forbid();
+            return ResponseFactory.FromResult(isRequestAllowedResult);
         }
 
         MerchantQueries.GetTransactionFeesForProductQuery query = new(estateId, merchantId, contractId, productId);
 
         Result<List<ContractProductTransactionFee>> transactionFeesResult = await Mediator.Send(query, cancellationToken);
-        if (transactionFeesResult.IsFailed)
-            return transactionFeesResult.ToActionResultX();
-        List<ContractProductTransactionFee> transactionFees = transactionFeesResult.Data;
-        return ModelFactory.ConvertFrom(transactionFees).ToActionResultX();
+        
+        return ResponseFactory.FromResult(transactionFeesResult, ModelFactory.ConvertFrom);
     }
 
     [HttpPatch]
     [Route("{merchantId}")]
-    public async Task<IActionResult> UpdateMerchant([FromRoute] Guid estateId,
-                                                    [FromRoute] Guid merchantId,
-                                                    [FromBody] UpdateMerchantRequest updateMerchantRequest,
-                                                    CancellationToken cancellationToken)
+    public async Task<IResult> UpdateMerchant([FromRoute] Guid estateId,
+                                              [FromRoute] Guid merchantId,
+                                              [FromBody] UpdateMerchantRequest updateMerchantRequest,
+                                              CancellationToken cancellationToken)
     {
 
         Result isRequestAllowedResult = PerformStandardChecks(estateId);
         if (isRequestAllowedResult.IsFailed) {
-            return Forbid();
+            return ResponseFactory.FromResult(isRequestAllowedResult);
         }
 
         MerchantCommands.UpdateMerchantCommand command = new(estateId, merchantId, updateMerchantRequest);
@@ -603,19 +580,19 @@ public class MerchantController : ControllerBase
         Result result = await Mediator.Send(command, cancellationToken);
 
         // return the result
-        return result.ToActionResultX();
+        return ResponseFactory.FromResult(result);
     }
 
     [Route("{merchantId}/addresses")]
     [HttpPatch]
-    public async Task<IActionResult> AddMerchantAddress([FromRoute] Guid estateId,
-                                                        [FromRoute] Guid merchantId,
-                                                        [FromBody] DataTransferObjects.Requests.Merchant.Address addAddressRequest,
-                                                        CancellationToken cancellationToken)
+    public async Task<IResult> AddMerchantAddress([FromRoute] Guid estateId,
+                                                  [FromRoute] Guid merchantId,
+                                                  [FromBody] DataTransferObjects.Requests.Merchant.Address addAddressRequest,
+                                                  CancellationToken cancellationToken)
     {
         Result isRequestAllowedResult = PerformStandardChecks(estateId);
         if (isRequestAllowedResult.IsFailed) {
-            return Forbid();
+            return ResponseFactory.FromResult(isRequestAllowedResult);
         }
 
         MerchantCommands.AddMerchantAddressCommand command = new(estateId, merchantId, addAddressRequest);
@@ -624,20 +601,20 @@ public class MerchantController : ControllerBase
         Result result = await Mediator.Send(command, cancellationToken);
 
         // return the result
-        return result.ToActionResultX();
+        return ResponseFactory.FromResult(result);
     }
 
     [Route("{merchantId}/addresses/{addressId}")]
     [HttpPatch]
-    public async Task<IActionResult> UpdateMerchantAddress([FromRoute] Guid estateId,
-                                                           [FromRoute] Guid merchantId,
-                                                           [FromRoute] Guid addressId,
-                                                           [FromBody] DataTransferObjects.Requests.Merchant.Address updateAddressRequest,
-                                                           CancellationToken cancellationToken)
+    public async Task<IResult> UpdateMerchantAddress([FromRoute] Guid estateId,
+                                                     [FromRoute] Guid merchantId,
+                                                     [FromRoute] Guid addressId,
+                                                     [FromBody] DataTransferObjects.Requests.Merchant.Address updateAddressRequest,
+                                                     CancellationToken cancellationToken)
     {
         Result isRequestAllowedResult = PerformStandardChecks(estateId);
         if (isRequestAllowedResult.IsFailed) {
-            return Forbid();
+            return ResponseFactory.FromResult(isRequestAllowedResult);
         }
 
         MerchantCommands.UpdateMerchantAddressCommand command = new(estateId, merchantId, addressId, updateAddressRequest);
@@ -646,19 +623,19 @@ public class MerchantController : ControllerBase
         Result result = await Mediator.Send(command, cancellationToken);
 
         // return the result
-        return result.ToActionResultX();
+        return ResponseFactory.FromResult(result);
     }
 
     [Route("{merchantId}/contacts")]
     [HttpPatch]
-    public async Task<IActionResult> AddMerchantContact([FromRoute] Guid estateId,
-                                                            [FromRoute] Guid merchantId,
-                                                            [FromBody] DataTransferObjects.Requests.Merchant.Contact addContactRequest,
-                                                            CancellationToken cancellationToken)
+    public async Task<IResult> AddMerchantContact([FromRoute] Guid estateId,
+                                                  [FromRoute] Guid merchantId,
+                                                  [FromBody] DataTransferObjects.Requests.Merchant.Contact addContactRequest,
+                                                  CancellationToken cancellationToken)
     {
         Result isRequestAllowedResult = PerformStandardChecks(estateId);
         if (isRequestAllowedResult.IsFailed) {
-            return Forbid();
+            return ResponseFactory.FromResult(isRequestAllowedResult);
         }
 
         MerchantCommands.AddMerchantContactCommand command = new(estateId, merchantId, addContactRequest);
@@ -667,20 +644,20 @@ public class MerchantController : ControllerBase
         Result result = await Mediator.Send(command, cancellationToken);
 
         // return the result
-        return result.ToActionResultX();
+        return ResponseFactory.FromResult(result);
     }
 
     [Route("{merchantId}/contacts/{contactId}")]
     [HttpPatch]
-    public async Task<IActionResult> UpdateMerchantContact([FromRoute] Guid estateId,
-                                                           [FromRoute] Guid merchantId,
-                                                           [FromRoute] Guid contactId,
-                                                           [FromBody] DataTransferObjects.Requests.Merchant.Contact updateContactRequest,
-                                                           CancellationToken cancellationToken)
+    public async Task<IResult> UpdateMerchantContact([FromRoute] Guid estateId,
+                                                     [FromRoute] Guid merchantId,
+                                                     [FromRoute] Guid contactId,
+                                                     [FromBody] DataTransferObjects.Requests.Merchant.Contact updateContactRequest,
+                                                     CancellationToken cancellationToken)
     {
         Result isRequestAllowedResult = PerformStandardChecks(estateId);
         if (isRequestAllowedResult.IsFailed) {
-            return Forbid();
+            return ResponseFactory.FromResult(isRequestAllowedResult);
         }
 
         MerchantCommands.UpdateMerchantContactCommand command = new(estateId, merchantId, contactId, updateContactRequest);
@@ -689,19 +666,19 @@ public class MerchantController : ControllerBase
         Result result = await Mediator.Send(command, cancellationToken);
 
         // return the result
-        return result.ToActionResultX();
+        return ResponseFactory.FromResult(result);
     }
 
     [HttpPost]
     [Route("{merchantId}/statements")]
-    public async Task<IActionResult> GenerateMerchantStatement([FromRoute] Guid estateId,
-                                                               [FromRoute] Guid merchantId,
-                                                               [FromBody] GenerateMerchantStatementRequest generateMerchantStatementRequest,
-                                                               CancellationToken cancellationToken)
+    public async Task<IResult> GenerateMerchantStatement([FromRoute] Guid estateId,
+                                                         [FromRoute] Guid merchantId,
+                                                         [FromBody] GenerateMerchantStatementRequest generateMerchantStatementRequest,
+                                                         CancellationToken cancellationToken)
     {
         Result isRequestAllowedResult = PerformStandardChecks(estateId);
         if (isRequestAllowedResult.IsFailed) {
-            return Forbid();
+            return ResponseFactory.FromResult(isRequestAllowedResult);
         }
 
         MerchantCommands.GenerateMerchantStatementCommand command = new(estateId, merchantId, generateMerchantStatementRequest);
@@ -710,6 +687,6 @@ public class MerchantController : ControllerBase
         Result result = await Mediator.Send(command, cancellationToken);
 
         // return the result
-        return result.ToActionResultX();
+        return ResponseFactory.FromResult(result);
     }
 }

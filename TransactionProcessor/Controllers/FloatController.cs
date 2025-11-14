@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Mvc;
 using Shared.Results;
 using Shared.Results.Web;
 using SimpleResults;
@@ -40,22 +41,22 @@ namespace TransactionProcessor.Controllers
         }
 
         [HttpPost]
-        public async Task<IActionResult> CreateFloatForContractProduct([FromRoute] Guid estateId, [FromBody] DataTransferObjects.CreateFloatForContractProductRequest createFloatRequest, CancellationToken cancellationToken){
+        public async Task<IResult> CreateFloatForContractProduct([FromRoute] Guid estateId, [FromBody] DataTransferObjects.CreateFloatForContractProductRequest createFloatRequest, CancellationToken cancellationToken){
             FloatCommands.CreateFloatForContractProductCommand command = new(estateId, createFloatRequest.ContractId, createFloatRequest.ProductId,
                                                                                                        createFloatRequest.CreateDateTime);
 
             Result result= await this.Mediator.Send(command, cancellationToken);
 
-            return result.ToActionResultX();
+            return ResponseFactory.FromResult(result);
         }
 
         [HttpPut]
-        public async Task<IActionResult> RecordFloatCreditPurchase([FromRoute] Guid estateId, [FromBody] DataTransferObjects.RecordFloatCreditPurchaseRequest recordFloatCreditPurchaseRequest, CancellationToken cancellationToken){
+        public async Task<IResult> RecordFloatCreditPurchase([FromRoute] Guid estateId, [FromBody] DataTransferObjects.RecordFloatCreditPurchaseRequest recordFloatCreditPurchaseRequest, CancellationToken cancellationToken){
             FloatCommands.RecordCreditPurchaseForFloatCommand command = new(estateId, recordFloatCreditPurchaseRequest.FloatId, recordFloatCreditPurchaseRequest.CreditAmount, recordFloatCreditPurchaseRequest.CostPrice, recordFloatCreditPurchaseRequest.PurchaseDateTime);
 
             Result result = await this.Mediator.Send(command, cancellationToken);
 
-            return result.ToActionResultX();
+            return ResponseFactory.FromResult(result);
         }
     }
 }

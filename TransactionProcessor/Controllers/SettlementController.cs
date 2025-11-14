@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using SecurityService.DataTransferObjects.Responses;
 using Shared.Results;
@@ -47,7 +48,7 @@ namespace TransactionProcessor.Controllers
 
         [HttpGet]
         [Route("{settlementDate}/merchants/{merchantId}/pending")]
-        public async Task<IActionResult> GetPendingSettlement([FromRoute] DateTime settlementDate,
+        public async Task<IResult> GetPendingSettlement([FromRoute] DateTime settlementDate,
                                                               [FromRoute] Guid estateId,
                                                               [FromRoute] Guid merchantId,
                                                               CancellationToken cancellationToken)
@@ -55,106 +56,57 @@ namespace TransactionProcessor.Controllers
             SettlementQueries.GetPendingSettlementQuery query = new(settlementDate, merchantId, estateId);
 
             Result<SettlementAggregate> getPendingSettlementResult = await this.Mediator.Send(query, cancellationToken);
-            if (getPendingSettlementResult.IsFailed)
-                return getPendingSettlementResult.ToActionResultX();
-
-            SettlementResponse settlementResponse = new SettlementResponse
-                                            {
-                                                EstateId = getPendingSettlementResult.Data.EstateId,
-                                                MerchantId = getPendingSettlementResult.Data.MerchantId,
-                                                NumberOfFeesPendingSettlement = getPendingSettlementResult.Data.GetNumberOfFeesPendingSettlement(),
-                                                NumberOfFeesSettled = getPendingSettlementResult.Data.GetNumberOfFeesSettled(),
-                                                SettlementDate = getPendingSettlementResult.Data.SettlementDate,
-                                                SettlementCompleted = getPendingSettlementResult.Data.SettlementComplete
-                                            };
-
-            return Result.Success(settlementResponse).ToActionResultX();
-
+            return ResponseFactory.FromResult(getPendingSettlementResult, r => {
+                SettlementResponse settlementResponse = new SettlementResponse {
+                    EstateId = r.EstateId,
+                    MerchantId = r.MerchantId,
+                    NumberOfFeesPendingSettlement = r.GetNumberOfFeesPendingSettlement(),
+                    NumberOfFeesSettled = r.GetNumberOfFeesSettled(),
+                    SettlementDate = r.SettlementDate,
+                    SettlementCompleted = r.SettlementComplete
+                };
+                return settlementResponse;
+            });
         }
 
         [HttpPost]
         [Route("{settlementDate}/merchants/{merchantId}")]
-        public async Task<IActionResult> ProcessSettlement([FromRoute] DateTime settlementDate,
-                                                           [FromRoute] Guid estateId,
-                                                           [FromRoute] Guid merchantId,
-                                                           CancellationToken cancellationToken)
+        public async Task<IResult> ProcessSettlement([FromRoute] DateTime settlementDate,
+                                                     [FromRoute] Guid estateId,
+                                                     [FromRoute] Guid merchantId,
+                                                     CancellationToken cancellationToken)
         {
             SettlementCommands.ProcessSettlementCommand command = new(settlementDate, merchantId, estateId);
 
             Result<Guid> result = await this.Mediator.Send(command, cancellationToken);
 
-            return result.ToActionResultX();
+            return ResponseFactory.FromResult(result, guid => guid);
         }
 
         [Route("{settlementId}")]
         [HttpGet]
-        public async Task<IActionResult> GetSettlement([FromRoute] Guid estateId,
-                                                       [FromQuery] Guid merchantId,
-                                                       [FromRoute] Guid settlementId,
-                                                       CancellationToken cancellationToken)
+        public async Task<IResult> GetSettlement([FromRoute] Guid estateId,
+                                                 [FromQuery] Guid merchantId,
+                                                 [FromRoute] Guid settlementId,
+                                                 CancellationToken cancellationToken)
         {
             SettlementQueries.GetSettlementQuery query = new(estateId, merchantId, settlementId);
             var result = await this.Mediator.Send(query, cancellationToken);
-            if (result.IsFailed)
-                return result.ToActionResultX();
 
-            DataTransferObjects.Responses.Settlement.SettlementResponse settlementResponse = new() {
-                IsCompleted = result.Data.IsCompleted,
-                NumberOfFeesSettled = result.Data.NumberOfFeesSettled,
-                SettlementDate = result.Data.SettlementDate,
-                SettlementFees = new(),
-                SettlementId = result.Data.SettlementId,
-                ValueOfFeesSettled = result.Data.ValueOfFeesSettled
-            };
-
-            foreach (SettlementFeeModel settlementFeeResponse in result.Data.SettlementFees)
-            {
-                settlementResponse.SettlementFees.Add(new()
+            return ResponseFactory.FromResult(result, r => {
+                DataTransferObjects.Responses.Settlement.SettlementResponse settlementResponse = new()
                 {
-                    TransactionId = settlementFeeResponse.TransactionId,
-                    MerchantId = settlementFeeResponse.MerchantId,
-                    MerchantName = settlementFeeResponse.MerchantName,
-                    SettlementDate = settlementFeeResponse.SettlementDate,
-                    SettlementId = settlementFeeResponse.SettlementId,
-                    CalculatedValue = settlementFeeResponse.CalculatedValue,
-                    FeeDescription = settlementFeeResponse.FeeDescription,
-                    IsSettled = settlementFeeResponse.IsSettled,
-                    OperatorIdentifier = settlementFeeResponse.OperatorIdentifier
-                });
-            }
-
-            return Result.Success(settlementResponse).ToActionResultX();
-        }
-
-        [Route("")]
-        [HttpGet]
-        public async Task<IActionResult> GetSettlements([FromRoute] Guid estateId,
-                                                        [FromQuery] Guid? merchantId,
-                                                        [FromQuery(Name = "start_date")] string startDate,
-                                                        [FromQuery(Name = "end_date")] string endDate,
-                                                        CancellationToken cancellationToken)
-        {
-            SettlementQueries.GetSettlementsQuery query = new(estateId, merchantId, startDate, endDate);
-            var result = await this.Mediator.Send(query, cancellationToken);
-            if (result.IsFailed)
-                return result.ToActionResultX();
-
-            var responses = new List<DataTransferObjects.Responses.Settlement.SettlementResponse>();
-            foreach (SettlementModel settlementResponses in result.Data)
-            {
-                DataTransferObjects.Responses.Settlement.SettlementResponse sr = new DataTransferObjects.Responses.Settlement.SettlementResponse
-                {
-                    IsCompleted = settlementResponses.IsCompleted,
-                    NumberOfFeesSettled = settlementResponses.NumberOfFeesSettled,
-                    SettlementDate = settlementResponses.SettlementDate,
+                    IsCompleted = r.IsCompleted,
+                    NumberOfFeesSettled = r.NumberOfFeesSettled,
+                    SettlementDate = r.SettlementDate,
                     SettlementFees = new(),
-                    SettlementId = settlementResponses.SettlementId,
-                    ValueOfFeesSettled = settlementResponses.ValueOfFeesSettled
+                    SettlementId = r.SettlementId,
+                    ValueOfFeesSettled = r.ValueOfFeesSettled
                 };
 
-                foreach (SettlementFeeModel settlementFeeResponse in settlementResponses.SettlementFees)
+                foreach (SettlementFeeModel settlementFeeResponse in r.SettlementFees)
                 {
-                    sr.SettlementFees.Add(new()
+                    settlementResponse.SettlementFees.Add(new()
                     {
                         TransactionId = settlementFeeResponse.TransactionId,
                         MerchantId = settlementFeeResponse.MerchantId,
@@ -167,11 +119,52 @@ namespace TransactionProcessor.Controllers
                         OperatorIdentifier = settlementFeeResponse.OperatorIdentifier
                     });
                 }
-                responses.Add(sr);
-            }
 
+                return settlementResponse;
+            });
+        }
 
-            return Result.Success(responses).ToActionResultX();
+        [Route("")]
+        [HttpGet]
+        public async Task<IResult> GetSettlements([FromRoute] Guid estateId,
+                                                  [FromQuery] Guid? merchantId,
+                                                  [FromQuery(Name = "start_date")] string startDate,
+                                                  [FromQuery(Name = "end_date")] string endDate,
+                                                  CancellationToken cancellationToken)
+        {
+            SettlementQueries.GetSettlementsQuery query = new(estateId, merchantId, startDate, endDate);
+            Result<List<SettlementModel>> result = await this.Mediator.Send(query, cancellationToken);
+            return ResponseFactory.FromResult(result, r => {
+                List<DataTransferObjects.Responses.Settlement.SettlementResponse> responses = new List<DataTransferObjects.Responses.Settlement.SettlementResponse>();
+                foreach (SettlementModel settlementResponses in r) {
+                    DataTransferObjects.Responses.Settlement.SettlementResponse sr = new DataTransferObjects.Responses.Settlement.SettlementResponse {
+                        IsCompleted = settlementResponses.IsCompleted,
+                        NumberOfFeesSettled = settlementResponses.NumberOfFeesSettled,
+                        SettlementDate = settlementResponses.SettlementDate,
+                        SettlementFees = new(),
+                        SettlementId = settlementResponses.SettlementId,
+                        ValueOfFeesSettled = settlementResponses.ValueOfFeesSettled
+                    };
+
+                    foreach (SettlementFeeModel settlementFeeResponse in settlementResponses.SettlementFees) {
+                        sr.SettlementFees.Add(new() {
+                            TransactionId = settlementFeeResponse.TransactionId,
+                            MerchantId = settlementFeeResponse.MerchantId,
+                            MerchantName = settlementFeeResponse.MerchantName,
+                            SettlementDate = settlementFeeResponse.SettlementDate,
+                            SettlementId = settlementFeeResponse.SettlementId,
+                            CalculatedValue = settlementFeeResponse.CalculatedValue,
+                            FeeDescription = settlementFeeResponse.FeeDescription,
+                            IsSettled = settlementFeeResponse.IsSettled,
+                            OperatorIdentifier = settlementFeeResponse.OperatorIdentifier
+                        });
+                    }
+
+                    responses.Add(sr);
+                }
+
+                return responses;
+            });
         }
 
         #endregion
