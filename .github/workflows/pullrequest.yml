@@ -46,10 +46,10 @@ jobs:
       run: docker build . --file TransactionProcessor/Dockerfile --tag transactionprocessor:latest
       
     - name: Run Integration Tests
-      env:
-        FLUENTDOCKER_DOCKER_USE_SUDO: "false"
-        FLUENTDOCKER_DOCKER_PATH: "/usr/bin/docker"
-      run: dotnet test "TransactionProcessor.IntegrationTests\TransactionProcessor.IntegrationTests.csproj"  --filter Category=PRTest --logger "trx;LogFileName=test-results.trx"
+      run: 
+        FLUENTDOCKER_DOCKER_USE_SUDO=false \
+        FLUENTDOCKER_DOCKER_PATH=/usr/bin/docker \
+        dotnet test "TransactionProcessor.IntegrationTests\TransactionProcessor.IntegrationTests.csproj"  --filter Category=PRTest --logger "trx;LogFileName=test-results.trx"
 
     - uses: actions/upload-artifact@v4.4.0
       if: ${{ failure() }}
