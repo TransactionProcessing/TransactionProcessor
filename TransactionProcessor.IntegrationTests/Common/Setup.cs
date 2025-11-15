@@ -20,6 +20,8 @@ namespace TransactionProcessor.IntegrationTests.Common
 
         public static async Task GlobalSetup(DockerHelper dockerHelper)
         {
+            Environment.SetEnvironmentVariable("FLUENTDOCKER_DOCKER_USE_SUDO", "false");
+
             ShouldlyConfiguration.DefaultTaskTimeout = TimeSpan.FromMinutes(1);
             dockerHelper.SqlCredentials = Setup.SqlCredentials;
             dockerHelper.DockerCredentials = Setup.DockerCredentials;
