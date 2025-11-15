@@ -16,6 +16,12 @@ jobs:
     steps:
     - uses: actions/checkout@v2.3.4
   
+    - name: Disable sudo (FluentDocker fix)
+      run: |
+        echo '#!/bin/bash' | sudo tee /usr/local/bin/sudo > /dev/null
+        echo 'exec "$@"'    | sudo tee -a /usr/local/bin/sudo > /dev/null
+        sudo chmod +x /usr/local/bin/sudo
+
     - name: Install NET 9
       uses: actions/setup-dotnet@v4.0.1
       with:
