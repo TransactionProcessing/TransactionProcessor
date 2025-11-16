@@ -8,6 +8,15 @@ namespace TransactionProcessor.IntegrationTests.Common
     using NLog;
     using Reqnroll;
 
+    public class Test{
+        [BeforeTestRun]
+        public static async Task BeforeTestRun()
+        {
+            Environment.SetEnvironmentVariable("FLUENTDOCKER_DOCKER_USE_SUDO", "false");
+            Environment.SetEnvironmentVariable("FLUENTDOCKER_DOCKER_PATH", "/usr/bin/docker");
+        }
+    }
+
     [Binding]
     [Scope(Tag = "base")]
     public class GenericSteps
@@ -26,9 +35,6 @@ namespace TransactionProcessor.IntegrationTests.Common
         [BeforeScenario]
         public async Task StartSystem()
         {
-            Environment.SetEnvironmentVariable("FLUENTDOCKER_DOCKER_USE_SUDO", "false");
-            Environment.SetEnvironmentVariable("FLUENTDOCKER_DOCKER_PATH", "/usr/bin/docker");
-
             // Initialise a logger
             String scenarioName = this.ScenarioContext.ScenarioInfo.Title.Replace(" ", "");
             NlogLogger logger = new NlogLogger();
