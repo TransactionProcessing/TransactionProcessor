@@ -16,12 +16,6 @@ jobs:
     steps:
     - uses: actions/checkout@v2.3.4
   
-    - name: Disable sudo (FluentDocker fix)
-      run: |
-        echo '#!/bin/bash' | sudo tee /usr/local/bin/sudo > /dev/null
-        echo 'exec "$@"'    | sudo tee -a /usr/local/bin/sudo > /dev/null
-        sudo chmod +x /usr/local/bin/sudo
-
     - name: Install NET 9
       uses: actions/setup-dotnet@v4.0.1
       with:
@@ -45,11 +39,22 @@ jobs:
     - name: Build Docker Image
       run: docker build . --file TransactionProcessor/Dockerfile --tag transactionprocessor:latest
       
+    # - name: Run Integration Tests
+    #   run: 
+    #     dotnet test "TransactionProcessor.IntegrationTests\TransactionProcessor.IntegrationTests.csproj"  --filter Category=PRTest --logger "trx;LogFileName=test-results.trx"
+
+    - name: Ensure Docker is running
+      run: |
+        sudo systemctl restart docker
+        sleep 3
+        docker ps
+
     - name: Run Integration Tests
-      run: 
-        FLUENTDOCKER_DOCKER_USE_SUDO=false \
-        FLUENTDOCKER_DOCKER_PATH=/usr/bin/docker \
-        dotnet test "TransactionProcessor.IntegrationTests\TransactionProcessor.IntegrationTests.csproj"  --filter Category=PRTest --logger "trx;LogFileName=test-results.trx"
+      env:
+        FLUENTDOCKER_DOCKER_USE_SUDO: "false"
+        FLUENTDOCKER_DOCKER_PATH: "/usr/bin/docker"
+      run: |
+        dotnet test "TransactionProcessor.IntegrationTests/TransactionProcessor.IntegrationTests.csproj" --filter Category=PRTest "
 
     - uses: actions/upload-artifact@v4.4.0
       if: ${{ failure() }}
