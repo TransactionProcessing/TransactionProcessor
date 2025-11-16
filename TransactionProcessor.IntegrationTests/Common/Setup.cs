@@ -11,11 +11,6 @@ namespace TransactionProcessor.IntegrationTests.Common
     [Binding]
     public class Setup
     {
-        static Setup() {
-            Environment.SetEnvironmentVariable("FLUENTDOCKER_DOCKER_USE_SUDO", "false");
-            Environment.SetEnvironmentVariable("FLUENTDOCKER_DOCKER_PATH", "/usr/bin/docker");
-        }
-
         public static IContainerService DatabaseServerContainer;
         public static INetworkService DatabaseServerNetwork;
         public static (String usename, String password) SqlCredentials = ("sa", "thisisalongpassword123!");
