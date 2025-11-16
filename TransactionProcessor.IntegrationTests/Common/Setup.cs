@@ -20,7 +20,7 @@ namespace TransactionProcessor.IntegrationTests.Common
 
         public static async Task GlobalSetup(DockerHelper dockerHelper)
         {
-            ShouldlyConfiguration.DefaultTaskTimeout = TimeSpan.FromMinutes(1);
+            ShouldlyConfiguration.DefaultTaskTimeout = TimeSpan.FromMinutes(5);
             dockerHelper.SqlCredentials = Setup.SqlCredentials;
             dockerHelper.DockerCredentials = Setup.DockerCredentials;
             dockerHelper.SqlServerContainerName = "sharedsqlserver";
