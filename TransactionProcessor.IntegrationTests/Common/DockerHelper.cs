@@ -181,7 +181,7 @@ namespace TransactionProcessor.IntegrationTests.Common
                                                                                                   return true;
                                                                                               }
                                               };
-            HttpClient httpClient = new HttpClient(clientHandler);
+            HttpClient httpClient = new(clientHandler);
             this.SecurityServiceClient = new SecurityServiceClient(SecurityServiceBaseAddressResolver, httpClient);
             this.TransactionProcessorClient = new TransactionProcessorClient(TransactionProcessorBaseAddressResolver, httpClient);
             this.TestHostHttpClient= new HttpClient(clientHandler);
