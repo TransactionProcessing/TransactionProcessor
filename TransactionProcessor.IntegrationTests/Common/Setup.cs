@@ -21,8 +21,6 @@ namespace TransactionProcessor.IntegrationTests.Common
 
         public static async Task GlobalSetup(DockerHelper dockerHelper)
         {
-            dockerHelper.SetImageDetails(ContainerType.SqlServer, ("mcr.microsoft.com/mssql/server:2019-latest", false));
-
             ShouldlyConfiguration.DefaultTaskTimeout = TimeSpan.FromMinutes(5);
             dockerHelper.SqlCredentials = Setup.SqlCredentials;
             dockerHelper.DockerCredentials = Setup.DockerCredentials;

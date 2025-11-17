@@ -1,4 +1,5 @@
-﻿using TransactionProcessor.Database.Contexts;
+﻿using Syncfusion.Pdf.Xmp;
+using TransactionProcessor.Database.Contexts;
 
 namespace TransactionProcessor.IntegrationTests.Common
 {
@@ -164,7 +165,6 @@ namespace TransactionProcessor.IntegrationTests.Common
         /// </summary>
         /// <param name="scenarioName">Name of the scenario.</param>
         public override async Task StartContainersForScenarioRun(String scenarioName, DockerServices dockerServices){
-            
             await base.StartContainersForScenarioRun(scenarioName, dockerServices);
             
             // Setup the base address resolvers

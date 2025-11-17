@@ -8,15 +8,6 @@ namespace TransactionProcessor.IntegrationTests.Common
     using NLog;
     using Reqnroll;
 
-    public class Test{
-        [BeforeTestRun]
-        public static async Task BeforeTestRun()
-        {
-            Environment.SetEnvironmentVariable("FLUENTDOCKER_DOCKER_USE_SUDO", "false");
-            Environment.SetEnvironmentVariable("FLUENTDOCKER_DOCKER_PATH", "/usr/bin/docker");
-        }
-    }
-
     [Binding]
     [Scope(Tag = "base")]
     public class GenericSteps
@@ -60,7 +51,7 @@ namespace TransactionProcessor.IntegrationTests.Common
             this.TestingContext.DockerHelper.SqlCredentials = Setup.SqlCredentials;
             this.TestingContext.DockerHelper.SqlServerContainerName = "sharedsqlserver";
 
-            this.TestingContext.DockerHelper.SetImageDetails(ContainerType.TransactionProcessor, ("transactionprocessor", false));
+            //this.TestingContext.DockerHelper.SetImageDetails(ContainerType.TransactionProcessor, ("transactionprocessor", false));
 
             this.TestingContext.Logger = logger;
             this.TestingContext.Logger.LogInformation("About to Start Containers for Scenario Run");
