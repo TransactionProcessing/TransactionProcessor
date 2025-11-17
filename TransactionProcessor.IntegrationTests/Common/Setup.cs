@@ -7,6 +7,7 @@ namespace TransactionProcessor.IntegrationTests.Common
     using global::Shared.IntegrationTesting;
     using Reqnroll;
     using Shouldly;
+    using System.Threading;
     using System.Threading.Tasks;
 
     [Binding]
@@ -17,7 +18,7 @@ namespace TransactionProcessor.IntegrationTests.Common
         public static (String usename, String password) SqlCredentials = ("sa", "thisisalongpassword123!");
         public static (String url, String username, String password) DockerCredentials = ("https://www.docker.com", "stuartferguson", "Sc0tland");
 
-        static object padLock = new object(); // Object to lock on
+        private static readonly SemaphoreSlim _setupLock = new SemaphoreSlim(1, 1);
 
         public static async Task GlobalSetup(DockerHelper dockerHelper)
         {
@@ -26,12 +27,18 @@ namespace TransactionProcessor.IntegrationTests.Common
             dockerHelper.DockerCredentials = Setup.DockerCredentials;
             dockerHelper.SqlServerContainerName = "sharedsqlserver";
 
-            lock (Setup.padLock)
+            await _setupLock.WaitAsync();
+            try
             {
                 Setup.DatabaseServerNetwork = dockerHelper.SetupTestNetwork("sharednetwork");
 
                 dockerHelper.Logger.LogInformation("in start SetupSqlServerContainer");
-                Setup.DatabaseServerContainer = dockerHelper.SetupSqlServerContainer(Setup.DatabaseServerNetwork).Result;
+                Setup.DatabaseServerContainer =
+                    await dockerHelper.SetupSqlServerContainer(Setup.DatabaseServerNetwork);
+            }
+            finally
+            {
+                _setupLock.Release();
             }
         }
 
