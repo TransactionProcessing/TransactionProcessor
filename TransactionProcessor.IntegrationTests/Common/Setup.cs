@@ -2,11 +2,12 @@
 
 namespace TransactionProcessor.IntegrationTests.Common
 {
-    using System.Threading.Tasks;
     using Ductus.FluentDocker.Services;
     using Ductus.FluentDocker.Services.Extensions;
+    using global::Shared.IntegrationTesting;
     using Reqnroll;
     using Shouldly;
+    using System.Threading.Tasks;
 
     [Binding]
     public class Setup
@@ -20,6 +21,8 @@ namespace TransactionProcessor.IntegrationTests.Common
 
         public static async Task GlobalSetup(DockerHelper dockerHelper)
         {
+            dockerHelper.SetImageDetails(ContainerType.SqlServer, ("mcr.microsoft.com/mssql/server:2022-latest", false));
+
             ShouldlyConfiguration.DefaultTaskTimeout = TimeSpan.FromMinutes(5);
             dockerHelper.SqlCredentials = Setup.SqlCredentials;
             dockerHelper.DockerCredentials = Setup.DockerCredentials;
