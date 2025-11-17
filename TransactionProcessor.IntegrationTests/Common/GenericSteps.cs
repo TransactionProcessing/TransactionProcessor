@@ -37,11 +37,14 @@ namespace TransactionProcessor.IntegrationTests.Common
                                             DockerServices.SqlServer | DockerServices.TestHost | DockerServices.TransactionProcessor |
                                             DockerServices.TransactionProcessorAcl;
 
+            
             this.TestingContext.DockerHelper = new DockerHelper();
             this.TestingContext.DockerHelper.Logger = logger;
             this.TestingContext.Logger = logger;
             this.TestingContext.DockerHelper.RequiredDockerServices = dockerServices;
             this.TestingContext.Logger.LogInformation("About to Start Global Setup");
+
+            this.TestingContext.DockerHelper.SetImageDetails(ContainerType.SqlServer, ("mcr.microsoft.com/mssql/server:2019-latest", true));
 
             await Setup.GlobalSetup(this.TestingContext.DockerHelper);
 
