@@ -14,6 +14,7 @@ namespace TransactionProcessor.IntegrationTests.Common
     using Shouldly;
     using System;
     using System.Collections.Generic;
+    using System.Linq;
     using System.Net.Http;
     using System.Text;
     using System.Threading;
@@ -281,9 +282,50 @@ namespace TransactionProcessor.IntegrationTests.Common
         {
             await this.RemoveEstateReadModel().ConfigureAwait(false);
 
-            await base.StopContainersForScenarioRun(dockerServices);
+            await this.StopContainersForScenarioRunX(dockerServices);
         }
-        
+
+        public async Task StopContainersForScenarioRunX(DockerServices sharedDockerServices)
+        {
+            if (this.Containers.Any())
+            {
+                this.Containers.Reverse();
+
+                foreach ((DockerServices, IContainerService) containerService in this.Containers)
+                {
+
+                    if ((sharedDockerServices & containerService.Item1) == containerService.Item1)
+                    {
+                        continue;
+                    }
+
+                    this.Trace($"Stopping container [{containerService.Item2.Name}]");
+                    if (containerService.Item2.Name.Contains("eventstore"))
+                    {
+                        CopyEventStoreLogs(containerService.Item2);
+                    }
+
+                    containerService.Item2.Stop();
+                    containerService.Item2.Remove(true);
+                    this.Trace($"Container [{containerService.Item2.Name}] stopped");
+                }
+            }
+
+            if (this.TestNetworks.Any())
+            {
+                foreach (INetworkService networkService in this.TestNetworks)
+                {
+                    this.Trace($"Teardown network {networkService.Name}");
+                    var cfg = networkService.GetConfiguration(true);
+                    if (!cfg.Containers.Any())
+                    {
+                        networkService.Stop();
+                        networkService.Remove(true);
+                    }
+                }
+            }
+        }
+
         private async Task RemoveEstateReadModel()
         {
             List<Guid> estateIdList = this.TestingContext.GetAllEstateIds();
