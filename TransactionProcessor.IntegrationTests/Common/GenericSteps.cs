@@ -27,7 +27,7 @@ namespace TransactionProcessor.IntegrationTests.Common
             this.TestingContext = testingContext;
         }
 
-        public static String GetDockerEnginePlatform() {
+        public static String GetDockerEnginePlatform(NlogLogger logger) {
             try {
 
 
@@ -36,7 +36,7 @@ namespace TransactionProcessor.IntegrationTests.Common
                 return version.Data.ServerOs.ToLower();
             }
             catch (Exception ex) {
-                this.TestingContext.Logger.LogInformation(ex.Message);
+                logger.LogInformation(ex.Message);
                 return $"Unknown";
             }
         }
@@ -60,7 +60,7 @@ namespace TransactionProcessor.IntegrationTests.Common
             this.TestingContext.DockerHelper.Logger = logger;
             this.TestingContext.Logger = logger;
             this.TestingContext.DockerHelper.RequiredDockerServices = dockerServices;
-            this.TestingContext.Logger.LogInformation($"About to Start Global Setup [{GetDockerEnginePlatform()}]");
+            this.TestingContext.Logger.LogInformation($"About to Start Global Setup [{GetDockerEnginePlatform(this.TestingContext.Logger)}]");
 
             this.TestingContext.DockerHelper.SetImageDetails(ContainerType.SqlServer, ("mcr.microsoft.com/mssql/server:2019-latest", true));
 
