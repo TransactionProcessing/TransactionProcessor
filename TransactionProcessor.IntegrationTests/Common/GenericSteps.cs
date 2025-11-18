@@ -1,12 +1,16 @@
-﻿using System;
+﻿using Ductus.FluentDocker.Commands;
+using SimpleResults;
+using System;
 
 namespace TransactionProcessor.IntegrationTests.Common
 {
-    using System.Threading.Tasks;
+    using Ductus.FluentDocker.Services;
     using global::Shared.IntegrationTesting;
     using global::Shared.Logger;
+    using Microsoft.Extensions.Hosting;
     using NLog;
     using Reqnroll;
+    using System.Threading.Tasks;
 
     [Binding]
     [Scope(Tag = "base")]
@@ -21,6 +25,20 @@ namespace TransactionProcessor.IntegrationTests.Common
         {
             this.ScenarioContext = scenarioContext;
             this.TestingContext = testingContext;
+        }
+
+        public static String GetDockerEnginePlatform() {
+            try {
+
+
+                IHostService docker = BaseDockerHelper.GetDockerHost();
+                var version = docker.Host.Version(null);
+                return version.Data.ServerOs.ToLower();
+            }
+            catch (Exception ex)
+            {
+                return $"Unknown";
+            }
         }
 
         [BeforeScenario]
@@ -42,7 +60,7 @@ namespace TransactionProcessor.IntegrationTests.Common
             this.TestingContext.DockerHelper.Logger = logger;
             this.TestingContext.Logger = logger;
             this.TestingContext.DockerHelper.RequiredDockerServices = dockerServices;
-            this.TestingContext.Logger.LogInformation("About to Start Global Setup");
+            this.TestingContext.Logger.LogInformation($"About to Start Global Setup [{GetDockerEnginePlatform()}]");
 
             this.TestingContext.DockerHelper.SetImageDetails(ContainerType.SqlServer, ("mcr.microsoft.com/mssql/server:2019-latest", true));
 

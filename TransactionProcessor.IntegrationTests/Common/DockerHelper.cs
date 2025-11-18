@@ -50,6 +50,9 @@ namespace TransactionProcessor.IntegrationTests.Common
 
             //ConsoleStream<String> consoleLogs = null;
             try {
+                SimpleResults.Result<DockerEnginePlatform> dockerEnginePlatform = BaseDockerHelper.GetDockerEnginePlatform();
+                Console.WriteLine($"Engine Type is {dockerEnginePlatform.Data}");
+
                 this.Trace($"{dockerService} about to call builder func");
                 ContainerBuilder containerBuilder = buildContainerFunc();
 
