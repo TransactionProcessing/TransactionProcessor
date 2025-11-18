@@ -60,6 +60,8 @@ namespace TransactionProcessor.IntegrationTests.Common
 
                 this.Trace($"{dockerService} about to call Start");
                 IContainerService startedContainer = builtContainer.Start();
+                if (startedContainer == null)
+                    throw new Exception($"{dockerService} startedContainer is null");
                 this.Trace($"{dockerService} after call to Start");
                 if (networkServices == null || networkServices.Count == 0) {
                     this.Trace($"{dockerService} No network services to attach");
