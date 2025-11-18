@@ -2,11 +2,12 @@
 
 namespace TransactionProcessor.IntegrationTests.Common
 {
-    using System.Threading.Tasks;
     using Ductus.FluentDocker.Services;
     using Ductus.FluentDocker.Services.Extensions;
+    using global::Shared.IntegrationTesting;
     using Reqnroll;
     using Shouldly;
+    using System.Threading.Tasks;
 
     [Binding]
     public class Setup
@@ -24,7 +25,7 @@ namespace TransactionProcessor.IntegrationTests.Common
             dockerHelper.SqlCredentials = Setup.SqlCredentials;
             dockerHelper.DockerCredentials = Setup.DockerCredentials;
             dockerHelper.SqlServerContainerName = "sharedsqlserver";
-
+            dockerHelper.SetImageDetails(ContainerType.SqlServer, ("mssqlserver:2022-ltsc2022", false));
             lock (Setup.padLock)
             {
                 Setup.DatabaseServerNetwork = dockerHelper.SetupTestNetwork("sharednetwork");
