@@ -1,6 +1,9 @@
 ﻿using Ductus.FluentDocker.Commands;
 using SimpleResults;
 using System;
+using Ductus.FluentDocker.Model;
+using Ductus.FluentDocker.Model.Containers;
+using Newtonsoft.Json;
 
 namespace TransactionProcessor.IntegrationTests.Common
 {
@@ -32,7 +35,26 @@ namespace TransactionProcessor.IntegrationTests.Common
 
 
                 IHostService docker = BaseDockerHelper.GetDockerHost();
-                var version = docker.Host.Version(null);
+
+                if (docker == null) {
+                    logger.LogInformation("Docker Host is null");
+                    return "Unknown";
+                }
+                if (docker.Host == null) {
+                    logger.LogInformation("Docker Host Host is null");
+                    return "Unknown";
+                }
+
+                CommandResponse<DockerInfoBase> version = docker.Host.Version(null);
+
+                if (version == null) {
+                    logger.LogInformation("Docker Host Version is null");
+                    return "Unknown";
+                }
+
+                var x = JsonConvert.SerializeObject(version);
+                logger.LogInformation(x);
+
                 return version.Data.ServerOs.ToLower();
             }
             catch (Exception ex) {
