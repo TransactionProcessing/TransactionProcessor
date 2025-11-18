@@ -47,7 +47,7 @@ namespace TransactionProcessor.IntegrationTests.Common
                 return default;
             }
 
-            ConsoleStream<String> consoleLogs = null;
+            //ConsoleStream<String> consoleLogs = null;
             try
             {
                 this.Trace($"{dockerService} about to call builder func");
@@ -57,7 +57,7 @@ namespace TransactionProcessor.IntegrationTests.Common
                 IContainerService builtContainer = containerBuilder.Build();
 
                 this.Trace($"{dockerService} about to attach logs");
-                consoleLogs = builtContainer.Logs(true);
+                //consoleLogs = builtContainer.Logs(true);
 
                 this.Trace($"{dockerService} about to call Start");
                 IContainerService startedContainer = builtContainer.Start();
@@ -78,14 +78,14 @@ namespace TransactionProcessor.IntegrationTests.Common
             }
             catch (Exception ex)
             {
-                if (consoleLogs != null)
-                {
-                    while (!consoleLogs.IsFinished)
-                    {
-                        String s = consoleLogs.TryRead(10000);
-                        this.Trace(s);
-                    }
-                }
+                //if (consoleLogs != null)
+                //{
+                //    while (!consoleLogs.IsFinished)
+                //    {
+                //        String s = consoleLogs.TryRead(10000);
+                //        this.Trace(s);
+                //    }
+                //}
 
                 this.Error($"Error starting container [{buildContainerFunc.Method.Name}]", ex);
                 throw;
