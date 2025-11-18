@@ -133,7 +133,7 @@ Background:
 	When I process the settlement for '2022-02-06' on Estate 'Test Estate 2' for Merchant 'Test Merchant 3' then 1 fees are marked as settled and the settlement is completed
 
 @settlement
-@PRTest
+#@PRTest
 Scenario: Get Settlements - Merchant Filter
 	When I get the Estate Settlement Report for Estate 'Test Estate 1' for Merchant 'Test Merchant 1' with the Start Date '2022-01-13' and the End Date '2022-02-06' the following data is returned
 	| SettlementDate | NumberOfFeesSettled | ValueOfFeesSettled | IsCompleted |

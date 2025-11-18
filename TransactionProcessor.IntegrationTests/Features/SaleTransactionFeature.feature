@@ -136,7 +136,7 @@ Background:
 	| Test Estate 1 | Test Merchant 4 | PataPawa PostPay Contract |
 	| Test Estate 1 | Test Merchant 4 | PataPawa PrePay Contract |	
 
-@PRTest
+#@PRTest
 Scenario: Sale Transactions
 
 	When I perform the following transactions

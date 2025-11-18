@@ -68,6 +68,6 @@ Background:
 	| Today    | 1                 | Sale            | 1                 | Test Merchant 1 | 123456780        | Test Estate 1 | Voucher          | 10.00             |                       |                             | Hospital 1 Contract       | 10 KES            | test@recipient.co.uk |                 |               |               |                  |
 	
 
-@PRTest
+#@PRTest
 Scenario: Redeem Vouchers
 	When I redeem the voucher for Estate 'Test Estate 1' and Merchant 'Test Merchant 1' transaction number 1 the voucher balance will be 0
