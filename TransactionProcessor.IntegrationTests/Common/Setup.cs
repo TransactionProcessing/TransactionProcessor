@@ -25,7 +25,7 @@ namespace TransactionProcessor.IntegrationTests.Common
             dockerHelper.SqlCredentials = Setup.SqlCredentials;
             dockerHelper.DockerCredentials = Setup.DockerCredentials;
             dockerHelper.SqlServerContainerName = "sharedsqlserver";
-            dockerHelper.SetImageDetails(ContainerType.SqlServer, ("mssqlserver:2022-ltsc2022", false));
+            dockerHelper.SetImageDetails(ContainerType.SqlServer, ("mcr.microsoft.com/mssql/server:2022-latest", true));
             lock (Setup.padLock)
             {
                 Setup.DatabaseServerNetwork = dockerHelper.SetupTestNetwork("sharednetwork");
