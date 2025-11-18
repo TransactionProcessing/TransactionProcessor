@@ -67,6 +67,9 @@ namespace TransactionProcessor.IntegrationTests.Common
                 else{
                     foreach (INetworkService networkService in networkServices) {
                         this.Trace($"{dockerService} about to attach network service");
+                        if (networkService == null)
+                            throw new ArgumentNullException("networkService is null");
+
                         networkService.Attach(startedContainer, false);
                     }
             }
