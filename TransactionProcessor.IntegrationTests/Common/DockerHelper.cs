@@ -1,4 +1,5 @@
-﻿using Ductus.FluentDocker.Services;
+﻿using Ductus.FluentDocker.Model.Containers;
+using Ductus.FluentDocker.Services;
 using TransactionProcessor.Database.Contexts;
 
 namespace TransactionProcessor.IntegrationTests.Common
@@ -27,6 +28,20 @@ namespace TransactionProcessor.IntegrationTests.Common
     /// <seealso cref="Shared.IntegrationTesting.DockerHelper" />
     public class DockerHelper : global::Shared.IntegrationTesting.DockerHelper
     {
+
+        public override INetworkService SetupTestNetwork(String networkName = null,
+                                                        Boolean reuseIfExists = false)
+        {
+            networkName = String.IsNullOrEmpty(networkName) ? $"testnw{this.TestId:N}" : networkName;
+            //SimpleResults.Result<DockerEnginePlatform> engineType = BaseDockerHelper.GetDockerEnginePlatform();
+            //Console.WriteLine($"Engine Type is {engineType.Data}");
+
+            // Build a network
+            NetworkBuilder networkService = new Builder().UseNetwork(networkName).ReuseIfExist();
+
+            return networkService.Build();
+        }
+
         public override async Task<IContainerService> SetupSqlServerContainer(INetworkService networkService)
         {
             if (this.SqlCredentials == default)
