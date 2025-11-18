@@ -714,11 +714,9 @@ await this.FeatureBackgroundAsync();
         
         [global::NUnit.Framework.TestAttribute()]
         [global::NUnit.Framework.DescriptionAttribute("Process Settlement")]
-        [global::NUnit.Framework.CategoryAttribute("PRTest")]
         public async global::System.Threading.Tasks.Task ProcessSettlement()
         {
-            string[] tagsOfScenario = new string[] {
-                    "PRTest"};
+            string[] tagsOfScenario = ((string[])(null));
             global::System.Collections.Specialized.OrderedDictionary argumentsOfScenario = new global::System.Collections.Specialized.OrderedDictionary();
             string pickleIndex = "1";
             global::Reqnroll.ScenarioInfo scenarioInfo = new global::Reqnroll.ScenarioInfo("Process Settlement", null, tagsOfScenario, argumentsOfScenario, featureTags, pickleIndex);

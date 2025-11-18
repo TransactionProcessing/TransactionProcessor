@@ -399,11 +399,9 @@ namespace TransactionProcessor.IntegrationTests.Features
         
         [global::NUnit.Framework.TestAttribute()]
         [global::NUnit.Framework.DescriptionAttribute("Reconciliation Transactions")]
-        [global::NUnit.Framework.CategoryAttribute("PRTest")]
         public async global::System.Threading.Tasks.Task ReconciliationTransactions()
         {
-            string[] tagsOfScenario = new string[] {
-                    "PRTest"};
+            string[] tagsOfScenario = ((string[])(null));
             global::System.Collections.Specialized.OrderedDictionary argumentsOfScenario = new global::System.Collections.Specialized.OrderedDictionary();
             string pickleIndex = "0";
             global::Reqnroll.ScenarioInfo scenarioInfo = new global::Reqnroll.ScenarioInfo("Reconciliation Transactions", null, tagsOfScenario, argumentsOfScenario, featureTags, pickleIndex);

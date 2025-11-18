@@ -188,11 +188,9 @@ namespace TransactionProcessor.IntegrationTests.Features
         
         [global::NUnit.Framework.TestAttribute()]
         [global::NUnit.Framework.DescriptionAttribute("Update Operator")]
-        [global::NUnit.Framework.CategoryAttribute("PRTest")]
         public async global::System.Threading.Tasks.Task UpdateOperator()
         {
-            string[] tagsOfScenario = new string[] {
-                    "PRTest"};
+            string[] tagsOfScenario = ((string[])(null));
             global::System.Collections.Specialized.OrderedDictionary argumentsOfScenario = new global::System.Collections.Specialized.OrderedDictionary();
             string pickleIndex = "0";
             global::Reqnroll.ScenarioInfo scenarioInfo = new global::Reqnroll.ScenarioInfo("Update Operator", null, tagsOfScenario, argumentsOfScenario, featureTags, pickleIndex);

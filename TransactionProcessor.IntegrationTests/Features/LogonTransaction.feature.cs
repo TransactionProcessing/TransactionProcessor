@@ -334,11 +334,9 @@ namespace TransactionProcessor.IntegrationTests.Features
         
         [global::NUnit.Framework.TestAttribute()]
         [global::NUnit.Framework.DescriptionAttribute("Logon Transactions")]
-        [global::NUnit.Framework.CategoryAttribute("PRTest")]
         public async global::System.Threading.Tasks.Task LogonTransactions()
         {
-            string[] tagsOfScenario = new string[] {
-                    "PRTest"};
+            string[] tagsOfScenario = ((string[])(null));
             global::System.Collections.Specialized.OrderedDictionary argumentsOfScenario = new global::System.Collections.Specialized.OrderedDictionary();
             string pickleIndex = "0";
             global::Reqnroll.ScenarioInfo scenarioInfo = new global::Reqnroll.ScenarioInfo("Logon Transactions", null, tagsOfScenario, argumentsOfScenario, featureTags, pickleIndex);
