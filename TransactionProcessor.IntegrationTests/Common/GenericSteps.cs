@@ -35,8 +35,8 @@ namespace TransactionProcessor.IntegrationTests.Common
                 var version = docker.Host.Version(null);
                 return version.Data.ServerOs.ToLower();
             }
-            catch (Exception ex)
-            {
+            catch (Exception ex) {
+                this.TestingContext.Logger.LogInformation(ex.Message);
                 return $"Unknown";
             }
         }
