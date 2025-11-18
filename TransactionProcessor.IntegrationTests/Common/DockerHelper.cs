@@ -48,8 +48,7 @@ namespace TransactionProcessor.IntegrationTests.Common
             }
 
             //ConsoleStream<String> consoleLogs = null;
-            try
-            {
+            try {
                 this.Trace($"{dockerService} about to call builder func");
                 ContainerBuilder containerBuilder = buildContainerFunc();
 
@@ -61,13 +60,18 @@ namespace TransactionProcessor.IntegrationTests.Common
 
                 this.Trace($"{dockerService} about to call Start");
                 IContainerService startedContainer = builtContainer.Start();
-                foreach (INetworkService networkService in networkServices)
-                {
-                    this.Trace($"{dockerService} about to attach network service");
-                    networkService.Attach(startedContainer, false);
+                this.Trace($"{dockerService} after call to Start");
+                if (networkServices == null || networkServices.Count == 0) {
+                    this.Trace($"{dockerService} No network services to attach");
                 }
+                else{
+                    foreach (INetworkService networkService in networkServices) {
+                        this.Trace($"{dockerService} about to attach network service");
+                        networkService.Attach(startedContainer, false);
+                    }
+            }
 
-                this.Trace($"{dockerService} Container Started");
+            this.Trace($"{dockerService} Container Started");
                 this.Containers.Add((dockerService, startedContainer));
                 
                 await DoSqlServerHealthCheck(startedContainer);
