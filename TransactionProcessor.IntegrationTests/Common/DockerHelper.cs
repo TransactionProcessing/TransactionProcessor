@@ -1,20 +1,23 @@
-﻿using TransactionProcessor.Database.Contexts;
+﻿using Ductus.FluentDocker.Services;
+using TransactionProcessor.Database.Contexts;
 
 namespace TransactionProcessor.IntegrationTests.Common
 {
+    using Client;
+    using Ductus.FluentDocker.Builders;
+    using Ductus.FluentDocker.Executors;
+    using Ductus.FluentDocker.Services.Extensions;
+    using EventStore.Client;
+    using global::Shared.IntegrationTesting;
+    using Newtonsoft.Json;
+    using SecurityService.Client;
+    using Shouldly;
     using System;
     using System.Collections.Generic;
     using System.Net.Http;
     using System.Text;
     using System.Threading;
     using System.Threading.Tasks;
-    using Client;
-    using Ductus.FluentDocker.Builders;
-    using EventStore.Client;
-    using global::Shared.IntegrationTesting;
-    using Newtonsoft.Json;
-    using SecurityService.Client;
-    using Shouldly;
     using Retry = IntegrationTests.Retry;
 
     /// <summary>
@@ -23,6 +26,73 @@ namespace TransactionProcessor.IntegrationTests.Common
     /// <seealso cref="Shared.IntegrationTesting.DockerHelper" />
     public class DockerHelper : global::Shared.IntegrationTesting.DockerHelper
     {
+        public override async Task<IContainerService> SetupSqlServerContainer(INetworkService networkService)
+        {
+            if (this.SqlCredentials == default)
+                throw new ArgumentNullException("Sql Credentials have not been set");
+
+            IContainerService databaseServerContainer = await this.StartContainerX(this.ConfigureSqlContainer,
+                new List<INetworkService>{
+                    networkService
+                },
+                DockerServices.SqlServer);
+
+            return databaseServerContainer;
+        }
+
+        protected async Task<IContainerService> StartContainerX(Func<ContainerBuilder> buildContainerFunc, List<INetworkService> networkServices, DockerServices dockerService)
+        {
+            if ((this.RequiredDockerServices & dockerService) != dockerService)
+            {
+                return default;
+            }
+
+            ConsoleStream<String> consoleLogs = null;
+            try
+            {
+                this.Trace($"{dockerService} about to call builder func");
+                ContainerBuilder containerBuilder = buildContainerFunc();
+
+                this.Trace($"{dockerService} about to call build");
+                IContainerService builtContainer = containerBuilder.Build();
+
+                this.Trace($"{dockerService} about to attach logs");
+                consoleLogs = builtContainer.Logs(true);
+
+                this.Trace($"{dockerService} about to call Start");
+                IContainerService startedContainer = builtContainer.Start();
+                foreach (INetworkService networkService in networkServices)
+                {
+                    this.Trace($"{dockerService} about to attach network service");
+                    networkService.Attach(startedContainer, false);
+                }
+
+                this.Trace($"{dockerService} Container Started");
+                this.Containers.Add((dockerService, startedContainer));
+                
+                await DoSqlServerHealthCheck(startedContainer);
+                
+                this.Trace($"Container [{buildContainerFunc.Method.Name}] started");
+
+                return startedContainer;
+            }
+            catch (Exception ex)
+            {
+                if (consoleLogs != null)
+                {
+                    while (!consoleLogs.IsFinished)
+                    {
+                        String s = consoleLogs.TryRead(10000);
+                        this.Trace(s);
+                    }
+                }
+
+                this.Error($"Error starting container [{buildContainerFunc.Method.Name}]", ex);
+                throw;
+            }
+        }
+
+
         #region Fields
         public static String TestBankAccountNumber = "12345678";
 
