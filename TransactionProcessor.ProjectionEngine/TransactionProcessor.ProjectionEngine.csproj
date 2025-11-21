@@ -12,8 +12,8 @@
     <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="9.0.10" />
     <PackageReference Include="Microsoft.IdentityModel.Tokens" Version="8.14.0" />
     <PackageReference Include="Microsoft.IdentityModel.JsonWebTokens" Version="8.14.0" />
-    <PackageReference Include="Shared" Version="2025.11.8" />
-    <PackageReference Include="Shared.EventStore" Version="2025.11.8" />
+    <PackageReference Include="Shared" Version="2025.11.11" />
+    <PackageReference Include="Shared.EventStore" Version="2025.11.11" />
   </ItemGroup>
 
   <ItemGroup>
