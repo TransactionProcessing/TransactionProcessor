@@ -53,7 +53,7 @@ Background:
 	| Test Operator 1 | Test Merchant 6 | 00000001       | 10000001       | Test Estate 1 |
 	| Test Operator 1 | Test Merchant 7 | 00000001       | 10000001       | Test Estate 1 |
 
-#@PRTest
+@PRTest
 Scenario: Logon Transactions
 
 	When I perform the following transactions

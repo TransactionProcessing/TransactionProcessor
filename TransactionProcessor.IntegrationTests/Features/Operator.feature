@@ -27,7 +27,7 @@ Background:
 	| EstateName    |
 	| Test Estate 1 |
 
-#@PRTest
+@PRTest
 Scenario: Update Operator
 
 	Given I have created the following operators

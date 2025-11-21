@@ -119,7 +119,7 @@ Scenario: Get Pending Settlement
 	| SettlementDate | EstateName    | MerchantName    | NumberOfFees |
 	| 2022-01-06     | Test Estate 1 | Test Merchant 1 | 2            |
 
-#@PRTest
+@PRTest
 Scenario: Process Settlement
 	Given I create the following merchants
 	| MerchantName    | AddressLine1   | Town     | Region      | Country        | ContactName    | EmailAddress                 | EstateName    | SettlementSchedule |

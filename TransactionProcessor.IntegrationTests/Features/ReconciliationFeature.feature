@@ -75,7 +75,7 @@ Background:
 	| Deposit1  | 100.00 | Today    | Test Merchant 2 | Test Estate 1 |
 	| Deposit1  | 100.00 | Today    | Test Merchant 3 | Test Estate 2 |
 
-#@PRTest
+@PRTest
 Scenario: Reconciliation Transactions
 
 	When I perform the following reconciliations
