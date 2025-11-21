@@ -6,7 +6,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="ClientProxyBase" Version="2025.11.9" />
+    <PackageReference Include="ClientProxyBase" Version="2025.11.10" />
     <PackageReference Include="FileProcessor.FileImportLog.DomainEvents" Version="2025.8.1" />
     <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="9.0.10" />
     <PackageReference Include="SecurityService.Client" Version="2025.8.1" />
