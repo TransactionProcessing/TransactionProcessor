@@ -348,20 +348,20 @@ namespace TransactionProcessor.IntegrationTests.Common
 
         private async Task RemoveEstateReadModel()
         {
-            List<Guid> estateIdList = this.TestingContext.GetAllEstateIds();
+            //List<Guid> estateIdList = this.TestingContext.GetAllEstateIds();
 
-            foreach (Guid estateId in estateIdList)
-            {
-                String databaseName = $"EstateReportingReadModel{estateId}";
+            //foreach (Guid estateId in estateIdList)
+            //{
+            //    String databaseName = $"EstateReportingReadModel{estateId}";
 
-                await Retry.For(async () =>
-                                {
-                                    // Build the connection string (to master)
-                                    String connectionString = Setup.GetLocalConnectionString(databaseName);
-                                    EstateManagementContext context = new EstateManagementContext(connectionString);
-                                    await context.Database.EnsureDeletedAsync(CancellationToken.None);
-                                });
-            }
+            //    await Retry.For(async () =>
+            //                    {
+            //                        // Build the connection string (to master)
+            //                        String connectionString = Setup.GetLocalConnectionString(databaseName);
+            //                        EstateManagementContext context = new EstateManagementContext(connectionString);
+            //                        await context.Database.EnsureDeletedAsync(CancellationToken.None);
+            //                    });
+            //}
         }
 
         protected override List<String> GetRequiredProjections()

@@ -40,12 +40,12 @@ namespace TransactionProcessor.IntegrationTests.Common
             logger.Initialise(LogManager.GetLogger(scenarioName), scenarioName);
             LogManager.AddHiddenAssembly(typeof(NlogLogger).Assembly);
 
-            DockerServices dockerServices = DockerServices.CallbackHandler | DockerServices.EventStore |
-                                            DockerServices.FileProcessor | DockerServices.MessagingService | DockerServices.SecurityService |
-                                            DockerServices.SqlServer | DockerServices.TestHost | DockerServices.TransactionProcessor |
+            DockerServices dockerServices = DockerServices.SqlServer | DockerServices.EventStore | DockerServices.MessagingService | DockerServices.SecurityService |
+                                            DockerServices.CallbackHandler | DockerServices.FileProcessor |
+                                            DockerServices.TestHost | DockerServices.TransactionProcessor |
                                             DockerServices.TransactionProcessorAcl;
 
-            
+
             this.TestingContext.DockerHelper = new DockerHelper();
             this.TestingContext.DockerHelper.Logger = logger;
             this.TestingContext.Logger = logger;
@@ -55,12 +55,6 @@ namespace TransactionProcessor.IntegrationTests.Common
             this.TestingContext.DockerHelper.SetImageDetails(ContainerType.SqlServer, ("mcr.microsoft.com/mssql/server:2019-latest", true));
 
             await Setup.GlobalSetup(this.TestingContext.DockerHelper);
-
-            this.TestingContext.DockerHelper.SqlServerContainer = Setup.DatabaseServerContainer;
-            this.TestingContext.DockerHelper.SqlServerNetwork = Setup.DatabaseServerNetwork;
-            this.TestingContext.DockerHelper.DockerCredentials = Setup.DockerCredentials;
-            this.TestingContext.DockerHelper.SqlCredentials = Setup.SqlCredentials;
-            this.TestingContext.DockerHelper.SqlServerContainerName = "sharedsqlserver";
 
             this.TestingContext.DockerHelper.SetImageDetails(ContainerType.TransactionProcessor, ("transactionprocessor", false));
 
@@ -73,7 +67,7 @@ namespace TransactionProcessor.IntegrationTests.Common
         [AfterScenario]
         public async Task StopSystem(){
 
-            DockerServices sharedDockerServices = DockerServices.SqlServer;
+            DockerServices sharedDockerServices = DockerServices.None;
 
             this.TestingContext.Logger.LogInformation("About to Stop Containers for Scenario Run");
             await this.TestingContext.DockerHelper.StopContainersForScenarioRun(sharedDockerServices).ConfigureAwait(false);
