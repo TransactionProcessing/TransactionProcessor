@@ -17,6 +17,7 @@ using System.Linq;
 using System.Net.Http.Headers;
 using System.Text;
 using System.Threading.Tasks;
+using Shared.IntegrationTesting.Ductus;
 using TransactionProcessor.Database.Contexts;
 using TransactionProcessor.Repository;
 using Xunit.Abstractions;

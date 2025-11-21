@@ -1,4 +1,6 @@
-﻿using TransactionProcessor.Database.Contexts;
+﻿using DotNet.Testcontainers.Builders;
+using DotNet.Testcontainers.Containers;
+using TransactionProcessor.Database.Contexts;
 
 namespace TransactionProcessor.IntegrationTests.Common
 {
@@ -9,7 +11,6 @@ namespace TransactionProcessor.IntegrationTests.Common
     using System.Threading;
     using System.Threading.Tasks;
     using Client;
-    using Ductus.FluentDocker.Builders;
     using EventStore.Client;
     using global::Shared.IntegrationTesting;
     using Newtonsoft.Json;
@@ -21,7 +22,7 @@ namespace TransactionProcessor.IntegrationTests.Common
     /// 
     /// </summary>
     /// <seealso cref="Shared.IntegrationTesting.DockerHelper" />
-    public class DockerHelper : global::Shared.IntegrationTesting.DockerHelper
+    public class DockerHelper : global::Shared.IntegrationTesting.TestContainers.DockerHelper
     {
         #region Fields
         public static String TestBankAccountNumber = "12345678";
@@ -91,7 +92,7 @@ namespace TransactionProcessor.IntegrationTests.Common
             List<String> variables = new List<String>();
             variables.Add($"OperatorConfiguration:PataPawaPrePay:Url=http://{this.TestHostContainerName}:{DockerPorts.TestHostPort}/api/patapawaprepay");
 
-            this.AdditionalVariables.Add(ContainerType.FileProcessor, variables);
+            //this.AdditionalVariables.Add(ContainerType.FileProcessor, variables);
             //this.SetAdditionalVariables(ContainerType.FileProcessor, variables);
 
             return base.SetupTransactionProcessorContainer();
@@ -109,7 +110,7 @@ namespace TransactionProcessor.IntegrationTests.Common
             }
         }
 
-        public override ContainerBuilder SetupSecurityServiceContainer()
+        /*public override ContainerBuilder SetupSecurityServiceContainer()
         {
             this.Trace("About to Start Security Container");
 
@@ -157,7 +158,7 @@ namespace TransactionProcessor.IntegrationTests.Common
 
             // Now build and return the container                
             return securityServiceContainer;
-        }
+        }*/
 
         /// <summary>
         /// Starts the containers for scenario run.
@@ -207,20 +208,20 @@ namespace TransactionProcessor.IntegrationTests.Common
         
         private async Task RemoveEstateReadModel()
         {
-            List<Guid> estateIdList = this.TestingContext.GetAllEstateIds();
+        //    List<Guid> estateIdList = this.TestingContext.GetAllEstateIds();
 
-            foreach (Guid estateId in estateIdList)
-            {
-                String databaseName = $"EstateReportingReadModel{estateId}";
+        //    foreach (Guid estateId in estateIdList)
+        //    {
+        //        String databaseName = $"EstateReportingReadModel{estateId}";
 
-                await Retry.For(async () =>
-                                {
-                                    // Build the connection string (to master)
-                                    String connectionString = Setup.GetLocalConnectionString(databaseName);
-                                    EstateManagementContext context = new EstateManagementContext(connectionString);
-                                    await context.Database.EnsureDeletedAsync(CancellationToken.None);
-                                });
-            }
+        //        await Retry.For(async () =>
+        //                        {
+        //                            // Build the connection string (to master)
+        //                            String connectionString = Setup.GetLocalConnectionString(databaseName);
+        //                            EstateManagementContext context = new EstateManagementContext(connectionString);
+        //                            await context.Database.EnsureDeletedAsync(CancellationToken.None);
+        //                        });
+        //    }
         }
 
         protected override List<String> GetRequiredProjections()
