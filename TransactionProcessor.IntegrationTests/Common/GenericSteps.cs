@@ -4,6 +4,7 @@ using System;
 using Ductus.FluentDocker.Model;
 using Ductus.FluentDocker.Model.Containers;
 using Newtonsoft.Json;
+using Shared.IntegrationTesting.TestContainers;
 
 namespace TransactionProcessor.IntegrationTests.Common
 {
@@ -29,40 +30,7 @@ namespace TransactionProcessor.IntegrationTests.Common
             this.ScenarioContext = scenarioContext;
             this.TestingContext = testingContext;
         }
-
-        public static String GetDockerEnginePlatform(NlogLogger logger) {
-            try {
-
-
-                IHostService docker = BaseDockerHelper.GetDockerHost();
-
-                if (docker == null) {
-                    logger.LogInformation("Docker Host is null");
-                    return "Unknown";
-                }
-                if (docker.Host == null) {
-                    logger.LogInformation("Docker Host Host is null");
-                    return "Unknown";
-                }
-
-                CommandResponse<DockerInfoBase> version = docker.Host.Version(null);
-
-                if (version == null) {
-                    logger.LogInformation("Docker Host Version is null");
-                    return "Unknown";
-                }
-
-                var x = JsonConvert.SerializeObject(version);
-                logger.LogInformation(x);
-
-                return version.Data.ServerOs.ToLower();
-            }
-            catch (Exception ex) {
-                logger.LogInformation(ex.Message);
-                return $"Unknown";
-            }
-        }
-
+        
         [BeforeScenario]
         public async Task StartSystem()
         {
@@ -82,7 +50,7 @@ namespace TransactionProcessor.IntegrationTests.Common
             this.TestingContext.DockerHelper.Logger = logger;
             this.TestingContext.Logger = logger;
             this.TestingContext.DockerHelper.RequiredDockerServices = dockerServices;
-            this.TestingContext.Logger.LogInformation($"About to Start Global Setup [{GetDockerEnginePlatform(this.TestingContext.Logger)}]");
+            this.TestingContext.Logger.LogInformation($"About to Start Global Setup");
 
             this.TestingContext.DockerHelper.SetImageDetails(ContainerType.SqlServer, ("mcr.microsoft.com/mssql/server:2019-latest", true));
 

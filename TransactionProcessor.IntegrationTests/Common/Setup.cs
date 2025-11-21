@@ -1,4 +1,6 @@
 ﻿using System;
+using DotNet.Testcontainers.Containers;
+using DotNet.Testcontainers.Networks;
 
 namespace TransactionProcessor.IntegrationTests.Common
 {
@@ -12,8 +14,8 @@ namespace TransactionProcessor.IntegrationTests.Common
     [Binding]
     public class Setup
     {
-        public static IContainerService DatabaseServerContainer;
-        public static INetworkService DatabaseServerNetwork;
+        public static IContainer DatabaseServerContainer;
+        public static INetwork DatabaseServerNetwork;
         public static (String usename, String password) SqlCredentials = ("sa", "thisisalongpassword123!");
         public static (String url, String username, String password) DockerCredentials = ("https://www.docker.com", "stuartferguson", "Sc0tland");
 
@@ -28,7 +30,7 @@ namespace TransactionProcessor.IntegrationTests.Common
             dockerHelper.SetImageDetails(ContainerType.SqlServer, ("mcr.microsoft.com/mssql/server:2022-latest", true));
             lock (Setup.padLock)
             {
-                Setup.DatabaseServerNetwork = dockerHelper.SetupTestNetwork("sharednetwork");
+                Setup.DatabaseServerNetwork = dockerHelper.SetupTestNetwork("sharednetwork").Result;
 
                 dockerHelper.Logger.LogInformation("in start SetupSqlServerContainer");
                 Setup.DatabaseServerContainer = dockerHelper.SetupSqlServerContainer(Setup.DatabaseServerNetwork).Result;
@@ -42,7 +44,7 @@ namespace TransactionProcessor.IntegrationTests.Common
 
         public static String GetLocalConnectionString(String databaseName)
         {
-            Int32 databaseHostPort = Setup.DatabaseServerContainer.ToHostExposedEndpoint("1433/tcp").Port;
+            Int32 databaseHostPort = Setup.DatabaseServerContainer.GetMappedPublicPort(1433);
 
             return $"server=localhost,{databaseHostPort};database={databaseName};user id={Setup.SqlCredentials.usename};password={Setup.SqlCredentials.password}";
         }

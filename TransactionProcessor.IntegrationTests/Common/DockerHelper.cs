@@ -1,5 +1,7 @@
 ﻿using Ductus.FluentDocker.Model.Containers;
 using Ductus.FluentDocker.Services;
+using Shared.IntegrationTesting.TestContainers;
+using SimpleResults;
 using TransactionProcessor.Database.Contexts;
 
 namespace TransactionProcessor.IntegrationTests.Common
@@ -26,10 +28,10 @@ namespace TransactionProcessor.IntegrationTests.Common
     /// 
     /// </summary>
     /// <seealso cref="Shared.IntegrationTesting.DockerHelper" />
-    public class DockerHelper : global::Shared.IntegrationTesting.DockerHelper
+    public class DockerHelper : global::Shared.IntegrationTesting.TestContainers.DockerHelper
     {
 
-        public override INetworkService SetupTestNetwork(String networkName = null,
+        /*public override INetworkService SetupTestNetwork(String networkName = null,
                                                         Boolean reuseIfExists = false)
         {
             networkName = String.IsNullOrEmpty(networkName) ? $"testnw{this.TestId:N}" : networkName;
@@ -54,8 +56,8 @@ namespace TransactionProcessor.IntegrationTests.Common
                 DockerServices.SqlServer);
 
             return databaseServerContainer;
-        }
-
+        }*/
+        /*
         protected async Task<IContainerService> StartContainerX(Func<ContainerBuilder> buildContainerFunc, List<INetworkService> networkServices, DockerServices dockerService)
         {
             if ((this.RequiredDockerServices & dockerService) != dockerService)
@@ -65,7 +67,7 @@ namespace TransactionProcessor.IntegrationTests.Common
 
             //ConsoleStream<String> consoleLogs = null;
             try {
-                SimpleResults.Result<DockerEnginePlatform> dockerEnginePlatform = BaseDockerHelper.GetDockerEnginePlatform();
+                Result<DockerEnginePlatform> dockerEnginePlatform = await BaseDockerHelper.GetDockerEnginePlatform();
                 Console.WriteLine($"Engine Type is {dockerEnginePlatform.Data}");
 
                 this.Trace($"{dockerService} about to call builder func");
@@ -119,7 +121,7 @@ namespace TransactionProcessor.IntegrationTests.Common
                 throw;
             }
         }
-
+        */
 
         #region Fields
         public static String TestBankAccountNumber = "12345678";
@@ -183,7 +185,7 @@ namespace TransactionProcessor.IntegrationTests.Common
                 responseMessage.IsSuccessStatusCode.ShouldBeTrue();
             });
         }
-
+        /*
         public override ContainerBuilder SetupTransactionProcessorContainer(){
 
             List<String> variables = new List<String>();
@@ -193,7 +195,7 @@ namespace TransactionProcessor.IntegrationTests.Common
             //this.SetAdditionalVariables(ContainerType.FileProcessor, variables);
 
             return base.SetupTransactionProcessorContainer();
-        }
+        }*/
 
         public override async Task CreateSubscriptions(){
             List<(String streamName, String groupName, Int32 maxRetries)> subscriptions = new();
@@ -207,7 +209,7 @@ namespace TransactionProcessor.IntegrationTests.Common
             }
         }
 
-        public override ContainerBuilder SetupSecurityServiceContainer()
+        /*public override ContainerBuilder SetupSecurityServiceContainer()
         {
             this.Trace("About to Start Security Container");
 
@@ -255,7 +257,7 @@ namespace TransactionProcessor.IntegrationTests.Common
 
             // Now build and return the container                
             return securityServiceContainer;
-        }
+        }*/
 
         /// <summary>
         /// Starts the containers for scenario run.
@@ -300,10 +302,10 @@ namespace TransactionProcessor.IntegrationTests.Common
         {
             await this.RemoveEstateReadModel().ConfigureAwait(false);
 
-            await this.StopContainersForScenarioRunX(dockerServices);
+            await this.StopContainersForScenarioRun(dockerServices);
         }
 
-        public async Task StopContainersForScenarioRunX(DockerServices sharedDockerServices)
+        /*public async Task StopContainersForScenarioRunX(DockerServices sharedDockerServices)
         {
             if (this.Containers.Any())
             {
@@ -342,7 +344,7 @@ namespace TransactionProcessor.IntegrationTests.Common
                     }
                 }
             }
-        }
+        */
 
         private async Task RemoveEstateReadModel()
         {
