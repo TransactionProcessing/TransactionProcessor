@@ -302,7 +302,7 @@ namespace TransactionProcessor.IntegrationTests.Common
         {
             await this.RemoveEstateReadModel().ConfigureAwait(false);
 
-            await this.StopContainersForScenarioRun(dockerServices);
+            await base.StopContainersForScenarioRun(dockerServices);
         }
 
         /*public async Task StopContainersForScenarioRunX(DockerServices sharedDockerServices)
