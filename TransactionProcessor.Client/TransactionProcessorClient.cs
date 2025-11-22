@@ -48,15 +48,12 @@ public class TransactionProcessorClient : ClientProxyBase, ITransactionProcessor
         String requestUri = this.BuildRequestUrl($"/api/estates/{estateId}");
 
         try {
-            Result<String> result =  await this.SendGetRequest(requestUri, accessToken, cancellationToken);
+            Result<EstateResponse> result =  await this.SendHttpGetRequest<EstateResponse>(requestUri, accessToken, cancellationToken);
 
             if (result.IsFailed)
                 return ResultHelpers.CreateFailure(result);
 
-            // call was successful so now deserialise the body to the response object
-            ResponseData<EstateResponse> responseData = this.HandleResponseContent<EstateResponse>(result.Data);
-
-            return Result.Success(responseData.Data);
+            return result;
         }
         catch (Exception ex) {
             // An exception has occurred, add some additional information to the message
@@ -65,103 +62,48 @@ public class TransactionProcessorClient : ClientProxyBase, ITransactionProcessor
             throw exception;
         }
     }
+    //private async Task<Result<String>> SendPostRequest(String uri, String accessToken, String content, CancellationToken cancellationToken)
+    //{
 
-    private async Task<Result<String>> SendGetRequest(String uri, String accessToken, CancellationToken cancellationToken) {
+    //    HttpRequestMessage requestMessage = new HttpRequestMessage(HttpMethod.Post, uri);
+    //    requestMessage.Headers.Authorization = new AuthenticationHeaderValue(AuthenticationSchemes.Bearer, accessToken);
+    //    requestMessage.Content = new StringContent(content, Encoding.UTF8, "application/json");
 
-        HttpRequestMessage requestMessage = new HttpRequestMessage(HttpMethod.Get, uri);
-        requestMessage.Headers.Authorization = new AuthenticationHeaderValue(AuthenticationSchemes.Bearer, accessToken);
+    //    // Make the Http Call here
+    //    HttpResponseMessage httpResponse = await this.HttpClient.SendAsync(requestMessage, cancellationToken);
 
-        // Make the Http Call here
-        HttpResponseMessage httpResponse = await this.HttpClient.SendAsync(requestMessage, cancellationToken);
+    //    // Process the response
+    //    Result<String> result = await this.HandleResponseX(httpResponse, cancellationToken);
 
-        // Process the response
-        Result<String> result = await this.HandleResponseX(httpResponse, cancellationToken);
+    //    if (result.IsFailed)
+    //        return ResultHelpers.CreateFailure(result);
 
-        if (result.IsFailed)
-            return ResultHelpers.CreateFailure(result);
+    //    return Result.Success<String>(result.Data);
+    //}
 
-        return Result.Success<String>(result.Data);
-    }
+    //public static class AuthenticationSchemes
+    //{
+    //    public static readonly String Bearer = "Bearer";
+    //}
 
-    private async Task<Result<String>> SendPostRequest(String uri, String accessToken, String content, CancellationToken cancellationToken)
-    {
 
-        HttpRequestMessage requestMessage = new HttpRequestMessage(HttpMethod.Post, uri);
-        requestMessage.Headers.Authorization = new AuthenticationHeaderValue(AuthenticationSchemes.Bearer, accessToken);
-        requestMessage.Content = new StringContent(content, Encoding.UTF8, "application/json");
+    //private async Task<Result<String>> SendDeleteRequest(String uri, String accessToken, CancellationToken cancellationToken)
+    //{
 
-        // Make the Http Call here
-        HttpResponseMessage httpResponse = await this.HttpClient.SendAsync(requestMessage, cancellationToken);
+    //    HttpRequestMessage requestMessage = new HttpRequestMessage(HttpMethod.Delete, uri);
+    //    requestMessage.Headers.Authorization = new AuthenticationHeaderValue(AuthenticationSchemes.Bearer, accessToken);
 
-        // Process the response
-        Result<String> result = await this.HandleResponseX(httpResponse, cancellationToken);
+    //    // Make the Http Call here
+    //    HttpResponseMessage httpResponse = await this.HttpClient.SendAsync(requestMessage, cancellationToken);
 
-        if (result.IsFailed)
-            return ResultHelpers.CreateFailure(result);
+    //    // Process the response
+    //    Result<String> result = await this.HandleResponseX(httpResponse, cancellationToken);
 
-        return Result.Success<String>(result.Data);
-    }
+    //    if (result.IsFailed)
+    //        return ResultHelpers.CreateFailure(result);
 
-    private async Task<Result<String>> SendPutRequest(String uri, String accessToken, String content, CancellationToken cancellationToken)
-    {
-
-        HttpRequestMessage requestMessage = new HttpRequestMessage(HttpMethod.Put, uri);
-        requestMessage.Headers.Authorization = new AuthenticationHeaderValue(AuthenticationSchemes.Bearer, accessToken);
-        requestMessage.Content = new StringContent(content, Encoding.UTF8, "application/json");
-
-        // Make the Http Call here
-        HttpResponseMessage httpResponse = await this.HttpClient.SendAsync(requestMessage, cancellationToken);
-
-        // Process the response
-        Result<String> result = await this.HandleResponseX(httpResponse, cancellationToken);
-
-        if (result.IsFailed)
-            return ResultHelpers.CreateFailure(result);
-
-        return Result.Success<String>(result.Data);
-    }
-
-    public static class AuthenticationSchemes
-    {
-        public static readonly String Bearer = "Bearer";
-    }
-
-    private async Task<Result<String>> SendPatchRequest(String uri, String accessToken, String content, CancellationToken cancellationToken)
-    {
-
-        HttpRequestMessage requestMessage = new HttpRequestMessage(HttpMethod.Patch, uri);
-        requestMessage.Headers.Authorization = new AuthenticationHeaderValue(AuthenticationSchemes.Bearer, accessToken);
-        requestMessage.Content = new StringContent(content, Encoding.UTF8, "application/json");
-
-        // Make the Http Call here
-        HttpResponseMessage httpResponse = await this.HttpClient.SendAsync(requestMessage, cancellationToken);
-
-        // Process the response
-        Result<String> result = await this.HandleResponseX(httpResponse, cancellationToken);
-
-        if (result.IsFailed)
-            return ResultHelpers.CreateFailure(result);
-
-        return Result.Success<String>(result.Data);
-    }
-
-    private async Task<Result<String>> SendDeleteRequest(String uri, String accessToken, CancellationToken cancellationToken)
-    {
-
-        HttpRequestMessage requestMessage = new HttpRequestMessage(HttpMethod.Delete, uri);
-        requestMessage.Headers.Authorization = new AuthenticationHeaderValue(AuthenticationSchemes.Bearer, accessToken);
-
-        // Make the Http Call here
-        HttpResponseMessage httpResponse = await this.HttpClient.SendAsync(requestMessage, cancellationToken);
-
-        // Process the response
-        Result<String> result = await this.HandleResponseX(httpResponse, cancellationToken);
-
-        if (result.IsFailed)
-            return ResultHelpers.CreateFailure(result);
-
-        return Result.Success<String>(result.Data);
-    }
+    //    return Result.Success<String>(result.Data);
+    //}
 
     public async Task<Result> CreateEstate(String accessToken,
                                            CreateEstateRequest createEstateRequest,
@@ -169,8 +111,7 @@ public class TransactionProcessorClient : ClientProxyBase, ITransactionProcessor
         String requestUri = this.BuildRequestUrl("/api/estates/");
 
         try {
-            String requestSerialised = JsonConvert.SerializeObject(createEstateRequest);
-            Result<String> result = await this.SendPostRequest(requestUri, accessToken, requestSerialised, cancellationToken);
+            var result = await this.SendHttpPostRequest<CreateEstateRequest,CreateEstateResponse>(requestUri, createEstateRequest,accessToken, cancellationToken);
             
             if (result.IsFailed)
                 return ResultHelpers.CreateFailure(result);
@@ -191,11 +132,12 @@ public class TransactionProcessorClient : ClientProxyBase, ITransactionProcessor
         String requestUri = this.BuildRequestUrl($"/api/estates/{estateId}/all");
 
         try {
-            Result<String> result = await this.SendGetRequest(requestUri, accessToken, cancellationToken);
+            Result<List<EstateResponse>> result = await this.SendHttpGetRequest<List<EstateResponse>>(requestUri, accessToken, cancellationToken);
 
-            ResponseData<List<EstateResponse>> responseData = this.HandleResponseContent<List<EstateResponse>>(result.Data);
+            if (result.IsFailed)
+                return ResultHelpers.CreateFailure(result);
 
-            return Result.Success(responseData.Data);
+            return result;
         }
         catch (Exception ex) {
             // An exception has occurred, add some additional information to the message
@@ -212,9 +154,7 @@ public class TransactionProcessorClient : ClientProxyBase, ITransactionProcessor
         String requestUri = this.BuildRequestUrl($"/api/estates/{estateId}/floats");
 
         try {
-            String requestSerialised = JsonConvert.SerializeObject(createFloatForContractProductRequest);
-
-            Result<String> result = await this.SendPostRequest(requestUri, accessToken, requestSerialised, cancellationToken);
+            var result = await this.SendHttpPostRequest<CreateFloatForContractProductRequest, CreateFloatForContractProductResponse>(requestUri, createFloatForContractProductRequest, accessToken, cancellationToken);
 
             if (result.IsFailed)
                 return ResultHelpers.CreateFailure(result);
@@ -239,14 +179,12 @@ public class TransactionProcessorClient : ClientProxyBase, ITransactionProcessor
         if (liveBalance) requestUri = this.BuildRequestUrl($"/api/estates/{estateId}/merchants/{merchantId}/livebalance");
 
         try {
-            Result<String> result = await this.SendGetRequest(requestUri, accessToken, cancellationToken);
+            Result<MerchantBalanceResponse> result = await this.SendHttpGetRequest<MerchantBalanceResponse>(requestUri, accessToken, cancellationToken);
 
             if (result.IsFailed)
                 return ResultHelpers.CreateFailure(result);
 
-            ResponseData<MerchantBalanceResponse> responseData = this.HandleResponseContent<MerchantBalanceResponse>(result.Data);
-
-            return Result.Success(responseData.Data);
+            return result;
         }
         catch (Exception ex) {
             // An exception has occurred, add some additional information to the message
@@ -265,14 +203,12 @@ public class TransactionProcessorClient : ClientProxyBase, ITransactionProcessor
         String requestUri = this.BuildRequestUrl($"/api/estates/{estateId}/merchants/{merchantId}/balancehistory?startDate={startDate:yyyy-MM-dd}&endDate={endDate:yyyy-MM-dd}");
 
         try {
-            Result<String> result = await this.SendGetRequest(requestUri, accessToken, cancellationToken);
+            Result<List<MerchantBalanceChangedEntryResponse>> result = await this.SendHttpGetRequest<List<MerchantBalanceChangedEntryResponse>>(requestUri, accessToken, cancellationToken);
 
             if (result.IsFailed)
                 return ResultHelpers.CreateFailure(result);
 
-            ResponseData<List<MerchantBalanceChangedEntryResponse>> responseData = this.HandleResponseContent<List<MerchantBalanceChangedEntryResponse>>(result.Data);
-
-            return Result.Success(responseData.Data);
+            return result;
         }
         catch (Exception ex) {
             // An exception has occurred, add some additional information to the message
@@ -289,14 +225,12 @@ public class TransactionProcessorClient : ClientProxyBase, ITransactionProcessor
                                                                       CancellationToken cancellationToken) {
         String requestUri = this.BuildRequestUrl($"/api/estates/{estateId}/settlements/{settlementDate.Date:yyyy-MM-dd}/merchants/{merchantId}/pending");
         try {
-            Result<String> result = await this.SendGetRequest(requestUri, accessToken, cancellationToken);
+            var result = await this.SendHttpGetRequest<SettlementResponse>(requestUri, accessToken, cancellationToken);
 
             if (result.IsFailed)
                 return ResultHelpers.CreateFailure(result);
 
-            ResponseData<SettlementResponse> responseData = this.HandleResponseContent<SettlementResponse>(result.Data);
-
-            return Result.Success(responseData.Data);
+            return result;
         }
         catch (Exception ex) {
             // An exception has occurred, add some additional information to the message
@@ -313,14 +247,12 @@ public class TransactionProcessorClient : ClientProxyBase, ITransactionProcessor
         String requestUri = this.BuildRequestUrl($"/api/vouchers?estateId={estateId}&voucherCode={voucherCode}");
 
         try {
-            Result<String> result = await this.SendGetRequest(requestUri, accessToken, cancellationToken);
+            var result = await this.SendHttpGetRequest<GetVoucherResponse>(requestUri, accessToken, cancellationToken);
 
             if (result.IsFailed)
                 return ResultHelpers.CreateFailure(result);
 
-            ResponseData<GetVoucherResponse> responseData = this.HandleResponseContent<GetVoucherResponse>(result.Data);
-
-            return Result.Success(responseData.Data);
+            return result;
         }
         catch (Exception ex) {
             // An exception has occurred, add some additional information to the message
@@ -337,14 +269,12 @@ public class TransactionProcessorClient : ClientProxyBase, ITransactionProcessor
         String requestUri = this.BuildRequestUrl($"/api/vouchers?estateId={estateId}&transactionId={transactionId}");
 
         try {
-            Result<String> result = await this.SendGetRequest(requestUri, accessToken, cancellationToken);
+            var result = await this.SendHttpGetRequest<GetVoucherResponse>(requestUri, accessToken, cancellationToken);
 
             if (result.IsFailed)
                 return ResultHelpers.CreateFailure(result);
 
-            ResponseData<GetVoucherResponse> responseData = this.HandleResponseContent<GetVoucherResponse>(result.Data);
-
-            return Result.Success(responseData.Data);
+            return result;
         }
         catch (Exception ex) {
             // An exception has occurred, add some additional information to the message
@@ -360,16 +290,12 @@ public class TransactionProcessorClient : ClientProxyBase, ITransactionProcessor
                                                                     CancellationToken cancellationToken) {
         String requestUri = this.BuildRequestUrl($"/api/transactions");
         try {
-            String requestSerialised = JsonConvert.SerializeObject(transactionRequest);
-
-            Result<String> result = await this.SendPostRequest(requestUri, accessToken, requestSerialised, cancellationToken);
+            var result = await this.SendHttpPostRequest<SerialisedMessage, SerialisedMessage>(requestUri, transactionRequest, accessToken, cancellationToken);
 
             if (result.IsFailed)
                 return ResultHelpers.CreateFailure(result);
 
-            ResponseData<SerialisedMessage> responseData = this.HandleResponseContent<SerialisedMessage>(result.Data);
-
-            return Result.Success(responseData.Data);
+            return Result.Success(result.Data);
         }
         catch (Exception ex) {
             // An exception has occurred, add some additional information to the message
@@ -387,12 +313,12 @@ public class TransactionProcessorClient : ClientProxyBase, ITransactionProcessor
         String requestUri = this.BuildRequestUrl($"/api/estates/{estateId}/settlements/{settlementDate.Date:yyyy-MM-dd}/merchants/{merchantId}");
 
         try {
-            Result<String> result = await this.SendPostRequest(requestUri, accessToken, String.Empty, cancellationToken);
+            Result result = await this.SendHttpPostRequest(requestUri, accessToken, cancellationToken);
 
             if (result.IsFailed)
                 return ResultHelpers.CreateFailure(result);
-            
-            return Result.Success();
+
+            return result;
         }
         catch (Exception ex) {
             // An exception has occurred, add some additional information to the message
@@ -415,9 +341,7 @@ public class TransactionProcessorClient : ClientProxyBase, ITransactionProcessor
         String requestUri = this.BuildRequestUrl($"/api/estates/{estateId}/floats");
 
         try {
-            String requestSerialised = JsonConvert.SerializeObject(recordFloatCreditPurchaseRequest);
-
-            Result<String> result = await this.SendPostRequest(requestUri, accessToken, requestSerialised, cancellationToken);
+            var result = await this.SendHttpPostRequest<RecordFloatCreditPurchaseRequest, String>(requestUri, recordFloatCreditPurchaseRequest, accessToken, cancellationToken);
 
             if (result.IsFailed)
                 return ResultHelpers.CreateFailure(result);
@@ -432,22 +356,20 @@ public class TransactionProcessorClient : ClientProxyBase, ITransactionProcessor
         }
     }
 
-    public async Task<Result<RedeemVoucherResponse>> RedeemVoucher(String accessToken,
-                                                                   RedeemVoucherRequest redeemVoucherRequest,
-                                                                   CancellationToken cancellationToken) {
+    public async Task<Result> RedeemVoucher(String accessToken,
+                                            RedeemVoucherRequest redeemVoucherRequest,
+                                            CancellationToken cancellationToken) {
         String requestUri = this.BuildRequestUrl($"/api/vouchers");
 
         try {
-            String requestSerialised = JsonConvert.SerializeObject(redeemVoucherRequest);
 
-            Result<String> result = await this.SendPutRequest(requestUri, accessToken, requestSerialised, cancellationToken);
+            Result result = await this.SendHttpPutRequest(requestUri, redeemVoucherRequest, accessToken, cancellationToken);
 
             if (result.IsFailed)
                 return ResultHelpers.CreateFailure(result);
 
-            ResponseData<RedeemVoucherResponse> responseData = this.HandleResponseContent<RedeemVoucherResponse>(result.Data);
 
-            return Result.Success(responseData.Data);
+            return result;
         }
         catch (Exception ex) {
             // An exception has occurred, add some additional information to the message
@@ -464,7 +386,7 @@ public class TransactionProcessorClient : ClientProxyBase, ITransactionProcessor
         String requestUri = this.BuildRequestUrl($"/api/{estateId}/transactions/{transactionId}/resendreceipt");
 
         try {
-            Result<String> result = await this.SendPostRequest(requestUri, accessToken, String.Empty, cancellationToken);
+            var result = await this.SendHttpPostRequest(requestUri, accessToken, cancellationToken);
 
             if (result.IsFailed)
                 return ResultHelpers.CreateFailure(result);
@@ -487,15 +409,12 @@ public class TransactionProcessorClient : ClientProxyBase, ITransactionProcessor
         String requestUri = this.BuildRequestUrl($"/api/estates/{estateId}/merchants/{merchantId}/contracts");
 
         try {
-            String requestSerialised = JsonConvert.SerializeObject(addMerchantContractRequest);
-
-            Result<String> result = await this.SendPatchRequest(requestUri, accessToken, requestSerialised, cancellationToken);
+            Result result = await this.SendHttpPatchRequest(requestUri, addMerchantContractRequest, accessToken, cancellationToken);
 
             if (result.IsFailed)
                 return ResultHelpers.CreateFailure(result);
 
-            return Result.Success();
-        }
+            return result; }
         catch (Exception ex) {
             // An exception has occurred, add some additional information to the message
             Exception exception = new($"Error adding contract {addMerchantContractRequest.ContractId} to merchant Id {merchantId} in estate {estateId}.", ex);
@@ -512,14 +431,13 @@ public class TransactionProcessorClient : ClientProxyBase, ITransactionProcessor
         String requestUri = this.BuildRequestUrl($"/api/estates/{estateId}/merchants/{merchantId}/devices");
 
         try {
-            String requestSerialised = JsonConvert.SerializeObject(addMerchantDeviceRequest);
-
-            Result<String> result = await this.SendPatchRequest(requestUri, accessToken, requestSerialised, cancellationToken);
+            
+            Result result = await this.SendHttpPatchRequest(requestUri, addMerchantDeviceRequest,accessToken, cancellationToken);
 
             if (result.IsFailed)
                 return ResultHelpers.CreateFailure(result);
 
-            return Result.Success();
+            return result;
         }
         catch (Exception ex) {
             // An exception has occurred, add some additional information to the message
@@ -537,14 +455,12 @@ public class TransactionProcessorClient : ClientProxyBase, ITransactionProcessor
         String requestUri = this.BuildRequestUrl($"/api/estates/{estateId}/merchants/{merchantId}/addresses");
 
         try {
-            String requestSerialised = JsonConvert.SerializeObject(newAddressRequest);
-
-            Result<String> result = await this.SendPatchRequest(requestUri, accessToken, requestSerialised, cancellationToken);
+            Result result = await this.SendHttpPatchRequest(requestUri, newAddressRequest, accessToken, cancellationToken);
 
             if (result.IsFailed)
                 return ResultHelpers.CreateFailure(result);
 
-            return Result.Success();
+            return result;
         }
         catch (Exception ex) {
             // An exception has occurred, add some additional information to the message
@@ -562,14 +478,12 @@ public class TransactionProcessorClient : ClientProxyBase, ITransactionProcessor
         String requestUri = this.BuildRequestUrl($"/api/estates/{estateId}/merchants/{merchantId}/contacts");
 
         try {
-            String requestSerialised = JsonConvert.SerializeObject(newContactRequest);
-
-            Result<String> result = await this.SendPatchRequest(requestUri, accessToken, requestSerialised, cancellationToken);
+            Result result = await this.SendHttpPatchRequest(requestUri, newContactRequest, accessToken, cancellationToken);
 
             if (result.IsFailed)
                 return ResultHelpers.CreateFailure(result);
 
-            return Result.Success();
+            return result;
         }
         catch (Exception ex) {
             // An exception has occurred, add some additional information to the message
@@ -587,14 +501,12 @@ public class TransactionProcessorClient : ClientProxyBase, ITransactionProcessor
         String requestUri = this.BuildRequestUrl($"/api/estates/{estateId}/contracts/{contractId}/products");
 
         try {
-            String requestSerialised = JsonConvert.SerializeObject(addProductToContractRequest);
-
-            Result<String> result = await this.SendPatchRequest(requestUri, accessToken, requestSerialised, cancellationToken);
+            Result result = await this.SendHttpPatchRequest(requestUri, addProductToContractRequest, accessToken, cancellationToken);
 
             if (result.IsFailed)
                 return ResultHelpers.CreateFailure(result);
 
-            return Result.Success();
+            return result;
         }
         catch (Exception ex) {
             // An exception has occurred, add some additional information to the message
@@ -613,14 +525,12 @@ public class TransactionProcessorClient : ClientProxyBase, ITransactionProcessor
         String requestUri = this.BuildRequestUrl($"/api/estates/{estateId}/contracts/{contractId}/products/{productId}/transactionFees");
 
         try {
-            String requestSerialised = JsonConvert.SerializeObject(addTransactionFeeForProductToContractRequest);
-
-            Result<String> result = await this.SendPatchRequest(requestUri, accessToken, requestSerialised, cancellationToken);
+            Result result = await this.SendHttpPatchRequest(requestUri, addTransactionFeeForProductToContractRequest, accessToken, cancellationToken);
 
             if (result.IsFailed)
                 return ResultHelpers.CreateFailure(result);
 
-            return Result.Success();
+            return result;
         }
         catch (Exception ex) {
             // An exception has occurred, add some additional information to the message
@@ -638,14 +548,12 @@ public class TransactionProcessorClient : ClientProxyBase, ITransactionProcessor
         String requestUri = this.BuildRequestUrl($"/api/estates/{estateId}/merchants/{merchantId}/operators");
 
         try {
-            String requestSerialised = JsonConvert.SerializeObject(assignOperatorRequest);
-
-            Result<String> result = await this.SendPatchRequest(requestUri, accessToken, requestSerialised, cancellationToken);
+            Result result = await this.SendHttpPatchRequest(requestUri, assignOperatorRequest, accessToken, cancellationToken);
 
             if (result.IsFailed)
                 return ResultHelpers.CreateFailure(result);
 
-            return Result.Success();
+            return result;
         }
         catch (Exception ex) {
             // An exception has occurred, add some additional information to the message
@@ -663,12 +571,12 @@ public class TransactionProcessorClient : ClientProxyBase, ITransactionProcessor
         String requestUri = this.BuildRequestUrl($"/api/estates/{estateId}/merchants/{merchantId}/operators/{operatorId}");
 
         try {
-            Result<String> result = await this.SendDeleteRequest(requestUri, accessToken, cancellationToken);
+            Result result = await this.SendHttpDeleteRequest(requestUri, accessToken, cancellationToken);
 
             if (result.IsFailed)
                 return ResultHelpers.CreateFailure(result);
 
-            return Result.Success();
+            return result;
         }
         catch (Exception ex) {
             // An exception has occurred, add some additional information to the message
@@ -685,12 +593,12 @@ public class TransactionProcessorClient : ClientProxyBase, ITransactionProcessor
         String requestUri = this.BuildRequestUrl($"/api/estates/{estateId}/operators/{operatorId}");
 
         try {
-            Result<String> result = await this.SendDeleteRequest(requestUri, accessToken, cancellationToken);
+            Result result = await this.SendHttpDeleteRequest(requestUri, accessToken, cancellationToken);
 
             if (result.IsFailed)
                 return ResultHelpers.CreateFailure(result);
 
-            return Result.Success();
+            return result;
         }
         catch (Exception ex) {
             // An exception has occurred, add some additional information to the message
@@ -708,12 +616,12 @@ public class TransactionProcessorClient : ClientProxyBase, ITransactionProcessor
         String requestUri = this.BuildRequestUrl($"/api/estates/{estateId}/merchants/{merchantId}/contracts/{contractId}");
 
         try {
-            Result<String> result = await this.SendDeleteRequest(requestUri, accessToken, cancellationToken);
+            Result result = await this.SendHttpDeleteRequest(requestUri, accessToken, cancellationToken);
 
             if (result.IsFailed)
                 return ResultHelpers.CreateFailure(result);
 
-            return Result.Success();
+            return result;
         }
         catch (Exception ex) {
             // An exception has occurred, add some additional information to the message
@@ -730,9 +638,7 @@ public class TransactionProcessorClient : ClientProxyBase, ITransactionProcessor
         String requestUri = this.BuildRequestUrl($"/api/estates/{estateId}/contracts/");
 
         try {
-            String requestSerialised = JsonConvert.SerializeObject(createContractRequest);
-
-            Result<String> result = await this.SendPostRequest(requestUri, accessToken, requestSerialised, cancellationToken);
+            var result = await this.SendHttpPostRequest<CreateContractRequest, CreateContractResponse>(requestUri, createContractRequest, accessToken, cancellationToken);
 
             if (result.IsFailed)
                 return ResultHelpers.CreateFailure(result);
@@ -754,9 +660,7 @@ public class TransactionProcessorClient : ClientProxyBase, ITransactionProcessor
         String requestUri = this.BuildRequestUrl($"/api/estates/{estateId}/operators");
 
         try {
-            String requestSerialised = JsonConvert.SerializeObject(createOperatorRequest);
-
-            Result<String> result = await this.SendPostRequest(requestUri, accessToken, requestSerialised, cancellationToken);
+            var result = await this.SendHttpPostRequest<CreateOperatorRequest, CreateOperatorResponse>(requestUri, createOperatorRequest, accessToken, cancellationToken);
 
             if (result.IsFailed)
                 return ResultHelpers.CreateFailure(result);
@@ -778,14 +682,12 @@ public class TransactionProcessorClient : ClientProxyBase, ITransactionProcessor
         String requestUri = this.BuildRequestUrl($"/api/estates/{estateId}/users");
 
         try {
-            String requestSerialised = JsonConvert.SerializeObject(createEstateUserRequest);
-
-            Result<String> result = await this.SendPatchRequest(requestUri, accessToken, requestSerialised, cancellationToken);
+            Result result = await this.SendHttpPatchRequest(requestUri, createEstateUserRequest, accessToken, cancellationToken);
 
             if (result.IsFailed)
                 return ResultHelpers.CreateFailure(result);
 
-            return Result.Success();
+            return result;
             ;
         }
         catch (Exception ex) {
@@ -803,9 +705,7 @@ public class TransactionProcessorClient : ClientProxyBase, ITransactionProcessor
         String requestUri = this.BuildRequestUrl($"/api/estates/{estateId}/merchants");
 
         try {
-            String requestSerialised = JsonConvert.SerializeObject(createMerchantRequest);
-
-            Result<String> result = await this.SendPostRequest(requestUri, accessToken, requestSerialised, cancellationToken);
+            var result = await this.SendHttpPostRequest<CreateMerchantRequest, CreateMerchantResponse>(requestUri, createMerchantRequest, accessToken, cancellationToken);
 
             if (result.IsFailed)
                 return ResultHelpers.CreateFailure(result);
@@ -828,14 +728,12 @@ public class TransactionProcessorClient : ClientProxyBase, ITransactionProcessor
         String requestUri = this.BuildRequestUrl($"/api/estates/{estateId}/merchants/{merchantId}/users");
 
         try {
-            String requestSerialised = JsonConvert.SerializeObject(createMerchantUserRequest);
-
-            Result<String> result = await this.SendPatchRequest(requestUri, accessToken, requestSerialised, cancellationToken);
+            Result result = await this.SendHttpPatchRequest(requestUri, createMerchantUserRequest, accessToken, cancellationToken);
 
             if (result.IsFailed)
                 return ResultHelpers.CreateFailure(result);
 
-            return Result.Success();
+            return result;
         }
         catch (Exception ex) {
             // An exception has occurred, add some additional information to the message
@@ -852,14 +750,12 @@ public class TransactionProcessorClient : ClientProxyBase, ITransactionProcessor
         String requestUri = this.BuildRequestUrl($"/api/estates/{estateId}/operators");
 
         try {
-            String requestSerialised = JsonConvert.SerializeObject(assignOperatorRequest);
-
-            Result<String> result = await this.SendPatchRequest(requestUri, accessToken, requestSerialised, cancellationToken);
+            Result result = await this.SendHttpPatchRequest(requestUri, assignOperatorRequest, accessToken, cancellationToken);
 
             if (result.IsFailed)
                 return ResultHelpers.CreateFailure(result);
 
-            return Result.Success();
+            return result;
         }
         catch (Exception ex) {
             // An exception has occurred, add some additional information to the message
@@ -878,12 +774,12 @@ public class TransactionProcessorClient : ClientProxyBase, ITransactionProcessor
         String requestUri = this.BuildRequestUrl($"/api/estates/{estateId}/contracts/{contractId}/products/{productId}/transactionFees/{transactionFeeId}");
 
         try {
-            Result<String> result = await this.SendDeleteRequest(requestUri, accessToken, cancellationToken);
+            Result result = await this.SendHttpDeleteRequest(requestUri, accessToken, cancellationToken);
 
             if (result.IsFailed)
                 return ResultHelpers.CreateFailure(result);
 
-            return Result.Success();
+            return result;
         }
         catch (Exception ex) {
             // An exception has occurred, add some additional information to the message
@@ -900,15 +796,12 @@ public class TransactionProcessorClient : ClientProxyBase, ITransactionProcessor
         String requestUri = this.BuildRequestUrl($"/api/estates/{estateId}/contracts/{contractId}");
 
         try {
-            Result<String> result = await this.SendGetRequest(requestUri, accessToken, cancellationToken);
+            var result = await this.SendHttpGetRequest<ContractResponse>(requestUri, accessToken, cancellationToken);
 
             if (result.IsFailed)
                 return ResultHelpers.CreateFailure(result);
 
-            // call was successful so now deserialise the body to the response object
-            ResponseData<ContractResponse> responseData = this.HandleResponseContent<ContractResponse>(result.Data);
-
-            return Result.Success(responseData.Data);
+            return result;
         }
         catch (Exception ex) {
             // An exception has occurred, add some additional information to the message
@@ -924,14 +817,12 @@ public class TransactionProcessorClient : ClientProxyBase, ITransactionProcessor
         String requestUri = this.BuildRequestUrl($"/api/estates/{estateId}/contracts");
 
         try {
-            Result<String> result = await this.SendGetRequest(requestUri, accessToken, cancellationToken);
+            var result = await this.SendHttpGetRequest<List<ContractResponse>>(requestUri, accessToken, cancellationToken);
 
             if (result.IsFailed)
                 return ResultHelpers.CreateFailure(result);
 
-            ResponseData<List<ContractResponse>> responseData = this.HandleResponseContent<List<ContractResponse>>(result.Data);
-
-            return Result.Success(responseData.Data);
+            return result;
         }
         catch (Exception ex) {
             // An exception has occurred, add some additional information to the message
@@ -948,14 +839,12 @@ public class TransactionProcessorClient : ClientProxyBase, ITransactionProcessor
         String requestUri = this.BuildRequestUrl($"/api/estates/{estateId}/merchants/{merchantId}");
 
         try {
-            Result<String> result = await this.SendGetRequest(requestUri, accessToken, cancellationToken);
+            var result = await this.SendHttpGetRequest<MerchantResponse>(requestUri, accessToken, cancellationToken);
 
             if (result.IsFailed)
                 return ResultHelpers.CreateFailure(result);
 
-            ResponseData<MerchantResponse> responseData = this.HandleResponseContent<MerchantResponse>(result.Data);
-
-            return Result.Success(responseData.Data);
+            return result;
         }
         catch (Exception ex) {
             // An exception has occurred, add some additional information to the message
@@ -972,14 +861,12 @@ public class TransactionProcessorClient : ClientProxyBase, ITransactionProcessor
         String requestUri = this.BuildRequestUrl($"/api/estates/{estateId}/merchants/{merchantId}/contracts");
 
         try {
-            Result<String> result = await this.SendGetRequest(requestUri, accessToken, cancellationToken);
+            var result = await this.SendHttpGetRequest<List<ContractResponse>>(requestUri, accessToken, cancellationToken);
 
             if (result.IsFailed)
                 return ResultHelpers.CreateFailure(result);
 
-            ResponseData<List<ContractResponse>> responseData = this.HandleResponseContent<List<ContractResponse>>(result.Data);
-
-            return Result.Success(responseData.Data);
+            return result;
         }
         catch (Exception ex) {
             // An exception has occurred, add some additional information to the message
@@ -995,14 +882,12 @@ public class TransactionProcessorClient : ClientProxyBase, ITransactionProcessor
         String requestUri = this.BuildRequestUrl($"/api/estates/{estateId}/merchants");
 
         try {
-            Result<String> result = await this.SendGetRequest(requestUri, accessToken, cancellationToken);
+            var result = await this.SendHttpGetRequest<List<MerchantResponse>>(requestUri, accessToken, cancellationToken);
 
             if (result.IsFailed)
                 return ResultHelpers.CreateFailure(result);
 
-            ResponseData<List<MerchantResponse>> responseData = this.HandleResponseContent<List<MerchantResponse>>(result.Data);
-
-            return Result.Success(responseData.Data);
+            return result;
         }
         catch (Exception ex) {
             // An exception has occurred, add some additional information to the message
@@ -1020,14 +905,12 @@ public class TransactionProcessorClient : ClientProxyBase, ITransactionProcessor
         String requestUri = this.BuildRequestUrl($"/api/estates/{estateId}/settlements/{settlementId}?merchantId={merchantId}");
 
         try {
-            Result<String> result = await this.SendGetRequest(requestUri, accessToken, cancellationToken);
+            var result = await this.SendHttpGetRequest<DataTransferObjects.Responses.Settlement.SettlementResponse>(requestUri, accessToken, cancellationToken);
 
             if (result.IsFailed)
                 return ResultHelpers.CreateFailure(result);
 
-            ResponseData<DataTransferObjects.Responses.Settlement.SettlementResponse> responseData = this.HandleResponseContent<DataTransferObjects.Responses.Settlement.SettlementResponse>(result.Data);
-
-            return Result.Success(responseData.Data);
+            return result;
         }
         catch (Exception ex) {
             // An exception has occurred, add some additional information to the message
@@ -1046,14 +929,12 @@ public class TransactionProcessorClient : ClientProxyBase, ITransactionProcessor
         String requestUri = this.BuildRequestUrl($"/api/estates/{estateId}/settlements?merchantId={merchantId}&start_date={startDate}&end_date={endDate}");
 
         try {
-            Result<String> result = await this.SendGetRequest(requestUri, accessToken, cancellationToken);
+            var result = await this.SendHttpGetRequest<List<DataTransferObjects.Responses.Settlement.SettlementResponse>>(requestUri, accessToken, cancellationToken);
 
             if (result.IsFailed)
                 return ResultHelpers.CreateFailure(result);
 
-            ResponseData<List<DataTransferObjects.Responses.Settlement.SettlementResponse>> responseData = this.HandleResponseContent<List<DataTransferObjects.Responses.Settlement.SettlementResponse>>(result.Data);
-
-            return Result.Success(responseData.Data);
+            return result;
         }
         catch (Exception ex) {
             // An exception has occurred, add some additional information to the message
@@ -1072,15 +953,12 @@ public class TransactionProcessorClient : ClientProxyBase, ITransactionProcessor
         String requestUri = this.BuildRequestUrl($"/api/estates/{estateId}/merchants/{merchantId}/contracts/{contractId}/products/{productId}/transactionFees");
 
         try {
-            Result<String> result = await this.SendGetRequest(requestUri, accessToken, cancellationToken);
+            var result = await this.SendHttpGetRequest<List<ContractProductTransactionFee>>(requestUri, accessToken, cancellationToken);
 
             if (result.IsFailed)
                 return ResultHelpers.CreateFailure(result);
 
-            // call was successful so now deserialise the body to the response object
-            ResponseData<List<ContractProductTransactionFee>> responseData = this.HandleResponseContent<List<ContractProductTransactionFee>>(result.Data);
-
-            return Result.Success(responseData.Data);
+            return result;
         }
         catch (Exception ex) {
             // An exception has occurred, add some additional information to the message
@@ -1098,9 +976,7 @@ public class TransactionProcessorClient : ClientProxyBase, ITransactionProcessor
         String requestUri = this.BuildRequestUrl($"/api/estates/{estateId}/merchants/{merchantId}/deposits");
 
         try {
-            String requestSerialised = JsonConvert.SerializeObject(makeMerchantDepositRequest);
-
-            Result<String> result = await this.SendPostRequest(requestUri, accessToken, requestSerialised, cancellationToken);
+            var result = await this.SendHttpPostRequest<MakeMerchantDepositRequest, MakeMerchantDepositResponse>(requestUri, makeMerchantDepositRequest, accessToken, cancellationToken);
 
             if (result.IsFailed)
                 return ResultHelpers.CreateFailure(result);
@@ -1123,9 +999,7 @@ public class TransactionProcessorClient : ClientProxyBase, ITransactionProcessor
         String requestUri = this.BuildRequestUrl($"/api/estates/{estateId}/merchants/{merchantId}/withdrawals");
 
         try {
-            String requestSerialised = JsonConvert.SerializeObject(makeMerchantWithdrawalRequest);
-
-            Result<String> result = await this.SendPostRequest(requestUri, accessToken, requestSerialised, cancellationToken);
+            var result = await this.SendHttpPostRequest<MakeMerchantWithdrawalRequest, MakeMerchantWithdrawalResponse>(requestUri, makeMerchantWithdrawalRequest, accessToken, cancellationToken);
 
             if (result.IsFailed)
                 return ResultHelpers.CreateFailure(result);
@@ -1148,14 +1022,12 @@ public class TransactionProcessorClient : ClientProxyBase, ITransactionProcessor
         String requestUri = this.BuildRequestUrl($"/api/estates/{estateId}/merchants/{merchantId}");
 
         try {
-            String requestSerialised = JsonConvert.SerializeObject(setSettlementScheduleRequest);
-
-            Result<String> result = await this.SendPatchRequest(requestUri, accessToken, requestSerialised, cancellationToken);
+            Result result = await this.SendHttpPatchRequest(requestUri, setSettlementScheduleRequest, accessToken, cancellationToken);
 
             if (result.IsFailed)
                 return ResultHelpers.CreateFailure(result);
 
-            return Result.Success();
+            return result;
         }
         catch (Exception ex) {
             // An exception has occurred, add some additional information to the message
@@ -1174,14 +1046,12 @@ public class TransactionProcessorClient : ClientProxyBase, ITransactionProcessor
         String requestUri = this.BuildRequestUrl($"/api/estates/{estateId}/merchants/{merchantId}/devices/{deviceIdentifier}");
 
         try {
-            String requestSerialised = JsonConvert.SerializeObject(swapMerchantDeviceRequest);
-
-            Result<String> result = await this.SendPatchRequest(requestUri, accessToken, requestSerialised, cancellationToken);
+            Result result = await this.SendHttpPatchRequest(requestUri, swapMerchantDeviceRequest, accessToken, cancellationToken);
 
             if (result.IsFailed)
                 return ResultHelpers.CreateFailure(result);
 
-            return Result.Success();
+            return result;
         }
         catch (Exception ex) {
             // An exception has occurred, add some additional information to the message
@@ -1199,14 +1069,12 @@ public class TransactionProcessorClient : ClientProxyBase, ITransactionProcessor
         String requestUri = this.BuildRequestUrl($"/api/estates/{estateId}/merchants/{merchantId}");
 
         try {
-            String requestSerialised = JsonConvert.SerializeObject(updateMerchantRequest);
-
-            Result<String> result = await this.SendPatchRequest(requestUri, accessToken, requestSerialised, cancellationToken);
+            Result result = await this.SendHttpPatchRequest(requestUri, updateMerchantRequest, accessToken, cancellationToken);
 
             if (result.IsFailed)
                 return ResultHelpers.CreateFailure(result);
 
-            return Result.Success();
+            return result;
         }
         catch (Exception ex) {
             // An exception has occurred, add some additional information to the message
@@ -1225,14 +1093,12 @@ public class TransactionProcessorClient : ClientProxyBase, ITransactionProcessor
         String requestUri = this.BuildRequestUrl($"/api/estates/{estateId}/merchants/{merchantId}/addresses/{addressId}");
 
         try {
-            String requestSerialised = JsonConvert.SerializeObject(updatedAddressRequest);
-
-            Result<String> result = await this.SendPatchRequest(requestUri, accessToken, requestSerialised, cancellationToken);
+            Result result = await this.SendHttpPatchRequest(requestUri, updatedAddressRequest, accessToken, cancellationToken);
 
             if (result.IsFailed)
                 return ResultHelpers.CreateFailure(result);
 
-            return Result.Success();
+            return result;
         }
         catch (Exception ex) {
             // An exception has occurred, add some additional information to the message
@@ -1251,14 +1117,12 @@ public class TransactionProcessorClient : ClientProxyBase, ITransactionProcessor
         String requestUri = this.BuildRequestUrl($"/api/estates/{estateId}/merchants/{merchantId}/contacts/{contactId}");
 
         try {
-            String requestSerialised = JsonConvert.SerializeObject(updatedContactRequest);
-
-            Result<String> result = await this.SendPatchRequest(requestUri, accessToken, requestSerialised, cancellationToken);
+            Result result = await this.SendHttpPatchRequest(requestUri, updatedContactRequest, accessToken, cancellationToken);
 
             if (result.IsFailed)
                 return ResultHelpers.CreateFailure(result);
 
-            return Result.Success();
+            return result;
         }
         catch (Exception ex) {
             // An exception has occurred, add some additional information to the message
@@ -1276,9 +1140,7 @@ public class TransactionProcessorClient : ClientProxyBase, ITransactionProcessor
         String requestUri = this.BuildRequestUrl($"/api/estates/{estateId}/operators/{operatorId}");
 
         try {
-            String requestSerialised = JsonConvert.SerializeObject(updateOperatorRequest);
-
-            Result<String> result = await this.SendPostRequest(requestUri, accessToken, requestSerialised, cancellationToken);
+            var result = await this.SendHttpPostRequest<UpdateOperatorRequest, String>(requestUri, updateOperatorRequest, accessToken, cancellationToken);
 
             if (result.IsFailed)
                 return ResultHelpers.CreateFailure(result);
@@ -1300,14 +1162,12 @@ public class TransactionProcessorClient : ClientProxyBase, ITransactionProcessor
         String requestUri = this.BuildRequestUrl($"/api/estates/{estateId}/operators/{operatorId}");
 
         try {
-            Result<String> result = await this.SendGetRequest(requestUri, accessToken, cancellationToken);
+            var result = await this.SendHttpGetRequest<OperatorResponse>(requestUri, accessToken, cancellationToken);
 
             if (result.IsFailed)
                 return ResultHelpers.CreateFailure(result);
 
-            ResponseData<OperatorResponse> responseData = this.HandleResponseContent<OperatorResponse>(result.Data);
-
-            return Result.Success(responseData.Data);
+            return result;
         }
         catch (Exception ex) {
             // An exception has occurred, add some additional information to the message
@@ -1323,14 +1183,12 @@ public class TransactionProcessorClient : ClientProxyBase, ITransactionProcessor
         String requestUri = this.BuildRequestUrl($"/api/estates/{estateId}/operators");
 
         try {
-            Result<String> result = await this.SendGetRequest(requestUri, accessToken, cancellationToken);
+            var result = await this.SendHttpGetRequest<List<OperatorResponse>>(requestUri, accessToken, cancellationToken);
 
             if (result.IsFailed)
                 return ResultHelpers.CreateFailure(result);
 
-            ResponseData<List<OperatorResponse>> responseData = this.HandleResponseContent<List<OperatorResponse>>(result.Data);
-
-            return Result.Success(responseData.Data);
+            return result;
         }
         catch (Exception ex) {
             // An exception has occurred, add some additional information to the message

@@ -1,4 +1,5 @@
-﻿using Shared.Results;
+﻿using Microsoft.AspNetCore.Http;
+using Shared.Results;
 using Shared.Results.Web;
 using SimpleResults;
 using Swashbuckle.AspNetCore.Filters;
@@ -58,23 +59,20 @@ namespace TransactionProcessor.Controllers
         [HttpPut]
         [SwaggerResponse(200, "OK", typeof(RedeemVoucherResponse))]
         [SwaggerResponseExample(200, typeof(RedeemVoucherResponseExample))]
-        public async Task<IActionResult> RedeemVoucher(RedeemVoucherRequest redeemVoucherRequest,
+        public async Task<IResult> RedeemVoucher(RedeemVoucherRequest redeemVoucherRequest,
                                                        CancellationToken cancellationToken)
         {
             // Reject password tokens
-            if (ClaimsHelper.IsPasswordToken(this.User))
-            {
-                return this.Forbid();
+            if (ClaimsHelper.IsPasswordToken(this.User)) {
+                return ResponseFactory.FromResult(Result.Forbidden());
             }
 
             DateTime redeemedDateTime = redeemVoucherRequest.RedeemedDateTime.HasValue ? redeemVoucherRequest.RedeemedDateTime.Value : DateTime.Now;
             VoucherCommands.RedeemVoucherCommand command = new(redeemVoucherRequest.EstateId, redeemVoucherRequest.VoucherCode, redeemedDateTime);
 
             Result<RedeemVoucherResponse> result = await this.Mediator.Send(command, cancellationToken);
-            if (result.IsFailed)
-                return ResultHelpers.CreateFailure(result).ToActionResultX();
-
-            return ModelFactory.ConvertFrom(result.Data).ToActionResultX();
+            
+            return ResponseFactory.FromResult(result, ModelFactory.ConvertFrom);
         }
 
         /// <summary>
@@ -87,36 +85,32 @@ namespace TransactionProcessor.Controllers
         [HttpGet]
         [SwaggerResponse(200, "OK", typeof(GetVoucherResponse))]
         [SwaggerResponseExample(200, typeof(GetVoucherResponseExample))]
-        public async Task<IActionResult> GetVoucher([FromQuery] Guid estateId,
+        public async Task<IResult> GetVoucher([FromQuery] Guid estateId,
                                                     [FromQuery] String voucherCode,
                                                     [FromQuery] Guid transactionId,
                                                     CancellationToken cancellationToken) {
             // Reject password tokens
             if (ClaimsHelper.IsPasswordToken(this.User)) {
-                return this.Forbid();
+                return ResponseFactory.FromResult(Result.Forbidden());
             }
 
             if (String.IsNullOrEmpty(voucherCode) == false) {
                 VoucherQueries.GetVoucherByVoucherCodeQuery queryByVoucherCode = new(estateId, voucherCode);
                 // By code is priority
                 Result<Voucher> getVoucherByCodeResult = await this.Mediator.Send(queryByVoucherCode, cancellationToken);
-                if (getVoucherByCodeResult.IsFailed)
-                    return ResultHelpers.CreateFailure(getVoucherByCodeResult).ToActionResultX();
 
-                return ModelFactory.ConvertFrom(getVoucherByCodeResult.Data).ToActionResultX();
+                return ResponseFactory.FromResult(getVoucherByCodeResult, ModelFactory.ConvertFrom);
             }
 
             if (transactionId != Guid.Empty) {
                 // By transaction id is an additional filter
                 VoucherQueries.GetVoucherByTransactionIdQuery queryByTransactionId = new(estateId, transactionId);
                 Result<Voucher> getVoucherByTransactionIdResult = await this.Mediator.Send(queryByTransactionId, cancellationToken);
-                if (getVoucherByTransactionIdResult.IsFailed)
-                    return ResultHelpers.CreateFailure(getVoucherByTransactionIdResult).ToActionResultX();
-
-                return ModelFactory.ConvertFrom(getVoucherByTransactionIdResult.Data).ToActionResultX();
+                
+                return ResponseFactory.FromResult(getVoucherByTransactionIdResult, ModelFactory.ConvertFrom);
             }
 
-            return Result.Invalid().ToActionResultX();
+            return ResponseFactory.FromResult(Result.Invalid());
         }
         #endregion
 

@@ -1,6 +1,7 @@
 ﻿using System.Linq;
 using SimpleResults;
 using TransactionProcessor.DataTransferObjects.Responses.Contract;
+using TransactionProcessor.DataTransferObjects.Responses.Estate;
 using TransactionProcessor.DataTransferObjects.Responses.Merchant;
 using TransactionProcessor.DataTransferObjects.Responses.Operator;
 using ProductType = TransactionProcessor.DataTransferObjects.Responses.Contract.ProductType;
@@ -25,23 +26,24 @@ namespace TransactionProcessor.Factories
     public static class ModelFactory
     {
         #region Methods
-        public static Result<List<ContractResponse>> ConvertFrom(List<Models.Contract.Contract> contracts)
+        public static List<ContractResponse> ConvertFrom(List<Models.Contract.Contract> contracts)
         {
-            List<Result<ContractResponse>> result = new();
+            List<ContractResponse> result = new();
 
-            contracts.ForEach(c => result.Add(ModelFactory.ConvertFrom(c)));
+            contracts.ForEach(c => {
+                ContractResponse converted = ModelFactory.ConvertFrom(c);
+                if (converted != null) {
+                    result.Add(converted);
+                }
+            });
 
-            if (result.Any(c => c.IsFailed))
-                return Result.Failure("Failed converting contracts");
-
-            return Result.Success(result.Select(r => r.Data).ToList());
+            return result;
         }
 
-        public static Result<ContractResponse> ConvertFrom(Models.Contract.Contract contract)
+        public static ContractResponse ConvertFrom(Models.Contract.Contract contract)
         {
-            if (contract == null)
-            {
-                return Result.Invalid("contract cannot be null");
+            if (contract == null) {
+                return null;
             }
 
             ContractResponse contractResponse = new ContractResponse
@@ -90,14 +92,13 @@ namespace TransactionProcessor.Factories
                 });
             }
 
-            return Result.Success(contractResponse);
+            return contractResponse;
         }
 
-        public static Result<OperatorResponse> ConvertFrom(Models.Operator.Operator @operator)
+        public static OperatorResponse ConvertFrom(Models.Operator.Operator @operator)
         {
-            if (@operator == null)
-            {
-                return Result.Invalid("operator cannot be null");
+            if (@operator == null) {
+                return null;
             }
 
             OperatorResponse response = new();
@@ -106,31 +107,34 @@ namespace TransactionProcessor.Factories
             response.RequireCustomMerchantNumber = @operator.RequireCustomMerchantNumber;
             response.Name = @operator.Name;
 
-            return Result.Success(response);
+            return response;
         }
 
-        public static Result<List<OperatorResponse>> ConvertFrom(List<Models.Operator.Operator> @operators)
+        public static List<OperatorResponse> ConvertFrom(List<Models.Operator.Operator> @operators)
         {
             if (@operators == null || @operators.Any() == false)
             {
-                return Result.Success(new List<OperatorResponse>());
+                return new List<OperatorResponse>();
             }
 
-            List<Result<OperatorResponse>> result = new();
+            List<OperatorResponse> result = new();
 
-            @operators.ForEach(c => result.Add(ModelFactory.ConvertFrom(c)));
+            @operators.ForEach(c => {
+                var converted = ModelFactory.ConvertFrom(c);
+                if (converted != null) {
+                    result.Add(converted);
+                }
+            });
 
-            if (result.Any(c => c.IsFailed))
-                return Result.Failure("Failed converting operators");
 
-            return Result.Success(result.Select(r => r.Data).ToList());
+            return result.ToList();
         }
 
-        public static Result<SerialisedMessage> ConvertFrom(ProcessLogonTransactionResponse processLogonTransactionResponse)
+        public static SerialisedMessage ConvertFrom(ProcessLogonTransactionResponse processLogonTransactionResponse)
         {
             if (processLogonTransactionResponse == null)
             {
-                return Result.Invalid("processLogonTransactionResponse cannot be null");
+                return null;
             }
 
             LogonTransactionResponse logonTransactionResponse = new LogonTransactionResponse
@@ -142,7 +146,7 @@ namespace TransactionProcessor.Factories
                                                                     TransactionId = processLogonTransactionResponse.TransactionId
                                                                 };
 
-            return Result.Success(new SerialisedMessage
+            return new SerialisedMessage
                    {
                        Metadata = new Dictionary<String, String>()
                                   {
@@ -153,14 +157,14 @@ namespace TransactionProcessor.Factories
                                                                                                      {
                                                                                                          TypeNameHandling = TypeNameHandling.All
                                                                                                      })
-                   });
+                   };
         }
 
-        public static Result<SerialisedMessage> ConvertFrom(ProcessSaleTransactionResponse processSaleTransactionResponse)
+        public static SerialisedMessage ConvertFrom(ProcessSaleTransactionResponse processSaleTransactionResponse)
         {
             if (processSaleTransactionResponse == null)
             {
-                return Result.Invalid("processSaleTransactionResponse cannot be null");
+                return null;
             }
 
             SaleTransactionResponse saleTransactionResponse = new SaleTransactionResponse
@@ -173,7 +177,7 @@ namespace TransactionProcessor.Factories
                                                                     TransactionId = processSaleTransactionResponse.TransactionId
                                                                 };
 
-            return Result.Success(new SerialisedMessage
+            return new SerialisedMessage
             {
                        Metadata = new Dictionary<String, String>()
                                   {
@@ -184,14 +188,14 @@ namespace TransactionProcessor.Factories
                                                                                              {
                                                                                                  TypeNameHandling = TypeNameHandling.All
                                                                                              })
-                   });
+                   };
         }
 
-        public static Result<SerialisedMessage> ConvertFrom(ProcessReconciliationTransactionResponse processReconciliationTransactionResponse)
+        public static SerialisedMessage ConvertFrom(ProcessReconciliationTransactionResponse processReconciliationTransactionResponse)
         {
             if (processReconciliationTransactionResponse == null)
             {
-                return Result.Invalid("processReconciliationTransactionResponse cannot be null");
+                return null;
             }
 
             ReconciliationResponse reconciliationTransactionResponse = new ReconciliationResponse
@@ -203,7 +207,7 @@ namespace TransactionProcessor.Factories
                                                                            TransactionId = processReconciliationTransactionResponse.TransactionId
                                                                        };
 
-            return Result.Success(new SerialisedMessage
+            return new SerialisedMessage
             {
                        Metadata = new Dictionary<String, String>()
                                   {
@@ -214,7 +218,7 @@ namespace TransactionProcessor.Factories
                                                                                                        {
                                                                                                            TypeNameHandling = TypeNameHandling.All
                                                                                                        })
-                   });
+                   };
         }
 
         public static IssueVoucherResponse ConvertFrom(Models.IssueVoucherResponse issueVoucherResponse)
@@ -234,11 +238,11 @@ namespace TransactionProcessor.Factories
 
             return response;
         }
-        public static Result<GetVoucherResponse> ConvertFrom(Voucher voucherModel)
+        public static GetVoucherResponse ConvertFrom(Voucher voucherModel)
         {
             if (voucherModel == null)
             {
-                return Result.Invalid("voucherModel cannot be null");
+                return null;
             }
 
             GetVoucherResponse response = new GetVoucherResponse
@@ -257,13 +261,13 @@ namespace TransactionProcessor.Factories
                 VoucherId = voucherModel.VoucherId
             };
 
-            return Result.Success(response);
+            return response;
         }
-        public static Result<RedeemVoucherResponse> ConvertFrom(Models.RedeemVoucherResponse redeemVoucherResponse)
+        public static RedeemVoucherResponse ConvertFrom(Models.RedeemVoucherResponse redeemVoucherResponse)
         {
             if (redeemVoucherResponse == null)
             {
-                return Result.Invalid("redeemVoucherResponse cannot be null");
+                return null;
             }
 
             RedeemVoucherResponse response = new RedeemVoucherResponse
@@ -273,23 +277,24 @@ namespace TransactionProcessor.Factories
                 RemainingBalance = redeemVoucherResponse.RemainingBalance
             };
 
-            return Result.Success(response);
+            return response;
         }
 
-        public static Result<List<DataTransferObjects.Responses.Estate.EstateResponse>> ConvertFrom(List<Estate> estates)
+        public static List<EstateResponse> ConvertFrom(List<Estate> estates)
         {
-            List<Result<DataTransferObjects.Responses.Estate.EstateResponse>> result = new();
+            List<EstateResponse> result = new();
+            
+            estates.ForEach(c => {
+                var converted = ModelFactory.ConvertFrom(c);
+                if (converted != null)
+                    result.Add(converted);
+            });
 
-            estates.ForEach(c => result.Add(ModelFactory.ConvertFrom(c)));
-
-            if (result.Any(c => c.IsFailed))
-                return Result.Failure("Failed converting estates");
-
-            return Result.Success(result.Select(r => r.Data).ToList());
+            return result.ToList();
 
         }
 
-        public static Result<List<DataTransferObjects.Responses.Contract.ContractProductTransactionFee>> ConvertFrom(List<Models.Contract.ContractProductTransactionFee> transactionFees)
+        public static List<DataTransferObjects.Responses.Contract.ContractProductTransactionFee> ConvertFrom(List<Models.Contract.ContractProductTransactionFee> transactionFees)
         {
             List<DataTransferObjects.Responses.Contract.ContractProductTransactionFee> result = new();
             transactionFees.ForEach(tf => {
@@ -305,22 +310,23 @@ namespace TransactionProcessor.Factories
                 result.Add(transactionFee);
             });
 
-            return Result.Success(result);
+            return result;
         }
 
-        public static Result<List<MerchantResponse>> ConvertFrom(List<Models.Merchant.Merchant> merchants)
+        public static List<MerchantResponse> ConvertFrom(List<Models.Merchant.Merchant> merchants)
         {
-            List<Result<MerchantResponse>> result = new();
+            List<MerchantResponse> result = new();
 
             if (merchants == null)
-                return Result.Success(new List<MerchantResponse>());
+                return new List<MerchantResponse>();
 
-            merchants.ForEach(c => result.Add(ModelFactory.ConvertFrom(c)));
-
-            if (result.Any(c => c.IsFailed))
-                return Result.Failure("Failed converting merchants");
-
-            return Result.Success(result.Select(r => r.Data).ToList());
+            merchants.ForEach(c => {
+                MerchantResponse converted = ModelFactory.ConvertFrom(c); 
+                if (converted!= null)
+                    result.Add(converted);
+            });
+            
+            return result;
         }
 
         private static TransactionProcessor.DataTransferObjects.Responses.Merchant.SettlementSchedule ConvertFrom(Models.Merchant.SettlementSchedule settlementSchedule)
@@ -334,11 +340,10 @@ namespace TransactionProcessor.Factories
             };
         }
 
-        public static Result<DataTransferObjects.Responses.Estate.EstateResponse> ConvertFrom(Estate estate)
+        public static DataTransferObjects.Responses.Estate.EstateResponse ConvertFrom(Estate estate)
         {
-            if (estate == null)
-            {
-                return Result.Invalid("estate cannot be null");
+            if (estate == null) {
+                return null;
             }
 
             DataTransferObjects.Responses.Estate.EstateResponse estateResponse = new()
@@ -372,7 +377,7 @@ namespace TransactionProcessor.Factories
                 }));
             }
 
-            return Result.Success(estateResponse);
+            return estateResponse;
         }
 
         #endregion
@@ -464,15 +469,13 @@ namespace TransactionProcessor.Factories
             return result;
         }
 
-        public static Result<MerchantResponse> ConvertFrom(Models.Merchant.Merchant merchant)
+        public static MerchantResponse ConvertFrom(Models.Merchant.Merchant merchant)
         {
-            if (merchant == null)
-            {
-                return Result.Invalid("merchant cannot be null");
+            if (merchant == null) {
+                return null;
             }
 
-            MerchantResponse merchantResponse = new MerchantResponse
-            {
+            MerchantResponse merchantResponse = new() {
                 EstateId = merchant.EstateId,
                 EstateReportingId = merchant.EstateReportingId,
                 MerchantId = merchant.MerchantId,

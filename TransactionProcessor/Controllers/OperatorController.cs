@@ -61,7 +61,7 @@ public class OperatorController : ControllerBase
     /// <returns></returns>
     [HttpPost]
     [Route("")]
-    public async Task<IActionResult> CreateOperator([FromRoute] Guid estateId, [FromBody] CreateOperatorRequest createOperatorRequest, CancellationToken cancellationToken)
+    public async Task<IResult> CreateOperator([FromRoute] Guid estateId, [FromBody] CreateOperatorRequest createOperatorRequest, CancellationToken cancellationToken)
     {
         // Create the command
         OperatorCommands.CreateOperatorCommand command = new OperatorCommands.CreateOperatorCommand(estateId, createOperatorRequest);
@@ -70,13 +70,13 @@ public class OperatorController : ControllerBase
         Result result = await Mediator.Send(command, cancellationToken);
 
         // return the result
-        return result.ToActionResultX();
+        return ResponseFactory.FromResult(result);
     }
 
     [HttpPost]
     [Route("{operatorId}")]
     [SwaggerResponse(200, "OK")]
-    public async Task<IActionResult> UpdateOperator([FromRoute] Guid estateId, [FromRoute] Guid operatorId, [FromBody] UpdateOperatorRequest updateOperatorRequest, CancellationToken cancellationToken)
+    public async Task<IResult> UpdateOperator([FromRoute] Guid estateId, [FromRoute] Guid operatorId, [FromBody] UpdateOperatorRequest updateOperatorRequest, CancellationToken cancellationToken)
     {
         // Create the command
         OperatorCommands.UpdateOperatorCommand command = new OperatorCommands.UpdateOperatorCommand(estateId, operatorId, updateOperatorRequest);
@@ -85,13 +85,13 @@ public class OperatorController : ControllerBase
         Result result = await Mediator.Send(command, cancellationToken);
 
         // return the result
-        return result.ToActionResultX();
+        return ResponseFactory.FromResult(result);
     }
 
 
     [HttpGet]
     [Route("{operatorId}")]
-    public async Task<IActionResult> GetOperator([FromRoute] Guid estateId,
+    public async Task<IResult> GetOperator([FromRoute] Guid estateId,
                                                  [FromRoute] Guid operatorId,
                                                  CancellationToken cancellationToken)
     {
@@ -99,29 +99,22 @@ public class OperatorController : ControllerBase
         OperatorQueries.GetOperatorQuery query = new(estateId, operatorId);
 
         // Route the command
-        Result<Operator> getOperatorResult = await Mediator.Send(query, cancellationToken);
-        if (getOperatorResult.IsFailed)
-            return getOperatorResult.ToActionResultX();
-
-        Models.Operator.Operator @operator = getOperatorResult.Data;
-        return ModelFactory.ConvertFrom(@operator).ToActionResultX();
+        Result<Operator> result = await Mediator.Send(query, cancellationToken);
+        return ResponseFactory.FromResult(result, ModelFactory.ConvertFrom);
     }
 
     [HttpGet]
     [Route("")]
-    public async Task<IActionResult> GetOperators([FromRoute] Guid estateId,
+    public async Task<IResult> GetOperators([FromRoute] Guid estateId,
                                                   CancellationToken cancellationToken)
     {
         // Create the command
         OperatorQueries.GetOperatorsQuery query = new(estateId);
 
         // Route the command
-        Result<List<Operator>> getOperatorResult = await Mediator.Send(query, cancellationToken);
-        if (getOperatorResult.IsFailed)
-            return getOperatorResult.ToActionResultX();
-
-        List<Models.Operator.Operator> @operatorList = getOperatorResult.Data;
-        return ModelFactory.ConvertFrom(@operatorList).ToActionResultX();
+        Result<List<Operator>> result = await Mediator.Send(query, cancellationToken);
+        
+        return ResponseFactory.FromResult(result, ModelFactory.ConvertFrom);
     }
 
     #region Others

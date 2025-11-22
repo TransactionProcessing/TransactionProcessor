@@ -24,7 +24,7 @@ namespace TransactionProcessor.DataTransferObjects.Responses.Merchant
         /// <value>
         /// The address line1.
         /// </value>
-        [JsonProperty("address_line_1")]
+        [JsonProperty("address_line1")]
         public String AddressLine1 { get; set; }
 
         /// <summary>
@@ -33,7 +33,7 @@ namespace TransactionProcessor.DataTransferObjects.Responses.Merchant
         /// <value>
         /// The address line2.
         /// </value>
-        [JsonProperty("address_line_2")]
+        [JsonProperty("address_line2")]
         public String AddressLine2 { get; set; }
 
         /// <summary>
@@ -42,7 +42,7 @@ namespace TransactionProcessor.DataTransferObjects.Responses.Merchant
         /// <value>
         /// The address line3.
         /// </value>
-        [JsonProperty("address_line_3")]
+        [JsonProperty("address_line3")]
         public String AddressLine3 { get; set; }
 
         /// <summary>
@@ -51,7 +51,7 @@ namespace TransactionProcessor.DataTransferObjects.Responses.Merchant
         /// <value>
         /// The address line4.
         /// </value>
-        [JsonProperty("address_line_4")]
+        [JsonProperty("address_line4")]
         public String AddressLine4 { get; set; }
 
         /// <summary>

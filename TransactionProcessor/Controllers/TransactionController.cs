@@ -11,6 +11,7 @@ namespace TransactionProcessor.Controllers
     using Humanizer;
     using MediatR;
     using Microsoft.AspNetCore.Authorization;
+    using Microsoft.AspNetCore.Http;
     using Microsoft.AspNetCore.Mvc;
     using Models;
     using Newtonsoft.Json;
@@ -66,14 +67,14 @@ namespace TransactionProcessor.Controllers
         [SwaggerResponse(201, "Created", typeof(SerialisedMessage))]
         [SwaggerRequestExample(typeof(List<SerialisedMessage>), typeof(TransactionRequestExample))]
         [SwaggerResponseExample(201, typeof(TransactionResponseExample))]
-        public async Task<IActionResult> PerformTransaction([FromBody] SerialisedMessage transactionRequest,
+        public async Task<IResult> PerformTransaction([FromBody] SerialisedMessage transactionRequest,
                                                             CancellationToken cancellationToken)
         {
             DateTime transactionReceivedDateTime = DateTime.Now;
 
             // Reject password tokens
             if (ClaimsHelper.IsPasswordToken(this.User)) {
-                return this.Forbid();
+                return ResponseFactory.FromResult(Result.Forbidden());
             }
 
             Guid estateId = Guid.Parse(transactionRequest.Metadata[MetadataContants.KeyNameEstateId]);
@@ -98,28 +99,28 @@ namespace TransactionProcessor.Controllers
                 ReconciliationRequest rr => await this.ProcessSpecificMessage(rr, cancellationToken),
                 _ => Result.Invalid($"DTO Type {dto.GetType().Name} not supported)")
             };
-            
 
-            return transactionResult.ToActionResultX();
+
+            return ResponseFactory.FromResult(transactionResult, message => message);
         }
 
         [HttpPost]
         [Route("/api/{estateId}/transactions/{transactionId}/resendreceipt")]
         [SwaggerResponseExample(201, typeof(TransactionResponseExample))]
-        public async Task<IActionResult> ResendTransactionReceipt([FromRoute] Guid estateId, 
+        public async Task<IResult> ResendTransactionReceipt([FromRoute] Guid estateId, 
                                                                   [FromRoute] Guid transactionId,
                                                                   CancellationToken cancellationToken)
         {
             // Reject password tokens
             if (ClaimsHelper.IsPasswordToken(this.User)) {
-                return this.Forbid();
+                return ResponseFactory.FromResult(Result.Forbidden());
             }
 
             TransactionCommands.ResendTransactionReceiptCommand command= new(transactionId,estateId);
 
             var result = await this.Mediator.Send(command, cancellationToken);
 
-            return result.ToActionResultX();
+            return ResponseFactory.FromResult(result);
         }
 
         /// <summary>

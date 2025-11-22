@@ -77,22 +77,17 @@ namespace TransactionProcessor.Controllers {
         /// <returns></returns>
         [HttpGet]
         [Route("{contractId}")]
-        public async Task<IActionResult> GetContract([FromRoute] Guid estateId,
+        public async Task<IResult> GetContract([FromRoute] Guid estateId,
                                                      [FromRoute] Guid contractId,
                                                      CancellationToken cancellationToken) {
             Result securityChecksResult = StandardSecurityChecks(estateId);
             if (securityChecksResult.IsFailed)
-                return securityChecksResult.ToActionResultX();
+                return ResponseFactory.FromResult(securityChecksResult);
 
             ContractQueries.GetContractQuery query = new ContractQueries.GetContractQuery(estateId, contractId);
             Result<Contract> result = await Mediator.Send(query, cancellationToken);
-            if (result.IsFailed)
-            {
-                var x = result.ToActionResultX();
-                return x;
-            }
-
-            return ModelFactory.ConvertFrom(result.Data).ToActionResultX();
+            
+            return ResponseFactory.FromResult(result, ModelFactory.ConvertFrom);
         }
 
         /// <summary>
@@ -103,16 +98,16 @@ namespace TransactionProcessor.Controllers {
         /// <returns></returns>
         [HttpGet]
         [Route("")]
-        public async Task<IActionResult> GetContracts([FromRoute] Guid estateId,
-                                                      CancellationToken cancellationToken) {
+        public async Task<IResult> GetContracts([FromRoute] Guid estateId,
+                                                CancellationToken cancellationToken) {
             Result securityChecksResult = StandardSecurityChecks(estateId);
             if (securityChecksResult.IsFailed)
-                return securityChecksResult.ToActionResultX();
+                return ResponseFactory.FromResult(securityChecksResult);
 
             ContractQueries.GetContractsQuery query = new ContractQueries.GetContractsQuery(estateId);
 
             Result<List<Contract>> result = await Mediator.Send(query, cancellationToken);
-            return ModelFactory.ConvertFrom(result.Data).ToActionResultX();
+            return ResponseFactory.FromResult(result, ModelFactory.ConvertFrom);
 
         }
 
@@ -126,13 +121,13 @@ namespace TransactionProcessor.Controllers {
         /// <returns></returns>
         [HttpPatch]
         [Route("{contractId}/products")]
-        public async Task<IActionResult> AddProductToContract([FromRoute] Guid estateId,
-                                                              [FromRoute] Guid contractId,
-                                                              [FromBody] AddProductToContractRequest addProductToContractRequest,
-                                                              CancellationToken cancellationToken) {
+        public async Task<IResult> AddProductToContract([FromRoute] Guid estateId,
+                                                        [FromRoute] Guid contractId,
+                                                        [FromBody] AddProductToContractRequest addProductToContractRequest,
+                                                        CancellationToken cancellationToken) {
             Result securityChecksResult = StandardSecurityChecks(estateId);
             if (securityChecksResult.IsFailed)
-                return securityChecksResult.ToActionResultX();
+                return ResponseFactory.FromResult(securityChecksResult);
 
             Guid productId = Guid.NewGuid();
 
@@ -143,7 +138,7 @@ namespace TransactionProcessor.Controllers {
 
             // Route the command
             Result result = await Mediator.Send(command, cancellationToken);
-            return result.ToActionResultX();
+            return ResponseFactory.FromResult(result);
         }
 
 
@@ -158,14 +153,14 @@ namespace TransactionProcessor.Controllers {
         /// <returns></returns>
         [HttpPatch]
         [Route("{contractId}/products/{productId}/transactionFees")]
-        public async Task<IActionResult> AddTransactionFeeForProductToContract([FromRoute] Guid estateId,
-                                                                               [FromRoute] Guid contractId,
-                                                                               [FromRoute] Guid productId,
-                                                                               [FromBody] AddTransactionFeeForProductToContractRequest addTransactionFeeForProductToContractRequest,
-                                                                               CancellationToken cancellationToken) {
+        public async Task<IResult> AddTransactionFeeForProductToContract([FromRoute] Guid estateId,
+                                                                         [FromRoute] Guid contractId,
+                                                                         [FromRoute] Guid productId,
+                                                                         [FromBody] AddTransactionFeeForProductToContractRequest addTransactionFeeForProductToContractRequest,
+                                                                         CancellationToken cancellationToken) {
             Result securityChecksResult = StandardSecurityChecks(estateId);
             if (securityChecksResult.IsFailed)
-                return securityChecksResult.ToActionResultX();
+                return ResponseFactory.FromResult(securityChecksResult);
             Guid transactionFeeId = Guid.NewGuid();
 
             // Create the command
@@ -174,7 +169,7 @@ namespace TransactionProcessor.Controllers {
 
             // Route the command
             Result result = await Mediator.Send(command, cancellationToken);
-            return result.ToActionResultX();
+            return ResponseFactory.FromResult(result);
         }
 
         /// <summary>
@@ -188,14 +183,14 @@ namespace TransactionProcessor.Controllers {
         /// <returns></returns>
         [HttpDelete]
         [Route("{contractId}/products/{productId}/transactionFees/{transactionFeeId}")]
-        public async Task<IActionResult> DisableTransactionFeeForProduct([FromRoute] Guid estateId,
-                                                                         [FromRoute] Guid contractId,
-                                                                         [FromRoute] Guid productId,
-                                                                         [FromRoute] Guid transactionFeeId,
-                                                                         CancellationToken cancellationToken) {
+        public async Task<IResult> DisableTransactionFeeForProduct([FromRoute] Guid estateId,
+                                                                   [FromRoute] Guid contractId,
+                                                                   [FromRoute] Guid productId,
+                                                                   [FromRoute] Guid transactionFeeId,
+                                                                   CancellationToken cancellationToken) {
             Result securityChecksResult = StandardSecurityChecks(estateId);
             if (securityChecksResult.IsFailed)
-                return securityChecksResult.ToActionResultX();
+                return ResponseFactory.FromResult(securityChecksResult);
             // Create the command
             ContractCommands.DisableTransactionFeeForProductCommand command = new(contractId, estateId, productId, transactionFeeId);
 
@@ -203,7 +198,7 @@ namespace TransactionProcessor.Controllers {
             Result result = await Mediator.Send(command, cancellationToken);
 
             // return the result
-            return result.ToActionResultX();
+            return ResponseFactory.FromResult(result);
         }
 
 
@@ -216,12 +211,12 @@ namespace TransactionProcessor.Controllers {
         /// <returns></returns>
         [HttpPost]
         [Route("")]
-        public async Task<IActionResult> CreateContract([FromRoute] Guid estateId,
-                                                        [FromBody] CreateContractRequest createContractRequest,
-                                                        CancellationToken cancellationToken) {
+        public async Task<IResult> CreateContract([FromRoute] Guid estateId,
+                                                  [FromBody] CreateContractRequest createContractRequest,
+                                                  CancellationToken cancellationToken) {
             Result securityChecksResult = StandardSecurityChecks(estateId);
             if (securityChecksResult.IsFailed)
-                return securityChecksResult.ToActionResultX();
+                return ResponseFactory.FromResult(securityChecksResult);
             Guid contractId = Guid.NewGuid();
 
             // Create the command
@@ -231,7 +226,7 @@ namespace TransactionProcessor.Controllers {
             Result result = await Mediator.Send(command, cancellationToken);
 
             // return the result
-            return result.ToActionResultX();
+            return ResponseFactory.FromResult(result);
         }
 
         #endregion

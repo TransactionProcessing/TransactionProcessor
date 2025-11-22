@@ -32,7 +32,7 @@ namespace TransactionProcessor.IntegrationTests.Common
             logger.Initialise(LogManager.GetLogger(scenarioName), scenarioName);
             LogManager.AddHiddenAssembly(typeof(NlogLogger).Assembly);
 
-            DockerServices dockerServices = DockerServices.CallbackHandler | DockerServices.EventStore |
+            DockerServices dockerServices = DockerServices.SqlServer | DockerServices.CallbackHandler | DockerServices.EventStore |
                                             DockerServices.FileProcessor | DockerServices.MessagingService | DockerServices.SecurityService |
                                             DockerServices.SqlServer | DockerServices.TestHost | DockerServices.TransactionProcessor |
                                             DockerServices.TransactionProcessorAcl;
@@ -45,8 +45,6 @@ namespace TransactionProcessor.IntegrationTests.Common
 
             await Setup.GlobalSetup(this.TestingContext.DockerHelper);
 
-            this.TestingContext.DockerHelper.SqlServerContainer = Setup.DatabaseServerContainer;
-            this.TestingContext.DockerHelper.SqlServerNetwork = Setup.DatabaseServerNetwork;
             this.TestingContext.DockerHelper.DockerCredentials = Setup.DockerCredentials;
             this.TestingContext.DockerHelper.SqlCredentials = Setup.SqlCredentials;
             this.TestingContext.DockerHelper.SqlServerContainerName = "sharedsqlserver";
@@ -62,7 +60,7 @@ namespace TransactionProcessor.IntegrationTests.Common
         [AfterScenario]
         public async Task StopSystem(){
 
-            DockerServices sharedDockerServices = DockerServices.SqlServer;
+            DockerServices sharedDockerServices = DockerServices.None;
 
             this.TestingContext.Logger.LogInformation("About to Stop Containers for Scenario Run");
             await this.TestingContext.DockerHelper.StopContainersForScenarioRun(sharedDockerServices).ConfigureAwait(false);
