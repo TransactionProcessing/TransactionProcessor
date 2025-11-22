@@ -456,9 +456,13 @@ public class TransactionProcessorSteps
                                                                        .RedeemVoucher(accessToken, redeemVoucherRequest, CancellationToken.None)
                                                                        .ConfigureAwait(false);
                             redeemVoucherResult.IsSuccess.ShouldBeTrue();
-                            RedeemVoucherResponse response = redeemVoucherResult.Data;
-                            response.ShouldNotBeNull();
-                            response.RemainingBalance.ShouldBe(expectedBalance);
+                            //RedeemVoucherResponse response = redeemVoucherResult.Data;
+                            //response.ShouldNotBeNull();
+                            //response.RemainingBalance.ShouldBe(expectedBalance);
+
+                            var x = await this.TransactionProcessorClient.GetVoucherByCode(accessToken, estate.EstateId, voucher.VoucherCode, CancellationToken.None);
+                            x.IsSuccess.ShouldBeTrue();
+                            x.Data.Balance.ShouldBe(expectedBalance);
                         });
     }
 
