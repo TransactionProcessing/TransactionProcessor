@@ -19,7 +19,7 @@ using TransactionProcessor.Factories;
 
 namespace TransactionProcessor.Controllers
 {
-    [ExcludeFromCodeCoverage]
+    /*[ExcludeFromCodeCoverage]
     [Route(ControllerRoute)]
     [ApiController]
     [Authorize]
@@ -235,5 +235,5 @@ namespace TransactionProcessor.Controllers
         private const string ControllerRoute = "api/" + ControllerName;
 
         #endregion
-    }
+    }*/
 }

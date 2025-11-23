@@ -2,6 +2,7 @@ using Prometheus;
 using System.Linq;
 using System.Threading;
 using TransactionProcessor.BusinessLogic.Services;
+using TransactionProcessor.Endpoints;
 
 namespace TransactionProcessor
 {
@@ -138,6 +139,7 @@ namespace TransactionProcessor
                                                                Predicate = _ => true,
                                                                ResponseWriter = UIResponseWriter.WriteHealthCheckUIResponse
                                                            });
+                                 endpoints.MapEstateEndpoints();
             });
 
             app.UseSwagger();
