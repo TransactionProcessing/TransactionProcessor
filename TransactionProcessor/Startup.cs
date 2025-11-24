@@ -142,6 +142,11 @@ namespace TransactionProcessor
                                  endpoints.MapEstateEndpoints();
                                  endpoints.MapMerchantEndpoints();
                                  endpoints.MapContractEndpoints();
+                                 endpoints.MapOperatorEndpoints();
+                                 endpoints.MapFloatEndpoints();
+                                 endpoints.MapVoucherEndpoints();
+                                 endpoints.MapTransactionEndpoints();
+                                 endpoints.MapSettlementEndpoints();
             });
 
             app.UseSwagger();

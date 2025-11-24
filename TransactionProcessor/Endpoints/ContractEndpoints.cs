@@ -15,7 +15,8 @@ namespace TransactionProcessor.Endpoints
             RouteGroupBuilder contractGroup = endpoints
                 .MapGroup(BaseRoute)
                 .WithTags("Contracts")
-                .RequireAuthorization();
+                .RequireAuthorization()
+                .RequireAuthorization(AuthorizationExtensions.PolicyNames.ClientCredentialsOnlyPolicy);
 
             // Read
             contractGroup.MapGet("/{contractId:guid}", ContractHandlers.GetContract).WithName("GetContract");
@@ -23,19 +24,15 @@ namespace TransactionProcessor.Endpoints
 
             // Write / Modify - require client credentials only
             contractGroup.MapPatch("/{contractId:guid}/products", ContractHandlers.AddProductToContract)
-                .RequireAuthorization(AuthorizationExtensions.PolicyNames.ClientCredentialsOnlyPolicy)
                 .WithName("AddProductToContract");
 
             contractGroup.MapPatch("/{contractId:guid}/products/{productId:guid}/transactionFees", ContractHandlers.AddTransactionFeeForProductToContract)
-                .RequireAuthorization(AuthorizationExtensions.PolicyNames.ClientCredentialsOnlyPolicy)
                 .WithName("AddTransactionFeeForProductToContract");
 
             contractGroup.MapDelete("/{contractId:guid}/products/{productId:guid}/transactionFees/{transactionFeeId:guid}", ContractHandlers.DisableTransactionFeeForProduct)
-                .RequireAuthorization(AuthorizationExtensions.PolicyNames.ClientCredentialsOnlyPolicy)
                 .WithName("DisableTransactionFeeForProduct");
 
             contractGroup.MapPost("/", ContractHandlers.CreateContract)
-                .RequireAuthorization(AuthorizationExtensions.PolicyNames.ClientCredentialsOnlyPolicy)
                 .WithName("CreateContract");
 
             return endpoints;

@@ -16,6 +16,7 @@ public static class MerchantEndpoints
         RouteGroupBuilder merchantGroup = endpoints
             .MapGroup(BaseRoute)
             .WithTags("Merchants")
+            .RequireAuthorization()
             .RequireAuthorization(AuthorizationExtensions.PolicyNames.ClientCredentialsOnlyPolicy);
 
         // Read endpoints (now also protected by client-credentials-only policy via the group)
