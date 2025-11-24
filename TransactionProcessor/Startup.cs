@@ -140,6 +140,8 @@ namespace TransactionProcessor
                                                                ResponseWriter = UIResponseWriter.WriteHealthCheckUIResponse
                                                            });
                                  endpoints.MapEstateEndpoints();
+                                 endpoints.MapMerchantEndpoints();
+                                 endpoints.MapContractEndpoints();
             });
 
             app.UseSwagger();

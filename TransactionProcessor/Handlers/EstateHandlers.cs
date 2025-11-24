@@ -1,11 +1,11 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Threading;
-using System.Threading.Tasks;
-using MediatR;
+﻿using MediatR;
 using Microsoft.AspNetCore.Http;
 using Shared.Results.Web;
 using SimpleResults;
+using System;
+using System.Collections.Generic;
+using System.Threading;
+using System.Threading.Tasks;
 using TransactionProcessor.BusinessLogic.Requests;
 using TransactionProcessor.DataTransferObjects.Requests.Estate;
 using TransactionProcessor.Factories;

@@ -38,11 +38,11 @@ namespace TransactionProcessor.Endpoints
 
             estateGroup.MapPatch("/{estateId:guid}/operators", EstateHandlers.AssignOperator)
                 .RequireAuthorization(AuthorizationExtensions.PolicyNames.ClientCredentialsOnlyPolicy)
-                .WithName("AssignOperator");
+                .WithName("AssignEstateOperator");
 
             estateGroup.MapDelete("/{estateId:guid}/operators/{operatorId:guid}", EstateHandlers.RemoveOperator)
                 .RequireAuthorization(AuthorizationExtensions.PolicyNames.ClientCredentialsOnlyPolicy)
-                .WithName("RemoveOperator");
+                .WithName("RemoveEstateOperator");
 
             return endpoints;
         }
