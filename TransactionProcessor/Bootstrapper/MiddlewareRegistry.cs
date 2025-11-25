@@ -3,11 +3,6 @@ using Microsoft.IdentityModel.Tokens;
 
 namespace TransactionProcessor.Bootstrapper
 {
-    using System;
-    using System.Diagnostics.CodeAnalysis;
-    using System.IO;
-    using System.Net.Http;
-    using System.Reflection;
     using Common;
     using EventStore.Client;
     using Lamar;
@@ -18,10 +13,16 @@ namespace TransactionProcessor.Bootstrapper
     using Microsoft.OpenApi.Models;
     using Newtonsoft.Json;
     using Newtonsoft.Json.Serialization;
+    using Shared.Authorisation;
     using Shared.EventStore.Extensions;
     using Shared.Extensions;
     using Shared.General;
     using Swashbuckle.AspNetCore.Filters;
+    using System;
+    using System.Diagnostics.CodeAnalysis;
+    using System.IO;
+    using System.Net.Http;
+    using System.Reflection;
 
     /// <summary>
     /// 
@@ -120,6 +121,9 @@ namespace TransactionProcessor.Bootstrapper
 
             Assembly assembly = this.GetType().GetTypeInfo().Assembly;
             this.AddMvcCore().AddApplicationPart(assembly).AddControllersAsServices();
+
+            this.AddClientCredentialsOnlyPolicy();
+            this.AddClientCredentialsHandler();
 
             this.ConfigureHttpJsonOptions(options =>
             {

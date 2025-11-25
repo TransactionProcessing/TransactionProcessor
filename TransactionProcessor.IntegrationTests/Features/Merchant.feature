@@ -49,32 +49,10 @@ Background:
 	| estateuser1@testestate1.co.uk | 123456   | TestEstate | User1      | Test Estate 1 |
 	| estateuser1@testestate2.co.uk | 123456   | TestEstate | User1      | Test Estate 2 |
 
-Scenario: Get Invalid Merchant - System Login
+Scenario: Get Invalid Merchant
 	When I get the merchant "Test Merchant 1" for estate "Test Estate 1" an error is returned
 
-Scenario: Get Invalid Merchant - Estate User
-	Given I am logged in as "estateuser1@testestate1.co.uk" with password "123456" for Estate "Test Estate 1" with client "estateClient"
-	When I get the merchant "Test Merchant 1" for estate "Test Estate 1" an error is returned
-
-Scenario: Create Merchant - System Login	 
-	When I create the following merchants
-	| MerchantName    | AddressLine1   | Town     | Region      | Country        | ContactName    | EmailAddress                 | EstateName    | SettlementSchedule |
-	| Test Merchant 1 | Address Line 1 | TestTown | Test Region | United Kingdom | Test Contact 1 | testcontact1@merchant1.co.uk | Test Estate 1 | Weekly             |
-	When I assign the following operator to the merchants
-	| OperatorName    | MerchantName    | MerchantNumber | TerminalNumber | EstateName    |
-	| Test Operator 1 | Test Merchant 1 | 00000001       | 10000001       | Test Estate 1 |
-	When I create the following security users
-	| EmailAddress                      | Password | GivenName    | FamilyName | MerchantName    | EstateName    |
-	| merchantuser1@testmerchant1.co.uk | 123456   | TestMerchant | User1      | Test Merchant 1 | Test Estate 1 |
-	When I add the following devices to the merchant
-	| DeviceIdentifier | MerchantName    | EstateName    |
-	| TestDevice1      | Test Merchant 1 | Test Estate 1 |
-	When I swap the merchant device the device is swapped
-	| OriginalDeviceIdentifier | NewDeviceIdentifier | MerchantName    | EstateName    |
-	| TestDevice1              | TestDevice2         | Test Merchant 1 | Test Estate 1 |
-
-Scenario: Create Merchant - Estate User	
-	Given I am logged in as "estateuser1@testestate1.co.uk" with password "123456" for Estate "Test Estate 1" with client "estateClient"
+Scenario: Create Merchant
 	When I create the following merchants
 	| MerchantName    | AddressLine1   | Town     | Region      | Country        | ContactName    | EmailAddress                 | EstateName    | SettlementSchedule |
 	| Test Merchant 1 | Address Line 1 | TestTown | Test Region | United Kingdom | Test Contact 1 | testcontact1@merchant1.co.uk | Test Estate 1 | Weekly             |
@@ -172,15 +150,7 @@ Scenario: Get Merchants for Estate
 
 	When I get the merchants for 'Test Estate 1' then 3 merchants will be returned
 
-	When I get the merchants for 'Test Estate 2' then 2 merchants will be returned
-
-	Given I am logged in as "estateuser1@testestate1.co.uk" with password "123456" for Estate "Test Estate 1" with client "estateClient"
-
-	When I get the merchants for 'Test Estate 1' then 3 merchants will be returned
-
-	Given I am logged in as "estateuser1@testestate2.co.uk" with password "123456" for Estate "Test Estate 2" with client "estateClient"
-
-	When I get the merchants for 'Test Estate 2' then 2 merchants will be returned
+	When I get the merchants for 'Test Estate 2' then 2 merchants will be returned	
 
 @PRTest
 Scenario: Update Merchant

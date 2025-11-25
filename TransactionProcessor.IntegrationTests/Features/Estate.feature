@@ -50,20 +50,7 @@ Scenario: Get Estate
 	| EmailAddress                  |
 	| estateuser1@testestate1.co.uk |
 	| estateuser2@testestate1.co.uk |
-	When I get the estate "Test Estate 2" a "NotFound" error is returned
-	Given I am logged in as "estateuser1@testestate1.co.uk" with password "123456" for Estate "Test Estate 1" with client "estateClient"
-	When I get the estate "Test Estate 1" the estate details are returned as follows
-	| EstateName    |
-	| Test Estate 1 |
-	When I get the estate "Test Estate 1" the estate operator details are returned as follows
-	| OperatorName    |
-	| Test Operator 1 |
-	| Test Operator 2 |
-	When I get the estate "Test Estate 1" the estate security user details are returned as follows
-	| EmailAddress                  |
-	| estateuser1@testestate1.co.uk |
-	| estateuser2@testestate1.co.uk |
-	When I get the estate "Test Estate 2" a "Failure" error is returned
+	When I get the estate "Test Estate 2" a "NotFound" error is returned	
 
 Scenario: Update Estate
 	Given I have created the following estates
