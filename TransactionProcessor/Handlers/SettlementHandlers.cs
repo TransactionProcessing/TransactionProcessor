@@ -4,6 +4,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using MediatR;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Mvc;
 using SimpleResults;
 using Shared.Results.Web;
 using TransactionProcessor.Aggregates;
@@ -15,7 +16,7 @@ namespace TransactionProcessor.Handlers
 {
     public static class SettlementHandlers
     {
-        public static async Task<IResult> GetPendingSettlement(IMediator mediator, HttpContext ctx, DateTime settlementDate, Guid estateId, Guid merchantId, CancellationToken cancellationToken)
+        public static async Task<IResult> GetPendingSettlement(IMediator mediator, HttpContext ctx, DateTime settlementDate, [FromRoute] Guid estateId, Guid merchantId, CancellationToken cancellationToken)
         {
             SettlementQueries.GetPendingSettlementQuery query = new(settlementDate, merchantId, estateId);
             Result<SettlementAggregate> getPendingSettlementResult = await mediator.Send(query, cancellationToken);
@@ -38,7 +39,7 @@ namespace TransactionProcessor.Handlers
             return ResponseFactory.FromResult(result, guid => guid);
         }
 
-        public static async Task<IResult> GetSettlement(IMediator mediator, HttpContext ctx, Guid estateId, Guid settlementId, Guid merchantId, CancellationToken cancellationToken)
+        public static async Task<IResult> GetSettlement(IMediator mediator, HttpContext ctx, [FromRoute] Guid estateId, Guid settlementId, Guid merchantId, CancellationToken cancellationToken)
         {
             SettlementQueries.GetSettlementQuery query = new(estateId, merchantId, settlementId);
             var result = await mediator.Send(query, cancellationToken);
@@ -75,7 +76,8 @@ namespace TransactionProcessor.Handlers
             });
         }
 
-        public static async Task<IResult> GetSettlements(IMediator mediator, HttpContext ctx, Guid estateId, Guid? merchantId, string startDate, string endDate, CancellationToken cancellationToken)
+        public static async Task<IResult> GetSettlements(IMediator mediator, HttpContext ctx, 
+                                                         [FromRoute] Guid estateId, [FromQuery] Guid? merchantId, [FromQuery(Name = "start_date")] string startDate, [FromQuery(Name = "end_date")] string endDate, CancellationToken cancellationToken)
         {
             SettlementQueries.GetSettlementsQuery query = new(estateId, merchantId, startDate, endDate);
             Result<List<SettlementModel>> result = await mediator.Send(query, cancellationToken);
