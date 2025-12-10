@@ -1,5 +1,7 @@
-﻿using Microsoft.IdentityModel.Logging;
+﻿using KurrentDB.Client;
+using Microsoft.IdentityModel.Logging;
 using Microsoft.IdentityModel.Tokens;
+using Microsoft.OpenApi;
 
 namespace TransactionProcessor.Bootstrapper
 {
@@ -10,7 +12,6 @@ namespace TransactionProcessor.Bootstrapper
     using Microsoft.Extensions.Configuration;
     using Microsoft.Extensions.DependencyInjection;
     using Microsoft.Extensions.Diagnostics.HealthChecks;
-    using Microsoft.OpenApi.Models;
     using Newtonsoft.Json;
     using Newtonsoft.Json.Serialization;
     using Shared.Authorisation;
@@ -39,7 +40,7 @@ namespace TransactionProcessor.Bootstrapper
         public MiddlewareRegistry()
         {
             String connectionString = Startup.Configuration.GetValue<String>("EventStoreSettings:ConnectionString");
-            EventStoreClientSettings eventStoreClientSettings = EventStoreClientSettings.Create(connectionString);
+            KurrentDBClientSettings eventStoreClientSettings = KurrentDBClientSettings.Create(connectionString);
 
             this.AddHealthChecks()
                 .AddEventStore(eventStoreClientSettings,

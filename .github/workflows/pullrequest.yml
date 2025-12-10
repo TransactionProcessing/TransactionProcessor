@@ -16,11 +16,6 @@ jobs:
     steps:
     - uses: actions/checkout@v2.3.4
   
-    - name: Install NET 9
-      uses: actions/setup-dotnet@v4.0.1
-      with:
-        dotnet-version: '9.0.306'
-
     - name: Restore Nuget Packages
       run: dotnet restore TransactionProcessor.sln --source ${{ secrets.PUBLICFEEDURL }} --source ${{ secrets.PRIVATEFEED_URL }}
 
