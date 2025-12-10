@@ -11,7 +11,7 @@ jobs:
     env:
         ASPNETCORE_ENVIRONMENT: "Production"
 
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-latest-xl
 
     steps:
     - uses: actions/checkout@v2.3.4
