@@ -21,7 +21,6 @@ jobs:
       with:
           remove_android: true
           remove_haskell: true
-          remove_tool_cache: true
           remove_swap: true
           remove_packages: "azure-cli google-cloud-cli microsoft-edge-stable google-chrome-stable firefox postgresql* temurin-* *llvm* mysql*"
           remove_packages_one_command: true
