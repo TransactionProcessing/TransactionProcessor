@@ -1,4 +1,5 @@
 ﻿using EventStore.Client;
+using KurrentDB.Client;
 using Newtonsoft.Json;
 using SimpleResults;
 using TransactionProcessor.BusinessLogic.Requests;

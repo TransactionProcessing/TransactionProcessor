@@ -41,9 +41,9 @@ namespace TransactionProcessor.Bootstrapper
         {
             string eventStoreConnectionString = Startup.Configuration.GetValue<string>("EventStoreSettings:ConnectionString");
 
-            this.AddEventStoreProjectionManagementClient(eventStoreConnectionString);
-            this.AddEventStorePersistentSubscriptionsClient(eventStoreConnectionString);
-            this.AddEventStoreClient(eventStoreConnectionString);
+            this.AddKurrentDBProjectionManagementClient(eventStoreConnectionString);
+            this.AddKurrentDBPersistentSubscriptionsClient(eventStoreConnectionString);
+            this.AddKurrentDBClient(eventStoreConnectionString);
 
             this.AddSingleton<Func<string, int, ISubscriptionRepository>>(cont => (esConnString, cacheDuration) =>
                 SubscriptionRepository.Create(esConnString, cacheDuration));

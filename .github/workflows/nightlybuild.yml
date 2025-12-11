@@ -16,11 +16,6 @@ jobs:
     steps:
     - uses: actions/checkout@v2.3.4
 
-    - name: Install NET 9
-      uses: actions/setup-dotnet@v4.0.1
-      with:
-        dotnet-version: '9.0.x'  
-
     - name: Set Up Variables
       run: echo "action_url=$GITHUB_SERVER_URL/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID" >> $GITHUB_ENV
 
@@ -57,7 +52,7 @@ jobs:
       run: docker build . --file TransactionProcessor/Dockerfile --tag transactionprocessor:latest
 
     - name: Run Integration Tests
-      run: dotnet test "TransactionProcessor.IntegrationTests\TransactionProcessor.IntegrationTests.csproj" --logger "trx;LogFileName=test-results.trx"
+      run: dotnet test "TransactionProcessor.IntegrationTests\TransactionProcessor.IntegrationTests.csproj"
 
     - uses: actions/upload-artifact@v4.4.0
       if: ${{ failure() }}

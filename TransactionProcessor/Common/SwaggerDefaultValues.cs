@@ -1,10 +1,10 @@
 ﻿using System.Linq;
+using Microsoft.OpenApi;
 
 namespace TransactionProcessor.Common
 {
     using System.Diagnostics.CodeAnalysis;
     using Microsoft.AspNetCore.Mvc.ApiExplorer;
-    using Microsoft.OpenApi.Models;
     using Swashbuckle.AspNetCore.SwaggerGen;
 
     /// <summary>
