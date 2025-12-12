@@ -16,6 +16,15 @@ jobs:
     steps:
     - uses: actions/checkout@v2.3.4
 
+    - name: Free Disk Space
+      uses: endersonmenezes/free-disk-space@v3  # Use @main for latest, @v3 for stable
+      with:
+          remove_android: true
+          remove_haskell: true
+          rm_cmd: "rm"  # Use 'rmz' for faster deletion (default: 'rm')
+          rmz_version: "3.1.1"  # Required when rm_cmd is 'rmz'
+          testing: false
+          
     - name: Set Up Variables
       run: echo "action_url=$GITHUB_SERVER_URL/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID" >> $GITHUB_ENV
 
