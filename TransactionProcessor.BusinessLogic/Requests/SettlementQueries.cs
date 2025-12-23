@@ -10,7 +10,7 @@ namespace TransactionProcessor.BusinessLogic.Requests;
 [ExcludeFromCodeCoverage]
 public record SettlementQueries {
     public record GetPendingSettlementQuery(DateTime SettlementDate, Guid MerchantId, Guid EstateId)
-        : IRequest<Result<SettlementAggregate>>;
+        : IRequest<Result<PendingSettlementModel>>;
     public record GetSettlementQuery(Guid EstateId, Guid MerchantId, Guid SettlementId)
         : IRequest<Result<SettlementModel>>;
 

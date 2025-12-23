@@ -57,6 +57,11 @@ namespace TransactionProcessor.BusinessLogic.Manager
                                                            String endDate,
                                                            CancellationToken cancellationToken);
 
+        Task<Result<PendingSettlementModel>> GetPendingSettlement(Guid estateId,
+                                                            Guid merchantId,
+                                                            DateTime settlementDate,
+                                                            CancellationToken cancellationToken);
+
         #endregion
     }
 }
