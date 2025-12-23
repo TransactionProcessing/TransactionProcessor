@@ -26,12 +26,12 @@ namespace TransactionProcessor.DomainEvents {
     public class MerchantStatementForDateDomainEvents {
         public record StatementCreatedForDateEvent(Guid MerchantStatementForDateId, DateTime ActivityDate, DateTime MerchantStatementDate, Guid MerchantStatementId, Guid EstateId, Guid MerchantId) : DomainEvent(MerchantStatementForDateId, Guid.NewGuid());
 
-        public record SettledFeeAddedToStatementForDateEvent(Guid MerchantStatementForDateId, Guid EventId, Guid EstateId, Guid MerchantId, Guid SettledFeeId, Guid TransactionId, DateTime SettledDateTime, Decimal SettledValue) : DomainEvent(MerchantStatementForDateId, EventId);
+        public record SettledFeeAddedToStatementForDateEvent(Guid MerchantStatementForDateId, Guid EventId, Guid EstateId, Guid MerchantId, Guid MerchantStatementId, Guid SettledFeeId, Guid TransactionId, DateTime SettledDateTime, Decimal SettledValue) : DomainEvent(MerchantStatementForDateId, EventId);
 
-        public record TransactionAddedToStatementForDateEvent(Guid MerchantStatementForDateId, Guid EventId, Guid EstateId, Guid MerchantId, Guid TransactionId, DateTime TransactionDateTime, Decimal TransactionValue) : DomainEvent(MerchantStatementForDateId, EventId);
+        public record TransactionAddedToStatementForDateEvent(Guid MerchantStatementForDateId, Guid EventId, Guid EstateId, Guid MerchantId, Guid MerchantStatementId, Guid TransactionId, DateTime TransactionDateTime, Decimal TransactionValue) : DomainEvent(MerchantStatementForDateId, EventId);
 
-        public record DepositAddedToStatementForDateEvent(Guid MerchantStatementForDateId, Guid EventId, Guid EstateId, Guid MerchantId, Guid DepositId, DateTime DepositDateTime, Decimal DepositAmount) : DomainEvent(MerchantStatementForDateId, EventId);
-        public record WithdrawalAddedToStatementForDateEvent(Guid MerchantStatementForDateId, Guid EventId, Guid EstateId, Guid MerchantId, Guid WithdrawalId, DateTime WithdrawalDateTime, Decimal WithdrawalAmount) : DomainEvent(MerchantStatementForDateId, EventId);
+        public record DepositAddedToStatementForDateEvent(Guid MerchantStatementForDateId, Guid EventId, Guid EstateId, Guid MerchantId, Guid MerchantStatementId, Guid DepositId, DateTime DepositDateTime, Decimal DepositAmount) : DomainEvent(MerchantStatementForDateId, EventId);
+        public record WithdrawalAddedToStatementForDateEvent(Guid MerchantStatementForDateId, Guid EventId, Guid EstateId, Guid MerchantId, Guid MerchantStatementId, Guid WithdrawalId, DateTime WithdrawalDateTime, Decimal WithdrawalAmount) : DomainEvent(MerchantStatementForDateId, EventId);
 
     }
 }

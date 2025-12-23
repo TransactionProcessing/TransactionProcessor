@@ -286,7 +286,13 @@ namespace TransactionProcessor.Repository {
                                                            String endDate,
                                                            CancellationToken cancellationToken);
 
-        Task<Result> RecordTransactionTimings(TransactionDomainEvents.TransactionTimingsAddedToTransactionEvent de,
+        Task<Result> RecordTransactionTimings(TransactionDomainEvents.TransactionTimingsAddedToTransactionEvent domainEvent,
+                                              CancellationToken cancellationToken);
+
+        Task<Result> AddTransactionToStatement(MerchantStatementForDateDomainEvents.TransactionAddedToStatementForDateEvent domainEvent,
+                                               CancellationToken cancellationToken);
+
+        Task<Result> AddSettledFeeToStatement(MerchantStatementForDateDomainEvents.SettledFeeAddedToStatementForDateEvent domainEvent,
                                               CancellationToken cancellationToken);
     }
 
@@ -2050,7 +2056,7 @@ namespace TransactionProcessor.Repository {
                                                            CancellationToken cancellationToken) {
             // Calculate the timings for the transaction
             TimeSpan totalTime = domainEvent.TransactionCompletedDateTime.Subtract(domainEvent.TransactionStartedDateTime);
-            // Calculte the timings for the operator communications
+            // Calculate the timings for the operator communications
             TimeSpan operatorCommunicationsTime = domainEvent.OperatorCommunicationsCompletedEvent?.Subtract(domainEvent.OperatorCommunicationsStartedEvent ?? DateTime.MinValue) ?? TimeSpan.Zero;
             // Calculate the timings for the transaction without operator timings
             TimeSpan transactionTime = totalTime.Subtract(operatorCommunicationsTime);
@@ -2071,5 +2077,71 @@ namespace TransactionProcessor.Repository {
             await context.TransactionTimings.AddAsync(timings, cancellationToken);
             return await context.SaveChangesWithDuplicateHandling(cancellationToken);
         }
+
+        public async Task<Result> AddTransactionToStatement(MerchantStatementForDateDomainEvents.TransactionAddedToStatementForDateEvent domainEvent,
+                                                            CancellationToken cancellationToken) {
+            // Load this information to the database
+            EstateManagementContext context = await this.GetContext(domainEvent.EstateId);
+
+            // Find the corresponding transaction
+            Result<Transaction> transactionResult = await context.LoadTransaction(domainEvent, cancellationToken);
+            if (transactionResult.IsFailed)
+                return ResultHelpers.CreateFailure(transactionResult);
+
+            Transaction transaction = transactionResult.Data;
+
+            Result<Operator> operatorResult = await context.LoadOperator(transaction.OperatorId, cancellationToken);
+            if (operatorResult.IsFailed)
+                return ResultHelpers.CreateFailure(operatorResult);
+            Operator @operator = operatorResult.Data;
+
+            StatementLine line = new StatementLine
+            {
+                StatementId = domainEvent.MerchantStatementId,
+                ActivityDateTime = domainEvent.TransactionDateTime,
+                ActivityDate = domainEvent.TransactionDateTime.Date,
+                ActivityDescription = $"{@operator.Name} Transaction",
+                ActivityType = 1, // Transaction
+                TransactionId = domainEvent.TransactionId,
+                OutAmount = domainEvent.TransactionValue
+            };
+
+            await context.StatementLines.AddAsync(line, cancellationToken);
+            return await context.SaveChangesWithDuplicateHandling(cancellationToken);
+        }
+
+        public async Task<Result> AddSettledFeeToStatement(MerchantStatementForDateDomainEvents.SettledFeeAddedToStatementForDateEvent domainEvent,
+                                                           CancellationToken cancellationToken)
+        {
+            // Load this information to the database
+            EstateManagementContext context = await this.GetContext(domainEvent.EstateId);
+
+            // Find the corresponding transaction
+            var getTransactionResult = await context.LoadTransaction(domainEvent, cancellationToken);
+            if (getTransactionResult.IsFailed)
+                return ResultHelpers.CreateFailure(getTransactionResult);
+            var transaction = getTransactionResult.Data;
+
+            Result<Operator> operatorResult = await context.LoadOperator(transaction.OperatorId, cancellationToken);
+            if (operatorResult.IsFailed)
+                return ResultHelpers.CreateFailure(operatorResult);
+            var @operator = operatorResult.Data;
+
+            StatementLine line = new StatementLine
+            {
+                StatementId = domainEvent.MerchantStatementId,
+                ActivityDateTime = domainEvent.SettledDateTime,
+                ActivityDate = domainEvent.SettledDateTime.Date,
+                ActivityDescription = $"{@operator.Name} Transaction Fee",
+                ActivityType = 2, // Transaction Fee
+                TransactionId = domainEvent.TransactionId,
+                InAmount = domainEvent.SettledValue
+            };
+
+            await context.StatementLines.AddAsync(line, cancellationToken);
+
+            return await context.SaveChangesWithDuplicateHandling(cancellationToken);
+        }
+
     }
 }

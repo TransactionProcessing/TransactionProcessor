@@ -25,7 +25,7 @@ public static class MerchantStatementForDateAggregateExtensions
         if (result.IsFailed)
             return result;
 
-        MerchantStatementForDateDomainEvents.SettledFeeAddedToStatementForDateEvent settledFeeAddedToStatementEvent = new(aggregate.AggregateId, eventId, aggregate.EstateId, aggregate.MerchantId, settledFee.SettledFeeId, settledFee.TransactionId, settledFee.DateTime, settledFee.Amount);
+        MerchantStatementForDateDomainEvents.SettledFeeAddedToStatementForDateEvent settledFeeAddedToStatementEvent = new(aggregate.AggregateId, eventId, aggregate.EstateId, aggregate.MerchantId, merchantStatementId, settledFee.SettledFeeId, settledFee.TransactionId, settledFee.DateTime, settledFee.Amount);
 
         aggregate.ApplyAndAppend(settledFeeAddedToStatementEvent);
 
@@ -45,7 +45,7 @@ public static class MerchantStatementForDateAggregateExtensions
         if (result.IsFailed)
             return result;
 
-        MerchantStatementForDateDomainEvents.DepositAddedToStatementForDateEvent depositAddedToStatementEvent = new(aggregate.AggregateId, eventId, aggregate.EstateId, aggregate.MerchantId, deposit.DepositId, deposit.DepositDateTime, deposit.Amount);
+        MerchantStatementForDateDomainEvents.DepositAddedToStatementForDateEvent depositAddedToStatementEvent = new(aggregate.AggregateId, eventId, aggregate.EstateId, aggregate.MerchantId, merchantStatementId, deposit.DepositId, deposit.DepositDateTime, deposit.Amount);
 
         aggregate.ApplyAndAppend(depositAddedToStatementEvent);
 
@@ -65,7 +65,7 @@ public static class MerchantStatementForDateAggregateExtensions
         if (result.IsFailed)
             return result;
 
-        MerchantStatementForDateDomainEvents.WithdrawalAddedToStatementForDateEvent withdrawalAddedToStatementEvent = new(aggregate.AggregateId, eventId, aggregate.EstateId, aggregate.MerchantId, withdrawal.WithdrawalId, withdrawal.WithdrawalDateTime, withdrawal.Amount);
+        MerchantStatementForDateDomainEvents.WithdrawalAddedToStatementForDateEvent withdrawalAddedToStatementEvent = new(aggregate.AggregateId, eventId, aggregate.EstateId, aggregate.MerchantId, merchantStatementId, withdrawal.WithdrawalId, withdrawal.WithdrawalDateTime, withdrawal.Amount);
 
         aggregate.ApplyAndAppend(withdrawalAddedToStatementEvent);
 
@@ -89,6 +89,7 @@ public static class MerchantStatementForDateAggregateExtensions
                                                                                                                  eventId,
                                                                                                                  aggregate.EstateId,
                                                                                                                  aggregate.MerchantId,
+                                                                                                                 merchantStatementId,
                                                                                                                  transaction.TransactionId,
                                                                                                                  transaction.DateTime,
                                                                                                                  transaction.Amount);
