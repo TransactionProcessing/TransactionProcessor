@@ -13,6 +13,7 @@ using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
+using SimpleResults;
 using TransactionProcessor.Aggregates;
 using TransactionProcessor.Database.Entities;
 using TransactionProcessor.Models.Merchant;
@@ -23,7 +24,7 @@ namespace TransactionProcessor.BusinessLogic.Services
 {
     public interface IStatementBuilder
     {
-        Task<String> GetStatementHtml(MerchantStatementAggregate statementAggregate,
+        Task<Result<String>> GetStatementHtml(MerchantStatementAggregate statementAggregate,
                                       Merchant merchant,
                                       CancellationToken cancellationToken);
     }
@@ -51,15 +52,21 @@ namespace TransactionProcessor.BusinessLogic.Services
         #region Methods
 
         
-        public async Task<String> GetStatementHtml(MerchantStatementAggregate statementAggregate,
-                                                   Merchant merchant,
-                                                   CancellationToken cancellationToken)
+        public async Task<Result<String>> GetStatementHtml(MerchantStatementAggregate statementAggregate,
+                                                           Merchant merchant,
+                                                           CancellationToken cancellationToken)
         {
-            // TODO: Check statement aggregate status
             // TODO: Check merchant and addresses exist
 
             IDirectoryInfo path = this.FileSystem.Directory.GetParent(Assembly.GetExecutingAssembly().Location);
             MerchantStatement statementHeader = statementAggregate.GetStatement();
+
+            // This is only allowed if the statement has been generated but not yet built
+            if (statementHeader.IsBuilt)
+                return Result.Invalid("Statement has already been built");
+
+            if (statementHeader.IsGenerated == false)
+                return Result.Invalid("Statement has not yet been generated");
 
             String mainHtml = await this.FileSystem.File.ReadAllTextAsync($"{path}/Templates/Email/statement.html", cancellationToken);
 
@@ -74,9 +81,9 @@ namespace TransactionProcessor.BusinessLogic.Services
                 MerchantPostcode = merchant.Addresses.First().PostalCode,
                 MerchantContactNumber = merchant.Contacts.First().ContactPhoneNumber,
                 StatementDate = statementHeader.StatementDate,
-                
             };
-            var statementLines = statementHeader.GetStatementLines();
+
+            List<(Int32 lineNumber, MerchantStatementLine statementLine)> statementLines = statementHeader.GetStatementLines();
 
             var anonymousFooter = new { StatementTotal = statementLines.Sum(sl => sl.statementLine.Amount), TransactionsValue = statementLines.Where(sl => sl.statementLine.LineType == 1).Sum(sl => sl.statementLine.Amount), TransactionFeesValue = statementLines.Where(sl => sl.statementLine.LineType == 2).Sum(sl => sl.statementLine.Amount) };
 
@@ -84,27 +91,23 @@ namespace TransactionProcessor.BusinessLogic.Services
             PropertyInfo[] statementHeaderProperties = anonymousHeader.GetType().GetProperties(BindingFlags.Public | BindingFlags.Instance);
 
             // Do the replaces for the transaction
-            foreach (PropertyInfo propertyInfo in statementHeaderProperties)
-            {
+            foreach (PropertyInfo propertyInfo in statementHeaderProperties) {
                 mainHtml = mainHtml.Replace($"[{propertyInfo.Name}]", propertyInfo.GetValue(anonymousHeader)?.ToString());
             }
 
             PropertyInfo[] statementFooterProperties = anonymousFooter.GetType().GetProperties(BindingFlags.Public | BindingFlags.Instance);
 
             // Do the replaces for the transaction
-            foreach (PropertyInfo propertyInfo in statementFooterProperties)
-            {
+            foreach (PropertyInfo propertyInfo in statementFooterProperties) {
                 mainHtml = mainHtml.Replace($"[{propertyInfo.Name}]", propertyInfo.GetValue(anonymousFooter)?.ToString());
             }
 
             StringBuilder lines = new StringBuilder();
             String lineHtml = await this.FileSystem.File.ReadAllTextAsync($"{path}/Templates/Email/statementline.html", cancellationToken);
-            foreach ((Int32 lineNumber, MerchantStatementLine statementLine) statementLineContainer in statementHeader.GetStatementLines())
-            {
-                var anonymousLine = new { StatementLineNumber = statementLineContainer.lineNumber+1, StatementLineDate = statementLineContainer.statementLine.DateTime.ToString("dd/MM/yyyy"), StatementLineDescription = statementLineContainer.statementLine.Description, StatementLineAmount = statementLineContainer.statementLine.Amount };
+            foreach ((Int32 lineNumber, MerchantStatementLine statementLine) statementLineContainer in statementHeader.GetStatementLines()) {
+                var anonymousLine = new { StatementLineNumber = statementLineContainer.lineNumber + 1, StatementLineDate = statementLineContainer.statementLine.DateTime.ToString("dd/MM/yyyy"), StatementLineDescription = statementLineContainer.statementLine.Description, StatementLineAmount = statementLineContainer.statementLine.Amount };
                 PropertyInfo[] statementLineProperties = anonymousLine.GetType().GetProperties(BindingFlags.Public | BindingFlags.Instance);
-                foreach (PropertyInfo propertyInfo in statementLineProperties)
-                {
+                foreach (PropertyInfo propertyInfo in statementLineProperties) {
                     lineHtml = lineHtml.Replace($"[{propertyInfo.Name}]", propertyInfo.GetValue(anonymousLine)?.ToString());
                 }
 
@@ -113,17 +116,17 @@ namespace TransactionProcessor.BusinessLogic.Services
 
             mainHtml = mainHtml.Replace("[StatementLinesData]", lines.ToString());
 
-            string basePath = Path.GetFullPath($"{AppContext.BaseDirectory}/Templates/Email/");
+            String basePath = Path.GetFullPath($"{AppContext.BaseDirectory}/Templates/Email/");
 
-            var bootstrapmin = await this.FileSystem.File.ReadAllTextAsync($@"{basePath}bootstrap/css/bootstrap.min.css", cancellationToken);
-            var fontawesomemin = await this.FileSystem.File.ReadAllTextAsync($@"{basePath}fontawesome/css/fontawesome.min.css", cancellationToken);
-            var fontawesomesolid = await this.FileSystem.File.ReadAllTextAsync($@"{basePath}fontawesome/css/solid.css", cancellationToken);
+            String bootstrapmin = await this.FileSystem.File.ReadAllTextAsync($@"{basePath}bootstrap/css/bootstrap.min.css", cancellationToken);
+            String fontawesomemin = await this.FileSystem.File.ReadAllTextAsync($@"{basePath}fontawesome/css/fontawesome.min.css", cancellationToken);
+            String fontawesomesolid = await this.FileSystem.File.ReadAllTextAsync($@"{basePath}fontawesome/css/solid.css", cancellationToken);
 
             mainHtml = mainHtml.Replace("{bootstrapcss}", bootstrapmin);
             mainHtml = mainHtml.Replace("{fontawesomemincss}", fontawesomemin);
             mainHtml = mainHtml.Replace("{fontawesomesolidcss}", fontawesomesolid);
 
-            return mainHtml;
+            return Result.Success<String>(mainHtml);
         }
 
         #endregion

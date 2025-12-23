@@ -8,6 +8,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Moq;
 using Shouldly;
+using SimpleResults;
 using TransactionProcessor.Aggregates;
 using TransactionProcessor.BusinessLogic.Services;
 using TransactionProcessor.Models.Merchant;
@@ -48,8 +49,10 @@ namespace TransactionProcessor.BusinessLogic.Tests.Services {
             // (Mocks already set up in constructor)
 
             // Act
-            var html = await _builder.GetStatementHtml(merchantStatementAggregate, _merchant, _cancellationToken);
+            Result<String> htmlResult = await _builder.GetStatementHtml(merchantStatementAggregate, _merchant, _cancellationToken);
 
+            htmlResult.IsSuccess.ShouldBeTrue();
+            String html = htmlResult.Data;
             // Assert
             html.ShouldContain(this._merchant.MerchantName);
             html.ShouldContain(this._merchant.Addresses.First().AddressLine1);
@@ -60,6 +63,39 @@ namespace TransactionProcessor.BusinessLogic.Tests.Services {
             html.ShouldContain("body{color:red;}");
             html.ShouldContain(".fa{display:inline;}");
             html.ShouldContain(".fa-solid{font-weight:bold;}");
+        }
+
+        [Fact]
+        public async Task GetStatementHtml_StatementNotGenerated_ErrorResult()
+        {
+            // Arrange
+            var merchantStatementAggregate = new MerchantStatementAggregate();
+            merchantStatementAggregate.RecordActivityDateOnStatement(TestData.MerchantStatementId, TestData.StatementDate, TestData.EstateId, TestData.MerchantId, TestData.MerchantStatementForDateId1, new DateTime(2025, 5, 1));
+            merchantStatementAggregate.RecordActivityDateOnStatement(TestData.MerchantStatementId, TestData.StatementDate, TestData.EstateId, TestData.MerchantId, TestData.MerchantStatementForDateId2, new DateTime(2025, 5, 2));
+            merchantStatementAggregate.AddDailySummaryRecord(new DateTime(2025, 5, 1), 100, 1000.00m, 100, 10.00m, 1, 1000, 1, 200);
+            merchantStatementAggregate.AddDailySummaryRecord(new DateTime(2025, 5, 2), 200, 2000.00m, 200, 20.00m, 2, 1000, 2, 200);
+            
+            // Act
+            Result<String> htmlResult = await _builder.GetStatementHtml(merchantStatementAggregate, _merchant, _cancellationToken);
+
+            htmlResult.IsFailed.ShouldBeTrue();
+        }
+
+        [Fact]
+        public async Task GetStatementHtml_StatementAleadyBuilt_ErrorResult()
+        {
+            // Arrange
+            var merchantStatementAggregate = new MerchantStatementAggregate();
+            merchantStatementAggregate.RecordActivityDateOnStatement(TestData.MerchantStatementId, TestData.StatementDate, TestData.EstateId, TestData.MerchantId, TestData.MerchantStatementForDateId1, new DateTime(2025, 5, 1));
+            merchantStatementAggregate.RecordActivityDateOnStatement(TestData.MerchantStatementId, TestData.StatementDate, TestData.EstateId, TestData.MerchantId, TestData.MerchantStatementForDateId2, new DateTime(2025, 5, 2));
+            merchantStatementAggregate.AddDailySummaryRecord(new DateTime(2025, 5, 1), 100, 1000.00m, 100, 10.00m, 1, 1000, 1, 200);
+            merchantStatementAggregate.AddDailySummaryRecord(new DateTime(2025, 5, 2), 200, 2000.00m, 200, 20.00m, 2, 1000, 2, 200);
+            merchantStatementAggregate.GenerateStatement(TestData.GeneratedDateTime);
+            merchantStatementAggregate.BuildStatement(TestData.StatementBuiltDate, "<html>statement</html>");
+            // Act
+            Result<String> htmlResult = await _builder.GetStatementHtml(merchantStatementAggregate, _merchant, _cancellationToken);
+
+            htmlResult.IsFailed.ShouldBeTrue();
         }
 
         [Fact]
