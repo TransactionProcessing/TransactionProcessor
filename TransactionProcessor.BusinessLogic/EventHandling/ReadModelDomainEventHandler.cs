@@ -92,10 +92,8 @@ namespace TransactionProcessor.BusinessLogic.EventHandling
                 FileProcessor.File.DomainEvents.FileProcessingCompletedEvent de => this.EstateReportingRepository.UpdateFileAsComplete(de, cancellationToken),
 
                 MerchantStatementDomainEvents.StatementCreatedEvent de => this.EstateReportingRepository.CreateStatement(de, cancellationToken),
-                // TODO@ Add this back in
-                //MerchantStatementDomainEvents.TransactionAddedToStatementEvent de => this.EstateReportingRepository.AddTransactionToStatement(de, cancellationToken),
-                // TODO@ Add this back in
-                //MerchantStatementDomainEvents.SettledFeeAddedToStatementEvent de => this.EstateReportingRepository.AddSettledFeeToStatement(de, cancellationToken),
+                MerchantStatementForDateDomainEvents.TransactionAddedToStatementForDateEvent de => this.EstateReportingRepository.AddTransactionToStatement(de, cancellationToken),
+                MerchantStatementForDateDomainEvents.SettledFeeAddedToStatementForDateEvent de => this.EstateReportingRepository.AddSettledFeeToStatement(de, cancellationToken),
                 MerchantStatementDomainEvents.StatementGeneratedEvent de => this.HandleSpecificDomainEvent(de, cancellationToken),
 
                 FloatCreatedForContractProductEvent de => this.EstateReportingRepository.CreateFloat(de, cancellationToken),
