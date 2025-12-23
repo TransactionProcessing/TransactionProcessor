@@ -264,10 +264,12 @@ namespace TransactionProcessor.BusinessLogic.Services
 
                 Merchant merchantModel = getMerchantResult.Data.GetMerchant();
 
-                String html = await this.StatementBuilder.GetStatementHtml(merchantStatementAggregate, merchantModel, cancellationToken);
-                // TODO: Record the html to the statement aggregate so we can use it later if needed
+                Result<String> htmlResult = await this.StatementBuilder.GetStatementHtml(merchantStatementAggregate, merchantModel, cancellationToken);
+                if (htmlResult.IsFailed)
+                    return ResultHelpers.CreateFailure(htmlResult);
 
-                String base64 = EncodeTo64(html);
+                // TODO: Record the html to the statement aggregate so we can use it later if needed
+                String base64 = EncodeTo64(htmlResult.Data);
 
                 Result stateResult = merchantStatementAggregate.BuildStatement(DateTime.Now, base64);
                 if (stateResult.IsFailed)
