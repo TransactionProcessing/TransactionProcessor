@@ -116,17 +116,19 @@ namespace TransactionProcessor.BusinessLogic.Services
 
             mainHtml = mainHtml.Replace("[StatementLinesData]", lines.ToString());
 
-            String basePath = Path.GetFullPath($"{AppContext.BaseDirectory}/Templates/Email/");
-
-            String bootstrapmin = await this.FileSystem.File.ReadAllTextAsync($@"{basePath}bootstrap/css/bootstrap.min.css", cancellationToken);
-            String fontawesomemin = await this.FileSystem.File.ReadAllTextAsync($@"{basePath}fontawesome/css/fontawesome.min.css", cancellationToken);
-            String fontawesomesolid = await this.FileSystem.File.ReadAllTextAsync($@"{basePath}fontawesome/css/solid.css", cancellationToken);
-
-            mainHtml = mainHtml.Replace("{bootstrapcss}", bootstrapmin);
-            mainHtml = mainHtml.Replace("{fontawesomemincss}", fontawesomemin);
-            mainHtml = mainHtml.Replace("{fontawesomesolidcss}", fontawesomesolid);
+            mainHtml = await this.AddCSSToHtml(mainHtml, "{bootstrapcss}", "bootstrap/css/bootstrap.min.css", cancellationToken);
+            mainHtml = await this.AddCSSToHtml(mainHtml, "{fontawesomemincss}", "fontawesome/css/fontawesome.min.css", cancellationToken);
+            mainHtml = await this.AddCSSToHtml(mainHtml, "{fontawesomesolidcss}", "fontawesome/css/solid.css", cancellationToken);
 
             return Result.Success<String>(mainHtml);
+        }
+
+        private async Task<String> AddCSSToHtml(String html, String tag, String fileName, CancellationToken cancellationToken) {
+            String basePath = Path.GetFullPath($"{AppContext.BaseDirectory}/Templates/Email/");
+
+            String css = await this.FileSystem.File.ReadAllTextAsync($@"{basePath}{fileName}", cancellationToken);
+
+            return html.Replace(tag, css);
         }
 
         #endregion
