@@ -56,8 +56,6 @@ namespace TransactionProcessor.BusinessLogic.Services
                                                            Merchant merchant,
                                                            CancellationToken cancellationToken)
         {
-            // TODO: Check merchant and addresses exist
-
             IDirectoryInfo path = this.FileSystem.Directory.GetParent(Assembly.GetExecutingAssembly().Location);
             MerchantStatement statementHeader = statementAggregate.GetStatement();
 

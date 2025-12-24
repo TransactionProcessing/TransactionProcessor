@@ -262,7 +262,13 @@ namespace TransactionProcessor.BusinessLogic.Services
                 if (getMerchantResult.IsFailed)
                     return ResultHelpers.CreateFailure(getMerchantResult);
 
+                if (getMerchantResult.Data.IsCreated == false)
+                    return Result.Invalid("Merchant must be created to build a statement");
+
                 Merchant merchantModel = getMerchantResult.Data.GetMerchant();
+
+                if (merchantModel.Addresses.Any()  == false)
+                    return Result.Invalid("Merchant must have an address to build a statement");
 
                 Result<String> htmlResult = await this.StatementBuilder.GetStatementHtml(merchantStatementAggregate, merchantModel, cancellationToken);
                 if (htmlResult.IsFailed)
