@@ -19,19 +19,16 @@ namespace TransactionProcessor.BusinessLogic.RequestHandlers
     public class SettlementRequestHandler : IRequestHandler<SettlementCommands.ProcessSettlementCommand, Result<Guid>>,
                                             IRequestHandler<SettlementCommands.AddMerchantFeePendingSettlementCommand, Result>,
                                             IRequestHandler<SettlementCommands.AddSettledFeeToSettlementCommand, Result>,
-                                            IRequestHandler<SettlementQueries.GetPendingSettlementQuery, Result<SettlementAggregate>>,
+                                            IRequestHandler<SettlementQueries.GetPendingSettlementQuery, Result<PendingSettlementModel>>,
                                             IRequestHandler<SettlementQueries.GetSettlementQuery, Result<SettlementModel>>,
                                             IRequestHandler<SettlementQueries.GetSettlementsQuery, Result<List<SettlementModel>>>
     {
         private readonly ISettlementDomainService SettlementDomainService;
-        private readonly IAggregateService AggregateService;
         private readonly ITransactionProcessorManager TransactionProcessorManager;
 
         public SettlementRequestHandler(ISettlementDomainService settlementDomainService,
-                                        IAggregateService aggregateService,
                                         ITransactionProcessorManager transactionProcessorManager) {
             this.SettlementDomainService = settlementDomainService;
-            this.AggregateService = aggregateService;
             this.TransactionProcessorManager = transactionProcessorManager;
         }
 
@@ -51,19 +48,9 @@ namespace TransactionProcessor.BusinessLogic.RequestHandlers
             return await this.SettlementDomainService.AddSettledFeeToSettlement(command, cancellationToken);
         }
 
-        public async Task<Result<SettlementAggregate>> Handle(SettlementQueries.GetPendingSettlementQuery query,
-                                                              CancellationToken cancellationToken) {
-            // TODO: Convert to using a manager/model/factory
-            // Convert the date passed in to a guid
-            Guid aggregateId = Helpers.CalculateSettlementAggregateId(query.SettlementDate, query.MerchantId, query.EstateId);
-            
-            Result<SettlementAggregate> getSettlementResult = await this.AggregateService.GetLatest<SettlementAggregate>(aggregateId, cancellationToken);
-            if (getSettlementResult.IsFailed)
-                return getSettlementResult;
-
-            SettlementAggregate settlementAggregate = getSettlementResult.Data;
-
-            return Result.Success(settlementAggregate);
+        public async Task<Result<PendingSettlementModel>> Handle(SettlementQueries.GetPendingSettlementQuery query,
+                                                                 CancellationToken cancellationToken) {
+            return await this.TransactionProcessorManager.GetPendingSettlement(query.EstateId, query.MerchantId, query.SettlementDate, cancellationToken);
         }
 
         public async Task<Result<SettlementModel>> Handle(SettlementQueries.GetSettlementQuery request,

@@ -103,7 +103,7 @@ namespace TransactionProcessor.Bootstrapper
             this.AddSingleton<IRequestHandler<SettlementCommands.ProcessSettlementCommand, Result<Guid>>, SettlementRequestHandler>();
             this.AddSingleton<IRequestHandler<SettlementCommands.AddMerchantFeePendingSettlementCommand, Result>, SettlementRequestHandler>();
             this.AddSingleton<IRequestHandler<SettlementCommands.AddSettledFeeToSettlementCommand, Result>, SettlementRequestHandler>();
-            this.AddSingleton<IRequestHandler<SettlementQueries.GetPendingSettlementQuery, Result<SettlementAggregate>>, SettlementRequestHandler>();
+            this.AddSingleton<IRequestHandler<SettlementQueries.GetPendingSettlementQuery, Result<PendingSettlementModel>>, SettlementRequestHandler>();
             this.AddSingleton<IRequestHandler<SettlementQueries.GetSettlementQuery, Result<SettlementModel>>, SettlementRequestHandler>();
             this.AddSingleton<IRequestHandler<SettlementQueries.GetSettlementsQuery, Result<List<SettlementModel>>>, SettlementRequestHandler>();
         }

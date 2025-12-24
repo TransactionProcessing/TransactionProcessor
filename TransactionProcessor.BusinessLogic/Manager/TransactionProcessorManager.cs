@@ -1,18 +1,20 @@
-﻿using System;
+﻿using Shared.DomainDrivenDesign.EventSourcing;
+using Shared.EventStore.Aggregate;
+using Shared.Results;
+using SimpleResults;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using Shared.DomainDrivenDesign.EventSourcing;
-using Shared.EventStore.Aggregate;
-using Shared.Results;
-using SimpleResults;
 using TransactionProcessor.Aggregates;
+using TransactionProcessor.BusinessLogic.Common;
 using TransactionProcessor.BusinessLogic.Services;
 using TransactionProcessor.Models.Contract;
 using TransactionProcessor.Models.Merchant;
 using TransactionProcessor.Models.Settlement;
 using TransactionProcessor.Repository;
+using static TransactionProcessor.BusinessLogic.Requests.SettlementQueries;
 using Contract = TransactionProcessor.Models.Contract.Contract;
 using Operator = TransactionProcessor.Models.Estate.Operator;
 
@@ -244,6 +246,31 @@ namespace TransactionProcessor.BusinessLogic.Manager
                                                                         CancellationToken cancellationToken)
         {
             return await this.TransactionProcessorReadModelRepository.GetSettlements(estateId, merchantId, startDate, endDate, cancellationToken);
+        }
+
+        public async Task<Result<PendingSettlementModel>> GetPendingSettlement(Guid estateId,
+                                                                               Guid merchantId,
+                                                                               DateTime settlementDate,
+                                                                               CancellationToken cancellationToken) {
+
+            Guid aggregateId = Helpers.CalculateSettlementAggregateId(settlementDate, merchantId, estateId);
+
+            Result<SettlementAggregate> getSettlementResult = await this.AggregateService.GetLatest<SettlementAggregate>(aggregateId, cancellationToken);
+            if (getSettlementResult.IsFailed)
+                return ResultHelpers.CreateFailure(getSettlementResult);
+
+            SettlementAggregate settlementAggregate = getSettlementResult.Data;
+
+            PendingSettlementModel model = new PendingSettlementModel {
+                EstateId = settlementAggregate.EstateId,
+                MerchantId = settlementAggregate.MerchantId,
+                NumberOfFeesPendingSettlement = settlementAggregate.GetNumberOfFeesPendingSettlement(),
+                NumberOfFeesSettled = settlementAggregate.GetNumberOfFeesSettled(),
+                SettlementDate = settlementAggregate.SettlementDate,
+                SettlementCompleted = settlementAggregate.SettlementComplete,
+            };
+
+            return Result.Success(model);
         }
 
         #endregion

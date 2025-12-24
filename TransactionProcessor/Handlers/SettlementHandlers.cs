@@ -19,16 +19,16 @@ namespace TransactionProcessor.Handlers
         public static async Task<IResult> GetPendingSettlement(IMediator mediator, HttpContext ctx, DateTime settlementDate, [FromRoute] Guid estateId, Guid merchantId, CancellationToken cancellationToken)
         {
             SettlementQueries.GetPendingSettlementQuery query = new(settlementDate, merchantId, estateId);
-            Result<SettlementAggregate> getPendingSettlementResult = await mediator.Send(query, cancellationToken);
+            Result<PendingSettlementModel> getPendingSettlementResult = await mediator.Send(query, cancellationToken);
 
             return ResponseFactory.FromResult(getPendingSettlementResult, r => new TransactionProcessor.DataTransferObjects.SettlementResponse
             {
                 EstateId = r.EstateId,
                 MerchantId = r.MerchantId,
-                NumberOfFeesPendingSettlement = r.GetNumberOfFeesPendingSettlement(),
-                NumberOfFeesSettled = r.GetNumberOfFeesSettled(),
+                NumberOfFeesPendingSettlement = r.NumberOfFeesPendingSettlement,
+                NumberOfFeesSettled = r.NumberOfFeesSettled,
                 SettlementDate = r.SettlementDate,
-                SettlementCompleted = r.SettlementComplete
+                SettlementCompleted = r.SettlementCompleted
             });
         }
 

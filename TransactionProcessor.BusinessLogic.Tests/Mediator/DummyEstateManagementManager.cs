@@ -83,4 +83,11 @@ public class DummyTransactionProcessorManager : ITransactionProcessorManager {
                                                                     CancellationToken cancellationToken) {
         return Result.Success(new List<SettlementModel>());
     }
+
+    public async Task<Result<PendingSettlementModel>> GetPendingSettlement(Guid estateId,
+                                                                           Guid merchantId,
+                                                                           DateTime settlementDate,
+                                                                           CancellationToken cancellationToken) {
+        return Result.Success(new PendingSettlementModel());
+    }
 }
