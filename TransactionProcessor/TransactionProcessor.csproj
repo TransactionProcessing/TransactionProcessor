@@ -10,11 +10,10 @@
   </PropertyGroup>
 
   <ItemGroup>
-	  <PackageReference Include="ClientProxyBase" Version="2025.12.1" />
+	  <PackageReference Include="ClientProxyBase" Version="2025.12.2" />
 	  <PackageReference Include="Lamar" Version="15.0.1" />
 	  <PackageReference Include="Lamar.Microsoft.DependencyInjection" Version="15.0.1" />
 	  <PackageReference Include="AspNetCore.HealthChecks.SqlServer" Version="9.0.0" />
-	<PackageReference Include="AspNetCore.HealthChecks.UI" Version="9.0.0" />
 	<PackageReference Include="AspNetCore.HealthChecks.UI.Client" Version="9.0.0" />
 	<PackageReference Include="AspNetCore.HealthChecks.UI.InMemory.Storage" Version="9.0.0" />
 	<PackageReference Include="AspNetCore.HealthChecks.Uris" Version="9.0.0" />
@@ -25,25 +24,22 @@
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
-	  <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="10.0.1" />
-	  <PackageReference Include="Microsoft.Extensions.Logging.Console" Version="10.0.1" />
-    <PackageReference Include="Microsoft.Extensions.Logging.Debug" Version="10.0.1" />
     <PackageReference Include="Microsoft.VisualStudio.Azure.Containers.Tools.Targets" Version="1.22.1" />
-    <PackageReference Include="Microsoft.VisualStudio.Web.CodeGeneration.Design" Version="10.0.0" />
+    <PackageReference Include="Microsoft.VisualStudio.Web.CodeGeneration.Design" Version="10.0.1" />
     <PackageReference Include="NLog.Extensions.Logging" Version="6.1.0" />
 	  <PackageReference Include="prometheus-net" Version="8.2.1" />
 	  <PackageReference Include="prometheus-net.AspNetCore" Version="8.2.1" />
-    <PackageReference Include="SecurityService.Client" Version="2025.12.1" />
-    <PackageReference Include="Shared" Version="2025.12.1" />
-    <PackageReference Include="Shared.EventStore" Version="2025.12.1" />
+    <PackageReference Include="SecurityService.Client" Version="2025.12.2" />
+    <PackageReference Include="Shared" Version="2025.12.2" />
+    <PackageReference Include="Shared.EventStore" Version="2025.12.2" />
       <PackageReference Include="Microsoft.Extensions.Hosting.WindowsServices" Version="10.0.1" />
-      <PackageReference Include="Shared.Results.Web" Version="2025.12.1" />
-	  <PackageReference Include="Swashbuckle.AspNetCore" Version="10.0.1" />
-	  <PackageReference Include="Swashbuckle.AspNetCore.Annotations" Version="10.0.1" />
+      <PackageReference Include="Shared.Results.Web" Version="2025.12.2" />
+	  <PackageReference Include="Swashbuckle.AspNetCore" Version="10.1.0" />
+	  <PackageReference Include="Swashbuckle.AspNetCore.Annotations" Version="10.1.0" />
 	  <PackageReference Include="Swashbuckle.AspNetCore.Filters" Version="10.0.1" />
-	  <PackageReference Include="Swashbuckle.AspNetCore.Swagger" Version="10.0.1" />
-	  <PackageReference Include="Swashbuckle.AspNetCore.SwaggerGen" Version="10.0.1" />
-	  <PackageReference Include="Swashbuckle.AspNetCore.SwaggerUI" Version="10.0.1" />
+	  <PackageReference Include="Swashbuckle.AspNetCore.Swagger" Version="10.1.0" />
+	  <PackageReference Include="Swashbuckle.AspNetCore.SwaggerGen" Version="10.1.0" />
+	  <PackageReference Include="Swashbuckle.AspNetCore.SwaggerUI" Version="10.1.0" />
 	  <PackageReference Include="System.ServiceModel.Federation" Version="10.0.652802" />
 	  <PackageReference Include="System.ServiceModel.Http" Version="10.0.652802" />
 	  <PackageReference Include="System.ServiceModel.NetTcp" Version="10.0.652802" />
