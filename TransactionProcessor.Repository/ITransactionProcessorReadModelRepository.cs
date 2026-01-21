@@ -264,7 +264,6 @@ namespace TransactionProcessor.Repository {
 
         Task<Result<List<Models.Operator.Operator>>> GetOperators(Guid estateId,
                                                                   CancellationToken cancellationToken);
-
         Task<Result<List<ContractModel>>> GetContracts(Guid estateId,
                                                   CancellationToken cancellationToken);
 
@@ -293,6 +292,12 @@ namespace TransactionProcessor.Repository {
                                                CancellationToken cancellationToken);
 
         Task<Result> AddSettledFeeToStatement(MerchantStatementForDateDomainEvents.SettledFeeAddedToStatementForDateEvent domainEvent,
+                                              CancellationToken cancellationToken);
+
+        Task<Result> AddEstateOperator(EstateDomainEvents.OperatorAddedToEstateEvent de,
+                                       CancellationToken cancellationToken);
+
+        Task<Result> RemoveOperatorFromEstate(EstateDomainEvents.OperatorRemovedFromEstateEvent de,
                                               CancellationToken cancellationToken);
     }
 
@@ -2143,5 +2148,41 @@ namespace TransactionProcessor.Repository {
             return await context.SaveChangesWithDuplicateHandling(cancellationToken);
         }
 
+        public async Task<Result> AddEstateOperator(EstateDomainEvents.OperatorAddedToEstateEvent domainEvent,
+                                                    CancellationToken cancellationToken) {
+            // Load this information to the database
+            EstateManagementContext context = await this.GetContext(domainEvent.EstateId);
+
+            var estateOperator = await context.EstateOperators.SingleOrDefaultAsync(eo => eo.EstateId == domainEvent.EstateId && eo.OperatorId == domainEvent.OperatorId, cancellationToken);
+
+            if (estateOperator == null) {
+                await context.EstateOperators.AddAsync(new EstateOperator { EstateId = domainEvent.EstateId, OperatorId = domainEvent.OperatorId }, cancellationToken);
+            }
+            else {
+                // Re-enable the record
+                estateOperator.IsDeleted = null;
+            }
+
+            return await context.SaveChangesAsync(cancellationToken);
+        }
+
+        public async Task<Result> RemoveOperatorFromEstate(EstateDomainEvents.OperatorRemovedFromEstateEvent domainEvent,
+                                                           CancellationToken cancellationToken) {
+            // Load this information to the database
+            EstateManagementContext context = await this.GetContext(domainEvent.EstateId);
+
+            var estateOperator = await context.EstateOperators.SingleOrDefaultAsync(eo => eo.EstateId == domainEvent.EstateId && eo.OperatorId == domainEvent.OperatorId, cancellationToken);
+
+            if (estateOperator == null) {
+                await context.EstateOperators.AddAsync(new EstateOperator { EstateId = domainEvent.EstateId, OperatorId = domainEvent.OperatorId, IsDeleted = true}, cancellationToken);
+            }
+            else
+            {
+                // delete the record
+                estateOperator.IsDeleted = true;
+            }
+
+            return await context.SaveChangesAsync(cancellationToken);
+        }
     }
 }

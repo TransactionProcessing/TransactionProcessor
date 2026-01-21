@@ -56,7 +56,9 @@ public class EstateManagementContext : DbContext
     public DbSet<Operator> Operators { get; set; }
 
     public DbSet<Estate> Estates { get; set; }
-    
+
+    public DbSet<EstateOperator> EstateOperators { get; set; }
+
     public DbSet<EstateSecurityUser> EstateSecurityUsers { get; set; }
     
     public virtual DbSet<FileImportLogFile> FileImportLogFiles { get; set; }
@@ -314,7 +316,8 @@ ALTER DATABASE [{dbName}] SET MULTI_USER;
                     .SetupSettlementSummary()
                     .SetupTransactionHistory()
                     .SetupTodaysTransactions()
-                    .SetupTransactionTimings();
+                    .SetupTransactionTimings()
+                    .SetupEstateOperator();
         
         modelBuilder.SetupViewEntities();
 
