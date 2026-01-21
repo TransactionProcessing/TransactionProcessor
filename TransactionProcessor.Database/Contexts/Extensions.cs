@@ -77,6 +77,16 @@ public static class Extensions{
         return modelBuilder;
     }
 
+    public static ModelBuilder SetupEstateOperator(this ModelBuilder modelBuilder)
+    {
+        modelBuilder.Entity<EstateOperator>().HasKey(t => new {
+            t.EstateId,
+            t.OperatorId
+        });
+
+        return modelBuilder;
+    }
+
     public static ModelBuilder SetupOperator(this ModelBuilder modelBuilder)
     {
         modelBuilder.Entity<Operator>().HasKey(t => new {

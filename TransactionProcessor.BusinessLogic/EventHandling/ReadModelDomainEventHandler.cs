@@ -24,7 +24,9 @@ namespace TransactionProcessor.BusinessLogic.EventHandling
                 EstateDomainEvents.EstateCreatedEvent de => this.HandleSpecificDomainEvent(de, cancellationToken),
                 EstateDomainEvents.SecurityUserAddedToEstateEvent de => this.EstateReportingRepository.AddEstateSecurityUser(de, cancellationToken),
                 EstateDomainEvents.EstateReferenceAllocatedEvent de => this.EstateReportingRepository.UpdateEstate(de, cancellationToken),
-                
+                EstateDomainEvents.OperatorAddedToEstateEvent de => this.EstateReportingRepository.AddEstateOperator(de, cancellationToken),
+                EstateDomainEvents.OperatorRemovedFromEstateEvent de => this.EstateReportingRepository.RemoveOperatorFromEstate(de, cancellationToken),
+
                 OperatorDomainEvents.OperatorCreatedEvent de => this.EstateReportingRepository.AddOperator(de, cancellationToken),
                 OperatorDomainEvents.OperatorNameUpdatedEvent de => this.EstateReportingRepository.UpdateOperator(de, cancellationToken),
                 OperatorDomainEvents.OperatorRequireCustomMerchantNumberChangedEvent de => this.EstateReportingRepository.UpdateOperator(de, cancellationToken),
