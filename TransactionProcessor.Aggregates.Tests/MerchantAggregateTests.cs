@@ -790,5 +790,33 @@ namespace TransactionProcessor.Aggregates.Tests
             result.IsFailed.ShouldBeTrue();
             result.Status.ShouldBe(ResultStatus.Invalid);
         }
+
+        [Fact]
+        public void MerchantAggregate_RemoveOperator_And_ReAdd_OperatorIsReAdded()
+        {
+            MerchantAggregate aggregate = MerchantAggregate.Create(TestData.MerchantId);
+            aggregate.Create(TestData.EstateId, TestData.MerchantName, TestData.DateMerchantCreated, TestData.AddressModel, TestData.ContactModel,
+                TestData.SettlementScheduleModel);
+            aggregate.AssignOperator(TestData.OperatorId, TestData.OperatorName, TestData.OperatorMerchantNumber, TestData.OperatorTerminalNumber);
+
+            Result result = aggregate.RemoveOperator(TestData.OperatorId);
+            result.IsSuccess.ShouldBeTrue();
+
+            Merchant merchantModel = aggregate.GetMerchant();
+            merchantModel.Operators.ShouldHaveSingleItem();
+            Operator operatorModel = merchantModel.Operators.Single();
+            operatorModel.OperatorId.ShouldBe(TestData.OperatorId);
+            operatorModel.Name.ShouldBe(TestData.OperatorName);
+            operatorModel.MerchantNumber.ShouldBe(TestData.OperatorMerchantNumber);
+            operatorModel.TerminalNumber.ShouldBe(TestData.OperatorTerminalNumber);
+            operatorModel.IsDeleted.ShouldBeTrue();
+
+            result = aggregate.AssignOperator(TestData.OperatorId, TestData.OperatorName, TestData.OperatorMerchantNumber, TestData.OperatorTerminalNumber);
+            result.IsSuccess.ShouldBeTrue();
+            merchantModel = aggregate.GetMerchant();
+            merchantModel.Operators.ShouldHaveSingleItem();
+            operatorModel = merchantModel.Operators.Single();
+            operatorModel.IsDeleted.ShouldBeFalse();
+        }
     }
 }
