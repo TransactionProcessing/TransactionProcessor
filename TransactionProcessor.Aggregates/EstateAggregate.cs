@@ -21,8 +21,7 @@ namespace TransactionProcessor.Aggregates{
             if (result.IsFailed)
                 return result;
 
-            EstateDomainEvents.OperatorAddedToEstateEvent operatorAddedToEstateEvent =
-                new EstateDomainEvents.OperatorAddedToEstateEvent(aggregate.AggregateId, operatorId);
+            EstateDomainEvents.OperatorAddedToEstateEvent operatorAddedToEstateEvent = new(aggregate.AggregateId, operatorId);
 
             aggregate.ApplyAndAppend(operatorAddedToEstateEvent);
 
@@ -118,13 +117,18 @@ namespace TransactionProcessor.Aggregates{
             aggregate.EstateReference = domainEvent.EstateReference;
         }
 
-        public static void PlayEvent(this EstateAggregate aggregate, EstateDomainEvents.OperatorAddedToEstateEvent domainEvent){
-            TransactionProcessor.Models.Estate.Operator @operator = new() {
-              IsDeleted  = false,
-              OperatorId = domainEvent.OperatorId
-            };
+        public static void PlayEvent(this EstateAggregate aggregate, EstateDomainEvents.OperatorAddedToEstateEvent domainEvent) {
+            var @operator = aggregate.Operators.SingleOrDefault(o => o.Key == domainEvent.OperatorId);
 
-            aggregate.Operators.Add(domainEvent.OperatorId, @operator);
+            if (@operator.Value != null){
+                @operator.Value.IsDeleted = false;
+                return;
+            }
+
+            aggregate.Operators.Add(domainEvent.OperatorId, new Operator {
+                IsDeleted = false,
+                OperatorId = domainEvent.OperatorId
+            });
         }
 
         public static void PlayEvent(this EstateAggregate aggregate, EstateDomainEvents.OperatorRemovedFromEstateEvent domainEvent){
@@ -140,8 +144,8 @@ namespace TransactionProcessor.Aggregates{
 
         private static Result CheckOperatorHasNotAlreadyBeenCreated(this EstateAggregate aggregate,
                                                                     Guid operatorId) {
-            Boolean operatorRecordExists = aggregate.Operators.ContainsKey(operatorId);
-            if (operatorRecordExists == true) {
+            Boolean operatorRecordExists = aggregate.Operators.Any(o => o.Key == operatorId && o.Value.IsDeleted == false);
+            if (operatorRecordExists) {
                 return Result.Invalid($"Duplicate operator details are not allowed, an operator already exists on this estate with Id [{operatorId}]");
             }
             return Result.Success();
