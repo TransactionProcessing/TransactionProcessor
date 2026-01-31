@@ -219,5 +219,27 @@ namespace TransactionProcessor.Aggregates.Tests
 
             result.Message.ShouldContain($"Operator not added to this Estate with Id [{TestData.OperatorId}]");
         }
+
+        [Fact]
+        public void EstateAggregate_RemoveOperatorFromEstate_ThenReAdd_OperatorAdded()
+        {
+            EstateAggregate aggregate = EstateAggregate.Create(TestData.EstateId);
+            aggregate.Create(TestData.EstateName);
+            aggregate.AddOperator(TestData.OperatorId);
+            
+            Estate estate = aggregate.GetEstate();
+            estate.Operators.ShouldHaveSingleItem();
+            estate.Operators.Single().IsDeleted.ShouldBeFalse();
+            aggregate.RemoveOperator(TestData.OperatorId);
+            
+            estate = aggregate.GetEstate();
+            estate.Operators.ShouldHaveSingleItem();
+            estate.Operators.Single().IsDeleted.ShouldBeTrue();
+            aggregate.AddOperator(TestData.OperatorId);
+
+            estate = aggregate.GetEstate();
+            estate.Operators.ShouldHaveSingleItem();
+            estate.Operators.Single().IsDeleted.ShouldBeFalse();
+        }
     }
 }
