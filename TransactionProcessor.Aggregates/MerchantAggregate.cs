@@ -621,7 +621,7 @@ namespace TransactionProcessor.Aggregates
 
         private static Result EnsureContractHasNotAlreadyBeenAdded(this MerchantAggregate aggregate,
                                                                    Guid contractId) {
-            if (aggregate.Contracts.ContainsKey(contractId)) {
+            if (aggregate.Contracts.Any(o => o.Key == contractId && o.Value.IsDeleted == false)) {
                 return Result.Invalid($"Contract {contractId} has already been assigned to merchant");
             }
 
@@ -785,19 +785,21 @@ namespace TransactionProcessor.Aggregates
             aggregate.Contacts.Add(contactAddedEvent.ContactId, contact);
         }
 
-        public static void PlayEvent(this MerchantAggregate aggregate, MerchantDomainEvents.OperatorAssignedToMerchantEvent operatorAssignedToMerchantEvent) {
-            var @operator = aggregate.Operators.SingleOrDefault(o => o.Key == operatorAssignedToMerchantEvent.OperatorId);
-
-            if (@operator.Value != null) {
-                aggregate.Operators[operatorAssignedToMerchantEvent.OperatorId] = @operator.Value with { IsDeleted = false };
+        public static void PlayEvent(this MerchantAggregate aggregate, MerchantDomainEvents.OperatorAssignedToMerchantEvent domainEvent) {
+            if (aggregate.Operators.ContainsKey(domainEvent.OperatorId))
+            {
+                KeyValuePair<Guid, Operator> @operator = aggregate.Operators.Single(c => c.Key == domainEvent.OperatorId);
+                aggregate.Operators[domainEvent.OperatorId] = @operator.Value with
+                {
+                    IsDeleted = true
+                };
                 return;
             }
+            Operator newOperator = new Operator(domainEvent.OperatorId, domainEvent.Name,
+                domainEvent.MerchantNumber,
+                domainEvent.TerminalNumber);
 
-            Operator newOperator = new Operator(operatorAssignedToMerchantEvent.OperatorId, operatorAssignedToMerchantEvent.Name,
-                                              operatorAssignedToMerchantEvent.MerchantNumber,
-                                              operatorAssignedToMerchantEvent.TerminalNumber);
-
-            aggregate.Operators.Add(operatorAssignedToMerchantEvent.OperatorId, newOperator);
+            aggregate.Operators.Add(domainEvent.OperatorId, newOperator);
         }
 
         public static void PlayEvent(this MerchantAggregate aggregate, MerchantDomainEvents.OperatorRemovedFromMerchantEvent operatorRemovedFromMerchantEvent){
@@ -822,6 +824,14 @@ namespace TransactionProcessor.Aggregates
         }
 
         public static void PlayEvent(this MerchantAggregate aggregate, MerchantDomainEvents.ContractAddedToMerchantEvent domainEvent){
+            if (aggregate.Contracts.ContainsKey(domainEvent.ContractId)) {
+                KeyValuePair<Guid, Contract> contract = aggregate.Contracts.Single(c => c.Key == domainEvent.ContractId);
+                aggregate.Contracts[domainEvent.ContractId] = contract.Value with
+                {
+                    IsDeleted = false
+                };
+                return;
+            }
             aggregate.Contracts.Add(domainEvent.ContractId, new Contract(domainEvent.ContractId));
         }
 
