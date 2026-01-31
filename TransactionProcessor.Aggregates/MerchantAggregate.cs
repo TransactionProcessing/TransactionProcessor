@@ -603,7 +603,7 @@ namespace TransactionProcessor.Aggregates
 
         private static Result EnsureOperatorHasNotAlreadyBeenAssigned(this MerchantAggregate aggregate,
                                                                       Guid operatorId) {
-            if (aggregate.Operators.Any(o => o.Key == operatorId)) {
+            if (aggregate.Operators.Any(o => o.Key == operatorId && o.Value.IsDeleted == false)) {
                 return Result.Invalid($"Operator {operatorId} has already been assigned to merchant");
             }
 
@@ -785,13 +785,19 @@ namespace TransactionProcessor.Aggregates
             aggregate.Contacts.Add(contactAddedEvent.ContactId, contact);
         }
 
-        public static void PlayEvent(this MerchantAggregate aggregate, MerchantDomainEvents.OperatorAssignedToMerchantEvent operatorAssignedToMerchantEvent)
-        {
-            Operator @operator = new Operator(operatorAssignedToMerchantEvent.OperatorId, operatorAssignedToMerchantEvent.Name,
+        public static void PlayEvent(this MerchantAggregate aggregate, MerchantDomainEvents.OperatorAssignedToMerchantEvent operatorAssignedToMerchantEvent) {
+            var @operator = aggregate.Operators.SingleOrDefault(o => o.Key == operatorAssignedToMerchantEvent.OperatorId);
+
+            if (@operator.Value != null) {
+                aggregate.Operators[operatorAssignedToMerchantEvent.OperatorId] = @operator.Value with { IsDeleted = false };
+                return;
+            }
+
+            Operator newOperator = new Operator(operatorAssignedToMerchantEvent.OperatorId, operatorAssignedToMerchantEvent.Name,
                                               operatorAssignedToMerchantEvent.MerchantNumber,
                                               operatorAssignedToMerchantEvent.TerminalNumber);
 
-            aggregate.Operators.Add(operatorAssignedToMerchantEvent.OperatorId, @operator);
+            aggregate.Operators.Add(operatorAssignedToMerchantEvent.OperatorId, newOperator);
         }
 
         public static void PlayEvent(this MerchantAggregate aggregate, MerchantDomainEvents.OperatorRemovedFromMerchantEvent operatorRemovedFromMerchantEvent){
