@@ -818,5 +818,32 @@ namespace TransactionProcessor.Aggregates.Tests
             operatorModel = merchantModel.Operators.Single();
             operatorModel.IsDeleted.ShouldBeFalse();
         }
+
+        [Fact]
+        public void MerchantAggregate_RemoveContract_And_ReAdd_ContractIsReAdded()
+        {
+            MerchantAggregate aggregate = MerchantAggregate.Create(TestData.MerchantId);
+            aggregate.Create(TestData.EstateId, TestData.MerchantName, TestData.DateMerchantCreated, TestData.AddressModel, TestData.ContactModel,
+                TestData.SettlementScheduleModel);
+            aggregate.AddContract(TestData.Aggregates.CreatedContractAggregate());
+
+            Result result = aggregate.RemoveContract(TestData.ContractId);
+            result.IsSuccess.ShouldBeTrue();
+
+            Merchant merchantModel = aggregate.GetMerchant();
+            merchantModel.Contracts.ShouldHaveSingleItem();
+            Contract contractModel = merchantModel.Contracts.Single();
+            contractModel.ContractId.ShouldBe(TestData.ContractId);
+            contractModel.IsDeleted.ShouldBeTrue();
+
+            result = aggregate.AddContract(TestData.Aggregates.CreatedContractAggregate());
+            result.IsSuccess.ShouldBeTrue();
+
+            merchantModel = aggregate.GetMerchant();
+            merchantModel.Contracts.ShouldHaveSingleItem();
+            contractModel = merchantModel.Contracts.Single();
+            contractModel.ContractId.ShouldBe(TestData.ContractId);
+            contractModel.IsDeleted.ShouldBeFalse();
+        }
     }
 }
