@@ -791,7 +791,7 @@ namespace TransactionProcessor.Aggregates
                 KeyValuePair<Guid, Operator> @operator = aggregate.Operators.Single(c => c.Key == domainEvent.OperatorId);
                 aggregate.Operators[domainEvent.OperatorId] = @operator.Value with
                 {
-                    IsDeleted = true
+                    IsDeleted = false
                 };
                 return;
             }
