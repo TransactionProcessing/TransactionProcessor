@@ -3,6 +3,7 @@ using Shared.EventStore.Aggregate;
 using Shared.General;
 using SimpleResults;
 using System.Diagnostics.CodeAnalysis;
+using System.Runtime.CompilerServices;
 using TransactionProcessor.DomainEvents;
 using TransactionProcessor.Models.Contract;
 using TransactionProcessor.Models.Merchant;
@@ -294,10 +295,13 @@ namespace TransactionProcessor.Aggregates
             if (result.IsFailed)
                 return result;
 
+            KeyValuePair<Guid, Device> originalDevice = aggregate.Devices.Single(d => d.Value.DeviceIdentifier == originalDeviceIdentifier);
+
             Guid deviceId = Guid.NewGuid();
             
-            MerchantDomainEvents.DeviceSwappedForMerchantEvent deviceSwappedForMerchantEvent = new MerchantDomainEvents.DeviceSwappedForMerchantEvent(aggregate.AggregateId, aggregate.EstateId,
-                                                                                                            deviceId, originalDeviceIdentifier, newDeviceIdentifier);
+            MerchantDomainEvents.DeviceSwappedForMerchantEvent deviceSwappedForMerchantEvent = new(aggregate.AggregateId, aggregate.EstateId,
+                                                                                                  deviceId, 
+                                                                                                  originalDevice.Value.DeviceId, newDeviceIdentifier);
 
             aggregate.ApplyAndAppend(deviceSwappedForMerchantEvent);
 
@@ -842,7 +846,7 @@ namespace TransactionProcessor.Aggregates
 
         public static void PlayEvent(this MerchantAggregate aggregate, MerchantDomainEvents.DeviceSwappedForMerchantEvent domainEvent)
         {
-            KeyValuePair<Guid, Device> device = aggregate.Devices.Single(d => d.Value.DeviceIdentifier == domainEvent.OriginalDeviceIdentifier);
+            KeyValuePair<Guid, Device> device = aggregate.Devices.Single(d => d.Key == domainEvent.OriginalDeviceId);
             aggregate.Devices[device.Key] = device.Value with{
                                                                  IsEnabled = false
                                                              };

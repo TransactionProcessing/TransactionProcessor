@@ -353,7 +353,8 @@ namespace TransactionProcessor.Testing
         public static String DeclinedResponseMessage = "DeclinedResponseMessage";
 
         public static Guid DeviceId = Guid.Parse("840F32FF-8B74-467C-8078-F5D9297FED56");
-
+        public static Guid OriginalDeviceId = Guid.Parse("840F32FF-8B74-467C-8078-F5D9297FED56");
+        public static Guid NewDeviceId = Guid.Parse("55C261AC-7E80-47E1-9169-4041329D3F12");
         public static String DeviceIdentifier = "1234567890";
 
         public static String DeviceIdentifier1 = "1234567891";
@@ -2690,8 +2691,8 @@ namespace TransactionProcessor.Testing
             public static MerchantDomainEvents.DeviceSwappedForMerchantEvent DeviceSwappedForMerchantEvent =>
                 new MerchantDomainEvents.DeviceSwappedForMerchantEvent(TestData.MerchantId,
                     TestData.EstateId,
-                    TestData.DeviceId,
-                    TestData.DeviceIdentifier,
+                    TestData.NewDeviceId,
+                    TestData.OriginalDeviceId,
                     TestData.NewDeviceIdentifier);
 
             public static MerchantDomainEvents.OperatorRemovedFromMerchantEvent OperatorRemovedFromMerchantEvent => new MerchantDomainEvents.OperatorRemovedFromMerchantEvent(TestData.MerchantId, TestData.EstateId, TestData.OperatorId);

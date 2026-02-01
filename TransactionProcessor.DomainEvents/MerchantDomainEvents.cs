@@ -9,7 +9,7 @@ namespace TransactionProcessor.DomainEvents {
         public record AutomaticDepositMadeEvent(Guid MerchantId, Guid EstateId, Guid DepositId, String Reference, DateTime DepositDateTime, Decimal Amount) : DomainEvent(MerchantId, Guid.NewGuid());
         public record ContactAddedEvent(Guid MerchantId, Guid EstateId, Guid ContactId, String ContactName, String ContactPhoneNumber, String ContactEmailAddress) : DomainEvent(MerchantId, Guid.NewGuid());
         public record DeviceAddedToMerchantEvent(Guid MerchantId, Guid EstateId, Guid DeviceId, String DeviceIdentifier) : DomainEvent(MerchantId, Guid.NewGuid());
-        public record DeviceSwappedForMerchantEvent(Guid MerchantId, Guid EstateId, Guid DeviceId, String OriginalDeviceIdentifier, String NewDeviceIdentifier) : DomainEvent(MerchantId, Guid.NewGuid());
+        public record DeviceSwappedForMerchantEvent(Guid MerchantId, Guid EstateId, Guid DeviceId, Guid OriginalDeviceId, String NewDeviceIdentifier) : DomainEvent(MerchantId, Guid.NewGuid());
         public record ManualDepositMadeEvent(Guid MerchantId, Guid EstateId, Guid DepositId, String Reference, DateTime DepositDateTime, Decimal Amount) : DomainEvent(MerchantId, Guid.NewGuid());
         public record MerchantCreatedEvent(Guid MerchantId, Guid EstateId, String MerchantName, DateTime DateCreated) : DomainEvent(MerchantId, Guid.NewGuid());
         public record MerchantDepositListCreatedEvent(Guid MerchantId, Guid EstateId, DateTime DateCreated) : DomainEvent(MerchantId, Guid.NewGuid());

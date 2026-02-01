@@ -3,17 +3,20 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using TransactionProcessor.Database.Contexts;
 
 #nullable disable
 
-namespace EstateManagement.Database.Migrations.SqlServer
+namespace TransactionProcessor.Database.Migrations.SqlServer
 {
     [DbContext(typeof(EstateManagementContext))]
-    partial class EstateManagementSqlServerContextModelSnapshot : ModelSnapshot
+    [Migration("20260201193603_add_isenabled_to_merchantdevice")]
+    partial class add_isenabled_to_merchantdevice
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
