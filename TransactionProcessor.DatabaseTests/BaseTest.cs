@@ -1,28 +1,18 @@
-﻿using Ductus.FluentDocker.Services;
-using Ductus.FluentDocker.Services.Extensions;
-using Microsoft.EntityFrameworkCore;
-using Microsoft.EntityFrameworkCore.Infrastructure;
-using Microsoft.Extensions.Configuration;
+﻿using System.Diagnostics;
+using DotNet.Testcontainers.Builders;
+using DotNet.Testcontainers.Networks;
 using Microsoft.Extensions.DependencyInjection;
 using Moq;
 using NLog;
 using Shared.EntityFramework;
 using Shared.IntegrationTesting;
+using Shared.IntegrationTesting.TestContainers;
 using Shared.Logger;
 using Shouldly;
-using SimpleResults;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Net.Http.Headers;
-using System.Text;
-using System.Threading.Tasks;
-using Shared.IntegrationTesting.Ductus;
 using TransactionProcessor.Database.Contexts;
 using TransactionProcessor.Repository;
 using Xunit.Abstractions;
 using Logger = Shared.Logger.Logger;
-using NullLogger = Microsoft.Extensions.Logging.Abstractions.NullLogger;
 
 namespace TransactionProcessor.DatabaseTests
 {
@@ -76,43 +66,43 @@ namespace TransactionProcessor.DatabaseTests
         
         protected Guid TestId;
         
-        public static IContainerService DatabaseServerContainer;
-        public static INetworkService DatabaseServerNetwork;
+        public static INetwork DatabaseServerNetwork;
         public static (String usename, String password) SqlCredentials = ("sa", "thisisalongpassword123!");
 
-        public static String GetLocalConnectionString(String databaseName)
+        public String GetLocalConnectionString(String databaseName)
         {
-            Int32 databaseHostPort = DatabaseServerContainer.ToHostExposedEndpoint("1433/tcp").Port;
-
+            Int32? databaseHostPort = DockerHelper.GetHostPort(ContainerType.SqlServer);
+            
             return $"server=localhost,{databaseHostPort};database={databaseName};user id={SqlCredentials.usename};password={SqlCredentials.password};Encrypt=false";
         }
 
+        private DockerHelper DockerHelper;
+
         internal async Task StartSqlContainer()
         {
-            DockerHelper dockerHelper = new TestDockerHelper();
+            DockerHelper = new TestDockerHelper();
 
             NlogLogger logger = new NlogLogger();
             logger.Initialise(LogManager.GetLogger("Specflow"), "Specflow");
             LogManager.AddHiddenAssembly(typeof(NlogLogger).Assembly);
-            dockerHelper.Logger = logger;
-            dockerHelper.SqlCredentials = SqlCredentials;
-            dockerHelper.SqlServerContainerName = "sharedsqlserver_repotests";
-            dockerHelper.RequiredDockerServices = DockerServices.SqlServer;
+            DockerHelper.Logger = logger;
+            DockerHelper.SqlCredentials = SqlCredentials;
+            DockerHelper.SqlServerContainerName = $"sqlserver_{this.TestId}";
+            DockerHelper.RequiredDockerServices = DockerServices.SqlServer;
 
-            DatabaseServerNetwork = dockerHelper.SetupTestNetwork("sharednetwork", true);
-            await Retry.For(async () => {
-                DatabaseServerContainer = await dockerHelper.SetupSqlServerContainer(DatabaseServerNetwork);
-            });
+            //DatabaseServerNetwork = await DockerHelper.SetupTestNetwork($"nw{this.TestId}", true);
+            await DockerHelper.StartContainersForScenarioRun(this.TestId.ToString(), DockerServices.SqlServer);
         }
 
         public void Dispose()
         {
-            EstateManagementContext context = new EstateManagementContext(BaseTest.GetLocalConnectionString($"EstateReportingReadModel{this.TestId.ToString()}"));
+            EstateManagementContext context = new EstateManagementContext(this.GetLocalConnectionString($"EstateReportingReadModel{this.TestId.ToString()}"));
 
             Console.WriteLine($"About to delete database EstateReportingReadModel{this.TestId.ToString()}");
             Boolean result = context.Database.EnsureDeleted();
             Console.WriteLine($"Delete result is {result}");
             result.ShouldBeTrue();
+            
         }
     }
 
