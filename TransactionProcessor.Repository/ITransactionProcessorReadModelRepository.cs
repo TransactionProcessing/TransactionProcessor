@@ -359,7 +359,7 @@ namespace TransactionProcessor.Repository {
 
             await context.Merchants.AddAsync(merchant, cancellationToken);
 
-            return await context.SaveChangesAsync(cancellationToken);
+            return await context.SaveChangesWithDuplicateHandling(cancellationToken);
         }
 
         public async Task<Result> UpdateMerchant(MerchantNameUpdatedEvent domainEvent, CancellationToken cancellationToken)
@@ -423,8 +423,7 @@ namespace TransactionProcessor.Repository {
         {
             EstateManagementContext context = await this.GetContext(domainEvent.EstateId);
 
-            MerchantDevice merchantDevice = new MerchantDevice
-            {
+            MerchantDevice merchantDevice = new() {
                 MerchantId = domainEvent.MerchantId,
                 DeviceId = domainEvent.DeviceId,
                 DeviceIdentifier = domainEvent.DeviceIdentifier
@@ -432,21 +431,24 @@ namespace TransactionProcessor.Repository {
 
             await context.MerchantDevices.AddAsync(merchantDevice, cancellationToken);
 
-            return await context.SaveChangesAsync(cancellationToken);
+            return await context.SaveChangesWithDuplicateHandling(cancellationToken);
         }
 
         public async Task<Result> SwapMerchantDevice(DeviceSwappedForMerchantEvent domainEvent, CancellationToken cancellationToken)
         {
             EstateManagementContext context = await this.GetContext(domainEvent.EstateId);
 
-            var getDeviceResult = await context.LoadMerchantDevice(domainEvent, cancellationToken);
-            if (getDeviceResult.IsFailed)
-                return ResultHelpers.CreateFailure(getDeviceResult);
-            var device = getDeviceResult.Data;
+            Result<MerchantDevice> getOriginalDeviceResult = await context.LoadOriginalMerchantDevice(domainEvent, cancellationToken);
+            if (getOriginalDeviceResult.IsFailed)
+                return ResultHelpers.CreateFailure(getOriginalDeviceResult);
+            MerchantDevice? originalDevice = getOriginalDeviceResult.Data;
 
-            device.DeviceIdentifier = domainEvent.NewDeviceIdentifier;
+            originalDevice.IsEnabled = false;
 
-            return await context.SaveChangesAsync(cancellationToken);
+            MerchantDevice newDevice = new() { DeviceId = domainEvent.DeviceId, IsEnabled = true, DeviceIdentifier = domainEvent.NewDeviceIdentifier, MerchantId = domainEvent.MerchantId };
+            await context.MerchantDevices.AddAsync(newDevice, cancellationToken);
+
+            return await context.SaveChangesWithDuplicateHandling(cancellationToken);
         }
 
         public async Task<Result> AddMerchantOperator(OperatorAssignedToMerchantEvent domainEvent,

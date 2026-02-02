@@ -429,12 +429,26 @@ public static class EstateManagementContextExtensions
         return loadOperatorResult;
     }
 
+    public static async Task<Result<MerchantDevice>> LoadOriginalMerchantDevice(this EstateManagementContext context, IDomainEvent domainEvent, CancellationToken cancellationToken)
+    {
+        Guid merchantId = DomainEventHelper.GetMerchantId(domainEvent);
+        Guid deviceId = DomainEventHelper.GetOriginalDeviceId(domainEvent);
+        MerchantDevice device = await context.MerchantDevices.SingleOrDefaultAsync(d => d.DeviceId == deviceId &&
+            d.MerchantId == merchantId, cancellationToken);
+
+        return device switch
+        {
+            null => Result.NotFound($"Original Device Id {deviceId} not found for Merchant {merchantId}"),
+            _ => Result.Success(device)
+        };
+    }
+
     public static async Task<Result<MerchantDevice>> LoadMerchantDevice(this EstateManagementContext context, IDomainEvent domainEvent, CancellationToken cancellationToken)
     {
         Guid merchantId = DomainEventHelper.GetMerchantId(domainEvent);
         Guid deviceId = DomainEventHelper.GetDeviceId(domainEvent);
         MerchantDevice device = await context.MerchantDevices.SingleOrDefaultAsync(d => d.DeviceId == deviceId &&
-            d.MerchantId == merchantId, cancellationToken);
+                                                                                        d.MerchantId == merchantId, cancellationToken);
 
         return device switch
         {
@@ -596,6 +610,7 @@ public static class DomainEventHelper
     public static Guid GetFileId(IDomainEvent domainEvent) => DomainEventHelper.GetProperty<Guid>(domainEvent, "FileId");
 
     public static Guid GetFileImportLogId(IDomainEvent domainEvent) => DomainEventHelper.GetProperty<Guid>(domainEvent, "FileImportLogId");
+    public static Guid GetOriginalDeviceId(IDomainEvent domainEvent) => DomainEventHelper.GetProperty<Guid>(domainEvent, "OriginalDeviceId");
     public static Guid GetDeviceId(IDomainEvent domainEvent) => DomainEventHelper.GetProperty<Guid>(domainEvent, "DeviceId");
     public static Guid GetMerchantId(IDomainEvent domainEvent) => DomainEventHelper.GetProperty<Guid>(domainEvent, "MerchantId");
     public static Guid GetAddressId(IDomainEvent domainEvent) => DomainEventHelper.GetProperty<Guid>(domainEvent, "AddressId");

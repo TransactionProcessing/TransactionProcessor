@@ -17,6 +17,7 @@ namespace TransactionProcessor.Database.Entities
         public String DeviceIdentifier { get; set; }
         
         public Guid MerchantId { get; set; }
+        public Boolean IsEnabled { get; set; }
 
         #endregion
     }
