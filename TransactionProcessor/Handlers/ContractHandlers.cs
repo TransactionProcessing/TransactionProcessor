@@ -55,7 +55,7 @@ namespace TransactionProcessor.Handlers
 
         public static async Task<IResult> DisableTransactionFeeForProduct(IMediator mediator, HttpContext ctx, Guid estateId, Guid contractId, Guid productId, Guid transactionFeeId, CancellationToken cancellationToken)
         {
-            ContractCommands.DisableTransactionFeeForProductCommand command = new(contractId, estateId, productId, transactionFeeId);
+            ContractCommands.DisableTransactionFeeForProductCommand command = new(estateId, contractId, productId, transactionFeeId);
 
             Result result = await mediator.Send(command, cancellationToken);
             return ResponseFactory.FromResult(result);
