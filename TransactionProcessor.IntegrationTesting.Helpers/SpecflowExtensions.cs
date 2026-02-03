@@ -963,7 +963,7 @@ public static class ReqnrollExtensions{
             EstateDetails estateDetails = estateDetailsList.SingleOrDefault(e => e.EstateName == estateName);
             estateDetails.ShouldNotBeNull();
 
-            Guid operatorId = Guid.NewGuid();
+            Guid operatorId = Guid.Parse(ReqnrollTableHelper.GetStringRowValue(tableRow, "OperatorId"));
             String operatorName = ReqnrollTableHelper.GetStringRowValue(tableRow, "OperatorName");
             Boolean requireCustomMerchantNumber = ReqnrollTableHelper.GetBooleanValue(tableRow, "RequireCustomMerchantNumber");
             Boolean requireCustomTerminalNumber = ReqnrollTableHelper.GetBooleanValue(tableRow, "RequireCustomTerminalNumber");

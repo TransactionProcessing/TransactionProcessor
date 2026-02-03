@@ -655,6 +655,14 @@ public class TransactionProcessorSteps
                 operators.IsSuccess.ShouldBeTrue();
                 OperatorResponse? @operator = operators.Data.SingleOrDefault(o => o.Name == request.request.Name);
                 @operator.ShouldNotBeNull();
+                //@operator.OperatorId.ShouldNotBe();
+                if (request.request.OperatorId != Guid.Empty) {
+                    @operator.OperatorId.ShouldBe(request.request.OperatorId);
+                }
+                else {
+                    @operator.OperatorId.ShouldNotBe(Guid.Empty);
+                }
+
                 request.estate.AddOperator(@operator.OperatorId, request.request.Name);
                 results.Add((request.estate.EstateId,
                     new EstateOperatorResponse

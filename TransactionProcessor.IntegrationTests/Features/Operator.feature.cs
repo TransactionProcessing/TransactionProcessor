@@ -111,73 +111,73 @@ namespace TransactionProcessor.IntegrationTests.Features
         {
 #line 4
 #line hidden
-            global::Reqnroll.Table table98 = new global::Reqnroll.Table(new string[] {
+            global::Reqnroll.Table table1 = new global::Reqnroll.Table(new string[] {
                         "Role Name"});
-            table98.AddRow(new string[] {
+            table1.AddRow(new string[] {
                         "Estate"});
 #line 5
- await testRunner.GivenAsync("the following security roles exist", ((string)(null)), table98, "Given ");
+ await testRunner.GivenAsync("the following security roles exist", ((string)(null)), table1, "Given ");
 #line hidden
-            global::Reqnroll.Table table99 = new global::Reqnroll.Table(new string[] {
+            global::Reqnroll.Table table2 = new global::Reqnroll.Table(new string[] {
                         "Name",
                         "DisplayName",
                         "Description"});
-            table99.AddRow(new string[] {
+            table2.AddRow(new string[] {
                         "estateManagement",
                         "Estate Managememt REST Scope",
                         "A scope for Estate Managememt REST"});
 #line 9
- await testRunner.GivenAsync("I create the following api scopes", ((string)(null)), table99, "Given ");
+ await testRunner.GivenAsync("I create the following api scopes", ((string)(null)), table2, "Given ");
 #line hidden
-            global::Reqnroll.Table table100 = new global::Reqnroll.Table(new string[] {
+            global::Reqnroll.Table table3 = new global::Reqnroll.Table(new string[] {
                         "Name",
                         "DisplayName",
                         "Secret",
                         "Scopes",
                         "UserClaims"});
-            table100.AddRow(new string[] {
+            table3.AddRow(new string[] {
                         "estateManagement",
                         "Estate Managememt REST",
                         "Secret1",
                         "estateManagement",
                         "merchantId, estateId, role"});
 #line 13
- await testRunner.GivenAsync("the following api resources exist", ((string)(null)), table100, "Given ");
+ await testRunner.GivenAsync("the following api resources exist", ((string)(null)), table3, "Given ");
 #line hidden
-            global::Reqnroll.Table table101 = new global::Reqnroll.Table(new string[] {
+            global::Reqnroll.Table table4 = new global::Reqnroll.Table(new string[] {
                         "ClientId",
                         "ClientName",
                         "Secret",
                         "Scopes",
                         "GrantTypes"});
-            table101.AddRow(new string[] {
+            table4.AddRow(new string[] {
                         "serviceClient",
                         "Service Client",
                         "Secret1",
                         "estateManagement",
                         "client_credentials"});
-            table101.AddRow(new string[] {
+            table4.AddRow(new string[] {
                         "estateClient",
                         "Estate Client",
                         "Secret1",
                         "estateManagement",
                         "password"});
 #line 17
- await testRunner.GivenAsync("the following clients exist", ((string)(null)), table101, "Given ");
+ await testRunner.GivenAsync("the following clients exist", ((string)(null)), table4, "Given ");
 #line hidden
-            global::Reqnroll.Table table102 = new global::Reqnroll.Table(new string[] {
+            global::Reqnroll.Table table5 = new global::Reqnroll.Table(new string[] {
                         "ClientId"});
-            table102.AddRow(new string[] {
+            table5.AddRow(new string[] {
                         "serviceClient"});
 #line 22
- await testRunner.GivenAsync("I have a token to access the estate management resource", ((string)(null)), table102, "Given ");
+ await testRunner.GivenAsync("I have a token to access the estate management resource", ((string)(null)), table5, "Given ");
 #line hidden
-            global::Reqnroll.Table table103 = new global::Reqnroll.Table(new string[] {
+            global::Reqnroll.Table table6 = new global::Reqnroll.Table(new string[] {
                         "EstateName"});
-            table103.AddRow(new string[] {
+            table6.AddRow(new string[] {
                         "Test Estate 1"});
 #line 26
- await testRunner.GivenAsync("I have created the following estates", ((string)(null)), table103, "Given ");
+ await testRunner.GivenAsync("I have created the following estates", ((string)(null)), table6, "Given ");
 #line hidden
         }
         
@@ -211,46 +211,59 @@ this.ScenarioInitialize(scenarioInfo, ruleInfo);
 #line 4
 await this.FeatureBackgroundAsync();
 #line hidden
-                global::Reqnroll.Table table104 = new global::Reqnroll.Table(new string[] {
+                global::Reqnroll.Table table7 = new global::Reqnroll.Table(new string[] {
                             "EstateName",
                             "OperatorName",
                             "RequireCustomMerchantNumber",
-                            "RequireCustomTerminalNumber"});
-                table104.AddRow(new string[] {
+                            "RequireCustomTerminalNumber",
+                            "OperatorId"});
+                table7.AddRow(new string[] {
                             "Test Estate 1",
                             "Test Operator 1",
                             "True",
-                            "True"});
+                            "True",
+                            "27C722F6-208F-4F78-9A2F-993F8A8F24A3"});
+                table7.AddRow(new string[] {
+                            "Test Estate 1",
+                            "Test Operator 2",
+                            "True",
+                            "True",
+                            "00000000-0000-0000-0000-000000000000"});
 #line 33
- await testRunner.GivenAsync("I have created the following operators", ((string)(null)), table104, "Given ");
+ await testRunner.GivenAsync("I have created the following operators", ((string)(null)), table7, "Given ");
 #line hidden
-                global::Reqnroll.Table table105 = new global::Reqnroll.Table(new string[] {
+                global::Reqnroll.Table table8 = new global::Reqnroll.Table(new string[] {
                             "UpdateOperatorName",
                             "RequireCustomMerchantNumber",
                             "RequireCustomTerminalNumber",
                             "EstateName",
                             "OperatorName"});
-                table105.AddRow(new string[] {
+                table8.AddRow(new string[] {
                             "Update Operator 1",
                             "False",
                             "False",
                             "Test Estate 1",
                             "Test Operator 1"});
-#line 37
- await testRunner.WhenAsync("I update the operators with the following details", ((string)(null)), table105, "When ");
+#line 38
+ await testRunner.WhenAsync("I update the operators with the following details", ((string)(null)), table8, "When ");
 #line hidden
-                global::Reqnroll.Table table106 = new global::Reqnroll.Table(new string[] {
+                global::Reqnroll.Table table9 = new global::Reqnroll.Table(new string[] {
                             "EstateName",
                             "OperatorName",
                             "RequireCustomMerchantNumber",
                             "RequireCustomTerminalNumber"});
-                table106.AddRow(new string[] {
+                table9.AddRow(new string[] {
                             "Test Estate 1",
                             "Update Operator 1",
                             "False",
                             "False"});
-#line 41
- await testRunner.WhenAsync("I get all the operators the following details are returned", ((string)(null)), table106, "When ");
+                table9.AddRow(new string[] {
+                            "Test Estate 1",
+                            "Test Operator 2",
+                            "True",
+                            "True"});
+#line 42
+ await testRunner.WhenAsync("I get all the operators the following details are returned", ((string)(null)), table9, "When ");
 #line hidden
             }
             await this.ScenarioCleanupAsync();
