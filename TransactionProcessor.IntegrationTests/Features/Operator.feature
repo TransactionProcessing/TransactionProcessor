@@ -31,13 +31,15 @@ Background:
 Scenario: Update Operator
 
 	Given I have created the following operators
-	| EstateName    | OperatorName    | RequireCustomMerchantNumber | RequireCustomTerminalNumber |
-	| Test Estate 1 | Test Operator 1 | True                        | True                        |
+	| EstateName    | OperatorName    | RequireCustomMerchantNumber | RequireCustomTerminalNumber | OperatorId                           |
+	| Test Estate 1 | Test Operator 1 | True                        | True                        | 27C722F6-208F-4F78-9A2F-993F8A8F24A3 |
+	| Test Estate 1 | Test Operator 2 | True                        | True                        | 00000000-0000-0000-0000-000000000000 |
 	
 	When I update the operators with the following details
 	| UpdateOperatorName | RequireCustomMerchantNumber | RequireCustomTerminalNumber | EstateName    | OperatorName    |
 	| Update Operator 1  | False                       | False                       | Test Estate 1 | Test Operator 1 |
 
 	When I get all the operators the following details are returned
-	| EstateName    | OperatorName    | RequireCustomMerchantNumber | RequireCustomTerminalNumber |
-	| Test Estate 1 | Update Operator 1 | False                        | False                        |
+	| EstateName    | OperatorName      | RequireCustomMerchantNumber | RequireCustomTerminalNumber |
+	| Test Estate 1 | Update Operator 1 | False                       | False                       |
+	| Test Estate 1 | Test Operator 2   | True                        | True                        |

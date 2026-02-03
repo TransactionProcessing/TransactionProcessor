@@ -31,11 +31,17 @@ namespace TransactionProcessor.BusinessLogic.Services
         public async Task<Result> CreateOperator(OperatorCommands.CreateOperatorCommand command, CancellationToken cancellationToken)
         {
             try {
+                // Check if we have been sent a merchant id to use
+                Guid operatorId = command.RequestDto.OperatorId switch {
+                    _ when command.RequestDto.OperatorId == Guid.Empty => Guid.NewGuid(),
+                    _ => command.RequestDto.OperatorId
+                };
+
                 Result<EstateAggregate> estateResult = await DomainServiceHelper.GetAggregateOrFailure(ct => this.AggregateService.Get<EstateAggregate>(command.EstateId, ct), command.EstateId, cancellationToken);
                 if (estateResult.IsFailed)
                     return ResultHelpers.CreateFailure(estateResult);
 
-                Result<OperatorAggregate> operatorResult = await DomainServiceHelper.GetAggregateOrFailure(ct => this.AggregateService.GetLatest<OperatorAggregate>(command.RequestDto.OperatorId, ct), command.RequestDto.OperatorId, cancellationToken, false);
+                Result<OperatorAggregate> operatorResult = await DomainServiceHelper.GetAggregateOrFailure(ct => this.AggregateService.GetLatest<OperatorAggregate>(operatorId, ct), operatorId, cancellationToken, false);
                 if (estateResult.IsFailed)
                     return ResultHelpers.CreateFailure(operatorResult);
 
