@@ -1246,7 +1246,7 @@ public class MerchantDomainServiceTests {
             .Setup(m => m.GetLatest<MerchantDepositListAggregate>(It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(Result.Success(TestData.Aggregates.CreatedMerchantDepositListAggregate()));
         this.EventStoreContext.Setup(e => e.GetPartitionStateFromProjection(It.IsAny<String>(), It.IsAny<String>(), It.IsAny<CancellationToken>()))
-            .ReturnsAsync(Result.Failure<String>());
+            .ReturnsAsync(Result.Failure());
 
         var result = await this.DomainService.MakeMerchantWithdrawal(TestData.Commands.MakeMerchantWithdrawalCommand, CancellationToken.None);
         result.IsFailed.ShouldBeTrue();
@@ -1614,7 +1614,7 @@ public class MerchantDomainServiceTests {
     }
 
     [Fact]
-    public async Task MerchantDomainService_CreateMerchant_NotSetSettlementSchedule_MerchantIsCreated() {
+    public async Task MerchantDomainService_CreateMerchant_NotSetSettlementSchedule_ResultIsFailed() {
         this.AggregateService.Setup(m => m.GetLatest<MerchantAggregate>(It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(Result.Success(TestData.Aggregates.EmptyMerchantAggregate()));
         this.AggregateService.Setup(m => m.Save(It.IsAny<MerchantAggregate>(), It.IsAny<CancellationToken>()))
@@ -1626,7 +1626,7 @@ public class MerchantDomainServiceTests {
         command.RequestDto.SettlementSchedule = DataTransferObjects.Responses.Merchant.SettlementSchedule.NotSet;
 
         var result = await this.DomainService.CreateMerchant(command, CancellationToken.None);
-        result.IsSuccess.ShouldBeTrue();
+        result.IsFailed.ShouldBeTrue();
     }
 
     [Fact]
