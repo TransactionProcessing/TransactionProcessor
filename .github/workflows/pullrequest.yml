@@ -36,7 +36,7 @@ jobs:
       run: |
         echo "ASPNETCORE_ENVIRONMENT are > ${ASPNETCORE_ENVIRONMENT}"
         dotnet test "TransactionProcessor.BusinessLogic.Tests\TransactionProcessor.BusinessLogic.Tests.csproj"  --configuration Release --no-build --verbosity normal --logger "trx;LogFileName=buslogic-test-results.trx"
-        dotnet test "TransactionProcessor.ProjectionEngine.Tests\TransactionProcessor.ProjectionEngine.Tests.csproj" --configuration Release --no-build --verbosity normal --logger "trx;LogFileName=blazor-test-results.trx"  --configuration Release --no-build --verbosity normal --logger "trx;LogFileName=projection-test-results.trx"
+        dotnet test "TransactionProcessor.ProjectionEngine.Tests\TransactionProcessor.ProjectionEngine.Tests.csproj" --configuration Release --no-build --verbosity normal --logger "trx;LogFileName=projection-test-results.trx"
         dotnet test "TransactionProcessor.Aggregates.Tests\TransactionProcessor.Aggregates.Tests.csproj"  --configuration Release --no-build --verbosity normal --logger "trx;LogFileName=aggregates-test-results.trx"
         dotnet test "TransactionProcessor.Tests\TransactionProcessor.Tests.csproj"  --configuration Release --no-build --verbosity normal --logger "trx;LogFileName=tests-test-results.trx"
         dotnet test "TransactionProcessor.DatabaseTests\TransactionProcessor.DatabaseTests.csproj"  --configuration Release --no-build --verbosity normal --logger "trx;LogFileName=database-test-results.trx"
