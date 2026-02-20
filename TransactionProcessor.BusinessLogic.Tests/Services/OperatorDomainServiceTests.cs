@@ -7,7 +7,9 @@ using Shared.EventStore.Aggregate;
 using Shouldly;
 using SimpleResults;
 using TransactionProcessor.Aggregates;
+using TransactionProcessor.BusinessLogic.Requests;
 using TransactionProcessor.BusinessLogic.Services;
+using TransactionProcessor.DataTransferObjects.Requests.Operator;
 using TransactionProcessor.Testing;
 using Xunit;
 
@@ -61,6 +63,26 @@ public class OperatorDomainServiceTests{
     }
 
     [Fact]
+    public async Task OperatorDomainService_CreateOperator_OperatorNameEmpty_ResultFailed()
+    {
+        this.AggregateService.Setup(e => e.Get<EstateAggregate>(It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(TestData.Aggregates.CreatedEstateAggregate());
+        this.AggregateService.Setup(o => o.GetLatest<OperatorAggregate>(It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(SimpleResults.Result.Success(TestData.Aggregates.EmptyOperatorAggregate()));
+
+        OperatorCommands.CreateOperatorCommand emptyNameCommand = new(TestData.EstateId,
+            new CreateOperatorRequest {
+                OperatorId = TestData.OperatorId,
+                Name = string.Empty,
+                RequireCustomMerchantNumber = TestData.RequireCustomMerchantNumber,
+                RequireCustomTerminalNumber = TestData.RequireCustomTerminalNumber
+            });
+
+        Result result = await this.OperatorDomainService.CreateOperator(emptyNameCommand, CancellationToken.None);
+        result.IsFailed.ShouldBeTrue();
+    }
+
+    [Fact]
     public async Task OperatorDomainService_UpdateOperator_OperatorIsUpdated()
     {
         this.AggregateService.Setup(e => e.Get<EstateAggregate>(It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
@@ -75,6 +97,8 @@ public class OperatorDomainServiceTests{
     [Fact]
     public async Task OperatorDomainService_UpdateOperator_OperatorNotCreated_ResultFailed()
     {
+        this.AggregateService.Setup(e => e.Get<EstateAggregate>(It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(TestData.Aggregates.CreatedEstateAggregate());
         this.AggregateService.Setup(o => o.GetLatest<OperatorAggregate>(It.IsAny<Guid>(), It.IsAny<CancellationToken>())).ReturnsAsync(SimpleResults.Result.Success(TestData.Aggregates.EmptyOperatorAggregate()));
 
         Result result = await this.OperatorDomainService.UpdateOperator(TestData.Commands.UpdateOperatorCommand, CancellationToken.None);
