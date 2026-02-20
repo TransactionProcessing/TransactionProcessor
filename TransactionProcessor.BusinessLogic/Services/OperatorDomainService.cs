@@ -91,11 +91,6 @@ namespace TransactionProcessor.BusinessLogic.Services
                     return Result.Forbidden($"Estate with Id {command.EstateId} not created");
                 }
 
-                if (operatorAggregate.IsCreated == false)
-                {
-                    return Result.Forbidden($"Operator with Id {command.OperatorId} not created");
-                }
-
                 Result stateResult = operatorAggregate.UpdateOperator(command.RequestDto.Name,
                         command.RequestDto.RequireCustomMerchantNumber.GetValueOrDefault(),
                         command.RequestDto.RequireCustomTerminalNumber.GetValueOrDefault());

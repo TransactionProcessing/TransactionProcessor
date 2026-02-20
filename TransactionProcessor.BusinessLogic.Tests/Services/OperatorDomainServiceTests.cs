@@ -40,6 +40,28 @@ public class OperatorDomainServiceTests{
     }
 
     [Fact]
+    public async Task OperatorDomainService_CreateOperator_OperatorIdIsEmpty_OperatorIsCreated()
+    {
+        this.AggregateService.Setup(e => e.Get<EstateAggregate>(It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(TestData.Aggregates.CreatedEstateAggregate());
+        this.AggregateService.Setup(o => o.GetLatest<OperatorAggregate>(It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(SimpleResults.Result.Success(TestData.Aggregates.EmptyOperatorAggregate()));
+        this.AggregateService
+            .Setup(o => o.Save(It.IsAny<OperatorAggregate>(), It.IsAny<CancellationToken>())).ReturnsAsync(Result.Success());
+
+        OperatorCommands.CreateOperatorCommand emptyIdCommand = new(TestData.EstateId,
+            new CreateOperatorRequest {
+                OperatorId = Guid.Empty,
+                Name = TestData.OperatorName,
+                RequireCustomMerchantNumber = TestData.RequireCustomMerchantNumber,
+                RequireCustomTerminalNumber = TestData.RequireCustomTerminalNumber
+            });
+
+        Result result = await this.OperatorDomainService.CreateOperator(emptyIdCommand, CancellationToken.None);
+        result.IsSuccess.ShouldBeTrue();
+    }
+
+    [Fact]
     public async Task OperatorDomainService_CreateOperator_EstateNotCreated_ResultFailed()
     {
         this.AggregateService.Setup(e => e.Get<EstateAggregate>(It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
