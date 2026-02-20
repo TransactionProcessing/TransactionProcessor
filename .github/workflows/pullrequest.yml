@@ -35,11 +35,11 @@ jobs:
     - name: Run Unit Tests
       run: |
         echo "ASPNETCORE_ENVIRONMENT are > ${ASPNETCORE_ENVIRONMENT}"
-        dotnet test "TransactionProcessor.BusinessLogic.Tests\TransactionProcessor.BusinessLogic.Tests.csproj"
-        dotnet test "TransactionProcessor.ProjectionEngine.Tests\TransactionProcessor.ProjectionEngine.Tests.csproj"
-        dotnet test "TransactionProcessor.Aggregates.Tests\TransactionProcessor.Aggregates.Tests.csproj"
-        dotnet test "TransactionProcessor.Tests\TransactionProcessor.Tests.csproj"
-        dotnet test "TransactionProcessor.DatabaseTests\TransactionProcessor.DatabaseTests.csproj"
+        dotnet test "TransactionProcessor.BusinessLogic.Tests\TransactionProcessor.BusinessLogic.Tests.csproj"  --configuration Release --no-build --verbosity normal --logger "trx;LogFileName=buslogic-test-results.trx"
+        dotnet test "TransactionProcessor.ProjectionEngine.Tests\TransactionProcessor.ProjectionEngine.Tests.csproj" --configuration Release --no-build --verbosity normal --logger "trx;LogFileName=blazor-test-results.trx"  --configuration Release --no-build --verbosity normal --logger "trx;LogFileName=projection-test-results.trx"
+        dotnet test "TransactionProcessor.Aggregates.Tests\TransactionProcessor.Aggregates.Tests.csproj"  --configuration Release --no-build --verbosity normal --logger "trx;LogFileName=aggregates-test-results.trx"
+        dotnet test "TransactionProcessor.Tests\TransactionProcessor.Tests.csproj"  --configuration Release --no-build --verbosity normal --logger "trx;LogFileName=tests-test-results.trx"
+        dotnet test "TransactionProcessor.DatabaseTests\TransactionProcessor.DatabaseTests.csproj"  --configuration Release --no-build --verbosity normal --logger "trx;LogFileName=database-test-results.trx"
 
     - name: Build Docker Image
       run: docker build . --file TransactionProcessor/Dockerfile --tag transactionprocessor:latest
@@ -59,10 +59,27 @@ jobs:
         FLUENTDOCKER_DOCKER_USE_SUDO: "false"
         FLUENTDOCKER_DOCKER_PATH: "/usr/bin/docker"
       run: |
-        dotnet test "TransactionProcessor.IntegrationTests/TransactionProcessor.IntegrationTests.csproj" --filter Category=PRTest
+        dotnet test "TransactionProcessor.IntegrationTests/TransactionProcessor.IntegrationTests.csproj" --filter Category=PRTest  --configuration Release --no-build --verbosity normal --logger "trx;LogFileName=integration-test-results.trx"
 
     - uses: actions/upload-artifact@v4.4.0
       if: ${{ failure() }}
       with:
         name: tracelogs
         path: /home/txnproc/trace/   
+
+    - name: Publish test results
+      uses: dorny/test-reporter@v1
+      if: always()
+      with:
+          name: Unit Test Results
+          path: '**/TestResults/*.trx'
+          reporter: dotnet-trx
+          fail-on-error: true
+    
+    - name: Upload test results
+      uses: actions/upload-artifact@v4
+      if: always()
+      with:
+          name: test-results
+          path: '**/TestResults/*.trx'
+          retention-days: 30
