@@ -79,7 +79,7 @@ namespace TransactionProcessor.BusinessLogic.Services
                     return ResultHelpers.CreateFailure(estateResult);
 
                 Result<MerchantAggregate> merchantResult = await DomainServiceHelper.GetAggregateOrFailure(ct => this.AggregateService.GetLatest<MerchantAggregate>(command.MerchantId, ct), command.MerchantId, cancellationToken);
-                if (estateResult.IsFailed)
+                if (merchantResult.IsFailed)
                     return ResultHelpers.CreateFailure(merchantResult);
 
                 EstateAggregate estateAggregate = estateResult.Data;
@@ -193,7 +193,7 @@ namespace TransactionProcessor.BusinessLogic.Services
                 }
 
                 Result<MerchantAggregate> merchantResult = await DomainServiceHelper.GetAggregateOrFailure(ct => this.AggregateService.GetLatest<MerchantAggregate>(merchantId, ct), merchantId, cancellationToken, false);
-                if (estateResult.IsFailed)
+                if (merchantResult.IsFailed)
                     return ResultHelpers.CreateFailure(merchantResult);
 
                 MerchantAggregate merchantAggregate = merchantResult.Data;
@@ -245,7 +245,7 @@ namespace TransactionProcessor.BusinessLogic.Services
                     return ResultHelpers.CreateFailure(estateResult);
 
                 Result<MerchantAggregate> merchantResult = await DomainServiceHelper.GetAggregateOrFailure(ct => this.AggregateService.GetLatest<MerchantAggregate>(command.MerchantId, ct), command.MerchantId, cancellationToken);
-                if (estateResult.IsFailed)
+                if (merchantResult.IsFailed)
                     return ResultHelpers.CreateFailure(merchantResult);
 
                 EstateAggregate estateAggregate = estateResult.Data;
@@ -294,7 +294,7 @@ namespace TransactionProcessor.BusinessLogic.Services
                     return ResultHelpers.CreateFailure(estateResult);
 
                 Result<MerchantAggregate> merchantResult = await DomainServiceHelper.GetAggregateOrFailure(ct => this.AggregateService.Get<MerchantAggregate>(command.MerchantId, ct), command.MerchantId, cancellationToken);
-                if (estateResult.IsFailed)
+                if (merchantResult.IsFailed)
                     return ResultHelpers.CreateFailure(merchantResult);
 
                 EstateAggregate estateAggregate = estateResult.Data;
@@ -350,7 +350,7 @@ namespace TransactionProcessor.BusinessLogic.Services
                     return ResultHelpers.CreateFailure(estateResult);
 
                 Result<MerchantAggregate> merchantResult = await DomainServiceHelper.GetAggregateOrFailure(ct => this.AggregateService.Get<MerchantAggregate>(command.MerchantId, ct), command.MerchantId, cancellationToken);
-                if (estateResult.IsFailed)
+                if (merchantResult.IsFailed)
                     return ResultHelpers.CreateFailure(merchantResult);
 
                 EstateAggregate estateAggregate = estateResult.Data;
@@ -375,7 +375,7 @@ namespace TransactionProcessor.BusinessLogic.Services
                 Result<String> getBalanceResult = await this.EventStoreContext.GetPartitionStateFromProjection("MerchantBalanceProjection", $"MerchantBalance-{command.MerchantId:N}", cancellationToken);
                 if (getBalanceResult.IsFailed)
                 {
-                    Result.Invalid($"Failed to get Merchant Balance.");
+                    return Result.Invalid($"Failed to get Merchant Balance.");
                 }
 
                 MerchantBalanceProjectionState1 projectionState = JsonConvert.DeserializeObject<MerchantBalanceProjectionState1>(getBalanceResult.Data);
@@ -412,7 +412,7 @@ namespace TransactionProcessor.BusinessLogic.Services
                     return ResultHelpers.CreateFailure(estateResult);
 
                 Result<MerchantAggregate> merchantResult = await DomainServiceHelper.GetAggregateOrFailure(ct => this.AggregateService.GetLatest<MerchantAggregate>(command.MerchantId, ct), command.MerchantId, cancellationToken);
-                if (estateResult.IsFailed)
+                if (merchantResult.IsFailed)
                     return ResultHelpers.CreateFailure(merchantResult);
 
                 EstateAggregate estateAggregate = estateResult.Data;
@@ -455,7 +455,7 @@ namespace TransactionProcessor.BusinessLogic.Services
                     return ResultHelpers.CreateFailure(estateResult);
 
                 Result<MerchantAggregate> merchantResult = await DomainServiceHelper.GetAggregateOrFailure(ct => this.AggregateService.GetLatest<MerchantAggregate>(command.MerchantId, ct), command.MerchantId, cancellationToken);
-                if (estateResult.IsFailed)
+                if (merchantResult.IsFailed)
                     return ResultHelpers.CreateFailure(merchantResult);
 
                 EstateAggregate estateAggregate = estateResult.Data;
@@ -493,7 +493,7 @@ namespace TransactionProcessor.BusinessLogic.Services
                     return ResultHelpers.CreateFailure(estateResult);
 
                 Result<MerchantAggregate> merchantResult = await DomainServiceHelper.GetAggregateOrFailure(ct => this.AggregateService.GetLatest<MerchantAggregate>(command.MerchantId, ct), command.MerchantId, cancellationToken);
-                if (estateResult.IsFailed)
+                if (merchantResult.IsFailed)
                     return ResultHelpers.CreateFailure(merchantResult);
 
                 EstateAggregate estateAggregate = estateResult.Data;
@@ -531,7 +531,7 @@ namespace TransactionProcessor.BusinessLogic.Services
                     return ResultHelpers.CreateFailure(estateResult);
 
                 Result<MerchantAggregate> merchantResult = await DomainServiceHelper.GetAggregateOrFailure(ct => this.AggregateService.GetLatest<MerchantAggregate>(command.MerchantId, ct), command.MerchantId, cancellationToken);
-                if (estateResult.IsFailed)
+                if (merchantResult.IsFailed)
                     return ResultHelpers.CreateFailure(merchantResult);
 
                 EstateAggregate estateAggregate = estateResult.Data;
@@ -569,7 +569,7 @@ namespace TransactionProcessor.BusinessLogic.Services
                     return ResultHelpers.CreateFailure(estateResult);
 
                 Result<MerchantAggregate> merchantResult = await DomainServiceHelper.GetAggregateOrFailure(ct => this.AggregateService.GetLatest<MerchantAggregate>(command.MerchantId, ct), command.MerchantId, cancellationToken);
-                if (estateResult.IsFailed)
+                if (merchantResult.IsFailed)
                     return ResultHelpers.CreateFailure(merchantResult);
 
                 EstateAggregate estateAggregate = estateResult.Data;
@@ -606,7 +606,7 @@ namespace TransactionProcessor.BusinessLogic.Services
                     return ResultHelpers.CreateFailure(estateResult);
 
                 Result<MerchantAggregate> merchantResult = await DomainServiceHelper.GetAggregateOrFailure(ct => this.AggregateService.GetLatest<MerchantAggregate>(command.MerchantId, ct), command.MerchantId, cancellationToken);
-                if (estateResult.IsFailed)
+                if (merchantResult.IsFailed)
                     return ResultHelpers.CreateFailure(merchantResult);
 
                 EstateAggregate estateAggregate = estateResult.Data;
@@ -639,7 +639,7 @@ namespace TransactionProcessor.BusinessLogic.Services
                     return ResultHelpers.CreateFailure(estateResult);
 
                 Result<MerchantAggregate> merchantResult = await DomainServiceHelper.GetAggregateOrFailure(ct => this.AggregateService.GetLatest<MerchantAggregate>(command.MerchantId, ct), command.MerchantId, cancellationToken);
-                if (estateResult.IsFailed)
+                if (merchantResult.IsFailed)
                     return ResultHelpers.CreateFailure(merchantResult);
 
                 EstateAggregate estateAggregate = estateResult.Data;
@@ -673,7 +673,7 @@ namespace TransactionProcessor.BusinessLogic.Services
                     return ResultHelpers.CreateFailure(estateResult);
 
                 Result<MerchantAggregate> merchantResult = await DomainServiceHelper.GetAggregateOrFailure(ct => this.AggregateService.GetLatest<MerchantAggregate>(command.MerchantId, ct), command.MerchantId, cancellationToken);
-                if (estateResult.IsFailed)
+                if (merchantResult.IsFailed)
                     return ResultHelpers.CreateFailure(merchantResult);
 
                 EstateAggregate estateAggregate = estateResult.Data;
@@ -726,7 +726,7 @@ namespace TransactionProcessor.BusinessLogic.Services
                     return ResultHelpers.CreateFailure(estateResult);
 
                 Result<MerchantAggregate> merchantResult = await DomainServiceHelper.GetAggregateOrFailure(ct => this.AggregateService.GetLatest<MerchantAggregate>(command.MerchantId, ct), command.MerchantId, cancellationToken);
-                if (estateResult.IsFailed)
+                if (merchantResult.IsFailed)
                     return ResultHelpers.CreateFailure(merchantResult);
 
                 EstateAggregate estateAggregate = estateResult.Data;
