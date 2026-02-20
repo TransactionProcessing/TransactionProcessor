@@ -65,6 +65,9 @@ namespace TransactionProcessor.Aggregates
                                           Boolean requireCustomMerchantNumber,
                                           Boolean requireCustomTerminalNumber)
         {
+            if (aggregate.IsCreated == false)
+                return Result.Invalid("Operator has not been created");
+
             if (String.Compare(name, aggregate.Name, StringComparison.InvariantCultureIgnoreCase) != 0 &&
                 String.IsNullOrEmpty(name) == false)
             {
