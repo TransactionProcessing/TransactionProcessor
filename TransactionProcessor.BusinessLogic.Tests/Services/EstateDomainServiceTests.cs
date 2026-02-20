@@ -346,5 +346,46 @@ namespace TransactionProcessor.BusinessLogic.Tests.Services
             Result result = await this.DomainService.RemoveOperatorFromEstate(TestData.Commands.RemoveOperatorFromEstateCommand, CancellationToken.None);
             result.IsFailed.ShouldBeTrue();
         }
+
+        [Fact]
+        public async Task EstateDomainService_CreateEstate_ExceptionThrown_ResultIsFailed()
+        {
+            this.AggregateService.Setup(m => m.GetLatest<EstateAggregate>(It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
+                .ThrowsAsync(new Exception());
+
+            Result result = await this.DomainService.CreateEstate(TestData.Commands.CreateEstateCommand, CancellationToken.None);
+            result.IsFailed.ShouldBeTrue();
+        }
+
+        [Fact]
+        public async Task EstateDomainService_AddOperatorToEstate_ExceptionThrown_ResultIsFailed()
+        {
+            this.AggregateService.Setup(m => m.Get<OperatorAggregate>(It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
+                .ThrowsAsync(new Exception());
+
+            Result result = await this.DomainService.AddOperatorToEstate(TestData.Commands.AddOperatorToEstateCommand, CancellationToken.None);
+            result.IsFailed.ShouldBeTrue();
+        }
+
+        [Fact]
+        public async Task EstateDomainService_CreateEstateUser_ExceptionThrown_ResultIsFailed()
+        {
+            this.SecurityServiceClient
+                .Setup(s => s.CreateUser(It.IsAny<CreateUserRequest>(), It.IsAny<CancellationToken>()))
+                .ThrowsAsync(new Exception());
+
+            Result result = await this.DomainService.CreateEstateUser(TestData.Commands.CreateEstateUserCommand, CancellationToken.None);
+            result.IsFailed.ShouldBeTrue();
+        }
+
+        [Fact]
+        public async Task EstateDomainService_RemoveOperatorFromEstate_ExceptionThrown_ResultIsFailed()
+        {
+            this.AggregateService.Setup(m => m.GetLatest<EstateAggregate>(It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
+                .ThrowsAsync(new Exception());
+
+            Result result = await this.DomainService.RemoveOperatorFromEstate(TestData.Commands.RemoveOperatorFromEstateCommand, CancellationToken.None);
+            result.IsFailed.ShouldBeTrue();
+        }
     }
 }
