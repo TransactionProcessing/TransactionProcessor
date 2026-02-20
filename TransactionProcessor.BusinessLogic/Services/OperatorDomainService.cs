@@ -42,7 +42,7 @@ namespace TransactionProcessor.BusinessLogic.Services
                     return ResultHelpers.CreateFailure(estateResult);
 
                 Result<OperatorAggregate> operatorResult = await DomainServiceHelper.GetAggregateOrFailure(ct => this.AggregateService.GetLatest<OperatorAggregate>(operatorId, ct), operatorId, cancellationToken, false);
-                if (estateResult.IsFailed)
+                if (operatorResult.IsFailed)
                     return ResultHelpers.CreateFailure(operatorResult);
 
                 EstateAggregate estateAggregate = estateResult.Data;
@@ -80,7 +80,7 @@ namespace TransactionProcessor.BusinessLogic.Services
                     return ResultHelpers.CreateFailure(estateResult);
 
                 Result<OperatorAggregate> operatorResult = await DomainServiceHelper.GetAggregateOrFailure(ct => this.AggregateService.GetLatest<OperatorAggregate>(command.OperatorId, ct), command.OperatorId, cancellationToken);
-                if (estateResult.IsFailed)
+                if (operatorResult.IsFailed)
                     return ResultHelpers.CreateFailure(operatorResult);
 
                 EstateAggregate estateAggregate = estateResult.Data;
