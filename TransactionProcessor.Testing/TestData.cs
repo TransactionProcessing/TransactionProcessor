@@ -2328,6 +2328,33 @@ namespace TransactionProcessor.Testing
 
                 return merchantDepositListAggregate;
             }
+
+            public static MerchantDepositListAggregate MerchantDepositListAggregateWithDeposit()
+            {
+                MerchantAggregate merchantAggregate = MerchantAggregate.Create(TestData.MerchantId);
+
+                merchantAggregate.Create(TestData.EstateId, TestData.MerchantName, TestData.DateMerchantCreated, TestData.AddressModel, TestData.ContactModel,
+                    TestData.SettlementScheduleModel);
+
+                MerchantDepositListAggregate merchantDepositListAggregate = MerchantDepositListAggregate.Create(TestData.MerchantId);
+                merchantDepositListAggregate.Create(merchantAggregate, TestData.DateMerchantCreated);
+                merchantDepositListAggregate.MakeDeposit(Models.Merchant.MerchantDepositSource.Manual, TestData.Commands.MakeMerchantDepositCommand.RequestDto.Reference, TestData.Commands.MakeMerchantDepositCommand.RequestDto.DepositDateTime, PositiveMoney.Create(Money.Create(TestData.Commands.MakeMerchantDepositCommand.RequestDto.Amount)));
+                return merchantDepositListAggregate;
+            }
+
+            public static MerchantDepositListAggregate MerchantDepositListAggregateWithWithdrawal()
+            {
+                MerchantAggregate merchantAggregate = MerchantAggregate.Create(TestData.MerchantId);
+
+                merchantAggregate.Create(TestData.EstateId, TestData.MerchantName, TestData.DateMerchantCreated, TestData.AddressModel, TestData.ContactModel,
+                    TestData.SettlementScheduleModel);
+
+                MerchantDepositListAggregate merchantDepositListAggregate = MerchantDepositListAggregate.Create(TestData.MerchantId);
+                merchantDepositListAggregate.Create(merchantAggregate, TestData.DateMerchantCreated);
+                merchantDepositListAggregate.MakeWithdrawal(TestData.Commands.MakeMerchantWithdrawalCommand.RequestDto.WithdrawalDateTime, PositiveMoney.Create(Money.Create(TestData.Commands.MakeMerchantWithdrawalCommand.RequestDto.Amount)));
+                return merchantDepositListAggregate;
+            }
+
             public static MerchantAggregate MerchantAggregateWithDevice()
             {
                 MerchantAggregate merchantAggregate = MerchantAggregate.Create(TestData.MerchantId);
