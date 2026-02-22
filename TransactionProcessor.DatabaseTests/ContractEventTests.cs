@@ -11,8 +11,7 @@ using TransactionProcessor.Database.Entities;
 using TransactionProcessor.Repository;
 using TransactionProcessor.Testing;
 
-namespace TransactionProcessor.DatabaseTests
-{
+namespace TransactionProcessor.DatabaseTests {
     public class MerchantEventTests : BaseTest {
         [Fact]
         public async Task AddMerchant_MerchantIsAdded() {
@@ -49,8 +48,7 @@ namespace TransactionProcessor.DatabaseTests
         }
 
         [Fact]
-        public async Task SwapMerchantDevice_MerchantContractIsAdded()
-        {
+        public async Task SwapMerchantDevice_MerchantContractIsAdded() {
             Result result = await this.Repository.AddMerchantDevice(TestData.DomainEvents.DeviceAddedToMerchantEvent, CancellationToken.None);
             result.IsSuccess.ShouldBeTrue();
             result = await this.Repository.SwapMerchantDevice(TestData.DomainEvents.DeviceSwappedForMerchantEvent, CancellationToken.None);
@@ -68,8 +66,7 @@ namespace TransactionProcessor.DatabaseTests
         }
 
         [Fact]
-        public async Task SwapMerchantDevice_EventReplayHandled()
-        {
+        public async Task SwapMerchantDevice_EventReplayHandled() {
             Result result = await this.Repository.AddMerchantDevice(TestData.DomainEvents.DeviceAddedToMerchantEvent, CancellationToken.None);
             result.IsSuccess.ShouldBeTrue();
             result = await this.Repository.SwapMerchantDevice(TestData.DomainEvents.DeviceSwappedForMerchantEvent, CancellationToken.None);
@@ -97,6 +94,28 @@ namespace TransactionProcessor.DatabaseTests
             merchantDevice.ShouldNotBeNull();
             merchantDevice.DeviceIdentifier.ShouldBe(TestData.DomainEvents.DeviceSwappedForMerchantEvent.NewDeviceIdentifier);
             merchantDevice.IsEnabled.ShouldBeTrue();
+        }
+    }
+
+    public class FloatEventTests : BaseTest {
+        [Fact]
+        public async Task CreateFloat_FloatIsAdded()
+        {
+            Result result = await this.Repository.CreateFloat(TestData.DomainEvents.FloatCreatedForContractProductEvent, CancellationToken.None);
+            result.IsSuccess.ShouldBeTrue();
+            EstateManagementContext context = this.GetContext();
+            Float? @float = await context.Floats.SingleOrDefaultAsync(c => c.FloatId == TestData.DomainEvents.FloatCreatedForContractProductEvent.FloatId);
+            @float.ShouldNotBeNull();
+        }
+
+        [Fact]
+        public async Task CreateFloat_EventReplayHandled()
+        {
+            Result result = await this.Repository.CreateFloat(TestData.DomainEvents.FloatCreatedForContractProductEvent, CancellationToken.None);
+            result.IsSuccess.ShouldBeTrue();
+
+            result = await this.Repository.CreateFloat(TestData.DomainEvents.FloatCreatedForContractProductEvent, CancellationToken.None);
+            result.IsSuccess.ShouldBeTrue();
         }
     }
 
