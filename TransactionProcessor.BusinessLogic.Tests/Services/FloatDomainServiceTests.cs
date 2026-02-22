@@ -166,5 +166,129 @@ namespace TransactionProcessor.BusinessLogic.Tests.Services
             Result result = await this.FloatDomainService.RecordCreditPurchase(command, CancellationToken.None);
             result.IsFailed.ShouldBeTrue();
         }
+
+        [Fact]
+        public async Task FloatDomainService_CreateFloatForContractProduct_GetFloatFailed()
+        {
+            this.AggregateService.Setup(f => f.Get<EstateAggregate>(It.IsAny<Guid>(), It.IsAny<CancellationToken>())).ReturnsAsync(Result.Success(TestData.Aggregates.EstateAggregateWithOperator()));
+            this.AggregateService.Setup(f => f.Get<ContractAggregate>(It.IsAny<Guid>(), It.IsAny<CancellationToken>())).ReturnsAsync(Result.Success(TestData.Aggregates.CreatedContractAggregateWithAProductAndTransactionFee(Models.Contract.CalculationType.Fixed, Models.Contract.FeeType.Merchant)));
+            this.AggregateService.Setup(f => f.GetLatest<FloatAggregate>(It.IsAny<Guid>(), It.IsAny<CancellationToken>())).ReturnsAsync(Result.Failure());
+
+            FloatCommands.CreateFloatForContractProductCommand command = new FloatCommands.CreateFloatForContractProductCommand(TestData.EstateId, TestData.ContractId,
+                TestData.ProductId, TestData.FloatCreatedDateTime);
+            Result result = await this.FloatDomainService.CreateFloatForContractProduct(command, CancellationToken.None);
+            result.IsFailed.ShouldBeTrue();
+        }
+
+        [Fact]
+        public async Task FloatDomainService_CreateFloatForContractProduct_SaveFailed()
+        {
+            this.AggregateService.Setup(f => f.Get<EstateAggregate>(It.IsAny<Guid>(), It.IsAny<CancellationToken>())).ReturnsAsync(Result.Success(TestData.Aggregates.EstateAggregateWithOperator()));
+            this.AggregateService.Setup(f => f.Get<ContractAggregate>(It.IsAny<Guid>(), It.IsAny<CancellationToken>())).ReturnsAsync(Result.Success(TestData.Aggregates.CreatedContractAggregateWithAProductAndTransactionFee(Models.Contract.CalculationType.Fixed, Models.Contract.FeeType.Merchant)));
+            this.AggregateService.Setup(f => f.GetLatest<FloatAggregate>(It.IsAny<Guid>(), It.IsAny<CancellationToken>())).ReturnsAsync(Result.Success(TestData.GetEmptyFloatAggregate()));
+            this.AggregateService.Setup(f => f.Save<FloatAggregate>(It.IsAny<FloatAggregate>(), It.IsAny<CancellationToken>())).ReturnsAsync(Result.Failure());
+
+            FloatCommands.CreateFloatForContractProductCommand command = new FloatCommands.CreateFloatForContractProductCommand(TestData.EstateId, TestData.ContractId,
+                TestData.ProductId, TestData.FloatCreatedDateTime);
+            Result result = await this.FloatDomainService.CreateFloatForContractProduct(command, CancellationToken.None);
+            result.IsFailed.ShouldBeTrue();
+        }
+
+        [Fact]
+        public async Task FloatDomainService_CreateFloatForContractProduct_ExceptionThrown()
+        {
+            this.AggregateService.Setup(f => f.Get<EstateAggregate>(It.IsAny<Guid>(), It.IsAny<CancellationToken>())).ReturnsAsync(Result.Success(TestData.Aggregates.EstateAggregateWithOperator()));
+            this.AggregateService.Setup(f => f.Get<ContractAggregate>(It.IsAny<Guid>(), It.IsAny<CancellationToken>())).ReturnsAsync(Result.Success(TestData.Aggregates.CreatedContractAggregateWithAProductAndTransactionFee(Models.Contract.CalculationType.Fixed, Models.Contract.FeeType.Merchant)));
+            this.AggregateService.Setup(f => f.GetLatest<FloatAggregate>(It.IsAny<Guid>(), It.IsAny<CancellationToken>())).ReturnsAsync(Result.Success(TestData.GetEmptyFloatAggregate()));
+            this.AggregateService.Setup(f => f.Save<FloatAggregate>(It.IsAny<FloatAggregate>(), It.IsAny<CancellationToken>())).ThrowsAsync(new Exception());
+
+            FloatCommands.CreateFloatForContractProductCommand command = new FloatCommands.CreateFloatForContractProductCommand(TestData.EstateId, TestData.ContractId,
+                TestData.ProductId, TestData.FloatCreatedDateTime);
+            Result result = await this.FloatDomainService.CreateFloatForContractProduct(command, CancellationToken.None);
+            result.IsFailed.ShouldBeTrue();
+        }
+
+        [Fact]
+        public async Task FloatDomainService_RecordCreditPurchase_GetFloatFailed()
+        {
+            this.AggregateService.Setup(f => f.GetLatest<FloatAggregate>(It.IsAny<Guid>(), It.IsAny<CancellationToken>())).ReturnsAsync(Result.Failure());
+
+            FloatCommands.RecordCreditPurchaseForFloatCommand command = new FloatCommands.RecordCreditPurchaseForFloatCommand(TestData.EstateId,
+                TestData.FloatAggregateId, TestData.FloatCreditAmount, TestData.FloatCreditCostPrice,
+                TestData.CreditPurchasedDateTime);
+            Result result = await this.FloatDomainService.RecordCreditPurchase(command, CancellationToken.None);
+            result.IsFailed.ShouldBeTrue();
+        }
+
+        [Fact]
+        public async Task FloatDomainService_RecordCreditPurchase_FloatActivity_GetFloatActivityFailed()
+        {
+            this.AggregateService.Setup(f => f.GetLatest<FloatActivityAggregate>(It.IsAny<Guid>(), It.IsAny<CancellationToken>())).ReturnsAsync(Result.Failure());
+
+            FloatActivityCommands.RecordCreditPurchaseCommand command = new FloatActivityCommands.RecordCreditPurchaseCommand(TestData.EstateId,
+                TestData.FloatAggregateId, TestData.CreditPurchasedDateTime, TestData.FloatCreditAmount, TestData.FloatCreditId);
+            Result result = await this.FloatDomainService.RecordCreditPurchase(command, CancellationToken.None);
+            result.IsFailed.ShouldBeTrue();
+        }
+
+        [Fact]
+        public async Task FloatDomainService_RecordTransaction_TransactionRecorded()
+        {
+            FloatActivityAggregate floatActivityAggregate = FloatActivityAggregate.Create(TestData.FloatAggregateId);
+            this.AggregateService.Setup(f => f.GetLatest<TransactionAggregate>(It.IsAny<Guid>(), It.IsAny<CancellationToken>())).ReturnsAsync(Result.Success(TestData.GetCompletedAuthorisedSaleTransactionAggregate()));
+            this.AggregateService.Setup(f => f.GetLatest<FloatActivityAggregate>(It.IsAny<Guid>(), It.IsAny<CancellationToken>())).ReturnsAsync(Result.Success(floatActivityAggregate));
+            this.AggregateService.Setup(f => f.Save<FloatActivityAggregate>(It.IsAny<FloatActivityAggregate>(), It.IsAny<CancellationToken>())).ReturnsAsync(Result.Success());
+
+            FloatActivityCommands.RecordTransactionCommand command = new FloatActivityCommands.RecordTransactionCommand(TestData.EstateId, TestData.TransactionId);
+            Result result = await this.FloatDomainService.RecordTransaction(command, CancellationToken.None);
+            result.IsSuccess.ShouldBeTrue();
+        }
+
+        [Fact]
+        public async Task FloatDomainService_RecordTransaction_GetTransactionFailed()
+        {
+            this.AggregateService.Setup(f => f.GetLatest<TransactionAggregate>(It.IsAny<Guid>(), It.IsAny<CancellationToken>())).ReturnsAsync(Result.Failure());
+
+            FloatActivityCommands.RecordTransactionCommand command = new FloatActivityCommands.RecordTransactionCommand(TestData.EstateId, TestData.TransactionId);
+            Result result = await this.FloatDomainService.RecordTransaction(command, CancellationToken.None);
+            result.IsFailed.ShouldBeTrue();
+        }
+
+        [Fact]
+        public async Task FloatDomainService_RecordTransaction_GetFloatActivityFailed()
+        {
+            this.AggregateService.Setup(f => f.GetLatest<TransactionAggregate>(It.IsAny<Guid>(), It.IsAny<CancellationToken>())).ReturnsAsync(Result.Success(TestData.GetCompletedAuthorisedSaleTransactionAggregate()));
+            this.AggregateService.Setup(f => f.GetLatest<FloatActivityAggregate>(It.IsAny<Guid>(), It.IsAny<CancellationToken>())).ReturnsAsync(Result.Failure());
+
+            FloatActivityCommands.RecordTransactionCommand command = new FloatActivityCommands.RecordTransactionCommand(TestData.EstateId, TestData.TransactionId);
+            Result result = await this.FloatDomainService.RecordTransaction(command, CancellationToken.None);
+            result.IsFailed.ShouldBeTrue();
+        }
+
+        [Fact]
+        public async Task FloatDomainService_RecordTransaction_SaveFailed()
+        {
+            FloatActivityAggregate floatActivityAggregate = FloatActivityAggregate.Create(TestData.FloatAggregateId);
+            this.AggregateService.Setup(f => f.GetLatest<TransactionAggregate>(It.IsAny<Guid>(), It.IsAny<CancellationToken>())).ReturnsAsync(Result.Success(TestData.GetCompletedAuthorisedSaleTransactionAggregate()));
+            this.AggregateService.Setup(f => f.GetLatest<FloatActivityAggregate>(It.IsAny<Guid>(), It.IsAny<CancellationToken>())).ReturnsAsync(Result.Success(floatActivityAggregate));
+            this.AggregateService.Setup(f => f.Save<FloatActivityAggregate>(It.IsAny<FloatActivityAggregate>(), It.IsAny<CancellationToken>())).ReturnsAsync(Result.Failure());
+
+            FloatActivityCommands.RecordTransactionCommand command = new FloatActivityCommands.RecordTransactionCommand(TestData.EstateId, TestData.TransactionId);
+            Result result = await this.FloatDomainService.RecordTransaction(command, CancellationToken.None);
+            result.IsFailed.ShouldBeTrue();
+        }
+
+        [Fact]
+        public async Task FloatDomainService_RecordTransaction_ExceptionThrown()
+        {
+            FloatActivityAggregate floatActivityAggregate = FloatActivityAggregate.Create(TestData.FloatAggregateId);
+            this.AggregateService.Setup(f => f.GetLatest<TransactionAggregate>(It.IsAny<Guid>(), It.IsAny<CancellationToken>())).ReturnsAsync(Result.Success(TestData.GetCompletedAuthorisedSaleTransactionAggregate()));
+            this.AggregateService.Setup(f => f.GetLatest<FloatActivityAggregate>(It.IsAny<Guid>(), It.IsAny<CancellationToken>())).ReturnsAsync(Result.Success(floatActivityAggregate));
+            this.AggregateService.Setup(f => f.Save<FloatActivityAggregate>(It.IsAny<FloatActivityAggregate>(), It.IsAny<CancellationToken>())).ThrowsAsync(new Exception());
+
+            FloatActivityCommands.RecordTransactionCommand command = new FloatActivityCommands.RecordTransactionCommand(TestData.EstateId, TestData.TransactionId);
+            Result result = await this.FloatDomainService.RecordTransaction(command, CancellationToken.None);
+            result.IsFailed.ShouldBeTrue();
+        }
     }
 }
