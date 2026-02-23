@@ -394,5 +394,69 @@ public class MerchantStatementDomainServiceTests {
         result.IsFailed.ShouldBeTrue();
     }
 
+    [Fact]
+    public async Task MerchantStatementDomainService_AddTransactionToStatement_ExceptionThrown_ResultIsFailed()
+    {
+        this.AggregateService.Setup(a => a.GetLatest<MerchantStatementForDateAggregate>(It.IsAny<Guid>(), It.IsAny<CancellationToken>())).ThrowsAsync(new Exception("Test exception"));
+        Result result = await this.DomainService.AddTransactionToStatement(TestData.Commands.AddTransactionToMerchantStatementCommand, CancellationToken.None);
+        result.IsFailed.ShouldBeTrue();
+    }
+
+    [Fact]
+    public async Task MerchantStatementDomainService_AddSettledFeeToStatement_ExceptionThrown_ResultIsFailed()
+    {
+        this.AggregateService.Setup(a => a.GetLatest<MerchantStatementForDateAggregate>(It.IsAny<Guid>(), It.IsAny<CancellationToken>())).ThrowsAsync(new Exception("Test exception"));
+        Result result = await this.DomainService.AddSettledFeeToStatement(TestData.Commands.AddSettledFeeToMerchantStatementCommand, CancellationToken.None);
+        result.IsFailed.ShouldBeTrue();
+    }
+
+    [Fact]
+    public async Task MerchantStatementDomainService_AddDepositToStatement_ExceptionThrown_ResultIsFailed()
+    {
+        this.AggregateService.Setup(a => a.GetLatest<MerchantStatementForDateAggregate>(It.IsAny<Guid>(), It.IsAny<CancellationToken>())).ThrowsAsync(new Exception("Test exception"));
+        Result result = await this.DomainService.AddDepositToStatement(TestData.Commands.AddDepositToMerchantStatementCommand, CancellationToken.None);
+        result.IsFailed.ShouldBeTrue();
+    }
+
+    [Fact]
+    public async Task MerchantStatementDomainService_AddWithdrawalToStatement_ExceptionThrown_ResultIsFailed()
+    {
+        this.AggregateService.Setup(a => a.GetLatest<MerchantStatementForDateAggregate>(It.IsAny<Guid>(), It.IsAny<CancellationToken>())).ThrowsAsync(new Exception("Test exception"));
+        Result result = await this.DomainService.AddWithdrawalToStatement(TestData.Commands.AddWithdrawalToMerchantStatementCommand, CancellationToken.None);
+        result.IsFailed.ShouldBeTrue();
+    }
+
+    [Fact]
+    public async Task MerchantStatementDomainService_RecordActivityDateOnMerchantStatement_ExceptionThrown_ResultIsFailed()
+    {
+        this.AggregateService.Setup(a => a.GetLatest<MerchantStatementAggregate>(It.IsAny<Guid>(), It.IsAny<CancellationToken>())).ThrowsAsync(new Exception("Test exception"));
+        Result result = await this.DomainService.RecordActivityDateOnMerchantStatement(TestData.Commands.RecordActivityDateOnMerchantStatementCommand, CancellationToken.None);
+        result.IsFailed.ShouldBeTrue();
+    }
+
+    [Fact]
+    public async Task MerchantStatementDomainService_GenerateStatement_ExceptionThrown_ResultIsFailed()
+    {
+        this.AggregateService.Setup(a => a.GetLatest<MerchantStatementAggregate>(It.IsAny<Guid>(), It.IsAny<CancellationToken>())).ThrowsAsync(new Exception("Test exception"));
+        Result result = await this.DomainService.GenerateStatement(TestData.Commands.GenerateMerchantStatementCommand, CancellationToken.None);
+        result.IsFailed.ShouldBeTrue();
+    }
+
+    [Fact]
+    public async Task MerchantStatementDomainService_BuildStatement_ExceptionThrown_ResultIsFailed()
+    {
+        this.AggregateService.Setup(a => a.GetLatest<MerchantStatementAggregate>(It.IsAny<Guid>(), It.IsAny<CancellationToken>())).ThrowsAsync(new Exception("Test exception"));
+        Result result = await this.DomainService.BuildStatement(TestData.Commands.BuildMerchantStatementCommand, CancellationToken.None);
+        result.IsFailed.ShouldBeTrue();
+    }
+
+    [Fact]
+    public async Task MerchantStatementDomainService_EmailStatement_ExceptionThrown_ResultIsFailed()
+    {
+        this.AggregateService.Setup(a => a.GetLatest<MerchantStatementAggregate>(It.IsAny<Guid>(), It.IsAny<CancellationToken>())).ThrowsAsync(new Exception("Test exception"));
+        Result result = await this.DomainService.EmailStatement(TestData.Commands.EmailMerchantStatementCommand, CancellationToken.None);
+        result.IsFailed.ShouldBeTrue();
+    }
+
 
 }
