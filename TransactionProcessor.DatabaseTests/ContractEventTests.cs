@@ -14,7 +14,8 @@ using TransactionProcessor.Testing;
 namespace TransactionProcessor.DatabaseTests {
     public class MerchantEventTests : BaseTest {
         [Fact]
-        public async Task AddMerchant_MerchantIsAdded() {
+        public async Task AddMerchant_MerchantIsAdded()
+        {
             Result result = await this.Repository.AddMerchant(TestData.DomainEvents.MerchantCreatedEvent, CancellationToken.None);
             result.IsSuccess.ShouldBeTrue();
             EstateManagementContext context = this.GetContext();
@@ -31,7 +32,8 @@ namespace TransactionProcessor.DatabaseTests {
         }
 
         [Fact]
-        public async Task AddMerchantDevice_MerchantContractIsAdded() {
+        public async Task AddMerchantDevice_MerchantContractIsAdded()
+        {
             Result result = await this.Repository.AddMerchantDevice(TestData.DomainEvents.DeviceAddedToMerchantEvent, CancellationToken.None);
             result.IsSuccess.ShouldBeTrue();
             EstateManagementContext context = this.GetContext();
@@ -120,6 +122,26 @@ namespace TransactionProcessor.DatabaseTests {
     }
 
 
+    public class StatementEventTests : BaseTest {
+        [Fact]
+        public async Task CreateStatement_StatementIsAdded()
+        {
+            Result result = await this.Repository.CreateStatement(TestData.DomainEvents.StatementCreatedEvent, CancellationToken.None);
+            result.IsSuccess.ShouldBeTrue();
+            EstateManagementContext context = this.GetContext();
+            StatementHeader? statement = await context.StatementHeaders.SingleOrDefaultAsync(c => c.StatementId == TestData.DomainEvents.StatementCreatedEvent.MerchantStatementId);
+            statement.ShouldNotBeNull();
+        }
+        [Fact]
+        public async Task CreateStatement_EventReplayHandled()
+        {
+            Result result = await this.Repository.CreateStatement(TestData.DomainEvents.StatementCreatedEvent, CancellationToken.None);
+            result.IsSuccess.ShouldBeTrue();
+            result = await this.Repository.CreateStatement(TestData.DomainEvents.StatementCreatedEvent, CancellationToken.None);
+            result.IsSuccess.ShouldBeTrue();
+        }
+    }
+
     public class ContractEventTests : BaseTest
     {
         [Fact]
@@ -143,7 +165,8 @@ namespace TransactionProcessor.DatabaseTests {
         }
 
         [Fact]
-        public async Task AddContract_ContractIsAdded() {
+        public async Task AddContract_ContractIsAdded()
+        {
             Result result = await this.Repository.AddContract(TestData.DomainEvents.ContractCreatedEvent, CancellationToken.None);
             result.IsSuccess.ShouldBeTrue();
             EstateManagementContext context = this.GetContext();
@@ -161,7 +184,8 @@ namespace TransactionProcessor.DatabaseTests {
         }
 
         [Fact]
-        public async Task AddContractProduct_ContractProductIsAdded() {
+        public async Task AddContractProduct_ContractProductIsAdded()
+        {
             Result result = await this.Repository.AddContractProduct(TestData.DomainEvents.FixedValueProductAddedToContractEvent, CancellationToken.None);
             result.IsSuccess.ShouldBeTrue();
             EstateManagementContext context = this.GetContext();
@@ -195,7 +219,7 @@ namespace TransactionProcessor.DatabaseTests {
             result = await this.Repository.AddContractProduct(TestData.DomainEvents.VariableValueProductAddedToContractEvent, CancellationToken.None);
             result.IsSuccess.ShouldBeTrue();
         }
-    
+
         [Fact]
         public async Task AddContractProductTransactionFee_ContractIsAdded()
         {
@@ -216,7 +240,7 @@ namespace TransactionProcessor.DatabaseTests {
             result = await this.Repository.AddContractProductTransactionFee(TestData.DomainEvents.TransactionFeeForProductAddedToContractEvent, CancellationToken.None);
             result.IsSuccess.ShouldBeTrue();
         }
-    
+
         [Fact]
         public async Task AddFileImportLog_FileImportLogIsAdded()
         {
