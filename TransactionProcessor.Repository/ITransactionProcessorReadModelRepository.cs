@@ -1762,7 +1762,7 @@ namespace TransactionProcessor.Repository {
 
             await context.StatementHeaders.AddAsync(header, cancellationToken);
 
-            return await context.SaveChangesAsync(cancellationToken);
+            return await context.SaveChangesWithDuplicateHandling(cancellationToken);
         }
 
         // TODO@ Add this back in

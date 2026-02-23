@@ -57,8 +57,8 @@ namespace TransactionProcessor.DatabaseTests
             this.Repository = new TransactionProcessorReadModelRepository(resolver.Object);
         }
 
-        public virtual async Task DisposeAsync()
-        {
+        public virtual async Task DisposeAsync() {
+            await this.DockerHelper.StopContainersForScenarioRun(DockerServices.None);
         }
 
         //protected abstract Task ClearStandingData();
@@ -94,16 +94,16 @@ namespace TransactionProcessor.DatabaseTests
             await DockerHelper.StartContainersForScenarioRun(this.TestId.ToString(), DockerServices.SqlServer);
         }
 
-        public void Dispose()
-        {
-            EstateManagementContext context = new EstateManagementContext(this.GetLocalConnectionString($"EstateReportingReadModel{this.TestId.ToString()}"));
+        //public void Dispose()
+        //{
+        //    EstateManagementContext context = new EstateManagementContext(this.GetLocalConnectionString($"EstateReportingReadModel{this.TestId.ToString()}"));
 
-            Console.WriteLine($"About to delete database EstateReportingReadModel{this.TestId.ToString()}");
-            Boolean result = context.Database.EnsureDeleted();
-            Console.WriteLine($"Delete result is {result}");
-            result.ShouldBeTrue();
+        //    Console.WriteLine($"About to delete database EstateReportingReadModel{this.TestId.ToString()}");
+        //    Boolean result = context.Database.EnsureDeleted();
+        //    Console.WriteLine($"Delete result is {result}");
+        //    result.ShouldBeTrue();
             
-        }
+        //}
     }
 
 
