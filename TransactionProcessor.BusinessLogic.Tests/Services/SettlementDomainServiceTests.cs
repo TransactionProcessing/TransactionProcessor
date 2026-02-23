@@ -571,6 +571,21 @@ namespace TransactionProcessor.BusinessLogic.Tests.Services
         }
 
         [Fact]
+        public async Task SettlementDomainService_AddMerchantFeePendingSettlement_StateChangeFailed_FeeNotAdded()
+        {
+            this.AggregateService.Setup(s => s.GetLatest<SettlementAggregate>(It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
+                .ReturnsAsync(Result.Success(TestData.GetCreatedSettlementAggregate()));
+            this.AggregateService.Setup(s => s.Save(It.IsAny<SettlementAggregate>(), It.IsAny<CancellationToken>()))
+                .ReturnsAsync(Result.Failure("Save failed"));
+
+            SettlementCommands.AddMerchantFeePendingSettlementCommand command = new(Guid.Empty, TestData.CalculatedFeeValue, TestData.TransactionFeeCalculateDateTime, CalculationType.Fixed, TestData.TransactionFeeId, TestData.TransactionFeeValue, TestData.TransactionFeeSettlementDueDate, TestData.MerchantId, TestData.EstateId);
+
+            Result result = await settlementDomainService.AddMerchantFeePendingSettlement(command, CancellationToken.None);
+
+            result.IsFailed.ShouldBeTrue();
+        }
+
+        [Fact]
         public async Task SettlementDomainService_AddMerchantFeePendingSettlement_SaveFailed_FeeNotAdded()
         {
             this.AggregateService.Setup(s => s.GetLatest<SettlementAggregate>(It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
