@@ -2587,7 +2587,7 @@ namespace TransactionProcessor.Testing
         public static String DepositAccountNumber = "12345678";
         public static Guid DepositHostIdentifier = Guid.Parse("1D1BD9F0-D953-4B2A-9969-98D3C0CDFA2A");
         public static String DepositSortCode = "112233";
-
+        
         public static Models.Merchant.Merchant MerchantModelWithAddressesContactsDevicesAndOperatorsAndContracts(Models.Merchant.SettlementSchedule settlementSchedule = Models.Merchant.SettlementSchedule.Immediate) =>
             new Models.Merchant.Merchant
             {
@@ -2627,7 +2627,7 @@ namespace TransactionProcessor.Testing
             };
 
         public static class DomainEvents {
-
+            public static FloatDomainEvents.FloatCreatedForContractProductEvent FloatCreatedForContractProductEvent => new FloatDomainEvents.FloatCreatedForContractProductEvent(FloatAggregateId, EstateId, ContractId, VariableContractProductId, FloatCreatedDateTime);
             public static TransactionDomainEvents.TransactionHasBeenCompletedEvent TransactionHasBeenCompletedEvent => new TransactionDomainEvents.TransactionHasBeenCompletedEvent(TestData.TransactionId,
                 TestData.EstateId,
                 TestData.MerchantId,
