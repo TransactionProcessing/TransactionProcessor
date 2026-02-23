@@ -1094,7 +1094,7 @@ namespace TransactionProcessor.Repository {
                 ProductId = domainEvent.ProductId
             };
             await context.Floats.AddAsync(floatRecord, cancellationToken);
-            return await context.SaveChangesAsync(cancellationToken);
+            return await context.SaveChangesWithDuplicateHandling(cancellationToken);
         }
 
         public async Task<Result> CreateFloatActivity(FloatDomainEvents.FloatCreditPurchasedEvent domainEvent,
