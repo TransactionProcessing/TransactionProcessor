@@ -2627,6 +2627,9 @@ namespace TransactionProcessor.Testing
             };
 
         public static class DomainEvents {
+
+            public static ReconciliationDomainEvents.ReconciliationHasStartedEvent ReconciliationHasStartedEvent => new ReconciliationDomainEvents.ReconciliationHasStartedEvent(TestData.TransactionId, TestData.EstateId, TestData.MerchantId, TestData.TransactionDateTime);
+
             public static FloatDomainEvents.FloatCreatedForContractProductEvent FloatCreatedForContractProductEvent => new FloatDomainEvents.FloatCreatedForContractProductEvent(FloatAggregateId, EstateId, ContractId, VariableContractProductId, FloatCreatedDateTime);
             public static TransactionDomainEvents.TransactionHasBeenCompletedEvent TransactionHasBeenCompletedEvent => new TransactionDomainEvents.TransactionHasBeenCompletedEvent(TestData.TransactionId,
                 TestData.EstateId,

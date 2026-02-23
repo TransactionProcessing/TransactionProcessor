@@ -11,159 +11,30 @@ using TransactionProcessor.Database.Entities;
 using TransactionProcessor.Repository;
 using TransactionProcessor.Testing;
 
-namespace TransactionProcessor.DatabaseTests {
-    public class MerchantEventTests : BaseTest {
+namespace TransactionProcessor.DatabaseTests
+{
+    public class ReconciliationEventTests : BaseTest
+    {
         [Fact]
-        public async Task AddMerchant_MerchantIsAdded()
+        public async Task AddReconciliation_ReconciliationIsAdded()
         {
-            Result result = await this.Repository.AddMerchant(TestData.DomainEvents.MerchantCreatedEvent, CancellationToken.None);
+            Result result = await this.Repository.StartReconciliation(TestData.DomainEvents.ReconciliationHasStartedEvent, CancellationToken.None);
             result.IsSuccess.ShouldBeTrue();
             EstateManagementContext context = this.GetContext();
-            Merchant? merchant = await context.Merchants.SingleOrDefaultAsync(c => c.MerchantId == TestData.DomainEvents.MerchantCreatedEvent.MerchantId);
-            merchant.ShouldNotBeNull();
-        }
-
-        [Fact]
-        public async Task AddMerchant_EventReplayHandled() {
-            Result result = await this.Repository.AddMerchant(TestData.DomainEvents.MerchantCreatedEvent, CancellationToken.None);
-            result.IsSuccess.ShouldBeTrue();
-            result = await this.Repository.AddMerchant(TestData.DomainEvents.MerchantCreatedEvent, CancellationToken.None);
-            result.IsSuccess.ShouldBeTrue();
-        }
-
-        [Fact]
-        public async Task AddMerchantDevice_MerchantContractIsAdded()
-        {
-            Result result = await this.Repository.AddMerchantDevice(TestData.DomainEvents.DeviceAddedToMerchantEvent, CancellationToken.None);
-            result.IsSuccess.ShouldBeTrue();
-            EstateManagementContext context = this.GetContext();
-            var merchantDevice = await context.MerchantDevices.SingleOrDefaultAsync(c => c.DeviceId == TestData.DomainEvents.DeviceAddedToMerchantEvent.DeviceId);
-            merchantDevice.ShouldNotBeNull();
-        }
-
-        [Fact]
-        public async Task AddMerchantDevice_EventReplayHandled() {
-            Result result = await this.Repository.AddMerchantDevice(TestData.DomainEvents.DeviceAddedToMerchantEvent, CancellationToken.None);
-            result.IsSuccess.ShouldBeTrue();
-            result = await this.Repository.AddMerchantDevice(TestData.DomainEvents.DeviceAddedToMerchantEvent, CancellationToken.None);
-            result.IsSuccess.ShouldBeTrue();
-        }
-
-        [Fact]
-        public async Task SwapMerchantDevice_MerchantContractIsAdded() {
-            Result result = await this.Repository.AddMerchantDevice(TestData.DomainEvents.DeviceAddedToMerchantEvent, CancellationToken.None);
-            result.IsSuccess.ShouldBeTrue();
-            result = await this.Repository.SwapMerchantDevice(TestData.DomainEvents.DeviceSwappedForMerchantEvent, CancellationToken.None);
-            result.IsSuccess.ShouldBeTrue();
-            EstateManagementContext context = this.GetContext();
-            var merchantDevice = await context.MerchantDevices.SingleOrDefaultAsync(c => c.DeviceId == TestData.DomainEvents.DeviceAddedToMerchantEvent.DeviceId);
-            merchantDevice.ShouldNotBeNull();
-            merchantDevice.DeviceIdentifier.ShouldBe(TestData.DomainEvents.DeviceAddedToMerchantEvent.DeviceIdentifier);
-            merchantDevice.IsEnabled.ShouldBeFalse();
-
-            merchantDevice = await context.MerchantDevices.SingleOrDefaultAsync(c => c.DeviceId == TestData.DomainEvents.DeviceSwappedForMerchantEvent.DeviceId);
-            merchantDevice.ShouldNotBeNull();
-            merchantDevice.DeviceIdentifier.ShouldBe(TestData.DomainEvents.DeviceSwappedForMerchantEvent.NewDeviceIdentifier);
-            merchantDevice.IsEnabled.ShouldBeTrue();
-        }
-
-        [Fact]
-        public async Task SwapMerchantDevice_EventReplayHandled() {
-            Result result = await this.Repository.AddMerchantDevice(TestData.DomainEvents.DeviceAddedToMerchantEvent, CancellationToken.None);
-            result.IsSuccess.ShouldBeTrue();
-            result = await this.Repository.SwapMerchantDevice(TestData.DomainEvents.DeviceSwappedForMerchantEvent, CancellationToken.None);
-            result.IsSuccess.ShouldBeTrue();
-            EstateManagementContext context = this.GetContext();
-            var merchantDevice = await context.MerchantDevices.SingleOrDefaultAsync(c => c.DeviceId == TestData.DomainEvents.DeviceAddedToMerchantEvent.DeviceId);
-            merchantDevice.ShouldNotBeNull();
-            merchantDevice.DeviceIdentifier.ShouldBe(TestData.DomainEvents.DeviceAddedToMerchantEvent.DeviceIdentifier);
-            merchantDevice.IsEnabled.ShouldBeFalse();
-
-            merchantDevice = await context.MerchantDevices.SingleOrDefaultAsync(c => c.DeviceId == TestData.DomainEvents.DeviceSwappedForMerchantEvent.DeviceId);
-            merchantDevice.ShouldNotBeNull();
-            merchantDevice.DeviceIdentifier.ShouldBe(TestData.DomainEvents.DeviceSwappedForMerchantEvent.NewDeviceIdentifier);
-            merchantDevice.IsEnabled.ShouldBeTrue();
-
-            result = await this.Repository.SwapMerchantDevice(TestData.DomainEvents.DeviceSwappedForMerchantEvent, CancellationToken.None);
-            result.IsSuccess.ShouldBeTrue();
-
-            merchantDevice = await context.MerchantDevices.SingleOrDefaultAsync(c => c.DeviceId == TestData.DomainEvents.DeviceAddedToMerchantEvent.DeviceId);
-            merchantDevice.ShouldNotBeNull();
-            merchantDevice.DeviceIdentifier.ShouldBe(TestData.DomainEvents.DeviceAddedToMerchantEvent.DeviceIdentifier);
-            merchantDevice.IsEnabled.ShouldBeFalse();
-
-            merchantDevice = await context.MerchantDevices.SingleOrDefaultAsync(c => c.DeviceId == TestData.DomainEvents.DeviceSwappedForMerchantEvent.DeviceId);
-            merchantDevice.ShouldNotBeNull();
-            merchantDevice.DeviceIdentifier.ShouldBe(TestData.DomainEvents.DeviceSwappedForMerchantEvent.NewDeviceIdentifier);
-            merchantDevice.IsEnabled.ShouldBeTrue();
-        }
-    }
-
-    public class FloatEventTests : BaseTest {
-        [Fact]
-        public async Task CreateFloat_FloatIsAdded()
-        {
-            Result result = await this.Repository.CreateFloat(TestData.DomainEvents.FloatCreatedForContractProductEvent, CancellationToken.None);
-            result.IsSuccess.ShouldBeTrue();
-            EstateManagementContext context = this.GetContext();
-            Float? @float = await context.Floats.SingleOrDefaultAsync(c => c.FloatId == TestData.DomainEvents.FloatCreatedForContractProductEvent.FloatId);
-            @float.ShouldNotBeNull();
-        }
-
-        [Fact]
-        public async Task CreateFloat_EventReplayHandled()
-        {
-            Result result = await this.Repository.CreateFloat(TestData.DomainEvents.FloatCreatedForContractProductEvent, CancellationToken.None);
-            result.IsSuccess.ShouldBeTrue();
-
-            result = await this.Repository.CreateFloat(TestData.DomainEvents.FloatCreatedForContractProductEvent, CancellationToken.None);
-            result.IsSuccess.ShouldBeTrue();
-        }
-    }
-
-
-    public class StatementEventTests : BaseTest {
-        [Fact]
-        public async Task CreateStatement_StatementIsAdded()
-        {
-            Result result = await this.Repository.CreateStatement(TestData.DomainEvents.StatementCreatedEvent, CancellationToken.None);
-            result.IsSuccess.ShouldBeTrue();
-            EstateManagementContext context = this.GetContext();
-            StatementHeader? statement = await context.StatementHeaders.SingleOrDefaultAsync(c => c.StatementId == TestData.DomainEvents.StatementCreatedEvent.MerchantStatementId);
-            statement.ShouldNotBeNull();
+            Reconciliation? reconciliation = await context.Reconciliations.SingleOrDefaultAsync(c => c.TransactionId == TestData.DomainEvents.ReconciliationHasStartedEvent.TransactionId);
+            reconciliation.ShouldNotBeNull();
         }
         [Fact]
-        public async Task CreateStatement_EventReplayHandled()
-        {
-            Result result = await this.Repository.CreateStatement(TestData.DomainEvents.StatementCreatedEvent, CancellationToken.None);
+        public async Task AddReconciliation_EventReplayHandled() {
+            Result result = await this.Repository.StartReconciliation(TestData.DomainEvents.ReconciliationHasStartedEvent, CancellationToken.None);
             result.IsSuccess.ShouldBeTrue();
-            result = await this.Repository.CreateStatement(TestData.DomainEvents.StatementCreatedEvent, CancellationToken.None);
+            result = await this.Repository.StartReconciliation(TestData.DomainEvents.ReconciliationHasStartedEvent, CancellationToken.None);
             result.IsSuccess.ShouldBeTrue();
         }
     }
 
     public class ContractEventTests : BaseTest
     {
-        [Fact]
-        public async Task AddOperator_OperatorIsAdded()
-        {
-            Result result = await this.Repository.AddOperator(TestData.DomainEvents.OperatorCreatedEvent, CancellationToken.None);
-            result.IsSuccess.ShouldBeTrue();
-            EstateManagementContext context = this.GetContext();
-            Operator? @operator = await context.Operators.SingleOrDefaultAsync(c => c.OperatorId == TestData.DomainEvents.OperatorCreatedEvent.OperatorId);
-            @operator.ShouldNotBeNull();
-        }
-
-        [Fact]
-        public async Task AddOperator_EventReplayHandled()
-        {
-            Result result = await this.Repository.AddOperator(TestData.DomainEvents.OperatorCreatedEvent, CancellationToken.None);
-            result.IsSuccess.ShouldBeTrue();
-
-            result = await this.Repository.AddOperator(TestData.DomainEvents.OperatorCreatedEvent, CancellationToken.None);
-            result.IsSuccess.ShouldBeTrue();
-        }
-
         [Fact]
         public async Task AddContract_ContractIsAdded()
         {
@@ -238,87 +109,6 @@ namespace TransactionProcessor.DatabaseTests {
             result.IsSuccess.ShouldBeTrue();
 
             result = await this.Repository.AddContractProductTransactionFee(TestData.DomainEvents.TransactionFeeForProductAddedToContractEvent, CancellationToken.None);
-            result.IsSuccess.ShouldBeTrue();
-        }
-
-        [Fact]
-        public async Task AddFileImportLog_FileImportLogIsAdded()
-        {
-            Result result = await this.Repository.AddFileImportLog(TestData.DomainEvents.ImportLogCreatedEvent, CancellationToken.None);
-            result.IsSuccess.ShouldBeTrue();
-            EstateManagementContext context = this.GetContext();
-            var fileImportLog = await context.FileImportLogs.SingleOrDefaultAsync(f => f.FileImportLogId == TestData.DomainEvents.ImportLogCreatedEvent.FileImportLogId);
-            fileImportLog.ShouldNotBeNull();
-        }
-
-        [Fact]
-        public async Task AddFileImportLog_EventReplayHandled()
-        {
-            Result result = await this.Repository.AddFileImportLog(TestData.DomainEvents.ImportLogCreatedEvent, CancellationToken.None);
-            result.IsSuccess.ShouldBeTrue();
-
-            result = await this.Repository.AddFileImportLog(TestData.DomainEvents.ImportLogCreatedEvent, CancellationToken.None);
-            result.IsSuccess.ShouldBeTrue();
-        }
-
-        [Fact]
-        public async Task AddFileImportLogFile_FileImportLogIsAdded()
-        {
-            Result result = await this.Repository.AddFileToImportLog(TestData.DomainEvents.FileAddedToImportLogEvent, CancellationToken.None);
-            result.IsSuccess.ShouldBeTrue();
-            EstateManagementContext context = this.GetContext();
-            var fileImportLogFile = await context.FileImportLogFiles.SingleOrDefaultAsync(f => f.FileImportLogId == TestData.DomainEvents.FileAddedToImportLogEvent.FileImportLogId && f.FileId == TestData.DomainEvents.FileAddedToImportLogEvent.FileId);
-            fileImportLogFile.ShouldNotBeNull();
-        }
-
-        [Fact]
-        public async Task AddFileImportLogFile_EventReplayHandled()
-        {
-            Result result = await this.Repository.AddFileToImportLog(TestData.DomainEvents.FileAddedToImportLogEvent, CancellationToken.None);
-            result.IsSuccess.ShouldBeTrue();
-
-            result = await this.Repository.AddFileToImportLog(TestData.DomainEvents.FileAddedToImportLogEvent, CancellationToken.None);
-            result.IsSuccess.ShouldBeTrue();
-        }
-
-
-        [Fact]
-        public async Task AddEstate_EstateIsAdded()
-        {
-            Result result = await this.Repository.AddEstate(TestData.DomainEvents.EstateCreatedEvent, CancellationToken.None);
-            result.IsSuccess.ShouldBeTrue();
-            EstateManagementContext context = this.GetContext();
-            var estate = await context.Estates.SingleOrDefaultAsync(f => f.EstateId == TestData.DomainEvents.EstateCreatedEvent.EstateId);
-            estate.ShouldNotBeNull();
-        }
-
-        [Fact]
-        public async Task AddEstate_EventReplayHandled()
-        {
-            Result result = await this.Repository.AddEstate(TestData.DomainEvents.EstateCreatedEvent, CancellationToken.None);
-            result.IsSuccess.ShouldBeTrue();
-
-            result = await this.Repository.AddEstate(TestData.DomainEvents.EstateCreatedEvent, CancellationToken.None);
-            result.IsSuccess.ShouldBeTrue();
-        }
-
-        [Fact]
-        public async Task AddEstateSecurityUser_EstateIsAdded()
-        {
-            Result result = await this.Repository.AddEstateSecurityUser(TestData.DomainEvents.EstateSecurityUserAddedEvent, CancellationToken.None);
-            result.IsSuccess.ShouldBeTrue();
-            EstateManagementContext context = this.GetContext();
-            var estateSecurityUser = await context.EstateSecurityUsers.SingleOrDefaultAsync(f => f.EstateId == TestData.DomainEvents.EstateSecurityUserAddedEvent.EstateId && f.SecurityUserId == TestData.DomainEvents.EstateSecurityUserAddedEvent.SecurityUserId);
-            estateSecurityUser.ShouldNotBeNull();
-        }
-
-        [Fact]
-        public async Task AddEstateSecurityUser_EventReplayHandled()
-        {
-            Result result = await this.Repository.AddEstateSecurityUser(TestData.DomainEvents.EstateSecurityUserAddedEvent, CancellationToken.None);
-            result.IsSuccess.ShouldBeTrue();
-
-            result = await this.Repository.AddEstateSecurityUser(TestData.DomainEvents.EstateSecurityUserAddedEvent, CancellationToken.None);
             result.IsSuccess.ShouldBeTrue();
         }
     }
