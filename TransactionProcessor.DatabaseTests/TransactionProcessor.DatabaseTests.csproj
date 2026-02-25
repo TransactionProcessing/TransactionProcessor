@@ -5,7 +5,7 @@
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
     <IsPackable>false</IsPackable>
-	  <DebugType>Full</DebugType>
+	  <DebugType>None</DebugType>
   </PropertyGroup>
 
   <ItemGroup>
