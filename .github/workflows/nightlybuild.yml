@@ -42,20 +42,6 @@ jobs:
         dotnet test "TransactionProcessor.Aggregates.Tests\TransactionProcessor.Aggregates.Tests.csproj" /p:CollectCoverage=true /p:Exclude="[xunit*]*" /p:ExcludeByAttribute="Obsolete" /p:ExcludeByAttribute="GeneratedCodeAttribute" /p:ExcludeByAttribute="CompilerGeneratedAttribute" /p:ExcludeByAttribute="ExcludeFromCodeCoverageAttribute" /p:CoverletOutput="../lcov3.info" /maxcpucount:1 /p:CoverletOutputFormat="lcov"
         dotnet test "TransactionProcessor.Tests\TransactionProcessor.Tests.csproj" /p:CollectCoverage=true /p:Exclude="[xunit*]*" /p:ExcludeByAttribute="Obsolete" /p:ExcludeByAttribute="GeneratedCodeAttribute" /p:ExcludeByAttribute="CompilerGeneratedAttribute" /p:ExcludeByAttribute="ExcludeFromCodeCoverageAttribute" /p:CoverletOutput="../lcov4.info" /maxcpucount:1 /p:CoverletOutputFormat="lcov"
         dotnet test "TransactionProcessor.DatabaseTests\TransactionProcessor.DatabaseTests.csproj"  /p:CollectCoverage=true /p:Exclude="[xunit*]*" /p:ExcludeByAttribute="Obsolete" /p:ExcludeByAttribute="GeneratedCodeAttribute" /p:ExcludeByAttribute="CompilerGeneratedAttribute" /p:ExcludeByAttribute="ExcludeFromCodeCoverageAttribute" /p:CoverletOutput="../lcov5.info" /maxcpucount:1 /p:CoverletOutputFormat="lcov"
-
-    - name: Install LCOV merger
-      run: npm install -g lcov-result-merger
-
-    - name: Merge LCOV reports
-      run: |
-        mkdir -p coverage
-        lcov-result-merger "*.info" > lcov.info
-
-    - name: Upload merged coverage to Codacy
-      uses: codacy/codacy-coverage-reporter-action@v1
-      with:
-        project-token: ${{ secrets.CODACY_PROJECT_TOKEN }}
-        coverage-reports: ./lcov.info
         
     - name: Build Docker Image
       run: docker build . --file TransactionProcessor/Dockerfile --tag transactionprocessor:latest
