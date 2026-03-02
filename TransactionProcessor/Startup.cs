@@ -116,8 +116,7 @@ namespace TransactionProcessor
                 Logger.LogInformation($"Type name {type.Value} mapped to {type.Key.Name}");
             }
             app.UseMiddleware<TenantMiddleware>();
-            app.AddRequestLogging();
-            app.AddResponseLogging();
+            app.AddRequestResponseLogging();
             app.AddExceptionHandler();
 
             app.UseRouting();
