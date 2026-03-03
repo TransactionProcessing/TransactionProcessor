@@ -218,7 +218,6 @@ namespace TransactionProcessor
         }
 
         private static void OperatorLogon(String operatorId) {
-            try {
                 Logger.LogInformation($"About to do auto logon for operator Id [{operatorId}]");
                 Func<String, IOperatorProxy> resolver = Startup.ServiceProvider.GetService<Func<String, IOperatorProxy>>();
                 IOperatorProxy proxy = resolver(operatorId);
@@ -232,11 +231,6 @@ namespace TransactionProcessor
                 if (logonResult.IsFailed) {
                     Logger.LogWarning($"Auto logon for operator Id [{operatorId}] status [{logonResult.Message}]");
                 }
-            }
-            catch (Exception ex) {
-                Logger.LogWarning($"Auto logon for operator Id [{operatorId}] failed.");
-                Logger.LogWarning(ex.ToString());
-            }
         }
     }
 }
