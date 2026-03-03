@@ -42,32 +42,31 @@ namespace TransactionProcessor.BusinessLogic.OperatorInterfaces.PataPawaPostPay
         #region Methods
 
         public async Task<Result<OperatorResponse>> ProcessLogonMessage(CancellationToken cancellationToken) {
+            try {
+                // Check if we need to do a logon with the operator
+                OperatorResponse operatorResponse = this.MemoryCache.Get<OperatorResponse>("PataPawaPostPayLogon");
+                if (operatorResponse != null) {
+                    return operatorResponse;
+                }
 
-            // Check if we need to do a logon with the operator
-            OperatorResponse operatorResponse = this.MemoryCache.Get<OperatorResponse>("PataPawaPostPayLogon");
-            if (operatorResponse != null){
-                return operatorResponse;
+                IPataPawaPostPayService channel = this.ChannelResolver(this.ServiceClient, "PataPawaPostPay", this.Configuration.Url);
+                login logonResponse = await channel.getLoginRequestAsync(this.Configuration.Username, this.Configuration.Password);
+                if (logonResponse.status != 0) {
+                    return Result.Failure($"Error logging on with PataPawa Post Paid API, Response is {logonResponse.status}");
+                }
+
+                operatorResponse = new OperatorResponse { IsSuccessful = true, ResponseCode = "0000", ResponseMessage = logonResponse.message, AdditionalTransactionResponseMetadata = new Dictionary<String, String>() };
+
+                operatorResponse.AdditionalTransactionResponseMetadata.Add("PataPawaPostPaidAPIKey", logonResponse.api_key);
+                operatorResponse.AdditionalTransactionResponseMetadata.Add("PataPawaPostPaidBalance", logonResponse.balance.ToString());
+
+                this.MemoryCache.Set("PataPawaPostPayLogon", operatorResponse, MemoryCacheEntryOptions);
+
+                return Result.Success(operatorResponse);
             }
-
-            IPataPawaPostPayService channel = this.ChannelResolver(this.ServiceClient, "PataPawaPostPay", this.Configuration.Url);
-            login logonResponse = await channel.getLoginRequestAsync(this.Configuration.Username, this.Configuration.Password);
-            if (logonResponse.status != 0) {
-                return Result.Failure($"Error logging on with PataPawa Post Paid API, Response is {logonResponse.status}");
+            catch (Exception ex) {
+                return Result.Failure($"Error processing logon message for PataPawaPostPay [{ex.Message}]");
             }
-
-            operatorResponse = new OperatorResponse {
-                                                                         IsSuccessful = true,
-                                                                         ResponseCode = "0000",
-                                                                         ResponseMessage = logonResponse.message,
-                                                                         AdditionalTransactionResponseMetadata = new Dictionary<String, String>()
-                                                                     };
-
-            operatorResponse.AdditionalTransactionResponseMetadata.Add("PataPawaPostPaidAPIKey", logonResponse.api_key);
-            operatorResponse.AdditionalTransactionResponseMetadata.Add("PataPawaPostPaidBalance", logonResponse.balance.ToString());
-
-            this.MemoryCache.Set("PataPawaPostPayLogon", operatorResponse, MemoryCacheEntryOptions);
-
-            return Result.Success(operatorResponse);
         }
 
         private MemoryCacheEntryOptions MemoryCacheEntryOptions =>

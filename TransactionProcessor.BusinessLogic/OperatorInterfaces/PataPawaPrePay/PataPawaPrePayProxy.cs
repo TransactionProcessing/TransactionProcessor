@@ -29,32 +29,37 @@ public class PataPawaPrePayProxy : IOperatorProxy{
     }
 
     public async Task<Result<OperatorResponse>> ProcessLogonMessage(CancellationToken cancellationToken){
-        // Check if we need to do a logon with the operator
-        OperatorResponse operatorResponse = this.MemoryCache.Get<OperatorResponse>("PataPawaPrePayLogon");
-        if (operatorResponse != null){
-            return Result.Success(operatorResponse);
+        try {
+            // Check if we need to do a logon with the operator
+            OperatorResponse operatorResponse = this.MemoryCache.Get<OperatorResponse>("PataPawaPrePayLogon");
+            if (operatorResponse != null) {
+                return Result.Success(operatorResponse);
+            }
+
+            HttpRequestMessage requestMessage = new HttpRequestMessage(HttpMethod.Post, this.Configuration.Url);
+            MultipartFormDataContent content = new MultipartFormDataContent();
+            content.Add(new StringContent("login"), "request");
+            content.Add(new StringContent(this.Configuration.Username), "username");
+            content.Add(new StringContent(this.Configuration.Password), "password");
+            requestMessage.Content = content;
+
+            HttpResponseMessage responseMessage = await this.HttpClient.SendAsync(requestMessage, cancellationToken);
+
+            // Check the send was successful
+            if (responseMessage.IsSuccessStatusCode == false) {
+                return Result.Failure($"Error sending logon request to Patapawa. Status Code [{responseMessage.StatusCode}]");
+            }
+
+            // Get the response
+            String responseContent = await responseMessage.Content.ReadAsStringAsync(cancellationToken);
+
+            Logger.LogInformation($"Received response message from Patapawa [{responseContent}]");
+
+            return this.CreateFromLogon(responseContent);
         }
-
-        HttpRequestMessage requestMessage = new HttpRequestMessage(HttpMethod.Post, this.Configuration.Url);
-        MultipartFormDataContent content = new MultipartFormDataContent();
-        content.Add(new StringContent("login"), "request");
-        content.Add(new StringContent(this.Configuration.Username), "username");
-        content.Add(new StringContent(this.Configuration.Password), "password");
-        requestMessage.Content = content;
-
-        HttpResponseMessage responseMessage = await this.HttpClient.SendAsync(requestMessage, cancellationToken);
-
-        // Check the send was successful
-        if (responseMessage.IsSuccessStatusCode == false){
-            return Result.Failure($"Error sending logon request to Patapawa. Status Code [{responseMessage.StatusCode}]");
+        catch (Exception ex) {
+            return Result.Failure($"Error processing logon message for PataPawaPrePay [{ex.Message}]");
         }
-
-        // Get the response
-        String responseContent = await responseMessage.Content.ReadAsStringAsync(cancellationToken);
-
-        Logger.LogInformation($"Received response message from Patapawa [{responseContent}]");
-
-        return this.CreateFromLogon(responseContent);
     }
 
     public async Task<Result<OperatorResponse>> ProcessSaleMessage(Guid transactionId, Guid operatorId,
