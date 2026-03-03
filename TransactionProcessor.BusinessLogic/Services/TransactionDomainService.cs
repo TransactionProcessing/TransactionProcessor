@@ -659,7 +659,7 @@ namespace TransactionProcessor.BusinessLogic.Services{
             DateTime? start = null, end = null;
 
             if (validationResult.Data.ResponseCode != TransactionResponseCode.Success) {
-                Logger.LogWarning($"Validation failed with ResponseCode {validationResult.Data.ResponseCode}: {validationResult.Data.ResponseMessage}");
+                Logger.LogInformation($"Validation failed with ResponseCode {validationResult.Data.ResponseCode}: {validationResult.Data.ResponseMessage}");
                 transactionAggregate.DeclineTransactionLocally(validationResult.Data.ResponseCode, validationResult.Data.ResponseMessage);
                 return (start, end);
             }
