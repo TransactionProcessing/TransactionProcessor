@@ -89,7 +89,7 @@ public class ProjectionHandler<TState> : IProjectionHandler where TState : Share
 
         builder.Insert(0, $"Total time: {stopwatch.ElapsedMilliseconds}ms|");
 
-        Logger.LogWarning(builder.ToString());
+        Logger.LogInformation(builder.ToString());
         Logger.LogInformation($"{@event.EventId}|Event Type {@event.EventType} Id [{@event.EventId}] for state {state.GetType().Name} took {stopwatch.ElapsedMilliseconds}ms to process");
         
         return Result.Success();

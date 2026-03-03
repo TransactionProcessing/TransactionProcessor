@@ -35,11 +35,11 @@ public class StateProjectionEventHandler<TState> : IDomainEventHandler where TSt
             return await this.MigrateDatabase((EstateDomainEvents.EstateCreatedEvent)domainEvent, cancellationToken);
         }
 
-        Logger.LogWarning($"|{domainEvent.EventId}|State Projection Domain Event Handler - Inside Handle {domainEvent.EventType}");
+        Logger.LogInformation($"|{domainEvent.EventId}|State Projection Domain Event Handler - Inside Handle {domainEvent.EventType}");
         Stopwatch sw = Stopwatch.StartNew();
         Result result = await this.ProjectionHandler.Handle(domainEvent, cancellationToken);
         sw.Stop();
-        Logger.LogWarning($"|{domainEvent.EventId}|State Projection Event Handler - after Handle {domainEvent.EventType} time {sw.ElapsedMilliseconds}ms");
+        Logger.LogInformation($"|{domainEvent.EventId}|State Projection Event Handler - after Handle {domainEvent.EventType} time {sw.ElapsedMilliseconds}ms");
 
         return result;
     }

@@ -375,7 +375,7 @@ ALTER DATABASE [{dbName}] SET MULTI_USER;
         catch (UniqueConstraintException uex)
         {
             // Swallow the error
-            Logger.LogWarning(BuildUniqueConstraintExceptionLogMessage(uex));
+            Logger.LogInformation(BuildUniqueConstraintExceptionLogMessage(uex));
             return Result.Success();
         }
     }
