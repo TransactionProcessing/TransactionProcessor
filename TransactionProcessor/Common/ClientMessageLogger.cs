@@ -1,4 +1,5 @@
-﻿using Microsoft.Extensions.Logging;
+﻿using System.Net;
+using Microsoft.Extensions.Logging;
 using Shared.Middleware;
 
 namespace TransactionProcessor.Common;
@@ -38,12 +39,28 @@ internal sealed class ClientMessageLogger :
 
     #region Methods
 
-    public void AfterReceiveReply(ref Message reply, Object correlationState) => LogMessage(LogType.Request,$"Received SOAP reply from {this.ClientName}:\r\n{reply}");
-    
+    public void AfterReceiveReply(ref Message reply, Object correlationState) {
+
+        if (reply.Properties.TryGetValue(
+                HttpResponseMessageProperty.Name,
+                out object httpResponseObj))
+        {
+            HttpResponseMessageProperty httpResponse = (HttpResponseMessageProperty)httpResponseObj;
+
+            HttpStatusCode statusCode = httpResponse.StatusCode;
+            if (statusCode != HttpStatusCode.OK) {
+                Logger.LogWarning($"Received failed SOAP reply from {this.ClientName}:\r\n{reply}");
+                return;
+            }
+
+            LogMessage(LogType.Response, $"Received SOAP reply from {this.ClientName}:\r\n{reply}");
+        }
+    }
+
 
     public Object BeforeSendRequest(ref Message request, IClientChannel channel)
     {
-        LogMessage(LogType.Response, $"Sending SOAP request to {this.ClientName}:\r\n{request}");
+        LogMessage(LogType.Request, $"Sending SOAP request to {this.ClientName}:\r\n{request}");
         return null;
     }
 
