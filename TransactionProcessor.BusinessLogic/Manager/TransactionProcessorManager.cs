@@ -49,71 +49,76 @@ namespace TransactionProcessor.BusinessLogic.Manager
         public async Task<Result<List<Contract>>> GetContracts(Guid estateId,
                                                                     CancellationToken cancellationToken)
         {
-            Result<List<Contract>> getContractsResult = await this.TransactionProcessorReadModelRepository.GetContracts(estateId, cancellationToken);
+            return await AsyncExecutor.ExecuteSafeAsync(async ct =>{
+                Result<List<Contract>> getContractsResult = await this.TransactionProcessorReadModelRepository.GetContracts(estateId, ct);
 
-            if (getContractsResult.IsFailed)
-                return ResultHelpers.CreateFailure(getContractsResult);
+                if (getContractsResult.IsFailed)
+                    return ResultHelpers.CreateFailure(getContractsResult);
 
-            return Result.Success(getContractsResult.Data);
+                return Result.Success(getContractsResult.Data);
+            }, cancellationToken);
         }
 
         public async Task<Result<Contract>> GetContract(Guid estateId,
                                                 Guid contractId,
                                                 CancellationToken cancellationToken)
         {
-            Result<ContractAggregate> getContractResult = await this.AggregateService.GetLatest<ContractAggregate>(contractId, cancellationToken);
-            if (getContractResult.IsFailed)
-                return ResultHelpers.CreateFailure(getContractResult);
+            return await AsyncExecutor.ExecuteSafeAsync(async ct => {
+                Result<ContractAggregate> getContractResult = await this.AggregateService.GetLatest<ContractAggregate>(contractId, ct);
+                if (getContractResult.IsFailed)
+                    return ResultHelpers.CreateFailure(getContractResult);
 
-            ContractAggregate contractAggregate = getContractResult.Data;
+                ContractAggregate contractAggregate = getContractResult.Data;
 
-            if (contractAggregate.IsCreated == false)
-            {
-                return Result.NotFound($"No contract found with Id [{estateId}]");
-            }
-            Contract contractModel = contractAggregate.GetContract();
+                if (contractAggregate.IsCreated == false) {
+                    return Result.NotFound($"No contract found with Id [{estateId}]");
+                }
 
-            return Result.Success(contractModel);
+                Contract contractModel = contractAggregate.GetContract();
+
+                return Result.Success(contractModel);
+            }, cancellationToken);
         }
 
         public async Task<Result<Models.Estate.Estate>> GetEstate(Guid estateId,
-                                                  CancellationToken cancellationToken){
+                                                  CancellationToken cancellationToken) {
 
-            Result<EstateAggregate> getEstateResult = await this.AggregateService.GetLatest<EstateAggregate>(estateId, cancellationToken);
-            if (getEstateResult.IsFailed)
-                return ResultHelpers.CreateFailure(getEstateResult);
-            
-            EstateAggregate estateAggregate = getEstateResult.Data;
-            if (estateAggregate.IsCreated == false){
-                return Result.NotFound($"No estate found with Id [{estateId}]");
-            }
+            return await AsyncExecutor.ExecuteSafeAsync(async ct => {
+                Result<EstateAggregate> getEstateResult = await this.AggregateService.GetLatest<EstateAggregate>(estateId, ct);
+                if (getEstateResult.IsFailed)
+                    return ResultHelpers.CreateFailure(getEstateResult);
 
-            Models.Estate.Estate estateModel = estateAggregate.GetEstate();
+                EstateAggregate estateAggregate = getEstateResult.Data;
+                if (estateAggregate.IsCreated == false) {
+                    return Result.NotFound($"No estate found with Id [{estateId}]");
+                }
 
-            if (estateModel.Operators != null)
-            {
-                foreach (Operator @operator in estateModel.Operators)
-                {
-                    var getOperatorResult = await this.AggregateService.GetLatest<OperatorAggregate>(@operator.OperatorId, cancellationToken);
-                    if (getOperatorResult.IsSuccess) {
-                        OperatorAggregate operatorAggregate = getOperatorResult.Data;
-                        @operator.Name = operatorAggregate.Name;
+                Models.Estate.Estate estateModel = estateAggregate.GetEstate();
+
+                if (estateModel.Operators != null) {
+                    foreach (Operator @operator in estateModel.Operators) {
+                        var getOperatorResult = await this.AggregateService.GetLatest<OperatorAggregate>(@operator.OperatorId, ct);
+                        if (getOperatorResult.IsSuccess) {
+                            OperatorAggregate operatorAggregate = getOperatorResult.Data;
+                            @operator.Name = operatorAggregate.Name;
+                        }
                     }
                 }
-            }
 
-            return Result.Success(estateModel);
+                return Result.Success(estateModel);
+            }, cancellationToken);
         }
 
         public async Task<Result<List<Models.Estate.Estate>>> GetEstates(Guid estateId,
                                                    CancellationToken cancellationToken){
-            Result<Models.Estate.Estate> getEstateResult= await this.TransactionProcessorReadModelRepository.GetEstate(estateId, cancellationToken);
-            if (getEstateResult.IsFailed)
-                return Result.NotFound($"No estate found with Id [{estateId}]");
-            
-            return Result.Success(new List<Models.Estate.Estate>(){
-                getEstateResult.Data
-                                     });
+            return await AsyncExecutor.ExecuteSafeAsync(async ct => {
+                    Result<Models.Estate.Estate> getEstateResult = await this.TransactionProcessorReadModelRepository.GetEstate(estateId, ct);
+                    if (getEstateResult.IsFailed)
+                        return Result.NotFound($"No estate found with Id [{estateId}]");
+
+                    return Result.Success(new List<Models.Estate.Estate>() { getEstateResult.Data });
+                },
+                cancellationToken);
         }
 
         public async Task<Result<Merchant>> GetMerchant(Guid estateId,
@@ -153,30 +158,33 @@ namespace TransactionProcessor.BusinessLogic.Manager
                                                                Guid merchantId,
                                                                CancellationToken cancellationToken)
         {
-            Result<List<Contract>> getMerchantContractsResult = await this.TransactionProcessorReadModelRepository.GetMerchantContracts(estateId, merchantId, cancellationToken);
-            if (getMerchantContractsResult.IsFailed)
-                return ResultHelpers.CreateFailure(getMerchantContractsResult);
+            return await AsyncExecutor.ExecuteSafeAsync(async ct => {
+                Result<List<Contract>> getMerchantContractsResult = await this.TransactionProcessorReadModelRepository.GetMerchantContracts(estateId, merchantId, ct);
+                if (getMerchantContractsResult.IsFailed)
+                    return ResultHelpers.CreateFailure(getMerchantContractsResult);
 
-            List<Contract> contractModels = getMerchantContractsResult.Data;
-            if (contractModels.Any() == false)
-                return Result.NotFound($"No contracts for Estate {estateId} and Merchant {merchantId}");
+                List<Contract> contractModels = getMerchantContractsResult.Data;
+                if (contractModels.Any() == false)
+                    return Result.NotFound($"No contracts for Estate {estateId} and Merchant {merchantId}");
 
-            return Result.Success(contractModels);
+                return Result.Success(contractModels);
+            }, cancellationToken);
         }
 
         public async Task<Result<List<Merchant>>> GetMerchants(Guid estateId,
                                                        CancellationToken cancellationToken)
         {
-            Result<List<Merchant>> getMerchantsResult = await this.TransactionProcessorReadModelRepository.GetMerchants(estateId, cancellationToken);
-            if (getMerchantsResult.IsFailed)
-                return ResultHelpers.CreateFailure(getMerchantsResult);
-            List<Merchant> merchants = getMerchantsResult.Data;
-            if (merchants == null || merchants.Any() == false)
-            {
-                return Result.NotFound($"No Merchants found for estate Id {estateId}");
-            }
+            return await AsyncExecutor.ExecuteSafeAsync(async ct => {
+                Result<List<Merchant>> getMerchantsResult = await this.TransactionProcessorReadModelRepository.GetMerchants(estateId, ct);
+                if (getMerchantsResult.IsFailed)
+                    return ResultHelpers.CreateFailure(getMerchantsResult);
+                List<Merchant> merchants = getMerchantsResult.Data;
+                if (merchants == null || merchants.Any() == false) {
+                    return Result.NotFound($"No Merchants found for estate Id {estateId}");
+                }
 
-            return Result.Success(merchants);
+                return Result.Success(merchants);
+            },cancellationToken);
         }
 
         public async Task<Result<List<Models.Contract.ContractProductTransactionFee>>> GetTransactionFeesForProduct(Guid estateId,
@@ -224,11 +232,13 @@ namespace TransactionProcessor.BusinessLogic.Manager
 
         public async Task<Result<List<Models.Operator.Operator>>> GetOperators(Guid estateId, CancellationToken cancellationToken)
         {
-            Result<List<Models.Operator.Operator>> getOperatorsResult = await this.TransactionProcessorReadModelRepository.GetOperators(estateId, cancellationToken);
-            if (getOperatorsResult.IsFailed)
-                return ResultHelpers.CreateFailure(getOperatorsResult);
+            return await AsyncExecutor.ExecuteSafeAsync(async ct => {
+                Result<List<Models.Operator.Operator>> getOperatorsResult = await this.TransactionProcessorReadModelRepository.GetOperators(estateId, ct);
+                if (getOperatorsResult.IsFailed)
+                    return ResultHelpers.CreateFailure(getOperatorsResult);
 
-            return Result.Success(getOperatorsResult.Data);
+                return Result.Success(getOperatorsResult.Data);
+            }, cancellationToken);
         }
 
         public async Task<Result<SettlementModel>> GetSettlement(Guid estateId,
@@ -236,7 +246,8 @@ namespace TransactionProcessor.BusinessLogic.Manager
                                                                  Guid settlementId,
                                                                  CancellationToken cancellationToken)
         {
-            return await this.TransactionProcessorReadModelRepository.GetSettlement(estateId, merchantId, settlementId, cancellationToken);
+            return await AsyncExecutor.ExecuteSafeAsync(async ct => { return await this.TransactionProcessorReadModelRepository.GetSettlement(estateId, merchantId, settlementId, ct); },
+                cancellationToken);
         }
 
         public async Task<Result<List<SettlementModel>>> GetSettlements(Guid estateId,
@@ -245,7 +256,12 @@ namespace TransactionProcessor.BusinessLogic.Manager
                                                                         String endDate,
                                                                         CancellationToken cancellationToken)
         {
-            return await this.TransactionProcessorReadModelRepository.GetSettlements(estateId, merchantId, startDate, endDate, cancellationToken);
+            return await AsyncExecutor.ExecuteSafeAsync(async ct => {
+                Result<List<SettlementModel>> getSettlementsResult = await this.TransactionProcessorReadModelRepository.GetSettlements(estateId, merchantId, startDate, endDate, ct);
+                if (getSettlementsResult.IsFailed) return ResultHelpers.CreateFailure(getSettlementsResult);
+
+                return Result.Success(getSettlementsResult.Data);
+            }, cancellationToken);
         }
 
         public async Task<Result<PendingSettlementModel>> GetPendingSettlement(Guid estateId,

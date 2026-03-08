@@ -1,5 +1,7 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.EntityFrameworkCore.DynamicLinq;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
+using SimpleResults;
 using TransactionProcessor.Database.Entities;
 using TransactionProcessor.Database.Entities.Summary;
 using TransactionProcessor.Database.ViewEntities;
@@ -483,4 +485,58 @@ public static class Extensions{
     }
 
     #endregion
+}
+
+public static class DbQueryHelpers {
+    public static async Task<Result<T>> ExecuteQuerySafeSum<T>(IQueryable query,
+                                                                CancellationToken cancellationToken,
+                                                                string contextMessage = null)
+    {
+        try
+        {
+            T item = await query.SumAsync(cancellationToken);
+            return Result.Success(item);
+        }
+        catch (Exception ex)
+        {
+            string msg = contextMessage == null ? $"Error executing query: {ex.Message}" : $"{contextMessage}: {ex.Message}";
+            return Result.Failure(msg);
+        }
+    }
+
+    public static async Task<Result<List<T>>> ExecuteQuerySafeToList<T>(IQueryable<T> query,
+                                                                        CancellationToken cancellationToken,
+                                                                        string contextMessage = null)
+    {
+        try
+        {
+            List<T> items = await query.ToListAsync(cancellationToken);
+            return Result.Success(items);
+        }
+        catch (Exception ex)
+        {
+            string msg = contextMessage == null ? $"Error executing query: {ex.Message}" : $"{contextMessage}: {ex.Message}";
+            return Result.Failure(msg);
+        }
+    }
+
+    public static async Task<Result<T>> ExecuteQuerySafeSingleOrDefault<T>(IQueryable<T> query,
+                                                                           CancellationToken cancellationToken,
+                                                                           string contextMessage = null)
+    {
+        try
+        {
+            T item = await query.SingleOrDefaultAsync(cancellationToken);
+
+            if (item == null)
+                return Result.NotFound();
+
+            return Result.Success(item);
+        }
+        catch (Exception ex)
+        {
+            string msg = contextMessage == null ? $"Error executing query: {ex.Message}" : $"{contextMessage}: {ex.Message}";
+            return Result.Failure(msg);
+        }
+    }
 }
