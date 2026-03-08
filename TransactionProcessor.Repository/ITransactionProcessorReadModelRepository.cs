@@ -2188,3 +2188,33 @@ namespace TransactionProcessor.Repository {
         }
     }
 }
+
+
+public static class AsyncExecutor
+{
+    public static async Task<Result<T>> ExecuteSafeAsync<T>(Func<CancellationToken, Task<Result<T>>> func, CancellationToken cancellationToken)
+    {
+        try
+        {
+            return await func(cancellationToken);
+        }
+        catch (Exception ex)
+        {
+            Logger.LogError(new Exception("Error executing async operation", ex));
+            return Result.Failure(ex.Message);
+        }
+    }
+
+    public static async Task<Result> ExecuteSafeAsync(Func<CancellationToken, Task<Result>> func, CancellationToken cancellationToken)
+    {
+        try
+        {
+            return await func(cancellationToken);
+        }
+        catch (Exception ex)
+        {
+            Logger.LogError(new Exception("Error executing async operation", ex));
+            return Result.Failure(ex.Message);
+        }
+    }
+}
