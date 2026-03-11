@@ -114,7 +114,7 @@ namespace TransactionProcessor.Aggregates.Tests
             aggregate.Create(TestData.EstateId, TestData.MerchantName, TestData.DateMerchantCreated, TestData.AddressModel, TestData.ContactModel,
                 TestData.SettlementScheduleModel);
 
-            Address newAddress = new(Guid.Empty, TestData.MerchantAddressLine1,
+            Address newAddress = Address.Create(Guid.Empty, TestData.MerchantAddressLine1,
                 TestData.MerchantAddressLine2,
                 TestData.MerchantAddressLine3,
                 TestData.MerchantAddressLine4,
@@ -577,7 +577,7 @@ namespace TransactionProcessor.Aggregates.Tests
             Merchant merchantModel = aggregate.GetMerchant();
             Address? address = merchantModel.Addresses.ShouldHaveSingleItem();
 
-            Address newAddress = new(address.AddressId, TestData.MerchantAddressLine1Update, TestData.MerchantAddressLine2Update, TestData.MerchantAddressLine3Update, TestData.MerchantAddressLine4Update, TestData.MerchantTownUpdate, TestData.MerchantRegionUpdate, TestData.MerchantPostalCodeUpdate, TestData.MerchantCountryUpdate);
+            Address newAddress = Address.Create(address.AddressId, TestData.MerchantAddressLine1Update, TestData.MerchantAddressLine2Update, TestData.MerchantAddressLine3Update, TestData.MerchantAddressLine4Update, TestData.MerchantTownUpdate, TestData.MerchantRegionUpdate, TestData.MerchantPostalCodeUpdate, TestData.MerchantCountryUpdate);
             Result result = aggregate.UpdateAddress(newAddress);
             result.IsSuccess.ShouldBeTrue();
 
@@ -598,7 +598,7 @@ namespace TransactionProcessor.Aggregates.Tests
         {
             MerchantAggregate aggregate = MerchantAggregate.Create(TestData.MerchantId);
 
-            Address newAddress = new(Guid.NewGuid(), TestData.MerchantAddressLine1Update, TestData.MerchantAddressLine2Update, TestData.MerchantAddressLine3Update, TestData.MerchantAddressLine4Update, TestData.MerchantTownUpdate, TestData.MerchantRegionUpdate, TestData.MerchantPostalCodeUpdate, TestData.MerchantCountryUpdate);
+            Address newAddress = Address.Create(Guid.NewGuid(), TestData.MerchantAddressLine1Update, TestData.MerchantAddressLine2Update, TestData.MerchantAddressLine3Update, TestData.MerchantAddressLine4Update, TestData.MerchantTownUpdate, TestData.MerchantRegionUpdate, TestData.MerchantPostalCodeUpdate, TestData.MerchantCountryUpdate);
             Result result = aggregate.UpdateAddress(newAddress);
             result.IsFailed.ShouldBeTrue();
             result.Status.ShouldBe(ResultStatus.Invalid);
@@ -610,7 +610,7 @@ namespace TransactionProcessor.Aggregates.Tests
             aggregate.Create(TestData.EstateId, TestData.MerchantName, TestData.DateMerchantCreated, TestData.AddressModel, TestData.ContactModel,
                 TestData.SettlementScheduleModel);
 
-            Address newAddress = new(Guid.NewGuid(), TestData.MerchantAddressLine1Update, TestData.MerchantAddressLine2Update, TestData.MerchantAddressLine3Update, TestData.MerchantAddressLine4Update, TestData.MerchantTownUpdate, TestData.MerchantRegionUpdate, TestData.MerchantPostalCodeUpdate, TestData.MerchantCountryUpdate);
+            Address newAddress = Address.Create(Guid.NewGuid(), TestData.MerchantAddressLine1Update, TestData.MerchantAddressLine2Update, TestData.MerchantAddressLine3Update, TestData.MerchantAddressLine4Update, TestData.MerchantTownUpdate, TestData.MerchantRegionUpdate, TestData.MerchantPostalCodeUpdate, TestData.MerchantCountryUpdate);
 
             Result result = aggregate.UpdateAddress(newAddress);
             result.IsSuccess.ShouldBeTrue();
@@ -625,7 +625,7 @@ namespace TransactionProcessor.Aggregates.Tests
             Merchant merchantModel = aggregate.GetMerchant();
             Address? address = merchantModel.Addresses.ShouldHaveSingleItem();
 
-            Address newAddress = new (address.AddressId, address.AddressLine1, address.AddressLine2, address.AddressLine3, address.AddressLine4, address.Town, address.Region, address.PostalCode, address.Country);
+            Address newAddress = Address.Create(address.AddressId, address.AddressLine1, address.AddressLine2, address.AddressLine3, address.AddressLine4, address.Town, address.Region, address.PostalCode, address.Country);
 
             Result result = aggregate.UpdateAddress(newAddress);
 
@@ -845,5 +845,48 @@ namespace TransactionProcessor.Aggregates.Tests
             contractModel.ContractId.ShouldBe(TestData.ContractId);
             contractModel.IsDeleted.ShouldBeFalse();
         }
+
+        [Theory]
+        [InlineData("")]
+        [InlineData(null)]
+        public void Address_AddressLine1IsRequired_ErrorThrown(String addressLine1){
+            Should.Throw<ArgumentException>(() => {
+                Address.Create(Guid.NewGuid(), addressLine1, TestData.MerchantAddressLine2, TestData.MerchantAddressLine3, TestData.MerchantAddressLine4, TestData.MerchantTown, TestData.MerchantRegion, TestData.MerchantPostalCode, TestData.MerchantCountry);
+            });
+        }
+
+        [Theory]
+        [InlineData("")]
+        [InlineData(null)]
+        public void Address_TownIsRequired_ErrorThrown(String town)
+        {
+            Should.Throw<ArgumentException>(() => {
+                Address.Create(Guid.NewGuid(), TestData.MerchantAddressLine1, TestData.MerchantAddressLine2, TestData.MerchantAddressLine3, TestData.MerchantAddressLine4, town, TestData.MerchantRegion, TestData.MerchantPostalCode, TestData.MerchantCountry);
+            });
+        }
+
+
+        [Theory]
+        [InlineData("")]
+        [InlineData(null)]
+        public void Address_PostalCodeIsRequired_ErrorThrown(String postalCode)
+        {
+            Should.Throw<ArgumentException>(() => {
+                Address.Create(Guid.NewGuid(), TestData.MerchantAddressLine1, TestData.MerchantAddressLine2, TestData.MerchantAddressLine3, TestData.MerchantAddressLine4, TestData.MerchantTown, TestData.MerchantRegion, postalCode, TestData.MerchantCountry);
+            });
+        }
+
+
+
+        [Theory]
+        [InlineData("")]
+        [InlineData(null)]
+        public void Address_CountryIsRequired_ErrorThrown(String country)
+        {
+            Should.Throw<ArgumentException>(() => {
+                Address.Create(Guid.NewGuid(), TestData.MerchantAddressLine1, TestData.MerchantAddressLine2, TestData.MerchantAddressLine3, TestData.MerchantAddressLine4, TestData.MerchantTown, TestData.MerchantRegion, TestData.MerchantPostalCode, country);
+            });
+        }
+
     }
 }

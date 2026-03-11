@@ -145,7 +145,7 @@ namespace TransactionProcessor.Testing
                 MerchantName = TestData.MerchantName,
                 SettlementSchedule = Models.Merchant.SettlementSchedule.Immediate,
                 Addresses = new List<Models.Merchant.Address>{
-                    new Models.Merchant.Address(Guid.NewGuid(), MerchantAddressLine1,MerchantAddressLine2,
+                    Models.Merchant.Address.Create(Guid.NewGuid(), MerchantAddressLine1,MerchantAddressLine2,
                         MerchantAddressLine3,MerchantAddressLine4, MerchantTown,MerchantRegion,
                         MerchantPostalCode, MerchantCountry)
                 },
@@ -165,7 +165,7 @@ namespace TransactionProcessor.Testing
                 MerchantName = TestData.MerchantName,
                 SettlementSchedule = Models.Merchant.SettlementSchedule.Immediate,
                 Addresses = new List<Models.Merchant.Address>{
-                    new Models.Merchant.Address(Guid.NewGuid(), MerchantAddressLine1,MerchantAddressLine2,
+                    Models.Merchant.Address.Create(Guid.NewGuid(), MerchantAddressLine1,MerchantAddressLine2,
                         MerchantAddressLine3,MerchantAddressLine4, MerchantTown,MerchantRegion,
                         MerchantPostalCode, MerchantCountry)
                 },
@@ -184,7 +184,7 @@ namespace TransactionProcessor.Testing
                                             MerchantName = TestData.MerchantName,
                                             SettlementSchedule = Models.Merchant.SettlementSchedule.Immediate,
                                             Addresses = new List<Models.Merchant.Address>{
-                                                                                             new Models.Merchant.Address(Guid.NewGuid(), MerchantAddressLine1,MerchantAddressLine2,
+                                                                                             Models.Merchant.Address.Create(Guid.NewGuid(), MerchantAddressLine1,MerchantAddressLine2,
                                                                                                  MerchantAddressLine3,MerchantAddressLine4, MerchantTown,MerchantRegion,
                                                                                                  MerchantPostalCode, MerchantCountry)
                                                                                          },
@@ -2102,7 +2102,7 @@ namespace TransactionProcessor.Testing
                 MerchantStatementDate = TestData.StatementCreateDate
             };
 
-        public static Models.Merchant.Address AddressModel => new (Guid.Empty, AddressLine1, AddressLine2, AddressLine3, AddressLine4, Town, Region, PostCode, Country);
+        public static Models.Merchant.Address AddressModel => Models.Merchant.Address.Create(Guid.Empty, AddressLine1, AddressLine2, AddressLine3, AddressLine4, Town, Region, PostCode, Country);
 
         public static Models.Merchant.Contact ContactModel => new(Guid.Empty, ContactEmail, ContactName, ContactPhone);
 
