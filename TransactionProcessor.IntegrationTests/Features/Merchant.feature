@@ -54,8 +54,8 @@ Scenario: Get Invalid Merchant
 
 Scenario: Create Merchant
 	When I create the following merchants
-	| MerchantName    | AddressLine1   | Town     | Region      | Country        | ContactName    | EmailAddress                 | EstateName    | SettlementSchedule |
-	| Test Merchant 1 | Address Line 1 | TestTown | Test Region | United Kingdom | Test Contact 1 | testcontact1@merchant1.co.uk | Test Estate 1 | Weekly             |
+	| MerchantName    | AddressLine1   | Town     | Region      | PostalCode | Country        | ContactName    | EmailAddress                 | EstateName    | SettlementSchedule |
+	| Test Merchant 1 | Address Line 1 | TestTown | Test Region | TE57 1NG | United Kingdom | Test Contact 1 | testcontact1@merchant1.co.uk | Test Estate 1 | Weekly             |
 	When I assign the following operator to the merchants
 	| OperatorName    | MerchantName    | MerchantNumber | TerminalNumber | EstateName    |
 	| Test Operator 1 | Test Merchant 1 | 00000001       | 10000001       | Test Estate 1 |
@@ -103,10 +103,10 @@ Scenario: Create Merchant
 	| -100  | LastMonth | Test Merchant 1 | Test Estate 1 |
 
 	Given I create the following merchants
-	| MerchantName    | AddressLine1   | Town     | Region      | Country        | ContactName    | EmailAddress                 | EstateName    |
-	| Test Merchant 2 | Address Line 1 | TestTown | Test Region | United Kingdom | Test Contact 1 | testcontact1@merchant1.co.uk | Test Estate 1 |
-	| Test Merchant 3 | Address Line 1 | TestTown | Test Region | United Kingdom | Test Contact 1 | testcontact1@merchant1.co.uk | Test Estate 1 |
-	| Test Merchant 4 | Address Line 1 | TestTown | Test Region | United Kingdom | Test Contact 1 | testcontact1@merchant1.co.uk | Test Estate 1 |
+	| MerchantName    | AddressLine1   | Town     | Region      | PostalCode | Country        | ContactName    | EmailAddress                 | EstateName    |
+	| Test Merchant 2 | Address Line 1 | TestTown | Test Region | TE57 2NG           | United Kingdom | Test Contact 1 | testcontact1@merchant1.co.uk | Test Estate 1 |
+	| Test Merchant 3 | Address Line 1 | TestTown | Test Region | TE57 3NG           | United Kingdom | Test Contact 1 | testcontact1@merchant1.co.uk | Test Estate 1 |
+	| Test Merchant 4 | Address Line 1 | TestTown | Test Region | TE57 4NG           | United Kingdom | Test Contact 1 | testcontact1@merchant1.co.uk | Test Estate 1 |
 
 	When I set the merchants settlement schedule
 	| MerchantName    | EstateName    | SettlementSchedule |
@@ -117,12 +117,12 @@ Scenario: Create Merchant
 @PRTest
 Scenario: Get Merchants for Estate
 	Given I create the following merchants
-	| MerchantName    | AddressLine1   | Town     | Region      | Country        | ContactName    | EmailAddress                 | EstateName    |
-	| Test Merchant 1 | Address Line 1 | TestTown | Test Region | United Kingdom | Test Contact 1 | testcontact1@merchant1.co.uk | Test Estate 1 |
-	| Test Merchant 2 | Address Line 1 | TestTown | Test Region | United Kingdom | Test Contact 1 | testcontact1@merchant2.co.uk | Test Estate 1 |
-	| Test Merchant 3 | Address Line 1 | TestTown | Test Region | United Kingdom | Test Contact 1 | testcontact1@merchant3.co.uk | Test Estate 1 |
-	| Test Merchant 4 | Address Line 1 | TestTown | Test Region | United Kingdom | Test Contact 1 | testcontact1@merchant4.co.uk | Test Estate 2 |
-	| Test Merchant 5 | Address Line 1 | TestTown | Test Region | United Kingdom | Test Contact 1 | testcontact1@merchant5.co.uk | Test Estate 2 |
+	| MerchantName    | AddressLine1   | Town     | Region      | PostalCode | Country        | ContactName    | EmailAddress                 | EstateName    |
+	| Test Merchant 1 | Address Line 1 | TestTown | Test Region | TE57 1NG | United Kingdom | Test Contact 1 | testcontact1@merchant1.co.uk | Test Estate 1 |
+	| Test Merchant 2 | Address Line 1 | TestTown | Test Region | TE57 2NG | United Kingdom | Test Contact 1 | testcontact1@merchant2.co.uk | Test Estate 1 |
+	| Test Merchant 3 | Address Line 1 | TestTown | Test Region | TE57 3NG | United Kingdom | Test Contact 1 | testcontact1@merchant3.co.uk | Test Estate 1 |
+	| Test Merchant 4 | Address Line 1 | TestTown | Test Region | TE57 4NG | United Kingdom | Test Contact 1 | testcontact1@merchant4.co.uk | Test Estate 2 |
+	| Test Merchant 5 | Address Line 1 | TestTown | Test Region | TE57 5NG | United Kingdom | Test Contact 1 | testcontact1@merchant5.co.uk | Test Estate 2 |
 
 	When I assign the following operator to the merchants
 	| OperatorName    | MerchantName    | MerchantNumber | TerminalNumber | EstateName    |
@@ -155,8 +155,8 @@ Scenario: Get Merchants for Estate
 @PRTest
 Scenario: Update Merchant
 	When I create the following merchants
-	| MerchantName    | AddressLine1   | Town     | Region      | Country        | ContactName    | EmailAddress                 | EstateName    | SettlementSchedule |
-	| Test Merchant 1 | Address Line 1 | TestTown | Test Region | United Kingdom | Test Contact 1 | testcontact1@merchant1.co.uk | Test Estate 1 | Weekly             |
+	| MerchantName    | AddressLine1   | Town     | Region      | PostalCode | Country        | ContactName    | EmailAddress                 | EstateName    | SettlementSchedule |
+	| Test Merchant 1 | Address Line 1 | TestTown | Test Region | TE57 1NG   | United Kingdom | Test Contact 1 | testcontact1@merchant1.co.uk | Test Estate 1 | Weekly             |
 	When I assign the following operator to the merchants
 	| OperatorName    | MerchantName    | MerchantNumber | TerminalNumber | EstateName    |
 	| Test Operator 1 | Test Merchant 1 | 00000001       | 10000001       | Test Estate 1 |
@@ -173,8 +173,8 @@ Scenario: Update Merchant
 	| UpdateMerchantName | SettlementSchedule | EstateName    | MerchantName    |
 	| Update Merchant 1  | Monthly            | Test Estate 1 | Test Merchant 1 |
 	When I update the merchants address with the following details
-	| AddressLine1   | AddressLine2   | AddressLine3   | AddressLine4   | Town     | Region      | Country        | EstateName    | MerchantName    |
-	| Address Line 1U | Address Line 2 | Address Line 3 | Address Line 4 | TestTownU | Test RegionU | United KingdomU | Test Estate 1 | Test Merchant 1 |
+	| AddressLine1    | AddressLine2   | AddressLine3   | AddressLine4   | Town      | Region       | PostalCode | Country         | EstateName    | MerchantName    |
+	| Address Line 1U | Address Line 2 | Address Line 3 | Address Line 4 | TestTownU | Test RegionU | TE57 2NG   | United KingdomU | Test Estate 1 | Test Merchant 1 |
 	When I update the merchants contact with the following details
 	| ContactName    | EmailAddress                       | PhoneNumber | EstateName    | MerchantName    |
 	| Test Contact 1U | testcontact1update@merchant1.co.uk | 12345678    | Test Estate 1 | Test Merchant 1 |

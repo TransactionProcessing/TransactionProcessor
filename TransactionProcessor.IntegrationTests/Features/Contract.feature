@@ -46,9 +46,9 @@ Background:
 Scenario: Get Merchant Contracts
 
 	Given I create the following merchants
-	| MerchantName    | AddressLine1   | Town     | Region      | Country        | ContactName    | EmailAddress                 | EstateName    |
-	| Test Merchant 1 | Address Line 1 | TestTown | Test Region | United Kingdom | Test Contact 1 | testcontact1@merchant1.co.uk | Test Estate 1 |
-	| Test Merchant 2 | Address Line 1 | TestTown | Test Region | United Kingdom | Test Contact 1 | testcontact1@merchant2.co.uk | Test Estate 2 |
+	| MerchantName    | AddressLine1   | Town     | Region      | PostalCode | Country        | ContactName    | EmailAddress                 | EstateName    |
+	| Test Merchant 1 | Address Line 1 | TestTown | Test Region | TE57 1NG   | United Kingdom | Test Contact 1 | testcontact1@merchant1.co.uk | Test Estate 1 |
+	| Test Merchant 2 | Address Line 1 | TestTown | Test Region | TE57 2NG   | United Kingdom | Test Contact 1 | testcontact1@merchant2.co.uk | Test Estate 2 |
 	
 	Given I create a contract with the following values
 	| EstateName    | OperatorName    | ContractDescription |

@@ -52,10 +52,10 @@ Background:
 	| Test Estate 2 | Safaricom    | Safaricom Contract  | Variable Topup | Percentage      | Merchant Commission | 0.85  |
 
 	Given I create the following merchants
-	| MerchantName    | AddressLine1   | Town     | Region      | Country        | ContactName    | EmailAddress                 | EstateName    |
-	| Test Merchant 1 | Address Line 1 | TestTown | Test Region | United Kingdom | Test Contact 1 | testcontact1@merchant1.co.uk | Test Estate 1 |
-	| Test Merchant 2 | Address Line 1 | TestTown | Test Region | United Kingdom | Test Contact 2 | testcontact2@merchant2.co.uk | Test Estate 1 |
-	| Test Merchant 3 | Address Line 1 | TestTown | Test Region | United Kingdom | Test Contact 3 | testcontact3@merchant2.co.uk | Test Estate 2 |
+	| MerchantName    | AddressLine1   | Town     | Region      | PostalCode | Country        | ContactName    | EmailAddress                 | EstateName    |
+	| Test Merchant 1 | Address Line 1 | TestTown | Test Region | TE57 1NG | United Kingdom | Test Contact 1 | testcontact1@merchant1.co.uk | Test Estate 1 |
+	| Test Merchant 2 | Address Line 1 | TestTown | Test Region | TE57 2NG | United Kingdom | Test Contact 2 | testcontact2@merchant2.co.uk | Test Estate 1 |
+	| Test Merchant 3 | Address Line 1 | TestTown | Test Region | TE57 3NG | United Kingdom | Test Contact 3 | testcontact3@merchant2.co.uk | Test Estate 2 |
 
 	Given I have assigned the following operator to the merchants
 	| OperatorName | MerchantName    | MerchantNumber | TerminalNumber | EstateName    |
