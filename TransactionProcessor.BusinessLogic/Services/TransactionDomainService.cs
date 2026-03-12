@@ -252,42 +252,9 @@ namespace TransactionProcessor.BusinessLogic.Services{
                     return ResultHelpers.CreateFailure(feesForCalculationResult);
 
                 List<CalculatedFee> resultFees = this.FeeCalculationManager.CalculateFees(feesForCalculationResult.Data, transactionAggregate.TransactionAmount.Value, command.CompletedDateTime);
-
-                IEnumerable<CalculatedFee> nonMerchantFees = resultFees.Where(f => f.FeeType == TransactionProcessor.Models.Contract.FeeType.ServiceProvider);
-                foreach (CalculatedFee calculatedFee in nonMerchantFees) {
-                    // Add Fee to the Transaction 
-                    transactionAggregate.AddFee(calculatedFee);
-                }
-
-                // Now deal with merchant fees 
-                List<CalculatedFee> merchantFees = resultFees.Where(f => f.FeeType == TransactionProcessor.Models.Contract.FeeType.Merchant).ToList();
-
-                if (merchantFees.Any()) {
-                    Result<Merchant> merchantResult = await this.GetMerchant(command.MerchantId, cancellationToken);
-                    if (merchantResult.IsFailed)
-                        return ResultHelpers.CreateFailure(merchantResult);
-                    if (merchantResult.Data.SettlementSchedule == Models.Merchant.SettlementSchedule.NotSet) {
-                        return Result.Failure($"Merchant {merchantResult.Data.MerchantId} does not have a settlement schedule configured");
-                    }
-
-                    foreach (CalculatedFee calculatedFee in merchantFees) {
-                        // Determine when the fee should be applied
-                        DateTime settlementDate = TransactionHelpers.CalculateSettlementDate(merchantResult.Data.SettlementSchedule, command.CompletedDateTime);
-
-                        Result stateResult = transactionAggregate.AddFeePendingSettlement(calculatedFee, settlementDate);
-                        if (stateResult.IsFailed)
-                            return ResultHelpers.CreateFailure(stateResult);
-                        
-                        if (merchantResult.Data.SettlementSchedule == Models.Merchant.SettlementSchedule.Immediate) {
-                            Guid settlementId = Helpers.CalculateSettlementAggregateId(settlementDate, command.MerchantId, command.EstateId);
-
-                            // Add fees to transaction now if settlement is immediate
-                            stateResult =transactionAggregate.AddSettledFee(calculatedFee, settlementDate, settlementId);
-                            if (stateResult.IsFailed)
-                                return ResultHelpers.CreateFailure(stateResult);
-                        }
-                    }
-                }
+                Result applyFeesResult = await this.ApplyCalculatedFees(transactionAggregate, resultFees, command, cancellationToken);
+                if (applyFeesResult.IsFailed)
+                    return applyFeesResult;
 
                 Result saveResult = await this.AggregateService.Save(transactionAggregate, cancellationToken);
                 if (saveResult.IsFailed)
@@ -386,7 +353,7 @@ namespace TransactionProcessor.BusinessLogic.Services{
         }
         
         private async Task<Result<List<TransactionFeeToCalculate>>> GetTransactionFeesForCalculation(TransactionAggregate transactionAggregate,
-                                                                                             CancellationToken cancellationToken) {
+                                                                                              CancellationToken cancellationToken) {
             // Get the fees to be calculated
             Result<List<ContractProductTransactionFee>> feesForProduct = await this.GetTransactionFeesForProduct(transactionAggregate.ContractId, transactionAggregate.ProductId, cancellationToken);
         
@@ -408,9 +375,71 @@ namespace TransactionProcessor.BusinessLogic.Services{
             return Result.Success(feesForCalculation);
         }
 
+        private async Task<Result> ApplyCalculatedFees(TransactionAggregate transactionAggregate,
+                                                       List<CalculatedFee> calculatedFees,
+                                                       TransactionCommands.CalculateFeesForTransactionCommand command,
+                                                       CancellationToken cancellationToken) {
+            this.ApplyNonMerchantFees(transactionAggregate, calculatedFees.Where(f => f.FeeType == TransactionProcessor.Models.Contract.FeeType.ServiceProvider));
+
+            List<CalculatedFee> merchantFees = calculatedFees.Where(f => f.FeeType == TransactionProcessor.Models.Contract.FeeType.Merchant).ToList();
+            if (merchantFees.Any() == false)
+                return Result.Success();
+
+            Result<Merchant> merchantResult = await this.GetMerchant(command.MerchantId, cancellationToken);
+            if (merchantResult.IsFailed)
+                return ResultHelpers.CreateFailure(merchantResult);
+
+            if (merchantResult.Data.SettlementSchedule == Models.Merchant.SettlementSchedule.NotSet)
+                return Result.Failure($"Merchant {merchantResult.Data.MerchantId} does not have a settlement schedule configured");
+
+            return this.ApplyMerchantFees(transactionAggregate, merchantResult.Data, merchantFees, command.CompletedDateTime, command.MerchantId, command.EstateId);
+        }
+
+        private void ApplyNonMerchantFees(TransactionAggregate transactionAggregate,
+                                          IEnumerable<CalculatedFee> calculatedFees) {
+            foreach (CalculatedFee calculatedFee in calculatedFees) {
+                transactionAggregate.AddFee(calculatedFee);
+            }
+        }
+
+        private Result ApplyMerchantFees(TransactionAggregate transactionAggregate,
+                                         Merchant merchant,
+                                         IEnumerable<CalculatedFee> calculatedFees,
+                                         DateTime completedDateTime,
+                                         Guid merchantId,
+                                         Guid estateId) {
+            foreach (CalculatedFee calculatedFee in calculatedFees) {
+                Result applyMerchantFeeResult = this.ApplyMerchantFee(transactionAggregate, merchant, calculatedFee, completedDateTime, merchantId, estateId);
+                if (applyMerchantFeeResult.IsFailed)
+                    return ResultHelpers.CreateFailure(applyMerchantFeeResult);
+            }
+
+            return Result.Success();
+        }
+
+        private Result ApplyMerchantFee(TransactionAggregate transactionAggregate,
+                                        Merchant merchant,
+                                        CalculatedFee calculatedFee,
+                                        DateTime completedDateTime,
+                                        Guid merchantId,
+                                        Guid estateId) {
+            DateTime settlementDate = TransactionHelpers.CalculateSettlementDate(merchant.SettlementSchedule, completedDateTime);
+
+            Result stateResult = transactionAggregate.AddFeePendingSettlement(calculatedFee, settlementDate);
+            if (stateResult.IsFailed)
+                return stateResult;
+
+            if (merchant.SettlementSchedule != Models.Merchant.SettlementSchedule.Immediate)
+                return Result.Success();
+
+            Guid settlementId = Helpers.CalculateSettlementAggregateId(settlementDate, merchantId, estateId);
+
+            return transactionAggregate.AddSettledFee(calculatedFee, settlementDate, settlementId);
+        }
+
         private async Task<Result> AddDeviceToMerchant(Guid merchantId,
-                                               String deviceIdentifier,
-                                               CancellationToken cancellationToken) {
+                                                String deviceIdentifier,
+                                                CancellationToken cancellationToken) {
             // Add the device to the merchant
             Result<MerchantAggregate> merchantAggregate = await this.AggregateService.GetLatest<MerchantAggregate>(merchantId, cancellationToken);
             if (merchantAggregate.IsFailed)

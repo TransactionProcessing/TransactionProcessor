@@ -637,6 +637,23 @@ namespace TransactionProcessor.BusinessLogic.Tests.Services{
         }
 
         [Fact]
+        public async Task TransactionDomainService_CalculateFeesForTransaction_MerchantWithoutSettlementSchedule_ResultFailed()
+        {
+            this.AggregateService.Setup(t => t.GetLatest<TransactionAggregate>(It.IsAny<Guid>(), It.IsAny<CancellationToken>())).ReturnsAsync(Result.Success(TestData.GetCompletedAuthorisedSaleTransactionAggregate()));
+            this.AggregateService.Setup(t => t.Save(It.IsAny<TransactionAggregate>(), It.IsAny<CancellationToken>())).ReturnsAsync(Result.Success());
+            this.AggregateService.Setup(e => e.Get<MerchantAggregate>(It.IsAny<Guid>(), It.IsAny<CancellationToken>())).ReturnsAsync(TestData.Aggregates.MerchantAggregateWithEverything(SettlementSchedule.NotSet));
+            this.SecurityServiceClient.Setup(s => s.GetToken(It.IsAny<String>(), It.IsAny<String>(), It.IsAny<CancellationToken>())).ReturnsAsync(Result.Success(TestData.TokenResponse()));
+            this.AggregateService.Setup(c => c.Get<ContractAggregate>(It.IsAny<Guid>(), It.IsAny<CancellationToken>())).ReturnsAsync(TestData.Aggregates.CreatedContractAggregateWithAProductAndTransactionFee(CalculationType.Fixed, FeeType.Merchant));
+            this.FeeCalculationManager.Setup(f => f.CalculateFees(It.IsAny<List<TransactionFeeToCalculate>>(), It.IsAny<Decimal>(), It.IsAny<DateTime>())).Returns(TestData.CalculatedMerchantFees);
+
+            TransactionCommands.CalculateFeesForTransactionCommand command = new(TestData.TransactionId, TestData.TransactionDateTime, TestData.EstateId, TestData.MerchantId);
+
+            var result = await this.TransactionDomainService.CalculateFeesForTransaction(command, CancellationToken.None);
+            result.IsFailed.ShouldBeTrue();
+            result.Message.ShouldBe($"Merchant {TestData.MerchantId} does not have a settlement schedule configured");
+        }
+
+        [Fact]
         public async Task TransactionDomainService_CalculateFeesForTransaction_NonMerchantFees_FeesCalculated()
         {
             this.AggregateService.Setup(t => t.GetLatest<TransactionAggregate>(It.IsAny<Guid>(), It.IsAny<CancellationToken>())).ReturnsAsync(Result.Success(TestData.GetCompletedAuthorisedSaleTransactionAggregate()));
