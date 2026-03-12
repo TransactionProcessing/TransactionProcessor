@@ -107,23 +107,9 @@ namespace TransactionProcessor.BusinessLogic.Services{
                     return ResultHelpers.CreateFailure(stateResult);
 
                 Result<TransactionValidationResult> validationResult = await this.TransactionValidationService.ValidateLogonTransaction(command.EstateId, command.MerchantId, command.DeviceIdentifier, cancellationToken);
-
-                if (validationResult.IsSuccess && (validationResult.Data.ResponseCode == TransactionResponseCode.Success || validationResult.Data.ResponseCode == TransactionResponseCode.SuccessNeedToAddDevice)) {
-                    if (validationResult.Data.ResponseCode == TransactionResponseCode.SuccessNeedToAddDevice) {
-                        await this.AddDeviceToMerchant(command.MerchantId, command.DeviceIdentifier, cancellationToken);
-                    }
-
-                    // Record the successful validation
-                    stateResult = transactionAggregate.AuthoriseTransactionLocally(TransactionHelpers.GenerateAuthCode(), validationResult.Data.ResponseCode, validationResult.Data.ResponseMessage);
-                    if (stateResult.IsFailed)
-                        return ResultHelpers.CreateFailure(stateResult);
-                }
-                else {
-                    // Record the failure
-                    stateResult = transactionAggregate.DeclineTransactionLocally(validationResult.Data.ResponseCode, validationResult.Data.ResponseMessage);
-                    if (stateResult.IsFailed)
-                        return ResultHelpers.CreateFailure(stateResult);
-                }
+                stateResult = await this.RecordLogonTransactionValidation(command, transactionAggregate, validationResult, cancellationToken);
+                if (stateResult.IsFailed)
+                    return ResultHelpers.CreateFailure(stateResult);
 
                 stateResult = transactionAggregate.CompleteTransaction();
                 if (stateResult.IsFailed)
@@ -136,13 +122,7 @@ namespace TransactionProcessor.BusinessLogic.Services{
                 Result saveResult = await this.AggregateService.Save(transactionAggregate, cancellationToken);
                 if (saveResult.IsFailed)
                     return ResultHelpers.CreateFailure(saveResult);
-                return Result.Success(new ProcessLogonTransactionResponse {
-                    ResponseMessage = transactionAggregate.ResponseMessage,
-                    ResponseCode = transactionAggregate.ResponseCode,
-                    EstateId = command.EstateId,
-                    MerchantId = command.MerchantId,
-                    TransactionId = command.TransactionId
-                });
+                return Result.Success(this.CreateLogonTransactionResponse(command, transactionAggregate));
             }
             catch (Exception ex) {
                 return Result.Failure(ex.GetExceptionMessages());
@@ -425,6 +405,36 @@ namespace TransactionProcessor.BusinessLogic.Services{
             if (stateResult.IsFailed)
                 return ResultHelpers.CreateFailure(stateResult);
             return await this.AggregateService.Save(merchantAggregate.Data, cancellationToken);
+        }
+
+        private ProcessLogonTransactionResponse CreateLogonTransactionResponse(TransactionCommands.ProcessLogonTransactionCommand command,
+                                                                               TransactionAggregate transactionAggregate) {
+            return new ProcessLogonTransactionResponse {
+                ResponseMessage = transactionAggregate.ResponseMessage,
+                ResponseCode = transactionAggregate.ResponseCode,
+                EstateId = command.EstateId,
+                MerchantId = command.MerchantId,
+                TransactionId = command.TransactionId
+            };
+        }
+
+        private async Task<Result> RecordLogonTransactionValidation(TransactionCommands.ProcessLogonTransactionCommand command,
+                                                                    TransactionAggregate transactionAggregate,
+                                                                    Result<TransactionValidationResult> validationResult,
+                                                                    CancellationToken cancellationToken) {
+            if (validationResult.IsSuccess && this.IsSuccessfulLogonValidation(validationResult.Data.ResponseCode)) {
+                if (validationResult.Data.ResponseCode == TransactionResponseCode.SuccessNeedToAddDevice) {
+                    await this.AddDeviceToMerchant(command.MerchantId, command.DeviceIdentifier, cancellationToken);
+                }
+
+                return transactionAggregate.AuthoriseTransactionLocally(TransactionHelpers.GenerateAuthCode(), validationResult.Data.ResponseCode, validationResult.Data.ResponseMessage);
+            }
+
+            return transactionAggregate.DeclineTransactionLocally(validationResult.Data.ResponseCode, validationResult.Data.ResponseMessage);
+        }
+
+        private Boolean IsSuccessfulLogonValidation(TransactionResponseCode responseCode) {
+            return responseCode == TransactionResponseCode.Success || responseCode == TransactionResponseCode.SuccessNeedToAddDevice;
         }
 
         
