@@ -152,36 +152,13 @@ namespace TransactionProcessor.BusinessLogic.Services{
         public async Task<Result<ProcessReconciliationTransactionResponse>> ProcessReconciliationTransaction(TransactionCommands.ProcessReconciliationCommand command,
                                                                                                              CancellationToken cancellationToken) {
             try{
+                Result<ReconciliationAggregate> reconciliationResult = await DomainServiceHelper.GetAggregateOrFailure(ct => this.AggregateService.GetLatest<ReconciliationAggregate>(command.TransactionId, ct), command.TransactionId, cancellationToken, false);
+                if (reconciliationResult.IsFailed)
+                    return ResultHelpers.CreateFailure(reconciliationResult);
 
-            Result<ReconciliationAggregate> reconciliationResult = await DomainServiceHelper.GetAggregateOrFailure(ct => this.AggregateService.GetLatest<ReconciliationAggregate>(command.TransactionId, ct), command.TransactionId, cancellationToken, false);
-            if (reconciliationResult.IsFailed)
-                return ResultHelpers.CreateFailure(reconciliationResult);
-
-            ReconciliationAggregate reconciliationAggregate = reconciliationResult.Data;
-            Result<TransactionValidationResult> validationResult = await this.TransactionValidationService.ValidateReconciliationTransaction(command.EstateId, command.MerchantId, command.DeviceIdentifier, cancellationToken);
-
-                Result stateResult = reconciliationAggregate.StartReconciliation(command.TransactionDateTime, command.EstateId, command.MerchantId);
-                if (stateResult.IsFailed)
-                    return ResultHelpers.CreateFailure(stateResult);
-
-                stateResult = reconciliationAggregate.RecordOverallTotals(command.TransactionCount, command.TransactionValue);
-                if (stateResult.IsFailed)
-                    return ResultHelpers.CreateFailure(stateResult);
-
-                if (validationResult.IsSuccess && validationResult.Data.ResponseCode == TransactionResponseCode.Success) {
-                    // Record the successful validation
-                    stateResult = reconciliationAggregate.Authorise(validationResult.Data.ResponseCode, validationResult.Data.ResponseMessage);
-                    if (stateResult.IsFailed)
-                        return ResultHelpers.CreateFailure(stateResult);
-                }
-                else {
-                    // Record the failure
-                    stateResult = reconciliationAggregate.Decline(validationResult.Data.ResponseCode, validationResult.Data.ResponseMessage);
-                    if (stateResult.IsFailed)
-                        return ResultHelpers.CreateFailure(stateResult);
-                }
-                
-                stateResult = reconciliationAggregate.CompleteReconciliation();
+                ReconciliationAggregate reconciliationAggregate = reconciliationResult.Data;
+                Result<TransactionValidationResult> validationResult = await this.TransactionValidationService.ValidateReconciliationTransaction(command.EstateId, command.MerchantId, command.DeviceIdentifier, cancellationToken);
+                Result stateResult = this.ProcessReconciliation(reconciliationAggregate, command, validationResult);
                 if (stateResult.IsFailed)
                     return ResultHelpers.CreateFailure(stateResult);
 
@@ -681,10 +658,37 @@ namespace TransactionProcessor.BusinessLogic.Services{
             return Result.Success();
         }
 
+        private Result ProcessReconciliation(ReconciliationAggregate reconciliationAggregate,
+                                             TransactionCommands.ProcessReconciliationCommand command,
+                                             Result<TransactionValidationResult> validationResult) {
+            Result result = reconciliationAggregate.StartReconciliation(command.TransactionDateTime, command.EstateId, command.MerchantId);
+            if (result.IsFailed)
+                return result;
+
+            result = reconciliationAggregate.RecordOverallTotals(command.TransactionCount, command.TransactionValue);
+            if (result.IsFailed)
+                return result;
+
+            result = TransactionDomainService.ApplyReconciliationValidationResult(reconciliationAggregate, validationResult);
+            if (result.IsFailed)
+                return result;
+
+            return reconciliationAggregate.CompleteReconciliation();
+        }
+
+        private static Result ApplyReconciliationValidationResult(ReconciliationAggregate reconciliationAggregate,
+                                                                  Result<TransactionValidationResult> validationResult) {
+            if (validationResult.IsSuccess && validationResult.Data.ResponseCode == TransactionResponseCode.Success) {
+                return reconciliationAggregate.Authorise(validationResult.Data.ResponseCode, validationResult.Data.ResponseMessage);
+            }
+
+            return reconciliationAggregate.Decline(validationResult.Data.ResponseCode, validationResult.Data.ResponseMessage);
+        }
+
         private async Task<(DateTime? Start, DateTime? End)> HandleOperatorProcessing(TransactionAggregate transactionAggregate,
-                                                                                           TransactionCommands.ProcessSaleTransactionCommand command,
-                                                                                           Result<TransactionValidationResult> validationResult,
-                                                                                           CancellationToken cancellationToken) {
+                                                                                            TransactionCommands.ProcessSaleTransactionCommand command,
+                                                                                            Result<TransactionValidationResult> validationResult,
+                                                                                            CancellationToken cancellationToken) {
             DateTime? start = null, end = null;
 
             if (validationResult.Data.ResponseCode != TransactionResponseCode.Success) {
