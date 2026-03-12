@@ -102,6 +102,8 @@ namespace TransactionProcessor.BusinessLogic.Tests.Services{
             result.Data.MerchantId.ShouldBe(TestData.MerchantId);
             result.Data.ResponseCode.ShouldBe("0001");
             result.Data.TransactionId.ShouldBe(TestData.TransactionId);
+            this.AggregateService.Verify(t => t.GetLatest<MerchantAggregate>(TestData.MerchantId, It.IsAny<CancellationToken>()), Times.Once);
+            this.AggregateService.Verify(t => t.Save(It.IsAny<MerchantAggregate>(), It.IsAny<CancellationToken>()), Times.Once);
         }
 
         [Fact]
