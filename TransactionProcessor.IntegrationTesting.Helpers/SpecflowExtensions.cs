@@ -1050,7 +1050,10 @@ public static class ReqnrollExtensions{
                                                                                                                       "Region"),
                     Country =
                                                                                 ReqnrollTableHelper.GetStringRowValue(tableRow,
-                                                                                                                      "Country")
+                                                                                                                      "Country"),
+                    PostalCode =
+                                                                                ReqnrollTableHelper.GetStringRowValue(tableRow,
+                                                                                                                      "PostalCode")
                 },
                 SettlementSchedule = schedule,
                 MerchantId = Guid.NewGuid()
