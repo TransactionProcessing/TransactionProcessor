@@ -242,21 +242,7 @@ namespace TransactionProcessor.BusinessLogic.Services
         public async Task<Result> CreateMerchantUser(MerchantCommands.CreateMerchantUserCommand command, CancellationToken cancellationToken)
         {
             try {
-                CreateUserRequest createUserRequest = new() {
-                    EmailAddress = command.RequestDto.EmailAddress,
-                    FamilyName = command.RequestDto.FamilyName,
-                    GivenName = command.RequestDto.GivenName,
-                    MiddleName = command.RequestDto.MiddleName,
-                    Password = command.RequestDto.Password,
-                    PhoneNumber = "123456", // Is this really needed :|
-                    Roles = new List<String>(),
-                    Claims = new Dictionary<String, String>()
-                };
-
-                String merchantRoleName = Environment.GetEnvironmentVariable("MerchantRoleName");
-                createUserRequest.Roles.Add(String.IsNullOrEmpty(merchantRoleName) ? "Merchant" : merchantRoleName);
-                createUserRequest.Claims.Add("estateId", command.EstateId.ToString());
-                createUserRequest.Claims.Add("merchantId", command.MerchantId.ToString());
+                CreateUserRequest createUserRequest = this.BuildMerchantUserRequest(command);
 
                 Result<EstateAggregate> estateResult = await DomainServiceHelper.GetAggregateOrFailure(ct => this.AggregateService.Get<EstateAggregate>(command.EstateId, ct), command.EstateId, cancellationToken);
                 if (estateResult.IsFailed)
@@ -273,20 +259,12 @@ namespace TransactionProcessor.BusinessLogic.Services
                 if (validateResult.IsFailed)
                     return ResultHelpers.CreateFailure(validateResult);
 
-                Result createUserResult = await this.SecurityServiceClient.CreateUser(createUserRequest, cancellationToken);
-                if (createUserResult.IsFailed)
-                    return ResultHelpers.CreateFailure(createUserResult);
-
-                Result<List<UserDetails>> userDetailsResult = await this.SecurityServiceClient.GetUsers(createUserRequest.EmailAddress, cancellationToken);
-                if (userDetailsResult.IsFailed)
-                    return ResultHelpers.CreateFailure(userDetailsResult);
-
-                UserDetails user = userDetailsResult.Data.SingleOrDefault();
-                if (user == null)
-                    return Result.Failure($"Unable to get user details for username {createUserRequest.EmailAddress}");
+                Result<UserDetails> getUserResult = await this.CreateMerchantSecurityUser(createUserRequest, cancellationToken);
+                if (getUserResult.IsFailed)
+                    return ResultHelpers.CreateFailure(getUserResult);
 
                 // Add the user to the aggregate 
-                Result stateResult = merchantAggregate.AddSecurityUser(user.UserId, command.RequestDto.EmailAddress);
+                Result stateResult = merchantAggregate.AddSecurityUser(getUserResult.Data.UserId, command.RequestDto.EmailAddress);
                 if (stateResult.IsFailed)
                     return stateResult;
 
@@ -301,6 +279,43 @@ namespace TransactionProcessor.BusinessLogic.Services
             catch (Exception ex) {
                 return Result.Failure(ex.GetExceptionMessages());
             }
+        }
+
+        private CreateUserRequest BuildMerchantUserRequest(MerchantCommands.CreateMerchantUserCommand command) {
+            CreateUserRequest createUserRequest = new() {
+                EmailAddress = command.RequestDto.EmailAddress,
+                FamilyName = command.RequestDto.FamilyName,
+                GivenName = command.RequestDto.GivenName,
+                MiddleName = command.RequestDto.MiddleName,
+                Password = command.RequestDto.Password,
+                PhoneNumber = "123456", // Is this really needed :|
+                Roles = new List<String>(),
+                Claims = new Dictionary<String, String>()
+            };
+
+            String merchantRoleName = Environment.GetEnvironmentVariable("MerchantRoleName");
+            createUserRequest.Roles.Add(String.IsNullOrEmpty(merchantRoleName) ? "Merchant" : merchantRoleName);
+            createUserRequest.Claims.Add("estateId", command.EstateId.ToString());
+            createUserRequest.Claims.Add("merchantId", command.MerchantId.ToString());
+
+            return createUserRequest;
+        }
+
+        private async Task<Result<UserDetails>> CreateMerchantSecurityUser(CreateUserRequest createUserRequest,
+                                                                           CancellationToken cancellationToken) {
+            Result createUserResult = await this.SecurityServiceClient.CreateUser(createUserRequest, cancellationToken);
+            if (createUserResult.IsFailed)
+                return ResultHelpers.CreateFailure(createUserResult);
+
+            Result<List<UserDetails>> userDetailsResult = await this.SecurityServiceClient.GetUsers(createUserRequest.EmailAddress, cancellationToken);
+            if (userDetailsResult.IsFailed)
+                return ResultHelpers.CreateFailure(userDetailsResult);
+
+            UserDetails user = userDetailsResult.Data.SingleOrDefault();
+            if (user == null)
+                return Result.Failure($"Unable to get user details for username {createUserRequest.EmailAddress}");
+
+            return Result.Success(user);
         }
 
         public async Task<Result> MakeMerchantDeposit(MerchantCommands.MakeMerchantDepositCommand command, CancellationToken cancellationToken)
