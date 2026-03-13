@@ -124,9 +124,9 @@ namespace TransactionProcessor.BusinessLogic.Services
                 if (result.IsFailed)
                     return ResultHelpers.CreateFailure(result);
 
-                (Result operatorValidationResult, String operatorName) = await this.GetOperatorAssignmentDetails(command, estateAggregate, cancellationToken);
-                if (operatorValidationResult.IsFailed)
-                    return operatorValidationResult;
+                (Result validationResult, String operatorName) = await this.GetOperatorAssignmentDetails(command, estateAggregate, cancellationToken);
+                if (validationResult.IsFailed)
+                    return validationResult;
 
                 // Assign the operator
                 Result stateResult = merchantAggregate.AssignOperator(command.RequestDto.OperatorId, operatorName, command.RequestDto.MerchantNumber, command.RequestDto.TerminalNumber);
@@ -144,19 +144,19 @@ namespace TransactionProcessor.BusinessLogic.Services
             }
         }
 
-        private async Task<(Result Result, String OperatorName)> GetOperatorAssignmentDetails(MerchantCommands.AssignOperatorToMerchantCommand command,
-                                                                                              EstateAggregate estateAggregate,
-                                                                                              CancellationToken cancellationToken)
+        private async Task<(Result ValidationResult, String OperatorName)> GetOperatorAssignmentDetails(MerchantCommands.AssignOperatorToMerchantCommand command,
+                                                                                                        EstateAggregate estateAggregate,
+                                                                                                        CancellationToken cancellationToken)
         {
             Estate estate = estateAggregate.GetEstate();
             Models.Estate.Operator @operator = estate.Operators?.SingleOrDefault(o => o.OperatorId == command.RequestDto.OperatorId);
             if (@operator == null) {
-                return (Result.Invalid($"Operator Id {command.RequestDto.OperatorId} is not supported on Estate [{estate.Name}]"), null);
+                return (Result.Invalid($"Operator Id {command.RequestDto.OperatorId} is not supported on Estate [{estate.Name}]"), String.Empty);
             }
 
             Result<OperatorAggregate> operatorResult = await DomainServiceHelper.GetAggregateOrFailure(ct => this.AggregateService.GetLatest<OperatorAggregate>(command.RequestDto.OperatorId, ct), command.RequestDto.OperatorId, cancellationToken);
             if (operatorResult.IsFailed)
-                return (ResultHelpers.CreateFailure(operatorResult), null);
+                return (ResultHelpers.CreateFailure(operatorResult), String.Empty);
 
             Result validationResult = this.ValidateOperatorAssignment(command.RequestDto.OperatorId,
                 command.RequestDto.MerchantNumber,
@@ -164,7 +164,7 @@ namespace TransactionProcessor.BusinessLogic.Services
                 operatorResult.Data);
 
             return validationResult.IsFailed
-                ? (validationResult, null)
+                ? (validationResult, String.Empty)
                 : (Result.Success(), @operator.Name);
         }
 
