@@ -419,17 +419,11 @@ namespace TransactionProcessor.BusinessLogic.Services
                 if (validateResult.IsFailed)
                     return ResultHelpers.CreateFailure(validateResult);
 
-                Result<ContractAggregate> getContractResult = await this.AggregateService.Get<ContractAggregate>(command.RequestDto.ContractId, cancellationToken);
-                if (getContractResult.IsFailed) {
-                    return ResultHelpers.CreateFailure(getContractResult);
-                }
+                Result<ContractAggregate> contractResult = await this.GetCreatedContract(command.RequestDto.ContractId, cancellationToken);
+                if (contractResult.IsFailed)
+                    return contractResult;
 
-                ContractAggregate contractAggregate = getContractResult.Data;
-                if (contractAggregate.IsCreated == false) {
-                    return Result.Invalid($"Contract Id {command.RequestDto.ContractId} has not been created");
-                }
-
-                Result stateResult = merchantAggregate.AddContract(contractAggregate);
+                Result stateResult = merchantAggregate.AddContract(contractResult.Data);
                 if (stateResult.IsFailed)
                     return stateResult;
 
@@ -711,6 +705,20 @@ namespace TransactionProcessor.BusinessLogic.Services
             }
 
             return Result.Success();
+        }
+
+        private async Task<Result<ContractAggregate>> GetCreatedContract(Guid contractId,
+                                                                         CancellationToken cancellationToken)
+        {
+            Result<ContractAggregate> contractResult = await this.AggregateService.Get<ContractAggregate>(contractId, cancellationToken);
+            if (contractResult.IsFailed)
+                return ResultHelpers.CreateFailure(contractResult);
+
+            ContractAggregate contractAggregate = contractResult.Data;
+            if (contractAggregate.IsCreated == false)
+                return Result.Invalid($"Contract Id {contractId} has not been created");
+
+            return contractResult;
         }
 
         private async Task<Result<MerchantDepositListAggregate>> GetMerchantDepositListForWithdrawal(MerchantCommands.MakeMerchantWithdrawalCommand command,
