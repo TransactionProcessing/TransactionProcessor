@@ -193,6 +193,23 @@ namespace TransactionProcessor.BusinessLogic.Services
                 _ => SettlementSchedule.NotSet
             };
 
+        private MerchantDepositSource ConvertDepositSource(DataTransferObjects.Requests.Merchant.MerchantDepositSource depositSource) =>
+            depositSource switch
+            {
+                DataTransferObjects.Requests.Merchant.MerchantDepositSource.Manual => MerchantDepositSource.Manual,
+                _ => MerchantDepositSource.Automatic,
+            };
+
+        private Result EnsureMerchantDepositListCreated(MerchantDepositListAggregate merchantDepositListAggregate,
+                                                        MerchantAggregate merchantAggregate,
+                                                        DateTime depositDateTime) {
+            if (merchantDepositListAggregate.IsCreated) {
+                return Result.Success();
+            }
+
+            return merchantDepositListAggregate.Create(merchantAggregate, depositDateTime);
+        }
+
         public async Task<Result> CreateMerchant(MerchantCommands.CreateMerchantCommand command, CancellationToken cancellationToken)
         {
             try {
@@ -328,19 +345,12 @@ namespace TransactionProcessor.BusinessLogic.Services
                     return ResultHelpers.CreateFailure(getDepositListResult);
 
                 MerchantDepositListAggregate merchantDepositListAggregate = getDepositListResult.Data;
-                if (merchantDepositListAggregate.IsCreated == false)
-                {
-                    Result createResult = merchantDepositListAggregate.Create(merchantAggregate, command.RequestDto.DepositDateTime);
-                    if (createResult.IsFailed)
-                        return ResultHelpers.CreateFailure(createResult);
-                }
+                Result createResult = this.EnsureMerchantDepositListCreated(merchantDepositListAggregate, merchantAggregate, command.RequestDto.DepositDateTime);
+                if (createResult.IsFailed)
+                    return ResultHelpers.CreateFailure(createResult);
 
                 PositiveMoney amount = PositiveMoney.Create(Money.Create(command.RequestDto.Amount));
-                MerchantDepositSource depositSource = command.DepositSource switch
-                {
-                    DataTransferObjects.Requests.Merchant.MerchantDepositSource.Manual => MerchantDepositSource.Manual,
-                    _ => MerchantDepositSource.Automatic,
-                };
+                MerchantDepositSource depositSource = this.ConvertDepositSource(command.DepositSource);
                 Result stateResult = merchantDepositListAggregate.MakeDeposit(depositSource, command.RequestDto.Reference, command.RequestDto.DepositDateTime, amount);
                 if (stateResult.IsFailed)
                     return ResultHelpers.CreateFailure(stateResult);
