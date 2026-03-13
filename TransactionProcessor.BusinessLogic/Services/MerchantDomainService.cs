@@ -363,48 +363,17 @@ namespace TransactionProcessor.BusinessLogic.Services
 
             try
             {
-                Result<EstateAggregate> estateResult = await DomainServiceHelper.GetAggregateOrFailure(ct => this.AggregateService.Get<EstateAggregate>(command.EstateId, ct), command.EstateId, cancellationToken);
-                if (estateResult.IsFailed)
-                    return ResultHelpers.CreateFailure(estateResult);
-
-                Result<MerchantAggregate> merchantResult = await DomainServiceHelper.GetAggregateOrFailure(ct => this.AggregateService.Get<MerchantAggregate>(command.MerchantId, ct), command.MerchantId, cancellationToken);
-                if (merchantResult.IsFailed)
-                    return ResultHelpers.CreateFailure(merchantResult);
-
-                EstateAggregate estateAggregate = estateResult.Data;
-                MerchantAggregate merchantAggregate = merchantResult.Data;
-
-                Result validateResult =
-                    this.ValidateEstateAndMerchant(estateAggregate, merchantAggregate);
-                if (validateResult.IsFailed)
-                    return ResultHelpers.CreateFailure(validateResult);
-
-                Result<MerchantDepositListAggregate> getDepositListResult = await DomainServiceHelper.GetAggregateOrFailure(ct => this.AggregateService.GetLatest<MerchantDepositListAggregate>(command.MerchantId, ct), command.MerchantId, cancellationToken);
+                Result<MerchantDepositListAggregate> getDepositListResult = await this.GetMerchantDepositListForWithdrawal(command, cancellationToken);
                 if (getDepositListResult.IsFailed)
                     return ResultHelpers.CreateFailure(getDepositListResult);
-                
-                MerchantDepositListAggregate merchantDepositListAggregate = getDepositListResult.Data;
-                if (merchantDepositListAggregate.IsCreated == false)
-                {
-                    return Result.Invalid($"Merchant [{command.MerchantId}] has not made any deposits yet");
-                }
 
-                // Now we need to check the merchants balance to ensure they have funds to withdraw
-                Result<String> getBalanceResult = await this.EventStoreContext.GetPartitionStateFromProjection("MerchantBalanceProjection", $"MerchantBalance-{command.MerchantId:N}", cancellationToken);
-                if (getBalanceResult.IsFailed)
-                {
-                    return Result.Invalid($"Failed to get Merchant Balance.");
-                }
-
-                MerchantBalanceProjectionState1 projectionState = JsonConvert.DeserializeObject<MerchantBalanceProjectionState1>(getBalanceResult.Data);
-
-                if (command.RequestDto.Amount > projectionState.merchant.balance)
-                {
-                    return Result.Invalid($"Not enough credit available for withdrawal of [{command.RequestDto.Amount}]. Balance is {projectionState.merchant.balance}");
-                }
+                Result validateBalanceResult = await this.ValidateWithdrawalBalance(command, cancellationToken);
+                if (validateBalanceResult.IsFailed)
+                    return validateBalanceResult;
 
                 // If we are here we have enough credit to withdraw
                 PositiveMoney amount = PositiveMoney.Create(Money.Create(command.RequestDto.Amount));
+                MerchantDepositListAggregate merchantDepositListAggregate = getDepositListResult.Data;
 
                 Result stateResult = merchantDepositListAggregate.MakeWithdrawal(command.RequestDto.WithdrawalDateTime, amount);
                 if (stateResult.IsFailed)
@@ -729,6 +698,57 @@ namespace TransactionProcessor.BusinessLogic.Services
             // Estate Id is a valid estate
             if (estateAggregate.IsCreated == false) {
                 return Result.Invalid($"Estate Id {estateAggregate.AggregateId} has not been created");
+            }
+
+            return Result.Success();
+        }
+
+        private async Task<Result<MerchantDepositListAggregate>> GetMerchantDepositListForWithdrawal(MerchantCommands.MakeMerchantWithdrawalCommand command,
+                                                                                                      CancellationToken cancellationToken)
+        {
+            Result<EstateAggregate> estateResult = await DomainServiceHelper.GetAggregateOrFailure(ct => this.AggregateService.Get<EstateAggregate>(command.EstateId, ct), command.EstateId, cancellationToken);
+            if (estateResult.IsFailed)
+                return ResultHelpers.CreateFailure(estateResult);
+
+            Result<MerchantAggregate> merchantResult = await DomainServiceHelper.GetAggregateOrFailure(ct => this.AggregateService.Get<MerchantAggregate>(command.MerchantId, ct), command.MerchantId, cancellationToken);
+            if (merchantResult.IsFailed)
+                return ResultHelpers.CreateFailure(merchantResult);
+
+            Result validateResult = this.ValidateEstateAndMerchant(estateResult.Data, merchantResult.Data);
+            if (validateResult.IsFailed)
+                return ResultHelpers.CreateFailure(validateResult);
+
+            Result<MerchantDepositListAggregate> getDepositListResult = await DomainServiceHelper.GetAggregateOrFailure(ct => this.AggregateService.GetLatest<MerchantDepositListAggregate>(command.MerchantId, ct), command.MerchantId, cancellationToken);
+            if (getDepositListResult.IsFailed)
+                return ResultHelpers.CreateFailure(getDepositListResult);
+
+            MerchantDepositListAggregate merchantDepositListAggregate = getDepositListResult.Data;
+            if (merchantDepositListAggregate.IsCreated == false)
+            {
+                return Result.Invalid($"Merchant [{command.MerchantId}] has not made any deposits yet");
+            }
+
+            return Result.Success(merchantDepositListAggregate);
+        }
+
+        private async Task<Result> ValidateWithdrawalBalance(MerchantCommands.MakeMerchantWithdrawalCommand command,
+                                                             CancellationToken cancellationToken)
+        {
+            Result<String> getBalanceResult = await this.EventStoreContext.GetPartitionStateFromProjection("MerchantBalanceProjection", $"MerchantBalance-{command.MerchantId:N}", cancellationToken);
+            if (getBalanceResult.IsFailed)
+            {
+                return Result.Invalid($"Failed to get Merchant Balance.");
+            }
+
+            MerchantBalanceProjectionState1 projectionState = JsonConvert.DeserializeObject<MerchantBalanceProjectionState1>(getBalanceResult.Data);
+            if (projectionState?.merchant == null)
+            {
+                return Result.Invalid("Merchant Balance data is missing or invalid.");
+            }
+
+            if (command.RequestDto.Amount > projectionState.merchant.balance)
+            {
+                return Result.Invalid($"Not enough credit available for withdrawal of [{command.RequestDto.Amount}]. Balance is {projectionState.merchant.balance}");
             }
 
             return Result.Success();
