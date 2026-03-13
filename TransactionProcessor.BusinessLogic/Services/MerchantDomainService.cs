@@ -723,6 +723,10 @@ namespace TransactionProcessor.BusinessLogic.Services
             }
 
             MerchantBalanceProjectionState1 projectionState = JsonConvert.DeserializeObject<MerchantBalanceProjectionState1>(getBalanceResult.Data);
+            if (projectionState?.merchant == null)
+            {
+                return Result.Invalid("Merchant Balance data is missing or invalid.");
+            }
 
             if (command.RequestDto.Amount > projectionState.merchant.balance)
             {
