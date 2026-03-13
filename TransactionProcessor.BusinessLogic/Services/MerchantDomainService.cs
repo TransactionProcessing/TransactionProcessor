@@ -124,34 +124,12 @@ namespace TransactionProcessor.BusinessLogic.Services
                 if (result.IsFailed)
                     return ResultHelpers.CreateFailure(result);
 
-                // Is the operator valid for this estate
-                Estate estate = estateAggregate.GetEstate();
-                Models.Estate.Operator @operator = estate.Operators?.SingleOrDefault(o => o.OperatorId == command.RequestDto.OperatorId);
-                if (@operator == null) {
-                    return Result.Invalid($"Operator Id {command.RequestDto.OperatorId} is not supported on Estate [{estate.Name}]");
-                }
-
-                Result<OperatorAggregate> operatorResult = await DomainServiceHelper.GetAggregateOrFailure(ct => this.AggregateService.GetLatest<OperatorAggregate>(command.RequestDto.OperatorId, ct), command.RequestDto.OperatorId, cancellationToken);
-                if (operatorResult.IsFailed)
-                    return ResultHelpers.CreateFailure(operatorResult);
-                OperatorAggregate @operatorAggregate = operatorResult.Data;
-                // Operator has been validated, now check the rules of the operator against the passed in data
-                if (@operatorAggregate.RequireCustomMerchantNumber) {
-                    // requested addition must have a merchant number supplied
-                    if (String.IsNullOrEmpty(command.RequestDto.MerchantNumber)) {
-                        return Result.Invalid($"Operator Id {command.RequestDto.OperatorId} requires that a merchant number is provided");
-                    }
-                }
-
-                if (@operatorAggregate.RequireCustomTerminalNumber) {
-                    // requested addition must have a terminal number supplied
-                    if (String.IsNullOrEmpty(command.RequestDto.TerminalNumber)) {
-                        return Result.Invalid($"Operator Id {command.RequestDto.OperatorId} requires that a terminal number is provided");
-                    }
-                }
+                (Result validationResult, String operatorName) = await this.GetOperatorAssignmentDetails(command, estateAggregate, cancellationToken);
+                if (validationResult.IsFailed)
+                    return validationResult;
 
                 // Assign the operator
-                Result stateResult = merchantAggregate.AssignOperator(command.RequestDto.OperatorId, @operator.Name, command.RequestDto.MerchantNumber, command.RequestDto.TerminalNumber);
+                Result stateResult = merchantAggregate.AssignOperator(command.RequestDto.OperatorId, operatorName, command.RequestDto.MerchantNumber, command.RequestDto.TerminalNumber);
                 if (stateResult.IsFailed)
                     return stateResult;
 
@@ -166,6 +144,46 @@ namespace TransactionProcessor.BusinessLogic.Services
             }
         }
 
+        private async Task<(Result ValidationResult, String OperatorName)> GetOperatorAssignmentDetails(MerchantCommands.AssignOperatorToMerchantCommand command,
+                                                                                                        EstateAggregate estateAggregate,
+                                                                                                        CancellationToken cancellationToken)
+        {
+            Estate estate = estateAggregate.GetEstate();
+            Models.Estate.Operator @operator = estate.Operators?.SingleOrDefault(o => o.OperatorId == command.RequestDto.OperatorId);
+            if (@operator == null) {
+                return (Result.Invalid($"Operator Id {command.RequestDto.OperatorId} is not supported on Estate [{estate.Name}]"), String.Empty);
+            }
+
+            Result<OperatorAggregate> operatorResult = await DomainServiceHelper.GetAggregateOrFailure(ct => this.AggregateService.GetLatest<OperatorAggregate>(command.RequestDto.OperatorId, ct), command.RequestDto.OperatorId, cancellationToken);
+            if (operatorResult.IsFailed)
+                return (ResultHelpers.CreateFailure(operatorResult), String.Empty);
+
+            Result validationResult = this.ValidateOperatorAssignment(command.RequestDto.OperatorId,
+                command.RequestDto.MerchantNumber,
+                command.RequestDto.TerminalNumber,
+                operatorResult.Data);
+
+            return validationResult.IsFailed
+                ? (validationResult, String.Empty)
+                : (Result.Success(), @operator.Name);
+        }
+
+        private Result ValidateOperatorAssignment(Guid operatorId,
+                                                  String merchantNumber,
+                                                  String terminalNumber,
+                                                  OperatorAggregate operatorAggregate)
+        {
+            if (operatorAggregate.RequireCustomMerchantNumber && String.IsNullOrEmpty(merchantNumber)) {
+                return Result.Invalid($"Operator Id {operatorId} requires that a merchant number is provided");
+            }
+
+            if (operatorAggregate.RequireCustomTerminalNumber && String.IsNullOrEmpty(terminalNumber)) {
+                return Result.Invalid($"Operator Id {operatorId} requires that a terminal number is provided");
+            }
+
+            return Result.Success();
+        }
+
         private SettlementSchedule ConvertSettlementSchedule(DataTransferObjects.Responses.Merchant.SettlementSchedule settlementSchedule) =>
             settlementSchedule switch
             {
@@ -174,6 +192,23 @@ namespace TransactionProcessor.BusinessLogic.Services
                 DataTransferObjects.Responses.Merchant.SettlementSchedule.Weekly => SettlementSchedule.Weekly,
                 _ => SettlementSchedule.NotSet
             };
+
+        private MerchantDepositSource ConvertDepositSource(DataTransferObjects.Requests.Merchant.MerchantDepositSource depositSource) =>
+            depositSource switch
+            {
+                DataTransferObjects.Requests.Merchant.MerchantDepositSource.Manual => MerchantDepositSource.Manual,
+                _ => MerchantDepositSource.Automatic,
+            };
+
+        private Result EnsureMerchantDepositListCreated(MerchantDepositListAggregate merchantDepositListAggregate,
+                                                        MerchantAggregate merchantAggregate,
+                                                        DateTime depositDateTime) {
+            if (merchantDepositListAggregate.IsCreated) {
+                return Result.Success();
+            }
+
+            return merchantDepositListAggregate.Create(merchantAggregate, depositDateTime);
+        }
 
         public async Task<Result> CreateMerchant(MerchantCommands.CreateMerchantCommand command, CancellationToken cancellationToken)
         {
@@ -310,19 +345,12 @@ namespace TransactionProcessor.BusinessLogic.Services
                     return ResultHelpers.CreateFailure(getDepositListResult);
 
                 MerchantDepositListAggregate merchantDepositListAggregate = getDepositListResult.Data;
-                if (merchantDepositListAggregate.IsCreated == false)
-                {
-                    Result createResult = merchantDepositListAggregate.Create(merchantAggregate, command.RequestDto.DepositDateTime);
-                    if (createResult.IsFailed)
-                        return ResultHelpers.CreateFailure(createResult);
-                }
+                Result createResult = this.EnsureMerchantDepositListCreated(merchantDepositListAggregate, merchantAggregate, command.RequestDto.DepositDateTime);
+                if (createResult.IsFailed)
+                    return ResultHelpers.CreateFailure(createResult);
 
                 PositiveMoney amount = PositiveMoney.Create(Money.Create(command.RequestDto.Amount));
-                MerchantDepositSource depositSource = command.DepositSource switch
-                {
-                    DataTransferObjects.Requests.Merchant.MerchantDepositSource.Manual => MerchantDepositSource.Manual,
-                    _ => MerchantDepositSource.Automatic,
-                };
+                MerchantDepositSource depositSource = this.ConvertDepositSource(command.DepositSource);
                 Result stateResult = merchantDepositListAggregate.MakeDeposit(depositSource, command.RequestDto.Reference, command.RequestDto.DepositDateTime, amount);
                 if (stateResult.IsFailed)
                     return ResultHelpers.CreateFailure(stateResult);
@@ -345,48 +373,17 @@ namespace TransactionProcessor.BusinessLogic.Services
 
             try
             {
-                Result<EstateAggregate> estateResult = await DomainServiceHelper.GetAggregateOrFailure(ct => this.AggregateService.Get<EstateAggregate>(command.EstateId, ct), command.EstateId, cancellationToken);
-                if (estateResult.IsFailed)
-                    return ResultHelpers.CreateFailure(estateResult);
-
-                Result<MerchantAggregate> merchantResult = await DomainServiceHelper.GetAggregateOrFailure(ct => this.AggregateService.Get<MerchantAggregate>(command.MerchantId, ct), command.MerchantId, cancellationToken);
-                if (merchantResult.IsFailed)
-                    return ResultHelpers.CreateFailure(merchantResult);
-
-                EstateAggregate estateAggregate = estateResult.Data;
-                MerchantAggregate merchantAggregate = merchantResult.Data;
-
-                Result validateResult =
-                    this.ValidateEstateAndMerchant(estateAggregate, merchantAggregate);
-                if (validateResult.IsFailed)
-                    return ResultHelpers.CreateFailure(validateResult);
-
-                Result<MerchantDepositListAggregate> getDepositListResult = await DomainServiceHelper.GetAggregateOrFailure(ct => this.AggregateService.GetLatest<MerchantDepositListAggregate>(command.MerchantId, ct), command.MerchantId, cancellationToken);
+                Result<MerchantDepositListAggregate> getDepositListResult = await this.GetMerchantDepositListForWithdrawal(command, cancellationToken);
                 if (getDepositListResult.IsFailed)
                     return ResultHelpers.CreateFailure(getDepositListResult);
-                
-                MerchantDepositListAggregate merchantDepositListAggregate = getDepositListResult.Data;
-                if (merchantDepositListAggregate.IsCreated == false)
-                {
-                    return Result.Invalid($"Merchant [{command.MerchantId}] has not made any deposits yet");
-                }
 
-                // Now we need to check the merchants balance to ensure they have funds to withdraw
-                Result<String> getBalanceResult = await this.EventStoreContext.GetPartitionStateFromProjection("MerchantBalanceProjection", $"MerchantBalance-{command.MerchantId:N}", cancellationToken);
-                if (getBalanceResult.IsFailed)
-                {
-                    return Result.Invalid($"Failed to get Merchant Balance.");
-                }
-
-                MerchantBalanceProjectionState1 projectionState = JsonConvert.DeserializeObject<MerchantBalanceProjectionState1>(getBalanceResult.Data);
-
-                if (command.RequestDto.Amount > projectionState.merchant.balance)
-                {
-                    return Result.Invalid($"Not enough credit available for withdrawal of [{command.RequestDto.Amount}]. Balance is {projectionState.merchant.balance}");
-                }
+                Result validateBalanceResult = await this.ValidateWithdrawalBalance(command, cancellationToken);
+                if (validateBalanceResult.IsFailed)
+                    return validateBalanceResult;
 
                 // If we are here we have enough credit to withdraw
                 PositiveMoney amount = PositiveMoney.Create(Money.Create(command.RequestDto.Amount));
+                MerchantDepositListAggregate merchantDepositListAggregate = getDepositListResult.Data;
 
                 Result stateResult = merchantDepositListAggregate.MakeWithdrawal(command.RequestDto.WithdrawalDateTime, amount);
                 if (stateResult.IsFailed)
@@ -711,6 +708,57 @@ namespace TransactionProcessor.BusinessLogic.Services
             // Estate Id is a valid estate
             if (estateAggregate.IsCreated == false) {
                 return Result.Invalid($"Estate Id {estateAggregate.AggregateId} has not been created");
+            }
+
+            return Result.Success();
+        }
+
+        private async Task<Result<MerchantDepositListAggregate>> GetMerchantDepositListForWithdrawal(MerchantCommands.MakeMerchantWithdrawalCommand command,
+                                                                                                      CancellationToken cancellationToken)
+        {
+            Result<EstateAggregate> estateResult = await DomainServiceHelper.GetAggregateOrFailure(ct => this.AggregateService.Get<EstateAggregate>(command.EstateId, ct), command.EstateId, cancellationToken);
+            if (estateResult.IsFailed)
+                return ResultHelpers.CreateFailure(estateResult);
+
+            Result<MerchantAggregate> merchantResult = await DomainServiceHelper.GetAggregateOrFailure(ct => this.AggregateService.Get<MerchantAggregate>(command.MerchantId, ct), command.MerchantId, cancellationToken);
+            if (merchantResult.IsFailed)
+                return ResultHelpers.CreateFailure(merchantResult);
+
+            Result validateResult = this.ValidateEstateAndMerchant(estateResult.Data, merchantResult.Data);
+            if (validateResult.IsFailed)
+                return ResultHelpers.CreateFailure(validateResult);
+
+            Result<MerchantDepositListAggregate> getDepositListResult = await DomainServiceHelper.GetAggregateOrFailure(ct => this.AggregateService.GetLatest<MerchantDepositListAggregate>(command.MerchantId, ct), command.MerchantId, cancellationToken);
+            if (getDepositListResult.IsFailed)
+                return ResultHelpers.CreateFailure(getDepositListResult);
+
+            MerchantDepositListAggregate merchantDepositListAggregate = getDepositListResult.Data;
+            if (merchantDepositListAggregate.IsCreated == false)
+            {
+                return Result.Invalid($"Merchant [{command.MerchantId}] has not made any deposits yet");
+            }
+
+            return Result.Success(merchantDepositListAggregate);
+        }
+
+        private async Task<Result> ValidateWithdrawalBalance(MerchantCommands.MakeMerchantWithdrawalCommand command,
+                                                             CancellationToken cancellationToken)
+        {
+            Result<String> getBalanceResult = await this.EventStoreContext.GetPartitionStateFromProjection("MerchantBalanceProjection", $"MerchantBalance-{command.MerchantId:N}", cancellationToken);
+            if (getBalanceResult.IsFailed)
+            {
+                return Result.Invalid($"Failed to get Merchant Balance.");
+            }
+
+            MerchantBalanceProjectionState1 projectionState = JsonConvert.DeserializeObject<MerchantBalanceProjectionState1>(getBalanceResult.Data);
+            if (projectionState?.merchant == null)
+            {
+                return Result.Invalid("Merchant Balance data is missing or invalid.");
+            }
+
+            if (command.RequestDto.Amount > projectionState.merchant.balance)
+            {
+                return Result.Invalid($"Not enough credit available for withdrawal of [{command.RequestDto.Amount}]. Balance is {projectionState.merchant.balance}");
             }
 
             return Result.Success();
