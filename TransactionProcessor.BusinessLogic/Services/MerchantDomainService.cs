@@ -421,7 +421,7 @@ namespace TransactionProcessor.BusinessLogic.Services
 
                 Result<ContractAggregate> contractResult = await this.GetCreatedContract(command.RequestDto.ContractId, cancellationToken);
                 if (contractResult.IsFailed)
-                    return contractResult;
+                    return ResultHelpers.CreateFailure(contractResult);
 
                 Result stateResult = merchantAggregate.AddContract(contractResult.Data);
                 if (stateResult.IsFailed)
@@ -718,7 +718,7 @@ namespace TransactionProcessor.BusinessLogic.Services
             if (contractAggregate.IsCreated == false)
                 return Result.Invalid($"Contract Id {contractId} has not been created");
 
-            return contractResult;
+            return Result.Success(contractAggregate);
         }
 
         private async Task<Result<MerchantDepositListAggregate>> GetMerchantDepositListForWithdrawal(MerchantCommands.MakeMerchantWithdrawalCommand command,
