@@ -590,6 +590,47 @@ public class TransactionProcessorSteps
         return responses;
     }
 
+    public async Task<List<MerchantResponse>> WhenISetTheOpeningHoursOfTheFollowingMerchants(string accessToken, List<(EstateDetails estate, Guid merchantId, MerchantOpeningRequest request)> requests)
+    {
+        List<MerchantResponse> responses = new List<MerchantResponse>();
+
+        foreach ((EstateDetails estate, Guid merchantId, MerchantOpeningRequest request) request in requests)
+        {
+            await this.TransactionProcessorClient.UpdateMerchantOpeningHours(accessToken, request.estate.EstateId, request.merchantId, request.request, CancellationToken.None).ConfigureAwait(false);
+        }
+
+        foreach ((EstateDetails estate, Guid merchantId, MerchantOpeningRequest request) request in requests)
+        {
+            await Retry.For(async () => {
+                Result<MerchantResponse>? getMerchantResult = await this.TransactionProcessorClient
+                    .GetMerchant(accessToken, request.estate.EstateId, request.merchantId, CancellationToken.None)
+                    .ConfigureAwait(false);
+                getMerchantResult.IsSuccess.ShouldBeTrue();
+                MerchantResponse merchant = getMerchantResult.Data;
+                merchant.OpeningHours.ShouldNotBeNull();
+                merchant.OpeningHours[DayOfWeek.Sunday].Opening.ShouldBe(request.request.Sunday.Opening);
+                merchant.OpeningHours[DayOfWeek.Sunday].Closing.ShouldBe(request.request.Sunday.Closing);
+                merchant.OpeningHours[DayOfWeek.Monday].Opening.ShouldBe(request.request.Monday.Opening);
+                merchant.OpeningHours[DayOfWeek.Monday].Closing.ShouldBe(request.request.Monday.Closing);
+                merchant.OpeningHours[DayOfWeek.Tuesday].Opening.ShouldBe(request.request.Tuesday.Opening);
+                merchant.OpeningHours[DayOfWeek.Tuesday].Closing.ShouldBe(request.request.Tuesday.Closing);
+                merchant.OpeningHours[DayOfWeek.Wednesday].Opening.ShouldBe(request.request.Wednesday.Opening);
+                merchant.OpeningHours[DayOfWeek.Wednesday].Closing.ShouldBe(request.request.Wednesday.Closing);
+                merchant.OpeningHours[DayOfWeek.Thursday].Opening.ShouldBe(request.request.Thursday.Opening);
+                merchant.OpeningHours[DayOfWeek.Thursday].Closing.ShouldBe(request.request.Thursday.Closing);
+                merchant.OpeningHours[DayOfWeek.Friday].Opening.ShouldBe(request.request.Friday.Opening);
+                merchant.OpeningHours[DayOfWeek.Friday].Closing.ShouldBe(request.request.Friday.Closing);
+                merchant.OpeningHours[DayOfWeek.Saturday].Opening.ShouldBe(request.request.Saturday.Opening);
+                merchant.OpeningHours[DayOfWeek.Saturday].Closing.ShouldBe(request.request.Saturday.Closing);
+                merchant.OpeningHours[DayOfWeek.Sunday].Opening.ShouldBe(request.request.Sunday.Opening);
+                merchant.OpeningHours[DayOfWeek.Sunday].Closing.ShouldBe(request.request.Sunday.Closing);
+                responses.Add(merchant);
+            });
+        }
+
+        return responses;
+    }
+
     public async Task<List<(EstateDetails, MerchantOperatorResponse)>> WhenIAssignTheFollowingOperatorToTheMerchants(string accessToken, List<(EstateDetails estate, Guid merchantId, DataTransferObjects.Requests.Merchant.AssignOperatorRequest request)> requests)
     {
 

@@ -1,5 +1,6 @@
 ﻿using System.Linq;
 using SimpleResults;
+using TransactionProcessor.DataTransferObjects.Requests.Merchant;
 using TransactionProcessor.DataTransferObjects.Responses.Contract;
 using TransactionProcessor.DataTransferObjects.Responses.Estate;
 using TransactionProcessor.DataTransferObjects.Responses.Merchant;
@@ -491,6 +492,13 @@ namespace TransactionProcessor.Factories
             merchantResponse.Devices = ConvertFrom(merchant.Devices);
             merchantResponse.Operators = ConvertFrom(merchant.Operators);
             merchantResponse.Contracts = ConvertFrom(merchant.Contracts);
+            merchantResponse.OpeningHours = merchant.OpeningHours?.ToDictionary(
+                oh => oh.Key,
+                oh => new OpeningHoursResponse
+                {
+                    Opening = oh.Value.Opening,
+                    Closing = oh.Value.Closing
+                });
 
             return merchantResponse;
         }

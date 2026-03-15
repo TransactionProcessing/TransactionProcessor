@@ -258,6 +258,9 @@ namespace TransactionProcessor.Repository {
 
         Task<Result> UpdateMerchantContact(MerchantDomainEvents.MerchantContactPhoneNumberUpdatedEvent domainEvent,
                                            CancellationToken cancellationToken);
+        
+        Task<Result> UpdateMerchantOpeningHours(MerchantDomainEvents.MerchantOpeningHoursUpdatedEvent domainEvent,
+                                           CancellationToken cancellationToken);
 
         Task<Result<Models.Estate.Estate>> GetEstate(Guid estateId,
                                               CancellationToken cancellationToken);
@@ -725,6 +728,41 @@ namespace TransactionProcessor.Repository {
 
             return await context.SaveChangesAsync(cancellationToken);
         }
+
+        public async Task<Result> UpdateMerchantOpeningHours(MerchantOpeningHoursUpdatedEvent domainEvent,
+                                                             CancellationToken cancellationToken) {
+            EstateManagementContext context = await this.GetContext(domainEvent.EstateId);
+            Result<MerchantOpeningHours> getMerchantOpeningHoursResult = await context.LoadMerchantOpeningHours(domainEvent, cancellationToken);
+            if (getMerchantOpeningHoursResult.IsFailed && getMerchantOpeningHoursResult.Status != ResultStatus.NotFound)
+                return ResultHelpers.CreateFailure(getMerchantOpeningHoursResult);
+
+            if (getMerchantOpeningHoursResult.Status == ResultStatus.NotFound) {
+                // No opening hours so create a new row
+                MerchantOpeningHours merchantOpeningHours = new MerchantOpeningHours { MerchantId = domainEvent.MerchantId };
+
+                setOpeningHours[(DayOfWeek)domainEvent.DayOfWeek](merchantOpeningHours, domainEvent.Opening, domainEvent.Closing);
+
+                await context.MerchantOpeningHours.AddAsync(merchantOpeningHours, cancellationToken);
+            }
+            else {
+                // Update the existing row
+                setOpeningHours[(DayOfWeek)domainEvent.DayOfWeek](getMerchantOpeningHoursResult.Data, domainEvent.Opening, domainEvent.Closing);
+            }
+
+            return await context.SaveChangesAsync(cancellationToken);
+        }
+
+        static readonly Dictionary<DayOfWeek, Action<MerchantOpeningHours, String, String>> setOpeningHours =
+            new()
+            {
+                { DayOfWeek.Monday, (m,o,c) => { m.MondayOpening = o; m.MondayClosing = c; } },
+                { DayOfWeek.Tuesday, (m,o,c) => { m.TuesdayOpening = o; m.TuesdayClosing = c; } },
+                { DayOfWeek.Wednesday, (m,o,c) => { m.WednesdayOpening = o; m.WednesdayClosing = c; } },
+                { DayOfWeek.Thursday, (m,o,c) => { m.ThursdayOpening = o; m.ThursdayClosing = c; } },
+                { DayOfWeek.Friday, (m,o,c) => { m.FridayOpening = o; m.FridayClosing = c; } },
+                { DayOfWeek.Saturday, (m,o,c) => { m.SaturdayOpening = o; m.SaturdayClosing = c; } },
+                { DayOfWeek.Sunday, (m,o,c) => { m.SundayOpening = o; m.SundayClosing = c; } }
+            };
 
         public async Task<Result> AddContractToMerchant(ContractAddedToMerchantEvent domainEvent, CancellationToken cancellationToken)
         {

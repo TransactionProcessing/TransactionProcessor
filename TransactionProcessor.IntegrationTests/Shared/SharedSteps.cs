@@ -1,27 +1,29 @@
-﻿using System;
-using System.Collections.Generic;
-using SecurityService.DataTransferObjects.Responses;
+﻿using SecurityService.DataTransferObjects.Responses;
 using SimpleResults;
+using System;
+using System.Collections.Generic;
 using TransactionProcessor.DataTransferObjects.Requests.Contract;
 using TransactionProcessor.DataTransferObjects.Requests.Merchant;
 using TransactionProcessor.DataTransferObjects.Requests.Operator;
 using TransactionProcessor.DataTransferObjects.Responses.Contract;
+using TransactionProcessor.DataTransferObjects.Responses.Merchant;
 using TransactionProcessor.DataTransferObjects.Responses.Operator;
 
 namespace TransactionProcessor.IntegrationTests.Shared
 {
-    using System.Linq;
-    using System.Text.Json;
-    using System.Threading;
-    using System.Threading.Tasks;
     using Common;
     using DataTransferObjects;
     using IntegrationTesting.Helpers;
+    using Microsoft.EntityFrameworkCore.Metadata.Internal;
     using Newtonsoft.Json.Linq;
     using Reqnroll;
     using SecurityService.DataTransferObjects.Requests;
     using SecurityService.IntegrationTesting.Helpers;
     using Shouldly;
+    using System.Linq;
+    using System.Text.Json;
+    using System.Threading;
+    using System.Threading.Tasks;
     using AssignOperatorRequest = DataTransferObjects.Requests.Estate.AssignOperatorRequest;
     using ClientDetails = Common.ClientDetails;
     using ReqnrollExtensions = IntegrationTesting.Helpers.ReqnrollExtensions;
@@ -147,6 +149,20 @@ namespace TransactionProcessor.IntegrationTests.Shared
             List<CreateApiScopeRequest> requests = table.Rows.ToCreateApiScopeRequests();
             await this.SecurityServiceSteps.GivenICreateTheFollowingApiScopes(requests);
         }
+
+        [When("I set the following opening hours")]
+        public async Task WhenISetTheFollowingOpeningHours(DataTable table)
+        {
+            List<(EstateDetails, Guid, DataTransferObjects.Requests.Merchant.MerchantOpeningRequest)> requests = table.Rows.ToMerchantOpeningRequests(this.TestingContext.Estates);
+
+            List<MerchantResponse> results = await this.TransactionProcessorSteps.WhenISetTheOpeningHoursOfTheFollowingMerchants(this.TestingContext.AccessToken, requests);
+
+            foreach (var result in results)
+            {
+                this.TestingContext.Logger.LogInformation($"Opening hours set for merchant {result.MerchantName}");
+            }
+        }
+
 
         [Given(@"I have assigned the following operator to the merchants")]
         [When(@"I assign the following operator to the merchants")]

@@ -120,7 +120,7 @@ namespace TransactionProcessor.Controllers
                 // We are being told by the caller to use a specific handler
                 var allhandlers = resolver.GetDomainEventHandlers(domainEvent);
 
-                if (!allhandlers.IsFailed)
+                if (allhandlers.IsFailed)
                     return new List<IDomainEventHandler>();
 
                 var handlers = allhandlers.Data.Where(h => h.GetType().Name.Contains(eventHandler));

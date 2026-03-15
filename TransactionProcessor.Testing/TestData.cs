@@ -20,6 +20,7 @@ using AssignOperatorRequest = TransactionProcessor.DataTransferObjects.Requests.
 using Contract = TransactionProcessor.Models.Merchant.Contract;
 using Deposit = CallbackHandler.DataTransferObjects.Deposit;
 using MerchantDepositSource = TransactionProcessor.DataTransferObjects.Requests.Merchant.MerchantDepositSource;
+using OpeningHours = TransactionProcessor.DataTransferObjects.Requests.Merchant.OpeningHours;
 using SettlementSchedule = TransactionProcessor.DataTransferObjects.Responses.Merchant.SettlementSchedule;
 using SettlementScheduleModel = TransactionProcessor.Models.Merchant.SettlementSchedule;
 
@@ -2131,6 +2132,18 @@ namespace TransactionProcessor.Testing
             public static FloatActivityCommands.RecordTransactionCommand RecordTransactionCommand => new(EstateId, TransactionId);
             public static TransactionCommands.CalculateFeesForTransactionCommand CalculateFeesForTransactionCommand => new(TransactionId, TransactionDateTime, EstateId, MerchantId);
             public static TransactionCommands.AddSettledMerchantFeeCommand AddSettledMerchantFeeCommand => new(TransactionId, CalculatedFeeValue, TransactionFeeCalculateDateTime, CalculationType.Percentage, TransactionFeeId, TransactionFeeValue, SettlementDate, SettlementAggregateId);
+
+            public static MerchantCommands.UpdateMerchantOpeningHoursCommand UpdateMerchantOpeningHoursCommand => new(TestData.EstateId, TestData.MerchantId, new MerchantOpeningRequest
+            {
+                Monday = new OpeningHours { Opening = "0800", Closing = "1700" },
+                Tuesday = new OpeningHours { Opening = "0800", Closing = "1700" },
+                Wednesday = new OpeningHours { Opening = "0800", Closing = "1700" },
+                Thursday = new OpeningHours { Opening = "0800", Closing = "1700" },
+                Friday = new OpeningHours { Opening = "0800", Closing = "1700" },
+                Saturday = new OpeningHours { Opening = "0800", Closing = "1300" },
+                Sunday = new OpeningHours { Opening = "0800", Closing = "1300" }
+            });
+
             public static TransactionCommands.ProcessSaleTransactionCommand ProcessSaleTransactionCommand =>
                 new(TestData.TransactionId, TestData.EstateId,
                                                      TestData.MerchantId,
@@ -2280,6 +2293,7 @@ namespace TransactionProcessor.Testing
                     TestData.MerchantId,
                     TestData.ContractId,
                     TestData.FixedContractProductId);
+            
             public static MerchantQueries.GetMerchantContractsQuery GetMerchantContractsQuery => new MerchantQueries.GetMerchantContractsQuery(TestData.EstateId, TestData.MerchantId);
             public static MerchantQueries.GetMerchantQuery GetMerchantQuery => new MerchantQueries.GetMerchantQuery(TestData.EstateId, TestData.MerchantId);
 

@@ -39,6 +39,8 @@ public class EstateManagementContext : DbContext
     #endregion
 
     #region Properties
+
+    public DbSet<MerchantOpeningHours> MerchantOpeningHours { get; set; }
     public DbSet<MerchantBalanceChangedEntry> MerchantBalanceChangedEntry { get; set; }
 
     public DbSet<MerchantBalanceHistoryViewEntry> MerchantBalanceHistoryViewEntry { get; set; }
@@ -317,7 +319,8 @@ ALTER DATABASE [{dbName}] SET MULTI_USER;
                     .SetupTransactionHistory()
                     .SetupTodaysTransactions()
                     .SetupTransactionTimings()
-                    .SetupEstateOperator();
+                    .SetupEstateOperator()
+                    .SetupMerchantOpeningHours();
         
         modelBuilder.SetupViewEntities();
 
@@ -513,6 +516,19 @@ public static class EstateManagementContextExtensions
         {
             ResultStatus.NotFound => Result.NotFound($"Merchant Contact {contactId} not found with merchant Id {merchantId}"),
             _ => merchantContactResult        
+        };
+    }
+
+    public static async Task<Result<MerchantOpeningHours>> LoadMerchantOpeningHours(this EstateManagementContext context, IDomainEvent domainEvent, CancellationToken cancellationToken)
+    {
+        Guid merchantId = DomainEventHelper.GetMerchantId(domainEvent);
+
+        IQueryable<MerchantOpeningHours> query = context.MerchantOpeningHours.Where(e => e.MerchantId == merchantId);
+        Result<MerchantOpeningHours> merchantOpeningHoursResult = await DbQueryHelpers.ExecuteQuerySafeSingleOrDefault(query, cancellationToken, $"Error getting merchant opening hours for merchant {merchantId}");
+        return merchantOpeningHoursResult.Status switch
+        {
+            ResultStatus.NotFound => Result.NotFound($"Merchant Opening Hours not found for merchant Id {merchantId}"),
+            _ => merchantOpeningHoursResult
         };
     }
 

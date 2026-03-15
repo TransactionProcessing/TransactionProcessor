@@ -43,6 +43,7 @@ namespace TransactionProcessor.BusinessLogic.Services
         Task<Result> UpdateMerchantContact(MerchantCommands.UpdateMerchantContactCommand command, CancellationToken cancellationToken);
         Task<Result> RemoveOperatorFromMerchant(MerchantCommands.RemoveOperatorFromMerchantCommand command, CancellationToken cancellationToken);
         Task<Result> RemoveContractFromMerchant(MerchantCommands.RemoveMerchantContractCommand command, CancellationToken cancellationToken);
+        Task<Result> UpdateMerchantOpeningHours(MerchantCommands.UpdateMerchantOpeningHoursCommand command, CancellationToken cancellationToken);
 
         #endregion
     }
@@ -215,7 +216,6 @@ namespace TransactionProcessor.BusinessLogic.Services
                     return ResultHelpers.CreateFailure(merchantResult);
 
                 MerchantAggregate merchantAggregate = merchantResult.Data;
-
                 // Build up the models for the Crete call
                 Address address = Address.Create(Guid.Empty, command.RequestDto.Address.AddressLine1, command.RequestDto.Address.AddressLine2, command.RequestDto.Address.AddressLine3, command.RequestDto.Address.AddressLine4, command.RequestDto.Address.Town, command.RequestDto.Address.Region, command.RequestDto.Address.PostalCode, command.RequestDto.Address.Country);
                 Contact contact = new Contact(Guid.Empty, command.RequestDto.Contact.EmailAddress, command.RequestDto.Contact.ContactName, command.RequestDto.Contact.PhoneNumber);
@@ -675,6 +675,80 @@ namespace TransactionProcessor.BusinessLogic.Services
                 if (stateResult.IsFailed)
                     return stateResult;
 
+                Result saveResult = await this.AggregateService.Save(merchantAggregate, cancellationToken);
+                if (saveResult.IsFailed)
+                    return ResultHelpers.CreateFailure(saveResult);
+
+                return saveResult;
+            }
+            catch (Exception ex)
+            {
+                return Result.Failure(ex.GetExceptionMessages());
+            }
+        }
+
+        public async Task<Result> UpdateMerchantOpeningHours(MerchantCommands.UpdateMerchantOpeningHoursCommand command,
+                                                             CancellationToken cancellationToken) {
+            try
+            {
+                Result<EstateAggregate> estateResult = await DomainServiceHelper.GetAggregateOrFailure(ct => this.AggregateService.Get<EstateAggregate>(command.EstateId, ct), command.EstateId, cancellationToken);
+                if (estateResult.IsFailed)
+                    return ResultHelpers.CreateFailure(estateResult);
+
+                Result<MerchantAggregate> merchantResult = await DomainServiceHelper.GetAggregateOrFailure(ct => this.AggregateService.GetLatest<MerchantAggregate>(command.MerchantId, ct), command.MerchantId, cancellationToken);
+                if (merchantResult.IsFailed)
+                    return ResultHelpers.CreateFailure(merchantResult);
+
+                EstateAggregate estateAggregate = estateResult.Data;
+                MerchantAggregate merchantAggregate = merchantResult.Data;
+
+                Result result =
+                    this.ValidateEstateAndMerchant(estateAggregate, merchantAggregate);
+                if (result.IsFailed)
+                    return ResultHelpers.CreateFailure(result);
+
+                if (command.RequestDto.Monday != null) {
+                    Result stateResult = merchantAggregate.SetDayOpeningHours(DayOfWeek.Monday, command.RequestDto.Monday.Opening, command.RequestDto.Monday.Closing);
+                    if (stateResult.IsFailed)
+                        return stateResult;
+                }
+                if (command.RequestDto.Tuesday != null)
+                {
+                    Result stateResult = merchantAggregate.SetDayOpeningHours(DayOfWeek.Tuesday, command.RequestDto.Tuesday.Opening, command.RequestDto.Tuesday.Closing);
+                    if (stateResult.IsFailed)
+                        return stateResult;
+                }
+                if (command.RequestDto.Wednesday != null)
+                {
+                    Result stateResult = merchantAggregate.SetDayOpeningHours(DayOfWeek.Wednesday, command.RequestDto.Wednesday.Opening, command.RequestDto.Wednesday.Closing);
+                    if (stateResult.IsFailed)
+                        return stateResult;
+                }
+                if (command.RequestDto.Thursday != null)
+                {
+                    Result stateResult = merchantAggregate.SetDayOpeningHours(DayOfWeek.Thursday, command.RequestDto.Thursday.Opening, command.RequestDto.Thursday.Closing);
+                    if (stateResult.IsFailed)
+                        return stateResult;
+                }
+                if (command.RequestDto.Friday != null)
+                {
+                    Result stateResult = merchantAggregate.SetDayOpeningHours(DayOfWeek.Friday, command.RequestDto.Friday.Opening, command.RequestDto.Friday.Closing);
+                    if (stateResult.IsFailed)
+                        return stateResult;
+                }
+                if (command.RequestDto.Saturday != null)
+                {
+                    Result stateResult = merchantAggregate.SetDayOpeningHours(DayOfWeek.Saturday, command.RequestDto.Saturday.Opening, command.RequestDto.Saturday.Closing);
+                    if (stateResult.IsFailed)
+                        return stateResult;
+                }
+                if (command.RequestDto.Sunday != null)
+                {
+                    Result stateResult = merchantAggregate.SetDayOpeningHours(DayOfWeek.Sunday, command.RequestDto.Sunday.Opening, command.RequestDto.Sunday.Closing);
+                    if (stateResult.IsFailed)
+                        return stateResult;
+                }
+                
                 Result saveResult = await this.AggregateService.Save(merchantAggregate, cancellationToken);
                 if (saveResult.IsFailed)
                     return ResultHelpers.CreateFailure(saveResult);
