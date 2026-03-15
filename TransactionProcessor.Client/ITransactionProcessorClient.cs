@@ -73,6 +73,12 @@ namespace TransactionProcessor.Client
                          CreateFloatForContractProductRequest createFloatForContractProductRequest,
                          CancellationToken cancellationToken);
 
+        Task<Result> UpdateMerchantOpeningHours(String accessToken,
+                                                   Guid estateId,
+                                                   Guid merchantId,
+                                                   MerchantOpeningRequest merchantOpeningRequest,
+                                                   CancellationToken cancellationToken);
+
         Task<Result> RecordFloatCreditPurchase(String accessToken,
                                        Guid estateId,
                                        RecordFloatCreditPurchaseRequest recordFloatCreditPurchaseRequest,

@@ -87,6 +87,8 @@ namespace TransactionProcessor.BusinessLogic.Tests.Mediator
             this.Requests.Add(TestData.Commands.RemoveOperatorFromMerchantCommand);
             this.Requests.Add(TestData.Commands.RemoveMerchantContractCommand);
             this.Requests.Add(TestData.Commands.SetMerchantOperatingScheduleCommand);
+            this.Requests.Add(TestData.Commands.UpdateMerchantOpeningHoursCommand);
+            this.Requests.Add(TestData.Commands.SetMerchantOperatingScheduleCommand);
             this.Requests.Add(TestData.Queries.GetMerchantsQuery);
             this.Requests.Add(TestData.Queries.GetMerchantQuery);
             this.Requests.Add(TestData.Queries.GetMerchantContractsQuery);

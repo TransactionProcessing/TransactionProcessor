@@ -62,7 +62,8 @@ namespace TransactionProcessor.BusinessLogic.EventHandling
                 MerchantDomainEvents.MerchantContactNameUpdatedEvent de => this.EstateReportingRepository.UpdateMerchantContact(de, cancellationToken),
                 MerchantDomainEvents.MerchantContactEmailAddressUpdatedEvent de => this.EstateReportingRepository.UpdateMerchantContact(de, cancellationToken),
                 MerchantDomainEvents.MerchantContactPhoneNumberUpdatedEvent de => this.EstateReportingRepository.UpdateMerchantContact(de, cancellationToken),
-                
+                MerchantDomainEvents.MerchantOpeningHoursUpdatedEvent de => this.EstateReportingRepository.UpdateMerchantOpeningHours(de, cancellationToken),
+
                 TransactionDomainEvents.TransactionHasStartedEvent de => this.EstateReportingRepository.StartTransaction(de, cancellationToken),
                 TransactionDomainEvents.AdditionalRequestDataRecordedEvent de => this.HandleSpecificDomainEvent(de, cancellationToken),
                 TransactionDomainEvents.AdditionalResponseDataRecordedEvent de => this.EstateReportingRepository.RecordTransactionAdditionalResponseData(de, cancellationToken),

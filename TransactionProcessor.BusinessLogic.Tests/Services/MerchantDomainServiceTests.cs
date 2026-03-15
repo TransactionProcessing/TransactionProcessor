@@ -593,6 +593,49 @@ public class MerchantDomainServiceTests {
     }
 
     [Fact]
+    public async Task MerchantDomainService_UpdateMerchantOpeningHours_Success()
+    {
+        this.AggregateService.Setup(e => e.Get<EstateAggregate>(It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(TestData.Aggregates.CreatedEstateAggregate());
+
+        this.AggregateService.Setup(m => m.GetLatest<MerchantAggregate>(It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(Result.Success(TestData.Aggregates.CreatedMerchantAggregate()));
+
+        this.AggregateService
+            .Setup(m => m.Save(It.IsAny<MerchantAggregate>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(Result.Success);
+
+        var result = await this.DomainService.UpdateMerchantOpeningHours(TestData.Commands.UpdateMerchantOpeningHoursCommand, CancellationToken.None);
+        result.IsSuccess.ShouldBeTrue();
+    }
+
+    [Fact]
+    public async Task MerchantDomainService_UpdateMerchantOpeningHours_MerchantNotCreated_ErrorThrown()
+    {
+        this.AggregateService.Setup(e => e.Get<EstateAggregate>(It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(TestData.Aggregates.CreatedEstateAggregate());
+
+        this.AggregateService.Setup(m => m.GetLatest<MerchantAggregate>(It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(Result.Success(TestData.Aggregates.EmptyMerchantAggregate()));
+
+        var result = await this.DomainService.UpdateMerchantOpeningHours(TestData.Commands.UpdateMerchantOpeningHoursCommand, CancellationToken.None);
+        result.IsFailed.ShouldBeTrue();
+    }
+
+    [Fact]
+    public async Task MerchantDomainService_UpdateMerchantOpeningHours_EstateNotCreated_ErrorThrown()
+    {
+        this.AggregateService.Setup(e => e.Get<EstateAggregate>(It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(TestData.Aggregates.EmptyEstateAggregate);
+
+        this.AggregateService.Setup(m => m.GetLatest<MerchantAggregate>(It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(Result.Success(TestData.Aggregates.CreatedMerchantAggregate()));
+
+        var result = await this.DomainService.UpdateMerchantOpeningHours(TestData.Commands.UpdateMerchantOpeningHoursCommand, CancellationToken.None);
+        result.IsFailed.ShouldBeTrue();
+    }
+
+    [Fact]
     public async Task MerchantDomainService_MakeMerchantWithdrawal_WithdrawalIsMade() {
         this.AggregateService.Setup(e => e.Get<EstateAggregate>(It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(TestData.Aggregates.CreatedEstateAggregate());

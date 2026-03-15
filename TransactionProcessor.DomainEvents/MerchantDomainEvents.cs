@@ -37,5 +37,6 @@ namespace TransactionProcessor.DomainEvents {
         public record MerchantContactEmailAddressUpdatedEvent(Guid MerchantId, Guid EstateId, Guid ContactId, String ContactEmailAddress) : DomainEvent(MerchantId, Guid.NewGuid());
         public record MerchantContactPhoneNumberUpdatedEvent(Guid MerchantId, Guid EstateId, Guid ContactId, String ContactPhoneNumber) : DomainEvent(MerchantId, Guid.NewGuid());
         public record MerchantOperatingScheduleSetEvent(Guid MerchantId, Guid EstateId, Int32 Year, Boolean DefaultIsOpen, List<MerchantOperatingSchedulePeriod> Periods) : DomainEvent(MerchantId, Guid.NewGuid());
+        public record MerchantOpeningHoursUpdatedEvent(Guid MerchantId, Guid EstateId, Int32 DayOfWeek, String Opening, String Closing) : DomainEvent(MerchantId, Guid.NewGuid());
     }
 }

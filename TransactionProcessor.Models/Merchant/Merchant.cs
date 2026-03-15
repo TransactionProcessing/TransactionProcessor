@@ -36,9 +36,17 @@ namespace TransactionProcessor.Models.Merchant
         public DateTime NextSettlementDueDate { get; set; }
 
         public DateTime NextStatementDate { get; set; }
+        
+        public Dictionary<DayOfWeek, OpeningHours> OpeningHours { get; set; }
 
         public List<MerchantOperatingSchedule> OperatingSchedules { get; set; }
 
         #endregion
+    }
+
+    public class OpeningHours
+    {
+        public string Opening { get; set; }
+        public string Closing { get; set; }
     }
 }

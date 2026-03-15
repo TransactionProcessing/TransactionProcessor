@@ -89,6 +89,15 @@ public static class Extensions{
         return modelBuilder;
     }
 
+    public static ModelBuilder SetupMerchantOpeningHours(this ModelBuilder modelBuilder)
+    {
+        modelBuilder.Entity<MerchantOpeningHours>().HasKey(t => new {
+            t.MerchantId
+        });
+
+        return modelBuilder;
+    }
+
     public static ModelBuilder SetupOperator(this ModelBuilder modelBuilder)
     {
         modelBuilder.Entity<Operator>().HasKey(t => new {

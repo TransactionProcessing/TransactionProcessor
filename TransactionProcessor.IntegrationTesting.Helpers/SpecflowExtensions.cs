@@ -921,6 +921,33 @@ public static class ReqnrollExtensions{
         return requests;
     }
 
+    public static List<(EstateDetails, Guid, MerchantOpeningRequest)> ToMerchantOpeningRequests(this DataTableRows tableRows,
+                                                                                                List<EstateDetails> estateDetailsList) {
+        List<(EstateDetails, Guid, MerchantOpeningRequest)> requests = new List<(EstateDetails, Guid, MerchantOpeningRequest)>();
+        foreach (DataTableRow tableRow in tableRows) {
+            String estateName = ReqnrollTableHelper.GetStringRowValue(tableRow, "EstateName");
+            EstateDetails estateDetails = estateDetailsList.SingleOrDefault(e => e.EstateName == estateName);
+            estateDetails.ShouldNotBeNull();
+
+            // Lookup the merchant id
+            String merchantName = ReqnrollTableHelper.GetStringRowValue(tableRow, "MerchantName");
+            Guid merchantId = estateDetails.GetMerchantId(merchantName);
+
+            MerchantOpeningRequest request = new MerchantOpeningRequest {
+                Monday = new OpeningHours { Opening = ReqnrollTableHelper.GetStringRowValue(tableRow, "MondayOpening"), Closing = ReqnrollTableHelper.GetStringRowValue(tableRow, "MondayClosing") },
+                Tuesday = new OpeningHours { Opening = ReqnrollTableHelper.GetStringRowValue(tableRow, "TuesdayOpening"), Closing = ReqnrollTableHelper.GetStringRowValue(tableRow, "TuesdayClosing") },
+                Wednesday = new OpeningHours { Opening = ReqnrollTableHelper.GetStringRowValue(tableRow, "WednesdayOpening"), Closing = ReqnrollTableHelper.GetStringRowValue(tableRow, "WednesdayClosing") },
+                Thursday = new OpeningHours { Opening = ReqnrollTableHelper.GetStringRowValue(tableRow, "ThursdayOpening"), Closing = ReqnrollTableHelper.GetStringRowValue(tableRow, "ThursdayClosing") },
+                Friday = new OpeningHours() { Opening = ReqnrollTableHelper.GetStringRowValue(tableRow, "FridayOpening"), Closing = ReqnrollTableHelper.GetStringRowValue(tableRow, "FridayClosing") },
+                Saturday = new OpeningHours() { Opening = ReqnrollTableHelper.GetStringRowValue(tableRow, "SaturdayOpening"), Closing = ReqnrollTableHelper.GetStringRowValue(tableRow, "SaturdayClosing") },
+                Sunday = new OpeningHours() { Opening = ReqnrollTableHelper.GetStringRowValue(tableRow, "SundayOpening"), Closing = ReqnrollTableHelper.GetStringRowValue(tableRow, "SundayClosing") }
+            };
+            requests.Add((estateDetails, merchantId, request));
+        }
+
+        return requests;
+    }
+
     public static List<(EstateDetails, Guid, AssignOperatorToMerchantRequest)> ToAssignOperatorRequests(this DataTableRows tableRows, List<EstateDetails> estateDetailsList)
     {
         List<(EstateDetails, Guid, AssignOperatorToMerchantRequest)> requests = new();

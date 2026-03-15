@@ -57,6 +57,7 @@ public static class MerchantEndpoints
         merchantGroup.MapPost("/{merchantId:guid}/statements", MerchantHandlers.GenerateMerchantStatement).WithName("GenerateMerchantStatement");
 
         merchantGroup.MapPatch("/{merchantId:guid}", MerchantHandlers.UpdateMerchant).WithName("UpdateMerchant");
+        merchantGroup.MapPatch("/{merchantId:guid}/opening", MerchantHandlers.UpdateMerchantOpening).WithName("UpdateMerchantOpening");
 
         return endpoints;
     }

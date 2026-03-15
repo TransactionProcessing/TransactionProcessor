@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using Newtonsoft.Json;
+using TransactionProcessor.DataTransferObjects.Requests.Merchant;
 using TransactionProcessor.DataTransferObjects.Responses.Contract;
 
 namespace TransactionProcessor.DataTransferObjects.Responses.Merchant
@@ -113,6 +114,9 @@ namespace TransactionProcessor.DataTransferObjects.Responses.Merchant
 
         [JsonProperty("contracts")]
         public List<MerchantContractResponse> Contracts { get; set; }
+
+        [JsonProperty("opening_hours")]
+        public Dictionary<DayOfWeek, OpeningHoursResponse> OpeningHours { get; set; }
 
         #endregion
     }

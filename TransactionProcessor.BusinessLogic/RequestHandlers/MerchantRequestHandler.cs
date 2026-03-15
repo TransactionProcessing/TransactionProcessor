@@ -36,10 +36,11 @@ IRequestHandler<MerchantCommands.SwapMerchantDeviceCommand, Result>,
                                           IRequestHandler<MerchantCommands.UpdateMerchantCommand, Result>,
                                           IRequestHandler<MerchantCommands.AddMerchantAddressCommand, Result>,
                                           IRequestHandler<MerchantCommands.UpdateMerchantAddressCommand, Result>,
-                                          IRequestHandler<MerchantCommands.AddMerchantContactCommand, Result>,
-                                           IRequestHandler<MerchantCommands.UpdateMerchantContactCommand, Result>,
-                                           IRequestHandler<MerchantCommands.RemoveOperatorFromMerchantCommand, Result>,
-                                           IRequestHandler<MerchantCommands.RemoveMerchantContractCommand, Result>,
+                                           IRequestHandler<MerchantCommands.AddMerchantContactCommand, Result>,
+                                            IRequestHandler<MerchantCommands.UpdateMerchantContactCommand, Result>,
+                                            IRequestHandler<MerchantCommands.RemoveOperatorFromMerchantCommand, Result>,
+                                            IRequestHandler<MerchantCommands.RemoveMerchantContractCommand, Result>,
+                                       IRequestHandler<MerchantCommands.UpdateMerchantOpeningHoursCommand, Result>
                                            IRequestHandler<MerchantCommands.SetMerchantOperatingScheduleCommand, Result>
 {
     private readonly IProjectionStateRepository<MerchantBalanceState> MerchantBalanceStateRepository;
@@ -182,6 +183,12 @@ IRequestHandler<MerchantCommands.SwapMerchantDeviceCommand, Result>,
     public async Task<Result> Handle(MerchantCommands.RemoveMerchantContractCommand command, CancellationToken cancellationToken)
     {
         return await this.MerchantDomainService.RemoveContractFromMerchant(command, cancellationToken);
+    }
+
+    public async Task<Result> Handle(MerchantCommands.SetMerchantOperatingScheduleCommand command, CancellationToken cancellationToken)
+    public async Task<Result> Handle(MerchantCommands.UpdateMerchantOpeningHoursCommand command,
+                                     CancellationToken cancellationToken) {
+        return await this.MerchantDomainService.UpdateMerchantOpeningHours(command, cancellationToken);
     }
 
     public async Task<Result> Handle(MerchantCommands.SetMerchantOperatingScheduleCommand command, CancellationToken cancellationToken)
