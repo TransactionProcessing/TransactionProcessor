@@ -337,7 +337,7 @@ await this.FeatureBackgroundAsync();
                             "MondayClosing",
                             "TuesdayOpening",
                             "TuesdayClosing",
-                            "WedensdayOpening",
+                            "WednesdayOpening",
                             "WednesdayClosing",
                             "ThursdayOpening",
                             "ThursdayClosing",

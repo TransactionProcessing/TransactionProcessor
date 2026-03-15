@@ -706,49 +706,23 @@ namespace TransactionProcessor.BusinessLogic.Services
                     this.ValidateEstateAndMerchant(estateAggregate, merchantAggregate);
                 if (result.IsFailed)
                     return ResultHelpers.CreateFailure(result);
+                var dayMappings = new List<(DayOfWeek Day, TransactionProcessor.DataTransferObjects.Requests.Merchant.OpeningHours Hours)>() {
+                    (DayOfWeek.Monday, command.RequestDto.Monday),
+                    (DayOfWeek.Tuesday, command.RequestDto.Tuesday),
+                    (DayOfWeek.Wednesday, command.RequestDto.Wednesday),
+                    (DayOfWeek.Thursday, command.RequestDto.Thursday),
+                    (DayOfWeek.Friday, command.RequestDto.Friday),
+                    (DayOfWeek.Saturday, command.RequestDto.Saturday),
+                    (DayOfWeek.Sunday, command.RequestDto.Sunday),
+                };
 
-                if (command.RequestDto.Monday != null) {
-                    Result stateResult = merchantAggregate.SetDayOpeningHours(DayOfWeek.Monday, command.RequestDto.Monday.Opening, command.RequestDto.Monday.Closing);
-                    if (stateResult.IsFailed)
-                        return stateResult;
-                }
-                if (command.RequestDto.Tuesday != null)
+                foreach (var mapping in dayMappings)
                 {
-                    Result stateResult = merchantAggregate.SetDayOpeningHours(DayOfWeek.Tuesday, command.RequestDto.Tuesday.Opening, command.RequestDto.Tuesday.Closing);
+                    Result stateResult = ApplyOpeningHoursIfPresent(merchantAggregate, mapping.Day, mapping.Hours);
                     if (stateResult.IsFailed)
                         return stateResult;
                 }
-                if (command.RequestDto.Wednesday != null)
-                {
-                    Result stateResult = merchantAggregate.SetDayOpeningHours(DayOfWeek.Wednesday, command.RequestDto.Wednesday.Opening, command.RequestDto.Wednesday.Closing);
-                    if (stateResult.IsFailed)
-                        return stateResult;
-                }
-                if (command.RequestDto.Thursday != null)
-                {
-                    Result stateResult = merchantAggregate.SetDayOpeningHours(DayOfWeek.Thursday, command.RequestDto.Thursday.Opening, command.RequestDto.Thursday.Closing);
-                    if (stateResult.IsFailed)
-                        return stateResult;
-                }
-                if (command.RequestDto.Friday != null)
-                {
-                    Result stateResult = merchantAggregate.SetDayOpeningHours(DayOfWeek.Friday, command.RequestDto.Friday.Opening, command.RequestDto.Friday.Closing);
-                    if (stateResult.IsFailed)
-                        return stateResult;
-                }
-                if (command.RequestDto.Saturday != null)
-                {
-                    Result stateResult = merchantAggregate.SetDayOpeningHours(DayOfWeek.Saturday, command.RequestDto.Saturday.Opening, command.RequestDto.Saturday.Closing);
-                    if (stateResult.IsFailed)
-                        return stateResult;
-                }
-                if (command.RequestDto.Sunday != null)
-                {
-                    Result stateResult = merchantAggregate.SetDayOpeningHours(DayOfWeek.Sunday, command.RequestDto.Sunday.Opening, command.RequestDto.Sunday.Closing);
-                    if (stateResult.IsFailed)
-                        return stateResult;
-                }
-                
+
                 Result saveResult = await this.AggregateService.Save(merchantAggregate, cancellationToken);
                 if (saveResult.IsFailed)
                     return ResultHelpers.CreateFailure(saveResult);
@@ -759,6 +733,14 @@ namespace TransactionProcessor.BusinessLogic.Services
             {
                 return Result.Failure(ex.GetExceptionMessages());
             }
+        }
+
+        private Result ApplyOpeningHoursIfPresent(MerchantAggregate merchantAggregate, DayOfWeek day, TransactionProcessor.DataTransferObjects.Requests.Merchant.OpeningHours hours)
+        {
+            if (hours == null)
+                return Result.Success();
+
+            return merchantAggregate.SetDayOpeningHours(day, hours.Opening, hours.Closing);
         }
 
         private Result ValidateEstateAndMerchant(EstateAggregate estateAggregate,
