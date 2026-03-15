@@ -37,10 +37,10 @@ IRequestHandler<MerchantCommands.SwapMerchantDeviceCommand, Result>,
                                           IRequestHandler<MerchantCommands.AddMerchantAddressCommand, Result>,
                                           IRequestHandler<MerchantCommands.UpdateMerchantAddressCommand, Result>,
                                            IRequestHandler<MerchantCommands.AddMerchantContactCommand, Result>,
-                                            IRequestHandler<MerchantCommands.UpdateMerchantContactCommand, Result>,
-                                            IRequestHandler<MerchantCommands.RemoveOperatorFromMerchantCommand, Result>,
-                                            IRequestHandler<MerchantCommands.RemoveMerchantContractCommand, Result>,
-                                       IRequestHandler<MerchantCommands.UpdateMerchantOpeningHoursCommand, Result>
+                                           IRequestHandler<MerchantCommands.UpdateMerchantContactCommand, Result>,
+                                           IRequestHandler<MerchantCommands.RemoveOperatorFromMerchantCommand, Result>,
+                                           IRequestHandler<MerchantCommands.RemoveMerchantContractCommand, Result>,
+                                           IRequestHandler<MerchantCommands.UpdateMerchantOpeningHoursCommand, Result>,
                                            IRequestHandler<MerchantCommands.SetMerchantOperatingScheduleCommand, Result>
 {
     private readonly IProjectionStateRepository<MerchantBalanceState> MerchantBalanceStateRepository;

@@ -45,7 +45,6 @@ namespace TransactionProcessor.BusinessLogic.Services
         Task<Result> RemoveContractFromMerchant(MerchantCommands.RemoveMerchantContractCommand command, CancellationToken cancellationToken);
         Task<Result> SetMerchantOperatingSchedule(MerchantCommands.SetMerchantOperatingScheduleCommand command, CancellationToken cancellationToken);
         Task<Result> UpdateMerchantOpeningHours(MerchantCommands.UpdateMerchantOpeningHoursCommand command, CancellationToken cancellationToken);
-        Task<Result> SetMerchantOperatingSchedule(MerchantCommands.SetMerchantOperatingScheduleCommand command, CancellationToken cancellationToken);
 
         #endregion
     }

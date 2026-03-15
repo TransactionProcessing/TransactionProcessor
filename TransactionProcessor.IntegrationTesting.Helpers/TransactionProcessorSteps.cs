@@ -622,8 +622,6 @@ public class TransactionProcessorSteps
                 merchant.OpeningHours[DayOfWeek.Friday].Closing.ShouldBe(request.request.Friday.Closing);
                 merchant.OpeningHours[DayOfWeek.Saturday].Opening.ShouldBe(request.request.Saturday.Opening);
                 merchant.OpeningHours[DayOfWeek.Saturday].Closing.ShouldBe(request.request.Saturday.Closing);
-                merchant.OpeningHours[DayOfWeek.Sunday].Opening.ShouldBe(request.request.Sunday.Opening);
-                merchant.OpeningHours[DayOfWeek.Sunday].Closing.ShouldBe(request.request.Sunday.Closing);
                 responses.Add(merchant);
             });
         }

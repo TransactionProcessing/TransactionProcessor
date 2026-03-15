@@ -523,7 +523,6 @@ namespace TransactionProcessor.Factories
                     Opening = oh.Value.Opening,
                     Closing = oh.Value.Closing
                 });
-            merchantResponse.OperatingSchedules = ConvertFrom(merchant.OperatingSchedules);
 
             return merchantResponse;
         }
