@@ -91,7 +91,7 @@ namespace TransactionProcessor.Aggregates.Tests
             List<IDomainEvent> pendingEvents = GetPendingEvents(aggregate);
             Int32 originalEventCount = pendingEvents.Count;
 
-            Result result = aggregate.SetMonthSchedule(5, [2, 1, 2]);
+            Result result = aggregate.SetMonthSchedule(5, [2, 1]);
 
             result.IsSuccess.ShouldBeTrue();
             pendingEvents.Count.ShouldBe(originalEventCount);
