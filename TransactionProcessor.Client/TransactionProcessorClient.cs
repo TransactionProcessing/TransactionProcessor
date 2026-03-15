@@ -169,6 +169,31 @@ public class TransactionProcessorClient : ClientProxyBase, ITransactionProcessor
         }
     }
 
+    public async Task<Result> UpdateMerchantOpeningHours(String accessToken,
+                                                         Guid estateId,
+                                                         Guid merchantId,
+                                                         MerchantOpeningRequest merchantOpeningRequest,
+                                                         CancellationToken cancellationToken) {
+        String requestUri = this.BuildRequestUrl($"/api/estates/{estateId}/merchants/{merchantId}/opening");
+
+        try
+        {
+            var result = await this.SendHttpPatchRequest<MerchantOpeningRequest>(requestUri, merchantOpeningRequest, accessToken, cancellationToken);
+
+            if (result.IsFailed)
+                return ResultHelpers.CreateFailure(result);
+
+            return Result.Success();
+        }
+        catch (Exception ex)
+        {
+            // An exception has occurred, add some additional information to the message
+            Exception exception = new("Error updating merchant opening hours.", ex);
+
+            throw exception;
+        }
+    }
+
     public async Task<Result<MerchantBalanceResponse>> GetMerchantBalance(String accessToken,
                                                                           Guid estateId,
                                                                           Guid merchantId,

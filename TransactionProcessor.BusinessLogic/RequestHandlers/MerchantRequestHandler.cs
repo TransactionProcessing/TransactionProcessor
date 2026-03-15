@@ -17,29 +17,29 @@ using Merchant = TransactionProcessor.Models.Merchant.Merchant;
 
 namespace TransactionProcessor.BusinessLogic.RequestHandlers;
 
-public class MerchantRequestHandler :
-    IRequestHandler<MerchantQueries.GetMerchantBalanceQuery, Result<MerchantBalanceState>>,
-    IRequestHandler<MerchantQueries.GetMerchantLiveBalanceQuery, Result<MerchantBalanceProjectionState1>>,
-    IRequestHandler<MerchantQueries.GetMerchantBalanceHistoryQuery, Result<List<MerchantBalanceChangedEntry>>>,
-IRequestHandler<MerchantCommands.SwapMerchantDeviceCommand, Result>,
-                                          IRequestHandler<MerchantCommands.AddMerchantContractCommand, Result>,
-                                          IRequestHandler<MerchantCommands.CreateMerchantCommand, Result>,
-                                          IRequestHandler<MerchantCommands.AssignOperatorToMerchantCommand, Result>,
-                                          IRequestHandler<MerchantCommands.AddMerchantDeviceCommand, Result>,
-                                          IRequestHandler<MerchantCommands.CreateMerchantUserCommand, Result>,
-                                          IRequestHandler<MerchantCommands.MakeMerchantDepositCommand, Result>,
-                                          IRequestHandler<MerchantCommands.MakeMerchantWithdrawalCommand, Result>,
-                                          IRequestHandler<MerchantQueries.GetMerchantQuery, Result<Models.Merchant.Merchant>>,
-                                          IRequestHandler<MerchantQueries.GetMerchantContractsQuery, Result<List<Models.Contract.Contract>>>,
-                                          IRequestHandler<MerchantQueries.GetMerchantsQuery, Result<List<Models.Merchant.Merchant>>>,
-                                          IRequestHandler<MerchantQueries.GetTransactionFeesForProductQuery, Result<List<Models.Contract.ContractProductTransactionFee>>>,
-                                          IRequestHandler<MerchantCommands.UpdateMerchantCommand, Result>,
-                                          IRequestHandler<MerchantCommands.AddMerchantAddressCommand, Result>,
-                                          IRequestHandler<MerchantCommands.UpdateMerchantAddressCommand, Result>,
-                                          IRequestHandler<MerchantCommands.AddMerchantContactCommand, Result>,
-                                          IRequestHandler<MerchantCommands.UpdateMerchantContactCommand, Result>,
-                                          IRequestHandler<MerchantCommands.RemoveOperatorFromMerchantCommand, Result>,
-                                          IRequestHandler<MerchantCommands.RemoveMerchantContractCommand, Result>
+public class MerchantRequestHandler : IRequestHandler<MerchantQueries.GetMerchantBalanceQuery, Result<MerchantBalanceState>>,
+                                      IRequestHandler<MerchantQueries.GetMerchantLiveBalanceQuery, Result<MerchantBalanceProjectionState1>>,
+                                      IRequestHandler<MerchantQueries.GetMerchantBalanceHistoryQuery, Result<List<MerchantBalanceChangedEntry>>>,
+                                      IRequestHandler<MerchantCommands.SwapMerchantDeviceCommand, Result>,
+                                      IRequestHandler<MerchantCommands.AddMerchantContractCommand, Result>,
+                                      IRequestHandler<MerchantCommands.CreateMerchantCommand, Result>,
+                                      IRequestHandler<MerchantCommands.AssignOperatorToMerchantCommand, Result>,
+                                      IRequestHandler<MerchantCommands.AddMerchantDeviceCommand, Result>,
+                                      IRequestHandler<MerchantCommands.CreateMerchantUserCommand, Result>,
+                                      IRequestHandler<MerchantCommands.MakeMerchantDepositCommand, Result>,
+                                      IRequestHandler<MerchantCommands.MakeMerchantWithdrawalCommand, Result>,
+                                      IRequestHandler<MerchantQueries.GetMerchantQuery, Result<Models.Merchant.Merchant>>,
+                                      IRequestHandler<MerchantQueries.GetMerchantContractsQuery, Result<List<Models.Contract.Contract>>>,
+                                      IRequestHandler<MerchantQueries.GetMerchantsQuery, Result<List<Models.Merchant.Merchant>>>,
+                                      IRequestHandler<MerchantQueries.GetTransactionFeesForProductQuery, Result<List<Models.Contract.ContractProductTransactionFee>>>,
+                                      IRequestHandler<MerchantCommands.UpdateMerchantCommand, Result>,
+                                      IRequestHandler<MerchantCommands.AddMerchantAddressCommand, Result>,
+                                      IRequestHandler<MerchantCommands.UpdateMerchantAddressCommand, Result>,
+                                      IRequestHandler<MerchantCommands.AddMerchantContactCommand, Result>,
+                                      IRequestHandler<MerchantCommands.UpdateMerchantContactCommand, Result>,
+                                      IRequestHandler<MerchantCommands.RemoveOperatorFromMerchantCommand, Result>,
+                                      IRequestHandler<MerchantCommands.RemoveMerchantContractCommand, Result>,
+                                      IRequestHandler<MerchantCommands.UpdateMerchantOpeningHoursCommand, Result>
 {
     private readonly IProjectionStateRepository<MerchantBalanceState> MerchantBalanceStateRepository;
     private readonly IEventStoreContext EventStoreContext;
@@ -181,5 +181,10 @@ IRequestHandler<MerchantCommands.SwapMerchantDeviceCommand, Result>,
     public async Task<Result> Handle(MerchantCommands.RemoveMerchantContractCommand command, CancellationToken cancellationToken)
     {
         return await this.MerchantDomainService.RemoveContractFromMerchant(command, cancellationToken);
+    }
+
+    public async Task<Result> Handle(MerchantCommands.UpdateMerchantOpeningHoursCommand command,
+                                     CancellationToken cancellationToken) {
+        return await this.MerchantDomainService.UpdateMerchantOpeningHours(command, cancellationToken);
     }
 }

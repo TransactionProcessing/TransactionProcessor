@@ -242,6 +242,20 @@ public static class MerchantHandlers {
         return ResponseFactory.FromResult(result);
     }
 
+    public static async Task<IResult> UpdateMerchantOpening(IMediator mediator,
+                                                     HttpContext ctx,
+                                                     Guid estateId,
+                                                     Guid merchantId,
+                                                     MerchantOpeningRequest merchantOpeningRequest,
+                                                     CancellationToken cancellationToken)
+    {
+        MerchantCommands.UpdateMerchantOpeningHoursCommand command = new(estateId, merchantId, merchantOpeningRequest);
+        Result result = await mediator.Send(command, cancellationToken);
+
+        return ResponseFactory.FromResult(result);
+        
+    }
+
     public static async Task<IResult> AddMerchantAddress(IMediator mediator,
                                                          HttpContext ctx,
                                                          Guid estateId,

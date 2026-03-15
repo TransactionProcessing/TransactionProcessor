@@ -409,6 +409,97 @@ namespace TransactionProcessor.Aggregates.Tests
             Merchant merchant = aggregate.GetMerchant();
             merchant.SettlementSchedule.ShouldBe(originalSettlementSchedule);
         }
+
+        [Fact]      
+        public void MerchantAggregate_SetDayOpeningHours_WhenNotSet_EmitsUpdatedEvent()
+        {
+            MerchantAggregate aggregate = MerchantAggregate.Create(TestData.MerchantId);
+            aggregate.Create(TestData.EstateId, TestData.MerchantName, TestData.DateMerchantCreated, TestData.AddressModel, TestData.ContactModel,
+                TestData.SettlementScheduleModel);
+
+            Result result = aggregate.SetDayOpeningHours(DayOfWeek.Monday, "09:00", "17:00");
+            result.IsSuccess.ShouldBeTrue();
+
+            Type type = aggregate.GetType();
+            PropertyInfo property = type.GetProperty("PendingEvents", BindingFlags.Instance | BindingFlags.NonPublic);
+            object value = property.GetValue(aggregate);
+            value.ShouldNotBeNull();
+            List<IDomainEvent> eventHistory = (List<IDomainEvent>)value;
+
+            // Last event should be the opening hours set event
+            IDomainEvent lastEvent = eventHistory[eventHistory.Count - 1];
+            lastEvent.ShouldBeOfType<TransactionProcessor.DomainEvents.MerchantDomainEvents.MerchantOpeningHoursUpdatedEvent>();
+            var setEvent = (TransactionProcessor.DomainEvents.MerchantDomainEvents.MerchantOpeningHoursUpdatedEvent)lastEvent;
+            setEvent.DayOfWeek.ShouldBe((int)DayOfWeek.Monday);
+            setEvent.Opening.ShouldBe("09:00");
+            setEvent.Closing.ShouldBe("17:00");
+        }
+
+        [Fact]
+        public void MerchantAggregate_SetDayOpeningHours_WhenChanged_EmitsUpdatedEvent()
+        {
+            MerchantAggregate aggregate = MerchantAggregate.Create(TestData.MerchantId);
+            aggregate.Create(TestData.EstateId, TestData.MerchantName, TestData.DateMerchantCreated, TestData.AddressModel, TestData.ContactModel,
+                TestData.SettlementScheduleModel);
+
+            // Set initial hours
+            Result result = aggregate.SetDayOpeningHours(DayOfWeek.Tuesday, "08:00", "16:00");
+            result.IsSuccess.ShouldBeTrue();
+
+            Type type = aggregate.GetType();
+            PropertyInfo property = type.GetProperty("PendingEvents", BindingFlags.Instance | BindingFlags.NonPublic);
+            object value = property.GetValue(aggregate);
+            List<IDomainEvent> eventHistory = (List<IDomainEvent>)value;
+            int countAfterSet = eventHistory.Count;
+
+            // Update to new hours
+            result = aggregate.SetDayOpeningHours(DayOfWeek.Tuesday, "10:00", "18:00");
+            result.IsSuccess.ShouldBeTrue();
+
+            value = property.GetValue(aggregate);
+            eventHistory = (List<IDomainEvent>)value;
+
+            // Ensure a new event was appended and that it is an UpdatedEvent
+            eventHistory.Count.ShouldBeGreaterThan(countAfterSet);
+            IDomainEvent lastEvent = eventHistory[eventHistory.Count - 1];
+            lastEvent.ShouldBeOfType<TransactionProcessor.DomainEvents.MerchantDomainEvents.MerchantOpeningHoursUpdatedEvent>();
+            var updatedEvent = (TransactionProcessor.DomainEvents.MerchantDomainEvents.MerchantOpeningHoursUpdatedEvent)lastEvent;
+            updatedEvent.DayOfWeek.ShouldBe((int)DayOfWeek.Tuesday);
+            updatedEvent.Opening.ShouldBe("10:00");
+            updatedEvent.Closing.ShouldBe("18:00");
+        }
+
+        [Fact]
+        public void MerchantAggregate_SetDayOpeningHours_SameValue_NoEventRaised()
+        {
+            MerchantAggregate aggregate = MerchantAggregate.Create(TestData.MerchantId);
+            aggregate.Create(TestData.EstateId, TestData.MerchantName, TestData.DateMerchantCreated, TestData.AddressModel, TestData.ContactModel,
+                TestData.SettlementScheduleModel);
+
+            Type type = aggregate.GetType();
+            PropertyInfo property = type.GetProperty("PendingEvents", BindingFlags.Instance | BindingFlags.NonPublic);
+            object value = property.GetValue(aggregate);
+            List<IDomainEvent> eventHistory = (List<IDomainEvent>)value;
+            int initialCount = eventHistory.Count;
+
+            Result result = aggregate.SetDayOpeningHours(DayOfWeek.Wednesday, "07:00", "15:00");
+            result.IsSuccess.ShouldBeTrue();
+
+            value = property.GetValue(aggregate);
+            eventHistory = (List<IDomainEvent>)value;
+            int afterFirstSet = eventHistory.Count;
+
+            // Call again with same values - should not append another event
+            result = aggregate.SetDayOpeningHours(DayOfWeek.Wednesday, "07:00", "15:00");
+            result.IsSuccess.ShouldBeTrue();
+
+            value = property.GetValue(aggregate);
+            eventHistory = (List<IDomainEvent>)value;
+            eventHistory.Count.ShouldBe(afterFirstSet);
+            // Ensure first new event was a SetEvent
+            IDomainEvent lastEvent = eventHistory[eventHistory.Count - 1];
+            lastEvent.ShouldBeOfType<TransactionProcessor.DomainEvents.MerchantDomainEvents.MerchantOpeningHoursUpdatedEvent>();
+        }
         
         [Fact]
         public void MerchantAggregate_SwapDevice_DeviceIsSwapped(){
