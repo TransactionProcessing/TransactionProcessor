@@ -20,6 +20,7 @@ using TransactionProcessor.BusinessLogic.Requests;
 using TransactionProcessor.Database.Entities;
 using TransactionProcessor.Models.Estate;
 using TransactionProcessor.Models.Merchant;
+using TransactionProcessor.Models.MerchantSchedule;
 using TransactionProcessor.ProjectionEngine.State;
 using Estate = TransactionProcessor.Models.Estate.Estate;
 
@@ -44,6 +45,8 @@ namespace TransactionProcessor.BusinessLogic.Services
         Task<Result> RemoveOperatorFromMerchant(MerchantCommands.RemoveOperatorFromMerchantCommand command, CancellationToken cancellationToken);
         Task<Result> RemoveContractFromMerchant(MerchantCommands.RemoveMerchantContractCommand command, CancellationToken cancellationToken);
         Task<Result> UpdateMerchantOpeningHours(MerchantCommands.UpdateMerchantOpeningHoursCommand command, CancellationToken cancellationToken);
+        Task<Result> CreateMerchantSchedule(MerchantCommands.CreateMerchantScheduleCommand command, CancellationToken cancellationToken);
+        Task<Result> UpdateMerchantSchedule(MerchantCommands.UpdateMerchantScheduleCommand command, CancellationToken cancellationToken);
 
         #endregion
     }
@@ -707,7 +710,7 @@ namespace TransactionProcessor.BusinessLogic.Services
         }
 
         public async Task<Result> UpdateMerchantOpeningHours(MerchantCommands.UpdateMerchantOpeningHoursCommand command,
-                                                             CancellationToken cancellationToken) {
+                                                              CancellationToken cancellationToken) {
             try
             {
                 Result<EstateAggregate> estateResult = await DomainServiceHelper.GetAggregateOrFailure(ct => this.AggregateService.Get<EstateAggregate>(command.EstateId, ct), command.EstateId, cancellationToken);
@@ -754,6 +757,86 @@ namespace TransactionProcessor.BusinessLogic.Services
             }
         }
 
+        public async Task<Result> CreateMerchantSchedule(MerchantCommands.CreateMerchantScheduleCommand command,
+                                                         CancellationToken cancellationToken) {
+            try {
+                Result<EstateAggregate> estateResult = await DomainServiceHelper.GetAggregateOrFailure(ct => this.AggregateService.Get<EstateAggregate>(command.EstateId, ct), command.EstateId, cancellationToken);
+                if (estateResult.IsFailed)
+                    return ResultHelpers.CreateFailure(estateResult);
+
+                Result<MerchantAggregate> merchantResult = await DomainServiceHelper.GetAggregateOrFailure(ct => this.AggregateService.GetLatest<MerchantAggregate>(command.MerchantId, ct), command.MerchantId, cancellationToken);
+                if (merchantResult.IsFailed)
+                    return ResultHelpers.CreateFailure(merchantResult);
+
+                EstateAggregate estateAggregate = estateResult.Data;
+                MerchantAggregate merchantAggregate = merchantResult.Data;
+
+                Result result = this.ValidateEstateAndMerchant(estateAggregate, merchantAggregate);
+                if (result.IsFailed)
+                    return ResultHelpers.CreateFailure(result);
+
+                Guid merchantScheduleId = IdGenerationService.GenerateMerchantScheduleAggregateId(command.EstateId, command.MerchantId, command.RequestDto.Year);
+                Result<MerchantScheduleAggregate> merchantScheduleResult = await DomainServiceHelper.GetAggregateOrFailure(ct => this.AggregateService.GetLatest<MerchantScheduleAggregate>(merchantScheduleId, ct), merchantScheduleId, cancellationToken, false);
+                if (merchantScheduleResult.IsFailed)
+                    return ResultHelpers.CreateFailure(merchantScheduleResult);
+
+                MerchantScheduleAggregate merchantScheduleAggregate = merchantScheduleResult.Data;
+
+                Result stateResult = merchantScheduleAggregate.Create(command.EstateId, command.MerchantId, command.RequestDto.Year, ConvertScheduleMonths(command.RequestDto.Months));
+                if (stateResult.IsFailed)
+                    return stateResult;
+
+                Result saveResult = await this.AggregateService.Save(merchantScheduleAggregate, cancellationToken);
+                if (saveResult.IsFailed)
+                    return ResultHelpers.CreateFailure(saveResult);
+
+                return saveResult;
+            }
+            catch (Exception ex) {
+                return Result.Failure(ex.GetExceptionMessages());
+            }
+        }
+
+        public async Task<Result> UpdateMerchantSchedule(MerchantCommands.UpdateMerchantScheduleCommand command,
+                                                         CancellationToken cancellationToken) {
+            try {
+                Result<EstateAggregate> estateResult = await DomainServiceHelper.GetAggregateOrFailure(ct => this.AggregateService.Get<EstateAggregate>(command.EstateId, ct), command.EstateId, cancellationToken);
+                if (estateResult.IsFailed)
+                    return ResultHelpers.CreateFailure(estateResult);
+
+                Result<MerchantAggregate> merchantResult = await DomainServiceHelper.GetAggregateOrFailure(ct => this.AggregateService.GetLatest<MerchantAggregate>(command.MerchantId, ct), command.MerchantId, cancellationToken);
+                if (merchantResult.IsFailed)
+                    return ResultHelpers.CreateFailure(merchantResult);
+
+                EstateAggregate estateAggregate = estateResult.Data;
+                MerchantAggregate merchantAggregate = merchantResult.Data;
+
+                Result result = this.ValidateEstateAndMerchant(estateAggregate, merchantAggregate);
+                if (result.IsFailed)
+                    return ResultHelpers.CreateFailure(result);
+
+                Guid merchantScheduleId = IdGenerationService.GenerateMerchantScheduleAggregateId(command.EstateId, command.MerchantId, command.Year);
+                Result<MerchantScheduleAggregate> merchantScheduleResult = await DomainServiceHelper.GetAggregateOrFailure(ct => this.AggregateService.GetLatest<MerchantScheduleAggregate>(merchantScheduleId, ct), merchantScheduleId, cancellationToken, false);
+                if (merchantScheduleResult.IsFailed)
+                    return ResultHelpers.CreateFailure(merchantScheduleResult);
+
+                MerchantScheduleAggregate merchantScheduleAggregate = merchantScheduleResult.Data;
+
+                Result stateResult = merchantScheduleAggregate.UpdateSchedule(ConvertScheduleMonths(command.RequestDto.Months));
+                if (stateResult.IsFailed)
+                    return stateResult;
+
+                Result saveResult = await this.AggregateService.Save(merchantScheduleAggregate, cancellationToken);
+                if (saveResult.IsFailed)
+                    return ResultHelpers.CreateFailure(saveResult);
+
+                return saveResult;
+            }
+            catch (Exception ex) {
+                return Result.Failure(ex.GetExceptionMessages());
+            }
+        }
+
         private Result ApplyOpeningHoursIfPresent(MerchantAggregate merchantAggregate, DayOfWeek day, TransactionProcessor.DataTransferObjects.Requests.Merchant.OpeningHours hours)
         {
             if (hours == null)
@@ -778,8 +861,15 @@ namespace TransactionProcessor.BusinessLogic.Services
             return Result.Success();
         }
 
+        private static List<MerchantScheduleMonth> ConvertScheduleMonths(IEnumerable<TransactionProcessor.DataTransferObjects.Requests.MerchantSchedule.MerchantScheduleMonthRequest> months) =>
+            months?.Select(month => new MerchantScheduleMonth
+            {
+                Month = month.Month,
+                ClosedDays = month.ClosedDays ?? []
+            }).ToList() ?? [];
+
         private async Task<Result<ContractAggregate>> GetCreatedContract(Guid contractId,
-                                                                         CancellationToken cancellationToken)
+                                                                          CancellationToken cancellationToken)
         {
             Result<ContractAggregate> contractResult = await this.AggregateService.Get<ContractAggregate>(contractId, cancellationToken);
             if (contractResult.IsFailed)

@@ -9,6 +9,7 @@ using TransactionProcessor.BusinessLogic.Events;
 using TransactionProcessor.DataTransferObjects.Requests.Contract;
 using TransactionProcessor.DataTransferObjects.Requests.Estate;
 using TransactionProcessor.DataTransferObjects.Requests.Merchant;
+using TransactionProcessor.DataTransferObjects.Requests.MerchantSchedule;
 using TransactionProcessor.DataTransferObjects.Requests.Operator;
 using TransactionProcessor.DataTransferObjects.Responses.Estate;
 using TransactionProcessor.DataTransferObjects.Responses.Merchant;
@@ -250,6 +251,7 @@ namespace TransactionProcessor.Testing
         public static Models.Merchant.MerchantDepositSource MerchantDepositSourceManual = Models.Merchant.MerchantDepositSource.Manual;
         public static Models.Merchant.MerchantDepositSource MerchantDepositSourceAutomatic = Models.Merchant.MerchantDepositSource.Automatic;
         public static DataTransferObjects.Responses.Merchant.SettlementSchedule SettlementScheduleDTO = DataTransferObjects.Responses.Merchant.SettlementSchedule.Monthly;
+        public static Int32 MerchantScheduleYear = 2026;
         public static CreateMerchantRequest CreateMerchantRequest =>
             new CreateMerchantRequest
             {
@@ -274,6 +276,33 @@ namespace TransactionProcessor.Testing
                 MerchantId = TestData.MerchantId,
                 Name = TestData.MerchantName,
                 SettlementSchedule = TestData.SettlementScheduleDTO
+            };
+
+        public static CreateMerchantScheduleRequest CreateMerchantScheduleRequest =>
+            new CreateMerchantScheduleRequest
+            {
+                Year = TestData.MerchantScheduleYear,
+                Months =
+                [
+                    new MerchantScheduleMonthRequest
+                    {
+                        Month = 1,
+                        ClosedDays = [1, 26]
+                    }
+                ]
+            };
+
+        public static UpdateMerchantScheduleRequest UpdateMerchantScheduleRequest =>
+            new UpdateMerchantScheduleRequest
+            {
+                Months =
+                [
+                    new MerchantScheduleMonthRequest
+                    {
+                        Month = 2,
+                        ClosedDays = [14]
+                    }
+                ]
             };
 
         public static String MerchantAddressLine1 = "Address Line 1";
@@ -2144,6 +2173,10 @@ namespace TransactionProcessor.Testing
                 Sunday = new OpeningHours { Opening = "0800", Closing = "1300" }
             });
 
+            public static MerchantCommands.CreateMerchantScheduleCommand CreateMerchantScheduleCommand => new(TestData.EstateId, TestData.MerchantId, TestData.CreateMerchantScheduleRequest);
+
+            public static MerchantCommands.UpdateMerchantScheduleCommand UpdateMerchantScheduleCommand => new(TestData.EstateId, TestData.MerchantId, TestData.MerchantScheduleYear, TestData.UpdateMerchantScheduleRequest);
+
             public static TransactionCommands.ProcessSaleTransactionCommand ProcessSaleTransactionCommand =>
                 new(TestData.TransactionId, TestData.EstateId,
                                                      TestData.MerchantId,
@@ -2442,6 +2475,21 @@ namespace TransactionProcessor.Testing
                 MerchantAggregate merchantAggregate = MerchantAggregate.Create(TestData.MerchantId);
 
                 return merchantAggregate;
+            }
+
+            public static MerchantScheduleAggregate EmptyMerchantScheduleAggregate()
+            {
+                Guid merchantScheduleId = IdGenerationService.GenerateMerchantScheduleAggregateId(TestData.EstateId, TestData.MerchantId, TestData.MerchantScheduleYear);
+
+                return MerchantScheduleAggregate.Create(merchantScheduleId);
+            }
+
+            public static MerchantScheduleAggregate CreatedMerchantScheduleAggregate()
+            {
+                MerchantScheduleAggregate merchantScheduleAggregate = EmptyMerchantScheduleAggregate();
+                merchantScheduleAggregate.Create(TestData.EstateId, TestData.MerchantId, TestData.MerchantScheduleYear, []);
+
+                return merchantScheduleAggregate;
             }
             public static OperatorAggregate EmptyOperatorAggregate()
             {

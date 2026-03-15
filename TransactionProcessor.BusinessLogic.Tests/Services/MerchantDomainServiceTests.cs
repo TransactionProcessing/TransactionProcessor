@@ -636,6 +636,55 @@ public class MerchantDomainServiceTests {
     }
 
     [Fact]
+    public async Task MerchantDomainService_CreateMerchantSchedule_Success()
+    {
+        this.AggregateService.Setup(e => e.Get<EstateAggregate>(It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(TestData.Aggregates.CreatedEstateAggregate());
+
+        this.AggregateService.Setup(m => m.GetLatest<MerchantAggregate>(It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(Result.Success(TestData.Aggregates.CreatedMerchantAggregate()));
+
+        this.AggregateService.Setup(m => m.GetLatest<MerchantScheduleAggregate>(It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(Result.Success(TestData.Aggregates.EmptyMerchantScheduleAggregate()));
+
+        this.AggregateService
+            .Setup(m => m.Save(It.IsAny<MerchantScheduleAggregate>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(Result.Success);
+
+        var result = await this.DomainService.CreateMerchantSchedule(TestData.Commands.CreateMerchantScheduleCommand, CancellationToken.None);
+
+        result.IsSuccess.ShouldBeTrue();
+        this.AggregateService.Verify(m => m.Save(It.Is<MerchantScheduleAggregate>(aggregate =>
+            aggregate.IsCreated &&
+            aggregate.Year == TestData.MerchantScheduleYear &&
+            aggregate.GetSchedule().Months.Single().Month == 1 &&
+            aggregate.GetSchedule().Months.Single().ClosedDays.SequenceEqual(new[] { 1, 26 })), It.IsAny<CancellationToken>()), Times.Once);
+    }
+
+    [Fact]
+    public async Task MerchantDomainService_UpdateMerchantSchedule_Success()
+    {
+        this.AggregateService.Setup(e => e.Get<EstateAggregate>(It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(TestData.Aggregates.CreatedEstateAggregate());
+
+        this.AggregateService.Setup(m => m.GetLatest<MerchantAggregate>(It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(Result.Success(TestData.Aggregates.CreatedMerchantAggregate()));
+
+        this.AggregateService.Setup(m => m.GetLatest<MerchantScheduleAggregate>(It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(Result.Success(TestData.Aggregates.CreatedMerchantScheduleAggregate()));
+
+        this.AggregateService
+            .Setup(m => m.Save(It.IsAny<MerchantScheduleAggregate>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(Result.Success);
+
+        var result = await this.DomainService.UpdateMerchantSchedule(TestData.Commands.UpdateMerchantScheduleCommand, CancellationToken.None);
+
+        result.IsSuccess.ShouldBeTrue();
+        this.AggregateService.Verify(m => m.Save(It.Is<MerchantScheduleAggregate>(aggregate =>
+            aggregate.GetSchedule().Months.Any(month => month.Month == 2 && month.ClosedDays.SequenceEqual(new[] { 14 }))), It.IsAny<CancellationToken>()), Times.Once);
+    }
+
+    [Fact]
     public async Task MerchantDomainService_MakeMerchantWithdrawal_WithdrawalIsMade() {
         this.AggregateService.Setup(e => e.Get<EstateAggregate>(It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(TestData.Aggregates.CreatedEstateAggregate());

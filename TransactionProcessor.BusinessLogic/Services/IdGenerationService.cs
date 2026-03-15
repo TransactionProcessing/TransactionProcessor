@@ -69,5 +69,13 @@ namespace TransactionProcessor.BusinessLogic.Services
                 merchantId,
                 nextStatementDate = nextStatementDateTime.Date
             });
+
+        public static Guid GenerateMerchantScheduleAggregateId(Guid estateId, Guid merchantId, Int32 year) =>
+            IdGenerationService.GenerateUniqueId(new
+            {
+                estateId,
+                merchantId,
+                year
+            });
     }
 }
