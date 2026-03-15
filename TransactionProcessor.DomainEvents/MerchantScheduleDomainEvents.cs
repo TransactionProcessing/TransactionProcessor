@@ -15,6 +15,5 @@ public class MerchantScheduleDomainEvents {
                                                     Guid MerchantId,
                                                     Int32 Year,
                                                     Int32 Month,
-                                                    Int32[] ClosedDays,
-                                                    Int32[] OpenDays) : DomainEvent(MerchantScheduleId, Guid.NewGuid());
+                                                    Int32[] ClosedDays) : DomainEvent(MerchantScheduleId, Guid.NewGuid());
 }

@@ -34,8 +34,7 @@ namespace TransactionProcessor.Aggregates.Tests
                                                  new MerchantScheduleMonth
                                                  {
                                                      Month = 1,
-                                                     ClosedDays = [1, 26],
-                                                     OpenDays = [4]
+                                                     ClosedDays = [1, 26]
                                                  }
                                              ]);
 
@@ -49,7 +48,6 @@ namespace TransactionProcessor.Aggregates.Tests
             model.Months.ShouldHaveSingleItem();
             model.Months.Single().Month.ShouldBe(1);
             model.Months.Single().ClosedDays.ShouldBe([1, 26]);
-            model.Months.Single().OpenDays.ShouldBe([4]);
         }
 
         [Fact]
@@ -70,7 +68,7 @@ namespace TransactionProcessor.Aggregates.Tests
             MerchantScheduleAggregate aggregate = MerchantScheduleAggregate.Create(MerchantScheduleId);
             aggregate.Create(EstateId, MerchantId, 2026, []);
 
-            Result result = aggregate.SetMonthSchedule(12, [25, 26], [24]);
+            Result result = aggregate.SetMonthSchedule(12, [25, 26]);
 
             result.IsSuccess.ShouldBeTrue();
 
@@ -81,7 +79,6 @@ namespace TransactionProcessor.Aggregates.Tests
                 (MerchantScheduleDomainEvents.MerchantScheduleMonthUpdatedEvent)pendingEvents.Last();
             updatedEvent.Month.ShouldBe(12);
             updatedEvent.ClosedDays.ShouldBe([25, 26]);
-            updatedEvent.OpenDays.ShouldBe([24]);
         }
 
         [Fact]
@@ -89,12 +86,12 @@ namespace TransactionProcessor.Aggregates.Tests
         {
             MerchantScheduleAggregate aggregate = MerchantScheduleAggregate.Create(MerchantScheduleId);
             aggregate.Create(EstateId, MerchantId, 2026, []);
-            aggregate.SetMonthSchedule(5, [1, 2], [3]);
+            aggregate.SetMonthSchedule(5, [1, 2]);
 
             List<IDomainEvent> pendingEvents = GetPendingEvents(aggregate);
             Int32 originalEventCount = pendingEvents.Count;
 
-            Result result = aggregate.SetMonthSchedule(5, [2, 1], [3, 3]);
+            Result result = aggregate.SetMonthSchedule(5, [2, 1, 2]);
 
             result.IsSuccess.ShouldBeTrue();
             pendingEvents.Count.ShouldBe(originalEventCount);
@@ -106,7 +103,7 @@ namespace TransactionProcessor.Aggregates.Tests
             MerchantScheduleAggregate aggregate = MerchantScheduleAggregate.Create(MerchantScheduleId);
             aggregate.Create(EstateId, MerchantId, 2025, []);
 
-            Result result = aggregate.SetMonthSchedule(2, [29], []);
+            Result result = aggregate.SetMonthSchedule(2, [29]);
 
             result.IsFailed.ShouldBeTrue();
             result.Status.ShouldBe(ResultStatus.Invalid);
@@ -121,7 +118,7 @@ namespace TransactionProcessor.Aggregates.Tests
 
             Result result = aggregate.UpdateSchedule([
                 new MerchantScheduleMonth { Month = 6, ClosedDays = [1] },
-                new MerchantScheduleMonth { Month = 6, OpenDays = [2] }
+                new MerchantScheduleMonth { Month = 6, ClosedDays = [2] }
             ]);
 
             result.IsFailed.ShouldBeTrue();

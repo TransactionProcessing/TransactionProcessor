@@ -44,7 +44,7 @@ namespace TransactionProcessor.Aggregates
 
             foreach (MerchantScheduleMonthModel month in monthList.OrderBy(m => m.Month))
             {
-                Result monthResult = aggregate.SetMonthSchedule(month.Month, month.ClosedDays, month.OpenDays);
+                Result monthResult = aggregate.SetMonthSchedule(month.Month, month.ClosedDays);
                 if (monthResult.IsFailed)
                     return monthResult;
             }
@@ -54,29 +54,26 @@ namespace TransactionProcessor.Aggregates
 
         public static Result SetMonthSchedule(this MerchantScheduleAggregate aggregate,
                                               Int32 month,
-                                              IEnumerable<Int32>? closedDays,
-                                              IEnumerable<Int32>? openDays)
+                                              IEnumerable<Int32>? closedDays)
         {
             Result result = aggregate.EnsureScheduleHasBeenCreated();
             if (result.IsFailed)
                 return result;
 
-            result = ValidateMonth(aggregate.Year, month, closedDays, openDays);
+            result = ValidateMonth(aggregate.Year, month, closedDays);
             if (result.IsFailed)
                 return result;
 
             Int32[] normalisedClosedDays = NormaliseDays(closedDays);
-            Int32[] normalisedOpenDays = NormaliseDays(openDays);
 
             if (aggregate.Months.TryGetValue(month, out MerchantScheduleMonthModel? existingMonth))
             {
-                if (existingMonth.ClosedDays.SequenceEqual(normalisedClosedDays) &&
-                    existingMonth.OpenDays.SequenceEqual(normalisedOpenDays))
+                if (existingMonth.ClosedDays.SequenceEqual(normalisedClosedDays))
                     return Result.Success();
             }
 
             MerchantScheduleDomainEvents.MerchantScheduleMonthUpdatedEvent merchantScheduleMonthUpdatedEvent =
-                new(aggregate.AggregateId, aggregate.EstateId, aggregate.MerchantId, aggregate.Year, month, normalisedClosedDays, normalisedOpenDays);
+                new(aggregate.AggregateId, aggregate.EstateId, aggregate.MerchantId, aggregate.Year, month, normalisedClosedDays);
 
             aggregate.ApplyAndAppend(merchantScheduleMonthUpdatedEvent);
 
@@ -99,8 +96,7 @@ namespace TransactionProcessor.Aggregates
                 model.Months.Add(new MerchantScheduleMonthModel
                 {
                     Month = month.Month,
-                    ClosedDays = [.. month.ClosedDays],
-                    OpenDays = [.. month.OpenDays]
+                    ClosedDays = [.. month.ClosedDays]
                 });
             }
 
@@ -122,8 +118,7 @@ namespace TransactionProcessor.Aggregates
             aggregate.Months[domainEvent.Month] = new MerchantScheduleMonthModel
             {
                 Month = domainEvent.Month,
-                ClosedDays = [.. domainEvent.ClosedDays],
-                OpenDays = [.. domainEvent.OpenDays]
+                ClosedDays = [.. domainEvent.ClosedDays]
             };
         }
 
@@ -157,22 +152,16 @@ namespace TransactionProcessor.Aggregates
 
         private static Result ValidateMonth(Int32 year,
                                             Int32 month,
-                                            IEnumerable<Int32>? closedDays,
-                                            IEnumerable<Int32>? openDays)
+                                            IEnumerable<Int32>? closedDays)
         {
             if (month is < 1 or > 12)
                 return Result.Invalid("A valid month must be provided when updating a merchant schedule");
 
             Int32 daysInMonth = DateTime.DaysInMonth(year, month);
             Int32[] normalisedClosedDays = NormaliseDays(closedDays);
-            Int32[] normalisedOpenDays = NormaliseDays(openDays);
 
-            if (normalisedClosedDays.Any(day => day < 1 || day > daysInMonth) ||
-                normalisedOpenDays.Any(day => day < 1 || day > daysInMonth))
+            if (normalisedClosedDays.Any(day => day < 1 || day > daysInMonth))
                 return Result.Invalid($"Only days between 1 and {daysInMonth} can be supplied for {year}-{month:D2}");
-
-            if (normalisedClosedDays.Intersect(normalisedOpenDays).Any())
-                return Result.Invalid("A merchant schedule day cannot be marked as both open and closed");
 
             return Result.Success();
         }

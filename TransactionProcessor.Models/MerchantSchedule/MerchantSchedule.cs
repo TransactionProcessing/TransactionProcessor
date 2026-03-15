@@ -18,7 +18,5 @@
         public Int32 Month { get; set; }
 
         public List<Int32> ClosedDays { get; set; } = [];
-
-        public List<Int32> OpenDays { get; set; } = [];
     }
 }

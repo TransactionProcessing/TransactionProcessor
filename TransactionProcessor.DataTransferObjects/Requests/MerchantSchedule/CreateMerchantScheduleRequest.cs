@@ -28,8 +28,5 @@ namespace TransactionProcessor.DataTransferObjects.Requests.MerchantSchedule
 
         [JsonProperty("closed_days")]
         public List<Int32> ClosedDays { get; set; } = [];
-
-        [JsonProperty("open_days")]
-        public List<Int32> OpenDays { get; set; } = [];
     }
 }
