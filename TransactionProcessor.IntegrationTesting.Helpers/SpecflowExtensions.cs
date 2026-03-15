@@ -1,8 +1,9 @@
-﻿using Shared.Extensions;
+using Shared.Extensions;
 using Shouldly;
 using TransactionProcessor.DataTransferObjects.Requests.Contract;
 using TransactionProcessor.DataTransferObjects.Requests.Estate;
 using TransactionProcessor.DataTransferObjects.Requests.Merchant;
+using TransactionProcessor.DataTransferObjects.Requests.MerchantSchedule;
 using TransactionProcessor.DataTransferObjects.Requests.Operator;
 using TransactionProcessor.DataTransferObjects.Responses.Contract;
 using TransactionProcessor.DataTransferObjects.Responses.Merchant;
@@ -1250,6 +1251,39 @@ public static class ReqnrollExtensions{
         }
 
         return requests;
+    }
+
+    public static List<(EstateDetails estate, Guid merchantId, CreateMerchantScheduleRequest request)> ToCreateMerchantScheduleRequests(this DataTableRows tableRows,
+                                                                                                                                        List<EstateDetails> estateDetailsList)
+    {
+        return tableRows.GroupBy(row => new
+               {
+                   EstateName = ReqnrollTableHelper.GetStringRowValue(row, "EstateName"),
+                   MerchantName = ReqnrollTableHelper.GetStringRowValue(row, "MerchantName"),
+                   Year = ReqnrollTableHelper.GetIntValue(row, "Year")
+               })
+               .Select(group =>
+               {
+                   EstateDetails estateDetails = estateDetailsList.SingleOrDefault(e => e.EstateName == group.Key.EstateName);
+                   estateDetails.ShouldNotBeNull();
+
+                   Guid merchantId = estateDetails.GetMerchant(group.Key.MerchantName).MerchantId;
+
+                   CreateMerchantScheduleRequest request = new()
+                   {
+                       Year = group.Key.Year,
+                       Months = group.Select(row => new MerchantScheduleMonthRequest
+                       {
+                           Month = ReqnrollTableHelper.GetIntValue(row, "Month"),
+                           ClosedDays = ReqnrollTableHelper.GetStringRowValue(row, "ClosedDays")
+                                                          .Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)
+                                                          .Select(Int32.Parse)
+                                                          .ToList()
+                       }).ToList()
+                   };
+
+                   return (estateDetails, merchantId, request);
+               }).ToList();
     }
 
     public static List<(EstateDetails, Guid, AddMerchantDeviceRequest)> ToAddMerchantDeviceRequests(this DataTableRows tableRows, List<EstateDetails> estateDetailsList)

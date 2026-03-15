@@ -1,7 +1,8 @@
-﻿using SimpleResults;
+using SimpleResults;
 using TransactionProcessor.DataTransferObjects.Requests.Contract;
 using TransactionProcessor.DataTransferObjects.Requests.Estate;
 using TransactionProcessor.DataTransferObjects.Requests.Merchant;
+using TransactionProcessor.DataTransferObjects.Requests.MerchantSchedule;
 using TransactionProcessor.DataTransferObjects.Requests.Operator;
 using TransactionProcessor.DataTransferObjects.Responses.Contract;
 using TransactionProcessor.DataTransferObjects.Responses.Estate;
@@ -105,6 +106,12 @@ namespace TransactionProcessor.Client
                                     Guid estateId,
                                     CreateMerchantRequest createMerchantRequest,
                                     CancellationToken cancellationToken);
+
+        Task<Result> CreateMerchantSchedule(String accessToken,
+                                            Guid estateId,
+                                            Guid merchantId,
+                                            CreateMerchantScheduleRequest createMerchantScheduleRequest,
+                                            CancellationToken cancellationToken);
 
         Task<Result<MerchantResponse>> GetMerchant(String accessToken,
                                                    Guid estateId,

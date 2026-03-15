@@ -1,7 +1,8 @@
-﻿using SimpleResults;
+using SimpleResults;
 using TransactionProcessor.DataTransferObjects.Requests.Contract;
 using TransactionProcessor.DataTransferObjects.Requests.Estate;
 using TransactionProcessor.DataTransferObjects.Requests.Merchant;
+using TransactionProcessor.DataTransferObjects.Requests.MerchantSchedule;
 using TransactionProcessor.DataTransferObjects.Requests.Operator;
 using TransactionProcessor.DataTransferObjects.Responses.Contract;
 using TransactionProcessor.DataTransferObjects.Responses.Estate;
@@ -740,6 +741,28 @@ public class TransactionProcessorClient : ClientProxyBase, ITransactionProcessor
         catch (Exception ex) {
             // An exception has occurred, add some additional information to the message
             Exception exception = new($"Error creating new merchant {createMerchantRequest.Name} for estate {estateId}.", ex);
+
+            throw exception;
+        }
+    }
+
+    public async Task<Result> CreateMerchantSchedule(String accessToken,
+                                                     Guid estateId,
+                                                     Guid merchantId,
+                                                     CreateMerchantScheduleRequest createMerchantScheduleRequest,
+                                                     CancellationToken cancellationToken) {
+        String requestUri = this.BuildRequestUrl($"/api/estates/{estateId}/merchants/{merchantId}/schedules");
+
+        try {
+            var result = await this.SendHttpPostRequest<CreateMerchantScheduleRequest, String>(requestUri, createMerchantScheduleRequest, accessToken, cancellationToken);
+
+            if (result.IsFailed)
+                return ResultHelpers.CreateFailure(result);
+
+            return Result.Success();
+        }
+        catch (Exception ex) {
+            Exception exception = new($"Error creating merchant schedule for merchant {merchantId} for estate {estateId}.", ex);
 
             throw exception;
         }

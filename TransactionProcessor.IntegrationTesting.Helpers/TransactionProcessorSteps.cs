@@ -3,6 +3,7 @@ using SimpleResults;
 using TransactionProcessor.DataTransferObjects.Requests.Contract;
 using TransactionProcessor.DataTransferObjects.Requests.Estate;
 using TransactionProcessor.DataTransferObjects.Requests.Merchant;
+using TransactionProcessor.DataTransferObjects.Requests.MerchantSchedule;
 using TransactionProcessor.DataTransferObjects.Requests.Operator;
 using TransactionProcessor.DataTransferObjects.Responses.Contract;
 using TransactionProcessor.DataTransferObjects.Responses.Estate;
@@ -183,6 +184,21 @@ public class TransactionProcessorSteps
                     CancellationToken.None);
             });
 
+        }
+    }
+
+    public async Task WhenICreateTheFollowingMerchantSchedules(String accessToken,
+                                                               List<(EstateDetails estate, Guid merchantId, CreateMerchantScheduleRequest request)> requests)
+    {
+        foreach ((EstateDetails estate, Guid merchantId, CreateMerchantScheduleRequest request) scheduleRequest in requests)
+        {
+            Result result = await this.TransactionProcessorClient.CreateMerchantSchedule(accessToken,
+                scheduleRequest.estate.EstateId,
+                scheduleRequest.merchantId,
+                scheduleRequest.request,
+                CancellationToken.None);
+
+            result.IsSuccess.ShouldBeTrue();
         }
     }
 
