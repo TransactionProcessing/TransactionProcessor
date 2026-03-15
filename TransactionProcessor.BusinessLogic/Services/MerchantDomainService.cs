@@ -194,6 +194,23 @@ namespace TransactionProcessor.BusinessLogic.Services
                 _ => SettlementSchedule.NotSet
             };
 
+        private MerchantDepositSource ConvertDepositSource(DataTransferObjects.Requests.Merchant.MerchantDepositSource depositSource) =>
+            depositSource switch
+            {
+                DataTransferObjects.Requests.Merchant.MerchantDepositSource.Manual => MerchantDepositSource.Manual,
+                _ => MerchantDepositSource.Automatic,
+            };
+
+        private Result EnsureMerchantDepositListCreated(MerchantDepositListAggregate merchantDepositListAggregate,
+                                                        MerchantAggregate merchantAggregate,
+                                                        DateTime depositDateTime) {
+            if (merchantDepositListAggregate.IsCreated) {
+                return Result.Success();
+            }
+
+            return merchantDepositListAggregate.Create(merchantAggregate, depositDateTime);
+        }
+
         public async Task<Result> CreateMerchant(MerchantCommands.CreateMerchantCommand command, CancellationToken cancellationToken)
         {
             try {
@@ -242,21 +259,7 @@ namespace TransactionProcessor.BusinessLogic.Services
         public async Task<Result> CreateMerchantUser(MerchantCommands.CreateMerchantUserCommand command, CancellationToken cancellationToken)
         {
             try {
-                CreateUserRequest createUserRequest = new() {
-                    EmailAddress = command.RequestDto.EmailAddress,
-                    FamilyName = command.RequestDto.FamilyName,
-                    GivenName = command.RequestDto.GivenName,
-                    MiddleName = command.RequestDto.MiddleName,
-                    Password = command.RequestDto.Password,
-                    PhoneNumber = "123456", // Is this really needed :|
-                    Roles = new List<String>(),
-                    Claims = new Dictionary<String, String>()
-                };
-
-                String merchantRoleName = Environment.GetEnvironmentVariable("MerchantRoleName");
-                createUserRequest.Roles.Add(String.IsNullOrEmpty(merchantRoleName) ? "Merchant" : merchantRoleName);
-                createUserRequest.Claims.Add("estateId", command.EstateId.ToString());
-                createUserRequest.Claims.Add("merchantId", command.MerchantId.ToString());
+                CreateUserRequest createUserRequest = this.BuildMerchantUserRequest(command);
 
                 Result<EstateAggregate> estateResult = await DomainServiceHelper.GetAggregateOrFailure(ct => this.AggregateService.Get<EstateAggregate>(command.EstateId, ct), command.EstateId, cancellationToken);
                 if (estateResult.IsFailed)
@@ -273,20 +276,12 @@ namespace TransactionProcessor.BusinessLogic.Services
                 if (validateResult.IsFailed)
                     return ResultHelpers.CreateFailure(validateResult);
 
-                Result createUserResult = await this.SecurityServiceClient.CreateUser(createUserRequest, cancellationToken);
-                if (createUserResult.IsFailed)
-                    return ResultHelpers.CreateFailure(createUserResult);
-
-                Result<List<UserDetails>> userDetailsResult = await this.SecurityServiceClient.GetUsers(createUserRequest.EmailAddress, cancellationToken);
-                if (userDetailsResult.IsFailed)
-                    return ResultHelpers.CreateFailure(userDetailsResult);
-
-                UserDetails user = userDetailsResult.Data.SingleOrDefault();
-                if (user == null)
-                    return Result.Failure($"Unable to get user details for username {createUserRequest.EmailAddress}");
+                Result<UserDetails> getUserResult = await this.CreateMerchantSecurityUser(createUserRequest, cancellationToken);
+                if (getUserResult.IsFailed)
+                    return ResultHelpers.CreateFailure(getUserResult);
 
                 // Add the user to the aggregate 
-                Result stateResult = merchantAggregate.AddSecurityUser(user.UserId, command.RequestDto.EmailAddress);
+                Result stateResult = merchantAggregate.AddSecurityUser(getUserResult.Data.UserId, command.RequestDto.EmailAddress);
                 if (stateResult.IsFailed)
                     return stateResult;
 
@@ -301,6 +296,43 @@ namespace TransactionProcessor.BusinessLogic.Services
             catch (Exception ex) {
                 return Result.Failure(ex.GetExceptionMessages());
             }
+        }
+
+        private CreateUserRequest BuildMerchantUserRequest(MerchantCommands.CreateMerchantUserCommand command) {
+            CreateUserRequest createUserRequest = new() {
+                EmailAddress = command.RequestDto.EmailAddress,
+                FamilyName = command.RequestDto.FamilyName,
+                GivenName = command.RequestDto.GivenName,
+                MiddleName = command.RequestDto.MiddleName,
+                Password = command.RequestDto.Password,
+                PhoneNumber = "123456", // Is this really needed :|
+                Roles = new List<String>(),
+                Claims = new Dictionary<String, String>()
+            };
+
+            String merchantRoleName = Environment.GetEnvironmentVariable("MerchantRoleName");
+            createUserRequest.Roles.Add(String.IsNullOrEmpty(merchantRoleName) ? "Merchant" : merchantRoleName);
+            createUserRequest.Claims.Add("estateId", command.EstateId.ToString());
+            createUserRequest.Claims.Add("merchantId", command.MerchantId.ToString());
+
+            return createUserRequest;
+        }
+
+        private async Task<Result<UserDetails>> CreateMerchantSecurityUser(CreateUserRequest createUserRequest,
+                                                                           CancellationToken cancellationToken) {
+            Result createUserResult = await this.SecurityServiceClient.CreateUser(createUserRequest, cancellationToken);
+            if (createUserResult.IsFailed)
+                return ResultHelpers.CreateFailure(createUserResult);
+
+            Result<List<UserDetails>> userDetailsResult = await this.SecurityServiceClient.GetUsers(createUserRequest.EmailAddress, cancellationToken);
+            if (userDetailsResult.IsFailed)
+                return ResultHelpers.CreateFailure(userDetailsResult);
+
+            UserDetails user = userDetailsResult.Data.SingleOrDefault();
+            if (user == null)
+                return Result.Failure($"Unable to get user details for username {createUserRequest.EmailAddress}");
+
+            return Result.Success(user);
         }
 
         public async Task<Result> MakeMerchantDeposit(MerchantCommands.MakeMerchantDepositCommand command, CancellationToken cancellationToken)
@@ -328,19 +360,12 @@ namespace TransactionProcessor.BusinessLogic.Services
                     return ResultHelpers.CreateFailure(getDepositListResult);
 
                 MerchantDepositListAggregate merchantDepositListAggregate = getDepositListResult.Data;
-                if (merchantDepositListAggregate.IsCreated == false)
-                {
-                    Result createResult = merchantDepositListAggregate.Create(merchantAggregate, command.RequestDto.DepositDateTime);
-                    if (createResult.IsFailed)
-                        return ResultHelpers.CreateFailure(createResult);
-                }
+                Result createResult = this.EnsureMerchantDepositListCreated(merchantDepositListAggregate, merchantAggregate, command.RequestDto.DepositDateTime);
+                if (createResult.IsFailed)
+                    return ResultHelpers.CreateFailure(createResult);
 
                 PositiveMoney amount = PositiveMoney.Create(Money.Create(command.RequestDto.Amount));
-                MerchantDepositSource depositSource = command.DepositSource switch
-                {
-                    DataTransferObjects.Requests.Merchant.MerchantDepositSource.Manual => MerchantDepositSource.Manual,
-                    _ => MerchantDepositSource.Automatic,
-                };
+                MerchantDepositSource depositSource = this.ConvertDepositSource(command.DepositSource);
                 Result stateResult = merchantDepositListAggregate.MakeDeposit(depositSource, command.RequestDto.Reference, command.RequestDto.DepositDateTime, amount);
                 if (stateResult.IsFailed)
                     return ResultHelpers.CreateFailure(stateResult);
@@ -409,17 +434,11 @@ namespace TransactionProcessor.BusinessLogic.Services
                 if (validateResult.IsFailed)
                     return ResultHelpers.CreateFailure(validateResult);
 
-                Result<ContractAggregate> getContractResult = await this.AggregateService.Get<ContractAggregate>(command.RequestDto.ContractId, cancellationToken);
-                if (getContractResult.IsFailed) {
-                    return ResultHelpers.CreateFailure(getContractResult);
-                }
+                Result<ContractAggregate> contractResult = await this.GetCreatedContract(command.RequestDto.ContractId, cancellationToken);
+                if (contractResult.IsFailed)
+                    return ResultHelpers.CreateFailure(contractResult);
 
-                ContractAggregate contractAggregate = getContractResult.Data;
-                if (contractAggregate.IsCreated == false) {
-                    return Result.Invalid($"Contract Id {command.RequestDto.ContractId} has not been created");
-                }
-
-                Result stateResult = merchantAggregate.AddContract(contractAggregate);
+                Result stateResult = merchantAggregate.AddContract(contractResult.Data);
                 if (stateResult.IsFailed)
                     return stateResult;
 
@@ -775,6 +794,20 @@ namespace TransactionProcessor.BusinessLogic.Services
             }
 
             return Result.Success();
+        }
+
+        private async Task<Result<ContractAggregate>> GetCreatedContract(Guid contractId,
+                                                                         CancellationToken cancellationToken)
+        {
+            Result<ContractAggregate> contractResult = await this.AggregateService.Get<ContractAggregate>(contractId, cancellationToken);
+            if (contractResult.IsFailed)
+                return ResultHelpers.CreateFailure(contractResult);
+
+            ContractAggregate contractAggregate = contractResult.Data;
+            if (contractAggregate.IsCreated == false)
+                return Result.Invalid($"Contract Id {contractId} has not been created");
+
+            return Result.Success(contractAggregate);
         }
 
         private async Task<Result<MerchantDepositListAggregate>> GetMerchantDepositListForWithdrawal(MerchantCommands.MakeMerchantWithdrawalCommand command,
