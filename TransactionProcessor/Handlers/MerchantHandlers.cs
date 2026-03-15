@@ -266,7 +266,6 @@ public static class MerchantHandlers {
         Result result = await mediator.Send(command, cancellationToken);
 
         return ResponseFactory.FromResult(result);
-        
     }
 
     public static async Task<IResult> AddMerchantAddress(IMediator mediator,

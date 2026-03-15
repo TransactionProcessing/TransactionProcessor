@@ -2319,7 +2319,7 @@ namespace TransactionProcessor.Testing
                     TestData.MerchantId,
                     TestData.ContractId,
                     TestData.FixedContractProductId);
-            
+
             public static MerchantQueries.GetMerchantContractsQuery GetMerchantContractsQuery => new MerchantQueries.GetMerchantContractsQuery(TestData.EstateId, TestData.MerchantId);
             public static MerchantQueries.GetMerchantQuery GetMerchantQuery => new MerchantQueries.GetMerchantQuery(TestData.EstateId, TestData.MerchantId);
 
