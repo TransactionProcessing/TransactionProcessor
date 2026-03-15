@@ -1037,6 +1037,29 @@ public class TransactionProcessorClient : ClientProxyBase, ITransactionProcessor
         }
     }
 
+    public async Task<Result> SetMerchantOperatingSchedule(String accessToken,
+                                                           Guid estateId,
+                                                           Guid merchantId,
+                                                           Int32 year,
+                                                           SetMerchantOperatingScheduleRequest setMerchantOperatingScheduleRequest,
+                                                           CancellationToken cancellationToken) {
+        String requestUri = this.BuildRequestUrl($"/api/estates/{estateId}/merchants/{merchantId}/operating-schedules/{year}");
+
+        try {
+            Result result = await this.SendHttpPutRequest(requestUri, setMerchantOperatingScheduleRequest, accessToken, cancellationToken);
+
+            if (result.IsFailed)
+                return ResultHelpers.CreateFailure(result);
+
+            return result;
+        }
+        catch (Exception ex) {
+            Exception exception = new($"Error setting merchant operating schedule for merchant {merchantId} in estate {estateId} for year {year}.", ex);
+
+            throw exception;
+        }
+    }
+
     public async Task<Result> SwapDeviceForMerchant(String accessToken,
                                                     Guid estateId,
                                                     Guid merchantId,

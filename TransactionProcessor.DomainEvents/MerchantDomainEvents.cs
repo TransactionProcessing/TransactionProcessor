@@ -3,6 +3,8 @@ using Shared.DomainDrivenDesign.EventSourcing;
 
 namespace TransactionProcessor.DomainEvents {
 
+    public record MerchantOperatingSchedulePeriod(DateTime StartDate, DateTime EndDate, Boolean IsOpen);
+
     [ExcludeFromCodeCoverage]
     public class MerchantDomainEvents {
         public record AddressAddedEvent(Guid MerchantId, Guid EstateId, Guid AddressId, String AddressLine1, String AddressLine2, String AddressLine3, String AddressLine4, String Town, String Region, String PostalCode, String Country) : DomainEvent(MerchantId, Guid.NewGuid());
@@ -34,5 +36,6 @@ namespace TransactionProcessor.DomainEvents {
         public record MerchantContactNameUpdatedEvent(Guid MerchantId, Guid EstateId, Guid ContactId, String ContactName) : DomainEvent(MerchantId, Guid.NewGuid());
         public record MerchantContactEmailAddressUpdatedEvent(Guid MerchantId, Guid EstateId, Guid ContactId, String ContactEmailAddress) : DomainEvent(MerchantId, Guid.NewGuid());
         public record MerchantContactPhoneNumberUpdatedEvent(Guid MerchantId, Guid EstateId, Guid ContactId, String ContactPhoneNumber) : DomainEvent(MerchantId, Guid.NewGuid());
+        public record MerchantOperatingScheduleSetEvent(Guid MerchantId, Guid EstateId, Int32 Year, Boolean DefaultIsOpen, List<MerchantOperatingSchedulePeriod> Periods) : DomainEvent(MerchantId, Guid.NewGuid());
     }
 }

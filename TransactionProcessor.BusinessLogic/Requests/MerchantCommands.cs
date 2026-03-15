@@ -39,6 +39,8 @@ namespace TransactionProcessor.BusinessLogic.Requests
         public record AddMerchantContactCommand(Guid EstateId, Guid MerchantId, Contact RequestDto) : IRequest<Result>;
 
         public record UpdateMerchantContactCommand(Guid EstateId, Guid MerchantId, Guid ContactId, Contact RequestDto) : IRequest<Result>;
+
+        public record SetMerchantOperatingScheduleCommand(Guid EstateId, Guid MerchantId, Int32 Year, SetMerchantOperatingScheduleRequest RequestDto) : IRequest<Result>;
     }
 
     

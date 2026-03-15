@@ -249,6 +249,11 @@ namespace TransactionProcessor.Testing
         public static Models.Merchant.MerchantDepositSource MerchantDepositSourceManual = Models.Merchant.MerchantDepositSource.Manual;
         public static Models.Merchant.MerchantDepositSource MerchantDepositSourceAutomatic = Models.Merchant.MerchantDepositSource.Automatic;
         public static DataTransferObjects.Responses.Merchant.SettlementSchedule SettlementScheduleDTO = DataTransferObjects.Responses.Merchant.SettlementSchedule.Monthly;
+        public static Int32 OperatingScheduleYear = 2026;
+        public static DateTime OperatingSchedulePeriod1StartDate = new DateTime(2026, 1, 1);
+        public static DateTime OperatingSchedulePeriod1EndDate = new DateTime(2026, 1, 3);
+        public static DateTime OperatingSchedulePeriod2StartDate = new DateTime(2026, 12, 24);
+        public static DateTime OperatingSchedulePeriod2EndDate = new DateTime(2026, 12, 26);
         public static CreateMerchantRequest CreateMerchantRequest =>
             new CreateMerchantRequest
             {
@@ -2045,6 +2050,26 @@ namespace TransactionProcessor.Testing
                 Name = TestData.MerchantNameUpdated,
                 SettlementSchedule = DataTransferObjects.Responses.Merchant.SettlementSchedule.NotSet
             };
+        public static SetMerchantOperatingScheduleRequest SetMerchantOperatingScheduleRequest =>
+            new SetMerchantOperatingScheduleRequest
+            {
+                DefaultIsOpen = true,
+                Periods = new List<MerchantOperatingSchedulePeriodRequest>
+                {
+                    new MerchantOperatingSchedulePeriodRequest
+                    {
+                        StartDate = OperatingSchedulePeriod1StartDate,
+                        EndDate = OperatingSchedulePeriod1EndDate,
+                        IsOpen = false
+                    },
+                    new MerchantOperatingSchedulePeriodRequest
+                    {
+                        StartDate = OperatingSchedulePeriod2StartDate,
+                        EndDate = OperatingSchedulePeriod2EndDate,
+                        IsOpen = false
+                    }
+                }
+            };
 
         /// <summary>
         /// The address line1
@@ -2195,6 +2220,7 @@ namespace TransactionProcessor.Testing
 
 
             public static MerchantCommands.UpdateMerchantCommand UpdateMerchantCommand => new(TestData.EstateId, TestData.MerchantId, TestData.UpdateMerchantRequest);
+            public static MerchantCommands.SetMerchantOperatingScheduleCommand SetMerchantOperatingScheduleCommand => new(TestData.EstateId, TestData.MerchantId, TestData.OperatingScheduleYear, TestData.SetMerchantOperatingScheduleRequest);
             public static MerchantCommands.AddMerchantContractCommand AddMerchantContractCommand => new(TestData.EstateId, TestData.MerchantId, TestData.AddMerchantContractRequest);
             public static MerchantCommands.SwapMerchantDeviceCommand SwapMerchantDeviceCommand => new MerchantCommands.SwapMerchantDeviceCommand(TestData.EstateId, TestData.MerchantId, TestData.DeviceIdentifier, TestData.SwapMerchantDeviceRequest);
 

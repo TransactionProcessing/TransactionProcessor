@@ -37,9 +37,10 @@ IRequestHandler<MerchantCommands.SwapMerchantDeviceCommand, Result>,
                                           IRequestHandler<MerchantCommands.AddMerchantAddressCommand, Result>,
                                           IRequestHandler<MerchantCommands.UpdateMerchantAddressCommand, Result>,
                                           IRequestHandler<MerchantCommands.AddMerchantContactCommand, Result>,
-                                          IRequestHandler<MerchantCommands.UpdateMerchantContactCommand, Result>,
-                                          IRequestHandler<MerchantCommands.RemoveOperatorFromMerchantCommand, Result>,
-                                          IRequestHandler<MerchantCommands.RemoveMerchantContractCommand, Result>
+                                           IRequestHandler<MerchantCommands.UpdateMerchantContactCommand, Result>,
+                                           IRequestHandler<MerchantCommands.RemoveOperatorFromMerchantCommand, Result>,
+                                           IRequestHandler<MerchantCommands.RemoveMerchantContractCommand, Result>,
+                                           IRequestHandler<MerchantCommands.SetMerchantOperatingScheduleCommand, Result>
 {
     private readonly IProjectionStateRepository<MerchantBalanceState> MerchantBalanceStateRepository;
     private readonly IEventStoreContext EventStoreContext;
@@ -181,5 +182,10 @@ IRequestHandler<MerchantCommands.SwapMerchantDeviceCommand, Result>,
     public async Task<Result> Handle(MerchantCommands.RemoveMerchantContractCommand command, CancellationToken cancellationToken)
     {
         return await this.MerchantDomainService.RemoveContractFromMerchant(command, cancellationToken);
+    }
+
+    public async Task<Result> Handle(MerchantCommands.SetMerchantOperatingScheduleCommand command, CancellationToken cancellationToken)
+    {
+        return await this.MerchantDomainService.SetMerchantOperatingSchedule(command, cancellationToken);
     }
 }

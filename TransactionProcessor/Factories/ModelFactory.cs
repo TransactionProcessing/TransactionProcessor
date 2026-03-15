@@ -469,6 +469,29 @@ namespace TransactionProcessor.Factories
             return result;
         }
 
+        private static List<MerchantOperatingScheduleResponse> ConvertFrom(List<Models.Merchant.MerchantOperatingSchedule> operatingSchedules)
+        {
+            List<MerchantOperatingScheduleResponse> result = new();
+
+            if (operatingSchedules != null && operatingSchedules.Any())
+            {
+                operatingSchedules.ForEach(schedule => result.Add(new MerchantOperatingScheduleResponse
+                {
+                    Year = schedule.Year,
+                    DefaultIsOpen = schedule.DefaultIsOpen,
+                    Periods = schedule.Periods?
+                        .Select(period => new MerchantOperatingSchedulePeriodResponse
+                        {
+                            StartDate = period.StartDate,
+                            EndDate = period.EndDate,
+                            IsOpen = period.IsOpen
+                        }).ToList() ?? new List<MerchantOperatingSchedulePeriodResponse>()
+                }));
+            }
+
+            return result;
+        }
+
         public static MerchantResponse ConvertFrom(Models.Merchant.Merchant merchant)
         {
             if (merchant == null) {
@@ -491,6 +514,7 @@ namespace TransactionProcessor.Factories
             merchantResponse.Devices = ConvertFrom(merchant.Devices);
             merchantResponse.Operators = ConvertFrom(merchant.Operators);
             merchantResponse.Contracts = ConvertFrom(merchant.Contracts);
+            merchantResponse.OperatingSchedules = ConvertFrom(merchant.OperatingSchedules);
 
             return merchantResponse;
         }

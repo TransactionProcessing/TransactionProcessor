@@ -5,6 +5,8 @@ using SimpleResults;
 using System.Diagnostics.CodeAnalysis;
 using System.Runtime.CompilerServices;
 using TransactionProcessor.DomainEvents;
+using OperatingScheduleModel = TransactionProcessor.Models.Merchant.MerchantOperatingSchedule;
+using OperatingSchedulePeriodModel = TransactionProcessor.Models.Merchant.MerchantOperatingSchedulePeriod;
 using TransactionProcessor.Models.Contract;
 using TransactionProcessor.Models.Merchant;
 using Address = TransactionProcessor.Aggregates.Models.Address;
@@ -425,6 +427,20 @@ namespace TransactionProcessor.Aggregates
                 }
             }
 
+            if (aggregate.OperatingSchedules.Any())
+            {
+                merchantModel.OperatingSchedules = aggregate.OperatingSchedules
+                                                            .OrderBy(o => o.Key)
+                                                            .Select(o => new OperatingScheduleModel
+                                                            {
+                                                                Year = o.Value.Year,
+                                                                DefaultIsOpen = o.Value.DefaultIsOpen,
+                                                                Periods = o.Value.Periods
+                                                                                  .Select(p => new OperatingSchedulePeriodModel(p.StartDate, p.EndDate, p.IsOpen))
+                                                                                  .ToList()
+                                                            }).ToList();
+            }
+
             return merchantModel;
         }
 
@@ -470,6 +486,61 @@ namespace TransactionProcessor.Aggregates
             MerchantDomainEvents.SettlementScheduleChangedEvent settlementScheduleChangedEvent = new(aggregate.AggregateId, aggregate.EstateId, (Int32)settlementSchedule, nextSettlementDate);
 
             aggregate.ApplyAndAppend(settlementScheduleChangedEvent);
+
+            return Result.Success();
+        }
+
+        public static Result SetOperatingSchedule(this MerchantAggregate aggregate,
+                                                  Int32 year,
+                                                  Boolean defaultIsOpen,
+                                                  List<OperatingSchedulePeriodModel> periods)
+        {
+            Result result = aggregate.EnsureMerchantHasBeenCreated();
+            if (result.IsFailed)
+                return result;
+
+            if (year < 1)
+                return Result.Invalid("A valid year must be provided");
+
+            List<OperatingSchedulePeriodModel> normalisedPeriods = (periods ?? new List<OperatingSchedulePeriodModel>())
+                                                                   .Select(p => new OperatingSchedulePeriodModel(p.StartDate.Date, p.EndDate.Date, p.IsOpen))
+                                                                   .OrderBy(p => p.StartDate)
+                                                                   .ThenBy(p => p.EndDate)
+                                                                   .ToList();
+
+            for (Int32 i = 0; i < normalisedPeriods.Count; i++)
+            {
+                OperatingSchedulePeriodModel period = normalisedPeriods[i];
+                if (period.StartDate > period.EndDate)
+                    return Result.Invalid("Operating schedule periods must have a start date on or before the end date");
+
+                if (period.StartDate.Year != year || period.EndDate.Year != year)
+                    return Result.Invalid("Operating schedule periods must fall within the requested year");
+
+                if (i > 0)
+                {
+                    OperatingSchedulePeriodModel previousPeriod = normalisedPeriods[i - 1];
+                    if (period.StartDate <= previousPeriod.EndDate)
+                        return Result.Invalid("Operating schedule periods must not overlap");
+                }
+            }
+
+            if (aggregate.OperatingSchedules.TryGetValue(year, out OperatingScheduleModel existingSchedule))
+            {
+                Boolean isUnchanged = existingSchedule.DefaultIsOpen == defaultIsOpen &&
+                                      existingSchedule.Periods.SequenceEqual(normalisedPeriods);
+                if (isUnchanged)
+                    return Result.Success();
+            }
+
+            MerchantDomainEvents.MerchantOperatingScheduleSetEvent merchantOperatingScheduleSetEvent = new(
+                aggregate.AggregateId,
+                aggregate.EstateId,
+                year,
+                defaultIsOpen,
+                normalisedPeriods.Select(p => new TransactionProcessor.DomainEvents.MerchantOperatingSchedulePeriod(p.StartDate, p.EndDate, p.IsOpen)).ToList());
+
+            aggregate.ApplyAndAppend(merchantOperatingScheduleSetEvent);
 
             return Result.Success();
         }
@@ -854,6 +925,18 @@ namespace TransactionProcessor.Aggregates
             aggregate.Contracts[domainEvent.ContractId] = contract.Value;
         }
 
+        public static void PlayEvent(this MerchantAggregate aggregate, MerchantDomainEvents.MerchantOperatingScheduleSetEvent domainEvent)
+        {
+            aggregate.OperatingSchedules[domainEvent.Year] = new OperatingScheduleModel
+            {
+                Year = domainEvent.Year,
+                DefaultIsOpen = domainEvent.DefaultIsOpen,
+                Periods = domainEvent.Periods?
+                    .Select(p => new OperatingSchedulePeriodModel(p.StartDate.Date, p.EndDate.Date, p.IsOpen))
+                    .ToList() ?? new List<OperatingSchedulePeriodModel>()
+            };
+        }
+
         public static void PlayEvent(this MerchantAggregate aggregate, MerchantDomainEvents.DeviceSwappedForMerchantEvent domainEvent)
         {
             KeyValuePair<Guid, Device> device = aggregate.Devices.Single(d => d.Key == domainEvent.OriginalDeviceId);
@@ -887,6 +970,8 @@ namespace TransactionProcessor.Aggregates
 
         internal readonly Dictionary<Guid, Contract> Contracts;
 
+        internal readonly Dictionary<Int32, OperatingScheduleModel> OperatingSchedules;
+
         #endregion
 
         #region Constructors
@@ -904,6 +989,7 @@ namespace TransactionProcessor.Aggregates
             this.SecurityUsers = new List<SecurityUser>();
             this.Devices = new Dictionary<Guid, Device>();
             this.Contracts = new Dictionary<Guid, Contract>();
+            this.OperatingSchedules = new Dictionary<Int32, OperatingScheduleModel>();
         }
 
         /// <summary>
@@ -922,6 +1008,7 @@ namespace TransactionProcessor.Aggregates
             this.SecurityUsers = new List<SecurityUser>();
             this.Devices = new Dictionary<Guid, Device>();
             this.Contracts = new Dictionary<Guid, Contract>();
+            this.OperatingSchedules = new Dictionary<Int32, OperatingScheduleModel>();
         }
 
         #endregion

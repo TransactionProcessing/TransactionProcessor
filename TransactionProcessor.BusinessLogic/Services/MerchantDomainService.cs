@@ -43,6 +43,7 @@ namespace TransactionProcessor.BusinessLogic.Services
         Task<Result> UpdateMerchantContact(MerchantCommands.UpdateMerchantContactCommand command, CancellationToken cancellationToken);
         Task<Result> RemoveOperatorFromMerchant(MerchantCommands.RemoveOperatorFromMerchantCommand command, CancellationToken cancellationToken);
         Task<Result> RemoveContractFromMerchant(MerchantCommands.RemoveMerchantContractCommand command, CancellationToken cancellationToken);
+        Task<Result> SetMerchantOperatingSchedule(MerchantCommands.SetMerchantOperatingScheduleCommand command, CancellationToken cancellationToken);
 
         #endregion
     }
@@ -486,6 +487,45 @@ namespace TransactionProcessor.BusinessLogic.Services
                 return saveResult;
             }
             catch (Exception ex) {
+                return Result.Failure(ex.GetExceptionMessages());
+            }
+        }
+
+        public async Task<Result> SetMerchantOperatingSchedule(MerchantCommands.SetMerchantOperatingScheduleCommand command, CancellationToken cancellationToken)
+        {
+            try
+            {
+                Result<EstateAggregate> estateResult = await DomainServiceHelper.GetAggregateOrFailure(ct => this.AggregateService.Get<EstateAggregate>(command.EstateId, ct), command.EstateId, cancellationToken);
+                if (estateResult.IsFailed)
+                    return ResultHelpers.CreateFailure(estateResult);
+
+                Result<MerchantAggregate> merchantResult = await DomainServiceHelper.GetAggregateOrFailure(ct => this.AggregateService.GetLatest<MerchantAggregate>(command.MerchantId, ct), command.MerchantId, cancellationToken);
+                if (merchantResult.IsFailed)
+                    return ResultHelpers.CreateFailure(merchantResult);
+
+                EstateAggregate estateAggregate = estateResult.Data;
+                MerchantAggregate merchantAggregate = merchantResult.Data;
+
+                Result result = this.ValidateEstateAndMerchant(estateAggregate, merchantAggregate);
+                if (result.IsFailed)
+                    return ResultHelpers.CreateFailure(result);
+
+                List<MerchantOperatingSchedulePeriod> periods = command.RequestDto.Periods?
+                    .Select(p => new MerchantOperatingSchedulePeriod(p.StartDate, p.EndDate, p.IsOpen))
+                    .ToList() ?? new List<MerchantOperatingSchedulePeriod>();
+
+                Result stateResult = merchantAggregate.SetOperatingSchedule(command.Year, command.RequestDto.DefaultIsOpen, periods);
+                if (stateResult.IsFailed)
+                    return stateResult;
+
+                Result saveResult = await this.AggregateService.Save(merchantAggregate, cancellationToken);
+                if (saveResult.IsFailed)
+                    return ResultHelpers.CreateFailure(saveResult);
+
+                return saveResult;
+            }
+            catch (Exception ex)
+            {
                 return Result.Failure(ex.GetExceptionMessages());
             }
         }

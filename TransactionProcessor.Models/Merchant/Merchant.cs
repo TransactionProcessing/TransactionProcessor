@@ -37,6 +37,8 @@ namespace TransactionProcessor.Models.Merchant
 
         public DateTime NextStatementDate { get; set; }
 
+        public List<MerchantOperatingSchedule> OperatingSchedules { get; set; }
+
         #endregion
     }
 }

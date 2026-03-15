@@ -221,10 +221,17 @@ namespace TransactionProcessor.Client
                                     CancellationToken cancellationToken);
 
         Task<Result> SetMerchantSettlementSchedule(String accessToken,
-                                                   Guid estateId,
-                                                   Guid merchantId,
-                                                   SetSettlementScheduleRequest setSettlementScheduleRequest,
-                                                   CancellationToken cancellationToken);
+                                                    Guid estateId,
+                                                    Guid merchantId,
+                                                    SetSettlementScheduleRequest setSettlementScheduleRequest,
+                                                    CancellationToken cancellationToken);
+
+        Task<Result> SetMerchantOperatingSchedule(String accessToken,
+                                                  Guid estateId,
+                                                  Guid merchantId,
+                                                  Int32 year,
+                                                  SetMerchantOperatingScheduleRequest setMerchantOperatingScheduleRequest,
+                                                  CancellationToken cancellationToken);
 
         Task<Result> SwapDeviceForMerchant(String accessToken,
                                            Guid estateId,

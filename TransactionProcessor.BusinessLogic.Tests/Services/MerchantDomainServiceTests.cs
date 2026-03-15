@@ -1463,6 +1463,31 @@ public class MerchantDomainServiceTests {
     }
 
     [Fact]
+    public async Task MerchantDomainService_SetMerchantOperatingSchedule_ScheduleSet() {
+        this.AggregateService.Setup(e => e.Get<EstateAggregate>(It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(TestData.Aggregates.CreatedEstateAggregate());
+        this.AggregateService.Setup(m => m.GetLatest<MerchantAggregate>(It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(Result.Success(TestData.Aggregates.CreatedMerchantAggregate()));
+        this.AggregateService.Setup(m => m.Save(It.IsAny<MerchantAggregate>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(Result.Success());
+
+        var result = await this.DomainService.SetMerchantOperatingSchedule(TestData.Commands.SetMerchantOperatingScheduleCommand, CancellationToken.None);
+        result.IsSuccess.ShouldBeTrue();
+    }
+
+    [Fact]
+    public async Task MerchantDomainService_SetMerchantOperatingSchedule_ValidationFailure_ResultIsFailed()
+    {
+        this.AggregateService.Setup(e => e.Get<EstateAggregate>(It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(TestData.Aggregates.CreatedEstateAggregate());
+        this.AggregateService.Setup(m => m.GetLatest<MerchantAggregate>(It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(Result.Success(TestData.Aggregates.EmptyMerchantAggregate()));
+
+        var result = await this.DomainService.SetMerchantOperatingSchedule(TestData.Commands.SetMerchantOperatingScheduleCommand, CancellationToken.None);
+        result.IsFailed.ShouldBeTrue();
+    }
+
+    [Fact]
     public async Task MerchantDomainService_AddMerchantAddress_GetEstateFailed_ResultIsFailed() {
         this.AggregateService.Setup(e => e.Get<EstateAggregate>(It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(Result.Failure());

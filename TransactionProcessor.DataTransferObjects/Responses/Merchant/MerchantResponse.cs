@@ -99,6 +99,9 @@ namespace TransactionProcessor.DataTransferObjects.Responses.Merchant
         [JsonProperty("operators")]
         public List<MerchantOperatorResponse> Operators { get; set; }
 
+        [JsonProperty("operating_schedules")]
+        public List<MerchantOperatingScheduleResponse> OperatingSchedules { get; set; }
+
         /// <summary>
         /// Gets or sets the settlement schedule.
         /// </summary>

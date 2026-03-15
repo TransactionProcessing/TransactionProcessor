@@ -409,7 +409,76 @@ namespace TransactionProcessor.Aggregates.Tests
             Merchant merchant = aggregate.GetMerchant();
             merchant.SettlementSchedule.ShouldBe(originalSettlementSchedule);
         }
-        
+
+        [Fact]
+        public void MerchantAggregate_SetOperatingSchedule_ScheduleIsSet()
+        {
+            MerchantAggregate aggregate = MerchantAggregate.Create(TestData.MerchantId);
+            aggregate.Create(TestData.EstateId, TestData.MerchantName, TestData.DateMerchantCreated, TestData.AddressModel, TestData.ContactModel,
+                TestData.SettlementScheduleModel);
+
+            List<MerchantOperatingSchedulePeriod> periods = new()
+            {
+                new MerchantOperatingSchedulePeriod(TestData.OperatingSchedulePeriod1StartDate, TestData.OperatingSchedulePeriod1EndDate, false),
+                new MerchantOperatingSchedulePeriod(TestData.OperatingSchedulePeriod2StartDate, TestData.OperatingSchedulePeriod2EndDate, false)
+            };
+
+            Result result = aggregate.SetOperatingSchedule(TestData.OperatingScheduleYear, true, periods);
+            result.IsSuccess.ShouldBeTrue();
+
+            Merchant merchant = aggregate.GetMerchant();
+            merchant.OperatingSchedules.ShouldHaveSingleItem();
+            merchant.OperatingSchedules.Single().Year.ShouldBe(TestData.OperatingScheduleYear);
+            merchant.OperatingSchedules.Single().DefaultIsOpen.ShouldBeTrue();
+            merchant.OperatingSchedules.Single().Periods.Count.ShouldBe(2);
+            merchant.OperatingSchedules.Single().Periods[0].StartDate.ShouldBe(TestData.OperatingSchedulePeriod1StartDate);
+            merchant.OperatingSchedules.Single().Periods[0].EndDate.ShouldBe(TestData.OperatingSchedulePeriod1EndDate);
+            merchant.OperatingSchedules.Single().Periods[0].IsOpen.ShouldBeFalse();
+        }
+
+        [Fact]
+        public void MerchantAggregate_SetOperatingSchedule_OverlappingPeriods_ErrorReturned()
+        {
+            MerchantAggregate aggregate = MerchantAggregate.Create(TestData.MerchantId);
+            aggregate.Create(TestData.EstateId, TestData.MerchantName, TestData.DateMerchantCreated, TestData.AddressModel, TestData.ContactModel,
+                TestData.SettlementScheduleModel);
+
+            List<MerchantOperatingSchedulePeriod> periods = new()
+            {
+                new MerchantOperatingSchedulePeriod(new DateTime(TestData.OperatingScheduleYear, 1, 1), new DateTime(TestData.OperatingScheduleYear, 1, 3), false),
+                new MerchantOperatingSchedulePeriod(new DateTime(TestData.OperatingScheduleYear, 1, 3), new DateTime(TestData.OperatingScheduleYear, 1, 4), true)
+            };
+
+            Result result = aggregate.SetOperatingSchedule(TestData.OperatingScheduleYear, true, periods);
+            result.IsFailed.ShouldBeTrue();
+            result.Status.ShouldBe(ResultStatus.Invalid);
+            result.Message.ShouldBe("Operating schedule periods must not overlap");
+        }
+
+        [Fact]
+        public void MerchantAggregate_SetOperatingSchedule_SameValue_NoEventRaised()
+        {
+            MerchantAggregate aggregate = MerchantAggregate.Create(TestData.MerchantId);
+            aggregate.Create(TestData.EstateId, TestData.MerchantName, TestData.DateMerchantCreated, TestData.AddressModel, TestData.ContactModel,
+                TestData.SettlementScheduleModel);
+
+            List<MerchantOperatingSchedulePeriod> periods = new()
+            {
+                new MerchantOperatingSchedulePeriod(TestData.OperatingSchedulePeriod1StartDate, TestData.OperatingSchedulePeriod1EndDate, false)
+            };
+
+            aggregate.SetOperatingSchedule(TestData.OperatingScheduleYear, true, periods);
+            Result result = aggregate.SetOperatingSchedule(TestData.OperatingScheduleYear, true, periods);
+            result.IsSuccess.ShouldBeTrue();
+
+            Type type = aggregate.GetType();
+            PropertyInfo property = type.GetProperty("PendingEvents", BindingFlags.Instance | BindingFlags.NonPublic);
+            Object value = property.GetValue(aggregate);
+            value.ShouldNotBeNull();
+            List<IDomainEvent> eventHistory = (List<IDomainEvent>)value;
+            eventHistory.Count.ShouldBe(6);
+        }
+
         [Fact]
         public void MerchantAggregate_SwapDevice_DeviceIsSwapped(){
             MerchantAggregate aggregate = MerchantAggregate.Create(TestData.MerchantId);

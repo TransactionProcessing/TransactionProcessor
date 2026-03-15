@@ -231,12 +231,25 @@ public static class MerchantHandlers {
     }
 
     public static async Task<IResult> UpdateMerchant(IMediator mediator,
-                                                     HttpContext ctx,
-                                                     Guid estateId,
+                                                      HttpContext ctx,
+                                                      Guid estateId,
                                                      Guid merchantId,
                                                      UpdateMerchantRequest updateMerchantRequest,
                                                      CancellationToken cancellationToken) {
         MerchantCommands.UpdateMerchantCommand command = new(estateId, merchantId, updateMerchantRequest);
+        Result result = await mediator.Send(command, cancellationToken);
+
+        return ResponseFactory.FromResult(result);
+    }
+
+    public static async Task<IResult> SetMerchantOperatingSchedule(IMediator mediator,
+                                                                   HttpContext ctx,
+                                                                   Guid estateId,
+                                                                   Guid merchantId,
+                                                                   Int32 year,
+                                                                   SetMerchantOperatingScheduleRequest setMerchantOperatingScheduleRequest,
+                                                                   CancellationToken cancellationToken) {
+        MerchantCommands.SetMerchantOperatingScheduleCommand command = new(estateId, merchantId, year, setMerchantOperatingScheduleRequest);
         Result result = await mediator.Send(command, cancellationToken);
 
         return ResponseFactory.FromResult(result);
@@ -293,8 +306,8 @@ public static class MerchantHandlers {
     }
 
     public static async Task<IResult> GenerateMerchantStatement(IMediator mediator,
-                                                                HttpContext ctx,
-                                                                Guid estateId,
+                                                                 HttpContext ctx,
+                                                                 Guid estateId,
                                                                 Guid merchantId,
                                                                 GenerateMerchantStatementRequest generateMerchantStatementRequest,
                                                                 CancellationToken cancellationToken) {
