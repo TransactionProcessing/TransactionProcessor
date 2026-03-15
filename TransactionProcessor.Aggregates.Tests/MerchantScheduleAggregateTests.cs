@@ -53,6 +53,18 @@ namespace TransactionProcessor.Aggregates.Tests
         }
 
         [Fact]
+        public void MerchantScheduleAggregate_Create_InvalidYear_ErrorReturned()
+        {
+            MerchantScheduleAggregate aggregate = MerchantScheduleAggregate.Create(MerchantScheduleId);
+
+            Result result = aggregate.Create(EstateId, MerchantId, 1899, []);
+
+            result.IsFailed.ShouldBeTrue();
+            result.Status.ShouldBe(ResultStatus.Invalid);
+            result.Message.ShouldBe("A valid year must be provided when creating a merchant schedule");
+        }
+
+        [Fact]
         public void MerchantScheduleAggregate_SetMonthSchedule_WhenChanged_EmitsMonthEvent()
         {
             MerchantScheduleAggregate aggregate = MerchantScheduleAggregate.Create(MerchantScheduleId);

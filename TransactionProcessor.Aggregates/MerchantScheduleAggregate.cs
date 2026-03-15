@@ -149,7 +149,7 @@ namespace TransactionProcessor.Aggregates
             if (merchantId == Guid.Empty)
                 return Result.Invalid("Merchant id must be provided when creating a merchant schedule");
 
-            if (year < 1)
+            if (year < 1900)
                 return Result.Invalid("A valid year must be provided when creating a merchant schedule");
 
             return Result.Success();
@@ -194,7 +194,7 @@ namespace TransactionProcessor.Aggregates
         private MerchantScheduleAggregate(Guid aggregateId)
         {
             if (aggregateId == Guid.Empty)
-                throw new ArgumentNullException(nameof(aggregateId));
+                throw new ArgumentException("Value cannot be empty.", nameof(aggregateId));
 
             this.AggregateId = aggregateId;
             this.Months = new Dictionary<Int32, MerchantScheduleMonthModel>();
