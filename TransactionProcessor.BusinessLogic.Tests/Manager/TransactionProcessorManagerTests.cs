@@ -373,7 +373,7 @@ namespace TransactionProcessor.BusinessLogic.Tests.Manager
         }
 
         [Fact]
-        public async Task TransactionProcessorManager_GetMerchantSchedule_MerchantScheduleNotCreated_ErrorThrown()
+        public async Task TransactionProcessorManager_GetMerchantSchedule_MerchantScheduleNotCreated_ReturnsFailure()
         {
             this.AggregateService
                 .Setup(m => m.GetLatest<MerchantScheduleAggregate>(It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
