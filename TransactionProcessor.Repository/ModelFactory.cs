@@ -14,6 +14,10 @@ namespace TransactionProcessor.Repository
     using MerchantContactModel = Models.Merchant.Contact;
     using MerchantDeviceEntity = TransactionProcessor.Database.Entities.MerchantDevice;
     using MerchantEntity = TransactionProcessor.Database.Entities.Merchant;
+    using MerchantScheduleEntity = TransactionProcessor.Database.Entities.MerchantSchedule;
+    using MerchantScheduleModel = TransactionProcessor.Models.MerchantSchedule.MerchantSchedule;
+    using MerchantScheduleMonthEntity = TransactionProcessor.Database.Entities.MerchantScheduleMonth;
+    using MerchantScheduleMonthModel = TransactionProcessor.Models.MerchantSchedule.MerchantScheduleMonth;
     using MerchantModel = Models.Merchant.Merchant;
     using MerchantOperatorEntity = TransactionProcessor.Database.Entities.MerchantOperator;
     using MerchantOperatorModel = Models.Merchant.Operator;
@@ -78,7 +82,9 @@ namespace TransactionProcessor.Repository
                                                 List<MerchantContactEntity> merchantContacts,
                                                 List<MerchantOperatorEntity> merchantOperators,
                                                 List<MerchantDeviceEntity> merchantDevices,
-                                                List<MerchantSecurityUserEntity> merchantSecurityUsers)
+                                                List<MerchantSecurityUserEntity> merchantSecurityUsers,
+                                                List<MerchantScheduleEntity> merchantSchedules,
+                                                List<MerchantScheduleMonthEntity> merchantScheduleMonths)
         {
             MerchantModel merchantModel = ModelFactory.ConvertFrom(estateId, merchant);
 
@@ -87,6 +93,7 @@ namespace TransactionProcessor.Repository
             merchantModel.Operators = ConvertFrom(merchantOperators);
             merchantModel.Devices = ConvertFrom(merchantDevices);
             merchantModel.SecurityUsers = ConvertFrom(merchantSecurityUsers);
+            merchantModel.Schedules = ConvertFrom(merchantSchedules, merchantScheduleMonths);
 
             return merchantModel;
         }
@@ -142,6 +149,48 @@ namespace TransactionProcessor.Repository
             }
 
             return contacts;
+        }
+
+        private static List<MerchantScheduleModel> ConvertFrom(List<MerchantScheduleEntity> merchantSchedules,
+                                                               List<MerchantScheduleMonthEntity> merchantScheduleMonths)
+        {
+            List<MerchantScheduleModel> schedules = [];
+            merchantScheduleMonths ??= [];
+
+            if (merchantSchedules == null || merchantSchedules.Any() == false)
+            {
+                return schedules;
+            }
+
+            foreach (MerchantScheduleEntity merchantSchedule in merchantSchedules.OrderBy(s => s.Year))
+            {
+                MerchantScheduleModel schedule = new()
+                {
+                    MerchantScheduleId = merchantSchedule.MerchantScheduleId,
+                    EstateId = merchantSchedule.EstateId,
+                    MerchantId = merchantSchedule.MerchantId,
+                    Year = merchantSchedule.Year,
+                    Months = []
+                };
+
+                foreach (MerchantScheduleMonthEntity merchantScheduleMonth in merchantScheduleMonths
+                             .Where(m => m.MerchantScheduleId == merchantSchedule.MerchantScheduleId)
+                             .OrderBy(m => m.Month))
+                {
+                    schedule.Months.Add(new MerchantScheduleMonthModel
+                    {
+                        Month = merchantScheduleMonth.Month,
+                        ClosedDays = merchantScheduleMonth.ClosedDays
+                                                         .Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)
+                                                         .Select(Int32.Parse)
+                                                         .ToList()
+                    });
+                }
+
+                schedules.Add(schedule);
+            }
+
+            return schedules;
         }
     }
 }

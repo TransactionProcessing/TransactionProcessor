@@ -192,6 +192,28 @@ public static class Extensions{
         
         return modelBuilder;
     }
+
+    public static ModelBuilder SetupMerchantSchedule(this ModelBuilder modelBuilder)
+    {
+        modelBuilder.Entity<MerchantSchedule>().HasKey(t => t.MerchantScheduleId);
+        modelBuilder.Entity<MerchantSchedule>()
+                    .HasIndex(t => new {
+                        t.MerchantId,
+                        t.Year
+                    }).IsUnique();
+
+        return modelBuilder;
+    }
+
+    public static ModelBuilder SetupMerchantScheduleMonth(this ModelBuilder modelBuilder)
+    {
+        modelBuilder.Entity<MerchantScheduleMonth>().HasKey(t => new {
+            t.MerchantScheduleId,
+            t.Month
+        });
+
+        return modelBuilder;
+    }
     
     public static ModelBuilder SetupMerchantAddress(this ModelBuilder modelBuilder){
         modelBuilder.Entity<MerchantAddress>().HasKey(t => new {

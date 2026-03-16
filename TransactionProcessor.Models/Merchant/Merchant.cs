@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using TransactionProcessor.Models.MerchantSchedule;
 
 namespace TransactionProcessor.Models.Merchant
 {
@@ -38,6 +39,8 @@ namespace TransactionProcessor.Models.Merchant
         public DateTime NextStatementDate { get; set; }
         
         public Dictionary<DayOfWeek, OpeningHours> OpeningHours { get; set; }
+
+        public List<MerchantSchedule> Schedules { get; set; }
 
         #endregion
     }

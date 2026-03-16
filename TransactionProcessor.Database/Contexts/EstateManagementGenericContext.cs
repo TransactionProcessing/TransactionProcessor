@@ -79,6 +79,10 @@ public class EstateManagementContext : DbContext
 
     public DbSet<MerchantDevice> MerchantDevices { get; set; }
 
+    public DbSet<MerchantSchedule> MerchantSchedules { get; set; }
+
+    public DbSet<MerchantScheduleMonth> MerchantScheduleMonths { get; set; }
+
     public DbSet<MerchantOperator> MerchantOperators { get; set; }
     
     public DbSet<Merchant> Merchants { get; set; }
@@ -320,6 +324,8 @@ ALTER DATABASE [{dbName}] SET MULTI_USER;
                     .SetupTodaysTransactions()
                     .SetupTransactionTimings()
                     .SetupEstateOperator()
+                    .SetupMerchantSchedule()
+                    .SetupMerchantScheduleMonth()
                     .SetupMerchantOpeningHours();
         
         modelBuilder.SetupViewEntities();
@@ -529,6 +535,33 @@ public static class EstateManagementContextExtensions
         {
             ResultStatus.NotFound => Result.NotFound($"Merchant Opening Hours not found for merchant Id {merchantId}"),
             _ => merchantOpeningHoursResult
+        };
+    }
+
+    public static async Task<Result<MerchantSchedule>> LoadMerchantSchedule(this EstateManagementContext context, IDomainEvent domainEvent, CancellationToken cancellationToken)
+    {
+        Guid merchantScheduleId = domainEvent.AggregateId;
+
+        IQueryable<MerchantSchedule> query = context.MerchantSchedules.Where(e => e.MerchantScheduleId == merchantScheduleId);
+        Result<MerchantSchedule> merchantScheduleResult = await DbQueryHelpers.ExecuteQuerySafeSingleOrDefault(query, cancellationToken, $"Error getting merchant schedule {merchantScheduleId}");
+        return merchantScheduleResult.Status switch
+        {
+            ResultStatus.NotFound => Result.NotFound($"Merchant Schedule not found for merchant schedule Id {merchantScheduleId}"),
+            _ => merchantScheduleResult
+        };
+    }
+
+    public static async Task<Result<MerchantScheduleMonth>> LoadMerchantScheduleMonth(this EstateManagementContext context, MerchantScheduleDomainEvents.MerchantScheduleMonthUpdatedEvent domainEvent, CancellationToken cancellationToken)
+    {
+        Guid merchantScheduleId = domainEvent.AggregateId;
+        Int32 month = domainEvent.Month;
+
+        IQueryable<MerchantScheduleMonth> query = context.MerchantScheduleMonths.Where(e => e.MerchantScheduleId == merchantScheduleId && e.Month == month);
+        Result<MerchantScheduleMonth> merchantScheduleMonthResult = await DbQueryHelpers.ExecuteQuerySafeSingleOrDefault(query, cancellationToken, $"Error getting merchant schedule month {month} for merchant schedule {merchantScheduleId}");
+        return merchantScheduleMonthResult.Status switch
+        {
+            ResultStatus.NotFound => Result.NotFound($"Merchant Schedule Month {month} not found for merchant schedule Id {merchantScheduleId}"),
+            _ => merchantScheduleMonthResult
         };
     }
 
