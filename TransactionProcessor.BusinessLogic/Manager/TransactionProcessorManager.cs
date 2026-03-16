@@ -177,8 +177,8 @@ namespace TransactionProcessor.BusinessLogic.Manager
         }
 
         public async Task<Result<List<Contract>>> GetMerchantContracts(Guid estateId,
-                                                                Guid merchantId,
-                                                               CancellationToken cancellationToken)
+                                                                       Guid merchantId,
+                                                                       CancellationToken cancellationToken)
         {
             return await AsyncExecutor.ExecuteSafeAsync(async ct => {
                 Result<List<Contract>> getMerchantContractsResult = await this.TransactionProcessorReadModelRepository.GetMerchantContracts(estateId, merchantId, ct);
