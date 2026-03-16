@@ -13,7 +13,6 @@ using AssignOperatorRequest = TransactionProcessor.DataTransferObjects.Requests.
 
 namespace TransactionProcessor.IntegrationTesting.Helpers;
 
-using System.Linq;
 using System.Net;
 using System.Text;
 using System.Text.Json;
