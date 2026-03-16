@@ -498,6 +498,12 @@ namespace TransactionProcessor.Tests.Factories
             contactResponse.ContactEmailAddress.ShouldBe(merchantModel.Contacts.Single().ContactEmailAddress);
             contactResponse.ContactName.ShouldBe(merchantModel.Contacts.Single().ContactName);
             contactResponse.ContactPhoneNumber.ShouldBe(merchantModel.Contacts.Single().ContactPhoneNumber);
+
+            merchantResponse.Schedules.ShouldHaveSingleItem();
+            merchantResponse.Schedules.Single().Year.ShouldBe(TestData.MerchantScheduleYear);
+            merchantResponse.Schedules.Single().Months.ShouldHaveSingleItem();
+            merchantResponse.Schedules.Single().Months.Single().Month.ShouldBe(1);
+            merchantResponse.Schedules.Single().Months.Single().ClosedDays.ShouldBe(new List<int> { 1, 26 });
         }
 
         [Fact]

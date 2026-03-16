@@ -6,6 +6,7 @@ using SimpleResults;
 using TransactionProcessor.BusinessLogic.Manager;
 using TransactionProcessor.Models.Contract;
 using TransactionProcessor.Models.Merchant;
+using MerchantScheduleModel = TransactionProcessor.Models.MerchantSchedule.MerchantSchedule;
 using TransactionProcessor.Models.Settlement;
 using Contract = TransactionProcessor.Models.Contract.Contract;
 
@@ -43,6 +44,20 @@ public class DummyTransactionProcessorManager : ITransactionProcessorManager {
                                                     Guid merchantId,
                                                     CancellationToken cancellationToken) {
         return new Result<Merchant>();
+    }
+
+    public async Task<Result<MerchantScheduleModel>> GetMerchantSchedule(Guid estateId,
+                                                                          Guid merchantId,
+                                                                          Int32 year,
+                                                                          CancellationToken cancellationToken) {
+        return Result.Success(new MerchantScheduleModel());
+    }
+
+    public async Task<Result<MerchantScheduleModel>> GetMerchantScheduleFromReadModel(Guid estateId,
+                                                                                       Guid merchantId,
+                                                                                       Int32 year,
+                                                                                       CancellationToken cancellationToken) {
+        return Result.Success(new MerchantScheduleModel());
     }
 
     public async Task<Result<List<Merchant>>> GetMerchants(Guid estateId,

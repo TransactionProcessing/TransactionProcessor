@@ -3,6 +3,7 @@ using System.Diagnostics.CodeAnalysis;
 using MediatR;
 using SimpleResults;
 using TransactionProcessor.DataTransferObjects.Requests.Merchant;
+using TransactionProcessor.DataTransferObjects.Requests.MerchantSchedule;
 
 namespace TransactionProcessor.BusinessLogic.Requests
 {
@@ -41,6 +42,10 @@ namespace TransactionProcessor.BusinessLogic.Requests
         public record UpdateMerchantContactCommand(Guid EstateId, Guid MerchantId, Guid ContactId, Contact RequestDto) : IRequest<Result>;
 
         public record UpdateMerchantOpeningHoursCommand(Guid EstateId, Guid MerchantId, MerchantOpeningRequest RequestDto) : IRequest<Result>;
+
+        public record CreateMerchantScheduleCommand(Guid EstateId, Guid MerchantId, CreateMerchantScheduleRequest RequestDto) : IRequest<Result>;
+
+        public record UpdateMerchantScheduleCommand(Guid EstateId, Guid MerchantId, Int32 Year, UpdateMerchantScheduleRequest RequestDto) : IRequest<Result>;
     }
 
     

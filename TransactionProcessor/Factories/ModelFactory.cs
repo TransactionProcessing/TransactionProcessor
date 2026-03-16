@@ -499,8 +499,35 @@ namespace TransactionProcessor.Factories
                     Opening = oh.Value.Opening,
                     Closing = oh.Value.Closing
                 });
+            merchantResponse.Schedules = merchant.Schedules?.Select(schedule => new MerchantScheduleResponse
+            {
+                Year = schedule.Year,
+                Months = schedule.Months.Select(month => new MerchantScheduleMonthResponse
+                {
+                    Month = month.Month,
+                    ClosedDays = [.. month.ClosedDays]
+                }).ToList()
+            }).ToList();
 
             return merchantResponse;
+        }
+
+        public static MerchantScheduleResponse ConvertFrom(TransactionProcessor.Models.MerchantSchedule.MerchantSchedule merchantSchedule)
+        {
+            if (merchantSchedule == null)
+            {
+                return null;
+            }
+
+            return new MerchantScheduleResponse
+            {
+                Year = merchantSchedule.Year,
+                Months = merchantSchedule.Months.Select(month => new MerchantScheduleMonthResponse
+                {
+                    Month = month.Month,
+                    ClosedDays = [.. month.ClosedDays]
+                }).ToList()
+            };
         }
     }
 }

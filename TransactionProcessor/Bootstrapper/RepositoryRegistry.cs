@@ -89,6 +89,7 @@ namespace TransactionProcessor.Bootstrapper
             this.AddSingleton<IAggregateRepository<MerchantDepositListAggregate, DomainEvent>, AggregateRepository<MerchantDepositListAggregate, DomainEvent>>();
             this.AddSingleton<IAggregateRepository<MerchantStatementAggregate, DomainEvent>, AggregateRepository<MerchantStatementAggregate, DomainEvent>>();
             this.AddSingleton<IAggregateRepository<MerchantStatementForDateAggregate, DomainEvent>, AggregateRepository<MerchantStatementForDateAggregate, DomainEvent>>();
+            this.AddSingleton<IAggregateRepository<MerchantScheduleAggregate, DomainEvent>, AggregateRepository<MerchantScheduleAggregate, DomainEvent>>();
         }
 
         private void RegisterAggregateCachingFunc() {

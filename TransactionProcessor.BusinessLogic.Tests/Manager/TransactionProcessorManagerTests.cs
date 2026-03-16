@@ -14,6 +14,7 @@ using TransactionProcessor.BusinessLogic.Services;
 using TransactionProcessor.Models.Contract;
 using TransactionProcessor.Models.Estate;
 using TransactionProcessor.Models.Merchant;
+using MerchantScheduleModel = TransactionProcessor.Models.MerchantSchedule.MerchantSchedule;
 using TransactionProcessor.Repository;
 using TransactionProcessor.Testing;
 using Xunit;
@@ -349,6 +350,66 @@ namespace TransactionProcessor.BusinessLogic.Tests.Manager
             this.AggregateService.Setup(m => m.GetLatest<MerchantAggregate>(It.IsAny<Guid>(), It.IsAny<CancellationToken>())).ReturnsAsync(Result.Failure());
 
             Result<Merchant> result = await this.TransactionProcessorManager.GetMerchant(TestData.EstateId, TestData.MerchantId, CancellationToken.None);
+            result.IsFailed.ShouldBeTrue();
+        }
+
+        [Fact]
+        public async Task TransactionProcessorManager_GetMerchantSchedule_MerchantScheduleIsReturned()
+        {
+            MerchantScheduleAggregate merchantScheduleAggregate = TestData.Aggregates.CreatedMerchantScheduleAggregate();
+            merchantScheduleAggregate.UpdateSchedule(TestData.MerchantModelWithAddressesContactsDevicesAndOperatorsAndContracts().Schedules.Single().Months);
+
+            this.AggregateService
+                .Setup(m => m.GetLatest<MerchantScheduleAggregate>(It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
+                .ReturnsAsync(Result.Success(merchantScheduleAggregate));
+
+            Result<MerchantScheduleModel> result = await this.TransactionProcessorManager.GetMerchantSchedule(TestData.EstateId, TestData.MerchantId, TestData.MerchantScheduleYear, CancellationToken.None);
+
+            result.IsSuccess.ShouldBeTrue();
+            result.Data.Year.ShouldBe(TestData.MerchantScheduleYear);
+            result.Data.Months.ShouldHaveSingleItem();
+            result.Data.Months.Single().Month.ShouldBe(1);
+            result.Data.Months.Single().ClosedDays.ShouldBe([1, 26]);
+        }
+
+        [Fact]
+        public async Task TransactionProcessorManager_GetMerchantSchedule_MerchantScheduleNotCreated_ReturnsFailure()
+        {
+            this.AggregateService
+                .Setup(m => m.GetLatest<MerchantScheduleAggregate>(It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
+                .ReturnsAsync(Result.Success(TestData.Aggregates.EmptyMerchantScheduleAggregate()));
+
+            Result<MerchantScheduleModel> result = await this.TransactionProcessorManager.GetMerchantSchedule(TestData.EstateId, TestData.MerchantId, TestData.MerchantScheduleYear, CancellationToken.None);
+
+            result.IsFailed.ShouldBeTrue();
+        }
+
+        [Fact]
+        public async Task TransactionProcessorManager_GetMerchantScheduleFromReadModel_MerchantScheduleIsReturned()
+        {
+            MerchantScheduleModel expectedSchedule = TestData.MerchantModelWithAddressesContactsDevicesAndOperatorsAndContracts().Schedules.Single();
+            this.TransactionProcessorReadModelRepository
+                .Setup(m => m.GetMerchantSchedule(It.IsAny<Guid>(), It.IsAny<Guid>(), It.IsAny<Int32>(), It.IsAny<CancellationToken>()))
+                .ReturnsAsync(Result.Success(expectedSchedule));
+
+            Result<MerchantScheduleModel> result = await this.TransactionProcessorManager.GetMerchantScheduleFromReadModel(TestData.EstateId, TestData.MerchantId, TestData.MerchantScheduleYear, CancellationToken.None);
+
+            result.IsSuccess.ShouldBeTrue();
+            result.Data.Year.ShouldBe(TestData.MerchantScheduleYear);
+            result.Data.Months.ShouldHaveSingleItem();
+            result.Data.Months.Single().Month.ShouldBe(1);
+            result.Data.Months.Single().ClosedDays.ShouldBe([1, 26]);
+        }
+
+        [Fact]
+        public async Task TransactionProcessorManager_GetMerchantScheduleFromReadModel_MerchantScheduleNotFound_ReturnsFailure()
+        {
+            this.TransactionProcessorReadModelRepository
+                .Setup(m => m.GetMerchantSchedule(It.IsAny<Guid>(), It.IsAny<Guid>(), It.IsAny<Int32>(), It.IsAny<CancellationToken>()))
+                .ReturnsAsync(Result.Failure());
+
+            Result<MerchantScheduleModel> result = await this.TransactionProcessorManager.GetMerchantScheduleFromReadModel(TestData.EstateId, TestData.MerchantId, TestData.MerchantScheduleYear, CancellationToken.None);
+
             result.IsFailed.ShouldBeTrue();
         }
 

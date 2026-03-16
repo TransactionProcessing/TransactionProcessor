@@ -12,6 +12,7 @@ using TransactionProcessor.BusinessLogic.Common;
 using TransactionProcessor.BusinessLogic.Services;
 using TransactionProcessor.Models.Contract;
 using TransactionProcessor.Models.Merchant;
+using MerchantScheduleModel = TransactionProcessor.Models.MerchantSchedule.MerchantSchedule;
 using TransactionProcessor.Models.Settlement;
 using TransactionProcessor.Repository;
 using static TransactionProcessor.BusinessLogic.Requests.SettlementQueries;
@@ -154,9 +155,44 @@ namespace TransactionProcessor.BusinessLogic.Manager
             return Result.Success(merchantModel);
         }
 
+        public async Task<Result<MerchantScheduleModel>> GetMerchantSchedule(Guid estateId,
+                                                                              Guid merchantId,
+                                                                              Int32 year,
+                                                                              CancellationToken cancellationToken)
+        {
+            return await AsyncExecutor.ExecuteSafeAsync(async ct => {
+                Guid merchantScheduleId = IdGenerationService.GenerateMerchantScheduleAggregateId(estateId, merchantId, year);
+                Result<MerchantScheduleAggregate> getMerchantScheduleResult = await this.AggregateService.GetLatest<MerchantScheduleAggregate>(merchantScheduleId, ct);
+                if (getMerchantScheduleResult.IsFailed)
+                    return ResultHelpers.CreateFailure(getMerchantScheduleResult);
+
+                MerchantScheduleAggregate merchantScheduleAggregate = getMerchantScheduleResult.Data;
+                if (merchantScheduleAggregate.IsCreated == false)
+                    return Result.NotFound($"No merchant schedule found for Merchant [{merchantId}] in Year [{year}]");
+
+                MerchantScheduleModel merchantScheduleModel = merchantScheduleAggregate.GetSchedule();
+
+                return Result.Success(merchantScheduleModel);
+            }, cancellationToken);
+        }
+
+        public async Task<Result<MerchantScheduleModel>> GetMerchantScheduleFromReadModel(Guid estateId,
+                                                                                           Guid merchantId,
+                                                                                           Int32 year,
+                                                                                           CancellationToken cancellationToken)
+        {
+            return await AsyncExecutor.ExecuteSafeAsync(async ct => {
+                Result<MerchantScheduleModel> getMerchantScheduleResult = await this.TransactionProcessorReadModelRepository.GetMerchantSchedule(estateId, merchantId, year, ct);
+                if (getMerchantScheduleResult.IsFailed)
+                    return ResultHelpers.CreateFailure(getMerchantScheduleResult);
+
+                return Result.Success(getMerchantScheduleResult.Data);
+            }, cancellationToken);
+        }
+
         public async Task<Result<List<Contract>>> GetMerchantContracts(Guid estateId,
-                                                               Guid merchantId,
-                                                               CancellationToken cancellationToken)
+                                                                        Guid merchantId,
+                                                                       CancellationToken cancellationToken)
         {
             return await AsyncExecutor.ExecuteSafeAsync(async ct => {
                 Result<List<Contract>> getMerchantContractsResult = await this.TransactionProcessorReadModelRepository.GetMerchantContracts(estateId, merchantId, ct);

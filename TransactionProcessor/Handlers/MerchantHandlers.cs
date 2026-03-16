@@ -9,6 +9,7 @@ using SimpleResults;
 using TransactionProcessor.BusinessLogic.Requests;
 using TransactionProcessor.DataTransferObjects;
 using TransactionProcessor.DataTransferObjects.Requests.Merchant;
+using TransactionProcessor.DataTransferObjects.Requests.MerchantSchedule;
 using TransactionProcessor.Factories;
 using TransactionProcessor.Models.Contract;
 using TransactionProcessor.ProjectionEngine.Models;
@@ -243,8 +244,8 @@ public static class MerchantHandlers {
     }
 
     public static async Task<IResult> UpdateMerchantOpening(IMediator mediator,
-                                                     HttpContext ctx,
-                                                     Guid estateId,
+                                                      HttpContext ctx,
+                                                      Guid estateId,
                                                      Guid merchantId,
                                                      MerchantOpeningRequest merchantOpeningRequest,
                                                      CancellationToken cancellationToken)
@@ -256,9 +257,58 @@ public static class MerchantHandlers {
         
     }
 
+    public static async Task<IResult> CreateMerchantSchedule(IMediator mediator,
+                                                             HttpContext ctx,
+                                                             Guid estateId,
+                                                             Guid merchantId,
+                                                             CreateMerchantScheduleRequest createMerchantScheduleRequest,
+                                                             CancellationToken cancellationToken) {
+        MerchantCommands.CreateMerchantScheduleCommand command = new(estateId, merchantId, createMerchantScheduleRequest);
+        Result result = await mediator.Send(command, cancellationToken);
+
+        return ResponseFactory.FromResult(result);
+    }
+
+    public static async Task<IResult> GetMerchantSchedule(IMediator mediator,
+                                                          HttpContext ctx,
+                                                          Guid estateId,
+                                                          Guid merchantId,
+                                                          Int32 year,
+                                                          CancellationToken cancellationToken) {
+        MerchantQueries.GetMerchantScheduleQuery query = new(estateId, merchantId, year);
+        Result<Models.MerchantSchedule.MerchantSchedule> result = await mediator.Send(query, cancellationToken);
+
+        return ResponseFactory.FromResult(result, ModelFactory.ConvertFrom);
+    }
+
+    public static async Task<IResult> GetMerchantScheduleFromReadModel(IMediator mediator,
+                                                                       HttpContext ctx,
+                                                                       Guid estateId,
+                                                                       Guid merchantId,
+                                                                       Int32 year,
+                                                                       CancellationToken cancellationToken) {
+        MerchantQueries.GetMerchantScheduleFromReadModelQuery query = new(estateId, merchantId, year);
+        Result<Models.MerchantSchedule.MerchantSchedule> result = await mediator.Send(query, cancellationToken);
+
+        return ResponseFactory.FromResult(result, ModelFactory.ConvertFrom);
+    }
+
+    public static async Task<IResult> UpdateMerchantSchedule(IMediator mediator,
+                                                             HttpContext ctx,
+                                                             Guid estateId,
+                                                             Guid merchantId,
+                                                             Int32 year,
+                                                             UpdateMerchantScheduleRequest updateMerchantScheduleRequest,
+                                                             CancellationToken cancellationToken) {
+        MerchantCommands.UpdateMerchantScheduleCommand command = new(estateId, merchantId, year, updateMerchantScheduleRequest);
+        Result result = await mediator.Send(command, cancellationToken);
+
+        return ResponseFactory.FromResult(result);
+    }
+
     public static async Task<IResult> AddMerchantAddress(IMediator mediator,
-                                                         HttpContext ctx,
-                                                         Guid estateId,
+                                                          HttpContext ctx,
+                                                          Guid estateId,
                                                          Guid merchantId,
                                                          TransactionProcessor.DataTransferObjects.Requests.Merchant.Address addAddressRequest,
                                                          CancellationToken cancellationToken) {

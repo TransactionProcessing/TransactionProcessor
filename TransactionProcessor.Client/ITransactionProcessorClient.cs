@@ -1,7 +1,8 @@
-﻿using SimpleResults;
+using SimpleResults;
 using TransactionProcessor.DataTransferObjects.Requests.Contract;
 using TransactionProcessor.DataTransferObjects.Requests.Estate;
 using TransactionProcessor.DataTransferObjects.Requests.Merchant;
+using TransactionProcessor.DataTransferObjects.Requests.MerchantSchedule;
 using TransactionProcessor.DataTransferObjects.Requests.Operator;
 using TransactionProcessor.DataTransferObjects.Responses.Contract;
 using TransactionProcessor.DataTransferObjects.Responses.Estate;
@@ -106,10 +107,28 @@ namespace TransactionProcessor.Client
                                     CreateMerchantRequest createMerchantRequest,
                                     CancellationToken cancellationToken);
 
+        Task<Result> CreateMerchantSchedule(String accessToken,
+                                            Guid estateId,
+                                            Guid merchantId,
+                                            CreateMerchantScheduleRequest createMerchantScheduleRequest,
+                                            CancellationToken cancellationToken);
+
         Task<Result<MerchantResponse>> GetMerchant(String accessToken,
                                                    Guid estateId,
                                                    Guid merchantId,
                                                    CancellationToken cancellationToken);
+
+        Task<Result<MerchantScheduleResponse>> GetMerchantSchedule(String accessToken,
+                                                                   Guid estateId,
+                                                                   Guid merchantId,
+                                                                   Int32 year,
+                                                                   CancellationToken cancellationToken);
+
+        Task<Result<MerchantScheduleResponse>> GetMerchantScheduleFromReadModel(String accessToken,
+                                                                                Guid estateId,
+                                                                                Guid merchantId,
+                                                                                Int32 year,
+                                                                                CancellationToken cancellationToken);
 
         Task<Result> AssignOperatorToMerchant(String accessToken,
                                               Guid estateId,

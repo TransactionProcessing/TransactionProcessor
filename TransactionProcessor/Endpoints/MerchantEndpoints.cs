@@ -26,6 +26,8 @@ public static class MerchantEndpoints
         merchantGroup.MapGet("/", MerchantHandlers.GetMerchants).WithName("GetMerchants");
         merchantGroup.MapGet("/{merchantId:guid}", MerchantHandlers.GetMerchant).WithName("GetMerchant");
         merchantGroup.MapGet("/{merchantId:guid}/contracts", MerchantHandlers.GetMerchantContracts).WithName("GetMerchantContracts");
+        merchantGroup.MapGet("/{merchantId:guid}/schedules/{year:int}", MerchantHandlers.GetMerchantSchedule).WithName("GetMerchantSchedule");
+        merchantGroup.MapGet("/{merchantId:guid}/schedules/{year:int}/readmodel", MerchantHandlers.GetMerchantScheduleFromReadModel).WithName("GetMerchantScheduleFromReadModel");
         merchantGroup.MapGet("/{merchantId:guid}/contracts/{contractId:guid}/products/{productId:guid}/transactionFees",
             MerchantHandlers.GetTransactionFeesForProduct).WithName("GetTransactionFeesForProduct");
 
@@ -56,6 +58,8 @@ public static class MerchantEndpoints
 
         merchantGroup.MapPatch("/{merchantId:guid}", MerchantHandlers.UpdateMerchant).WithName("UpdateMerchant");
         merchantGroup.MapPatch("/{merchantId:guid}/opening", MerchantHandlers.UpdateMerchantOpening).WithName("UpdateMerchantOpening");
+        merchantGroup.MapPost("/{merchantId:guid}/schedules", MerchantHandlers.CreateMerchantSchedule).WithName("CreateMerchantSchedule");
+        merchantGroup.MapPatch("/{merchantId:guid}/schedules/{year:int}", MerchantHandlers.UpdateMerchantSchedule).WithName("UpdateMerchantSchedule");
 
         return endpoints;
     }

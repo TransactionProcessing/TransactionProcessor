@@ -4,6 +4,7 @@ using System;
 using System.Collections.Generic;
 using TransactionProcessor.DataTransferObjects.Requests.Contract;
 using TransactionProcessor.DataTransferObjects.Requests.Merchant;
+using TransactionProcessor.DataTransferObjects.Requests.MerchantSchedule;
 using TransactionProcessor.DataTransferObjects.Requests.Operator;
 using TransactionProcessor.DataTransferObjects.Responses.Contract;
 using TransactionProcessor.DataTransferObjects.Responses.Merchant;
@@ -257,6 +258,15 @@ namespace TransactionProcessor.IntegrationTests.Shared
         {
             List<(EstateDetails, Guid, SetSettlementScheduleRequest)> requests = table.Rows.ToSetSettlementScheduleRequests(this.TestingContext.Estates);
             await this.TransactionProcessorSteps.WhenISetTheMerchantsSettlementSchedule(this.TestingContext.AccessToken, requests);
+        }
+
+        [When(@"I create the following merchant schedules")]
+        public async Task WhenICreateTheFollowingMerchantSchedules(DataTable table)
+        {
+            List<(EstateDetails estate, Guid merchantId, CreateMerchantScheduleRequest request)> requests =
+                table.Rows.ToCreateMerchantScheduleRequests(this.TestingContext.Estates);
+
+            await this.TransactionProcessorSteps.WhenICreateTheFollowingMerchantSchedules(this.TestingContext.AccessToken, requests);
         }
 
         [Given(@"I make the following manual merchant deposits")]

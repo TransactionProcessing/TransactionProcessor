@@ -115,6 +115,9 @@ namespace TransactionProcessor.DataTransferObjects.Responses.Merchant
         [JsonProperty("opening_hours")]
         public Dictionary<DayOfWeek, OpeningHoursResponse> OpeningHours { get; set; }
 
+        [JsonProperty("schedules")]
+        public List<MerchantScheduleResponse> Schedules { get; set; }
+
         #endregion
     }
 }

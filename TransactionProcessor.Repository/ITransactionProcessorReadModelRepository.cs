@@ -15,6 +15,7 @@ using TransactionProcessor.DomainEvents;
 using TransactionProcessor.Models.Contract;
 using TransactionProcessor.Models.Estate;
 using TransactionProcessor.Models.Settlement;
+using MerchantScheduleModel = TransactionProcessor.Models.MerchantSchedule.MerchantSchedule;
 using static TransactionProcessor.DomainEvents.MerchantDomainEvents;
 using static TransactionProcessor.DomainEvents.MerchantStatementDomainEvents;
 using Contract = TransactionProcessor.Database.Entities.Contract;
@@ -77,7 +78,10 @@ namespace TransactionProcessor.Repository {
                                         CancellationToken cancellationToken);
 
         Task<Result> AddMerchant(MerchantDomainEvents.MerchantCreatedEvent domainEvent,
-                                CancellationToken cancellationToken);
+                                 CancellationToken cancellationToken);
+
+        Task<Result> AddMerchantSchedule(MerchantScheduleDomainEvents.MerchantScheduleCreatedEvent domainEvent,
+                                         CancellationToken cancellationToken);
 
         Task<Result> UpdateMerchant(MerchantDomainEvents.MerchantNameUpdatedEvent domainEvent,
                                     CancellationToken cancellationToken);
@@ -260,7 +264,10 @@ namespace TransactionProcessor.Repository {
                                            CancellationToken cancellationToken);
         
         Task<Result> UpdateMerchantOpeningHours(MerchantDomainEvents.MerchantOpeningHoursUpdatedEvent domainEvent,
-                                           CancellationToken cancellationToken);
+                                            CancellationToken cancellationToken);
+
+        Task<Result> UpdateMerchantSchedule(MerchantScheduleDomainEvents.MerchantScheduleMonthUpdatedEvent domainEvent,
+                                            CancellationToken cancellationToken);
 
         Task<Result<Models.Estate.Estate>> GetEstate(Guid estateId,
                                               CancellationToken cancellationToken);
@@ -275,7 +282,12 @@ namespace TransactionProcessor.Repository {
                                                                CancellationToken cancellationToken);
 
         Task<Result<List<MerchantModel>>> GetMerchants(Guid estateId,
-                                                       CancellationToken cancellationToken);
+                                                        CancellationToken cancellationToken);
+
+        Task<Result<MerchantScheduleModel>> GetMerchantSchedule(Guid estateId,
+                                                                Guid merchantId,
+                                                                Int32 year,
+                                                                CancellationToken cancellationToken);
 
         Task<Result<SettlementModel>> GetSettlement(Guid estateId,
                                                     Guid merchantId,
@@ -342,7 +354,7 @@ namespace TransactionProcessor.Repository {
             if (merchant == null)
                 return Result.NotFound($"No merchant found with reference {reference}");
 
-            return Result.Success(ModelFactory.ConvertFrom(estateId, merchant, null, null, null, null, null));
+            return Result.Success(ModelFactory.ConvertFrom(estateId, merchant, null, null, null, null, null, null, null));
         }
 
         public async Task<Result> AddMerchant(MerchantDomainEvents.MerchantCreatedEvent domainEvent,
@@ -361,6 +373,24 @@ namespace TransactionProcessor.Repository {
             };
 
             await context.Merchants.AddAsync(merchant, cancellationToken);
+
+            return await context.SaveChangesWithDuplicateHandling(cancellationToken);
+        }
+
+        public async Task<Result> AddMerchantSchedule(MerchantScheduleDomainEvents.MerchantScheduleCreatedEvent domainEvent,
+                                                      CancellationToken cancellationToken)
+        {
+            EstateManagementContext context = await this.GetContext(domainEvent.EstateId);
+
+            MerchantSchedule merchantSchedule = new()
+            {
+                MerchantScheduleId = domainEvent.MerchantScheduleId,
+                EstateId = domainEvent.EstateId,
+                MerchantId = domainEvent.MerchantId,
+                Year = domainEvent.Year
+            };
+
+            await context.MerchantSchedules.AddAsync(merchantSchedule, cancellationToken);
 
             return await context.SaveChangesWithDuplicateHandling(cancellationToken);
         }
@@ -752,6 +782,40 @@ namespace TransactionProcessor.Repository {
             return await context.SaveChangesAsync(cancellationToken);
         }
 
+        public async Task<Result> UpdateMerchantSchedule(MerchantScheduleDomainEvents.MerchantScheduleMonthUpdatedEvent domainEvent,
+                                                         CancellationToken cancellationToken)
+        {
+            EstateManagementContext context = await this.GetContext(domainEvent.EstateId);
+
+            Result<MerchantSchedule> merchantScheduleResult = await context.LoadMerchantSchedule(domainEvent, cancellationToken);
+            if (merchantScheduleResult.IsFailed)
+                return ResultHelpers.CreateFailure(merchantScheduleResult);
+
+            Result<MerchantScheduleMonth> merchantScheduleMonthResult = await context.LoadMerchantScheduleMonth(domainEvent, cancellationToken);
+            if (merchantScheduleMonthResult.IsFailed && merchantScheduleMonthResult.Status != ResultStatus.NotFound)
+                return ResultHelpers.CreateFailure(merchantScheduleMonthResult);
+
+            String closedDays = String.Join(",", domainEvent.ClosedDays.OrderBy(day => day));
+
+            if (merchantScheduleMonthResult.Status == ResultStatus.NotFound)
+            {
+                MerchantScheduleMonth merchantScheduleMonth = new()
+                {
+                    MerchantScheduleId = merchantScheduleResult.Data.MerchantScheduleId,
+                    Month = domainEvent.Month,
+                    ClosedDays = closedDays
+                };
+
+                await context.MerchantScheduleMonths.AddAsync(merchantScheduleMonth, cancellationToken);
+            }
+            else
+            {
+                merchantScheduleMonthResult.Data.ClosedDays = closedDays;
+            }
+
+            return await context.SaveChangesAsync(cancellationToken);
+        }
+
         static readonly Dictionary<DayOfWeek, Action<MerchantOpeningHours, String, String>> setOpeningHours =
             new()
             {
@@ -792,7 +856,7 @@ namespace TransactionProcessor.Repository {
         }
 
         public async Task<Result<List<MerchantModel>>> GetMerchants(Guid estateId,
-                                                                  CancellationToken cancellationToken)
+                                                                   CancellationToken cancellationToken)
         {
             EstateManagementContext context = await this.GetContext(estateId);
 
@@ -802,6 +866,10 @@ namespace TransactionProcessor.Repository {
             List<MerchantOperator> merchantOperators = await (from o in context.MerchantOperators where merchants.Select(m => m.MerchantId).Contains(o.MerchantId) select o).ToListAsync(cancellationToken);
             List<MerchantSecurityUser> merchantSecurityUsers = await (from u in context.MerchantSecurityUsers where merchants.Select(m => m.MerchantId).Contains(u.MerchantId) select u).ToListAsync(cancellationToken);
             List<MerchantDevice> merchantDevices = await (from d in context.MerchantDevices where merchants.Select(m => m.MerchantId).Contains(d.MerchantId) select d).ToListAsync(cancellationToken);
+            List<MerchantSchedule> merchantSchedules = await (from s in context.MerchantSchedules where merchants.Select(m => m.MerchantId).Contains(s.MerchantId) select s).ToListAsync(cancellationToken);
+            List<MerchantScheduleMonth> merchantScheduleMonths = await (from sm in context.MerchantScheduleMonths
+                                                                        where merchantSchedules.Select(s => s.MerchantScheduleId).Contains(sm.MerchantScheduleId)
+                                                                        select sm).ToListAsync(cancellationToken);
 
             if (merchants.Any() == false)
             {
@@ -817,11 +885,56 @@ namespace TransactionProcessor.Repository {
                 List<MerchantOperator> o = merchantOperators.Where(mo => mo.MerchantId == m.MerchantId).ToList();
                 List<MerchantSecurityUser> u = merchantSecurityUsers.Where(msu => msu.MerchantId == m.MerchantId).ToList();
                 List<MerchantDevice> d = merchantDevices.Where(ma => ma.MerchantId == m.MerchantId).ToList();
+                List<MerchantSchedule> s = merchantSchedules.Where(ms => ms.MerchantId == m.MerchantId).ToList();
 
-                models.Add(ModelFactory.ConvertFrom(estateId, m, a, c, o, d, u));
+                models.Add(ModelFactory.ConvertFrom(estateId, m, a, c, o, d, u, s, merchantScheduleMonths));
             }
 
             return Result.Success(models);
+        }
+
+        public async Task<Result<MerchantScheduleModel>> GetMerchantSchedule(Guid estateId,
+                                                                             Guid merchantId,
+                                                                             Int32 year,
+                                                                             CancellationToken cancellationToken)
+        {
+            EstateManagementContext context = await this.GetContext(estateId);
+
+            MerchantSchedule merchantSchedule = await (from s in context.MerchantSchedules
+                                                       where s.EstateId == estateId &&
+                                                             s.MerchantId == merchantId &&
+                                                             s.Year == year
+                                                       select s).SingleOrDefaultAsync(cancellationToken);
+
+            if (merchantSchedule == null)
+            {
+                return Result.NotFound($"No merchant schedule found for Merchant [{merchantId}] in Year [{year}]");
+            }
+
+            List<MerchantScheduleMonth> merchantScheduleMonths = await (from sm in context.MerchantScheduleMonths
+                                                                        where sm.MerchantScheduleId == merchantSchedule.MerchantScheduleId
+                                                                        orderby sm.Month
+                                                                        select sm).ToListAsync(cancellationToken);
+
+            MerchantScheduleModel schedule = new()
+            {
+                MerchantScheduleId = merchantSchedule.MerchantScheduleId,
+                EstateId = merchantSchedule.EstateId,
+                MerchantId = merchantSchedule.MerchantId,
+                Year = merchantSchedule.Year,
+                Months = merchantScheduleMonths.Select(month => new TransactionProcessor.Models.MerchantSchedule.MerchantScheduleMonth
+                {
+                    Month = month.Month,
+                    ClosedDays = month.ClosedDays
+                                      .Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)
+                                      .Select(day => Int32.TryParse(day, out Int32 parsedDay) ? (Int32?)parsedDay : null)
+                                      .Where(day => day.HasValue)
+                                      .Select(day => day.Value)
+                                      .ToList()
+                }).ToList()
+            };
+
+            return Result.Success(schedule);
         }
 
         public async Task<Result<List<ContractModel>>> GetMerchantContracts(Guid estateId,
