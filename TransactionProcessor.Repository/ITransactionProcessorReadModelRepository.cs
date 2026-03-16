@@ -927,7 +927,9 @@ namespace TransactionProcessor.Repository {
                     Month = month.Month,
                     ClosedDays = month.ClosedDays
                                       .Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)
-                                      .Select(Int32.Parse)
+                                      .Select(day => Int32.TryParse(day, out Int32 parsedDay) ? (Int32?)parsedDay : null)
+                                      .Where(day => day.HasValue)
+                                      .Select(day => day.Value)
                                       .ToList()
                 }).ToList()
             };
