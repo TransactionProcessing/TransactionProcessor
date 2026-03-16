@@ -156,9 +156,9 @@ namespace TransactionProcessor.BusinessLogic.Manager
         }
 
         public async Task<Result<MerchantScheduleModel>> GetMerchantSchedule(Guid estateId,
-                                                                             Guid merchantId,
-                                                                             Int32 year,
-                                                                             CancellationToken cancellationToken)
+                                                                              Guid merchantId,
+                                                                              Int32 year,
+                                                                              CancellationToken cancellationToken)
         {
             return await AsyncExecutor.ExecuteSafeAsync(async ct => {
                 Guid merchantScheduleId = IdGenerationService.GenerateMerchantScheduleAggregateId(estateId, merchantId, year);
@@ -176,8 +176,22 @@ namespace TransactionProcessor.BusinessLogic.Manager
             }, cancellationToken);
         }
 
+        public async Task<Result<MerchantScheduleModel>> GetMerchantScheduleFromReadModel(Guid estateId,
+                                                                                           Guid merchantId,
+                                                                                           Int32 year,
+                                                                                           CancellationToken cancellationToken)
+        {
+            return await AsyncExecutor.ExecuteSafeAsync(async ct => {
+                Result<MerchantScheduleModel> getMerchantScheduleResult = await this.TransactionProcessorReadModelRepository.GetMerchantSchedule(estateId, merchantId, year, ct);
+                if (getMerchantScheduleResult.IsFailed)
+                    return ResultHelpers.CreateFailure(getMerchantScheduleResult);
+
+                return Result.Success(getMerchantScheduleResult.Data);
+            }, cancellationToken);
+        }
+
         public async Task<Result<List<Contract>>> GetMerchantContracts(Guid estateId,
-                                                                       Guid merchantId,
+                                                                        Guid merchantId,
                                                                        CancellationToken cancellationToken)
         {
             return await AsyncExecutor.ExecuteSafeAsync(async ct => {

@@ -15,6 +15,7 @@ using TransactionProcessor.DomainEvents;
 using TransactionProcessor.Models.Contract;
 using TransactionProcessor.Models.Estate;
 using TransactionProcessor.Models.Settlement;
+using MerchantScheduleModel = TransactionProcessor.Models.MerchantSchedule.MerchantSchedule;
 using static TransactionProcessor.DomainEvents.MerchantDomainEvents;
 using static TransactionProcessor.DomainEvents.MerchantStatementDomainEvents;
 using Contract = TransactionProcessor.Database.Entities.Contract;
@@ -281,7 +282,12 @@ namespace TransactionProcessor.Repository {
                                                                CancellationToken cancellationToken);
 
         Task<Result<List<MerchantModel>>> GetMerchants(Guid estateId,
-                                                       CancellationToken cancellationToken);
+                                                        CancellationToken cancellationToken);
+
+        Task<Result<MerchantScheduleModel>> GetMerchantSchedule(Guid estateId,
+                                                                Guid merchantId,
+                                                                Int32 year,
+                                                                CancellationToken cancellationToken);
 
         Task<Result<SettlementModel>> GetSettlement(Guid estateId,
                                                     Guid merchantId,
@@ -850,7 +856,7 @@ namespace TransactionProcessor.Repository {
         }
 
         public async Task<Result<List<MerchantModel>>> GetMerchants(Guid estateId,
-                                                                  CancellationToken cancellationToken)
+                                                                   CancellationToken cancellationToken)
         {
             EstateManagementContext context = await this.GetContext(estateId);
 
@@ -885,6 +891,48 @@ namespace TransactionProcessor.Repository {
             }
 
             return Result.Success(models);
+        }
+
+        public async Task<Result<MerchantScheduleModel>> GetMerchantSchedule(Guid estateId,
+                                                                             Guid merchantId,
+                                                                             Int32 year,
+                                                                             CancellationToken cancellationToken)
+        {
+            EstateManagementContext context = await this.GetContext(estateId);
+
+            MerchantSchedule merchantSchedule = await (from s in context.MerchantSchedules
+                                                       where s.EstateId == estateId &&
+                                                             s.MerchantId == merchantId &&
+                                                             s.Year == year
+                                                       select s).SingleOrDefaultAsync(cancellationToken);
+
+            if (merchantSchedule == null)
+            {
+                return Result.NotFound($"No merchant schedule found for Merchant [{merchantId}] in Year [{year}]");
+            }
+
+            List<MerchantScheduleMonth> merchantScheduleMonths = await (from sm in context.MerchantScheduleMonths
+                                                                        where sm.MerchantScheduleId == merchantSchedule.MerchantScheduleId
+                                                                        orderby sm.Month
+                                                                        select sm).ToListAsync(cancellationToken);
+
+            MerchantScheduleModel schedule = new()
+            {
+                MerchantScheduleId = merchantSchedule.MerchantScheduleId,
+                EstateId = merchantSchedule.EstateId,
+                MerchantId = merchantSchedule.MerchantId,
+                Year = merchantSchedule.Year,
+                Months = merchantScheduleMonths.Select(month => new TransactionProcessor.Models.MerchantSchedule.MerchantScheduleMonth
+                {
+                    Month = month.Month,
+                    ClosedDays = month.ClosedDays
+                                      .Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)
+                                      .Select(Int32.Parse)
+                                      .ToList()
+                }).ToList()
+            };
+
+            return Result.Success(schedule);
         }
 
         public async Task<Result<List<ContractModel>>> GetMerchantContracts(Guid estateId,

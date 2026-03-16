@@ -119,10 +119,16 @@ namespace TransactionProcessor.Client
                                                    CancellationToken cancellationToken);
 
         Task<Result<MerchantScheduleResponse>> GetMerchantSchedule(String accessToken,
-                                                                  Guid estateId,
-                                                                  Guid merchantId,
-                                                                  Int32 year,
-                                                                  CancellationToken cancellationToken);
+                                                                   Guid estateId,
+                                                                   Guid merchantId,
+                                                                   Int32 year,
+                                                                   CancellationToken cancellationToken);
+
+        Task<Result<MerchantScheduleResponse>> GetMerchantScheduleFromReadModel(String accessToken,
+                                                                                Guid estateId,
+                                                                                Guid merchantId,
+                                                                                Int32 year,
+                                                                                CancellationToken cancellationToken);
 
         Task<Result> AssignOperatorToMerchant(String accessToken,
                                               Guid estateId,

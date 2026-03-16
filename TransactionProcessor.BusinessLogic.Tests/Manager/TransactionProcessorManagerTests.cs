@@ -385,6 +385,35 @@ namespace TransactionProcessor.BusinessLogic.Tests.Manager
         }
 
         [Fact]
+        public async Task TransactionProcessorManager_GetMerchantScheduleFromReadModel_MerchantScheduleIsReturned()
+        {
+            MerchantScheduleModel expectedSchedule = TestData.MerchantModelWithAddressesContactsDevicesAndOperatorsAndContracts().Schedules.Single();
+            this.TransactionProcessorReadModelRepository
+                .Setup(m => m.GetMerchantSchedule(It.IsAny<Guid>(), It.IsAny<Guid>(), It.IsAny<Int32>(), It.IsAny<CancellationToken>()))
+                .ReturnsAsync(Result.Success(expectedSchedule));
+
+            Result<MerchantScheduleModel> result = await this.TransactionProcessorManager.GetMerchantScheduleFromReadModel(TestData.EstateId, TestData.MerchantId, TestData.MerchantScheduleYear, CancellationToken.None);
+
+            result.IsSuccess.ShouldBeTrue();
+            result.Data.Year.ShouldBe(TestData.MerchantScheduleYear);
+            result.Data.Months.ShouldHaveSingleItem();
+            result.Data.Months.Single().Month.ShouldBe(1);
+            result.Data.Months.Single().ClosedDays.ShouldBe([1, 26]);
+        }
+
+        [Fact]
+        public async Task TransactionProcessorManager_GetMerchantScheduleFromReadModel_MerchantScheduleNotFound_ReturnsFailure()
+        {
+            this.TransactionProcessorReadModelRepository
+                .Setup(m => m.GetMerchantSchedule(It.IsAny<Guid>(), It.IsAny<Guid>(), It.IsAny<Int32>(), It.IsAny<CancellationToken>()))
+                .ReturnsAsync(Result.Failure());
+
+            Result<MerchantScheduleModel> result = await this.TransactionProcessorManager.GetMerchantScheduleFromReadModel(TestData.EstateId, TestData.MerchantId, TestData.MerchantScheduleYear, CancellationToken.None);
+
+            result.IsFailed.ShouldBeTrue();
+        }
+
+        [Fact]
         public async Task TransactionProcessorManager_GetMerchantContracts_MerchantContractsReturned()
         {
             this.TransactionProcessorReadModelRepository.Setup(e => e.GetMerchantContracts(It.IsAny<Guid>(), It.IsAny<Guid>(), It.IsAny<CancellationToken>())).ReturnsAsync(Result.Success(TestData.MerchantContracts));

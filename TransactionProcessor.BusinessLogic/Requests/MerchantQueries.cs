@@ -22,6 +22,8 @@ public record MerchantQueries {
 
     public record GetMerchantScheduleQuery(Guid EstateId, Guid MerchantId, Int32 Year) : IRequest<Result<MerchantScheduleModel>>;
 
+    public record GetMerchantScheduleFromReadModelQuery(Guid EstateId, Guid MerchantId, Int32 Year) : IRequest<Result<MerchantScheduleModel>>;
+
     public record GetMerchantContractsQuery(Guid EstateId, Guid MerchantId) : IRequest<Result<List<Models.Contract.Contract>>>;
 
     public record GetMerchantsQuery(Guid EstateId) : IRequest<Result<List<Models.Merchant.Merchant>>>;

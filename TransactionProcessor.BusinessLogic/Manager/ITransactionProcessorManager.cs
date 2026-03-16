@@ -36,9 +36,14 @@ namespace TransactionProcessor.BusinessLogic.Manager
                                                              CancellationToken cancellationToken);
 
         Task<Result<MerchantScheduleModel>> GetMerchantSchedule(Guid estateId,
-                                                                Guid merchantId,
-                                                                Int32 year,
-                                                                CancellationToken cancellationToken);
+                                                                 Guid merchantId,
+                                                                 Int32 year,
+                                                                 CancellationToken cancellationToken);
+
+        Task<Result<MerchantScheduleModel>> GetMerchantScheduleFromReadModel(Guid estateId,
+                                                                             Guid merchantId,
+                                                                             Int32 year,
+                                                                             CancellationToken cancellationToken);
 
         Task<Result<List<Merchant>>> GetMerchants(Guid estateId, CancellationToken cancellationToken);
 

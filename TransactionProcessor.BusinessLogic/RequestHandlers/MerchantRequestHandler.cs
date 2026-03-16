@@ -31,6 +31,7 @@ public class MerchantRequestHandler : IRequestHandler<MerchantQueries.GetMerchan
                                       IRequestHandler<MerchantCommands.MakeMerchantWithdrawalCommand, Result>,
                                       IRequestHandler<MerchantQueries.GetMerchantQuery, Result<Models.Merchant.Merchant>>,
                                       IRequestHandler<MerchantQueries.GetMerchantScheduleQuery, Result<MerchantScheduleModel>>,
+                                      IRequestHandler<MerchantQueries.GetMerchantScheduleFromReadModelQuery, Result<MerchantScheduleModel>>,
                                       IRequestHandler<MerchantQueries.GetMerchantContractsQuery, Result<List<Models.Contract.Contract>>>,
                                       IRequestHandler<MerchantQueries.GetMerchantsQuery, Result<List<Models.Merchant.Merchant>>>,
                                       IRequestHandler<MerchantQueries.GetTransactionFeesForProductQuery, Result<List<Models.Contract.ContractProductTransactionFee>>>,
@@ -140,6 +141,11 @@ public class MerchantRequestHandler : IRequestHandler<MerchantQueries.GetMerchan
     public async Task<Result<MerchantScheduleModel>> Handle(MerchantQueries.GetMerchantScheduleQuery query, CancellationToken cancellationToken)
     {
         return await this.TransactionProcessorManager.GetMerchantSchedule(query.EstateId, query.MerchantId, query.Year, cancellationToken);
+    }
+
+    public async Task<Result<MerchantScheduleModel>> Handle(MerchantQueries.GetMerchantScheduleFromReadModelQuery query, CancellationToken cancellationToken)
+    {
+        return await this.TransactionProcessorManager.GetMerchantScheduleFromReadModel(query.EstateId, query.MerchantId, query.Year, cancellationToken);
     }
 
     public async Task<Result<List<Models.Contract.Contract>>> Handle(MerchantQueries.GetMerchantContractsQuery query, CancellationToken cancellationToken)

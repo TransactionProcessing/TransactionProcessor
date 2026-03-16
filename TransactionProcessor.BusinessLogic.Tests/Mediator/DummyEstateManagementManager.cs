@@ -47,9 +47,16 @@ public class DummyTransactionProcessorManager : ITransactionProcessorManager {
     }
 
     public async Task<Result<MerchantScheduleModel>> GetMerchantSchedule(Guid estateId,
-                                                                         Guid merchantId,
-                                                                         Int32 year,
-                                                                         CancellationToken cancellationToken) {
+                                                                          Guid merchantId,
+                                                                          Int32 year,
+                                                                          CancellationToken cancellationToken) {
+        return Result.Success(new MerchantScheduleModel());
+    }
+
+    public async Task<Result<MerchantScheduleModel>> GetMerchantScheduleFromReadModel(Guid estateId,
+                                                                                       Guid merchantId,
+                                                                                       Int32 year,
+                                                                                       CancellationToken cancellationToken) {
         return Result.Success(new MerchantScheduleModel());
     }
 

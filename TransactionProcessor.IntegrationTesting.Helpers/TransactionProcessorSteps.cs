@@ -201,7 +201,7 @@ public class TransactionProcessorSteps
             result.IsSuccess.ShouldBeTrue();
 
             await Retry.For(async () => {
-                Result<MerchantScheduleResponse> getMerchantScheduleResult = await this.TransactionProcessorClient.GetMerchantSchedule(accessToken,
+                Result<MerchantScheduleResponse> getMerchantScheduleResult = await this.TransactionProcessorClient.GetMerchantScheduleFromReadModel(accessToken,
                     scheduleRequest.estate.EstateId,
                     scheduleRequest.merchantId,
                     scheduleRequest.request.Year,
