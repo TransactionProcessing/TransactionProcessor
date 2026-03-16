@@ -511,5 +511,23 @@ namespace TransactionProcessor.Factories
 
             return merchantResponse;
         }
+
+        public static MerchantScheduleResponse ConvertFrom(TransactionProcessor.Models.MerchantSchedule.MerchantSchedule schedule)
+        {
+            if (schedule == null)
+            {
+                return null;
+            }
+
+            return new MerchantScheduleResponse
+            {
+                Year = schedule.Year,
+                Months = schedule.Months.Select(month => new MerchantScheduleMonthResponse
+                {
+                    Month = month.Month,
+                    ClosedDays = [.. month.ClosedDays]
+                }).ToList()
+            };
+        }
     }
 }

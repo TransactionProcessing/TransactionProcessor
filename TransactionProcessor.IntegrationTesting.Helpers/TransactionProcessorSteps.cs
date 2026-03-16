@@ -13,6 +13,7 @@ using AssignOperatorRequest = TransactionProcessor.DataTransferObjects.Requests.
 
 namespace TransactionProcessor.IntegrationTesting.Helpers;
 
+using System.Linq;
 using System.Net;
 using System.Text;
 using System.Text.Json;
@@ -199,6 +200,27 @@ public class TransactionProcessorSteps
                 CancellationToken.None);
 
             result.IsSuccess.ShouldBeTrue();
+
+            await Retry.For(async () => {
+                Result<MerchantScheduleResponse> getMerchantScheduleResult = await this.TransactionProcessorClient.GetMerchantSchedule(accessToken,
+                    scheduleRequest.estate.EstateId,
+                    scheduleRequest.merchantId,
+                    scheduleRequest.request.Year,
+                    CancellationToken.None);
+
+                getMerchantScheduleResult.IsSuccess.ShouldBeTrue();
+                MerchantScheduleResponse merchantSchedule = getMerchantScheduleResult.Data;
+                merchantSchedule.ShouldNotBeNull();
+
+                merchantSchedule.Year.ShouldBe(scheduleRequest.request.Year);
+                merchantSchedule.Months.Count.ShouldBe(scheduleRequest.request.Months.Count);
+
+                foreach (MerchantScheduleMonthRequest expectedMonth in scheduleRequest.request.Months.OrderBy(m => m.Month))
+                {
+                    MerchantScheduleMonthResponse actualMonth = merchantSchedule.Months.Single(m => m.Month == expectedMonth.Month);
+                    actualMonth.ClosedDays.ShouldBe(expectedMonth.ClosedDays);
+                }
+            });
         }
     }
 

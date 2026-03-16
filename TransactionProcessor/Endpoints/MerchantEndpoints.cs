@@ -26,6 +26,7 @@ public static class MerchantEndpoints
         merchantGroup.MapGet("/", MerchantHandlers.GetMerchants).WithName("GetMerchants");
         merchantGroup.MapGet("/{merchantId:guid}", MerchantHandlers.GetMerchant).WithName("GetMerchant");
         merchantGroup.MapGet("/{merchantId:guid}/contracts", MerchantHandlers.GetMerchantContracts).WithName("GetMerchantContracts");
+        merchantGroup.MapGet("/{merchantId:guid}/schedules/{year:int}", MerchantHandlers.GetMerchantSchedule).WithName("GetMerchantSchedule");
         merchantGroup.MapGet("/{merchantId:guid}/contracts/{contractId:guid}/products/{productId:guid}/transactionFees",
             MerchantHandlers.GetTransactionFeesForProduct).WithName("GetTransactionFeesForProduct");
 

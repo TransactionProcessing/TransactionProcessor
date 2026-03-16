@@ -14,6 +14,7 @@ using TransactionProcessor.ProjectionEngine.Models;
 using TransactionProcessor.ProjectionEngine.Repository;
 using TransactionProcessor.ProjectionEngine.State;
 using Merchant = TransactionProcessor.Models.Merchant.Merchant;
+using MerchantScheduleModel = TransactionProcessor.Models.MerchantSchedule.MerchantSchedule;
 
 namespace TransactionProcessor.BusinessLogic.RequestHandlers;
 
@@ -29,6 +30,7 @@ public class MerchantRequestHandler : IRequestHandler<MerchantQueries.GetMerchan
                                       IRequestHandler<MerchantCommands.MakeMerchantDepositCommand, Result>,
                                       IRequestHandler<MerchantCommands.MakeMerchantWithdrawalCommand, Result>,
                                       IRequestHandler<MerchantQueries.GetMerchantQuery, Result<Models.Merchant.Merchant>>,
+                                      IRequestHandler<MerchantQueries.GetMerchantScheduleQuery, Result<MerchantScheduleModel>>,
                                       IRequestHandler<MerchantQueries.GetMerchantContractsQuery, Result<List<Models.Contract.Contract>>>,
                                       IRequestHandler<MerchantQueries.GetMerchantsQuery, Result<List<Models.Merchant.Merchant>>>,
                                       IRequestHandler<MerchantQueries.GetTransactionFeesForProductQuery, Result<List<Models.Contract.ContractProductTransactionFee>>>,
@@ -133,6 +135,11 @@ public class MerchantRequestHandler : IRequestHandler<MerchantQueries.GetMerchan
     public async Task<Result<Models.Merchant.Merchant>> Handle(MerchantQueries.GetMerchantQuery query, CancellationToken cancellationToken)
     {
         return await this.TransactionProcessorManager.GetMerchant(query.EstateId, query.MerchantId, cancellationToken);
+    }
+
+    public async Task<Result<MerchantScheduleModel>> Handle(MerchantQueries.GetMerchantScheduleQuery query, CancellationToken cancellationToken)
+    {
+        return await this.TransactionProcessorManager.GetMerchantSchedule(query.EstateId, query.MerchantId, query.Year, cancellationToken);
     }
 
     public async Task<Result<List<Models.Contract.Contract>>> Handle(MerchantQueries.GetMerchantContractsQuery query, CancellationToken cancellationToken)

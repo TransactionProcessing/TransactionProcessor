@@ -269,6 +269,18 @@ public static class MerchantHandlers {
         return ResponseFactory.FromResult(result);
     }
 
+    public static async Task<IResult> GetMerchantSchedule(IMediator mediator,
+                                                          HttpContext ctx,
+                                                          Guid estateId,
+                                                          Guid merchantId,
+                                                          Int32 year,
+                                                          CancellationToken cancellationToken) {
+        MerchantQueries.GetMerchantScheduleQuery query = new(estateId, merchantId, year);
+        Result<Models.MerchantSchedule.MerchantSchedule> result = await mediator.Send(query, cancellationToken);
+
+        return ResponseFactory.FromResult(result, ModelFactory.ConvertFrom);
+    }
+
     public static async Task<IResult> UpdateMerchantSchedule(IMediator mediator,
                                                              HttpContext ctx,
                                                              Guid estateId,

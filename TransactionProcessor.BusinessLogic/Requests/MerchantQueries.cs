@@ -4,6 +4,7 @@ using System.Diagnostics.CodeAnalysis;
 using MediatR;
 using SimpleResults;
 using TransactionProcessor.Models.Contract;
+using MerchantScheduleModel = TransactionProcessor.Models.MerchantSchedule.MerchantSchedule;
 using TransactionProcessor.ProjectionEngine.Models;
 using TransactionProcessor.ProjectionEngine.State;
 
@@ -18,6 +19,8 @@ public record MerchantQueries {
         : IRequest<Result<List<MerchantBalanceChangedEntry>>>;
 
     public record GetMerchantQuery(Guid EstateId, Guid MerchantId) : IRequest<Result<Models.Merchant.Merchant>>;
+
+    public record GetMerchantScheduleQuery(Guid EstateId, Guid MerchantId, Int32 Year) : IRequest<Result<MerchantScheduleModel>>;
 
     public record GetMerchantContractsQuery(Guid EstateId, Guid MerchantId) : IRequest<Result<List<Models.Contract.Contract>>>;
 

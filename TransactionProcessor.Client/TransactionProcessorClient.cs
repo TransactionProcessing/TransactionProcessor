@@ -768,6 +768,28 @@ public class TransactionProcessorClient : ClientProxyBase, ITransactionProcessor
         }
     }
 
+    public async Task<Result<MerchantScheduleResponse>> GetMerchantSchedule(String accessToken,
+                                                                            Guid estateId,
+                                                                            Guid merchantId,
+                                                                            Int32 year,
+                                                                            CancellationToken cancellationToken) {
+        String requestUri = this.BuildRequestUrl($"/api/estates/{estateId}/merchants/{merchantId}/schedules/{year}");
+
+        try {
+            Result<MerchantScheduleResponse> result = await this.SendHttpGetRequest<MerchantScheduleResponse>(requestUri, accessToken, cancellationToken);
+
+            if (result.IsFailed)
+                return ResultHelpers.CreateFailure(result);
+
+            return result;
+        }
+        catch (Exception ex) {
+            Exception exception = new($"Error getting merchant schedule for merchant {merchantId} for estate {estateId} in year {year}.", ex);
+
+            throw exception;
+        }
+    }
+
     public async Task<Result> CreateMerchantUser(String accessToken,
                                                  Guid estateId,
                                                  Guid merchantId,

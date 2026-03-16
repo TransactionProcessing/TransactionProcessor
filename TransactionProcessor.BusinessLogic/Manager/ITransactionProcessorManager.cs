@@ -5,6 +5,7 @@ using System.Threading.Tasks;
 using SimpleResults;
 using TransactionProcessor.Models.Contract;
 using TransactionProcessor.Models.Merchant;
+using MerchantScheduleModel = TransactionProcessor.Models.MerchantSchedule.MerchantSchedule;
 using TransactionProcessor.Models.Settlement;
 using Contract = TransactionProcessor.Models.Contract.Contract;
 
@@ -32,7 +33,12 @@ namespace TransactionProcessor.BusinessLogic.Manager
                                                                CancellationToken cancellationToken);
 
         Task<Result<Merchant>> GetMerchant(Guid estateId, Guid merchantId,
-                                                            CancellationToken cancellationToken);
+                                                             CancellationToken cancellationToken);
+
+        Task<Result<MerchantScheduleModel>> GetMerchantSchedule(Guid estateId,
+                                                                Guid merchantId,
+                                                                Int32 year,
+                                                                CancellationToken cancellationToken);
 
         Task<Result<List<Merchant>>> GetMerchants(Guid estateId, CancellationToken cancellationToken);
 
