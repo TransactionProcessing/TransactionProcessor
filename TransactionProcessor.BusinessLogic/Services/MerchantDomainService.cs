@@ -23,6 +23,7 @@ using TransactionProcessor.Models.Merchant;
 using TransactionProcessor.Models.MerchantSchedule;
 using TransactionProcessor.ProjectionEngine.State;
 using Estate = TransactionProcessor.Models.Estate.Estate;
+using MerchantScheduleMonth = TransactionProcessor.Models.MerchantSchedule.MerchantScheduleMonth;
 
 namespace TransactionProcessor.BusinessLogic.Services
 {
@@ -781,7 +782,6 @@ namespace TransactionProcessor.BusinessLogic.Services
                     return ResultHelpers.CreateFailure(merchantScheduleResult);
 
                 MerchantScheduleAggregate merchantScheduleAggregate = merchantScheduleResult.Data;
-
                 Result stateResult = merchantScheduleAggregate.Create(command.EstateId, command.MerchantId, command.RequestDto.Year, ConvertScheduleMonths(command.RequestDto.Months));
                 if (stateResult.IsFailed)
                     return stateResult;

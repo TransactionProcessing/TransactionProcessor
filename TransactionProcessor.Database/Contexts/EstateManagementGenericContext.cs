@@ -540,7 +540,7 @@ public static class EstateManagementContextExtensions
 
     public static async Task<Result<MerchantSchedule>> LoadMerchantSchedule(this EstateManagementContext context, IDomainEvent domainEvent, CancellationToken cancellationToken)
     {
-        Guid merchantScheduleId = domainEvent.AggregateId;
+        Guid merchantScheduleId = DomainEventHelper.GetMerchantScheduleId(domainEvent);
 
         IQueryable<MerchantSchedule> query = context.MerchantSchedules.Where(e => e.MerchantScheduleId == merchantScheduleId);
         Result<MerchantSchedule> merchantScheduleResult = await DbQueryHelpers.ExecuteQuerySafeSingleOrDefault(query, cancellationToken, $"Error getting merchant schedule {merchantScheduleId}");
@@ -551,10 +551,10 @@ public static class EstateManagementContextExtensions
         };
     }
 
-    public static async Task<Result<MerchantScheduleMonth>> LoadMerchantScheduleMonth(this EstateManagementContext context, MerchantScheduleDomainEvents.MerchantScheduleMonthUpdatedEvent domainEvent, CancellationToken cancellationToken)
+    public static async Task<Result<MerchantScheduleMonth>> LoadMerchantScheduleMonth(this EstateManagementContext context, IDomainEvent domainEvent, CancellationToken cancellationToken)
     {
-        Guid merchantScheduleId = domainEvent.AggregateId;
-        Int32 month = domainEvent.Month;
+        Guid merchantScheduleId = DomainEventHelper.GetMerchantScheduleId(domainEvent);
+        Int32 month = DomainEventHelper.GetMonth(domainEvent);
 
         IQueryable<MerchantScheduleMonth> query = context.MerchantScheduleMonths.Where(e => e.MerchantScheduleId == merchantScheduleId && e.Month == month);
         Result<MerchantScheduleMonth> merchantScheduleMonthResult = await DbQueryHelpers.ExecuteQuerySafeSingleOrDefault(query, cancellationToken, $"Error getting merchant schedule month {month} for merchant schedule {merchantScheduleId}");
@@ -669,6 +669,7 @@ public static class DomainEventHelper
     public static Guid GetOriginalDeviceId(IDomainEvent domainEvent) => DomainEventHelper.GetProperty<Guid>(domainEvent, "OriginalDeviceId");
     public static Guid GetDeviceId(IDomainEvent domainEvent) => DomainEventHelper.GetProperty<Guid>(domainEvent, "DeviceId");
     public static Guid GetMerchantId(IDomainEvent domainEvent) => DomainEventHelper.GetProperty<Guid>(domainEvent, "MerchantId");
+    public static Guid GetMerchantScheduleId(IDomainEvent domainEvent) => DomainEventHelper.GetProperty<Guid>(domainEvent, "MerchantScheduleId");
     public static Guid GetAddressId(IDomainEvent domainEvent) => DomainEventHelper.GetProperty<Guid>(domainEvent, "AddressId");
 
     public static Guid GetContactId(IDomainEvent domainEvent) => DomainEventHelper.GetProperty<Guid>(domainEvent, "ContactId");
@@ -720,6 +721,8 @@ public static class DomainEventHelper
     public static Guid GetStatementHeaderId(IDomainEvent domainEvent) => DomainEventHelper.GetProperty<Guid>(domainEvent, "MerchantStatementId");
 
     public static Guid GetTransactionId(IDomainEvent domainEvent) => DomainEventHelper.GetProperty<Guid>(domainEvent, "TransactionId");
+
+    public static Int32 GetMonth(IDomainEvent domainEvent) => DomainEventHelper.GetProperty<Int32>(domainEvent, "Month");
 
     public static Guid GetVoucherId(IDomainEvent domainEvent) => DomainEventHelper.GetProperty<Guid>(domainEvent, "VoucherId");
 

@@ -13,6 +13,7 @@ public static class SubscriptionsHelper
                                                                                                ("$ce-FileImportLogAggregate", "Transaction Processor", 0),
                                                                                                ("$ce-FloatAggregate", "Transaction Processor", 0),
                                                                                                ("$ce-MerchantAggregate", "Transaction Processor", 0),
+                                                                                               ("$ce-MerchantScheduleAggregate", "Transaction Processor", 0),
                                                                                                ("$ce-MerchantStatementAggregate", "Transaction Processor", 0),
                                                                                                ("$ce-OperatorAggregate", "Transaction Processor", 0),
                                                                                                ("$ce-ReconciliationAggregate", "Transaction Processor", 0),

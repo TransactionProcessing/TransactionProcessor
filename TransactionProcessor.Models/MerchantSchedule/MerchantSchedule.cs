@@ -1,4 +1,7 @@
-﻿namespace TransactionProcessor.Models.MerchantSchedule
+﻿using System;
+using System.Collections.Generic;
+
+namespace TransactionProcessor.Models.MerchantSchedule
 {
     public class MerchantSchedule
     {

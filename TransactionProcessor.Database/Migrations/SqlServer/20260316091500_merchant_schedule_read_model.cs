@@ -7,8 +7,6 @@ using TransactionProcessor.Database.Contexts;
 
 namespace TransactionProcessor.Database.Migrations.SqlServer;
 
-[DbContext(typeof(EstateManagementContext))]
-[Migration("20260316091500_merchant_schedule_read_model")]
 public partial class merchant_schedule_read_model : Migration
 {
     protected override void Up(MigrationBuilder migrationBuilder)

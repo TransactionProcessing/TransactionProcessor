@@ -40,7 +40,7 @@ namespace TransactionProcessor.Models.Merchant
         
         public Dictionary<DayOfWeek, OpeningHours> OpeningHours { get; set; }
 
-        public List<MerchantSchedule> Schedules { get; set; }
+        public List<MerchantSchedule.MerchantSchedule> Schedules { get; set; }
 
         #endregion
     }

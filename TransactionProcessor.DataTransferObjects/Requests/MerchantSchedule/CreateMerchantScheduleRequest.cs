@@ -1,4 +1,6 @@
-﻿using System.Diagnostics.CodeAnalysis;
+﻿using System;
+using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using Newtonsoft.Json;
 
 namespace TransactionProcessor.DataTransferObjects.Requests.MerchantSchedule
@@ -10,7 +12,7 @@ namespace TransactionProcessor.DataTransferObjects.Requests.MerchantSchedule
         public Int32 Year { get; set; }
 
         [JsonProperty("months")]
-        public List<MerchantScheduleMonthRequest> Months { get; set; } = [];
+        public System.Collections.Generic.List<MerchantScheduleMonthRequest> Months { get; set; } = [];
     }
 
     [ExcludeFromCodeCoverage]
