@@ -217,7 +217,7 @@ public class TransactionProcessorSteps
                 foreach (MerchantScheduleMonthRequest expectedMonth in scheduleRequest.request.Months.OrderBy(m => m.Month))
                 {
                     MerchantScheduleMonthResponse actualMonth = merchantSchedule.Months.Single(m => m.Month == expectedMonth.Month);
-                    actualMonth.ClosedDays.ShouldBe(expectedMonth.ClosedDays);
+                    actualMonth.ClosedDays.OrderBy(day => day).ToList().ShouldBe(expectedMonth.ClosedDays.OrderBy(day => day).ToList());
                 }
             });
         }
