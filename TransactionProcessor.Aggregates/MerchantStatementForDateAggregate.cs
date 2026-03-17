@@ -13,6 +13,11 @@ namespace TransactionProcessor.Aggregates;
 
 public static class MerchantStatementForDateAggregateExtensions
 {
+    private const Int32 TransactionLineType = 1;
+    private const Int32 SettledFeeLineType = 2;
+    private const Int32 DepositLineType = 3;
+    private const Int32 WithdrawalLineType = 4;
+
     public static Result AddSettledFeeToStatement(this MerchantStatementForDateAggregate aggregate,
                                                 Guid merchantStatementId,
                                                 DateTime statementDate,
@@ -176,10 +181,10 @@ public static class MerchantStatementForDateAggregateExtensions
 
         if (includeStatementLines)
         {
-            merchantStatement.AddStatementLines(aggregate.Transactions, transaction => transaction.Amount, transaction => transaction.DateTime, 1);
-            merchantStatement.AddStatementLines(aggregate.SettledFees, settledFee => settledFee.Amount, settledFee => settledFee.DateTime, 2);
-            merchantStatement.AddStatementLines(aggregate.Deposits, deposit => deposit.Amount, deposit => deposit.DepositDateTime, 3);
-            merchantStatement.AddStatementLines(aggregate.Withdrawals, withdrawal => withdrawal.Amount, withdrawal => withdrawal.WithdrawalDateTime, 4);
+            merchantStatement.AddStatementLines(aggregate.Transactions, transaction => transaction.Amount, transaction => transaction.DateTime, TransactionLineType);
+            merchantStatement.AddStatementLines(aggregate.SettledFees, settledFee => settledFee.Amount, settledFee => settledFee.DateTime, SettledFeeLineType);
+            merchantStatement.AddStatementLines(aggregate.Deposits, deposit => deposit.Amount, deposit => deposit.DepositDateTime, DepositLineType);
+            merchantStatement.AddStatementLines(aggregate.Withdrawals, withdrawal => withdrawal.Amount, withdrawal => withdrawal.WithdrawalDateTime, WithdrawalLineType);
         }
 
         return merchantStatement;

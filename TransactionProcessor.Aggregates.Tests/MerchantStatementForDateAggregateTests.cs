@@ -9,6 +9,11 @@ namespace TransactionProcessor.Aggregates.Tests;
 
 public class MerchantStatementForDateAggregateTests
 {
+    private const Int32 TransactionLineType = 1;
+    private const Int32 SettledFeeLineType = 2;
+    private const Int32 DepositLineType = 3;
+    private const Int32 WithdrawalLineType = 4;
+
     [Fact]
     public void MerchantStatementForDateAggregate_CanBeCreated_IsCreated()
     {
@@ -271,10 +276,10 @@ public class MerchantStatementForDateAggregateTests
 
         statementLines.ShouldNotBeNull();
         statementLines.Count.ShouldBe(4);
-        statementLines.Count(line => line.LineType == 1 && line.Amount == TestData.Transaction1.Amount && line.DateTime == TestData.Transaction1.DateTime).ShouldBe(1);
-        statementLines.Count(line => line.LineType == 2 && line.Amount == TestData.SettledFee1.Amount && line.DateTime == TestData.SettledFee1.DateTime).ShouldBe(1);
-        statementLines.Count(line => line.LineType == 3 && line.Amount == TestData.DepositAmount.Value && line.DateTime == TestData.DepositDateTime).ShouldBe(1);
-        statementLines.Count(line => line.LineType == 4 && line.Amount == TestData.WithdrawalAmount.Value && line.DateTime == TestData.WithdrawalDateTime).ShouldBe(1);
+        statementLines.Count(line => line.LineType == TransactionLineType && line.Amount == TestData.Transaction1.Amount && line.DateTime == TestData.Transaction1.DateTime).ShouldBe(1);
+        statementLines.Count(line => line.LineType == SettledFeeLineType && line.Amount == TestData.SettledFee1.Amount && line.DateTime == TestData.SettledFee1.DateTime).ShouldBe(1);
+        statementLines.Count(line => line.LineType == DepositLineType && line.Amount == TestData.DepositAmount.Value && line.DateTime == TestData.DepositDateTime).ShouldBe(1);
+        statementLines.Count(line => line.LineType == WithdrawalLineType && line.Amount == TestData.WithdrawalAmount.Value && line.DateTime == TestData.WithdrawalDateTime).ShouldBe(1);
     }
 
     [Theory]
