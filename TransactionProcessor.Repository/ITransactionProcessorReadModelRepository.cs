@@ -1096,7 +1096,7 @@ namespace TransactionProcessor.Repository {
 
             Boolean productFound = contract.Products.Any(p => p.ContractProductId == product.ContractProductId);
 
-            if (productFound == false)
+            if (!productFound)
             {
                 contract.Products.Add(new Product
                 {
