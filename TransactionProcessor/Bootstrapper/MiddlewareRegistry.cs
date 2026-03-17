@@ -42,15 +42,101 @@ namespace TransactionProcessor.Bootstrapper
             String connectionString = Startup.Configuration.GetValue<String>("EventStoreSettings:ConnectionString");
             KurrentDBClientSettings eventStoreClientSettings = KurrentDBClientSettings.Create(connectionString);
 
+            this.ConfigureHealthChecks(eventStoreClientSettings);
+            this.ConfigureSwagger();
+            this.ConfigureAuthentication();
+            this.ConfigureControllers();
+            this.ConfigureMvc();
+            this.ConfigureAuthorization();
+            this.ConfigureJsonOptions();
+        }
+
+        #endregion
+
+        private String GetSecurityServiceConfigValue(String keyName) {
+            return ConfigurationReader.GetValue("SecurityConfiguration", keyName);
+        }
+
+        #region Methods
+
+        private void ConfigureAuthentication()
+        {
+            IdentityModelEventSource.ShowPII = true;
+
+            this.AddAuthentication(options =>
+                                   {
+                                       options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
+                                       options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+                                       options.DefaultScheme = JwtBearerDefaults.AuthenticationScheme;
+                                   }).AddJwtBearer(options =>
+                                                   {
+                                                       options.BackchannelHttpHandler = new HttpClientHandler
+                                                                                        {
+                                                                                            ServerCertificateCustomValidationCallback = (message,
+                                                                                                certificate,
+                                                                                                chain,
+                                                                                                sslPolicyErrors) => true
+                                                                                        };
+                                                       options.Authority = GetSecurityServiceConfigValue("Authority");
+                                                       options.Audience = GetSecurityServiceConfigValue("ApiName");
+
+                                                       options.TokenValidationParameters = new TokenValidationParameters
+                                                       {
+                                                           ValidateAudience = false,
+                                                           ValidAudience = GetSecurityServiceConfigValue("ApiName"),
+                                                           ValidIssuer = GetSecurityServiceConfigValue("Authority"),
+                                                       };
+                                                       options.IncludeErrorDetails = true;
+                                                   });
+        }
+
+        private void ConfigureAuthorization()
+        {
+            this.AddClientCredentialsOnlyPolicy();
+            this.AddClientCredentialsHandler();
+        }
+
+        private void ConfigureControllers()
+        {
+            this.AddControllers().AddNewtonsoftJson(options =>
+                                                    {
+                                                        options.SerializerSettings.ReferenceLoopHandling = ReferenceLoopHandling.Ignore;
+                                                        options.SerializerSettings.TypeNameHandling = TypeNameHandling.Auto;
+                                                        options.SerializerSettings.Formatting = Formatting.Indented;
+                                                        options.SerializerSettings.DateTimeZoneHandling = DateTimeZoneHandling.Utc;
+                                                        options.SerializerSettings.ContractResolver = new CamelCasePropertyNamesContractResolver();
+                                                    });
+        }
+
+        private void ConfigureHealthChecks(KurrentDBClientSettings eventStoreClientSettings)
+        {
             this.AddHealthChecks()
                 .AddEventStore(eventStoreClientSettings,
                                userCredentials: eventStoreClientSettings.DefaultCredentials,
-                               name:"Eventstore",
-                               failureStatus:HealthStatus.Unhealthy,
-                               tags:new[] {"db", "eventstore"}).AddSecurityService(this.ApiEndpointHttpHandler);
+                               name: "Eventstore",
+                               failureStatus: HealthStatus.Unhealthy,
+                               tags: new[] { "db", "eventstore" }).AddSecurityService(this.ApiEndpointHttpHandler);
+        }
 
+        private void ConfigureJsonOptions()
+        {
+            this.ConfigureHttpJsonOptions(options =>
+            {
+                options.SerializerOptions.PropertyNamingPolicy = new SnakeCaseNamingPolicy();
+                options.SerializerOptions.PropertyNameCaseInsensitive = true; // optional, but safer
+            });
+        }
+
+        private void ConfigureMvc()
+        {
+            Assembly assembly = this.GetType().GetTypeInfo().Assembly;
+            this.AddMvcCore().AddApplicationPart(assembly).AddControllersAsServices();
+        }
+
+        private void ConfigureSwagger()
+        {
             this.AddSwaggerGen(c =>
-                               { 
+                               {
                                    c.CustomSchemaIds(type => type.FullName); // Uses the full namespace as schema ID
                                    c.SwaggerDoc("v1",
                                                 new OpenApiInfo
@@ -80,66 +166,7 @@ namespace TransactionProcessor.Bootstrapper
                                });
 
             this.AddSwaggerExamplesFromAssemblyOf<SwaggerJsonConverter>();
-
-            IdentityModelEventSource.ShowPII = true;
-
-            this.AddAuthentication(options =>
-                                   {
-                                       options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
-                                       options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
-                                       options.DefaultScheme = JwtBearerDefaults.AuthenticationScheme;
-                                   }).AddJwtBearer(options =>
-                                                   {
-                                                       options.BackchannelHttpHandler = new HttpClientHandler
-                                                                                        {
-                                                                                            ServerCertificateCustomValidationCallback = (message,
-                                                                                                certificate,
-                                                                                                chain,
-                                                                                                sslPolicyErrors) => true
-                                                                                        };
-                                                       options.Authority = GetSecurityServiceConfigValue("Authority");
-                                                       options.Audience = GetSecurityServiceConfigValue("ApiName");
-
-                                                       options.TokenValidationParameters = new TokenValidationParameters
-                                                       {
-                                                           ValidateAudience = false,
-                                                           ValidAudience =
-                                                               GetSecurityServiceConfigValue("ApiName"),
-                                                           ValidIssuer =
-                                                               GetSecurityServiceConfigValue("Authority"),
-                                                       };
-                                                       options.IncludeErrorDetails = true;
-                                                   });
-
-            this.AddControllers().AddNewtonsoftJson(options =>
-                                                    {
-                                                        options.SerializerSettings.ReferenceLoopHandling = ReferenceLoopHandling.Ignore;
-                                                        options.SerializerSettings.TypeNameHandling = TypeNameHandling.Auto;
-                                                        options.SerializerSettings.Formatting = Formatting.Indented;
-                                                        options.SerializerSettings.DateTimeZoneHandling = DateTimeZoneHandling.Utc;
-                                                        options.SerializerSettings.ContractResolver = new CamelCasePropertyNamesContractResolver();
-                                                    });
-
-            Assembly assembly = this.GetType().GetTypeInfo().Assembly;
-            this.AddMvcCore().AddApplicationPart(assembly).AddControllersAsServices();
-
-            this.AddClientCredentialsOnlyPolicy();
-            this.AddClientCredentialsHandler();
-
-            this.ConfigureHttpJsonOptions(options =>
-            {
-                options.SerializerOptions.PropertyNamingPolicy = new SnakeCaseNamingPolicy();
-                options.SerializerOptions.PropertyNameCaseInsensitive = true; // optional, but safer
-            });
         }
-
-        #endregion
-
-        private String GetSecurityServiceConfigValue(String keyName) {
-            return ConfigurationReader.GetValue("SecurityConfiguration", keyName);
-        }
-
-        #region Methods
 
         /// <summary>
         /// APIs the endpoint HTTP handler.
