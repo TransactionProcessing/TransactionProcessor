@@ -245,12 +245,15 @@ public class MerchantStatementForDateAggregateTests
     [Fact]
     public void MerchantStatementForDateAggregate_GetStatement_IncludeStatementLines_AddsAllLineTypes()
     {
+        Guid settledFeeEventId = Guid.NewGuid();
+        Guid depositEventId = Guid.NewGuid();
+        Guid withdrawalEventId = Guid.NewGuid();
         MerchantStatementForDateAggregate merchantStatementForDateAggregate = MerchantStatementForDateAggregate.Create(TestData.MerchantStatementForDateId1);
         merchantStatementForDateAggregate.AddTransactionToStatement(TestData.MerchantStatementId, TestData.StatementDate, TestData.EventId1, TestData.EstateId, TestData.MerchantId, TestData.Transaction1);
-        merchantStatementForDateAggregate.AddSettledFeeToStatement(TestData.MerchantStatementId, TestData.StatementDate, TestData.EventId2, TestData.EstateId, TestData.MerchantId, TestData.SettledFee1);
+        merchantStatementForDateAggregate.AddSettledFeeToStatement(TestData.MerchantStatementId, TestData.StatementDate, settledFeeEventId, TestData.EstateId, TestData.MerchantId, TestData.SettledFee1);
         merchantStatementForDateAggregate.AddDepositToStatement(TestData.MerchantStatementId,
             TestData.StatementDate,
-            TestData.EventId3,
+            depositEventId,
             TestData.EstateId,
             TestData.MerchantId, new Deposit
             {
@@ -262,7 +265,7 @@ public class MerchantStatementForDateAggregateTests
             });
         merchantStatementForDateAggregate.AddWithdrawalToStatement(TestData.MerchantStatementId,
             TestData.StatementDate,
-            TestData.EventId4,
+            withdrawalEventId,
             TestData.EstateId,
             TestData.MerchantId, new Withdrawal
             {
