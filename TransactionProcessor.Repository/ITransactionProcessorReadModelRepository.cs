@@ -1025,47 +1025,8 @@ namespace TransactionProcessor.Repository {
 
             foreach (var contractData in query)
             {
-                // attempt to find the contract
-                ContractModel contract = contracts.SingleOrDefault(c => c.ContractId == contractData.Contract.ContractId);
-
-                if (contract == null)
-                {
-                    // create the contract
-                    contract = new ContractModel
-                    {
-                        EstateReportingId = contractData.Estate.EstateReportingId,
-                        EstateId = contractData.Estate.EstateId,
-                        OperatorId = contractData.Contract.OperatorId,
-                        OperatorName = contractData.Operator.Name,
-                        Products = new List<Product>(),
-                        Description = contractData.Contract.Description,
-                        IsCreated = true,
-                        ContractId = contractData.Contract.ContractId,
-                        ContractReportingId = contractData.Contract.ContractReportingId
-                    };
-
-                    contracts.Add(contract);
-                }
-
-                // Now add the product if not already added
-                Boolean productFound = contract.Products.Any(p => p.ContractProductId == contractData.Product.ContractProductId);
-
-                if (productFound == false)
-                {
-                    if (contractData.Product != null)
-                    {
-                        // Not already there so need to add it
-                        contract.Products.Add(new Product
-                        {
-                            ContractProductId = contractData.Product.ContractProductId,
-                            TransactionFees = null,
-                            Value = contractData.Product.Value,
-                            Name = contractData.Product.ProductName,
-                            DisplayText = contractData.Product.DisplayText,
-                            ContractProductReportingId = contractData.Product.ContractProductReportingId
-                        });
-                    }
-                }
+                ContractModel contract = this.GetOrCreateContract(contracts, contractData.Estate, contractData.Contract, contractData.Operator);
+                this.AddProductIfRequired(contract, contractData.Product);
             }
 
             return Result.Success(contracts);
@@ -1093,6 +1054,60 @@ namespace TransactionProcessor.Repository {
         {
             ResolvedDbContext<EstateManagementContext>? resolvedContext = this.Resolver.Resolve(EstateManagementDatabaseName, estateId.ToString());
             return resolvedContext.Context;
+        }
+
+        private ContractModel GetOrCreateContract(List<ContractModel> contracts,
+                                                  Estate estate,
+                                                  Contract contractData,
+                                                  Operator operatorData)
+        {
+            ContractModel contract = contracts.SingleOrDefault(c => c.ContractId == contractData.ContractId);
+
+            if (contract != null)
+            {
+                return contract;
+            }
+
+            contract = new ContractModel
+            {
+                EstateReportingId = estate.EstateReportingId,
+                EstateId = estate.EstateId,
+                OperatorId = contractData.OperatorId,
+                OperatorName = operatorData.Name,
+                Products = new List<Product>(),
+                Description = contractData.Description,
+                IsCreated = true,
+                ContractId = contractData.ContractId,
+                ContractReportingId = contractData.ContractReportingId
+            };
+
+            contracts.Add(contract);
+
+            return contract;
+        }
+
+        private void AddProductIfRequired(ContractModel contract,
+                                          ContractProduct product)
+        {
+            if (product == null)
+            {
+                return;
+            }
+
+            Boolean productFound = contract.Products.Any(p => p.ContractProductId == product.ContractProductId);
+
+            if (productFound == false)
+            {
+                contract.Products.Add(new Product
+                {
+                    ContractProductId = product.ContractProductId,
+                    TransactionFees = null,
+                    Value = product.Value,
+                    Name = product.ProductName,
+                    DisplayText = product.DisplayText,
+                    ContractProductReportingId = product.ContractProductReportingId
+                });
+            }
         }
 
         public async Task<Result> AddContractProductTransactionFee(ContractDomainEvents.TransactionFeeForProductAddedToContractEvent domainEvent,
