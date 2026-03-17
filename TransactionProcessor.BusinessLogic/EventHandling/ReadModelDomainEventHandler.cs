@@ -11,26 +11,42 @@ namespace TransactionProcessor.BusinessLogic.EventHandling
 {
     public class ReadModelDomainEventHandler : IDomainEventHandler
     {
+        private delegate Task<Result> DomainEventDispatchHandler(IDomainEvent domainEvent,
+                                                                 CancellationToken cancellationToken);
+
         private readonly ITransactionProcessorReadModelRepository EstateReportingRepository;
+        private readonly DomainEventDispatchHandler[] DomainEventHandlers;
 
         public ReadModelDomainEventHandler(ITransactionProcessorReadModelRepository estateReportingRepository) {
             this.EstateReportingRepository = estateReportingRepository;
+            this.DomainEventHandlers = new[]
+                                       {
+                                           this.HandleEstateDomainEvent,
+                                           this.HandleOperatorDomainEvent,
+                                           this.HandleContractDomainEvent,
+                                           this.HandleMerchantDomainEvent,
+                                           this.HandleTransactionDomainEvent,
+                                           this.HandleReconciliationDomainEvent,
+                                           this.HandleFileDomainEvent,
+                                           this.HandleStatementDomainEvent,
+                                           this.HandleFloatDomainEvent,
+                                           this.HandleSettlementDomainEvent
+                                       };
         }
 
         public Task<Result> Handle(IDomainEvent domainEvent,
-                                   CancellationToken cancellationToken) {
-            Task<Result> task = this.HandleEstateDomainEvent(domainEvent, cancellationToken) ??
-                                this.HandleOperatorDomainEvent(domainEvent, cancellationToken) ??
-                                this.HandleContractDomainEvent(domainEvent, cancellationToken) ??
-                                this.HandleMerchantDomainEvent(domainEvent, cancellationToken) ??
-                                this.HandleTransactionDomainEvent(domainEvent, cancellationToken) ??
-                                this.HandleReconciliationDomainEvent(domainEvent, cancellationToken) ??
-                                this.HandleFileDomainEvent(domainEvent, cancellationToken) ??
-                                this.HandleStatementDomainEvent(domainEvent, cancellationToken) ??
-                                this.HandleFloatDomainEvent(domainEvent, cancellationToken) ??
-                                this.HandleSettlementDomainEvent(domainEvent, cancellationToken);
+                                   CancellationToken cancellationToken)
+        {
+            foreach (DomainEventDispatchHandler domainEventHandler in this.DomainEventHandlers)
+            {
+                Task<Result> task = domainEventHandler(domainEvent, cancellationToken);
+                if (task != null)
+                {
+                    return task;
+                }
+            }
 
-            return task ?? Task.FromResult(Result.Success());
+            return Task.FromResult(Result.Success());
         }
 
         private Task<Result> HandleEstateDomainEvent(IDomainEvent domainEvent,
