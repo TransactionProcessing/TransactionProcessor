@@ -9,6 +9,11 @@ namespace TransactionProcessor.Aggregates.Tests;
 
 public class MerchantStatementForDateAggregateTests
 {
+    private const Int32 TransactionLineType = 1;
+    private const Int32 SettledFeeLineType = 2;
+    private const Int32 DepositLineType = 3;
+    private const Int32 WithdrawalLineType = 4;
+
     [Fact]
     public void MerchantStatementForDateAggregate_CanBeCreated_IsCreated()
     {
@@ -235,6 +240,49 @@ public class MerchantStatementForDateAggregateTests
         statementLines.ShouldNotBeNull();
         statementLines.ShouldNotBeEmpty();
         statementLines.Count.ShouldBe(1);
+    }
+
+    [Fact]
+    public void MerchantStatementForDateAggregate_GetStatement_IncludeStatementLines_AddsAllLineTypes()
+    {
+        Guid settledFeeEventId = Guid.NewGuid();
+        Guid depositEventId = Guid.NewGuid();
+        Guid withdrawalEventId = Guid.NewGuid();
+        MerchantStatementForDateAggregate merchantStatementForDateAggregate = MerchantStatementForDateAggregate.Create(TestData.MerchantStatementForDateId1);
+        merchantStatementForDateAggregate.AddTransactionToStatement(TestData.MerchantStatementId, TestData.StatementDate, TestData.EventId1, TestData.EstateId, TestData.MerchantId, TestData.Transaction1);
+        merchantStatementForDateAggregate.AddSettledFeeToStatement(TestData.MerchantStatementId, TestData.StatementDate, settledFeeEventId, TestData.EstateId, TestData.MerchantId, TestData.SettledFee1);
+        merchantStatementForDateAggregate.AddDepositToStatement(TestData.MerchantStatementId,
+            TestData.StatementDate,
+            depositEventId,
+            TestData.EstateId,
+            TestData.MerchantId, new Deposit
+            {
+                DepositDateTime = TestData.DepositDateTime,
+                Amount = TestData.DepositAmount.Value,
+                DepositId = TestData.DepositId,
+                Reference = TestData.DepositReference,
+                Source = MerchantDepositSource.Manual
+            });
+        merchantStatementForDateAggregate.AddWithdrawalToStatement(TestData.MerchantStatementId,
+            TestData.StatementDate,
+            withdrawalEventId,
+            TestData.EstateId,
+            TestData.MerchantId, new Withdrawal
+            {
+                WithdrawalDateTime = TestData.WithdrawalDateTime,
+                Amount = TestData.WithdrawalAmount.Value,
+                WithdrawalId = TestData.WithdrawalId
+            });
+
+        MerchantStatementForDate merchantStatementForDate = merchantStatementForDateAggregate.GetStatement(true);
+        List<MerchantStatementLine>? statementLines = merchantStatementForDate.GetStatementLines();
+
+        statementLines.ShouldNotBeNull();
+        statementLines.Count.ShouldBe(4);
+        statementLines.Count(line => line.LineType == TransactionLineType && line.Amount == TestData.Transaction1.Amount && line.DateTime == TestData.Transaction1.DateTime).ShouldBe(1);
+        statementLines.Count(line => line.LineType == SettledFeeLineType && line.Amount == TestData.SettledFee1.Amount && line.DateTime == TestData.SettledFee1.DateTime).ShouldBe(1);
+        statementLines.Count(line => line.LineType == DepositLineType && line.Amount == TestData.DepositAmount.Value && line.DateTime == TestData.DepositDateTime).ShouldBe(1);
+        statementLines.Count(line => line.LineType == WithdrawalLineType && line.Amount == TestData.WithdrawalAmount.Value && line.DateTime == TestData.WithdrawalDateTime).ShouldBe(1);
     }
 
     [Theory]
