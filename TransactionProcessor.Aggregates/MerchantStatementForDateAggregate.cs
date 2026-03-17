@@ -176,53 +176,36 @@ public static class MerchantStatementForDateAggregateExtensions
 
         if (includeStatementLines)
         {
-            foreach (Transaction transaction in aggregate.Transactions)
-            {
-                merchantStatement.AddStatementLine(new MerchantStatementLine
-                {
-                    Amount = transaction.Amount,
-                    DateTime = transaction.DateTime,
-                    Description = string.Empty,
-                    LineType = 1 // Transaction
-                });
-            }
-
-            foreach (SettledFee settledFee in aggregate.SettledFees)
-            {
-                merchantStatement.AddStatementLine(new MerchantStatementLine
-                {
-                    Amount = settledFee.Amount,
-                    DateTime = settledFee.DateTime,
-                    Description = string.Empty,
-                    LineType = 2 // Settled Fee
-                });
-            }
-
-            foreach (Deposit deposit in aggregate.Deposits)
-            {
-                merchantStatement.AddStatementLine(new MerchantStatementLine
-                {
-                    Amount = deposit.Amount,
-                    DateTime = deposit.DepositDateTime,
-                    Description = string.Empty,
-                    LineType = 3 // Deposit
-                });
-            }
-
-            foreach (Withdrawal withdrawal in aggregate.Withdrawals)
-            {
-                merchantStatement.AddStatementLine(new MerchantStatementLine
-                {
-                    Amount = withdrawal.Amount,
-                    DateTime = withdrawal.WithdrawalDateTime,
-                    Description = string.Empty,
-                    LineType = 4 // Withdrawal
-                });
-            }
+            merchantStatement.AddStatementLines(aggregate.Transactions, transaction => transaction.Amount, transaction => transaction.DateTime, 1);
+            merchantStatement.AddStatementLines(aggregate.SettledFees, settledFee => settledFee.Amount, settledFee => settledFee.DateTime, 2);
+            merchantStatement.AddStatementLines(aggregate.Deposits, deposit => deposit.Amount, deposit => deposit.DepositDateTime, 3);
+            merchantStatement.AddStatementLines(aggregate.Withdrawals, withdrawal => withdrawal.Amount, withdrawal => withdrawal.WithdrawalDateTime, 4);
         }
 
         return merchantStatement;
     }
+
+    private static void AddStatementLines<T>(this MerchantStatementForDate merchantStatement,
+                                             IEnumerable<T> source,
+                                             Func<T, Decimal> amountSelector,
+                                             Func<T, DateTime> dateTimeSelector,
+                                             Int32 lineType)
+    {
+        foreach (T item in source)
+        {
+            merchantStatement.AddStatementLine(CreateStatementLine(amountSelector(item), dateTimeSelector(item), lineType));
+        }
+    }
+
+    private static MerchantStatementLine CreateStatementLine(Decimal amount,
+                                                             DateTime dateTime,
+                                                             Int32 lineType) => new()
+    {
+        Amount = amount,
+        DateTime = dateTime,
+        Description = string.Empty,
+        LineType = lineType
+    };
 }
 
 public record MerchantStatementForDateAggregate : Aggregate

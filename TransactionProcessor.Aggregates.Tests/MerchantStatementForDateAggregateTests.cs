@@ -237,6 +237,46 @@ public class MerchantStatementForDateAggregateTests
         statementLines.Count.ShouldBe(1);
     }
 
+    [Fact]
+    public void MerchantStatementForDateAggregate_GetStatement_IncludeStatementLines_AddsAllLineTypes()
+    {
+        MerchantStatementForDateAggregate merchantStatementForDateAggregate = MerchantStatementForDateAggregate.Create(TestData.MerchantStatementForDateId1);
+        merchantStatementForDateAggregate.AddTransactionToStatement(TestData.MerchantStatementId, TestData.StatementDate, TestData.EventId1, TestData.EstateId, TestData.MerchantId, TestData.Transaction1);
+        merchantStatementForDateAggregate.AddSettledFeeToStatement(TestData.MerchantStatementId, TestData.StatementDate, TestData.EventId2, TestData.EstateId, TestData.MerchantId, TestData.SettledFee1);
+        merchantStatementForDateAggregate.AddDepositToStatement(TestData.MerchantStatementId,
+            TestData.StatementDate,
+            TestData.EventId3,
+            TestData.EstateId,
+            TestData.MerchantId, new Deposit
+            {
+                DepositDateTime = TestData.DepositDateTime,
+                Amount = TestData.DepositAmount.Value,
+                DepositId = TestData.DepositId,
+                Reference = TestData.DepositReference,
+                Source = MerchantDepositSource.Manual
+            });
+        merchantStatementForDateAggregate.AddWithdrawalToStatement(TestData.MerchantStatementId,
+            TestData.StatementDate,
+            TestData.EventId4,
+            TestData.EstateId,
+            TestData.MerchantId, new Withdrawal
+            {
+                WithdrawalDateTime = TestData.WithdrawalDateTime,
+                Amount = TestData.WithdrawalAmount.Value,
+                WithdrawalId = TestData.WithdrawalId
+            });
+
+        MerchantStatementForDate merchantStatementForDate = merchantStatementForDateAggregate.GetStatement(true);
+        List<MerchantStatementLine>? statementLines = merchantStatementForDate.GetStatementLines();
+
+        statementLines.ShouldNotBeNull();
+        statementLines.Count.ShouldBe(4);
+        statementLines.Count(line => line.LineType == 1 && line.Amount == TestData.Transaction1.Amount && line.DateTime == TestData.Transaction1.DateTime).ShouldBe(1);
+        statementLines.Count(line => line.LineType == 2 && line.Amount == TestData.SettledFee1.Amount && line.DateTime == TestData.SettledFee1.DateTime).ShouldBe(1);
+        statementLines.Count(line => line.LineType == 3 && line.Amount == TestData.DepositAmount.Value && line.DateTime == TestData.DepositDateTime).ShouldBe(1);
+        statementLines.Count(line => line.LineType == 4 && line.Amount == TestData.WithdrawalAmount.Value && line.DateTime == TestData.WithdrawalDateTime).ShouldBe(1);
+    }
+
     [Theory]
     [InlineData("", null, null)]
     [InlineData(null, "", null)]
