@@ -11,11 +11,8 @@ namespace TransactionProcessor.BusinessLogic.EventHandling
 {
     public class ReadModelDomainEventHandler : IDomainEventHandler
     {
-        private delegate Task<Result> DomainEventDispatchHandler(IDomainEvent domainEvent,
-                                                                 CancellationToken cancellationToken);
-
         private readonly ITransactionProcessorReadModelRepository EstateReportingRepository;
-        private readonly DomainEventDispatchHandler[] DomainEventHandlers;
+        private readonly Func<IDomainEvent, CancellationToken, Task<Result>>[] DomainEventHandlers;
 
         public ReadModelDomainEventHandler(ITransactionProcessorReadModelRepository estateReportingRepository) {
             this.EstateReportingRepository = estateReportingRepository;
@@ -37,7 +34,7 @@ namespace TransactionProcessor.BusinessLogic.EventHandling
         public Task<Result> Handle(IDomainEvent domainEvent,
                                    CancellationToken cancellationToken)
         {
-            foreach (DomainEventDispatchHandler domainEventHandler in this.DomainEventHandlers)
+            foreach (Func<IDomainEvent, CancellationToken, Task<Result>> domainEventHandler in this.DomainEventHandlers)
             {
                 Task<Result> task = domainEventHandler(domainEvent, cancellationToken);
                 if (task != null)
