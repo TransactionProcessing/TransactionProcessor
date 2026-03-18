@@ -111,34 +111,11 @@ namespace TransactionProcessor.BusinessLogic.Services
         {
             try
             {
-                CreateUserRequest createUserRequest = new CreateUserRequest
-                {
-                    EmailAddress = command.RequestDto.EmailAddress,
-                    FamilyName = command.RequestDto.FamilyName,
-                    GivenName = command.RequestDto.GivenName,
-                    MiddleName = command.RequestDto.MiddleName,
-                    Password = command.RequestDto.Password,
-                    PhoneNumber = "123456", // Is this really needed :|
-                    Roles = new List<String>(),
-                    Claims = new Dictionary<String, String>()
-                };
+                CreateUserRequest createUserRequest = this.BuildEstateUserRequest(command);
 
-                // Check if role has been overridden
-                String estateRoleName = Environment.GetEnvironmentVariable("EstateRoleName");
-                createUserRequest.Roles.Add(String.IsNullOrEmpty(estateRoleName) ? "Estate" : estateRoleName);
-                createUserRequest.Claims.Add("estateId", command.EstateId.ToString());
-
-                Result createUserResult = await this.SecurityServiceClient.CreateUser(createUserRequest, cancellationToken);
-                if (createUserResult.IsFailed)
-                    return ResultHelpers.CreateFailure(createUserResult);
-
-                Result<List<UserDetails>> userDetailsResult = await this.SecurityServiceClient.GetUsers(createUserRequest.EmailAddress, cancellationToken);
-                if (userDetailsResult.IsFailed)
-                    return ResultHelpers.CreateFailure(userDetailsResult);
-
-                UserDetails user = userDetailsResult.Data.SingleOrDefault();
-                if (user == null)
-                    return Result.Failure($"Unable to get user details for username {createUserRequest.EmailAddress}");
+                Result<UserDetails> getUserResult = await this.CreateEstateSecurityUser(createUserRequest, cancellationToken);
+                if (getUserResult.IsFailed)
+                    return ResultHelpers.CreateFailure(getUserResult);
 
                 Result<EstateAggregate> estateResult = await DomainServiceHelper.GetAggregateOrFailure(ct => this.AggregateService.GetLatest<EstateAggregate>(command.EstateId, ct), command.EstateId, cancellationToken);
                 if (estateResult.IsFailed)
@@ -146,7 +123,7 @@ namespace TransactionProcessor.BusinessLogic.Services
 
                 EstateAggregate estateAggregate = estateResult.Data;
 
-                Result stateResult = estateAggregate.AddSecurityUser(user.UserId, command.RequestDto.EmailAddress);
+                Result stateResult = estateAggregate.AddSecurityUser(getUserResult.Data.UserId, command.RequestDto.EmailAddress);
                 if (stateResult.IsFailed)
                     return ResultHelpers.CreateFailure(stateResult);
 
@@ -160,6 +137,43 @@ namespace TransactionProcessor.BusinessLogic.Services
             {
                 return Result.Failure(ex.GetExceptionMessages());
             }
+        }
+
+        private CreateUserRequest BuildEstateUserRequest(EstateCommands.CreateEstateUserCommand command) {
+            CreateUserRequest createUserRequest = new CreateUserRequest
+            {
+                EmailAddress = command.RequestDto.EmailAddress,
+                FamilyName = command.RequestDto.FamilyName,
+                GivenName = command.RequestDto.GivenName,
+                MiddleName = command.RequestDto.MiddleName,
+                Password = command.RequestDto.Password,
+                PhoneNumber = "123456", // Is this really needed :|
+                Roles = new List<String>(),
+                Claims = new Dictionary<String, String>()
+            };
+
+            String estateRoleName = Environment.GetEnvironmentVariable("EstateRoleName");
+            createUserRequest.Roles.Add(String.IsNullOrEmpty(estateRoleName) ? "Estate" : estateRoleName);
+            createUserRequest.Claims.Add("estateId", command.EstateId.ToString());
+
+            return createUserRequest;
+        }
+
+        private async Task<Result<UserDetails>> CreateEstateSecurityUser(CreateUserRequest createUserRequest,
+                                                                         CancellationToken cancellationToken) {
+            Result createUserResult = await this.SecurityServiceClient.CreateUser(createUserRequest, cancellationToken);
+            if (createUserResult.IsFailed)
+                return ResultHelpers.CreateFailure(createUserResult);
+
+            Result<List<UserDetails>> userDetailsResult = await this.SecurityServiceClient.GetUsers(createUserRequest.EmailAddress, cancellationToken);
+            if (userDetailsResult.IsFailed)
+                return ResultHelpers.CreateFailure(userDetailsResult);
+
+            UserDetails user = userDetailsResult.Data.SingleOrDefault();
+            if (user == null)
+                return Result.Failure($"Unable to get user details for username {createUserRequest.EmailAddress}");
+
+            return Result.Success(user);
         }
 
         public async Task<Result> RemoveOperatorFromEstate(EstateCommands.RemoveOperatorFromEstateCommand command, CancellationToken cancellationToken)

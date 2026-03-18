@@ -90,6 +90,43 @@ namespace TransactionProcessor.BusinessLogic.Tests.Services
         }
 
         [Fact]
+        public async Task EstateDomainService_CreateEstateUser_EstateRoleOverrideIsUsedInCreateUserRequest() {
+            String originalEstateRoleName = Environment.GetEnvironmentVariable("EstateRoleName");
+            CreateUserRequest capturedRequest = null;
+
+            try {
+                Environment.SetEnvironmentVariable("EstateRoleName", "CustomEstateRole");
+
+                this.AggregateService.Setup(m => m.GetLatest<EstateAggregate>(It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
+                    .ReturnsAsync(Result.Success(TestData.Aggregates.CreatedEstateAggregate()));
+                this.AggregateService.Setup(m => m.Save(It.IsAny<EstateAggregate>(), It.IsAny<CancellationToken>()))
+                    .ReturnsAsync(SimpleResults.Result.Success());
+
+                this.SecurityServiceClient
+                    .Setup(s => s.CreateUser(It.IsAny<CreateUserRequest>(), It.IsAny<CancellationToken>()))
+                    .Callback<CreateUserRequest, CancellationToken>((request, _) => capturedRequest = request)
+                    .ReturnsAsync(Result.Success);
+                this.SecurityServiceClient
+                    .Setup(s => s.GetUsers(It.IsAny<String>(), It.IsAny<CancellationToken>()))
+                    .ReturnsAsync(Result.Success(new List<UserDetails>() {
+                        new UserDetails {
+                            UserId = Guid.Parse("FA077CE3-B915-4048-88E3-9B500699317F")
+                        }
+                    }));
+
+                Result result = await this.DomainService.CreateEstateUser(TestData.Commands.CreateEstateUserCommand, CancellationToken.None);
+
+                result.IsSuccess.ShouldBeTrue();
+                capturedRequest.ShouldNotBeNull();
+                capturedRequest.Roles.ShouldContain("CustomEstateRole");
+                capturedRequest.Claims["estateId"].ShouldBe(TestData.EstateId.ToString());
+            }
+            finally {
+                Environment.SetEnvironmentVariable("EstateRoleName", originalEstateRoleName);
+            }
+        }
+
+        [Fact]
         public async Task EstateDomainService_CreateEstateUser_UserCreateFailed_ResultIsFailed()
         {
             this.AggregateService.Setup(m => m.GetLatest<EstateAggregate>(It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
