@@ -99,15 +99,16 @@ namespace TransactionProcessor.BusinessLogic.Services
                                                            CancellationToken cancellationToken)
         {
             StringBuilder lines = new StringBuilder();
-            String lineHtml = await this.FileSystem.File.ReadAllTextAsync($"{path}/Templates/Email/statementline.html", cancellationToken);
+            String lineTemplate = await this.FileSystem.File.ReadAllTextAsync($"{path}/Templates/Email/statementline.html", cancellationToken);
 
             foreach ((Int32 lineNumber, MerchantStatementLine statementLine) statementLineContainer in statementLines) {
-                lines.Append(this.ReplaceTokens(lineHtml, new {
+                String populatedLine = this.ReplaceTokens(lineTemplate, new {
                     StatementLineNumber = statementLineContainer.lineNumber + 1,
                     StatementLineDate = statementLineContainer.statementLine.DateTime.ToString("dd/MM/yyyy"),
                     StatementLineDescription = statementLineContainer.statementLine.Description,
                     StatementLineAmount = statementLineContainer.statementLine.Amount
-                }));
+                });
+                lines.Append(populatedLine);
             }
 
             return lines.ToString();
@@ -116,13 +117,14 @@ namespace TransactionProcessor.BusinessLogic.Services
         private String ReplaceTokens(String html,
                                      Object tokenSource)
         {
+            String result = html;
             PropertyInfo[] properties = tokenSource.GetType().GetProperties(BindingFlags.Public | BindingFlags.Instance);
 
             foreach (PropertyInfo propertyInfo in properties) {
-                html = html.Replace($"[{propertyInfo.Name}]", propertyInfo.GetValue(tokenSource)?.ToString());
+                result = result.Replace($"[{propertyInfo.Name}]", propertyInfo.GetValue(tokenSource)?.ToString());
             }
 
-            return html;
+            return result;
         }
 
         private async Task<String> AddCSSToHtml(String html, String tag, String fileName, CancellationToken cancellationToken) {
