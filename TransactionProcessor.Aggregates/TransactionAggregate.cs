@@ -502,6 +502,43 @@ namespace TransactionProcessor.Aggregates
                                             String deviceIdentifier,
                                             Decimal? transactionAmount)
         {
+            Result result = ValidateStartTransactionArguments(transactionDateTime,
+                                                              transactionNumber,
+                                                              transactionType,
+                                                              transactionReference,
+                                                              estateId,
+                                                              merchantId,
+                                                              deviceIdentifier);
+            if (result.IsFailed)
+                return result;
+
+            result = aggregate.CheckCanStartTransaction();
+            if (result.IsFailed)
+                return result;
+
+            TransactionDomainEvents.TransactionHasStartedEvent transactionHasStartedEvent = new(aggregate.AggregateId,
+                                                                                                   estateId,
+                                                                                                   merchantId,
+                                                                                                   transactionDateTime,
+                                                                                                   transactionNumber,
+                                                                                                   transactionType.ToString(),
+                                                                                                   transactionReference,
+                                                                                                   deviceIdentifier,
+                                                                                                   transactionAmount);
+
+            aggregate.ApplyAndAppend(transactionHasStartedEvent);
+
+            return Result.Success();
+        }
+
+        private static Result ValidateStartTransactionArguments(DateTime transactionDateTime,
+                                                               String transactionNumber,
+                                                               TransactionType transactionType,
+                                                               String transactionReference,
+                                                               Guid estateId,
+                                                               Guid merchantId,
+                                                               String deviceIdentifier)
+        {
             if (transactionDateTime == DateTime.MinValue)
                 return Result.Invalid($"Transaction Date Time must not be [{DateTime.MinValue}]");
             if (String.IsNullOrEmpty(transactionNumber))
@@ -523,26 +560,16 @@ namespace TransactionProcessor.Aggregates
             if (String.IsNullOrEmpty(deviceIdentifier))
                 return Result.Invalid("Device Identifier must not be null or empty");
 
+            return Result.Success();
+        }
+
+        private static Result CheckCanStartTransaction(this TransactionAggregate aggregate)
+        {
             Result result = aggregate.CheckTransactionNotAlreadyStarted();
             if (result.IsFailed)
                 return result;
-            result = aggregate.CheckTransactionNotAlreadyCompleted();
-            if (result.IsFailed)
-                return result;
 
-            TransactionDomainEvents.TransactionHasStartedEvent transactionHasStartedEvent = new(aggregate.AggregateId,
-                                                                                                   estateId,
-                                                                                                   merchantId,
-                                                                                                   transactionDateTime,
-                                                                                                   transactionNumber,
-                                                                                                   transactionType.ToString(),
-                                                                                                   transactionReference,
-                                                                                                   deviceIdentifier,
-                                                                                                   transactionAmount);
-
-            aggregate.ApplyAndAppend(transactionHasStartedEvent);
-
-            return Result.Success();
+            return aggregate.CheckTransactionNotAlreadyCompleted();
         }
 
         public static Result RecordCostPrice(this TransactionAggregate aggregate, Decimal unitCost, Decimal totalCost){
