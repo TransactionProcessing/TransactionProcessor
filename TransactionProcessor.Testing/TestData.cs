@@ -1109,11 +1109,13 @@ namespace TransactionProcessor.Testing
 
         #region Methods
 
+        private static TransactionStartContext CreateTransactionStartContext() => new TransactionStartContext { EstateId = TestData.EstateId, MerchantId = TestData.MerchantId, DeviceIdentifier = TestData.DeviceIdentifier };
+
         public static TransactionAggregate GetCompletedLogonTransactionAggregate()
         {
             TransactionAggregate transactionAggregate = TransactionAggregate.Create(TestData.TransactionId);
 
-            transactionAggregate.StartTransaction(TestData.TransactionDateTime, TestData.TransactionNumber, TestData.TransactionTypeLogon, TestData.TransactionReference, new TransactionStartContext { EstateId = TestData.EstateId, MerchantId = TestData.MerchantId, DeviceIdentifier = TestData.DeviceIdentifier }, TestData.TransactionAmount);
+            transactionAggregate.StartTransaction(TestData.TransactionDateTime, TestData.TransactionNumber, TestData.TransactionTypeLogon, TestData.TransactionReference, CreateTransactionStartContext(), TestData.TransactionAmount);
 
             transactionAggregate.AuthoriseTransactionLocally(TestData.AuthorisationCode, TestData.ResponseCode, TestData.ResponseMessage);
 
@@ -1126,7 +1128,7 @@ namespace TransactionProcessor.Testing
         {
             TransactionAggregate transactionAggregate = TransactionAggregate.Create(TestData.TransactionId);
 
-            transactionAggregate.StartTransaction(TestData.TransactionDateTime, TestData.TransactionNumber, TestData.TransactionTypeSale, TestData.TransactionReference, new TransactionStartContext { EstateId = TestData.EstateId, MerchantId = TestData.MerchantId, DeviceIdentifier = TestData.DeviceIdentifier }, TestData.TransactionAmount);
+            transactionAggregate.StartTransaction(TestData.TransactionDateTime, TestData.TransactionNumber, TestData.TransactionTypeSale, TestData.TransactionReference, CreateTransactionStartContext(), TestData.TransactionAmount);
 
             transactionAggregate.AddProductDetails(TestData.ContractId, TestData.ProductId);
 
@@ -1147,7 +1149,7 @@ namespace TransactionProcessor.Testing
         {
             TransactionAggregate transactionAggregate = TransactionAggregate.Create(TestData.TransactionId);
 
-            transactionAggregate.StartTransaction(TestData.TransactionDateTime, TestData.TransactionNumber, TestData.TransactionTypeSale, TestData.TransactionReference, new TransactionStartContext { EstateId = TestData.EstateId, MerchantId = TestData.MerchantId, DeviceIdentifier = TestData.DeviceIdentifier }, TestData.TransactionAmount);
+            transactionAggregate.StartTransaction(TestData.TransactionDateTime, TestData.TransactionNumber, TestData.TransactionTypeSale, TestData.TransactionReference, CreateTransactionStartContext(), TestData.TransactionAmount);
 
             transactionAggregate.AddProductDetails(TestData.ContractId, TestData.ProductId);
 
@@ -1169,7 +1171,7 @@ namespace TransactionProcessor.Testing
         {
             TransactionAggregate transactionAggregate = TransactionAggregate.Create(TestData.TransactionId);
 
-            transactionAggregate.StartTransaction(TestData.TransactionDateTime, TestData.TransactionNumber, TestData.TransactionTypeSale, TestData.TransactionReference, new TransactionStartContext { EstateId = TestData.EstateId, MerchantId = TestData.MerchantId, DeviceIdentifier = TestData.DeviceIdentifier }, TestData.TransactionAmount);
+            transactionAggregate.StartTransaction(TestData.TransactionDateTime, TestData.TransactionNumber, TestData.TransactionTypeSale, TestData.TransactionReference, CreateTransactionStartContext(), TestData.TransactionAmount);
 
             transactionAggregate.AddProductDetails(TestData.ContractId, TestData.ProductId);
 
@@ -1192,7 +1194,7 @@ namespace TransactionProcessor.Testing
         {
             TransactionAggregate transactionAggregate = TransactionAggregate.Create(TestData.TransactionId);
 
-            transactionAggregate.StartTransaction(TestData.TransactionDateTime, TestData.TransactionNumber, TestData.TransactionTypeSale, TestData.TransactionReference, new TransactionStartContext { EstateId = TestData.EstateId, MerchantId = TestData.MerchantId, DeviceIdentifier = TestData.DeviceIdentifier }, TestData.TransactionAmount);
+            transactionAggregate.StartTransaction(TestData.TransactionDateTime, TestData.TransactionNumber, TestData.TransactionTypeSale, TestData.TransactionReference, CreateTransactionStartContext(), TestData.TransactionAmount);
 
             transactionAggregate.AddProductDetails(TestData.ContractId, TestData.ProductId);
 
@@ -1211,7 +1213,7 @@ namespace TransactionProcessor.Testing
         {
             TransactionAggregate transactionAggregate = TransactionAggregate.Create(TestData.TransactionId);
 
-            transactionAggregate.StartTransaction(TestData.TransactionDateTime, TestData.TransactionNumber, TestData.TransactionTypeSale, TestData.TransactionReference, new TransactionStartContext { EstateId = TestData.EstateId, MerchantId = TestData.MerchantId, DeviceIdentifier = TestData.DeviceIdentifier }, TestData.TransactionAmount);
+            transactionAggregate.StartTransaction(TestData.TransactionDateTime, TestData.TransactionNumber, TestData.TransactionTypeSale, TestData.TransactionReference, CreateTransactionStartContext(), TestData.TransactionAmount);
 
             transactionAggregate.AddProductDetails(TestData.ContractId, TestData.ProductId);
 
@@ -1228,7 +1230,7 @@ namespace TransactionProcessor.Testing
         {
             TransactionAggregate transactionAggregate = TransactionAggregate.Create(TestData.TransactionId);
 
-            transactionAggregate.StartTransaction(TestData.TransactionDateTime, TestData.TransactionNumber, TestData.TransactionTypeLogon, TestData.TransactionReference, new TransactionStartContext { EstateId = TestData.EstateId, MerchantId = TestData.MerchantId, DeviceIdentifier = TestData.DeviceIdentifier }, TestData.TransactionAmount);
+            transactionAggregate.StartTransaction(TestData.TransactionDateTime, TestData.TransactionNumber, TestData.TransactionTypeLogon, TestData.TransactionReference, CreateTransactionStartContext(), TestData.TransactionAmount);
 
             transactionAggregate.AuthoriseTransactionLocally(TestData.AuthorisationCode,
                                                              TestData.ResponseCode,
@@ -1243,7 +1245,7 @@ namespace TransactionProcessor.Testing
         {
             TransactionAggregate transactionAggregate = TransactionAggregate.Create(TestData.TransactionId);
 
-            transactionAggregate.StartTransaction(TestData.TransactionDateTime, TestData.TransactionNumber, TestData.TransactionTypeSale, TestData.TransactionReference, new TransactionStartContext { EstateId = TestData.EstateId, MerchantId = TestData.MerchantId, DeviceIdentifier = TestData.DeviceIdentifier }, TestData.TransactionAmount);
+            transactionAggregate.StartTransaction(TestData.TransactionDateTime, TestData.TransactionNumber, TestData.TransactionTypeSale, TestData.TransactionReference, CreateTransactionStartContext(), TestData.TransactionAmount);
             
             transactionAggregate.AuthoriseTransaction(TestData.OperatorId,
                                                       TestData.AuthorisationCode,
@@ -1285,7 +1287,7 @@ namespace TransactionProcessor.Testing
         {
             TransactionAggregate transactionAggregate = TransactionAggregate.Create(TestData.TransactionId);
 
-            transactionAggregate.StartTransaction(TestData.TransactionDateTime, TestData.TransactionNumber, TestData.TransactionTypeLogon, TestData.TransactionReference, new TransactionStartContext { EstateId = TestData.EstateId, MerchantId = TestData.MerchantId, DeviceIdentifier = TestData.DeviceIdentifier }, TestData.TransactionAmount);
+            transactionAggregate.StartTransaction(TestData.TransactionDateTime, TestData.TransactionNumber, TestData.TransactionTypeLogon, TestData.TransactionReference, CreateTransactionStartContext(), TestData.TransactionAmount);
 
             transactionAggregate.AuthoriseTransactionLocally(TestData.AuthorisationCode, TestData.ResponseCode, TestData.ResponseMessage);
 
@@ -1296,7 +1298,7 @@ namespace TransactionProcessor.Testing
         {
             TransactionAggregate transactionAggregate = TransactionAggregate.Create(TestData.TransactionId);
 
-            transactionAggregate.StartTransaction(TestData.TransactionDateTime, TestData.TransactionNumber, TestData.TransactionTypeLogon, TestData.TransactionReference, new TransactionStartContext { EstateId = TestData.EstateId, MerchantId = TestData.MerchantId, DeviceIdentifier = TestData.DeviceIdentifier }, TestData.TransactionAmount);
+            transactionAggregate.StartTransaction(TestData.TransactionDateTime, TestData.TransactionNumber, TestData.TransactionTypeLogon, TestData.TransactionReference, CreateTransactionStartContext(), TestData.TransactionAmount);
 
             transactionAggregate.DeclineTransactionLocally(transactionResponseCode,
                                                            TestData.GetResponseCodeMessage(transactionResponseCode));
@@ -1308,7 +1310,7 @@ namespace TransactionProcessor.Testing
         {
             TransactionAggregate transactionAggregate = TransactionAggregate.Create(TestData.TransactionId);
 
-            transactionAggregate.StartTransaction(TestData.TransactionDateTime, TestData.TransactionNumber, TestData.TransactionTypeLogon, TestData.TransactionReference, new TransactionStartContext { EstateId = TestData.EstateId, MerchantId = TestData.MerchantId, DeviceIdentifier = TestData.DeviceIdentifier }, TestData.TransactionAmount);
+            transactionAggregate.StartTransaction(TestData.TransactionDateTime, TestData.TransactionNumber, TestData.TransactionTypeLogon, TestData.TransactionReference, CreateTransactionStartContext(), TestData.TransactionAmount);
 
             transactionAggregate.DeclineTransaction(TestData.OperatorId, 
                                                     TestData.DeclinedOperatorResponseCode,
@@ -1333,7 +1335,7 @@ namespace TransactionProcessor.Testing
         {
             TransactionAggregate transactionAggregate = TransactionAggregate.Create(TestData.TransactionId);
 
-            transactionAggregate.StartTransaction(TestData.TransactionDateTime, TestData.TransactionNumber, TestData.TransactionTypeLogon, TestData.TransactionReference, new TransactionStartContext { EstateId = TestData.EstateId, MerchantId = TestData.MerchantId, DeviceIdentifier = TestData.DeviceIdentifier }, TestData.TransactionAmount);
+            transactionAggregate.StartTransaction(TestData.TransactionDateTime, TestData.TransactionNumber, TestData.TransactionTypeLogon, TestData.TransactionReference, CreateTransactionStartContext(), TestData.TransactionAmount);
 
             return transactionAggregate;
         }

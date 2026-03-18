@@ -52,9 +52,9 @@ namespace TransactionProcessor.Aggregates
 
     public class TransactionStartContext
     {
-        public Guid EstateId { get; set; }
-        public Guid MerchantId { get; set; }
-        public String DeviceIdentifier { get; set; }
+        public Guid EstateId { get; init; }
+        public Guid MerchantId { get; init; }
+        public String DeviceIdentifier { get; init; }
     }
 
     public static class TransactionAggregateExtensions{
