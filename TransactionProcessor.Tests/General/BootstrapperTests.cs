@@ -1,8 +1,9 @@
-﻿namespace TransactionProcessor.Tests.General
+namespace TransactionProcessor.Tests.General
 {
     using System;
     using System.Collections.Generic;
     using System.Diagnostics;
+    using System.Linq;
     using Lamar;
     using Microsoft.AspNetCore.Hosting;
     using Microsoft.Extensions.Configuration;
@@ -38,6 +39,30 @@
             Startup.Container.AssertConfigurationIsValid(AssertMode.Full);
         }
 
+        [Fact]
+        public void ConfigureContainer_PopulatesAutoApiLogonOperators_WithoutDuplicates()
+        {
+            Mock<IWebHostEnvironment> hostingEnvironment = new Mock<IWebHostEnvironment>();
+            hostingEnvironment.Setup(he => he.EnvironmentName).Returns("Development");
+            hostingEnvironment.Setup(he => he.ContentRootPath).Returns("/home");
+            hostingEnvironment.Setup(he => he.ApplicationName).Returns("Test Application");
+
+            Startup s = new Startup(hostingEnvironment.Object);
+            Startup.Configuration = this.SetupMemoryConfiguration();
+
+            ServiceRegistry firstServices = new ServiceRegistry();
+            this.AddTestRegistrations(firstServices, hostingEnvironment.Object);
+            s.ConfigureContainer(firstServices);
+
+            Assert.Equal(new[] { "Safaricom", "PataPawaPostPay" }, Startup.AutoApiLogonOperators.ToArray());
+
+            ServiceRegistry secondServices = new ServiceRegistry();
+            this.AddTestRegistrations(secondServices, hostingEnvironment.Object);
+            s.ConfigureContainer(secondServices);
+
+            Assert.Equal(new[] { "Safaricom", "PataPawaPostPay" }, Startup.AutoApiLogonOperators.ToArray());
+        }
+
         private IConfigurationRoot SetupMemoryConfiguration()
         {
             Dictionary<String, String> configuration = new Dictionary<String, String>();
@@ -54,6 +79,9 @@
             configuration.Add("AppSettings:SecurityService", "http://localhost");
             configuration.Add("SecurityConfiguration:Authority", "http://localhost");
             configuration.Add("ConnectionStrings:TransactionProcessorReadModel", "dbconnstring");
+            configuration.Add("OperatorConfiguration:Safaricom:ApiLogonRequired", "true");
+            configuration.Add("OperatorConfiguration:PataPawaPostPay:ApiLogonRequired", "true");
+            configuration.Add("OperatorConfiguration:PataPawaPrePay:ApiLogonRequired", "false");
 
             builder.AddInMemoryCollection(configuration);
 

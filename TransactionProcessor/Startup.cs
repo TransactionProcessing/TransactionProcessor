@@ -40,7 +40,7 @@ namespace TransactionProcessor
 
         public static Container Container;
 
-        public static List<String> AutoApiLogonOperators = new List<String>();
+        private static readonly List<String> AutoApiLogonOperatorsInternal = new List<String>();
 
         #endregion
 
@@ -76,6 +76,8 @@ namespace TransactionProcessor
         public static IConfigurationRoot Configuration { get; set; }
 
         public static IServiceProvider ServiceProvider { get; set; }
+
+        public static IReadOnlyCollection<String> AutoApiLogonOperators => AutoApiLogonOperatorsInternal.AsReadOnly();
 
         /// <summary>
         /// Gets or sets the web host environment.
@@ -135,6 +137,7 @@ namespace TransactionProcessor
         public void ConfigureContainer(ServiceRegistry services) {
 
             ConfigurationReader.Initialise(Startup.Configuration);
+            Startup.AutoApiLogonOperatorsInternal.Clear();
 
             services.IncludeRegistry<MiscRegistry>();
             services.IncludeRegistry<MediatorRegistry>();
@@ -152,6 +155,12 @@ namespace TransactionProcessor
             Startup.Container = new Container(services);
 
             Startup.ServiceProvider = services.BuildServiceProvider();
+        }
+
+        internal static void AddAutoApiLogonOperator(String operatorId) {
+            if (Startup.AutoApiLogonOperatorsInternal.Contains(operatorId) == false) {
+                Startup.AutoApiLogonOperatorsInternal.Add(operatorId);
+            }
         }
 
         private void ConfigureEndpoints(IApplicationBuilder app) {

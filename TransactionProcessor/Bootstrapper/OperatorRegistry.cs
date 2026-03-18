@@ -68,7 +68,7 @@ namespace TransactionProcessor.Bootstrapper
             BaseOperatorConfiguration cfg = configObject as BaseOperatorConfiguration;
 
             if (cfg.ApiLogonRequired) {
-                Startup.AutoApiLogonOperators.Add(operatorId);
+                Startup.AddAutoApiLogonOperator(operatorId);
             }
         }
 
