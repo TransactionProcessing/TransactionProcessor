@@ -187,34 +187,7 @@ namespace TransactionProcessor.BusinessLogic.Services
                     return ResultHelpers.CreateFailure(getMerchantResult);
 
                 Merchant merchantModel = getMerchantResult.Data.GetMerchant();
-                List<String> emailAddresses = merchantModel.Contacts.Select(c => c.ContactEmailAddress).ToList();
-
-                SendEmailRequest sendEmailRequest = new SendEmailRequest
-                {
-                    Body = "<html><body>Please find attached this months statement.</body></html>",
-                    ConnectionIdentifier = command.EstateId,
-                    FromAddress = ConfigurationReader.GetValueOrDefault("AppSettings", "FromEmailAddress", "golfhandicapping@btinternet.com"),
-                    IsHtml = true,
-                    Subject = $"Merchant Statement for {statement.StatementDate}",
-                    ToAddresses = emailAddresses,
-                    EmailAttachments = new List<EmailAttachment>
-                    {
-                        new EmailAttachment
-                        {
-                            FileData = command.pdfData,
-                            FileType = FileType.PDF,
-                            Filename = $"merchantstatement{statement.StatementDate}.pdf"
-                        }
-                    }
-                };
-
-                Guid messageId = IdGenerationService.GenerateEventId(new
-                {
-                    command.MerchantStatementId,
-                    DateTime.Now
-                });
-
-                sendEmailRequest.MessageId = messageId;
+                (SendEmailRequest sendEmailRequest, Guid messageId) = this.BuildStatementEmailRequest(command, statement, merchantModel);
 
                 Result<TokenResponse> getTokenResult = await Helpers.GetToken(this.TokenResponse, this.SecurityServiceClient, cancellationToken);
                 if (getTokenResult.IsFailed)
@@ -237,6 +210,40 @@ namespace TransactionProcessor.BusinessLogic.Services
             {
                 return Result.Failure(ex.GetExceptionMessages());
             }
+        }
+
+        private (SendEmailRequest SendEmailRequest, Guid MessageId) BuildStatementEmailRequest(MerchantStatementCommands.EmailMerchantStatementCommand command,
+                                                                                               MerchantStatement statement,
+                                                                                               Merchant merchantModel) {
+            List<String> emailAddresses = merchantModel.Contacts.Select(c => c.ContactEmailAddress).ToList();
+
+            Guid messageId = IdGenerationService.GenerateEventId(new
+            {
+                command.MerchantStatementId,
+                DateTime.Now
+            });
+
+            SendEmailRequest sendEmailRequest = new SendEmailRequest
+            {
+                Body = "<html><body>Please find attached this months statement.</body></html>",
+                ConnectionIdentifier = command.EstateId,
+                FromAddress = ConfigurationReader.GetValueOrDefault("AppSettings", "FromEmailAddress", "golfhandicapping@btinternet.com"),
+                IsHtml = true,
+                Subject = $"Merchant Statement for {statement.StatementDate}",
+                ToAddresses = emailAddresses,
+                EmailAttachments = new List<EmailAttachment>
+                {
+                    new EmailAttachment
+                    {
+                        FileData = command.pdfData,
+                        FileType = FileType.PDF,
+                        Filename = $"merchantstatement{statement.StatementDate}.pdf"
+                    }
+                },
+                MessageId = messageId
+            };
+
+            return (sendEmailRequest, messageId);
         }
         private TokenResponse TokenResponse;
 
