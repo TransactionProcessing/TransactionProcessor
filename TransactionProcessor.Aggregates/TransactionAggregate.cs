@@ -512,7 +512,7 @@ namespace TransactionProcessor.Aggregates
             if (result.IsFailed)
                 return result;
 
-            result = aggregate.CheckCanStartTransaction();
+            result = CheckCanStartTransaction(aggregate);
             if (result.IsFailed)
                 return result;
 
@@ -532,12 +532,12 @@ namespace TransactionProcessor.Aggregates
         }
 
         private static Result ValidateStartTransactionArguments(DateTime transactionDateTime,
-                                                               String transactionNumber,
-                                                               TransactionType transactionType,
-                                                               String transactionReference,
-                                                               Guid estateId,
-                                                               Guid merchantId,
-                                                               String deviceIdentifier)
+                                                                String transactionNumber,
+                                                                TransactionType transactionType,
+                                                                String transactionReference,
+                                                                Guid estateId,
+                                                                Guid merchantId,
+                                                                String deviceIdentifier)
         {
             if (transactionDateTime == DateTime.MinValue)
                 return Result.Invalid($"Transaction Date Time must not be [{DateTime.MinValue}]");
@@ -563,7 +563,7 @@ namespace TransactionProcessor.Aggregates
             return Result.Success();
         }
 
-        private static Result CheckCanStartTransaction(this TransactionAggregate aggregate)
+        private static Result CheckCanStartTransaction(TransactionAggregate aggregate)
         {
             Result result = aggregate.CheckTransactionNotAlreadyStarted();
             if (result.IsFailed)
