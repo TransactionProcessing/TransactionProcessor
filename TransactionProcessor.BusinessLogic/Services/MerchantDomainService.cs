@@ -359,22 +359,17 @@ namespace TransactionProcessor.BusinessLogic.Services
                 if (validateResult.IsFailed)
                     return ResultHelpers.CreateFailure(validateResult);
 
-                Result<MerchantDepositListAggregate> getDepositListResult = await DomainServiceHelper.GetAggregateOrFailure(ct => this.AggregateService.GetLatest<MerchantDepositListAggregate>(command.MerchantId, ct), command.MerchantId, cancellationToken, false);
-                if (getDepositListResult.IsFailed)
-                    return ResultHelpers.CreateFailure(getDepositListResult);
-
-                MerchantDepositListAggregate merchantDepositListAggregate = getDepositListResult.Data;
-                Result createResult = this.EnsureMerchantDepositListCreated(merchantDepositListAggregate, merchantAggregate, command.RequestDto.DepositDateTime);
-                if (createResult.IsFailed)
-                    return ResultHelpers.CreateFailure(createResult);
+                Result<MerchantDepositListAggregate> depositListResult = await this.GetOrCreateMerchantDepositList(command, merchantAggregate, cancellationToken);
+                if (depositListResult.IsFailed)
+                    return ResultHelpers.CreateFailure(depositListResult);
 
                 PositiveMoney amount = PositiveMoney.Create(Money.Create(command.RequestDto.Amount));
                 MerchantDepositSource depositSource = this.ConvertDepositSource(command.DepositSource);
-                Result stateResult = merchantDepositListAggregate.MakeDeposit(depositSource, command.RequestDto.Reference, command.RequestDto.DepositDateTime, amount);
+                Result stateResult = depositListResult.Data.MakeDeposit(depositSource, command.RequestDto.Reference, command.RequestDto.DepositDateTime, amount);
                 if (stateResult.IsFailed)
                     return ResultHelpers.CreateFailure(stateResult);
 
-                Result saveResult = await this.AggregateService.Save(merchantDepositListAggregate, cancellationToken);
+                Result saveResult = await this.AggregateService.Save(depositListResult.Data, cancellationToken);
                 if (saveResult.IsFailed)
                     return ResultHelpers.CreateFailure(saveResult);
 
@@ -880,6 +875,22 @@ namespace TransactionProcessor.BusinessLogic.Services
                 return Result.Invalid($"Contract Id {contractId} has not been created");
 
             return Result.Success(contractAggregate);
+        }
+
+        private async Task<Result<MerchantDepositListAggregate>> GetOrCreateMerchantDepositList(MerchantCommands.MakeMerchantDepositCommand command,
+                                                                                                MerchantAggregate merchantAggregate,
+                                                                                                CancellationToken cancellationToken)
+        {
+            Result<MerchantDepositListAggregate> getDepositListResult = await DomainServiceHelper.GetAggregateOrFailure(ct => this.AggregateService.GetLatest<MerchantDepositListAggregate>(command.MerchantId, ct), command.MerchantId, cancellationToken, false);
+            if (getDepositListResult.IsFailed)
+                return ResultHelpers.CreateFailure(getDepositListResult);
+
+            MerchantDepositListAggregate merchantDepositListAggregate = getDepositListResult.Data;
+            Result createResult = this.EnsureMerchantDepositListCreated(merchantDepositListAggregate, merchantAggregate, command.RequestDto.DepositDateTime);
+            if (createResult.IsFailed)
+                return ResultHelpers.CreateFailure(createResult);
+
+            return Result.Success(merchantDepositListAggregate);
         }
 
         private async Task<Result<MerchantDepositListAggregate>> GetMerchantDepositListForWithdrawal(MerchantCommands.MakeMerchantWithdrawalCommand command,
