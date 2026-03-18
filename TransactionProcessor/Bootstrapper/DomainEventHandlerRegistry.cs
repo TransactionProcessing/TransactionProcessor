@@ -31,48 +31,55 @@ namespace TransactionProcessor.Bootstrapper
         /// </summary>
         public DomainEventHandlerRegistry()
         {
+            Dictionary<String, String[]> eventHandlersConfiguration =
+                this.GetEventHandlerConfiguration("AppSettings:EventHandlerConfiguration", "EventHandlerConfiguration");
+            Dictionary<String, String[]> eventHandlersConfigurationDomain =
+                this.GetEventHandlerConfiguration("AppSettings:EventHandlerConfigurationDomain", "EventHandlerConfigurationDomain");
+            Dictionary<String, String[]> eventHandlersConfigurationOrdered =
+                this.GetEventHandlerConfiguration("AppSettings:EventHandlerConfigurationOrdered", "EventHandlerConfigurationOrdered");
+
+            this.RegisterEventHandlers();
+            this.RegisterProjections();
+            this.RegisterResolvers(eventHandlersConfiguration, eventHandlersConfigurationDomain, eventHandlersConfigurationOrdered);
+            this.AddSingleton<IDomainEventFactory<IDomainEvent>, DomainEventFactory>();
+        }
+
+        #endregion
+
+        #region Methods
+
+        private Dictionary<String, String[]> GetEventHandlerConfiguration(String sectionName,
+                                                                          String registrationName)
+        {
             Dictionary<String, String[]> eventHandlersConfiguration = new Dictionary<String, String[]>();
-            Dictionary<String, String[]> eventHandlersConfigurationDomain= new Dictionary<String, String[]>();
-            Dictionary<String, String[]> eventHandlersConfigurationOrdered = new Dictionary<String, String[]>();
 
             if (Startup.Configuration != null)
             {
-                IConfigurationSection section = Startup.Configuration.GetSection("AppSettings:EventHandlerConfiguration");
+                IConfigurationSection section = Startup.Configuration.GetSection(sectionName);
 
                 if (section != null)
                 {
-                    Startup.Configuration.GetSection("AppSettings:EventHandlerConfiguration").Bind(eventHandlersConfiguration);
+                    section.Bind(eventHandlersConfiguration);
                 }
 
-                this.Use(eventHandlersConfiguration).Named("EventHandlerConfiguration");
-
-                section = Startup.Configuration.GetSection("AppSettings:EventHandlerConfigurationDomain");
-
-                if (section != null)
-                {
-                    Startup.Configuration.GetSection("AppSettings:EventHandlerConfigurationDomain").Bind(eventHandlersConfigurationDomain);
-                }
-
-                this.Use(eventHandlersConfigurationDomain).Named("EventHandlerConfigurationDomain");
-
-                section = Startup.Configuration.GetSection("AppSettings:EventHandlerConfigurationOrdered");
-
-                if (section != null)
-                {
-                    Startup.Configuration.GetSection("AppSettings:EventHandlerConfigurationOrdered").Bind(eventHandlersConfigurationOrdered);
-                }
-
-                this.Use(eventHandlersConfigurationOrdered).Named("EventHandlerConfigurationOrdered");
+                this.Use(eventHandlersConfiguration).Named(registrationName);
             }
 
+            return eventHandlersConfiguration;
+        }
+
+        private void RegisterEventHandlers()
+        {
             this.AddSingleton<Func<Type, IDomainEventHandler>>(container => type =>
                                                                             {
                                                                                 IDomainEventHandler handler = container.GetService(type) as IDomainEventHandler;
                                                                                 return handler;
                                                                             });
 
-            this.AddSingleton<Func<String, IDomainEventHandler>>(container => type => {
-                                                                                  return type switch{
+            this.AddSingleton<Func<String, IDomainEventHandler>>(container => type =>
+                                                                              {
+                                                                                  return type switch
+                                                                                  {
                                                                                       "VoucherState" => container.GetService<StateProjectionEventHandler<VoucherState>>(),
                                                                                       _ => container.GetService<StateProjectionEventHandler<MerchantBalanceState>>()
                                                                                   };
@@ -85,22 +92,28 @@ namespace TransactionProcessor.Bootstrapper
             this.AddSingleton<MerchantDomainEventHandler>();
             this.AddSingleton<StateProjectionEventHandler<MerchantBalanceState>>();
             this.AddSingleton<StateProjectionEventHandler<VoucherState>>();
+        }
 
+        private void RegisterProjections()
+        {
             this.AddSingleton<ProjectionHandler<MerchantBalanceState>>();
             this.AddSingleton<ProjectionHandler<VoucherState>>();
             this.AddSingleton<IProjection<MerchantBalanceState>, MerchantBalanceProjection>();
             this.AddSingleton<IProjection<VoucherState>, VoucherProjection>();
             this.AddSingleton<IStateDispatcher<MerchantBalanceState>, MerchantBalanceStateDispatcher>();
             this.AddSingleton<IStateDispatcher<VoucherState>, VoucherStateDispatcher>();
+        }
 
+        private void RegisterResolvers(Dictionary<String, String[]> eventHandlersConfiguration,
+                                       Dictionary<String, String[]> eventHandlersConfigurationDomain,
+                                       Dictionary<String, String[]> eventHandlersConfigurationOrdered)
+        {
             this.For<IDomainEventHandlerResolver>().Use<DomainEventHandlerResolver>().Named("Main")
                 .Ctor<Dictionary<String, String[]>>().Is(eventHandlersConfiguration).Singleton();
             this.For<IDomainEventHandlerResolver>().Use<DomainEventHandlerResolver>().Named("Domain")
                 .Ctor<Dictionary<String, String[]>>().Is(eventHandlersConfigurationDomain).Singleton();
             this.For<IDomainEventHandlerResolver>().Use<DomainEventHandlerResolver>().Named("Ordered")
                 .Ctor<Dictionary<String, String[]>>().Is(eventHandlersConfigurationOrdered).Singleton();
-
-            this.AddSingleton<IDomainEventFactory<IDomainEvent>, DomainEventFactory>();
         }
 
         #endregion
