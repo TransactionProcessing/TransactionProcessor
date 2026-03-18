@@ -398,7 +398,7 @@ namespace TransactionProcessor.Aggregates
 
             merchantModel.Contacts = new();
             foreach (KeyValuePair<Guid, Contact> aggregateContact in aggregate.Contacts) {
-                ContactModel contact = new ContactModel(aggregateContact.Key, aggregateContact.Value.ContactEmailAddress, aggregateContact.Value.ContactName, aggregateContact.Value.ContactPhoneNumber);
+                var contact = new ContactModel(aggregateContact.Key, aggregateContact.Value.ContactEmailAddress, aggregateContact.Value.ContactName, aggregateContact.Value.ContactPhoneNumber);
                 merchantModel.Contacts.Add(contact);
             }
         }
@@ -445,7 +445,7 @@ namespace TransactionProcessor.Aggregates
 
             merchantModel.Contracts = new();
             foreach (KeyValuePair<Guid, Contract> aggregateContract in aggregate.Contracts) {
-                ContractModel contract = new ContractModel(aggregateContract.Key, aggregateContract.Value.IsDeleted);
+                var contract = new ContractModel(aggregateContract.Key, aggregateContract.Value.IsDeleted);
                 aggregateContract.Value.ContractProducts.ForEach(cp => contract.ContractProducts.Add(cp));
                 merchantModel.Contracts.Add(contract);
             }
@@ -459,7 +459,7 @@ namespace TransactionProcessor.Aggregates
 
             merchantModel.OpeningHours = new();
             foreach (KeyValuePair<DayOfWeek, Models.OpeningHours> openingHoursForDay in aggregate.OpeningHours) {
-                merchantModel.OpeningHours.Add(openingHoursForDay.Key, new OpeningHours() { Opening = openingHoursForDay.Value.OpeningTime, Closing = openingHoursForDay.Value.ClosingTime });
+                merchantModel.OpeningHours.Add(openingHoursForDay.Key, new() { Opening = openingHoursForDay.Value.OpeningTime, Closing = openingHoursForDay.Value.ClosingTime });
             }
         }
 
