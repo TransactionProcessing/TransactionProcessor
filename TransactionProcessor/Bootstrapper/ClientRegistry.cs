@@ -28,8 +28,7 @@
             this.RegisterHttpClient<ISecurityServiceClient, SecurityServiceClient>();
             this.RegisterHttpClient<IMessagingServiceClient, MessagingServiceClient>();
 
-            Func<String, String> resolver(IServiceProvider container) => serviceName => ConfigurationReader.GetBaseServerUri(serviceName).OriginalString;
-            this.AddSingleton<Func<String, String>>(resolver);
+            this.AddSingleton<Func<String, String>>(serviceName => ConfigurationReader.GetBaseServerUri(serviceName).OriginalString);
         }
 
         #endregion
