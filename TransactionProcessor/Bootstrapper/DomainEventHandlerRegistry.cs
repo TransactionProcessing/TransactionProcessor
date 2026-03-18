@@ -24,6 +24,10 @@ namespace TransactionProcessor.Bootstrapper
     [ExcludeFromCodeCoverage]
     public class DomainEventHandlerRegistry : ServiceRegistry
     {
+        private const String EventHandlerConfiguration = "EventHandlerConfiguration";
+        private const String EventHandlerConfigurationDomain = "EventHandlerConfigurationDomain";
+        private const String EventHandlerConfigurationOrdered = "EventHandlerConfigurationOrdered";
+
         #region Constructors
 
         /// <summary>
@@ -32,11 +36,11 @@ namespace TransactionProcessor.Bootstrapper
         public DomainEventHandlerRegistry()
         {
             Dictionary<String, String[]> eventHandlersConfiguration =
-                this.GetEventHandlerConfiguration("AppSettings:EventHandlerConfiguration", "EventHandlerConfiguration");
+                this.GetEventHandlerConfiguration($"AppSettings:{EventHandlerConfiguration}", EventHandlerConfiguration);
             Dictionary<String, String[]> eventHandlersConfigurationDomain =
-                this.GetEventHandlerConfiguration("AppSettings:EventHandlerConfigurationDomain", "EventHandlerConfigurationDomain");
+                this.GetEventHandlerConfiguration($"AppSettings:{EventHandlerConfigurationDomain}", EventHandlerConfigurationDomain);
             Dictionary<String, String[]> eventHandlersConfigurationOrdered =
-                this.GetEventHandlerConfiguration("AppSettings:EventHandlerConfigurationOrdered", "EventHandlerConfigurationOrdered");
+                this.GetEventHandlerConfiguration($"AppSettings:{EventHandlerConfigurationOrdered}", EventHandlerConfigurationOrdered);
 
             this.RegisterEventHandlers();
             this.RegisterProjections();
