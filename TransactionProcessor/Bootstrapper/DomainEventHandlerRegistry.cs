@@ -24,9 +24,9 @@ namespace TransactionProcessor.Bootstrapper
     [ExcludeFromCodeCoverage]
     public class DomainEventHandlerRegistry : ServiceRegistry
     {
-        private const String EventHandlerConfiguration = "EventHandlerConfiguration";
-        private const String EventHandlerConfigurationDomain = "EventHandlerConfigurationDomain";
-        private const String EventHandlerConfigurationOrdered = "EventHandlerConfigurationOrdered";
+        private const String MainRegistrationName = "EventHandlerConfiguration";
+        private const String DomainRegistrationName = "EventHandlerConfigurationDomain";
+        private const String OrderedRegistrationName = "EventHandlerConfigurationOrdered";
 
         #region Constructors
 
@@ -36,11 +36,11 @@ namespace TransactionProcessor.Bootstrapper
         public DomainEventHandlerRegistry()
         {
             Dictionary<String, String[]> eventHandlersConfiguration =
-                this.GetEventHandlerConfiguration($"AppSettings:{EventHandlerConfiguration}", EventHandlerConfiguration);
+                this.GetEventHandlerConfiguration($"AppSettings:{MainRegistrationName}", MainRegistrationName);
             Dictionary<String, String[]> eventHandlersConfigurationDomain =
-                this.GetEventHandlerConfiguration($"AppSettings:{EventHandlerConfigurationDomain}", EventHandlerConfigurationDomain);
+                this.GetEventHandlerConfiguration($"AppSettings:{DomainRegistrationName}", DomainRegistrationName);
             Dictionary<String, String[]> eventHandlersConfigurationOrdered =
-                this.GetEventHandlerConfiguration($"AppSettings:{EventHandlerConfigurationOrdered}", EventHandlerConfigurationOrdered);
+                this.GetEventHandlerConfiguration($"AppSettings:{OrderedRegistrationName}", OrderedRegistrationName);
 
             this.RegisterEventHandlers();
             this.RegisterProjections();
@@ -55,7 +55,7 @@ namespace TransactionProcessor.Bootstrapper
         private Dictionary<String, String[]> GetEventHandlerConfiguration(String sectionName,
                                                                           String registrationName)
         {
-            Dictionary<String, String[]> eventHandlersConfiguration = new Dictionary<String, String[]>();
+            Dictionary<String, String[]> configuration = new Dictionary<String, String[]>();
 
             if (Startup.Configuration != null)
             {
@@ -63,13 +63,13 @@ namespace TransactionProcessor.Bootstrapper
 
                 if (section != null)
                 {
-                    section.Bind(eventHandlersConfiguration);
+                    section.Bind(configuration);
                 }
 
-                this.Use(eventHandlersConfiguration).Named(registrationName);
+                this.Use(configuration).Named(registrationName);
             }
 
-            return eventHandlersConfiguration;
+            return configuration;
         }
 
         private void RegisterEventHandlers()
