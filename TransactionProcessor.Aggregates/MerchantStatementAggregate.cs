@@ -256,8 +256,19 @@ namespace TransactionProcessor.Aggregates
                 return Result.Success();
             }
 
-            MerchantStatementDomainEvents.StatementSummaryForDateEvent statementSummaryForDateEvent = new(aggregate.AggregateId, aggregate.EstateId, aggregate.MerchantId, activityDate,aggregate.MerchantStatementSummaries.Count +1
-                ,summaryTotals.NumberOfTransactions, summaryTotals.ValueOfTransactions, summaryTotals.NumberOfSettledFees, summaryTotals.ValueOfSettledFees, summaryTotals.NumberOfDeposits, summaryTotals.ValueOfDeposits, summaryTotals.NumberOfWithdrawals, summaryTotals.ValueOfWithdrawals);
+            MerchantStatementDomainEvents.StatementSummaryForDateEvent statementSummaryForDateEvent = new(aggregate.AggregateId,
+                aggregate.EstateId,
+                aggregate.MerchantId,
+                activityDate,
+                aggregate.MerchantStatementSummaries.Count + 1,
+                summaryTotals.NumberOfTransactions,
+                summaryTotals.ValueOfTransactions,
+                summaryTotals.NumberOfSettledFees,
+                summaryTotals.ValueOfSettledFees,
+                summaryTotals.NumberOfDeposits,
+                summaryTotals.ValueOfDeposits,
+                summaryTotals.NumberOfWithdrawals,
+                summaryTotals.ValueOfWithdrawals);
             aggregate.ApplyAndAppend(statementSummaryForDateEvent);
 
             return Result.Success();
