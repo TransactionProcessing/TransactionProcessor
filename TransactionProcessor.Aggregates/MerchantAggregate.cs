@@ -357,68 +357,110 @@ namespace TransactionProcessor.Aggregates
                 return null;
             }
 
-            Merchant merchantModel = new();
+            Merchant merchantModel = new() {
+                                            EstateId = aggregate.EstateId,
+                                            MerchantId = aggregate.AggregateId,
+                                            MerchantName = aggregate.Name,
+                                            Reference = aggregate.MerchantReference,
+                                            SettlementSchedule = aggregate.SettlementSchedule,
+                                            NextSettlementDueDate = aggregate.NextSettlementDueDate
+                                        };
 
-            merchantModel.EstateId = aggregate.EstateId;
-            merchantModel.MerchantId = aggregate.AggregateId;
-            merchantModel.MerchantName = aggregate.Name;
-            merchantModel.Reference = aggregate.MerchantReference;
-            merchantModel.SettlementSchedule = aggregate.SettlementSchedule;
-            merchantModel.NextSettlementDueDate = aggregate.NextSettlementDueDate;
-
-            if (aggregate.Addresses.Any()) {
-                merchantModel.Addresses = new();
-                foreach (KeyValuePair<Guid, Address> aggregateAddress in aggregate.Addresses) {
-                    AddressModel address = AddressModel.Create(aggregateAddress.Key, aggregateAddress.Value.AddressLine1, aggregateAddress.Value.AddressLine2, aggregateAddress.Value.AddressLine3, aggregateAddress.Value.AddressLine4, aggregateAddress.Value.Town, aggregateAddress.Value.Region, aggregateAddress.Value.PostalCode, aggregateAddress.Value.Country);
-
-                    merchantModel.Addresses.Add(address);
-                }
-            }
-
-            if (aggregate.Contacts.Any()) {
-                merchantModel.Contacts = new();
-                foreach (KeyValuePair<Guid, Contact> aggregateContact in aggregate.Contacts) {
-                    var contact = new ContactModel(aggregateContact.Key, aggregateContact.Value.ContactEmailAddress, aggregateContact.Value.ContactName, aggregateContact.Value.ContactPhoneNumber);
-                    merchantModel.Contacts.Add(contact);
-                }
-            }
-
-            if (aggregate.Operators.Any()) {
-                merchantModel.Operators = new();
-                foreach (KeyValuePair<Guid, Operator> aggregateOperator in aggregate.Operators) {
-                    merchantModel.Operators.Add(new OperatorModel(aggregateOperator.Key, aggregateOperator.Value.Name, aggregateOperator.Value.MerchantNumber, aggregateOperator.Value.TerminalNumber, aggregateOperator.Value.IsDeleted));
-                }
-            }
-
-            if (aggregate.SecurityUsers.Any()) {
-                merchantModel.SecurityUsers = new();
-                aggregate.SecurityUsers.ForEach(s => merchantModel.SecurityUsers.Add(new SecurityUserModel(s.SecurityUserId, s.EmailAddress)));
-            }
-
-            if (aggregate.Devices.Any()) {
-                merchantModel.Devices = new();
-                foreach ((Guid key, Device device) in aggregate.Devices) {
-                    merchantModel.Devices.Add(new DeviceModel(key, device.DeviceIdentifier, device.IsEnabled));
-                }
-            }
-
-            if (aggregate.Contracts.Any()) {
-                merchantModel.Contracts = new();
-                foreach (KeyValuePair<Guid, Contract> aggregateContract in aggregate.Contracts) {
-                    var contract = new ContractModel(aggregateContract.Key, aggregateContract.Value.IsDeleted);
-                    aggregateContract.Value.ContractProducts.ForEach(cp => contract.ContractProducts.Add(cp));
-                    merchantModel.Contracts.Add(contract);
-                }
-            }
-            
-            if (aggregate.OpeningHours.Any()) {
-                merchantModel.OpeningHours = new();
-                foreach (KeyValuePair<DayOfWeek, Models.OpeningHours> openingHoursForDay in aggregate.OpeningHours) {
-                    merchantModel.OpeningHours.Add(openingHoursForDay.Key, new  OpeningHours() { Opening = openingHoursForDay.Value.OpeningTime, Closing = openingHoursForDay.Value.ClosingTime });
-                }
-            }
+            aggregate.PopulateAddresses(merchantModel);
+            aggregate.PopulateContacts(merchantModel);
+            aggregate.PopulateOperators(merchantModel);
+            aggregate.PopulateSecurityUsers(merchantModel);
+            aggregate.PopulateDevices(merchantModel);
+            aggregate.PopulateContracts(merchantModel);
+            aggregate.PopulateOpeningHours(merchantModel);
 
             return merchantModel;
+        }
+
+        private static void PopulateAddresses(this MerchantAggregate aggregate,
+                                              Merchant merchantModel) {
+            if (aggregate.Addresses.Any() == false) {
+                return;
+            }
+
+            merchantModel.Addresses = new();
+            foreach (KeyValuePair<Guid, Address> aggregateAddress in aggregate.Addresses) {
+                AddressModel address = AddressModel.Create(aggregateAddress.Key, aggregateAddress.Value.AddressLine1, aggregateAddress.Value.AddressLine2, aggregateAddress.Value.AddressLine3, aggregateAddress.Value.AddressLine4, aggregateAddress.Value.Town, aggregateAddress.Value.Region, aggregateAddress.Value.PostalCode, aggregateAddress.Value.Country);
+                merchantModel.Addresses.Add(address);
+            }
+        }
+
+        private static void PopulateContacts(this MerchantAggregate aggregate,
+                                             Merchant merchantModel) {
+            if (aggregate.Contacts.Any() == false) {
+                return;
+            }
+
+            merchantModel.Contacts = new();
+            foreach (KeyValuePair<Guid, Contact> aggregateContact in aggregate.Contacts) {
+                ContactModel contact = new(aggregateContact.Key, aggregateContact.Value.ContactEmailAddress, aggregateContact.Value.ContactName, aggregateContact.Value.ContactPhoneNumber);
+                merchantModel.Contacts.Add(contact);
+            }
+        }
+
+        private static void PopulateOperators(this MerchantAggregate aggregate,
+                                              Merchant merchantModel) {
+            if (aggregate.Operators.Any() == false) {
+                return;
+            }
+
+            merchantModel.Operators = new();
+            foreach (KeyValuePair<Guid, Operator> aggregateOperator in aggregate.Operators) {
+                merchantModel.Operators.Add(new OperatorModel(aggregateOperator.Key, aggregateOperator.Value.Name, aggregateOperator.Value.MerchantNumber, aggregateOperator.Value.TerminalNumber, aggregateOperator.Value.IsDeleted));
+            }
+        }
+
+        private static void PopulateSecurityUsers(this MerchantAggregate aggregate,
+                                                  Merchant merchantModel) {
+            if (aggregate.SecurityUsers.Any() == false) {
+                return;
+            }
+
+            merchantModel.SecurityUsers = new();
+            aggregate.SecurityUsers.ForEach(s => merchantModel.SecurityUsers.Add(new SecurityUserModel(s.SecurityUserId, s.EmailAddress)));
+        }
+
+        private static void PopulateDevices(this MerchantAggregate aggregate,
+                                            Merchant merchantModel) {
+            if (aggregate.Devices.Any() == false) {
+                return;
+            }
+
+            merchantModel.Devices = new();
+            foreach ((Guid key, Device device) in aggregate.Devices) {
+                merchantModel.Devices.Add(new DeviceModel(key, device.DeviceIdentifier, device.IsEnabled));
+            }
+        }
+
+        private static void PopulateContracts(this MerchantAggregate aggregate,
+                                              Merchant merchantModel) {
+            if (aggregate.Contracts.Any() == false) {
+                return;
+            }
+
+            merchantModel.Contracts = new();
+            foreach (KeyValuePair<Guid, Contract> aggregateContract in aggregate.Contracts) {
+                ContractModel contract = new(aggregateContract.Key, aggregateContract.Value.IsDeleted);
+                aggregateContract.Value.ContractProducts.ForEach(cp => contract.ContractProducts.Add(cp));
+                merchantModel.Contracts.Add(contract);
+            }
+        }
+
+        private static void PopulateOpeningHours(this MerchantAggregate aggregate,
+                                                 Merchant merchantModel) {
+            if (aggregate.OpeningHours.Any() == false) {
+                return;
+            }
+
+            merchantModel.OpeningHours = new();
+            foreach (KeyValuePair<DayOfWeek, Models.OpeningHours> openingHoursForDay in aggregate.OpeningHours) {
+                merchantModel.OpeningHours.Add(openingHoursForDay.Key, new OpeningHours() { Opening = openingHoursForDay.Value.OpeningTime, Closing = openingHoursForDay.Value.ClosingTime });
+            }
         }
 
         static DateTime CalculateNextSettlementDate(this MerchantAggregate aggregate,
