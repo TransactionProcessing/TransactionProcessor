@@ -35,6 +35,15 @@ namespace TransactionProcessor.Bootstrapper
         /// </summary>
         public DomainEventHandlerRegistry()
         {
+            this.RegisterServices();
+        }
+
+        #endregion
+
+        #region Methods
+
+        private void RegisterServices()
+        {
             Dictionary<String, String[]> eventHandlersConfiguration =
                 this.GetEventHandlerConfiguration($"AppSettings:{MainRegistrationName}", MainRegistrationName);
             Dictionary<String, String[]> eventHandlersConfigurationDomain =
@@ -47,10 +56,6 @@ namespace TransactionProcessor.Bootstrapper
             this.RegisterResolvers(eventHandlersConfiguration, eventHandlersConfigurationDomain, eventHandlersConfigurationOrdered);
             this.AddSingleton<IDomainEventFactory<IDomainEvent>, DomainEventFactory>();
         }
-
-        #endregion
-
-        #region Methods
 
         private Dictionary<String, String[]> GetEventHandlerConfiguration(String sectionName,
                                                                           String registrationName)
