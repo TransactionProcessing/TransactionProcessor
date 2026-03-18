@@ -190,7 +190,7 @@ namespace TransactionProcessor
                                                           .ToList();
 
             foreach (Assembly asm in loadedTokensAssemblies) {
-                Console.WriteLine($"[Trace] Tokens Assembly: {asm.Location} � Version: {asm.GetName().Version}");
+                Console.WriteLine($"[Trace] Tokens Assembly: {asm.Location} - Version: {asm.GetName().Version}");
             }
         }
     }
