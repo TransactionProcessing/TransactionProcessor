@@ -50,6 +50,13 @@ namespace TransactionProcessor.Aggregates
         }
     }
 
+    public class TransactionStartContext
+    {
+        public Guid EstateId { get; init; }
+        public Guid MerchantId { get; init; }
+        public String DeviceIdentifier { get; init; }
+    }
+
     public static class TransactionAggregateExtensions{
 
         public static Result DeclineTransaction(this TransactionAggregate aggregate,
@@ -497,18 +504,14 @@ namespace TransactionProcessor.Aggregates
                                             String transactionNumber,
                                             TransactionType transactionType,
                                             String transactionReference,
-                                            Guid estateId,
-                                            Guid merchantId,
-                                            String deviceIdentifier,
+                                            TransactionStartContext transactionStartContext,
                                             Decimal? transactionAmount)
         {
             Result result = ValidateStartTransactionArguments(transactionDateTime,
                                                               transactionNumber,
                                                               transactionType,
                                                               transactionReference,
-                                                              estateId,
-                                                              merchantId,
-                                                              deviceIdentifier);
+                                                              transactionStartContext);
             if (result.IsFailed)
                 return result;
 
@@ -517,14 +520,14 @@ namespace TransactionProcessor.Aggregates
                 return result;
 
             TransactionDomainEvents.TransactionHasStartedEvent transactionHasStartedEvent = new(aggregate.AggregateId,
-                                                                                                   estateId,
-                                                                                                   merchantId,
-                                                                                                   transactionDateTime,
-                                                                                                   transactionNumber,
-                                                                                                   transactionType.ToString(),
-                                                                                                   transactionReference,
-                                                                                                   deviceIdentifier,
-                                                                                                   transactionAmount);
+                                                                                                     transactionStartContext.EstateId,
+                                                                                                     transactionStartContext.MerchantId,
+                                                                                                     transactionDateTime,
+                                                                                                     transactionNumber,
+                                                                                                     transactionType.ToString(),
+                                                                                                     transactionReference,
+                                                                                                     transactionStartContext.DeviceIdentifier,
+                                                                                                     transactionAmount);
 
             aggregate.ApplyAndAppend(transactionHasStartedEvent);
 
@@ -535,10 +538,11 @@ namespace TransactionProcessor.Aggregates
                                                                 String transactionNumber,
                                                                 TransactionType transactionType,
                                                                 String transactionReference,
-                                                                Guid estateId,
-                                                                Guid merchantId,
-                                                                String deviceIdentifier)
+                                                                TransactionStartContext transactionStartContext)
         {
+            if (transactionStartContext == null)
+                return Result.Invalid("Transaction Start Context must not be null");
+
             if (transactionDateTime == DateTime.MinValue)
                 return Result.Invalid($"Transaction Date Time must not be [{DateTime.MinValue}]");
             if (String.IsNullOrEmpty(transactionNumber))
@@ -553,11 +557,11 @@ namespace TransactionProcessor.Aggregates
             if (Enum.IsDefined(typeof(TransactionType), transactionType) == false)
                 return Result.Invalid("Transaction Type not valid");
 
-            if (estateId == Guid.Empty)
+            if (transactionStartContext.EstateId == Guid.Empty)
                 return Result.Invalid($"Estate Id must not be [{Guid.Empty}]");
-            if (merchantId == Guid.Empty)
+            if (transactionStartContext.MerchantId == Guid.Empty)
                 return Result.Invalid($"Merchant Id must not be [{Guid.Empty}]");
-            if (String.IsNullOrEmpty(deviceIdentifier))
+            if (String.IsNullOrEmpty(transactionStartContext.DeviceIdentifier))
                 return Result.Invalid("Device Identifier must not be null or empty");
 
             return Result.Success();

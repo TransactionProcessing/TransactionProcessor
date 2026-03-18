@@ -102,7 +102,7 @@ namespace TransactionProcessor.BusinessLogic.Services{
                 // Generate a transaction reference
                 String transactionReference = TransactionHelpers.GenerateTransactionReference();
 
-                Result stateResult = transactionAggregate.StartTransaction(command.TransactionDateTime, command.TransactionNumber, transactionType, transactionReference, command.EstateId, command.MerchantId, command.DeviceIdentifier, null); // Logon transaction has no amount
+                Result stateResult = transactionAggregate.StartTransaction(command.TransactionDateTime, command.TransactionNumber, transactionType, transactionReference, new TransactionStartContext { EstateId = command.EstateId, MerchantId = command.MerchantId, DeviceIdentifier = command.DeviceIdentifier }, null); // Logon transaction has no amount
                 if (stateResult.IsFailed)
                     return ResultHelpers.CreateFailure(stateResult);
 
@@ -654,7 +654,7 @@ namespace TransactionProcessor.BusinessLogic.Services{
             String transactionReference = TransactionHelpers.GenerateTransactionReference();
             Decimal? amount = command.AdditionalTransactionMetadata.ExtractFieldFromMetadata<decimal?>("Amount");
 
-            Result result = transactionAggregate.StartTransaction(command.TransactionDateTime, command.TransactionNumber, transactionType, transactionReference, command.EstateId, command.MerchantId, command.DeviceIdentifier, amount);
+            Result result = transactionAggregate.StartTransaction(command.TransactionDateTime, command.TransactionNumber, transactionType, transactionReference, new TransactionStartContext { EstateId = command.EstateId, MerchantId = command.MerchantId, DeviceIdentifier = command.DeviceIdentifier }, amount);
 
             if (result.IsFailed)
                 return result;
