@@ -943,61 +943,26 @@ namespace TransactionProcessor.Repository {
         {
             EstateManagementContext context = await this.GetContext(estateId);
 
-            var x = await (from c in context.Contracts
-                           join cp in context.ContractProducts on c.ContractId equals cp.ContractId
-                           join eo in context.Operators on c.OperatorId equals eo.OperatorId
-                           join m in context.Merchants on c.EstateId equals m.EstateId
-                           join e in context.Estates on c.EstateId equals e.EstateId
-                           join mc in context.MerchantContracts on new { c.ContractId, m.MerchantId } equals new { mc.ContractId, mc.MerchantId }
-                           where m.MerchantId == merchantId && e.EstateId == estateId
-                           select new
-                           {
-                               Contract = c,
-                               Product = cp,
-                               Operator = eo
-                           }).ToListAsync(cancellationToken);
+            var query = await (from c in context.Contracts
+                               join cp in context.ContractProducts on c.ContractId equals cp.ContractId
+                               join eo in context.Operators on c.OperatorId equals eo.OperatorId
+                               join m in context.Merchants on c.EstateId equals m.EstateId
+                               join e in context.Estates on c.EstateId equals e.EstateId
+                               join mc in context.MerchantContracts on new { c.ContractId, m.MerchantId } equals new { mc.ContractId, mc.MerchantId }
+                               where m.MerchantId == merchantId && e.EstateId == estateId
+                               select new
+                               {
+                                   Contract = c,
+                                   Product = cp,
+                                   Operator = eo
+                               }).ToListAsync(cancellationToken);
 
             List<ContractModel> contracts = new List<ContractModel>();
 
-            foreach (var test in x)
+            foreach (var contractData in query)
             {
-                // attempt to find the contract
-                ContractModel contract = contracts.SingleOrDefault(c => c.ContractId == test.Contract.ContractId);
-
-                if (contract == null)
-                {
-                    // create the contract
-                    contract = new ContractModel
-                    {
-                        OperatorId = test.Contract.OperatorId,
-                        OperatorName = test.Operator.Name,
-                        Products = new List<Product>(),
-                        Description = test.Contract.Description,
-                        IsCreated = true,
-                        ContractId = test.Contract.ContractId,
-                        ContractReportingId = test.Contract.ContractReportingId,
-                        EstateId = estateId
-                    };
-
-                    contracts.Add(contract);
-                }
-
-                // Now add the product if not already added
-                Boolean productFound = contract.Products.Any(p => p.ContractProductId == test.Product.ContractProductId);
-
-                if (productFound == false)
-                {
-                    // Not already there so need to add it
-                    contract.Products.Add(new Product
-                    {
-                        ContractProductId = test.Product.ContractProductId,
-                        ContractProductReportingId = test.Product.ContractProductReportingId,
-                        TransactionFees = null,
-                        Value = test.Product.Value,
-                        Name = test.Product.ProductName,
-                        DisplayText = test.Product.DisplayText
-                    });
-                }
+                ContractModel contract = this.GetOrCreateMerchantContract(contracts, estateId, contractData.Contract, contractData.Operator);
+                this.AddProductIfRequired(contract, contractData.Product);
             }
 
             return Result.Success(contracts);
@@ -1054,6 +1019,35 @@ namespace TransactionProcessor.Repository {
         {
             ResolvedDbContext<EstateManagementContext>? resolvedContext = this.Resolver.Resolve(EstateManagementDatabaseName, estateId.ToString());
             return resolvedContext.Context;
+        }
+
+        private ContractModel GetOrCreateMerchantContract(List<ContractModel> contracts,
+                                                          Guid estateId,
+                                                          Contract contractData,
+                                                          Operator operatorData)
+        {
+            ContractModel contract = contracts.SingleOrDefault(c => c.ContractId == contractData.ContractId);
+
+            if (contract != null)
+            {
+                return contract;
+            }
+
+            contract = new ContractModel
+            {
+                OperatorId = contractData.OperatorId,
+                OperatorName = operatorData.Name,
+                Products = new List<Product>(),
+                Description = contractData.Description,
+                IsCreated = true,
+                ContractId = contractData.ContractId,
+                ContractReportingId = contractData.ContractReportingId,
+                EstateId = estateId
+            };
+
+            contracts.Add(contract);
+
+            return contract;
         }
 
         private ContractModel GetOrCreateContract(List<ContractModel> contracts,
