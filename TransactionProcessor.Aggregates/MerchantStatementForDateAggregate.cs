@@ -168,26 +168,33 @@ public static class MerchantStatementForDateAggregateExtensions
 
     public static MerchantStatementForDate GetStatement(this MerchantStatementForDateAggregate aggregate, Boolean includeStatementLines = false)
     {
-        MerchantStatementForDate merchantStatement = new MerchantStatementForDate
-        {
-            EstateId = aggregate.EstateId,
-            MerchantId = aggregate.MerchantId,
-            MerchantStatementId = aggregate.MerchantStatementId,
-            IsCreated = aggregate.IsCreated,
-            ActivityDate = aggregate.ActivityDate,
-            MerchantStatementForDateId = aggregate.AggregateId,
-            StatementDate = aggregate.StatementDate
-        };
+        MerchantStatementForDate merchantStatement = aggregate.CreateStatement();
 
         if (includeStatementLines)
         {
-            merchantStatement.AddStatementLines(aggregate.Transactions, transaction => transaction.Amount, transaction => transaction.DateTime, TransactionLineType);
-            merchantStatement.AddStatementLines(aggregate.SettledFees, settledFee => settledFee.Amount, settledFee => settledFee.DateTime, SettledFeeLineType);
-            merchantStatement.AddStatementLines(aggregate.Deposits, deposit => deposit.Amount, deposit => deposit.DepositDateTime, DepositLineType);
-            merchantStatement.AddStatementLines(aggregate.Withdrawals, withdrawal => withdrawal.Amount, withdrawal => withdrawal.WithdrawalDateTime, WithdrawalLineType);
+            merchantStatement.PopulateStatementLines(aggregate);
         }
 
         return merchantStatement;
+    }
+
+    private static MerchantStatementForDate CreateStatement(this MerchantStatementForDateAggregate aggregate) => new()
+    {
+        EstateId = aggregate.EstateId,
+        MerchantId = aggregate.MerchantId,
+        MerchantStatementId = aggregate.MerchantStatementId,
+        IsCreated = aggregate.IsCreated,
+        ActivityDate = aggregate.ActivityDate,
+        MerchantStatementForDateId = aggregate.AggregateId,
+        StatementDate = aggregate.StatementDate
+    };
+
+    private static void PopulateStatementLines(this MerchantStatementForDate merchantStatement, MerchantStatementForDateAggregate aggregate)
+    {
+        merchantStatement.AddStatementLines(aggregate.Transactions, transaction => transaction.Amount, transaction => transaction.DateTime, TransactionLineType);
+        merchantStatement.AddStatementLines(aggregate.SettledFees, settledFee => settledFee.Amount, settledFee => settledFee.DateTime, SettledFeeLineType);
+        merchantStatement.AddStatementLines(aggregate.Deposits, deposit => deposit.Amount, deposit => deposit.DepositDateTime, DepositLineType);
+        merchantStatement.AddStatementLines(aggregate.Withdrawals, withdrawal => withdrawal.Amount, withdrawal => withdrawal.WithdrawalDateTime, WithdrawalLineType);
     }
 
     private static void AddStatementLines<T>(this MerchantStatementForDate merchantStatement,
