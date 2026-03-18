@@ -142,44 +142,22 @@ namespace TransactionProcessor.Aggregates
                                                  Guid addressId,
                                                  Address existingAddress,
                                                  Address updatedAddress) {
-            if (existingAddress.AddressLine1 != updatedAddress.AddressLine1) {
-                MerchantDomainEvents.MerchantAddressLine1UpdatedEvent merchantAddressLine1UpdatedEvent = new(merchantAggregate.AggregateId, merchantAggregate.EstateId, addressId, updatedAddress.AddressLine1);
-                merchantAggregate.ApplyAndAppend(merchantAddressLine1UpdatedEvent);
-            }
+            merchantAggregate.ApplyAddressUpdate(existingAddress.AddressLine1, updatedAddress.AddressLine1, () => new MerchantDomainEvents.MerchantAddressLine1UpdatedEvent(merchantAggregate.AggregateId, merchantAggregate.EstateId, addressId, updatedAddress.AddressLine1));
+            merchantAggregate.ApplyAddressUpdate(existingAddress.AddressLine2, updatedAddress.AddressLine2, () => new MerchantDomainEvents.MerchantAddressLine2UpdatedEvent(merchantAggregate.AggregateId, merchantAggregate.EstateId, addressId, updatedAddress.AddressLine2));
+            merchantAggregate.ApplyAddressUpdate(existingAddress.AddressLine3, updatedAddress.AddressLine3, () => new MerchantDomainEvents.MerchantAddressLine3UpdatedEvent(merchantAggregate.AggregateId, merchantAggregate.EstateId, addressId, updatedAddress.AddressLine3));
+            merchantAggregate.ApplyAddressUpdate(existingAddress.AddressLine4, updatedAddress.AddressLine4, () => new MerchantDomainEvents.MerchantAddressLine4UpdatedEvent(merchantAggregate.AggregateId, merchantAggregate.EstateId, addressId, updatedAddress.AddressLine4));
+            merchantAggregate.ApplyAddressUpdate(existingAddress.Country, updatedAddress.Country, () => new MerchantDomainEvents.MerchantCountyUpdatedEvent(merchantAggregate.AggregateId, merchantAggregate.EstateId, addressId, updatedAddress.Country));
+            merchantAggregate.ApplyAddressUpdate(existingAddress.PostalCode, updatedAddress.PostalCode, () => new MerchantDomainEvents.MerchantPostalCodeUpdatedEvent(merchantAggregate.AggregateId, merchantAggregate.EstateId, addressId, updatedAddress.PostalCode));
+            merchantAggregate.ApplyAddressUpdate(existingAddress.Region, updatedAddress.Region, () => new MerchantDomainEvents.MerchantRegionUpdatedEvent(merchantAggregate.AggregateId, merchantAggregate.EstateId, addressId, updatedAddress.Region));
+            merchantAggregate.ApplyAddressUpdate(existingAddress.Town, updatedAddress.Town, () => new MerchantDomainEvents.MerchantTownUpdatedEvent(merchantAggregate.AggregateId, merchantAggregate.EstateId, addressId, updatedAddress.Town));
+        }
 
-            if (existingAddress.AddressLine2 != updatedAddress.AddressLine2) {
-                MerchantDomainEvents.MerchantAddressLine2UpdatedEvent merchantAddressLine2UpdatedEvent = new(merchantAggregate.AggregateId, merchantAggregate.EstateId, addressId, updatedAddress.AddressLine2);
-                merchantAggregate.ApplyAndAppend(merchantAddressLine2UpdatedEvent);
-            }
-
-            if (existingAddress.AddressLine3 != updatedAddress.AddressLine3) {
-                MerchantDomainEvents.MerchantAddressLine3UpdatedEvent merchantAddressLine3UpdatedEvent = new(merchantAggregate.AggregateId, merchantAggregate.EstateId, addressId, updatedAddress.AddressLine3);
-                merchantAggregate.ApplyAndAppend(merchantAddressLine3UpdatedEvent);
-            }
-
-            if (existingAddress.AddressLine4 != updatedAddress.AddressLine4) {
-                MerchantDomainEvents.MerchantAddressLine4UpdatedEvent merchantAddressLine4UpdatedEvent = new(merchantAggregate.AggregateId, merchantAggregate.EstateId, addressId, updatedAddress.AddressLine4);
-                merchantAggregate.ApplyAndAppend(merchantAddressLine4UpdatedEvent);
-            }
-
-            if (existingAddress.Country != updatedAddress.Country) {
-                MerchantDomainEvents.MerchantCountyUpdatedEvent merchantCountyUpdatedEvent = new(merchantAggregate.AggregateId, merchantAggregate.EstateId, addressId, updatedAddress.Country);
-                merchantAggregate.ApplyAndAppend(merchantCountyUpdatedEvent);
-            }
-
-            if (existingAddress.PostalCode != updatedAddress.PostalCode) {
-                MerchantDomainEvents.MerchantPostalCodeUpdatedEvent merchantPostalCodeUpdatedEvent = new(merchantAggregate.AggregateId, merchantAggregate.EstateId, addressId, updatedAddress.PostalCode);
-                merchantAggregate.ApplyAndAppend(merchantPostalCodeUpdatedEvent);
-            }
-
-            if (existingAddress.Region != updatedAddress.Region) {
-                MerchantDomainEvents.MerchantRegionUpdatedEvent merchantRegionUpdatedEvent = new(merchantAggregate.AggregateId, merchantAggregate.EstateId, addressId, updatedAddress.Region);
-                merchantAggregate.ApplyAndAppend(merchantRegionUpdatedEvent);
-            }
-
-            if (existingAddress.Town != updatedAddress.Town) {
-                MerchantDomainEvents.MerchantTownUpdatedEvent merchantTownUpdatedEvent = new(merchantAggregate.AggregateId, merchantAggregate.EstateId, addressId, updatedAddress.Town);
-                merchantAggregate.ApplyAndAppend(merchantTownUpdatedEvent);
+        private static void ApplyAddressUpdate<T>(this MerchantAggregate merchantAggregate,
+                                                  T existingValue,
+                                                  T updatedValue,
+                                                  Func<IDomainEvent> createEvent) {
+            if (EqualityComparer<T>.Default.Equals(existingValue, updatedValue) == false) {
+                merchantAggregate.ApplyAndAppend(createEvent());
             }
         }
 
