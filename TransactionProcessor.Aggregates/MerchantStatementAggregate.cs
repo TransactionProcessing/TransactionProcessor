@@ -249,17 +249,15 @@ namespace TransactionProcessor.Aggregates
             return Result.Success();
         }
 
-        public static Result AddDailySummaryRecord(this MerchantStatementAggregate aggregate, DateTime activityDate, 
-                                                 Int32 numberOfTransactions, Decimal valueOfTransactions, 
-                                                 Int32 numberOfSettledFees, Decimal valueOfSettledFees,
-                                                 Int32 numberOfDepoits, Decimal valueOfDepoits,
-                                                 Int32 numberOfWithdrawals, Decimal valueOfWithdrawals) {
+        public static Result AddDailySummaryRecord(this MerchantStatementAggregate aggregate,
+                                                   DateTime activityDate,
+                                                   MerchantStatementSummaryTotals summaryTotals) {
             if (aggregate.MerchantStatementSummaries.Any(s => s.ActivityDate == activityDate)) {
                 return Result.Success();
             }
 
             MerchantStatementDomainEvents.StatementSummaryForDateEvent statementSummaryForDateEvent = new(aggregate.AggregateId, aggregate.EstateId, aggregate.MerchantId, activityDate,aggregate.MerchantStatementSummaries.Count +1
-                ,numberOfTransactions, valueOfTransactions, numberOfSettledFees, valueOfSettledFees, numberOfDepoits, valueOfDepoits, numberOfWithdrawals, valueOfWithdrawals);
+                ,summaryTotals.NumberOfTransactions, summaryTotals.ValueOfTransactions, summaryTotals.NumberOfSettledFees, summaryTotals.ValueOfSettledFees, summaryTotals.NumberOfDeposits, summaryTotals.ValueOfDeposits, summaryTotals.NumberOfWithdrawals, summaryTotals.ValueOfWithdrawals);
             aggregate.ApplyAndAppend(statementSummaryForDateEvent);
 
             return Result.Success();
@@ -267,4 +265,12 @@ namespace TransactionProcessor.Aggregates
     }
 
     public record MerchantStatementSummary(DateTime ActivityDate, Int32 NumberOfTransactions, Decimal ValueOfTransactions, Int32 NumberOfSettledFees, Decimal ValueOfSettledFees);
+    public record MerchantStatementSummaryTotals(Int32 NumberOfTransactions,
+                                                 Decimal ValueOfTransactions,
+                                                 Int32 NumberOfSettledFees,
+                                                 Decimal ValueOfSettledFees,
+                                                 Int32 NumberOfDeposits,
+                                                 Decimal ValueOfDeposits,
+                                                 Int32 NumberOfWithdrawals,
+                                                 Decimal ValueOfWithdrawals);
 }

@@ -87,8 +87,8 @@ namespace TransactionProcessor.Aggregates.Tests
         public void MerchantStatementAggregate_AddDailySummaryRecord_RecordIsAdded()
         {
             MerchantStatementAggregate merchantStatementAggregate = MerchantStatementAggregate.Create(TestData.MerchantStatementId);
-            Result result = merchantStatementAggregate.AddDailySummaryRecord(TestData.TransactionDateTime.Date, 1, 100.00m, 1, 0.10m,
-                1, 1000, 1, 200);
+            Result result = merchantStatementAggregate.AddDailySummaryRecord(TestData.TransactionDateTime.Date,
+                new MerchantStatementSummaryTotals(1, 100.00m, 1, 0.10m, 1, 1000, 1, 200));
             result.IsSuccess.ShouldBeTrue();
         }
 
@@ -96,10 +96,10 @@ namespace TransactionProcessor.Aggregates.Tests
         public void MerchantStatementAggregate_AddDailySummaryRecord_DuplicateAdd_ExceptionIsThrown()
         {
             MerchantStatementAggregate merchantStatementAggregate = MerchantStatementAggregate.Create(TestData.MerchantStatementId);
-            merchantStatementAggregate.AddDailySummaryRecord(TestData.TransactionDateTime.Date, 1, 100.00m, 1, 0.10m,
-                1, 1000, 1, 200);
-            Result result = merchantStatementAggregate.AddDailySummaryRecord(TestData.TransactionDateTime.Date, 1, 100.00m, 1, 0.10m,
-                1, 1000, 1, 200);
+            merchantStatementAggregate.AddDailySummaryRecord(TestData.TransactionDateTime.Date,
+                new MerchantStatementSummaryTotals(1, 100.00m, 1, 0.10m, 1, 1000, 1, 200));
+            Result result = merchantStatementAggregate.AddDailySummaryRecord(TestData.TransactionDateTime.Date,
+                new MerchantStatementSummaryTotals(1, 100.00m, 1, 0.10m, 1, 1000, 1, 200));
             result.IsSuccess.ShouldBeTrue();
         }
 
@@ -108,8 +108,8 @@ namespace TransactionProcessor.Aggregates.Tests
         public void MerchantStatementAggregate_GenerateStatement_StatementIsGenerated()
         {
             MerchantStatementAggregate merchantStatementAggregate = MerchantStatementAggregate.Create(TestData.MerchantStatementId);
-            merchantStatementAggregate.AddDailySummaryRecord(TestData.TransactionDateTime.Date, 1, 100.00m, 1, 0.10m,
-                1, 1000, 1, 200);
+            merchantStatementAggregate.AddDailySummaryRecord(TestData.TransactionDateTime.Date,
+                new MerchantStatementSummaryTotals(1, 100.00m, 1, 0.10m, 1, 1000, 1, 200));
             Result result = merchantStatementAggregate.GenerateStatement(TestData.StatementGeneratedDate);
             result.IsSuccess.ShouldBeTrue();
 
@@ -121,7 +121,8 @@ namespace TransactionProcessor.Aggregates.Tests
         public void MerchantStatementAggregate_GenerateStatement_StatementIsAlreadyGenerated_ExceptionThrown()
         {
             MerchantStatementAggregate merchantStatementAggregate = MerchantStatementAggregate.Create(TestData.MerchantStatementId);
-            merchantStatementAggregate.AddDailySummaryRecord(TestData.TransactionDateTime.Date, 1, 100.00m, 1, 0.10m, 1, 1000, 1, 200);
+            merchantStatementAggregate.AddDailySummaryRecord(TestData.TransactionDateTime.Date,
+                new MerchantStatementSummaryTotals(1, 100.00m, 1, 0.10m, 1, 1000, 1, 200));
             merchantStatementAggregate.GenerateStatement(TestData.StatementGeneratedDate);
 
             Result result = merchantStatementAggregate.GenerateStatement(TestData.StatementGeneratedDate);
@@ -142,7 +143,8 @@ namespace TransactionProcessor.Aggregates.Tests
         public void MerchantStatementAggregate_BuildStatement_StatementIsBuilt()
         {
             MerchantStatementAggregate merchantStatementAggregate = MerchantStatementAggregate.Create(TestData.MerchantStatementId);
-            merchantStatementAggregate.AddDailySummaryRecord(TestData.TransactionDateTime.Date, 1, 100.00m, 1, 0.10m, 1, 1000, 1, 200);
+            merchantStatementAggregate.AddDailySummaryRecord(TestData.TransactionDateTime.Date,
+                new MerchantStatementSummaryTotals(1, 100.00m, 1, 0.10m, 1, 1000, 1, 200));
             merchantStatementAggregate.GenerateStatement(TestData.StatementGeneratedDate);
             Result result = merchantStatementAggregate.BuildStatement(TestData.StatementBuiltDate, TestData.StatementData);
             result.IsSuccess.ShouldBeTrue();
@@ -155,7 +157,8 @@ namespace TransactionProcessor.Aggregates.Tests
         public void MerchantStatementAggregate_BuildStatement_StatementIsAlreadyBuilt_NoErrorThrown()
         {
             MerchantStatementAggregate merchantStatementAggregate = MerchantStatementAggregate.Create(TestData.MerchantStatementId);
-            merchantStatementAggregate.AddDailySummaryRecord(TestData.TransactionDateTime.Date, 1, 100.00m, 1, 0.10m, 1, 1000, 1, 200);
+            merchantStatementAggregate.AddDailySummaryRecord(TestData.TransactionDateTime.Date,
+                new MerchantStatementSummaryTotals(1, 100.00m, 1, 0.10m, 1, 1000, 1, 200));
             merchantStatementAggregate.GenerateStatement(TestData.StatementGeneratedDate);
             merchantStatementAggregate.BuildStatement(TestData.StatementBuiltDate, TestData.StatementData);
 
@@ -167,7 +170,8 @@ namespace TransactionProcessor.Aggregates.Tests
         public void MerchantStatementAggregate_BuildStatement_StatementIsNotGenerated_ExceptionThrown()
         {
             MerchantStatementAggregate merchantStatementAggregate = MerchantStatementAggregate.Create(TestData.MerchantStatementId);
-            merchantStatementAggregate.AddDailySummaryRecord(TestData.TransactionDateTime.Date, 1, 100.00m, 1, 0.10m, 1, 1000, 1, 200);
+            merchantStatementAggregate.AddDailySummaryRecord(TestData.TransactionDateTime.Date,
+                new MerchantStatementSummaryTotals(1, 100.00m, 1, 0.10m, 1, 1000, 1, 200));
 
             Result result = merchantStatementAggregate.BuildStatement(TestData.StatementBuiltDate, TestData.StatementData);
             result.IsFailed.ShouldBeTrue();
@@ -178,7 +182,8 @@ namespace TransactionProcessor.Aggregates.Tests
         public void MerchantStatementAggregate_EmailStatement_StatementIsEmailed()
         {
             MerchantStatementAggregate merchantStatementAggregate = MerchantStatementAggregate.Create(TestData.MerchantStatementId);
-            merchantStatementAggregate.AddDailySummaryRecord(TestData.TransactionDateTime.Date, 1, 100.00m, 1, 0.10m, 1, 1000, 1, 200);
+            merchantStatementAggregate.AddDailySummaryRecord(TestData.TransactionDateTime.Date,
+                new MerchantStatementSummaryTotals(1, 100.00m, 1, 0.10m, 1, 1000, 1, 200));
             merchantStatementAggregate.GenerateStatement(TestData.StatementGeneratedDate);
             merchantStatementAggregate.BuildStatement(TestData.StatementBuiltDate, TestData.StatementData);
 
@@ -193,7 +198,8 @@ namespace TransactionProcessor.Aggregates.Tests
         public void MerchantStatementAggregate_EmailStatement_StatementIsAlreadyEmailed_ExceptionThrown()
         {
             MerchantStatementAggregate merchantStatementAggregate = MerchantStatementAggregate.Create(TestData.MerchantStatementId);
-            merchantStatementAggregate.AddDailySummaryRecord(TestData.TransactionDateTime.Date, 1, 100.00m, 1, 0.10m, 1, 1000, 1, 200);
+            merchantStatementAggregate.AddDailySummaryRecord(TestData.TransactionDateTime.Date,
+                new MerchantStatementSummaryTotals(1, 100.00m, 1, 0.10m, 1, 1000, 1, 200));
             merchantStatementAggregate.GenerateStatement(TestData.StatementGeneratedDate);
             merchantStatementAggregate.BuildStatement(TestData.StatementBuiltDate, TestData.StatementData);
             merchantStatementAggregate.EmailStatement(TestData.StatementEmailedDate, TestData.MessageId);
@@ -206,7 +212,8 @@ namespace TransactionProcessor.Aggregates.Tests
         public void MerchantStatementAggregate_EmailStatement_StatementIsNotBuilt_ExceptionThrown()
         {
             MerchantStatementAggregate merchantStatementAggregate = MerchantStatementAggregate.Create(TestData.MerchantStatementId);
-            merchantStatementAggregate.AddDailySummaryRecord(TestData.TransactionDateTime.Date, 1, 100.00m, 1, 0.10m, 1, 1000, 1, 200);
+            merchantStatementAggregate.AddDailySummaryRecord(TestData.TransactionDateTime.Date,
+                new MerchantStatementSummaryTotals(1, 100.00m, 1, 0.10m, 1, 1000, 1, 200));
             merchantStatementAggregate.GenerateStatement(TestData.StatementGeneratedDate);
 
             var result = merchantStatementAggregate.EmailStatement(TestData.StatementEmailedDate, TestData.MessageId);

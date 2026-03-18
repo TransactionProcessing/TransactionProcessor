@@ -33,8 +33,8 @@ namespace TransactionProcessor.BusinessLogic.Tests.Services {
             merchantStatementAggregate = new MerchantStatementAggregate();
             merchantStatementAggregate.RecordActivityDateOnStatement(TestData.MerchantStatementId, TestData.StatementDate, TestData.EstateId, TestData.MerchantId, TestData.MerchantStatementForDateId1, new DateTime(2025, 5, 1));
             merchantStatementAggregate.RecordActivityDateOnStatement(TestData.MerchantStatementId, TestData.StatementDate, TestData.EstateId, TestData.MerchantId, TestData.MerchantStatementForDateId2, new DateTime(2025, 5, 2));
-            merchantStatementAggregate.AddDailySummaryRecord(new DateTime(2025, 5, 1), 100, 1000.00m, 100, 10.00m, 1, 1000, 1, 200);
-            merchantStatementAggregate.AddDailySummaryRecord(new DateTime(2025, 5, 2), 200, 2000.00m, 200, 20.00m, 2, 1000, 2, 200);
+            merchantStatementAggregate.AddDailySummaryRecord(new DateTime(2025, 5, 1), new MerchantStatementSummaryTotals(100, 1000.00m, 100, 10.00m, 1, 1000, 1, 200));
+            merchantStatementAggregate.AddDailySummaryRecord(new DateTime(2025, 5, 2), new MerchantStatementSummaryTotals(200, 2000.00m, 200, 20.00m, 2, 1000, 2, 200));
             merchantStatementAggregate.GenerateStatement(TestData.GeneratedDateTime);
 
             // Setup file system mocks for templates and CSS
@@ -74,8 +74,8 @@ namespace TransactionProcessor.BusinessLogic.Tests.Services {
             var merchantStatementAggregate = new MerchantStatementAggregate();
             merchantStatementAggregate.RecordActivityDateOnStatement(TestData.MerchantStatementId, TestData.StatementDate, TestData.EstateId, TestData.MerchantId, TestData.MerchantStatementForDateId1, new DateTime(2025, 5, 1));
             merchantStatementAggregate.RecordActivityDateOnStatement(TestData.MerchantStatementId, TestData.StatementDate, TestData.EstateId, TestData.MerchantId, TestData.MerchantStatementForDateId2, new DateTime(2025, 5, 2));
-            merchantStatementAggregate.AddDailySummaryRecord(new DateTime(2025, 5, 1), 100, 1000.00m, 100, 10.00m, 1, 1000, 1, 200);
-            merchantStatementAggregate.AddDailySummaryRecord(new DateTime(2025, 5, 2), 200, 2000.00m, 200, 20.00m, 2, 1000, 2, 200);
+            merchantStatementAggregate.AddDailySummaryRecord(new DateTime(2025, 5, 1), new MerchantStatementSummaryTotals(100, 1000.00m, 100, 10.00m, 1, 1000, 1, 200));
+            merchantStatementAggregate.AddDailySummaryRecord(new DateTime(2025, 5, 2), new MerchantStatementSummaryTotals(200, 2000.00m, 200, 20.00m, 2, 1000, 2, 200));
             
             // Act
             Result<String> htmlResult = await _builder.GetStatementHtml(merchantStatementAggregate, _merchant, _cancellationToken);
@@ -90,8 +90,8 @@ namespace TransactionProcessor.BusinessLogic.Tests.Services {
             var merchantStatementAggregate = new MerchantStatementAggregate();
             merchantStatementAggregate.RecordActivityDateOnStatement(TestData.MerchantStatementId, TestData.StatementDate, TestData.EstateId, TestData.MerchantId, TestData.MerchantStatementForDateId1, new DateTime(2025, 5, 1));
             merchantStatementAggregate.RecordActivityDateOnStatement(TestData.MerchantStatementId, TestData.StatementDate, TestData.EstateId, TestData.MerchantId, TestData.MerchantStatementForDateId2, new DateTime(2025, 5, 2));
-            merchantStatementAggregate.AddDailySummaryRecord(new DateTime(2025, 5, 1), 100, 1000.00m, 100, 10.00m, 1, 1000, 1, 200);
-            merchantStatementAggregate.AddDailySummaryRecord(new DateTime(2025, 5, 2), 200, 2000.00m, 200, 20.00m, 2, 1000, 2, 200);
+            merchantStatementAggregate.AddDailySummaryRecord(new DateTime(2025, 5, 1), new MerchantStatementSummaryTotals(100, 1000.00m, 100, 10.00m, 1, 1000, 1, 200));
+            merchantStatementAggregate.AddDailySummaryRecord(new DateTime(2025, 5, 2), new MerchantStatementSummaryTotals(200, 2000.00m, 200, 20.00m, 2, 1000, 2, 200));
             merchantStatementAggregate.GenerateStatement(TestData.GeneratedDateTime);
             merchantStatementAggregate.BuildStatement(TestData.StatementBuiltDate, "<html>statement</html>");
             // Act
