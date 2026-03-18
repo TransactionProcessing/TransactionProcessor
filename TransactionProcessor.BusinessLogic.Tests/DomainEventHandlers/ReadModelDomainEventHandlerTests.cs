@@ -1,7 +1,9 @@
+using System;
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 using Moq;
+using Shared.DomainDrivenDesign.EventSourcing;
 using Shared.Logger;
 using Shouldly;
 using SimpleResults;
@@ -15,6 +17,8 @@ namespace TransactionProcessor.BusinessLogic.Tests.DomainEventHandlers;
 
 public class ReadModelDomainEventHandlerTests
 {
+    private sealed record UnhandledDomainEvent() : DomainEvent(Guid.NewGuid(), Guid.NewGuid());
+
     private readonly Mock<ITransactionProcessorReadModelRepository> EstateReportingRepository;
     private readonly ReadModelDomainEventHandler DomainEventHandler;
 
@@ -63,5 +67,16 @@ public class ReadModelDomainEventHandlerTests
         result.IsFailed.ShouldBeTrue();
         this.EstateReportingRepository.Verify(r => r.MarkStatementAsGenerated(domainEvent, It.IsAny<CancellationToken>()), Times.Once);
         this.EstateReportingRepository.Verify(r => r.UpdateMerchant(domainEvent, It.IsAny<CancellationToken>()), Times.Never);
+    }
+
+    [Fact]
+    public async Task ReadModelDomainEventHandler_Handle_UnhandledDomainEvent_ReturnsSuccessWithoutRepositoryCalls()
+    {
+        UnhandledDomainEvent domainEvent = new();
+
+        Result result = await this.DomainEventHandler.Handle(domainEvent, CancellationToken.None);
+
+        result.IsSuccess.ShouldBeTrue();
+        this.EstateReportingRepository.VerifyNoOtherCalls();
     }
 }

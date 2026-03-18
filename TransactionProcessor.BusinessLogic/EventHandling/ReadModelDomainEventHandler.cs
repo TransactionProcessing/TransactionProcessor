@@ -33,7 +33,11 @@ namespace TransactionProcessor.BusinessLogic.EventHandling
         }
 
         public Task<Result> Handle(IDomainEvent domainEvent,
-                                   CancellationToken cancellationToken)
+                                   CancellationToken cancellationToken) =>
+            this.TryHandleDomainEvent(domainEvent, cancellationToken) ?? Task.FromResult(Result.Success());
+
+        private Task<Result> TryHandleDomainEvent(IDomainEvent domainEvent,
+                                                  CancellationToken cancellationToken)
         {
             foreach (Func<IDomainEvent, CancellationToken, Task<Result>> domainEventHandler in this.DomainEventHandlers)
             {
@@ -44,7 +48,7 @@ namespace TransactionProcessor.BusinessLogic.EventHandling
                 }
             }
 
-            return Task.FromResult(Result.Success());
+            return null;
         }
 
         private Task<Result> HandleEstateDomainEvent(IDomainEvent domainEvent,
