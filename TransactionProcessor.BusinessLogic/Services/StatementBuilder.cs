@@ -67,8 +67,8 @@ namespace TransactionProcessor.BusinessLogic.Services
                 return Result.Invalid("Statement has not yet been generated");
 
             String mainHtml = await this.FileSystem.File.ReadAllTextAsync($"{path}/Templates/Email/statement.html", cancellationToken);
-
-            var anonymousHeader = new {
+            List<(Int32 lineNumber, MerchantStatementLine statementLine)> statementLines = statementHeader.GetStatementLines();
+            mainHtml = this.ReplaceTokens(mainHtml, new {
                 StatementId = statementAggregate.AggregateId,
                 EstateName = "Demo Estate",
                 MerchantName = merchant.MerchantName,
@@ -79,46 +79,50 @@ namespace TransactionProcessor.BusinessLogic.Services
                 MerchantPostcode = merchant.Addresses.First().PostalCode,
                 MerchantContactNumber = merchant.Contacts.First().ContactPhoneNumber,
                 StatementDate = statementHeader.StatementDate,
-            };
-
-            List<(Int32 lineNumber, MerchantStatementLine statementLine)> statementLines = statementHeader.GetStatementLines();
-
-            var anonymousFooter = new { StatementTotal = statementLines.Sum(sl => sl.statementLine.Amount), TransactionsValue = statementLines.Where(sl => sl.statementLine.LineType == 1).Sum(sl => sl.statementLine.Amount), TransactionFeesValue = statementLines.Where(sl => sl.statementLine.LineType == 2).Sum(sl => sl.statementLine.Amount) };
-
-            // Statement header class first
-            PropertyInfo[] statementHeaderProperties = anonymousHeader.GetType().GetProperties(BindingFlags.Public | BindingFlags.Instance);
-
-            // Do the replaces for the transaction
-            foreach (PropertyInfo propertyInfo in statementHeaderProperties) {
-                mainHtml = mainHtml.Replace($"[{propertyInfo.Name}]", propertyInfo.GetValue(anonymousHeader)?.ToString());
-            }
-
-            PropertyInfo[] statementFooterProperties = anonymousFooter.GetType().GetProperties(BindingFlags.Public | BindingFlags.Instance);
-
-            // Do the replaces for the transaction
-            foreach (PropertyInfo propertyInfo in statementFooterProperties) {
-                mainHtml = mainHtml.Replace($"[{propertyInfo.Name}]", propertyInfo.GetValue(anonymousFooter)?.ToString());
-            }
-
-            StringBuilder lines = new StringBuilder();
-            String lineHtml = await this.FileSystem.File.ReadAllTextAsync($"{path}/Templates/Email/statementline.html", cancellationToken);
-            foreach ((Int32 lineNumber, MerchantStatementLine statementLine) statementLineContainer in statementHeader.GetStatementLines()) {
-                var anonymousLine = new { StatementLineNumber = statementLineContainer.lineNumber + 1, StatementLineDate = statementLineContainer.statementLine.DateTime.ToString("dd/MM/yyyy"), StatementLineDescription = statementLineContainer.statementLine.Description, StatementLineAmount = statementLineContainer.statementLine.Amount };
-                PropertyInfo[] statementLineProperties = anonymousLine.GetType().GetProperties(BindingFlags.Public | BindingFlags.Instance);
-                foreach (PropertyInfo propertyInfo in statementLineProperties) {
-                    lineHtml = lineHtml.Replace($"[{propertyInfo.Name}]", propertyInfo.GetValue(anonymousLine)?.ToString());
-                }
-
-                lines.Append(lineHtml);
-            }
-
-            mainHtml = mainHtml.Replace("[StatementLinesData]", lines.ToString());
+            });
+            mainHtml = this.ReplaceTokens(mainHtml, new {
+                StatementTotal = statementLines.Sum(sl => sl.statementLine.Amount),
+                TransactionsValue = statementLines.Where(sl => sl.statementLine.LineType == 1).Sum(sl => sl.statementLine.Amount),
+                TransactionFeesValue = statementLines.Where(sl => sl.statementLine.LineType == 2).Sum(sl => sl.statementLine.Amount)
+            });
+            mainHtml = mainHtml.Replace("[StatementLinesData]", await this.BuildStatementLinesHtml(path, statementLines, cancellationToken));
 
             mainHtml = await this.AddCSSToHtml(mainHtml, "{bootstrapcss}", "bootstrap/css/bootstrap.min.css", cancellationToken);
             mainHtml = await this.AddCSSToHtml(mainHtml, "{fontawesomemincss}", "fontawesome/css/fontawesome.min.css", cancellationToken);
             mainHtml = await this.AddCSSToHtml(mainHtml, "{fontawesomesolidcss}", "fontawesome/css/solid.css", cancellationToken);
 
             return Result.Success<String>(mainHtml);
+        }
+
+        private async Task<String> BuildStatementLinesHtml(IDirectoryInfo path,
+                                                           List<(Int32 lineNumber, MerchantStatementLine statementLine)> statementLines,
+                                                           CancellationToken cancellationToken)
+        {
+            StringBuilder lines = new StringBuilder();
+            String lineHtml = await this.FileSystem.File.ReadAllTextAsync($"{path}/Templates/Email/statementline.html", cancellationToken);
+
+            foreach ((Int32 lineNumber, MerchantStatementLine statementLine) statementLineContainer in statementLines) {
+                lines.Append(this.ReplaceTokens(lineHtml, new {
+                    StatementLineNumber = statementLineContainer.lineNumber + 1,
+                    StatementLineDate = statementLineContainer.statementLine.DateTime.ToString("dd/MM/yyyy"),
+                    StatementLineDescription = statementLineContainer.statementLine.Description,
+                    StatementLineAmount = statementLineContainer.statementLine.Amount
+                }));
+            }
+
+            return lines.ToString();
+        }
+
+        private String ReplaceTokens(String html,
+                                     Object tokenSource)
+        {
+            PropertyInfo[] properties = tokenSource.GetType().GetProperties(BindingFlags.Public | BindingFlags.Instance);
+
+            foreach (PropertyInfo propertyInfo in properties) {
+                html = html.Replace($"[{propertyInfo.Name}]", propertyInfo.GetValue(tokenSource)?.ToString());
+            }
+
+            return html;
         }
 
         private async Task<String> AddCSSToHtml(String html, String tag, String fileName, CancellationToken cancellationToken) {

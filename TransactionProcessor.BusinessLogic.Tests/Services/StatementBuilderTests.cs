@@ -58,6 +58,8 @@ namespace TransactionProcessor.BusinessLogic.Tests.Services {
             html.ShouldContain(this._merchant.Addresses.First().AddressLine1);
             html.ShouldContain("Transactions");
             html.ShouldContain("Fees");
+            html.ShouldContain("01/05/2025");
+            html.ShouldContain("02/05/2025");
             html.ShouldContain("100");
             html.ShouldContain("10");
             html.ShouldContain("body{color:red;}");
