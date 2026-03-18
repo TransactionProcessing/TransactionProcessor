@@ -151,7 +151,10 @@ namespace TransactionProcessor.BusinessLogic.Services
                                                                                                                                                                              sl) => new { Count = acc.Count + 1, TotalAmount = acc.TotalAmount + sl.Amount });
                     var withdrawalsResult = merchantStatementForDateAggregate.GetStatementLines().Where(sl => sl.LineType == 4).Aggregate(new { Count = 0, TotalAmount = 0m }, (acc,
                                                                                                                                                                                 sl) => new { Count = acc.Count + 1, TotalAmount = acc.TotalAmount + sl.Amount });
-                    Result result = merchantStatementAggregate.AddDailySummaryRecord(merchantStatementForDateAggregate.ActivityDate, transactionsResult.Count, transactionsResult.TotalAmount, settledFeesResult.Count, settledFeesResult.TotalAmount, depositsResult.Count, depositsResult.TotalAmount, withdrawalsResult.Count, withdrawalsResult.TotalAmount);
+                    Result result = merchantStatementAggregate.AddDailySummaryRecord(merchantStatementForDateAggregate.ActivityDate,
+                        new MerchantStatementSummaryTotals(transactionsResult.Count, transactionsResult.TotalAmount,
+                            settledFeesResult.Count, settledFeesResult.TotalAmount, depositsResult.Count, depositsResult.TotalAmount,
+                            withdrawalsResult.Count, withdrawalsResult.TotalAmount));
                     if (result.IsFailed)
                         return ResultHelpers.CreateFailure(result);
                 }

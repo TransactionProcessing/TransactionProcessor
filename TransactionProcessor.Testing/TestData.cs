@@ -2617,7 +2617,7 @@ namespace TransactionProcessor.Testing
             {
                 MerchantStatementAggregate aggregate = MerchantStatementAggregate.Create(MerchantStatementId);
                 aggregate.RecordActivityDateOnStatement(MerchantStatementId, StatementDate, EstateId, MerchantId, MerchantStatementForDateId1, ActivityDate1);
-                aggregate.AddDailySummaryRecord(ActivityDate1, 1, 100, 1,0.10m, 1,1000, 1,200);
+                aggregate.AddDailySummaryRecord(ActivityDate1, new MerchantStatementSummaryTotals(1, 100, 1, 0.10m, 1, 1000, 1, 200));
                 aggregate.GenerateStatement(StatementGeneratedDate);
                 return aggregate;
             }
@@ -2626,7 +2626,7 @@ namespace TransactionProcessor.Testing
             {
                 MerchantStatementAggregate aggregate = MerchantStatementAggregate.Create(MerchantStatementId);
                 aggregate.RecordActivityDateOnStatement(MerchantStatementId, StatementDate, EstateId, MerchantId, MerchantStatementForDateId1, ActivityDate1);
-                aggregate.AddDailySummaryRecord(ActivityDate1, 1, 100, 1, 0.10m, 1, 1000, 1, 200);
+                aggregate.AddDailySummaryRecord(ActivityDate1, new MerchantStatementSummaryTotals(1, 100, 1, 0.10m, 1, 1000, 1, 200));
                 aggregate.GenerateStatement(StatementGeneratedDate);
                 aggregate.BuildStatement(StatementBuiltDate,StatementData);
                 return aggregate;
