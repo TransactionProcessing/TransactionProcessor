@@ -225,7 +225,7 @@ namespace TransactionProcessor.BusinessLogic.Services
 
             SendEmailRequest sendEmailRequest = new SendEmailRequest
             {
-                Body = "<html><body>Please find attached this months statement.</body></html>",
+                Body = "<html><body>Please find attached this month's statement.</body></html>",
                 ConnectionIdentifier = command.EstateId,
                 FromAddress = ConfigurationReader.GetValueOrDefault("AppSettings", "FromEmailAddress", "golfhandicapping@btinternet.com"),
                 IsHtml = true,
