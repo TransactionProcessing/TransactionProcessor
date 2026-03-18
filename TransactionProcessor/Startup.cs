@@ -111,10 +111,7 @@ namespace TransactionProcessor
             Logger.Initialise(logger);
 
             Startup.Configuration.LogConfiguration(Logger.LogWarning);
-
-            foreach (KeyValuePair<Type, String> type in TypeMap.Map) {
-                Logger.LogInformation($"Type name {type.Value} mapped to {type.Key.Name}");
-            }
+            this.LogTypeMappings();
             app.UseMiddleware<TenantMiddleware>();
             app.AddRequestResponseLogging();
             app.AddExceptionHandler();
@@ -125,44 +122,14 @@ namespace TransactionProcessor
             app.UseAuthorization();
             app.UseMetricServer(s => {
             });
-            app.UseEndpoints(endpoints => {
-                                 endpoints.MapControllers();
-                                 endpoints.MapHealthChecks("health",
-                                                           new HealthCheckOptions {
-                                                                                      Predicate = _ => true,
-                                                                                      ResponseWriter = Shared.HealthChecks.HealthCheckMiddleware.WriteResponse
-                                                                                  });
-                                 endpoints.MapHealthChecks("healthui",
-                                                           new HealthCheckOptions
-                                                           {
-                                                               Predicate = _ => true,
-                                                               ResponseWriter = UIResponseWriter.WriteHealthCheckUIResponse
-                                                           });
-                                 endpoints.MapEstateEndpoints();
-                                 endpoints.MapMerchantEndpoints();
-                                 endpoints.MapContractEndpoints();
-                                 endpoints.MapOperatorEndpoints();
-                                 endpoints.MapFloatEndpoints();
-                                 endpoints.MapVoucherEndpoints();
-                                 endpoints.MapTransactionEndpoints();
-                                 endpoints.MapSettlementEndpoints();
-            });
+            this.ConfigureEndpoints(app);
 
             app.UseSwagger();
 
             app.UseSwaggerUI();
 
             app.PreWarm();
-
-            var loadedTokensAssemblies = AppDomain.CurrentDomain
-                .GetAssemblies()
-                .Where(a => a.GetName().Name == "Microsoft.IdentityModel.Tokens")
-                .ToList();
-
-            foreach (var asm in loadedTokensAssemblies)
-            {
-                Console.WriteLine($"[Trace] Tokens Assembly: {asm.Location} — Version: {asm.GetName().Version}");
-            }
+            this.TraceLoadedTokenAssemblies();
         }
 
         public void ConfigureContainer(ServiceRegistry services) {
@@ -185,6 +152,46 @@ namespace TransactionProcessor
             Startup.Container = new Container(services);
 
             Startup.ServiceProvider = services.BuildServiceProvider();
+        }
+
+        private void ConfigureEndpoints(IApplicationBuilder app) {
+            app.UseEndpoints(endpoints => {
+                                 endpoints.MapControllers();
+                                 endpoints.MapHealthChecks("health",
+                                                           new HealthCheckOptions {
+                                                                                      Predicate = _ => true,
+                                                                                      ResponseWriter = Shared.HealthChecks.HealthCheckMiddleware.WriteResponse
+                                                                                  });
+                                 endpoints.MapHealthChecks("healthui",
+                                                           new HealthCheckOptions {
+                                                                                      Predicate = _ => true,
+                                                                                      ResponseWriter = UIResponseWriter.WriteHealthCheckUIResponse
+                                                                                  });
+                                 endpoints.MapEstateEndpoints();
+                                 endpoints.MapMerchantEndpoints();
+                                 endpoints.MapContractEndpoints();
+                                 endpoints.MapOperatorEndpoints();
+                                 endpoints.MapFloatEndpoints();
+                                 endpoints.MapVoucherEndpoints();
+                                 endpoints.MapTransactionEndpoints();
+                                 endpoints.MapSettlementEndpoints();
+                             });
+        }
+
+        private void LogTypeMappings() {
+            foreach (KeyValuePair<Type, String> type in TypeMap.Map) {
+                Logger.LogInformation($"Type name {type.Value} mapped to {type.Key.Name}");
+            }
+        }
+
+        private void TraceLoadedTokenAssemblies() {
+            List<Assembly> loadedTokensAssemblies = AppDomain.CurrentDomain.GetAssemblies()
+                                                          .Where(a => a.GetName().Name == "Microsoft.IdentityModel.Tokens")
+                                                          .ToList();
+
+            foreach (Assembly asm in loadedTokensAssemblies) {
+                Console.WriteLine($"[Trace] Tokens Assembly: {asm.Location} - Version: {asm.GetName().Version}");
+            }
         }
     }
 
