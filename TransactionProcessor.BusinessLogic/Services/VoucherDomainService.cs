@@ -191,15 +191,8 @@ public class VoucherDomainService : IVoucherDomainService
             return Result.Invalid("Voucher code is missing or invalid.");
         }
 
-        try
-        {
-            Barcode barcode = new Barcode(voucherCode);
-            return voucherAggregate.AddBarcode(barcode.GetBase64Image());
-        }
-        catch (Exception)
-        {
-            return Result.Invalid("Voucher code is missing or invalid.");
-        }
+        Barcode barcode = new Barcode(voucherCode);
+        return voucherAggregate.AddBarcode(barcode.GetBase64Image());
     }
 
     #endregion

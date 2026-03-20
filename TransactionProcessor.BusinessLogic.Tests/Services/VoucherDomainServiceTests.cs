@@ -19,10 +19,10 @@ namespace TransactionProcessor.BusinessLogic.Tests.Services
     using Shared.Logger;
     using Shouldly;
     using System;
-    using System.Reflection;
     using System.Threading;
     using System.Threading.Tasks;
     using Testing;
+    using TransactionProcessor.DomainEvents;
     using Xunit;
 
     public class VoucherDomainServiceTests
@@ -219,11 +219,16 @@ namespace TransactionProcessor.BusinessLogic.Tests.Services
         [Fact]
         public async Task VoucherDomainService_IssueVoucher_VoucherCodeMissing_ErrorReturned() {
             VoucherAggregate aggregate = VoucherAggregate.Create(TestData.VoucherId);
-            aggregate.Generate(TestData.OperatorId, TestData.EstateId, TestData.TransactionId, TestData.GeneratedDateTime, TestData.Value);
-
-            FieldInfo voucherCodeField = typeof(VoucherAggregate).GetField("VoucherCode", BindingFlags.Instance | BindingFlags.NonPublic);
-            voucherCodeField.ShouldNotBeNull();
-            voucherCodeField.SetValue(aggregate, null);
+            const String MissingVoucherCode = null;
+            aggregate.PlayEvent(new VoucherDomainEvents.VoucherGeneratedEvent(TestData.VoucherId,
+                                                                             TestData.EstateId,
+                                                                             TestData.TransactionId,
+                                                                             TestData.GeneratedDateTime,
+                                                                             TestData.OperatorId,
+                                                                             TestData.Value,
+                                                                             MissingVoucherCode,
+                                                                             TestData.ExpiryDate,
+                                                                             String.Empty));
 
             this.AggregateService.Setup(v => v.GetLatest<VoucherAggregate>(It.IsAny<Guid>(), It.IsAny<CancellationToken>())).ReturnsAsync(Result.Success(aggregate));
             this.AggregateService.Setup(f => f.Get<EstateAggregate>(It.IsAny<Guid>(), It.IsAny<CancellationToken>())).ReturnsAsync(Result.Success(TestData.Aggregates.EstateAggregateWithOperator()));
