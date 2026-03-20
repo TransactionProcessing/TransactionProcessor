@@ -20,13 +20,48 @@ namespace TransactionProcessor.Handlers
     {
         public static async Task<IResult> PerformTransaction(IMediator mediator, HttpContext ctx, SerialisedMessage transactionRequest, CancellationToken cancellationToken)
         {
-            DateTime transactionReceivedDateTime = DateTime.Now;
-            
-            Guid estateId = Guid.Parse(transactionRequest.Metadata[MetadataContants.KeyNameEstateId]);
-            Guid merchantId = Guid.Parse(transactionRequest.Metadata[MetadataContants.KeyNameMerchantId]);
+            if (transactionRequest == null || String.IsNullOrWhiteSpace(transactionRequest.SerialisedData))
+            {
+                return Results.BadRequest("Transaction request body is missing.");
+            }
 
-            DataTransferObject dto = JsonConvert.DeserializeObject<DataTransferObject>(transactionRequest.SerialisedData,
-                new JsonSerializerSettings { TypeNameHandling = TypeNameHandling.Auto });
+            DateTime transactionReceivedDateTime = DateTime.Now;
+
+            DataTransferObject dto;
+            try
+            {
+                dto = JsonConvert.DeserializeObject<DataTransferObject>(transactionRequest.SerialisedData,
+                    new JsonSerializerSettings { TypeNameHandling = TypeNameHandling.Auto });
+            }
+            catch (JsonException)
+            {
+                return Results.BadRequest("Transaction request body is invalid.");
+            }
+
+            if (dto == null)
+            {
+                return Results.BadRequest("Transaction request body is invalid.");
+            }
+
+            if (TryGetMetadataGuid(transactionRequest.Metadata, MetadataContants.KeyNameEstateId, out Guid estateId) == false)
+            {
+                if (dto.EstateId == Guid.Empty)
+                {
+                    return Results.BadRequest("Transaction request metadata is missing or invalid.");
+                }
+
+                estateId = dto.EstateId;
+            }
+
+            if (TryGetMetadataGuid(transactionRequest.Metadata, MetadataContants.KeyNameMerchantId, out Guid merchantId) == false)
+            {
+                if (dto.MerchantId == Guid.Empty)
+                {
+                    return Results.BadRequest("Transaction request metadata is missing or invalid.");
+                }
+
+                merchantId = dto.MerchantId;
+            }
 
             dto.MerchantId = merchantId;
             dto.EstateId = estateId;
@@ -123,6 +158,18 @@ namespace TransactionProcessor.Handlers
                 return ResultHelpers.CreateFailure(result);
 
             return ModelFactory.ConvertFrom(result.Data);
+        }
+
+        private static Boolean TryGetMetadataGuid(IDictionary<String, String> metadata, String key, out Guid value)
+        {
+            value = Guid.Empty;
+
+            if (metadata == null)
+            {
+                return false;
+            }
+
+            return metadata.TryGetValue(key, out String rawValue) && Guid.TryParse(rawValue, out value);
         }
     }
 }
