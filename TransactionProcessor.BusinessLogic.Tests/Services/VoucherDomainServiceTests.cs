@@ -19,6 +19,7 @@ namespace TransactionProcessor.BusinessLogic.Tests.Services
     using Shared.Logger;
     using Shouldly;
     using System;
+    using System.Reflection;
     using System.Threading;
     using System.Threading.Tasks;
     using Testing;
@@ -213,6 +214,27 @@ namespace TransactionProcessor.BusinessLogic.Tests.Services
             Result<IssueVoucherResponse> result = await this.VoucherDomainService.IssueVoucher(TestData.IssueVoucherCommand,
                                                                                  CancellationToken.None);
             result.IsFailed.ShouldBeTrue();
+        }
+
+        [Fact]
+        public async Task VoucherDomainService_IssueVoucher_VoucherCodeMissing_ErrorReturned() {
+            VoucherAggregate aggregate = VoucherAggregate.Create(TestData.VoucherId);
+            aggregate.Generate(TestData.OperatorId, TestData.EstateId, TestData.TransactionId, TestData.GeneratedDateTime, TestData.Value);
+
+            FieldInfo voucherCodeField = typeof(VoucherAggregate).GetField("VoucherCode", BindingFlags.Instance | BindingFlags.NonPublic);
+            voucherCodeField.ShouldNotBeNull();
+            voucherCodeField.SetValue(aggregate, null);
+
+            this.AggregateService.Setup(v => v.GetLatest<VoucherAggregate>(It.IsAny<Guid>(), It.IsAny<CancellationToken>())).ReturnsAsync(Result.Success(aggregate));
+            this.AggregateService.Setup(f => f.Get<EstateAggregate>(It.IsAny<Guid>(), It.IsAny<CancellationToken>())).ReturnsAsync(Result.Success(TestData.Aggregates.EstateAggregateWithOperator()));
+
+            Result<IssueVoucherResponse> result = await this.VoucherDomainService.IssueVoucher(TestData.IssueVoucherCommand,
+                                                                                               CancellationToken.None);
+
+            result.IsFailed.ShouldBeTrue();
+            result.Status.ShouldBe(ResultStatus.Invalid);
+            result.Message.ShouldBe("Voucher code is missing or invalid.");
+            this.AggregateService.Verify(v => v.Save(It.IsAny<VoucherAggregate>(), It.IsAny<CancellationToken>()), Times.Never);
         }
 
         [Fact]

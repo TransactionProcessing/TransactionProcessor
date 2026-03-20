@@ -72,9 +72,7 @@ public class VoucherDomainService : IVoucherDomainService
 
             Models.Voucher voucherModel = voucherAggregate.GetVoucher();
 
-            // Generate the barcode
-            Barcode barcode = new Barcode(voucherModel.VoucherCode);
-            stateResult = voucherAggregate.AddBarcode(barcode.GetBase64Image());
+            stateResult = this.TryAddBarcode(voucherAggregate, voucherModel.VoucherCode);
             if (stateResult.IsFailed)
                 return ResultHelpers.CreateFailure(stateResult);
             
@@ -184,6 +182,24 @@ public class VoucherDomainService : IVoucherDomainService
             return ResultHelpers.CreateFailure(estateResult);
 
         return Result.Success();
+    }
+
+    private Result TryAddBarcode(VoucherAggregate voucherAggregate, String voucherCode)
+    {
+        if (String.IsNullOrWhiteSpace(voucherCode))
+        {
+            return Result.Invalid("Voucher code is missing or invalid.");
+        }
+
+        try
+        {
+            Barcode barcode = new Barcode(voucherCode);
+            return voucherAggregate.AddBarcode(barcode.GetBase64Image());
+        }
+        catch (Exception)
+        {
+            return Result.Invalid("Voucher code is missing or invalid.");
+        }
     }
 
     #endregion
