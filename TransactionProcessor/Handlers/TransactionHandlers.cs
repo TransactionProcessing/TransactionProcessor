@@ -20,7 +20,7 @@ namespace TransactionProcessor.Handlers
     {
         public static async Task<IResult> PerformTransaction(IMediator mediator, HttpContext ctx, SerialisedMessage transactionRequest, CancellationToken cancellationToken)
         {
-            if (transactionRequest == null || String.IsNullOrWhiteSpace(transactionRequest.SerialisedData))
+            if (transactionRequest == null || string.IsNullOrWhiteSpace(transactionRequest.SerialisedData))
             {
                 return Results.BadRequest("Transaction request body is missing.");
             }
@@ -160,7 +160,7 @@ namespace TransactionProcessor.Handlers
             return ModelFactory.ConvertFrom(result.Data);
         }
 
-        private static Boolean TryGetMetadataGuid(IDictionary<String, String> metadata, String key, out Guid value)
+        private static bool TryGetMetadataGuid(IDictionary<string, string> metadata, string key, out Guid value)
         {
             value = Guid.Empty;
 
@@ -169,7 +169,7 @@ namespace TransactionProcessor.Handlers
                 return false;
             }
 
-            return metadata.TryGetValue(key, out String rawValue) && Guid.TryParse(rawValue, out value);
+            return metadata.TryGetValue(key, out string rawValue) && Guid.TryParse(rawValue, out value);
         }
     }
 }

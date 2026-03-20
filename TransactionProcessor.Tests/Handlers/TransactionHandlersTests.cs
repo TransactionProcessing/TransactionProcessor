@@ -96,7 +96,7 @@ namespace TransactionProcessor.Tests.Handlers
         }
 
         private static SerialisedMessage CreateSerialisedMessage(DataTransferObject request,
-                                                                 Dictionary<String, String> metadata = null)
+                                                                 Dictionary<string, string> metadata = null)
         {
             return new SerialisedMessage
             {
