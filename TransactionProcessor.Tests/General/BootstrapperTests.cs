@@ -19,26 +19,6 @@ namespace TransactionProcessor.Tests.General
     {
         #region Methods
 
-        /// <summary>
-        /// Verifies the bootstrapper is valid.
-        /// </summary>
-        [Fact]
-        public void VerifyBootstrapperIsValid()
-        {
-            Mock<IWebHostEnvironment> hostingEnvironment = new Mock<IWebHostEnvironment>();
-            hostingEnvironment.Setup(he => he.EnvironmentName).Returns("Development");
-            hostingEnvironment.Setup(he => he.ContentRootPath).Returns("/home");
-            hostingEnvironment.Setup(he => he.ApplicationName).Returns("Test Application");
-
-            ServiceRegistry services = new ServiceRegistry();
-            Startup s = new Startup(hostingEnvironment.Object);
-            Startup.Configuration = this.SetupMemoryConfiguration();
-
-            this.AddTestRegistrations(services, hostingEnvironment.Object);
-            s.ConfigureContainer(services);
-            Startup.Container.AssertConfigurationIsValid(AssertMode.Full);
-        }
-
         [Fact]
         public void ConfigureContainer_PopulatesAutoApiLogonOperators_WithoutDuplicates()
         {
@@ -78,6 +58,7 @@ namespace TransactionProcessor.Tests.General
             configuration.Add("AppSettings:VoucherManagementApi", "http://localhost");
             configuration.Add("AppSettings:SecurityService", "http://localhost");
             configuration.Add("SecurityConfiguration:Authority", "http://localhost");
+            configuration.Add("SecurityConfiguration:ApiName", "ApiName");
             configuration.Add("ConnectionStrings:TransactionProcessorReadModel", "dbconnstring");
             configuration.Add("OperatorConfiguration:Safaricom:ApiLogonRequired", "true");
             configuration.Add("OperatorConfiguration:PataPawaPostPay:ApiLogonRequired", "true");

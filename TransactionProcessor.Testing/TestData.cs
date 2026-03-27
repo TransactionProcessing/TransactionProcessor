@@ -727,6 +727,7 @@ namespace TransactionProcessor.Testing
                 ["AppSettings:UseConnectionStringConfig"] = "false",
                 ["EventStoreSettings:ConnectionString"] = "esdb://127.0.0.1:2113",
                 ["SecurityConfiguration:Authority"] = "https://127.0.0.1",
+                ["SecurityConfiguration:ApiName"] = "ApiName",
                 ["AppSettings:EstateManagementApi"] = "http://127.0.0.1",
                 ["AppSettings:SecurityService"] = "http://127.0.0.1",
                 ["AppSettings:ContractProductFeeCacheExpiryInHours"] = "",

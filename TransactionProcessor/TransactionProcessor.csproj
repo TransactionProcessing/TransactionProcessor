@@ -10,6 +10,7 @@
   </PropertyGroup>
 
   <ItemGroup>
+	  <PackageReference Include="OpenIddict.Client.SystemNetHttp" Version="7.4.0" />
 	  <PackageReference Include="ClientProxyBase" Version="2026.3.1" />
 	  <PackageReference Include="Lamar" Version="15.0.1" />
 	  <PackageReference Include="Lamar.Microsoft.DependencyInjection" Version="15.0.1" />

@@ -2,6 +2,7 @@
 using Microsoft.IdentityModel.Logging;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi;
+using OpenIddict.Client;
 
 namespace TransactionProcessor.Bootstrapper
 {
@@ -62,32 +63,24 @@ namespace TransactionProcessor.Bootstrapper
         private void ConfigureAuthentication()
         {
             IdentityModelEventSource.ShowPII = true;
+            this.AddOpenIddict()
+                // Register the OpenIddict client components.
+                .AddClient(options => {
+                    // Allow grant_type=client_credentials to be negotiated.
+                    options.AllowClientCredentialsFlow();
 
-            this.AddAuthentication(options =>
-                                   {
-                                       options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
-                                       options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
-                                       options.DefaultScheme = JwtBearerDefaults.AuthenticationScheme;
-                                   }).AddJwtBearer(options =>
-                                                   {
-                                                       options.BackchannelHttpHandler = new HttpClientHandler
-                                                                                        {
-                                                                                            ServerCertificateCustomValidationCallback = (message,
-                                                                                                certificate,
-                                                                                                chain,
-                                                                                                sslPolicyErrors) => true
-                                                                                        };
-                                                       options.Authority = GetSecurityServiceConfigValue("Authority");
-                                                       options.Audience = GetSecurityServiceConfigValue("ApiName");
+                    // Disable token storage, which is not necessary for non-interactive flows like
+                    // grant_type=password, grant_type=client_credentials or grant_type=refresh_token.
+                    options.DisableTokenStorage();
 
-                                                       options.TokenValidationParameters = new TokenValidationParameters
-                                                       {
-                                                           ValidateAudience = false,
-                                                           ValidAudience = GetSecurityServiceConfigValue("ApiName"),
-                                                           ValidIssuer = GetSecurityServiceConfigValue("Authority"),
-                                                       };
-                                                       options.IncludeErrorDetails = true;
-                                                   });
+                    // Register the System.Net.Http integration and use the identity of the current
+                    // assembly as a more specific user agent, which can be useful when dealing with
+                    // providers that use the user agent as a way to throttle requests (e.g Reddit).
+                    options.UseSystemNetHttp().SetProductInformation(typeof(Program).Assembly);
+
+                    // Add a client registration matching the client application definition in the server project.
+                    options.AddRegistration(new OpenIddictClientRegistration { Issuer = new Uri(GetSecurityServiceConfigValue("Authority"), UriKind.Absolute), ClientId = GetSecurityServiceConfigValue("ApiName") });
+                });
         }
 
         private void ConfigureAuthorization()
