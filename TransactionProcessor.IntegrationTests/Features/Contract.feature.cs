@@ -123,7 +123,7 @@ namespace TransactionProcessor.IntegrationTests.Features
                         "DisplayName",
                         "Description"});
             table2.AddRow(new string[] {
-                        "estateManagement",
+                        "transactionProcessor",
                         "Estate Managememt REST Scope",
                         "A scope for Estate Managememt REST"});
 #line 9
@@ -136,10 +136,10 @@ namespace TransactionProcessor.IntegrationTests.Features
                         "Scopes",
                         "UserClaims"});
             table3.AddRow(new string[] {
-                        "estateManagement",
+                        "transactionProcessor",
                         "Estate Managememt REST",
                         "Secret1",
-                        "estateManagement",
+                        "transactionProcessor",
                         "merchantId, estateId, role"});
 #line 13
  await testRunner.GivenAsync("the following api resources exist", ((string)(null)), table3, "Given ");
@@ -154,22 +154,22 @@ namespace TransactionProcessor.IntegrationTests.Features
                         "serviceClient",
                         "Service Client",
                         "Secret1",
-                        "estateManagement",
+                        "transactionProcessor",
                         "client_credentials"});
             table4.AddRow(new string[] {
                         "estateClient",
                         "Estate Client",
                         "Secret1",
-                        "estateManagement",
+                        "transactionProcessor",
                         "password"});
-#line 17
+#line 16
  await testRunner.GivenAsync("the following clients exist", ((string)(null)), table4, "Given ");
 #line hidden
             global::Reqnroll.Table table5 = new global::Reqnroll.Table(new string[] {
                         "ClientId"});
             table5.AddRow(new string[] {
                         "serviceClient"});
-#line 22
+#line 21
  await testRunner.GivenAsync("I have a token to access the estate management resource", ((string)(null)), table5, "Given ");
 #line hidden
             global::Reqnroll.Table table6 = new global::Reqnroll.Table(new string[] {
@@ -178,7 +178,7 @@ namespace TransactionProcessor.IntegrationTests.Features
                         "Test Estate 1"});
             table6.AddRow(new string[] {
                         "Test Estate 2"});
-#line 26
+#line 25
  await testRunner.GivenAsync("I have created the following estates", ((string)(null)), table6, "Given ");
 #line hidden
             global::Reqnroll.Table table7 = new global::Reqnroll.Table(new string[] {
@@ -196,7 +196,7 @@ namespace TransactionProcessor.IntegrationTests.Features
                         "Test Operator 1",
                         "False",
                         "False"});
-#line 31
+#line 30
  await testRunner.GivenAsync("I have created the following operators", ((string)(null)), table7, "Given ");
 #line hidden
             global::Reqnroll.Table table8 = new global::Reqnroll.Table(new string[] {
@@ -208,7 +208,7 @@ namespace TransactionProcessor.IntegrationTests.Features
             table8.AddRow(new string[] {
                         "Test Estate 2",
                         "Test Operator 1"});
-#line 36
+#line 35
  await testRunner.AndAsync("I have assigned the following operators to the estates", ((string)(null)), table8, "And ");
 #line hidden
             global::Reqnroll.Table table9 = new global::Reqnroll.Table(new string[] {
@@ -229,7 +229,7 @@ namespace TransactionProcessor.IntegrationTests.Features
                         "TestEstate",
                         "User1",
                         "Test Estate 2"});
-#line 41
+#line 40
  await testRunner.GivenAsync("I have created the following security users", ((string)(null)), table9, "Given ");
 #line hidden
         }
@@ -249,7 +249,7 @@ namespace TransactionProcessor.IntegrationTests.Features
             global::Reqnroll.ScenarioInfo scenarioInfo = new global::Reqnroll.ScenarioInfo("Get Merchant Contracts", null, tagsOfScenario, argumentsOfScenario, featureTags, pickleIndex);
             string[] tagsOfRule = ((string[])(null));
             global::Reqnroll.RuleInfo ruleInfo = null;
-#line 46
+#line 45
 this.ScenarioInitialize(scenarioInfo, ruleInfo);
 #line hidden
             if ((global::Reqnroll.TagHelper.ContainsIgnoreTag(scenarioInfo.CombinedTags) || global::Reqnroll.TagHelper.ContainsIgnoreTag(featureTags)))
@@ -292,7 +292,7 @@ await this.FeatureBackgroundAsync();
                             "Test Contact 1",
                             "testcontact1@merchant2.co.uk",
                             "Test Estate 2"});
-#line 48
+#line 47
  await testRunner.GivenAsync("I create the following merchants", ((string)(null)), table10, "Given ");
 #line hidden
                 global::Reqnroll.Table table11 = new global::Reqnroll.Table(new string[] {
@@ -307,7 +307,7 @@ await this.FeatureBackgroundAsync();
                             "Test Estate 2",
                             "Test Operator 1",
                             "Operator 1 Contract Estate 2"});
-#line 53
+#line 52
  await testRunner.GivenAsync("I create a contract with the following values", ((string)(null)), table11, "Given ");
 #line hidden
                 global::Reqnroll.Table table12 = new global::Reqnroll.Table(new string[] {
@@ -350,7 +350,7 @@ await this.FeatureBackgroundAsync();
                             "Custom",
                             "",
                             "MobileTopup"});
-#line 58
+#line 57
  await testRunner.WhenAsync("I create the following Products", ((string)(null)), table12, "When ");
 #line hidden
                 global::Reqnroll.Table table13 = new global::Reqnroll.Table(new string[] {
@@ -407,7 +407,7 @@ await this.FeatureBackgroundAsync();
                             "Merchant Commission",
                             "2.25",
                             "Merchant"});
-#line 65
+#line 64
  await testRunner.WhenAsync("I add the following Transaction Fees", ((string)(null)), table13, "When ");
 #line hidden
                 global::Reqnroll.Table table14 = new global::Reqnroll.Table(new string[] {
@@ -422,7 +422,7 @@ await this.FeatureBackgroundAsync();
                             "Test Estate 2",
                             "Test Merchant 2",
                             "Operator 1 Contract Estate 2"});
-#line 73
+#line 72
  await testRunner.WhenAsync("I add the following contracts to the following merchants", ((string)(null)), table14, "When ");
 #line hidden
                 global::Reqnroll.Table table15 = new global::Reqnroll.Table(new string[] {
@@ -434,7 +434,7 @@ await this.FeatureBackgroundAsync();
                 table15.AddRow(new string[] {
                             "Operator 1 Contract Estate 1",
                             "Variable Topup 1"});
-#line 78
+#line 77
  await testRunner.ThenAsync("I get the Contracts for \'Test Estate 1\' the following contract details are return" +
                         "ed", ((string)(null)), table15, "Then ");
 #line hidden
@@ -447,7 +447,7 @@ await this.FeatureBackgroundAsync();
                 table16.AddRow(new string[] {
                             "Operator 1 Contract Estate 2",
                             "Variable Topup 2"});
-#line 83
+#line 82
  await testRunner.ThenAsync("I get the Contracts for \'Test Estate 2\' the following contract details are return" +
                         "ed", ((string)(null)), table16, "Then ");
 #line hidden
@@ -460,7 +460,7 @@ await this.FeatureBackgroundAsync();
                 table17.AddRow(new string[] {
                             "Operator 1 Contract Estate 1",
                             "Variable Topup 1"});
-#line 88
+#line 87
  await testRunner.ThenAsync("I get the Merchant Contracts for \'Test Merchant 1\' for \'Test Estate 1\' the follow" +
                         "ing contract details are returned", ((string)(null)), table17, "Then ");
 #line hidden
@@ -473,7 +473,7 @@ await this.FeatureBackgroundAsync();
                 table18.AddRow(new string[] {
                             "Operator 1 Contract Estate 2",
                             "Variable Topup 2"});
-#line 93
+#line 92
  await testRunner.ThenAsync("I get the Merchant Contracts for \'Test Merchant 2\' for \'Test Estate 2\' the follow" +
                         "ing contract details are returned", ((string)(null)), table18, "Then ");
 #line hidden
@@ -492,7 +492,7 @@ await this.FeatureBackgroundAsync();
                             "Merchant Commission",
                             "0.015",
                             "Merchant"});
-#line 98
+#line 97
  await testRunner.ThenAsync("I get the Transaction Fees for \'100 KES Topup\' on the \'Operator 1 Contract Estate" +
                         " 1\' contract for \'Test Estate 1\' the following fees are returned", ((string)(null)), table19, "Then ");
 #line hidden
@@ -506,7 +506,7 @@ await this.FeatureBackgroundAsync();
                             "Merchant Commission",
                             "1.50",
                             "Merchant"});
-#line 103
+#line 102
  await testRunner.ThenAsync("I get the Transaction Fees for \'Variable Topup 1\' on the \'Operator 1 Contract Est" +
                         "ate 1\' contract for \'Test Estate 1\' the following fees are returned", ((string)(null)), table20, "Then ");
 #line hidden
@@ -520,7 +520,7 @@ await this.FeatureBackgroundAsync();
                             "Merchant Commission",
                             "0.25",
                             "Merchant"});
-#line 107
+#line 106
  await testRunner.ThenAsync("I get the Transaction Fees for \'200 KES Topup\' on the \'Operator 1 Contract Estate" +
                         " 2\' contract for \'Test Estate 2\' the following fees are returned", ((string)(null)), table21, "Then ");
 #line hidden
@@ -534,7 +534,7 @@ await this.FeatureBackgroundAsync();
                             "Merchant Commission",
                             "2.25",
                             "Merchant"});
-#line 111
+#line 110
  await testRunner.ThenAsync("I get the Transaction Fees for \'Variable Topup 2\' on the \'Operator 1 Contract Est" +
                         "ate 2\' contract for \'Test Estate 2\' the following fees are returned", ((string)(null)), table22, "Then ");
 #line hidden
@@ -552,7 +552,7 @@ await this.FeatureBackgroundAsync();
             global::Reqnroll.ScenarioInfo scenarioInfo = new global::Reqnroll.ScenarioInfo("Prevent Duplicate Contracts", null, tagsOfScenario, argumentsOfScenario, featureTags, pickleIndex);
             string[] tagsOfRule = ((string[])(null));
             global::Reqnroll.RuleInfo ruleInfo = null;
-#line 116
+#line 115
 this.ScenarioInitialize(scenarioInfo, ruleInfo);
 #line hidden
             if ((global::Reqnroll.TagHelper.ContainsIgnoreTag(scenarioInfo.CombinedTags) || global::Reqnroll.TagHelper.ContainsIgnoreTag(featureTags)))
@@ -573,7 +573,7 @@ await this.FeatureBackgroundAsync();
                             "Test Estate 1",
                             "Test Operator 1",
                             "Operator 1 Contract"});
-#line 118
+#line 117
  await testRunner.GivenAsync("I create a contract with the following values", ((string)(null)), table23, "Given ");
 #line hidden
                 global::Reqnroll.Table table24 = new global::Reqnroll.Table(new string[] {
@@ -584,7 +584,7 @@ await this.FeatureBackgroundAsync();
                             "Test Estate 1",
                             "Test Operator 1",
                             "Operator 1 Contract"});
-#line 122
+#line 121
  await testRunner.WhenAsync("I create another contract with the same values it should be rejected", ((string)(null)), table24, "When ");
 #line hidden
             }
