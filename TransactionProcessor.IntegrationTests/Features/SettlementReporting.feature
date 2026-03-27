@@ -5,17 +5,15 @@ Background:
 
 	Given I create the following api scopes
 	| Name                 | DisplayName                       | Description                            |
-	| estateManagement     | Estate Managememt REST Scope      | A scope for Estate Managememt REST     |
 	| transactionProcessor | Transaction Processor REST  Scope | A scope for Transaction Processor REST |
 
 	Given the following api resources exist
 	| Name     | DisplayName            | Secret  | Scopes           | UserClaims                 |
-	| estateManagement | Estate Managememt REST | Secret1 | estateManagement | MerchantId, EstateId, role |
-	| transactionProcessor | Transaction Processor REST | Secret1 | transactionProcessor |  |
+	| transactionProcessor | Estate Managememt REST | Secret1 | transactionProcessor | MerchantId, EstateId, role |
 
 	Given the following clients exist
 	| ClientId      | ClientName     | Secret  | Scopes    | GrantTypes  |
-	| serviceClient | Service Client | Secret1 | estateManagement,transactionProcessor | client_credentials |
+	| serviceClient | Service Client | Secret1 | transactionProcessor | client_credentials |
 
 	Given I have a token to access the estate management and transaction processor resources
 	| ClientId      | 

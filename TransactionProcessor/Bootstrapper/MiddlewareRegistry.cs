@@ -2,6 +2,7 @@
 using Microsoft.IdentityModel.Logging;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi;
+using OpenIddict.Validation.AspNetCore;
 
 namespace TransactionProcessor.Bootstrapper
 {
@@ -14,6 +15,7 @@ namespace TransactionProcessor.Bootstrapper
     using Microsoft.Extensions.Diagnostics.HealthChecks;
     using Newtonsoft.Json;
     using Newtonsoft.Json.Serialization;
+    using OpenIddict.Abstractions;
     using Shared.Authorisation;
     using Shared.EventStore.Extensions;
     using Shared.Extensions;
@@ -62,32 +64,35 @@ namespace TransactionProcessor.Bootstrapper
         private void ConfigureAuthentication()
         {
             IdentityModelEventSource.ShowPII = true;
-
             this.AddAuthentication(options =>
-                                   {
-                                       options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
-                                       options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
-                                       options.DefaultScheme = JwtBearerDefaults.AuthenticationScheme;
-                                   }).AddJwtBearer(options =>
-                                                   {
-                                                       options.BackchannelHttpHandler = new HttpClientHandler
-                                                                                        {
-                                                                                            ServerCertificateCustomValidationCallback = (message,
-                                                                                                certificate,
-                                                                                                chain,
-                                                                                                sslPolicyErrors) => true
-                                                                                        };
-                                                       options.Authority = GetSecurityServiceConfigValue("Authority");
-                                                       options.Audience = GetSecurityServiceConfigValue("ApiName");
+            {
+                options.DefaultScheme = OpenIddictValidationAspNetCoreDefaults.AuthenticationScheme;
+            });
 
-                                                       options.TokenValidationParameters = new TokenValidationParameters
-                                                       {
-                                                           ValidateAudience = false,
-                                                           ValidAudience = GetSecurityServiceConfigValue("ApiName"),
-                                                           ValidIssuer = GetSecurityServiceConfigValue("Authority"),
-                                                       };
-                                                       options.IncludeErrorDetails = true;
-                                                   });
+            this.AddOpenIddict()
+                .AddValidation(options =>
+                {
+                    // Same as your Authority
+                    options.SetIssuer(new Uri(ConfigurationReader.GetValue("SecurityConfiguration", "Authority")));
+
+                    // Enables discovery and HTTP backchannel support
+                    options.UseSystemNetHttp()
+                        .ConfigureHttpClientHandler(handler =>
+                        {
+                            // DEV ONLY: bypass all certificate errors
+                            handler.ServerCertificateCustomValidationCallback =
+                                HttpClientHandler.DangerousAcceptAnyServerCertificateValidator;
+                        });
+
+                    // Register the ASP.NET Core integration
+                    options.UseAspNetCore();
+
+                    // Optionally set expected audience(s):
+                    options.AddAudiences(ConfigurationReader.GetValue("SecurityConfiguration", "ApiName"));
+
+                });
+
+            this.AddAuthorization();
         }
 
         private void ConfigureAuthorization()
