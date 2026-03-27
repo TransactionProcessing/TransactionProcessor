@@ -10,7 +10,7 @@ Background:
 
 	Given the following api resources exist
 	| Name         | DisplayName                | Secret  | Scopes               | UserClaims                 |
-	| transactionProcessor     | Estate Managememt REST     | Secret1 | estateManagement     | MerchantId, EstateId, role |
+	| transactionProcessor     | Estate Managememt REST     | Secret1 | transactionProcessor     | MerchantId, EstateId, role |
 	| messagingService     | Messaging REST             | Secret  | messagingService     |                            |
 
 	Given the following clients exist
