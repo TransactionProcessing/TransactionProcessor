@@ -5,6 +5,7 @@ using System.Threading.Tasks;
 using MediatR;
 using Microsoft.AspNetCore.Http;
 using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 using SimpleResults;
 using Shared.Results.Web;
 using Shared.General;
@@ -25,8 +26,13 @@ namespace TransactionProcessor.Handlers
             Guid estateId = Guid.Parse(transactionRequest.Metadata[MetadataContants.KeyNameEstateId]);
             Guid merchantId = Guid.Parse(transactionRequest.Metadata[MetadataContants.KeyNameMerchantId]);
 
-            DataTransferObject dto = JsonConvert.DeserializeObject<DataTransferObject>(transactionRequest.SerialisedData,
-                new JsonSerializerSettings { TypeNameHandling = TypeNameHandling.Auto });
+            Result<DataTransferObject> deserialiseResult = DeserializeTransactionRequest(transactionRequest.SerialisedData);
+            if (deserialiseResult.IsFailed || deserialiseResult.Data == null)
+            {
+                return ResponseFactory.FromResult(Result.Invalid(deserialiseResult.Message));
+            }
+
+            DataTransferObject dto = deserialiseResult.Data;
 
             dto.MerchantId = merchantId;
             dto.EstateId = estateId;
@@ -44,6 +50,69 @@ namespace TransactionProcessor.Handlers
             };
 
             return ResponseFactory.FromResult(transactionResult, message => message);
+        }
+
+        private static Result<DataTransferObject> DeserializeTransactionRequest(String serialisedData)
+        {
+            try
+            {
+                JObject jsonObject = JObject.Parse(serialisedData);
+
+                if (IsReconciliationRequest(jsonObject))
+                {
+                    return Result.Success<DataTransferObject>(jsonObject.ToObject<ReconciliationRequest>());
+                }
+
+                if (IsSaleRequest(jsonObject))
+                {
+                    return Result.Success<DataTransferObject>(jsonObject.ToObject<SaleTransactionRequest>());
+                }
+
+                if (IsLogonRequest(jsonObject))
+                {
+                    return Result.Success<DataTransferObject>(jsonObject.ToObject<LogonTransactionRequest>());
+                }
+
+                return Result.Invalid("DTO Type could not be determined");
+            }
+            catch (JsonException ex)
+            {
+                return Result.Invalid($"Invalid transaction request payload: {ex.Message}");
+            }
+        }
+
+        private static Boolean IsLogonRequest(JObject jsonObject)
+        {
+            String transactionType = jsonObject.GetValue("transaction_type", StringComparison.OrdinalIgnoreCase)?.Value<String>();
+
+            return String.Equals(transactionType, "Logon", StringComparison.OrdinalIgnoreCase) &&
+                   HasProperty(jsonObject, "device_identifier", "transaction_number");
+        }
+
+        private static Boolean IsSaleRequest(JObject jsonObject)
+        {
+            String transactionType = jsonObject.GetValue("transaction_type", StringComparison.OrdinalIgnoreCase)?.Value<String>();
+
+            return String.Equals(transactionType, "Sale", StringComparison.OrdinalIgnoreCase) ||
+                   HasProperty(jsonObject, "operator_id", "contract_id", "product_id", "customer_email_address", "additional_transaction_metadata", "transaction_source");
+        }
+
+        private static Boolean IsReconciliationRequest(JObject jsonObject)
+        {
+            return HasProperty(jsonObject, "transaction_count", "transaction_value", "operator_totals");
+        }
+
+        private static Boolean HasProperty(JObject jsonObject, params String[] propertyNames)
+        {
+            foreach (String propertyName in propertyNames)
+            {
+                if (jsonObject.GetValue(propertyName, StringComparison.OrdinalIgnoreCase) != null)
+                {
+                    return true;
+                }
+            }
+
+            return false;
         }
 
         public static async Task<IResult> ResendTransactionReceipt(IMediator mediator, HttpContext ctx, Guid estateId, Guid transactionId, CancellationToken cancellationToken)
