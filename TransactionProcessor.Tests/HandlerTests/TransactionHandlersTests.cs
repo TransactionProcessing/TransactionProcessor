@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
 using MediatR;
@@ -150,11 +149,9 @@ namespace TransactionProcessor.Tests.HandlerTests
         public async Task PerformTransaction_UnsupportedPayload_ReturnsBadRequest()
         {
             Mock<IMediator> mediator = new Mock<IMediator>(MockBehavior.Strict);
-            DefaultHttpContext httpContext = new DefaultHttpContext();
-            httpContext.Response.Body = new MemoryStream();
 
             IResult result = await TransactionHandlers.PerformTransaction(mediator.Object,
-                httpContext,
+                new DefaultHttpContext(),
                 CreateSerialisedMessage(new
                 {
                     device_identifier = "device-1",
@@ -162,9 +159,8 @@ namespace TransactionProcessor.Tests.HandlerTests
                 }),
                 CancellationToken.None);
 
-            await result.ExecuteAsync(httpContext);
-
-            httpContext.Response.StatusCode.ShouldBe(StatusCodes.Status400BadRequest);
+            IStatusCodeHttpResult statusCodeResult = result.ShouldBeAssignableTo<IStatusCodeHttpResult>();
+            statusCodeResult.StatusCode.ShouldBe(StatusCodes.Status400BadRequest);
             mediator.Verify(m => m.Send(It.IsAny<object>(), It.IsAny<CancellationToken>()), Times.Never);
         }
 
