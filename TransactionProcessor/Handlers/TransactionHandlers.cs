@@ -46,7 +46,7 @@ namespace TransactionProcessor.Handlers
                 LogonTransactionRequest ltr => await ProcessSpecificMessage(mediator, ltr, transactionReceivedDateTime, cancellationToken),
                 SaleTransactionRequest str => await ProcessSpecificMessage(mediator, str, transactionReceivedDateTime, cancellationToken),
                 ReconciliationRequest rr => await ProcessSpecificMessage(mediator, rr, cancellationToken),
-                _ => Result.Invalid($"DTO Type {dto.GetType().Name} not supported)")
+                _ => Result.Invalid($"DTO Type {dto.GetType().Name} not supported")
             };
 
             return ResponseFactory.FromResult(transactionResult, message => message);
@@ -60,17 +60,17 @@ namespace TransactionProcessor.Handlers
 
                 if (IsReconciliationRequest(jsonObject))
                 {
-                    return Result.Success<DataTransferObject>(jsonObject.ToObject<ReconciliationRequest>());
+                    return DeserializeKnownType<ReconciliationRequest>(jsonObject);
                 }
 
                 if (IsSaleRequest(jsonObject))
                 {
-                    return Result.Success<DataTransferObject>(jsonObject.ToObject<SaleTransactionRequest>());
+                    return DeserializeKnownType<SaleTransactionRequest>(jsonObject);
                 }
 
                 if (IsLogonRequest(jsonObject))
                 {
-                    return Result.Success<DataTransferObject>(jsonObject.ToObject<LogonTransactionRequest>());
+                    return DeserializeKnownType<LogonTransactionRequest>(jsonObject);
                 }
 
                 return Result.Invalid("DTO Type could not be determined");
@@ -79,6 +79,18 @@ namespace TransactionProcessor.Handlers
             {
                 return Result.Invalid($"Invalid transaction request payload: {ex.Message}");
             }
+        }
+
+        private static Result<DataTransferObject> DeserializeKnownType<T>(JObject jsonObject) where T : DataTransferObject
+        {
+            T dto = jsonObject.ToObject<T>();
+
+            if (dto == null)
+            {
+                return Result.Invalid($"Failed to deserialize transaction request as {typeof(T).Name}");
+            }
+
+            return Result.Success<DataTransferObject>(dto);
         }
 
         private static Boolean IsLogonRequest(JObject jsonObject)

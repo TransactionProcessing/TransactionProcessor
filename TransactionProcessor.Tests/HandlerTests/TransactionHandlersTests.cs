@@ -50,11 +50,12 @@ namespace TransactionProcessor.Tests.HandlerTests
                     TransactionId = Guid.NewGuid()
                 }));
 
-            await TransactionHandlers.PerformTransaction(mediator.Object,
+            IResult result = await TransactionHandlers.PerformTransaction(mediator.Object,
                 new DefaultHttpContext(),
                 CreateSerialisedMessage(request),
                 CancellationToken.None);
 
+            result.ShouldNotBeNull();
             mediator.VerifyAll();
         }
 
@@ -98,11 +99,12 @@ namespace TransactionProcessor.Tests.HandlerTests
                     TransactionId = Guid.NewGuid()
                 }));
 
-            await TransactionHandlers.PerformTransaction(mediator.Object,
+            IResult result = await TransactionHandlers.PerformTransaction(mediator.Object,
                 new DefaultHttpContext(),
                 CreateSerialisedMessage(request),
                 CancellationToken.None);
 
+            result.ShouldNotBeNull();
             mediator.VerifyAll();
         }
 
@@ -135,11 +137,12 @@ namespace TransactionProcessor.Tests.HandlerTests
                     TransactionId = Guid.NewGuid()
                 }));
 
-            await TransactionHandlers.PerformTransaction(mediator.Object,
+            IResult result = await TransactionHandlers.PerformTransaction(mediator.Object,
                 new DefaultHttpContext(),
                 CreateSerialisedMessage(request),
                 CancellationToken.None);
 
+            result.ShouldNotBeNull();
             mediator.VerifyAll();
         }
 
