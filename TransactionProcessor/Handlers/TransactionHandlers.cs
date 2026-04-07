@@ -111,7 +111,8 @@ namespace TransactionProcessor.Handlers
             String transactionType = jsonObject.GetValue("transaction_type", StringComparison.OrdinalIgnoreCase)?.Value<String>();
 
             return String.Equals(transactionType, "Logon", StringComparison.OrdinalIgnoreCase) &&
-                   HasAllProperties(jsonObject, "device_identifier", "transaction_number");
+                   HasDeviceIdentifier(jsonObject) &&
+                   HasTransactionNumber(jsonObject);
         }
 
         private static Boolean IsSaleRequest(JObject jsonObject)
@@ -119,26 +120,39 @@ namespace TransactionProcessor.Handlers
             String transactionType = jsonObject.GetValue("transaction_type", StringComparison.OrdinalIgnoreCase)?.Value<String>();
 
             return (String.Equals(transactionType, "Sale", StringComparison.OrdinalIgnoreCase) &&
-                    HasAllProperties(jsonObject, "device_identifier", "transaction_number")) ||
-                   HasAllProperties(jsonObject, "device_identifier", "transaction_number", "operator_id", "contract_id", "product_id");
+                    HasDeviceIdentifier(jsonObject) &&
+                    HasTransactionNumber(jsonObject)) ||
+                   (HasDeviceIdentifier(jsonObject) &&
+                    HasTransactionNumber(jsonObject) &&
+                    HasOperatorId(jsonObject) &&
+                    HasContractId(jsonObject) &&
+                    HasProductId(jsonObject));
         }
 
         private static Boolean IsReconciliationRequest(JObject jsonObject)
         {
-            return HasAllProperties(jsonObject, "device_identifier", "transaction_count", "transaction_value");
+            return HasDeviceIdentifier(jsonObject) &&
+                   HasTransactionCount(jsonObject) &&
+                   HasTransactionValue(jsonObject);
         }
 
-        private static Boolean HasAllProperties(JObject jsonObject, params String[] propertyNames)
-        {
-            foreach (String propertyName in propertyNames)
-            {
-                if (jsonObject.GetValue(propertyName, StringComparison.OrdinalIgnoreCase) == null)
-                {
-                    return false;
-                }
-            }
+        private static Boolean HasDeviceIdentifier(JObject jsonObject) => HasProperty(jsonObject, "device_identifier");
 
-            return true;
+        private static Boolean HasTransactionNumber(JObject jsonObject) => HasProperty(jsonObject, "transaction_number");
+
+        private static Boolean HasOperatorId(JObject jsonObject) => HasProperty(jsonObject, "operator_id");
+
+        private static Boolean HasContractId(JObject jsonObject) => HasProperty(jsonObject, "contract_id");
+
+        private static Boolean HasProductId(JObject jsonObject) => HasProperty(jsonObject, "product_id");
+
+        private static Boolean HasTransactionCount(JObject jsonObject) => HasProperty(jsonObject, "transaction_count");
+
+        private static Boolean HasTransactionValue(JObject jsonObject) => HasProperty(jsonObject, "transaction_value");
+
+        private static Boolean HasProperty(JObject jsonObject, String propertyName)
+        {
+            return jsonObject.GetValue(propertyName, StringComparison.OrdinalIgnoreCase) != null;
         }
 
         public static async Task<IResult> ResendTransactionReceipt(IMediator mediator, HttpContext ctx, Guid estateId, Guid transactionId, CancellationToken cancellationToken)
