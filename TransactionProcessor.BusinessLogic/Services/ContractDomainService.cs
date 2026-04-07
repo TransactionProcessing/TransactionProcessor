@@ -168,41 +168,15 @@ namespace TransactionProcessor.BusinessLogic.Services
                     return ResultHelpers.CreateFailure(contractResult);
 
                 ContractAggregate contractAggregate = contractResult.Data;
-                EstateAggregate estateAggregate = estateResult.Data;
+                Models.Estate.Estate estate = estateResult.Data.GetEstate();
 
-
-                Models.Estate.Estate estate = estateAggregate.GetEstate();
-                if (estate.Operators.Any(o => o.OperatorId == command.RequestDTO.OperatorId) == false)
-                {
-                    return Result.NotFound($"Unable to create a contract for an operator that is not setup on estate [{estate.Name}]");
-                }
-
-                // Validate a duplicate name
-                String projection =
-                    $"fromCategory(\"ContractAggregate\")\n.when({{\n    $init: function (s, e) {{\n                        return {{\n                            total: 0,\n                            contractId: 0\n                        }};\n                    }},\n    'ContractCreatedEvent': function(s,e){{\n        // Check if it matches\n        if (e.data.description === '{command.RequestDTO.Description}' \n            && e.data.operatorId === '{command.RequestDTO.OperatorId}'){{\n            s.total += 1;\n            s.contractId = e.data.contractId\n        }}\n    }}\n}})";
-
-                Result<String> result = await this.Context.RunTransientQuery(projection, cancellationToken);
-                if (result.IsFailed)
-                    return ResultHelpers.CreateFailure(result);
-                String resultString = result.Data;
-                if (String.IsNullOrEmpty(resultString) == false)
-                {
-                    JObject jsonResult = JObject.Parse(resultString);
-
-                    String contractIdString = jsonResult.Property("contractId").Values<String>().Single();
-
-                    Guid.TryParse(contractIdString, out Guid contractIdResult);
-
-                    if (contractIdResult != Guid.Empty) {
-                        return Result.Conflict(
-                            $"Contract Description {command.RequestDTO.Description} already in use for operator {command.RequestDTO.OperatorId}");
-                    }
-                }
+                Result preConditionResult = await this.ValidateContractCreationPreConditions(command, estate, cancellationToken);
+                if (preConditionResult.IsFailed)
+                    return preConditionResult;
 
                 if (contractAggregate.IsCreated)
-                {
                     return Result.Forbidden($"Contract Id [{command.ContractId}] already created for estate [{estate.Name}]");
-                }
+
                 Result stateResult = contractAggregate.Create(command.EstateId, command.RequestDTO.OperatorId, command.RequestDTO.Description);
                 if (stateResult.IsFailed)
                     return ResultHelpers.CreateFailure(stateResult);
@@ -217,6 +191,30 @@ namespace TransactionProcessor.BusinessLogic.Services
             {
                 return Result.Failure(ex.GetExceptionMessages());
             }
+        }
+
+        private async Task<Result> ValidateContractCreationPreConditions(ContractCommands.CreateContractCommand command, Models.Estate.Estate estate, CancellationToken cancellationToken)
+        {
+            if (estate.Operators.Any(o => o.OperatorId == command.RequestDTO.OperatorId) == false)
+                return Result.NotFound($"Unable to create a contract for an operator that is not setup on estate [{estate.Name}]");
+
+            String projection =
+                $"fromCategory(\"ContractAggregate\")\n.when({{\n    $init: function (s, e) {{\n                        return {{\n                            total: 0,\n                            contractId: 0\n                        }};\n                    }},\n    'ContractCreatedEvent': function(s,e){{\n        // Check if it matches\n        if (e.data.description === '{command.RequestDTO.Description}' \n            && e.data.operatorId === '{command.RequestDTO.OperatorId}'){{\n            s.total += 1;\n            s.contractId = e.data.contractId\n        }}\n    }}\n}})";
+
+            Result<String> result = await this.Context.RunTransientQuery(projection, cancellationToken);
+            if (result.IsFailed)
+                return ResultHelpers.CreateFailure(result);
+
+            String resultString = result.Data;
+            if (String.IsNullOrEmpty(resultString) == false)
+            {
+                JObject jsonResult = JObject.Parse(resultString);
+                String contractIdString = jsonResult["contractId"]?.Value<String>();
+                if (Guid.TryParse(contractIdString, out Guid contractIdResult) && contractIdResult != Guid.Empty)
+                    return Result.Conflict($"Contract Description {command.RequestDTO.Description} already in use for operator {command.RequestDTO.OperatorId}");
+            }
+
+            return Result.Success();
         }
 
         #endregion
