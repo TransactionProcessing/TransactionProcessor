@@ -24,5 +24,10 @@ RUN dotnet publish "TransactionProcessor.csproj" -c Release -o /app/publish
 
 FROM base AS final
 WORKDIR /app
-COPY --from=publish /app/publish .
+RUN groupadd --gid 10001 appuser \
+    && useradd --uid 10001 --gid appuser --shell /usr/sbin/nologin appuser \
+    && mkdir -p /home/txnproc/statements/outbound \
+    && chown -R appuser:appuser /home/txnproc
+COPY --from=publish --chown=appuser:appuser /app/publish .
+USER appuser
 ENTRYPOINT ["dotnet", "TransactionProcessor.dll"]
