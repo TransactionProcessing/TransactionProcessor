@@ -258,7 +258,7 @@ namespace TransactionProcessor.BusinessLogic.Services
             return returnValue;
         }
 
-        public async Task<Result> BuildStatement(MerchantStatementCommands.BuildMerchantStatementCommand command,
+        /*public async Task<Result> BuildStatement(MerchantStatementCommands.BuildMerchantStatementCommand command,
                                                  CancellationToken cancellationToken) {
             try {
                 // Work out the next statement date
@@ -300,6 +300,69 @@ namespace TransactionProcessor.BusinessLogic.Services
             catch (Exception ex) {
                 return Result.Failure(ex.GetExceptionMessages());
             }
+        }*/
+
+        public async Task<Result> BuildStatement(MerchantStatementCommands.BuildMerchantStatementCommand command,
+                                                 CancellationToken cancellationToken)
+        {
+            try
+            {
+                Result<MerchantStatementAggregate> statementAggregate = await GetStatementAggregate(command, cancellationToken);
+                if (statementAggregate.IsFailed) return ResultHelpers.CreateFailure(statementAggregate);
+
+                Result<Merchant> merchant = await GetValidMerchant(statementAggregate.Data, cancellationToken);
+                if (merchant.IsFailed) return ResultHelpers.CreateFailure(merchant);
+
+                Result<String> htmlResult = await this.StatementBuilder.GetStatementHtml(statementAggregate.Data, merchant.Data, cancellationToken);
+                if (htmlResult.IsFailed) return ResultHelpers.CreateFailure(htmlResult);
+
+                String base64 = EncodeTo64(htmlResult.Data);
+
+                Result buildResult = statementAggregate.Data.BuildStatement(DateTime.Now, base64);
+                if (buildResult.IsFailed) return buildResult;
+
+                Result saveResult = await this.AggregateService.Save(statementAggregate.Data, cancellationToken);
+                if (saveResult.IsFailed) return saveResult;
+
+                return Result.Success();
+            }
+            catch (Exception ex)
+            {
+                return Result.Failure(ex.GetExceptionMessages());
+            }
+        }
+
+        private async Task<Result<MerchantStatementAggregate>> GetStatementAggregate(MerchantStatementCommands.BuildMerchantStatementCommand command,
+                                                                                     CancellationToken ct)
+        {
+            return await DomainServiceHelper.GetAggregateOrFailure(
+                c => this.AggregateService.GetLatest<MerchantStatementAggregate>(command.MerchantStatementId, c),
+                command.MerchantStatementId,
+                ct);
+        }
+
+        private async Task<Result<Merchant>> GetValidMerchant(MerchantStatementAggregate statementAggregate,
+                                                              CancellationToken ct)
+        {
+            MerchantStatement statement = statementAggregate.GetStatement();
+
+            Result<MerchantAggregate> merchantResult = await DomainServiceHelper.GetAggregateOrFailure(
+                c => this.AggregateService.Get<MerchantAggregate>(statement.MerchantId, c),
+                statement.MerchantId,
+                ct);
+
+            if (merchantResult.IsFailed)
+                return ResultHelpers.CreateFailure(merchantResult);
+
+            if (!merchantResult.Data.IsCreated)
+                return Result.Invalid("Merchant must be created to build a statement");
+
+            Merchant merchant = merchantResult.Data.GetMerchant();
+
+            if (!merchant.Addresses.Any())
+                return Result.Invalid("Merchant must have an address to build a statement");
+
+            return Result.Success(merchant);
         }
 
         public async Task<Result> RecordActivityDateOnMerchantStatement(MerchantStatementCommands.RecordActivityDateOnMerchantStatementCommand command,
