@@ -83,14 +83,27 @@ namespace TransactionProcessor.Handlers
 
         private static Result<DataTransferObject> DeserializeKnownType<T>(JObject jsonObject) where T : DataTransferObject
         {
-            T dto = jsonObject.ToObject<T>();
-
-            if (dto == null)
+            try
             {
-                return Result.Invalid($"Failed to deserialize transaction request as {typeof(T).Name}");
-            }
+                JsonSerializer serializer = JsonSerializer.Create(new JsonSerializerSettings
+                {
+                    TypeNameHandling = TypeNameHandling.None,
+                    MetadataPropertyHandling = MetadataPropertyHandling.Ignore
+                });
 
-            return Result.Success<DataTransferObject>(dto);
+                T dto = jsonObject.ToObject<T>(serializer);
+
+                if (dto == null)
+                {
+                    return Result.Invalid($"Failed to deserialize transaction request as {typeof(T).Name}: deserialized payload was null");
+                }
+
+                return Result.Success<DataTransferObject>(dto);
+            }
+            catch (JsonException ex)
+            {
+                return Result.Invalid($"Failed to deserialize transaction request as {typeof(T).Name}: {ex.Message}");
+            }
         }
 
         private static Boolean IsLogonRequest(JObject jsonObject)
