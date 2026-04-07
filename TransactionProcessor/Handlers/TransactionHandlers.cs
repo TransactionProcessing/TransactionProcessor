@@ -5,6 +5,7 @@ using System.Threading.Tasks;
 using MediatR;
 using Microsoft.AspNetCore.Http;
 using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 using SimpleResults;
 using Shared.Results.Web;
 using Shared.General;
@@ -25,8 +26,13 @@ namespace TransactionProcessor.Handlers
             Guid estateId = Guid.Parse(transactionRequest.Metadata[MetadataContants.KeyNameEstateId]);
             Guid merchantId = Guid.Parse(transactionRequest.Metadata[MetadataContants.KeyNameMerchantId]);
 
-            DataTransferObject dto = JsonConvert.DeserializeObject<DataTransferObject>(transactionRequest.SerialisedData,
-                new JsonSerializerSettings { TypeNameHandling = TypeNameHandling.Auto });
+            Result<DataTransferObject> deserialiseResult = DeserializeTransactionRequest(transactionRequest.SerialisedData);
+            if (deserialiseResult.IsFailed || deserialiseResult.Data == null)
+            {
+                return ResponseFactory.FromResult(Result.Invalid(deserialiseResult.Message));
+            }
+
+            DataTransferObject dto = deserialiseResult.Data;
 
             dto.MerchantId = merchantId;
             dto.EstateId = estateId;
@@ -40,10 +46,100 @@ namespace TransactionProcessor.Handlers
                 LogonTransactionRequest ltr => await ProcessSpecificMessage(mediator, ltr, transactionReceivedDateTime, cancellationToken),
                 SaleTransactionRequest str => await ProcessSpecificMessage(mediator, str, transactionReceivedDateTime, cancellationToken),
                 ReconciliationRequest rr => await ProcessSpecificMessage(mediator, rr, cancellationToken),
-                _ => Result.Invalid($"DTO Type {dto.GetType().Name} not supported)")
+                _ => Result.Invalid($"DTO Type {dto.GetType().Name} not supported")
             };
 
             return ResponseFactory.FromResult(transactionResult, message => message);
+        }
+
+        private static Result<DataTransferObject> DeserializeTransactionRequest(String serialisedData)
+        {
+            try {
+                JObject jsonObject = JObject.Parse(serialisedData);
+
+                if (IsReconciliationRequest(jsonObject)) {
+                    return DeserializeKnownType<ReconciliationRequest>(jsonObject);
+                }
+
+                if (IsSaleRequest(jsonObject)) {
+                    return DeserializeKnownType<SaleTransactionRequest>(jsonObject);
+                }
+
+                if (IsLogonRequest(jsonObject)) {
+                    return DeserializeKnownType<LogonTransactionRequest>(jsonObject);
+                }
+
+                return Result.Invalid("DTO Type could not be determined");
+            }
+            catch (JsonException ex) {
+                return Result.Invalid($"Invalid transaction request payload: {ex.Message}");
+            }
+        }
+
+        private static Result<DataTransferObject> DeserializeKnownType<T>(JObject jsonObject) where T : DataTransferObject
+        {
+            try
+            {
+                JsonSerializer serializer = JsonSerializer.Create(new JsonSerializerSettings
+                {
+                    TypeNameHandling = TypeNameHandling.None,
+                    MetadataPropertyHandling = MetadataPropertyHandling.Ignore
+                });
+
+                T dto = jsonObject.ToObject<T>(serializer);
+
+                if (dto == null)
+                {
+                    return Result.Invalid($"Failed to deserialize transaction request as {typeof(T).Name}: deserialized payload was null");
+                }
+
+                return Result.Success<DataTransferObject>(dto);
+            }
+            catch (JsonException ex)
+            {
+                return Result.Invalid($"Failed to deserialize transaction request as {typeof(T).Name}: {ex.Message}");
+            }
+        }
+
+        private static Boolean IsLogonRequest(JObject jsonObject) {
+            if (TryGetTransactionType(jsonObject, out string transactionType)) {
+                return String.Equals(transactionType, "Logon", StringComparison.OrdinalIgnoreCase);
+            }
+
+            return false;
+        }
+
+        private static Boolean IsSaleRequest(JObject jsonObject) {
+            if (TryGetTransactionType(jsonObject, out string transactionType)) {
+                return String.Equals(transactionType, "Sale", StringComparison.OrdinalIgnoreCase);
+            }
+
+            return false;
+        }
+
+        private static Boolean IsReconciliationRequest(JObject jsonObject) {
+            if (TryGetTransactionType(jsonObject, out string _)) {
+                return false;
+            }
+
+            return true;
+        }
+
+        private static bool TryGetTransactionType(JObject jsonObject,
+                                                  out string transactionType) {
+            transactionType = null;
+
+            if (!HasProperty(jsonObject, "transaction_type"))
+                return false;
+
+            transactionType = jsonObject.GetValue("transaction_type", StringComparison.OrdinalIgnoreCase)?.Value<string>();
+
+            return transactionType != null;
+        }
+
+        private static Boolean HasProperty(JObject jsonObject,
+                                           String propertyName) {
+            return jsonObject.GetValue(propertyName, StringComparison.OrdinalIgnoreCase) != null;
         }
 
         public static async Task<IResult> ResendTransactionReceipt(IMediator mediator, HttpContext ctx, Guid estateId, Guid transactionId, CancellationToken cancellationToken)
