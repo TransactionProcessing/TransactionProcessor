@@ -86,33 +86,34 @@ namespace TransactionProcessor.Handlers
             String transactionType = jsonObject.GetValue("transaction_type", StringComparison.OrdinalIgnoreCase)?.Value<String>();
 
             return String.Equals(transactionType, "Logon", StringComparison.OrdinalIgnoreCase) &&
-                   HasProperty(jsonObject, "device_identifier", "transaction_number");
+                   HasAllProperties(jsonObject, "device_identifier", "transaction_number");
         }
 
         private static Boolean IsSaleRequest(JObject jsonObject)
         {
             String transactionType = jsonObject.GetValue("transaction_type", StringComparison.OrdinalIgnoreCase)?.Value<String>();
 
-            return String.Equals(transactionType, "Sale", StringComparison.OrdinalIgnoreCase) ||
-                   HasProperty(jsonObject, "operator_id", "contract_id", "product_id", "customer_email_address", "additional_transaction_metadata", "transaction_source");
+            return (String.Equals(transactionType, "Sale", StringComparison.OrdinalIgnoreCase) &&
+                    HasAllProperties(jsonObject, "device_identifier", "transaction_number")) ||
+                   HasAllProperties(jsonObject, "device_identifier", "transaction_number", "operator_id", "contract_id", "product_id");
         }
 
         private static Boolean IsReconciliationRequest(JObject jsonObject)
         {
-            return HasProperty(jsonObject, "transaction_count", "transaction_value", "operator_totals");
+            return HasAllProperties(jsonObject, "device_identifier", "transaction_count", "transaction_value");
         }
 
-        private static Boolean HasProperty(JObject jsonObject, params String[] propertyNames)
+        private static Boolean HasAllProperties(JObject jsonObject, params String[] propertyNames)
         {
             foreach (String propertyName in propertyNames)
             {
-                if (jsonObject.GetValue(propertyName, StringComparison.OrdinalIgnoreCase) != null)
+                if (jsonObject.GetValue(propertyName, StringComparison.OrdinalIgnoreCase) == null)
                 {
-                    return true;
+                    return false;
                 }
             }
 
-            return false;
+            return true;
         }
 
         public static async Task<IResult> ResendTransactionReceipt(IMediator mediator, HttpContext ctx, Guid estateId, Guid transactionId, CancellationToken cancellationToken)
