@@ -25,4 +25,6 @@ RUN dotnet publish "TransactionProcessor.csproj" -c Release -o /app/publish
 FROM base AS final
 WORKDIR /app
 COPY --from=publish /app/publish .
+RUN addgroup --system txnproc && adduser --system --ingroup txnproc txnproc
+USER txnproc
 ENTRYPOINT ["dotnet", "TransactionProcessor.dll"]
