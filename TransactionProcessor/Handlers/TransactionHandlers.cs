@@ -54,29 +54,24 @@ namespace TransactionProcessor.Handlers
 
         private static Result<DataTransferObject> DeserializeTransactionRequest(String serialisedData)
         {
-            try
-            {
+            try {
                 JObject jsonObject = JObject.Parse(serialisedData);
 
-                if (IsReconciliationRequest(jsonObject))
-                {
+                if (IsReconciliationRequest(jsonObject)) {
                     return DeserializeKnownType<ReconciliationRequest>(jsonObject);
                 }
 
-                if (IsSaleRequest(jsonObject))
-                {
+                if (IsSaleRequest(jsonObject)) {
                     return DeserializeKnownType<SaleTransactionRequest>(jsonObject);
                 }
 
-                if (IsLogonRequest(jsonObject))
-                {
+                if (IsLogonRequest(jsonObject)) {
                     return DeserializeKnownType<LogonTransactionRequest>(jsonObject);
                 }
 
                 return Result.Invalid("DTO Type could not be determined");
             }
-            catch (JsonException ex)
-            {
+            catch (JsonException ex) {
                 return Result.Invalid($"Invalid transaction request payload: {ex.Message}");
             }
         }
@@ -106,52 +101,44 @@ namespace TransactionProcessor.Handlers
             }
         }
 
-        private static Boolean IsLogonRequest(JObject jsonObject)
-        {
-            String transactionType = jsonObject.GetValue("transaction_type", StringComparison.OrdinalIgnoreCase)?.Value<String>();
+        private static Boolean IsLogonRequest(JObject jsonObject) {
+            if (TryGetTransactionType(jsonObject, out string transactionType)) {
+                return String.Equals(transactionType, "Logon", StringComparison.OrdinalIgnoreCase);
+            }
 
-            return String.Equals(transactionType, "Logon", StringComparison.OrdinalIgnoreCase) &&
-                   HasDeviceIdentifier(jsonObject) &&
-                   HasTransactionNumber(jsonObject);
+            return false;
         }
 
-        private static Boolean IsSaleRequest(JObject jsonObject)
-        {
-            String transactionType = jsonObject.GetValue("transaction_type", StringComparison.OrdinalIgnoreCase)?.Value<String>();
+        private static Boolean IsSaleRequest(JObject jsonObject) {
+            if (TryGetTransactionType(jsonObject, out string transactionType)) {
+                return String.Equals(transactionType, "Sale", StringComparison.OrdinalIgnoreCase);
+            }
 
-            return (String.Equals(transactionType, "Sale", StringComparison.OrdinalIgnoreCase) &&
-                    HasDeviceIdentifier(jsonObject) &&
-                    HasTransactionNumber(jsonObject)) ||
-                   (HasDeviceIdentifier(jsonObject) &&
-                    HasTransactionNumber(jsonObject) &&
-                    HasOperatorId(jsonObject) &&
-                    HasContractId(jsonObject) &&
-                    HasProductId(jsonObject));
+            return false;
         }
 
-        private static Boolean IsReconciliationRequest(JObject jsonObject)
-        {
-            return HasDeviceIdentifier(jsonObject) &&
-                   HasTransactionCount(jsonObject) &&
-                   HasTransactionValue(jsonObject);
+        private static Boolean IsReconciliationRequest(JObject jsonObject) {
+            if (TryGetTransactionType(jsonObject, out string _)) {
+                return false;
+            }
+
+            return true;
         }
 
-        private static Boolean HasDeviceIdentifier(JObject jsonObject) => HasProperty(jsonObject, "device_identifier");
+        private static bool TryGetTransactionType(JObject jsonObject,
+                                                  out string transactionType) {
+            transactionType = null;
 
-        private static Boolean HasTransactionNumber(JObject jsonObject) => HasProperty(jsonObject, "transaction_number");
+            if (!HasProperty(jsonObject, "transaction_type"))
+                return false;
 
-        private static Boolean HasOperatorId(JObject jsonObject) => HasProperty(jsonObject, "operator_id");
+            transactionType = jsonObject.GetValue("transaction_type", StringComparison.OrdinalIgnoreCase)?.Value<string>();
 
-        private static Boolean HasContractId(JObject jsonObject) => HasProperty(jsonObject, "contract_id");
+            return transactionType != null;
+        }
 
-        private static Boolean HasProductId(JObject jsonObject) => HasProperty(jsonObject, "product_id");
-
-        private static Boolean HasTransactionCount(JObject jsonObject) => HasProperty(jsonObject, "transaction_count");
-
-        private static Boolean HasTransactionValue(JObject jsonObject) => HasProperty(jsonObject, "transaction_value");
-
-        private static Boolean HasProperty(JObject jsonObject, String propertyName)
-        {
+        private static Boolean HasProperty(JObject jsonObject,
+                                           String propertyName) {
             return jsonObject.GetValue(propertyName, StringComparison.OrdinalIgnoreCase) != null;
         }
 
