@@ -43,9 +43,6 @@ namespace TransactionProcessor.BusinessLogic.Tests.Mediator
             this.Requests.Add(TestData.Commands.RecordTransactionCommand);
             this.Requests.Add(TestData.Commands.SendCustomerEmailReceiptCommand);
             this.Requests.Add(TestData.Commands.ResendTransactionReceiptCommand);
-            // TODO: this needs the query handling function refactoring to use a repository not the context direct
-            //this.Requests.Add(TestData.GetVoucherByVoucherCodeQuery);
-            //this.Requests.Add(TestData.GetVoucherByTransactionIdQuery);
 
             // Estate Commands and Queries
             this.Requests.Add(TestData.Commands.CreateEstateCommand);

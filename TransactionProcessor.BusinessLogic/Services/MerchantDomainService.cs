@@ -263,8 +263,6 @@ namespace TransactionProcessor.BusinessLogic.Services
                 if (stateResult.IsFailed)
                     return stateResult;
 
-                // TODO: add a delete user here in case the aggregate add fails...
-
                 Result saveResult = await this.AggregateService.Save(merchantAggregate, cancellationToken);
                 if (saveResult.IsFailed)
                     return ResultHelpers.CreateFailure(saveResult);

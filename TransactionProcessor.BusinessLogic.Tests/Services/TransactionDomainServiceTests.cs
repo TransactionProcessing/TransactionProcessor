@@ -505,7 +505,6 @@ namespace TransactionProcessor.BusinessLogic.Tests.Services{
             transactionAggregate.StartTransaction(TestData.TransactionDateTime, TestData.TransactionNumber, TransactionType.Sale, TestData.TransactionReference, new TransactionStartContext { EstateId = TestData.EstateId, MerchantId = TestData.MerchantId, DeviceIdentifier = TestData.DeviceIdentifier }, TestData.TransactionAmount);
             transactionAggregate.DeclineTransaction(TestData.OperatorId, "111", "SUCCESS", TransactionResponseCode.Success, "SUCCESS");
 
-            // TODO: maybe move this to an extension on aggregate
             var result = TransactionHelpers.RequireFeeCalculation(transactionAggregate);
             result.ShouldBeFalse();
         }

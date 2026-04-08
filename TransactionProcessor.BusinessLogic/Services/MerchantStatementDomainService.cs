@@ -258,50 +258,6 @@ namespace TransactionProcessor.BusinessLogic.Services
             return returnValue;
         }
 
-        /*public async Task<Result> BuildStatement(MerchantStatementCommands.BuildMerchantStatementCommand command,
-                                                 CancellationToken cancellationToken) {
-            try {
-                // Work out the next statement date
-                Result<MerchantStatementAggregate> getMerchantStatementResult = await DomainServiceHelper.GetAggregateOrFailure(ct => this.AggregateService.GetLatest<MerchantStatementAggregate>(command.MerchantStatementId, ct), command.MerchantStatementId, cancellationToken);
-                if (getMerchantStatementResult.IsFailed)
-                    return ResultHelpers.CreateFailure(getMerchantStatementResult);
-
-                MerchantStatementAggregate merchantStatementAggregate = getMerchantStatementResult.Data;
-                MerchantStatement statement = merchantStatementAggregate.GetStatement();
-                Result<MerchantAggregate> getMerchantResult = await DomainServiceHelper.GetAggregateOrFailure(ct => this.AggregateService.Get<MerchantAggregate>(statement.MerchantId, ct), statement.MerchantId, cancellationToken);
-                if (getMerchantResult.IsFailed)
-                    return ResultHelpers.CreateFailure(getMerchantResult);
-
-                if (getMerchantResult.Data.IsCreated == false)
-                    return Result.Invalid("Merchant must be created to build a statement");
-
-                Merchant merchantModel = getMerchantResult.Data.GetMerchant();
-
-                if (merchantModel.Addresses.Any()  == false)
-                    return Result.Invalid("Merchant must have an address to build a statement");
-
-                Result<String> htmlResult = await this.StatementBuilder.GetStatementHtml(merchantStatementAggregate, merchantModel, cancellationToken);
-                if (htmlResult.IsFailed)
-                    return ResultHelpers.CreateFailure(htmlResult);
-
-                // TODO: Record the html to the statement aggregate so we can use it later if needed
-                String base64 = EncodeTo64(htmlResult.Data);
-
-                Result stateResult = merchantStatementAggregate.BuildStatement(DateTime.Now, base64);
-                if (stateResult.IsFailed)
-                    return ResultHelpers.CreateFailure(stateResult);
-
-                Result saveResult = await this.AggregateService.Save(merchantStatementAggregate, cancellationToken);
-                if (saveResult.IsFailed)
-                    return ResultHelpers.CreateFailure(saveResult);
-
-                return Result.Success();
-            }
-            catch (Exception ex) {
-                return Result.Failure(ex.GetExceptionMessages());
-            }
-        }*/
-
         public async Task<Result> BuildStatement(MerchantStatementCommands.BuildMerchantStatementCommand command,
                                                  CancellationToken cancellationToken)
         {
