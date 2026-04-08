@@ -354,7 +354,7 @@ namespace TransactionProcessor.Repository {
             if (merchant == null)
                 return Result.NotFound($"No merchant found with reference {reference}");
 
-            return Result.Success(ModelFactory.ConvertFrom(estateId, merchant, null, null, null, null, null, null, null));
+            return Result.Success(ModelFactory.ConvertFrom(estateId, merchant));
         }
 
         public async Task<Result> AddMerchant(MerchantDomainEvents.MerchantCreatedEvent domainEvent,
@@ -887,7 +887,7 @@ namespace TransactionProcessor.Repository {
                 List<MerchantDevice> d = merchantDevices.Where(ma => ma.MerchantId == m.MerchantId).ToList();
                 List<MerchantSchedule> s = merchantSchedules.Where(ms => ms.MerchantId == m.MerchantId).ToList();
 
-                models.Add(ModelFactory.ConvertFrom(estateId, m, a, c, o, d, u, s, merchantScheduleMonths));
+                models.Add(ModelFactory.ConvertFrom(estateId, m, a, c, o, d, u, (s, merchantScheduleMonths)));
             }
 
             return Result.Success(models);

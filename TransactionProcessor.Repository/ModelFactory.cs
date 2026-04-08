@@ -83,8 +83,7 @@ namespace TransactionProcessor.Repository
                                                 List<MerchantOperatorEntity> merchantOperators,
                                                 List<MerchantDeviceEntity> merchantDevices,
                                                 List<MerchantSecurityUserEntity> merchantSecurityUsers,
-                                                List<MerchantScheduleEntity> merchantSchedules,
-                                                List<MerchantScheduleMonthEntity> merchantScheduleMonths)
+                                                (List<MerchantScheduleEntity> Schedules, List<MerchantScheduleMonthEntity> Months) merchantScheduleData)
         {
             MerchantModel merchantModel = ModelFactory.ConvertFrom(estateId, merchant);
 
@@ -93,7 +92,7 @@ namespace TransactionProcessor.Repository
             merchantModel.Operators = ConvertFrom(merchantOperators);
             merchantModel.Devices = ConvertFrom(merchantDevices);
             merchantModel.SecurityUsers = ConvertFrom(merchantSecurityUsers);
-            merchantModel.Schedules = ConvertFrom(merchantSchedules, merchantScheduleMonths);
+            merchantModel.Schedules = ConvertFrom(merchantScheduleData.Schedules, merchantScheduleData.Months);
 
             return merchantModel;
         }
