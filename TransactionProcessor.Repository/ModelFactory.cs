@@ -111,7 +111,7 @@ namespace TransactionProcessor.Repository
         private static List<MerchantAddressModel> ConvertFrom(List<MerchantAddressEntity> merchantAddresses) {
             List<MerchantAddressModel> addresses = new List<MerchantAddressModel>();
             if (merchantAddresses != null && merchantAddresses.Any()) {
-                merchantAddresses.ForEach(ma => addresses.Add(MerchantAddressModel.Create(ma.AddressId, ma.AddressLine1, ma.AddressLine2, ma.AddressLine3, ma.AddressLine4, ma.Town, ma.Region, ma.PostalCode, ma.Country)));
+                merchantAddresses.ForEach(ma => addresses.Add(MerchantAddressModel.Create(ma.AddressId, new AddressLines(ma.AddressLine1, ma.AddressLine2, ma.AddressLine3, ma.AddressLine4), ma.Town, ma.Region, ma.PostalCode, ma.Country)));
             }
 
             return addresses;

@@ -221,7 +221,7 @@ namespace TransactionProcessor.BusinessLogic.Services
 
                 MerchantAggregate merchantAggregate = merchantResult.Data;
                 // Build up the models for the Crete call
-                Address address = Address.Create(Guid.Empty, command.RequestDto.Address.AddressLine1, command.RequestDto.Address.AddressLine2, command.RequestDto.Address.AddressLine3, command.RequestDto.Address.AddressLine4, command.RequestDto.Address.Town, command.RequestDto.Address.Region, command.RequestDto.Address.PostalCode, command.RequestDto.Address.Country);
+                Address address = Address.Create(Guid.Empty, new AddressLines(command.RequestDto.Address.AddressLine1, command.RequestDto.Address.AddressLine2, command.RequestDto.Address.AddressLine3, command.RequestDto.Address.AddressLine4), command.RequestDto.Address.Town, command.RequestDto.Address.Region, command.RequestDto.Address.PostalCode, command.RequestDto.Address.Country);
                 Contact contact = new Contact(Guid.Empty, command.RequestDto.Contact.EmailAddress, command.RequestDto.Contact.ContactName, command.RequestDto.Contact.PhoneNumber);
                 // Set the settlement schedule
                 SettlementSchedule settlementSchedule = ConvertSettlementSchedule(command.RequestDto.SettlementSchedule);
@@ -445,7 +445,7 @@ namespace TransactionProcessor.BusinessLogic.Services
 
                 MerchantAggregate merchantAggregate = contextResult.Data.MerchantAggregate;
 
-                Address address = Address.Create(Guid.Empty, command.RequestDto.AddressLine1, command.RequestDto.AddressLine2, command.RequestDto.AddressLine3, command.RequestDto.AddressLine4, command.RequestDto.Town, command.RequestDto.Region, command.RequestDto.PostalCode, command.RequestDto.Country);
+                Address address = Address.Create(Guid.Empty, new AddressLines(command.RequestDto.AddressLine1, command.RequestDto.AddressLine2, command.RequestDto.AddressLine3, command.RequestDto.AddressLine4), command.RequestDto.Town, command.RequestDto.Region, command.RequestDto.PostalCode, command.RequestDto.Country);
 
                 Result stateResult = merchantAggregate.AddAddress(address);
                 if (stateResult.IsFailed)
@@ -473,7 +473,7 @@ namespace TransactionProcessor.BusinessLogic.Services
 
                 MerchantAggregate merchantAggregate = contextResult.Data.MerchantAggregate;
 
-                Address address = Address.Create(command.AddressId, command.RequestDto.AddressLine1, command.RequestDto.AddressLine2, command.RequestDto.AddressLine3, command.RequestDto.AddressLine4, command.RequestDto.Town, command.RequestDto.Region, command.RequestDto.PostalCode, command.RequestDto.Country);
+                Address address = Address.Create(command.AddressId, new AddressLines(command.RequestDto.AddressLine1, command.RequestDto.AddressLine2, command.RequestDto.AddressLine3, command.RequestDto.AddressLine4), command.RequestDto.Town, command.RequestDto.Region, command.RequestDto.PostalCode, command.RequestDto.Country);
 
                 Result stateResult = merchantAggregate.UpdateAddress(address);
                 if (stateResult.IsFailed)
