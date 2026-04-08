@@ -363,7 +363,7 @@ namespace TransactionProcessor.Aggregates
 
             merchantModel.Addresses = new();
             foreach (KeyValuePair<Guid, Address> aggregateAddress in aggregate.Addresses) {
-                AddressModel address = AddressModel.Create(aggregateAddress.Key, aggregateAddress.Value.AddressLine1, aggregateAddress.Value.AddressLine2, aggregateAddress.Value.AddressLine3, aggregateAddress.Value.AddressLine4, aggregateAddress.Value.Town, aggregateAddress.Value.Region, aggregateAddress.Value.PostalCode, aggregateAddress.Value.Country);
+                AddressModel address = AddressModel.Create(aggregateAddress.Key, new AddressLines(aggregateAddress.Value.AddressLine1, aggregateAddress.Value.AddressLine2, aggregateAddress.Value.AddressLine3, aggregateAddress.Value.AddressLine4), aggregateAddress.Value.Town, aggregateAddress.Value.Region, aggregateAddress.Value.PostalCode, aggregateAddress.Value.Country);
                 merchantModel.Addresses.Add(address);
             }
         }
