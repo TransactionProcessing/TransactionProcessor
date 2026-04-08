@@ -79,7 +79,6 @@ namespace TransactionProcessor.BusinessLogic.Tests.Manager
             estateModel.Name.ShouldBe(TestData.EstateModel.Name);
             estateModel.Operators.ShouldHaveSingleItem();
             estateModel.Operators.Single().OperatorId.ShouldBe(TestData.OperatorId);
-            // TODO: add back in with operator aggregate
             estateModel.Operators.Single().Name.ShouldBe(TestData.OperatorName);
             estateModel.Operators.Single().IsDeleted.ShouldBeFalse();
         }
