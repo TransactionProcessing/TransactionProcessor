@@ -23,8 +23,8 @@ namespace TransactionProcessor.Handlers
         {
             DateTime transactionReceivedDateTime = DateTime.Now;
             
-            Guid estateId = Guid.Parse(transactionRequest.Metadata[MetadataContants.KeyNameEstateId]);
-            Guid merchantId = Guid.Parse(transactionRequest.Metadata[MetadataContants.KeyNameMerchantId]);
+            Guid estateId = Guid.Parse(transactionRequest.Metadata[MetadataContants.EstateIdMetadataName]);
+            Guid merchantId = Guid.Parse(transactionRequest.Metadata[MetadataContants.MerchantIdMetadataName]);
 
             Result<DataTransferObject> deserialiseResult = DeserializeTransactionRequest(transactionRequest.SerialisedData);
             if (deserialiseResult.IsFailed || deserialiseResult.Data == null)

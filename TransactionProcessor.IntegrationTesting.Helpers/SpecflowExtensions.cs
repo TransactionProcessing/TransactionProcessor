@@ -605,8 +605,8 @@ public static class ReqnrollExtensions{
             }
 
             SerialisedMessage serialisedMessage = new SerialisedMessage();
-            serialisedMessage.Metadata.Add(MetadataContants.KeyNameEstateId, estateDetails.EstateId.ToString());
-            serialisedMessage.Metadata.Add(MetadataContants.KeyNameMerchantId, merchantId.ToString());
+            serialisedMessage.Metadata.Add(MetadataContants.EstateIdMetadataName, estateDetails.EstateId.ToString());
+            serialisedMessage.Metadata.Add(MetadataContants.MerchantIdMetadataName, merchantId.ToString());
             serialisedMessage.SerialisedData = serialisedData;
             messages.Add((estateDetails, merchantId, transactionNumber, serialisedMessage));
         }

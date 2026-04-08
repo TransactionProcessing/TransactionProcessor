@@ -12,16 +12,14 @@
         #region Others
 
         /// <summary>
-        /// The key name estate identifier
+        /// The estate identifier metadata name
         /// </summary>
-        [SuppressMessage("Security", "S2068:Passwords should not be hardcoded", Justification = "Not a password - this is a metadata key name constant")]
-        public static readonly String KeyNameEstateId = "estate_id";
+        public static readonly String EstateIdMetadataName = "estate_id";
 
         /// <summary>
-        /// The key name merchant identifier
+        /// The merchant identifier metadata name
         /// </summary>
-        [SuppressMessage("Security", "S2068:Passwords should not be hardcoded", Justification = "Not a password - this is a metadata key name constant")]
-        public static readonly String KeyNameMerchantId = "merchant_id";
+        public static readonly String MerchantIdMetadataName = "merchant_id";
 
         #endregion
     }

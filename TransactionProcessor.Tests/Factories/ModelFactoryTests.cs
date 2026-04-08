@@ -187,10 +187,10 @@ namespace TransactionProcessor.Tests.Factories
 
             SerialisedMessage logonTransactionResponse = ModelFactory.ConvertFrom(processLogonTransactionResponseModel);
             logonTransactionResponse.ShouldNotBeNull();
-            logonTransactionResponse.Metadata.ShouldContainKey(MetadataContants.KeyNameEstateId);
-            logonTransactionResponse.Metadata.ShouldContainKey(MetadataContants.KeyNameMerchantId);
-            String estateId = logonTransactionResponse.Metadata[MetadataContants.KeyNameEstateId];
-            String merchantId = logonTransactionResponse.Metadata[MetadataContants.KeyNameMerchantId];
+            logonTransactionResponse.Metadata.ShouldContainKey(MetadataContants.EstateIdMetadataName);
+            logonTransactionResponse.Metadata.ShouldContainKey(MetadataContants.MerchantIdMetadataName);
+            String estateId = logonTransactionResponse.Metadata[MetadataContants.EstateIdMetadataName];
+            String merchantId = logonTransactionResponse.Metadata[MetadataContants.MerchantIdMetadataName];
             estateId.ShouldBe(TestData.ProcessLogonTransactionResponseModel.EstateId.ToString());
             merchantId.ShouldBe(TestData.ProcessLogonTransactionResponseModel.MerchantId.ToString());
         }
@@ -212,10 +212,10 @@ namespace TransactionProcessor.Tests.Factories
             SerialisedMessage saleTransactionResponse = ModelFactory.ConvertFrom(processSaleTransactionResponseModel);
 
             saleTransactionResponse.ShouldNotBeNull();
-            saleTransactionResponse.Metadata.ShouldContainKey(MetadataContants.KeyNameEstateId);
-            saleTransactionResponse.Metadata.ShouldContainKey(MetadataContants.KeyNameMerchantId);
-            String estateId = saleTransactionResponse.Metadata[MetadataContants.KeyNameEstateId];
-            String merchantId = saleTransactionResponse.Metadata[MetadataContants.KeyNameMerchantId];
+            saleTransactionResponse.Metadata.ShouldContainKey(MetadataContants.EstateIdMetadataName);
+            saleTransactionResponse.Metadata.ShouldContainKey(MetadataContants.MerchantIdMetadataName);
+            String estateId = saleTransactionResponse.Metadata[MetadataContants.EstateIdMetadataName];
+            String merchantId = saleTransactionResponse.Metadata[MetadataContants.MerchantIdMetadataName];
             estateId.ShouldBe(TestData.ProcessSaleTransactionResponseModel.EstateId.ToString());
             merchantId.ShouldBe(TestData.ProcessSaleTransactionResponseModel.MerchantId.ToString());
         }
@@ -237,10 +237,10 @@ namespace TransactionProcessor.Tests.Factories
             SerialisedMessage processReconciliationTransactionResponse = ModelFactory.ConvertFrom(processReconciliationTransactionResponseModel);
 
             processReconciliationTransactionResponse.ShouldNotBeNull();
-            processReconciliationTransactionResponse.Metadata.ShouldContainKey(MetadataContants.KeyNameEstateId);
-            processReconciliationTransactionResponse.Metadata.ShouldContainKey(MetadataContants.KeyNameMerchantId);
-            String estateId = processReconciliationTransactionResponse.Metadata[MetadataContants.KeyNameEstateId];
-            String merchantId = processReconciliationTransactionResponse.Metadata[MetadataContants.KeyNameMerchantId];
+            processReconciliationTransactionResponse.Metadata.ShouldContainKey(MetadataContants.EstateIdMetadataName);
+            processReconciliationTransactionResponse.Metadata.ShouldContainKey(MetadataContants.MerchantIdMetadataName);
+            String estateId = processReconciliationTransactionResponse.Metadata[MetadataContants.EstateIdMetadataName];
+            String merchantId = processReconciliationTransactionResponse.Metadata[MetadataContants.MerchantIdMetadataName];
             estateId.ShouldBe(TestData.ProcessSaleTransactionResponseModel.EstateId.ToString());
             merchantId.ShouldBe(TestData.ProcessSaleTransactionResponseModel.MerchantId.ToString());
         }
