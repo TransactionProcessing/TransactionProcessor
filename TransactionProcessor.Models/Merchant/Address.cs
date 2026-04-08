@@ -4,36 +4,17 @@ namespace TransactionProcessor.Models.Merchant
 {
     public record Address
     {
-        public Guid AddressId { get; }
-        public String AddressLine1 { get; }
-        public String? AddressLine2 { get; }
-        public String? AddressLine3 { get; }
-        public String? AddressLine4 { get; }
-        public String Town { get; }
-        public String? Region { get; }
-        public String PostalCode { get; }
-        public String Country { get; }
+        public Guid AddressId { get; init; }
+        public String AddressLine1 { get; init; }
+        public String? AddressLine2 { get; init; }
+        public String? AddressLine3 { get; init; }
+        public String? AddressLine4 { get; init; }
+        public String Town { get; init; }
+        public String? Region { get; init; }
+        public String PostalCode { get; init; }
+        public String Country { get; init; }
 
-        private Address(Guid addressId,
-                        String addressLine1,
-                        String? addressLine2,
-                        String? addressLine3,
-                        String? addressLine4,
-                        String town,
-                        String? region,
-                        String postalCode,
-                        String country)
-        {
-            AddressId = addressId;
-            AddressLine1 = addressLine1;
-            AddressLine2 = addressLine2;
-            AddressLine3 = addressLine3;
-            AddressLine4 = addressLine4;
-            Town = town;
-            Region = region;
-            PostalCode = postalCode;
-            Country = country;
-        }
+        private Address() { }
 
         public static Address Create(Guid addressId, 
                                      String addressLine1,
@@ -57,7 +38,18 @@ namespace TransactionProcessor.Models.Merchant
             if (String.IsNullOrWhiteSpace(country))
                 throw new ArgumentException("Country is required");
 
-            return new Address(addressId, addressLine1, addressLine2, addressLine3, addressLine4,town, region, postalCode, country);
+            return new Address
+            {
+                AddressId = addressId,
+                AddressLine1 = addressLine1,
+                AddressLine2 = addressLine2,
+                AddressLine3 = addressLine3,
+                AddressLine4 = addressLine4,
+                Town = town,
+                Region = region,
+                PostalCode = postalCode,
+                Country = country
+            };
         }
     }
 }
