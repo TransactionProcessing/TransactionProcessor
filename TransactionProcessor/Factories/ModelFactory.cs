@@ -151,8 +151,8 @@ namespace TransactionProcessor.Factories
                    {
                        Metadata = new Dictionary<String, String>()
                                   {
-                                      {MetadataContants.KeyNameEstateId, logonTransactionResponse.EstateId.ToString()},
-                                      {MetadataContants.KeyNameMerchantId, logonTransactionResponse.MerchantId.ToString()}
+                                      {MetadataContants.EstateIdMetadataName, logonTransactionResponse.EstateId.ToString()},
+                                      {MetadataContants.MerchantIdMetadataName, logonTransactionResponse.MerchantId.ToString()}
                                   },
                        SerialisedData = JsonConvert.SerializeObject(logonTransactionResponse, new JsonSerializerSettings
                                                                                                      {
@@ -182,8 +182,8 @@ namespace TransactionProcessor.Factories
             {
                        Metadata = new Dictionary<String, String>()
                                   {
-                                      {MetadataContants.KeyNameEstateId, processSaleTransactionResponse.EstateId.ToString()},
-                                      {MetadataContants.KeyNameMerchantId, processSaleTransactionResponse.MerchantId.ToString()}
+                                      {MetadataContants.EstateIdMetadataName, processSaleTransactionResponse.EstateId.ToString()},
+                                      {MetadataContants.MerchantIdMetadataName, processSaleTransactionResponse.MerchantId.ToString()}
                                   },
                        SerialisedData = JsonConvert.SerializeObject(saleTransactionResponse, new JsonSerializerSettings
                                                                                              {
@@ -212,8 +212,8 @@ namespace TransactionProcessor.Factories
             {
                        Metadata = new Dictionary<String, String>()
                                   {
-                                      {MetadataContants.KeyNameEstateId, processReconciliationTransactionResponse.EstateId.ToString()},
-                                      {MetadataContants.KeyNameMerchantId, processReconciliationTransactionResponse.MerchantId.ToString()}
+                                      {MetadataContants.EstateIdMetadataName, processReconciliationTransactionResponse.EstateId.ToString()},
+                                      {MetadataContants.MerchantIdMetadataName, processReconciliationTransactionResponse.MerchantId.ToString()}
                                   },
                        SerialisedData = JsonConvert.SerializeObject(reconciliationTransactionResponse, new JsonSerializerSettings
                                                                                                        {

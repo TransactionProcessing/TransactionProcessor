@@ -170,8 +170,8 @@ namespace TransactionProcessor.Tests.HandlerTests
             {
                 Metadata = new Dictionary<String, String>
                 {
-                    { MetadataContants.KeyNameEstateId, TestData.EstateId.ToString() },
-                    { MetadataContants.KeyNameMerchantId, TestData.MerchantId.ToString() }
+                    { MetadataContants.EstateIdMetadataName, TestData.EstateId.ToString() },
+                    { MetadataContants.MerchantIdMetadataName, TestData.MerchantId.ToString() }
                 },
                 SerialisedData = JsonConvert.SerializeObject(request)
             };
