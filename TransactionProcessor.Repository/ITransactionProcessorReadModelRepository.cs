@@ -887,7 +887,7 @@ namespace TransactionProcessor.Repository {
                 List<MerchantDevice> d = merchantDevices.Where(ma => ma.MerchantId == m.MerchantId).ToList();
                 List<MerchantSchedule> s = merchantSchedules.Where(ms => ms.MerchantId == m.MerchantId).ToList();
 
-                models.Add(ModelFactory.ConvertFrom(estateId, m, a, c, o, d, u, (s, merchantScheduleMonths)));
+                models.Add(ModelFactory.ConvertFrom(estateId, m, a, c, o, d, u, (Schedules: s, Months: merchantScheduleMonths)));
             }
 
             return Result.Success(models);
