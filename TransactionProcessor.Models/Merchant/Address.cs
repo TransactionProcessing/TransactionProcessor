@@ -2,6 +2,8 @@
 
 namespace TransactionProcessor.Models.Merchant
 {
+    public record AddressLines(String Line1, String? Line2, String? Line3, String? Line4);
+
     public record Address
     {
         public Guid AddressId { get; init; }
@@ -16,17 +18,17 @@ namespace TransactionProcessor.Models.Merchant
 
         private Address() { }
 
-        public static Address Create(Guid addressId, 
-                                     String addressLine1,
-                                     String? addressLine2,
-                                     String? addressLine3,
-                                     String? addressLine4,
+        public static Address Create(Guid addressId,
+                                     AddressLines lines,
                                      String town,
                                      String? region,
                                      String postalCode,
                                      String country)
         {
-            if (String.IsNullOrWhiteSpace(addressLine1))
+            if (lines == null)
+                throw new ArgumentNullException(nameof(lines));
+
+            if (String.IsNullOrWhiteSpace(lines.Line1))
                 throw new ArgumentException("AddressLine1 is required");
 
             if (String.IsNullOrWhiteSpace(town))
@@ -41,10 +43,10 @@ namespace TransactionProcessor.Models.Merchant
             return new Address
             {
                 AddressId = addressId,
-                AddressLine1 = addressLine1,
-                AddressLine2 = addressLine2,
-                AddressLine3 = addressLine3,
-                AddressLine4 = addressLine4,
+                AddressLine1 = lines.Line1,
+                AddressLine2 = lines.Line2,
+                AddressLine3 = lines.Line3,
+                AddressLine4 = lines.Line4,
                 Town = town,
                 Region = region,
                 PostalCode = postalCode,

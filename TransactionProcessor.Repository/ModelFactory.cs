@@ -83,8 +83,7 @@ namespace TransactionProcessor.Repository
                                                 List<MerchantOperatorEntity> merchantOperators,
                                                 List<MerchantDeviceEntity> merchantDevices,
                                                 List<MerchantSecurityUserEntity> merchantSecurityUsers,
-                                                List<MerchantScheduleEntity> merchantSchedules,
-                                                List<MerchantScheduleMonthEntity> merchantScheduleMonths)
+                                                (List<MerchantScheduleEntity> Schedules, List<MerchantScheduleMonthEntity> Months) merchantScheduleData)
         {
             MerchantModel merchantModel = ModelFactory.ConvertFrom(estateId, merchant);
 
@@ -93,7 +92,7 @@ namespace TransactionProcessor.Repository
             merchantModel.Operators = ConvertFrom(merchantOperators);
             merchantModel.Devices = ConvertFrom(merchantDevices);
             merchantModel.SecurityUsers = ConvertFrom(merchantSecurityUsers);
-            merchantModel.Schedules = ConvertFrom(merchantSchedules, merchantScheduleMonths);
+            merchantModel.Schedules = ConvertFrom(merchantScheduleData.Schedules, merchantScheduleData.Months);
 
             return merchantModel;
         }
@@ -112,7 +111,7 @@ namespace TransactionProcessor.Repository
         private static List<MerchantAddressModel> ConvertFrom(List<MerchantAddressEntity> merchantAddresses) {
             List<MerchantAddressModel> addresses = new List<MerchantAddressModel>();
             if (merchantAddresses != null && merchantAddresses.Any()) {
-                merchantAddresses.ForEach(ma => addresses.Add(MerchantAddressModel.Create(ma.AddressId, ma.AddressLine1, ma.AddressLine2, ma.AddressLine3, ma.AddressLine4, ma.Town, ma.Region, ma.PostalCode, ma.Country)));
+                merchantAddresses.ForEach(ma => addresses.Add(MerchantAddressModel.Create(ma.AddressId, new AddressLines(ma.AddressLine1, ma.AddressLine2, ma.AddressLine3, ma.AddressLine4), ma.Town, ma.Region, ma.PostalCode, ma.Country)));
             }
 
             return addresses;
