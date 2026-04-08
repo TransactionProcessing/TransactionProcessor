@@ -540,23 +540,18 @@ namespace TransactionProcessor.Aggregates
                                                                 String transactionReference,
                                                                 TransactionStartContext transactionStartContext)
         {
+            var result = ValidateContext(transactionStartContext);
+            if (result.IsFailed) return result;
+
+            result = ValidateCoreFields(transactionDateTime, transactionNumber, transactionReference, transactionType);
+            if (result.IsFailed) return result;
+
+            return Result.Success();
+        }
+
+        private static Result ValidateContext(TransactionStartContext transactionStartContext) {
             if (transactionStartContext == null)
-                return Result.Invalid("Transaction Start Context must not be null");
-
-            if (transactionDateTime == DateTime.MinValue)
-                return Result.Invalid($"Transaction Date Time must not be [{DateTime.MinValue}]");
-            if (String.IsNullOrEmpty(transactionNumber))
-                return Result.Invalid("Transaction Number must not be null or empty");
-            if (String.IsNullOrEmpty(transactionReference))
-                return Result.Invalid("Transaction Reference must not be null or empty");
-
-            if (Int32.TryParse(transactionNumber, out Int32 _) == false) {
-                return Result.Invalid("Transaction Number must be numeric");
-            }
-
-            if (Enum.IsDefined(typeof(TransactionType), transactionType) == false)
-                return Result.Invalid("Transaction Type not valid");
-
+              return Result.Invalid("Transaction Start Context must not be null");
             if (transactionStartContext.EstateId == Guid.Empty)
                 return Result.Invalid($"Estate Id must not be [{Guid.Empty}]");
             if (transactionStartContext.MerchantId == Guid.Empty)
@@ -566,6 +561,27 @@ namespace TransactionProcessor.Aggregates
 
             return Result.Success();
         }
+
+        private static Result ValidateCoreFields(DateTime dateTime, string number, string reference, TransactionType transactionType)
+        {
+            if (dateTime == DateTime.MinValue)
+                return Result.Invalid($"Transaction Date Time must not be [{DateTime.MinValue}]");
+
+            if (string.IsNullOrEmpty(number))
+                return Result.Invalid("Transaction Number must not be null or empty");
+
+            if (!int.TryParse(number, out _))
+                return Result.Invalid("Transaction Number must be numeric");
+
+            if (string.IsNullOrEmpty(reference))
+                return Result.Invalid("Transaction Reference must not be null or empty");
+
+            if (Enum.IsDefined(typeof(TransactionType), transactionType) == false)
+                return Result.Invalid("Transaction Type not valid");
+
+            return Result.Success();
+        }
+
 
         private static Result CheckCanStartTransaction(TransactionAggregate aggregate)
         {
