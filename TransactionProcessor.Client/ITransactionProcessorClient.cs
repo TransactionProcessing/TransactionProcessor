@@ -113,6 +113,13 @@ namespace TransactionProcessor.Client
                                             CreateMerchantScheduleRequest createMerchantScheduleRequest,
                                             CancellationToken cancellationToken);
 
+        Task<Result> UpdateMerchantSchedule(String accessToken,
+                                            Guid estateId,
+                                            Guid merchantId,
+                                            Int32 year,
+                                            UpdateMerchantScheduleRequest updateMerchantScheduleRequest,
+                                            CancellationToken cancellationToken);
+
         Task<Result<MerchantResponse>> GetMerchant(String accessToken,
                                                    Guid estateId,
                                                    Guid merchantId,
