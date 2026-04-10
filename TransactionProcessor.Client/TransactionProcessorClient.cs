@@ -762,17 +762,41 @@ public class TransactionProcessorClient : ClientProxyBase, ITransactionProcessor
             return Result.Success();
         }
         catch (Exception ex) {
-            Exception exception = new($"Error creating merchant schedule for merchant {merchantId} for estate {estateId}.", ex);
+            Exception exception = new($"Error creating schedule for merchant {merchantId} for estate {estateId}.", ex);
+
+            throw exception;
+        }
+    }
+
+    public async Task<Result> UpdateMerchantSchedule(String accessToken,
+                                                     Guid estateId,
+                                                     Guid merchantId,
+                                                     Int32 year,
+                                                     UpdateMerchantScheduleRequest updateMerchantScheduleRequest,
+                                                     CancellationToken cancellationToken) {
+        String requestUri = this.BuildRequestUrl($"/api/estates/{estateId}/merchants/{merchantId}/schedules/{year}");
+
+        try
+        {
+            var result = await this.SendHttpPatchRequest(requestUri, updateMerchantScheduleRequest, accessToken, cancellationToken);
+            if (result.IsFailed)
+                return ResultHelpers.CreateFailure(result);
+
+            return Result.Success();
+        }
+        catch (Exception ex)
+        {
+            Exception exception = new($"Error updating {year} schedule for merchant {merchantId} for estate {estateId}.", ex);
 
             throw exception;
         }
     }
 
     public async Task<Result<MerchantScheduleResponse>> GetMerchantSchedule(String accessToken,
-                                                                             Guid estateId,
-                                                                             Guid merchantId,
-                                                                             Int32 year,
-                                                                             CancellationToken cancellationToken) {
+                                                                            Guid estateId,
+                                                                            Guid merchantId,
+                                                                            Int32 year,
+                                                                            CancellationToken cancellationToken) {
         String requestUri = this.BuildRequestUrl($"/api/estates/{estateId}/merchants/{merchantId}/schedules/{year}");
 
         try {
