@@ -100,7 +100,7 @@ public class TransactionValidationService : ITransactionValidationService{
 
         // Validate Merchant
         Result<TransactionValidationResult<MerchantAggregate>> merchantValidationResult = await ValidateMerchant(estate.EstateName, merchantId, cancellationToken);
-        if (merchantValidationResult.IsFailed) return CreateFailedResult(merchantValidationResult.Data.validationResult); ;
+        if (merchantValidationResult.IsFailed) return CreateFailedResult(merchantValidationResult.Data.validationResult);
 
         var merchant = merchantValidationResult.Data.additionalData.GetMerchant();
 
@@ -137,7 +137,7 @@ public class TransactionValidationService : ITransactionValidationService{
 
         // Validate Merchant
         Result<TransactionValidationResult<MerchantAggregate>> merchantValidationResult = await ValidateMerchant(estate.EstateName, merchantId, cancellationToken);
-        if (merchantValidationResult.IsFailed) return CreateFailedResult(merchantValidationResult.Data.validationResult); ;
+        if (merchantValidationResult.IsFailed) return CreateFailedResult(merchantValidationResult.Data.validationResult);
 
         Models.Merchant.Merchant merchant = merchantValidationResult.Data.additionalData.GetMerchant();
 
