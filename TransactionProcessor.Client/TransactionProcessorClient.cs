@@ -63,49 +63,7 @@ public class TransactionProcessorClient : ClientProxyBase, ITransactionProcessor
             throw exception;
         }
     }
-    //private async Task<Result<String>> SendPostRequest(String uri, String accessToken, String content, CancellationToken cancellationToken)
-    //{
-
-    //    HttpRequestMessage requestMessage = new HttpRequestMessage(HttpMethod.Post, uri);
-    //    requestMessage.Headers.Authorization = new AuthenticationHeaderValue(AuthenticationSchemes.Bearer, accessToken);
-    //    requestMessage.Content = new StringContent(content, Encoding.UTF8, "application/json");
-
-    //    // Make the Http Call here
-    //    HttpResponseMessage httpResponse = await this.HttpClient.SendAsync(requestMessage, cancellationToken);
-
-    //    // Process the response
-    //    Result<String> result = await this.HandleResponseX(httpResponse, cancellationToken);
-
-    //    if (result.IsFailed)
-    //        return ResultHelpers.CreateFailure(result);
-
-    //    return Result.Success<String>(result.Data);
-    //}
-
-    //public static class AuthenticationSchemes
-    //{
-    //    public static readonly String Bearer = "Bearer";
-    //}
-
-
-    //private async Task<Result<String>> SendDeleteRequest(String uri, String accessToken, CancellationToken cancellationToken)
-    //{
-
-    //    HttpRequestMessage requestMessage = new HttpRequestMessage(HttpMethod.Delete, uri);
-    //    requestMessage.Headers.Authorization = new AuthenticationHeaderValue(AuthenticationSchemes.Bearer, accessToken);
-
-    //    // Make the Http Call here
-    //    HttpResponseMessage httpResponse = await this.HttpClient.SendAsync(requestMessage, cancellationToken);
-
-    //    // Process the response
-    //    Result<String> result = await this.HandleResponseX(httpResponse, cancellationToken);
-
-    //    if (result.IsFailed)
-    //        return ResultHelpers.CreateFailure(result);
-
-    //    return Result.Success<String>(result.Data);
-    //}
-
+    
     public async Task<Result> CreateEstate(String accessToken,
                                            CreateEstateRequest createEstateRequest,
                                            CancellationToken cancellationToken) {
@@ -305,8 +263,7 @@ public class TransactionProcessorClient : ClientProxyBase, ITransactionProcessor
         catch (Exception ex) {
             // An exception has occurred, add some additional information to the message
             Exception exception = new("Error getting voucher by transaction Id.", ex);
-            ;
-
+            
             throw exception;
         }
     }

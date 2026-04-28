@@ -691,32 +691,7 @@ namespace TransactionProcessor.Repository {
 
             return await context.SaveChangesAsync(cancellationToken);
         }
-
-        //public async Task<Result> AddGeneratedVoucher(VoucherDomainEvents.VoucherGeneratedEvent domainEvent,
-        //                                              CancellationToken cancellationToken)
-        //{
-        //    EstateManagementGenericContext context = await this.GetContextFromDomainEvent(domainEvent, cancellationToken);
-
-        //    Voucher voucher = new Voucher
-        //    {
-        //        ExpiryDateTime = domainEvent.ExpiryDateTime,
-        //        ExpiryDate = domainEvent.ExpiryDateTime.Date,
-        //        IsGenerated = true,
-        //        IsIssued = false,
-        //        OperatorIdentifier = domainEvent.OperatorId.ToString(),
-        //        Value = domainEvent.Value,
-        //        VoucherCode = domainEvent.VoucherCode,
-        //        VoucherId = domainEvent.VoucherId,
-        //        TransactionId = domainEvent.TransactionId,
-        //        GenerateDateTime = domainEvent.GeneratedDateTime,
-        //        GenerateDate = domainEvent.GeneratedDateTime.Date
-        //    };
-
-        //    await context.Vouchers.AddAsync(voucher, cancellationToken);
-
-        //    return await context.SaveChangesAsync(cancellationToken);
-        //}
-
+        
         public async Task<Result> UpdateMerchantContact(MerchantContactNameUpdatedEvent domainEvent, CancellationToken cancellationToken)
         {
             EstateManagementContext context = await this.GetContext(domainEvent.EstateId);
@@ -1687,42 +1662,9 @@ namespace TransactionProcessor.Repository {
             transaction.ResponseCode = domainEvent.ResponseCode;
             transaction.ResponseMessage = domainEvent.ResponseMessage;
 
-            return await context.SaveChangesAsync(cancellationToken); ;
+            return await context.SaveChangesAsync(cancellationToken);
         }
-
-        //public async Task<Result> UpdateVoucherIssueDetails(VoucherDomainEvents.VoucherIssuedEvent domainEvent,
-        //                                                    CancellationToken cancellationToken) {
-        //    EstateManagementGenericContext context = await this.GetContextFromDomainEvent(domainEvent, cancellationToken);
-
-        //    var getVoucherResult = await context.LoadVoucher(domainEvent, cancellationToken);
-        //    if (getVoucherResult.IsFailed)
-        //        return ResultHelpers.CreateFailure(getVoucherResult);
-        //    var voucher = getVoucherResult.Data;
-        //    voucher.IsIssued = true;
-        //    voucher.RecipientEmail = domainEvent.RecipientEmail;
-        //    voucher.RecipientMobile = domainEvent.RecipientMobile;
-        //    voucher.IssuedDateTime = domainEvent.IssuedDateTime;
-        //    voucher.IssuedDate = domainEvent.IssuedDateTime.Date;
-
-        //    return await context.SaveChangesAsync(cancellationToken);
-        //}
-
-        //public async Task<Result> UpdateVoucherRedemptionDetails(VoucherDomainEvents.VoucherFullyRedeemedEvent domainEvent,
-        //                                                         CancellationToken cancellationToken) {
-        //    EstateManagementGenericContext context = await this.GetContextFromDomainEvent(domainEvent, cancellationToken);
-
-        //    var getVoucherResult = await context.LoadVoucher(domainEvent, cancellationToken);
-        //    if (getVoucherResult.IsFailed)
-        //        return ResultHelpers.CreateFailure(getVoucherResult);
-        //    var voucher = getVoucherResult.Data;
-
-        //    voucher.IsRedeemed = true;
-        //    voucher.RedeemedDateTime = domainEvent.RedeemedDateTime;
-        //    voucher.RedeemedDate = domainEvent.RedeemedDateTime.Date;
-
-        //    return await context.SaveChangesAsync(cancellationToken);
-        //}
-
+        
         public async Task<Result<List<Models.Operator.Operator>>> GetOperators(Guid estateId, CancellationToken cancellationToken)
         {
             EstateManagementContext context = await this.GetContext(estateId);
