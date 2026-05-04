@@ -308,7 +308,7 @@ public class TransactionProcessorClient : ClientBase, ITransactionProcessorClien
         String requestUri = this.BuildRequestUrl($"/api/estates/{estateId}/settlements/{settlementDate.Date:yyyy-MM-dd}/merchants/{merchantId}");
 
         try {
-            Result result = await this.Post(requestUri, accessToken, cancellationToken);
+            Result result = await this.Post(requestUri, new StringContent(""), accessToken, cancellationToken);
 
             if (result.IsFailed)
                 return ResultHelpers.CreateFailure(result);
