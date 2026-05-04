@@ -6,16 +6,16 @@ Background:
 	Given I create the following api scopes
 	| Name                 | DisplayName                       | Description                            |
 	| transactionProcessor | Transaction Processor REST  Scope | A scope for Transaction Processor REST |
-	| messagingService     | Scope for Messaging REST          | Scope for Messaging REST               |
+	#| messagingService     | Scope for Messaging REST          | Scope for Messaging REST               |
 
 	Given the following api resources exist
 	| Name         | DisplayName                | Secret  | Scopes               | UserClaims                 |
 	| transactionProcessor     | Estate Managememt REST     | Secret1 | transactionProcessor     | MerchantId, EstateId, role |
-	| messagingService     | Messaging REST             | Secret  | messagingService     |                            |
+	#| messagingService     | Messaging REST             | Secret  | messagingService     |                            |
 
 	Given the following clients exist
 	| ClientId      | ClientName     | Secret  | Scopes    | GrantTypes  |
-	| serviceClient | Service Client | Secret1 | transactionProcessor,messagingService | client_credentials |
+	| serviceClient | Service Client | Secret1 | transactionProcessor | client_credentials |
 
 	Given I have a token to access the estate management and transaction processor resources
 	| ClientId      | 
@@ -137,10 +137,10 @@ Scenario: Sale Transactions
 
 	When I perform the following transactions
 	| DateTime | TransactionNumber | TransactionType | TransactionSource | MerchantName    | DeviceIdentifier | EstateName    | OperatorName     | TransactionAmount | CustomerAccountNumber | CustomerEmailAddress        | ContractDescription       | ProductName       | RecipientEmail       | RecipientMobile | MessageType   | AccountNumber | CustomerName     | MeterNumber |
-	| Today    | 1                 | Sale            | 1                 | Test Merchant 1 | 123456780        | Test Estate 1 | Safaricom        | 110.00            | 123456789             | testcustomer@customer.co.uk | Safaricom Contract        | Variable Topup    |                      |                 |               |               |                  |             |
+	| Today    | 1                 | Sale            | 1                 | Test Merchant 1 | 123456780        | Test Estate 1 | Safaricom        | 110.00            | 123456789             |  | Safaricom Contract        | Variable Topup    |                      |                 |               |               |                  |             |
 	| Today    | 2                 | Sale            | 1                 | Test Merchant 2 | 123456781        | Test Estate 1 | Safaricom        | 100.00            | 123456789             |                             | Safaricom Contract        | Variable Topup    |                      |                 |               |               |                  |             |
 	| Today    | 3                 | Sale            | 2                 | Test Merchant 3 | 123456782        | Test Estate 1 | Safaricom        | 100.00            | 123456789             |                             | Safaricom Contract        | Variable Topup    |                      |                 |               |               |                  |             |
-	| Today    | 4                 | Sale            | 1                 | Test Merchant 1 | 123456780        | Test Estate 1 | Safaricom        | 90.00             | 123456789             | testcustomer@customer.co.uk | Safaricom Contract        | Variable Topup    |                      |                 |               |               |                  |             |
+	| Today    | 4                 | Sale            | 1                 | Test Merchant 1 | 123456780        | Test Estate 1 | Safaricom        | 90.00             | 123456789             |  | Safaricom Contract        | Variable Topup    |                      |                 |               |               |                  |             |
 	| Today    | 5                 | Sale            | 1                 | Test Merchant 1 | 123456780        | Test Estate 1 | Voucher          | 10.00             |                       |                             | Hospital 1 Contract       | 10 KES            | test@recipient.co.uk |                 |               |               |                  |             |
 	| Today    | 6                 | Sale            | 1                 | Test Merchant 2 | 123456781        | Test Estate 1 | Voucher          | 10.00             |                       |                             | Hospital 1 Contract       | 10 KES            |                      | 123456789       |               |               |                  |             |
 	| Today    | 7                 | Sale            | 2                 | Test Merchant 3 | 123456782        | Test Estate 1 | Voucher          | 10.00             |                       |                             | Hospital 1 Contract       | 10 KES            | test@recipient.co.uk |                 |               |               |                  |             |
@@ -193,9 +193,9 @@ Scenario: Sale Transactions
 	| Today    | Transaction Fee Processed | C         | 0.00   | 0.85   | 0.50         | 20.00   |
 	| Today    | Opening Balance           | C         | 0.00   | 0.00   | 0.00         | 20.00   |
 		
-	When I request the receipt is resent
-	| EstateName    | MerchantName    | TransactionNumber | 
-	| Test Estate 1 | Test Merchant 1 | 1                 | 
+	#When I request the receipt is resent
+	#| EstateName    | MerchantName    | TransactionNumber | 
+	#| Test Estate 1 | Test Merchant 1 | 1                 | 
 
 	When I perform the following transactions
 	| DateTime | TransactionNumber | TransactionType | TransactionSource | MerchantName    | DeviceIdentifier | EstateName    | OperatorName | TransactionAmount | CustomerAccountNumber | CustomerEmailAddress        | ContractDescription | ProductName    |

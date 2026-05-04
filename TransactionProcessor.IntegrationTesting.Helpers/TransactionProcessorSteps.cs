@@ -505,11 +505,13 @@ public class TransactionProcessorSteps
 
     public async Task WhenIProcessTheSettlementForOnEstateThenFeesAreMarkedAsSettledAndTheSettlementIsCompleted(String accessToken, ReqnrollExtensions.ProcessSettlementRequest request, Int32 expectedNumberFeesSettled)
     {
-        await this.TransactionProcessorClient.ProcessSettlement(accessToken,
+        var result = await this.TransactionProcessorClient.ProcessSettlement(accessToken,
                                                                 request.SettlementDate,
                                                                 request.EstateDetails.EstateId,
                                                                 request.MerchantId,
                                                                 CancellationToken.None);
+
+        result.IsSuccess.ShouldBeTrue();
 
         await Retry.For(async () => {
                             Result<SettlementResponse>? getSettlementByDateResult =
