@@ -1,6 +1,5 @@
 ﻿using FileProcessor.FileImportLog.DomainEvents;
 using Microsoft.IdentityModel.Tokens;
-using Newtonsoft.Json;
 using SecurityService.DataTransferObjects;
 using Shared.EventStore.ProjectionEngine;
 using Shared.ValueObjects;
@@ -2658,7 +2657,7 @@ namespace TransactionProcessor.Testing
                 new CallbackReceivedEnrichedEvent(TestData.CallbackId)
                 {
                     Reference = TestData.CallbackReference,
-                    CallbackMessage = JsonConvert.SerializeObject(TestData.Deposit),
+                    CallbackMessage = StringSerialiser.Serialise(TestData.Deposit),
                     EstateId = TestData.EstateId,
                     MessageFormat = TestData.CallbackMessageFormat,
                     TypeString = TestData.CallbackTypeString
@@ -2668,7 +2667,7 @@ namespace TransactionProcessor.Testing
                 new CallbackReceivedEnrichedEvent(TestData.CallbackId)
                 {
                     Reference = TestData.CallbackReference,
-                    CallbackMessage = JsonConvert.SerializeObject(TestData.Deposit),
+                    CallbackMessage = StringSerialiser.Serialise(TestData.Deposit),
                     EstateId = TestData.EstateId,
                     MessageFormat = TestData.CallbackMessageFormat,
                     TypeString = "OtherType"

@@ -23,7 +23,6 @@ public class ContractDomainEventHandlerTests
     public ContractDomainEventHandlerTests() {
         Logger.Initialise(NullLogger.Instance);
         StringSerialiser.Initialise(new Shared.Serialisation.SystemTextJsonSerializer(new System.Text.Json.JsonSerializerOptions()));
-        StringSerialiser.Initialise(new SystemTextJsonSerializer(new JsonSerializerOptions()));
         this.EstateReportingRepository= new Mock<ITransactionProcessorReadModelRepository>();
         this.DomainEventHandler = new ReadModelDomainEventHandler(this.EstateReportingRepository.Object);
     }
