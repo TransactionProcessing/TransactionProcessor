@@ -22,6 +22,7 @@ namespace TransactionProcessor
     using Shared.Extensions;
     using Shared.General;
     using Shared.Middleware;
+    using Shared.Serialisation;
     using System;
     using System.Collections.Generic;
     using System.Diagnostics.CodeAnalysis;
@@ -137,6 +138,7 @@ namespace TransactionProcessor
             services.IncludeRegistry<DomainServiceRegistry>();
             services.IncludeRegistry<OperatorRegistry>();
             services.IncludeRegistry<ClientRegistry>();
+            services.IncludeRegistry<SerialiserRegistry>();
             services.IncludeRegistry<DomainEventHandlerRegistry>();
             
             services.AddMemoryCache();
@@ -146,6 +148,9 @@ namespace TransactionProcessor
             Startup.Container = new Container(services);
 
             Startup.ServiceProvider = services.BuildServiceProvider();
+
+            var serialiser = Container.GetRequiredService<IStringSerialiser>();
+            StringSerialiser.Initialise(serialiser);
         }
 
         internal static void AddAutoApiLogonOperator(String operatorId) {

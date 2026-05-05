@@ -1,4 +1,5 @@
 using Shared.EventStore.Aggregate;
+using Shared.Serialisation;
 using Shared.ValueObjects;
 using Shouldly;
 using SimpleResults;
@@ -9,6 +10,10 @@ namespace TransactionProcessor.Aggregates.Tests
 {
     public class MerchantDepositListAggregateTests
     {
+        public MerchantDepositListAggregateTests() {
+            StringSerialiser.Initialise(new Shared.Serialisation.SystemTextJsonSerializer(new System.Text.Json.JsonSerializerOptions()));
+        }
+
         #region Methods
 
         [Fact]

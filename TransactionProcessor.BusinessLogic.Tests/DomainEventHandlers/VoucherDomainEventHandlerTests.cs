@@ -19,11 +19,13 @@ using Shared.EntityFramework;
 using Shared.EventStore.Aggregate;
 using Shared.General;
 using Shared.Logger;
+using Shared.Serialisation;
 using System;
 using System.Collections.Generic;
 using System.IO;
 using System.IO.Abstractions.TestingHelpers;
 using System.Reflection;
+using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 using Testing;
@@ -55,6 +57,7 @@ public class VoucherDomainEventHandlerTests
         IConfigurationRoot configurationRoot = new ConfigurationBuilder().AddInMemoryCollection(TestData.DefaultAppSettings).Build();
         ConfigurationReader.Initialise(configurationRoot);
         Logger.Initialise(NullLogger.Instance);
+        StringSerialiser.Initialise(new SystemTextJsonSerializer(new JsonSerializerOptions()));
 
         SecurityServiceClient = new Mock<ISecurityServiceClient>();
         MessagingServiceClient = new Mock<IMessagingServiceClient>();
@@ -86,7 +89,7 @@ public class VoucherDomainEventHandlerTests
     [Fact]
     public async Task VoucherDomainEventHandler_VoucherIssuedEvent_WithEmailAddress_IsHandled()
     {
-        this.SecurityServiceClient.Setup(s => s.GetToken(It.IsAny<String>(), It.IsAny<String>(), It.IsAny<CancellationToken>())).ReturnsAsync(Result.Success(TestData.TokenResponse()));
+        this.SecurityServiceClient.Setup(s => s.GetToken(It.IsAny<String>(), It.IsAny<String>(), It.IsAny<CancellationToken>())).ReturnsAsync(Result.Success(TestData.GetTokenResponse()));
 
         this.AggregateService.Setup(t => t.Get<VoucherAggregate>(It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
                                   .ReturnsAsync(Result.Success(TestData.GetVoucherAggregateWithRecipientEmail()));
@@ -111,7 +114,7 @@ public class VoucherDomainEventHandlerTests
     [Fact]
     public async Task VoucherDomainEventHandler_VoucherIssuedEvent_WithRecipientMobile_IsHandled()
     {
-        this.SecurityServiceClient.Setup(s => s.GetToken(It.IsAny<String>(), It.IsAny<String>(), It.IsAny<CancellationToken>())).ReturnsAsync(Result.Success(TestData.TokenResponse()));
+        this.SecurityServiceClient.Setup(s => s.GetToken(It.IsAny<String>(), It.IsAny<String>(), It.IsAny<CancellationToken>())).ReturnsAsync(Result.Success(TestData.GetTokenResponse()));
 
         this.AggregateService.Setup(t => t.Get<VoucherAggregate>(It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
                                   .ReturnsAsync(Result.Success(TestData.GetVoucherAggregateWithRecipientMobile()));

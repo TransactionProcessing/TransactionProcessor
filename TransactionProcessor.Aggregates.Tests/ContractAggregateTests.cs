@@ -1,3 +1,4 @@
+using Shared.Serialisation;
 using Shouldly;
 using SimpleResults;
 using TransactionProcessor.Models.Contract;
@@ -7,6 +8,10 @@ namespace TransactionProcessor.Aggregates.Tests
 {
     public class ContractAggregateTests
     {
+        public ContractAggregateTests() {
+            StringSerialiser.Initialise(new Shared.Serialisation.SystemTextJsonSerializer(new System.Text.Json.JsonSerializerOptions()));
+        }
+
         [Fact]
         public void ContractAggregate_CanBeCreated_IsCreated()
         {

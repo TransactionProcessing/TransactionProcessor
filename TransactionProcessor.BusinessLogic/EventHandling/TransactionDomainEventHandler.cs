@@ -3,6 +3,7 @@ using SimpleResults;
 using System;
 using System.Diagnostics;
 using Prometheus;
+using SecurityService.DataTransferObjects;
 using Shared.EventStore.Aggregate;
 using TransactionProcessor.BusinessLogic.Requests;
 using TransactionProcessor.DomainEvents;
@@ -10,15 +11,10 @@ using TransactionProcessor.Models.Contract;
 
 namespace TransactionProcessor.BusinessLogic.EventHandling
 {
-    using Polly;
-    using SecurityService.DataTransferObjects.Responses;
     using Shared.DomainDrivenDesign.EventSourcing;
     using Shared.EventStore.EventHandling;
-    using Shared.Logger;
     using System.Threading;
     using System.Threading.Tasks;
-    using TransactionProcessor.BusinessLogic.Common;
-    using TransactionProcessor.BusinessLogic.Services;
     using static TransactionProcessor.BusinessLogic.Requests.SettlementCommands;
     using static TransactionProcessor.BusinessLogic.Requests.TransactionCommands;
 

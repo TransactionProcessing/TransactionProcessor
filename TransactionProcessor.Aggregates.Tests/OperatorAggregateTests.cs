@@ -1,4 +1,5 @@
-﻿using Shouldly;
+﻿using Shared.Serialisation;
+using Shouldly;
 using SimpleResults;
 using TransactionProcessor.Testing;
 
@@ -6,10 +7,8 @@ namespace TransactionProcessor.Aggregates.Tests
 {
     public class OperatorAggregateTests
     {
-        [Fact]
-        public void OperatorAggregate_Create_OperatorIsCreated()
-        {
-
+        public OperatorAggregateTests() {
+            StringSerialiser.Initialise(new Shared.Serialisation.SystemTextJsonSerializer(new System.Text.Json.JsonSerializerOptions()));
         }
 
         [Fact]

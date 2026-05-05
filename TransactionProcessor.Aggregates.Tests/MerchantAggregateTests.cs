@@ -1,5 +1,6 @@
 ﻿using Shared.DomainDrivenDesign.EventSourcing;
 using Shared.EventStore.Aggregate;
+using Shared.Serialisation;
 using Shouldly;
 using SimpleResults;
 using System.Reflection;
@@ -14,6 +15,11 @@ using SettlementSchedule = TransactionProcessor.Models.Merchant.SettlementSchedu
 namespace TransactionProcessor.Aggregates.Tests
 {
     public class MerchantAggregateTests{
+
+        public MerchantAggregateTests() {
+            StringSerialiser.Initialise(new Shared.Serialisation.SystemTextJsonSerializer(new System.Text.Json.JsonSerializerOptions()));
+        }
+
         [Fact]
         public void MerchantAggregate_CanBeCreated_IsCreated(){
             MerchantAggregate aggregate = MerchantAggregate.Create(TestData.MerchantId);

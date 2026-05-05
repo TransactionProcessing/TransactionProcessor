@@ -31,7 +31,7 @@
     <PackageReference Include="NLog.Extensions.Logging" Version="6.1.2" />
 	  <PackageReference Include="prometheus-net" Version="8.2.1" />
 	  <PackageReference Include="prometheus-net.AspNetCore" Version="8.2.1" />
-    <PackageReference Include="SecurityService.Client" Version="2026.2.3" />
+    <PackageReference Include="SecurityService.Client" Version="2026.4.3-build156" />
     <PackageReference Include="Shared" Version="2026.5.4" />
     <PackageReference Include="Shared.EventStore" Version="2026.5.4" />
       <PackageReference Include="Microsoft.Extensions.Hosting.WindowsServices" Version="10.0.3" />

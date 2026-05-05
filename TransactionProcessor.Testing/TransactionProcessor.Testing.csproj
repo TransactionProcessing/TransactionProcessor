@@ -9,7 +9,7 @@
     <PackageReference Include="ClientProxyBase" Version="2026.5.4" />
     <PackageReference Include="FileProcessor.FileImportLog.DomainEvents" Version="2026.2.2" />
     <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="10.0.3" />
-    <PackageReference Include="SecurityService.Client" Version="2026.2.3" />
+    <PackageReference Include="SecurityService.Client" Version="2026.4.3-build156" />
     <PackageReference Include="System.ServiceModel.Federation" Version="10.0.652802" />
     <PackageReference Include="Microsoft.IdentityModel.Tokens" Version="8.16.0" />
     <PackageReference Include="Microsoft.IdentityModel.JsonWebTokens" Version="8.16.0" />

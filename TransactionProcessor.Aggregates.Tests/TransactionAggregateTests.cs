@@ -1,3 +1,4 @@
+using Shared.Serialisation;
 using Shouldly;
 using SimpleResults;
 using TransactionProcessor.Aggregates;
@@ -8,6 +9,11 @@ using TransactionProcessor.Testing;
 namespace TransactionProcessor.Aggregates.Tests{
 
     public class TransactionAggregateTests{
+
+        public TransactionAggregateTests() {
+            StringSerialiser.Initialise(new Shared.Serialisation.SystemTextJsonSerializer(new System.Text.Json.JsonSerializerOptions()));
+        }
+
         [Fact]
         public void TransactionAggregate_CanBeCreated_IsCreated(){
             Aggregates.TransactionAggregate aggregate = Aggregates.TransactionAggregate.Create(TestData.TransactionId);

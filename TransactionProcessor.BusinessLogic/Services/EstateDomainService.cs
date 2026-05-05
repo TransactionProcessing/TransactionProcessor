@@ -5,7 +5,6 @@ using System.Threading;
 using System.Threading.Tasks;
 using SecurityService.Client;
 using SecurityService.DataTransferObjects;
-using SecurityService.DataTransferObjects.Responses;
 using Shared.DomainDrivenDesign.EventSourcing;
 using Shared.EventStore.Aggregate;
 using Shared.Exceptions;
@@ -113,7 +112,7 @@ namespace TransactionProcessor.BusinessLogic.Services
             {
                 CreateUserRequest createUserRequest = this.BuildEstateUserRequest(command);
 
-                Result<UserDetails> getUserResult = await this.CreateEstateSecurityUser(createUserRequest, cancellationToken);
+                Result<UserResponse> getUserResult = await this.CreateEstateSecurityUser(createUserRequest, cancellationToken);
                 if (getUserResult.IsFailed)
                     return ResultHelpers.CreateFailure(getUserResult);
 
@@ -123,7 +122,7 @@ namespace TransactionProcessor.BusinessLogic.Services
 
                 EstateAggregate estateAggregate = estateResult.Data;
 
-                Result stateResult = estateAggregate.AddSecurityUser(getUserResult.Data.UserId, command.RequestDto.EmailAddress);
+                Result stateResult = estateAggregate.AddSecurityUser(Guid.Parse(getUserResult.Data.UserId), command.RequestDto.EmailAddress);
                 if (stateResult.IsFailed)
                     return ResultHelpers.CreateFailure(stateResult);
 
@@ -159,17 +158,17 @@ namespace TransactionProcessor.BusinessLogic.Services
             return createUserRequest;
         }
 
-        private async Task<Result<UserDetails>> CreateEstateSecurityUser(CreateUserRequest createUserRequest,
+        private async Task<Result<UserResponse>> CreateEstateSecurityUser(CreateUserRequest createUserRequest,
                                                                          CancellationToken cancellationToken) {
             Result createUserResult = await this.SecurityServiceClient.CreateUser(createUserRequest, cancellationToken);
             if (createUserResult.IsFailed)
                 return ResultHelpers.CreateFailure(createUserResult);
 
-            Result<List<UserDetails>> userDetailsResult = await this.SecurityServiceClient.GetUsers(createUserRequest.EmailAddress, cancellationToken);
+            Result<List<UserResponse>> userDetailsResult = await this.SecurityServiceClient.GetUsers(createUserRequest.EmailAddress, cancellationToken);
             if (userDetailsResult.IsFailed)
                 return ResultHelpers.CreateFailure(userDetailsResult);
 
-            UserDetails user = userDetailsResult.Data.SingleOrDefault();
+            UserResponse user = userDetailsResult.Data.SingleOrDefault();
             if (user == null)
                 return Result.Failure($"Unable to get user details for username {createUserRequest.EmailAddress}");
 

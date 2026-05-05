@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using SecurityService.DataTransferObjects;
 using Shared.Results;
 using SimpleResults;
 
@@ -9,7 +10,6 @@ namespace TransactionProcessor.BusinessLogic.Common
     using System.Diagnostics.CodeAnalysis;
     using System.Threading;
     using SecurityService.Client;
-    using SecurityService.DataTransferObjects.Responses;
     using Shared.General;
     using Shared.Logger;
     using Type = System.Type;

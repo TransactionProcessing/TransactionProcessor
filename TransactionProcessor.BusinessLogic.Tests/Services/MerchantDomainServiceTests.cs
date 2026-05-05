@@ -3,7 +3,6 @@ using Moq;
 using Newtonsoft.Json;
 using SecurityService.Client;
 using SecurityService.DataTransferObjects;
-using SecurityService.DataTransferObjects.Responses;
 using Shared.DomainDrivenDesign.EventSourcing;
 using Shared.EventStore.Aggregate;
 using Shared.EventStore.EventStore;
@@ -268,9 +267,9 @@ public class MerchantDomainServiceTests {
             .ReturnsAsync(Result.Success);
         this.SecurityServiceClient
             .Setup(s => s.GetUsers(It.IsAny<String>(), It.IsAny<CancellationToken>()))
-            .ReturnsAsync(Result.Success(new List<UserDetails>() {
-                new UserDetails {
-                    UserId = Guid.Parse("FA077CE3-B915-4048-88E3-9B500699317F")
+            .ReturnsAsync(Result.Success(new List<UserResponse>() {
+                new UserResponse {
+                    UserId = "FA077CE3-B915-4048-88E3-9B500699317F"
                 }
             }));
 
@@ -375,7 +374,7 @@ public class MerchantDomainServiceTests {
             .ReturnsAsync(Result.Success);
         this.SecurityServiceClient
             .Setup(s => s.GetUsers(It.IsAny<String>(), It.IsAny<CancellationToken>()))
-            .ReturnsAsync(Result.Success(new List<UserDetails> {
+            .ReturnsAsync(Result.Success(new List<UserResponse> {
                 null
             }));
 
@@ -837,7 +836,7 @@ public class MerchantDomainServiceTests {
 
         this.SecurityServiceClient
             .Setup(s => s.GetToken(It.IsAny<String>(), It.IsAny<String>(), It.IsAny<CancellationToken>()))
-            .ReturnsAsync(Result.Success(TestData.TokenResponse()));
+            .ReturnsAsync(Result.Success(TestData.GetTokenResponse()));
 
         this.EventStoreContext.Setup(e => e.GetPartitionStateFromProjection(It.IsAny<String>(), It.IsAny<String>(), It.IsAny<CancellationToken>())).ReturnsAsync(Result.Success<String>(JsonConvert.SerializeObject(TestData.MerchantBalanceProjectionState)));
 
@@ -863,7 +862,7 @@ public class MerchantDomainServiceTests {
 
         this.SecurityServiceClient
             .Setup(s => s.GetToken(It.IsAny<String>(), It.IsAny<String>(), It.IsAny<CancellationToken>()))
-            .ReturnsAsync(Result.Success(TestData.TokenResponse()));
+            .ReturnsAsync(Result.Success(TestData.GetTokenResponse()));
 
         this.EventStoreContext.Setup(e => e.GetPartitionStateFromProjection(It.IsAny<String>(), It.IsAny<String>(), It.IsAny<CancellationToken>())).ReturnsAsync(Result.Success<String>(JsonConvert.SerializeObject(TestData.MerchantBalanceProjectionState)));
 
@@ -1412,7 +1411,7 @@ public class MerchantDomainServiceTests {
         this.SecurityServiceClient.Setup(s => s.CreateUser(It.IsAny<CreateUserRequest>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(Result.Success());
         this.SecurityServiceClient.Setup(s => s.GetUsers(It.IsAny<String>(), It.IsAny<CancellationToken>()))
-            .ReturnsAsync(Result.Success(new List<UserDetails> { new UserDetails { UserId = Guid.NewGuid() } }));
+            .ReturnsAsync(Result.Success(new List<UserResponse> { new UserResponse { UserId = "FA077CE3-B915-4048-88E3-9B500699317F" } }));
         this.AggregateService.Setup(m => m.Save(It.IsAny<MerchantAggregate>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(Result.Failure());
 

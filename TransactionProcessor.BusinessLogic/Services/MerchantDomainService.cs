@@ -13,7 +13,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using SecurityService.DataTransferObjects.Responses;
+using KurrentDB.Client;
 using TransactionProcessor.Aggregates;
 using TransactionProcessor.BusinessLogic.Common;
 using TransactionProcessor.BusinessLogic.Requests;
@@ -254,12 +254,12 @@ namespace TransactionProcessor.BusinessLogic.Services
 
                 MerchantAggregate merchantAggregate = contextResult.Data.MerchantAggregate;
 
-                Result<UserDetails> getUserResult = await this.CreateMerchantSecurityUser(createUserRequest, cancellationToken);
+                Result<UserResponse> getUserResult = await this.CreateMerchantSecurityUser(createUserRequest, cancellationToken);
                 if (getUserResult.IsFailed)
                     return ResultHelpers.CreateFailure(getUserResult);
 
                 // Add the user to the aggregate 
-                Result stateResult = merchantAggregate.AddSecurityUser(getUserResult.Data.UserId, command.RequestDto.EmailAddress);
+                Result stateResult = merchantAggregate.AddSecurityUser(Guid.Parse(getUserResult.Data.UserId), command.RequestDto.EmailAddress);
                 if (stateResult.IsFailed)
                     return stateResult;
 
@@ -294,17 +294,17 @@ namespace TransactionProcessor.BusinessLogic.Services
             return createUserRequest;
         }
 
-        private async Task<Result<UserDetails>> CreateMerchantSecurityUser(CreateUserRequest createUserRequest,
-                                                                           CancellationToken cancellationToken) {
+        private async Task<Result<UserResponse>> CreateMerchantSecurityUser(CreateUserRequest createUserRequest,
+                                                                            CancellationToken cancellationToken) {
             Result createUserResult = await this.SecurityServiceClient.CreateUser(createUserRequest, cancellationToken);
             if (createUserResult.IsFailed)
                 return ResultHelpers.CreateFailure(createUserResult);
 
-            Result<List<UserDetails>> userDetailsResult = await this.SecurityServiceClient.GetUsers(createUserRequest.EmailAddress, cancellationToken);
+            Result<List<UserResponse>> userDetailsResult = await this.SecurityServiceClient.GetUsers(createUserRequest.EmailAddress, cancellationToken);
             if (userDetailsResult.IsFailed)
                 return ResultHelpers.CreateFailure(userDetailsResult);
 
-            UserDetails user = userDetailsResult.Data.SingleOrDefault();
+            UserResponse user = userDetailsResult.Data.SingleOrDefault();
             if (user == null)
                 return Result.Failure($"Unable to get user details for username {createUserRequest.EmailAddress}");
 
