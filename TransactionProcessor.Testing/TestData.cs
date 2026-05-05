@@ -48,6 +48,10 @@ namespace TransactionProcessor.Testing
 
     public class TestData
     {
+        public TestData() {
+            StringSerialiser.Initialise(new Shared.Serialisation.SystemTextJsonSerializer(new System.Text.Json.JsonSerializerOptions()));
+        }
+
         public static String StatementData = "StatementData";
 
         #region Fields
