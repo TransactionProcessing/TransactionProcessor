@@ -144,19 +144,19 @@ namespace TransactionProcessor.Controllers
             if (type == null)
                 throw new NotFoundException($"Failed to find a domain event with type {eventType}");
 
-            JsonIgnoreAttributeIgnorerContractResolver jsonIgnoreAttributeIgnorerContractResolver = new JsonIgnoreAttributeIgnorerContractResolver();
-            JsonSerializerSettings jsonSerialiserSettings = new JsonSerializerSettings
-            {
-                ReferenceLoopHandling = ReferenceLoopHandling.Ignore,
-                TypeNameHandling = TypeNameHandling.All,
-                Formatting = Formatting.Indented,
-                DateTimeZoneHandling = DateTimeZoneHandling.Utc,
-                ContractResolver = jsonIgnoreAttributeIgnorerContractResolver
-            };
+            //JsonIgnoreAttributeIgnorerContractResolver jsonIgnoreAttributeIgnorerContractResolver = new JsonIgnoreAttributeIgnorerContractResolver();
+            //JsonSerializerSettings jsonSerialiserSettings = new JsonSerializerSettings
+            //{
+            //    ReferenceLoopHandling = ReferenceLoopHandling.Ignore,
+            //    TypeNameHandling = TypeNameHandling.All,
+            //    Formatting = Formatting.Indented,
+            //    DateTimeZoneHandling = DateTimeZoneHandling.Utc,
+            //    ContractResolver = jsonIgnoreAttributeIgnorerContractResolver
+            //};
 
             if (type.IsSubclassOf(typeof(DomainEvent)))
             {
-                String json = JsonConvert.SerializeObject(domainEvent, jsonSerialiserSettings);
+                String json = StringSerialiser.Serialise(domainEvent); //JsonConvert.SerializeObject(domainEvent, jsonSerialiserSettings);
 
                 DomainEventFactory domainEventFactory = new();
                 String validatedJson = this.ValidateEvent(json);

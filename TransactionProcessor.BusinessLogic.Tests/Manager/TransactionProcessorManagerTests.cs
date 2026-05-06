@@ -1,24 +1,25 @@
-﻿using System;
+﻿using Moq;
+using Shared.DomainDrivenDesign.EventSourcing;
+using Shared.EventStore.Aggregate;
+using Shared.Serialisation;
+using Shouldly;
+using SimpleResults;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using Moq;
-using Shared.DomainDrivenDesign.EventSourcing;
-using Shared.EventStore.Aggregate;
-using Shouldly;
-using SimpleResults;
 using TransactionProcessor.Aggregates;
 using TransactionProcessor.BusinessLogic.Manager;
 using TransactionProcessor.BusinessLogic.Services;
 using TransactionProcessor.Models.Contract;
 using TransactionProcessor.Models.Estate;
 using TransactionProcessor.Models.Merchant;
-using MerchantScheduleModel = TransactionProcessor.Models.MerchantSchedule.MerchantSchedule;
 using TransactionProcessor.Repository;
 using TransactionProcessor.Testing;
 using Xunit;
 using Contract = TransactionProcessor.Models.Contract.Contract;
+using MerchantScheduleModel = TransactionProcessor.Models.MerchantSchedule.MerchantSchedule;
 using Operator = TransactionProcessor.Models.Operator.Operator;
 
 namespace TransactionProcessor.BusinessLogic.Tests.Manager
@@ -33,7 +34,7 @@ namespace TransactionProcessor.BusinessLogic.Tests.Manager
         public TransactionProcessorManagerTests()
         {
             this.TransactionProcessorReadModelRepository = new Mock<ITransactionProcessorReadModelRepository>();
-
+            StringSerialiser.Initialise(new Shared.Serialisation.SystemTextJsonSerializer(new System.Text.Json.JsonSerializerOptions()));
             this.AggregateService = new Mock<IAggregateService>();
             
             this.TransactionProcessorManager = new TransactionProcessorManager(this.TransactionProcessorReadModelRepository.Object, this.AggregateService.Object);

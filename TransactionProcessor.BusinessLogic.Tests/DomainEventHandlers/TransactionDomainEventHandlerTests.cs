@@ -13,9 +13,11 @@ namespace TransactionProcessor.BusinessLogic.Tests.DomainEventHandlers
     using Shared.DomainDrivenDesign.EventSourcing;
     using Shared.General;
     using Shared.Logger;
+    using Shared.Serialisation;
     using Shouldly;
     using System;
     using System.Collections.Generic;
+    using System.Text.Json;
     using System.Threading;
     using System.Threading.Tasks;
     using Testing;
@@ -28,6 +30,7 @@ namespace TransactionProcessor.BusinessLogic.Tests.DomainEventHandlers
 
         public DomainEventHandlerTests(ITestOutputHelper testOutputHelper) {
             this.Mediator = new Mock<IMediator>();
+            StringSerialiser.Initialise(new SystemTextJsonSerializer(new JsonSerializerOptions()));
             IConfigurationRoot configurationRoot = new ConfigurationBuilder().AddInMemoryCollection(TestData.DefaultAppSettings).Build();
             ConfigurationReader.Initialise(configurationRoot);
             this.Mediator.Setup(s => s.Send(It.IsAny<IRequest<Result>>(), It.IsAny<CancellationToken>())).ReturnsAsync(Result.Success());

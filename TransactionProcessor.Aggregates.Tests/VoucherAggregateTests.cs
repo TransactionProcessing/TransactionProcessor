@@ -1,3 +1,4 @@
+using Shared.Serialisation;
 using Shouldly;
 using SimpleResults;
 using TransactionProcessor.Models;
@@ -7,6 +8,10 @@ namespace TransactionProcessor.Aggregates.Tests;
 
 public class VoucherAggregateTests
     {
+        public VoucherAggregateTests() {
+        StringSerialiser.Initialise(new Shared.Serialisation.SystemTextJsonSerializer(new System.Text.Json.JsonSerializerOptions()));
+    }
+
         [Fact]
         public void VoucherAggregate_CanBeCreated_IsCreated()
         {

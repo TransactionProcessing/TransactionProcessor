@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
+using System.Text.Json;
 using System.Threading.Tasks;
 using MediatR;
 using Microsoft.AspNetCore.Hosting;
@@ -9,6 +10,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Hosting;
 using Moq;
 using Shared.EventStore.EventStore;
+using Shared.Serialisation;
 using TransactionProcessor.BusinessLogic.Manager;
 using TransactionProcessor.DataTransferObjects.Responses.Contract;
 using TransactionProcessor.ProjectionEngine.Repository;
@@ -28,6 +30,8 @@ namespace TransactionProcessor.BusinessLogic.Tests.Mediator
 
         public MediatorTests()
         {
+            StringSerialiser.Initialise(new SystemTextJsonSerializer(new JsonSerializerOptions()));
+
             this.Requests.Add(TestData.Commands.ProcessLogonTransactionCommand);
             this.Requests.Add(TestData.Commands.ProcessReconciliationCommand);
             this.Requests.Add(TestData.Commands.ProcessSaleTransactionCommand);
@@ -120,7 +124,7 @@ namespace TransactionProcessor.BusinessLogic.Tests.Mediator
             ServiceRegistry services = new ServiceRegistry();
             Startup s = new Startup(hostingEnvironment.Object);
             Startup.Configuration = this.SetupMemoryConfiguration();
-
+            
             this.AddTestRegistrations(services, hostingEnvironment.Object);
             s.ConfigureContainer(services);
 

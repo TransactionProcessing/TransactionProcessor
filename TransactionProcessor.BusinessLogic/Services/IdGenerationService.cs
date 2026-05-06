@@ -17,13 +17,13 @@ namespace TransactionProcessor.BusinessLogic.Services
         internal delegate Guid GenerateUniqueIdFromString(String payload);
 
 
-        private static readonly JsonSerialiser JsonSerialiser = new(() => new JsonSerializerSettings {
-                                                                                                         Formatting = Formatting.None,
-                                                                                                         TypeNameHandling = TypeNameHandling.None
-                                                                                                     });
+        //private static readonly StringSe JsonSerialiser = new(() => new JsonSerializerSettings {
+        //                                                                                                 Formatting = Formatting.None,
+        //                                                                                                 TypeNameHandling = TypeNameHandling.None
+        //                                                                                             });
 
         private static readonly GenerateUniqueIdFromObject GenerateUniqueId =
-            data => IdGenerationService.GenerateGuidFromString(IdGenerationService.JsonSerialiser.Serialise(data));
+            data => IdGenerationService.GenerateGuidFromString(StringSerialiser.Serialise(data));
 
         private static readonly GenerateUniqueIdFromString GenerateGuidFromString = uniqueKey => {
                                                                                         using SHA256 sha256Hash = SHA256.Create();

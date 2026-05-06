@@ -1,9 +1,9 @@
-﻿using System.Text;
-using FileProcessor.FileImportLog.DomainEvents;
+﻿using FileProcessor.FileImportLog.DomainEvents;
 using Microsoft.IdentityModel.Tokens;
-using Newtonsoft.Json;
+using SecurityService.DataTransferObjects;
 using Shared.EventStore.ProjectionEngine;
 using Shared.ValueObjects;
+using System.Text;
 using TransactionProcessor.Aggregates;
 using TransactionProcessor.BusinessLogic.Events;
 using TransactionProcessor.BusinessLogic.Services;
@@ -28,9 +28,6 @@ using SettlementScheduleModel = TransactionProcessor.Models.Merchant.SettlementS
 
 namespace TransactionProcessor.Testing
 {
-    using System;
-    using System.Collections.Generic;
-    using System.Linq;
     using BusinessLogic.OperatorInterfaces;
     using BusinessLogic.OperatorInterfaces.PataPawaPostPay;
     using BusinessLogic.OperatorInterfaces.SafaricomPinless;
@@ -39,7 +36,11 @@ namespace TransactionProcessor.Testing
     using Models;
     using PataPawaPostPay;
     using ProjectionEngine.State;
-    using SecurityService.DataTransferObjects.Responses;
+    using Shared.Serialisation;
+    using System;
+    using System.Collections.Generic;
+    using System.Linq;
+    using System.Text.Json;
     using TransactionProcessor.Aggregates.Models;
     using TransactionProcessor.Database.Entities;
     using TransactionProcessor.Models.Estate;
@@ -47,6 +48,10 @@ namespace TransactionProcessor.Testing
 
     public class TestData
     {
+        static TestData() {
+            StringSerialiser.Initialise(new Shared.Serialisation.SystemTextJsonSerializer(new System.Text.Json.JsonSerializerOptions()));
+        }
+
         public static String StatementData = "StatementData";
 
         #region Fields
@@ -1338,9 +1343,8 @@ namespace TransactionProcessor.Testing
             return transactionAggregate;
         }
 
-        public static TokenResponse TokenResponse()
-        {
-            return SecurityService.DataTransferObjects.Responses.TokenResponse.Create("AccessToken", string.Empty, 100);
+        public static TokenResponse GetTokenResponse() {
+            return TokenResponse.Create("AccessToken", "RefreshToken", 100);
         }
 
         public static TransactionDomainEvents.CustomerEmailReceiptRequestedEvent CustomerEmailReceiptRequestedEvent =
@@ -2657,7 +2661,7 @@ namespace TransactionProcessor.Testing
                 new CallbackReceivedEnrichedEvent(TestData.CallbackId)
                 {
                     Reference = TestData.CallbackReference,
-                    CallbackMessage = JsonConvert.SerializeObject(TestData.Deposit),
+                    CallbackMessage = StringSerialiser.Serialise(TestData.Deposit),
                     EstateId = TestData.EstateId,
                     MessageFormat = TestData.CallbackMessageFormat,
                     TypeString = TestData.CallbackTypeString
@@ -2667,7 +2671,7 @@ namespace TransactionProcessor.Testing
                 new CallbackReceivedEnrichedEvent(TestData.CallbackId)
                 {
                     Reference = TestData.CallbackReference,
-                    CallbackMessage = JsonConvert.SerializeObject(TestData.Deposit),
+                    CallbackMessage = StringSerialiser.Serialise(TestData.Deposit),
                     EstateId = TestData.EstateId,
                     MessageFormat = TestData.CallbackMessageFormat,
                     TypeString = "OtherType"

@@ -5,7 +5,6 @@ using System.Threading.Tasks;
 using Moq;
 using SecurityService.Client;
 using SecurityService.DataTransferObjects;
-using SecurityService.DataTransferObjects.Responses;
 using Shared.DomainDrivenDesign.EventSourcing;
 using Shared.EventStore.Aggregate;
 using Shouldly;
@@ -79,9 +78,9 @@ namespace TransactionProcessor.BusinessLogic.Tests.Services
                 .ReturnsAsync(Result.Success);
             this.SecurityServiceClient
                 .Setup(s => s.GetUsers(It.IsAny<String>(), It.IsAny<CancellationToken>()))
-                .ReturnsAsync(Result.Success(new List<UserDetails>() {
-                    new UserDetails {
-                        UserId = Guid.Parse("FA077CE3-B915-4048-88E3-9B500699317F")
+                .ReturnsAsync(Result.Success(new List<UserResponse>() {
+                    new UserResponse {
+                        UserId = "FA077CE3-B915-4048-88E3-9B500699317F"
                     }
                 }));
 
@@ -108,9 +107,9 @@ namespace TransactionProcessor.BusinessLogic.Tests.Services
                     .ReturnsAsync(Result.Success);
                 this.SecurityServiceClient
                     .Setup(s => s.GetUsers(It.IsAny<String>(), It.IsAny<CancellationToken>()))
-                    .ReturnsAsync(Result.Success(new List<UserDetails>() {
-                        new UserDetails {
-                            UserId = Guid.Parse("FA077CE3-B915-4048-88E3-9B500699317F")
+                    .ReturnsAsync(Result.Success(new List<UserResponse>() {
+                        new UserResponse {
+                            UserId = "FA077CE3-B915-4048-88E3-9B500699317F"
                         }
                     }));
 
@@ -139,9 +138,9 @@ namespace TransactionProcessor.BusinessLogic.Tests.Services
                 .ReturnsAsync(Result.Failure);
             this.SecurityServiceClient
                 .Setup(s => s.GetUsers(It.IsAny<String>(), It.IsAny<CancellationToken>()))
-                .ReturnsAsync(Result.Success(new List<UserDetails>() {
-                    new UserDetails {
-                        UserId = Guid.Parse("FA077CE3-B915-4048-88E3-9B500699317F")
+                .ReturnsAsync(Result.Success(new List<UserResponse>() {
+                    new UserResponse {
+                        UserId = "FA077CE3-B915-4048-88E3-9B500699317F"
                     }
                 }));
 
@@ -181,7 +180,7 @@ namespace TransactionProcessor.BusinessLogic.Tests.Services
                 .ReturnsAsync(Result.Success);
             this.SecurityServiceClient
                 .Setup(s => s.GetUsers(It.IsAny<String>(), It.IsAny<CancellationToken>()))
-                .ReturnsAsync(Result.Success(new List<UserDetails>() {
+                .ReturnsAsync(Result.Success(new List<UserResponse>() {
                     null
                 }));
 
@@ -200,9 +199,9 @@ namespace TransactionProcessor.BusinessLogic.Tests.Services
                 .ReturnsAsync(Result.Success);
             this.SecurityServiceClient
                 .Setup(s => s.GetUsers(It.IsAny<String>(), It.IsAny<CancellationToken>()))
-                .ReturnsAsync(Result.Success(new List<UserDetails>() {
-                    new UserDetails {
-                        UserId = Guid.Parse("FA077CE3-B915-4048-88E3-9B500699317F")
+                .ReturnsAsync(Result.Success(new List<UserResponse>() {
+                    new UserResponse {
+                        UserId = "FA077CE3-B915-4048-88E3-9B500699317F"
                     }
                 }));
 
@@ -223,9 +222,9 @@ namespace TransactionProcessor.BusinessLogic.Tests.Services
                 .ReturnsAsync(Result.Success);
             this.SecurityServiceClient
                 .Setup(s => s.GetUsers(It.IsAny<String>(), It.IsAny<CancellationToken>()))
-                .ReturnsAsync(Result.Success(new List<UserDetails>() {
-                    new UserDetails {
-                        UserId = Guid.Parse("FA077CE3-B915-4048-88E3-9B500699317F")
+                .ReturnsAsync(Result.Success(new List<UserResponse>() {
+                    new UserResponse {
+                        UserId = "FA077CE3-B915-4048-88E3-9B500699317F"
                     }
                 }));
 
@@ -246,9 +245,9 @@ namespace TransactionProcessor.BusinessLogic.Tests.Services
                 .ReturnsAsync(Result.Success);
             this.SecurityServiceClient
                 .Setup(s => s.GetUsers(It.IsAny<String>(), It.IsAny<CancellationToken>()))
-                .ReturnsAsync(Result.Success(new List<UserDetails>() {
-                    new UserDetails {
-                        UserId = Guid.Parse("FA077CE3-B915-4048-88E3-9B500699317F")
+                .ReturnsAsync(Result.Success(new List<UserResponse>() {
+                    new UserResponse {
+                        UserId = "FA077CE3-B915-4048-88E3-9B500699317F"
                     }
                 }));
 

@@ -1,3 +1,4 @@
+using Shared.Serialisation;
 using Shouldly;
 using SimpleResults;
 using TransactionProcessor.DataTransferObjects.Requests.Merchant;
@@ -9,6 +10,10 @@ namespace TransactionProcessor.Aggregates.Tests;
 
 public class MerchantStatementForDateAggregateTests
 {
+    public MerchantStatementForDateAggregateTests() {
+        StringSerialiser.Initialise(new Shared.Serialisation.SystemTextJsonSerializer(new System.Text.Json.JsonSerializerOptions()));
+    }
+
     private const Int32 TransactionLineType = 1;
     private const Int32 SettledFeeLineType = 2;
     private const Int32 DepositLineType = 3;

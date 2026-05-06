@@ -1,3 +1,4 @@
+using Shared.Serialisation;
 using Shouldly;
 using SimpleResults;
 using TransactionProcessor.Models.Merchant;
@@ -6,6 +7,11 @@ using TransactionProcessor.Testing;
 namespace TransactionProcessor.Aggregates.Tests
 {
     public class MerchantStatementAggregateTests {
+
+        public MerchantStatementAggregateTests() {
+            StringSerialiser.Initialise(new Shared.Serialisation.SystemTextJsonSerializer(new System.Text.Json.JsonSerializerOptions()));
+        }
+
         [Fact]
         public void MerchantStatementAggregate_CanBeCreated_IsCreated()
         {

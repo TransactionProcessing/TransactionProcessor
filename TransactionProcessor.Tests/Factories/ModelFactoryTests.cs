@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text.Json;
+using Shared.Serialisation;
 using TransactionProcessor.Aggregates;
 using TransactionProcessor.DataTransferObjects.Responses.Contract;
 using TransactionProcessor.DataTransferObjects.Responses.Estate;
@@ -26,6 +28,10 @@ namespace TransactionProcessor.Tests.Factories
 
     public class ModelFactoryTests
     {
+        public ModelFactoryTests() {
+            StringSerialiser.Initialise(new SystemTextJsonSerializer(new JsonSerializerOptions()));
+        }
+
         [Fact]
         public void ModelFactory_Contract_ContractOnly_IsConverted()
         {

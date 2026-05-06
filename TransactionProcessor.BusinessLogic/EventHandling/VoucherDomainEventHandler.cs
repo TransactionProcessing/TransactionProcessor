@@ -1,4 +1,5 @@
-﻿using Shared.Exceptions;
+﻿using SecurityService.DataTransferObjects;
+using Shared.Exceptions;
 using Shared.Results;
 using SimpleResults;
 using TransactionProcessor.Aggregates;
@@ -14,7 +15,6 @@ using MessagingService.Client;
 using MessagingService.DataTransferObjects;
 using Microsoft.EntityFrameworkCore;
 using SecurityService.Client;
-using SecurityService.DataTransferObjects.Responses;
 using Shared.DomainDrivenDesign.EventSourcing;
 using Shared.EntityFramework;
 using Shared.EventStore.Aggregate;

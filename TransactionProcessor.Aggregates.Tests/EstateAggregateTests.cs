@@ -1,4 +1,5 @@
-﻿using Shouldly;
+﻿using Shared.Serialisation;
+using Shouldly;
 using SimpleResults;
 using TransactionProcessor.Models.Estate;
 using TransactionProcessor.Testing;
@@ -7,6 +8,10 @@ namespace TransactionProcessor.Aggregates.Tests
 {
     public class EstateAggregateTests
     {
+        public EstateAggregateTests() {
+            StringSerialiser.Initialise(new Shared.Serialisation.SystemTextJsonSerializer(new System.Text.Json.JsonSerializerOptions()));
+        }
+
         [Fact]
         public void EstateAggregate_CanBeCreated_IsCreated()
         {

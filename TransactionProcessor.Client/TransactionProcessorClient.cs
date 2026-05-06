@@ -25,17 +25,7 @@ using DataTransferObjects;
 using Newtonsoft.Json;
 using Shared.Results;
 
-public class TransactionProcessorClient : ClientBase, ITransactionProcessorClient {
-    private static String Serialise(Object arg)
-    {
-        return JsonConvert.SerializeObject(arg);
-    }
-
-    private static Object Deserialise(String arg, Type type)
-    {
-        return JsonConvert.DeserializeObject(arg, type);
-    }
-
+public class TransactionProcessorClient : ClientProxyBase, ITransactionProcessorClient {
     #region Fields
 
     private readonly Func<String, String> BaseAddressResolver;
@@ -45,12 +35,11 @@ public class TransactionProcessorClient : ClientBase, ITransactionProcessorClien
     #region Constructors
 
     public TransactionProcessorClient(Func<String, String> baseAddressResolver,
-                                      HttpClient httpClient) : base(httpClient, Serialise, Deserialise)
+                                      HttpClient httpClient,
+                                      Func<object, string> serialise,
+                                      Func<string, Type, object> deserialise) : base(httpClient, serialise, deserialise)
     {
         this.BaseAddressResolver = baseAddressResolver;
-
-        // Add the API version header
-        //this.HttpClient.DefaultRequestHeaders.Add("api-version", "1.0");
     }
 
     #endregion

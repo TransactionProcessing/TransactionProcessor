@@ -1,7 +1,7 @@
-﻿using SecurityService.DataTransferObjects.Responses;
-using SimpleResults;
+﻿using SimpleResults;
 using System;
 using System.Collections.Generic;
+using SecurityService.DataTransferObjects;
 using TransactionProcessor.DataTransferObjects.Requests.Contract;
 using TransactionProcessor.DataTransferObjects.Requests.Merchant;
 using TransactionProcessor.DataTransferObjects.Requests.MerchantSchedule;
@@ -18,7 +18,6 @@ namespace TransactionProcessor.IntegrationTests.Shared
     using Microsoft.EntityFrameworkCore.Metadata.Internal;
     using Newtonsoft.Json.Linq;
     using Reqnroll;
-    using SecurityService.DataTransferObjects.Requests;
     using SecurityService.IntegrationTesting.Helpers;
     using Shouldly;
     using System.Linq;
@@ -441,7 +440,7 @@ namespace TransactionProcessor.IntegrationTests.Shared
         public async Task GivenTheFollowingSecurityRolesExist(DataTable table)
         {
             List<CreateRoleRequest> requests = table.Rows.ToCreateRoleRequests();
-            List<(String, Guid)> responses = await this.SecurityServiceSteps.GivenICreateTheFollowingRoles(requests, CancellationToken.None);
+            List<(String, String)> responses = await this.SecurityServiceSteps.GivenICreateTheFollowingRoles(requests, CancellationToken.None);
         }
 
         [Given(@"I have a token to access the estate management resource")]

@@ -1,4 +1,4 @@
-﻿using Newtonsoft.Json;
+﻿using SecurityService.DataTransferObjects;
 using Shared.Exceptions;
 using Shared.General;
 using Shared.Results;
@@ -14,7 +14,6 @@ namespace TransactionProcessor.BusinessLogic.Services{
     using Models;
     using OperatorInterfaces;
     using SecurityService.Client;
-    using SecurityService.DataTransferObjects.Responses;
     using Shared.EventStore.Aggregate;
     using Shared.Logger;
     using System;

@@ -1,4 +1,5 @@
-﻿using Shouldly;
+﻿using Shared.Serialisation;
+using Shouldly;
 using SimpleResults;
 using TransactionProcessor.Testing;
 
@@ -6,6 +7,10 @@ namespace TransactionProcessor.Aggregates.Tests
 {
     public class ReconciliationAggregateTests
     {
+        public ReconciliationAggregateTests() {
+            StringSerialiser.Initialise(new Shared.Serialisation.SystemTextJsonSerializer(new System.Text.Json.JsonSerializerOptions()));
+        }
+
         [Fact]
         public void ReconciliationAggregate_CanBeCreated_IsCreated()
         {

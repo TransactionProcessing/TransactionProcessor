@@ -1,7 +1,9 @@
-﻿using System.Threading;
-using Moq;
+﻿using Moq;
 using Shared.Logger;
+using Shared.Serialisation;
 using Shouldly;
+using System.Text.Json;
+using System.Threading;
 using TransactionProcessor.BusinessLogic.EventHandling;
 using TransactionProcessor.DomainEvents;
 using TransactionProcessor.Repository;
@@ -12,6 +14,7 @@ namespace TransactionProcessor.BusinessLogic.Tests.DomainEventHandlers;
 
 public class ContractDomainEventHandlerTests
 {
+
     #region Methods
 
     private Mock<ITransactionProcessorReadModelRepository> EstateReportingRepository;
@@ -19,6 +22,7 @@ public class ContractDomainEventHandlerTests
     private ReadModelDomainEventHandler DomainEventHandler;
     public ContractDomainEventHandlerTests() {
         Logger.Initialise(NullLogger.Instance);
+        StringSerialiser.Initialise(new Shared.Serialisation.SystemTextJsonSerializer(new System.Text.Json.JsonSerializerOptions()));
         this.EstateReportingRepository= new Mock<ITransactionProcessorReadModelRepository>();
         this.DomainEventHandler = new ReadModelDomainEventHandler(this.EstateReportingRepository.Object);
     }

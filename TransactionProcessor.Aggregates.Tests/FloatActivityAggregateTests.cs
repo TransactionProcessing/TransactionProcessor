@@ -1,3 +1,4 @@
+using Shared.Serialisation;
 using Shouldly;
 using SimpleResults;
 using TransactionProcessor.Testing;
@@ -5,6 +6,11 @@ using TransactionProcessor.Testing;
 namespace TransactionProcessor.Aggregates.Tests;
 
 public class FloatActivityAggregateTests {
+
+    public FloatActivityAggregateTests() {
+        StringSerialiser.Initialise(new Shared.Serialisation.SystemTextJsonSerializer(new System.Text.Json.JsonSerializerOptions()));
+    }
+
     [Fact]
     public void FloatActivityAggregate_CanBeCreated_IsCreated()
     {

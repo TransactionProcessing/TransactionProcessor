@@ -1,31 +1,24 @@
-﻿using Google.Protobuf.Reflection;
-using MessagingService.Client;
+﻿using MessagingService.Client;
 using MessagingService.DataTransferObjects;
 using SecurityService.Client;
-using SecurityService.DataTransferObjects.Responses;
-using Shared.DomainDrivenDesign.EventSourcing;
 using Shared.EventStore.Aggregate;
 using Shared.Exceptions;
 using Shared.General;
-using Shared.Logger;
 using Shared.Results;
-using Shared.ValueObjects;
 using SimpleResults;
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
-using System.IO.Abstractions;
 using System.Linq;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using SecurityService.DataTransferObjects;
 using TransactionProcessor.Aggregates;
 using TransactionProcessor.Aggregates.Models;
 using TransactionProcessor.BusinessLogic.Common;
 using TransactionProcessor.BusinessLogic.Requests;
 using TransactionProcessor.Models.Merchant;
-using TransactionProcessor.Repository;
 using Transaction = TransactionProcessor.Aggregates.Models.Transaction;
 
 namespace TransactionProcessor.BusinessLogic.Services
