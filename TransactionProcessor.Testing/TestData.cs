@@ -48,7 +48,7 @@ namespace TransactionProcessor.Testing
 
     public class TestData
     {
-        public TestData() {
+        static TestData() {
             StringSerialiser.Initialise(new Shared.Serialisation.SystemTextJsonSerializer(new System.Text.Json.JsonSerializerOptions()));
         }
 
