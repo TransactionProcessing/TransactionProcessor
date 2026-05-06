@@ -1,10 +1,23 @@
-﻿using TransactionProcessor.Aggregates;
+﻿using KurrentDB.Client;
+using Shared.EventStore.SubscriptionWorker;
+using Shared.Serialisation;
+using SimpleResults;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Linq.Expressions;
+using System.Net.Http;
+using System.Text.Json;
+using System.Text.Json.Serialization.Metadata;
+using System.Threading;
+using System.Threading.Tasks;
+using TransactionProcessor.Aggregates;
 using TransactionProcessor.BusinessLogic.Services;
 using TransactionProcessor.Database.Contexts;
 using TransactionProcessor.Repository;
+using PersistentSubscriptionInfo = Shared.EventStore.SubscriptionWorker.PersistentSubscriptionInfo;
 
-namespace TransactionProcessor.Bootstrapper
-{
+namespace TransactionProcessor.Bootstrapper {
     using Lamar;
     using Microsoft.Data.SqlClient;
     using Microsoft.EntityFrameworkCore;
@@ -32,33 +45,27 @@ namespace TransactionProcessor.Bootstrapper
     /// </summary>
     /// <seealso cref="Lamar.ServiceRegistry" />
     [ExcludeFromCodeCoverage]
-    public class RepositoryRegistry : ServiceRegistry
-    {
+    public class RepositoryRegistry : ServiceRegistry {
         private static bool CachedAggregatesAdded;
         private static readonly object CachedAggregatesLock = new();
 
-        public RepositoryRegistry()
-        {
+        public RepositoryRegistry() {
             string eventStoreConnectionString = Startup.Configuration.GetValue<string>("EventStoreSettings:ConnectionString");
 
             this.AddKurrentDBProjectionManagementClient(eventStoreConnectionString);
             this.AddKurrentDBPersistentSubscriptionsClient(eventStoreConnectionString);
             this.AddKurrentDBClient(eventStoreConnectionString);
 
-            this.AddSingleton<Func<string, int, ISubscriptionRepository>>(cont => (esConnString, cacheDuration) =>
-                SubscriptionRepository.Create(esConnString, cacheDuration));
+            this.AddSingleton<Func<string, int, ISubscriptionRepository>>(cont => (esConnString,
+                                                                                   cacheDuration) => SubscriptionRepository.Create(esConnString, cacheDuration));
 
             this.AddSingleton(typeof(IDbContextResolver<>), typeof(DbContextResolver<>));
 
-            if (Startup.WebHostEnvironment.IsEnvironment("IntegrationTest") ||
-                Startup.Configuration.GetValue<bool>("ServiceOptions:UseInMemoryDatabase"))
-            {
+            if (Startup.WebHostEnvironment.IsEnvironment("IntegrationTest") || Startup.Configuration.GetValue<bool>("ServiceOptions:UseInMemoryDatabase")) {
                 this.AddDbContext<EstateManagementContext>(builder => builder.UseInMemoryDatabase("TransactionProcessorReadModel"));
             }
-            else
-            {
-                this.AddDbContext<EstateManagementContext>(options =>
-                    options.UseSqlServer(ConfigurationReader.GetConnectionString("TransactionProcessorReadModel")));
+            else {
+                this.AddDbContext<EstateManagementContext>(options => options.UseSqlServer(ConfigurationReader.GetConnectionString("TransactionProcessorReadModel")));
             }
 
             this.AddTransient<IEventStoreContext, EventStoreContext>();
@@ -94,17 +101,13 @@ namespace TransactionProcessor.Bootstrapper
 
         private void RegisterAggregateCachingFunc() {
             // ✅ Defer to the container — safe and compliant
-            this.AddSingleton<Func<IAggregateService>>(c => () =>
-            {
+            this.AddSingleton<Func<IAggregateService>>(c => () => {
                 var aggregateService = c.GetService<IAggregateService>();
 
                 // Thread-safe single initialization
-                if (!CachedAggregatesAdded)
-                {
-                    lock (CachedAggregatesLock)
-                    {
-                        if (!CachedAggregatesAdded)
-                        {
+                if (!CachedAggregatesAdded) {
+                    lock (CachedAggregatesLock) {
+                        if (!CachedAggregatesAdded) {
                             aggregateService.AddCachedAggregate(typeof(EstateAggregate), null);
                             aggregateService.AddCachedAggregate(typeof(ContractAggregate), null);
                             aggregateService.AddCachedAggregate(typeof(OperatorAggregate), null);
