@@ -9,6 +9,8 @@ using TransactionProcessor.DataTransferObjects.Requests.Operator;
 using TransactionProcessor.DataTransferObjects.Responses.Contract;
 using TransactionProcessor.DataTransferObjects.Responses.Merchant;
 using TransactionProcessor.DataTransferObjects.Responses.Operator;
+using TransactionProcessor.ProjectionEngine.Projections;
+using TransactionProcessor.ProjectionEngine.State;
 
 namespace TransactionProcessor.IntegrationTests.Shared
 {
@@ -16,7 +18,6 @@ namespace TransactionProcessor.IntegrationTests.Shared
     using DataTransferObjects;
     using IntegrationTesting.Helpers;
     using Microsoft.EntityFrameworkCore.Metadata.Internal;
-    using Newtonsoft.Json.Linq;
     using Reqnroll;
     using SecurityService.IntegrationTesting.Helpers;
     using Shouldly;
@@ -317,7 +318,7 @@ namespace TransactionProcessor.IntegrationTests.Shared
         [When(@"I perform the following transactions")]
         public async Task WhenIPerformTheFollowingTransactions(DataTable table)
         {
-            List<(EstateDetails, Guid, String, SerialisedMessage)> serialisedMessages = table.Rows.ToSerialisedMessages(this.TestingContext.Estates);
+            List<(EstateDetails, Guid, String, TransactionRequest)> serialisedMessages = table.Rows.ToTransactionRequests(this.TestingContext.Estates);
 
             await this.TransactionProcessorSteps.WhenIPerformTheFollowingTransactions(this.TestingContext.AccessToken, serialisedMessages);
         }
@@ -351,14 +352,14 @@ namespace TransactionProcessor.IntegrationTests.Shared
         [Then(@"transaction response should contain the following information")]
         public void ThenTransactionResponseShouldContainTheFollowingInformation(DataTable table)
         {
-            List<(SerialisedMessage, String, String, String)> transactions = table.Rows.GetTransactionDetails(this.TestingContext.Estates);
+            List<(TransactionResponse, String, String, String)> transactions = table.Rows.GetTransactionDetails(this.TestingContext.Estates);
             this.TransactionProcessorSteps.ValidateTransactions(transactions);
         }
 
         [When(@"I request the receipt is resent")]
         public async Task WhenIRequestTheReceiptIsResent(DataTable table)
         {
-            List<SerialisedMessage> transactions = table.Rows.GetTransactionResendDetails(this.TestingContext.Estates);
+            List<TransactionResponse> transactions = table.Rows.GetTransactionResendDetails(this.TestingContext.Estates);
             await this.TransactionProcessorSteps.WhenIRequestTheReceiptIsResent(this.TestingContext.AccessToken, transactions);
         }
         [When(@"I get the merchants for '(.*)' then (.*) merchants will be returned")]
@@ -401,17 +402,15 @@ namespace TransactionProcessor.IntegrationTests.Shared
 
         private async Task<Decimal> GetMerchantBalance(Guid merchantId)
         {
-            JsonElement jsonElement = (JsonElement)await this.TestingContext.DockerHelper.ProjectionManagementClient.GetStateAsync<dynamic>("MerchantBalanceProjection", $"MerchantBalance-{merchantId:N}");
-            JObject jsonObject = JObject.Parse(jsonElement.GetRawText());
-            decimal balanceValue = jsonObject.SelectToken("merchant.balance").Value<decimal>();
-            return balanceValue;
+            MerchantBalanceProjectionState1 balanceState = await this.TestingContext.DockerHelper.ProjectionManagementClient.GetStateAsync<MerchantBalanceProjectionState1>("MerchantBalanceProjection", $"MerchantBalance-{merchantId:N}");
+            return balanceState.merchant.balance;
         }
 
         
         [When(@"I perform the following reconciliations")]
         public async Task WhenIPerformTheFollowingReconciliations(DataTable table)
         {
-            List<(EstateDetails, Guid, String, SerialisedMessage)> serialisedMessages = table.Rows.ToSerialisedMessages(this.TestingContext.Estates);
+            List<(EstateDetails, Guid, String, TransactionRequest)> serialisedMessages = table.Rows.ToTransactionRequests(this.TestingContext.Estates);
 
             await this.TransactionProcessorSteps.WhenIPerformTheFollowingTransactions(this.TestingContext.AccessToken, serialisedMessages);
         }
@@ -419,7 +418,7 @@ namespace TransactionProcessor.IntegrationTests.Shared
         [Then(@"reconciliation response should contain the following information")]
         public void ThenReconciliationResponseShouldContainTheFollowingInformation(DataTable table)
         {
-            List<(SerialisedMessage, String, String, String)> transactions = table.Rows.GetTransactionDetails(this.TestingContext.Estates);
+            List<(TransactionResponse, String, String, String)> transactions = table.Rows.GetTransactionDetails(this.TestingContext.Estates);
             this.TransactionProcessorSteps.ValidateTransactions(transactions);
         }
 

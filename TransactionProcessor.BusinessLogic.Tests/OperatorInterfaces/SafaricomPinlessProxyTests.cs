@@ -1,19 +1,21 @@
-﻿using System;
+﻿using SimpleResults;
+using System;
 using System.Collections.Generic;
-using SimpleResults;
 
 namespace TransactionProcessor.BusinessLogic.Tests.OperatorInterfaces
 {
-    using System.Net;
-    using System.Net.Http;
-    using System.Threading;
-    using System.Threading.Tasks;
     using BusinessLogic.OperatorInterfaces;
     using BusinessLogic.OperatorInterfaces.SafaricomPinless;
     using Moq;
     using Moq.Protected;
     using Shared.Logger;
+    using Shared.Serialisation;
     using Shouldly;
+    using System.Net;
+    using System.Net.Http;
+    using System.Text.Json;
+    using System.Threading;
+    using System.Threading.Tasks;
     using Testing;
     using Xunit;
 
@@ -21,6 +23,7 @@ namespace TransactionProcessor.BusinessLogic.Tests.OperatorInterfaces
     {
         public SafaricomPinlessProxyTests(){
             Logger.Initialise(NullLogger.Instance);
+            StringSerialiser.Initialise(new SystemTextJsonSerializer(new JsonSerializerOptions()));
         }
 
         [Fact]

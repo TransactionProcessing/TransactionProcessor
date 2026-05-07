@@ -1,7 +1,7 @@
-﻿using System;
-using System.Threading.Tasks;
-using Moq;
+﻿using Moq;
 using Shouldly;
+using System;
+using System.Threading.Tasks;
 using TransactionProcessor.BusinessLogic.Manager;
 using TransactionProcessor.BusinessLogic.RequestHandlers;
 using TransactionProcessor.BusinessLogic.Requests;
@@ -10,11 +10,17 @@ using Xunit;
 
 namespace TransactionProcessor.BusinessLogic.Tests.RequestHandler
 {
+    using Shared.Serialisation;
+    using System.Text.Json;
     using System.Threading;
     using Testing;
 
     public class VoucherManagementRequestHandlerTests
     {
+        public VoucherManagementRequestHandlerTests() {
+            StringSerialiser.Initialise(new SystemTextJsonSerializer(new JsonSerializerOptions()));
+        }
+
         [Fact]
         public async Task VoucherManagementRequestHandler_IssueVoucherRequest_IsHandled()
         {

@@ -11,7 +11,6 @@ namespace TransactionProcessor.IntegrationTests.Common
     using DataTransferObjects;
     using global::Shared.IntegrationTesting;
     using global::Shared.Logger;
-    using Newtonsoft.Json;
     using Reqnroll;
     using Shouldly;
     using Retry = IntegrationTests.Retry;
@@ -194,13 +193,9 @@ namespace TransactionProcessor.IntegrationTests.Common
         public async Task<GetVoucherResponse> GetVoucherByTransactionNumber(String estateName, String merchantName, Int32 transactionNumber) {
             EstateDetails estate = this.GetEstateDetails(estateName);
             Guid merchantId = estate.GetMerchantId(merchantName);
-            String message = estate.GetTransactionResponse(merchantId, transactionNumber.ToString());
-            SerialisedMessage serialisedMessage = JsonConvert.DeserializeObject<SerialisedMessage>(message);
-            SaleTransactionResponse transactionResponse = JsonConvert.DeserializeObject<SaleTransactionResponse>(serialisedMessage.SerialisedData,
-                                                                                                           new JsonSerializerSettings
-                                                                                                           {
-                                                                                                               TypeNameHandling = TypeNameHandling.All
-                                                                                                           });
+            TransactionResponse message = estate.GetTransactionResponse(merchantId, transactionNumber.ToString());
+            
+            SaleTransactionResponse transactionResponse = message as SaleTransactionResponse;
 
             GetVoucherResponse voucher = null;
             await Retry.For(async () => {

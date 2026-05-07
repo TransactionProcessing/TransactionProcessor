@@ -6,10 +6,6 @@ using TransactionProcessor.Models.Merchant;
 
 namespace TransactionProcessor.BusinessLogic.Tests.Services
 {
-    using System;
-    using System.Collections.Generic;
-    using System.Threading;
-    using System.Threading.Tasks;
     using BusinessLogic.Services;
     using Microsoft.Extensions.Configuration;
     using Moq;
@@ -17,7 +13,13 @@ namespace TransactionProcessor.BusinessLogic.Tests.Services
     using Shared.EventStore.Aggregate;
     using Shared.General;
     using Shared.Logger;
+    using Shared.Serialisation;
     using Shouldly;
+    using System;
+    using System.Collections.Generic;
+    using System.Text.Json;
+    using System.Threading;
+    using System.Threading.Tasks;
     using Testing;
     using Xunit;
 
@@ -27,6 +29,7 @@ namespace TransactionProcessor.BusinessLogic.Tests.Services
         private SettlementDomainService settlementDomainService;
 
         public SettlementDomainServiceTests() {
+            StringSerialiser.Initialise(new SystemTextJsonSerializer(new JsonSerializerOptions()));
             this.AggregateService =
                 new Mock<IAggregateService>();
             IAggregateService AggregateServiceResolver() => this.AggregateService.Object;

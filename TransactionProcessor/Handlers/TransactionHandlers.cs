@@ -1,14 +1,10 @@
 using System;
-using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 using MediatR;
 using Microsoft.AspNetCore.Http;
-using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
 using SimpleResults;
 using Shared.Results.Web;
-using Shared.General;
 using Shared.Results;
 using TransactionProcessor.DataTransferObjects;
 using TransactionProcessor.Factories;
@@ -19,129 +15,31 @@ namespace TransactionProcessor.Handlers
 {
     public static class TransactionHandlers
     {
-        public static async Task<IResult> PerformTransaction(IMediator mediator, HttpContext ctx, SerialisedMessage transactionRequest, CancellationToken cancellationToken)
+        public static async Task<IResult> PerformSaleTransaction(IMediator mediator, HttpContext ctx, SaleTransactionRequest transactionRequest, CancellationToken cancellationToken)
         {
             DateTime transactionReceivedDateTime = DateTime.Now;
             
-            Guid estateId = Guid.Parse(transactionRequest.Metadata[MetadataContants.EstateIdMetadataName]);
-            Guid merchantId = Guid.Parse(transactionRequest.Metadata[MetadataContants.MerchantIdMetadataName]);
-
-            Result<DataTransferObject> deserialiseResult = DeserializeTransactionRequest(transactionRequest.SerialisedData);
-            if (deserialiseResult.IsFailed || deserialiseResult.Data == null)
-            {
-                return ResponseFactory.FromResult(Result.Invalid(deserialiseResult.Message));
-            }
-
-            DataTransferObject dto = deserialiseResult.Data;
-
-            dto.MerchantId = merchantId;
-            dto.EstateId = estateId;
-            if (dto.TransactionDateTime.Kind == DateTimeKind.Utc)
-            {
-                dto.TransactionDateTime = new DateTime(dto.TransactionDateTime.Ticks, DateTimeKind.Unspecified);
-            }
-
-            Result<SerialisedMessage> transactionResult = dto switch
-            {
-                LogonTransactionRequest ltr => await ProcessSpecificMessage(mediator, ltr, transactionReceivedDateTime, cancellationToken),
-                SaleTransactionRequest str => await ProcessSpecificMessage(mediator, str, transactionReceivedDateTime, cancellationToken),
-                ReconciliationRequest rr => await ProcessSpecificMessage(mediator, rr, cancellationToken),
-                _ => Result.Invalid($"DTO Type {dto.GetType().Name} not supported")
-            };
+            Result<SaleTransactionResponse> transactionResult = await ProcessSpecificMessage(mediator, transactionRequest, transactionReceivedDateTime, cancellationToken);
 
             return ResponseFactory.FromResult(transactionResult, message => message);
         }
 
-        private static Result<DataTransferObject> DeserializeTransactionRequest(String serialisedData)
+        public static async Task<IResult> PerformLogonTransaction(IMediator mediator, HttpContext ctx, LogonTransactionRequest transactionRequest, CancellationToken cancellationToken)
         {
-            try {
-                JObject jsonObject = JObject.Parse(serialisedData);
+            DateTime transactionReceivedDateTime = DateTime.Now;
 
-                if (IsReconciliationRequest(jsonObject)) {
-                    return DeserializeKnownType<ReconciliationRequest>(jsonObject);
-                }
+            Result<LogonTransactionResponse> transactionResult = await ProcessSpecificMessage(mediator, transactionRequest, transactionReceivedDateTime, cancellationToken);
 
-                if (IsSaleRequest(jsonObject)) {
-                    return DeserializeKnownType<SaleTransactionRequest>(jsonObject);
-                }
-
-                if (IsLogonRequest(jsonObject)) {
-                    return DeserializeKnownType<LogonTransactionRequest>(jsonObject);
-                }
-
-                return Result.Invalid("DTO Type could not be determined");
-            }
-            catch (JsonException ex) {
-                return Result.Invalid($"Invalid transaction request payload: {ex.Message}");
-            }
+            return ResponseFactory.FromResult(transactionResult, message => message);
         }
 
-        private static Result<DataTransferObject> DeserializeKnownType<T>(JObject jsonObject) where T : DataTransferObject
+        public static async Task<IResult> PerformReconciliationTransaction(IMediator mediator, HttpContext ctx, ReconciliationRequest transactionRequest, CancellationToken cancellationToken)
         {
-            try
-            {
-                JsonSerializer serializer = JsonSerializer.Create(new JsonSerializerSettings
-                {
-                    TypeNameHandling = TypeNameHandling.None,
-                    MetadataPropertyHandling = MetadataPropertyHandling.Ignore
-                });
+            Result<ReconciliationResponse> transactionResult = await ProcessSpecificMessage(mediator, transactionRequest, cancellationToken);
 
-                T dto = jsonObject.ToObject<T>(serializer);
-
-                if (dto == null)
-                {
-                    return Result.Invalid($"Failed to deserialize transaction request as {typeof(T).Name}: deserialized payload was null");
-                }
-
-                return Result.Success<DataTransferObject>(dto);
-            }
-            catch (JsonException ex)
-            {
-                return Result.Invalid($"Failed to deserialize transaction request as {typeof(T).Name}: {ex.Message}");
-            }
+            return ResponseFactory.FromResult(transactionResult, message => message);
         }
-
-        private static Boolean IsLogonRequest(JObject jsonObject) {
-            if (TryGetTransactionType(jsonObject, out string transactionType)) {
-                return String.Equals(transactionType, "Logon", StringComparison.OrdinalIgnoreCase);
-            }
-
-            return false;
-        }
-
-        private static Boolean IsSaleRequest(JObject jsonObject) {
-            if (TryGetTransactionType(jsonObject, out string transactionType)) {
-                return String.Equals(transactionType, "Sale", StringComparison.OrdinalIgnoreCase);
-            }
-
-            return false;
-        }
-
-        private static Boolean IsReconciliationRequest(JObject jsonObject) {
-            if (TryGetTransactionType(jsonObject, out string _)) {
-                return false;
-            }
-
-            return true;
-        }
-
-        private static bool TryGetTransactionType(JObject jsonObject,
-                                                  out string transactionType) {
-            transactionType = null;
-
-            if (!HasProperty(jsonObject, "transaction_type"))
-                return false;
-
-            transactionType = jsonObject.GetValue("transaction_type", StringComparison.OrdinalIgnoreCase)?.Value<string>();
-
-            return transactionType != null;
-        }
-
-        private static Boolean HasProperty(JObject jsonObject,
-                                           String propertyName) {
-            return jsonObject.GetValue(propertyName, StringComparison.OrdinalIgnoreCase) != null;
-        }
-
+        
         public static async Task<IResult> ResendTransactionReceipt(IMediator mediator, HttpContext ctx, Guid estateId, Guid transactionId, CancellationToken cancellationToken)
         {
             TransactionCommands.ResendTransactionReceiptCommand command = new(transactionId, estateId);
@@ -151,7 +49,7 @@ namespace TransactionProcessor.Handlers
         }
 
         // Helpers copied from controller logic
-        private static async Task<Result<SerialisedMessage>> ProcessSpecificMessage(IMediator mediator, LogonTransactionRequest logon, DateTime transactionReceivedDateTime, CancellationToken cancellationToken)
+        private static async Task<Result<LogonTransactionResponse>> ProcessSpecificMessage(IMediator mediator, LogonTransactionRequest logon, DateTime transactionReceivedDateTime, CancellationToken cancellationToken)
         {
             Guid transactionId = Guid.NewGuid();
 
@@ -165,14 +63,14 @@ namespace TransactionProcessor.Handlers
                 logon.TransactionNumber,
                 transactionReceivedDateTime);
 
-            var result = await mediator.Send(command, cancellationToken);
+            Result<ProcessLogonTransactionResponse> result = await mediator.Send(command, cancellationToken);
             if (result.IsFailed)
                 return ResultHelpers.CreateFailure(result);
 
             return ModelFactory.ConvertFrom(result.Data);
         }
 
-        private static async Task<Result<SerialisedMessage>> ProcessSpecificMessage(IMediator mediator, SaleTransactionRequest sale, DateTime transactionReceivedDateTime, CancellationToken cancellationToken)
+        private static async Task<Result<SaleTransactionResponse>> ProcessSpecificMessage(IMediator mediator, SaleTransactionRequest sale, DateTime transactionReceivedDateTime, CancellationToken cancellationToken)
         {
             Guid transactionId = Guid.NewGuid();
 
@@ -200,7 +98,7 @@ namespace TransactionProcessor.Handlers
             return ModelFactory.ConvertFrom(result.Data);
         }
 
-        private static async Task<Result<SerialisedMessage>> ProcessSpecificMessage(IMediator mediator, ReconciliationRequest reconciliation, CancellationToken cancellationToken)
+        private static async Task<Result<ReconciliationResponse>> ProcessSpecificMessage(IMediator mediator, ReconciliationRequest reconciliation, CancellationToken cancellationToken)
         {
             Guid transactionId = Guid.NewGuid();
 

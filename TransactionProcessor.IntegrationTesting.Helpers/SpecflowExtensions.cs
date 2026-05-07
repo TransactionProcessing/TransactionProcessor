@@ -1,4 +1,5 @@
 using Shared.Extensions;
+using Shared.Serialisation;
 using Shouldly;
 using TransactionProcessor.DataTransferObjects.Requests.Contract;
 using TransactionProcessor.DataTransferObjects.Requests.Estate;
@@ -12,7 +13,6 @@ using TransactionProcessor.DataTransferObjects.Responses.Operator;
 namespace TransactionProcessor.IntegrationTesting.Helpers;
 
 using DataTransferObjects;
-using Newtonsoft.Json;
 using Reqnroll;
 using Shared.General;
 using AssignOperatorToEstateRequest = DataTransferObjects.Requests.Estate.AssignOperatorRequest;
@@ -330,7 +330,7 @@ public static class ReqnrollExtensions{
                 amount = amount
             };
 
-            requests.Add(JsonConvert.SerializeObject(makeDepositRequest));
+            requests.Add(StringSerialiser.Serialise(makeDepositRequest));
         }
 
         return requests;
@@ -472,8 +472,8 @@ public static class ReqnrollExtensions{
         return results;
     }
 
-    public static List<(EstateDetails, Guid, String, SerialisedMessage)> ToSerialisedMessages(this DataTableRows tableRows, List<EstateDetails> estateDetailsList){
-        List<(EstateDetails, Guid, String, SerialisedMessage)> messages = new List<(EstateDetails, Guid, String, SerialisedMessage)>();
+    public static List<(EstateDetails, Guid, String, TransactionRequest)> ToTransactionRequests(this DataTableRows tableRows, List<EstateDetails> estateDetailsList){
+        List<(EstateDetails, Guid, String, TransactionRequest)> messages = new List<(EstateDetails, Guid, String, TransactionRequest)>();
         foreach (DataTableRow tableRow in tableRows){
             String transactionType = ReqnrollTableHelper.GetStringRowValue(tableRow, "TransactionType");
             String dateString = ReqnrollTableHelper.GetStringRowValue(tableRow, "DateTime");
@@ -490,19 +490,16 @@ public static class ReqnrollExtensions{
 
             String serialisedData = null;
             if (transactionType == "Logon"){
-                LogonTransactionRequest logonTransactionRequest = new LogonTransactionRequest{
+                LogonTransactionRequest logonTransactionRequest = new() {
                                                                                                  MerchantId = merchantId,
                                                                                                  EstateId = estateDetails.EstateId,
                                                                                                  TransactionDateTime = transactionDateTime,
                                                                                                  TransactionNumber = transactionNumber,
                                                                                                  DeviceIdentifier = deviceIdentifier,
-                                                                                                 TransactionType = transactionType
+                                                                                                 TransactionType = transactionType,
                                                                                              };
-                serialisedData = JsonConvert.SerializeObject(logonTransactionRequest,
-                                                             new JsonSerializerSettings{
-                                                                                           TypeNameHandling = TypeNameHandling.All
-                                                                                       });
-
+                messages.Add((estateDetails, merchantId, transactionNumber, logonTransactionRequest));
+                continue;
             }
 
             if (transactionType == "Sale"){
@@ -559,7 +556,7 @@ public static class ReqnrollExtensions{
 
                 Guid operatorId = estateDetails.GetOperatorId(operatorName);
 
-                SaleTransactionRequest saleTransactionRequest = new SaleTransactionRequest{
+                SaleTransactionRequest saleTransactionRequest = new() {
                                                                                               MerchantId = merchantId,
                                                                                               EstateId = estateDetails.EstateId,
                                                                                               TransactionDateTime = transactionDateTime,
@@ -579,43 +576,35 @@ public static class ReqnrollExtensions{
                     "PataPawa PrePay" => BuildPataPawaPrePayMetaData(messageType, meterNumber, customerName, transactionAmount),
                     _ => BuildMobileTopupMetaData(transactionAmount, customerAccountNumber)
                 };
-                serialisedData = JsonConvert.SerializeObject(saleTransactionRequest,
-                                                             new JsonSerializerSettings{
-                                                                                           TypeNameHandling = TypeNameHandling.All
-                                                                                       });
+                
+                messages.Add((estateDetails, merchantId, transactionNumber, saleTransactionRequest));
+                continue;
             }
 
             if (transactionType == "Reconciliation"){
                 Int32 transactionCount = ReqnrollTableHelper.GetIntValue(tableRow, "TransactionCount");
                 Decimal transactionValue = ReqnrollTableHelper.GetDecimalValue(tableRow, "TransactionValue");
 
-                ReconciliationRequest reconciliationRequest = new ReconciliationRequest{
+                ReconciliationRequest reconciliationRequest = new() {
                                                                                            MerchantId = merchantId,
                                                                                            EstateId = estateDetails.EstateId,
                                                                                            TransactionDateTime = transactionDateTime,
                                                                                            DeviceIdentifier = deviceIdentifier,
                                                                                            TransactionValue = transactionValue,
                                                                                            TransactionCount = transactionCount,
-                                                                                       };
+                                                                                           TransactionType = "Reconciliation"
+                };
 
-                serialisedData = JsonConvert.SerializeObject(reconciliationRequest,
-                                                             new JsonSerializerSettings{
-                                                                                           TypeNameHandling = TypeNameHandling.All
-                                                                                       });
+                messages.Add((estateDetails, merchantId, transactionNumber, reconciliationRequest));
+                continue;
             }
-
-            SerialisedMessage serialisedMessage = new SerialisedMessage();
-            serialisedMessage.Metadata.Add(MetadataContants.EstateIdMetadataName, estateDetails.EstateId.ToString());
-            serialisedMessage.Metadata.Add(MetadataContants.MerchantIdMetadataName, merchantId.ToString());
-            serialisedMessage.SerialisedData = serialisedData;
-            messages.Add((estateDetails, merchantId, transactionNumber, serialisedMessage));
         }
 
         return messages;
     }
 
-    public static List<(SerialisedMessage, String, String, String)> GetTransactionDetails(this DataTableRows tableRows, List<EstateDetails> estateDetailsList){
-        List<(SerialisedMessage, String, String, String)> expectedValuesForTransaction = new List<(SerialisedMessage, String, String, String)>();
+    public static List<(TransactionResponse, String, String, String)> GetTransactionDetails(this DataTableRows tableRows, List<EstateDetails> estateDetailsList){
+        List<(TransactionResponse, String, String, String)> expectedValuesForTransaction = new List<(TransactionResponse, String, String, String)>();
 
         foreach (DataTableRow tableRow in tableRows){
             String estateName = ReqnrollTableHelper.GetStringRowValue(tableRow, "EstateName");
@@ -628,9 +617,8 @@ public static class ReqnrollExtensions{
             String expectedResponseCode = ReqnrollTableHelper.GetStringRowValue(tableRow, "ResponseCode");
             String expectedResponseMessage = ReqnrollTableHelper.GetStringRowValue(tableRow, "ResponseMessage");
 
-            var message = estateDetails.GetTransactionResponse(merchantId, transactionNumber);
-            var serialisedMessage = JsonConvert.DeserializeObject<SerialisedMessage>(message);
-            expectedValuesForTransaction.Add((serialisedMessage, transactionNumber, expectedResponseCode, expectedResponseMessage));
+            var dataTransferObject = estateDetails.GetTransactionResponse(merchantId, transactionNumber);
+            expectedValuesForTransaction.Add((dataTransferObject, transactionNumber, expectedResponseCode, expectedResponseMessage));
         }
 
         return expectedValuesForTransaction;
@@ -754,8 +742,8 @@ public static class ReqnrollExtensions{
                                            };
     }
 
-    public static List<SerialisedMessage> GetTransactionResendDetails(this DataTableRows tableRows, List<EstateDetails> estateDetailsList){
-        List<SerialisedMessage> serialisedMessages = new List<SerialisedMessage>();
+    public static List<TransactionResponse> GetTransactionResendDetails(this DataTableRows tableRows, List<EstateDetails> estateDetailsList){
+        List<TransactionResponse> serialisedMessages = new List<TransactionResponse>();
 
         foreach (DataTableRow tableRow in tableRows){
             String estateName = ReqnrollTableHelper.GetStringRowValue(tableRow, "EstateName");
@@ -766,9 +754,9 @@ public static class ReqnrollExtensions{
             Guid merchantId = estateDetails.GetMerchantId(merchantName);
 
             String transactionNumber = ReqnrollTableHelper.GetStringRowValue(tableRow, "TransactionNumber");
-            var message = estateDetails.GetTransactionResponse(merchantId, transactionNumber);
-            var serialisedMessage = JsonConvert.DeserializeObject<SerialisedMessage>(message);
-            serialisedMessages.Add(serialisedMessage);
+            var dataTransferObject = estateDetails.GetTransactionResponse(merchantId, transactionNumber);
+            
+            serialisedMessages.Add(dataTransferObject);
         }
 
         return serialisedMessages;
@@ -897,13 +885,9 @@ public static class ReqnrollExtensions{
         EstateDetails estateDetails = ReqnrollExtensions.GetEstateDetails(estateDetailsList, estateName);
 
         Guid merchantId = estateDetails.GetMerchantId(merchantName);
-        var message = estateDetails.GetTransactionResponse(merchantId, transactionNumber.ToString());
-        var serialisedMessage = JsonConvert.DeserializeObject<SerialisedMessage>(message);
-        SaleTransactionResponse transactionResponse = JsonConvert.DeserializeObject<SaleTransactionResponse>(serialisedMessage.SerialisedData,
-                                                                                                             new JsonSerializerSettings{
-                                                                                                                                           TypeNameHandling = TypeNameHandling.All
-                                                                                                                                       });
-        return (estateDetails, transactionResponse);
+        var dataTransferObject = estateDetails.GetTransactionResponse(merchantId, transactionNumber.ToString()) as SaleTransactionResponse;
+        
+        return (estateDetails, dataTransferObject);
     }
 
     public static List<CreateEstateRequest> ToCreateEstateRequests(this DataTableRows tableRows)

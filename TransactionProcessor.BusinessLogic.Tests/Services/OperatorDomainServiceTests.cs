@@ -1,11 +1,13 @@
-﻿using System;
-using System.Threading;
-using System.Threading.Tasks;
-using Moq;
+﻿using Moq;
 using Shared.DomainDrivenDesign.EventSourcing;
 using Shared.EventStore.Aggregate;
+using Shared.Serialisation;
 using Shouldly;
 using SimpleResults;
+using System;
+using System.Text.Json;
+using System.Threading;
+using System.Threading.Tasks;
 using TransactionProcessor.Aggregates;
 using TransactionProcessor.BusinessLogic.Requests;
 using TransactionProcessor.BusinessLogic.Services;
@@ -24,6 +26,7 @@ public class OperatorDomainServiceTests{
         this.AggregateService = new Mock<IAggregateService>();
         IAggregateService AggregateServiceResolver() => this.AggregateService.Object;
         this.OperatorDomainService = new OperatorDomainService(AggregateServiceResolver);
+        StringSerialiser.Initialise(new SystemTextJsonSerializer(new JsonSerializerOptions()));
     }
 
     [Fact]

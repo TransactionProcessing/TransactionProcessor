@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Text;
+using Shared.Serialisation;
 
 namespace TransactionProcessor.Tests.Common
 {
@@ -12,7 +13,6 @@ namespace TransactionProcessor.Tests.Common
     using Microsoft.AspNetCore.Mvc.Testing;
     using Microsoft.Extensions.DependencyInjection;
     using Moq;
-    using Newtonsoft.Json;
     using Xunit;
 
     public class TransactionProcessorWebFactory<TStartup> : WebApplicationFactory<TStartup> where TStartup : class
@@ -70,7 +70,7 @@ namespace TransactionProcessor.Tests.Common
         /// <returns></returns>
         public static StringContent CreateStringContent<T>(T requestObject)
         {
-            return new StringContent(JsonConvert.SerializeObject(requestObject), Encoding.UTF8, "application/json");
+            return new StringContent(StringSerialiser.Serialise(requestObject), Encoding.UTF8, "application/json");
         }
 
         #endregion

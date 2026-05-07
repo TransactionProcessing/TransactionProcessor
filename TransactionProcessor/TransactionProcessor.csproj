@@ -12,7 +12,7 @@
   <ItemGroup>
 	  <PackageReference Include="OpenIddict.Validation.AspNetCore" Version="7.4.0" />
 	  <PackageReference Include="OpenIddict.Validation.SystemNetHttp" Version="7.4.0" />
-	  <PackageReference Include="ClientProxyBase" Version="2026.5.5" />
+	  <PackageReference Include="ClientProxyBase" Version="2026.5.6" />
 	  <PackageReference Include="Lamar" Version="15.0.1" />
 	  <PackageReference Include="Lamar.Microsoft.DependencyInjection" Version="15.0.1" />
 	  <PackageReference Include="AspNetCore.HealthChecks.SqlServer" Version="9.0.0" />
@@ -20,7 +20,6 @@
 	<PackageReference Include="AspNetCore.HealthChecks.UI.InMemory.Storage" Version="9.0.0" />
 	<PackageReference Include="AspNetCore.HealthChecks.Uris" Version="9.0.0" />
 	<PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="10.0.3" />
-	<PackageReference Include="Microsoft.AspNetCore.Mvc.NewtonsoftJson" Version="10.0.3" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" Version="10.0.3" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.Tools" Version="10.0.3">
       <PrivateAssets>all</PrivateAssets>
@@ -32,10 +31,10 @@
 	  <PackageReference Include="prometheus-net" Version="8.2.1" />
 	  <PackageReference Include="prometheus-net.AspNetCore" Version="8.2.1" />
     <PackageReference Include="SecurityService.Client" Version="2026.4.3-build156" />
-    <PackageReference Include="Shared" Version="2026.5.5" />
-    <PackageReference Include="Shared.EventStore" Version="2026.5.5" />
+    <PackageReference Include="Shared" Version="2026.5.6" />
+    <PackageReference Include="Shared.EventStore" Version="2026.5.6" />
       <PackageReference Include="Microsoft.Extensions.Hosting.WindowsServices" Version="10.0.3" />
-      <PackageReference Include="Shared.Results.Web" Version="2026.5.5" />
+      <PackageReference Include="Shared.Results.Web" Version="2026.5.6" />
 	  <PackageReference Include="Swashbuckle.AspNetCore" Version="10.1.4" />
 	  <PackageReference Include="Swashbuckle.AspNetCore.Annotations" Version="10.1.4" />
 	  <PackageReference Include="Swashbuckle.AspNetCore.Filters" Version="10.0.1" />

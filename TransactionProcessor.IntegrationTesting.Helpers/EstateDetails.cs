@@ -1,4 +1,6 @@
-﻿using TransactionProcessor.DataTransferObjects.Responses.Contract;
+﻿using Shared.Serialisation;
+using TransactionProcessor.DataTransferObjects;
+using TransactionProcessor.DataTransferObjects.Responses.Contract;
 
 namespace TransactionProcessor.IntegrationTesting.Helpers
 {
@@ -18,10 +20,10 @@ namespace TransactionProcessor.IntegrationTesting.Helpers
             this.AssignedOperators = new List<Guid>();
             this.MerchantUsers = new Dictionary<String, Dictionary<String, String>>();
             this.Contracts = new List<Contract>();
-            this.TransactionResponses = new Dictionary<(Guid merchantId, String transactionNumber), String>();
+            this.TransactionResponses = new Dictionary<(Guid merchantId, String transactionNumber), TransactionResponse>();
         }
 
-        private Dictionary<(Guid merchantId, String transactionNumber), String> TransactionResponses { get; }
+        private Dictionary<(Guid merchantId, String transactionNumber), TransactionResponse> TransactionResponses { get; }
 
         public Guid GetMerchantId(String merchantName)
         {
@@ -35,7 +37,7 @@ namespace TransactionProcessor.IntegrationTesting.Helpers
 
         public void AddTransactionResponse(Guid merchantId,
                                            String transactionNumber,
-                                           String transactionResponse)
+                                           TransactionResponse transactionResponse)
         {
             this.TransactionResponses.Add((merchantId, transactionNumber), transactionResponse);
         }
@@ -52,10 +54,10 @@ namespace TransactionProcessor.IntegrationTesting.Helpers
             return new EstateDetails(estateId,estateName, estateReference);
         }
 
-        public String GetTransactionResponse(Guid merchantId,
+        public TransactionResponse GetTransactionResponse(Guid merchantId,
                                              String transactionNumber)
         {
-            KeyValuePair<(Guid merchantId, String transactionNumber), String> transactionResponse =
+            KeyValuePair<(Guid merchantId, String transactionNumber), TransactionResponse> transactionResponse =
                 this.TransactionResponses.SingleOrDefault(t => t.Key.merchantId == merchantId && t.Key.transactionNumber == transactionNumber);
 
             return transactionResponse.Value;

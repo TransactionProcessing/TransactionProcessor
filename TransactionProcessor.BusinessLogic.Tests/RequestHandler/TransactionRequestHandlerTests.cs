@@ -1,8 +1,10 @@
-﻿using System.Threading;
-using System.Threading.Tasks;
-using Moq;
+﻿using Moq;
+using Shared.Serialisation;
 using Shouldly;
 using SimpleResults;
+using System.Text.Json;
+using System.Threading;
+using System.Threading.Tasks;
 using TransactionProcessor.BusinessLogic.RequestHandlers;
 using TransactionProcessor.BusinessLogic.Requests;
 using TransactionProcessor.BusinessLogic.Services;
@@ -13,6 +15,10 @@ namespace TransactionProcessor.BusinessLogic.Tests.RequestHandler
 {
     public class TransactionRequestHandlerTests
     {
+        public TransactionRequestHandlerTests() {
+            StringSerialiser.Initialise(new SystemTextJsonSerializer(new JsonSerializerOptions()));
+        }
+
         [Fact]
         public async Task TransactionRequestHandler_ProcessLogonTransactionRequest_IsHandled()
         {

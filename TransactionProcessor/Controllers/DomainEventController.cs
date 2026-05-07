@@ -8,8 +8,6 @@ using Shared.Exceptions;
 namespace TransactionProcessor.Controllers
 {
     using Microsoft.AspNetCore.Mvc;
-    using Newtonsoft.Json;
-    using Newtonsoft.Json.Linq;
     using Shared.DomainDrivenDesign.EventSourcing;
     using Shared.EventStore.Aggregate;
     using Shared.EventStore.EventHandling;
@@ -94,7 +92,7 @@ namespace TransactionProcessor.Controllers
             }
             catch (Exception ex)
             {
-                String domainEventData = JsonConvert.SerializeObject(domainEvent);
+                String domainEventData = StringSerialiser.Serialise(domainEvent);
                 Logger.LogError(new Exception($" Failed to Process Event, Event Data received [{domainEventData}]", ex));
 
                 throw;
@@ -143,39 +141,16 @@ namespace TransactionProcessor.Controllers
 
             if (type == null)
                 throw new NotFoundException($"Failed to find a domain event with type {eventType}");
-
-            //JsonIgnoreAttributeIgnorerContractResolver jsonIgnoreAttributeIgnorerContractResolver = new JsonIgnoreAttributeIgnorerContractResolver();
-            //JsonSerializerSettings jsonSerialiserSettings = new JsonSerializerSettings
-            //{
-            //    ReferenceLoopHandling = ReferenceLoopHandling.Ignore,
-            //    TypeNameHandling = TypeNameHandling.All,
-            //    Formatting = Formatting.Indented,
-            //    DateTimeZoneHandling = DateTimeZoneHandling.Utc,
-            //    ContractResolver = jsonIgnoreAttributeIgnorerContractResolver
-            //};
-
+            
             if (type.IsSubclassOf(typeof(DomainEvent)))
             {
-                String json = StringSerialiser.Serialise(domainEvent); //JsonConvert.SerializeObject(domainEvent, jsonSerialiserSettings);
+                String json = StringSerialiser.Serialise(domainEvent);
 
                 DomainEventFactory domainEventFactory = new();
-                String validatedJson = this.ValidateEvent(json);
-                return domainEventFactory.CreateDomainEvent(validatedJson, type);
+                return domainEventFactory.CreateDomainEvent(json, type);
             }
 
             return null;
-        }
-
-        private String ValidateEvent(String domainEventJson)
-        {
-            JObject domainEvent = JObject.Parse(domainEventJson);
-
-            if (domainEvent.ContainsKey("eventId") == false || domainEvent["eventId"].ToObject<Guid>() == Guid.Empty)
-            {
-                throw new ArgumentException("Domain Event must contain an Event Id");
-            }
-
-            return domainEventJson;
         }
 
         #endregion

@@ -8,10 +8,6 @@ using TransactionProcessor.Models.Contract;
 using TransactionProcessor.Models.Merchant;
 
 namespace TransactionProcessor.BusinessLogic.Tests.Services{
-    using System;
-    using System.Collections.Generic;
-    using System.Threading;
-    using System.Threading.Tasks;
     using BusinessLogic.OperatorInterfaces;
     using BusinessLogic.Services;
     using MessagingService.Client;
@@ -23,7 +19,13 @@ namespace TransactionProcessor.BusinessLogic.Tests.Services{
     using Shared.EventStore.Aggregate;
     using Shared.General;
     using Shared.Logger;
+    using Shared.Serialisation;
     using Shouldly;
+    using System;
+    using System.Collections.Generic;
+    using System.Text.Json;
+    using System.Threading;
+    using System.Threading.Tasks;
     using Testing;
     using Xunit;
 
@@ -44,6 +46,7 @@ namespace TransactionProcessor.BusinessLogic.Tests.Services{
         #region Constructors
 
         public TransactionDomainServiceTests(){
+            StringSerialiser.Initialise(new SystemTextJsonSerializer(new JsonSerializerOptions()));
             IConfigurationRoot configurationRoot = new ConfigurationBuilder().AddInMemoryCollection(TestData.DefaultAppSettings).Build();
             ConfigurationReader.Initialise(configurationRoot);
 

@@ -1,10 +1,12 @@
-﻿using System.Threading;
-using System.Threading.Tasks;
-using Moq;
+﻿using Moq;
 using Shared.DomainDrivenDesign.EventSourcing;
 using Shared.EventStore.Aggregate;
+using Shared.Serialisation;
 using Shouldly;
 using SimpleResults;
+using System.Text.Json;
+using System.Threading;
+using System.Threading.Tasks;
 using TransactionProcessor.Aggregates;
 using TransactionProcessor.BusinessLogic.Manager;
 using TransactionProcessor.BusinessLogic.RequestHandlers;
@@ -17,6 +19,10 @@ namespace TransactionProcessor.BusinessLogic.Tests.RequestHandler;
 
 public class SettlementRequestHandlerTests
 {
+    public SettlementRequestHandlerTests() {
+        StringSerialiser.Initialise(new SystemTextJsonSerializer(new JsonSerializerOptions()));
+    }
+
     [Fact]
     public async Task SettlementRequestHandler_ProcessSettlementRequest_IsHandled()
     {

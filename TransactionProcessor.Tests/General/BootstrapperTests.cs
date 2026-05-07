@@ -1,15 +1,19 @@
+using Shouldly;
+
 namespace TransactionProcessor.Tests.General
 {
-    using System;
-    using System.Collections.Generic;
-    using System.Diagnostics;
-    using System.Linq;
     using Lamar;
     using Microsoft.AspNetCore.Hosting;
     using Microsoft.Extensions.Configuration;
     using Microsoft.Extensions.DependencyInjection;
     using Microsoft.Extensions.Hosting;
     using Moq;
+    using Shared.Serialisation;
+    using System;
+    using System.Collections.Generic;
+    using System.Diagnostics;
+    using System.Linq;
+    using TransactionProcessor.ProjectionEngine.State;
     using Xunit;
 
     /// <summary>
@@ -88,28 +92,4 @@ namespace TransactionProcessor.Tests.General
 
         #endregion
     }
-
-    //public static class ServiceCollectionExtensions
-    //{
-    //    public static void AssertConfigurationIsValid(this IServiceCollection serviceCollection,
-    //                                                  List<Type> typesToIgnore = null)
-    //    {
-    //        ServiceProvider buildServiceProvider = serviceCollection.BuildServiceProvider();
-
-    //        List<ServiceDescriptor> list = serviceCollection.Where(x => x.ServiceType.Namespace != null && x.ServiceType.Namespace.Contains("Vme")).ToList();
-
-    //        if (typesToIgnore != null)
-    //        {
-    //            list.RemoveAll(listItem => typesToIgnore.Contains(listItem.ServiceType));
-    //        }
-
-    //        foreach (ServiceDescriptor serviceDescriptor in list)
-    //        {
-    //            Type type = serviceDescriptor.ServiceType;
-
-    //            //This throws an Exception if the type cannot be instantiated.
-    //            buildServiceProvider.GetService(type);
-    //        }
-    //    }
-    //}
 }

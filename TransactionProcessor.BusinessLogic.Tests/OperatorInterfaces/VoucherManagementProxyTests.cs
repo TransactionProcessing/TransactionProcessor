@@ -3,16 +3,18 @@ using SimpleResults;
 
 namespace TransactionProcessor.BusinessLogic.Tests.OperatorInterfaces
 {
-    using System;
-    using System.Collections.Generic;
-    using System.Threading;
-    using System.Threading.Tasks;
     using BusinessLogic.OperatorInterfaces;
     using BusinessLogic.OperatorInterfaces.VoucherManagement;
     using MediatR;
     using Moq;
     using Requests;
+    using Shared.Serialisation;
     using Shouldly;
+    using System;
+    using System.Collections.Generic;
+    using System.Text.Json;
+    using System.Threading;
+    using System.Threading.Tasks;
     using Testing;
     using Xunit;
 
@@ -20,6 +22,7 @@ namespace TransactionProcessor.BusinessLogic.Tests.OperatorInterfaces
     {
         public VoucherManagementProxyTests() {
             Logger.Initialise(new NullLogger());
+            StringSerialiser.Initialise(new SystemTextJsonSerializer(new JsonSerializerOptions()));
         }
 
         [Fact]

@@ -13,7 +13,6 @@ namespace TransactionProcessor.Factories
     using System.Collections.Generic;
     using DataTransferObjects;
     using Models;
-    using Newtonsoft.Json;
     using TransactionProcessor.Models.Estate;
     using TransactionProcessor.Models.Merchant;
     using CalculationType = DataTransferObjects.Responses.Contract.CalculationType;
@@ -131,7 +130,7 @@ namespace TransactionProcessor.Factories
             return result.ToList();
         }
 
-        public static SerialisedMessage ConvertFrom(ProcessLogonTransactionResponse processLogonTransactionResponse)
+        public static LogonTransactionResponse ConvertFrom(ProcessLogonTransactionResponse processLogonTransactionResponse)
         {
             if (processLogonTransactionResponse == null)
             {
@@ -144,24 +143,14 @@ namespace TransactionProcessor.Factories
                                                                     ResponseCode = processLogonTransactionResponse.ResponseCode,
                                                                     MerchantId = processLogonTransactionResponse.MerchantId,
                                                                     EstateId = processLogonTransactionResponse.EstateId,
-                                                                    TransactionId = processLogonTransactionResponse.TransactionId
+                                                                    TransactionId = processLogonTransactionResponse.TransactionId,
+                                                                    TransactionType = "Logon"
                                                                 };
 
-            return new SerialisedMessage
-                   {
-                       Metadata = new Dictionary<String, String>()
-                                  {
-                                      {MetadataContants.EstateIdMetadataName, logonTransactionResponse.EstateId.ToString()},
-                                      {MetadataContants.MerchantIdMetadataName, logonTransactionResponse.MerchantId.ToString()}
-                                  },
-                       SerialisedData = JsonConvert.SerializeObject(logonTransactionResponse, new JsonSerializerSettings
-                                                                                                     {
-                                                                                                         TypeNameHandling = TypeNameHandling.All
-                                                                                                     })
-                   };
+            return logonTransactionResponse;
         }
 
-        public static SerialisedMessage ConvertFrom(ProcessSaleTransactionResponse processSaleTransactionResponse)
+        public static SaleTransactionResponse ConvertFrom(ProcessSaleTransactionResponse processSaleTransactionResponse)
         {
             if (processSaleTransactionResponse == null)
             {
@@ -175,24 +164,14 @@ namespace TransactionProcessor.Factories
                                                                     MerchantId = processSaleTransactionResponse.MerchantId,
                                                                     EstateId = processSaleTransactionResponse.EstateId,
                                                                     AdditionalTransactionMetadata = processSaleTransactionResponse.AdditionalTransactionMetadata,
-                                                                    TransactionId = processSaleTransactionResponse.TransactionId
-                                                                };
+                                                                    TransactionId = processSaleTransactionResponse.TransactionId,
+                                                                    TransactionType = "Sale"
+            };
 
-            return new SerialisedMessage
-            {
-                       Metadata = new Dictionary<String, String>()
-                                  {
-                                      {MetadataContants.EstateIdMetadataName, processSaleTransactionResponse.EstateId.ToString()},
-                                      {MetadataContants.MerchantIdMetadataName, processSaleTransactionResponse.MerchantId.ToString()}
-                                  },
-                       SerialisedData = JsonConvert.SerializeObject(saleTransactionResponse, new JsonSerializerSettings
-                                                                                             {
-                                                                                                 TypeNameHandling = TypeNameHandling.All
-                                                                                             })
-                   };
+            return saleTransactionResponse;
         }
 
-        public static SerialisedMessage ConvertFrom(ProcessReconciliationTransactionResponse processReconciliationTransactionResponse)
+        public static ReconciliationResponse ConvertFrom(ProcessReconciliationTransactionResponse processReconciliationTransactionResponse)
         {
             if (processReconciliationTransactionResponse == null)
             {
@@ -205,21 +184,11 @@ namespace TransactionProcessor.Factories
                                                                            ResponseCode = processReconciliationTransactionResponse.ResponseCode,
                                                                            MerchantId = processReconciliationTransactionResponse.MerchantId,
                                                                            EstateId = processReconciliationTransactionResponse.EstateId,
-                                                                           TransactionId = processReconciliationTransactionResponse.TransactionId
+                                                                           TransactionId = processReconciliationTransactionResponse.TransactionId,
+                                                                           TransactionType = "Reconciliation"
                                                                        };
 
-            return new SerialisedMessage
-            {
-                       Metadata = new Dictionary<String, String>()
-                                  {
-                                      {MetadataContants.EstateIdMetadataName, processReconciliationTransactionResponse.EstateId.ToString()},
-                                      {MetadataContants.MerchantIdMetadataName, processReconciliationTransactionResponse.MerchantId.ToString()}
-                                  },
-                       SerialisedData = JsonConvert.SerializeObject(reconciliationTransactionResponse, new JsonSerializerSettings
-                                                                                                       {
-                                                                                                           TypeNameHandling = TypeNameHandling.All
-                                                                                                       })
-                   };
+            return reconciliationTransactionResponse;
         }
 
         public static IssueVoucherResponse ConvertFrom(Models.IssueVoucherResponse issueVoucherResponse)

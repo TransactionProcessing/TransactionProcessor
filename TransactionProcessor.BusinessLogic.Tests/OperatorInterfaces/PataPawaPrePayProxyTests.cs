@@ -1,15 +1,16 @@
-﻿using System;
+﻿using Microsoft.Extensions.Caching.Memory;
+using RichardSzalay.MockHttp;
+using Shared.Logger;
+using Shared.Serialisation;
+using Shouldly;
+using SimpleResults;
+using System;
 using System.Collections.Generic;
 using System.Net;
 using System.Net.Http;
+using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.Extensions.Caching.Memory;
-using Newtonsoft.Json;
-using RichardSzalay.MockHttp;
-using Shared.Logger;
-using Shouldly;
-using SimpleResults;
 using TransactionProcessor.BusinessLogic.OperatorInterfaces;
 using TransactionProcessor.BusinessLogic.OperatorInterfaces.PataPawaPrePay;
 using TransactionProcessor.Testing;
@@ -23,6 +24,7 @@ public class PataPawaPrePayProxyTests {
     private readonly IMemoryCache MemoryCache = new MemoryCache(new MemoryCacheOptions());
 
     public PataPawaPrePayProxyTests() {
+        StringSerialiser.Initialise(new SystemTextJsonSerializer(new JsonSerializerOptions()));
         PataPawaPrePaidConfiguration configuration = new PataPawaPrePaidConfiguration();
         configuration.Url = "http://localhost";
         configuration.Password = "password";
@@ -41,7 +43,7 @@ public class PataPawaPrePayProxyTests {
 
         LogonResponse logonResponse = new LogonResponse { Balance = "0", Key = "Key", Msg = "Success", Status = 0 };
 
-        this.MockHttpMessageHandler.When("http://localhost").Respond("application/json", JsonConvert.SerializeObject(logonResponse));
+        this.MockHttpMessageHandler.When("http://localhost").Respond("application/json", StringSerialiser.Serialise(logonResponse));
             
         var result = await this.PataPawaPrePayProxy.ProcessLogonMessage(CancellationToken.None);
         result.IsSuccess.ShouldBeTrue();
@@ -66,7 +68,7 @@ public class PataPawaPrePayProxyTests {
     {
         LogonResponse logonResponse = new LogonResponse { Balance = "0", Key = "Key", Msg = "Success", Status = -1 };
 
-        this.MockHttpMessageHandler.When("http://localhost").Respond("application/json", JsonConvert.SerializeObject(logonResponse));
+        this.MockHttpMessageHandler.When("http://localhost").Respond("application/json", StringSerialiser.Serialise(logonResponse));
 
         var result = await this.PataPawaPrePayProxy.ProcessLogonMessage(CancellationToken.None);
         result.IsFailed.ShouldBeTrue();
@@ -102,7 +104,7 @@ public class PataPawaPrePayProxyTests {
 
         MeterResponse meterResponse = new MeterResponse { Status = 0, Code = "1", CustomerName = "Customer", Msg = "msg" };
 
-        this.MockHttpMessageHandler.When("http://localhost").Respond("application/json", JsonConvert.SerializeObject(meterResponse));
+        this.MockHttpMessageHandler.When("http://localhost").Respond("application/json", StringSerialiser.Serialise(meterResponse));
             
         var result = await this.PataPawaPrePayProxy.ProcessSaleMessage(TestData.TransactionId, 
             TestData.OperatorId, TestData.Merchant, TestData.TransactionDateTime, TestData.TransactionReference,
@@ -132,7 +134,7 @@ public class PataPawaPrePayProxyTests {
 
         MeterResponse meterResponse = new MeterResponse { Status = -1, Code = "1", CustomerName = "Customer", Msg = "msg" };
 
-        this.MockHttpMessageHandler.When("http://localhost").Respond("application/json", JsonConvert.SerializeObject(meterResponse));
+        this.MockHttpMessageHandler.When("http://localhost").Respond("application/json", StringSerialiser.Serialise(meterResponse));
 
         var result = await this.PataPawaPrePayProxy.ProcessSaleMessage(TestData.TransactionId,
             TestData.OperatorId, TestData.Merchant, TestData.TransactionDateTime, TestData.TransactionReference,
@@ -165,7 +167,7 @@ public class PataPawaPrePayProxyTests {
                 CustomerName = "Mr Customer"
             }};
 
-        this.MockHttpMessageHandler.When("http://localhost").Respond("application/json", JsonConvert.SerializeObject(vendResponse));
+        this.MockHttpMessageHandler.When("http://localhost").Respond("application/json", StringSerialiser.Serialise(vendResponse));
 
         var result = await this.PataPawaPrePayProxy.ProcessSaleMessage(TestData.TransactionId,
             TestData.OperatorId, TestData.Merchant, TestData.TransactionDateTime, TestData.TransactionReference,
@@ -205,7 +207,7 @@ public class PataPawaPrePayProxyTests {
             }
         };
 
-        this.MockHttpMessageHandler.When("http://localhost").Respond("application/json", JsonConvert.SerializeObject(vendResponse));
+        this.MockHttpMessageHandler.When("http://localhost").Respond("application/json", StringSerialiser.Serialise(vendResponse));
 
         var result = await this.PataPawaPrePayProxy.ProcessSaleMessage(TestData.TransactionId,
             TestData.OperatorId, TestData.Merchant, TestData.TransactionDateTime, TestData.TransactionReference,
@@ -245,7 +247,7 @@ public class PataPawaPrePayProxyTests {
             }
         };
 
-        this.MockHttpMessageHandler.When("http://localhost").Respond("application/json", JsonConvert.SerializeObject(vendResponse));
+        this.MockHttpMessageHandler.When("http://localhost").Respond("application/json", StringSerialiser.Serialise(vendResponse));
 
         var result = await this.PataPawaPrePayProxy.ProcessSaleMessage(TestData.TransactionId,
             TestData.OperatorId, TestData.Merchant, TestData.TransactionDateTime, TestData.TransactionReference,
@@ -285,7 +287,7 @@ public class PataPawaPrePayProxyTests {
             }
         };
 
-        this.MockHttpMessageHandler.When("http://localhost").Respond("application/json", JsonConvert.SerializeObject(vendResponse));
+        this.MockHttpMessageHandler.When("http://localhost").Respond("application/json", StringSerialiser.Serialise(vendResponse));
 
         var result = await this.PataPawaPrePayProxy.ProcessSaleMessage(TestData.TransactionId,
             TestData.OperatorId, TestData.Merchant, TestData.TransactionDateTime, TestData.TransactionReference,
@@ -323,7 +325,7 @@ public class PataPawaPrePayProxyTests {
             }
         };
 
-        this.MockHttpMessageHandler.When("http://localhost").Respond("application/json", JsonConvert.SerializeObject(vendResponse));
+        this.MockHttpMessageHandler.When("http://localhost").Respond("application/json", StringSerialiser.Serialise(vendResponse));
 
         var result = await this.PataPawaPrePayProxy.ProcessSaleMessage(TestData.TransactionId,
             TestData.OperatorId, TestData.Merchant, TestData.TransactionDateTime, TestData.TransactionReference,

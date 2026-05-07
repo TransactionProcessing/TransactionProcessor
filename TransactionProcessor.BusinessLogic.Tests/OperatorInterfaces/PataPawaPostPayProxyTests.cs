@@ -1,15 +1,17 @@
-﻿using System;
+﻿using SimpleResults;
+using System;
 using System.Threading.Tasks;
-using SimpleResults;
 
 namespace TransactionProcessor.BusinessLogic.Tests.OperatorInterfaces
 {
-    using System.Threading;
     using Common;
     using Microsoft.Extensions.Caching.Memory;
     using Moq;
     using PataPawaPostPay;
+    using Shared.Serialisation;
     using Shouldly;
+    using System.Text.Json;
+    using System.Threading;
     using Testing;
     using TransactionProcessor.BusinessLogic.OperatorInterfaces.PataPawaPostPay;
     using Xunit;
@@ -26,6 +28,7 @@ namespace TransactionProcessor.BusinessLogic.Tests.OperatorInterfaces
         private readonly IMemoryCache MemoryCache;
 
         public PataPawaPostPayProxyTests(){
+            StringSerialiser.Initialise(new SystemTextJsonSerializer(new JsonSerializerOptions()));
             PataPawaPostPayService = new Mock<IPataPawaPostPayService>();
             PataPawaPostPayServiceClient = new Mock<PataPawaPostPayServiceClient>();
 

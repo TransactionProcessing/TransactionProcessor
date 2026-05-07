@@ -1,45 +1,35 @@
 ﻿namespace TransactionProcessor.DataTransferObjects
 {
     using System;
+    using System.Collections.Generic;
     using System.Diagnostics.CodeAnalysis;
-    using Newtonsoft.Json;
-
-    /// <summary>
-    /// 
-    /// </summary>
+    
     [ExcludeFromCodeCoverage]
-    public class DataTransferObject
+    public class TransactionRequest
     {
         #region Properties
 
-        // This only here as a shell base class...
-        /// <summary>
-        /// Gets or sets the estate identifier.
-        /// </summary>
-        /// <value>
-        /// The estate identifier.
-        /// </value>
-        [JsonProperty("estate_id")]
         public Guid EstateId { get; set; }
 
-        /// <summary>
-        /// Gets or sets the merchant identifier.
-        /// </summary>
-        /// <value>
-        /// The merchant identifier.
-        /// </value>
-        [JsonProperty("merchant_id")]
         public Guid MerchantId { get; set; }
 
-        /// <summary>
-        /// Gets or sets the transaction date time.
-        /// </summary>
-        /// <value>
-        /// The transaction date time.
-        /// </value>
-        [JsonProperty("transaction_date_time")]
         public DateTime TransactionDateTime { get; set; }
 
+        public String TransactionType { get; set; }
+
         #endregion
+    }
+
+    public class TransactionResponse {
+        public Guid EstateId { get; set; }
+
+        public Guid MerchantId { get; set; }
+
+        public String ResponseCode { get; set; }
+
+        public String ResponseMessage { get; set; }
+        
+        public Guid TransactionId { get; set; }
+        public String TransactionType { get; set; }
     }
 }

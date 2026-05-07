@@ -1,4 +1,3 @@
-using SecurityService.Client;
 using SimpleResults;
 using TransactionProcessor.DataTransferObjects.Requests.Contract;
 using TransactionProcessor.DataTransferObjects.Requests.Estate;
@@ -16,13 +15,10 @@ namespace TransactionProcessor.Client;
 using System;
 using System.Collections.Generic;
 using System.Net.Http;
-using System.Net.Http.Headers;
-using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using ClientProxyBase;
 using DataTransferObjects;
-using Newtonsoft.Json;
 using Shared.Results;
 
 public class TransactionProcessorClient : ClientProxyBase, ITransactionProcessorClient {
@@ -269,12 +265,12 @@ public class TransactionProcessorClient : ClientProxyBase, ITransactionProcessor
         }
     }
 
-    public async Task<Result<SerialisedMessage>> PerformTransaction(String accessToken,
-                                                                    SerialisedMessage transactionRequest,
+    public async Task<Result<LogonTransactionResponse>> PerformTransaction(String accessToken,
+                                                                    LogonTransactionRequest transactionRequest,
                                                                     CancellationToken cancellationToken) {
-        String requestUri = this.BuildRequestUrl($"/api/transactions");
+        String requestUri = this.BuildRequestUrl($"/api/transactions/logon");
         try {
-            var result = await this.Post<SerialisedMessage, SerialisedMessage>(requestUri, transactionRequest, accessToken, cancellationToken);
+            var result = await this.Post<LogonTransactionRequest, LogonTransactionResponse>(requestUri, transactionRequest, accessToken, cancellationToken);
 
             if (result.IsFailed)
                 return ResultHelpers.CreateFailure(result);
@@ -283,7 +279,53 @@ public class TransactionProcessorClient : ClientProxyBase, ITransactionProcessor
         }
         catch (Exception ex) {
             // An exception has occurred, add some additional information to the message
-            Exception exception = new("Error posting transaction.", ex);
+            Exception exception = new("Error posting logon transaction.", ex);
+
+            throw exception;
+        }
+    }
+
+    public async Task<Result<SaleTransactionResponse>> PerformTransaction(String accessToken,
+                                                                           SaleTransactionRequest transactionRequest,
+                                                                           CancellationToken cancellationToken)
+    {
+        String requestUri = this.BuildRequestUrl($"/api/transactions/sale");
+        try
+        {
+            var result = await this.Post<SaleTransactionRequest, SaleTransactionResponse>(requestUri, transactionRequest, accessToken, cancellationToken);
+
+            if (result.IsFailed)
+                return ResultHelpers.CreateFailure(result);
+
+            return Result.Success(result.Data);
+        }
+        catch (Exception ex)
+        {
+            // An exception has occurred, add some additional information to the message
+            Exception exception = new("Error posting logon transaction.", ex);
+
+            throw exception;
+        }
+    }
+
+    public async Task<Result<ReconciliationResponse>> PerformTransaction(String accessToken,
+                                                                          ReconciliationRequest transactionRequest,
+                                                                          CancellationToken cancellationToken)
+    {
+        String requestUri = this.BuildRequestUrl($"/api/transactions/reconciliation");
+        try
+        {
+            var result = await this.Post<ReconciliationRequest, ReconciliationResponse>(requestUri, transactionRequest, accessToken, cancellationToken);
+
+            if (result.IsFailed)
+                return ResultHelpers.CreateFailure(result);
+
+            return Result.Success(result.Data);
+        }
+        catch (Exception ex)
+        {
+            // An exception has occurred, add some additional information to the message
+            Exception exception = new("Error posting logon transaction.", ex);
 
             throw exception;
         }

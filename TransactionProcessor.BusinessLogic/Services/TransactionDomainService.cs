@@ -475,6 +475,7 @@ namespace TransactionProcessor.BusinessLogic.Services{
             catch (Exception e) {
                 // Log out the error
                 Logger.LogError(e);
+                Logger.LogWarning(e.StackTrace);
                 return ResultHelpers.CreateFailedResult(new OperatorResponse { IsSuccessful = false, ResponseCode = "9999", ResponseMessage = e.GetCombinedExceptionMessages() });
             }
         }

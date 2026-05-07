@@ -1,5 +1,4 @@
-﻿using Newtonsoft.Json;
-using SecurityService.Client;
+﻿using SecurityService.Client;
 using SecurityService.DataTransferObjects;
 using Shared.DomainDrivenDesign.EventSourcing;
 using Shared.EventStore.Aggregate;
@@ -14,6 +13,7 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using KurrentDB.Client;
+using Shared.Serialisation;
 using TransactionProcessor.Aggregates;
 using TransactionProcessor.BusinessLogic.Common;
 using TransactionProcessor.BusinessLogic.Requests;
@@ -802,7 +802,7 @@ namespace TransactionProcessor.BusinessLogic.Services
                 return Result.Invalid($"Failed to get Merchant Balance.");
             }
 
-            MerchantBalanceProjectionState1 projectionState = JsonConvert.DeserializeObject<MerchantBalanceProjectionState1>(getBalanceResult.Data);
+            MerchantBalanceProjectionState1 projectionState = StringSerialiser.Deserialise<MerchantBalanceProjectionState1>(getBalanceResult.Data);
             if (projectionState?.merchant == null)
             {
                 return Result.Invalid("Merchant Balance data is missing or invalid.");

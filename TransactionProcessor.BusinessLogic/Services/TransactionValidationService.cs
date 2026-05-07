@@ -6,15 +6,15 @@ using TransactionProcessor.Models.Merchant;
 
 namespace TransactionProcessor.BusinessLogic.Services;
 
+using ProjectionEngine.State;
+using Shared.EventStore.EventStore;
+using Shared.Serialisation;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using Newtonsoft.Json;
-using ProjectionEngine.State;
-using Shared.EventStore.EventStore;
 
 public interface ITransactionValidationService
 {
@@ -305,7 +305,7 @@ public class TransactionValidationService : ITransactionValidationService{
             return CreateFailedResult(new TransactionValidationResult(TransactionResponseCode.UnknownFailure, $"Error getting balance for Merchant [{merchantName}]"));
         }
 
-        MerchantBalanceProjectionState1 projectionState = JsonConvert.DeserializeObject<MerchantBalanceProjectionState1>(getBalanceResult.Data);
+        MerchantBalanceProjectionState1 projectionState = StringSerialiser.Deserialise<MerchantBalanceProjectionState1>(getBalanceResult.Data);
         if (projectionState.merchant.balance < transactionAmount)
         {
             return CreateFailedResult(new TransactionValidationResult(TransactionResponseCode.MerchantDoesNotHaveEnoughCredit, $"Merchant [{merchantName}] does not have enough credit available [{projectionState.merchant.balance:0.00}] to perform transaction amount [{transactionAmount}]"));

@@ -1,18 +1,20 @@
-﻿using System;
+﻿using SimpleResults;
+using System;
 using System.Threading.Tasks;
-using SimpleResults;
 using TransactionProcessor.BusinessLogic.Requests;
 
 namespace TransactionProcessor.BusinessLogic.Tests.Services
 {
-    using System.Threading;
     using Microsoft.Extensions.Configuration;
     using Moq;
     using Shared.DomainDrivenDesign.EventSourcing;
     using Shared.EventStore.Aggregate;
     using Shared.General;
     using Shared.Logger;
+    using Shared.Serialisation;
     using Shouldly;
+    using System.Text.Json;
+    using System.Threading;
     using Testing;
     using TransactionProcessor.Aggregates;
     using TransactionProcessor.BusinessLogic.Services;
@@ -24,7 +26,7 @@ namespace TransactionProcessor.BusinessLogic.Tests.Services
         private readonly FloatDomainService FloatDomainService;
 
         public FloatDomainServiceTests(){
-
+            StringSerialiser.Initialise(new SystemTextJsonSerializer(new JsonSerializerOptions()));
             IConfigurationRoot configurationRoot = new ConfigurationBuilder().AddInMemoryCollection(TestData.DefaultAppSettings).Build();
             ConfigurationReader.Initialise(configurationRoot);
 

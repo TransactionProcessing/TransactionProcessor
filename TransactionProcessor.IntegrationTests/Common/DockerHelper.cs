@@ -8,7 +8,6 @@ namespace TransactionProcessor.IntegrationTests.Common
     using EventStore.Client;
     using global::Shared.IntegrationTesting;
     using global::Shared.Serialisation;
-    using Newtonsoft.Json;
     using SecurityService.Client;
     using Shouldly;
     using System;
@@ -82,7 +81,7 @@ namespace TransactionProcessor.IntegrationTests.Common
             await Retry.For(async () =>
             {
                 HttpRequestMessage requestMessage = new HttpRequestMessage(HttpMethod.Post, "/api/testbank/configuration");
-                requestMessage.Content = new StringContent(JsonConvert.SerializeObject(hostConfig), Encoding.UTF8, "application/json");
+                requestMessage.Content = new StringContent(StringSerialiser.Serialise(hostConfig), Encoding.UTF8, "application/json");
                 var responseMessage = await this.TestHostHttpClient.SendAsync(requestMessage);
                 responseMessage.IsSuccessStatusCode.ShouldBeTrue();
             });

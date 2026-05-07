@@ -1,17 +1,20 @@
-﻿using System.Diagnostics.CodeAnalysis;
+﻿using Shared.Serialisation;
 using SimpleResults;
+using System.Diagnostics.CodeAnalysis;
+using System.Text.Json.Serialization;
 
 namespace TransactionProcessor.BusinessLogic.OperatorInterfaces.PataPawaPrePay;
 
-using System;
-using System.Collections.Generic;
-using System.Net.Http;
-using System.Threading;
-using System.Threading.Tasks;
 using Common;
 using Microsoft.Extensions.Caching.Memory;
-using Newtonsoft.Json;
 using Shared.Logger;
+using System;
+using System.Collections.Generic;
+using System.Globalization;
+using System.Net.Http;
+using System.Text.Json;
+using System.Threading;
+using System.Threading.Tasks;
 
 public class PataPawaPrePayProxy : IOperatorProxy{
     private readonly PataPawaPrePaidConfiguration Configuration;
@@ -157,7 +160,7 @@ public class PataPawaPrePayProxy : IOperatorProxy{
     }
 
     private Result<OperatorResponse> CreateFromLogon(String responseContent){
-        LogonResponse logonResponse = JsonConvert.DeserializeObject<LogonResponse>(responseContent);
+        LogonResponse logonResponse = StringSerialiser.Deserialise<LogonResponse>(responseContent);
 
         if (logonResponse.Status != 0) {
             return Result.Failure($"Error logging on with PataPawa Pre Paid API, Response is {logonResponse.Status}");
@@ -180,7 +183,7 @@ public class PataPawaPrePayProxy : IOperatorProxy{
 
     private Result<OperatorResponse> CreateFromMeter(String responseContent)
     {
-        MeterResponse meterResponse = JsonConvert.DeserializeObject<MeterResponse>(responseContent);
+        MeterResponse meterResponse = StringSerialiser.Deserialise<MeterResponse>(responseContent);
 
         if (meterResponse.Status != 0)
         {
@@ -202,7 +205,7 @@ public class PataPawaPrePayProxy : IOperatorProxy{
 
     private Result<OperatorResponse> CreateFromVend(String responseContent)
     {
-        VendResponse vendResponse = JsonConvert.DeserializeObject<VendResponse>(responseContent);
+        VendResponse vendResponse = StringSerialiser.Deserialise<VendResponse>(responseContent);
 
         if (vendResponse.Status != 0)
         {
@@ -243,6 +246,51 @@ public class PataPawaPrePayProxy : IOperatorProxy{
                                       Object state){
         if (key.ToString().Contains("Logon")){
             this.ProcessLogonMessage(CancellationToken.None).Wait();
+        }
+    }
+
+    public class DateTimeSpaceConverter : JsonConverter<DateTime>
+    {
+        private static readonly string[] AcceptedFormats = new[] {
+                "yyyy-MM-dd HH:mm:ss", "yyyy-MM-dd H:mm:ss", "yyyy-MM-ddTHH:mm:ss", "yyyy-MM-ddTHH:mm:ss.FFFFFFFK", "o" // ISO 8601 round-trip
+                                                                                                                                                                                };
+        public override DateTime Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
+        {
+            if (reader.TokenType == JsonTokenType.Null)
+            {
+                return default;
+            }
+
+            if (reader.TokenType == JsonTokenType.String)
+            {
+                var s = reader.GetString();
+                if (string.IsNullOrWhiteSpace(s))
+                    return default;
+
+                // Try exact known formats first (handles "2026-05-07 06:03:18")
+                if (DateTime.TryParseExact(s, AcceptedFormats, CultureInfo.InvariantCulture, DateTimeStyles.AssumeLocal | DateTimeStyles.AllowWhiteSpaces, out var dtExact))
+                    return dtExact;
+
+                // Fall back to general parse
+                if (DateTime.TryParse(s, CultureInfo.InvariantCulture, DateTimeStyles.AssumeLocal, out var dt))
+                    return dt;
+
+                throw new JsonException($"Unable to parse DateTime: '{s}'.");
+            }
+
+            // If JSON contains a number, attempt to treat it as Unix seconds (optional)
+            if (reader.TokenType == JsonTokenType.Number && reader.TryGetInt64(out long seconds))
+            {
+                return DateTimeOffset.FromUnixTimeSeconds(seconds).LocalDateTime;
+            }
+
+            throw new JsonException($"Unexpected token parsing DateTime. Token: {reader.TokenType}");
+        }
+
+        public override void Write(Utf8JsonWriter writer, DateTime value, JsonSerializerOptions options)
+        {
+            // Write in the same "space" format so round-trip matches your input
+            writer.WriteStringValue(value.ToString("yyyy-MM-dd HH:mm:ss", CultureInfo.InvariantCulture));
         }
     }
 }

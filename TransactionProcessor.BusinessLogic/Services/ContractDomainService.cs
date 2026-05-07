@@ -1,15 +1,13 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Net.WebSockets;
 using System.Threading;
 using System.Threading.Tasks;
-using Newtonsoft.Json.Linq;
-using Shared.DomainDrivenDesign.EventSourcing;
 using Shared.EventStore.Aggregate;
 using Shared.EventStore.EventStore;
 using Shared.Exceptions;
 using Shared.Results;
+using Shared.Serialisation;
 using SimpleResults;
 using TransactionProcessor.Aggregates;
 using TransactionProcessor.BusinessLogic.Common;
@@ -199,19 +197,21 @@ namespace TransactionProcessor.BusinessLogic.Services
                 return Result.NotFound($"Unable to create a contract for an operator that is not setup on estate [{estate.Name}]");
 
             String projection =
-                $"fromCategory(\"ContractAggregate\")\n.when({{\n    $init: function (s, e) {{\n                        return {{\n                            total: 0,\n                            contractId: 0\n                        }};\n                    }},\n    'ContractCreatedEvent': function(s,e){{\n        // Check if it matches\n        if (e.data.description === '{command.RequestDTO.Description}' \n            && e.data.operatorId === '{command.RequestDTO.OperatorId}'){{\n            s.total += 1;\n            s.contractId = e.data.contractId\n        }}\n    }}\n}})";
+                $"fromCategory(\"ContractAggregate\")\n.when({{\n    $init: function (s, e) {{\n                        return {{\n                            total: 0,\n                            contractId: 0\n                        }};\n                    }},\n    'ContractCreatedEvent': function(s,e){{\n        // Check if it matches\n        if (e.data.description === '{command.RequestDTO.Description}' \n            && e.data.operatorId === '{command.RequestDTO.OperatorId}'){{\n            s.total += 1;\n            s.contract_Id = e.data.contractId\n        }}\n    }}\n}})";
 
             Result<String> result = await this.Context.RunTransientQuery(projection, cancellationToken);
             if (result.IsFailed)
                 return ResultHelpers.CreateFailure(result);
 
             String resultString = result.Data;
-            if (String.IsNullOrEmpty(resultString) == false)
-            {
-                JObject jsonResult = JObject.Parse(resultString);
-                String contractIdString = jsonResult["contractId"]?.Value<String>();
-                if (Guid.TryParse(contractIdString, out Guid contractIdResult) && contractIdResult != Guid.Empty)
+            if (String.IsNullOrEmpty(resultString) == false) {
+                var resultObject = new { total = 0, contract_Id = String.Empty };
+                
+                var queryResult = StringSerialiser.DeserialiseAnonymousType(resultString, resultObject);
+
+                if (Guid.TryParse(queryResult.contract_Id, out Guid contractIdResult) && contractIdResult != Guid.Empty){
                     return Result.Conflict($"Contract Description {command.RequestDTO.Description} already in use for operator {command.RequestDTO.OperatorId}");
+                }
             }
 
             return Result.Success();
