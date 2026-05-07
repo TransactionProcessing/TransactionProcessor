@@ -326,10 +326,6 @@ public class TransactionProcessorSteps
                 string projectionName = "MerchantBalanceProjection";
                 String partitionId = $"MerchantBalance-{m.Item2:N}";
 
-                dynamic gg = await this.ProjectionManagementClient.GetStateAsync<dynamic>(
-                    projectionName, partitionId);
-                JsonElement x = (JsonElement)gg;
-
                 Result<MerchantBalanceResponse>? getMerchantBalanceResult = await this.TransactionProcessorClient.GetMerchantBalance(accessToken, m.Item1, m.Item2, CancellationToken.None);
                 getMerchantBalanceResult.IsSuccess.ShouldBeTrue();
                 getMerchantBalanceResult.Data.ShouldNotBeNull();

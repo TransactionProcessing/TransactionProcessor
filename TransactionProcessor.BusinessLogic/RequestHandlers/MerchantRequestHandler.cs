@@ -76,8 +76,8 @@ public class MerchantRequestHandler : IRequestHandler<MerchantQueries.GetMerchan
         if (result.IsFailed)
             return Result.NotFound(
                 $"Merchant Balance not found for Merchant {query.MerchantId} on MerchantBalanceProjection");
-        
-        MerchantBalanceProjectionState1 projectionState = StringSerialiser.Deserialise<MerchantBalanceProjectionState1>(result.Data);
+        var json = result.Data.ToLower();
+        MerchantBalanceProjectionState1 projectionState = StringSerialiser.Deserialise<MerchantBalanceProjectionState1>(json, new SerialiserOptions(SerialiserPropertyFormat.CamelCase));
 
         return Result.Success(projectionState);
     }
