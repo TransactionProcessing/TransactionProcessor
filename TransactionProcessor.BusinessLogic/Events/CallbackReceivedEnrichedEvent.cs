@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Diagnostics.CodeAnalysis;
-using Newtonsoft.Json;
 using Shared.DomainDrivenDesign.EventSourcing;
 
 namespace TransactionProcessor.BusinessLogic.Events
@@ -32,49 +31,14 @@ namespace TransactionProcessor.BusinessLogic.Events
 
         #region Properties
 
-        /// <summary>
-        /// Gets or sets the callback message.
-        /// </summary>
-        /// <value>
-        /// The callback message.
-        /// </value>
-        [JsonProperty("callbackMessage")]
         public String CallbackMessage { get; set; }
 
-        /// <summary>
-        /// Gets or sets the estate identifier.
-        /// </summary>
-        /// <value>
-        /// The estate identifier.
-        /// </value>
-        [JsonProperty("estateid")]
         public Guid EstateId { get; set; }
 
-        /// <summary>
-        /// Gets or sets the message format.
-        /// </summary>
-        /// <value>
-        /// The message format.
-        /// </value>
-        [JsonProperty("messageFormat")]
         public Int32 MessageFormat { get; set; }
 
-        /// <summary>
-        /// Gets or sets the reference.
-        /// </summary>
-        /// <value>
-        /// The reference.
-        /// </value>
-        [JsonProperty("reference")]
         public String Reference { get; set; }
 
-        /// <summary>
-        /// Gets or sets the type string.
-        /// </summary>
-        /// <value>
-        /// The type string.
-        /// </value>
-        [JsonProperty("typeString")]
         public String TypeString { get; set; }
 
         #endregion

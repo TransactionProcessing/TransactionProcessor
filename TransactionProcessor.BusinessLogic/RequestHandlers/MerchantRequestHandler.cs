@@ -3,8 +3,8 @@ using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 using MediatR;
-using Newtonsoft.Json;
 using Shared.EventStore.EventStore;
+using Shared.Serialisation;
 using SimpleResults;
 using TransactionProcessor.BusinessLogic.Manager;
 using TransactionProcessor.BusinessLogic.Requests;
@@ -77,7 +77,7 @@ public class MerchantRequestHandler : IRequestHandler<MerchantQueries.GetMerchan
             return Result.NotFound(
                 $"Merchant Balance not found for Merchant {query.MerchantId} on MerchantBalanceProjection");
         
-        MerchantBalanceProjectionState1 projectionState = JsonConvert.DeserializeObject<MerchantBalanceProjectionState1>(result.Data);
+        MerchantBalanceProjectionState1 projectionState = StringSerialiser.Deserialise<MerchantBalanceProjectionState1>(result.Data);
 
         return Result.Success(projectionState);
     }

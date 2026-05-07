@@ -8,6 +8,7 @@ using Microsoft.Extensions.Caching.Memory;
 using Newtonsoft.Json;
 using RichardSzalay.MockHttp;
 using Shared.Logger;
+using Shared.Serialisation;
 using Shouldly;
 using SimpleResults;
 using TransactionProcessor.BusinessLogic.OperatorInterfaces;
@@ -41,7 +42,7 @@ public class PataPawaPrePayProxyTests {
 
         LogonResponse logonResponse = new LogonResponse { Balance = "0", Key = "Key", Msg = "Success", Status = 0 };
 
-        this.MockHttpMessageHandler.When("http://localhost").Respond("application/json", JsonConvert.SerializeObject(logonResponse));
+        this.MockHttpMessageHandler.When("http://localhost").Respond("application/json", StringSerialiser.Serialise(logonResponse));
             
         var result = await this.PataPawaPrePayProxy.ProcessLogonMessage(CancellationToken.None);
         result.IsSuccess.ShouldBeTrue();

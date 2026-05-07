@@ -18,8 +18,14 @@ namespace TransactionProcessor.Endpoints
                                  .RequireAuthorization(AuthorizationExtensions.PolicyNames.ClientCredentialsOnlyPolicy);
 
             // POST /api/transactions  - rejects password tokens => require client credentials
-            group.MapPost("/", TransactionHandlers.PerformTransaction)
-                 .WithName("PerformTransaction");
+            group.MapPost("/logon", TransactionHandlers.PerformLogonTransaction)
+                 .WithName("PerformSaleTransaction");
+
+            group.MapPost("/sale", TransactionHandlers.PerformSaleTransaction)
+                .WithName("PerformSaleTransaction");
+            
+            group.MapPost("/reconciliation", TransactionHandlers.PerformReconciliationTransaction)
+                .WithName("PerformReconciliationTransaction");
 
             // POST /api/{estateId}/transactions/{transactionId}/resendreceipt
             // note: controller used absolute route; map both forms — keep support for the original absolute route

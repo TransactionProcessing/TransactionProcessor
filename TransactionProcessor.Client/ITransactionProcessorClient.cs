@@ -21,9 +21,18 @@ namespace TransactionProcessor.Client
     public interface ITransactionProcessorClient
     {
         #region Methods
-        Task<Result<SerialisedMessage>> PerformTransaction(String accessToken, 
-                                                           SerialisedMessage transactionRequest,
-                                                           CancellationToken cancellationToken);
+
+        Task<Result<ReconciliationResponse>> PerformTransaction(String accessToken,
+                                                                ReconciliationRequest transactionRequest,
+                                                                CancellationToken cancellationToken);
+
+        Task<Result<SaleTransactionResponse>> PerformTransaction(String accessToken,
+                                                                SaleTransactionRequest transactionRequest,
+                                                                CancellationToken cancellationToken);
+
+        Task<Result<LogonTransactionResponse>> PerformTransaction(String accessToken,
+                                                                  LogonTransactionRequest transactionRequest,
+                                                                  CancellationToken cancellationToken);
 
         Task<Result<SettlementResponse>> GetSettlementByDate(String accessToken, 
                                                                    DateTime settlementDate,

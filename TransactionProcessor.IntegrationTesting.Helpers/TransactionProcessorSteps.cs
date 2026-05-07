@@ -1,4 +1,5 @@
 ﻿using EventStore.Client;
+using Shared.Serialisation;
 using SimpleResults;
 using TransactionProcessor.DataTransferObjects.Requests.Contract;
 using TransactionProcessor.DataTransferObjects.Requests.Estate;
@@ -18,7 +19,6 @@ using System.Text;
 using System.Text.Json;
 using Client;
 using DataTransferObjects;
-using Newtonsoft.Json;
 using Shared.IntegrationTesting;
 using Shouldly;
 using TransactionProcessor.DataTransferObjects.Responses.Merchant;
@@ -158,17 +158,24 @@ public class TransactionProcessorSteps
         result.Status.ShouldBe(ResultStatus.NotFound);
     }
 
-    public async Task WhenIPerformTheFollowingTransactions(String accessToken, List<(EstateDetails, Guid, String, SerialisedMessage)> serialisedMessages)
+    public async Task WhenIPerformTheFollowingTransactions(String accessToken, List<(EstateDetails, Guid, String, TransactionRequest)> serialisedMessages)
     {
-        List<(EstateDetails, Guid, String, SerialisedMessage)> responseMessages = new List<(EstateDetails, Guid, String, SerialisedMessage)>();
-        foreach ((EstateDetails, Guid, String, SerialisedMessage) serialisedMessage in serialisedMessages)
-        {
-            Result<SerialisedMessage>? performTransactionResult  =
-                await this.TransactionProcessorClient.PerformTransaction(accessToken, serialisedMessage.Item4, CancellationToken.None);
-            performTransactionResult.IsSuccess.ShouldBeTrue();
-            SerialisedMessage responseSerialisedMessage = performTransactionResult.Data;
-            String message = JsonConvert.SerializeObject(responseSerialisedMessage);
-            serialisedMessage.Item1.AddTransactionResponse(serialisedMessage.Item2, serialisedMessage.Item3, message);
+        foreach ((EstateDetails, Guid, String, TransactionRequest) serialisedMessage in serialisedMessages) {
+            if (serialisedMessage.Item4 is LogonTransactionRequest ltr) {
+                Result<LogonTransactionResponse>? logonResult = await this.TransactionProcessorClient.PerformTransaction(accessToken, ltr, CancellationToken.None);
+                logonResult.IsSuccess.ShouldBeTrue();
+                serialisedMessage.Item1.AddTransactionResponse(serialisedMessage.Item2, serialisedMessage.Item3, logonResult.Data);
+            }
+            if (serialisedMessage.Item4 is SaleTransactionRequest str) {
+                Result<SaleTransactionResponse>? saleResult = await this.TransactionProcessorClient.PerformTransaction(accessToken, str, CancellationToken.None);
+                saleResult.IsSuccess.ShouldBeTrue();
+                serialisedMessage.Item1.AddTransactionResponse(serialisedMessage.Item2, serialisedMessage.Item3, saleResult.Data);
+            }
+            if (serialisedMessage.Item4 is ReconciliationRequest rr) {
+                Result<ReconciliationResponse>? reconciliationResult = await this.TransactionProcessorClient.PerformTransaction(accessToken, rr, CancellationToken.None);
+                reconciliationResult.IsSuccess.ShouldBeTrue();
+                serialisedMessage.Item1.AddTransactionResponse(serialisedMessage.Item2, serialisedMessage.Item3, reconciliationResult.Data);
+            }
         }
     }
 
@@ -337,17 +344,11 @@ public class TransactionProcessorSteps
         return responses;
     }
 
-    public void ValidateTransactions(List<(SerialisedMessage, String, String, String)> transactions)
+    public void ValidateTransactions(List<(TransactionResponse, String, String, String)> transactions)
     {
-        foreach ((SerialisedMessage, String, String, String) transaction in transactions)
+        foreach ((TransactionResponse, String, String, String) transaction in transactions)
         {
-            Object transactionResponse = JsonConvert.DeserializeObject(transaction.Item1.SerialisedData,
-                                                                       new JsonSerializerSettings
-                                                                       {
-                                                                           TypeNameHandling = TypeNameHandling.All
-                                                                       });
-
-            this.ValidateTransactionResponse((dynamic)transactionResponse, transaction.Item2, transaction.Item3, transaction.Item4);
+            this.ValidateTransactionResponse((dynamic)transaction.Item1, transaction.Item2, transaction.Item3, transaction.Item4);
         }
     }
 
@@ -370,16 +371,10 @@ public class TransactionProcessorSteps
         reconciliationResponse.ResponseMessage.ShouldBe(expectedResponseMessage, $"Transaction Number {transactionNumber} verification failed");
     }
 
-    public async Task WhenIRequestTheReceiptIsResent(String accessToken, List<SerialisedMessage> transactions)
+    public async Task WhenIRequestTheReceiptIsResent(String accessToken, List<TransactionResponse> transactions)
     {
-        foreach (SerialisedMessage serialisedMessage in transactions)
-        {
-            SaleTransactionResponse transactionResponse = JsonConvert.DeserializeObject<SaleTransactionResponse>(serialisedMessage.SerialisedData,
-                                                                                                                 new JsonSerializerSettings
-                                                                                                                 {
-                                                                                                                     TypeNameHandling = TypeNameHandling.All
-                                                                                                                 });
-
+        foreach (TransactionResponse transactionResponse in transactions) {
+            SaleTransactionResponse saleTransactionResponse = transactionResponse as SaleTransactionResponse;
             await Retry.For(async () => {
                                 Should.NotThrow(async () => {
                                                     await this.TransactionProcessorClient.ResendEmailReceipt(accessToken,
@@ -444,7 +439,7 @@ public class TransactionProcessorSteps
         foreach (T o in objects){
             HttpRequestMessage httpRequestMessage = new HttpRequestMessage(HttpMethod.Post, url);
 
-            httpRequestMessage.Content = new StringContent(JsonConvert.SerializeObject(o), Encoding.UTF8, "application/json");
+            httpRequestMessage.Content = new StringContent(StringSerialiser.Serialise(o), Encoding.UTF8, "application/json");
 
             HttpResponseMessage response = await this.TestHostHttpClient.SendAsync(httpRequestMessage);
             response.StatusCode.ShouldBe(HttpStatusCode.OK);

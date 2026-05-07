@@ -1,4 +1,5 @@
 ﻿using System.Diagnostics.CodeAnalysis;
+using Shared.Serialisation;
 using SimpleResults;
 
 namespace TransactionProcessor.BusinessLogic.OperatorInterfaces.PataPawaPrePay;
@@ -10,7 +11,6 @@ using System.Threading;
 using System.Threading.Tasks;
 using Common;
 using Microsoft.Extensions.Caching.Memory;
-using Newtonsoft.Json;
 using Shared.Logger;
 
 public class PataPawaPrePayProxy : IOperatorProxy{
@@ -157,7 +157,7 @@ public class PataPawaPrePayProxy : IOperatorProxy{
     }
 
     private Result<OperatorResponse> CreateFromLogon(String responseContent){
-        LogonResponse logonResponse = JsonConvert.DeserializeObject<LogonResponse>(responseContent);
+        LogonResponse logonResponse = StringSerialiser.Deserialise<LogonResponse>(responseContent);
 
         if (logonResponse.Status != 0) {
             return Result.Failure($"Error logging on with PataPawa Pre Paid API, Response is {logonResponse.Status}");
@@ -180,7 +180,7 @@ public class PataPawaPrePayProxy : IOperatorProxy{
 
     private Result<OperatorResponse> CreateFromMeter(String responseContent)
     {
-        MeterResponse meterResponse = JsonConvert.DeserializeObject<MeterResponse>(responseContent);
+        MeterResponse meterResponse = StringSerialiser.Deserialise<MeterResponse>(responseContent);
 
         if (meterResponse.Status != 0)
         {
@@ -202,7 +202,7 @@ public class PataPawaPrePayProxy : IOperatorProxy{
 
     private Result<OperatorResponse> CreateFromVend(String responseContent)
     {
-        VendResponse vendResponse = JsonConvert.DeserializeObject<VendResponse>(responseContent);
+        VendResponse vendResponse = StringSerialiser.Deserialise<VendResponse>(responseContent);
 
         if (vendResponse.Status != 0)
         {

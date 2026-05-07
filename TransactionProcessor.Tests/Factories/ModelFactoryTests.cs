@@ -191,14 +191,14 @@ namespace TransactionProcessor.Tests.Factories
         {
             ProcessLogonTransactionResponse processLogonTransactionResponseModel = TestData.ProcessLogonTransactionResponseModel;
 
-            SerialisedMessage logonTransactionResponse = ModelFactory.ConvertFrom(processLogonTransactionResponseModel);
+            LogonTransactionResponse logonTransactionResponse = ModelFactory.ConvertFrom(processLogonTransactionResponseModel);
             logonTransactionResponse.ShouldNotBeNull();
-            logonTransactionResponse.Metadata.ShouldContainKey(MetadataContants.EstateIdMetadataName);
-            logonTransactionResponse.Metadata.ShouldContainKey(MetadataContants.MerchantIdMetadataName);
-            String estateId = logonTransactionResponse.Metadata[MetadataContants.EstateIdMetadataName];
-            String merchantId = logonTransactionResponse.Metadata[MetadataContants.MerchantIdMetadataName];
-            estateId.ShouldBe(TestData.ProcessLogonTransactionResponseModel.EstateId.ToString());
-            merchantId.ShouldBe(TestData.ProcessLogonTransactionResponseModel.MerchantId.ToString());
+            logonTransactionResponse.EstateId.ShouldBe(TestData.ProcessLogonTransactionResponseModel.EstateId);
+            logonTransactionResponse.MerchantId.ShouldBe(TestData.ProcessLogonTransactionResponseModel.MerchantId);
+            logonTransactionResponse.ResponseCode.ShouldBe(TestData.ProcessLogonTransactionResponseModel.ResponseCode);
+            logonTransactionResponse.ResponseMessage.ShouldBe(TestData.ProcessLogonTransactionResponseModel.ResponseMessage);
+            logonTransactionResponse.TransactionId.ShouldBe(TestData.ProcessLogonTransactionResponseModel.TransactionId);
+            logonTransactionResponse.TransactionType.ShouldBe("Logon");
         }
 
         [Fact]
@@ -206,7 +206,7 @@ namespace TransactionProcessor.Tests.Factories
         {
             ProcessLogonTransactionResponse processLogonTransactionResponseModel = null;
 
-            SerialisedMessage logonTransactionResult = ModelFactory.ConvertFrom(processLogonTransactionResponseModel);
+            LogonTransactionResponse logonTransactionResult = ModelFactory.ConvertFrom(processLogonTransactionResponseModel);
             logonTransactionResult.ShouldBeNull();
         }
 
@@ -215,23 +215,24 @@ namespace TransactionProcessor.Tests.Factories
         {
             ProcessSaleTransactionResponse processSaleTransactionResponseModel = TestData.ProcessSaleTransactionResponseModel;
 
-            SerialisedMessage saleTransactionResponse = ModelFactory.ConvertFrom(processSaleTransactionResponseModel);
+            SaleTransactionResponse saleTransactionResponse = ModelFactory.ConvertFrom(processSaleTransactionResponseModel);
 
             saleTransactionResponse.ShouldNotBeNull();
-            saleTransactionResponse.Metadata.ShouldContainKey(MetadataContants.EstateIdMetadataName);
-            saleTransactionResponse.Metadata.ShouldContainKey(MetadataContants.MerchantIdMetadataName);
-            String estateId = saleTransactionResponse.Metadata[MetadataContants.EstateIdMetadataName];
-            String merchantId = saleTransactionResponse.Metadata[MetadataContants.MerchantIdMetadataName];
-            estateId.ShouldBe(TestData.ProcessSaleTransactionResponseModel.EstateId.ToString());
-            merchantId.ShouldBe(TestData.ProcessSaleTransactionResponseModel.MerchantId.ToString());
+            saleTransactionResponse.EstateId.ShouldBe(TestData.ProcessLogonTransactionResponseModel.EstateId);
+            saleTransactionResponse.MerchantId.ShouldBe(TestData.ProcessLogonTransactionResponseModel.MerchantId);
+            saleTransactionResponse.ResponseCode.ShouldBe(TestData.ProcessLogonTransactionResponseModel.ResponseCode);
+            saleTransactionResponse.ResponseMessage.ShouldBe(TestData.ProcessLogonTransactionResponseModel.ResponseMessage);
+            saleTransactionResponse.TransactionId.ShouldBe(TestData.ProcessLogonTransactionResponseModel.TransactionId);
+            saleTransactionResponse.TransactionType.ShouldBe("Sale");
         }
+
 
         [Fact]
         public void ModelFactory_ProcessSaleTransactionResponseModel_NullInput_IsConverted()
         {
             ProcessSaleTransactionResponse processSaleTransactionResponseModel = null;
 
-            SerialisedMessage saleTransactionResult = ModelFactory.ConvertFrom(processSaleTransactionResponseModel);
+            SaleTransactionResponse saleTransactionResult = ModelFactory.ConvertFrom(processSaleTransactionResponseModel);
             saleTransactionResult.ShouldBeNull();
         }
 
@@ -240,15 +241,15 @@ namespace TransactionProcessor.Tests.Factories
         {
             ProcessReconciliationTransactionResponse processReconciliationTransactionResponseModel = TestData.ProcessReconciliationTransactionResponseModel;
 
-            SerialisedMessage processReconciliationTransactionResponse = ModelFactory.ConvertFrom(processReconciliationTransactionResponseModel);
+            ReconciliationResponse reconciliationTransactionResponse = ModelFactory.ConvertFrom(processReconciliationTransactionResponseModel);
 
-            processReconciliationTransactionResponse.ShouldNotBeNull();
-            processReconciliationTransactionResponse.Metadata.ShouldContainKey(MetadataContants.EstateIdMetadataName);
-            processReconciliationTransactionResponse.Metadata.ShouldContainKey(MetadataContants.MerchantIdMetadataName);
-            String estateId = processReconciliationTransactionResponse.Metadata[MetadataContants.EstateIdMetadataName];
-            String merchantId = processReconciliationTransactionResponse.Metadata[MetadataContants.MerchantIdMetadataName];
-            estateId.ShouldBe(TestData.ProcessSaleTransactionResponseModel.EstateId.ToString());
-            merchantId.ShouldBe(TestData.ProcessSaleTransactionResponseModel.MerchantId.ToString());
+            reconciliationTransactionResponse.ShouldNotBeNull();
+            reconciliationTransactionResponse.EstateId.ShouldBe(TestData.ProcessLogonTransactionResponseModel.EstateId);
+            reconciliationTransactionResponse.MerchantId.ShouldBe(TestData.ProcessLogonTransactionResponseModel.MerchantId);
+            reconciliationTransactionResponse.ResponseCode.ShouldBe(TestData.ProcessLogonTransactionResponseModel.ResponseCode);
+            reconciliationTransactionResponse.ResponseMessage.ShouldBe(TestData.ProcessLogonTransactionResponseModel.ResponseMessage);
+            reconciliationTransactionResponse.TransactionId.ShouldBe(TestData.ProcessLogonTransactionResponseModel.TransactionId);
+            reconciliationTransactionResponse.TransactionType.ShouldBe("Reconciliation");
         }
 
         [Fact]
@@ -256,7 +257,7 @@ namespace TransactionProcessor.Tests.Factories
         {
             ProcessReconciliationTransactionResponse processReconciliationTransactionResponseModel = null;
 
-            SerialisedMessage reconciliationTransactionResult = ModelFactory.ConvertFrom(processReconciliationTransactionResponseModel);
+            ReconciliationResponse reconciliationTransactionResult = ModelFactory.ConvertFrom(processReconciliationTransactionResponseModel);
             reconciliationTransactionResult.ShouldBeNull();
         }
 

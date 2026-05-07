@@ -6,7 +6,6 @@ namespace TransactionProcessor.BusinessLogic.Services
 {
     using System.Diagnostics.CodeAnalysis;
     using System.Security.Cryptography;
-    using Newtonsoft.Json;
     using Shared.Serialisation;
 
     [ExcludeFromCodeCoverage]

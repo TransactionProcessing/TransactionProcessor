@@ -1,6 +1,5 @@
-﻿using EventStore.Client;
-using KurrentDB.Client;
-using Newtonsoft.Json;
+﻿using KurrentDB.Client;
+using Shared.Serialisation;
 using SimpleResults;
 using TransactionProcessor.BusinessLogic.Requests;
 using TransactionProcessor.ProjectionEngine.Models;
@@ -102,7 +101,7 @@ public class DummyEventStoreContext : IEventStoreContext {
                                                                       String partitionId,
                                                                       CancellationToken cancellationToken) {
         MerchantBalanceProjectionState1 state = new MerchantBalanceProjectionState1(new Merchant("", "", 0, 0, new Deposits(0, 0, DateTime.MinValue), new Withdrawals(0, 0, DateTime.MinValue), new AuthorisedSales(0, 0, DateTime.MinValue), new DeclinedSales(0, 0, DateTime.MinValue), new Fees(0, 0)) { });
-        return Result.Success<String>(JsonConvert.SerializeObject(state));
+        return Result.Success<String>(StringSerialiser.Serialise(state));
     }
 
     public async Task<Result<String>> GetResultFromProjection(String projectionName,

@@ -3,39 +3,27 @@
     using System;
     using System.Collections.Generic;
     using System.Diagnostics.CodeAnalysis;
-    using Newtonsoft.Json;
-
+    
     [ExcludeFromCodeCoverage]
-    public class SaleTransactionRequest : DataTransferObject
+    public class SaleTransactionRequest : TransactionRequest
     {
         #region Properties
 
-        [JsonProperty("additional_transaction_metadata")]
         public Dictionary<String, String> AdditionalTransactionMetadata { get; set; }
 
-        [JsonProperty("contract_id")]
         public Guid ContractId { get; set; }
 
-        [JsonProperty("customer_email_address")]
         public String CustomerEmailAddress { get; set; }
 
-        [JsonProperty("device_identifier")]
         public String DeviceIdentifier { get; set; }
 
-        [JsonProperty("operator_id")]
         public Guid OperatorId { get; set; }
 
-        [JsonProperty("product_id")]
         public Guid ProductId { get; set; }
         
-        [JsonProperty("transaction_number")]
         public String TransactionNumber { get; set; }
 
-        [JsonProperty("transaction_source")]
         public Int32? TransactionSource { get; set; }
-
-        [JsonProperty("transaction_type")]
-        public String TransactionType { get; set; }
 
         #endregion
     }

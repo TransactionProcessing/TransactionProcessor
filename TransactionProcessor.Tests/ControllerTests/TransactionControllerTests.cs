@@ -1,4 +1,5 @@
 ﻿using System;
+using Shared.Serialisation;
 
 namespace TransactionProcessor.Tests.ControllerTests
 {
@@ -8,7 +9,6 @@ namespace TransactionProcessor.Tests.ControllerTests
     using System.Threading.Tasks;
     using Common;
     using DataTransferObjects;
-    using Newtonsoft.Json;
     using Shouldly;
     using Xunit;
 
@@ -51,7 +51,7 @@ namespace TransactionProcessor.Tests.ControllerTests
             String responseAsJson = await response.Content.ReadAsStringAsync();
             responseAsJson.ShouldNotBeNullOrEmpty();
 
-            LogonTransactionResponse responseObject = JsonConvert.DeserializeObject<LogonTransactionResponse>(responseAsJson);
+            LogonTransactionResponse responseObject = StringSerialiser.Deserialise<LogonTransactionResponse>(responseAsJson);
             responseObject.ShouldNotBeNull();
             responseObject.ResponseCode.ShouldBe("0000");
             responseObject.ResponseMessage.ShouldBe("SUCCESS");
