@@ -1,7 +1,4 @@
-﻿using System;
-using System.Threading;
-using System.Threading.Tasks;
-using MessagingService.Client;
+﻿using MessagingService.Client;
 using MessagingService.DataTransferObjects;
 using Microsoft.Extensions.Configuration;
 using Moq;
@@ -9,8 +6,13 @@ using SecurityService.Client;
 using Shared.EventStore.Aggregate;
 using Shared.General;
 using Shared.Logger;
+using Shared.Serialisation;
 using Shouldly;
 using SimpleResults;
+using System;
+using System.Text.Json;
+using System.Threading;
+using System.Threading.Tasks;
 using TransactionProcessor.Aggregates;
 using TransactionProcessor.BusinessLogic.Services;
 using TransactionProcessor.Models.Merchant;
@@ -27,6 +29,7 @@ public class MerchantStatementDomainServiceTests {
     private readonly Mock<ISecurityServiceClient> SecurityServiceClient;
     private readonly MerchantStatementDomainService DomainService;
     public MerchantStatementDomainServiceTests() {
+        StringSerialiser.Initialise(new SystemTextJsonSerializer(new JsonSerializerOptions()));
         this.AggregateService = new Mock<IAggregateService>();
         this.StatementBuilder = new Mock<IStatementBuilder>();
         this.MessagingServiceClient = new Mock<IMessagingServiceClient>();

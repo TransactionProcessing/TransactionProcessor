@@ -1,19 +1,25 @@
-﻿using System.Threading.Tasks;
-using SimpleResults;
+﻿using SimpleResults;
+using System.Threading.Tasks;
 
 namespace TransactionProcessor.BusinessLogic.Tests.RequestHandler;
 
-using System.Threading;
 using BusinessLogic.Services;
 using Moq;
 using RequestHandlers;
 using Requests;
+using Shared.Serialisation;
 using Shouldly;
+using System.Text.Json;
+using System.Threading;
 using Testing;
 using Xunit;
 
 public class FloatRequestHandlerTests
 {
+    public FloatRequestHandlerTests() {
+        StringSerialiser.Initialise(new SystemTextJsonSerializer(new JsonSerializerOptions()));
+    }
+
     [Fact]
     public async Task FloatRequestHandler_CreateFloatForContractProductRequest_IsHandled(){
         Mock<IFloatDomainService> floatDomainService = new Mock<IFloatDomainService>();

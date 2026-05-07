@@ -54,10 +54,11 @@ public class VoucherDomainEventHandlerTests
     }
 
     public VoucherDomainEventHandlerTests() {
+        StringSerialiser.Initialise(new SystemTextJsonSerializer(new JsonSerializerOptions()));
         IConfigurationRoot configurationRoot = new ConfigurationBuilder().AddInMemoryCollection(TestData.DefaultAppSettings).Build();
         ConfigurationReader.Initialise(configurationRoot);
         Logger.Initialise(NullLogger.Instance);
-        StringSerialiser.Initialise(new SystemTextJsonSerializer(new JsonSerializerOptions()));
+        
 
         SecurityServiceClient = new Mock<ISecurityServiceClient>();
         MessagingServiceClient = new Mock<IMessagingServiceClient>();

@@ -15,6 +15,7 @@ using Shared.Logger;
 using Shared.Serialisation;
 using Shouldly;
 using System;
+using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 using Testing;
@@ -26,6 +27,7 @@ public class TransactionValidationServiceTests {
     private readonly Mock<IEventStoreContext> EventStoreContext;
     private readonly Mock<IAggregateService> AggregateService;
     public TransactionValidationServiceTests() {
+        StringSerialiser.Initialise(new SystemTextJsonSerializer(new JsonSerializerOptions()));
         IConfigurationRoot configurationRoot = new ConfigurationBuilder().AddInMemoryCollection(TestData.DefaultAppSettings).Build();
         ConfigurationReader.Initialise(configurationRoot);
 

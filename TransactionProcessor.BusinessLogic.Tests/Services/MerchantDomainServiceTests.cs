@@ -7,14 +7,15 @@ using Shared.EventStore.Aggregate;
 using Shared.EventStore.EventStore;
 using Shared.General;
 using Shared.Logger;
+using Shared.Serialisation;
 using Shouldly;
 using SimpleResults;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
-using Shared.Serialisation;
 using TransactionProcessor.Aggregates;
 using TransactionProcessor.BusinessLogic.Requests;
 using TransactionProcessor.BusinessLogic.Services;
@@ -36,6 +37,7 @@ public class MerchantDomainServiceTests {
     private readonly Mock<IEventStoreContext> EventStoreContext;
 
     public MerchantDomainServiceTests() {
+        StringSerialiser.Initialise(new SystemTextJsonSerializer(new JsonSerializerOptions()));
         IConfigurationRoot configurationRoot =
             new ConfigurationBuilder().AddInMemoryCollection(TestData.DefaultAppSettings).Build();
         ConfigurationReader.Initialise(configurationRoot);

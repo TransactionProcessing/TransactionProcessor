@@ -17,8 +17,10 @@ namespace TransactionProcessor.BusinessLogic.Tests.Services
     using Shared.EventStore.Aggregate;
     using Shared.General;
     using Shared.Logger;
+    using Shared.Serialisation;
     using Shouldly;
     using System;
+    using System.Text.Json;
     using System.Threading;
     using System.Threading.Tasks;
     using Testing;
@@ -34,6 +36,7 @@ namespace TransactionProcessor.BusinessLogic.Tests.Services
         private readonly Mock<IDbContextResolver<EstateManagementContext>> DbContextFactory;
 
         public VoucherDomainServiceTests() {
+            StringSerialiser.Initialise(new SystemTextJsonSerializer(new JsonSerializerOptions()));
             IConfigurationRoot configurationRoot = new ConfigurationBuilder().AddInMemoryCollection(TestData.DefaultAppSettings).Build();
             ConfigurationReader.Initialise(configurationRoot);
 

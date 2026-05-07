@@ -1,4 +1,5 @@
 ﻿using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.DependencyInjection;
 using Moq;
 using Shared.DomainDrivenDesign.EventSourcing;
 using Shared.EventStore.Aggregate;
@@ -8,7 +9,6 @@ using SimpleResults;
 using System;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.Extensions.DependencyInjection;
 using TransactionProcessor.Aggregates;
 using TransactionProcessor.BusinessLogic.Manager;
 using TransactionProcessor.BusinessLogic.Services;
@@ -25,6 +25,8 @@ namespace TransactionProcessor.BusinessLogic.Tests.Manager
     using ProjectionEngine.Database.Database;
     using ProjectionEngine.Database.Database.Entities;
     using Shared.EntityFramework;
+    using Shared.Serialisation;
+    using System.Text.Json;
     using Testing;
 
     public class VoucherManagementManagerTests
@@ -36,6 +38,7 @@ namespace TransactionProcessor.BusinessLogic.Tests.Manager
         }
 
         public VoucherManagementManagerTests() {
+            StringSerialiser.Initialise(new SystemTextJsonSerializer(new JsonSerializerOptions()));
             this.AggregateService = new Mock<IAggregateService>();
             this.DbContextFactory = new Mock<IDbContextResolver<EstateManagementContext>>();
             this.Context = this.GetContext(Guid.NewGuid().ToString("N"));

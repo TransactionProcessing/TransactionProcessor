@@ -1,16 +1,17 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Net;
-using System.Net.Http;
-using System.Threading;
-using System.Threading.Tasks;
-using Microsoft.Extensions.Caching.Memory;
+﻿using Microsoft.Extensions.Caching.Memory;
 using Newtonsoft.Json;
 using RichardSzalay.MockHttp;
 using Shared.Logger;
 using Shared.Serialisation;
 using Shouldly;
 using SimpleResults;
+using System;
+using System.Collections.Generic;
+using System.Net;
+using System.Net.Http;
+using System.Text.Json;
+using System.Threading;
+using System.Threading.Tasks;
 using TransactionProcessor.BusinessLogic.OperatorInterfaces;
 using TransactionProcessor.BusinessLogic.OperatorInterfaces.PataPawaPrePay;
 using TransactionProcessor.Testing;
@@ -24,6 +25,7 @@ public class PataPawaPrePayProxyTests {
     private readonly IMemoryCache MemoryCache = new MemoryCache(new MemoryCacheOptions());
 
     public PataPawaPrePayProxyTests() {
+        StringSerialiser.Initialise(new SystemTextJsonSerializer(new JsonSerializerOptions()));
         PataPawaPrePaidConfiguration configuration = new PataPawaPrePaidConfiguration();
         configuration.Url = "http://localhost";
         configuration.Password = "password";

@@ -1,14 +1,16 @@
+using Moq;
+using Shared.Serialisation;
+using Shouldly;
+using SimpleResults;
 using System;
 using System.Collections.Generic;
 using System.IO;
 using System.IO.Abstractions;
 using System.Linq;
 using System.Reflection;
+using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
-using Moq;
-using Shouldly;
-using SimpleResults;
 using TransactionProcessor.Aggregates;
 using TransactionProcessor.BusinessLogic.Services;
 using TransactionProcessor.Models.Merchant;
@@ -24,6 +26,7 @@ namespace TransactionProcessor.BusinessLogic.Tests.Services {
         private readonly CancellationToken _cancellationToken = CancellationToken.None;
 
         public StatementBuilderTests() {
+            StringSerialiser.Initialise(new SystemTextJsonSerializer(new JsonSerializerOptions()));
             _fileSystemMock = new Mock<IFileSystem>();
             _builder = new StatementBuilder(_fileSystemMock.Object);
 
