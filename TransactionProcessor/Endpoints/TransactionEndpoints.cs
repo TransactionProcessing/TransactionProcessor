@@ -19,7 +19,7 @@ namespace TransactionProcessor.Endpoints
 
             // POST /api/transactions  - rejects password tokens => require client credentials
             group.MapPost("/logon", TransactionHandlers.PerformLogonTransaction)
-                 .WithName("PerformSaleTransaction");
+                 .WithName("PerformLogonTransaction");
 
             group.MapPost("/sale", TransactionHandlers.PerformSaleTransaction)
                 .WithName("PerformSaleTransaction");
