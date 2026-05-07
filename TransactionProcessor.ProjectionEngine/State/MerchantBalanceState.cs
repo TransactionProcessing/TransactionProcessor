@@ -32,26 +32,26 @@ public record MerchantBalanceState : Shared.EventStore.ProjectionEngine.State
     public Int32 CompletedTransactionCount { get; init; }
 }
 
-[ExcludeFromCodeCoverage]
-public record AuthorisedSales(int count, decimal value, DateTime? lastSale);
+//[ExcludeFromCodeCoverage]
+//public record AuthorisedSales(int count, decimal value, DateTime? lastSale);
 
-[ExcludeFromCodeCoverage]
-public record DeclinedSales(int count, decimal value, DateTime? lastSale);
+//[ExcludeFromCodeCoverage]
+//public record DeclinedSales(int count, decimal value, DateTime? lastSale);
 
-[ExcludeFromCodeCoverage]
-public record Deposits(int count, decimal value, DateTime? lastDeposit);
+//[ExcludeFromCodeCoverage]
+//public record Deposits(int count, decimal value, DateTime? lastDeposit);
 
 [ExcludeFromCodeCoverage]
 public record Fees(int count, decimal value);
 
 [ExcludeFromCodeCoverage]
-public record Merchant(string Id, string Name, int numberOfEventsProcessed, decimal balance, 
-                       Deposits deposits, Withdrawals withdrawals, AuthorisedSales authorisedSales, 
-                       DeclinedSales declinedSales, Fees fees);
+public record Merchant(string Id, string Name, int numberOfEventsProcessed, decimal balance);
+                       //Deposits deposits, Withdrawals withdrawals, AuthorisedSales authorisedSales, 
+                       //DeclinedSales declinedSales, Fees fees);
 
 [ExcludeFromCodeCoverage]
 public record MerchantBalanceProjectionState1(Merchant merchant);
 
-[ExcludeFromCodeCoverage]
-public record Withdrawals(int count, decimal value, DateTime? lastWithdrawal);
+//[ExcludeFromCodeCoverage]
+//public record Withdrawals(int count, decimal value, DateTime? lastWithdrawal);
 

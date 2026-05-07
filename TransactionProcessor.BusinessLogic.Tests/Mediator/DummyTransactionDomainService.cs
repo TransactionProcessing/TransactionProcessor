@@ -100,7 +100,7 @@ public class DummyEventStoreContext : IEventStoreContext {
     public async Task<Result<String>> GetPartitionStateFromProjection(String projectionName,
                                                                       String partitionId,
                                                                       CancellationToken cancellationToken) {
-        MerchantBalanceProjectionState1 state = new MerchantBalanceProjectionState1(new Merchant("", "", 0, 0, new Deposits(0, 0, DateTime.MinValue), new Withdrawals(0, 0, DateTime.MinValue), new AuthorisedSales(0, 0, DateTime.MinValue), new DeclinedSales(0, 0, DateTime.MinValue), new Fees(0, 0)) { });
+        MerchantBalanceProjectionState1 state = new MerchantBalanceProjectionState1(new Merchant("", "", 0, 0));
         return Result.Success<String>(StringSerialiser.Serialise(state));
     }
 

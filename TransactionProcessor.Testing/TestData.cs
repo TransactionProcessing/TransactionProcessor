@@ -1492,22 +1492,12 @@ namespace TransactionProcessor.Testing
         public static ProjectionEngine.State.Merchant MerchantState = new ProjectionEngine.State.Merchant(TestData.MerchantStateId,
                                                             TestData.MerchantName,
                                                             1,
-                                                            TestData.AvailableBalance,
-                                                            new Deposits(1, 100.00m, DateTime.Now.AddDays(-1)),
-                                                            new Withdrawals(0, 0, null),
-                                                            new AuthorisedSales(1, 55.0m, DateTime.Now),
-                                                            new DeclinedSales(0, 0, null),
-                                                            new Fees(0, 0));
-
+                                                            TestData.AvailableBalance);
+        
         public static ProjectionEngine.State.Merchant MerchantStateNoCredit = new ProjectionEngine.State.Merchant(TestData.MerchantStateId,
                                                             TestData.MerchantName,
                                                             1,
-                                                            0,
-                                                            new Deposits(1, 100.00m, DateTime.Now.AddDays(-1)),
-                                                            new Withdrawals(0, 0, null),
-                                                            new AuthorisedSales(1, 55.0m, DateTime.Now),
-                                                            new DeclinedSales(0, 0, null),
-                                                            new Fees(0, 0));
+                                                            0);
 
         public static MerchantBalanceProjectionState1 MerchantBalanceProjectionState => new MerchantBalanceProjectionState1(TestData.MerchantState);
 

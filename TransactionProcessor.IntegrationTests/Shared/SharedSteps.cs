@@ -9,6 +9,8 @@ using TransactionProcessor.DataTransferObjects.Requests.Operator;
 using TransactionProcessor.DataTransferObjects.Responses.Contract;
 using TransactionProcessor.DataTransferObjects.Responses.Merchant;
 using TransactionProcessor.DataTransferObjects.Responses.Operator;
+using TransactionProcessor.ProjectionEngine.Projections;
+using TransactionProcessor.ProjectionEngine.State;
 
 namespace TransactionProcessor.IntegrationTests.Shared
 {
@@ -400,12 +402,8 @@ namespace TransactionProcessor.IntegrationTests.Shared
 
         private async Task<Decimal> GetMerchantBalance(Guid merchantId)
         {
-            String jsonElement = await this.TestingContext.DockerHelper.ProjectionManagementClient.GetStateAsync<String>("MerchantBalanceProjection", $"MerchantBalance-{merchantId:N}");
-            return 0;
-            //JsonElement jsonElement = (JsonElement)await this.TestingContext.DockerHelper.ProjectionManagementClient.GetStateAsync<dynamic>("MerchantBalanceProjection", $"MerchantBalance-{merchantId:N}");
-            //JObject jsonObject = JObject.Parse(jsonElement.GetRawText());
-            //decimal balanceValue = jsonObject.SelectToken("merchant.balance").Value<decimal>();
-            //return balanceValue;
+            MerchantBalanceProjectionState1 balanceState = await this.TestingContext.DockerHelper.ProjectionManagementClient.GetStateAsync<MerchantBalanceProjectionState1>("MerchantBalanceProjection", $"MerchantBalance-{merchantId:N}");
+            return balanceState.merchant.balance;
         }
 
         
