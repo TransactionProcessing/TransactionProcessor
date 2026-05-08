@@ -197,7 +197,7 @@ namespace TransactionProcessor.BusinessLogic.Services
                 return Result.NotFound($"Unable to create a contract for an operator that is not setup on estate [{estate.Name}]");
 
             String projection =
-                $"fromCategory(\"ContractAggregate\")\n.when({{\n    $init: function (s, e) {{\n                        return {{\n                            total: 0,\n                            contractId: 0\n                        }};\n                    }},\n    'ContractCreatedEvent': function(s,e){{\n        // Check if it matches\n        if (e.data.description === '{command.RequestDTO.Description}' \n            && e.data.operatorId === '{command.RequestDTO.OperatorId}'){{\n            s.total += 1;\n            s.contract_Id = e.data.contractId\n        }}\n    }}\n}})";
+                $"fromCategory(\"ContractAggregate\")\n.when({{\n    $init: function (s, e) {{\n                        return {{\n                            total: 0,\n                            contractId: 0\n                        }};\n                    }},\n    'ContractCreatedEvent': function(s,e){{\n        // Check if it matches\n        if (e.data.description === '{command.RequestDTO.Description}' \n            && e.data.operatorId === '{command.RequestDTO.OperatorId}'){{\n            s.total += 1;\n            s.contract_id = e.data.contractId\n        }}\n    }}\n}})";
 
             Result<String> result = await this.Context.RunTransientQuery(projection, cancellationToken);
             if (result.IsFailed)
@@ -207,7 +207,7 @@ namespace TransactionProcessor.BusinessLogic.Services
             if (String.IsNullOrEmpty(resultString) == false) {
                 var resultObject = new { total = 0, contract_Id = String.Empty };
                 
-                var queryResult = StringSerialiser.DeserialiseAnonymousType(resultString, resultObject);
+                var queryResult = StringSerialiser.DeserialiseAnonymousType(resultString, resultObject, new SerialiserOptions(SerialiserPropertyFormat.SnakeCase));
 
                 if (Guid.TryParse(queryResult.contract_Id, out Guid contractIdResult) && contractIdResult != Guid.Empty){
                     return Result.Conflict($"Contract Description {command.RequestDTO.Description} already in use for operator {command.RequestDTO.OperatorId}");
