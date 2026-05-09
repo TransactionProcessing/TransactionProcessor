@@ -3,13 +3,17 @@ using Microsoft.IdentityModel.Logging;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi;
 using OpenIddict.Validation.AspNetCore;
+using Shared.Logger;
 
 namespace TransactionProcessor.Bootstrapper
 {
     using Common;
     using EventStore.Client;
+    using Google.Api;
     using Lamar;
     using Microsoft.AspNetCore.Authentication.JwtBearer;
+    using Microsoft.AspNetCore.Http.Json;
+    using Microsoft.AspNetCore.Mvc;
     using Microsoft.Extensions.Configuration;
     using Microsoft.Extensions.DependencyInjection;
     using Microsoft.Extensions.Diagnostics.HealthChecks;
@@ -18,12 +22,14 @@ namespace TransactionProcessor.Bootstrapper
     using Shared.EventStore.Extensions;
     using Shared.Extensions;
     using Shared.General;
+    using Shared.Serialisation;
     using Swashbuckle.AspNetCore.Filters;
     using System;
     using System.Diagnostics.CodeAnalysis;
     using System.IO;
     using System.Net.Http;
     using System.Reflection;
+    using System.Text.Json;
 
     /// <summary>
     /// 
@@ -116,10 +122,8 @@ namespace TransactionProcessor.Bootstrapper
 
         private void ConfigureJsonOptions()
         {
-            this.ConfigureHttpJsonOptions(options =>
-            {
-                options.SerializerOptions.PropertyNamingPolicy = new SnakeCaseNamingPolicy();
-                options.SerializerOptions.PropertyNameCaseInsensitive = true; // optional, but safer
+            this.ConfigureHttpJsonOptions(options => {
+                JsonSerializerConfiguration.ConfigureMinimalApi(options.SerializerOptions);
             });
         }
 
@@ -181,5 +185,18 @@ namespace TransactionProcessor.Bootstrapper
         }
 
         #endregion
+    }
+
+    public static class JsonSerializerConfiguration
+    {
+        public static void ConfigureMinimalApi(JsonSerializerOptions serializerOptions)
+        {
+            var defaultOptions = SystemTextJsonSerializer.GetDefaultJsonSerializerOptions();
+            serializerOptions.PropertyNamingPolicy = defaultOptions.PropertyNamingPolicy;
+            serializerOptions.DictionaryKeyPolicy = defaultOptions.DictionaryKeyPolicy;
+            serializerOptions.ReferenceHandler = defaultOptions.ReferenceHandler;
+            serializerOptions.WriteIndented = defaultOptions.WriteIndented;
+            serializerOptions.Converters.Add(new DateTimeSpaceConverter());
+        }
     }
 }
