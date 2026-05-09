@@ -14,6 +14,7 @@ namespace TransactionProcessor.IntegrationTests.Common
     using System.Collections.Generic;
     using System.Net.Http;
     using System.Text;
+    using System.Text.Json;
     using System.Threading;
     using System.Threading.Tasks;
     using Retry = IntegrationTests.Retry;
@@ -59,6 +60,7 @@ namespace TransactionProcessor.IntegrationTests.Common
         /// <param name="testingContext">The testing context.</param>
         public DockerHelper() {
             this.TestingContext = new TestingContext();
+            StringSerialiser.Initialise((IStringSerialiser)new SystemTextJsonSerializer(SystemTextJsonSerializer.GetDefaultJsonSerializerOptions()));
         }
 
         #endregion
