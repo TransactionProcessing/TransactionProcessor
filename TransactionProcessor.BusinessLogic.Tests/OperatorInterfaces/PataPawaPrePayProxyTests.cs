@@ -134,7 +134,7 @@ public class PataPawaPrePayProxyTests {
 
         MeterResponse meterResponse = new MeterResponse { Status = -1, Code = "1", CustomerName = "Customer", Msg = "msg" };
 
-        this.MockHttpMessageHandler.When("http://localhost").Respond("application/json", StringSerialiser.Serialise(meterResponse));
+        this.MockHttpMessageHandler.When("http://localhost").Respond("application/json", StringSerialiser.Serialise(meterResponse, new SerialiserOptions(SerialiserPropertyFormat.CamelCase)));
 
         var result = await this.PataPawaPrePayProxy.ProcessSaleMessage(TestData.TransactionId,
             TestData.OperatorId, TestData.Merchant, TestData.TransactionDateTime, TestData.TransactionReference,
