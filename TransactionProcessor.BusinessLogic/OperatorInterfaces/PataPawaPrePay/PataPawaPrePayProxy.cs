@@ -183,7 +183,7 @@ public class PataPawaPrePayProxy : IOperatorProxy{
 
     private Result<OperatorResponse> CreateFromMeter(String responseContent)
     {
-        MeterResponse meterResponse = StringSerialiser.Deserialise<MeterResponse>(responseContent);
+        MeterResponse meterResponse = StringSerialiser.Deserialise<MeterResponse>(responseContent, new SerialiserOptions(SerialiserPropertyFormat.CamelCase));
 
         if (meterResponse.Status != 0)
         {
