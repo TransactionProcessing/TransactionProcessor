@@ -218,12 +218,6 @@ namespace TransactionProcessor.Repository {
         Task<Result> UpdateTransactionAuthorisation(TransactionDomainEvents.TransactionDeclinedByOperatorEvent domainEvent,
                                                     CancellationToken cancellationToken);
 
-        //Task<Result> UpdateVoucherIssueDetails(VoucherDomainEvents.VoucherIssuedEvent domainEvent,
-        //                                       CancellationToken cancellationToken);
-
-        //Task<Result> UpdateVoucherRedemptionDetails(VoucherDomainEvents.VoucherFullyRedeemedEvent domainEvent,
-        //                                            CancellationToken cancellationToken);
-
         Task<Result> RemoveOperatorFromMerchant(MerchantDomainEvents.OperatorRemovedFromMerchantEvent domainEvent,
                                                 CancellationToken cancellationToken);
 
