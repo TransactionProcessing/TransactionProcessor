@@ -714,7 +714,6 @@ public class TransactionProcessorClient : ClientProxyBase, ITransactionProcessor
                 return ResultHelpers.CreateFailure(result);
 
             return result;
-            ;
         }
         catch (Exception ex) {
             // An exception has occurred, add some additional information to the message
