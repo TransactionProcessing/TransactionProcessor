@@ -515,6 +515,37 @@ public static class Extensions{
         return modelBuilder;
     }
 
+    public static ModelBuilder SetupFileProfileConfiguration(this ModelBuilder modelBuilder)
+    {
+        modelBuilder.Entity<FileProfileConfiguration>().HasKey(t => new {
+            t.FileProfileId
+        });
+
+        modelBuilder.Entity<FileProfileConfiguration>().HasIndex(t => new {
+            t.Name
+        }).IsUnique();
+
+        return modelBuilder;
+    }
+
+    public static ModelBuilder SetupFileFormatHandler(this ModelBuilder modelBuilder)
+    {
+        modelBuilder.Entity<FileFormatHandler>().HasKey(t => new {
+            t.FileFormatHandlerId
+        });
+        modelBuilder.Entity<FileFormatHandler>().HasIndex(t => new { t.Name }).IsUnique();
+
+        return modelBuilder;
+    }
+
+    public static ModelBuilder SetupRequestType(this ModelBuilder modelBuilder) {
+        modelBuilder.Entity<RequestType>().HasKey(t => new { t.RequestTypeId });
+
+        modelBuilder.Entity<RequestType>().HasIndex(t => new { t.Name }).IsUnique();
+
+        return modelBuilder;
+    }
+
     #endregion
 }
 
