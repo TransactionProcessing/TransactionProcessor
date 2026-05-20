@@ -3,17 +3,20 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using TransactionProcessor.Database.Contexts;
 
 #nullable disable
 
-namespace EstateManagement.Database.Migrations.SqlServer
+namespace TransactionProcessor.Database.Migrations.SqlServer
 {
     [DbContext(typeof(EstateManagementContext))]
-    partial class EstateManagementSqlServerContextModelSnapshot : ModelSnapshot
+    [Migration("20260520162516_add_file_import_config_tables")]
+    partial class add_file_import_config_tables
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder

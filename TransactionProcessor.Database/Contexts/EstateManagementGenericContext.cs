@@ -40,6 +40,9 @@ public class EstateManagementContext : DbContext
 
     #region Properties
 
+    public DbSet<FileProfileConfiguration> FileProfileConfigurations { get; set; }
+    public DbSet<RequestType> RequestTypes { get; set; }
+    public DbSet<FileFormatHandler> FileFormatHandlers { get; set; }
     public DbSet<MerchantOpeningHours> MerchantOpeningHours { get; set; }
     public DbSet<MerchantBalanceChangedEntry> MerchantBalanceChangedEntry { get; set; }
 
@@ -266,10 +269,7 @@ ALTER DATABASE [{dbName}] SET MULTI_USER;
             await alterCommand.ExecuteNonQueryAsync(cancellationToken);
         }
     }
-
-
-
-
+    
     public static Boolean IsDuplicateInsertsIgnored(String tableName) =>
         EstateManagementContext.TablesToIgnoreDuplicates.Contains(tableName.Trim(), StringComparer.InvariantCultureIgnoreCase);
 
@@ -326,7 +326,10 @@ ALTER DATABASE [{dbName}] SET MULTI_USER;
                     .SetupEstateOperator()
                     .SetupMerchantSchedule()
                     .SetupMerchantScheduleMonth()
-                    .SetupMerchantOpeningHours();
+                    .SetupMerchantOpeningHours()
+                    .SetupFileProfileConfiguration()
+                    .SetupRequestType()
+                    .SetupFileFormatHandler();
         
         modelBuilder.SetupViewEntities();
 
@@ -398,7 +401,11 @@ ALTER DATABASE [{dbName}] SET MULTI_USER;
         if (uex.ConstraintProperties != null) {
             constraintProperties = String.Join(",", uex.ConstraintProperties);
         }
-        return $"Unique Constraint Exception. Message [{uex.Message}] Inner Exception [{uex.InnerException.Message}]";
+
+        return uex.InnerException switch {
+            null => $"Unique Constraint Exception. Message [{uex.Message}] Constraint Name [{constraintName}] Constraint Properties [{constraintProperties}]",
+            _ => $"Unique Constraint Exception. Message [{uex.Message}] Inner Exception [{uex.InnerException.Message}]"
+        };
 
     }
 
