@@ -401,7 +401,11 @@ ALTER DATABASE [{dbName}] SET MULTI_USER;
         if (uex.ConstraintProperties != null) {
             constraintProperties = String.Join(",", uex.ConstraintProperties);
         }
-        return $"Unique Constraint Exception. Message [{uex.Message}] Inner Exception [{uex.InnerException.Message}]";
+
+        return uex.InnerException switch {
+            null => $"Unique Constraint Exception. Message [{uex.Message}] Constraint Name [{constraintName}] Constraint Properties [{constraintProperties}]",
+            _ => $"Unique Constraint Exception. Message [{uex.Message}] Inner Exception [{uex.InnerException.Message}]"
+        };
 
     }
 
