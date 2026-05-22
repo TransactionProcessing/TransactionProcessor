@@ -15,12 +15,6 @@ namespace TransactionProcessor.BusinessLogic.Services
 
         internal delegate Guid GenerateUniqueIdFromString(String payload);
 
-
-        //private static readonly StringSe JsonSerialiser = new(() => new JsonSerializerSettings {
-        //                                                                                                 Formatting = Formatting.None,
-        //                                                                                                 TypeNameHandling = TypeNameHandling.None
-        //                                                                                             });
-
         private static readonly GenerateUniqueIdFromObject GenerateUniqueId =
             data => IdGenerationService.GenerateGuidFromString(StringSerialiser.Serialise(data));
 
