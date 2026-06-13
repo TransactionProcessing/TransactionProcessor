@@ -9,6 +9,8 @@ COPY ["TransactionProcessor/NuGet.Config", "TransactionProcessor/"]
 COPY ["TransactionProcessor.DataTransferObjects/TransactionProcessor.DataTransferObjects.csproj", "TransactionProcessor.DataTransferObjects/"]
 COPY ["TransactionProcessor.BusinessLogic/TransactionProcessor.BusinessLogic.csproj", "TransactionProcessor.BusinessLogic/"]
 COPY ["TransactionProcessor.Models/TransactionProcessor.Models.csproj", "TransactionProcessor.Models/"]
+COPY ["Directory.Packages.props", "."]
+COPY . .
 RUN dotnet restore "TransactionProcessor/TransactionProcessor.csproj"
 COPY . .
 WORKDIR "/src/TransactionProcessor"

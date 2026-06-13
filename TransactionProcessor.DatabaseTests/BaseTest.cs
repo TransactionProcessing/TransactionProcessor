@@ -11,7 +11,6 @@ using Shared.Logger;
 using Shouldly;
 using TransactionProcessor.Database.Contexts;
 using TransactionProcessor.Repository;
-using Xunit.Abstractions;
 using Logger = Shared.Logger.Logger;
 
 namespace TransactionProcessor.DatabaseTests
@@ -20,7 +19,7 @@ namespace TransactionProcessor.DatabaseTests
     {
         protected ITransactionProcessorReadModelRepository Repository;
         protected ITestOutputHelper TestOutputHelper;
-        public virtual async Task InitializeAsync()
+        public virtual async ValueTask InitializeAsync()
         {
             Logger.Initialise(new Shared.Logger.NullLogger());
             
@@ -57,7 +56,7 @@ namespace TransactionProcessor.DatabaseTests
             this.Repository = new TransactionProcessorReadModelRepository(resolver.Object);
         }
 
-        public virtual async Task DisposeAsync() {
+        public virtual async ValueTask DisposeAsync() {
             await this.DockerHelper.StopContainersForScenarioRun(DockerServices.None);
         }
 
