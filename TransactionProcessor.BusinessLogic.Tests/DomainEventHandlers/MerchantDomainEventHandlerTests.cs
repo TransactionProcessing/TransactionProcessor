@@ -17,7 +17,6 @@ using TransactionProcessor.DomainEvents;
 using TransactionProcessor.Repository;
 using TransactionProcessor.Testing;
 using Xunit;
-using Xunit.Abstractions;
 
 namespace TransactionProcessor.BusinessLogic.Tests.DomainEventHandlers
 {

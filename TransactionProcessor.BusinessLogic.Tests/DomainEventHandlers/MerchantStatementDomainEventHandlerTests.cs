@@ -12,7 +12,6 @@ using SimpleResults;
 using TransactionProcessor.BusinessLogic.EventHandling;
 using TransactionProcessor.Testing;
 using Xunit;
-using Xunit.Abstractions;
 
 namespace TransactionProcessor.BusinessLogic.Tests.DomainEventHandlers;
 
