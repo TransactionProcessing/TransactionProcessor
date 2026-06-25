@@ -4,9 +4,9 @@ WORKDIR /app
 
 FROM mcr.microsoft.com/dotnet/sdk:10.0-windowsservercore-ltsc2022 AS build
 WORKDIR /src
-COPY ["TransactionProcessor/NuGet.Config", "."]
+COPY ["NuGet.Config", "."]
 COPY ["TransactionProcessor/TransactionProcessor.csproj", "TransactionProcessor/"]
-COPY ["TransactionProcessor/NuGet.Config", "TransactionProcessor/"]
+COPY ["NuGet.Config", "TransactionProcessor/"]
 COPY ["TransactionProcessor.DataTransferObjects/TransactionProcessor.DataTransferObjects.csproj", "TransactionProcessor.DataTransferObjects/"]
 COPY ["TransactionProcessor.BusinessLogic/TransactionProcessor.BusinessLogic.csproj", "TransactionProcessor.BusinessLogic/"]
 COPY ["TransactionProcessor.Models/TransactionProcessor.Models.csproj", "TransactionProcessor.Models/"]
