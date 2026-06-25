@@ -1,4 +1,4 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
 	  <TargetFramework>net10.0</TargetFramework>
@@ -7,14 +7,14 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="FileProcessor.File.DomainEvents" Version="2026.2.2" />
-    <PackageReference Include="FileProcessor.FileImportLog.DomainEvents" Version="2026.2.2" />
-    <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="10.0.8" />
-    <PackageReference Include="Microsoft.IdentityModel.Tokens" Version="8.18.0" />
-    <PackageReference Include="Microsoft.IdentityModel.JsonWebTokens" Version="8.18.0" />
-    <PackageReference Include="OpenTelemetry.Api" Version="1.15.3" />
-    <PackageReference Include="Shared" Version="2026.5.6" />
-    <PackageReference Include="Shared.EventStore" Version="2026.5.6" />
+    <PackageReference Include="FileProcessor.File.DomainEvents" />
+    <PackageReference Include="FileProcessor.FileImportLog.DomainEvents" />
+    <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" />
+    <PackageReference Include="Microsoft.IdentityModel.Tokens" />
+    <PackageReference Include="Microsoft.IdentityModel.JsonWebTokens" />
+    <PackageReference Include="OpenTelemetry.Api" />
+    <PackageReference Include="Shared" />
+    <PackageReference Include="Shared.EventStore" />
   </ItemGroup>
 
   <ItemGroup>

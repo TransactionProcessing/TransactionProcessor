@@ -1,35 +1,35 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
 	  <TargetFramework>net10.0</TargetFramework>
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="CallbackHandler.DataTransferObjects" Version="2025.12.4" />
-    <PackageReference Include="ClientProxyBase" Version="2026.5.6" />
-    <PackageReference Include="Microsoft.EntityFrameworkCore.Relational" Version="10.0.8" />
-    <PackageReference Include="MessagingService.Client" Version="2026.4.3-build125" />
-    <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="10.0.8" />
-    <PackageReference Include="NuGet.Packaging" Version="7.6.0" />
-    <PackageReference Include="NuGet.Protocol" Version="7.6.0" />
-    <PackageReference Include="OpenTelemetry.Api" Version="1.15.3" />
-    <PackageReference Include="Polly" Version="8.6.6" />
-    <PackageReference Include="prometheus-net" Version="8.2.1" />
-    <PackageReference Include="SecurityService.Client" Version="2026.4.3-build156" />
-    <PackageReference Include="Shared.DomainDrivenDesign" Version="2026.5.6" />
-    <PackageReference Include="Shared.EventStore" Version="2026.5.6" />
-    <PackageReference Include="MediatR" Version="14.1.0" />
-    <PackageReference Include="Syncfusion.HtmlToPdfConverter.Net.Windows" Version="33.2.7" />
-    <PackageReference Include="System.IO.Abstractions" Version="22.1.1" />
-    <PackageReference Include="System.Security.Cryptography.Xml" Version="10.0.8" />
-    <PackageReference Include="System.ServiceModel.Duplex" Version="6.0.0" />
-    <PackageReference Include="System.ServiceModel.Federation" Version="10.0.652802" />
-    <PackageReference Include="Microsoft.IdentityModel.Tokens" Version="8.18.0" />
-    <PackageReference Include="Microsoft.IdentityModel.JsonWebTokens" Version="8.18.0" />
-    <PackageReference Include="System.ServiceModel.Http" Version="10.0.652802" />
-    <PackageReference Include="System.ServiceModel.NetTcp" Version="10.0.652802" />
-    <PackageReference Include="System.ServiceModel.Security" Version="6.0.0" />
-    <PackageReference Include="NetBarcode" Version="1.8.3" />
+    <PackageReference Include="CallbackHandler.DataTransferObjects" />
+    <PackageReference Include="ClientProxyBase" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Relational" />
+    <PackageReference Include="MessagingService.Client" />
+    <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" />
+    <PackageReference Include="NuGet.Packaging" />
+    <PackageReference Include="NuGet.Protocol" />
+    <PackageReference Include="OpenTelemetry.Api" />
+    <PackageReference Include="Polly" />
+    <PackageReference Include="prometheus-net" />
+    <PackageReference Include="SecurityService.Client" />
+    <PackageReference Include="Shared.DomainDrivenDesign" />
+    <PackageReference Include="Shared.EventStore" />
+    <PackageReference Include="MediatR" />
+    <PackageReference Include="Syncfusion.HtmlToPdfConverter.Net.Windows" />
+    <PackageReference Include="System.IO.Abstractions" />
+    <PackageReference Include="System.Security.Cryptography.Xml" />
+    <PackageReference Include="System.ServiceModel.Duplex" />
+    <PackageReference Include="System.ServiceModel.Federation" />
+    <PackageReference Include="Microsoft.IdentityModel.Tokens" />
+    <PackageReference Include="Microsoft.IdentityModel.JsonWebTokens" />
+    <PackageReference Include="System.ServiceModel.Http" />
+    <PackageReference Include="System.ServiceModel.NetTcp" />
+    <PackageReference Include="System.ServiceModel.Security" />
+    <PackageReference Include="NetBarcode" />
   </ItemGroup>
 
   <ItemGroup>
