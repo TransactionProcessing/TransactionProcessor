@@ -1,4 +1,4 @@
-﻿using FileProcessor.File.DomainEvents;
+using FileProcessor.File.DomainEvents;
 using FileProcessor.FileImportLog.DomainEvents;
 using Microsoft.EntityFrameworkCore;
 using Shared.DomainDrivenDesign.EventSourcing;
@@ -323,7 +323,8 @@ namespace TransactionProcessor.Repository {
         public async Task<Result> UpdateMerchant(StatementGeneratedEvent domainEvent,
                                                  CancellationToken cancellationToken)
         {
-            EstateManagementContext context = await this.GetContext(domainEvent.EstateId);
+            using ResolvedDbContext<EstateManagementContext>? resolvedContext = this.Resolver.Resolve(EstateManagementDatabaseName, domainEvent.EstateId.ToString());
+            await using EstateManagementContext context = resolvedContext.Context;
 
             Result<Merchant> merchantResult = await context.LoadMerchant(domainEvent, cancellationToken);
             if (merchantResult.IsFailed)
@@ -341,7 +342,8 @@ namespace TransactionProcessor.Repository {
                                                                           String reference,
                                                                           CancellationToken cancellationToken)
         {
-            EstateManagementContext context = await this.GetContext(estateId);
+            using ResolvedDbContext<EstateManagementContext>? resolvedContext = this.Resolver.Resolve(EstateManagementDatabaseName, estateId.ToString());
+            await using EstateManagementContext context = resolvedContext.Context;
 
             Merchant merchant = await (from m in context.Merchants where m.Reference == reference select m).SingleOrDefaultAsync(cancellationToken);
 
@@ -354,7 +356,8 @@ namespace TransactionProcessor.Repository {
         public async Task<Result> AddMerchant(MerchantDomainEvents.MerchantCreatedEvent domainEvent,
                                               CancellationToken cancellationToken)
         {
-            EstateManagementContext context = await this.GetContext(domainEvent.EstateId);
+            using ResolvedDbContext<EstateManagementContext>? resolvedContext = this.Resolver.Resolve(EstateManagementDatabaseName, domainEvent.EstateId.ToString());
+            await using EstateManagementContext context = resolvedContext.Context;
 
             Merchant merchant = new Merchant
             {
@@ -374,7 +377,8 @@ namespace TransactionProcessor.Repository {
         public async Task<Result> AddMerchantSchedule(MerchantScheduleDomainEvents.MerchantScheduleCreatedEvent domainEvent,
                                                       CancellationToken cancellationToken)
         {
-            EstateManagementContext context = await this.GetContext(domainEvent.EstateId);
+            using ResolvedDbContext<EstateManagementContext>? resolvedContext = this.Resolver.Resolve(EstateManagementDatabaseName, domainEvent.EstateId.ToString());
+            await using EstateManagementContext context = resolvedContext.Context;
 
             MerchantSchedule merchantSchedule = new()
             {
@@ -391,7 +395,8 @@ namespace TransactionProcessor.Repository {
 
         public async Task<Result> UpdateMerchant(MerchantNameUpdatedEvent domainEvent, CancellationToken cancellationToken)
         {
-            EstateManagementContext context = await this.GetContext(domainEvent.EstateId);
+            using ResolvedDbContext<EstateManagementContext>? resolvedContext = this.Resolver.Resolve(EstateManagementDatabaseName, domainEvent.EstateId.ToString());
+            await using EstateManagementContext context = resolvedContext.Context;
 
             Result<Merchant> merchantResult = await context.LoadMerchant(domainEvent, cancellationToken);
             if (merchantResult.IsFailed)
@@ -405,7 +410,8 @@ namespace TransactionProcessor.Repository {
         public async Task<Result> AddMerchantAddress(AddressAddedEvent domainEvent,
                                              CancellationToken cancellationToken)
         {
-            EstateManagementContext context = await this.GetContext(domainEvent.EstateId);
+            using ResolvedDbContext<EstateManagementContext>? resolvedContext = this.Resolver.Resolve(EstateManagementDatabaseName, domainEvent.EstateId.ToString());
+            await using EstateManagementContext context = resolvedContext.Context;
 
             MerchantAddress merchantAddress = new MerchantAddress
             {
@@ -429,7 +435,8 @@ namespace TransactionProcessor.Repository {
         public async Task<Result> AddMerchantContact(ContactAddedEvent domainEvent,
                                              CancellationToken cancellationToken)
         {
-            EstateManagementContext context = await this.GetContext(domainEvent.EstateId);
+            using ResolvedDbContext<EstateManagementContext>? resolvedContext = this.Resolver.Resolve(EstateManagementDatabaseName, domainEvent.EstateId.ToString());
+            await using EstateManagementContext context = resolvedContext.Context;
 
             MerchantContact merchantContact = new MerchantContact
             {
@@ -448,7 +455,8 @@ namespace TransactionProcessor.Repository {
         public async Task<Result> AddMerchantDevice(DeviceAddedToMerchantEvent domainEvent,
                                             CancellationToken cancellationToken)
         {
-            EstateManagementContext context = await this.GetContext(domainEvent.EstateId);
+            using ResolvedDbContext<EstateManagementContext>? resolvedContext = this.Resolver.Resolve(EstateManagementDatabaseName, domainEvent.EstateId.ToString());
+            await using EstateManagementContext context = resolvedContext.Context;
 
             MerchantDevice merchantDevice = new() {
                 MerchantId = domainEvent.MerchantId,
@@ -463,7 +471,8 @@ namespace TransactionProcessor.Repository {
 
         public async Task<Result> SwapMerchantDevice(DeviceSwappedForMerchantEvent domainEvent, CancellationToken cancellationToken)
         {
-            EstateManagementContext context = await this.GetContext(domainEvent.EstateId);
+            using ResolvedDbContext<EstateManagementContext>? resolvedContext = this.Resolver.Resolve(EstateManagementDatabaseName, domainEvent.EstateId.ToString());
+            await using EstateManagementContext context = resolvedContext.Context;
 
             Result<MerchantDevice> getOriginalDeviceResult = await context.LoadOriginalMerchantDevice(domainEvent, cancellationToken);
             if (getOriginalDeviceResult.IsFailed)
@@ -481,7 +490,8 @@ namespace TransactionProcessor.Repository {
         public async Task<Result> AddMerchantOperator(OperatorAssignedToMerchantEvent domainEvent,
                                               CancellationToken cancellationToken)
         {
-            EstateManagementContext context = await this.GetContext(domainEvent.EstateId);
+            using ResolvedDbContext<EstateManagementContext>? resolvedContext = this.Resolver.Resolve(EstateManagementDatabaseName, domainEvent.EstateId.ToString());
+            await using EstateManagementContext context = resolvedContext.Context;
             String operatorName = domainEvent.Name;
             if (String.IsNullOrEmpty(operatorName))
             {
@@ -512,7 +522,8 @@ namespace TransactionProcessor.Repository {
         public async Task<Result> AddMerchantSecurityUser(SecurityUserAddedToMerchantEvent domainEvent,
                                                   CancellationToken cancellationToken)
         {
-            EstateManagementContext context = await this.GetContext(domainEvent.EstateId);
+            using ResolvedDbContext<EstateManagementContext>? resolvedContext = this.Resolver.Resolve(EstateManagementDatabaseName, domainEvent.EstateId.ToString());
+            await using EstateManagementContext context = resolvedContext.Context;
 
             MerchantSecurityUser merchantSecurityUser = new MerchantSecurityUser
             {
@@ -528,7 +539,8 @@ namespace TransactionProcessor.Repository {
         public async Task<Result> UpdateMerchant(SettlementScheduleChangedEvent domainEvent,
                                                  CancellationToken cancellationToken)
         {
-            EstateManagementContext context = await this.GetContext(domainEvent.EstateId);
+            using ResolvedDbContext<EstateManagementContext>? resolvedContext = this.Resolver.Resolve(EstateManagementDatabaseName, domainEvent.EstateId.ToString());
+            await using EstateManagementContext context = resolvedContext.Context;
 
             Result<Merchant> merchantResult = await context.LoadMerchant(domainEvent, cancellationToken);
             if (merchantResult.IsFailed)
@@ -541,7 +553,8 @@ namespace TransactionProcessor.Repository {
 
         public async Task<Result> RemoveOperatorFromMerchant(OperatorRemovedFromMerchantEvent domainEvent, CancellationToken cancellationToken)
         {
-            EstateManagementContext context = await this.GetContext(domainEvent.EstateId);
+            using ResolvedDbContext<EstateManagementContext>? resolvedContext = this.Resolver.Resolve(EstateManagementDatabaseName, domainEvent.EstateId.ToString());
+            await using EstateManagementContext context = resolvedContext.Context;
 
             MerchantOperator merchantOperator = await context.MerchantOperators.SingleOrDefaultAsync(o => o.OperatorId == domainEvent.OperatorId &&
                                                                                                           o.MerchantId == domainEvent.MerchantId,
@@ -558,7 +571,8 @@ namespace TransactionProcessor.Repository {
 
         public async Task<Result> RemoveContractFromMerchant(ContractRemovedFromMerchantEvent domainEvent, CancellationToken cancellationToken)
         {
-            EstateManagementContext context = await this.GetContext(domainEvent.EstateId);
+            using ResolvedDbContext<EstateManagementContext>? resolvedContext = this.Resolver.Resolve(EstateManagementDatabaseName, domainEvent.EstateId.ToString());
+            await using EstateManagementContext context = resolvedContext.Context;
 
             MerchantContract merchantContract = await context.MerchantContracts.SingleOrDefaultAsync(o => o.ContractId == domainEvent.ContractId &&
                                                                                                           o.MerchantId == domainEvent.MerchantId,
@@ -576,7 +590,8 @@ namespace TransactionProcessor.Repository {
 
         public async Task<Result> UpdateMerchantAddress(MerchantAddressLine1UpdatedEvent domainEvent, CancellationToken cancellationToken)
         {
-            EstateManagementContext context = await this.GetContext(domainEvent.EstateId);
+            using ResolvedDbContext<EstateManagementContext>? resolvedContext = this.Resolver.Resolve(EstateManagementDatabaseName, domainEvent.EstateId.ToString());
+            await using EstateManagementContext context = resolvedContext.Context;
 
             var getMerchantAddressResult = await context.LoadMerchantAddress(domainEvent, cancellationToken);
             if (getMerchantAddressResult.IsFailed)
@@ -590,7 +605,8 @@ namespace TransactionProcessor.Repository {
 
         public async Task<Result> UpdateMerchantAddress(MerchantAddressLine2UpdatedEvent domainEvent, CancellationToken cancellationToken)
         {
-            EstateManagementContext context = await this.GetContext(domainEvent.EstateId);
+            using ResolvedDbContext<EstateManagementContext>? resolvedContext = this.Resolver.Resolve(EstateManagementDatabaseName, domainEvent.EstateId.ToString());
+            await using EstateManagementContext context = resolvedContext.Context;
 
             var getMerchantAddressResult = await context.LoadMerchantAddress(domainEvent, cancellationToken);
             if (getMerchantAddressResult.IsFailed)
@@ -604,7 +620,8 @@ namespace TransactionProcessor.Repository {
 
         public async Task<Result> UpdateMerchantAddress(MerchantAddressLine3UpdatedEvent domainEvent, CancellationToken cancellationToken)
         {
-            EstateManagementContext context = await this.GetContext(domainEvent.EstateId);
+            using ResolvedDbContext<EstateManagementContext>? resolvedContext = this.Resolver.Resolve(EstateManagementDatabaseName, domainEvent.EstateId.ToString());
+            await using EstateManagementContext context = resolvedContext.Context;
 
             var getMerchantAddressResult = await context.LoadMerchantAddress(domainEvent, cancellationToken);
             if (getMerchantAddressResult.IsFailed)
@@ -618,7 +635,8 @@ namespace TransactionProcessor.Repository {
 
         public async Task<Result> UpdateMerchantAddress(MerchantAddressLine4UpdatedEvent domainEvent, CancellationToken cancellationToken)
         {
-            EstateManagementContext context = await this.GetContext(domainEvent.EstateId);
+            using ResolvedDbContext<EstateManagementContext>? resolvedContext = this.Resolver.Resolve(EstateManagementDatabaseName, domainEvent.EstateId.ToString());
+            await using EstateManagementContext context = resolvedContext.Context;
 
             var getMerchantAddressResult = await context.LoadMerchantAddress(domainEvent, cancellationToken);
             if (getMerchantAddressResult.IsFailed)
@@ -632,7 +650,8 @@ namespace TransactionProcessor.Repository {
 
         public async Task<Result> UpdateMerchantAddress(MerchantCountyUpdatedEvent domainEvent, CancellationToken cancellationToken)
         {
-            EstateManagementContext context = await this.GetContext(domainEvent.EstateId);
+            using ResolvedDbContext<EstateManagementContext>? resolvedContext = this.Resolver.Resolve(EstateManagementDatabaseName, domainEvent.EstateId.ToString());
+            await using EstateManagementContext context = resolvedContext.Context;
 
             var getMerchantAddressResult = await context.LoadMerchantAddress(domainEvent, cancellationToken);
             if (getMerchantAddressResult.IsFailed)
@@ -646,7 +665,8 @@ namespace TransactionProcessor.Repository {
 
         public async Task<Result> UpdateMerchantAddress(MerchantRegionUpdatedEvent domainEvent, CancellationToken cancellationToken)
         {
-            EstateManagementContext context = await this.GetContext(domainEvent.EstateId);
+            using ResolvedDbContext<EstateManagementContext>? resolvedContext = this.Resolver.Resolve(EstateManagementDatabaseName, domainEvent.EstateId.ToString());
+            await using EstateManagementContext context = resolvedContext.Context;
 
             var getMerchantAddressResult = await context.LoadMerchantAddress(domainEvent, cancellationToken);
             if (getMerchantAddressResult.IsFailed)
@@ -660,7 +680,8 @@ namespace TransactionProcessor.Repository {
 
         public async Task<Result> UpdateMerchantAddress(MerchantTownUpdatedEvent domainEvent, CancellationToken cancellationToken)
         {
-            EstateManagementContext context = await this.GetContext(domainEvent.EstateId);
+            using ResolvedDbContext<EstateManagementContext>? resolvedContext = this.Resolver.Resolve(EstateManagementDatabaseName, domainEvent.EstateId.ToString());
+            await using EstateManagementContext context = resolvedContext.Context;
 
             var getMerchantAddressResult = await context.LoadMerchantAddress(domainEvent, cancellationToken);
             if (getMerchantAddressResult.IsFailed)
@@ -674,7 +695,8 @@ namespace TransactionProcessor.Repository {
 
         public async Task<Result> UpdateMerchantAddress(MerchantPostalCodeUpdatedEvent domainEvent, CancellationToken cancellationToken)
         {
-            EstateManagementContext context = await this.GetContext(domainEvent.EstateId);
+            using ResolvedDbContext<EstateManagementContext>? resolvedContext = this.Resolver.Resolve(EstateManagementDatabaseName, domainEvent.EstateId.ToString());
+            await using EstateManagementContext context = resolvedContext.Context;
 
             var getMerchantAddressResult = await context.LoadMerchantAddress(domainEvent, cancellationToken);
             if (getMerchantAddressResult.IsFailed)
@@ -688,7 +710,8 @@ namespace TransactionProcessor.Repository {
         
         public async Task<Result> UpdateMerchantContact(MerchantContactNameUpdatedEvent domainEvent, CancellationToken cancellationToken)
         {
-            EstateManagementContext context = await this.GetContext(domainEvent.EstateId);
+            using ResolvedDbContext<EstateManagementContext>? resolvedContext = this.Resolver.Resolve(EstateManagementDatabaseName, domainEvent.EstateId.ToString());
+            await using EstateManagementContext context = resolvedContext.Context;
 
             var getMerchantContactResult = await context.LoadMerchantContact(domainEvent, cancellationToken);
             if (getMerchantContactResult.IsFailed)
@@ -702,7 +725,8 @@ namespace TransactionProcessor.Repository {
 
         public async Task<Result> UpdateMerchantContact(MerchantContactEmailAddressUpdatedEvent domainEvent, CancellationToken cancellationToken)
         {
-            EstateManagementContext context = await this.GetContext(domainEvent.EstateId);
+            using ResolvedDbContext<EstateManagementContext>? resolvedContext = this.Resolver.Resolve(EstateManagementDatabaseName, domainEvent.EstateId.ToString());
+            await using EstateManagementContext context = resolvedContext.Context;
 
             var getMerchantContactResult = await context.LoadMerchantContact(domainEvent, cancellationToken);
             if (getMerchantContactResult.IsFailed)
@@ -716,7 +740,8 @@ namespace TransactionProcessor.Repository {
 
         public async Task<Result> UpdateMerchantContact(MerchantContactPhoneNumberUpdatedEvent domainEvent, CancellationToken cancellationToken)
         {
-            EstateManagementContext context = await this.GetContext(domainEvent.EstateId);
+            using ResolvedDbContext<EstateManagementContext>? resolvedContext = this.Resolver.Resolve(EstateManagementDatabaseName, domainEvent.EstateId.ToString());
+            await using EstateManagementContext context = resolvedContext.Context;
 
             var getMerchantContactResult = await context.LoadMerchantContact(domainEvent, cancellationToken);
             if (getMerchantContactResult.IsFailed)
@@ -730,7 +755,8 @@ namespace TransactionProcessor.Repository {
 
         public async Task<Result> UpdateMerchantOpeningHours(MerchantOpeningHoursUpdatedEvent domainEvent,
                                                              CancellationToken cancellationToken) {
-            EstateManagementContext context = await this.GetContext(domainEvent.EstateId);
+            using ResolvedDbContext<EstateManagementContext>? resolvedContext = this.Resolver.Resolve(EstateManagementDatabaseName, domainEvent.EstateId.ToString());
+            await using EstateManagementContext context = resolvedContext.Context;
             Result<MerchantOpeningHours> getMerchantOpeningHoursResult = await context.LoadMerchantOpeningHours(domainEvent, cancellationToken);
             if (getMerchantOpeningHoursResult.IsFailed && getMerchantOpeningHoursResult.Status != ResultStatus.NotFound)
                 return ResultHelpers.CreateFailure(getMerchantOpeningHoursResult);
@@ -754,7 +780,8 @@ namespace TransactionProcessor.Repository {
         public async Task<Result> UpdateMerchantSchedule(MerchantScheduleDomainEvents.MerchantScheduleMonthUpdatedEvent domainEvent,
                                                          CancellationToken cancellationToken)
         {
-            EstateManagementContext context = await this.GetContext(domainEvent.EstateId);
+            using ResolvedDbContext<EstateManagementContext>? resolvedContext = this.Resolver.Resolve(EstateManagementDatabaseName, domainEvent.EstateId.ToString());
+            await using EstateManagementContext context = resolvedContext.Context;
 
             Result<MerchantSchedule> merchantScheduleResult = await context.LoadMerchantSchedule(domainEvent, cancellationToken);
             if (merchantScheduleResult.IsFailed)
@@ -799,7 +826,8 @@ namespace TransactionProcessor.Repository {
 
         public async Task<Result> AddContractToMerchant(ContractAddedToMerchantEvent domainEvent, CancellationToken cancellationToken)
         {
-            EstateManagementContext context = await this.GetContext(domainEvent.EstateId);
+            using ResolvedDbContext<EstateManagementContext>? resolvedContext = this.Resolver.Resolve(EstateManagementDatabaseName, domainEvent.EstateId.ToString());
+            await using EstateManagementContext context = resolvedContext.Context;
 
             MerchantContract merchantContract = new MerchantContract
             {
@@ -813,7 +841,8 @@ namespace TransactionProcessor.Repository {
         public async Task<Result> UpdateMerchant(MerchantReferenceAllocatedEvent domainEvent,
                                                  CancellationToken cancellationToken)
         {
-            EstateManagementContext context = await this.GetContext(domainEvent.EstateId);
+            using ResolvedDbContext<EstateManagementContext>? resolvedContext = this.Resolver.Resolve(EstateManagementDatabaseName, domainEvent.EstateId.ToString());
+            await using EstateManagementContext context = resolvedContext.Context;
 
             Result<Merchant> merchantResult = await context.LoadMerchant(domainEvent, cancellationToken);
             if (merchantResult.IsFailed)
@@ -827,7 +856,8 @@ namespace TransactionProcessor.Repository {
         public async Task<Result<List<MerchantModel>>> GetMerchants(Guid estateId,
                                                                    CancellationToken cancellationToken)
         {
-            EstateManagementContext context = await this.GetContext(estateId);
+            using ResolvedDbContext<EstateManagementContext>? resolvedContext = this.Resolver.Resolve(EstateManagementDatabaseName, estateId.ToString());
+            await using EstateManagementContext context = resolvedContext.Context;
 
             List<Merchant> merchants = await (from m in context.Merchants where m.EstateId == estateId select m).ToListAsync(cancellationToken);
             List<MerchantAddress> merchantAddresses = await (from a in context.MerchantAddresses where merchants.Select(m => m.MerchantId).Contains(a.MerchantId) select a).ToListAsync(cancellationToken);
@@ -867,7 +897,8 @@ namespace TransactionProcessor.Repository {
                                                                              Int32 year,
                                                                              CancellationToken cancellationToken)
         {
-            EstateManagementContext context = await this.GetContext(estateId);
+            using ResolvedDbContext<EstateManagementContext>? resolvedContext = this.Resolver.Resolve(EstateManagementDatabaseName, estateId.ToString());
+            await using EstateManagementContext context = resolvedContext.Context;
 
             MerchantSchedule merchantSchedule = await (from s in context.MerchantSchedules
                                                        where s.EstateId == estateId &&
@@ -910,7 +941,8 @@ namespace TransactionProcessor.Repository {
                                                                             Guid merchantId,
                                                                             CancellationToken cancellationToken)
         {
-            EstateManagementContext context = await this.GetContext(estateId);
+            using ResolvedDbContext<EstateManagementContext>? resolvedContext = this.Resolver.Resolve(EstateManagementDatabaseName, estateId.ToString());
+            await using EstateManagementContext context = resolvedContext.Context;
 
             var query = await (from c in context.Contracts
                                join cp in context.ContractProducts on c.ContractId equals cp.ContractId
@@ -940,7 +972,8 @@ namespace TransactionProcessor.Repository {
         public async Task<Result<List<ContractModel>>> GetContracts(Guid estateId,
                                                             CancellationToken cancellationToken)
         {
-            EstateManagementContext context = await this.GetContext(estateId);
+            using ResolvedDbContext<EstateManagementContext>? resolvedContext = this.Resolver.Resolve(EstateManagementDatabaseName, estateId.ToString());
+            await using EstateManagementContext context = resolvedContext.Context;
 
             var query = await (from c in context.Contracts
                                join cp in context.ContractProducts on c.ContractId equals cp.ContractId into cps
@@ -983,12 +1016,6 @@ namespace TransactionProcessor.Repository {
             List<Database.Entities.Operator> operators = await context.Operators.Where(eo => eo.EstateId == estate.EstateId).ToListAsync(cancellationToken);
 
             return Result.Success(ModelFactory.ConvertFrom(estate, estateSecurityUsers, operators));
-        }
-
-        private async Task<EstateManagementContext> GetContext(Guid estateId)
-        {
-            ResolvedDbContext<EstateManagementContext>? resolvedContext = this.Resolver.Resolve(EstateManagementDatabaseName, estateId.ToString());
-            return resolvedContext.Context;
         }
 
         private ContractModel GetOrCreateMerchantContract(List<ContractModel> contracts,
@@ -1076,7 +1103,8 @@ namespace TransactionProcessor.Repository {
 
         public async Task<Result> AddContractProductTransactionFee(ContractDomainEvents.TransactionFeeForProductAddedToContractEvent domainEvent,
                                                                    CancellationToken cancellationToken) {
-            EstateManagementContext context = await this.GetContext(domainEvent.EstateId);
+            using ResolvedDbContext<EstateManagementContext>? resolvedContext = this.Resolver.Resolve(EstateManagementDatabaseName, domainEvent.EstateId.ToString());
+            await using EstateManagementContext context = resolvedContext.Context;
 
             ContractProductTransactionFee contractProductTransactionFee = new ContractProductTransactionFee
             {
@@ -1096,7 +1124,8 @@ namespace TransactionProcessor.Repository {
 
         public async Task<Result> AddEstate(EstateDomainEvents.EstateCreatedEvent domainEvent,
                                             CancellationToken cancellationToken) {
-            EstateManagementContext context = await this.GetContext(domainEvent.EstateId);
+            using ResolvedDbContext<EstateManagementContext>? resolvedContext = this.Resolver.Resolve(EstateManagementDatabaseName, domainEvent.EstateId.ToString());
+            await using EstateManagementContext context = resolvedContext.Context;
 
             // Add the estate to the read model
             Database.Entities.Estate estate = new Database.Entities.Estate
@@ -1112,7 +1141,8 @@ namespace TransactionProcessor.Repository {
 
         public async Task<Result> AddEstateSecurityUser(EstateDomainEvents.SecurityUserAddedToEstateEvent domainEvent,
                                                         CancellationToken cancellationToken) {
-            EstateManagementContext context = await this.GetContext(domainEvent.EstateId);
+            using ResolvedDbContext<EstateManagementContext>? resolvedContext = this.Resolver.Resolve(EstateManagementDatabaseName, domainEvent.EstateId.ToString());
+            await using EstateManagementContext context = resolvedContext.Context;
 
             EstateSecurityUser estateSecurityUser = new EstateSecurityUser
             {
@@ -1129,7 +1159,8 @@ namespace TransactionProcessor.Repository {
 
         public async Task<Result> AddProductDetailsToTransaction(TransactionDomainEvents.ProductDetailsAddedToTransactionEvent domainEvent,
                                                                  CancellationToken cancellationToken) {
-            EstateManagementContext context = await this.GetContext(domainEvent.EstateId);
+            using ResolvedDbContext<EstateManagementContext>? resolvedContext = this.Resolver.Resolve(EstateManagementDatabaseName, domainEvent.EstateId.ToString());
+            await using EstateManagementContext context = resolvedContext.Context;
 
             var getTransactionResult = await context.LoadTransaction(domainEvent, cancellationToken);
             if (getTransactionResult.IsFailed)
@@ -1150,7 +1181,8 @@ namespace TransactionProcessor.Repository {
 
         public async Task<Result> AddSettledMerchantFeeToSettlement(TransactionDomainEvents.SettledMerchantFeeAddedToTransactionEvent domainEvent,
                                                                     CancellationToken cancellationToken) {
-            EstateManagementContext context = await this.GetContext(domainEvent.EstateId);
+            using ResolvedDbContext<EstateManagementContext>? resolvedContext = this.Resolver.Resolve(EstateManagementDatabaseName, domainEvent.EstateId.ToString());
+            await using EstateManagementContext context = resolvedContext.Context;
 
             MerchantSettlementFee merchantSettlementFee = new MerchantSettlementFee
             {
@@ -1170,7 +1202,8 @@ namespace TransactionProcessor.Repository {
 
         public async Task<Result> AddSourceDetailsToTransaction(TransactionDomainEvents.TransactionSourceAddedToTransactionEvent domainEvent,
                                                                 CancellationToken cancellationToken) {
-            EstateManagementContext context = await this.GetContext(domainEvent.EstateId);
+            using ResolvedDbContext<EstateManagementContext>? resolvedContext = this.Resolver.Resolve(EstateManagementDatabaseName, domainEvent.EstateId.ToString());
+            await using EstateManagementContext context = resolvedContext.Context;
 
             var getTransactionResult = await context.LoadTransaction(domainEvent, cancellationToken);
             if (getTransactionResult.IsFailed)
@@ -1184,7 +1217,8 @@ namespace TransactionProcessor.Repository {
 
         public async Task<Result> CompleteReconciliation(ReconciliationDomainEvents.ReconciliationHasCompletedEvent domainEvent,
                                                          CancellationToken cancellationToken) {
-            EstateManagementContext context = await this.GetContext(domainEvent.EstateId);
+            using ResolvedDbContext<EstateManagementContext>? resolvedContext = this.Resolver.Resolve(EstateManagementDatabaseName, domainEvent.EstateId.ToString());
+            await using EstateManagementContext context = resolvedContext.Context;
 
             var getReconcilationResult = await context.LoadReconcilation(domainEvent, cancellationToken);
             if (getReconcilationResult.IsFailed)
@@ -1198,7 +1232,8 @@ namespace TransactionProcessor.Repository {
 
         public async Task<Result> CompleteTransaction(TransactionDomainEvents.TransactionHasBeenCompletedEvent domainEvent,
                                                       CancellationToken cancellationToken) {
-            EstateManagementContext context = await this.GetContext(domainEvent.EstateId);
+            using ResolvedDbContext<EstateManagementContext>? resolvedContext = this.Resolver.Resolve(EstateManagementDatabaseName, domainEvent.EstateId.ToString());
+            await using EstateManagementContext context = resolvedContext.Context;
 
             var getTransactionResult = await context.LoadTransaction(domainEvent, cancellationToken);
             if (getTransactionResult.IsFailed)
@@ -1212,7 +1247,8 @@ namespace TransactionProcessor.Repository {
 
         public async Task<Result> CreateFloat(FloatDomainEvents.FloatCreatedForContractProductEvent domainEvent,
                                               CancellationToken cancellationToken) {
-            EstateManagementContext context = await this.GetContext(domainEvent.EstateId);
+            using ResolvedDbContext<EstateManagementContext>? resolvedContext = this.Resolver.Resolve(EstateManagementDatabaseName, domainEvent.EstateId.ToString());
+            await using EstateManagementContext context = resolvedContext.Context;
 
             Database.Entities.Float floatRecord = new Database.Entities.Float
             {
@@ -1229,7 +1265,8 @@ namespace TransactionProcessor.Repository {
 
         public async Task<Result> CreateFloatActivity(FloatDomainEvents.FloatCreditPurchasedEvent domainEvent,
                                                       CancellationToken cancellationToken) {
-            EstateManagementContext context = await this.GetContext(domainEvent.EstateId);
+            using ResolvedDbContext<EstateManagementContext>? resolvedContext = this.Resolver.Resolve(EstateManagementDatabaseName, domainEvent.EstateId.ToString());
+            await using EstateManagementContext context = resolvedContext.Context;
 
             FloatActivity floatActivity = new FloatActivity
             {
@@ -1247,7 +1284,8 @@ namespace TransactionProcessor.Repository {
 
         public async Task<Result> CreateFloatActivity(FloatDomainEvents.FloatDecreasedByTransactionEvent domainEvent,
                                                       CancellationToken cancellationToken) {
-            EstateManagementContext context = await this.GetContext(domainEvent.EstateId);
+            using ResolvedDbContext<EstateManagementContext>? resolvedContext = this.Resolver.Resolve(EstateManagementDatabaseName, domainEvent.EstateId.ToString());
+            await using EstateManagementContext context = resolvedContext.Context;
 
             var getTransactionResult = await context.LoadTransaction(domainEvent, cancellationToken);
             if (getTransactionResult.IsFailed)
@@ -1270,7 +1308,8 @@ namespace TransactionProcessor.Repository {
 
         public async Task<Result> CreateReadModel(EstateDomainEvents.EstateCreatedEvent domainEvent,
                                                   CancellationToken cancellationToken) {
-            EstateManagementContext context = await this.GetContext(domainEvent.EstateId);
+            using ResolvedDbContext<EstateManagementContext>? resolvedContext = this.Resolver.Resolve(EstateManagementDatabaseName, domainEvent.EstateId.ToString());
+            await using EstateManagementContext context = resolvedContext.Context;
 
             Logger.LogInformation($"About to run migrations on Read Model database for estate [{domainEvent.EstateId}]");
 
@@ -1283,7 +1322,8 @@ namespace TransactionProcessor.Repository {
 
         public async Task<Result> CreateSettlement(SettlementDomainEvents.SettlementCreatedForDateEvent domainEvent,
                                                    CancellationToken cancellationToken) {
-            EstateManagementContext context = await this.GetContext(domainEvent.EstateId);
+            using ResolvedDbContext<EstateManagementContext>? resolvedContext = this.Resolver.Resolve(EstateManagementDatabaseName, domainEvent.EstateId.ToString());
+            await using EstateManagementContext context = resolvedContext.Context;
 
             Database.Entities.Settlement settlement = new Database.Entities.Settlement
             {
@@ -1301,7 +1341,8 @@ namespace TransactionProcessor.Repository {
 
         public async Task<Result> DisableContractProductTransactionFee(ContractDomainEvents.TransactionFeeForProductDisabledEvent domainEvent,
                                                                        CancellationToken cancellationToken) {
-            EstateManagementContext context = await this.GetContext(domainEvent.EstateId);
+            using ResolvedDbContext<EstateManagementContext>? resolvedContext = this.Resolver.Resolve(EstateManagementDatabaseName, domainEvent.EstateId.ToString());
+            await using EstateManagementContext context = resolvedContext.Context;
 
             Result<ContractProductTransactionFee> loadContractProductTransactionFeeResult = await context.LoadContractProductTransactionFee(domainEvent, cancellationToken);
             if (loadContractProductTransactionFeeResult.IsFailed)
@@ -1316,7 +1357,8 @@ namespace TransactionProcessor.Repository {
 
         public async Task<Result> MarkMerchantFeeAsSettled(SettlementDomainEvents.MerchantFeeSettledEvent domainEvent,
                                                            CancellationToken cancellationToken) {
-            EstateManagementContext context = await this.GetContext(domainEvent.EstateId);
+            using ResolvedDbContext<EstateManagementContext>? resolvedContext = this.Resolver.Resolve(EstateManagementDatabaseName, domainEvent.EstateId.ToString());
+            await using EstateManagementContext context = resolvedContext.Context;
 
             MerchantSettlementFee merchantFee = await context.MerchantSettlementFees.Where(m =>
                     m.MerchantId == domainEvent.MerchantId &&
@@ -1336,7 +1378,8 @@ namespace TransactionProcessor.Repository {
 
         public async Task<Result> MarkSettlementAsCompleted(SettlementDomainEvents.SettlementCompletedEvent domainEvent,
                                                             CancellationToken cancellationToken) {
-            EstateManagementContext context = await this.GetContext(domainEvent.EstateId);
+            using ResolvedDbContext<EstateManagementContext>? resolvedContext = this.Resolver.Resolve(EstateManagementDatabaseName, domainEvent.EstateId.ToString());
+            await using EstateManagementContext context = resolvedContext.Context;
 
             var getSettlementResult = await context.LoadSettlement(domainEvent, cancellationToken);
             if (getSettlementResult.IsFailed)
@@ -1349,7 +1392,8 @@ namespace TransactionProcessor.Repository {
 
         public async Task<Result> MarkSettlementAsProcessingStarted(SettlementDomainEvents.SettlementProcessingStartedEvent domainEvent,
                                                                     CancellationToken cancellationToken) {
-            EstateManagementContext context = await this.GetContext(domainEvent.EstateId);
+            using ResolvedDbContext<EstateManagementContext>? resolvedContext = this.Resolver.Resolve(EstateManagementDatabaseName, domainEvent.EstateId.ToString());
+            await using EstateManagementContext context = resolvedContext.Context;
 
             var getSettlementResult = await context.LoadSettlement(domainEvent, cancellationToken);
             if (getSettlementResult.IsFailed)
@@ -1371,7 +1415,8 @@ namespace TransactionProcessor.Repository {
 
         public async Task<Result> RecordTransactionAdditionalRequestData(TransactionDomainEvents.AdditionalRequestDataRecordedEvent domainEvent,
                                                                          CancellationToken cancellationToken) {
-            EstateManagementContext context = await this.GetContext(domainEvent.EstateId);
+            using ResolvedDbContext<EstateManagementContext>? resolvedContext = this.Resolver.Resolve(EstateManagementDatabaseName, domainEvent.EstateId.ToString());
+            await using EstateManagementContext context = resolvedContext.Context;
 
             TransactionAdditionalRequestData additionalRequestData = new TransactionAdditionalRequestData
             {
@@ -1414,7 +1459,8 @@ namespace TransactionProcessor.Repository {
 
         public async Task<Result> RecordTransactionAdditionalResponseData(TransactionDomainEvents.AdditionalResponseDataRecordedEvent domainEvent,
                                                                           CancellationToken cancellationToken) {
-            EstateManagementContext context = await this.GetContext(domainEvent.EstateId);
+            using ResolvedDbContext<EstateManagementContext>? resolvedContext = this.Resolver.Resolve(EstateManagementDatabaseName, domainEvent.EstateId.ToString());
+            await using EstateManagementContext context = resolvedContext.Context;
 
             TransactionAdditionalResponseData additionalResponseData = new TransactionAdditionalResponseData
             {
@@ -1443,7 +1489,8 @@ namespace TransactionProcessor.Repository {
 
         public async Task<Result> SetTransactionAmount(TransactionDomainEvents.AdditionalRequestDataRecordedEvent domainEvent,
                                                        CancellationToken cancellationToken) {
-            EstateManagementContext context = await this.GetContext(domainEvent.EstateId);
+            using ResolvedDbContext<EstateManagementContext>? resolvedContext = this.Resolver.Resolve(EstateManagementDatabaseName, domainEvent.EstateId.ToString());
+            await using EstateManagementContext context = resolvedContext.Context;
 
             var getTransactionResult = await context.LoadTransaction(domainEvent, cancellationToken);
             if (getTransactionResult.IsFailed)
@@ -1470,7 +1517,8 @@ namespace TransactionProcessor.Repository {
 
         public async Task<Result> StartReconciliation(ReconciliationDomainEvents.ReconciliationHasStartedEvent domainEvent,
                                                       CancellationToken cancellationToken) {
-            EstateManagementContext context = await this.GetContext(domainEvent.EstateId);
+            using ResolvedDbContext<EstateManagementContext>? resolvedContext = this.Resolver.Resolve(EstateManagementDatabaseName, domainEvent.EstateId.ToString());
+            await using EstateManagementContext context = resolvedContext.Context;
 
             Database.Entities.Reconciliation reconciliation = new Database.Entities.Reconciliation
             {
@@ -1488,7 +1536,8 @@ namespace TransactionProcessor.Repository {
 
         public async Task<Result> StartTransaction(TransactionDomainEvents.TransactionHasStartedEvent domainEvent,
                                                    CancellationToken cancellationToken) {
-            EstateManagementContext context = await this.GetContext(domainEvent.EstateId);
+            using ResolvedDbContext<EstateManagementContext>? resolvedContext = this.Resolver.Resolve(EstateManagementDatabaseName, domainEvent.EstateId.ToString());
+            await using EstateManagementContext context = resolvedContext.Context;
 
             Database.Entities.Transaction t = new Database.Entities.Transaction
             {
@@ -1516,7 +1565,8 @@ namespace TransactionProcessor.Repository {
 
         public async Task<Result> UpdateEstate(EstateDomainEvents.EstateReferenceAllocatedEvent domainEvent,
                                                CancellationToken cancellationToken) {
-            EstateManagementContext context = await this.GetContext(domainEvent.EstateId);
+            using ResolvedDbContext<EstateManagementContext>? resolvedContext = this.Resolver.Resolve(EstateManagementDatabaseName, domainEvent.EstateId.ToString());
+            await using EstateManagementContext context = resolvedContext.Context;
 
             var getEstateResult = await context.LoadEstate(domainEvent, cancellationToken);
             if (getEstateResult.IsFailed)
@@ -1530,7 +1580,8 @@ namespace TransactionProcessor.Repository {
 
         public async Task<Result> UpdateMerchant(TransactionDomainEvents.TransactionHasBeenCompletedEvent domainEvent,
                                                  CancellationToken cancellationToken) {
-            EstateManagementContext context = await this.GetContext(domainEvent.EstateId);
+            using ResolvedDbContext<EstateManagementContext>? resolvedContext = this.Resolver.Resolve(EstateManagementDatabaseName, domainEvent.EstateId.ToString());
+            await using EstateManagementContext context = resolvedContext.Context;
 
             Result<Merchant> merchantResult = await context.LoadMerchant(domainEvent, cancellationToken);
             if (merchantResult.IsFailed)
@@ -1549,7 +1600,8 @@ namespace TransactionProcessor.Repository {
         public async Task<Result> UpdateReconciliationOverallTotals(ReconciliationDomainEvents.OverallTotalsRecordedEvent domainEvent,
                                                                     CancellationToken cancellationToken) {
 
-            EstateManagementContext context = await this.GetContext(domainEvent.EstateId);
+            using ResolvedDbContext<EstateManagementContext>? resolvedContext = this.Resolver.Resolve(EstateManagementDatabaseName, domainEvent.EstateId.ToString());
+            await using EstateManagementContext context = resolvedContext.Context;
 
             var getReconcilationResult = await context.LoadReconcilation(domainEvent, cancellationToken);
             if (getReconcilationResult.IsFailed)
@@ -1564,7 +1616,8 @@ namespace TransactionProcessor.Repository {
 
         public async Task<Result> UpdateReconciliationStatus(ReconciliationDomainEvents.ReconciliationHasBeenLocallyAuthorisedEvent domainEvent,
                                                              CancellationToken cancellationToken) {
-            EstateManagementContext context = await this.GetContext(domainEvent.EstateId);
+            using ResolvedDbContext<EstateManagementContext>? resolvedContext = this.Resolver.Resolve(EstateManagementDatabaseName, domainEvent.EstateId.ToString());
+            await using EstateManagementContext context = resolvedContext.Context;
 
             var getReconcilationResult = await context.LoadReconcilation(domainEvent, cancellationToken);
             if (getReconcilationResult.IsFailed)
@@ -1580,7 +1633,8 @@ namespace TransactionProcessor.Repository {
 
         public async Task<Result> UpdateReconciliationStatus(ReconciliationDomainEvents.ReconciliationHasBeenLocallyDeclinedEvent domainEvent,
                                                              CancellationToken cancellationToken) {
-            EstateManagementContext context = await this.GetContext(domainEvent.EstateId);
+            using ResolvedDbContext<EstateManagementContext>? resolvedContext = this.Resolver.Resolve(EstateManagementDatabaseName, domainEvent.EstateId.ToString());
+            await using EstateManagementContext context = resolvedContext.Context;
 
             var getReconcilationResult = await context.LoadReconcilation(domainEvent, cancellationToken);
             if (getReconcilationResult.IsFailed)
@@ -1596,7 +1650,8 @@ namespace TransactionProcessor.Repository {
 
         public async Task<Result> UpdateTransactionAuthorisation(TransactionDomainEvents.TransactionHasBeenLocallyAuthorisedEvent domainEvent,
                                                                  CancellationToken cancellationToken) {
-            EstateManagementContext context = await this.GetContext(domainEvent.EstateId);
+            using ResolvedDbContext<EstateManagementContext>? resolvedContext = this.Resolver.Resolve(EstateManagementDatabaseName, domainEvent.EstateId.ToString());
+            await using EstateManagementContext context = resolvedContext.Context;
 
             var getTransactionResult = await context.LoadTransaction(domainEvent, cancellationToken);
             if (getTransactionResult.IsFailed)
@@ -1613,7 +1668,8 @@ namespace TransactionProcessor.Repository {
 
         public async Task<Result> UpdateTransactionAuthorisation(TransactionDomainEvents.TransactionHasBeenLocallyDeclinedEvent domainEvent,
                                                                  CancellationToken cancellationToken) {
-            EstateManagementContext context = await this.GetContext(domainEvent.EstateId);
+            using ResolvedDbContext<EstateManagementContext>? resolvedContext = this.Resolver.Resolve(EstateManagementDatabaseName, domainEvent.EstateId.ToString());
+            await using EstateManagementContext context = resolvedContext.Context;
 
             var getTransactionResult = await context.LoadTransaction(domainEvent, cancellationToken);
             if (getTransactionResult.IsFailed)
@@ -1629,7 +1685,8 @@ namespace TransactionProcessor.Repository {
 
         public async Task<Result> UpdateTransactionAuthorisation(TransactionDomainEvents.TransactionAuthorisedByOperatorEvent domainEvent,
                                                                  CancellationToken cancellationToken) {
-            EstateManagementContext context = await this.GetContext(domainEvent.EstateId);
+            using ResolvedDbContext<EstateManagementContext>? resolvedContext = this.Resolver.Resolve(EstateManagementDatabaseName, domainEvent.EstateId.ToString());
+            await using EstateManagementContext context = resolvedContext.Context;
 
             var getTransactionResult = await context.LoadTransaction(domainEvent, cancellationToken);
             if (getTransactionResult.IsFailed)
@@ -1646,7 +1703,8 @@ namespace TransactionProcessor.Repository {
 
         public async Task<Result> UpdateTransactionAuthorisation(TransactionDomainEvents.TransactionDeclinedByOperatorEvent domainEvent,
                                                                  CancellationToken cancellationToken) {
-            EstateManagementContext context = await this.GetContext(domainEvent.EstateId);
+            using ResolvedDbContext<EstateManagementContext>? resolvedContext = this.Resolver.Resolve(EstateManagementDatabaseName, domainEvent.EstateId.ToString());
+            await using EstateManagementContext context = resolvedContext.Context;
 
             var getTransactionResult = await context.LoadTransaction(domainEvent, cancellationToken);
             if (getTransactionResult.IsFailed)
@@ -1662,7 +1720,8 @@ namespace TransactionProcessor.Repository {
         
         public async Task<Result<List<Models.Operator.Operator>>> GetOperators(Guid estateId, CancellationToken cancellationToken)
         {
-            EstateManagementContext context = await this.GetContext(estateId);
+            using ResolvedDbContext<EstateManagementContext>? resolvedContext = this.Resolver.Resolve(EstateManagementDatabaseName, estateId.ToString());
+            await using EstateManagementContext context = resolvedContext.Context;
 
             Database.Entities.Estate estate = await context.Estates.SingleOrDefaultAsync(e => e.EstateId == estateId, cancellationToken: cancellationToken);
             List<Database.Entities.Operator> operators = await (from o in context.Operators where o.EstateId == estate.EstateId select o).ToListAsync(cancellationToken);
@@ -1685,7 +1744,8 @@ namespace TransactionProcessor.Repository {
 
         public async Task<Result> UpdateOperator(OperatorDomainEvents.OperatorNameUpdatedEvent domainEvent, CancellationToken cancellationToken)
         {
-            EstateManagementContext context = await this.GetContext(domainEvent.EstateId);
+            using ResolvedDbContext<EstateManagementContext>? resolvedContext = this.Resolver.Resolve(EstateManagementDatabaseName, domainEvent.EstateId.ToString());
+            await using EstateManagementContext context = resolvedContext.Context;
 
             Result<Database.Entities.Operator> operatorResult = await context.LoadOperator(domainEvent, cancellationToken);
             if (operatorResult.IsFailed)
@@ -1698,7 +1758,8 @@ namespace TransactionProcessor.Repository {
 
         public async Task<Result> UpdateOperator(OperatorDomainEvents.OperatorRequireCustomMerchantNumberChangedEvent domainEvent, CancellationToken cancellationToken)
         {
-            EstateManagementContext context = await this.GetContext(domainEvent.EstateId);
+            using ResolvedDbContext<EstateManagementContext>? resolvedContext = this.Resolver.Resolve(EstateManagementDatabaseName, domainEvent.EstateId.ToString());
+            await using EstateManagementContext context = resolvedContext.Context;
 
             Result<Database.Entities.Operator> operatorResult = await context.LoadOperator(domainEvent, cancellationToken);
             if (operatorResult.IsFailed)
@@ -1712,7 +1773,8 @@ namespace TransactionProcessor.Repository {
 
         public async Task<Result> UpdateOperator(OperatorDomainEvents.OperatorRequireCustomTerminalNumberChangedEvent domainEvent, CancellationToken cancellationToken)
         {
-            EstateManagementContext context = await this.GetContext(domainEvent.EstateId);
+            using ResolvedDbContext<EstateManagementContext>? resolvedContext = this.Resolver.Resolve(EstateManagementDatabaseName, domainEvent.EstateId.ToString());
+            await using EstateManagementContext context = resolvedContext.Context;
 
             Result<Database.Entities.Operator> operatorResult = await context.LoadOperator(domainEvent, cancellationToken);
             if (operatorResult.IsFailed)
@@ -1726,7 +1788,8 @@ namespace TransactionProcessor.Repository {
 
         public async Task<Result> AddOperator(OperatorDomainEvents.OperatorCreatedEvent domainEvent, CancellationToken cancellationToken)
         {
-            EstateManagementContext context = await this.GetContext(domainEvent.EstateId);
+            using ResolvedDbContext<EstateManagementContext>? resolvedContext = this.Resolver.Resolve(EstateManagementDatabaseName, domainEvent.EstateId.ToString());
+            await using EstateManagementContext context = resolvedContext.Context;
 
             Database.Entities.Operator @operator = new Database.Entities.Operator
             {
@@ -1744,7 +1807,8 @@ namespace TransactionProcessor.Repository {
 
         public async Task<Result> AddContract(ContractDomainEvents.ContractCreatedEvent domainEvent,
                                               CancellationToken cancellationToken) {
-            EstateManagementContext context = await this.GetContext(domainEvent.EstateId);
+            using ResolvedDbContext<EstateManagementContext>? resolvedContext = this.Resolver.Resolve(EstateManagementDatabaseName, domainEvent.EstateId.ToString());
+            await using EstateManagementContext context = resolvedContext.Context;
 
             Contract contract = new Contract
             {
@@ -1761,7 +1825,8 @@ namespace TransactionProcessor.Repository {
 
         public async Task<Result> AddContractProduct(ContractDomainEvents.VariableValueProductAddedToContractEvent domainEvent,
                                                      CancellationToken cancellationToken) {
-            EstateManagementContext context = await this.GetContext(domainEvent.EstateId);
+            using ResolvedDbContext<EstateManagementContext>? resolvedContext = this.Resolver.Resolve(EstateManagementDatabaseName, domainEvent.EstateId.ToString());
+            await using EstateManagementContext context = resolvedContext.Context;
 
             ContractProduct contractProduct = new ContractProduct
             {
@@ -1780,7 +1845,8 @@ namespace TransactionProcessor.Repository {
 
         public async Task<Result> AddContractProduct(ContractDomainEvents.FixedValueProductAddedToContractEvent domainEvent,
                                                      CancellationToken cancellationToken) {
-            EstateManagementContext context = await this.GetContext(domainEvent.EstateId);
+            using ResolvedDbContext<EstateManagementContext>? resolvedContext = this.Resolver.Resolve(EstateManagementDatabaseName, domainEvent.EstateId.ToString());
+            await using EstateManagementContext context = resolvedContext.Context;
 
             ContractProduct contractProduct = new ContractProduct
             {
@@ -1800,7 +1866,8 @@ namespace TransactionProcessor.Repository {
         public async Task<Result> MarkStatementAsGenerated(StatementGeneratedEvent domainEvent,
                                                            CancellationToken cancellationToken)
         {
-            EstateManagementContext context = await this.GetContext(domainEvent.EstateId);
+            using ResolvedDbContext<EstateManagementContext>? resolvedContext = this.Resolver.Resolve(EstateManagementDatabaseName, domainEvent.EstateId.ToString());
+            await using EstateManagementContext context = resolvedContext.Context;
 
             var getLoadStatementHeaderResult = await context.LoadStatementHeader(domainEvent, cancellationToken);
             if (getLoadStatementHeaderResult.IsFailed)
@@ -1814,7 +1881,8 @@ namespace TransactionProcessor.Repository {
         public async Task<Result> CreateStatement(StatementCreatedEvent domainEvent,
                                                   CancellationToken cancellationToken)
         {
-            EstateManagementContext context = await this.GetContext(domainEvent.EstateId);
+            using ResolvedDbContext<EstateManagementContext>? resolvedContext = this.Resolver.Resolve(EstateManagementDatabaseName, domainEvent.EstateId.ToString());
+            await using EstateManagementContext context = resolvedContext.Context;
 
             StatementHeader header = new StatementHeader
             {
@@ -1832,7 +1900,8 @@ namespace TransactionProcessor.Repository {
         public async Task<Result> AddFile(FileCreatedEvent domainEvent,
                               CancellationToken cancellationToken)
         {
-            EstateManagementContext context = await this.GetContext(domainEvent.EstateId);
+            using ResolvedDbContext<EstateManagementContext>? resolvedContext = this.Resolver.Resolve(EstateManagementDatabaseName, domainEvent.EstateId.ToString());
+            await using EstateManagementContext context = resolvedContext.Context;
 
             File file = new File
             {
@@ -1855,7 +1924,8 @@ namespace TransactionProcessor.Repository {
         public async Task<Result> AddFileImportLog(ImportLogCreatedEvent domainEvent,
                                            CancellationToken cancellationToken)
         {
-            EstateManagementContext context = await this.GetContext(domainEvent.EstateId);
+            using ResolvedDbContext<EstateManagementContext>? resolvedContext = this.Resolver.Resolve(EstateManagementDatabaseName, domainEvent.EstateId.ToString());
+            await using EstateManagementContext context = resolvedContext.Context;
 
             FileImportLog fileImportLog = new FileImportLog
             {
@@ -1873,7 +1943,8 @@ namespace TransactionProcessor.Repository {
         public async Task<Result> AddFileLineToFile(FileLineAddedEvent domainEvent,
                                             CancellationToken cancellationToken)
         {
-            EstateManagementContext context = await this.GetContext(domainEvent.EstateId);
+            using ResolvedDbContext<EstateManagementContext>? resolvedContext = this.Resolver.Resolve(EstateManagementDatabaseName, domainEvent.EstateId.ToString());
+            await using EstateManagementContext context = resolvedContext.Context;
 
             FileLine fileLine = new FileLine
             {
@@ -1891,7 +1962,8 @@ namespace TransactionProcessor.Repository {
         public async Task<Result> AddFileToImportLog(FileAddedToImportLogEvent domainEvent,
                                              CancellationToken cancellationToken)
         {
-            EstateManagementContext context = await this.GetContext(domainEvent.EstateId);
+            using ResolvedDbContext<EstateManagementContext>? resolvedContext = this.Resolver.Resolve(EstateManagementDatabaseName, domainEvent.EstateId.ToString());
+            await using EstateManagementContext context = resolvedContext.Context;
 
             FileImportLogFile fileImportLogFile = new FileImportLogFile
             {
@@ -1914,7 +1986,8 @@ namespace TransactionProcessor.Repository {
         public async Task<Result> UpdateFileAsComplete(FileProcessingCompletedEvent domainEvent,
                                            CancellationToken cancellationToken)
         {
-            EstateManagementContext context = await this.GetContext(domainEvent.EstateId);
+            using ResolvedDbContext<EstateManagementContext>? resolvedContext = this.Resolver.Resolve(EstateManagementDatabaseName, domainEvent.EstateId.ToString());
+            await using EstateManagementContext context = resolvedContext.Context;
 
             var getFileResult = await context.LoadFile(domainEvent, cancellationToken);
             if (getFileResult.IsFailed)
@@ -1929,7 +2002,8 @@ namespace TransactionProcessor.Repository {
         public async Task<Result> UpdateFileLine(FileLineProcessingSuccessfulEvent domainEvent,
                                          CancellationToken cancellationToken)
         {
-            EstateManagementContext context = await this.GetContext(domainEvent.EstateId);
+            using ResolvedDbContext<EstateManagementContext>? resolvedContext = this.Resolver.Resolve(EstateManagementDatabaseName, domainEvent.EstateId.ToString());
+            await using EstateManagementContext context = resolvedContext.Context;
 
             return await this.UpdateFileLineStatus(context,
                                             domainEvent.FileId,
@@ -1962,7 +2036,8 @@ namespace TransactionProcessor.Repository {
         public async Task<Result> UpdateFileLine(FileLineProcessingFailedEvent domainEvent,
                                          CancellationToken cancellationToken)
         {
-            EstateManagementContext context = await this.GetContext(domainEvent.EstateId);
+            using ResolvedDbContext<EstateManagementContext>? resolvedContext = this.Resolver.Resolve(EstateManagementDatabaseName, domainEvent.EstateId.ToString());
+            await using EstateManagementContext context = resolvedContext.Context;
 
             return await this.UpdateFileLineStatus(context,
                 domainEvent.FileId,
@@ -1975,7 +2050,8 @@ namespace TransactionProcessor.Repository {
         public async Task<Result> UpdateFileLine(FileLineProcessingIgnoredEvent domainEvent,
                                          CancellationToken cancellationToken)
         {
-            EstateManagementContext context = await this.GetContext(domainEvent.EstateId);
+            using ResolvedDbContext<EstateManagementContext>? resolvedContext = this.Resolver.Resolve(EstateManagementDatabaseName, domainEvent.EstateId.ToString());
+            await using EstateManagementContext context = resolvedContext.Context;
 
             return await this.UpdateFileLineStatus(context,
                                             domainEvent.FileId,
@@ -1988,7 +2064,8 @@ namespace TransactionProcessor.Repository {
         public async Task<Result> AddPendingMerchantFeeToSettlement(SettlementDomainEvents.MerchantFeeAddedPendingSettlementEvent domainEvent,
                                                                     CancellationToken cancellationToken)
         {
-            EstateManagementContext context = await this.GetContext(domainEvent.EstateId);
+            using ResolvedDbContext<EstateManagementContext>? resolvedContext = this.Resolver.Resolve(EstateManagementDatabaseName, domainEvent.EstateId.ToString());
+            await using EstateManagementContext context = resolvedContext.Context;
 
             MerchantSettlementFee merchantSettlementFee = new MerchantSettlementFee
             {
@@ -2012,7 +2089,8 @@ namespace TransactionProcessor.Repository {
                                                              Guid settlementId,
                                                              CancellationToken cancellationToken)
         {
-            EstateManagementContext context = await this.GetContext(estateId);
+            using ResolvedDbContext<EstateManagementContext>? resolvedContext = this.Resolver.Resolve(EstateManagementDatabaseName, estateId.ToString());
+            await using EstateManagementContext context = resolvedContext.Context;
 
             IQueryable<SettlementView> query = context.SettlementsView.Where(t => t.EstateId == estateId && t.SettlementId == settlementId
                                                                              && t.MerchantId == merchantId).AsQueryable();
@@ -2057,7 +2135,8 @@ namespace TransactionProcessor.Repository {
                                                                         String endDate,
                                                                         CancellationToken cancellationToken)
         {
-            EstateManagementContext context = await this.GetContext(estateId);
+            using ResolvedDbContext<EstateManagementContext>? resolvedContext = this.Resolver.Resolve(EstateManagementDatabaseName, estateId.ToString());
+            await using EstateManagementContext context = resolvedContext.Context;
 
             DateTime queryStartDate = DateTime.ParseExact(startDate, "yyyyMMdd", null);
             DateTime queryEndDate = DateTime.ParseExact(endDate, "yyyyMMdd", null);
@@ -2099,7 +2178,8 @@ namespace TransactionProcessor.Repository {
             TimeSpan transactionTime = totalTime.Subtract(operatorCommunicationsTime);
 
             // Load this information to the database
-            EstateManagementContext context = await this.GetContext(domainEvent.EstateId);
+            using ResolvedDbContext<EstateManagementContext>? resolvedContext = this.Resolver.Resolve(EstateManagementDatabaseName, domainEvent.EstateId.ToString());
+            await using EstateManagementContext context = resolvedContext.Context;
 
             TransactionTimings timings = new() {
                 TransactionStartedDateTime = domainEvent.TransactionStartedDateTime,
@@ -2118,7 +2198,8 @@ namespace TransactionProcessor.Repository {
         public async Task<Result> AddTransactionToStatement(MerchantStatementForDateDomainEvents.TransactionAddedToStatementForDateEvent domainEvent,
                                                             CancellationToken cancellationToken) {
             // Load this information to the database
-            EstateManagementContext context = await this.GetContext(domainEvent.EstateId);
+            using ResolvedDbContext<EstateManagementContext>? resolvedContext = this.Resolver.Resolve(EstateManagementDatabaseName, domainEvent.EstateId.ToString());
+            await using EstateManagementContext context = resolvedContext.Context;
 
             // Find the corresponding transaction
             Result<Transaction> transactionResult = await context.LoadTransaction(domainEvent, cancellationToken);
@@ -2151,7 +2232,8 @@ namespace TransactionProcessor.Repository {
                                                            CancellationToken cancellationToken)
         {
             // Load this information to the database
-            EstateManagementContext context = await this.GetContext(domainEvent.EstateId);
+            using ResolvedDbContext<EstateManagementContext>? resolvedContext = this.Resolver.Resolve(EstateManagementDatabaseName, domainEvent.EstateId.ToString());
+            await using EstateManagementContext context = resolvedContext.Context;
 
             // Find the corresponding transaction
             var getTransactionResult = await context.LoadTransaction(domainEvent, cancellationToken);
@@ -2183,7 +2265,8 @@ namespace TransactionProcessor.Repository {
         public async Task<Result> AddEstateOperator(EstateDomainEvents.OperatorAddedToEstateEvent domainEvent,
                                                     CancellationToken cancellationToken) {
             // Load this information to the database
-            EstateManagementContext context = await this.GetContext(domainEvent.EstateId);
+            using ResolvedDbContext<EstateManagementContext>? resolvedContext = this.Resolver.Resolve(EstateManagementDatabaseName, domainEvent.EstateId.ToString());
+            await using EstateManagementContext context = resolvedContext.Context;
 
             var estateOperator = await context.EstateOperators.SingleOrDefaultAsync(eo => eo.EstateId == domainEvent.EstateId && eo.OperatorId == domainEvent.OperatorId, cancellationToken);
 
@@ -2201,7 +2284,8 @@ namespace TransactionProcessor.Repository {
         public async Task<Result> RemoveOperatorFromEstate(EstateDomainEvents.OperatorRemovedFromEstateEvent domainEvent,
                                                            CancellationToken cancellationToken) {
             // Load this information to the database
-            EstateManagementContext context = await this.GetContext(domainEvent.EstateId);
+            using ResolvedDbContext<EstateManagementContext>? resolvedContext = this.Resolver.Resolve(EstateManagementDatabaseName, domainEvent.EstateId.ToString());
+            await using EstateManagementContext context = resolvedContext.Context;
 
             var estateOperator = await context.EstateOperators.SingleOrDefaultAsync(eo => eo.EstateId == domainEvent.EstateId && eo.OperatorId == domainEvent.OperatorId, cancellationToken);
 
