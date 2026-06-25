@@ -579,15 +579,39 @@ public class TransactionProcessorSteps
             await Retry.For(async () => {
                     Result<List<EstateResponse>>? getEstatesResult = await this.TransactionProcessorClient
                         .GetEstates(accessToken, createEstateRequest.EstateId, CancellationToken.None).ConfigureAwait(false);
-                    getEstatesResult.IsSuccess.ShouldBeTrue();
+
                     List<EstateResponse>? estates = getEstatesResult.Data;
-                    estates.ShouldNotBeNull();
-                    estates.Count.ShouldBe(1);
-                    estate = estates.Single();
+                    try
+                    {
+                        getEstatesResult.IsSuccess.ShouldBeTrue();
+                        estates.ShouldNotBeNull();
+                        estates.Count.ShouldBe(1);
+                        estate = estates.Single();
+                        estate.EstateName.ShouldBe(createEstateRequest.EstateName);
+                        estate.EstateReference.ShouldNotBeNullOrWhiteSpace();
+                    }
+                    catch
+                    {
+                        StringBuilder snapshot = new StringBuilder();
+                        snapshot.Append($"estateId={createEstateRequest.EstateId}, expectedName={createEstateRequest.EstateName}, ");
+                        snapshot.Append($"isSuccess={getEstatesResult.IsSuccess}, ");
+                        snapshot.Append($"rows={(estates == null ? "null" : estates.Count.ToString())}");
+
+                        if (estates != null)
+                        {
+                            for (Int32 i = 0; i < estates.Count; i++)
+                            {
+                                EstateResponse currentEstate = estates[i];
+                                snapshot.Append($", row[{i}]={{id={currentEstate.EstateId}, name={currentEstate.EstateName}, reference={currentEstate.EstateReference ?? "<null>"}}}");
+                            }
+                        }
+
+                        Console.WriteLine($"[CreateEstate retry] {snapshot}");
+                        throw;
+                    }
                 },
                 retryFor: TimeSpan.FromSeconds(180)).ConfigureAwait(false);
 
-            estate.EstateName.ShouldBe(createEstateRequest.EstateName);
             results.Add(estate);
         }
 
