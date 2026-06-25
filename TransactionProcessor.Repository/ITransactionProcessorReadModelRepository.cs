@@ -969,7 +969,8 @@ namespace TransactionProcessor.Repository {
         public async Task<Result<Models.Estate.Estate>> GetEstate(Guid estateId,
                                                            CancellationToken cancellationToken)
         {
-            EstateManagementContext context = await this.GetContext(estateId);
+            using ResolvedDbContext<EstateManagementContext>? resolvedContext = this.Resolver.Resolve(EstateManagementDatabaseName, estateId.ToString());
+            await using EstateManagementContext context = resolvedContext.Context;
 
             Database.Entities.Estate? estate = await context.Estates.SingleOrDefaultAsync(e => e.EstateId == estateId, cancellationToken);
 
