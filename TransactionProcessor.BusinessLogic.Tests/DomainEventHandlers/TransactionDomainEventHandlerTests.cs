@@ -3,7 +3,6 @@ using Grpc.Core;
 using MediatR;
 using SimpleResults;
 using TransactionProcessor.DomainEvents;
-using Xunit.Abstractions;
 
 namespace TransactionProcessor.BusinessLogic.Tests.DomainEventHandlers
 {
