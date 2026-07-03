@@ -278,6 +278,9 @@ namespace TransactionProcessor.Repository {
         Task<Result<List<MerchantModel>>> GetMerchants(Guid estateId,
                                                         CancellationToken cancellationToken);
 
+        Task<Result<MerchantModel>> GetMerchant(Guid estateId, Guid merchantId,
+                                                CancellationToken cancellationToken);
+
         Task<Result<MerchantScheduleModel>> GetMerchantSchedule(Guid estateId,
                                                                 Guid merchantId,
                                                                 Int32 year,
@@ -890,6 +893,32 @@ namespace TransactionProcessor.Repository {
             }
 
             return Result.Success(models);
+        }
+
+        public async Task<Result<MerchantModel>> GetMerchant(Guid estateId,
+                                                             Guid merchantId,
+                                                             CancellationToken cancellationToken) {
+            using ResolvedDbContext<EstateManagementContext>? resolvedContext = this.Resolver.Resolve(EstateManagementDatabaseName, estateId.ToString());
+            await using EstateManagementContext context = resolvedContext.Context;
+
+            Merchant? merchant = await (from m in context.Merchants where m.EstateId == estateId && m.MerchantId == merchantId select m).SingleOrDefaultAsync(cancellationToken);
+            List<MerchantAddress> merchantAddresses = await (from a in context.MerchantAddresses where a.MerchantId == merchantId select a).ToListAsync(cancellationToken);
+            List<MerchantContact> merchantContacts = await (from c in context.MerchantContacts where c.MerchantId == merchantId select c).ToListAsync(cancellationToken);
+            List<MerchantOperator> merchantOperators = await (from o in context.MerchantOperators where o.MerchantId == merchantId select o).ToListAsync(cancellationToken);
+            List<MerchantSecurityUser> merchantSecurityUsers = await (from u in context.MerchantSecurityUsers where u.MerchantId == merchantId select u).ToListAsync(cancellationToken);
+            List<MerchantDevice> merchantDevices = await (from d in context.MerchantDevices where d.MerchantId == merchantId select d).ToListAsync(cancellationToken);
+            List<MerchantSchedule> merchantSchedules = await (from s in context.MerchantSchedules where s.MerchantId == merchantId select s).ToListAsync(cancellationToken);
+            List<MerchantScheduleMonth> merchantScheduleMonths = await (from sm in context.MerchantScheduleMonths
+                                                                        where merchantSchedules.Select(s => s.MerchantScheduleId).Contains(sm.MerchantScheduleId)
+                                                                        select sm).ToListAsync(cancellationToken);
+
+            if (merchant == null) {
+                return Result.NotFound($"No merchant found for estate {estateId} and merchant {merchantId}");
+            }
+
+            MerchantModel model = ModelFactory.ConvertFrom(estateId, merchant, merchantAddresses, merchantContacts, merchantOperators, merchantDevices, merchantSecurityUsers, (Schedules: merchantSchedules, Months: merchantScheduleMonths));
+
+            return Result.Success(model);
         }
 
         public async Task<Result<MerchantScheduleModel>> GetMerchantSchedule(Guid estateId,
