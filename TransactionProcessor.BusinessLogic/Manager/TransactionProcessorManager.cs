@@ -152,6 +152,13 @@ namespace TransactionProcessor.BusinessLogic.Manager
                 }
             }
 
+            Result<Merchant> merchantReadModelResult = await this.TransactionProcessorReadModelRepository.GetMerchant(estateId, merchantId, cancellationToken);
+            if (merchantReadModelResult.IsFailed) {
+                return ResultHelpers.CreateFailure(merchantReadModelResult);
+            }
+
+            merchantModel.MerchantReportingId = merchantReadModelResult.Data.MerchantReportingId;
+
             return Result.Success(merchantModel);
         }
 
