@@ -1,5 +1,7 @@
 ﻿using DotNet.Testcontainers.Builders;
 using Syncfusion.Pdf.Xmp;
+using System.IO;
+using TestHosts.Clients;
 using TransactionProcessor.Database.Contexts;
 
 namespace TransactionProcessor.IntegrationTests.Common
@@ -7,6 +9,7 @@ namespace TransactionProcessor.IntegrationTests.Common
     using Client;
     using EventStore.Client;
     using global::Shared.IntegrationTesting;
+    using global::Shared.IntegrationTesting.TestContainers;
     using global::Shared.Serialisation;
     using SecurityService.Client;
     using Shouldly;
@@ -34,7 +37,7 @@ namespace TransactionProcessor.IntegrationTests.Common
         public static String TestBankSortCode = "112233";
 
         public HttpClient TestHostHttpClient;
-
+        
         /// <summary>
         /// The security service client
         /// </summary>
@@ -48,6 +51,8 @@ namespace TransactionProcessor.IntegrationTests.Common
         private readonly TestingContext TestingContext;
 
         public EventStoreProjectionManagementClient ProjectionManagementClient;
+
+        public IAgencyBankingClient AgencyBankingClient;
 
         #endregion
 
@@ -89,15 +94,52 @@ namespace TransactionProcessor.IntegrationTests.Common
             });
         }
 
-        public override ContainerBuilder SetupTransactionProcessorContainer(){
+        //public override ContainerBuilder SetupTestHostContainer()
+        //{
+        //    var variables = new Dictionary<String, String>();
+        //    variables.Add("ConnectionStrings:AgencyBankingReadModel", $"server={this.SqlServerContainerName};user id={this.SqlCredentials.usename};password={this.SqlCredentials.password};database=AgencyBankingReadModel;Encrypt=false");
+        //    variables.Add("ASPNETCORE_ENVIRONMENT", $"PRODUCTION");
+        //    this.AdditionalVariables.Add(ContainerType.TestHost, variables);
 
-            List<String> variables = new List<String>();
-            variables.Add($"OperatorConfiguration:PataPawaPrePay:Url=http://{this.TestHostContainerName}:{DockerPorts.TestHostPort}/api/patapawaprepay");
+        //    return base.SetupTestHostContainer();
+        //}
 
-            //this.AdditionalVariables.Add(ContainerType.FileProcessor, variables);
-            //this.SetAdditionalVariables(ContainerType.FileProcessor, variables);
+        public override ContainerBuilder SetupTransactionProcessorContainer() {
+             Dictionary<String, String> additionalVariables = new();
+            additionalVariables.Add("OperatorConfiguration:AgencyBanking:Url",$"http://{this.TestHostContainerName}:{DockerPorts.TestHostPort}/api/agencybanking");
+
+            this.AdditionalVariables.Add(ContainerType.TransactionProcessor, additionalVariables);
 
             return base.SetupTransactionProcessorContainer();
+        }
+
+        public override ContainerBuilder SetupTestHostContainer()
+        {
+            this.Trace("About to Start Test Hosts Container");
+
+            Dictionary<String, String> environmentVariables = this.GetCommonEnvironmentVariables();
+            environmentVariables.Add("ConnectionStrings:TestBankReadModel", this.SetConnectionString("TestBankReadModel", this.UseSecureSqlServerDatabase));
+            environmentVariables.Add("ConnectionStrings:PataPawaReadModel", this.SetConnectionString("PataPawaReadModel", this.UseSecureSqlServerDatabase));
+            environmentVariables.Add("ConnectionStrings:AgencyBankingReadModel", this.SetConnectionString("AgencyBankingReadModel", this.UseSecureSqlServerDatabase));
+            //environmentVariables.Add("ASPNETCORE_ENVIRONMENT", "IntegrationTest");
+
+            Dictionary<String, String> additionalEnvironmentVariables = this.GetAdditionalVariables(ContainerType.TestHost);
+
+            foreach (KeyValuePair<String, String> additionalEnvironmentVariable in additionalEnvironmentVariables)
+            {
+                environmentVariables.Add(additionalEnvironmentVariable.Key, additionalEnvironmentVariable.Value);
+            }
+
+            (String imageName, Boolean useLatest) imageDetails = this.GetImageDetails(ContainerType.TestHost).Data;
+
+            ContainerBuilder testHostContainer = new ContainerBuilder()
+                .WithName(this.TestHostContainerName)  // similar to WithName()
+                .WithImage(imageDetails.imageName)
+                .WithEnvironment(environmentVariables)
+                .MountHostFolder(this.DockerPlatform, this.HostTraceFolder)
+                .WithPortBinding(DockerPorts.TestHostPort, true);
+
+            return testHostContainer;
         }
 
         public override async Task CreateSubscriptions(){
@@ -172,16 +214,28 @@ namespace TransactionProcessor.IntegrationTests.Common
             return StringSerialiser.DeserializeObject<Object>(arg, type, new SerialiserOptions(SerialiserPropertyFormat.SnakeCase));
         }
 
+        String Serialise_CamelCase(Object arg)
+        {
+            return StringSerialiser.Serialise<Object>(arg, new SerialiserOptions(SerialiserPropertyFormat.CamelCase));
+        }
+
+        Object Deserialise_CamelCase(String arg, Type type)
+        {
+            return StringSerialiser.DeserializeObject<Object>(arg, type, new SerialiserOptions(SerialiserPropertyFormat.CamelCase));
+        }
+
         /// <summary>
         /// Starts the containers for scenario run.
         /// </summary>
         /// <param name="scenarioName">Name of the scenario.</param>
         public override async Task StartContainersForScenarioRun(String scenarioName, DockerServices dockerServices){
+            this.HostTraceFolder = Path.Combine(Directory.GetCurrentDirectory(), "trace");
             await base.StartContainersForScenarioRun(scenarioName, dockerServices);
             
             // Setup the base address resolvers
             String SecurityServiceBaseAddressResolver(String api) => $"https://127.0.0.1:{this.SecurityServicePort}";
             String TransactionProcessorBaseAddressResolver(String api) => $"http://127.0.0.1:{this.TransactionProcessorPort}";
+            String TestHostServiceBaseAddressResolver(String api) => $"http://127.0.0.1:{this.TestHostServicePort}";
 
             HttpClientHandler clientHandler = new HttpClientHandler
                                               {
@@ -193,11 +247,12 @@ namespace TransactionProcessor.IntegrationTests.Common
                                                                                                   return true;
                                                                                               }
                                               };
-            HttpClient httpClient = new HttpClient(clientHandler);
+            HttpClient httpClient = new(clientHandler);
             this.SecurityServiceClient = new SecurityServiceClient(SecurityServiceBaseAddressResolver, httpClient, Serialise, Deserialise);
             this.TransactionProcessorClient = new TransactionProcessorClient(TransactionProcessorBaseAddressResolver, httpClient, Serialise, Deserialise);
             this.TestHostHttpClient= new HttpClient(clientHandler);
             this.TestHostHttpClient.BaseAddress = new Uri($"http://127.0.0.1:{this.TestHostServicePort}");
+            this.AgencyBankingClient = new AgencyBankingClient(TestHostServiceBaseAddressResolver, httpClient, Serialise_CamelCase, this.Deserialise_CamelCase);
 
             this.Trace("About to configure Test Bank");
             String callbackUrl = $"http://{this.CallbackHandlerContainerName}:{DockerPorts.CallbackHandlerDockerPort}/api/callbacks";

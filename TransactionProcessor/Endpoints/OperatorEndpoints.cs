@@ -2,10 +2,12 @@ using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Routing;
 using Shared.Authorisation;
+using System.Diagnostics.CodeAnalysis;
 using TransactionProcessor.Handlers;
 
 namespace TransactionProcessor.Endpoints
 {
+    [ExcludeFromCodeCoverage]
     public static class OperatorEndpoints
     {
         private const string BaseRoute = "/api/estates/{estateId:guid}/operators";

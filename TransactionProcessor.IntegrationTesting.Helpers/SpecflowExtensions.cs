@@ -574,6 +574,7 @@ public static class ReqnrollExtensions{
                     "Voucher" => BuildVoucherTransactionMetaData(recipientEmail, recipientMobile, transactionAmount),
                     "PataPawa PostPay" => BuildPataPawaPostPayMetaData(messageType, accountNumber, recipientMobile, customerName, transactionAmount),
                     "PataPawa PrePay" => BuildPataPawaPrePayMetaData(messageType, meterNumber, customerName, transactionAmount),
+                    "AgencyBanking" => BuildAgencyBankingMetaData(messageType, accountNumber),
                     _ => BuildMobileTopupMetaData(transactionAmount, customerAccountNumber)
                 };
                 
@@ -649,6 +650,13 @@ public static class ReqnrollExtensions{
         return new Dictionary<String, String>{
                                                  { "Amount", transactionAmount.ToString() },
                                                  { "CustomerAccountNumber", customerAccountNumber }
+                                             };
+    }
+
+    private static Dictionary<String, String> BuildAgencyBankingMetaData(String messageType, String accountNumber){
+        return new Dictionary<String, String>{
+                                                 { "AgencyBankingMessageType", messageType },
+                                                 { "AgencyBankingAccountNumber", accountNumber }
                                              };
     }
 
@@ -1022,9 +1030,9 @@ public static class ReqnrollExtensions{
         return requests;
     }
 
-    public static List<(EstateDetails estate, CreateMerchantRequest)> ToCreateMerchantRequests(this DataTableRows tableRows, List<EstateDetails> estateDetailsList)
+    public static List<(EstateDetails estate, CreateMerchantRequest, Boolean EnableAgencyBanking)> ToCreateMerchantRequests(this DataTableRows tableRows, List<EstateDetails> estateDetailsList)
     {
-        List<(EstateDetails estate, CreateMerchantRequest)> requests = new();
+        List<(EstateDetails estate, CreateMerchantRequest, Boolean EnableAgencyBanking)> requests = new();
         foreach (DataTableRow tableRow in tableRows)
         {
             String estateName = ReqnrollTableHelper.GetStringRowValue(tableRow, "EstateName");
@@ -1043,34 +1051,21 @@ public static class ReqnrollExtensions{
                 Name = ReqnrollTableHelper.GetStringRowValue(tableRow, "MerchantName"),
                 Contact = new Contact
                 {
-                    ContactName =
-                                                                                ReqnrollTableHelper.GetStringRowValue(tableRow,
-                                                                                                                      "ContactName"),
-                    EmailAddress =
-                                                                                ReqnrollTableHelper.GetStringRowValue(tableRow,
-                                                                                                                      "EmailAddress")
+                    ContactName = ReqnrollTableHelper.GetStringRowValue(tableRow, "ContactName"),
+                    EmailAddress = ReqnrollTableHelper.GetStringRowValue(tableRow, "EmailAddress")
                 },
                 Address = new Address
                 {
-                    AddressLine1 =
-                                                                                ReqnrollTableHelper.GetStringRowValue(tableRow,
-                                                                                                                      "AddressLine1"),
-                    Town =
-                                                                                ReqnrollTableHelper.GetStringRowValue(tableRow, "Town"),
-                    Region =
-                                                                                ReqnrollTableHelper.GetStringRowValue(tableRow,
-                                                                                                                      "Region"),
-                    Country =
-                                                                                ReqnrollTableHelper.GetStringRowValue(tableRow,
-                                                                                                                      "Country"),
-                    PostalCode =
-                                                                                ReqnrollTableHelper.GetStringRowValue(tableRow,
-                                                                                                                      "PostalCode")
+                    AddressLine1 = ReqnrollTableHelper.GetStringRowValue(tableRow, "AddressLine1"),
+                    Town = ReqnrollTableHelper.GetStringRowValue(tableRow, "Town"),
+                    Region = ReqnrollTableHelper.GetStringRowValue(tableRow, "Region"),
+                    Country = ReqnrollTableHelper.GetStringRowValue(tableRow, "Country"),
+                    PostalCode = ReqnrollTableHelper.GetStringRowValue(tableRow, "PostalCode")
                 },
                 SettlementSchedule = schedule,
                 MerchantId = Guid.NewGuid()
             };
-            requests.Add((estateDetails, createMerchantRequest));
+            requests.Add((estateDetails, createMerchantRequest, ReqnrollTableHelper.GetBooleanValue(tableRow, "AgencyBankingEnabled")));
         }
 
         return requests;
