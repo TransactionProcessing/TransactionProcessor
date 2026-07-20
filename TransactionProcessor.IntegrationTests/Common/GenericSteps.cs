@@ -50,8 +50,7 @@ namespace TransactionProcessor.IntegrationTests.Common
             this.TestingContext.DockerHelper.SqlServerContainerName = "sharedsqlserver";
 
             this.TestingContext.DockerHelper.SetImageDetails(ContainerType.TransactionProcessor, ("transactionprocessor", false));
-            this.TestingContext.DockerHelper.SetImageDetails(ContainerType.TestHost, ("testhosts", false));
-
+            
             this.TestingContext.Logger = logger;
             this.TestingContext.Logger.LogInformation("About to Start Containers for Scenario Run");
             await this.TestingContext.DockerHelper.StartContainersForScenarioRun(scenarioName, dockerServices).ConfigureAwait(false);
