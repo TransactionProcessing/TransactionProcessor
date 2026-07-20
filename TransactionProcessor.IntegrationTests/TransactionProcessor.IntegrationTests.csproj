@@ -38,6 +38,7 @@
     <PackageReference Include="Microsoft.IdentityModel.JsonWebTokens" />
     <PackageReference Include="System.ServiceModel.Http" />
     <PackageReference Include="System.ServiceModel.NetTcp" />
+    <PackageReference Include="TestHosts.Clients" />
   </ItemGroup>
 
   <ItemGroup>

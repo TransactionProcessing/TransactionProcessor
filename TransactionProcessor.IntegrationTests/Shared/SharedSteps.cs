@@ -1,7 +1,9 @@
-﻿using SimpleResults;
+﻿using NLog.LayoutRenderers.Wrappers;
+using SecurityService.DataTransferObjects;
+using SimpleResults;
 using System;
 using System.Collections.Generic;
-using SecurityService.DataTransferObjects;
+using TestHosts.DataTransferObjects.AgencyBanking;
 using TransactionProcessor.DataTransferObjects.Requests.Contract;
 using TransactionProcessor.DataTransferObjects.Requests.Merchant;
 using TransactionProcessor.DataTransferObjects.Requests.MerchantSchedule;
@@ -46,7 +48,7 @@ namespace TransactionProcessor.IntegrationTests.Shared
             this.TestingContext = testingContext;
             this.SecurityServiceSteps = new SecurityServiceSteps(testingContext.DockerHelper.SecurityServiceClient);
             this.TransactionProcessorSteps = new TransactionProcessorSteps(testingContext.DockerHelper.TransactionProcessorClient, testingContext.DockerHelper.TestHostHttpClient,
-                testingContext.DockerHelper.ProjectionManagementClient);
+                testingContext.DockerHelper.ProjectionManagementClient, testingContext.DockerHelper.AgencyBankingClient);
         }
         
         //[Given(@"I have a token to access the estate management and transaction processor resources")]
@@ -302,13 +304,11 @@ namespace TransactionProcessor.IntegrationTests.Shared
         [When(@"I create the following merchants")]
         public async Task WhenICreateTheFollowingMerchants(DataTable table)
         {
-            List<(EstateDetails estate, CreateMerchantRequest)> requests = table.Rows.ToCreateMerchantRequests(this.TestingContext.Estates);
+            List<(EstateDetails estate, CreateMerchantRequest, Boolean)> requests = table.Rows.ToCreateMerchantRequests(this.TestingContext.Estates);
 
             List<DataTransferObjects.Responses.Merchant.MerchantResponse> verifiedMerchants = await this.TransactionProcessorSteps.WhenICreateTheFollowingMerchants(this.TestingContext.AccessToken, requests);
 
             foreach (DataTransferObjects.Responses.Merchant.MerchantResponse verifiedMerchant in verifiedMerchants){
-                //await this.TransactionProcessorSteps.WhenICreateTheFollowingMerchants(this.TestingContext.AccessToken, verifiedMerchant.EstateId, verifiedMerchant.MerchantId);
-
                 EstateDetails estateDetails = this.TestingContext.GetEstateDetails(verifiedMerchant.EstateId);
                 estateDetails.AddMerchant(verifiedMerchant);
                 this.TestingContext.Logger.LogInformation($"Merchant {verifiedMerchant.MerchantName} created with Id {verifiedMerchant.MerchantId} for Estate {estateDetails.EstateName}");
@@ -679,5 +679,73 @@ namespace TransactionProcessor.IntegrationTests.Shared
             List<ReqnrollExtensions.SettlementFeeDetails> settlementFeeDetailsList = table.Rows.ToSettlementFeeDetails(estateName, merchantName, settlementDateString, this.TestingContext.Estates);
             await this.TransactionProcessorSteps.WhenIGetTheEstateSettlementReportForEstateForMerchantWithTheDateTheFollowingFeesAreSettled(this.TestingContext.AccessToken, settlementFeeDetailsList);
         }
+
+        [Given("I initialise the Agency Banking Host")]
+        public async Task GivenIInitialiseTheAgencyBankingHost() {
+            SystemInitializationRequest request = new() {
+                DefaultCurrency = "KES",
+                InstitutionCode = "BANK001",
+                InstitutionName = "Enterprise Bank",
+                Timezone = "Africa/Nairobi",
+                SettlementMode = "NET"
+            };
+            var result = await this.TestingContext.DockerHelper.AgencyBankingClient.InitializeSystem(request, CancellationToken.None);
+            result.IsSuccess.ShouldBeTrue("Error initializing Agency Banking Host");
+
+        }
+
+        [Given("I create the following accounts")]
+        public async Task GivenICreateTheFollowingAccounts(DataTable dataTable)
+        {
+            foreach (DataTableRow dataTableRow in dataTable.Rows) {
+
+                CreateGlAccountRequest request = new() {
+                    Currency = ReqnrollTableHelper.GetStringRowValue(dataTableRow, "Currency"),
+                    GlCode = ReqnrollTableHelper.GetStringRowValue(dataTableRow, "Code"),
+                    GlName = ReqnrollTableHelper.GetStringRowValue(dataTableRow, "Name"),
+                    GlType = ReqnrollTableHelper.GetStringRowValue(dataTableRow, "Type")
+                };
+                Result result = await this.TestingContext.DockerHelper.AgencyBankingClient.CreateGlAccount(request, CancellationToken.None);
+                result.IsSuccess.ShouldBeTrue($"Error creating GL account {request.GlCode}");
+            }
+        }
+
+        [Given("I create the following customers")]
+        public async Task GivenICreateTheFollowingCustomers(DataTable dataTable)
+        {
+            foreach (DataTableRow dataTableRow in dataTable.Rows)
+            {
+                //| CustomerId | FullName | PhoneNumber | NationalId | AccountNumber |
+                CreateCustomerRequest request = new CreateCustomerRequest
+                {
+                    AccountNumber = ReqnrollTableHelper.GetStringRowValue(dataTableRow, "AccountNumber"),
+                    CustomerId = ReqnrollTableHelper.GetStringRowValue(dataTableRow, "CustomerId"),
+                    FullName = ReqnrollTableHelper.GetStringRowValue(dataTableRow, "FullName"),
+                    PhoneNumber = ReqnrollTableHelper.GetStringRowValue(dataTableRow, "PhoneNumber"),
+                    NationalId = ReqnrollTableHelper.GetStringRowValue(dataTableRow, "NationalId")
+                };
+                Result result = await this.TestingContext.DockerHelper.AgencyBankingClient.CreateCustomer(request, CancellationToken.None);
+                result.IsSuccess.ShouldBeTrue($"Error creating customer {request.AccountNumber}");
+            }
+        }
+
+        [Given("I create the settlement account")]
+        public async Task GivenICreateTheSettlementAccount(DataTable dataTable)
+        {
+            foreach (DataTableRow dataTableRow in dataTable.Rows)
+            {
+                CreateSettlementAccountRequest request = new()
+                {
+                    AccountNumber = ReqnrollTableHelper.GetStringRowValue(dataTableRow, "AccountNumber"),
+                    AccountName = ReqnrollTableHelper.GetStringRowValue(dataTableRow, "AccountName"),
+                    BankCode = ReqnrollTableHelper.GetStringRowValue(dataTableRow, "BankCode"),
+                    Currency = ReqnrollTableHelper.GetStringRowValue(dataTableRow, "Currency")
+                };
+                Result result = await this.TestingContext.DockerHelper.AgencyBankingClient.CreateSettlementAccount(request, CancellationToken.None);
+                result.IsSuccess.ShouldBeTrue($"Error creating settlement account {request.AccountNumber}");
+            }
+        }
+
+
     }
 }

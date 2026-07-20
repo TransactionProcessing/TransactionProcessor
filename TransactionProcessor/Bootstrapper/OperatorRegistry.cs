@@ -1,4 +1,5 @@
 ﻿using Shared.Middleware;
+using TransactionProcessor.BusinessLogic.OperatorInterfaces.AgencyBanking;
 
 namespace TransactionProcessor.Bootstrapper
 {
@@ -33,12 +34,14 @@ namespace TransactionProcessor.Bootstrapper
             this.ConfigureOperator<SafaricomConfiguration>("Safaricom");
             this.ConfigureOperator<PataPawaPostPaidConfiguration>("PataPawaPostPay");
             this.ConfigureOperator<PataPawaPrePaidConfiguration>("PataPawaPrePay");
+            this.ConfigureOperator<AgencyBankingConfiguration>("AgencyBanking");
             this.AddSingleton(new PataPawaPostPayServiceClient(PataPawaPostPayServiceClient.EndpointConfiguration.BasicHttpBinding_IPataPawaPostPayService));
 
             this.For<IOperatorProxy>().Add<SafaricomPinlessProxy>().Named("Safaricom").Singleton();
             this.For<IOperatorProxy>().Add<PataPawaPostPayProxy>().Named("PataPawaPostPay").Singleton();
             this.For<IOperatorProxy>().Add<PataPawaPrePayProxy>().Named("PataPawaPrePay").Singleton();
             this.For<IOperatorProxy>().Add<VoucherManagementProxy>().Named("Voucher").Singleton();
+            this.For<IOperatorProxy>().Add<AgencyBankingProxy>().Named("AgencyBanking").Singleton();
 
 
             this.AddTransient<Func<PataPawaPostPayServiceClient, String, String, IPataPawaPostPayService>>(context =>

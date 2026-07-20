@@ -15,6 +15,7 @@
     <PackageReference Include="Shared.IntegrationTesting" />
     <PackageReference Include="Microsoft.IdentityModel.Tokens" />
     <PackageReference Include="Microsoft.IdentityModel.JsonWebTokens" />
+    <PackageReference Include="TestHosts.Clients" />
   </ItemGroup>
 
   <ItemGroup>

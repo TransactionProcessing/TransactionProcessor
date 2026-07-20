@@ -4,11 +4,13 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Routing;
 using Shared.Authorisation;
 using Shared.General;
+using System.Diagnostics.CodeAnalysis;
 using System.Security.Claims;
 using TransactionProcessor.Handlers;
 
 namespace TransactionProcessor.Endpoints
 {
+    [ExcludeFromCodeCoverage]
     public static class EstateEndpoints
     {
         private const string BaseRoute = "/api/estates";

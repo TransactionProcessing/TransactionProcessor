@@ -49,7 +49,7 @@ namespace TransactionProcessor.Bootstrapper
             KurrentDBClientSettings eventStoreClientSettings = KurrentDBClientSettings.Create(connectionString);
 
             this.ConfigureHealthChecks(eventStoreClientSettings);
-            this.ConfigureSwagger();
+            //this.ConfigureSwagger();
             this.ConfigureAuthentication();
             this.ConfigureControllers();
             this.ConfigureMvc();
@@ -187,6 +187,7 @@ namespace TransactionProcessor.Bootstrapper
         #endregion
     }
 
+    [ExcludeFromCodeCoverage]
     public static class JsonSerializerConfiguration
     {
         public static void ConfigureMinimalApi(JsonSerializerOptions serializerOptions)

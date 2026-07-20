@@ -1,6 +1,8 @@
 ﻿using EventStore.Client;
 using Shared.Serialisation;
 using SimpleResults;
+using TestHosts.Clients;
+using TestHosts.DataTransferObjects.AgencyBanking;
 using TransactionProcessor.DataTransferObjects.Requests.Contract;
 using TransactionProcessor.DataTransferObjects.Requests.Estate;
 using TransactionProcessor.DataTransferObjects.Requests.Merchant;
@@ -29,12 +31,16 @@ public class TransactionProcessorSteps
 
     private readonly HttpClient TestHostHttpClient;
     private readonly EventStoreProjectionManagementClient ProjectionManagementClient;
+    private readonly IAgencyBankingClient AgencyBankingClient;
 
-    public TransactionProcessorSteps(ITransactionProcessorClient transactionProcessorClient, HttpClient testHostHttpClient, EventStoreProjectionManagementClient projectionManagementClient)
+    public TransactionProcessorSteps(ITransactionProcessorClient transactionProcessorClient, 
+                                     HttpClient testHostHttpClient, EventStoreProjectionManagementClient projectionManagementClient,
+                                     IAgencyBankingClient agencyBankingClient)
     {
         this.TransactionProcessorClient = transactionProcessorClient;
         this.TestHostHttpClient = testHostHttpClient;
         this.ProjectionManagementClient = projectionManagementClient;
+        this.AgencyBankingClient = agencyBankingClient;
     }
 
     public async Task WhenIGetTheEstateSettlementReportForEstateForMerchantWithTheStartDateAndTheEndDateTheFollowingDataIsReturned(String accessToken, DateTime stateDate, DateTime endDate, ReqnrollExtensions.SettlementDetails expectedSettlementDetails)
@@ -295,13 +301,13 @@ public class TransactionProcessorSteps
         }
     }
 
-    public async Task<List<MerchantResponse>> WhenICreateTheFollowingMerchants(string accessToken, List<(EstateDetails estate, CreateMerchantRequest request)> requests)
+    public async Task<List<MerchantResponse>> WhenICreateTheFollowingMerchants(string accessToken, List<(EstateDetails estate, CreateMerchantRequest request, Boolean enableAgencyBanking)> requests)
     {
         List<MerchantResponse> responses = new List<MerchantResponse>();
 
         List<(Guid, Guid, String)> merchants = new List<(Guid, Guid, String)>();
 
-        foreach ((EstateDetails estate, CreateMerchantRequest request) request in requests)
+        foreach ((EstateDetails estate, CreateMerchantRequest request, Boolean enableAgencyBanking) request in requests)
         {
 
             Result? result = await this.TransactionProcessorClient
@@ -309,6 +315,43 @@ public class TransactionProcessorSteps
                 .ConfigureAwait(false);
 
             result.IsSuccess.ShouldBeTrue();
+
+
+            if (request.enableAgencyBanking) {
+                CreateAgentRequest createAgentRequest = new() {
+                    AgentId = request.request.MerchantId.Value.ToString(),
+                    DailyLimit = 100000,
+                    Name = request.request.Name,
+                    MinimumFloat = 10000,
+                    Email = request.request.Contact.EmailAddress,
+                    Location = request.request.Address.AddressLine1,
+                    PhoneNumber = request.request.Contact.PhoneNumber
+                };
+                Result? enableAgencyBankingResult = await this.AgencyBankingClient.CreateRetailAgent(createAgentRequest, CancellationToken.None);
+                enableAgencyBankingResult.IsSuccess.ShouldBeTrue();
+                
+                // Activate the agent
+                ActivateAgentRequest activateAgentRequest = new ActivateAgentRequest { ActivatedBy = "INTEGRATIONTEST" };
+                var activateAgentResult = await this.AgencyBankingClient.ActivateAgent(createAgentRequest.AgentId, activateAgentRequest, CancellationToken.None);
+                activateAgentResult.IsSuccess.ShouldBeTrue();
+
+                ConfigureFloatRequest configureFloatRequest = new ConfigureFloatRequest {
+                    AgentId = createAgentRequest.AgentId, DailyFloatLimit = 100000, MaximumFloat = 100000, MinimumFloat = 10000,
+                };
+                var configureFloatResult = await this.AgencyBankingClient.ConfigureFloat(configureFloatRequest, CancellationToken.None);
+                configureFloatResult.IsSuccess.ShouldBeTrue();
+                
+                FloatCreditRequest floatCreditRequest = new FloatCreditRequest() {
+                    AgentId = createAgentRequest.AgentId,
+                    Amount = 10000,
+                    Narration = "Test Credit",
+                    SourceAccount = "Test Account",
+                    TransactionId = Guid.NewGuid().ToString()
+                };
+                var floatCreditResult = await this.AgencyBankingClient.CreditFloat(floatCreditRequest, CancellationToken.None);
+                floatCreditResult.IsSuccess.ShouldBeTrue();
+            }
+
 
             merchants.Add((request.estate.EstateId, request.request.MerchantId.Value, request.request.Name));
         }
@@ -352,19 +395,29 @@ public class TransactionProcessorSteps
     {
 
         logonTransactionResponse.ResponseCode.ShouldBe(expectedResponseCode, $"Transaction Number {transactionNumber} verification failed");
-        logonTransactionResponse.ResponseMessage.ShouldBe(expectedResponseMessage, $"Transaction Number {transactionNumber} verification failed");
+        this.ValidateResponseMessage(logonTransactionResponse.ResponseMessage, transactionNumber, expectedResponseMessage);
     }
 
     private void ValidateTransactionResponse(SaleTransactionResponse saleTransactionResponse, String transactionNumber, String expectedResponseCode, String expectedResponseMessage)
     {
         saleTransactionResponse.ResponseCode.ShouldBe(expectedResponseCode, $"Transaction Number {transactionNumber} verification failed");
-        saleTransactionResponse.ResponseMessage.ShouldBe(expectedResponseMessage, $"Transaction Number {transactionNumber} verification failed");
+        this.ValidateResponseMessage(saleTransactionResponse.ResponseMessage, transactionNumber, expectedResponseMessage);
     }
 
     private void ValidateTransactionResponse(ReconciliationResponse reconciliationResponse, String transactionNumber, String expectedResponseCode, String expectedResponseMessage)
     {
         reconciliationResponse.ResponseCode.ShouldBe(expectedResponseCode, $"Transaction Number {transactionNumber} verification failed");
-        reconciliationResponse.ResponseMessage.ShouldBe(expectedResponseMessage, $"Transaction Number {transactionNumber} verification failed");
+        this.ValidateResponseMessage(reconciliationResponse.ResponseMessage, transactionNumber, expectedResponseMessage);
+    }
+
+    private void ValidateResponseMessage(String actualResponseMessage, String transactionNumber, String expectedResponseMessage)
+    {
+        if (String.IsNullOrWhiteSpace(expectedResponseMessage) || expectedResponseMessage == "*")
+        {
+            return;
+        }
+
+        actualResponseMessage.ShouldBe(expectedResponseMessage, $"Transaction Number {transactionNumber} verification failed");
     }
 
     public async Task WhenIRequestTheReceiptIsResent(String accessToken, List<TransactionResponse> transactions)

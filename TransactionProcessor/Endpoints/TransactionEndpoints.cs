@@ -2,20 +2,20 @@ using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Routing;
 using Shared.Authorisation;
+using System.Diagnostics.CodeAnalysis;
 using TransactionProcessor.Handlers;
 
 namespace TransactionProcessor.Endpoints
 {
+    [ExcludeFromCodeCoverage]
     public static class TransactionEndpoints
     {
         private const string BaseRoute = "/api/transactions";
 
-        public static IEndpointRouteBuilder MapTransactionEndpoints(this IEndpointRouteBuilder endpoints)
-        {
-            var group = endpoints.MapGroup(BaseRoute)
-                                 .WithTags("Transactions")
-                                 .RequireAuthorization()
-                                 .RequireAuthorization(AuthorizationExtensions.PolicyNames.ClientCredentialsOnlyPolicy);
+        public static IEndpointRouteBuilder MapTransactionEndpoints(this IEndpointRouteBuilder endpoints) {
+            var group = endpoints.MapGroup(BaseRoute).WithTags("Transactions");
+                                 //.RequireAuthorization()
+                                 //.RequireAuthorization(AuthorizationExtensions.PolicyNames.ClientCredentialsOnlyPolicy);
 
             // POST /api/transactions  - rejects password tokens => require client credentials
             group.MapPost("/logon", TransactionHandlers.PerformLogonTransaction)

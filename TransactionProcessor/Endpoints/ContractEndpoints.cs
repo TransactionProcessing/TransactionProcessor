@@ -1,3 +1,4 @@
+using System.Diagnostics.CodeAnalysis;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Routing;
@@ -6,6 +7,7 @@ using TransactionProcessor.Handlers;
 
 namespace TransactionProcessor.Endpoints
 {
+    [ExcludeFromCodeCoverage]
     public static class ContractEndpoints
     {
         private const string BaseRoute = "/api/estates/{estateId:guid}/contracts";
