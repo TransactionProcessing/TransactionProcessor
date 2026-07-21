@@ -88,6 +88,7 @@ Background:
 	| Test Estate 1 | PataPawa PostPay | PataPawa PostPay Contract | Post Pay Bill Pay | Bill Pay (Post) |       | BillPayment |
 	| Test Estate 1 | PataPawa PrePay  | PataPawa PrePay Contract  | Pre Pay Bill Pay  | Bill Pay (Pre)  |       | BillPayment |
 	| Test Estate 1 | AgencyBanking    | AgencyBanking Contract    | Balance Enquiry   | Balance Enquiry |       | MobileTopup |
+	| Test Estate 1 | AgencyBanking    | AgencyBanking Contract    | Deposit           | Deposit         |       | MobileTopup |
 	
 	When I add the following Transaction Fees
 	| EstateName    | OperatorName     | ContractDescription       | ProductName       | CalculationType | FeeDescription      | Value |
@@ -134,7 +135,7 @@ Background:
 
 	Given I make the following manual merchant deposits 
 	| Reference | Amount  | DateTime | MerchantName    | EstateName    |
-	| Deposit1  | 265.00 | Today    | Test Merchant 1 | Test Estate 1 |
+	| Deposit1  | 365.00 | Today    | Test Merchant 1 | Test Estate 1 |
 	| Deposit1  | 110.00 | Today    | Test Merchant 2 | Test Estate 1 |
 	| Deposit1  | 110.00 | Today    | Test Merchant 3 | Test Estate 1 |
 	| Deposit1  | 100.00 | Today    | Test Merchant 4 | Test Estate 1 |
@@ -176,15 +177,16 @@ Scenario: Sale Transactions
 	| Today    |                 9 | Sale            |                 2 | Test Merchant 1 |        123456780 | Test Estate 1 | PataPawa PostPay |             20.00 |                       |                             | PataPawa PostPay Contract | Post Pay Bill Pay | test@recipient.co.uk |       123456789 | ProcessBill    |      12345678 | Mr Test Customer |             |
 	| Today    |                10 | Sale            |                 2 | Test Merchant 1 |        123456780 | Test Estate 1 | PataPawa PrePay  |              0.00 |                       |                             | PataPawa PrePay Contract  | Pre Pay Bill Pay  | test@recipient.co.uk |                 | meter          |               |                  |    00000001 |
 	| Today    |                11 | Sale            |                 2 | Test Merchant 1 |        123456780 | Test Estate 1 | PataPawa PrePay  |             25.00 |                       |                             | PataPawa PrePay Contract  | Pre Pay Bill Pay  | test@recipient.co.uk |                 | vend           |      00000001 | Customer 1       |    00000001 |
-	| Today    |                12 | Sale            |                 1 | Test Merchant 1 |        123456780 | Test Estate 1 | AgencyBanking    |              0.00 |                       |                             | AgencyBanking Contract    | Balance Enquiry   | balanceenquiry       |        12345678 | balanceenquiry |      12345678 |                  |             |
-	| Today    |                13 | Sale            |                 1 | Test Merchant 1 |        123456781 | Test Estate 1 | Safaricom        |            100.00 |             123456789 | testcustomer@customer.co.uk | Safaricom Contract        | Variable Topup    |                      |                 |                |               |                  |             |
-	| Today    |                14 | Sale            |                 1 | Test Merchant 1 |        123456780 | InvalidEstate | Safaricom        |            100.00 |             123456789 | testcustomer@customer.co.uk | Safaricom Contract        | Variable Topup    |                      |                 |                |               |                  |             |
-	| Today    |                15 | Sale            |                 1 | InvalidMerchant |        123456780 | Test Estate 1 | Safaricom        |            100.00 |             123456789 | testcustomer@customer.co.uk | Safaricom Contract        | Variable Topup    |                      |                 |                |               |                  |             |
-	| Today    |                16 | Sale            |                 1 | Test Merchant 1 |        123456780 | Test Estate 1 | Safaricom        |            100.00 |             123456789 | testcustomer@customer.co.uk | EmptyContract             | Variable Topup    |                      |                 |                |               |                  |             |
-	| Today    |                17 | Sale            |                 1 | Test Merchant 1 |        123456780 | Test Estate 1 | Safaricom        |            100.00 |             123456789 | testcustomer@customer.co.uk | InvalidContract           | Variable Topup    |                      |                 |                |               |                  |             |
-	| Today    |                18 | Sale            |                 1 | Test Merchant 1 |        123456780 | Test Estate 1 | Safaricom        |            100.00 |             123456789 | testcustomer@customer.co.uk | Safaricom Contract        | EmptyProduct      |                      |                 |                |               |                  |             |
-	| Today    |                19 | Sale            |                 1 | Test Merchant 1 |        123456780 | Test Estate 1 | Safaricom        |            100.00 |             123456789 | testcustomer@customer.co.uk | Safaricom Contract        | InvalidProduct    |                      |                 |                |               |                  |             |
-	| Today    |                20 | Sale            |                 1 | Test Merchant 4 |        123456783 | Test Estate 1 | Safaricom        |            300.00 |             123456789 | testcustomer@customer.co.uk | Safaricom Contract        | Variable Topup    |                      |                 |                |               |                  |             |
+	| Today    |                12 | Sale            |                 1 | Test Merchant 1 |        123456780 | Test Estate 1 | AgencyBanking    |              0.00 |                       |                             | AgencyBanking Contract    | Balance Enquiry   |                      |        12345678 | balanceenquiry |      12345678 |                  |             |
+	| Today    |                13 | Sale            |                 1 | Test Merchant 1 |        123456780 | Test Estate 1 | AgencyBanking    |            100.00 |                       |                             | AgencyBanking Contract    | Deposit           |                      |        12345678 | deposit        |      12345678 |                  |             |
+	| Today    |               100 | Sale            |                 1 | Test Merchant 1 |        123456781 | Test Estate 1 | Safaricom        |            100.00 |             123456789 | testcustomer@customer.co.uk | Safaricom Contract        | Variable Topup    |                      |                 |                |               |                  |             |
+	| Today    |               101 | Sale            |                 1 | Test Merchant 1 |        123456780 | InvalidEstate | Safaricom        |            100.00 |             123456789 | testcustomer@customer.co.uk | Safaricom Contract        | Variable Topup    |                      |                 |                |               |                  |             |
+	| Today    |               102 | Sale            |                 1 | InvalidMerchant |        123456780 | Test Estate 1 | Safaricom        |            100.00 |             123456789 | testcustomer@customer.co.uk | Safaricom Contract        | Variable Topup    |                      |                 |                |               |                  |             |
+	| Today    |               103 | Sale            |                 1 | Test Merchant 1 |        123456780 | Test Estate 1 | Safaricom        |            100.00 |             123456789 | testcustomer@customer.co.uk | EmptyContract             | Variable Topup    |                      |                 |                |               |                  |             |
+	| Today    |               104 | Sale            |                 1 | Test Merchant 1 |        123456780 | Test Estate 1 | Safaricom        |            100.00 |             123456789 | testcustomer@customer.co.uk | InvalidContract           | Variable Topup    |                      |                 |                |               |                  |             |
+	| Today    |               105 | Sale            |                 1 | Test Merchant 1 |        123456780 | Test Estate 1 | Safaricom        |            100.00 |             123456789 | testcustomer@customer.co.uk | Safaricom Contract        | EmptyProduct      |                      |                 |                |               |                  |             |
+	| Today    |               106 | Sale            |                 1 | Test Merchant 1 |        123456780 | Test Estate 1 | Safaricom        |            100.00 |             123456789 | testcustomer@customer.co.uk | Safaricom Contract        | InvalidProduct    |                      |                 |                |               |                  |             |
+	| Today    |               107 | Sale            |                 1 | Test Merchant 4 |        123456783 | Test Estate 1 | Safaricom        |            300.00 |             123456789 | testcustomer@customer.co.uk | Safaricom Contract        | Variable Topup    |                      |                 |                |               |                  |             |
 
 	Then transaction response should contain the following information
 	| EstateName    | MerchantName    | TransactionNumber | ResponseCode | ResponseMessage                                                                                                  |
@@ -200,28 +202,30 @@ Scenario: Sale Transactions
 	| Test Estate 1 | Test Merchant 1 |                10 |         0000 | SUCCESS                                                                                                          |
 	| Test Estate 1 | Test Merchant 1 |                11 |         0000 | SUCCESS                                                                                                          |
 	| Test Estate 1 | Test Merchant 1 |                12 |         0000 | SUCCESS                                                                                                          |
-	| Test Estate 1 | Test Merchant 1 |                13 |         1000 | Device Identifier 123456781 not valid for Merchant Test Merchant 1                                               |
-	| InvalidEstate | Test Merchant 1 |                14 |         1001 | Estate Id [79902550-64df-4491-b0c1-4e78943928a3] is not a valid estate                                           |
-	| Test Estate 1 | InvalidMerchant |                15 |         1002 | Merchant Id [d59320fa-4c3e-4900-a999-483f6a10c69a] is not a valid merchant for estate [Test Estate 1]            |
-	| Test Estate 1 | Test Merchant 1 |                16 |         1012 | Contract Id [00000000-0000-0000-0000-000000000000] must be set for a sale transaction                            |
-	| Test Estate 1 | Test Merchant 1 |                17 |         1015 | Contract Id [934d8164-f36a-448e-b27b-4d671d41d180] not valid for Merchant [Test Merchant 1]                      |
-	| Test Estate 1 | Test Merchant 1 |                18 |         1013 | Product Id [00000000-0000-0000-0000-000000000000] must be set for a sale transaction                             |
-	| Test Estate 1 | Test Merchant 1 |                19 |         1016 | Product Id [934d8164-f36a-448e-b27b-4d671d41d180] not valid for Merchant [Test Merchant 1]                       |
-	| Test Estate 1 | Test Merchant 4 |                20 |         1009 | Merchant [Test Merchant 4] does not have enough credit available [100.00] to perform transaction amount [300.00] |
+	| Test Estate 1 | Test Merchant 1 |                13 |         0000 | SUCCESS                                                                                                          |
+	| Test Estate 1 | Test Merchant 1 |               100 |         1000 | Device Identifier 123456781 not valid for Merchant Test Merchant 1                                               |
+	| InvalidEstate | Test Merchant 1 |               101 |         1001 | Estate Id [79902550-64df-4491-b0c1-4e78943928a3] is not a valid estate                                           |
+	| Test Estate 1 | InvalidMerchant |               102 |         1002 | Merchant Id [d59320fa-4c3e-4900-a999-483f6a10c69a] is not a valid merchant for estate [Test Estate 1]            |
+	| Test Estate 1 | Test Merchant 1 |               103 |         1012 | Contract Id [00000000-0000-0000-0000-000000000000] must be set for a sale transaction                            |
+	| Test Estate 1 | Test Merchant 1 |               104 |         1015 | Contract Id [934d8164-f36a-448e-b27b-4d671d41d180] not valid for Merchant [Test Merchant 1]                      |
+	| Test Estate 1 | Test Merchant 1 |               105 |         1013 | Product Id [00000000-0000-0000-0000-000000000000] must be set for a sale transaction                             |
+	| Test Estate 1 | Test Merchant 1 |               106 |         1016 | Product Id [934d8164-f36a-448e-b27b-4d671d41d180] not valid for Merchant [Test Merchant 1]                       |
+	| Test Estate 1 | Test Merchant 4 |               107 |         1009 | Merchant [Test Merchant 4] does not have enough credit available [100.00] to perform transaction amount [300.00] |
 
  Then the following entries appear in the merchants balance history for estate 'Test Estate 1' and merchant 'Test Merchant 1'
 	| DateTime | Reference                 | EntryType | In     | Out    | ChangeAmount | Balance |
-	| Today    | Merchant Deposit          | C         | 240.00 | 0.00   | 265.00       | 230.00  |
-	| Today    | Transaction Completed     | D         | 0.00   | 110.00 | 110.00       | 130.00  |
-	| Today    | Transaction Completed     | D         | 0.00   | 90.00  | 90.00        | 30.00   |
-	| Today    | Transaction Completed     | D         | 0.00   | 10.00  | 10.00        | 20.00   |
-	| Today    | Transaction Completed     | D         | 0.00   | 20.00  | 20.00        | 20.00   |
-	| Today    | Transaction Completed     | D         | 0.00   | 20.00  | 25.00        | 20.00   |
-	| Today    | Transaction Fee Processed | C         | 0.00   | 0.55   | 0.55         | 20.00   |
-	| Today    | Transaction Fee Processed | C         | 0.00   | 0.45   | 0.45         | 20.00   |
-	| Today    | Transaction Fee Processed | C         | 0.00   | 0.01   | 0.10         | 20.00   |
-	| Today    | Transaction Fee Processed | C         | 0.00   | 0.01   | 0.10         | 20.00   |
-	| Today    | Opening Balance           | C         | 0.00   | 0.00   | 0.00         | 20.00   |
+	| Today    | Merchant Deposit          | C         | 365.00 |   0.00 |       365.00 |  365.00 |
+	| Today    | Transaction Completed     | D         |   0.00 | 110.00 |       110.00 |  255.00 |
+	| Today    | Transaction Completed     | D         |   0.00 |  90.00 |        90.00 |  165.00 |
+	| Today    | Transaction Completed     | D         |   0.00 |  10.00 |        10.00 |  155.00 |
+	| Today    | Transaction Completed     | D         |   0.00 |  20.00 |        20.00 |  135.00 |
+	| Today    | Transaction Completed     | D         |   0.00 | 100.00 |       100.00 |   35.00 |
+	| Today    | Transaction Completed     | D         |   0.00 |  25.00 |        25.00 |   35.00 |
+	| Today    | Transaction Fee Processed | C         |   0.00 |   0.55 |         0.55 |   35.55 |
+	| Today    | Transaction Fee Processed | C         |   0.00 |   0.45 |         0.45 |   36.00 |
+	| Today    | Transaction Fee Processed | C         |   0.00 |   0.01 |         0.10 |   36.10 |
+	| Today    | Transaction Fee Processed | C         |   0.00 |   0.01 |         0.10 |   36.10 |
+	| Today    | Opening Balance           | C         |   0.00 |   0.00 |         0.00 |   36.10 |
 
 	Then the following entries appear in the merchants balance history for estate 'Test Estate 1' and merchant 'Test Merchant 2'
 	| DateTime | Reference                 | EntryType | In     | Out    | ChangeAmount | Balance |
