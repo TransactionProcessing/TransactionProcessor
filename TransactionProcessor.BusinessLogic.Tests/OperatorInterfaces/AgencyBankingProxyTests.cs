@@ -211,7 +211,7 @@ namespace TransactionProcessor.BusinessLogic.Tests.OperatorInterfaces
             {
                 { "AgencyBankingMessageType", "deposit" },
                 { "AgencyBankingAccountNumber", "123456789" },
-                { "AgencyBankingAmount", "250.75" }
+                { "Amount", "250.75" }
             };
 
             var result = await proxy.ProcessSaleMessage(TestData.TransactionId,
@@ -261,7 +261,7 @@ namespace TransactionProcessor.BusinessLogic.Tests.OperatorInterfaces
 
             result.IsFailed.ShouldBeTrue();
             result.Status.ShouldBe(ResultStatus.Invalid);
-            result.Message.ShouldBe("AgencyBankingAmount - Amount is a required field for this transaction type");
+            result.Message.ShouldBe("Amount - Amount is a required field for this transaction type");
         }
 
         [Fact]
@@ -276,7 +276,7 @@ namespace TransactionProcessor.BusinessLogic.Tests.OperatorInterfaces
             {
                 { "AgencyBankingMessageType", "deposit" },
                 { "AgencyBankingAccountNumber", "123456789" },
-                { "AgencyBankingAmount", "not-a-number" }
+                { "Amount", "not-a-number" }
             };
 
             var result = await proxy.ProcessSaleMessage(TestData.TransactionId,
@@ -289,7 +289,7 @@ namespace TransactionProcessor.BusinessLogic.Tests.OperatorInterfaces
 
             result.IsFailed.ShouldBeTrue();
             result.Status.ShouldBe(ResultStatus.Invalid);
-            result.Message.ShouldBe("AgencyBankingAmount - Amount is not a valid decimal value");
+            result.Message.ShouldBe("Amount - Amount is not a valid decimal value");
         }
 
         [Fact]
@@ -309,7 +309,7 @@ namespace TransactionProcessor.BusinessLogic.Tests.OperatorInterfaces
             {
                 { "AgencyBankingMessageType", "deposit" },
                 { "AgencyBankingAccountNumber", "123456789" },
-                { "AgencyBankingAmount", "250.75" }
+                { "Amount", "250.75" }
             };
 
             var result = await proxy.ProcessSaleMessage(TestData.TransactionId,
