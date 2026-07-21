@@ -194,6 +194,151 @@ namespace TransactionProcessor.BusinessLogic.Tests.OperatorInterfaces
             requestJson.RootElement.GetProperty("accountNumber").GetString().ShouldBe("123456789");
         }
 
+        [Fact]
+        public async Task AgencyBankingProxy_ProcessSaleMessage_DepositFailure_ReturnsInvalidResult()
+        {
+            HttpResponseMessage responseMessage = new HttpResponseMessage(HttpStatusCode.BadRequest)
+            {
+                Content = new StringContent("deposit rejected")
+            };
+
+            HttpRequestMessage capturedRequest = null;
+            HttpClient httpClient = SetupMockHttpClient(responseMessage, request => capturedRequest = request);
+            AgencyBankingConfiguration configuration = CreateConfiguration();
+            IOperatorProxy proxy = new AgencyBankingProxy(httpClient, configuration);
+
+            Dictionary<String, String> metadata = new Dictionary<String, String>
+            {
+                { "AgencyBankingMessageType", "deposit" },
+                { "AgencyBankingAccountNumber", "123456789" },
+                { "Amount", "250.75" }
+            };
+
+            var result = await proxy.ProcessSaleMessage(TestData.TransactionId,
+                                                        TestData.OperatorId,
+                                                        TestData.Merchant,
+                                                        TestData.TransactionDateTime,
+                                                        TestData.TransactionReference,
+                                                        metadata,
+                                                        CancellationToken.None);
+
+            result.IsFailed.ShouldBeTrue();
+            result.Status.ShouldBe(ResultStatus.Invalid);
+            result.Message.ShouldBe("Failed to process deposit deposit rejected");
+
+            capturedRequest.ShouldNotBeNull();
+            capturedRequest.Method.ShouldBe(HttpMethod.Post);
+            capturedRequest.RequestUri.ShouldBe(new Uri("http://localhost/transactions/deposit"));
+
+            String requestBody = await capturedRequest.Content.ReadAsStringAsync();
+            using JsonDocument requestJson = JsonDocument.Parse(requestBody);
+            requestJson.RootElement.GetProperty("agentId").GetString().ShouldBe(TestData.Merchant.MerchantId.ToString());
+            requestJson.RootElement.GetProperty("accountNumber").GetString().ShouldBe("123456789");
+            requestJson.RootElement.GetProperty("amount").GetDecimal().ShouldBe(250.75m);
+            requestJson.RootElement.GetProperty("transactionId").GetString().ShouldBe(TestData.TransactionId.ToString());
+        }
+
+        [Fact]
+        public async Task AgencyBankingProxy_ProcessSaleMessage_DepositMissingAmount_ReturnsInvalidResult()
+        {
+            HttpClient httpClient = SetupMockHttpClient(new HttpResponseMessage(HttpStatusCode.OK));
+            AgencyBankingConfiguration configuration = CreateConfiguration();
+            IOperatorProxy proxy = new AgencyBankingProxy(httpClient, configuration);
+
+            Dictionary<String, String> metadata = new Dictionary<String, String>
+            {
+                { "AgencyBankingMessageType", "deposit" },
+                { "AgencyBankingAccountNumber", "123456789" }
+            };
+
+            var result = await proxy.ProcessSaleMessage(TestData.TransactionId,
+                                                        TestData.OperatorId,
+                                                        TestData.Merchant,
+                                                        TestData.TransactionDateTime,
+                                                        TestData.TransactionReference,
+                                                        metadata,
+                                                        CancellationToken.None);
+
+            result.IsFailed.ShouldBeTrue();
+            result.Status.ShouldBe(ResultStatus.Invalid);
+            result.Message.ShouldBe("Amount - Amount is a required field for this transaction type");
+        }
+
+        [Fact]
+        public async Task AgencyBankingProxy_ProcessSaleMessage_DepositInvalidAmount_ReturnsInvalidResult()
+        {
+            Mock<HttpMessageHandler> handlerMock = new Mock<HttpMessageHandler>(MockBehavior.Strict);
+            HttpClient httpClient = new HttpClient(handlerMock.Object);
+            AgencyBankingConfiguration configuration = CreateConfiguration();
+            IOperatorProxy proxy = new AgencyBankingProxy(httpClient, configuration);
+
+            Dictionary<String, String> metadata = new Dictionary<String, String>
+            {
+                { "AgencyBankingMessageType", "deposit" },
+                { "AgencyBankingAccountNumber", "123456789" },
+                { "Amount", "not-a-number" }
+            };
+
+            var result = await proxy.ProcessSaleMessage(TestData.TransactionId,
+                                                        TestData.OperatorId,
+                                                        TestData.Merchant,
+                                                        TestData.TransactionDateTime,
+                                                        TestData.TransactionReference,
+                                                        metadata,
+                                                        CancellationToken.None);
+
+            result.IsFailed.ShouldBeTrue();
+            result.Status.ShouldBe(ResultStatus.Invalid);
+            result.Message.ShouldBe("Amount - Amount is not a valid decimal value");
+        }
+
+        [Fact]
+        public async Task AgencyBankingProxy_ProcessSaleMessage_DepositSuccess_ReturnsMappedOperatorResponse()
+        {
+            HttpResponseMessage responseMessage = new HttpResponseMessage(HttpStatusCode.OK)
+            {
+                Content = new StringContent("{\"ResponseCode\":\"0000\",\"TransactionId\":\"abc123\"}")
+            };
+
+            HttpRequestMessage capturedRequest = null;
+            HttpClient httpClient = SetupMockHttpClient(responseMessage, request => capturedRequest = request);
+            AgencyBankingConfiguration configuration = CreateConfiguration();
+            IOperatorProxy proxy = new AgencyBankingProxy(httpClient, configuration);
+
+            Dictionary<String, String> metadata = new Dictionary<String, String>
+            {
+                { "AgencyBankingMessageType", "deposit" },
+                { "AgencyBankingAccountNumber", "123456789" },
+                { "Amount", "250.75" }
+            };
+
+            var result = await proxy.ProcessSaleMessage(TestData.TransactionId,
+                                                        TestData.OperatorId,
+                                                        TestData.Merchant,
+                                                        TestData.TransactionDateTime,
+                                                        TestData.TransactionReference,
+                                                        metadata,
+                                                        CancellationToken.None);
+
+            result.IsSuccess.ShouldBeTrue();
+            result.Data.ShouldNotBeNull();
+            result.Data.IsSuccessful.ShouldBeTrue();
+            result.Data.ResponseCode.ShouldBe("0000");
+            result.Data.ResponseMessage.ShouldBe("SUCCESS");
+            result.Data.AdditionalTransactionResponseMetadata.ShouldBeEmpty();
+
+            capturedRequest.ShouldNotBeNull();
+            capturedRequest.Method.ShouldBe(HttpMethod.Post);
+            capturedRequest.RequestUri.ShouldBe(new Uri("http://localhost/transactions/deposit"));
+
+            String requestBody = await capturedRequest.Content.ReadAsStringAsync();
+            using JsonDocument requestJson = JsonDocument.Parse(requestBody);
+            requestJson.RootElement.GetProperty("agentId").GetString().ShouldBe(TestData.Merchant.MerchantId.ToString());
+            requestJson.RootElement.GetProperty("accountNumber").GetString().ShouldBe("123456789");
+            requestJson.RootElement.GetProperty("amount").GetDecimal().ShouldBe(250.75m);
+            requestJson.RootElement.GetProperty("transactionId").GetString().ShouldBe(TestData.TransactionId.ToString());
+        }
+
         private static AgencyBankingConfiguration CreateConfiguration()
         {
             return new AgencyBankingConfiguration

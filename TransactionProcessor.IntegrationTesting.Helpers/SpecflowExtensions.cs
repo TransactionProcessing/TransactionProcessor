@@ -574,7 +574,7 @@ public static class ReqnrollExtensions{
                     "Voucher" => BuildVoucherTransactionMetaData(recipientEmail, recipientMobile, transactionAmount),
                     "PataPawa PostPay" => BuildPataPawaPostPayMetaData(messageType, accountNumber, recipientMobile, customerName, transactionAmount),
                     "PataPawa PrePay" => BuildPataPawaPrePayMetaData(messageType, meterNumber, customerName, transactionAmount),
-                    "AgencyBanking" => BuildAgencyBankingMetaData(messageType, accountNumber),
+                    "AgencyBanking" => BuildAgencyBankingMetaData(messageType, accountNumber, transactionAmount),
                     _ => BuildMobileTopupMetaData(transactionAmount, customerAccountNumber)
                 };
                 
@@ -653,11 +653,19 @@ public static class ReqnrollExtensions{
                                              };
     }
 
-    private static Dictionary<String, String> BuildAgencyBankingMetaData(String messageType, String accountNumber){
-        return new Dictionary<String, String>{
+    private static Dictionary<String, String> BuildAgencyBankingMetaData(String messageType, String accountNumber, Decimal amount){
+       
+        // TODO: make this a pattern match with sub functions??
+        var metadata = new Dictionary<String, String>{
                                                  { "AgencyBankingMessageType", messageType },
                                                  { "AgencyBankingAccountNumber", accountNumber }
                                              };
+
+        if (amount > 0)
+        {
+            metadata.Add("Amount", amount.ToString());
+        }
+        return metadata;
     }
 
     private static Dictionary<String, String> BuildPataPawaPostPayMetaData(String messageType,

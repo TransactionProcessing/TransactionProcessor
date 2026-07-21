@@ -397,6 +397,14 @@ namespace TransactionProcessor.IntegrationTests.Features
                         "Balance Enquiry",
                         "",
                         "MobileTopup"});
+            table15.AddRow(new string[] {
+                        "Test Estate 1",
+                        "AgencyBanking",
+                        "AgencyBanking Contract",
+                        "Deposit",
+                        "Deposit",
+                        "",
+                        "MobileTopup"});
 #line 84
  await testRunner.WhenAsync("I create the following Products", ((string)(null)), table15, "When ");
 #line hidden
@@ -432,7 +440,7 @@ namespace TransactionProcessor.IntegrationTests.Features
                         "Percentage",
                         "Merchant Commission",
                         "0.50"});
-#line 92
+#line 93
  await testRunner.WhenAsync("I add the following Transaction Fees", ((string)(null)), table16, "When ");
 #line hidden
             global::Reqnroll.Table table17 = new global::Reqnroll.Table(new string[] {
@@ -490,7 +498,7 @@ namespace TransactionProcessor.IntegrationTests.Features
                         "testcontact4@merchant4.co.uk",
                         "Test Estate 1",
                         "true"});
-#line 98
+#line 99
  await testRunner.GivenAsync("I create the following merchants", ((string)(null)), table17, "Given ");
 #line hidden
             global::Reqnroll.Table table18 = new global::Reqnroll.Table(new string[] {
@@ -619,7 +627,7 @@ namespace TransactionProcessor.IntegrationTests.Features
                         "00000004",
                         "10000004",
                         "Test Estate 1"});
-#line 105
+#line 106
  await testRunner.GivenAsync("I have assigned the following operator to the merchants", ((string)(null)), table18, "Given ");
 #line hidden
             global::Reqnroll.Table table19 = new global::Reqnroll.Table(new string[] {
@@ -642,7 +650,7 @@ namespace TransactionProcessor.IntegrationTests.Features
                         "123456783",
                         "Test Merchant 4",
                         "Test Estate 1"});
-#line 128
+#line 129
  await testRunner.GivenAsync("I have assigned the following devices to the merchants", ((string)(null)), table19, "Given ");
 #line hidden
             global::Reqnroll.Table table20 = new global::Reqnroll.Table(new string[] {
@@ -653,7 +661,7 @@ namespace TransactionProcessor.IntegrationTests.Features
                         "EstateName"});
             table20.AddRow(new string[] {
                         "Deposit1",
-                        "265.00",
+                        "365.00",
                         "Today",
                         "Test Merchant 1",
                         "Test Estate 1"});
@@ -675,7 +683,7 @@ namespace TransactionProcessor.IntegrationTests.Features
                         "Today",
                         "Test Merchant 4",
                         "Test Estate 1"});
-#line 135
+#line 136
  await testRunner.GivenAsync("I make the following manual merchant deposits", ((string)(null)), table20, "Given ");
 #line hidden
             global::Reqnroll.Table table21 = new global::Reqnroll.Table(new string[] {
@@ -750,7 +758,7 @@ namespace TransactionProcessor.IntegrationTests.Features
                         "Test Estate 1",
                         "Test Merchant 4",
                         "PataPawa PrePay Contract"});
-#line 142
+#line 143
  await testRunner.WhenAsync("I add the following contracts to the following merchants", ((string)(null)), table21, "When ");
 #line hidden
         }
@@ -774,7 +782,7 @@ namespace TransactionProcessor.IntegrationTests.Features
             global::Reqnroll.ScenarioInfo scenarioInfo = new global::Reqnroll.ScenarioInfo("Sale Transactions", null, tagsOfScenario, argumentsOfScenario, featureTags, pickleIndex);
             string[] tagsOfRule = ((string[])(null));
             global::Reqnroll.RuleInfo ruleInfo = null;
-#line 164
+#line 165
 this.ScenarioInitialize(scenarioInfo, ruleInfo);
 #line hidden
             if ((global::Reqnroll.TagHelper.ContainsIgnoreTag(scenarioInfo.CombinedTags) || global::Reqnroll.TagHelper.ContainsIgnoreTag(featureTags)))
@@ -1041,7 +1049,7 @@ await this.FeatureBackgroundAsync();
                             "",
                             "AgencyBanking Contract",
                             "Balance Enquiry",
-                            "balanceenquiry",
+                            "",
                             "12345678",
                             "balanceenquiry",
                             "12345678",
@@ -1050,6 +1058,26 @@ await this.FeatureBackgroundAsync();
                 table22.AddRow(new string[] {
                             "Today",
                             "13",
+                            "Sale",
+                            "1",
+                            "Test Merchant 1",
+                            "123456780",
+                            "Test Estate 1",
+                            "AgencyBanking",
+                            "100.00",
+                            "",
+                            "",
+                            "AgencyBanking Contract",
+                            "Deposit",
+                            "",
+                            "12345678",
+                            "deposit",
+                            "12345678",
+                            "",
+                            ""});
+                table22.AddRow(new string[] {
+                            "Today",
+                            "100",
                             "Sale",
                             "1",
                             "Test Merchant 1",
@@ -1069,7 +1097,7 @@ await this.FeatureBackgroundAsync();
                             ""});
                 table22.AddRow(new string[] {
                             "Today",
-                            "14",
+                            "101",
                             "Sale",
                             "1",
                             "Test Merchant 1",
@@ -1089,7 +1117,7 @@ await this.FeatureBackgroundAsync();
                             ""});
                 table22.AddRow(new string[] {
                             "Today",
-                            "15",
+                            "102",
                             "Sale",
                             "1",
                             "InvalidMerchant",
@@ -1109,7 +1137,7 @@ await this.FeatureBackgroundAsync();
                             ""});
                 table22.AddRow(new string[] {
                             "Today",
-                            "16",
+                            "103",
                             "Sale",
                             "1",
                             "Test Merchant 1",
@@ -1129,7 +1157,7 @@ await this.FeatureBackgroundAsync();
                             ""});
                 table22.AddRow(new string[] {
                             "Today",
-                            "17",
+                            "104",
                             "Sale",
                             "1",
                             "Test Merchant 1",
@@ -1149,7 +1177,7 @@ await this.FeatureBackgroundAsync();
                             ""});
                 table22.AddRow(new string[] {
                             "Today",
-                            "18",
+                            "105",
                             "Sale",
                             "1",
                             "Test Merchant 1",
@@ -1169,7 +1197,7 @@ await this.FeatureBackgroundAsync();
                             ""});
                 table22.AddRow(new string[] {
                             "Today",
-                            "19",
+                            "106",
                             "Sale",
                             "1",
                             "Test Merchant 1",
@@ -1189,7 +1217,7 @@ await this.FeatureBackgroundAsync();
                             ""});
                 table22.AddRow(new string[] {
                             "Today",
-                            "20",
+                            "107",
                             "Sale",
                             "1",
                             "Test Merchant 4",
@@ -1207,7 +1235,7 @@ await this.FeatureBackgroundAsync();
                             "",
                             "",
                             ""});
-#line 166
+#line 167
  await testRunner.WhenAsync("I perform the following transactions", ((string)(null)), table22, "When ");
 #line hidden
                 global::Reqnroll.Table table23 = new global::Reqnroll.Table(new string[] {
@@ -1292,57 +1320,63 @@ await this.FeatureBackgroundAsync();
                             "Test Estate 1",
                             "Test Merchant 1",
                             "13",
+                            "0000",
+                            "SUCCESS"});
+                table23.AddRow(new string[] {
+                            "Test Estate 1",
+                            "Test Merchant 1",
+                            "100",
                             "1000",
                             "Device Identifier 123456781 not valid for Merchant Test Merchant 1"});
                 table23.AddRow(new string[] {
                             "InvalidEstate",
                             "Test Merchant 1",
-                            "14",
+                            "101",
                             "1001",
                             "Estate Id [79902550-64df-4491-b0c1-4e78943928a3] is not a valid estate"});
                 table23.AddRow(new string[] {
                             "Test Estate 1",
                             "InvalidMerchant",
-                            "15",
+                            "102",
                             "1002",
                             "Merchant Id [d59320fa-4c3e-4900-a999-483f6a10c69a] is not a valid merchant for es" +
                                 "tate [Test Estate 1]"});
                 table23.AddRow(new string[] {
                             "Test Estate 1",
                             "Test Merchant 1",
-                            "16",
+                            "103",
                             "1012",
                             "Contract Id [00000000-0000-0000-0000-000000000000] must be set for a sale transac" +
                                 "tion"});
                 table23.AddRow(new string[] {
                             "Test Estate 1",
                             "Test Merchant 1",
-                            "17",
+                            "104",
                             "1015",
                             "Contract Id [934d8164-f36a-448e-b27b-4d671d41d180] not valid for Merchant [Test M" +
                                 "erchant 1]"});
                 table23.AddRow(new string[] {
                             "Test Estate 1",
                             "Test Merchant 1",
-                            "18",
+                            "105",
                             "1013",
                             "Product Id [00000000-0000-0000-0000-000000000000] must be set for a sale transact" +
                                 "ion"});
                 table23.AddRow(new string[] {
                             "Test Estate 1",
                             "Test Merchant 1",
-                            "19",
+                            "106",
                             "1016",
                             "Product Id [934d8164-f36a-448e-b27b-4d671d41d180] not valid for Merchant [Test Me" +
                                 "rchant 1]"});
                 table23.AddRow(new string[] {
                             "Test Estate 1",
                             "Test Merchant 4",
-                            "20",
+                            "107",
                             "1009",
                             "Merchant [Test Merchant 4] does not have enough credit available [100.00] to perf" +
                                 "orm transaction amount [300.00]"});
-#line 189
+#line 191
  await testRunner.ThenAsync("transaction response should contain the following information", ((string)(null)), table23, "Then ");
 #line hidden
                 global::Reqnroll.Table table24 = new global::Reqnroll.Table(new string[] {
@@ -1357,10 +1391,10 @@ await this.FeatureBackgroundAsync();
                             "Today",
                             "Merchant Deposit",
                             "C",
-                            "240.00",
+                            "365.00",
                             "0.00",
-                            "265.00",
-                            "230.00"});
+                            "365.00",
+                            "365.00"});
                 table24.AddRow(new string[] {
                             "Today",
                             "Transaction Completed",
@@ -1368,7 +1402,7 @@ await this.FeatureBackgroundAsync();
                             "0.00",
                             "110.00",
                             "110.00",
-                            "130.00"});
+                            "255.00"});
                 table24.AddRow(new string[] {
                             "Today",
                             "Transaction Completed",
@@ -1376,7 +1410,7 @@ await this.FeatureBackgroundAsync();
                             "0.00",
                             "90.00",
                             "90.00",
-                            "30.00"});
+                            "165.00"});
                 table24.AddRow(new string[] {
                             "Today",
                             "Transaction Completed",
@@ -1384,7 +1418,7 @@ await this.FeatureBackgroundAsync();
                             "0.00",
                             "10.00",
                             "10.00",
-                            "20.00"});
+                            "155.00"});
                 table24.AddRow(new string[] {
                             "Today",
                             "Transaction Completed",
@@ -1392,15 +1426,23 @@ await this.FeatureBackgroundAsync();
                             "0.00",
                             "20.00",
                             "20.00",
-                            "20.00"});
+                            "135.00"});
                 table24.AddRow(new string[] {
                             "Today",
                             "Transaction Completed",
                             "D",
                             "0.00",
-                            "20.00",
+                            "100.00",
+                            "100.00",
+                            "35.00"});
+                table24.AddRow(new string[] {
+                            "Today",
+                            "Transaction Completed",
+                            "D",
+                            "0.00",
                             "25.00",
-                            "20.00"});
+                            "25.00",
+                            "35.00"});
                 table24.AddRow(new string[] {
                             "Today",
                             "Transaction Fee Processed",
@@ -1408,7 +1450,7 @@ await this.FeatureBackgroundAsync();
                             "0.00",
                             "0.55",
                             "0.55",
-                            "20.00"});
+                            "35.55"});
                 table24.AddRow(new string[] {
                             "Today",
                             "Transaction Fee Processed",
@@ -1416,7 +1458,7 @@ await this.FeatureBackgroundAsync();
                             "0.00",
                             "0.45",
                             "0.45",
-                            "20.00"});
+                            "36.00"});
                 table24.AddRow(new string[] {
                             "Today",
                             "Transaction Fee Processed",
@@ -1424,7 +1466,7 @@ await this.FeatureBackgroundAsync();
                             "0.00",
                             "0.01",
                             "0.10",
-                            "20.00"});
+                            "36.10"});
                 table24.AddRow(new string[] {
                             "Today",
                             "Transaction Fee Processed",
@@ -1432,7 +1474,7 @@ await this.FeatureBackgroundAsync();
                             "0.00",
                             "0.01",
                             "0.10",
-                            "20.00"});
+                            "36.10"});
                 table24.AddRow(new string[] {
                             "Today",
                             "Opening Balance",
@@ -1440,8 +1482,8 @@ await this.FeatureBackgroundAsync();
                             "0.00",
                             "0.00",
                             "0.00",
-                            "20.00"});
-#line 212
+                            "36.10"});
+#line 215
  await testRunner.ThenAsync("the following entries appear in the merchants balance history for estate \'Test Es" +
                         "tate 1\' and merchant \'Test Merchant 1\'", ((string)(null)), table24, "Then ");
 #line hidden
@@ -1493,7 +1535,7 @@ await this.FeatureBackgroundAsync();
                             "0.00",
                             "0.00",
                             "20.00"});
-#line 226
+#line 230
  await testRunner.ThenAsync("the following entries appear in the merchants balance history for estate \'Test Es" +
                         "tate 1\' and merchant \'Test Merchant 2\'", ((string)(null)), table25, "Then ");
 #line hidden
@@ -1545,7 +1587,7 @@ await this.FeatureBackgroundAsync();
                             "0.00",
                             "0.00",
                             "20.00"});
-#line 234
+#line 238
  await testRunner.ThenAsync("the following entries appear in the merchants balance history for estate \'Test Es" +
                         "tate 1\' and merchant \'Test Merchant 3\'", ((string)(null)), table26, "Then ");
 #line hidden
