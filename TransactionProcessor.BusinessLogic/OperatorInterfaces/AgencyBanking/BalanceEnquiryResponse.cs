@@ -45,4 +45,31 @@ namespace TransactionProcessor.BusinessLogic.OperatorInterfaces.AgencyBanking
 
         public string TransactionId { get; set; } = "";
     }
+
+    public class MiniStatementRequest
+    {
+        public string AgentId { get; set; }
+
+        public string AccountNumber { get; set; }
+
+        public int Count { get; set; } = 5;
+    }
+
+    public class MiniStatementResponse
+    {
+        public string ResponseCode { get; set; }
+
+        public string ResponseMessage { get; set; }
+
+        public List<MiniStatementItem> Transactions { get; set; }
+    }
+
+    public class MiniStatementItem
+    {
+        public DateTime TransactionDate { get; set; }
+
+        public string TransactionType { get; set; }
+
+        public decimal Amount { get; set; }
+    }
 }
