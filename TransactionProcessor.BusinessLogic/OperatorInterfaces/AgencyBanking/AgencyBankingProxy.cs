@@ -3,6 +3,7 @@ using Shared.Serialisation;
 using SimpleResults;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Net.Http;
 using System.Text;
 using System.Threading;
@@ -66,10 +67,10 @@ namespace TransactionProcessor.BusinessLogic.OperatorInterfaces.AgencyBanking
                 "balanceenquiry" => await ProcessBalanceEnquiry(transactionId, merchant.MerchantId.ToString(), accountNumber, cancellationToken),
                 "deposit" => await ProcessDeposit(transactionId, merchant.MerchantId.ToString(), accountNumber, additionalTransactionMetadata, cancellationToken),
                 "withdrawal" => await ProcessWithdrawal(transactionId, merchant.MerchantId.ToString(), accountNumber, additionalTransactionMetadata, cancellationToken),
+                "ministatement" => await ProcessMiniStatement(merchant.MerchantId.ToString(), accountNumber, cancellationToken),
                 _ => Result.Invalid($"AgencyBankingMessageType - Message Type {messageType} is not supported for this transaction type")
             };
-
-
+            
             if (result.Status == ResultStatus.Invalid) {
                 Logger.LogWarning($"AgencyBanking sale request rejected. TransactionId=[{transactionId}] unsupported message type [{messageType}]");
             }
@@ -126,6 +127,42 @@ namespace TransactionProcessor.BusinessLogic.OperatorInterfaces.AgencyBanking
                 ResponseMessage = "SUCCESS",
                 AdditionalTransactionResponseMetadata = new Dictionary<String, String>()
             };
+
+            return Result.Success(operatorResponse);
+        }
+
+        private async Task<Result<OperatorResponse>> ProcessMiniStatement(String agentId,
+                                                                          String accountNumber,
+                                                                          CancellationToken cancellationToken) {
+            HttpRequestMessage request = new(HttpMethod.Post, $"{this.Configuration.Url}/transactions/mini-statement");
+
+            MiniStatementRequest body = new() { AgentId = agentId, AccountNumber = accountNumber };
+
+            String requestBody = StringSerialiser.Serialise(body, SerialiserOptions);
+            request.Content = new StringContent(requestBody, Encoding.UTF8, "application/json");
+
+            Logger.LogWarning($"AgencyBanking mini-statement request starting. AgentId=[{agentId}], AccountNumber=[{accountNumber}], RequestUri=[{request.RequestUri}], RequestBody=[{requestBody}]");
+
+            HttpResponseMessage response = await this.HttpClient.SendAsync(request, cancellationToken);
+            String responseContent = await response.Content.ReadAsStringAsync(cancellationToken);
+
+            Logger.LogWarning($"AgencyBanking mini-statement response received. AgentId=[{agentId}], AccountNumber=[{accountNumber}], StatusCode=[{response.StatusCode}], ContentLength=[{responseContent?.Length ?? 0}]");
+
+            if (response.IsSuccessStatusCode == false) {
+                Logger.LogWarning($"AgencyBanking mini-statement failed. AgentId=[{agentId}], AccountNumber=[{accountNumber}], StatusCode=[{response.StatusCode}], ResponseBody=[{responseContent}]");
+                return Result.Invalid($"Failed to process mini-statement {responseContent}");
+            }
+
+            MiniStatementResponse miniStatementResponse = StringSerialiser.Deserialise<MiniStatementResponse>(responseContent, SerialiserOptions);
+            Logger.LogWarning($"AgencyBanking mini-statement completed. AgentId=[{agentId}], AccountNumber=[{accountNumber}], ResponseCode=[{miniStatementResponse.ResponseCode}]");
+
+            // Transform the mini-statement response into an operator response
+            List<OperatorStatementLine> statementLines = miniStatementResponse.Transactions.Select(line => new OperatorStatementLine { Amount = line.Amount, TransactionDate = line.TransactionDate, TransactionType = line.TransactionType }).ToList();
+
+
+            OperatorResponse operatorResponse = new() { IsSuccessful = true, ResponseCode = "0000", ResponseMessage = "SUCCESS", AdditionalTransactionResponseMetadata = new Dictionary<String, String>() };
+
+            operatorResponse.AdditionalTransactionResponseMetadata.Add("StatementLines", StringSerialiser.Serialise(statementLines));
 
             return Result.Success(operatorResponse);
         }

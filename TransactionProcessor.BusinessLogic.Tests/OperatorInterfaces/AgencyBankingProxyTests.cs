@@ -6,6 +6,7 @@ using Shouldly;
 using SimpleResults;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Net;
 using System.Net.Http;
 using System.Text.Json;
@@ -529,6 +530,123 @@ namespace TransactionProcessor.BusinessLogic.Tests.OperatorInterfaces
             requestJson.RootElement.GetProperty("accountNumber").GetString().ShouldBe("123456789");
             requestJson.RootElement.GetProperty("amount").GetDecimal().ShouldBe(250.75m);
             requestJson.RootElement.GetProperty("transactionId").GetString().ShouldBe(TestData.TransactionId.ToString());
+        }
+
+        [Fact]
+        public async Task AgencyBankingProxy_ProcessSaleMessage_MiniStatementFailure_ReturnsInvalidResult()
+        {
+            HttpResponseMessage responseMessage = new HttpResponseMessage(HttpStatusCode.BadRequest)
+            {
+                Content = new StringContent("mini statement rejected")
+            };
+
+            HttpRequestMessage capturedRequest = null;
+            HttpClient httpClient = SetupMockHttpClient(responseMessage, request => capturedRequest = request);
+            AgencyBankingConfiguration configuration = CreateConfiguration();
+            IOperatorProxy proxy = new AgencyBankingProxy(httpClient, configuration);
+
+            Dictionary<String, String> metadata = new Dictionary<String, String>
+            {
+                { "AgencyBankingMessageType", "ministatement" },
+                { "AgencyBankingAccountNumber", "123456789" }
+            };
+
+            var result = await proxy.ProcessSaleMessage(TestData.TransactionId,
+                                                        TestData.OperatorId,
+                                                        TestData.Merchant,
+                                                        TestData.TransactionDateTime,
+                                                        TestData.TransactionReference,
+                                                        metadata,
+                                                        CancellationToken.None);
+
+            result.IsFailed.ShouldBeTrue();
+            result.Status.ShouldBe(ResultStatus.Invalid);
+            result.Message.ShouldBe("Failed to process mini-statement mini statement rejected");
+
+            capturedRequest.ShouldNotBeNull();
+            capturedRequest.Method.ShouldBe(HttpMethod.Post);
+            capturedRequest.RequestUri.ShouldBe(new Uri("http://localhost/transactions/mini-statement"));
+
+            String requestBody = await capturedRequest.Content.ReadAsStringAsync();
+            using JsonDocument requestJson = JsonDocument.Parse(requestBody);
+            requestJson.RootElement.GetProperty("agentId").GetString().ShouldBe(TestData.Merchant.MerchantId.ToString());
+            requestJson.RootElement.GetProperty("accountNumber").GetString().ShouldBe("123456789");
+            requestJson.RootElement.GetProperty("count").GetInt32().ShouldBe(5);
+        }
+
+        [Fact]
+        public async Task AgencyBankingProxy_ProcessSaleMessage_MiniStatementSuccess_ReturnsMappedOperatorResponse()
+        {
+            HttpResponseMessage responseMessage = new HttpResponseMessage(HttpStatusCode.OK)
+            {
+                Content = new StringContent("""
+                {
+                  "responseCode": "0000",
+                  "responseMessage": "Mini statement successful",
+                  "transactions": [
+                    {
+                      "transactionDate": "2026-07-21T00:00:00",
+                      "transactionType": "D",
+                      "amount": 25.00
+                    },
+                    {
+                      "transactionDate": "2026-07-21T00:01:00",
+                      "transactionType": "C",
+                      "amount": 10.50
+                    }
+                  ]
+                }
+                """)
+            };
+
+            HttpRequestMessage capturedRequest = null;
+            HttpClient httpClient = SetupMockHttpClient(responseMessage, request => capturedRequest = request);
+            AgencyBankingConfiguration configuration = CreateConfiguration();
+            IOperatorProxy proxy = new AgencyBankingProxy(httpClient, configuration);
+
+            Dictionary<String, String> metadata = new Dictionary<String, String>
+            {
+                { "agencybankingmessagetype", "ministatement" },
+                { "agencybankingaccountnumber", "123456789" }
+            };
+
+            var result = await proxy.ProcessSaleMessage(TestData.TransactionId,
+                                                        TestData.OperatorId,
+                                                        TestData.Merchant,
+                                                        TestData.TransactionDateTime,
+                                                        TestData.TransactionReference,
+                                                        metadata,
+                                                        CancellationToken.None);
+
+            result.IsSuccess.ShouldBeTrue();
+            result.Data.ShouldNotBeNull();
+            result.Data.IsSuccessful.ShouldBeTrue();
+            result.Data.ResponseCode.ShouldBe("0000");
+            result.Data.ResponseMessage.ShouldBe("SUCCESS");
+            result.Data.AdditionalTransactionResponseMetadata.ShouldContainKey("StatementLines");
+
+            String statementLinesJson = result.Data.AdditionalTransactionResponseMetadata["StatementLines"];
+            using JsonDocument statementLinesDocument = JsonDocument.Parse(statementLinesJson);
+            statementLinesDocument.RootElement.ValueKind.ShouldBe(JsonValueKind.Array);
+            statementLinesDocument.RootElement.GetArrayLength().ShouldBe(2);
+
+            JsonElement firstLine = statementLinesDocument.RootElement[0];
+            firstLine.EnumerateObject().Any(property => property.Value.ValueKind == JsonValueKind.String && property.Value.GetString() == "D").ShouldBeTrue();
+            firstLine.EnumerateObject().Any(property => property.Value.ValueKind == JsonValueKind.Number && property.Value.GetDecimal() == 25.00m).ShouldBeTrue();
+
+            JsonElement secondLine = statementLinesDocument.RootElement[1];
+            secondLine.EnumerateObject().Any(property => property.Value.ValueKind == JsonValueKind.String && property.Value.GetString() == "C").ShouldBeTrue();
+            secondLine.EnumerateObject().Any(property => property.Value.ValueKind == JsonValueKind.Number && property.Value.GetDecimal() == 10.50m).ShouldBeTrue();
+
+            capturedRequest.ShouldNotBeNull();
+            capturedRequest.Method.ShouldBe(HttpMethod.Post);
+            capturedRequest.RequestUri.ShouldBe(new Uri("http://localhost/transactions/mini-statement"));
+
+            String requestBody = await capturedRequest.Content.ReadAsStringAsync();
+            using JsonDocument requestJson = JsonDocument.Parse(requestBody);
+            requestJson.RootElement.GetProperty("agentId").GetString().ShouldBe(TestData.Merchant.MerchantId.ToString());
+            requestJson.RootElement.GetProperty("accountNumber").GetString().ShouldBe("123456789");
+            requestJson.RootElement.GetProperty("count").GetInt32().ShouldBe(5);
         }
 
         private static AgencyBankingConfiguration CreateConfiguration()
