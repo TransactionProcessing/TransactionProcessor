@@ -405,6 +405,14 @@ namespace TransactionProcessor.IntegrationTests.Features
                         "Deposit",
                         "",
                         "MobileTopup"});
+            table15.AddRow(new string[] {
+                        "Test Estate 1",
+                        "AgencyBanking",
+                        "AgencyBanking Contract",
+                        "Withdrawal",
+                        "Withdrawal",
+                        "",
+                        "MobileTopup"});
 #line 84
  await testRunner.WhenAsync("I create the following Products", ((string)(null)), table15, "When ");
 #line hidden
@@ -440,7 +448,7 @@ namespace TransactionProcessor.IntegrationTests.Features
                         "Percentage",
                         "Merchant Commission",
                         "0.50"});
-#line 93
+#line 94
  await testRunner.WhenAsync("I add the following Transaction Fees", ((string)(null)), table16, "When ");
 #line hidden
             global::Reqnroll.Table table17 = new global::Reqnroll.Table(new string[] {
@@ -498,7 +506,7 @@ namespace TransactionProcessor.IntegrationTests.Features
                         "testcontact4@merchant4.co.uk",
                         "Test Estate 1",
                         "true"});
-#line 99
+#line 100
  await testRunner.GivenAsync("I create the following merchants", ((string)(null)), table17, "Given ");
 #line hidden
             global::Reqnroll.Table table18 = new global::Reqnroll.Table(new string[] {
@@ -627,7 +635,7 @@ namespace TransactionProcessor.IntegrationTests.Features
                         "00000004",
                         "10000004",
                         "Test Estate 1"});
-#line 106
+#line 107
  await testRunner.GivenAsync("I have assigned the following operator to the merchants", ((string)(null)), table18, "Given ");
 #line hidden
             global::Reqnroll.Table table19 = new global::Reqnroll.Table(new string[] {
@@ -650,7 +658,7 @@ namespace TransactionProcessor.IntegrationTests.Features
                         "123456783",
                         "Test Merchant 4",
                         "Test Estate 1"});
-#line 129
+#line 130
  await testRunner.GivenAsync("I have assigned the following devices to the merchants", ((string)(null)), table19, "Given ");
 #line hidden
             global::Reqnroll.Table table20 = new global::Reqnroll.Table(new string[] {
@@ -683,7 +691,7 @@ namespace TransactionProcessor.IntegrationTests.Features
                         "Today",
                         "Test Merchant 4",
                         "Test Estate 1"});
-#line 136
+#line 137
  await testRunner.GivenAsync("I make the following manual merchant deposits", ((string)(null)), table20, "Given ");
 #line hidden
             global::Reqnroll.Table table21 = new global::Reqnroll.Table(new string[] {
@@ -758,7 +766,7 @@ namespace TransactionProcessor.IntegrationTests.Features
                         "Test Estate 1",
                         "Test Merchant 4",
                         "PataPawa PrePay Contract"});
-#line 143
+#line 144
  await testRunner.WhenAsync("I add the following contracts to the following merchants", ((string)(null)), table21, "When ");
 #line hidden
         }
@@ -782,7 +790,7 @@ namespace TransactionProcessor.IntegrationTests.Features
             global::Reqnroll.ScenarioInfo scenarioInfo = new global::Reqnroll.ScenarioInfo("Sale Transactions", null, tagsOfScenario, argumentsOfScenario, featureTags, pickleIndex);
             string[] tagsOfRule = ((string[])(null));
             global::Reqnroll.RuleInfo ruleInfo = null;
-#line 165
+#line 166
 this.ScenarioInitialize(scenarioInfo, ruleInfo);
 #line hidden
             if ((global::Reqnroll.TagHelper.ContainsIgnoreTag(scenarioInfo.CombinedTags) || global::Reqnroll.TagHelper.ContainsIgnoreTag(featureTags)))
@@ -1077,6 +1085,26 @@ await this.FeatureBackgroundAsync();
                             ""});
                 table22.AddRow(new string[] {
                             "Today",
+                            "14",
+                            "Sale",
+                            "1",
+                            "Test Merchant 1",
+                            "123456780",
+                            "Test Estate 1",
+                            "AgencyBanking",
+                            "9.00",
+                            "",
+                            "",
+                            "AgencyBanking Contract",
+                            "Withdrawal",
+                            "",
+                            "12345678",
+                            "withdrawal",
+                            "12345678",
+                            "",
+                            ""});
+                table22.AddRow(new string[] {
+                            "Today",
                             "100",
                             "Sale",
                             "1",
@@ -1235,7 +1263,7 @@ await this.FeatureBackgroundAsync();
                             "",
                             "",
                             ""});
-#line 167
+#line 168
  await testRunner.WhenAsync("I perform the following transactions", ((string)(null)), table22, "When ");
 #line hidden
                 global::Reqnroll.Table table23 = new global::Reqnroll.Table(new string[] {
@@ -1325,6 +1353,12 @@ await this.FeatureBackgroundAsync();
                 table23.AddRow(new string[] {
                             "Test Estate 1",
                             "Test Merchant 1",
+                            "14",
+                            "0000",
+                            "SUCCESS"});
+                table23.AddRow(new string[] {
+                            "Test Estate 1",
+                            "Test Merchant 1",
                             "100",
                             "1000",
                             "Device Identifier 123456781 not valid for Merchant Test Merchant 1"});
@@ -1376,7 +1410,7 @@ await this.FeatureBackgroundAsync();
                             "1009",
                             "Merchant [Test Merchant 4] does not have enough credit available [100.00] to perf" +
                                 "orm transaction amount [300.00]"});
-#line 191
+#line 193
  await testRunner.ThenAsync("transaction response should contain the following information", ((string)(null)), table23, "Then ");
 #line hidden
                 global::Reqnroll.Table table24 = new global::Reqnroll.Table(new string[] {
@@ -1445,6 +1479,14 @@ await this.FeatureBackgroundAsync();
                             "35.00"});
                 table24.AddRow(new string[] {
                             "Today",
+                            "Transaction Completed",
+                            "D",
+                            "0.00",
+                            "10.00",
+                            "9.00",
+                            "35.00"});
+                table24.AddRow(new string[] {
+                            "Today",
                             "Transaction Fee Processed",
                             "C",
                             "0.00",
@@ -1483,7 +1525,7 @@ await this.FeatureBackgroundAsync();
                             "0.00",
                             "0.00",
                             "36.10"});
-#line 215
+#line 218
  await testRunner.ThenAsync("the following entries appear in the merchants balance history for estate \'Test Es" +
                         "tate 1\' and merchant \'Test Merchant 1\'", ((string)(null)), table24, "Then ");
 #line hidden
@@ -1535,7 +1577,7 @@ await this.FeatureBackgroundAsync();
                             "0.00",
                             "0.00",
                             "20.00"});
-#line 230
+#line 234
  await testRunner.ThenAsync("the following entries appear in the merchants balance history for estate \'Test Es" +
                         "tate 1\' and merchant \'Test Merchant 2\'", ((string)(null)), table25, "Then ");
 #line hidden
@@ -1587,7 +1629,7 @@ await this.FeatureBackgroundAsync();
                             "0.00",
                             "0.00",
                             "20.00"});
-#line 238
+#line 242
  await testRunner.ThenAsync("the following entries appear in the merchants balance history for estate \'Test Es" +
                         "tate 1\' and merchant \'Test Merchant 3\'", ((string)(null)), table26, "Then ");
 #line hidden

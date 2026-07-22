@@ -89,6 +89,7 @@ Background:
 	| Test Estate 1 | PataPawa PrePay  | PataPawa PrePay Contract  | Pre Pay Bill Pay  | Bill Pay (Pre)  |       | BillPayment |
 	| Test Estate 1 | AgencyBanking    | AgencyBanking Contract    | Balance Enquiry   | Balance Enquiry |       | MobileTopup |
 	| Test Estate 1 | AgencyBanking    | AgencyBanking Contract    | Deposit           | Deposit         |       | MobileTopup |
+	| Test Estate 1 | AgencyBanking    | AgencyBanking Contract    | Withdrawal        | Withdrawal      |       | MobileTopup |
 	
 	When I add the following Transaction Fees
 	| EstateName    | OperatorName     | ContractDescription       | ProductName       | CalculationType | FeeDescription      | Value |
@@ -179,6 +180,7 @@ Scenario: Sale Transactions
 	| Today    |                11 | Sale            |                 2 | Test Merchant 1 |        123456780 | Test Estate 1 | PataPawa PrePay  |             25.00 |                       |                             | PataPawa PrePay Contract  | Pre Pay Bill Pay  | test@recipient.co.uk |                 | vend           |      00000001 | Customer 1       |    00000001 |
 	| Today    |                12 | Sale            |                 1 | Test Merchant 1 |        123456780 | Test Estate 1 | AgencyBanking    |              0.00 |                       |                             | AgencyBanking Contract    | Balance Enquiry   |                      |        12345678 | balanceenquiry |      12345678 |                  |             |
 	| Today    |                13 | Sale            |                 1 | Test Merchant 1 |        123456780 | Test Estate 1 | AgencyBanking    |            100.00 |                       |                             | AgencyBanking Contract    | Deposit           |                      |        12345678 | deposit        |      12345678 |                  |             |
+	| Today    |                14 | Sale            |                 1 | Test Merchant 1 |        123456780 | Test Estate 1 | AgencyBanking    |             9.00 |                       |                             | AgencyBanking Contract    | Withdrawal        |                      |        12345678 | withdrawal     |      12345678 |                  |             |
 	| Today    |               100 | Sale            |                 1 | Test Merchant 1 |        123456781 | Test Estate 1 | Safaricom        |            100.00 |             123456789 | testcustomer@customer.co.uk | Safaricom Contract        | Variable Topup    |                      |                 |                |               |                  |             |
 	| Today    |               101 | Sale            |                 1 | Test Merchant 1 |        123456780 | InvalidEstate | Safaricom        |            100.00 |             123456789 | testcustomer@customer.co.uk | Safaricom Contract        | Variable Topup    |                      |                 |                |               |                  |             |
 	| Today    |               102 | Sale            |                 1 | InvalidMerchant |        123456780 | Test Estate 1 | Safaricom        |            100.00 |             123456789 | testcustomer@customer.co.uk | Safaricom Contract        | Variable Topup    |                      |                 |                |               |                  |             |
@@ -203,6 +205,7 @@ Scenario: Sale Transactions
 	| Test Estate 1 | Test Merchant 1 |                11 |         0000 | SUCCESS                                                                                                          |
 	| Test Estate 1 | Test Merchant 1 |                12 |         0000 | SUCCESS                                                                                                          |
 	| Test Estate 1 | Test Merchant 1 |                13 |         0000 | SUCCESS                                                                                                          |
+	| Test Estate 1 | Test Merchant 1 |                14 |         0000 | SUCCESS                                                                                                          |
 	| Test Estate 1 | Test Merchant 1 |               100 |         1000 | Device Identifier 123456781 not valid for Merchant Test Merchant 1                                               |
 	| InvalidEstate | Test Merchant 1 |               101 |         1001 | Estate Id [79902550-64df-4491-b0c1-4e78943928a3] is not a valid estate                                           |
 	| Test Estate 1 | InvalidMerchant |               102 |         1002 | Merchant Id [d59320fa-4c3e-4900-a999-483f6a10c69a] is not a valid merchant for estate [Test Estate 1]            |
@@ -220,7 +223,8 @@ Scenario: Sale Transactions
 	| Today    | Transaction Completed     | D         |   0.00 |  10.00 |        10.00 |  155.00 |
 	| Today    | Transaction Completed     | D         |   0.00 |  20.00 |        20.00 |  135.00 |
 	| Today    | Transaction Completed     | D         |   0.00 | 100.00 |       100.00 |   35.00 |
-	| Today    | Transaction Completed     | D         |   0.00 |  25.00 |        25.00 |   35.00 |
+	| Today    | Transaction Completed     | D         |   0.00 |  25.00 |        25.00 |   35.00 |	
+	| Today    | Transaction Completed     | D         |   0.00 |  10.00 |        9.00 |   35.00 |
 	| Today    | Transaction Fee Processed | C         |   0.00 |   0.55 |         0.55 |   35.55 |
 	| Today    | Transaction Fee Processed | C         |   0.00 |   0.45 |         0.45 |   36.00 |
 	| Today    | Transaction Fee Processed | C         |   0.00 |   0.01 |         0.10 |   36.10 |
