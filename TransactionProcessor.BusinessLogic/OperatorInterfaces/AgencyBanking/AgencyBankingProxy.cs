@@ -65,6 +65,7 @@ namespace TransactionProcessor.BusinessLogic.OperatorInterfaces.AgencyBanking
             Result<OperatorResponse> result = messageType switch {
                 "balanceenquiry" => await ProcessBalanceEnquiry(transactionId, merchant.MerchantId.ToString(), accountNumber, cancellationToken),
                 "deposit" => await ProcessDeposit(transactionId, merchant.MerchantId.ToString(), accountNumber, additionalTransactionMetadata, cancellationToken),
+                "withdrawal" => await ProcessWithdrawal(transactionId, merchant.MerchantId.ToString(), accountNumber, additionalTransactionMetadata, cancellationToken),
                 _ => Result.Invalid($"AgencyBankingMessageType - Message Type {messageType} is not supported for this transaction type")
             };
 
@@ -74,6 +75,59 @@ namespace TransactionProcessor.BusinessLogic.OperatorInterfaces.AgencyBanking
             }
 
             return result;
+        }
+
+        private async Task<Result<OperatorResponse>> ProcessWithdrawal(Guid transactionId,
+                                                                       String agentId,
+                                                                       String accountNumber,
+                                                                       Dictionary<String, String> additionalTransactionMetadata,
+                                                                       CancellationToken cancellationToken) {
+            HttpRequestMessage request = new(HttpMethod.Post, $"{this.Configuration.Url}/transactions/withdrawal");
+            // Extract required data from metadata
+            String amountValue = additionalTransactionMetadata.ExtractFieldFromMetadata<String>("Amount");
+
+            if (String.IsNullOrWhiteSpace(amountValue))
+            {
+                Logger.LogWarning($"AgencyBanking withdrawal request rejected. TransactionId=[{transactionId}] missing Amount");
+                return Result.Invalid("Amount - Amount is a required field for this transaction type");
+            }
+
+            if (Decimal.TryParse(amountValue, out Decimal amount) == false)
+            {
+                Logger.LogWarning($"AgencyBanking withdrawal request rejected. TransactionId=[{transactionId}] invalid Amount [{amountValue}]");
+                return Result.Invalid("Amount - Amount is not a valid decimal value");
+            }
+
+            WithdrawalRequest body = new() { AgentId = agentId, AccountNumber = accountNumber, Amount = amount, TransactionId = transactionId.ToString() };
+
+            String requestBody = StringSerialiser.Serialise(body, SerialiserOptions);
+            request.Content = new StringContent(requestBody, Encoding.UTF8, "application/json");
+
+            Logger.LogWarning($"AgencyBanking withdrawal request starting. TransactionId=[{transactionId}], AgentId=[{agentId}], AccountNumber=[{accountNumber}], RequestUri=[{request.RequestUri}], RequestBody=[{requestBody}]");
+
+            HttpResponseMessage response = await this.HttpClient.SendAsync(request, cancellationToken);
+            String responseContent = await response.Content.ReadAsStringAsync(cancellationToken);
+
+            Logger.LogWarning($"AgencyBanking withdrawal response received. TransactionId=[{transactionId}], StatusCode=[{response.StatusCode}], ContentLength=[{responseContent?.Length ?? 0}]");
+
+            if (response.IsSuccessStatusCode == false)
+            {
+                Logger.LogWarning($"AgencyBanking withdrawal failed. TransactionId=[{transactionId}], StatusCode=[{response.StatusCode}], ResponseBody=[{responseContent}]");
+                return Result.Invalid($"Failed to process withdrawal {responseContent}");
+            }
+
+            TransactionResult balanceEnquiryResponse = StringSerialiser.Deserialise<TransactionResult>(responseContent, SerialiserOptions);
+            Logger.LogWarning($"AgencyBanking withdrawal completed. TransactionId=[{transactionId}], ResponseCode=[{balanceEnquiryResponse.ResponseCode}]");
+
+            OperatorResponse operatorResponse = new()
+            {
+                IsSuccessful = true,
+                ResponseCode = "0000",
+                ResponseMessage = "SUCCESS",
+                AdditionalTransactionResponseMetadata = new Dictionary<String, String>()
+            };
+
+            return Result.Success(operatorResponse);
         }
 
         private async Task<Result<OperatorResponse>> ProcessDeposit(Guid transactionId,

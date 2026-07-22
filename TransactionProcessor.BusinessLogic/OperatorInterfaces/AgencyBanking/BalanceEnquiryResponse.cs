@@ -23,9 +23,27 @@ namespace TransactionProcessor.BusinessLogic.OperatorInterfaces.AgencyBanking
         public decimal AvailableBalance { get; set; }
     }
 
+    [ExcludeFromCodeCoverage]
     public class DepositRequest
     {
         public string TransactionId { get; set; }
+        public string CustomerId { get; set; }
+
+        public string AgentId { get; set; }
+
+        public string AccountNumber { get; set; }
+
+        public decimal Amount { get; set; }
+        public string Currency { get; set; }
+        public String Channel { get; set; }
+        public String Narration { get; set; }
+        public String ReferenceNumber { get; set; }
+    }
+
+    public class WithdrawalRequest
+    {
+        public string TransactionId { get; set; }
+
         public string CustomerId { get; set; }
 
         public string AgentId { get; set; }
