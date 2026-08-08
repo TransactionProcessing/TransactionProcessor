@@ -19,7 +19,6 @@
     <PackageReference Include="Shared.DomainDrivenDesign" />
     <PackageReference Include="Shared.EventStore" />
     <PackageReference Include="MediatR" />
-    <PackageReference Include="Syncfusion.HtmlToPdfConverter.Net.Windows" />
     <PackageReference Include="System.IO.Abstractions" />
     <PackageReference Include="System.Security.Cryptography.Xml" />
     <PackageReference Include="System.ServiceModel.Duplex" />
