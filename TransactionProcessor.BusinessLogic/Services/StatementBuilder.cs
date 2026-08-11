@@ -1,7 +1,5 @@
 ﻿using Microsoft.AspNetCore.Html;
 using Shared.General;
-using Syncfusion.HtmlConverter;
-using Syncfusion.Pdf;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;

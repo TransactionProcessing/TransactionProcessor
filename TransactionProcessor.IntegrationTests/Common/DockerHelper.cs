@@ -1,5 +1,4 @@
 ﻿using DotNet.Testcontainers.Builders;
-using Syncfusion.Pdf.Xmp;
 using System.IO;
 using TestHosts.Clients;
 using TransactionProcessor.Database.Contexts;
