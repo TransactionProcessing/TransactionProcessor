@@ -7,11 +7,12 @@ using TransactionProcessor.BusinessLogic.Requests;
 
 namespace TransactionProcessor
 {
-    using EventStore.Client;
-    using Microsoft.AspNetCore.Builder;
-    using Microsoft.Extensions.Caching.Memory;
-    using Microsoft.Extensions.Configuration;
-    using Microsoft.Extensions.DependencyInjection;
+using EventStore.Client;
+using Grpc.Core;
+using Microsoft.AspNetCore.Builder;
+using Microsoft.Extensions.Caching.Memory;
+using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.DependencyInjection;
     using Microsoft.Extensions.Hosting;
     using Shared.EventStore.Aggregate;
     using Shared.EventStore.EventHandling;
@@ -207,7 +208,7 @@ namespace TransactionProcessor
 
                 if (Startup.AutoApiLogonOperators.Any()) {
                     foreach (String autoApiLogonOperator in Startup.AutoApiLogonOperators) {
-                        OperatorLogon(autoApiLogonOperator);
+                        await this.OperatorLogonAsync(autoApiLogonOperator, stoppingToken);
                     }
                 }
 
@@ -217,20 +218,37 @@ namespace TransactionProcessor
             }
         }
 
-        private static void OperatorLogon(String operatorId) {
-                Logger.LogInformation($"About to do auto logon for operator Id [{operatorId}]");
-                Func<String, IOperatorProxy> resolver = Startup.ServiceProvider.GetService<Func<String, IOperatorProxy>>();
-                IOperatorProxy proxy = resolver(operatorId);
+        internal async Task OperatorLogonAsync(String operatorId, CancellationToken cancellationToken) {
+            Logger.LogInformation($"About to do auto logon for operator Id [{operatorId}]");
 
-                Result<OperatorResponse> logonResult = proxy.ProcessLogonMessage(CancellationToken.None).Result;
+            try {
+                Func<String, IOperatorProxy> resolver = Startup.ServiceProvider?.GetService<Func<String, IOperatorProxy>>();
+                if (resolver == null) {
+                    Logger.LogWarning($"Auto logon for operator Id [{operatorId}] skipped because no operator proxy resolver was registered");
+                    return;
+                }
+
+                IOperatorProxy proxy = resolver(operatorId);
+                if (proxy == null) {
+                    Logger.LogWarning($"Auto logon for operator Id [{operatorId}] skipped because no operator proxy was resolved");
+                    return;
+                }
+
+                Result<OperatorResponse> logonResult = await proxy.ProcessLogonMessage(cancellationToken);
 
                 if (logonResult.IsSuccess) {
                     Logger.LogInformation($"Auto logon for operator Id [{operatorId}] status [{logonResult.Data.IsSuccessful}]");
+                    return;
                 }
 
-                if (logonResult.IsFailed) {
-                    Logger.LogWarning($"Auto logon for operator Id [{operatorId}] status [{logonResult.Message}]");
-                }
+                Logger.LogWarning($"Auto logon for operator Id [{operatorId}] status [{logonResult.Message}]");
+            }
+            catch (RpcException ex) when (ex.StatusCode == StatusCode.Unavailable) {
+                Logger.LogWarning($"Auto logon for operator Id [{operatorId}] deferred because the operator gRPC service is unavailable: {ex.Status.Detail}");
+            }
+            catch (Exception ex) {
+                Logger.LogError(new Exception($"Auto logon for operator Id [{operatorId}] failed", ex));
+            }
         }
     }
 }
