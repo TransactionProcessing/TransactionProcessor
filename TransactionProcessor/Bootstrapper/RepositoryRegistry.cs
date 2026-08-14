@@ -18,6 +18,7 @@ using TransactionProcessor.Repository;
 using PersistentSubscriptionInfo = Shared.EventStore.SubscriptionWorker.PersistentSubscriptionInfo;
 
 namespace TransactionProcessor.Bootstrapper {
+    using Azure.Core;
     using Lamar;
     using Microsoft.Data.SqlClient;
     using Microsoft.EntityFrameworkCore;
@@ -65,7 +66,24 @@ namespace TransactionProcessor.Bootstrapper {
                 this.AddDbContext<EstateManagementContext>(builder => builder.UseInMemoryDatabase("TransactionProcessorReadModel"));
             }
             else {
-                this.AddDbContext<EstateManagementContext>(options => options.UseSqlServer(ConfigurationReader.GetConnectionString("TransactionProcessorReadModel")));
+                SqlServerRetryOptions retryOptions;
+                try {
+                    retryOptions = ConfigurationReader.GetSection<SqlServerRetryOptions>("AppSettings:SqlServerRetry");
+                }
+                catch (KeyNotFoundException) {
+                    retryOptions = null;
+                }
+
+                if (retryOptions != null) {
+                    this.AddDbContext<EstateManagementContext>(options => options.UseSharedSqlServer<EstateManagementContext>(ConfigurationReader.GetConnectionString("TransactionProcessorReadModel"), retry => {
+                        retry.AdditionalTransientErrorNumbers = retryOptions.AdditionalTransientErrorNumbers;
+                        retry.MaxRetryCount = retryOptions.MaxRetryCount;
+                        retry.MaxRetryDelay = retryOptions.MaxRetryDelay;
+                    }));
+                }
+                else {
+                    this.AddDbContext<EstateManagementContext>(options => options.UseSqlServer(ConfigurationReader.GetConnectionString("TransactionProcessorReadModel"), retry => { }));
+                }
             }
 
             this.AddTransient<IEventStoreContext, EventStoreContext>();
