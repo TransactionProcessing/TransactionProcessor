@@ -118,10 +118,6 @@ namespace TransactionProcessor
             });
             this.ConfigureEndpoints(app);
 
-            //app.UseSwagger();
-
-            //app.UseSwaggerUI();
-
             app.PreWarm();
             this.TraceLoadedTokenAssemblies();
         }

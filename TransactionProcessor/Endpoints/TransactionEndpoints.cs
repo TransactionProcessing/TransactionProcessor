@@ -13,9 +13,9 @@ namespace TransactionProcessor.Endpoints
         private const string BaseRoute = "/api/transactions";
 
         public static IEndpointRouteBuilder MapTransactionEndpoints(this IEndpointRouteBuilder endpoints) {
-            var group = endpoints.MapGroup(BaseRoute).WithTags("Transactions");
-                                 //.RequireAuthorization()
-                                 //.RequireAuthorization(AuthorizationExtensions.PolicyNames.ClientCredentialsOnlyPolicy);
+            var group = endpoints.MapGroup(BaseRoute).WithTags("Transactions")
+                                 .RequireAuthorization()
+                                 .RequireAuthorization(AuthorizationExtensions.PolicyNames.ClientCredentialsOnlyPolicy);
 
             // POST /api/transactions  - rejects password tokens => require client credentials
             group.MapPost("/logon", TransactionHandlers.PerformLogonTransaction)
