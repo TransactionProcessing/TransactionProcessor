@@ -120,11 +120,20 @@ public class MerchantBalanceStateRepository : IProjectionStateRepository<Merchan
         using ResolvedDbContext<EstateManagementContext>? resolvedContext = this.Resolver.Resolve(EstateManagementDatabaseName, estateId.ToString());
         await using EstateManagementContext context = resolvedContext.Context;
 
-        MerchantBalanceProjectionState? entity = await context.MerchantBalanceProjectionState.Where(m => m.MerchantId == merchantId).SingleOrDefaultAsync(cancellationToken: cancellationToken);
+        IQueryable<MerchantBalanceProjectionState> query = context.MerchantBalanceProjectionState.Where(m => m.MerchantId == merchantId);
+        Result<MerchantBalanceProjectionState> entityResult = await DbQueryHelpers.ExecuteQuerySafeSingleOrDefault(query,
+                                                                                                                  cancellationToken,
+                                                                                                                  $"Error getting merchant balance state for estate {estateId} and merchant {merchantId}");
 
-        if (entity == null) {
+        if (entityResult.Status == ResultStatus.NotFound) {
             return Result.Success(new MerchantBalanceState());
         }
+
+        if (entityResult.IsFailed) {
+            return Result.Failure(entityResult.Message);
+        }
+
+        MerchantBalanceProjectionState entity = entityResult.Data;
         
         // We have located a state record so we need to translate to the Model type
         return Result.Success(new MerchantBalanceState {

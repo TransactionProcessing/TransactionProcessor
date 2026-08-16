@@ -82,7 +82,9 @@ namespace TransactionProcessor.Bootstrapper {
                     }));
                 }
                 else {
-                    this.AddDbContext<EstateManagementContext>(options => options.UseSqlServer(ConfigurationReader.GetConnectionString("TransactionProcessorReadModel"), retry => { }));
+                    this.AddDbContext<EstateManagementContext>(options => options.UseSqlServer(ConfigurationReader.GetConnectionString("TransactionProcessorReadModel"), retry => {
+                        retry.EnableRetryOnFailure();
+                    }));
                 }
             }
 
