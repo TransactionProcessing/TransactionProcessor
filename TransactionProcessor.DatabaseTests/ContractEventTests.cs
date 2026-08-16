@@ -46,13 +46,64 @@ namespace TransactionProcessor.DatabaseTests
         }
 
         [Fact]
-        public async Task AddContract_EventReplayHandled() {
-            Result result = await this.Repository.AddContract(TestData.DomainEvents.ContractCreatedEvent, CancellationToken.None);
-            result.IsSuccess.ShouldBeTrue();
+    public async Task AddContract_EventReplayHandled() {
+        Result result = await this.Repository.AddContract(TestData.DomainEvents.ContractCreatedEvent, CancellationToken.None);
+        result.IsSuccess.ShouldBeTrue();
 
-            result = await this.Repository.AddContract(TestData.DomainEvents.ContractCreatedEvent, CancellationToken.None);
-            result.IsSuccess.ShouldBeTrue();
-        }
+        result = await this.Repository.AddContract(TestData.DomainEvents.ContractCreatedEvent, CancellationToken.None);
+        result.IsSuccess.ShouldBeTrue();
+    }
+
+    [Fact]
+    public async Task AddContractToMerchant_ContractIsAddedToMerchant()
+    {
+        Result result = await this.Repository.AddContract(TestData.DomainEvents.ContractCreatedEvent, CancellationToken.None);
+        result.IsSuccess.ShouldBeTrue();
+
+        result = await this.Repository.AddContractToMerchant(TestData.DomainEvents.ContractAddedToMerchantEvent, CancellationToken.None);
+        result.IsSuccess.ShouldBeTrue();
+
+        EstateManagementContext context = this.GetContext();
+        MerchantContract? merchantContract = await context.MerchantContracts.SingleOrDefaultAsync(c => c.MerchantId == TestData.DomainEvents.ContractAddedToMerchantEvent.MerchantId && c.ContractId == TestData.DomainEvents.ContractAddedToMerchantEvent.ContractId);
+        merchantContract.ShouldNotBeNull();
+        merchantContract.IsDeleted.ShouldBeFalse();
+    }
+
+    [Fact]
+    public async Task RemoveContractFromMerchant_ContractIsMarkedDeleted()
+    {
+        Result result = await this.Repository.AddContract(TestData.DomainEvents.ContractCreatedEvent, CancellationToken.None);
+        result.IsSuccess.ShouldBeTrue();
+        result = await this.Repository.AddContractToMerchant(TestData.DomainEvents.ContractAddedToMerchantEvent, CancellationToken.None);
+        result.IsSuccess.ShouldBeTrue();
+
+        result = await this.Repository.RemoveContractFromMerchant(TestData.DomainEvents.ContractRemovedFromMerchantEvent, CancellationToken.None);
+        result.IsSuccess.ShouldBeTrue();
+
+        EstateManagementContext context = this.GetContext();
+        MerchantContract? merchantContract = await context.MerchantContracts.SingleOrDefaultAsync(c => c.MerchantId == TestData.DomainEvents.ContractRemovedFromMerchantEvent.MerchantId && c.ContractId == TestData.DomainEvents.ContractRemovedFromMerchantEvent.ContractId);
+        merchantContract.ShouldNotBeNull();
+        merchantContract.IsDeleted.ShouldBeTrue();
+    }
+
+    [Fact]
+    public async Task DisableContractProductTransactionFee_TransactionFeeIsDisabled()
+    {
+        Result result = await this.Repository.AddContract(TestData.DomainEvents.ContractCreatedEvent, CancellationToken.None);
+        result.IsSuccess.ShouldBeTrue("Add");
+        result = await this.Repository.AddContractProduct(TestData.DomainEvents.FixedValueProductAddedToContractEvent, CancellationToken.None);
+        result.IsSuccess.ShouldBeTrue("Product Add");
+        result = await this.Repository.AddContractProductTransactionFee(TestData.DomainEvents.TransactionFeeForProductAddedToContractEvent, CancellationToken.None);
+        result.IsSuccess.ShouldBeTrue("Fee Add");
+
+        result = await this.Repository.DisableContractProductTransactionFee(TestData.DomainEvents.TransactionFeeForProductDisabledEvent, CancellationToken.None);
+        result.IsSuccess.ShouldBeTrue(result.Message);
+
+        EstateManagementContext context = this.GetContext();
+        ContractProductTransactionFee? contractProductTransactionFee = await context.ContractProductTransactionFees.SingleOrDefaultAsync(c => c.ContractProductTransactionFeeId == TestData.DomainEvents.TransactionFeeForProductDisabledEvent.TransactionFeeId);
+        contractProductTransactionFee.ShouldNotBeNull();
+        contractProductTransactionFee.IsEnabled.ShouldBeFalse();
+    }
 
         [Fact]
         public async Task AddContractProduct_ContractProductIsAdded()

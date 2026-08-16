@@ -1,10 +1,30 @@
 ﻿using Microsoft.EntityFrameworkCore;
+using Shared.Logger;
 using Shouldly;
 using SimpleResults;
 using TransactionProcessor.Database.Contexts;
 using TransactionProcessor.Testing;
 
 namespace TransactionProcessor.DatabaseTests;
+
+public class MigrationTests : BaseTest {
+    public override async ValueTask InitializeAsync() {
+
+        Logger.Initialise(new Shared.Logger.NullLogger());
+
+        this.TestId = Guid.NewGuid();
+
+        await this.StartSqlContainer();
+        await this.GetRepository();
+    }
+
+    [Fact]
+    public async Task CreateReadModel_EstateDatabaseIsMigrated()
+    {
+        Result result = await this.Repository.CreateReadModel(TestData.DomainEvents.EstateCreatedEvent, CancellationToken.None);
+        result.IsSuccess.ShouldBeTrue();
+    }
+}
 
 public class EstateEventTests : BaseTest {
     [Fact]
@@ -15,6 +35,7 @@ public class EstateEventTests : BaseTest {
         EstateManagementContext context = this.GetContext();
         var estate = await context.Estates.SingleOrDefaultAsync(f => f.EstateId == TestData.DomainEvents.EstateCreatedEvent.EstateId);
         estate.ShouldNotBeNull();
+        estate.Name.ShouldBe(TestData.DomainEvents.EstateCreatedEvent.EstateName);
     }
 
     [Fact]
@@ -45,5 +66,20 @@ public class EstateEventTests : BaseTest {
 
         result = await this.Repository.AddEstateSecurityUser(TestData.DomainEvents.EstateSecurityUserAddedEvent, CancellationToken.None);
         result.IsSuccess.ShouldBeTrue();
+    }
+
+    [Fact]
+    public async Task UpdateEstate_EstateReferenceIsUpdated()
+    {
+        Result result = await this.Repository.AddEstate(TestData.DomainEvents.EstateCreatedEvent, CancellationToken.None);
+        result.IsSuccess.ShouldBeTrue();
+
+        result = await this.Repository.UpdateEstate(TestData.DomainEvents.EstateReferenceAllocatedEvent, CancellationToken.None);
+        result.IsSuccess.ShouldBeTrue();
+
+        EstateManagementContext context = this.GetContext();
+        var estate = await context.Estates.SingleOrDefaultAsync(f => f.EstateId == TestData.DomainEvents.EstateReferenceAllocatedEvent.EstateId);
+        estate.ShouldNotBeNull();
+        estate.Reference.ShouldBe(TestData.DomainEvents.EstateReferenceAllocatedEvent.EstateReference);
     }
 }

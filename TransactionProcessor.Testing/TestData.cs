@@ -2623,6 +2623,25 @@ namespace TransactionProcessor.Testing
             public static ReconciliationDomainEvents.ReconciliationHasStartedEvent ReconciliationHasStartedEvent => new ReconciliationDomainEvents.ReconciliationHasStartedEvent(TestData.TransactionId, TestData.EstateId, TestData.MerchantId, TestData.TransactionDateTime);
 
             public static FloatDomainEvents.FloatCreatedForContractProductEvent FloatCreatedForContractProductEvent => new FloatDomainEvents.FloatCreatedForContractProductEvent(FloatAggregateId, EstateId, ContractId, VariableContractProductId, FloatCreatedDateTime);
+            public static TransactionDomainEvents.TransactionHasStartedEvent TransactionHasStartedEvent => new TransactionDomainEvents.TransactionHasStartedEvent(TestData.TransactionId, TestData.EstateId, TestData.MerchantId, TestData.TransactionDateTime1, TestData.TransactionNumber, TestData.TransactionTypeSale.ToString(), TestData.TransactionReference, TestData.DeviceIdentifier, TestData.TransactionAmount);
+            public static TransactionDomainEvents.AdditionalRequestDataRecordedEvent AdditionalRequestDataRecordedEvent => new TransactionDomainEvents.AdditionalRequestDataRecordedEvent(TestData.TransactionId, TestData.EstateId, TestData.MerchantId, TestData.OperatorId, new Dictionary<String, String>
+            {
+                { "Amount", "123.45" },
+                { "CustomerAccountNumber", "12345678" }
+            }, TestData.TransactionDateTime1);
+            public static TransactionDomainEvents.AdditionalResponseDataRecordedEvent AdditionalResponseDataRecordedEvent => new TransactionDomainEvents.AdditionalResponseDataRecordedEvent(TestData.TransactionId, TestData.EstateId, TestData.MerchantId, TestData.OperatorId, new Dictionary<String, String>
+            {
+                { "ResponseCode", TestData.ResponseCode.ToCodeString() }
+            }, TestData.TransactionDateTime1);
+            public static TransactionDomainEvents.ProductDetailsAddedToTransactionEvent ProductDetailsAddedToTransactionEvent => new TransactionDomainEvents.ProductDetailsAddedToTransactionEvent(TestData.TransactionId, TestData.EstateId, TestData.MerchantId, TestData.ContractId, TestData.FixedContractProductId, TestData.TransactionDateTime1);
+            public static TransactionDomainEvents.TransactionSourceAddedToTransactionEvent TransactionSourceAddedToTransactionEvent => new TransactionDomainEvents.TransactionSourceAddedToTransactionEvent(TestData.TransactionId, TestData.EstateId, TestData.MerchantId, 3, TestData.TransactionDateTime1);
+            public static TransactionDomainEvents.TransactionHasBeenLocallyAuthorisedEvent TransactionHasBeenLocallyAuthorisedEvent => new TransactionDomainEvents.TransactionHasBeenLocallyAuthorisedEvent(TestData.TransactionId, TestData.EstateId, TestData.MerchantId, TestData.AuthorisationCode, TestData.ResponseCode.ToCodeString(), TestData.ResponseMessage, TestData.TransactionDateTime1);
+            public static TransactionDomainEvents.TransactionHasBeenLocallyDeclinedEvent TransactionHasBeenLocallyDeclinedEvent => new TransactionDomainEvents.TransactionHasBeenLocallyDeclinedEvent(TestData.TransactionId, TestData.EstateId, TestData.MerchantId, TestData.DeclinedResponseCode.ToCodeString(), TestData.DeclinedResponseMessage, TestData.TransactionDateTime1);
+            public static TransactionDomainEvents.TransactionAuthorisedByOperatorEvent TransactionAuthorisedByOperatorEvent => new TransactionDomainEvents.TransactionAuthorisedByOperatorEvent(TestData.TransactionId, TestData.EstateId, TestData.MerchantId, TestData.OperatorId, TestData.OperatorAuthorisationCode, TestData.OperatorResponseCode, TestData.OperatorResponseMessage, "OPERATOR-TXN-1", TestData.ResponseCode.ToCodeString(), TestData.ResponseMessage, TestData.TransactionDateTime1);
+            public static TransactionDomainEvents.TransactionDeclinedByOperatorEvent TransactionDeclinedByOperatorEvent => new TransactionDomainEvents.TransactionDeclinedByOperatorEvent(TestData.TransactionId, TestData.EstateId, TestData.MerchantId, TestData.OperatorId, TestData.DeclinedOperatorResponseCode, TestData.DeclinedOperatorResponseMessage, TestData.DeclinedResponseCode.ToCodeString(), TestData.DeclinedResponseMessage, TestData.TransactionDateTime1);
+            public static TransactionDomainEvents.TransactionTimingsAddedToTransactionEvent TransactionTimingsAddedToTransactionEvent => new TransactionDomainEvents.TransactionTimingsAddedToTransactionEvent(TestData.TransactionId, TestData.EstateId, TestData.MerchantId, TestData.TransactionDateTime1, TestData.TransactionDateTime1.AddMinutes(1), TestData.TransactionDateTime1.AddMinutes(3), TestData.TransactionDateTime1.AddMinutes(5));
+            public static MerchantStatementForDateDomainEvents.TransactionAddedToStatementForDateEvent TransactionAddedToStatementForDateEvent => new MerchantStatementForDateDomainEvents.TransactionAddedToStatementForDateEvent(MerchantStatementForDateId1, Guid.Parse("2D7E6B2F-9C73-4C64-9D80-15D497D2D2B3"), EstateId, MerchantId, MerchantStatementId, TransactionId, TransactionDateTime1, TransactionAmount1.Value);
+            public static MerchantStatementForDateDomainEvents.SettledFeeAddedToStatementForDateEvent SettledFeeAddedToStatementForDateEvent => new MerchantStatementForDateDomainEvents.SettledFeeAddedToStatementForDateEvent(MerchantStatementForDateId1, Guid.Parse("7F6B6E17-1DF7-4C86-9DD4-1CE6FD35F1A9"), EstateId, MerchantId, MerchantStatementId, SettledFeeId1, TransactionId, SettledFeeDateTime1, SettledFeeAmount1);
             public static TransactionDomainEvents.TransactionHasBeenCompletedEvent TransactionHasBeenCompletedEvent => new TransactionDomainEvents.TransactionHasBeenCompletedEvent(TestData.TransactionId,
                 TestData.EstateId,
                 TestData.MerchantId,
@@ -2639,6 +2658,10 @@ namespace TransactionProcessor.Testing
             public static MerchantDomainEvents.WithdrawalMadeEvent WithdrawalMadeEvent => new(MerchantId, EstateId, WithdrawalId, WithdrawalDateTime, WithdrawalAmount.Value);
             public static MerchantStatementForDateDomainEvents.StatementCreatedForDateEvent StatementCreatedForDateEvent => new(MerchantStatementForDateId1, ActivityDate1, StatementDate, MerchantStatementId, EstateId, MerchantId);
 
+            public static SettlementDomainEvents.SettlementCreatedForDateEvent SettlementCreatedForDateEvent => new(SettlementId, EstateId, MerchantId, SettlementDate);
+            public static SettlementDomainEvents.SettlementProcessingStartedEvent SettlementProcessingStartedEvent => new(SettlementId, EstateId, MerchantId, TransactionDateTime);
+            public static SettlementDomainEvents.SettlementCompletedEvent SettlementCompletedEvent => new(SettlementId, EstateId, MerchantId);
+            public static SettlementDomainEvents.MerchantFeeAddedPendingSettlementEvent MerchantFeeAddedPendingSettlementEvent => new(SettlementId, EstateId, MerchantId, TransactionId, CalculatedFeeValue, FeeCalculationType, TransactionFeeId, FeeValue, TransactionFeeCalculateDateTime);
             public static SettlementDomainEvents.MerchantFeeSettledEvent MerchantFeeSettledEvent => new(SettlementId, EstateId, MerchantId, TransactionId, CalculatedFeeValue, FeeCalculationType, SettledFeeId1, FeeValue, TransactionFeeCalculateDateTime, SettlementDate);
 
             public static MerchantStatementDomainEvents.StatementCreatedEvent StatementCreatedEvent => new(TestData.MerchantStatementId, TestData.EstateId, TestData.MerchantId, StatementDate);
@@ -2671,6 +2694,7 @@ namespace TransactionProcessor.Testing
                 new MerchantDomainEvents.ContractAddedToMerchantEvent(TestData.MerchantId,
                     TestData.EstateId,
                     TestData.ContractId);
+            public static MerchantDomainEvents.ContractRemovedFromMerchantEvent ContractRemovedFromMerchantEvent => new MerchantDomainEvents.ContractRemovedFromMerchantEvent(TestData.MerchantId, TestData.EstateId, TestData.ContractId);
 
             public static MerchantDomainEvents.AddressAddedEvent AddressAddedEvent =>
                 new MerchantDomainEvents.AddressAddedEvent(TestData.MerchantId,
@@ -2708,6 +2732,7 @@ namespace TransactionProcessor.Testing
 
             public static MerchantDomainEvents.SecurityUserAddedToMerchantEvent MerchantSecurityUserAddedEvent => new MerchantDomainEvents.SecurityUserAddedToMerchantEvent(TestData.MerchantId, TestData.EstateId, TestData.MerchantSecurityUserId, TestData.EmailAddress);
             public static MerchantDomainEvents.SettlementScheduleChangedEvent SettlementScheduleChangedEvent => new MerchantDomainEvents.SettlementScheduleChangedEvent(TestData.MerchantId, TestData.EstateId, (Int32)TestData.SettlementSchedule, TestData.NextSettlementDate);
+            public static MerchantDomainEvents.MerchantOpeningHoursUpdatedEvent MerchantOpeningHoursUpdatedEvent => new MerchantDomainEvents.MerchantOpeningHoursUpdatedEvent(TestData.MerchantId, TestData.EstateId, (Int32)DayOfWeek.Monday, "0800", "1700");
             public static MerchantScheduleDomainEvents.MerchantScheduleCreatedEvent MerchantScheduleCreatedEvent => new(TestData.MerchantScheduleId, TestData.EstateId, TestData.MerchantId, TestData.MerchantScheduleYear);
             public static MerchantScheduleDomainEvents.MerchantScheduleMonthUpdatedEvent MerchantScheduleMonthUpdatedEvent => new(TestData.MerchantScheduleId, TestData.EstateId, TestData.MerchantId, TestData.MerchantScheduleYear, 12, [25, 26]);
             //public static StatementGeneratedEvent StatementGeneratedEvent => new StatementGeneratedEvent(TestData.MerchantStatementId, TestData.EstateId, TestData.MerchantId, TestData.StatementGeneratedDate);
@@ -2773,6 +2798,12 @@ namespace TransactionProcessor.Testing
             public static ImportLogCreatedEvent ImportLogCreatedEvent => new ImportLogCreatedEvent(FileImportLogId, EstateId, ImportLogDateTime);
             public static FileAddedToImportLogEvent FileAddedToImportLogEvent => new FileAddedToImportLogEvent(FileImportLogId, FileId, EstateId, MerchantId, EstateSecurityUserId,
                 FileProfileId, FileName, FilePath, FileUploadedDateTime );
+            public static FileProcessor.File.DomainEvents.FileCreatedEvent FileCreatedEvent => new FileProcessor.File.DomainEvents.FileCreatedEvent(FileId, FileImportLogId, EstateId, MerchantId, EstateSecurityUserId, FileProfileId, FilePath, FileUploadedDateTime, OperatorId);
+            public static FileProcessor.File.DomainEvents.FileLineAddedEvent FileLineAddedEvent => new FileProcessor.File.DomainEvents.FileLineAddedEvent(FileId, EstateId, MerchantId, 1, "Test file line");
+            public static FileProcessor.File.DomainEvents.FileProcessingCompletedEvent FileProcessingCompletedEvent => new FileProcessor.File.DomainEvents.FileProcessingCompletedEvent(FileId, EstateId, MerchantId, FileUploadedDateTime.AddMinutes(30));
+            public static FileProcessor.File.DomainEvents.FileLineProcessingSuccessfulEvent FileLineProcessingSuccessfulEvent => new FileProcessor.File.DomainEvents.FileLineProcessingSuccessfulEvent(FileId, EstateId, MerchantId, 1, TransactionId);
+            public static FileProcessor.File.DomainEvents.FileLineProcessingFailedEvent FileLineProcessingFailedEvent => new FileProcessor.File.DomainEvents.FileLineProcessingFailedEvent(FileId, EstateId, MerchantId, 1, TransactionId2, OperatorResponseCode, OperatorResponseMessage);
+            public static FileProcessor.File.DomainEvents.FileLineProcessingIgnoredEvent FileLineProcessingIgnoredEvent => new FileProcessor.File.DomainEvents.FileLineProcessingIgnoredEvent(FileId, EstateId, MerchantId, 1);
             
         }
     }
