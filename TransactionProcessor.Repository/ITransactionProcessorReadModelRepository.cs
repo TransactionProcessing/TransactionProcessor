@@ -432,7 +432,7 @@ namespace TransactionProcessor.Repository {
 
             await context.MerchantAddresses.AddAsync(merchantAddress, cancellationToken);
 
-            return await context.SaveChangesAsync(cancellationToken);
+            return await context.SaveChangesWithDuplicateHandling(cancellationToken);
         }
 
         public async Task<Result> AddMerchantContact(ContactAddedEvent domainEvent,
@@ -452,7 +452,7 @@ namespace TransactionProcessor.Repository {
 
             await context.MerchantContacts.AddAsync(merchantContact, cancellationToken);
 
-            return await context.SaveChangesAsync(cancellationToken);
+            return await context.SaveChangesWithDuplicateHandling(cancellationToken);
         }
 
         public async Task<Result> AddMerchantDevice(DeviceAddedToMerchantEvent domainEvent,
@@ -519,7 +519,7 @@ namespace TransactionProcessor.Repository {
 
             await context.MerchantOperators.AddAsync(merchantOperator, cancellationToken);
 
-            return await context.SaveChangesAsync(cancellationToken);
+            return await context.SaveChangesWithDuplicateHandling(cancellationToken);
         }
 
         public async Task<Result> AddMerchantSecurityUser(SecurityUserAddedToMerchantEvent domainEvent,
@@ -537,7 +537,7 @@ namespace TransactionProcessor.Repository {
 
             await context.MerchantSecurityUsers.AddAsync(merchantSecurityUser, cancellationToken);
 
-            return await context.SaveChangesAsync(cancellationToken);
+            return await context.SaveChangesWithDuplicateHandling(cancellationToken);
         }
         public async Task<Result> UpdateMerchant(SettlementScheduleChangedEvent domainEvent,
                                                  CancellationToken cancellationToken)
@@ -839,7 +839,7 @@ namespace TransactionProcessor.Repository {
             };
 
             await context.MerchantContracts.AddAsync(merchantContract, cancellationToken);
-            return await context.SaveChangesAsync(cancellationToken);
+            return await context.SaveChangesWithDuplicateHandling(cancellationToken);
         }
         public async Task<Result> UpdateMerchant(MerchantReferenceAllocatedEvent domainEvent,
                                                  CancellationToken cancellationToken)
@@ -1308,7 +1308,7 @@ namespace TransactionProcessor.Repository {
                 FloatId = domainEvent.FloatId
             };
             await context.FloatActivity.AddAsync(floatActivity, cancellationToken);
-            return await context.SaveChangesAsync(cancellationToken);
+            return await context.SaveChangesWithDuplicateHandling(cancellationToken);
         }
 
         public async Task<Result> CreateFloatActivity(FloatDomainEvents.FloatDecreasedByTransactionEvent domainEvent,
@@ -1332,7 +1332,7 @@ namespace TransactionProcessor.Repository {
                 FloatId = domainEvent.FloatId
             };
             await context.FloatActivity.AddAsync(floatActivity, cancellationToken);
-            return await context.SaveChangesAsync(cancellationToken);
+            return await context.SaveChangesWithDuplicateHandling(cancellationToken);
         }
 
         public async Task<Result> CreateReadModel(EstateDomainEvents.EstateCreatedEvent domainEvent,
@@ -1365,7 +1365,7 @@ namespace TransactionProcessor.Repository {
 
             await context.Settlements.AddAsync(settlement, cancellationToken);
 
-            return await context.SaveChangesAsync(cancellationToken);
+            return await context.SaveChangesWithDuplicateHandling(cancellationToken);
         }
 
         public async Task<Result> DisableContractProductTransactionFee(ContractDomainEvents.TransactionFeeForProductDisabledEvent domainEvent,
@@ -1947,7 +1947,7 @@ namespace TransactionProcessor.Repository {
 
             await context.Files.AddAsync(file, cancellationToken);
 
-            return await context.SaveChangesAsync(cancellationToken);
+            return await context.SaveChangesWithDuplicateHandling(cancellationToken);
         }
 
         public async Task<Result> AddFileImportLog(ImportLogCreatedEvent domainEvent,
@@ -2307,7 +2307,7 @@ namespace TransactionProcessor.Repository {
                 estateOperator.IsDeleted = null;
             }
 
-            return await context.SaveChangesAsync(cancellationToken);
+            return await context.SaveChangesWithDuplicateHandling(cancellationToken);
         }
 
         public async Task<Result> RemoveOperatorFromEstate(EstateDomainEvents.OperatorRemovedFromEstateEvent domainEvent,
@@ -2327,7 +2327,7 @@ namespace TransactionProcessor.Repository {
                 estateOperator.IsDeleted = true;
             }
 
-            return await context.SaveChangesAsync(cancellationToken);
+            return await context.SaveChangesWithDuplicateHandling(cancellationToken);
         }
     }
 }
