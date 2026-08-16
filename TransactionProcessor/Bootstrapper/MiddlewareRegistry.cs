@@ -49,7 +49,6 @@ namespace TransactionProcessor.Bootstrapper
             KurrentDBClientSettings eventStoreClientSettings = KurrentDBClientSettings.Create(connectionString);
 
             this.ConfigureHealthChecks(eventStoreClientSettings);
-            //this.ConfigureSwagger();
             this.ConfigureAuthentication();
             this.ConfigureControllers();
             this.ConfigureMvc();
