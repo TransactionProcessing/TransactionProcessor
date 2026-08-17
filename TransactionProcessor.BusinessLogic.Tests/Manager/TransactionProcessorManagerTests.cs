@@ -1,6 +1,7 @@
 ﻿using Moq;
 using Shared.DomainDrivenDesign.EventSourcing;
 using Shared.EventStore.Aggregate;
+using Shared.Logger;
 using Shared.Serialisation;
 using Shouldly;
 using SimpleResults;
@@ -33,6 +34,7 @@ namespace TransactionProcessor.BusinessLogic.Tests.Manager
 
         public TransactionProcessorManagerTests()
         {
+            Logger.Initialise(Microsoft.Extensions.Logging.Abstractions.NullLogger.Instance);
             this.TransactionProcessorReadModelRepository = new Mock<ITransactionProcessorReadModelRepository>();
             StringSerialiser.Initialise(new Shared.Serialisation.SystemTextJsonSerializer(new System.Text.Json.JsonSerializerOptions()));
             this.AggregateService = new Mock<IAggregateService>();
@@ -445,6 +447,19 @@ namespace TransactionProcessor.BusinessLogic.Tests.Manager
 
             Result<List<Contract>> getMerchantContractsResult = await this.TransactionProcessorManager.GetMerchantContracts(TestData.EstateId, TestData.MerchantId, CancellationToken.None);
             getMerchantContractsResult.IsFailed.ShouldBeTrue();
+        }
+
+        [Fact]
+        public async Task TransactionProcessorManager_GetMerchantContracts_RepositoryThrows_ResultFailed()
+        {
+            this.TransactionProcessorReadModelRepository
+                .Setup(e => e.GetMerchantContracts(It.IsAny<Guid>(), It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
+                .ThrowsAsync(new Exception("Test exception"));
+
+            Result<List<Contract>> getMerchantContractsResult = await this.TransactionProcessorManager.GetMerchantContracts(TestData.EstateId, TestData.MerchantId, CancellationToken.None);
+
+            getMerchantContractsResult.IsFailed.ShouldBeTrue();
+            getMerchantContractsResult.Message.ShouldBe("Test exception");
         }
 
         [Fact]
