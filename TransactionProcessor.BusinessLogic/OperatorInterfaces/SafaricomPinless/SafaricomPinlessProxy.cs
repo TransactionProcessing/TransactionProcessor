@@ -78,51 +78,59 @@ namespace TransactionProcessor.BusinessLogic.OperatorInterfaces.SafaricomPinless
                                                                        Dictionary<String, String> additionalTransactionMetadata,
                                                                        CancellationToken cancellationToken)
         {
-            // Extract the required fields
-            String transactionAmount = additionalTransactionMetadata.ExtractFieldFromMetadata<String>("Amount");
-            String customerMsisdn = additionalTransactionMetadata.ExtractFieldFromMetadata<String>("CustomerAccountNumber");
+            try {
+                // Extract the required fields
+                String transactionAmount = additionalTransactionMetadata.ExtractFieldFromMetadata<String>("Amount");
+                String customerMsisdn = additionalTransactionMetadata.ExtractFieldFromMetadata<String>("CustomerAccountNumber");
 
-            if (String.IsNullOrEmpty(transactionAmount))
-            {
-                return Result.Invalid("Amount is a required field for this transaction type");
-            }
+                if (String.IsNullOrEmpty(transactionAmount))
+                {
+                    return Result.Invalid("Amount is a required field for this transaction type");
+                }
 
-            if (String.IsNullOrEmpty(customerMsisdn))
-            {
-                return Result.Invalid("CustomerAccountNumber is a required field for this transaction type");
-            }
+                if (String.IsNullOrEmpty(customerMsisdn))
+                {
+                    return Result.Invalid("CustomerAccountNumber is a required field for this transaction type");
+                }
 
-            // Multiply amount before sending
-            // Covert the transaction amount to Decimal and remove decimal places
-            if (Decimal.TryParse(transactionAmount, out Decimal amountAsDecimal) == false)
-            {
-                return Result.Invalid("Transaction Amount is not a valid decimal value");
-            }
+                // Multiply amount before sending
+                // Covert the transaction amount to Decimal and remove decimal places
+                if (Decimal.TryParse(transactionAmount, out Decimal amountAsDecimal) == false)
+                {
+                    return Result.Invalid("Transaction Amount is not a valid decimal value");
+                }
 
-            Decimal operatorTransactionAmount = amountAsDecimal * 100;
+                Decimal operatorTransactionAmount = amountAsDecimal * 100;
             
-            String requestUrl = this.BuildRequest(transactionDateTime, transactionReference, customerMsisdn, operatorTransactionAmount);
+                String requestUrl = this.BuildRequest(transactionDateTime, transactionReference, customerMsisdn, operatorTransactionAmount);
 
-            Logger.LogInformation($"Sending message to Safaricom [{requestUrl}]");
+                Logger.LogInformation($"Sending message to Safaricom [{requestUrl}]");
 
-            // Concatenate the request message
-            HttpRequestMessage requestMessage = new HttpRequestMessage(HttpMethod.Get, new Uri(requestUrl));
+                // Concatenate the request message
+                HttpRequestMessage requestMessage = new HttpRequestMessage(HttpMethod.Get, new Uri(requestUrl));
 
-            // Send the request to Safaricom
-            HttpResponseMessage responseMessage = await this.HttpClient.SendAsync(requestMessage, cancellationToken);
+                // Send the request to Safaricom
+                HttpResponseMessage responseMessage = await this.HttpClient.SendAsync(requestMessage, cancellationToken);
 
-            // Check the send was successful
-            if (responseMessage.IsSuccessStatusCode == false)
-            {
-                return Result.Failure($"Error sending request [{requestUrl}] to Safaricom.  Status Code [{responseMessage.StatusCode}]");
+                // Check the send was successful
+                if (responseMessage.IsSuccessStatusCode == false)
+                {
+                    return Result.Failure($"Error sending request [{requestUrl}] to Safaricom.  Status Code [{responseMessage.StatusCode}]");
+                }
+
+                // Get the response
+                String responseContent = await responseMessage.Content.ReadAsStringAsync();
+
+                Logger.LogInformation($"Received response message from Safaricom [{responseContent}]");
+
+                return this.CreateFrom(responseContent);
             }
-
-            // Get the response
-            String responseContent = await responseMessage.Content.ReadAsStringAsync();
-
-            Logger.LogInformation($"Received response message from Safaricom [{responseContent}]");
-
-            return this.CreateFrom(responseContent);
+            catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested) {
+                throw;
+            }
+            catch (Exception ex) {
+                return Result.Failure($"Error sending request to Safaricom [{ex.Message}]");
+            }
         }
 
         /// <summary>

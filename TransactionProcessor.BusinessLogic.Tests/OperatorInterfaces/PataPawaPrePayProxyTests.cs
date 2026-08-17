@@ -144,6 +144,36 @@ public class PataPawaPrePayProxyTests {
     }
 
     [Fact]
+    public async Task PataPawaPrePayProxy_ProcessSaleMessage_MeterTransaction_Timeout_MessageProcessed()
+    {
+        BusinessLogic.OperatorInterfaces.OperatorResponse operatorResponse = new()
+        {
+            TransactionId = Guid.Parse("2D9D6BBA-BDF4-4248-9B27-6B68374AC037").ToString(),
+            AdditionalTransactionResponseMetadata = new Dictionary<String, String>{
+                {"PataPawaPrePaidAPIKey", "APIKey"}
+            }
+        };
+
+        this.MemoryCache.Set("PataPawaPrePayLogon", operatorResponse, new MemoryCacheEntryOptions());
+
+        Dictionary<String, String> metaDataDictionary = new Dictionary<String, String>();
+        metaDataDictionary.Add("PataPawaPrePayMessageType", "meter");
+        metaDataDictionary.Add("MeterNumber", "123456");
+
+        this.MockHttpMessageHandler.When("http://localhost")
+                                   .Respond(req => throw new TimeoutException("Execution Timeout Expired"));
+
+        var result = await this.PataPawaPrePayProxy.ProcessSaleMessage(TestData.TransactionId,
+            TestData.OperatorId, TestData.Merchant, TestData.TransactionDateTime, TestData.TransactionReference,
+            metaDataDictionary, CancellationToken.None);
+
+        result.IsFailed.ShouldBeTrue();
+        result.Status.ShouldBe(ResultStatus.Failure);
+        result.Message.ShouldContain("Error performing meter transaction for meter number 123456");
+        result.Message.ShouldContain("Execution Timeout Expired");
+    }
+
+    [Fact]
     public async Task PataPawaPrePayProxy_ProcessSaleMessage_VendTransaction_MessageProcessed()
     {
         BusinessLogic.OperatorInterfaces.OperatorResponse operatorResponse = new()
@@ -214,6 +244,38 @@ public class PataPawaPrePayProxyTests {
             metaDataDictionary, CancellationToken.None);
 
         result.IsFailed.ShouldBeTrue();
+    }
+
+    [Fact]
+    public async Task PataPawaPrePayProxy_ProcessSaleMessage_VendTransaction_Timeout_MessageProcessed()
+    {
+        BusinessLogic.OperatorInterfaces.OperatorResponse operatorResponse = new()
+        {
+            TransactionId = Guid.Parse("2D9D6BBA-BDF4-4248-9B27-6B68374AC037").ToString(),
+            AdditionalTransactionResponseMetadata = new Dictionary<String, String>{
+                {"PataPawaPrePaidAPIKey", "APIKey"}
+            }
+        };
+
+        this.MemoryCache.Set("PataPawaPrePayLogon", operatorResponse, new MemoryCacheEntryOptions());
+
+        Dictionary<String, String> metaDataDictionary = new Dictionary<String, String>();
+        metaDataDictionary.Add("PataPawaPrePayMessageType", "vend");
+        metaDataDictionary.Add("MeterNumber", "123456");
+        metaDataDictionary.Add("CustomerName", "Mr Customer");
+        metaDataDictionary.Add("Amount", "100");
+
+        this.MockHttpMessageHandler.When("http://localhost")
+                                   .Respond(req => throw new TimeoutException("Execution Timeout Expired"));
+
+        var result = await this.PataPawaPrePayProxy.ProcessSaleMessage(TestData.TransactionId,
+            TestData.OperatorId, TestData.Merchant, TestData.TransactionDateTime, TestData.TransactionReference,
+            metaDataDictionary, CancellationToken.None);
+
+        result.IsFailed.ShouldBeTrue();
+        result.Status.ShouldBe(ResultStatus.Failure);
+        result.Message.ShouldContain("Error performing vend transaction for meter number 123456");
+        result.Message.ShouldContain("Execution Timeout Expired");
     }
 
     [Theory]

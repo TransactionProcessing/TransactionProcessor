@@ -41,41 +41,50 @@ namespace TransactionProcessor.BusinessLogic.OperatorInterfaces.AgencyBanking
                                                                        String transactionReference,
                                                                        Dictionary<String, String> additionalTransactionMetadata,
                                                                        CancellationToken cancellationToken) {
-            Logger.LogInformation($"AgencyBanking sale request received. TransactionId=[{transactionId}], OperatorId=[{operatorId}], MerchantId=[{merchant.MerchantId}], TransactionDateTime=[{transactionDateTime:o}], TransactionReference=[{transactionReference}]");
+            try {
+                Logger.LogInformation($"AgencyBanking sale request received. TransactionId=[{transactionId}], OperatorId=[{operatorId}], MerchantId=[{merchant.MerchantId}], TransactionDateTime=[{transactionDateTime:o}], TransactionReference=[{transactionReference}]");
 
-            // Check the meta data for the message type
-            String messageType = additionalTransactionMetadata.ExtractFieldFromMetadata<String>("AgencyBankingMessageType");
+                // Check the meta data for the message type
+                String messageType = additionalTransactionMetadata.ExtractFieldFromMetadata<String>("AgencyBankingMessageType");
 
-            if (String.IsNullOrEmpty(messageType))
-            {
-                Logger.LogWarning($"AgencyBanking sale request rejected. TransactionId=[{transactionId}] missing AgencyBankingMessageType");
-                return Result.Invalid("AgencyBankingMessageType - Message Type is a required field for this transaction type");
-            }
+                if (String.IsNullOrEmpty(messageType))
+                {
+                    Logger.LogWarning($"AgencyBanking sale request rejected. TransactionId=[{transactionId}] missing AgencyBankingMessageType");
+                    return Result.Invalid("AgencyBankingMessageType - Message Type is a required field for this transaction type");
+                }
             
-            // Check the meta data for the account number
-            String accountNumber = additionalTransactionMetadata.ExtractFieldFromMetadata<String>("AgencyBankingAccountNumber");
+                // Check the meta data for the account number
+                String accountNumber = additionalTransactionMetadata.ExtractFieldFromMetadata<String>("AgencyBankingAccountNumber");
 
-            if (String.IsNullOrEmpty(accountNumber))
-            {
-                Logger.LogWarning($"AgencyBanking sale request rejected. TransactionId=[{transactionId}] missing AgencyBankingAccountNumber");
-                return Result.Invalid("AgencyBankingAccountNumber - Account Number is a required field for this transaction type");
-            }
+                if (String.IsNullOrEmpty(accountNumber))
+                {
+                    Logger.LogWarning($"AgencyBanking sale request rejected. TransactionId=[{transactionId}] missing AgencyBankingAccountNumber");
+                    return Result.Invalid("AgencyBankingAccountNumber - Account Number is a required field for this transaction type");
+                }
 
-            Logger.LogInformation($"AgencyBanking sale request metadata resolved. TransactionId=[{transactionId}], MessageType=[{messageType}], AccountNumber=[{accountNumber}]");
+                Logger.LogInformation($"AgencyBanking sale request metadata resolved. TransactionId=[{transactionId}], MessageType=[{messageType}], AccountNumber=[{accountNumber}]");
 
-            Result<OperatorResponse> result = messageType switch {
-                "balanceenquiry" => await ProcessBalanceEnquiry(transactionId, merchant.MerchantId.ToString(), accountNumber, cancellationToken),
-                "deposit" => await ProcessDeposit(transactionId, merchant.MerchantId.ToString(), accountNumber, additionalTransactionMetadata, cancellationToken),
-                "withdrawal" => await ProcessWithdrawal(transactionId, merchant.MerchantId.ToString(), accountNumber, additionalTransactionMetadata, cancellationToken),
-                "ministatement" => await ProcessMiniStatement(merchant.MerchantId.ToString(), accountNumber, cancellationToken),
-                _ => Result.Invalid($"AgencyBankingMessageType - Message Type {messageType} is not supported for this transaction type")
-            };
+                Result<OperatorResponse> result = messageType switch {
+                    "balanceenquiry" => await ProcessBalanceEnquiry(transactionId, merchant.MerchantId.ToString(), accountNumber, cancellationToken),
+                    "deposit" => await ProcessDeposit(transactionId, merchant.MerchantId.ToString(), accountNumber, additionalTransactionMetadata, cancellationToken),
+                    "withdrawal" => await ProcessWithdrawal(transactionId, merchant.MerchantId.ToString(), accountNumber, additionalTransactionMetadata, cancellationToken),
+                    "ministatement" => await ProcessMiniStatement(merchant.MerchantId.ToString(), accountNumber, cancellationToken),
+                    _ => Result.Invalid($"AgencyBankingMessageType - Message Type {messageType} is not supported for this transaction type")
+                };
             
-            if (result.Status == ResultStatus.Invalid) {
-                Logger.LogWarning($"AgencyBanking sale request rejected. TransactionId=[{transactionId}] unsupported message type [{messageType}]");
-            }
+                if (result.Status == ResultStatus.Invalid) {
+                    Logger.LogWarning($"AgencyBanking sale request rejected. TransactionId=[{transactionId}] unsupported message type [{messageType}]");
+                }
 
-            return result;
+                return result;
+            }
+            catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested) {
+                throw;
+            }
+            catch (Exception ex) {
+                Logger.LogError($"AgencyBanking sale request failed. TransactionId=[{transactionId}]", ex);
+                return Result.Failure($"AgencyBanking request failed [{ex.Message}]");
+            }
         }
 
         private async Task<Result<OperatorResponse>> ProcessWithdrawal(Guid transactionId,

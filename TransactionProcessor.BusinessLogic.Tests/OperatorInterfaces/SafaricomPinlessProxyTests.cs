@@ -188,6 +188,33 @@ namespace TransactionProcessor.BusinessLogic.Tests.OperatorInterfaces
             result.Status.ShouldBe(ResultStatus.Failure);
         }
 
+        [Fact]
+        public async Task SafaricomPinlessProxy_ProcessSaleMessage_Timeout_ErrorThrown()
+        {
+            Mock<HttpMessageHandler> handlerMock = new Mock<HttpMessageHandler>(MockBehavior.Strict);
+            handlerMock.Protected()
+                       .Setup<Task<HttpResponseMessage>>("SendAsync", ItExpr.IsAny<HttpRequestMessage>(), ItExpr.IsAny<CancellationToken>())
+                       .ThrowsAsync(new TimeoutException("Execution Timeout Expired"));
+
+            SafaricomConfiguration safaricomConfiguration = TestData.SafaricomConfiguration;
+            HttpClient httpClient = new HttpClient(handlerMock.Object);
+
+            IOperatorProxy safaricomPinlessproxy = new SafaricomPinlessProxy(safaricomConfiguration, httpClient);
+
+            var result = await safaricomPinlessproxy.ProcessSaleMessage(TestData.TransactionId,
+                                                                                       TestData.OperatorId,
+                                                                                       TestData.Merchant,
+                                                                                       TestData.TransactionDateTime,
+                                                                                       TestData.TransactionReference,
+                                                                                       TestData.AdditionalTransactionMetaDataForMobileTopup(),
+                                                                                       CancellationToken.None);
+
+            result.IsFailed.ShouldBeTrue();
+            result.Status.ShouldBe(ResultStatus.Failure);
+            result.Message.ShouldContain("Error sending request to Safaricom");
+            result.Message.ShouldContain("Execution Timeout Expired");
+        }
+
         [Theory]
         [InlineData("", "123456789")]
         [InlineData(null, "123456789")]
