@@ -78,6 +78,28 @@ namespace TransactionProcessor.BusinessLogic.Tests.OperatorInterfaces
             result.IsFailed.ShouldBeTrue();
         }
 
+        [Fact]
+        public async Task VoucherManagementProxy_ProcessSaleMessage_VoucherIssueThrowsTimeout_FailedResultReturned()
+        {
+            Mock<IMediator> mediator = new Mock<IMediator>();
+            mediator.Setup(m => m.Send(It.IsAny<VoucherCommands.IssueVoucherCommand>(), It.IsAny<CancellationToken>()))
+                    .ThrowsAsync(new TimeoutException("Execution Timeout Expired"));
+            IOperatorProxy voucherManagementProxy = new VoucherManagementProxy(mediator.Object);
+
+            var result = await voucherManagementProxy.ProcessSaleMessage(TestData.TransactionId,
+                                                                                         TestData.OperatorId,
+                                                                                         TestData.Merchant,
+                                                                                         TestData.TransactionDateTime,
+                                                                                         TestData.TransactionReference,
+                                                                                         TestData.AdditionalTransactionMetaDataForVoucher(),
+                                                                                         CancellationToken.None);
+
+            result.IsFailed.ShouldBeTrue();
+            result.Status.ShouldBe(ResultStatus.Failure);
+            result.Message.ShouldContain("Error issuing voucher");
+            result.Message.ShouldContain("Execution Timeout Expired");
+        }
+
         [Theory]
         [InlineData("")]
         [InlineData(null)]

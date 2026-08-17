@@ -104,59 +104,75 @@ public class PataPawaPrePayProxy : IOperatorProxy{
     }
 
     private async Task<Result<OperatorResponse>> PerformMeterTransaction(String meterNumber, String apiKey, CancellationToken cancellationToken){
-        HttpRequestMessage requestMessage = new HttpRequestMessage(HttpMethod.Post, this.Configuration.Url);
-        MultipartFormDataContent content = new MultipartFormDataContent();
-        content.Add(new StringContent("meter"), "request");
-        content.Add(new StringContent(this.Configuration.Username), "username");
-        content.Add(new StringContent(meterNumber), "meter");
-        content.Add(new StringContent(apiKey), "key");
-        requestMessage.Content = content;
+        try {
+            HttpRequestMessage requestMessage = new HttpRequestMessage(HttpMethod.Post, this.Configuration.Url);
+            MultipartFormDataContent content = new MultipartFormDataContent();
+            content.Add(new StringContent("meter"), "request");
+            content.Add(new StringContent(this.Configuration.Username), "username");
+            content.Add(new StringContent(meterNumber), "meter");
+            content.Add(new StringContent(apiKey), "key");
+            requestMessage.Content = content;
 
-        HttpResponseMessage responseMessage = await this.HttpClient.SendAsync(requestMessage, cancellationToken);
+            HttpResponseMessage responseMessage = await this.HttpClient.SendAsync(requestMessage, cancellationToken);
 
-        // Get the response
-        String responseContent = await responseMessage.Content.ReadAsStringAsync(cancellationToken);
+            // Get the response
+            String responseContent = await responseMessage.Content.ReadAsStringAsync(cancellationToken);
 
-        Logger.LogInformation($"Received response message from Patapawa [{responseContent}]");
+            Logger.LogInformation($"Received response message from Patapawa [{responseContent}]");
 
-        return this.CreateFromMeter(responseContent);
+            return this.CreateFromMeter(responseContent);
+        }
+        catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested) {
+            throw;
+        }
+        catch (Exception ex) {
+            return Result.Failure($"Error performing meter transaction for meter number {meterNumber} [{ex.Message}]");
+        }
     }
 
     private async Task<Result<OperatorResponse>> PerformVendTransaction(String meterNumber, String apiKey, Dictionary<String, String> additionalTransactionMetadata, CancellationToken cancellationToken)
     {
-        String customerName = additionalTransactionMetadata.ExtractFieldFromMetadata<String>("CustomerName");
+        try {
+            String customerName = additionalTransactionMetadata.ExtractFieldFromMetadata<String>("CustomerName");
 
-        if (String.IsNullOrEmpty(customerName))
-        {
-            return Result.Invalid("CustomerName - Customer Name is a required field for this transaction type");
+            if (String.IsNullOrEmpty(customerName))
+            {
+                return Result.Invalid("CustomerName - Customer Name is a required field for this transaction type");
+            }
+
+            String amount = additionalTransactionMetadata.ExtractFieldFromMetadata<String>("Amount");
+
+            if (String.IsNullOrEmpty(amount))
+            {
+                return Result.Invalid("Amount - Amount is a required field for this transaction type");
+            }
+
+
+            HttpRequestMessage requestMessage = new HttpRequestMessage(HttpMethod.Post, this.Configuration.Url);
+            MultipartFormDataContent content = new MultipartFormDataContent();
+            content.Add(new StringContent("vend"), "request");
+            content.Add(new StringContent(this.Configuration.Username), "username");
+            content.Add(new StringContent(meterNumber), "meter");
+            content.Add(new StringContent(apiKey), "key");
+            content.Add(new StringContent(amount), "amount");
+            content.Add(new StringContent(customerName), "customerName");
+            requestMessage.Content = content;
+
+            HttpResponseMessage responseMessage = await this.HttpClient.SendAsync(requestMessage, cancellationToken);
+
+            // Get the response
+            String responseContent = await responseMessage.Content.ReadAsStringAsync(cancellationToken);
+
+            Logger.LogInformation($"Received response message from Patapawa [{responseContent}]");
+
+            return this.CreateFromVend(responseContent);
         }
-
-        String amount = additionalTransactionMetadata.ExtractFieldFromMetadata<String>("Amount");
-
-        if (String.IsNullOrEmpty(amount))
-        {
-            return Result.Invalid("Amount - Amount is a required field for this transaction type");
+        catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested) {
+            throw;
         }
-
-
-        HttpRequestMessage requestMessage = new HttpRequestMessage(HttpMethod.Post, this.Configuration.Url);
-        MultipartFormDataContent content = new MultipartFormDataContent();
-        content.Add(new StringContent("vend"), "request");
-        content.Add(new StringContent(this.Configuration.Username), "username");
-        content.Add(new StringContent(meterNumber), "meter");
-        content.Add(new StringContent(apiKey), "key");
-        content.Add(new StringContent(amount), "amount");
-        content.Add(new StringContent(customerName), "customerName");
-        requestMessage.Content = content;
-
-        HttpResponseMessage responseMessage = await this.HttpClient.SendAsync(requestMessage, cancellationToken);
-
-        // Get the response
-        String responseContent = await responseMessage.Content.ReadAsStringAsync(cancellationToken);
-
-        Logger.LogInformation($"Received response message from Patapawa [{responseContent}]");
-
-        return this.CreateFromVend(responseContent);
+        catch (Exception ex) {
+            return Result.Failure($"Error performing vend transaction for meter number {meterNumber} [{ex.Message}]");
+        }
     }
 
     private Result<OperatorResponse> CreateFromLogon(String responseContent){

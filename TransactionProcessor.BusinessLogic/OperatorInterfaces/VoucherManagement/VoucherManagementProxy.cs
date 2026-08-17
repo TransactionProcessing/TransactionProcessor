@@ -38,56 +38,63 @@ namespace TransactionProcessor.BusinessLogic.OperatorInterfaces.VoucherManagemen
                                                                        Dictionary<String, String> additionalTransactionMetadata,
                                                                        CancellationToken cancellationToken)
         {
-            // Extract the required fields
-            String recipientEmail = additionalTransactionMetadata.ExtractFieldFromMetadata<String>("RecipientEmail");
-            String recipientMobile = additionalTransactionMetadata.ExtractFieldFromMetadata<String>("RecipientMobile");
-            String transactionAmount = additionalTransactionMetadata.ExtractFieldFromMetadata<String>("Amount");
+            try {
+                // Extract the required fields
+                String recipientEmail = additionalTransactionMetadata.ExtractFieldFromMetadata<String>("RecipientEmail");
+                String recipientMobile = additionalTransactionMetadata.ExtractFieldFromMetadata<String>("RecipientMobile");
+                String transactionAmount = additionalTransactionMetadata.ExtractFieldFromMetadata<String>("Amount");
 
-            // Covert the transaction amount to Decimal and remove decimal places
-            if (Decimal.TryParse(transactionAmount, out Decimal amountAsDecimal) == false)
-            {
-                return Result.Invalid("Transaction Amount is not a valid decimal value");
+                // Covert the transaction amount to Decimal and remove decimal places
+                if (Decimal.TryParse(transactionAmount, out Decimal amountAsDecimal) == false)
+                {
+                    return Result.Invalid("Transaction Amount is not a valid decimal value");
+                }
+
+                if (String.IsNullOrEmpty(recipientEmail) && String.IsNullOrEmpty(recipientMobile))
+                {
+                    return Result.Invalid("Recipient details (either email or mobile) is a required field for this transaction type");
+                }
+
+                VoucherCommands.IssueVoucherCommand command = new(Guid.NewGuid(),
+                                                                         operatorId,
+                                                                         merchant.EstateId,
+                                                                         transactionId,
+                                                                         DateTime.Now,
+                                                                         amountAsDecimal,
+                                                                         recipientEmail,
+                                                                         recipientMobile);
+
+                Result<IssueVoucherResponse> result= await this.Mediator.Send(command, cancellationToken);
+
+                if (result.IsFailed) {
+                    Logger.LogWarning($"Error issuing voucher {result.Message}");
+                    return ResultHelpers.CreateFailure(result);
+                }
+
+                // Build the response metadata
+                Dictionary<String, String> additionalTransactionResponseMetadata = new Dictionary<String, String>();
+                additionalTransactionResponseMetadata.Add("VoucherCode", result.Data.VoucherCode);
+                additionalTransactionResponseMetadata.Add("VoucherMessage", result.Data.Message);
+                additionalTransactionResponseMetadata.Add("VoucherExpiryDate", result.Data.ExpiryDate.ToString("yyyy-MM-dd"));
+
+                return Result.Success(new OperatorResponse
+                {
+                    TransactionId = transactionId.ToString("N"),
+                    ResponseCode = "0000",
+                    ResponseMessage = "SUCCESS",
+                    // This may contain the voucher details to be logged with the transaction, and for possible receipt email/print
+                    AdditionalTransactionResponseMetadata = additionalTransactionResponseMetadata,
+                    AuthorisationCode = "ABCD1234",
+                    IsSuccessful = true
+                });
             }
-
-            if (String.IsNullOrEmpty(recipientEmail) && String.IsNullOrEmpty(recipientMobile))
-            {
-                return Result.Invalid("Recipient details (either email or mobile) is a required field for this transaction type");
+            catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested) {
+                throw;
             }
-
-            VoucherCommands.IssueVoucherCommand command = new(Guid.NewGuid(),
-                                                                     operatorId,
-                                                                     merchant.EstateId,
-                                                                     transactionId,
-                                                                     DateTime.Now,
-                                                                     amountAsDecimal,
-                                                                     recipientEmail,
-                                                                     recipientMobile);
-
-            Result<IssueVoucherResponse> result= await this.Mediator.Send(command, cancellationToken);
-
-            if (result.IsFailed) {
-                Logger.LogWarning($"Error issuing voucher {result.Message}");
-                return ResultHelpers.CreateFailure(result);
+            catch (Exception ex) {
+                Logger.LogWarning($"Error issuing voucher [{ex.Message}]");
+                return Result.Failure($"Error issuing voucher [{ex.Message}]");
             }
-
-            // Build the response metadata
-            Dictionary<String, String> additionalTransactionResponseMetadata = new Dictionary<String, String>();
-            additionalTransactionResponseMetadata.Add("VoucherCode", result.Data.VoucherCode);
-            additionalTransactionResponseMetadata.Add("VoucherMessage", result.Data.Message);
-            additionalTransactionResponseMetadata.Add("VoucherExpiryDate", result.Data.ExpiryDate.ToString("yyyy-MM-dd"));
-
-            return Result.Success(new OperatorResponse
-            {
-                TransactionId = transactionId.ToString("N"),
-                ResponseCode = "0000",
-                ResponseMessage = "SUCCESS",
-                // This may contain the voucher details to be logged with the transaction, and for possible receipt email/print
-                AdditionalTransactionResponseMetadata = additionalTransactionResponseMetadata,
-                AuthorisationCode = "ABCD1234",
-                IsSuccessful = true
-            });
-            
-            
         }
     }
 }

@@ -153,6 +153,38 @@ namespace TransactionProcessor.BusinessLogic.Tests.OperatorInterfaces
         }
 
         [Fact]
+        public async Task AgencyBankingProxy_ProcessSaleMessage_BalanceEnquiryTimeout_ReturnsFailureResult()
+        {
+            Mock<HttpMessageHandler> handlerMock = new Mock<HttpMessageHandler>(MockBehavior.Strict);
+            handlerMock.Protected()
+                       .Setup<Task<HttpResponseMessage>>("SendAsync", ItExpr.IsAny<HttpRequestMessage>(), ItExpr.IsAny<CancellationToken>())
+                       .ThrowsAsync(new TimeoutException("Execution Timeout Expired"));
+
+            HttpClient httpClient = new HttpClient(handlerMock.Object);
+            AgencyBankingConfiguration configuration = CreateConfiguration();
+            IOperatorProxy proxy = new AgencyBankingProxy(httpClient, configuration);
+
+            Dictionary<String, String> metadata = new Dictionary<String, String>
+            {
+                { "AgencyBankingMessageType", "balanceenquiry" },
+                { "AgencyBankingAccountNumber", "123456789" }
+            };
+
+            var result = await proxy.ProcessSaleMessage(TestData.TransactionId,
+                                                        TestData.OperatorId,
+                                                        TestData.Merchant,
+                                                        TestData.TransactionDateTime,
+                                                        TestData.TransactionReference,
+                                                        metadata,
+                                                        CancellationToken.None);
+
+            result.IsFailed.ShouldBeTrue();
+            result.Status.ShouldBe(ResultStatus.Failure);
+            result.Message.ShouldContain("AgencyBanking request failed");
+            result.Message.ShouldContain("Execution Timeout Expired");
+        }
+
+        [Fact]
         public async Task AgencyBankingProxy_ProcessSaleMessage_BalanceEnquirySuccess_ReturnsMappedOperatorResponse()
         {
             HttpResponseMessage responseMessage = new HttpResponseMessage(HttpStatusCode.OK)

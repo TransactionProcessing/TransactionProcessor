@@ -203,6 +203,49 @@ namespace TransactionProcessor.BusinessLogic.Tests.OperatorInterfaces
             result.Status.ShouldBe(ResultStatus.NotFound);
             result.Message.Contains($"Error verifying account number {TestData.PataPawaPostPaidAccountNumber}");
         }
+
+        [Fact]
+        public async Task PataPawaPostPayProxy_ProcessSaleMessage_VerifyAccount_Timeout_ErrorIsThrown()
+        {
+            this.PataPawaPostPayService.Setup(s => s.getVerifyRequestAsync(It.IsAny<String>(), It.IsAny<String>(), It.IsAny<String>()))
+                .ThrowsAsync(new TimeoutException("Execution Timeout Expired"));
+            MemoryCache.Set("PataPawaPostPayLogon", TestData.PataPawaPostPaidSuccessfulLoginOperatorResponse);
+
+            var result = await this.PataPawaPostPayProxy.ProcessSaleMessage(TestData.TransactionId,
+                                                                                               TestData.OperatorId,
+                                                                                               TestData.Merchant,
+                                                                                               TestData.TransactionDateTime,
+                                                                                               TestData.TransactionReference,
+                                                                                               TestData.AdditionalTransactionMetaDataForPataPawaVerifyAccount(customerAccountNumber: TestData.PataPawaPostPaidAccountNumber),
+                                                                                               CancellationToken.None);
+
+            result.IsFailed.ShouldBeTrue();
+            result.Status.ShouldBe(ResultStatus.Failure);
+            result.Message.ShouldContain($"Error verifying account number {TestData.PataPawaPostPaidAccountNumber}");
+            result.Message.ShouldContain("Execution Timeout Expired");
+        }
+
+        [Fact]
+        public async Task PataPawaPostPayProxy_ProcessSaleMessage_ProcessBill_Timeout_ErrorIsThrown()
+        {
+            this.PataPawaPostPayService.Setup(s => s.getPayBillRequestAsync(It.IsAny<String>(), It.IsAny<String>(), It.IsAny<String>(),
+                                                                              It.IsAny<String>(), It.IsAny<String>(), It.IsAny<Decimal>()))
+                .ThrowsAsync(new TimeoutException("Execution Timeout Expired"));
+            MemoryCache.Set("PataPawaPostPayLogon", TestData.PataPawaPostPaidSuccessfulLoginOperatorResponse);
+
+            var result = await this.PataPawaPostPayProxy.ProcessSaleMessage(TestData.TransactionId,
+                                                                                               TestData.OperatorId,
+                                                                                               TestData.Merchant,
+                                                                                               TestData.TransactionDateTime,
+                                                                                               TestData.TransactionReference,
+                                                                                               TestData.AdditionalTransactionMetaDataForPataPawaProcessBill(customerAccountNumber: TestData.PataPawaPostPaidAccountNumber),
+                                                                                               CancellationToken.None);
+
+            result.IsFailed.ShouldBeTrue();
+            result.Status.ShouldBe(ResultStatus.Failure);
+            result.Message.ShouldContain($"Error paying bill for account number {TestData.PataPawaPostPaidAccountNumber}");
+            result.Message.ShouldContain("Execution Timeout Expired");
+        }
         
         [Fact]
         public async Task PataPawaPostPayProxy_ProcessSaleMessage_ProcessBill_SuccessfulResponse_MessageIsProcessed()
