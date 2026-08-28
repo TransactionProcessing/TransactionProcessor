@@ -23,7 +23,7 @@ namespace TransactionProcessor.BusinessLogic.OperatorInterfaces.AgencyBanking
     {
         private readonly HttpClient HttpClient;
         private readonly AgencyBankingConfiguration Configuration;
-        private static SerialiserOptions SerialiserOptions = new SerialiserOptions(SerialiserPropertyFormat.CamelCase);
+        private static SerialiserOptions SerialiserOptions = new(SerialiserPropertyFormat.CamelCase);
         public AgencyBankingProxy(HttpClient httpClient, AgencyBankingConfiguration configuration) {
             HttpClient = httpClient;
             this.Configuration = configuration;
@@ -87,6 +87,11 @@ namespace TransactionProcessor.BusinessLogic.OperatorInterfaces.AgencyBanking
             }
         }
 
+        private static StringContent CreateContent<T>(T body) {
+            String requestBody = StringSerialiser.Serialise(body, SerialiserOptions);
+            return new StringContent(requestBody, Encoding.UTF8, "application/json");
+        }
+        
         private async Task<Result<OperatorResponse>> ProcessWithdrawal(Guid transactionId,
                                                                        String agentId,
                                                                        String accountNumber,
@@ -110,9 +115,8 @@ namespace TransactionProcessor.BusinessLogic.OperatorInterfaces.AgencyBanking
 
             WithdrawalRequest body = new() { AgentId = agentId, AccountNumber = accountNumber, Amount = amount, TransactionId = transactionId.ToString() };
 
-            String requestBody = StringSerialiser.Serialise(body, SerialiserOptions);
-            request.Content = new StringContent(requestBody, Encoding.UTF8, "application/json");
-
+            request.Content = CreateContent(body);
+            string requestBody = await request.Content.ReadAsStringAsync(cancellationToken);
             Logger.LogWarning($"AgencyBanking withdrawal request starting. TransactionId=[{transactionId}], AgentId=[{agentId}], AccountNumber=[{accountNumber}], RequestUri=[{request.RequestUri}], RequestBody=[{requestBody}]");
 
             HttpResponseMessage response = await this.HttpClient.SendAsync(request, cancellationToken);
@@ -147,9 +151,8 @@ namespace TransactionProcessor.BusinessLogic.OperatorInterfaces.AgencyBanking
 
             MiniStatementRequest body = new() { AgentId = agentId, AccountNumber = accountNumber };
 
-            String requestBody = StringSerialiser.Serialise(body, SerialiserOptions);
-            request.Content = new StringContent(requestBody, Encoding.UTF8, "application/json");
-
+            request.Content = CreateContent(body);
+            string requestBody = await request.Content.ReadAsStringAsync(cancellationToken);
             Logger.LogWarning($"AgencyBanking mini-statement request starting. AgentId=[{agentId}], AccountNumber=[{accountNumber}], RequestUri=[{request.RequestUri}], RequestBody=[{requestBody}]");
 
             HttpResponseMessage response = await this.HttpClient.SendAsync(request, cancellationToken);
@@ -199,10 +202,8 @@ namespace TransactionProcessor.BusinessLogic.OperatorInterfaces.AgencyBanking
             }
 
             DepositRequest body = new() { AgentId = agentId, AccountNumber = accountNumber, Amount = amount, TransactionId = transactionId.ToString() };
-
-            String requestBody = StringSerialiser.Serialise(body, SerialiserOptions);
-            request.Content = new StringContent(requestBody, Encoding.UTF8, "application/json");
-
+            request.Content = CreateContent(body);
+            string requestBody = await request.Content.ReadAsStringAsync(cancellationToken);
             Logger.LogWarning($"AgencyBanking deposit request starting. TransactionId=[{transactionId}], AgentId=[{agentId}], AccountNumber=[{accountNumber}], RequestUri=[{request.RequestUri}], RequestBody=[{requestBody}]");
 
             HttpResponseMessage response = await this.HttpClient.SendAsync(request, cancellationToken);
@@ -236,14 +237,13 @@ namespace TransactionProcessor.BusinessLogic.OperatorInterfaces.AgencyBanking
                                                                            CancellationToken cancellationToken) {
             HttpRequestMessage request = new(HttpMethod.Post, $"{this.Configuration.Url}/transactions/balance-enquiry");
 
-            BalanceEnquiryRequest body = new BalanceEnquiryRequest(){
+            BalanceEnquiryRequest body = new(){
                 AgentId = agentId,
                 AccountNumber = accountNumber
             };
 
-            String requestBody = StringSerialiser.Serialise(body, SerialiserOptions);
-            request.Content = new StringContent(requestBody, Encoding.UTF8, "application/json");
-
+            request.Content = CreateContent(body);
+            string requestBody = await request.Content.ReadAsStringAsync(cancellationToken);
             Logger.LogWarning($"AgencyBanking balance enquiry request starting. TransactionId=[{transactionId}], AgentId=[{agentId}], AccountNumber=[{accountNumber}], RequestUri=[{request.RequestUri}], RequestBody=[{requestBody}]");
 
             HttpResponseMessage response = await this.HttpClient.SendAsync(request, cancellationToken);
