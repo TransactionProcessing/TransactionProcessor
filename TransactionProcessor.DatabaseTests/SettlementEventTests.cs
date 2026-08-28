@@ -8,8 +8,13 @@ using TransactionProcessor.Testing;
 
 namespace TransactionProcessor.DatabaseTests;
 
+[Collection(DatabaseTestCollection.Name)]
 public class SettlementEventTests : BaseTest
 {
+    public SettlementEventTests(DatabaseTestFixture fixture) : base(fixture)
+    {
+    }
+
     [Fact]
     public async Task CreateSettlement_SettlementIsAdded()
     {

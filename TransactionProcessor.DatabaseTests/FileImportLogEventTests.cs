@@ -7,7 +7,11 @@ using TransactionProcessor.Testing;
 
 namespace TransactionProcessor.DatabaseTests;
 
+[Collection(DatabaseTestCollection.Name)]
 public class FileImportLogEventTests : BaseTest {
+    public FileImportLogEventTests(DatabaseTestFixture fixture) : base(fixture) {
+    }
+
     private async Task CreateFileImportLogAsync()
     {
         Result result = await this.Repository.AddFileImportLog(TestData.DomainEvents.ImportLogCreatedEvent, TestContext.Current.CancellationToken);

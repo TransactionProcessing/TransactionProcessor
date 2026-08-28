@@ -13,8 +13,13 @@ using TransactionProcessor.Testing;
 
 namespace TransactionProcessor.DatabaseTests
 {
+    [Collection(DatabaseTestCollection.Name)]
     public class ReconciliationEventTests : BaseTest
     {
+        public ReconciliationEventTests(DatabaseTestFixture fixture) : base(fixture)
+        {
+        }
+
         [Fact]
         public async Task AddReconciliation_ReconciliationIsAdded()
         {
@@ -33,8 +38,13 @@ namespace TransactionProcessor.DatabaseTests
         }
     }
 
+    [Collection(DatabaseTestCollection.Name)]
     public class ContractEventTests : BaseTest
     {
+        public ContractEventTests(DatabaseTestFixture fixture) : base(fixture)
+        {
+        }
+
         [Fact]
         public async Task AddContract_ContractIsAdded()
         {

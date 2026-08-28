@@ -8,7 +8,11 @@ using TransactionProcessor.Testing;
 
 namespace TransactionProcessor.DatabaseTests;
 
+[Collection(DatabaseTestCollection.Name)]
 public class MerchantEventTests : BaseTest {
+    public MerchantEventTests(DatabaseTestFixture fixture) : base(fixture) {
+    }
+
     private async Task CreateMerchantAsync()
     {
         Result result = await this.Repository.AddMerchant(TestData.DomainEvents.MerchantCreatedEvent, TestContext.Current.CancellationToken);

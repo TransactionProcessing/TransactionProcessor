@@ -7,14 +7,12 @@ using TransactionProcessor.Testing;
 
 namespace TransactionProcessor.DatabaseTests;
 
+[Collection(DatabaseTestCollection.Name)]
 public class MigrationTests : BaseTest {
+    public MigrationTests(DatabaseTestFixture fixture) : base(fixture) {
+    }
+
     public override async ValueTask InitializeAsync() {
-
-        Logger.Initialise(new Shared.Logger.NullLogger());
-
-        this.TestId = Guid.NewGuid();
-
-        await this.StartSqlContainer();
         await this.GetRepository();
     }
 
@@ -26,7 +24,11 @@ public class MigrationTests : BaseTest {
     }
 }
 
+[Collection(DatabaseTestCollection.Name)]
 public class EstateEventTests : BaseTest {
+    public EstateEventTests(DatabaseTestFixture fixture) : base(fixture) {
+    }
+
     [Fact]
     public async Task AddEstate_EstateIsAdded()
     {

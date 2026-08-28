@@ -9,7 +9,11 @@ using System.Collections.Generic;
 
 namespace TransactionProcessor.DatabaseTests;
 
+[Collection(DatabaseTestCollection.Name)]
 public class TransactionEventTests : BaseTest {
+    public TransactionEventTests(DatabaseTestFixture fixture) : base(fixture) {
+    }
+
     private async Task CreateOperatorAsync()
     {
         Result result = await this.Repository.AddOperator(TestData.DomainEvents.OperatorCreatedEvent, TestContext.Current.CancellationToken);
