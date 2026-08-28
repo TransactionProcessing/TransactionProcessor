@@ -8,7 +8,6 @@ using TransactionProcessor.Testing;
 
 namespace TransactionProcessor.DatabaseTests;
 
-[Collection(DatabaseTestCollection.Name)]
 public class MerchantEventTests : BaseTest {
     public MerchantEventTests(DatabaseTestFixture fixture) : base(fixture) {
     }

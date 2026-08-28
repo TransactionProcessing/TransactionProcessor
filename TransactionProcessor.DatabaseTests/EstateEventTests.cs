@@ -7,7 +7,6 @@ using TransactionProcessor.Testing;
 
 namespace TransactionProcessor.DatabaseTests;
 
-[Collection(DatabaseTestCollection.Name)]
 public class MigrationTests : BaseTest {
     public MigrationTests(DatabaseTestFixture fixture) : base(fixture) {
     }
@@ -24,7 +23,6 @@ public class MigrationTests : BaseTest {
     }
 }
 
-[Collection(DatabaseTestCollection.Name)]
 public class EstateEventTests : BaseTest {
     public EstateEventTests(DatabaseTestFixture fixture) : base(fixture) {
     }

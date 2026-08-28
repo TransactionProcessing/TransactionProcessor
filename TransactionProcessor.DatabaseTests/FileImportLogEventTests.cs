@@ -7,7 +7,6 @@ using TransactionProcessor.Testing;
 
 namespace TransactionProcessor.DatabaseTests;
 
-[Collection(DatabaseTestCollection.Name)]
 public class FileImportLogEventTests : BaseTest {
     public FileImportLogEventTests(DatabaseTestFixture fixture) : base(fixture) {
     }

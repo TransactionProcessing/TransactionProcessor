@@ -9,7 +9,6 @@ using System.Collections.Generic;
 
 namespace TransactionProcessor.DatabaseTests;
 
-[Collection(DatabaseTestCollection.Name)]
 public class TransactionEventTests : BaseTest {
     public TransactionEventTests(DatabaseTestFixture fixture) : base(fixture) {
     }

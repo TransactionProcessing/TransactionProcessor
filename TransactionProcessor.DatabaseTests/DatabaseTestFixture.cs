@@ -58,8 +58,4 @@ namespace TransactionProcessor.DatabaseTests
         }
     }
 
-    [CollectionDefinition(DatabaseTestCollection.Name)]
-    public sealed class DatabaseTestCollectionDefinition : ICollectionFixture<DatabaseTestFixture>
-    {
-    }
 }

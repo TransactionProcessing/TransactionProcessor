@@ -13,7 +13,6 @@ using TransactionProcessor.Testing;
 
 namespace TransactionProcessor.DatabaseTests
 {
-    [Collection(DatabaseTestCollection.Name)]
     public class ReconciliationEventTests : BaseTest
     {
         public ReconciliationEventTests(DatabaseTestFixture fixture) : base(fixture)
@@ -38,7 +37,6 @@ namespace TransactionProcessor.DatabaseTests
         }
     }
 
-    [Collection(DatabaseTestCollection.Name)]
     public class ContractEventTests : BaseTest
     {
         public ContractEventTests(DatabaseTestFixture fixture) : base(fixture)
