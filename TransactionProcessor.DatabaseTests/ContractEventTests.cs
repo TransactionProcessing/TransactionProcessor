@@ -15,6 +15,10 @@ namespace TransactionProcessor.DatabaseTests
 {
     public class ReconciliationEventTests : BaseTest
     {
+        public ReconciliationEventTests(DatabaseTestFixture fixture) : base(fixture)
+        {
+        }
+
         [Fact]
         public async Task AddReconciliation_ReconciliationIsAdded()
         {
@@ -35,6 +39,10 @@ namespace TransactionProcessor.DatabaseTests
 
     public class ContractEventTests : BaseTest
     {
+        public ContractEventTests(DatabaseTestFixture fixture) : base(fixture)
+        {
+        }
+
         [Fact]
         public async Task AddContract_ContractIsAdded()
         {

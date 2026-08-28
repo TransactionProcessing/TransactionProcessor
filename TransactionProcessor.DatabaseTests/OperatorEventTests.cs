@@ -8,6 +8,9 @@ using TransactionProcessor.Testing;
 namespace TransactionProcessor.DatabaseTests;
 
 public class OperatorEventTests : BaseTest {
+    public OperatorEventTests(DatabaseTestFixture fixture) : base(fixture) {
+    }
+
     [Fact]
     public async Task AddOperator_OperatorIsAdded()
     {
