@@ -1,4 +1,4 @@
-﻿using Moq;
+using Moq;
 using Shouldly;
 using System;
 using System.Threading.Tasks;
@@ -32,7 +32,7 @@ namespace TransactionProcessor.BusinessLogic.Tests.RequestHandler
             VoucherManagementRequestHandler handler = new VoucherManagementRequestHandler(voucherDomainService.Object, voucherManagementManager.Object);
             
             var command = TestData.IssueVoucherCommand;
-            var result = await handler.Handle(command, CancellationToken.None);
+            var result = await handler.Handle(command, TestContext.Current.CancellationToken);
             result.IsSuccess.ShouldBeTrue();
         }
 
@@ -47,8 +47,9 @@ namespace TransactionProcessor.BusinessLogic.Tests.RequestHandler
             VoucherManagementRequestHandler handler = new VoucherManagementRequestHandler(voucherDomainService.Object, voucherManagementManager.Object);
 
             var command = TestData.RedeemVoucherCommand;
-            var result = await handler.Handle(command, CancellationToken.None);
+            var result = await handler.Handle(command, TestContext.Current.CancellationToken);
             result.IsSuccess.ShouldBeTrue();
         }
     }
 }
+

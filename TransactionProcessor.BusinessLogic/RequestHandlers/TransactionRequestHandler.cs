@@ -16,29 +16,12 @@ namespace TransactionProcessor.BusinessLogic.RequestHandlers
                                              IRequestHandler<TransactionCommands.CalculateFeesForTransactionCommand, Result>,
                                              IRequestHandler<TransactionCommands.AddSettledMerchantFeeCommand, Result>,
                                              IRequestHandler<TransactionCommands.SendCustomerEmailReceiptCommand, Result> {
-        #region Fields
-
-        /// <summary>
-        /// The transaction domain service
-        /// </summary>
         private readonly ITransactionDomainService TransactionDomainService;
 
-        #endregion
-
-        #region Constructors
-
-        /// <summary>
-        /// Initializes a new instance of the <see cref="TransactionRequestHandler"/> class.
-        /// </summary>
-        /// <param name="transactionDomainService">The transaction domain service.</param>
         public TransactionRequestHandler(ITransactionDomainService transactionDomainService)
         {
             this.TransactionDomainService = transactionDomainService;
         }
-
-        #endregion
-
-        #region Methods
 
         public async Task<Result<ProcessLogonTransactionResponse>> Handle(TransactionCommands.ProcessLogonTransactionCommand command,
                                                                   CancellationToken cancellationToken) {
@@ -57,8 +40,6 @@ namespace TransactionProcessor.BusinessLogic.RequestHandlers
         {
             return await this.TransactionDomainService.ProcessReconciliationTransaction(command, cancellationToken);
         }
-
-        #endregion
 
         public async Task<Result> Handle(TransactionCommands.ResendTransactionReceiptCommand command,
                                  CancellationToken cancellationToken) {

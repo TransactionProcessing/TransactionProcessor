@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 
 namespace TransactionProcessor.BusinessLogic.Tests.Services
@@ -40,7 +40,7 @@ namespace TransactionProcessor.BusinessLogic.Tests.Services
 
             TransactionReceiptBuilder receiptBuilder = new TransactionReceiptBuilder(fileSystem);
 
-            String receiptMessage = await receiptBuilder.GetEmailReceiptMessage(transaction, new Models.Merchant.Merchant(),"OperatorName", CancellationToken.None);
+            String receiptMessage = await receiptBuilder.GetEmailReceiptMessage(transaction, new Models.Merchant.Merchant(),"OperatorName", TestContext.Current.CancellationToken);
 
             receiptMessage.ShouldBe("Transaction Number: 12345");
 
@@ -48,3 +48,4 @@ namespace TransactionProcessor.BusinessLogic.Tests.Services
         }
     }
 }
+

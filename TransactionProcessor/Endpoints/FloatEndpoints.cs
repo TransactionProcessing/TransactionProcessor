@@ -19,8 +19,8 @@ namespace TransactionProcessor.Endpoints
                                  .RequireAuthorization()
                                  .RequireAuthorization(AuthorizationExtensions.PolicyNames.ClientCredentialsOnlyPolicy);
 
-            group.MapPost("/", FloatHandlers.CreateFloatForContractProduct)
-                 .WithName("CreateFloatForContractProduct");
+            group.MapPost("/", FloatHandlers.CreateFloat)
+                 .WithName("CreateFloat");
 
             group.MapPut("/", FloatHandlers.RecordFloatCreditPurchase)
                  .WithName("RecordFloatCreditPurchase");

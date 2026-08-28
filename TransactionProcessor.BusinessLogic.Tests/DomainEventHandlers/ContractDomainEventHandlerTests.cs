@@ -1,4 +1,4 @@
-﻿using Moq;
+using Moq;
 using Shared.Logger;
 using Shared.Serialisation;
 using Shouldly;
@@ -32,7 +32,7 @@ public class ContractDomainEventHandlerTests
     {
         ContractDomainEvents.ContractCreatedEvent contractCreatedEvent = TestData.DomainEvents.ContractCreatedEvent;
 
-        Should.NotThrow(async () => { await this.DomainEventHandler.Handle(contractCreatedEvent, CancellationToken.None); });
+        Should.NotThrow(async () => { await this.DomainEventHandler.Handle(contractCreatedEvent, TestContext.Current.CancellationToken); });
     }
 
     [Fact]
@@ -40,7 +40,7 @@ public class ContractDomainEventHandlerTests
     {
         ContractDomainEvents.FixedValueProductAddedToContractEvent fixedValueProductAddedToContractEvent = TestData.DomainEvents.FixedValueProductAddedToContractEvent;
 
-        Should.NotThrow(async () => { await this.DomainEventHandler.Handle(fixedValueProductAddedToContractEvent, CancellationToken.None); });
+        Should.NotThrow(async () => { await this.DomainEventHandler.Handle(fixedValueProductAddedToContractEvent, TestContext.Current.CancellationToken); });
     }
 
     [Fact]
@@ -48,7 +48,7 @@ public class ContractDomainEventHandlerTests
     {
         ContractDomainEvents.TransactionFeeForProductAddedToContractEvent transactionFeeForProductAddedToContractEvent = TestData.DomainEvents.TransactionFeeForProductAddedToContractEvent;
 
-        Should.NotThrow(async () => { await this.DomainEventHandler.Handle(transactionFeeForProductAddedToContractEvent, CancellationToken.None); });
+        Should.NotThrow(async () => { await this.DomainEventHandler.Handle(transactionFeeForProductAddedToContractEvent, TestContext.Current.CancellationToken); });
     }
 
     [Fact]
@@ -56,7 +56,7 @@ public class ContractDomainEventHandlerTests
     {
         ContractDomainEvents.TransactionFeeForProductDisabledEvent transactionFeeForProductDisabledEvent = TestData.DomainEvents.TransactionFeeForProductDisabledEvent;
 
-        Should.NotThrow(async () => { await this.DomainEventHandler.Handle(transactionFeeForProductDisabledEvent, CancellationToken.None); });
+        Should.NotThrow(async () => { await this.DomainEventHandler.Handle(transactionFeeForProductDisabledEvent, TestContext.Current.CancellationToken); });
     }
 
     [Fact]
@@ -64,7 +64,7 @@ public class ContractDomainEventHandlerTests
     {
         ContractDomainEvents.VariableValueProductAddedToContractEvent variableValueProductAddedToContractEvent = TestData.DomainEvents.VariableValueProductAddedToContractEvent;
 
-        Should.NotThrow(async () => { await this.DomainEventHandler.Handle(variableValueProductAddedToContractEvent, CancellationToken.None); });
+        Should.NotThrow(async () => { await this.DomainEventHandler.Handle(variableValueProductAddedToContractEvent, TestContext.Current.CancellationToken); });
     }
 
     #endregion

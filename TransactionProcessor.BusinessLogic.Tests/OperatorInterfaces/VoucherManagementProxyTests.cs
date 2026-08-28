@@ -1,4 +1,4 @@
-﻿using Shared.Logger;
+using Shared.Logger;
 using SimpleResults;
 
 namespace TransactionProcessor.BusinessLogic.Tests.OperatorInterfaces
@@ -31,7 +31,7 @@ namespace TransactionProcessor.BusinessLogic.Tests.OperatorInterfaces
             
             IOperatorProxy voucherManagementProxy = new VoucherManagementProxy(mediator.Object);
 
-            var processLogonMessageResult = await voucherManagementProxy.ProcessLogonMessage(CancellationToken.None);
+            var processLogonMessageResult = await voucherManagementProxy.ProcessLogonMessage(TestContext.Current.CancellationToken);
             processLogonMessageResult.IsSuccess.ShouldBeTrue();
             OperatorResponse operatorResponse = processLogonMessageResult.Data;
             operatorResponse.ShouldBeNull();
@@ -49,7 +49,7 @@ namespace TransactionProcessor.BusinessLogic.Tests.OperatorInterfaces
                                                                                                 TestData.TransactionDateTime,
                                                                                                 TestData.TransactionReference,
                                                                                                 TestData.AdditionalTransactionMetaDataForVoucher(),
-                                                                                                CancellationToken.None);
+                                                                                                TestContext.Current.CancellationToken);
             result.IsSuccess.ShouldBeTrue();
             var operatorResponse = result.Data;
             operatorResponse.ShouldNotBeNull();
@@ -73,7 +73,7 @@ namespace TransactionProcessor.BusinessLogic.Tests.OperatorInterfaces
                 TestData.TransactionDateTime,
                 TestData.TransactionReference,
                 TestData.AdditionalTransactionMetaDataForVoucher(),
-                CancellationToken.None);
+                TestContext.Current.CancellationToken);
             
             result.IsFailed.ShouldBeTrue();
         }
@@ -92,7 +92,7 @@ namespace TransactionProcessor.BusinessLogic.Tests.OperatorInterfaces
                                                                                          TestData.TransactionDateTime,
                                                                                          TestData.TransactionReference,
                                                                                          TestData.AdditionalTransactionMetaDataForVoucher(),
-                                                                                         CancellationToken.None);
+                                                                                         TestContext.Current.CancellationToken);
 
             result.IsFailed.ShouldBeTrue();
             result.Status.ShouldBe(ResultStatus.Failure);
@@ -119,7 +119,7 @@ namespace TransactionProcessor.BusinessLogic.Tests.OperatorInterfaces
                                                                                         TestData.TransactionDateTime,
                                                                                         TestData.TransactionReference,
                                                                                         additionalMetatdata,
-                                                                                        CancellationToken.None);
+                                                                                        TestContext.Current.CancellationToken);
 
 
                                         result.IsFailed.ShouldBeTrue();
@@ -151,9 +151,10 @@ namespace TransactionProcessor.BusinessLogic.Tests.OperatorInterfaces
                                                                                         TestData.TransactionDateTime,
                                                                                         TestData.TransactionReference,
                                                                                         additionalMetatdata,
-                                                                                        CancellationToken.None);
+                                                                                        TestContext.Current.CancellationToken);
             result.IsFailed.ShouldBeTrue();
             result.Status.ShouldBe(ResultStatus.Invalid);
         }
     }
 }
+

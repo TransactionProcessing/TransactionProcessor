@@ -23,7 +23,7 @@ namespace TransactionProcessor.BusinessLogic.Tests.Services {
         private readonly StatementBuilder _builder;
         private readonly MerchantStatementAggregate merchantStatementAggregate;
         private readonly Merchant _merchant;
-        private readonly CancellationToken _cancellationToken = CancellationToken.None;
+        private readonly CancellationToken _cancellationToken = TestContext.Current.CancellationToken;
 
         public StatementBuilderTests() {
             StringSerialiser.Initialise(new SystemTextJsonSerializer(new JsonSerializerOptions()));
@@ -137,3 +137,4 @@ namespace TransactionProcessor.BusinessLogic.Tests.Services {
         }
     }
 }
+

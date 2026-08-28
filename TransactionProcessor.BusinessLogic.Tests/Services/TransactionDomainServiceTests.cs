@@ -1,4 +1,4 @@
-﻿using MessagingService.DataTransferObjects;
+using MessagingService.DataTransferObjects;
 using SimpleResults;
 using TransactionProcessor.Aggregates;
 using TransactionProcessor.BusinessLogic.Common;
@@ -98,7 +98,7 @@ namespace TransactionProcessor.BusinessLogic.Tests.Services{
                 TestData.TransactionDateTime,
                 TestData.TransactionNumber, TestData.TransactionReceivedDateTime);
             
-            var result = await this.TransactionDomainService.ProcessLogonTransaction(command, CancellationToken.None);
+            var result = await this.TransactionDomainService.ProcessLogonTransaction(command, TestContext.Current.CancellationToken);
             
             result.IsSuccess.ShouldBeTrue();
             result.Data.EstateId.ShouldBe(TestData.EstateId);
@@ -129,7 +129,7 @@ namespace TransactionProcessor.BusinessLogic.Tests.Services{
                 TestData.TransactionDateTime,
                 TestData.TransactionNumber, TestData.TransactionReceivedDateTime);
 
-            var result = await this.TransactionDomainService.ProcessLogonTransaction(command, CancellationToken.None);
+            var result = await this.TransactionDomainService.ProcessLogonTransaction(command, TestContext.Current.CancellationToken);
 
             result.IsSuccess.ShouldBeTrue();
             result.Data.EstateId.ShouldBe(TestData.EstateId);
@@ -160,7 +160,7 @@ namespace TransactionProcessor.BusinessLogic.Tests.Services{
                 TestData.TransactionDateTime,
                 TestData.TransactionNumber, TestData.TransactionReceivedDateTime);
 
-            Result<ProcessLogonTransactionResponse> result = await this.TransactionDomainService.ProcessLogonTransaction(command, CancellationToken.None);
+            Result<ProcessLogonTransactionResponse> result = await this.TransactionDomainService.ProcessLogonTransaction(command, TestContext.Current.CancellationToken);
 
             result.IsSuccess.ShouldBeTrue();
             result.Data.EstateId.ShouldBe(TestData.EstateId);
@@ -185,7 +185,7 @@ namespace TransactionProcessor.BusinessLogic.Tests.Services{
                     TestData.MerchantId, TestData.DeviceIdentifier, TestData.TransactionDateTime,
                     TestData.ReconciliationTransactionCount, TestData.ReconciliationTransactionValue);
 
-            var result  = await this.TransactionDomainService.ProcessReconciliationTransaction(command, CancellationToken.None);
+            var result  = await this.TransactionDomainService.ProcessReconciliationTransaction(command, TestContext.Current.CancellationToken);
             result.IsSuccess.ShouldBeTrue();
             ProcessReconciliationTransactionResponse response = result.Data;
 
@@ -215,7 +215,7 @@ namespace TransactionProcessor.BusinessLogic.Tests.Services{
                     TestData.MerchantId, TestData.DeviceIdentifier, TestData.TransactionDateTime,
                     TestData.ReconciliationTransactionCount, TestData.ReconciliationTransactionValue);
 
-            var result = await this.TransactionDomainService.ProcessReconciliationTransaction(command, CancellationToken.None);
+            var result = await this.TransactionDomainService.ProcessReconciliationTransaction(command, TestContext.Current.CancellationToken);
             result.IsSuccess.ShouldBeTrue();
             var response = result.Data;
 
@@ -269,7 +269,7 @@ namespace TransactionProcessor.BusinessLogic.Tests.Services{
                     TestData.CustomerEmailAddress, TestData.AdditionalTransactionMetaDataForMobileTopup(),
                     TestData.ContractId, TestData.ProductId, TestData.TransactionSource, TestData.TransactionReceivedDateTime);
             
-            var result = await this.TransactionDomainService.ProcessSaleTransaction(command, CancellationToken.None);
+            var result = await this.TransactionDomainService.ProcessSaleTransaction(command, TestContext.Current.CancellationToken);
             result.IsSuccess.ShouldBeTrue();
             var response = result.Data;
 
@@ -312,7 +312,7 @@ namespace TransactionProcessor.BusinessLogic.Tests.Services{
                     TestData.CustomerEmailAddress, TestData.AdditionalTransactionMetaDataForMobileTopup(),
                     TestData.ContractId, TestData.ProductId, TestData.TransactionSource, TestData.TransactionReceivedDateTime);
 
-            var result = await this.TransactionDomainService.ProcessSaleTransaction(command, CancellationToken.None);
+            var result = await this.TransactionDomainService.ProcessSaleTransaction(command, TestContext.Current.CancellationToken);
             result.IsSuccess.ShouldBeTrue();
             var response = result.Data;
 
@@ -372,7 +372,7 @@ namespace TransactionProcessor.BusinessLogic.Tests.Services{
                     TestData.CustomerEmailAddress, TestData.AdditionalTransactionMetaDataForMobileTopup(),
                     TestData.ContractId, TestData.ProductId, TestData.TransactionSource, TestData.TransactionReceivedDateTime);
 
-            var result = await this.TransactionDomainService.ProcessSaleTransaction(command, CancellationToken.None);
+            var result = await this.TransactionDomainService.ProcessSaleTransaction(command, TestContext.Current.CancellationToken);
             result.IsSuccess.ShouldBeTrue();
             var response = result.Data;
 
@@ -436,7 +436,7 @@ namespace TransactionProcessor.BusinessLogic.Tests.Services{
                     TestData.CustomerEmailAddress, TestData.AdditionalTransactionMetaDataForMobileTopup(),
                     TestData.ContractId, TestData.ProductId, TestData.TransactionSource, TestData.TransactionReceivedDateTime);
 
-            var result = await this.TransactionDomainService.ProcessSaleTransaction(command, CancellationToken.None);
+            var result = await this.TransactionDomainService.ProcessSaleTransaction(command, TestContext.Current.CancellationToken);
             result.IsSuccess.ShouldBeTrue();
             var response = result.Data;
 
@@ -480,7 +480,7 @@ namespace TransactionProcessor.BusinessLogic.Tests.Services{
                     TestData.CustomerEmailAddress, TestData.AdditionalTransactionMetaDataForMobileTopup(),
                     TestData.ContractId, TestData.ProductId, TestData.TransactionSource, TestData.TransactionReceivedDateTime);
 
-            var result = await this.TransactionDomainService.ProcessSaleTransaction(command, CancellationToken.None);
+            var result = await this.TransactionDomainService.ProcessSaleTransaction(command, TestContext.Current.CancellationToken);
             result.IsSuccess.ShouldBeTrue();
             var response = result.Data;
 
@@ -497,7 +497,7 @@ namespace TransactionProcessor.BusinessLogic.Tests.Services{
             this.AggregateService.Setup(t => t.Save(It.IsAny<TransactionAggregate>(), It.IsAny<CancellationToken>()))
                 .ReturnsAsync(Result.Success());
             TransactionCommands.ResendTransactionReceiptCommand command = new(TestData.TransactionId, TestData.EstateId);
-            var result = await this.TransactionDomainService.ResendTransactionReceipt(command, CancellationToken.None);
+            var result = await this.TransactionDomainService.ResendTransactionReceipt(command, TestContext.Current.CancellationToken);
             result.IsSuccess.ShouldBeTrue();
         }
 
@@ -602,7 +602,7 @@ namespace TransactionProcessor.BusinessLogic.Tests.Services{
 
             TransactionCommands.CalculateFeesForTransactionCommand command = new(TestData.TransactionId, TestData.TransactionDateTime, TestData.EstateId, TestData.MerchantId);
 
-            var result = await this.TransactionDomainService.CalculateFeesForTransaction(command, CancellationToken.None);
+            var result = await this.TransactionDomainService.CalculateFeesForTransaction(command, TestContext.Current.CancellationToken);
             result.IsSuccess.ShouldBeTrue();
         }
 
@@ -618,7 +618,7 @@ namespace TransactionProcessor.BusinessLogic.Tests.Services{
 
             TransactionCommands.CalculateFeesForTransactionCommand command = new(TestData.TransactionId, TestData.TransactionDateTime, TestData.EstateId, TestData.MerchantId);
 
-            var result = await this.TransactionDomainService.CalculateFeesForTransaction(command, CancellationToken.None);
+            var result = await this.TransactionDomainService.CalculateFeesForTransaction(command, TestContext.Current.CancellationToken);
             result.IsSuccess.ShouldBeTrue();
         }
 
@@ -635,7 +635,7 @@ namespace TransactionProcessor.BusinessLogic.Tests.Services{
 
             TransactionCommands.CalculateFeesForTransactionCommand command = new(TestData.TransactionId, TestData.TransactionDateTime, TestData.EstateId, TestData.MerchantId);
 
-            var result = await this.TransactionDomainService.CalculateFeesForTransaction(command, CancellationToken.None);
+            var result = await this.TransactionDomainService.CalculateFeesForTransaction(command, TestContext.Current.CancellationToken);
             result.IsSuccess.ShouldBeTrue();
         }
 
@@ -651,7 +651,7 @@ namespace TransactionProcessor.BusinessLogic.Tests.Services{
 
             TransactionCommands.CalculateFeesForTransactionCommand command = new(TestData.TransactionId, TestData.TransactionDateTime, TestData.EstateId, TestData.MerchantId);
 
-            var result = await this.TransactionDomainService.CalculateFeesForTransaction(command, CancellationToken.None);
+            var result = await this.TransactionDomainService.CalculateFeesForTransaction(command, TestContext.Current.CancellationToken);
             result.IsSuccess.ShouldBeTrue();
         }
 
@@ -670,7 +670,7 @@ namespace TransactionProcessor.BusinessLogic.Tests.Services{
 
             TransactionCommands.CalculateFeesForTransactionCommand command = new(TestData.TransactionId, TestData.TransactionDateTime, TestData.EstateId, TestData.MerchantId);
 
-            var result = await this.TransactionDomainService.CalculateFeesForTransaction(command, CancellationToken.None);
+            var result = await this.TransactionDomainService.CalculateFeesForTransaction(command, TestContext.Current.CancellationToken);
             result.IsFailed.ShouldBeTrue();
         }
 
@@ -681,7 +681,7 @@ namespace TransactionProcessor.BusinessLogic.Tests.Services{
 
             TransactionCommands.AddSettledMerchantFeeCommand command = new(TestData.TransactionId, TestData.CalculatedFeeValue, TestData.TransactionFeeCalculateDateTime, CalculationType.Fixed, TestData.TransactionFeeId, TestData.CalculatedFeeValue, TestData.SettlementDate, TestData.SettlementAggregateId);
 
-            var result = await this.TransactionDomainService.AddSettledMerchantFee(command, CancellationToken.None);
+            var result = await this.TransactionDomainService.AddSettledMerchantFee(command, TestContext.Current.CancellationToken);
             result.IsSuccess.ShouldBeTrue();
         }
 
@@ -693,7 +693,7 @@ namespace TransactionProcessor.BusinessLogic.Tests.Services{
 
             TransactionCommands.AddSettledMerchantFeeCommand command = new(TestData.TransactionId, TestData.CalculatedFeeValue, TestData.TransactionFeeCalculateDateTime, CalculationType.Fixed, TestData.TransactionFeeId, TestData.CalculatedFeeValue, TestData.SettlementDate, TestData.SettlementAggregateId);
 
-            var result = await this.TransactionDomainService.AddSettledMerchantFee(command, CancellationToken.None);
+            var result = await this.TransactionDomainService.AddSettledMerchantFee(command, TestContext.Current.CancellationToken);
             result.IsFailed.ShouldBeTrue();
         }
 
@@ -707,7 +707,7 @@ namespace TransactionProcessor.BusinessLogic.Tests.Services{
             this.TransactionReceiptBuilder.Setup(r => r.GetEmailReceiptMessage(It.IsAny<Models.Transaction>(), It.IsAny<Merchant>(), It.IsAny<String>(), It.IsAny<CancellationToken>())).ReturnsAsync("EmailMessage");
             this.MessagingServiceClient.Setup(m => m.SendEmail(It.IsAny<String>(), It.IsAny<SendEmailRequest>(), It.IsAny<CancellationToken>())).ReturnsAsync(Result.Success);
             TransactionCommands.SendCustomerEmailReceiptCommand command = new(TestData.EstateId, TestData.TransactionId, Guid.NewGuid(), TestData.CustomerEmailAddress);
-            var result = await this.TransactionDomainService.SendCustomerEmailReceipt(command, CancellationToken.None);
+            var result = await this.TransactionDomainService.SendCustomerEmailReceipt(command, TestContext.Current.CancellationToken);
             result.IsSuccess.ShouldBeTrue();
         }
 
@@ -718,7 +718,7 @@ namespace TransactionProcessor.BusinessLogic.Tests.Services{
             this.AggregateService.Setup(t => t.GetLatest<TransactionAggregate>(It.IsAny<Guid>(), It.IsAny<CancellationToken>())).ReturnsAsync(Result.Failure());
             
             TransactionCommands.SendCustomerEmailReceiptCommand command = new(TestData.EstateId, TestData.TransactionId, Guid.NewGuid(), TestData.CustomerEmailAddress);
-            var result = await this.TransactionDomainService.SendCustomerEmailReceipt(command, CancellationToken.None);
+            var result = await this.TransactionDomainService.SendCustomerEmailReceipt(command, TestContext.Current.CancellationToken);
             result.IsFailed.ShouldBeTrue();
         }
 
@@ -730,7 +730,7 @@ namespace TransactionProcessor.BusinessLogic.Tests.Services{
             
             this.MessagingServiceClient.Setup(m => m.ResendEmail(It.IsAny<String>(), It.IsAny<ResendEmailRequest>(), It.IsAny<CancellationToken>())).ReturnsAsync(Result.Success);
             TransactionCommands.ResendCustomerEmailReceiptCommand command = new(TestData.EstateId, TestData.TransactionId);
-            var result = await this.TransactionDomainService.ResendCustomerEmailReceipt(command, CancellationToken.None);
+            var result = await this.TransactionDomainService.ResendCustomerEmailReceipt(command, TestContext.Current.CancellationToken);
             result.IsSuccess.ShouldBeTrue();
         }
 
@@ -741,7 +741,7 @@ namespace TransactionProcessor.BusinessLogic.Tests.Services{
             this.AggregateService.Setup(t => t.GetLatest<TransactionAggregate>(It.IsAny<Guid>(), It.IsAny<CancellationToken>())).ReturnsAsync(Result.Failure());
 
             TransactionCommands.ResendCustomerEmailReceiptCommand command = new(TestData.EstateId, TestData.TransactionId);
-            var result = await this.TransactionDomainService.ResendCustomerEmailReceipt(command, CancellationToken.None);
+            var result = await this.TransactionDomainService.ResendCustomerEmailReceipt(command, TestContext.Current.CancellationToken);
             result.IsFailed.ShouldBeTrue();
         }
 
@@ -759,7 +759,7 @@ namespace TransactionProcessor.BusinessLogic.Tests.Services{
                 TestData.TransactionDateTime,
                 TestData.TransactionNumber, TestData.TransactionReceivedDateTime);
 
-            var result = await this.TransactionDomainService.ProcessLogonTransaction(command, CancellationToken.None);
+            var result = await this.TransactionDomainService.ProcessLogonTransaction(command, TestContext.Current.CancellationToken);
             result.IsFailed.ShouldBeTrue();
         }
 
@@ -783,7 +783,7 @@ namespace TransactionProcessor.BusinessLogic.Tests.Services{
                 TestData.TransactionDateTime,
                 TestData.TransactionNumber, TestData.TransactionReceivedDateTime);
 
-            var result = await this.TransactionDomainService.ProcessLogonTransaction(command, CancellationToken.None);
+            var result = await this.TransactionDomainService.ProcessLogonTransaction(command, TestContext.Current.CancellationToken);
             result.IsFailed.ShouldBeTrue();
         }
 
@@ -798,7 +798,7 @@ namespace TransactionProcessor.BusinessLogic.Tests.Services{
                     TestData.MerchantId, TestData.DeviceIdentifier, TestData.TransactionDateTime,
                     TestData.ReconciliationTransactionCount, TestData.ReconciliationTransactionValue);
 
-            var result = await this.TransactionDomainService.ProcessReconciliationTransaction(command, CancellationToken.None);
+            var result = await this.TransactionDomainService.ProcessReconciliationTransaction(command, TestContext.Current.CancellationToken);
             result.IsFailed.ShouldBeTrue();
         }
 
@@ -819,7 +819,7 @@ namespace TransactionProcessor.BusinessLogic.Tests.Services{
                     TestData.MerchantId, TestData.DeviceIdentifier, TestData.TransactionDateTime,
                     TestData.ReconciliationTransactionCount, TestData.ReconciliationTransactionValue);
 
-            var result = await this.TransactionDomainService.ProcessReconciliationTransaction(command, CancellationToken.None);
+            var result = await this.TransactionDomainService.ProcessReconciliationTransaction(command, TestContext.Current.CancellationToken);
             result.IsFailed.ShouldBeTrue();
         }
 
@@ -830,7 +830,7 @@ namespace TransactionProcessor.BusinessLogic.Tests.Services{
                 .ReturnsAsync(Result.Failure());
 
             TransactionCommands.ResendTransactionReceiptCommand command = new(TestData.TransactionId, TestData.EstateId);
-            var result = await this.TransactionDomainService.ResendTransactionReceipt(command, CancellationToken.None);
+            var result = await this.TransactionDomainService.ResendTransactionReceipt(command, TestContext.Current.CancellationToken);
             result.IsFailed.ShouldBeTrue();
         }
 
@@ -843,7 +843,7 @@ namespace TransactionProcessor.BusinessLogic.Tests.Services{
                 .ReturnsAsync(Result.Failure());
 
             TransactionCommands.ResendTransactionReceiptCommand command = new(TestData.TransactionId, TestData.EstateId);
-            var result = await this.TransactionDomainService.ResendTransactionReceipt(command, CancellationToken.None);
+            var result = await this.TransactionDomainService.ResendTransactionReceipt(command, TestContext.Current.CancellationToken);
             result.IsFailed.ShouldBeTrue();
         }
 
@@ -860,7 +860,7 @@ namespace TransactionProcessor.BusinessLogic.Tests.Services{
                     TestData.CustomerEmailAddress, TestData.AdditionalTransactionMetaDataForMobileTopup(),
                     TestData.ContractId, TestData.ProductId, TestData.TransactionSource, TestData.TransactionReceivedDateTime);
 
-            var result = await this.TransactionDomainService.ProcessSaleTransaction(command, CancellationToken.None);
+            var result = await this.TransactionDomainService.ProcessSaleTransaction(command, TestContext.Current.CancellationToken);
             result.IsFailed.ShouldBeTrue();
         }
 
@@ -904,7 +904,7 @@ namespace TransactionProcessor.BusinessLogic.Tests.Services{
                     TestData.CustomerEmailAddress, TestData.AdditionalTransactionMetaDataForMobileTopup(),
                     TestData.ContractId, TestData.ProductId, TestData.TransactionSource, TestData.TransactionReceivedDateTime);
 
-            var result = await this.TransactionDomainService.ProcessSaleTransaction(command, CancellationToken.None);
+            var result = await this.TransactionDomainService.ProcessSaleTransaction(command, TestContext.Current.CancellationToken);
             result.IsFailed.ShouldBeTrue();
         }
 
@@ -916,7 +916,7 @@ namespace TransactionProcessor.BusinessLogic.Tests.Services{
 
             TransactionCommands.CalculateFeesForTransactionCommand command = new(TestData.TransactionId, TestData.TransactionDateTime, TestData.EstateId, TestData.MerchantId);
 
-            var result = await this.TransactionDomainService.CalculateFeesForTransaction(command, CancellationToken.None);
+            var result = await this.TransactionDomainService.CalculateFeesForTransaction(command, TestContext.Current.CancellationToken);
             result.IsFailed.ShouldBeTrue();
         }
 
@@ -932,7 +932,7 @@ namespace TransactionProcessor.BusinessLogic.Tests.Services{
 
             TransactionCommands.CalculateFeesForTransactionCommand command = new(TestData.TransactionId, TestData.TransactionDateTime, TestData.EstateId, TestData.MerchantId);
 
-            var result = await this.TransactionDomainService.CalculateFeesForTransaction(command, CancellationToken.None);
+            var result = await this.TransactionDomainService.CalculateFeesForTransaction(command, TestContext.Current.CancellationToken);
             result.IsFailed.ShouldBeTrue();
         }
 
@@ -948,7 +948,7 @@ namespace TransactionProcessor.BusinessLogic.Tests.Services{
 
             TransactionCommands.CalculateFeesForTransactionCommand command = new(TestData.TransactionId, TestData.TransactionDateTime, TestData.EstateId, TestData.MerchantId);
 
-            var result = await this.TransactionDomainService.CalculateFeesForTransaction(command, CancellationToken.None);
+            var result = await this.TransactionDomainService.CalculateFeesForTransaction(command, TestContext.Current.CancellationToken);
             result.IsFailed.ShouldBeTrue();
         }
 
@@ -960,7 +960,7 @@ namespace TransactionProcessor.BusinessLogic.Tests.Services{
 
             TransactionCommands.AddSettledMerchantFeeCommand command = new(TestData.TransactionId, TestData.CalculatedFeeValue, TestData.TransactionFeeCalculateDateTime, CalculationType.Fixed, TestData.TransactionFeeId, TestData.CalculatedFeeValue, TestData.SettlementDate, TestData.SettlementAggregateId);
 
-            var result = await this.TransactionDomainService.AddSettledMerchantFee(command, CancellationToken.None);
+            var result = await this.TransactionDomainService.AddSettledMerchantFee(command, TestContext.Current.CancellationToken);
             result.IsFailed.ShouldBeTrue();
         }
 
@@ -970,7 +970,7 @@ namespace TransactionProcessor.BusinessLogic.Tests.Services{
             this.SecurityServiceClient.Setup(s => s.GetToken(It.IsAny<String>(), It.IsAny<String>(), It.IsAny<CancellationToken>())).ReturnsAsync(Result.Failure());
 
             TransactionCommands.SendCustomerEmailReceiptCommand command = new(TestData.EstateId, TestData.TransactionId, Guid.NewGuid(), TestData.CustomerEmailAddress);
-            var result = await this.TransactionDomainService.SendCustomerEmailReceipt(command, CancellationToken.None);
+            var result = await this.TransactionDomainService.SendCustomerEmailReceipt(command, TestContext.Current.CancellationToken);
             result.IsFailed.ShouldBeTrue();
         }
 
@@ -983,7 +983,7 @@ namespace TransactionProcessor.BusinessLogic.Tests.Services{
                 .ReturnsAsync(Result.Failure());
 
             TransactionCommands.SendCustomerEmailReceiptCommand command = new(TestData.EstateId, TestData.TransactionId, Guid.NewGuid(), TestData.CustomerEmailAddress);
-            var result = await this.TransactionDomainService.SendCustomerEmailReceipt(command, CancellationToken.None);
+            var result = await this.TransactionDomainService.SendCustomerEmailReceipt(command, TestContext.Current.CancellationToken);
             result.IsFailed.ShouldBeTrue();
         }
 
@@ -997,7 +997,7 @@ namespace TransactionProcessor.BusinessLogic.Tests.Services{
             this.AggregateService.Setup(c => c.Get<EstateAggregate>(It.IsAny<Guid>(), It.IsAny<CancellationToken>())).ReturnsAsync(Result.Failure());
 
             TransactionCommands.SendCustomerEmailReceiptCommand command = new(TestData.EstateId, TestData.TransactionId, Guid.NewGuid(), TestData.CustomerEmailAddress);
-            var result = await this.TransactionDomainService.SendCustomerEmailReceipt(command, CancellationToken.None);
+            var result = await this.TransactionDomainService.SendCustomerEmailReceipt(command, TestContext.Current.CancellationToken);
             result.IsFailed.ShouldBeTrue();
         }
 
@@ -1007,10 +1007,11 @@ namespace TransactionProcessor.BusinessLogic.Tests.Services{
             this.SecurityServiceClient.Setup(s => s.GetToken(It.IsAny<String>(), It.IsAny<String>(), It.IsAny<CancellationToken>())).ReturnsAsync(Result.Failure());
 
             TransactionCommands.ResendCustomerEmailReceiptCommand command = new(TestData.EstateId, TestData.TransactionId);
-            var result = await this.TransactionDomainService.ResendCustomerEmailReceipt(command, CancellationToken.None);
+            var result = await this.TransactionDomainService.ResendCustomerEmailReceipt(command, TestContext.Current.CancellationToken);
             result.IsFailed.ShouldBeTrue();
         }
 
         #endregion
     }
 }
+

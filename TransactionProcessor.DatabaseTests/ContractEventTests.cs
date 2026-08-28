@@ -1,4 +1,4 @@
-﻿using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Moq;
@@ -18,17 +18,17 @@ namespace TransactionProcessor.DatabaseTests
         [Fact]
         public async Task AddReconciliation_ReconciliationIsAdded()
         {
-            Result result = await this.Repository.StartReconciliation(TestData.DomainEvents.ReconciliationHasStartedEvent, CancellationToken.None);
+            Result result = await this.Repository.StartReconciliation(TestData.DomainEvents.ReconciliationHasStartedEvent, TestContext.Current.CancellationToken);
             result.IsSuccess.ShouldBeTrue();
             EstateManagementContext context = this.GetContext();
-            Reconciliation? reconciliation = await context.Reconciliations.SingleOrDefaultAsync(c => c.TransactionId == TestData.DomainEvents.ReconciliationHasStartedEvent.TransactionId);
+            Reconciliation? reconciliation = await context.Reconciliations.SingleOrDefaultAsync(c => c.TransactionId == TestData.DomainEvents.ReconciliationHasStartedEvent.TransactionId, TestContext.Current.CancellationToken);
             reconciliation.ShouldNotBeNull();
         }
         [Fact]
         public async Task AddReconciliation_EventReplayHandled() {
-            Result result = await this.Repository.StartReconciliation(TestData.DomainEvents.ReconciliationHasStartedEvent, CancellationToken.None);
+            Result result = await this.Repository.StartReconciliation(TestData.DomainEvents.ReconciliationHasStartedEvent, TestContext.Current.CancellationToken);
             result.IsSuccess.ShouldBeTrue();
-            result = await this.Repository.StartReconciliation(TestData.DomainEvents.ReconciliationHasStartedEvent, CancellationToken.None);
+            result = await this.Repository.StartReconciliation(TestData.DomainEvents.ReconciliationHasStartedEvent, TestContext.Current.CancellationToken);
             result.IsSuccess.ShouldBeTrue();
         }
     }
@@ -38,33 +38,33 @@ namespace TransactionProcessor.DatabaseTests
         [Fact]
         public async Task AddContract_ContractIsAdded()
         {
-            Result result = await this.Repository.AddContract(TestData.DomainEvents.ContractCreatedEvent, CancellationToken.None);
+            Result result = await this.Repository.AddContract(TestData.DomainEvents.ContractCreatedEvent, TestContext.Current.CancellationToken);
             result.IsSuccess.ShouldBeTrue();
             EstateManagementContext context = this.GetContext();
-            Contract? contract = await context.Contracts.SingleOrDefaultAsync(c => c.ContractId == TestData.DomainEvents.ContractCreatedEvent.ContractId);
+            Contract? contract = await context.Contracts.SingleOrDefaultAsync(c => c.ContractId == TestData.DomainEvents.ContractCreatedEvent.ContractId, TestContext.Current.CancellationToken);
             contract.ShouldNotBeNull();
         }
 
         [Fact]
     public async Task AddContract_EventReplayHandled() {
-        Result result = await this.Repository.AddContract(TestData.DomainEvents.ContractCreatedEvent, CancellationToken.None);
+        Result result = await this.Repository.AddContract(TestData.DomainEvents.ContractCreatedEvent, TestContext.Current.CancellationToken);
         result.IsSuccess.ShouldBeTrue();
 
-        result = await this.Repository.AddContract(TestData.DomainEvents.ContractCreatedEvent, CancellationToken.None);
+        result = await this.Repository.AddContract(TestData.DomainEvents.ContractCreatedEvent, TestContext.Current.CancellationToken);
         result.IsSuccess.ShouldBeTrue();
     }
 
     [Fact]
     public async Task AddContractToMerchant_ContractIsAddedToMerchant()
     {
-        Result result = await this.Repository.AddContract(TestData.DomainEvents.ContractCreatedEvent, CancellationToken.None);
+        Result result = await this.Repository.AddContract(TestData.DomainEvents.ContractCreatedEvent, TestContext.Current.CancellationToken);
         result.IsSuccess.ShouldBeTrue();
 
-        result = await this.Repository.AddContractToMerchant(TestData.DomainEvents.ContractAddedToMerchantEvent, CancellationToken.None);
+        result = await this.Repository.AddContractToMerchant(TestData.DomainEvents.ContractAddedToMerchantEvent, TestContext.Current.CancellationToken);
         result.IsSuccess.ShouldBeTrue();
 
         EstateManagementContext context = this.GetContext();
-        MerchantContract? merchantContract = await context.MerchantContracts.SingleOrDefaultAsync(c => c.MerchantId == TestData.DomainEvents.ContractAddedToMerchantEvent.MerchantId && c.ContractId == TestData.DomainEvents.ContractAddedToMerchantEvent.ContractId);
+        MerchantContract? merchantContract = await context.MerchantContracts.SingleOrDefaultAsync(c => c.MerchantId == TestData.DomainEvents.ContractAddedToMerchantEvent.MerchantId && c.ContractId == TestData.DomainEvents.ContractAddedToMerchantEvent.ContractId, TestContext.Current.CancellationToken);
         merchantContract.ShouldNotBeNull();
         merchantContract.IsDeleted.ShouldBeFalse();
     }
@@ -72,16 +72,16 @@ namespace TransactionProcessor.DatabaseTests
     [Fact]
     public async Task RemoveContractFromMerchant_ContractIsMarkedDeleted()
     {
-        Result result = await this.Repository.AddContract(TestData.DomainEvents.ContractCreatedEvent, CancellationToken.None);
+        Result result = await this.Repository.AddContract(TestData.DomainEvents.ContractCreatedEvent, TestContext.Current.CancellationToken);
         result.IsSuccess.ShouldBeTrue();
-        result = await this.Repository.AddContractToMerchant(TestData.DomainEvents.ContractAddedToMerchantEvent, CancellationToken.None);
+        result = await this.Repository.AddContractToMerchant(TestData.DomainEvents.ContractAddedToMerchantEvent, TestContext.Current.CancellationToken);
         result.IsSuccess.ShouldBeTrue();
 
-        result = await this.Repository.RemoveContractFromMerchant(TestData.DomainEvents.ContractRemovedFromMerchantEvent, CancellationToken.None);
+        result = await this.Repository.RemoveContractFromMerchant(TestData.DomainEvents.ContractRemovedFromMerchantEvent, TestContext.Current.CancellationToken);
         result.IsSuccess.ShouldBeTrue();
 
         EstateManagementContext context = this.GetContext();
-        MerchantContract? merchantContract = await context.MerchantContracts.SingleOrDefaultAsync(c => c.MerchantId == TestData.DomainEvents.ContractRemovedFromMerchantEvent.MerchantId && c.ContractId == TestData.DomainEvents.ContractRemovedFromMerchantEvent.ContractId);
+        MerchantContract? merchantContract = await context.MerchantContracts.SingleOrDefaultAsync(c => c.MerchantId == TestData.DomainEvents.ContractRemovedFromMerchantEvent.MerchantId && c.ContractId == TestData.DomainEvents.ContractRemovedFromMerchantEvent.ContractId, TestContext.Current.CancellationToken);
         merchantContract.ShouldNotBeNull();
         merchantContract.IsDeleted.ShouldBeTrue();
     }
@@ -89,18 +89,18 @@ namespace TransactionProcessor.DatabaseTests
     [Fact]
     public async Task DisableContractProductTransactionFee_TransactionFeeIsDisabled()
     {
-        Result result = await this.Repository.AddContract(TestData.DomainEvents.ContractCreatedEvent, CancellationToken.None);
+        Result result = await this.Repository.AddContract(TestData.DomainEvents.ContractCreatedEvent, TestContext.Current.CancellationToken);
         result.IsSuccess.ShouldBeTrue("Add");
-        result = await this.Repository.AddContractProduct(TestData.DomainEvents.FixedValueProductAddedToContractEvent, CancellationToken.None);
+        result = await this.Repository.AddContractProduct(TestData.DomainEvents.FixedValueProductAddedToContractEvent, TestContext.Current.CancellationToken);
         result.IsSuccess.ShouldBeTrue("Product Add");
-        result = await this.Repository.AddContractProductTransactionFee(TestData.DomainEvents.TransactionFeeForProductAddedToContractEvent, CancellationToken.None);
+        result = await this.Repository.AddContractProductTransactionFee(TestData.DomainEvents.TransactionFeeForProductAddedToContractEvent, TestContext.Current.CancellationToken);
         result.IsSuccess.ShouldBeTrue("Fee Add");
 
-        result = await this.Repository.DisableContractProductTransactionFee(TestData.DomainEvents.TransactionFeeForProductDisabledEvent, CancellationToken.None);
+        result = await this.Repository.DisableContractProductTransactionFee(TestData.DomainEvents.TransactionFeeForProductDisabledEvent, TestContext.Current.CancellationToken);
         result.IsSuccess.ShouldBeTrue(result.Message);
 
         EstateManagementContext context = this.GetContext();
-        ContractProductTransactionFee? contractProductTransactionFee = await context.ContractProductTransactionFees.SingleOrDefaultAsync(c => c.ContractProductTransactionFeeId == TestData.DomainEvents.TransactionFeeForProductDisabledEvent.TransactionFeeId);
+        ContractProductTransactionFee? contractProductTransactionFee = await context.ContractProductTransactionFees.SingleOrDefaultAsync(c => c.ContractProductTransactionFeeId == TestData.DomainEvents.TransactionFeeForProductDisabledEvent.TransactionFeeId, TestContext.Current.CancellationToken);
         contractProductTransactionFee.ShouldNotBeNull();
         contractProductTransactionFee.IsEnabled.ShouldBeFalse();
     }
@@ -108,59 +108,61 @@ namespace TransactionProcessor.DatabaseTests
         [Fact]
         public async Task AddContractProduct_ContractProductIsAdded()
         {
-            Result result = await this.Repository.AddContractProduct(TestData.DomainEvents.FixedValueProductAddedToContractEvent, CancellationToken.None);
+            Result result = await this.Repository.AddContractProduct(TestData.DomainEvents.FixedValueProductAddedToContractEvent, TestContext.Current.CancellationToken);
             result.IsSuccess.ShouldBeTrue();
             EstateManagementContext context = this.GetContext();
-            ContractProduct? fixedContractProduct = await context.ContractProducts.SingleOrDefaultAsync(c => c.ContractId == TestData.DomainEvents.FixedValueProductAddedToContractEvent.ContractId && c.ContractProductId == TestData.DomainEvents.FixedValueProductAddedToContractEvent.ProductId);
+            ContractProduct? fixedContractProduct = await context.ContractProducts.SingleOrDefaultAsync(c => c.ContractId == TestData.DomainEvents.FixedValueProductAddedToContractEvent.ContractId && c.ContractProductId == TestData.DomainEvents.FixedValueProductAddedToContractEvent.ProductId, TestContext.Current.CancellationToken);
             fixedContractProduct.ShouldNotBeNull();
 
-            result = await this.Repository.AddContractProduct(TestData.DomainEvents.VariableValueProductAddedToContractEvent, CancellationToken.None);
+            result = await this.Repository.AddContractProduct(TestData.DomainEvents.VariableValueProductAddedToContractEvent, TestContext.Current.CancellationToken);
             result.IsSuccess.ShouldBeTrue();
             context = this.GetContext();
-            ContractProduct? variableContractProduct = await context.ContractProducts.SingleOrDefaultAsync(c => c.ContractId == TestData.DomainEvents.VariableValueProductAddedToContractEvent.ContractId && c.ContractProductId == TestData.DomainEvents.VariableValueProductAddedToContractEvent.ProductId);
+            ContractProduct? variableContractProduct = await context.ContractProducts.SingleOrDefaultAsync(c => c.ContractId == TestData.DomainEvents.VariableValueProductAddedToContractEvent.ContractId && c.ContractProductId == TestData.DomainEvents.VariableValueProductAddedToContractEvent.ProductId, TestContext.Current.CancellationToken);
             variableContractProduct.ShouldNotBeNull();
         }
 
         [Fact]
         public async Task AddContractProduct_EventReplayHandled() {
-            Result result = await this.Repository.AddContractProduct(TestData.DomainEvents.FixedValueProductAddedToContractEvent, CancellationToken.None);
+            Result result = await this.Repository.AddContractProduct(TestData.DomainEvents.FixedValueProductAddedToContractEvent, TestContext.Current.CancellationToken);
             result.IsSuccess.ShouldBeTrue();
             EstateManagementContext context = this.GetContext();
-            ContractProduct? fixedContractProduct = await context.ContractProducts.SingleOrDefaultAsync(c => c.ContractId == TestData.DomainEvents.FixedValueProductAddedToContractEvent.ContractId && c.ContractProductId == TestData.DomainEvents.FixedValueProductAddedToContractEvent.ProductId);
+            ContractProduct? fixedContractProduct = await context.ContractProducts.SingleOrDefaultAsync(c => c.ContractId == TestData.DomainEvents.FixedValueProductAddedToContractEvent.ContractId && c.ContractProductId == TestData.DomainEvents.FixedValueProductAddedToContractEvent.ProductId, TestContext.Current.CancellationToken);
             fixedContractProduct.ShouldNotBeNull();
 
-            result = await this.Repository.AddContractProduct(TestData.DomainEvents.VariableValueProductAddedToContractEvent, CancellationToken.None);
+            result = await this.Repository.AddContractProduct(TestData.DomainEvents.VariableValueProductAddedToContractEvent, TestContext.Current.CancellationToken);
             result.IsSuccess.ShouldBeTrue();
             context = this.GetContext();
-            ContractProduct? variableContractProduct = await context.ContractProducts.SingleOrDefaultAsync(c => c.ContractId == TestData.DomainEvents.VariableValueProductAddedToContractEvent.ContractId && c.ContractProductId == TestData.DomainEvents.VariableValueProductAddedToContractEvent.ProductId);
+            ContractProduct? variableContractProduct = await context.ContractProducts.SingleOrDefaultAsync(c => c.ContractId == TestData.DomainEvents.VariableValueProductAddedToContractEvent.ContractId && c.ContractProductId == TestData.DomainEvents.VariableValueProductAddedToContractEvent.ProductId, TestContext.Current.CancellationToken);
             variableContractProduct.ShouldNotBeNull();
 
-            result = await this.Repository.AddContractProduct(TestData.DomainEvents.FixedValueProductAddedToContractEvent, CancellationToken.None);
+            result = await this.Repository.AddContractProduct(TestData.DomainEvents.FixedValueProductAddedToContractEvent, TestContext.Current.CancellationToken);
             result.IsSuccess.ShouldBeTrue();
 
-            result = await this.Repository.AddContractProduct(TestData.DomainEvents.VariableValueProductAddedToContractEvent, CancellationToken.None);
+            result = await this.Repository.AddContractProduct(TestData.DomainEvents.VariableValueProductAddedToContractEvent, TestContext.Current.CancellationToken);
             result.IsSuccess.ShouldBeTrue();
         }
 
         [Fact]
         public async Task AddContractProductTransactionFee_ContractIsAdded()
         {
-            Result result = await this.Repository.AddContractProductTransactionFee(TestData.DomainEvents.TransactionFeeForProductAddedToContractEvent, CancellationToken.None);
+            Result result = await this.Repository.AddContractProductTransactionFee(TestData.DomainEvents.TransactionFeeForProductAddedToContractEvent, TestContext.Current.CancellationToken);
             result.IsSuccess.ShouldBeTrue();
             EstateManagementContext context = this.GetContext();
             ContractProductTransactionFee? contractProductTransactionFee = await context.ContractProductTransactionFees.SingleOrDefaultAsync(c => c.ContractProductId == TestData.DomainEvents.TransactionFeeForProductAddedToContractEvent.ProductId &&
-                                                                                                                                                  c.ContractProductTransactionFeeId == TestData.DomainEvents.TransactionFeeForProductAddedToContractEvent.TransactionFeeId);
+                                                                                                                                                  c.ContractProductTransactionFeeId == TestData.DomainEvents.TransactionFeeForProductAddedToContractEvent.TransactionFeeId, TestContext.Current.CancellationToken);
             contractProductTransactionFee.ShouldNotBeNull();
         }
 
         [Fact]
         public async Task AddContractProductTransactionFee_EventReplayHandled()
         {
-            Result result = await this.Repository.AddContractProductTransactionFee(TestData.DomainEvents.TransactionFeeForProductAddedToContractEvent, CancellationToken.None);
+            Result result = await this.Repository.AddContractProductTransactionFee(TestData.DomainEvents.TransactionFeeForProductAddedToContractEvent, TestContext.Current.CancellationToken);
             result.IsSuccess.ShouldBeTrue();
 
-            result = await this.Repository.AddContractProductTransactionFee(TestData.DomainEvents.TransactionFeeForProductAddedToContractEvent, CancellationToken.None);
+            result = await this.Repository.AddContractProductTransactionFee(TestData.DomainEvents.TransactionFeeForProductAddedToContractEvent, TestContext.Current.CancellationToken);
             result.IsSuccess.ShouldBeTrue();
         }
     }
 }
+
+

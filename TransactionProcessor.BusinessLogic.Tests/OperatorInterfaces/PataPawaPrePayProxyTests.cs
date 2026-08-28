@@ -1,4 +1,4 @@
-﻿using Microsoft.Extensions.Caching.Memory;
+using Microsoft.Extensions.Caching.Memory;
 using RichardSzalay.MockHttp;
 using Shared.Logger;
 using Shared.Serialisation;
@@ -45,7 +45,7 @@ public class PataPawaPrePayProxyTests {
 
         this.MockHttpMessageHandler.When("http://localhost").Respond("application/json", StringSerialiser.Serialise(logonResponse));
             
-        var result = await this.PataPawaPrePayProxy.ProcessLogonMessage(CancellationToken.None);
+        var result = await this.PataPawaPrePayProxy.ProcessLogonMessage(TestContext.Current.CancellationToken);
         result.IsSuccess.ShouldBeTrue();
         result.Data.ResponseCode.ShouldBe("0000");
         result.Data.IsSuccessful.ShouldBeTrue();
@@ -58,7 +58,7 @@ public class PataPawaPrePayProxyTests {
         this.MemoryCache.Set("PataPawaPrePayLogon", operatorResponse, new MemoryCacheEntryOptions());
         LogonResponse logonResponse = new LogonResponse { Balance = "0", Key = "Key", Msg = "Success", Status = 0 };
 
-        var result = await this.PataPawaPrePayProxy.ProcessLogonMessage(CancellationToken.None);
+        var result = await this.PataPawaPrePayProxy.ProcessLogonMessage(TestContext.Current.CancellationToken);
         result.IsSuccess.ShouldBeTrue();
         result.Data.TransactionId.ShouldBe(operatorResponse.TransactionId);
     }
@@ -70,7 +70,7 @@ public class PataPawaPrePayProxyTests {
 
         this.MockHttpMessageHandler.When("http://localhost").Respond("application/json", StringSerialiser.Serialise(logonResponse));
 
-        var result = await this.PataPawaPrePayProxy.ProcessLogonMessage(CancellationToken.None);
+        var result = await this.PataPawaPrePayProxy.ProcessLogonMessage(TestContext.Current.CancellationToken);
         result.IsFailed.ShouldBeTrue();
     }
 
@@ -81,7 +81,7 @@ public class PataPawaPrePayProxyTests {
 
         this.MockHttpMessageHandler.When("http://localhost").Respond(req => new HttpResponseMessage(HttpStatusCode.BadRequest));
 
-        var result = await this.PataPawaPrePayProxy.ProcessLogonMessage(CancellationToken.None);
+        var result = await this.PataPawaPrePayProxy.ProcessLogonMessage(TestContext.Current.CancellationToken);
         result.IsFailed.ShouldBeTrue();
     }
 
@@ -108,7 +108,7 @@ public class PataPawaPrePayProxyTests {
             
         var result = await this.PataPawaPrePayProxy.ProcessSaleMessage(TestData.TransactionId, 
             TestData.OperatorId, TestData.Merchant, TestData.TransactionDateTime, TestData.TransactionReference,
-            metaDataDictionary, CancellationToken.None);
+            metaDataDictionary, TestContext.Current.CancellationToken);
             
         result.IsSuccess.ShouldBeTrue();
         result.Data.ResponseCode.ShouldBe("0000");
@@ -138,7 +138,7 @@ public class PataPawaPrePayProxyTests {
 
         var result = await this.PataPawaPrePayProxy.ProcessSaleMessage(TestData.TransactionId,
             TestData.OperatorId, TestData.Merchant, TestData.TransactionDateTime, TestData.TransactionReference,
-            metaDataDictionary, CancellationToken.None);
+            metaDataDictionary, TestContext.Current.CancellationToken);
 
         result.IsFailed.ShouldBeTrue();
     }
@@ -165,7 +165,7 @@ public class PataPawaPrePayProxyTests {
 
         var result = await this.PataPawaPrePayProxy.ProcessSaleMessage(TestData.TransactionId,
             TestData.OperatorId, TestData.Merchant, TestData.TransactionDateTime, TestData.TransactionReference,
-            metaDataDictionary, CancellationToken.None);
+            metaDataDictionary, TestContext.Current.CancellationToken);
 
         result.IsFailed.ShouldBeTrue();
         result.Status.ShouldBe(ResultStatus.Failure);
@@ -201,7 +201,7 @@ public class PataPawaPrePayProxyTests {
 
         var result = await this.PataPawaPrePayProxy.ProcessSaleMessage(TestData.TransactionId,
             TestData.OperatorId, TestData.Merchant, TestData.TransactionDateTime, TestData.TransactionReference,
-            metaDataDictionary, CancellationToken.None);
+            metaDataDictionary, TestContext.Current.CancellationToken);
 
         result.IsSuccess.ShouldBeTrue();
         result.Data.ResponseCode.ShouldBe("0000");
@@ -241,7 +241,7 @@ public class PataPawaPrePayProxyTests {
 
         var result = await this.PataPawaPrePayProxy.ProcessSaleMessage(TestData.TransactionId,
             TestData.OperatorId, TestData.Merchant, TestData.TransactionDateTime, TestData.TransactionReference,
-            metaDataDictionary, CancellationToken.None);
+            metaDataDictionary, TestContext.Current.CancellationToken);
 
         result.IsFailed.ShouldBeTrue();
     }
@@ -270,7 +270,7 @@ public class PataPawaPrePayProxyTests {
 
         var result = await this.PataPawaPrePayProxy.ProcessSaleMessage(TestData.TransactionId,
             TestData.OperatorId, TestData.Merchant, TestData.TransactionDateTime, TestData.TransactionReference,
-            metaDataDictionary, CancellationToken.None);
+            metaDataDictionary, TestContext.Current.CancellationToken);
 
         result.IsFailed.ShouldBeTrue();
         result.Status.ShouldBe(ResultStatus.Failure);
@@ -313,7 +313,7 @@ public class PataPawaPrePayProxyTests {
 
         var result = await this.PataPawaPrePayProxy.ProcessSaleMessage(TestData.TransactionId,
             TestData.OperatorId, TestData.Merchant, TestData.TransactionDateTime, TestData.TransactionReference,
-            metaDataDictionary, CancellationToken.None);
+            metaDataDictionary, TestContext.Current.CancellationToken);
 
         result.IsFailed.ShouldBeTrue();
     }
@@ -353,7 +353,7 @@ public class PataPawaPrePayProxyTests {
 
         var result = await this.PataPawaPrePayProxy.ProcessSaleMessage(TestData.TransactionId,
             TestData.OperatorId, TestData.Merchant, TestData.TransactionDateTime, TestData.TransactionReference,
-            metaDataDictionary, CancellationToken.None);
+            metaDataDictionary, TestContext.Current.CancellationToken);
 
         result.IsFailed.ShouldBeTrue();
     }
@@ -391,7 +391,7 @@ public class PataPawaPrePayProxyTests {
 
         var result = await this.PataPawaPrePayProxy.ProcessSaleMessage(TestData.TransactionId,
             TestData.OperatorId, TestData.Merchant, TestData.TransactionDateTime, TestData.TransactionReference,
-            metaDataDictionary, CancellationToken.None);
+            metaDataDictionary, TestContext.Current.CancellationToken);
 
         result.IsFailed.ShouldBeTrue();
         result.Status.ShouldBe(ResultStatus.Invalid);
@@ -420,7 +420,7 @@ public class PataPawaPrePayProxyTests {
 
         var result = await this.PataPawaPrePayProxy.ProcessSaleMessage(TestData.TransactionId,
             TestData.OperatorId, TestData.Merchant, TestData.TransactionDateTime, TestData.TransactionReference,
-            metaDataDictionary, CancellationToken.None);
+            metaDataDictionary, TestContext.Current.CancellationToken);
 
         result.IsFailed.ShouldBeTrue();
         result.Status.ShouldBe(ResultStatus.Invalid);
@@ -451,7 +451,7 @@ public class PataPawaPrePayProxyTests {
 
         var result = await this.PataPawaPrePayProxy.ProcessSaleMessage(TestData.TransactionId,
             TestData.OperatorId, TestData.Merchant, TestData.TransactionDateTime, TestData.TransactionReference,
-            metaDataDictionary, CancellationToken.None);
+            metaDataDictionary, TestContext.Current.CancellationToken);
 
         result.IsFailed.ShouldBeTrue();
         result.Status.ShouldBe(ResultStatus.Invalid);
@@ -482,7 +482,7 @@ public class PataPawaPrePayProxyTests {
 
         var result = await this.PataPawaPrePayProxy.ProcessSaleMessage(TestData.TransactionId,
             TestData.OperatorId, TestData.Merchant, TestData.TransactionDateTime, TestData.TransactionReference,
-            metaDataDictionary, CancellationToken.None);
+            metaDataDictionary, TestContext.Current.CancellationToken);
 
         result.IsFailed.ShouldBeTrue();
         result.Status.ShouldBe(ResultStatus.Invalid);
@@ -513,10 +513,11 @@ public class PataPawaPrePayProxyTests {
 
         var result = await this.PataPawaPrePayProxy.ProcessSaleMessage(TestData.TransactionId,
             TestData.OperatorId, TestData.Merchant, TestData.TransactionDateTime, TestData.TransactionReference,
-            metaDataDictionary, CancellationToken.None);
+            metaDataDictionary, TestContext.Current.CancellationToken);
 
         result.IsFailed.ShouldBeTrue();
         result.Status.ShouldBe(ResultStatus.Invalid);
     }
 
 }
+

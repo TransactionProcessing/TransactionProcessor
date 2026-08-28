@@ -1,4 +1,4 @@
-﻿using SimpleResults;
+using SimpleResults;
 using TransactionProcessor.Aggregates;
 using TransactionProcessor.BusinessLogic.Services;
 using TransactionProcessor.Database.Contexts;
@@ -107,9 +107,9 @@ public class VoucherDomainEventHandlerTests
                                   EstateId = TestData.EstateId,
                                   Description = TestData.OperatorIdentifier
                               });
-        await this.Context.SaveChangesAsync(CancellationToken.None);
+        await this.Context.SaveChangesAsync(TestContext.Current.CancellationToken);
 
-        await this.VoucherDomainEventHandler.Handle(TestData.VoucherIssuedEvent, CancellationToken.None);
+        await this.VoucherDomainEventHandler.Handle(TestData.VoucherIssuedEvent, TestContext.Current.CancellationToken);
     }
     
     [Fact]
@@ -132,8 +132,8 @@ public class VoucherDomainEventHandlerTests
                                   EstateId = TestData.EstateId,
                                   Description = TestData.OperatorIdentifier
                               });
-        await this.Context.SaveChangesAsync(CancellationToken.None);
+        await this.Context.SaveChangesAsync(TestContext.Current.CancellationToken);
 
-        await VoucherDomainEventHandler.Handle(TestData.VoucherIssuedEvent, CancellationToken.None);
+        await VoucherDomainEventHandler.Handle(TestData.VoucherIssuedEvent, TestContext.Current.CancellationToken);
     }
 }

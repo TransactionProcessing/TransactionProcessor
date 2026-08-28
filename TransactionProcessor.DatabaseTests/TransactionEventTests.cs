@@ -12,7 +12,7 @@ namespace TransactionProcessor.DatabaseTests;
 public class TransactionEventTests : BaseTest {
     private async Task CreateOperatorAsync()
     {
-        Result result = await this.Repository.AddOperator(TestData.DomainEvents.OperatorCreatedEvent, CancellationToken.None);
+        Result result = await this.Repository.AddOperator(TestData.DomainEvents.OperatorCreatedEvent, TestContext.Current.CancellationToken);
         result.IsSuccess.ShouldBeTrue();
     }
 
@@ -20,19 +20,19 @@ public class TransactionEventTests : BaseTest {
     {
         await this.CreateOperatorAsync();
 
-        Result result = await this.Repository.AddContract(TestData.DomainEvents.ContractCreatedEvent, CancellationToken.None);
+        Result result = await this.Repository.AddContract(TestData.DomainEvents.ContractCreatedEvent, TestContext.Current.CancellationToken);
         result.IsSuccess.ShouldBeTrue();
     }
 
     private async Task CreateMerchantAsync()
     {
-        Result result = await this.Repository.AddMerchant(TestData.DomainEvents.MerchantCreatedEvent, CancellationToken.None);
+        Result result = await this.Repository.AddMerchant(TestData.DomainEvents.MerchantCreatedEvent, TestContext.Current.CancellationToken);
         result.IsSuccess.ShouldBeTrue();
     }
 
     private async Task CreateTransactionAsync()
     {
-        Result result = await this.Repository.StartTransaction(TestData.DomainEvents.TransactionHasStartedEvent, CancellationToken.None);
+        Result result = await this.Repository.StartTransaction(TestData.DomainEvents.TransactionHasStartedEvent, TestContext.Current.CancellationToken);
         result.IsSuccess.ShouldBeTrue();
     }
 
@@ -41,18 +41,18 @@ public class TransactionEventTests : BaseTest {
         await this.CreateContractAsync();
         await this.CreateTransactionAsync();
 
-        Result result = await this.Repository.AddProductDetailsToTransaction(TestData.DomainEvents.ProductDetailsAddedToTransactionEvent, CancellationToken.None);
+        Result result = await this.Repository.AddProductDetailsToTransaction(TestData.DomainEvents.ProductDetailsAddedToTransactionEvent, TestContext.Current.CancellationToken);
         result.IsSuccess.ShouldBeTrue();
     }
 
     [Fact]
     public async Task StartTransaction_TransactionIsAdded()
     {
-        Result result = await this.Repository.StartTransaction(TestData.DomainEvents.TransactionHasStartedEvent, CancellationToken.None);
+        Result result = await this.Repository.StartTransaction(TestData.DomainEvents.TransactionHasStartedEvent, TestContext.Current.CancellationToken);
         result.IsSuccess.ShouldBeTrue();
 
         EstateManagementContext context = this.GetContext();
-        Transaction? transaction = await context.Transactions.SingleOrDefaultAsync(t => t.TransactionId == TestData.DomainEvents.TransactionHasStartedEvent.TransactionId);
+        Transaction? transaction = await context.Transactions.SingleOrDefaultAsync(t => t.TransactionId == TestData.DomainEvents.TransactionHasStartedEvent.TransactionId, TestContext.Current.CancellationToken);
         transaction.ShouldNotBeNull();
         transaction.MerchantId.ShouldBe(TestData.DomainEvents.TransactionHasStartedEvent.MerchantId);
         transaction.TransactionDate.ShouldBe(TestData.DomainEvents.TransactionHasStartedEvent.TransactionDateTime.Date);
@@ -68,10 +68,10 @@ public class TransactionEventTests : BaseTest {
     [Fact]
     public async Task StartTransaction_EventReplayHandled()
     {
-        Result result = await this.Repository.StartTransaction(TestData.DomainEvents.TransactionHasStartedEvent, CancellationToken.None);
+        Result result = await this.Repository.StartTransaction(TestData.DomainEvents.TransactionHasStartedEvent, TestContext.Current.CancellationToken);
         result.IsSuccess.ShouldBeTrue();
 
-        result = await this.Repository.StartTransaction(TestData.DomainEvents.TransactionHasStartedEvent, CancellationToken.None);
+        result = await this.Repository.StartTransaction(TestData.DomainEvents.TransactionHasStartedEvent, TestContext.Current.CancellationToken);
         result.IsSuccess.ShouldBeTrue();
     }
 
@@ -80,11 +80,11 @@ public class TransactionEventTests : BaseTest {
     {
         await this.CreateTransactionAsync();
 
-        Result result = await this.Repository.CompleteTransaction(TestData.DomainEvents.TransactionHasBeenCompletedEvent, CancellationToken.None);
+        Result result = await this.Repository.CompleteTransaction(TestData.DomainEvents.TransactionHasBeenCompletedEvent, TestContext.Current.CancellationToken);
         result.IsSuccess.ShouldBeTrue();
 
         EstateManagementContext context = this.GetContext();
-        Transaction? transaction = await context.Transactions.SingleOrDefaultAsync(t => t.TransactionId == TestData.DomainEvents.TransactionHasBeenCompletedEvent.TransactionId);
+        Transaction? transaction = await context.Transactions.SingleOrDefaultAsync(t => t.TransactionId == TestData.DomainEvents.TransactionHasBeenCompletedEvent.TransactionId, TestContext.Current.CancellationToken);
         transaction.ShouldNotBeNull();
         transaction.IsCompleted.ShouldBeTrue();
     }
@@ -92,11 +92,11 @@ public class TransactionEventTests : BaseTest {
     [Fact]
     public async Task RecordTransactionAdditionalRequestData_RequestDataIsStored()
     {
-        Result result = await this.Repository.RecordTransactionAdditionalRequestData(TestData.DomainEvents.AdditionalRequestDataRecordedEvent, CancellationToken.None);
+        Result result = await this.Repository.RecordTransactionAdditionalRequestData(TestData.DomainEvents.AdditionalRequestDataRecordedEvent, TestContext.Current.CancellationToken);
         result.IsSuccess.ShouldBeTrue();
 
         EstateManagementContext context = this.GetContext();
-        TransactionAdditionalRequestData? requestData = await context.TransactionsAdditionalRequestData.SingleOrDefaultAsync(t => t.TransactionId == TestData.DomainEvents.AdditionalRequestDataRecordedEvent.TransactionId);
+        TransactionAdditionalRequestData? requestData = await context.TransactionsAdditionalRequestData.SingleOrDefaultAsync(t => t.TransactionId == TestData.DomainEvents.AdditionalRequestDataRecordedEvent.TransactionId, TestContext.Current.CancellationToken);
         requestData.ShouldNotBeNull();
         requestData.Amount.ShouldBe("123.45");
         requestData.CustomerAccountNumber.ShouldBe("12345678");
@@ -105,11 +105,11 @@ public class TransactionEventTests : BaseTest {
     [Fact]
     public async Task RecordTransactionAdditionalResponseData_ResponseDataIsStored()
     {
-        Result result = await this.Repository.RecordTransactionAdditionalResponseData(TestData.DomainEvents.AdditionalResponseDataRecordedEvent, CancellationToken.None);
+        Result result = await this.Repository.RecordTransactionAdditionalResponseData(TestData.DomainEvents.AdditionalResponseDataRecordedEvent, TestContext.Current.CancellationToken);
         result.IsSuccess.ShouldBeTrue();
 
         EstateManagementContext context = this.GetContext();
-        TransactionAdditionalResponseData? responseData = await context.TransactionsAdditionalResponseData.SingleOrDefaultAsync(t => t.TransactionId == TestData.DomainEvents.AdditionalResponseDataRecordedEvent.TransactionId);
+        TransactionAdditionalResponseData? responseData = await context.TransactionsAdditionalResponseData.SingleOrDefaultAsync(t => t.TransactionId == TestData.DomainEvents.AdditionalResponseDataRecordedEvent.TransactionId, TestContext.Current.CancellationToken);
         responseData.ShouldNotBeNull();
         responseData.TransactionId.ShouldBe(TestData.DomainEvents.AdditionalResponseDataRecordedEvent.TransactionId);
         responseData.TransactionReportingId.ShouldBe(0);
@@ -120,11 +120,11 @@ public class TransactionEventTests : BaseTest {
     {
         await this.CreateTransactionAsync();
 
-        Result result = await this.Repository.SetTransactionAmount(TestData.DomainEvents.AdditionalRequestDataRecordedEvent, CancellationToken.None);
+        Result result = await this.Repository.SetTransactionAmount(TestData.DomainEvents.AdditionalRequestDataRecordedEvent, TestContext.Current.CancellationToken);
         result.IsSuccess.ShouldBeTrue();
 
         EstateManagementContext context = this.GetContext();
-        Transaction? transaction = await context.Transactions.SingleOrDefaultAsync(t => t.TransactionId == TestData.DomainEvents.TransactionHasStartedEvent.TransactionId);
+        Transaction? transaction = await context.Transactions.SingleOrDefaultAsync(t => t.TransactionId == TestData.DomainEvents.TransactionHasStartedEvent.TransactionId, TestContext.Current.CancellationToken);
         transaction.ShouldNotBeNull();
         transaction.TransactionAmount.ShouldBe(123.45m);
     }
@@ -135,11 +135,11 @@ public class TransactionEventTests : BaseTest {
         await this.CreateContractAsync();
         await this.CreateTransactionAsync();
 
-        Result result = await this.Repository.AddProductDetailsToTransaction(TestData.DomainEvents.ProductDetailsAddedToTransactionEvent, CancellationToken.None);
+        Result result = await this.Repository.AddProductDetailsToTransaction(TestData.DomainEvents.ProductDetailsAddedToTransactionEvent, TestContext.Current.CancellationToken);
         result.IsSuccess.ShouldBeTrue();
 
         EstateManagementContext context = this.GetContext();
-        Transaction? transaction = await context.Transactions.SingleOrDefaultAsync(t => t.TransactionId == TestData.DomainEvents.ProductDetailsAddedToTransactionEvent.TransactionId);
+        Transaction? transaction = await context.Transactions.SingleOrDefaultAsync(t => t.TransactionId == TestData.DomainEvents.ProductDetailsAddedToTransactionEvent.TransactionId, TestContext.Current.CancellationToken);
         transaction.ShouldNotBeNull();
         transaction.ContractId.ShouldBe(TestData.DomainEvents.ProductDetailsAddedToTransactionEvent.ContractId);
         transaction.ContractProductId.ShouldBe(TestData.DomainEvents.ProductDetailsAddedToTransactionEvent.ProductId);
@@ -151,11 +151,11 @@ public class TransactionEventTests : BaseTest {
     {
         await this.CreateTransactionAsync();
 
-        Result result = await this.Repository.AddSourceDetailsToTransaction(TestData.DomainEvents.TransactionSourceAddedToTransactionEvent, CancellationToken.None);
+        Result result = await this.Repository.AddSourceDetailsToTransaction(TestData.DomainEvents.TransactionSourceAddedToTransactionEvent, TestContext.Current.CancellationToken);
         result.IsSuccess.ShouldBeTrue();
 
         EstateManagementContext context = this.GetContext();
-        Transaction? transaction = await context.Transactions.SingleOrDefaultAsync(t => t.TransactionId == TestData.DomainEvents.TransactionSourceAddedToTransactionEvent.TransactionId);
+        Transaction? transaction = await context.Transactions.SingleOrDefaultAsync(t => t.TransactionId == TestData.DomainEvents.TransactionSourceAddedToTransactionEvent.TransactionId, TestContext.Current.CancellationToken);
         transaction.ShouldNotBeNull();
         transaction.TransactionSource.ShouldBe(TestData.DomainEvents.TransactionSourceAddedToTransactionEvent.TransactionSource);
     }
@@ -165,11 +165,11 @@ public class TransactionEventTests : BaseTest {
     {
         await this.CreateTransactionAsync();
 
-        Result result = await this.Repository.UpdateTransactionAuthorisation(TestData.DomainEvents.TransactionHasBeenLocallyAuthorisedEvent, CancellationToken.None);
+        Result result = await this.Repository.UpdateTransactionAuthorisation(TestData.DomainEvents.TransactionHasBeenLocallyAuthorisedEvent, TestContext.Current.CancellationToken);
         result.IsSuccess.ShouldBeTrue();
 
         EstateManagementContext context = this.GetContext();
-        Transaction? transaction = await context.Transactions.SingleOrDefaultAsync(t => t.TransactionId == TestData.DomainEvents.TransactionHasBeenLocallyAuthorisedEvent.TransactionId);
+        Transaction? transaction = await context.Transactions.SingleOrDefaultAsync(t => t.TransactionId == TestData.DomainEvents.TransactionHasBeenLocallyAuthorisedEvent.TransactionId, TestContext.Current.CancellationToken);
         transaction.ShouldNotBeNull();
         transaction.IsAuthorised.ShouldBeTrue();
         transaction.AuthorisationCode.ShouldBe(TestData.AuthorisationCode);
@@ -182,11 +182,11 @@ public class TransactionEventTests : BaseTest {
     {
         await this.CreateTransactionAsync();
 
-        Result result = await this.Repository.UpdateTransactionAuthorisation(TestData.DomainEvents.TransactionHasBeenLocallyDeclinedEvent, CancellationToken.None);
+        Result result = await this.Repository.UpdateTransactionAuthorisation(TestData.DomainEvents.TransactionHasBeenLocallyDeclinedEvent, TestContext.Current.CancellationToken);
         result.IsSuccess.ShouldBeTrue();
 
         EstateManagementContext context = this.GetContext();
-        Transaction? transaction = await context.Transactions.SingleOrDefaultAsync(t => t.TransactionId == TestData.DomainEvents.TransactionHasBeenLocallyDeclinedEvent.TransactionId);
+        Transaction? transaction = await context.Transactions.SingleOrDefaultAsync(t => t.TransactionId == TestData.DomainEvents.TransactionHasBeenLocallyDeclinedEvent.TransactionId, TestContext.Current.CancellationToken);
         transaction.ShouldNotBeNull();
         transaction.IsAuthorised.ShouldBeFalse();
         transaction.ResponseCode.ShouldBe(TestData.DeclinedResponseCode.ToCodeString());
@@ -198,11 +198,11 @@ public class TransactionEventTests : BaseTest {
     {
         await this.CreateTransactionAsync();
 
-        Result result = await this.Repository.UpdateTransactionAuthorisation(TestData.DomainEvents.TransactionAuthorisedByOperatorEvent, CancellationToken.None);
+        Result result = await this.Repository.UpdateTransactionAuthorisation(TestData.DomainEvents.TransactionAuthorisedByOperatorEvent, TestContext.Current.CancellationToken);
         result.IsSuccess.ShouldBeTrue();
 
         EstateManagementContext context = this.GetContext();
-        Transaction? transaction = await context.Transactions.SingleOrDefaultAsync(t => t.TransactionId == TestData.DomainEvents.TransactionAuthorisedByOperatorEvent.TransactionId);
+        Transaction? transaction = await context.Transactions.SingleOrDefaultAsync(t => t.TransactionId == TestData.DomainEvents.TransactionAuthorisedByOperatorEvent.TransactionId, TestContext.Current.CancellationToken);
         transaction.ShouldNotBeNull();
         transaction.IsAuthorised.ShouldBeTrue();
         transaction.AuthorisationCode.ShouldBe(TestData.OperatorAuthorisationCode);
@@ -215,11 +215,11 @@ public class TransactionEventTests : BaseTest {
     {
         await this.CreateTransactionAsync();
 
-        Result result = await this.Repository.UpdateTransactionAuthorisation(TestData.DomainEvents.TransactionDeclinedByOperatorEvent, CancellationToken.None);
+        Result result = await this.Repository.UpdateTransactionAuthorisation(TestData.DomainEvents.TransactionDeclinedByOperatorEvent, TestContext.Current.CancellationToken);
         result.IsSuccess.ShouldBeTrue();
 
         EstateManagementContext context = this.GetContext();
-        Transaction? transaction = await context.Transactions.SingleOrDefaultAsync(t => t.TransactionId == TestData.DomainEvents.TransactionDeclinedByOperatorEvent.TransactionId);
+        Transaction? transaction = await context.Transactions.SingleOrDefaultAsync(t => t.TransactionId == TestData.DomainEvents.TransactionDeclinedByOperatorEvent.TransactionId, TestContext.Current.CancellationToken);
         transaction.ShouldNotBeNull();
         transaction.IsAuthorised.ShouldBeFalse();
         transaction.ResponseCode.ShouldBe(TestData.DeclinedResponseCode.ToCodeString());
@@ -229,11 +229,11 @@ public class TransactionEventTests : BaseTest {
     [Fact]
     public async Task RecordTransactionTimings_TimingsAreStored()
     {
-        Result result = await this.Repository.RecordTransactionTimings(TestData.DomainEvents.TransactionTimingsAddedToTransactionEvent, CancellationToken.None);
+        Result result = await this.Repository.RecordTransactionTimings(TestData.DomainEvents.TransactionTimingsAddedToTransactionEvent, TestContext.Current.CancellationToken);
         result.IsSuccess.ShouldBeTrue();
 
         EstateManagementContext context = this.GetContext();
-        TransactionTimings? timings = await context.TransactionTimings.SingleOrDefaultAsync(t => t.TransactionId == TestData.DomainEvents.TransactionTimingsAddedToTransactionEvent.TransactionId);
+        TransactionTimings? timings = await context.TransactionTimings.SingleOrDefaultAsync(t => t.TransactionId == TestData.DomainEvents.TransactionTimingsAddedToTransactionEvent.TransactionId, TestContext.Current.CancellationToken);
         timings.ShouldNotBeNull();
         timings.TransactionStartedDateTime.ShouldBe(TestData.DomainEvents.TransactionTimingsAddedToTransactionEvent.TransactionStartedDateTime);
         timings.OperatorCommunicationsStartedDateTime.ShouldBe(TestData.DomainEvents.TransactionTimingsAddedToTransactionEvent.OperatorCommunicationsStartedEvent);
@@ -249,11 +249,11 @@ public class TransactionEventTests : BaseTest {
     {
         await this.CreateTransactionWithProductDetailsAsync();
 
-        Result result = await this.Repository.AddTransactionToStatement(TestData.DomainEvents.TransactionAddedToStatementForDateEvent, CancellationToken.None);
+        Result result = await this.Repository.AddTransactionToStatement(TestData.DomainEvents.TransactionAddedToStatementForDateEvent, TestContext.Current.CancellationToken);
         result.IsSuccess.ShouldBeTrue();
 
         EstateManagementContext context = this.GetContext();
-        StatementLine? statementLine = await context.StatementLines.SingleOrDefaultAsync(s => s.StatementId == TestData.DomainEvents.TransactionAddedToStatementForDateEvent.MerchantStatementId && s.TransactionId == TestData.DomainEvents.TransactionAddedToStatementForDateEvent.TransactionId);
+        StatementLine? statementLine = await context.StatementLines.SingleOrDefaultAsync(s => s.StatementId == TestData.DomainEvents.TransactionAddedToStatementForDateEvent.MerchantStatementId && s.TransactionId == TestData.DomainEvents.TransactionAddedToStatementForDateEvent.TransactionId, TestContext.Current.CancellationToken);
         statementLine.ShouldNotBeNull();
         statementLine.ActivityDate.ShouldBe(TestData.DomainEvents.TransactionAddedToStatementForDateEvent.TransactionDateTime.Date);
         statementLine.ActivityDateTime.ShouldBe(TestData.DomainEvents.TransactionAddedToStatementForDateEvent.TransactionDateTime);
@@ -268,11 +268,11 @@ public class TransactionEventTests : BaseTest {
     {
         await this.CreateTransactionWithProductDetailsAsync();
 
-        Result result = await this.Repository.AddSettledFeeToStatement(TestData.DomainEvents.SettledFeeAddedToStatementForDateEvent, CancellationToken.None);
+        Result result = await this.Repository.AddSettledFeeToStatement(TestData.DomainEvents.SettledFeeAddedToStatementForDateEvent, TestContext.Current.CancellationToken);
         result.IsSuccess.ShouldBeTrue();
 
         EstateManagementContext context = this.GetContext();
-        StatementLine? statementLine = await context.StatementLines.SingleOrDefaultAsync(s => s.StatementId == TestData.DomainEvents.SettledFeeAddedToStatementForDateEvent.MerchantStatementId && s.TransactionId == TestData.DomainEvents.SettledFeeAddedToStatementForDateEvent.TransactionId);
+        StatementLine? statementLine = await context.StatementLines.SingleOrDefaultAsync(s => s.StatementId == TestData.DomainEvents.SettledFeeAddedToStatementForDateEvent.MerchantStatementId && s.TransactionId == TestData.DomainEvents.SettledFeeAddedToStatementForDateEvent.TransactionId, TestContext.Current.CancellationToken);
         statementLine.ShouldNotBeNull();
         statementLine.ActivityDate.ShouldBe(TestData.DomainEvents.SettledFeeAddedToStatementForDateEvent.SettledDateTime.Date);
         statementLine.ActivityDateTime.ShouldBe(TestData.DomainEvents.SettledFeeAddedToStatementForDateEvent.SettledDateTime);
@@ -287,13 +287,15 @@ public class TransactionEventTests : BaseTest {
     {
         await this.CreateMerchantAsync();
 
-        Result result = await this.Repository.UpdateMerchant(TestData.DomainEvents.TransactionHasBeenCompletedEvent, CancellationToken.None);
+        Result result = await this.Repository.UpdateMerchant(TestData.DomainEvents.TransactionHasBeenCompletedEvent, TestContext.Current.CancellationToken);
         result.IsSuccess.ShouldBeTrue();
 
         EstateManagementContext context = this.GetContext();
-        Merchant? merchant = await context.Merchants.SingleOrDefaultAsync(m => m.MerchantId == TestData.DomainEvents.TransactionHasBeenCompletedEvent.MerchantId);
+        Merchant? merchant = await context.Merchants.SingleOrDefaultAsync(m => m.MerchantId == TestData.DomainEvents.TransactionHasBeenCompletedEvent.MerchantId, TestContext.Current.CancellationToken);
         merchant.ShouldNotBeNull();
         merchant.LastSaleDate.ShouldBe(TestData.DomainEvents.TransactionHasBeenCompletedEvent.CompletedDateTime.Date);
         merchant.LastSaleDateTime.ShouldBe(TestData.DomainEvents.TransactionHasBeenCompletedEvent.CompletedDateTime);
     }
 }
+
+

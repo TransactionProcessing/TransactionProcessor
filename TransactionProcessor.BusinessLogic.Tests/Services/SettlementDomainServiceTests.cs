@@ -1,4 +1,4 @@
-﻿using SimpleResults;
+using SimpleResults;
 using TransactionProcessor.Aggregates;
 using TransactionProcessor.BusinessLogic.Requests;
 using TransactionProcessor.Models.Contract;
@@ -80,7 +80,7 @@ namespace TransactionProcessor.BusinessLogic.Tests.Services
                 new(TestData.SettlementDate, TestData.MerchantId,
                     TestData.EstateId);
 
-            Result<Guid> result = await settlementDomainService.ProcessSettlement(command, CancellationToken.None);
+            Result<Guid> result = await settlementDomainService.ProcessSettlement(command, TestContext.Current.CancellationToken);
 
             result.IsSuccess.ShouldBeTrue();
             result.Data.ShouldNotBe(Guid.Empty);
@@ -128,7 +128,7 @@ namespace TransactionProcessor.BusinessLogic.Tests.Services
                 new(TestData.SettlementDate, TestData.MerchantId,
                     TestData.EstateId);
 
-            Result<Guid> result = await settlementDomainService.ProcessSettlement(command, CancellationToken.None);
+            Result<Guid> result = await settlementDomainService.ProcessSettlement(command, TestContext.Current.CancellationToken);
 
             result.IsSuccess.ShouldBeFalse();
             this.AggregateService.Verify(s => s.Save(It.IsAny<SettlementAggregate>(), It.IsAny<CancellationToken>()), Times.Exactly(7));
@@ -172,7 +172,7 @@ namespace TransactionProcessor.BusinessLogic.Tests.Services
                 new(TestData.SettlementDate, TestData.MerchantId,
                     TestData.EstateId);
 
-            Result<Guid> result = await settlementDomainService.ProcessSettlement(command, CancellationToken.None);
+            Result<Guid> result = await settlementDomainService.ProcessSettlement(command, TestContext.Current.CancellationToken);
 
             result.IsSuccess.ShouldBeTrue();
             result.Data.ShouldNotBe(Guid.Empty);
@@ -218,7 +218,7 @@ namespace TransactionProcessor.BusinessLogic.Tests.Services
                 new(TestData.SettlementDate, TestData.MerchantId,
                     TestData.EstateId);
 
-            Result<Guid> result = await settlementDomainService.ProcessSettlement(command, CancellationToken.None);
+            Result<Guid> result = await settlementDomainService.ProcessSettlement(command, TestContext.Current.CancellationToken);
 
             result.IsSuccess.ShouldBeTrue();
             result.Data.ShouldNotBe(Guid.Empty);
@@ -237,7 +237,7 @@ namespace TransactionProcessor.BusinessLogic.Tests.Services
                 new(TestData.SettlementDate, TestData.MerchantId,
                     TestData.EstateId);
 
-            Result<Guid> result = await settlementDomainService.ProcessSettlement(command, CancellationToken.None);
+            Result<Guid> result = await settlementDomainService.ProcessSettlement(command, TestContext.Current.CancellationToken);
 
             result.IsSuccess.ShouldBeTrue();
         }
@@ -256,7 +256,7 @@ namespace TransactionProcessor.BusinessLogic.Tests.Services
             SettlementCommands.ProcessSettlementCommand command =
                 new(TestData.SettlementDate, TestData.MerchantId,
                     TestData.EstateId);
-            Result<Guid> result = await settlementDomainService.ProcessSettlement(command, CancellationToken.None);
+            Result<Guid> result = await settlementDomainService.ProcessSettlement(command, TestContext.Current.CancellationToken);
 
             result.IsSuccess.ShouldBeTrue();
             result.Data.ShouldNotBe(Guid.Empty);
@@ -299,7 +299,7 @@ namespace TransactionProcessor.BusinessLogic.Tests.Services
 
             SettlementCommands.ProcessSettlementCommand command = new(TestData.SettlementDate, TestData.MerchantId, TestData.EstateId);
 
-            Result<Guid> result = await settlementDomainService.ProcessSettlement(command, CancellationToken.None);
+            Result<Guid> result = await settlementDomainService.ProcessSettlement(command, TestContext.Current.CancellationToken);
             result.IsFailed.ShouldBeTrue();
         }
 
@@ -320,7 +320,7 @@ namespace TransactionProcessor.BusinessLogic.Tests.Services
 
             SettlementCommands.ProcessSettlementCommand command = new(TestData.SettlementDate, TestData.MerchantId, TestData.EstateId);
 
-            Result<Guid> result = await settlementDomainService.ProcessSettlement(command, CancellationToken.None);
+            Result<Guid> result = await settlementDomainService.ProcessSettlement(command, TestContext.Current.CancellationToken);
             result.IsFailed.ShouldBeTrue();
         }
 
@@ -338,7 +338,7 @@ namespace TransactionProcessor.BusinessLogic.Tests.Services
 
             SettlementCommands.ProcessSettlementCommand command = new(TestData.SettlementDate, TestData.MerchantId, TestData.EstateId);
 
-            Result<Guid> result = await settlementDomainService.ProcessSettlement(command, CancellationToken.None);
+            Result<Guid> result = await settlementDomainService.ProcessSettlement(command, TestContext.Current.CancellationToken);
             result.IsFailed.ShouldBeTrue();
         }
 
@@ -352,7 +352,7 @@ namespace TransactionProcessor.BusinessLogic.Tests.Services
 
             SettlementCommands.AddMerchantFeePendingSettlementCommand command = new(TestData.TransactionId, TestData.CalculatedFeeValue, TestData.TransactionFeeCalculateDateTime, CalculationType.Fixed, TestData.TransactionFeeId, TestData.TransactionFeeValue, TestData.TransactionFeeSettlementDueDate, TestData.MerchantId, TestData.EstateId);
 
-            Result result = await settlementDomainService.AddMerchantFeePendingSettlement(command, CancellationToken.None);
+            Result result = await settlementDomainService.AddMerchantFeePendingSettlement(command, TestContext.Current.CancellationToken);
             result.IsSuccess.ShouldBeTrue();
         }
 
@@ -367,7 +367,7 @@ namespace TransactionProcessor.BusinessLogic.Tests.Services
 
             SettlementCommands.AddMerchantFeePendingSettlementCommand command = new(TestData.TransactionId, TestData.CalculatedFeeValue, TestData.TransactionFeeCalculateDateTime, CalculationType.Fixed, TestData.TransactionFeeId, TestData.TransactionFeeValue, TestData.TransactionFeeSettlementDueDate, TestData.MerchantId, TestData.EstateId);
 
-            Result result = await settlementDomainService.AddMerchantFeePendingSettlement(command, CancellationToken.None);
+            Result result = await settlementDomainService.AddMerchantFeePendingSettlement(command, TestContext.Current.CancellationToken);
             result.IsSuccess.ShouldBeTrue();
         }
 
@@ -384,7 +384,7 @@ namespace TransactionProcessor.BusinessLogic.Tests.Services
 
             SettlementCommands.AddSettledFeeToSettlementCommand command = new(TestData.SettlementDate, TestData.MerchantId, TestData.EstateId, TestData.TransactionFeeId, TestData.TransactionId);
 
-            Result result = await settlementDomainService.AddSettledFeeToSettlement(command, CancellationToken.None);
+            Result result = await settlementDomainService.AddSettledFeeToSettlement(command, TestContext.Current.CancellationToken);
             result.IsSuccess.ShouldBeTrue();
         }
 
@@ -401,7 +401,7 @@ namespace TransactionProcessor.BusinessLogic.Tests.Services
 
             SettlementCommands.AddSettledFeeToSettlementCommand command = new(TestData.SettlementDate, TestData.MerchantId, TestData.EstateId, TestData.TransactionFeeId, TestData.TransactionId);
 
-            Result result = await settlementDomainService.AddSettledFeeToSettlement(command, CancellationToken.None);
+            Result result = await settlementDomainService.AddSettledFeeToSettlement(command, TestContext.Current.CancellationToken);
             result.IsSuccess.ShouldBeTrue();
         }
 
@@ -418,7 +418,7 @@ namespace TransactionProcessor.BusinessLogic.Tests.Services
 
             SettlementCommands.AddSettledFeeToSettlementCommand command = new(TestData.SettlementDate, TestData.MerchantId, TestData.EstateId, TestData.TransactionFeeId, TestData.TransactionId);
 
-            Result result = await settlementDomainService.AddSettledFeeToSettlement(command, CancellationToken.None);
+            Result result = await settlementDomainService.AddSettledFeeToSettlement(command, TestContext.Current.CancellationToken);
             result.IsFailed.ShouldBeTrue();
         }
 
@@ -435,7 +435,7 @@ namespace TransactionProcessor.BusinessLogic.Tests.Services
 
             SettlementCommands.AddSettledFeeToSettlementCommand command = new(TestData.SettlementDate, TestData.MerchantId, TestData.EstateId, TestData.TransactionFeeId, TestData.TransactionId);
 
-            Result result = await settlementDomainService.AddSettledFeeToSettlement(command, CancellationToken.None);
+            Result result = await settlementDomainService.AddSettledFeeToSettlement(command, TestContext.Current.CancellationToken);
             result.IsFailed.ShouldBeTrue();
         }
 
@@ -452,7 +452,7 @@ namespace TransactionProcessor.BusinessLogic.Tests.Services
 
             SettlementCommands.AddSettledFeeToSettlementCommand command = new(TestData.SettlementDate, TestData.MerchantId, TestData.EstateId, TestData.TransactionFeeId, TestData.TransactionId);
 
-            Result result = await settlementDomainService.AddSettledFeeToSettlement(command, CancellationToken.None);
+            Result result = await settlementDomainService.AddSettledFeeToSettlement(command, TestContext.Current.CancellationToken);
             result.IsFailed.ShouldBeTrue();
         }
 
@@ -464,7 +464,7 @@ namespace TransactionProcessor.BusinessLogic.Tests.Services
 
             SettlementCommands.ProcessSettlementCommand command = new(TestData.SettlementDate, TestData.MerchantId, TestData.EstateId);
 
-            Result<Guid> result = await settlementDomainService.ProcessSettlement(command, CancellationToken.None);
+            Result<Guid> result = await settlementDomainService.ProcessSettlement(command, TestContext.Current.CancellationToken);
 
             result.IsFailed.ShouldBeTrue();
         }
@@ -479,7 +479,7 @@ namespace TransactionProcessor.BusinessLogic.Tests.Services
 
             SettlementCommands.ProcessSettlementCommand command = new(TestData.SettlementDate, TestData.MerchantId, TestData.EstateId);
 
-            Result<Guid> result = await settlementDomainService.ProcessSettlement(command, CancellationToken.None);
+            Result<Guid> result = await settlementDomainService.ProcessSettlement(command, TestContext.Current.CancellationToken);
 
             result.IsFailed.ShouldBeTrue();
         }
@@ -498,7 +498,7 @@ namespace TransactionProcessor.BusinessLogic.Tests.Services
 
             SettlementCommands.ProcessSettlementCommand command = new(TestData.SettlementDate, TestData.MerchantId, TestData.EstateId);
 
-            Result<Guid> result = await settlementDomainService.ProcessSettlement(command, CancellationToken.None);
+            Result<Guid> result = await settlementDomainService.ProcessSettlement(command, TestContext.Current.CancellationToken);
 
             result.IsFailed.ShouldBeTrue();
         }
@@ -515,7 +515,7 @@ namespace TransactionProcessor.BusinessLogic.Tests.Services
 
             SettlementCommands.ProcessSettlementCommand command = new(TestData.SettlementDate, TestData.MerchantId, TestData.EstateId);
 
-            Result<Guid> result = await settlementDomainService.ProcessSettlement(command, CancellationToken.None);
+            Result<Guid> result = await settlementDomainService.ProcessSettlement(command, TestContext.Current.CancellationToken);
 
             result.IsFailed.ShouldBeTrue();
         }
@@ -554,7 +554,7 @@ namespace TransactionProcessor.BusinessLogic.Tests.Services
 
             SettlementCommands.ProcessSettlementCommand command = new(TestData.SettlementDate, TestData.MerchantId, TestData.EstateId);
 
-            Result<Guid> result = await settlementDomainService.ProcessSettlement(command, CancellationToken.None);
+            Result<Guid> result = await settlementDomainService.ProcessSettlement(command, TestContext.Current.CancellationToken);
 
             result.IsSuccess.ShouldBeTrue();
             result.Data.ShouldNotBe(Guid.Empty);
@@ -568,7 +568,7 @@ namespace TransactionProcessor.BusinessLogic.Tests.Services
 
             SettlementCommands.AddMerchantFeePendingSettlementCommand command = new(TestData.TransactionId, TestData.CalculatedFeeValue, TestData.TransactionFeeCalculateDateTime, CalculationType.Fixed, TestData.TransactionFeeId, TestData.TransactionFeeValue, TestData.TransactionFeeSettlementDueDate, TestData.MerchantId, TestData.EstateId);
 
-            Result result = await settlementDomainService.AddMerchantFeePendingSettlement(command, CancellationToken.None);
+            Result result = await settlementDomainService.AddMerchantFeePendingSettlement(command, TestContext.Current.CancellationToken);
 
             result.IsFailed.ShouldBeTrue();
         }
@@ -583,7 +583,7 @@ namespace TransactionProcessor.BusinessLogic.Tests.Services
 
             SettlementCommands.AddMerchantFeePendingSettlementCommand command = new(Guid.Empty, TestData.CalculatedFeeValue, TestData.TransactionFeeCalculateDateTime, CalculationType.Fixed, TestData.TransactionFeeId, TestData.TransactionFeeValue, TestData.TransactionFeeSettlementDueDate, TestData.MerchantId, TestData.EstateId);
 
-            Result result = await settlementDomainService.AddMerchantFeePendingSettlement(command, CancellationToken.None);
+            Result result = await settlementDomainService.AddMerchantFeePendingSettlement(command, TestContext.Current.CancellationToken);
 
             result.IsFailed.ShouldBeTrue();
         }
@@ -598,7 +598,7 @@ namespace TransactionProcessor.BusinessLogic.Tests.Services
 
             SettlementCommands.AddMerchantFeePendingSettlementCommand command = new(TestData.TransactionId, TestData.CalculatedFeeValue, TestData.TransactionFeeCalculateDateTime, CalculationType.Fixed, TestData.TransactionFeeId, TestData.TransactionFeeValue, TestData.TransactionFeeSettlementDueDate, TestData.MerchantId, TestData.EstateId);
 
-            Result result = await settlementDomainService.AddMerchantFeePendingSettlement(command, CancellationToken.None);
+            Result result = await settlementDomainService.AddMerchantFeePendingSettlement(command, TestContext.Current.CancellationToken);
 
             result.IsFailed.ShouldBeTrue();
         }
@@ -611,7 +611,7 @@ namespace TransactionProcessor.BusinessLogic.Tests.Services
 
             SettlementCommands.AddMerchantFeePendingSettlementCommand command = new(TestData.TransactionId, TestData.CalculatedFeeValue, TestData.TransactionFeeCalculateDateTime, CalculationType.Fixed, TestData.TransactionFeeId, TestData.TransactionFeeValue, TestData.TransactionFeeSettlementDueDate, TestData.MerchantId, TestData.EstateId);
 
-            Result result = await settlementDomainService.AddMerchantFeePendingSettlement(command, CancellationToken.None);
+            Result result = await settlementDomainService.AddMerchantFeePendingSettlement(command, TestContext.Current.CancellationToken);
 
             result.IsFailed.ShouldBeTrue();
         }
@@ -624,7 +624,7 @@ namespace TransactionProcessor.BusinessLogic.Tests.Services
 
             SettlementCommands.AddSettledFeeToSettlementCommand command = new(TestData.SettlementDate, TestData.MerchantId, TestData.EstateId, TestData.TransactionFeeId, TestData.TransactionId);
 
-            Result result = await settlementDomainService.AddSettledFeeToSettlement(command, CancellationToken.None);
+            Result result = await settlementDomainService.AddSettledFeeToSettlement(command, TestContext.Current.CancellationToken);
 
             result.IsFailed.ShouldBeTrue();
         }
@@ -641,9 +641,10 @@ namespace TransactionProcessor.BusinessLogic.Tests.Services
 
             SettlementCommands.AddSettledFeeToSettlementCommand command = new(TestData.SettlementDate, TestData.MerchantId, TestData.EstateId, TestData.TransactionFeeId, TestData.TransactionId);
 
-            Result result = await settlementDomainService.AddSettledFeeToSettlement(command, CancellationToken.None);
+            Result result = await settlementDomainService.AddSettledFeeToSettlement(command, TestContext.Current.CancellationToken);
 
             result.IsSuccess.ShouldBeTrue();
         }
     }
 }
+

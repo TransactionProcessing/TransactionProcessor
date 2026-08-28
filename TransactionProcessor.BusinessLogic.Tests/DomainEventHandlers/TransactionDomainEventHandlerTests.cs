@@ -1,4 +1,4 @@
-﻿using EventStore.Client;
+using EventStore.Client;
 using Grpc.Core;
 using MediatR;
 using SimpleResults;
@@ -68,10 +68,11 @@ namespace TransactionProcessor.BusinessLogic.Tests.DomainEventHandlers
                 _ => throw new NotSupportedException($"Event {eventType.Name} not supported")
             };
 
-            var result = await this.TransactionDomainEventHandler.Handle(domainEvent, CancellationToken.None);
+            var result = await this.TransactionDomainEventHandler.Handle(domainEvent, TestContext.Current.CancellationToken);
             result.IsSuccess.ShouldBeTrue();
         }
     }
 }
+
 
 

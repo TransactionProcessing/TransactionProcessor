@@ -1,4 +1,4 @@
-﻿using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Configuration;
 using Moq;
 using SecurityService.Client;
 using SecurityService.DataTransferObjects;
@@ -73,7 +73,7 @@ public class MerchantDomainServiceTests {
 
         command.RequestDto.SettlementSchedule = settlementSchedule;
 
-        Result<Guid> result = await this.DomainService.CreateMerchant(command, CancellationToken.None);
+        Result<Guid> result = await this.DomainService.CreateMerchant(command, TestContext.Current.CancellationToken);
         result.IsSuccess.ShouldBeTrue();
     }
 
@@ -91,7 +91,7 @@ public class MerchantDomainServiceTests {
         MerchantCommands.CreateMerchantCommand command = TestData.Commands.CreateMerchantCommand;
         command.RequestDto.MerchantId = null;
 
-        Result<Guid> result = await this.DomainService.CreateMerchant(command, CancellationToken.None);
+        Result<Guid> result = await this.DomainService.CreateMerchant(command, TestContext.Current.CancellationToken);
         result.IsSuccess.ShouldBeTrue();
     }
 
@@ -107,9 +107,9 @@ public class MerchantDomainServiceTests {
             .ReturnsAsync(TestData.Aggregates.CreatedEstateAggregate());
 
         Result<Guid> result =
-            await this.DomainService.CreateMerchant(TestData.Commands.CreateMerchantCommand, CancellationToken.None);
+            await this.DomainService.CreateMerchant(TestData.Commands.CreateMerchantCommand, TestContext.Current.CancellationToken);
         result.IsSuccess.ShouldBeTrue();
-        result = await this.DomainService.CreateMerchant(TestData.Commands.CreateMerchantCommand, CancellationToken.None);
+        result = await this.DomainService.CreateMerchant(TestData.Commands.CreateMerchantCommand, TestContext.Current.CancellationToken);
         result.IsSuccess.ShouldBeTrue();
     }
 
@@ -124,7 +124,7 @@ public class MerchantDomainServiceTests {
             .ReturnsAsync(TestData.Aggregates.EmptyEstateAggregate);
 
         Result<Guid> result =
-            await this.DomainService.CreateMerchant(TestData.Commands.CreateMerchantCommand, CancellationToken.None);
+            await this.DomainService.CreateMerchant(TestData.Commands.CreateMerchantCommand, TestContext.Current.CancellationToken);
         result.IsFailed.ShouldBeTrue();
     }
 
@@ -143,7 +143,7 @@ public class MerchantDomainServiceTests {
 
         Result result =
             await this.DomainService.AssignOperatorToMerchant(TestData.Commands.AssignOperatorToMerchantCommand,
-                CancellationToken.None);
+                TestContext.Current.CancellationToken);
         result.IsSuccess.ShouldBeTrue();
     }
 
@@ -159,7 +159,7 @@ public class MerchantDomainServiceTests {
             .ReturnsAsync(TestData.Aggregates.EstateAggregateWithOperator());
 
         Result result = await this.DomainService.AssignOperatorToMerchant(TestData.Commands.AssignOperatorToMerchantCommand,
-            CancellationToken.None);
+            TestContext.Current.CancellationToken);
         result.IsFailed.ShouldBeTrue();
     }
 
@@ -175,7 +175,7 @@ public class MerchantDomainServiceTests {
             .ReturnsAsync(TestData.Aggregates.EmptyEstateAggregate);
 
         var result = await this.DomainService.AssignOperatorToMerchant(TestData.Commands.AssignOperatorToMerchantCommand,
-                CancellationToken.None);
+                TestContext.Current.CancellationToken);
         result.IsFailed.ShouldBeTrue();
     }
 
@@ -191,7 +191,7 @@ public class MerchantDomainServiceTests {
             .ReturnsAsync(TestData.Aggregates.CreatedEstateAggregate());
 
         var result = await this.DomainService.AssignOperatorToMerchant(TestData.Commands.AssignOperatorToMerchantCommand,
-                CancellationToken.None);
+                TestContext.Current.CancellationToken);
         result.IsFailed.ShouldBeTrue();
     }
 
@@ -220,7 +220,7 @@ public class MerchantDomainServiceTests {
                 TerminalNumber = TestData.TerminalNumber
             });
 
-        var result = await this.DomainService.AssignOperatorToMerchant(command, CancellationToken.None);
+        var result = await this.DomainService.AssignOperatorToMerchant(command, TestContext.Current.CancellationToken);
         result.IsFailed.ShouldBeTrue();
     }
 
@@ -249,7 +249,7 @@ public class MerchantDomainServiceTests {
                 TerminalNumber = terminalNumber
             });
 
-        var result = await this.DomainService.AssignOperatorToMerchant(command, CancellationToken.None);
+        var result = await this.DomainService.AssignOperatorToMerchant(command, TestContext.Current.CancellationToken);
         result.IsFailed.ShouldBeTrue();
     }
 
@@ -275,7 +275,7 @@ public class MerchantDomainServiceTests {
                 }
             }));
 
-        var result = await this.DomainService.CreateMerchantUser(TestData.Commands.CreateMerchantUserCommand, CancellationToken.None);
+        var result = await this.DomainService.CreateMerchantUser(TestData.Commands.CreateMerchantUserCommand, TestContext.Current.CancellationToken);
         result.IsSuccess.ShouldBeTrue();
     }
 
@@ -294,7 +294,7 @@ public class MerchantDomainServiceTests {
             .Setup(s => s.CreateUser(It.IsAny<CreateUserRequest>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(Result.Success);
 
-        var result = await this.DomainService.CreateMerchantUser(TestData.Commands.CreateMerchantUserCommand, CancellationToken.None);
+        var result = await this.DomainService.CreateMerchantUser(TestData.Commands.CreateMerchantUserCommand, TestContext.Current.CancellationToken);
         result.IsFailed.ShouldBeTrue();
     }
 
@@ -313,7 +313,7 @@ public class MerchantDomainServiceTests {
             .Setup(s => s.CreateUser(It.IsAny<CreateUserRequest>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(Result.Success);
 
-        var result = await this.DomainService.CreateMerchantUser(TestData.Commands.CreateMerchantUserCommand, CancellationToken.None);
+        var result = await this.DomainService.CreateMerchantUser(TestData.Commands.CreateMerchantUserCommand, TestContext.Current.CancellationToken);
         result.IsFailed.ShouldBeTrue();
     }
 
@@ -332,7 +332,7 @@ public class MerchantDomainServiceTests {
             .Setup(s => s.CreateUser(It.IsAny<CreateUserRequest>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(Result.Failure);
 
-        var result = await this.DomainService.CreateMerchantUser(TestData.Commands.CreateMerchantUserCommand, CancellationToken.None);
+        var result = await this.DomainService.CreateMerchantUser(TestData.Commands.CreateMerchantUserCommand, TestContext.Current.CancellationToken);
         result.IsFailed.ShouldBeTrue();
     }
 
@@ -355,7 +355,7 @@ public class MerchantDomainServiceTests {
             .Setup(s => s.GetUsers(It.IsAny<String>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(Result.Failure());
 
-        var result = await this.DomainService.CreateMerchantUser(TestData.Commands.CreateMerchantUserCommand, CancellationToken.None);
+        var result = await this.DomainService.CreateMerchantUser(TestData.Commands.CreateMerchantUserCommand, TestContext.Current.CancellationToken);
         result.IsFailed.ShouldBeTrue();
     }
 
@@ -380,7 +380,7 @@ public class MerchantDomainServiceTests {
                 null
             }));
 
-        var result = await this.DomainService.CreateMerchantUser(TestData.Commands.CreateMerchantUserCommand, CancellationToken.None);
+        var result = await this.DomainService.CreateMerchantUser(TestData.Commands.CreateMerchantUserCommand, TestContext.Current.CancellationToken);
         result.IsFailed.ShouldBeTrue();
     }
 
@@ -395,7 +395,7 @@ public class MerchantDomainServiceTests {
             .Setup(m => m.Save(It.IsAny<MerchantAggregate>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(Result.Success);
 
-        var result = await this.DomainService.AddDeviceToMerchant(TestData.Commands.AddMerchantDeviceCommand, CancellationToken.None);
+        var result = await this.DomainService.AddDeviceToMerchant(TestData.Commands.AddMerchantDeviceCommand, TestContext.Current.CancellationToken);
         result.IsSuccess.ShouldBeTrue();
     }
 
@@ -410,7 +410,7 @@ public class MerchantDomainServiceTests {
             .Setup(m => m.Save(It.IsAny<MerchantAggregate>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(Result.Success);
 
-        var result = await this.DomainService.AddDeviceToMerchant(TestData.Commands.AddMerchantDeviceCommand, CancellationToken.None);
+        var result = await this.DomainService.AddDeviceToMerchant(TestData.Commands.AddMerchantDeviceCommand, TestContext.Current.CancellationToken);
         result.IsFailed.ShouldBeTrue();
     }
 
@@ -425,7 +425,7 @@ public class MerchantDomainServiceTests {
             .Setup(m => m.Save(It.IsAny<MerchantAggregate>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(Result.Success);
 
-        var result = await this.DomainService.AddDeviceToMerchant(TestData.Commands.AddMerchantDeviceCommand, CancellationToken.None);
+        var result = await this.DomainService.AddDeviceToMerchant(TestData.Commands.AddMerchantDeviceCommand, TestContext.Current.CancellationToken);
         result.IsFailed.ShouldBeTrue();
     }
 
@@ -445,7 +445,7 @@ public class MerchantDomainServiceTests {
             .Setup(m => m.Save(It.IsAny<MerchantDepositListAggregate>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(Result.Success());
 
-        var result = await this.DomainService.MakeMerchantDeposit(TestData.Commands.MakeMerchantDepositCommand, CancellationToken.None);
+        var result = await this.DomainService.MakeMerchantDeposit(TestData.Commands.MakeMerchantDepositCommand, TestContext.Current.CancellationToken);
         result.IsSuccess.ShouldBeTrue();
     }
 
@@ -465,7 +465,7 @@ public class MerchantDomainServiceTests {
             .Setup(m => m.Save(It.IsAny<MerchantDepositListAggregate>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(Result.Success());
 
-        var result = await this.DomainService.MakeMerchantDeposit(TestData.Commands.MakeMerchantDepositCommand, CancellationToken.None);
+        var result = await this.DomainService.MakeMerchantDeposit(TestData.Commands.MakeMerchantDepositCommand, TestContext.Current.CancellationToken);
         result.IsFailed.ShouldBeTrue();
     }
 
@@ -482,7 +482,7 @@ public class MerchantDomainServiceTests {
             .Setup(m => m.GetLatest<MerchantDepositListAggregate>(It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(Result.Failure());
 
-        var result = await this.DomainService.MakeMerchantDeposit(TestData.Commands.MakeMerchantDepositCommand, CancellationToken.None);
+        var result = await this.DomainService.MakeMerchantDeposit(TestData.Commands.MakeMerchantDepositCommand, TestContext.Current.CancellationToken);
         result.IsFailed.ShouldBeTrue();
     }
 
@@ -502,7 +502,7 @@ public class MerchantDomainServiceTests {
             .Setup(m => m.Save(It.IsAny<MerchantDepositListAggregate>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(Result.Failure);
 
-        var result = await this.DomainService.MakeMerchantDeposit(TestData.Commands.MakeMerchantDepositCommand, CancellationToken.None);
+        var result = await this.DomainService.MakeMerchantDeposit(TestData.Commands.MakeMerchantDepositCommand, TestContext.Current.CancellationToken);
         result.IsFailed.ShouldBeTrue();
     }
 
@@ -514,7 +514,7 @@ public class MerchantDomainServiceTests {
         this.AggregateService.Setup(m => m.Get<MerchantAggregate>(It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(Result.Success(TestData.Aggregates.CreatedMerchantAggregate()));
 
-        var result = await this.DomainService.MakeMerchantDeposit(TestData.Commands.MakeMerchantDepositCommand, CancellationToken.None);
+        var result = await this.DomainService.MakeMerchantDeposit(TestData.Commands.MakeMerchantDepositCommand, TestContext.Current.CancellationToken);
         result.IsFailed.ShouldBeTrue();
     }
 
@@ -526,7 +526,7 @@ public class MerchantDomainServiceTests {
         this.AggregateService.Setup(m => m.Get<MerchantAggregate>(It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(Result.Success(TestData.Aggregates.EmptyMerchantAggregate()));
 
-        var result = await this.DomainService.MakeMerchantDeposit(TestData.Commands.MakeMerchantDepositCommand, CancellationToken.None);
+        var result = await this.DomainService.MakeMerchantDeposit(TestData.Commands.MakeMerchantDepositCommand, TestContext.Current.CancellationToken);
         result.IsFailed.ShouldBeTrue();
     }
 
@@ -545,7 +545,7 @@ public class MerchantDomainServiceTests {
             .Setup(m => m.Save(It.IsAny<MerchantDepositListAggregate>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(Result.Success());
 
-        var result = await this.DomainService.MakeMerchantDeposit(TestData.Commands.MakeMerchantDepositCommand, CancellationToken.None);
+        var result = await this.DomainService.MakeMerchantDeposit(TestData.Commands.MakeMerchantDepositCommand, TestContext.Current.CancellationToken);
         result.IsSuccess.ShouldBeTrue();
     }
 
@@ -560,7 +560,7 @@ public class MerchantDomainServiceTests {
             .Setup(m => m.Save(It.IsAny<MerchantAggregate>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(Result.Success);
 
-        var result = await this.DomainService.SwapMerchantDevice(TestData.Commands.SwapMerchantDeviceCommand, CancellationToken.None);
+        var result = await this.DomainService.SwapMerchantDevice(TestData.Commands.SwapMerchantDeviceCommand, TestContext.Current.CancellationToken);
         result.IsSuccess.ShouldBeTrue();
     }
 
@@ -575,7 +575,7 @@ public class MerchantDomainServiceTests {
             .Setup(m => m.Save(It.IsAny<MerchantAggregate>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(Result.Success);
 
-        var result = await this.DomainService.SwapMerchantDevice(TestData.Commands.SwapMerchantDeviceCommand, CancellationToken.None);
+        var result = await this.DomainService.SwapMerchantDevice(TestData.Commands.SwapMerchantDeviceCommand, TestContext.Current.CancellationToken);
         result.IsFailed.ShouldBeTrue();
     }
 
@@ -590,7 +590,7 @@ public class MerchantDomainServiceTests {
             .Setup(m => m.Save(It.IsAny<MerchantAggregate>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(Result.Success);
 
-        Result result = await this.DomainService.SwapMerchantDevice(TestData.Commands.SwapMerchantDeviceCommand, CancellationToken.None);
+        Result result = await this.DomainService.SwapMerchantDevice(TestData.Commands.SwapMerchantDeviceCommand, TestContext.Current.CancellationToken);
         result.IsFailed.ShouldBeTrue();
     }
 
@@ -607,7 +607,7 @@ public class MerchantDomainServiceTests {
             .Setup(m => m.Save(It.IsAny<MerchantAggregate>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(Result.Success);
 
-        var result = await this.DomainService.UpdateMerchantOpeningHours(TestData.Commands.UpdateMerchantOpeningHoursCommand, CancellationToken.None);
+        var result = await this.DomainService.UpdateMerchantOpeningHours(TestData.Commands.UpdateMerchantOpeningHoursCommand, TestContext.Current.CancellationToken);
         result.IsSuccess.ShouldBeTrue();
     }
 
@@ -620,7 +620,7 @@ public class MerchantDomainServiceTests {
         this.AggregateService.Setup(m => m.GetLatest<MerchantAggregate>(It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(Result.Success(TestData.Aggregates.EmptyMerchantAggregate()));
 
-        var result = await this.DomainService.UpdateMerchantOpeningHours(TestData.Commands.UpdateMerchantOpeningHoursCommand, CancellationToken.None);
+        var result = await this.DomainService.UpdateMerchantOpeningHours(TestData.Commands.UpdateMerchantOpeningHoursCommand, TestContext.Current.CancellationToken);
         result.IsFailed.ShouldBeTrue();
     }
 
@@ -633,7 +633,7 @@ public class MerchantDomainServiceTests {
         this.AggregateService.Setup(m => m.GetLatest<MerchantAggregate>(It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(Result.Success(TestData.Aggregates.CreatedMerchantAggregate()));
 
-        var result = await this.DomainService.UpdateMerchantOpeningHours(TestData.Commands.UpdateMerchantOpeningHoursCommand, CancellationToken.None);
+        var result = await this.DomainService.UpdateMerchantOpeningHours(TestData.Commands.UpdateMerchantOpeningHoursCommand, TestContext.Current.CancellationToken);
         result.IsFailed.ShouldBeTrue();
     }
 
@@ -653,7 +653,7 @@ public class MerchantDomainServiceTests {
             .Setup(m => m.Save(It.IsAny<MerchantScheduleAggregate>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(Result.Success);
 
-        var result = await this.DomainService.CreateMerchantSchedule(TestData.Commands.CreateMerchantScheduleCommand, CancellationToken.None);
+        var result = await this.DomainService.CreateMerchantSchedule(TestData.Commands.CreateMerchantScheduleCommand, TestContext.Current.CancellationToken);
 
         result.IsSuccess.ShouldBeTrue();
         this.AggregateService.Verify(m => m.Save(It.Is<MerchantScheduleAggregate>(aggregate =>
@@ -669,7 +669,7 @@ public class MerchantDomainServiceTests {
         this.AggregateService.Setup(e => e.Get<EstateAggregate>(It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(Result.Failure());
 
-        var result = await this.DomainService.CreateMerchantSchedule(TestData.Commands.CreateMerchantScheduleCommand, CancellationToken.None);
+        var result = await this.DomainService.CreateMerchantSchedule(TestData.Commands.CreateMerchantScheduleCommand, TestContext.Current.CancellationToken);
 
         result.IsFailed.ShouldBeTrue();
     }
@@ -682,7 +682,7 @@ public class MerchantDomainServiceTests {
         this.AggregateService.Setup(m => m.GetLatest<MerchantAggregate>(It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(Result.Failure());
 
-        var result = await this.DomainService.CreateMerchantSchedule(TestData.Commands.CreateMerchantScheduleCommand, CancellationToken.None);
+        var result = await this.DomainService.CreateMerchantSchedule(TestData.Commands.CreateMerchantScheduleCommand, TestContext.Current.CancellationToken);
 
         result.IsFailed.ShouldBeTrue();
     }
@@ -697,7 +697,7 @@ public class MerchantDomainServiceTests {
         this.AggregateService.Setup(m => m.GetLatest<MerchantScheduleAggregate>(It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(Result.Failure());
 
-        var result = await this.DomainService.CreateMerchantSchedule(TestData.Commands.CreateMerchantScheduleCommand, CancellationToken.None);
+        var result = await this.DomainService.CreateMerchantSchedule(TestData.Commands.CreateMerchantScheduleCommand, TestContext.Current.CancellationToken);
 
         result.IsFailed.ShouldBeTrue();
     }
@@ -718,7 +718,7 @@ public class MerchantDomainServiceTests {
             .Setup(m => m.Save(It.IsAny<MerchantScheduleAggregate>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(Result.Failure());
 
-        var result = await this.DomainService.CreateMerchantSchedule(TestData.Commands.CreateMerchantScheduleCommand, CancellationToken.None);
+        var result = await this.DomainService.CreateMerchantSchedule(TestData.Commands.CreateMerchantScheduleCommand, TestContext.Current.CancellationToken);
 
         result.IsFailed.ShouldBeTrue();
     }
@@ -739,7 +739,7 @@ public class MerchantDomainServiceTests {
             .Setup(m => m.Save(It.IsAny<MerchantScheduleAggregate>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(Result.Success);
 
-        var result = await this.DomainService.UpdateMerchantSchedule(TestData.Commands.UpdateMerchantScheduleCommand, CancellationToken.None);
+        var result = await this.DomainService.UpdateMerchantSchedule(TestData.Commands.UpdateMerchantScheduleCommand, TestContext.Current.CancellationToken);
 
         result.IsSuccess.ShouldBeTrue();
         this.AggregateService.Verify(m => m.Save(It.Is<MerchantScheduleAggregate>(aggregate =>
@@ -752,7 +752,7 @@ public class MerchantDomainServiceTests {
         this.AggregateService.Setup(e => e.Get<EstateAggregate>(It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(Result.Failure());
 
-        var result = await this.DomainService.UpdateMerchantSchedule(TestData.Commands.UpdateMerchantScheduleCommand, CancellationToken.None);
+        var result = await this.DomainService.UpdateMerchantSchedule(TestData.Commands.UpdateMerchantScheduleCommand, TestContext.Current.CancellationToken);
 
         result.IsFailed.ShouldBeTrue();
     }
@@ -765,7 +765,7 @@ public class MerchantDomainServiceTests {
         this.AggregateService.Setup(m => m.GetLatest<MerchantAggregate>(It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(Result.Failure());
 
-        var result = await this.DomainService.UpdateMerchantSchedule(TestData.Commands.UpdateMerchantScheduleCommand, CancellationToken.None);
+        var result = await this.DomainService.UpdateMerchantSchedule(TestData.Commands.UpdateMerchantScheduleCommand, TestContext.Current.CancellationToken);
 
         result.IsFailed.ShouldBeTrue();
     }
@@ -780,7 +780,7 @@ public class MerchantDomainServiceTests {
         this.AggregateService.Setup(m => m.GetLatest<MerchantScheduleAggregate>(It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(Result.Failure());
 
-        var result = await this.DomainService.UpdateMerchantSchedule(TestData.Commands.UpdateMerchantScheduleCommand, CancellationToken.None);
+        var result = await this.DomainService.UpdateMerchantSchedule(TestData.Commands.UpdateMerchantScheduleCommand, TestContext.Current.CancellationToken);
 
         result.IsFailed.ShouldBeTrue();
     }
@@ -795,7 +795,7 @@ public class MerchantDomainServiceTests {
         this.AggregateService.Setup(m => m.GetLatest<MerchantScheduleAggregate>(It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(Result.Success(TestData.Aggregates.EmptyMerchantScheduleAggregate()));
 
-        var result = await this.DomainService.UpdateMerchantSchedule(TestData.Commands.UpdateMerchantScheduleCommand, CancellationToken.None);
+        var result = await this.DomainService.UpdateMerchantSchedule(TestData.Commands.UpdateMerchantScheduleCommand, TestContext.Current.CancellationToken);
 
         result.IsFailed.ShouldBeTrue();
     }
@@ -816,7 +816,7 @@ public class MerchantDomainServiceTests {
             .Setup(m => m.Save(It.IsAny<MerchantScheduleAggregate>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(Result.Failure());
 
-        var result = await this.DomainService.UpdateMerchantSchedule(TestData.Commands.UpdateMerchantScheduleCommand, CancellationToken.None);
+        var result = await this.DomainService.UpdateMerchantSchedule(TestData.Commands.UpdateMerchantScheduleCommand, TestContext.Current.CancellationToken);
 
         result.IsFailed.ShouldBeTrue();
     }
@@ -842,7 +842,7 @@ public class MerchantDomainServiceTests {
 
         this.EventStoreContext.Setup(e => e.GetPartitionStateFromProjection(It.IsAny<String>(), It.IsAny<String>(), It.IsAny<CancellationToken>())).ReturnsAsync(Result.Success<String>(StringSerialiser.Serialise(TestData.MerchantBalanceProjectionState)));
 
-        var result = await this.DomainService.MakeMerchantWithdrawal(TestData.Commands.MakeMerchantWithdrawalCommand, CancellationToken.None);
+        var result = await this.DomainService.MakeMerchantWithdrawal(TestData.Commands.MakeMerchantWithdrawalCommand, TestContext.Current.CancellationToken);
         result.IsSuccess.ShouldBeTrue();
     }
 
@@ -868,7 +868,7 @@ public class MerchantDomainServiceTests {
 
         this.EventStoreContext.Setup(e => e.GetPartitionStateFromProjection(It.IsAny<String>(), It.IsAny<String>(), It.IsAny<CancellationToken>())).ReturnsAsync(Result.Success<String>(StringSerialiser.Serialise(TestData.MerchantBalanceProjectionState)));
 
-        var result = await this.DomainService.MakeMerchantWithdrawal(TestData.Commands.MakeMerchantWithdrawalCommand, CancellationToken.None);
+        var result = await this.DomainService.MakeMerchantWithdrawal(TestData.Commands.MakeMerchantWithdrawalCommand, TestContext.Current.CancellationToken);
         result.IsFailed.ShouldBeTrue();
     }
 
@@ -885,7 +885,7 @@ public class MerchantDomainServiceTests {
             .Setup(m => m.GetLatest<MerchantDepositListAggregate>(It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(Result.Failure());
 
-        var result = await this.DomainService.MakeMerchantWithdrawal(TestData.Commands.MakeMerchantWithdrawalCommand, CancellationToken.None);
+        var result = await this.DomainService.MakeMerchantWithdrawal(TestData.Commands.MakeMerchantWithdrawalCommand, TestContext.Current.CancellationToken);
         result.IsFailed.ShouldBeTrue();
     }
 
@@ -897,7 +897,7 @@ public class MerchantDomainServiceTests {
         this.AggregateService.Setup(m => m.Get<MerchantAggregate>(It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(Result.Success(TestData.Aggregates.CreatedMerchantAggregate()));
         
-        var result = await this.DomainService.MakeMerchantWithdrawal(TestData.Commands.MakeMerchantWithdrawalCommand, CancellationToken.None);
+        var result = await this.DomainService.MakeMerchantWithdrawal(TestData.Commands.MakeMerchantWithdrawalCommand, TestContext.Current.CancellationToken);
         result.IsFailed.ShouldBeTrue();
     }
 
@@ -909,7 +909,7 @@ public class MerchantDomainServiceTests {
         this.AggregateService.Setup(m => m.Get<MerchantAggregate>(It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(Result.Success(TestData.Aggregates.EmptyMerchantAggregate()));
 
-        var result = await this.DomainService.MakeMerchantWithdrawal(TestData.Commands.MakeMerchantWithdrawalCommand, CancellationToken.None);
+        var result = await this.DomainService.MakeMerchantWithdrawal(TestData.Commands.MakeMerchantWithdrawalCommand, TestContext.Current.CancellationToken);
         result.IsFailed.ShouldBeTrue();
     }
 
@@ -925,7 +925,7 @@ public class MerchantDomainServiceTests {
             .Setup(m => m.GetLatest<MerchantDepositListAggregate>(It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(Result.Success(TestData.Aggregates.EmptyMerchantDepositListAggregate));
         
-        var result = await this.DomainService.MakeMerchantWithdrawal(TestData.Commands.MakeMerchantWithdrawalCommand, CancellationToken.None);
+        var result = await this.DomainService.MakeMerchantWithdrawal(TestData.Commands.MakeMerchantWithdrawalCommand, TestContext.Current.CancellationToken);
         result.IsFailed.ShouldBeTrue();
     }
 
@@ -947,7 +947,7 @@ public class MerchantDomainServiceTests {
         this.EventStoreContext.Setup(e => e.GetPartitionStateFromProjection(It.IsAny<String>(), It.IsAny<String>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(Result.Success<String>(StringSerialiser.Serialise(TestData.MerchantBalanceProjectionStateNoCredit)));
 
-        var result = await this.DomainService.MakeMerchantWithdrawal(TestData.Commands.MakeMerchantWithdrawalCommand, CancellationToken.None);
+        var result = await this.DomainService.MakeMerchantWithdrawal(TestData.Commands.MakeMerchantWithdrawalCommand, TestContext.Current.CancellationToken);
         result.IsFailed.ShouldBeTrue();
     }
 
@@ -966,7 +966,7 @@ public class MerchantDomainServiceTests {
         this.EventStoreContext.Setup(e => e.GetPartitionStateFromProjection(It.IsAny<String>(), It.IsAny<String>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(Result.Success<String>("null"));
 
-        var result = await this.DomainService.MakeMerchantWithdrawal(TestData.Commands.MakeMerchantWithdrawalCommand, CancellationToken.None);
+        var result = await this.DomainService.MakeMerchantWithdrawal(TestData.Commands.MakeMerchantWithdrawalCommand, TestContext.Current.CancellationToken);
         result.IsFailed.ShouldBeTrue();
     }
 
@@ -985,7 +985,7 @@ public class MerchantDomainServiceTests {
                 TestData.Aggregates.CreatedContractAggregateWithAProductAndTransactionFee(CalculationType.Fixed,
                     FeeType.Merchant));
 
-        var result = await this.DomainService.AddContractToMerchant(TestData.Commands.AddMerchantContractCommand, CancellationToken.None);
+        var result = await this.DomainService.AddContractToMerchant(TestData.Commands.AddMerchantContractCommand, TestContext.Current.CancellationToken);
         result.IsSuccess.ShouldBeTrue();
     }
 
@@ -1002,7 +1002,7 @@ public class MerchantDomainServiceTests {
         this.AggregateService.Setup(c => c.Get<ContractAggregate>(It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(TestData.Aggregates.EmptyContractAggregate());
 
-        var result = await this.DomainService.AddContractToMerchant(TestData.Commands.AddMerchantContractCommand, CancellationToken.None); 
+        var result = await this.DomainService.AddContractToMerchant(TestData.Commands.AddMerchantContractCommand, TestContext.Current.CancellationToken); 
         result.IsFailed.ShouldBeTrue();
     }
 
@@ -1020,7 +1020,7 @@ public class MerchantDomainServiceTests {
         this.AggregateService.Setup(c => c.Get<ContractAggregate>(It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(Result.NotFound());
 
-        var result = await this.DomainService.AddContractToMerchant(TestData.Commands.AddMerchantContractCommand, CancellationToken.None);
+        var result = await this.DomainService.AddContractToMerchant(TestData.Commands.AddMerchantContractCommand, TestContext.Current.CancellationToken);
         result.IsFailed.ShouldBeTrue();
     }
 
@@ -1038,7 +1038,7 @@ public class MerchantDomainServiceTests {
             .ReturnsAsync(TestData.Aggregates.CreatedContractAggregateWithAProductAndTransactionFee(CalculationType.Fixed,
                     FeeType.Merchant));
 
-        var result = await this.DomainService.AddContractToMerchant(TestData.Commands.AddMerchantContractCommand, CancellationToken.None);
+        var result = await this.DomainService.AddContractToMerchant(TestData.Commands.AddMerchantContractCommand, TestContext.Current.CancellationToken);
         result.IsFailed.ShouldBeTrue();
     }
 
@@ -1056,7 +1056,7 @@ public class MerchantDomainServiceTests {
             .ReturnsAsync(TestData.Aggregates.CreatedContractAggregateWithAProductAndTransactionFee(CalculationType.Fixed,
                     FeeType.Merchant));
         
-        var result = await this.DomainService.AddContractToMerchant(TestData.Commands.AddMerchantContractCommand, CancellationToken.None);
+        var result = await this.DomainService.AddContractToMerchant(TestData.Commands.AddMerchantContractCommand, TestContext.Current.CancellationToken);
         result.IsFailed.ShouldBeTrue();
     }
 
@@ -1079,7 +1079,7 @@ public class MerchantDomainServiceTests {
 
         command.RequestDto.SettlementSchedule = settlementSchedule;
 
-        var result = await this.DomainService.UpdateMerchant(command, CancellationToken.None);
+        var result = await this.DomainService.UpdateMerchant(command, TestContext.Current.CancellationToken);
         result.IsSuccess.ShouldBeTrue();
     }
 
@@ -1097,7 +1097,7 @@ public class MerchantDomainServiceTests {
 
         MerchantCommands.UpdateMerchantCommand command = TestData.Commands.UpdateMerchantCommand;
 
-        var result = await this.DomainService.UpdateMerchant(command, CancellationToken.None);
+        var result = await this.DomainService.UpdateMerchant(command, TestContext.Current.CancellationToken);
         result.IsFailed.ShouldBeTrue();
     }
 
@@ -1112,7 +1112,7 @@ public class MerchantDomainServiceTests {
             .Setup(m => m.Save(It.IsAny<MerchantAggregate>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(Result.Success);
 
-        var result = await this.DomainService.AddMerchantAddress(TestData.Commands.AddMerchantAddressCommand, CancellationToken.None);
+        var result = await this.DomainService.AddMerchantAddress(TestData.Commands.AddMerchantAddressCommand, TestContext.Current.CancellationToken);
         result.IsSuccess.ShouldBeTrue();
     }
 
@@ -1128,7 +1128,7 @@ public class MerchantDomainServiceTests {
             .Setup(m => m.Save(It.IsAny<MerchantAggregate>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(Result.Success);
 
-        var result = await this.DomainService.AddMerchantAddress(TestData.Commands.AddMerchantAddressCommand, CancellationToken.None);
+        var result = await this.DomainService.AddMerchantAddress(TestData.Commands.AddMerchantAddressCommand, TestContext.Current.CancellationToken);
         result.IsFailed.ShouldBeTrue();
     }
 
@@ -1143,7 +1143,7 @@ public class MerchantDomainServiceTests {
             .Setup(m => m.Save(It.IsAny<MerchantAggregate>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(Result.Success);
 
-        var result = await this.DomainService.UpdateMerchantAddress(TestData.Commands.UpdateMerchantAddressCommand, CancellationToken.None);
+        var result = await this.DomainService.UpdateMerchantAddress(TestData.Commands.UpdateMerchantAddressCommand, TestContext.Current.CancellationToken);
         result.IsSuccess.ShouldBeTrue();
     }
 
@@ -1159,7 +1159,7 @@ public class MerchantDomainServiceTests {
             .Setup(m => m.Save(It.IsAny<MerchantAggregate>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(Result.Success);
 
-        var result = await this.DomainService.UpdateMerchantAddress(TestData.Commands.UpdateMerchantAddressCommand, CancellationToken.None);
+        var result = await this.DomainService.UpdateMerchantAddress(TestData.Commands.UpdateMerchantAddressCommand, TestContext.Current.CancellationToken);
         result.IsFailed.ShouldBeTrue();
     }
 
@@ -1174,7 +1174,7 @@ public class MerchantDomainServiceTests {
             .Setup(m => m.Save(It.IsAny<MerchantAggregate>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(Result.Success);
 
-        var result = await this.DomainService.AddMerchantContact(TestData.Commands.AddMerchantContactCommand, CancellationToken.None);
+        var result = await this.DomainService.AddMerchantContact(TestData.Commands.AddMerchantContactCommand, TestContext.Current.CancellationToken);
         result.IsSuccess.ShouldBeTrue();
     }
 
@@ -1190,7 +1190,7 @@ public class MerchantDomainServiceTests {
             .Setup(m => m.Save(It.IsAny<MerchantAggregate>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(Result.Success);
 
-        var result = await this.DomainService.AddMerchantContact(TestData.Commands.AddMerchantContactCommand, CancellationToken.None);
+        var result = await this.DomainService.AddMerchantContact(TestData.Commands.AddMerchantContactCommand, TestContext.Current.CancellationToken);
         result.IsFailed.ShouldBeTrue();
     }
 
@@ -1205,7 +1205,7 @@ public class MerchantDomainServiceTests {
             .Setup(m => m.Save(It.IsAny<MerchantAggregate>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(Result.Success);
 
-        var result = await this.DomainService.UpdateMerchantContact(TestData.Commands.UpdateMerchantContactCommand, CancellationToken.None);
+        var result = await this.DomainService.UpdateMerchantContact(TestData.Commands.UpdateMerchantContactCommand, TestContext.Current.CancellationToken);
         result.IsSuccess.ShouldBeTrue();
     }
 
@@ -1221,7 +1221,7 @@ public class MerchantDomainServiceTests {
             .Setup(m => m.Save(It.IsAny<MerchantAggregate>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(Result.Success);
 
-        var result = await this.DomainService.UpdateMerchantContact(TestData.Commands.UpdateMerchantContactCommand, CancellationToken.None);
+        var result = await this.DomainService.UpdateMerchantContact(TestData.Commands.UpdateMerchantContactCommand, TestContext.Current.CancellationToken);
         result.IsFailed.ShouldBeTrue();
     }
 
@@ -1236,7 +1236,7 @@ public class MerchantDomainServiceTests {
             .Setup(m => m.Save(It.IsAny<MerchantAggregate>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(Result.Success);
 
-        var result = await this.DomainService.RemoveOperatorFromMerchant(TestData.Commands.RemoveOperatorFromMerchantCommand, CancellationToken.None);
+        var result = await this.DomainService.RemoveOperatorFromMerchant(TestData.Commands.RemoveOperatorFromMerchantCommand, TestContext.Current.CancellationToken);
         result.IsSuccess.ShouldBeTrue();
     }
 
@@ -1252,7 +1252,7 @@ public class MerchantDomainServiceTests {
             .Setup(m => m.Save(It.IsAny<MerchantAggregate>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(Result.Success);
 
-        var result = await this.DomainService.RemoveOperatorFromMerchant(TestData.Commands.RemoveOperatorFromMerchantCommand, CancellationToken.None);
+        var result = await this.DomainService.RemoveOperatorFromMerchant(TestData.Commands.RemoveOperatorFromMerchantCommand, TestContext.Current.CancellationToken);
         result.IsFailed.ShouldBeTrue();
     }
 
@@ -1267,7 +1267,7 @@ public class MerchantDomainServiceTests {
             .Setup(m => m.Save(It.IsAny<MerchantAggregate>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(Result.Success);
 
-        var result = await this.DomainService.RemoveContractFromMerchant(TestData.Commands.RemoveMerchantContractCommand, CancellationToken.None);
+        var result = await this.DomainService.RemoveContractFromMerchant(TestData.Commands.RemoveMerchantContractCommand, TestContext.Current.CancellationToken);
         result.IsSuccess.ShouldBeTrue();
     }
 
@@ -1283,7 +1283,7 @@ public class MerchantDomainServiceTests {
             .Setup(m => m.Save(It.IsAny<MerchantAggregate>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(Result.Success);
 
-        var result = await this.DomainService.RemoveContractFromMerchant(TestData.Commands.RemoveMerchantContractCommand, CancellationToken.None);
+        var result = await this.DomainService.RemoveContractFromMerchant(TestData.Commands.RemoveMerchantContractCommand, TestContext.Current.CancellationToken);
         result.IsFailed.ShouldBeTrue();
     }
 
@@ -1292,7 +1292,7 @@ public class MerchantDomainServiceTests {
         this.AggregateService.Setup(e => e.Get<EstateAggregate>(It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(Result.Failure());
 
-        var result = await this.DomainService.CreateMerchant(TestData.Commands.CreateMerchantCommand, CancellationToken.None);
+        var result = await this.DomainService.CreateMerchant(TestData.Commands.CreateMerchantCommand, TestContext.Current.CancellationToken);
         result.IsFailed.ShouldBeTrue();
     }
 
@@ -1303,7 +1303,7 @@ public class MerchantDomainServiceTests {
         this.AggregateService.Setup(m => m.GetLatest<MerchantAggregate>(It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(Result.Failure());
 
-        var result = await this.DomainService.CreateMerchant(TestData.Commands.CreateMerchantCommand, CancellationToken.None);
+        var result = await this.DomainService.CreateMerchant(TestData.Commands.CreateMerchantCommand, TestContext.Current.CancellationToken);
         result.IsFailed.ShouldBeTrue();
     }
 
@@ -1316,7 +1316,7 @@ public class MerchantDomainServiceTests {
         this.AggregateService.Setup(m => m.Save(It.IsAny<MerchantAggregate>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(Result.Failure());
 
-        var result = await this.DomainService.CreateMerchant(TestData.Commands.CreateMerchantCommand, CancellationToken.None);
+        var result = await this.DomainService.CreateMerchant(TestData.Commands.CreateMerchantCommand, TestContext.Current.CancellationToken);
         result.IsFailed.ShouldBeTrue();
     }
 
@@ -1325,7 +1325,7 @@ public class MerchantDomainServiceTests {
         this.AggregateService.Setup(e => e.Get<EstateAggregate>(It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(Result.Failure());
 
-        var result = await this.DomainService.AssignOperatorToMerchant(TestData.Commands.AssignOperatorToMerchantCommand, CancellationToken.None);
+        var result = await this.DomainService.AssignOperatorToMerchant(TestData.Commands.AssignOperatorToMerchantCommand, TestContext.Current.CancellationToken);
         result.IsFailed.ShouldBeTrue();
     }
 
@@ -1336,7 +1336,7 @@ public class MerchantDomainServiceTests {
         this.AggregateService.Setup(m => m.GetLatest<MerchantAggregate>(It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(Result.Failure());
 
-        var result = await this.DomainService.AssignOperatorToMerchant(TestData.Commands.AssignOperatorToMerchantCommand, CancellationToken.None);
+        var result = await this.DomainService.AssignOperatorToMerchant(TestData.Commands.AssignOperatorToMerchantCommand, TestContext.Current.CancellationToken);
         result.IsFailed.ShouldBeTrue();
     }
 
@@ -1349,7 +1349,7 @@ public class MerchantDomainServiceTests {
         this.AggregateService.Setup(m => m.GetLatest<OperatorAggregate>(It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(Result.Failure());
 
-        var result = await this.DomainService.AssignOperatorToMerchant(TestData.Commands.AssignOperatorToMerchantCommand, CancellationToken.None);
+        var result = await this.DomainService.AssignOperatorToMerchant(TestData.Commands.AssignOperatorToMerchantCommand, TestContext.Current.CancellationToken);
         result.IsFailed.ShouldBeTrue();
     }
 
@@ -1365,7 +1365,7 @@ public class MerchantDomainServiceTests {
         this.AggregateService.Setup(m => m.Save(It.IsAny<MerchantAggregate>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(Result.Failure());
 
-        var result = await this.DomainService.AssignOperatorToMerchant(TestData.Commands.AssignOperatorToMerchantCommand, CancellationToken.None);
+        var result = await this.DomainService.AssignOperatorToMerchant(TestData.Commands.AssignOperatorToMerchantCommand, TestContext.Current.CancellationToken);
         result.IsFailed.ShouldBeTrue();
     }
 
@@ -1380,7 +1380,7 @@ public class MerchantDomainServiceTests {
         this.AggregateService.Setup(m => m.Save(It.IsAny<MerchantAggregate>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(Result.Failure());
 
-        var result = await this.DomainService.AssignOperatorToMerchant(TestData.Commands.AssignOperatorToMerchantCommand, CancellationToken.None);
+        var result = await this.DomainService.AssignOperatorToMerchant(TestData.Commands.AssignOperatorToMerchantCommand, TestContext.Current.CancellationToken);
         result.IsFailed.ShouldBeTrue();
     }
 
@@ -1389,7 +1389,7 @@ public class MerchantDomainServiceTests {
         this.AggregateService.Setup(e => e.Get<EstateAggregate>(It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(Result.Failure());
 
-        var result = await this.DomainService.CreateMerchantUser(TestData.Commands.CreateMerchantUserCommand, CancellationToken.None);
+        var result = await this.DomainService.CreateMerchantUser(TestData.Commands.CreateMerchantUserCommand, TestContext.Current.CancellationToken);
         result.IsFailed.ShouldBeTrue();
     }
 
@@ -1400,7 +1400,7 @@ public class MerchantDomainServiceTests {
         this.AggregateService.Setup(m => m.GetLatest<MerchantAggregate>(It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(Result.Failure());
 
-        var result = await this.DomainService.CreateMerchantUser(TestData.Commands.CreateMerchantUserCommand, CancellationToken.None);
+        var result = await this.DomainService.CreateMerchantUser(TestData.Commands.CreateMerchantUserCommand, TestContext.Current.CancellationToken);
         result.IsFailed.ShouldBeTrue();
     }
 
@@ -1417,7 +1417,7 @@ public class MerchantDomainServiceTests {
         this.AggregateService.Setup(m => m.Save(It.IsAny<MerchantAggregate>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(Result.Failure());
 
-        var result = await this.DomainService.CreateMerchantUser(TestData.Commands.CreateMerchantUserCommand, CancellationToken.None);
+        var result = await this.DomainService.CreateMerchantUser(TestData.Commands.CreateMerchantUserCommand, TestContext.Current.CancellationToken);
         result.IsFailed.ShouldBeTrue();
     }
 
@@ -1426,7 +1426,7 @@ public class MerchantDomainServiceTests {
         this.AggregateService.Setup(e => e.Get<EstateAggregate>(It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(Result.Failure());
 
-        var result = await this.DomainService.AddDeviceToMerchant(TestData.Commands.AddMerchantDeviceCommand, CancellationToken.None);
+        var result = await this.DomainService.AddDeviceToMerchant(TestData.Commands.AddMerchantDeviceCommand, TestContext.Current.CancellationToken);
         result.IsFailed.ShouldBeTrue();
     }
 
@@ -1437,7 +1437,7 @@ public class MerchantDomainServiceTests {
         this.AggregateService.Setup(m => m.GetLatest<MerchantAggregate>(It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(Result.Failure());
 
-        var result = await this.DomainService.AddDeviceToMerchant(TestData.Commands.AddMerchantDeviceCommand, CancellationToken.None);
+        var result = await this.DomainService.AddDeviceToMerchant(TestData.Commands.AddMerchantDeviceCommand, TestContext.Current.CancellationToken);
         result.IsFailed.ShouldBeTrue();
     }
 
@@ -1451,7 +1451,7 @@ public class MerchantDomainServiceTests {
         this.AggregateService.Setup(m => m.Save(It.IsAny<MerchantAggregate>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(Result.Failure());
 
-        var result = await this.DomainService.AddDeviceToMerchant(TestData.Commands.AddMerchantDeviceCommand, CancellationToken.None);
+        var result = await this.DomainService.AddDeviceToMerchant(TestData.Commands.AddMerchantDeviceCommand, TestContext.Current.CancellationToken);
         result.IsFailed.ShouldBeTrue();
     }
 
@@ -1464,7 +1464,7 @@ public class MerchantDomainServiceTests {
         this.AggregateService.Setup(m => m.Save(It.IsAny<MerchantAggregate>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(Result.Failure());
 
-        var result = await this.DomainService.AddDeviceToMerchant(TestData.Commands.AddMerchantDeviceCommand, CancellationToken.None);
+        var result = await this.DomainService.AddDeviceToMerchant(TestData.Commands.AddMerchantDeviceCommand, TestContext.Current.CancellationToken);
         result.IsFailed.ShouldBeTrue();
     }
 
@@ -1473,7 +1473,7 @@ public class MerchantDomainServiceTests {
         this.AggregateService.Setup(e => e.Get<EstateAggregate>(It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(Result.Failure());
 
-        var result = await this.DomainService.MakeMerchantDeposit(TestData.Commands.MakeMerchantDepositCommand, CancellationToken.None);
+        var result = await this.DomainService.MakeMerchantDeposit(TestData.Commands.MakeMerchantDepositCommand, TestContext.Current.CancellationToken);
         result.IsFailed.ShouldBeTrue();
     }
 
@@ -1484,7 +1484,7 @@ public class MerchantDomainServiceTests {
         this.AggregateService.Setup(m => m.Get<MerchantAggregate>(It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(Result.Failure());
 
-        var result = await this.DomainService.MakeMerchantDeposit(TestData.Commands.MakeMerchantDepositCommand, CancellationToken.None);
+        var result = await this.DomainService.MakeMerchantDeposit(TestData.Commands.MakeMerchantDepositCommand, TestContext.Current.CancellationToken);
         result.IsFailed.ShouldBeTrue();
     }
 
@@ -1493,7 +1493,7 @@ public class MerchantDomainServiceTests {
         this.AggregateService.Setup(e => e.Get<EstateAggregate>(It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(Result.Failure());
 
-        var result = await this.DomainService.SwapMerchantDevice(TestData.Commands.SwapMerchantDeviceCommand, CancellationToken.None);
+        var result = await this.DomainService.SwapMerchantDevice(TestData.Commands.SwapMerchantDeviceCommand, TestContext.Current.CancellationToken);
         result.IsFailed.ShouldBeTrue();
     }
 
@@ -1504,7 +1504,7 @@ public class MerchantDomainServiceTests {
         this.AggregateService.Setup(m => m.GetLatest<MerchantAggregate>(It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(Result.Failure());
 
-        var result = await this.DomainService.SwapMerchantDevice(TestData.Commands.SwapMerchantDeviceCommand, CancellationToken.None);
+        var result = await this.DomainService.SwapMerchantDevice(TestData.Commands.SwapMerchantDeviceCommand, TestContext.Current.CancellationToken);
         result.IsFailed.ShouldBeTrue();
     }
 
@@ -1522,7 +1522,7 @@ public class MerchantDomainServiceTests {
             DeviceIdentifier = String.Empty
         };
 
-        var result = await this.DomainService.SwapMerchantDevice(command, CancellationToken.None);
+        var result = await this.DomainService.SwapMerchantDevice(command, TestContext.Current.CancellationToken);
         result.IsFailed.ShouldBeTrue();
     }
 
@@ -1535,7 +1535,7 @@ public class MerchantDomainServiceTests {
         this.AggregateService.Setup(m => m.Save(It.IsAny<MerchantAggregate>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(Result.Failure());
 
-        var result = await this.DomainService.SwapMerchantDevice(TestData.Commands.SwapMerchantDeviceCommand, CancellationToken.None);
+        var result = await this.DomainService.SwapMerchantDevice(TestData.Commands.SwapMerchantDeviceCommand, TestContext.Current.CancellationToken);
         result.IsFailed.ShouldBeTrue();
     }
 
@@ -1544,7 +1544,7 @@ public class MerchantDomainServiceTests {
         this.AggregateService.Setup(e => e.Get<EstateAggregate>(It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(Result.Failure());
 
-        var result = await this.DomainService.MakeMerchantWithdrawal(TestData.Commands.MakeMerchantWithdrawalCommand, CancellationToken.None);
+        var result = await this.DomainService.MakeMerchantWithdrawal(TestData.Commands.MakeMerchantWithdrawalCommand, TestContext.Current.CancellationToken);
         result.IsFailed.ShouldBeTrue();
     }
 
@@ -1555,7 +1555,7 @@ public class MerchantDomainServiceTests {
         this.AggregateService.Setup(m => m.Get<MerchantAggregate>(It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(Result.Failure());
 
-        var result = await this.DomainService.MakeMerchantWithdrawal(TestData.Commands.MakeMerchantWithdrawalCommand, CancellationToken.None);
+        var result = await this.DomainService.MakeMerchantWithdrawal(TestData.Commands.MakeMerchantWithdrawalCommand, TestContext.Current.CancellationToken);
         result.IsFailed.ShouldBeTrue();
     }
 
@@ -1571,7 +1571,7 @@ public class MerchantDomainServiceTests {
         this.EventStoreContext.Setup(e => e.GetPartitionStateFromProjection(It.IsAny<String>(), It.IsAny<String>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(Result.Failure());
 
-        var result = await this.DomainService.MakeMerchantWithdrawal(TestData.Commands.MakeMerchantWithdrawalCommand, CancellationToken.None);
+        var result = await this.DomainService.MakeMerchantWithdrawal(TestData.Commands.MakeMerchantWithdrawalCommand, TestContext.Current.CancellationToken);
         result.IsFailed.ShouldBeTrue();
     }
 
@@ -1589,7 +1589,7 @@ public class MerchantDomainServiceTests {
         this.AggregateService.Setup(m => m.Save(It.IsAny<MerchantDepositListAggregate>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(Result.Failure());
 
-        var result = await this.DomainService.MakeMerchantWithdrawal(TestData.Commands.MakeMerchantWithdrawalCommand, CancellationToken.None);
+        var result = await this.DomainService.MakeMerchantWithdrawal(TestData.Commands.MakeMerchantWithdrawalCommand, TestContext.Current.CancellationToken);
         result.IsFailed.ShouldBeTrue();
     }
 
@@ -1598,7 +1598,7 @@ public class MerchantDomainServiceTests {
         this.AggregateService.Setup(e => e.Get<EstateAggregate>(It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(Result.Failure());
 
-        var result = await this.DomainService.AddContractToMerchant(TestData.Commands.AddMerchantContractCommand, CancellationToken.None);
+        var result = await this.DomainService.AddContractToMerchant(TestData.Commands.AddMerchantContractCommand, TestContext.Current.CancellationToken);
         result.IsFailed.ShouldBeTrue();
     }
 
@@ -1609,7 +1609,7 @@ public class MerchantDomainServiceTests {
         this.AggregateService.Setup(m => m.GetLatest<MerchantAggregate>(It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(Result.Failure());
 
-        var result = await this.DomainService.AddContractToMerchant(TestData.Commands.AddMerchantContractCommand, CancellationToken.None);
+        var result = await this.DomainService.AddContractToMerchant(TestData.Commands.AddMerchantContractCommand, TestContext.Current.CancellationToken);
         result.IsFailed.ShouldBeTrue();
     }
 
@@ -1625,7 +1625,7 @@ public class MerchantDomainServiceTests {
         this.AggregateService.Setup(m => m.Save(It.IsAny<MerchantAggregate>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(Result.Failure());
 
-        var result = await this.DomainService.AddContractToMerchant(TestData.Commands.AddMerchantContractCommand, CancellationToken.None);
+        var result = await this.DomainService.AddContractToMerchant(TestData.Commands.AddMerchantContractCommand, TestContext.Current.CancellationToken);
         result.IsFailed.ShouldBeTrue();
     }
 
@@ -1640,7 +1640,7 @@ public class MerchantDomainServiceTests {
         this.AggregateService.Setup(m => m.Save(It.IsAny<MerchantAggregate>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(Result.Failure());
 
-        var result = await this.DomainService.AddContractToMerchant(TestData.Commands.AddMerchantContractCommand, CancellationToken.None);
+        var result = await this.DomainService.AddContractToMerchant(TestData.Commands.AddMerchantContractCommand, TestContext.Current.CancellationToken);
         result.IsFailed.ShouldBeTrue();
     }
 
@@ -1649,7 +1649,7 @@ public class MerchantDomainServiceTests {
         this.AggregateService.Setup(e => e.Get<EstateAggregate>(It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(Result.Failure());
 
-        var result = await this.DomainService.UpdateMerchant(TestData.Commands.UpdateMerchantCommand, CancellationToken.None);
+        var result = await this.DomainService.UpdateMerchant(TestData.Commands.UpdateMerchantCommand, TestContext.Current.CancellationToken);
         result.IsFailed.ShouldBeTrue();
     }
 
@@ -1660,7 +1660,7 @@ public class MerchantDomainServiceTests {
         this.AggregateService.Setup(m => m.GetLatest<MerchantAggregate>(It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(Result.Failure());
 
-        var result = await this.DomainService.UpdateMerchant(TestData.Commands.UpdateMerchantCommand, CancellationToken.None);
+        var result = await this.DomainService.UpdateMerchant(TestData.Commands.UpdateMerchantCommand, TestContext.Current.CancellationToken);
         result.IsFailed.ShouldBeTrue();
     }
 
@@ -1671,7 +1671,7 @@ public class MerchantDomainServiceTests {
         this.AggregateService.Setup(m => m.GetLatest<MerchantAggregate>(It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(Result.Success(TestData.Aggregates.EmptyMerchantAggregate()));
 
-        var result = await this.DomainService.UpdateMerchant(TestData.Commands.UpdateMerchantCommand, CancellationToken.None);
+        var result = await this.DomainService.UpdateMerchant(TestData.Commands.UpdateMerchantCommand, TestContext.Current.CancellationToken);
         result.IsFailed.ShouldBeTrue();
     }
 
@@ -1687,7 +1687,7 @@ public class MerchantDomainServiceTests {
         MerchantCommands.UpdateMerchantCommand command = TestData.Commands.UpdateMerchantCommand;
         command.RequestDto.SettlementSchedule = DataTransferObjects.Responses.Merchant.SettlementSchedule.Immediate;
 
-        var result = await this.DomainService.UpdateMerchant(command, CancellationToken.None);
+        var result = await this.DomainService.UpdateMerchant(command, TestContext.Current.CancellationToken);
         result.IsFailed.ShouldBeTrue();
     }
 
@@ -1696,7 +1696,7 @@ public class MerchantDomainServiceTests {
         this.AggregateService.Setup(e => e.Get<EstateAggregate>(It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(Result.Failure());
 
-        var result = await this.DomainService.AddMerchantAddress(TestData.Commands.AddMerchantAddressCommand, CancellationToken.None);
+        var result = await this.DomainService.AddMerchantAddress(TestData.Commands.AddMerchantAddressCommand, TestContext.Current.CancellationToken);
         result.IsFailed.ShouldBeTrue();
     }
 
@@ -1707,7 +1707,7 @@ public class MerchantDomainServiceTests {
         this.AggregateService.Setup(m => m.GetLatest<MerchantAggregate>(It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(Result.Failure());
 
-        var result = await this.DomainService.AddMerchantAddress(TestData.Commands.AddMerchantAddressCommand, CancellationToken.None);
+        var result = await this.DomainService.AddMerchantAddress(TestData.Commands.AddMerchantAddressCommand, TestContext.Current.CancellationToken);
         result.IsFailed.ShouldBeTrue();
     }
 
@@ -1718,7 +1718,7 @@ public class MerchantDomainServiceTests {
         this.AggregateService.Setup(m => m.GetLatest<MerchantAggregate>(It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(Result.Success(TestData.Aggregates.EmptyMerchantAggregate()));
 
-        var result = await this.DomainService.AddMerchantAddress(TestData.Commands.AddMerchantAddressCommand, CancellationToken.None);
+        var result = await this.DomainService.AddMerchantAddress(TestData.Commands.AddMerchantAddressCommand, TestContext.Current.CancellationToken);
         result.IsFailed.ShouldBeTrue();
     }
 
@@ -1731,7 +1731,7 @@ public class MerchantDomainServiceTests {
         this.AggregateService.Setup(m => m.Save(It.IsAny<MerchantAggregate>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(Result.Failure());
 
-        var result = await this.DomainService.AddMerchantAddress(TestData.Commands.AddMerchantAddressCommand, CancellationToken.None);
+        var result = await this.DomainService.AddMerchantAddress(TestData.Commands.AddMerchantAddressCommand, TestContext.Current.CancellationToken);
         result.IsFailed.ShouldBeTrue();
     }
 
@@ -1740,7 +1740,7 @@ public class MerchantDomainServiceTests {
         this.AggregateService.Setup(e => e.Get<EstateAggregate>(It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(Result.Failure());
 
-        var result = await this.DomainService.UpdateMerchantAddress(TestData.Commands.UpdateMerchantAddressCommand, CancellationToken.None);
+        var result = await this.DomainService.UpdateMerchantAddress(TestData.Commands.UpdateMerchantAddressCommand, TestContext.Current.CancellationToken);
         result.IsFailed.ShouldBeTrue();
     }
 
@@ -1751,7 +1751,7 @@ public class MerchantDomainServiceTests {
         this.AggregateService.Setup(m => m.GetLatest<MerchantAggregate>(It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(Result.Failure());
 
-        var result = await this.DomainService.UpdateMerchantAddress(TestData.Commands.UpdateMerchantAddressCommand, CancellationToken.None);
+        var result = await this.DomainService.UpdateMerchantAddress(TestData.Commands.UpdateMerchantAddressCommand, TestContext.Current.CancellationToken);
         result.IsFailed.ShouldBeTrue();
     }
 
@@ -1762,7 +1762,7 @@ public class MerchantDomainServiceTests {
         this.AggregateService.Setup(m => m.GetLatest<MerchantAggregate>(It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(Result.Success(TestData.Aggregates.EmptyMerchantAggregate()));
 
-        var result = await this.DomainService.UpdateMerchantAddress(TestData.Commands.UpdateMerchantAddressCommand, CancellationToken.None);
+        var result = await this.DomainService.UpdateMerchantAddress(TestData.Commands.UpdateMerchantAddressCommand, TestContext.Current.CancellationToken);
         result.IsFailed.ShouldBeTrue();
     }
 
@@ -1775,7 +1775,7 @@ public class MerchantDomainServiceTests {
         this.AggregateService.Setup(m => m.Save(It.IsAny<MerchantAggregate>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(Result.Failure());
 
-        var result = await this.DomainService.UpdateMerchantAddress(TestData.Commands.UpdateMerchantAddressCommand, CancellationToken.None);
+        var result = await this.DomainService.UpdateMerchantAddress(TestData.Commands.UpdateMerchantAddressCommand, TestContext.Current.CancellationToken);
         result.IsFailed.ShouldBeTrue();
     }
 
@@ -1784,7 +1784,7 @@ public class MerchantDomainServiceTests {
         this.AggregateService.Setup(e => e.Get<EstateAggregate>(It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(Result.Failure());
 
-        var result = await this.DomainService.AddMerchantContact(TestData.Commands.AddMerchantContactCommand, CancellationToken.None);
+        var result = await this.DomainService.AddMerchantContact(TestData.Commands.AddMerchantContactCommand, TestContext.Current.CancellationToken);
         result.IsFailed.ShouldBeTrue();
     }
 
@@ -1795,7 +1795,7 @@ public class MerchantDomainServiceTests {
         this.AggregateService.Setup(m => m.GetLatest<MerchantAggregate>(It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(Result.Failure());
 
-        var result = await this.DomainService.AddMerchantContact(TestData.Commands.AddMerchantContactCommand, CancellationToken.None);
+        var result = await this.DomainService.AddMerchantContact(TestData.Commands.AddMerchantContactCommand, TestContext.Current.CancellationToken);
         result.IsFailed.ShouldBeTrue();
     }
 
@@ -1806,7 +1806,7 @@ public class MerchantDomainServiceTests {
         this.AggregateService.Setup(m => m.GetLatest<MerchantAggregate>(It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(Result.Success(TestData.Aggregates.EmptyMerchantAggregate()));
 
-        var result = await this.DomainService.AddMerchantContact(TestData.Commands.AddMerchantContactCommand, CancellationToken.None);
+        var result = await this.DomainService.AddMerchantContact(TestData.Commands.AddMerchantContactCommand, TestContext.Current.CancellationToken);
         result.IsFailed.ShouldBeTrue();
     }
 
@@ -1819,7 +1819,7 @@ public class MerchantDomainServiceTests {
         this.AggregateService.Setup(m => m.Save(It.IsAny<MerchantAggregate>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(Result.Failure());
 
-        var result = await this.DomainService.AddMerchantContact(TestData.Commands.AddMerchantContactCommand, CancellationToken.None);
+        var result = await this.DomainService.AddMerchantContact(TestData.Commands.AddMerchantContactCommand, TestContext.Current.CancellationToken);
         result.IsFailed.ShouldBeTrue();
     }
 
@@ -1828,7 +1828,7 @@ public class MerchantDomainServiceTests {
         this.AggregateService.Setup(e => e.Get<EstateAggregate>(It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(Result.Failure());
 
-        var result = await this.DomainService.UpdateMerchantContact(TestData.Commands.UpdateMerchantContactCommand, CancellationToken.None);
+        var result = await this.DomainService.UpdateMerchantContact(TestData.Commands.UpdateMerchantContactCommand, TestContext.Current.CancellationToken);
         result.IsFailed.ShouldBeTrue();
     }
 
@@ -1839,7 +1839,7 @@ public class MerchantDomainServiceTests {
         this.AggregateService.Setup(m => m.GetLatest<MerchantAggregate>(It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(Result.Failure());
 
-        var result = await this.DomainService.UpdateMerchantContact(TestData.Commands.UpdateMerchantContactCommand, CancellationToken.None);
+        var result = await this.DomainService.UpdateMerchantContact(TestData.Commands.UpdateMerchantContactCommand, TestContext.Current.CancellationToken);
         result.IsFailed.ShouldBeTrue();
     }
 
@@ -1850,7 +1850,7 @@ public class MerchantDomainServiceTests {
         this.AggregateService.Setup(m => m.GetLatest<MerchantAggregate>(It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(Result.Success(TestData.Aggregates.EmptyMerchantAggregate()));
 
-        var result = await this.DomainService.UpdateMerchantContact(TestData.Commands.UpdateMerchantContactCommand, CancellationToken.None);
+        var result = await this.DomainService.UpdateMerchantContact(TestData.Commands.UpdateMerchantContactCommand, TestContext.Current.CancellationToken);
         result.IsFailed.ShouldBeTrue();
     }
 
@@ -1863,7 +1863,7 @@ public class MerchantDomainServiceTests {
         this.AggregateService.Setup(m => m.Save(It.IsAny<MerchantAggregate>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(Result.Failure());
 
-        var result = await this.DomainService.UpdateMerchantContact(TestData.Commands.UpdateMerchantContactCommand, CancellationToken.None);
+        var result = await this.DomainService.UpdateMerchantContact(TestData.Commands.UpdateMerchantContactCommand, TestContext.Current.CancellationToken);
         result.IsFailed.ShouldBeTrue();
     }
 
@@ -1872,7 +1872,7 @@ public class MerchantDomainServiceTests {
         this.AggregateService.Setup(e => e.Get<EstateAggregate>(It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(Result.Failure());
 
-        var result = await this.DomainService.RemoveOperatorFromMerchant(TestData.Commands.RemoveOperatorFromMerchantCommand, CancellationToken.None);
+        var result = await this.DomainService.RemoveOperatorFromMerchant(TestData.Commands.RemoveOperatorFromMerchantCommand, TestContext.Current.CancellationToken);
         result.IsFailed.ShouldBeTrue();
     }
 
@@ -1883,7 +1883,7 @@ public class MerchantDomainServiceTests {
         this.AggregateService.Setup(m => m.GetLatest<MerchantAggregate>(It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(Result.Failure());
 
-        var result = await this.DomainService.RemoveOperatorFromMerchant(TestData.Commands.RemoveOperatorFromMerchantCommand, CancellationToken.None);
+        var result = await this.DomainService.RemoveOperatorFromMerchant(TestData.Commands.RemoveOperatorFromMerchantCommand, TestContext.Current.CancellationToken);
         result.IsFailed.ShouldBeTrue();
     }
 
@@ -1894,7 +1894,7 @@ public class MerchantDomainServiceTests {
         this.AggregateService.Setup(m => m.GetLatest<MerchantAggregate>(It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(Result.Success(TestData.Aggregates.EmptyMerchantAggregate()));
 
-        var result = await this.DomainService.RemoveOperatorFromMerchant(TestData.Commands.RemoveOperatorFromMerchantCommand, CancellationToken.None);
+        var result = await this.DomainService.RemoveOperatorFromMerchant(TestData.Commands.RemoveOperatorFromMerchantCommand, TestContext.Current.CancellationToken);
         result.IsFailed.ShouldBeTrue();
     }
 
@@ -1910,7 +1910,7 @@ public class MerchantDomainServiceTests {
 
         var command = TestData.Commands.RemoveOperatorFromMerchantCommand with { OperatorId = Guid.NewGuid() };
 
-        var result = await this.DomainService.RemoveOperatorFromMerchant(command, CancellationToken.None);
+        var result = await this.DomainService.RemoveOperatorFromMerchant(command, TestContext.Current.CancellationToken);
         result.IsFailed.ShouldBeTrue();
     }
 
@@ -1923,7 +1923,7 @@ public class MerchantDomainServiceTests {
         this.AggregateService.Setup(m => m.Save(It.IsAny<MerchantAggregate>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(Result.Failure());
 
-        var result = await this.DomainService.RemoveOperatorFromMerchant(TestData.Commands.RemoveOperatorFromMerchantCommand, CancellationToken.None);
+        var result = await this.DomainService.RemoveOperatorFromMerchant(TestData.Commands.RemoveOperatorFromMerchantCommand, TestContext.Current.CancellationToken);
         result.IsFailed.ShouldBeTrue();
     }
 
@@ -1932,7 +1932,7 @@ public class MerchantDomainServiceTests {
         this.AggregateService.Setup(e => e.Get<EstateAggregate>(It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(Result.Failure());
 
-        var result = await this.DomainService.RemoveContractFromMerchant(TestData.Commands.RemoveMerchantContractCommand, CancellationToken.None);
+        var result = await this.DomainService.RemoveContractFromMerchant(TestData.Commands.RemoveMerchantContractCommand, TestContext.Current.CancellationToken);
         result.IsFailed.ShouldBeTrue();
     }
 
@@ -1943,7 +1943,7 @@ public class MerchantDomainServiceTests {
         this.AggregateService.Setup(m => m.GetLatest<MerchantAggregate>(It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(Result.Failure());
 
-        var result = await this.DomainService.RemoveContractFromMerchant(TestData.Commands.RemoveMerchantContractCommand, CancellationToken.None);
+        var result = await this.DomainService.RemoveContractFromMerchant(TestData.Commands.RemoveMerchantContractCommand, TestContext.Current.CancellationToken);
         result.IsFailed.ShouldBeTrue();
     }
 
@@ -1954,7 +1954,7 @@ public class MerchantDomainServiceTests {
         this.AggregateService.Setup(m => m.GetLatest<MerchantAggregate>(It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(Result.Success(TestData.Aggregates.EmptyMerchantAggregate()));
 
-        var result = await this.DomainService.RemoveContractFromMerchant(TestData.Commands.RemoveMerchantContractCommand, CancellationToken.None);
+        var result = await this.DomainService.RemoveContractFromMerchant(TestData.Commands.RemoveMerchantContractCommand, TestContext.Current.CancellationToken);
         result.IsFailed.ShouldBeTrue();
     }
 
@@ -1970,7 +1970,7 @@ public class MerchantDomainServiceTests {
 
         var command = TestData.Commands.RemoveMerchantContractCommand with { ContractId = Guid.NewGuid() };
 
-        var result = await this.DomainService.RemoveContractFromMerchant(command, CancellationToken.None);
+        var result = await this.DomainService.RemoveContractFromMerchant(command, TestContext.Current.CancellationToken);
         result.IsFailed.ShouldBeTrue();
     }
 
@@ -1983,7 +1983,7 @@ public class MerchantDomainServiceTests {
         this.AggregateService.Setup(m => m.Save(It.IsAny<MerchantAggregate>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(Result.Failure());
 
-        var result = await this.DomainService.RemoveContractFromMerchant(TestData.Commands.RemoveMerchantContractCommand, CancellationToken.None);
+        var result = await this.DomainService.RemoveContractFromMerchant(TestData.Commands.RemoveMerchantContractCommand, TestContext.Current.CancellationToken);
         result.IsFailed.ShouldBeTrue();
     }
 
@@ -1999,7 +1999,7 @@ public class MerchantDomainServiceTests {
         MerchantCommands.CreateMerchantCommand command = TestData.Commands.CreateMerchantCommand;
         command.RequestDto.SettlementSchedule = DataTransferObjects.Responses.Merchant.SettlementSchedule.NotSet;
 
-        var result = await this.DomainService.CreateMerchant(command, CancellationToken.None);
+        var result = await this.DomainService.CreateMerchant(command, TestContext.Current.CancellationToken);
         result.IsFailed.ShouldBeTrue();
     }
 
@@ -2019,7 +2019,7 @@ public class MerchantDomainServiceTests {
         MerchantCommands.MakeMerchantDepositCommand command = new(TestData.EstateId, TestData.MerchantId,
             TestData.MerchantDepositSourceAutomaticDTO, TestData.MakeMerchantDepositRequest);
 
-        var result = await this.DomainService.MakeMerchantDeposit(command, CancellationToken.None);
+        var result = await this.DomainService.MakeMerchantDeposit(command, TestContext.Current.CancellationToken);
         result.IsSuccess.ShouldBeTrue();
     }
 
@@ -2028,7 +2028,7 @@ public class MerchantDomainServiceTests {
         this.AggregateService.Setup(e => e.Get<EstateAggregate>(It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
             .ThrowsAsync(new Exception("Test exception"));
 
-        var result = await this.DomainService.CreateMerchant(TestData.Commands.CreateMerchantCommand, CancellationToken.None);
+        var result = await this.DomainService.CreateMerchant(TestData.Commands.CreateMerchantCommand, TestContext.Current.CancellationToken);
         result.IsFailed.ShouldBeTrue();
     }
 
@@ -2037,7 +2037,7 @@ public class MerchantDomainServiceTests {
         this.AggregateService.Setup(e => e.Get<EstateAggregate>(It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
             .ThrowsAsync(new Exception("Test exception"));
 
-        var result = await this.DomainService.AssignOperatorToMerchant(TestData.Commands.AssignOperatorToMerchantCommand, CancellationToken.None);
+        var result = await this.DomainService.AssignOperatorToMerchant(TestData.Commands.AssignOperatorToMerchantCommand, TestContext.Current.CancellationToken);
         result.IsFailed.ShouldBeTrue();
     }
 
@@ -2046,7 +2046,7 @@ public class MerchantDomainServiceTests {
         this.AggregateService.Setup(e => e.Get<EstateAggregate>(It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
             .ThrowsAsync(new Exception("Test exception"));
 
-        var result = await this.DomainService.CreateMerchantUser(TestData.Commands.CreateMerchantUserCommand, CancellationToken.None);
+        var result = await this.DomainService.CreateMerchantUser(TestData.Commands.CreateMerchantUserCommand, TestContext.Current.CancellationToken);
         result.IsFailed.ShouldBeTrue();
     }
 
@@ -2055,7 +2055,7 @@ public class MerchantDomainServiceTests {
         this.AggregateService.Setup(e => e.Get<EstateAggregate>(It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
             .ThrowsAsync(new Exception("Test exception"));
 
-        var result = await this.DomainService.AddDeviceToMerchant(TestData.Commands.AddMerchantDeviceCommand, CancellationToken.None);
+        var result = await this.DomainService.AddDeviceToMerchant(TestData.Commands.AddMerchantDeviceCommand, TestContext.Current.CancellationToken);
         result.IsFailed.ShouldBeTrue();
     }
 
@@ -2064,7 +2064,7 @@ public class MerchantDomainServiceTests {
         this.AggregateService.Setup(e => e.Get<EstateAggregate>(It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
             .ThrowsAsync(new Exception("Test exception"));
 
-        var result = await this.DomainService.MakeMerchantDeposit(TestData.Commands.MakeMerchantDepositCommand, CancellationToken.None);
+        var result = await this.DomainService.MakeMerchantDeposit(TestData.Commands.MakeMerchantDepositCommand, TestContext.Current.CancellationToken);
         result.IsFailed.ShouldBeTrue();
     }
 
@@ -2073,7 +2073,7 @@ public class MerchantDomainServiceTests {
         this.AggregateService.Setup(e => e.Get<EstateAggregate>(It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
             .ThrowsAsync(new Exception("Test exception"));
 
-        var result = await this.DomainService.SwapMerchantDevice(TestData.Commands.SwapMerchantDeviceCommand, CancellationToken.None);
+        var result = await this.DomainService.SwapMerchantDevice(TestData.Commands.SwapMerchantDeviceCommand, TestContext.Current.CancellationToken);
         result.IsFailed.ShouldBeTrue();
     }
 
@@ -2082,7 +2082,7 @@ public class MerchantDomainServiceTests {
         this.AggregateService.Setup(e => e.Get<EstateAggregate>(It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
             .ThrowsAsync(new Exception("Test exception"));
 
-        var result = await this.DomainService.MakeMerchantWithdrawal(TestData.Commands.MakeMerchantWithdrawalCommand, CancellationToken.None);
+        var result = await this.DomainService.MakeMerchantWithdrawal(TestData.Commands.MakeMerchantWithdrawalCommand, TestContext.Current.CancellationToken);
         result.IsFailed.ShouldBeTrue();
     }
 
@@ -2091,7 +2091,7 @@ public class MerchantDomainServiceTests {
         this.AggregateService.Setup(e => e.Get<EstateAggregate>(It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
             .ThrowsAsync(new Exception("Test exception"));
 
-        var result = await this.DomainService.AddContractToMerchant(TestData.Commands.AddMerchantContractCommand, CancellationToken.None);
+        var result = await this.DomainService.AddContractToMerchant(TestData.Commands.AddMerchantContractCommand, TestContext.Current.CancellationToken);
         result.IsFailed.ShouldBeTrue();
     }
 
@@ -2100,7 +2100,7 @@ public class MerchantDomainServiceTests {
         this.AggregateService.Setup(e => e.Get<EstateAggregate>(It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
             .ThrowsAsync(new Exception("Test exception"));
 
-        var result = await this.DomainService.UpdateMerchant(TestData.Commands.UpdateMerchantCommand, CancellationToken.None);
+        var result = await this.DomainService.UpdateMerchant(TestData.Commands.UpdateMerchantCommand, TestContext.Current.CancellationToken);
         result.IsFailed.ShouldBeTrue();
     }
 
@@ -2109,7 +2109,7 @@ public class MerchantDomainServiceTests {
         this.AggregateService.Setup(e => e.Get<EstateAggregate>(It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
             .ThrowsAsync(new Exception("Test exception"));
 
-        var result = await this.DomainService.AddMerchantAddress(TestData.Commands.AddMerchantAddressCommand, CancellationToken.None);
+        var result = await this.DomainService.AddMerchantAddress(TestData.Commands.AddMerchantAddressCommand, TestContext.Current.CancellationToken);
         result.IsFailed.ShouldBeTrue();
     }
 
@@ -2118,7 +2118,7 @@ public class MerchantDomainServiceTests {
         this.AggregateService.Setup(e => e.Get<EstateAggregate>(It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
             .ThrowsAsync(new Exception("Test exception"));
 
-        var result = await this.DomainService.UpdateMerchantAddress(TestData.Commands.UpdateMerchantAddressCommand, CancellationToken.None);
+        var result = await this.DomainService.UpdateMerchantAddress(TestData.Commands.UpdateMerchantAddressCommand, TestContext.Current.CancellationToken);
         result.IsFailed.ShouldBeTrue();
     }
 
@@ -2127,7 +2127,7 @@ public class MerchantDomainServiceTests {
         this.AggregateService.Setup(e => e.Get<EstateAggregate>(It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
             .ThrowsAsync(new Exception("Test exception"));
 
-        var result = await this.DomainService.AddMerchantContact(TestData.Commands.AddMerchantContactCommand, CancellationToken.None);
+        var result = await this.DomainService.AddMerchantContact(TestData.Commands.AddMerchantContactCommand, TestContext.Current.CancellationToken);
         result.IsFailed.ShouldBeTrue();
     }
 
@@ -2136,7 +2136,7 @@ public class MerchantDomainServiceTests {
         this.AggregateService.Setup(e => e.Get<EstateAggregate>(It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
             .ThrowsAsync(new Exception("Test exception"));
 
-        var result = await this.DomainService.UpdateMerchantContact(TestData.Commands.UpdateMerchantContactCommand, CancellationToken.None);
+        var result = await this.DomainService.UpdateMerchantContact(TestData.Commands.UpdateMerchantContactCommand, TestContext.Current.CancellationToken);
         result.IsFailed.ShouldBeTrue();
     }
 
@@ -2145,7 +2145,7 @@ public class MerchantDomainServiceTests {
         this.AggregateService.Setup(e => e.Get<EstateAggregate>(It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
             .ThrowsAsync(new Exception("Test exception"));
 
-        var result = await this.DomainService.RemoveOperatorFromMerchant(TestData.Commands.RemoveOperatorFromMerchantCommand, CancellationToken.None);
+        var result = await this.DomainService.RemoveOperatorFromMerchant(TestData.Commands.RemoveOperatorFromMerchantCommand, TestContext.Current.CancellationToken);
         result.IsFailed.ShouldBeTrue();
     }
 
@@ -2154,7 +2154,8 @@ public class MerchantDomainServiceTests {
         this.AggregateService.Setup(e => e.Get<EstateAggregate>(It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
             .ThrowsAsync(new Exception("Test exception"));
 
-        var result = await this.DomainService.RemoveContractFromMerchant(TestData.Commands.RemoveMerchantContractCommand, CancellationToken.None);
+        var result = await this.DomainService.RemoveContractFromMerchant(TestData.Commands.RemoveMerchantContractCommand, TestContext.Current.CancellationToken);
         result.IsFailed.ShouldBeTrue();
     }
 }
+

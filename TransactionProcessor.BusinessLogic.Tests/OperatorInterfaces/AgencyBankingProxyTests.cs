@@ -35,7 +35,7 @@ namespace TransactionProcessor.BusinessLogic.Tests.OperatorInterfaces
             AgencyBankingConfiguration configuration = CreateConfiguration();
             IOperatorProxy proxy = new AgencyBankingProxy(httpClient, configuration);
 
-            var result = await proxy.ProcessLogonMessage(CancellationToken.None);
+            var result = await proxy.ProcessLogonMessage(TestContext.Current.CancellationToken);
 
             result.IsSuccess.ShouldBeTrue();
             result.Data.ShouldBeNull();
@@ -59,7 +59,7 @@ namespace TransactionProcessor.BusinessLogic.Tests.OperatorInterfaces
                                                         TestData.TransactionDateTime,
                                                         TestData.TransactionReference,
                                                         metadata,
-                                                        CancellationToken.None);
+                                                        TestContext.Current.CancellationToken);
 
             result.IsFailed.ShouldBeTrue();
             result.Status.ShouldBe(ResultStatus.Invalid);
@@ -84,7 +84,7 @@ namespace TransactionProcessor.BusinessLogic.Tests.OperatorInterfaces
                                                         TestData.TransactionDateTime,
                                                         TestData.TransactionReference,
                                                         metadata,
-                                                        CancellationToken.None);
+                                                        TestContext.Current.CancellationToken);
 
             result.IsFailed.ShouldBeTrue();
             result.Status.ShouldBe(ResultStatus.Invalid);
@@ -110,7 +110,7 @@ namespace TransactionProcessor.BusinessLogic.Tests.OperatorInterfaces
                                                         TestData.TransactionDateTime,
                                                         TestData.TransactionReference,
                                                         metadata,
-                                                        CancellationToken.None);
+                                                        TestContext.Current.CancellationToken);
 
             result.IsFailed.ShouldBeTrue();
             result.Status.ShouldBe(ResultStatus.Invalid);
@@ -142,7 +142,7 @@ namespace TransactionProcessor.BusinessLogic.Tests.OperatorInterfaces
                                                         TestData.TransactionDateTime,
                                                         TestData.TransactionReference,
                                                         metadata,
-                                                        CancellationToken.None);
+                                                        TestContext.Current.CancellationToken);
 
             result.IsFailed.ShouldBeTrue();
             result.Status.ShouldBe(ResultStatus.Invalid);
@@ -176,7 +176,7 @@ namespace TransactionProcessor.BusinessLogic.Tests.OperatorInterfaces
                                                         TestData.TransactionDateTime,
                                                         TestData.TransactionReference,
                                                         metadata,
-                                                        CancellationToken.None);
+                                                        TestContext.Current.CancellationToken);
 
             result.IsFailed.ShouldBeTrue();
             result.Status.ShouldBe(ResultStatus.Failure);
@@ -209,7 +209,7 @@ namespace TransactionProcessor.BusinessLogic.Tests.OperatorInterfaces
                                                         TestData.TransactionDateTime,
                                                         TestData.TransactionReference,
                                                         metadata,
-                                                        CancellationToken.None);
+                                                        TestContext.Current.CancellationToken);
 
             result.IsSuccess.ShouldBeTrue();
             result.Data.ShouldNotBeNull();
@@ -221,7 +221,7 @@ namespace TransactionProcessor.BusinessLogic.Tests.OperatorInterfaces
             capturedRequest.Method.ShouldBe(HttpMethod.Post);
             capturedRequest.RequestUri.ShouldBe(new Uri("http://localhost/transactions/balance-enquiry"));
 
-            String requestBody = await capturedRequest.Content.ReadAsStringAsync();
+            String requestBody = await capturedRequest.Content.ReadAsStringAsync(TestContext.Current.CancellationToken);
             using JsonDocument requestJson = JsonDocument.Parse(requestBody);
             requestJson.RootElement.GetProperty("agentId").GetString().ShouldBe(TestData.Merchant.MerchantId.ToString());
             requestJson.RootElement.GetProperty("accountNumber").GetString().ShouldBe("123456789");
@@ -253,7 +253,7 @@ namespace TransactionProcessor.BusinessLogic.Tests.OperatorInterfaces
                                                         TestData.TransactionDateTime,
                                                         TestData.TransactionReference,
                                                         metadata,
-                                                        CancellationToken.None);
+                                                        TestContext.Current.CancellationToken);
 
             result.IsFailed.ShouldBeTrue();
             result.Status.ShouldBe(ResultStatus.Invalid);
@@ -263,7 +263,7 @@ namespace TransactionProcessor.BusinessLogic.Tests.OperatorInterfaces
             capturedRequest.Method.ShouldBe(HttpMethod.Post);
             capturedRequest.RequestUri.ShouldBe(new Uri("http://localhost/transactions/deposit"));
 
-            String requestBody = await capturedRequest.Content.ReadAsStringAsync();
+            String requestBody = await capturedRequest.Content.ReadAsStringAsync(TestContext.Current.CancellationToken);
             using JsonDocument requestJson = JsonDocument.Parse(requestBody);
             requestJson.RootElement.GetProperty("agentId").GetString().ShouldBe(TestData.Merchant.MerchantId.ToString());
             requestJson.RootElement.GetProperty("accountNumber").GetString().ShouldBe("123456789");
@@ -290,7 +290,7 @@ namespace TransactionProcessor.BusinessLogic.Tests.OperatorInterfaces
                                                         TestData.TransactionDateTime,
                                                         TestData.TransactionReference,
                                                         metadata,
-                                                        CancellationToken.None);
+                                                        TestContext.Current.CancellationToken);
 
             result.IsFailed.ShouldBeTrue();
             result.Status.ShouldBe(ResultStatus.Invalid);
@@ -318,7 +318,7 @@ namespace TransactionProcessor.BusinessLogic.Tests.OperatorInterfaces
                                                         TestData.TransactionDateTime,
                                                         TestData.TransactionReference,
                                                         metadata,
-                                                        CancellationToken.None);
+                                                        TestContext.Current.CancellationToken);
 
             result.IsFailed.ShouldBeTrue();
             result.Status.ShouldBe(ResultStatus.Invalid);
@@ -351,7 +351,7 @@ namespace TransactionProcessor.BusinessLogic.Tests.OperatorInterfaces
                                                         TestData.TransactionDateTime,
                                                         TestData.TransactionReference,
                                                         metadata,
-                                                        CancellationToken.None);
+                                                        TestContext.Current.CancellationToken);
 
             result.IsSuccess.ShouldBeTrue();
             result.Data.ShouldNotBeNull();
@@ -364,7 +364,7 @@ namespace TransactionProcessor.BusinessLogic.Tests.OperatorInterfaces
             capturedRequest.Method.ShouldBe(HttpMethod.Post);
             capturedRequest.RequestUri.ShouldBe(new Uri("http://localhost/transactions/deposit"));
 
-            String requestBody = await capturedRequest.Content.ReadAsStringAsync();
+            String requestBody = await capturedRequest.Content.ReadAsStringAsync(TestContext.Current.CancellationToken);
             using JsonDocument requestJson = JsonDocument.Parse(requestBody);
             requestJson.RootElement.GetProperty("agentId").GetString().ShouldBe(TestData.Merchant.MerchantId.ToString());
             requestJson.RootElement.GetProperty("accountNumber").GetString().ShouldBe("123456789");
@@ -398,7 +398,7 @@ namespace TransactionProcessor.BusinessLogic.Tests.OperatorInterfaces
                                                         TestData.TransactionDateTime,
                                                         TestData.TransactionReference,
                                                         metadata,
-                                                        CancellationToken.None);
+                                                        TestContext.Current.CancellationToken);
 
             result.IsFailed.ShouldBeTrue();
             result.Status.ShouldBe(ResultStatus.Invalid);
@@ -408,7 +408,7 @@ namespace TransactionProcessor.BusinessLogic.Tests.OperatorInterfaces
             capturedRequest.Method.ShouldBe(HttpMethod.Post);
             capturedRequest.RequestUri.ShouldBe(new Uri("http://localhost/transactions/withdrawal"));
 
-            String requestBody = await capturedRequest.Content.ReadAsStringAsync();
+            String requestBody = await capturedRequest.Content.ReadAsStringAsync(TestContext.Current.CancellationToken);
             using JsonDocument requestJson = JsonDocument.Parse(requestBody);
             requestJson.RootElement.GetProperty("agentId").GetString().ShouldBe(TestData.Merchant.MerchantId.ToString());
             requestJson.RootElement.GetProperty("accountNumber").GetString().ShouldBe("123456789");
@@ -435,7 +435,7 @@ namespace TransactionProcessor.BusinessLogic.Tests.OperatorInterfaces
                                                         TestData.TransactionDateTime,
                                                         TestData.TransactionReference,
                                                         metadata,
-                                                        CancellationToken.None);
+                                                        TestContext.Current.CancellationToken);
 
             result.IsFailed.ShouldBeTrue();
             result.Status.ShouldBe(ResultStatus.Invalid);
@@ -463,7 +463,7 @@ namespace TransactionProcessor.BusinessLogic.Tests.OperatorInterfaces
                                                         TestData.TransactionDateTime,
                                                         TestData.TransactionReference,
                                                         metadata,
-                                                        CancellationToken.None);
+                                                        TestContext.Current.CancellationToken);
 
             result.IsFailed.ShouldBeTrue();
             result.Status.ShouldBe(ResultStatus.Invalid);
@@ -496,7 +496,7 @@ namespace TransactionProcessor.BusinessLogic.Tests.OperatorInterfaces
                                                         TestData.TransactionDateTime,
                                                         TestData.TransactionReference,
                                                         metadata,
-                                                        CancellationToken.None);
+                                                        TestContext.Current.CancellationToken);
 
             result.IsSuccess.ShouldBeTrue();
             result.Data.ShouldNotBeNull();
@@ -509,7 +509,7 @@ namespace TransactionProcessor.BusinessLogic.Tests.OperatorInterfaces
             capturedRequest.Method.ShouldBe(HttpMethod.Post);
             capturedRequest.RequestUri.ShouldBe(new Uri("http://localhost/transactions/withdrawal"));
 
-            String requestBody = await capturedRequest.Content.ReadAsStringAsync();
+            String requestBody = await capturedRequest.Content.ReadAsStringAsync(TestContext.Current.CancellationToken);
             using JsonDocument requestJson = JsonDocument.Parse(requestBody);
             requestJson.RootElement.GetProperty("agentId").GetString().ShouldBe(TestData.Merchant.MerchantId.ToString());
             requestJson.RootElement.GetProperty("accountNumber").GetString().ShouldBe("123456789");
@@ -543,7 +543,7 @@ namespace TransactionProcessor.BusinessLogic.Tests.OperatorInterfaces
                                                         TestData.TransactionDateTime,
                                                         TestData.TransactionReference,
                                                         metadata,
-                                                        CancellationToken.None);
+                                                        TestContext.Current.CancellationToken);
 
             result.IsSuccess.ShouldBeTrue();
             result.Data.ShouldNotBeNull();
@@ -556,7 +556,7 @@ namespace TransactionProcessor.BusinessLogic.Tests.OperatorInterfaces
             capturedRequest.Method.ShouldBe(HttpMethod.Post);
             capturedRequest.RequestUri.ShouldBe(new Uri("http://localhost/transactions/withdrawal"));
 
-            String requestBody = await capturedRequest.Content.ReadAsStringAsync();
+            String requestBody = await capturedRequest.Content.ReadAsStringAsync(TestContext.Current.CancellationToken);
             using JsonDocument requestJson = JsonDocument.Parse(requestBody);
             requestJson.RootElement.GetProperty("agentId").GetString().ShouldBe(TestData.Merchant.MerchantId.ToString());
             requestJson.RootElement.GetProperty("accountNumber").GetString().ShouldBe("123456789");
@@ -589,7 +589,7 @@ namespace TransactionProcessor.BusinessLogic.Tests.OperatorInterfaces
                                                         TestData.TransactionDateTime,
                                                         TestData.TransactionReference,
                                                         metadata,
-                                                        CancellationToken.None);
+                                                        TestContext.Current.CancellationToken);
 
             result.IsFailed.ShouldBeTrue();
             result.Status.ShouldBe(ResultStatus.Invalid);
@@ -599,7 +599,7 @@ namespace TransactionProcessor.BusinessLogic.Tests.OperatorInterfaces
             capturedRequest.Method.ShouldBe(HttpMethod.Post);
             capturedRequest.RequestUri.ShouldBe(new Uri("http://localhost/transactions/mini-statement"));
 
-            String requestBody = await capturedRequest.Content.ReadAsStringAsync();
+            String requestBody = await capturedRequest.Content.ReadAsStringAsync(TestContext.Current.CancellationToken);
             using JsonDocument requestJson = JsonDocument.Parse(requestBody);
             requestJson.RootElement.GetProperty("agentId").GetString().ShouldBe(TestData.Merchant.MerchantId.ToString());
             requestJson.RootElement.GetProperty("accountNumber").GetString().ShouldBe("123456789");
@@ -648,7 +648,7 @@ namespace TransactionProcessor.BusinessLogic.Tests.OperatorInterfaces
                                                         TestData.TransactionDateTime,
                                                         TestData.TransactionReference,
                                                         metadata,
-                                                        CancellationToken.None);
+                                                        TestContext.Current.CancellationToken);
 
             result.IsSuccess.ShouldBeTrue();
             result.Data.ShouldNotBeNull();
@@ -674,7 +674,7 @@ namespace TransactionProcessor.BusinessLogic.Tests.OperatorInterfaces
             capturedRequest.Method.ShouldBe(HttpMethod.Post);
             capturedRequest.RequestUri.ShouldBe(new Uri("http://localhost/transactions/mini-statement"));
 
-            String requestBody = await capturedRequest.Content.ReadAsStringAsync();
+            String requestBody = await capturedRequest.Content.ReadAsStringAsync(TestContext.Current.CancellationToken);
             using JsonDocument requestJson = JsonDocument.Parse(requestBody);
             requestJson.RootElement.GetProperty("agentId").GetString().ShouldBe(TestData.Merchant.MerchantId.ToString());
             requestJson.RootElement.GetProperty("accountNumber").GetString().ShouldBe("123456789");
@@ -701,3 +701,4 @@ namespace TransactionProcessor.BusinessLogic.Tests.OperatorInterfaces
         }
     }
 }
+

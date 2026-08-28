@@ -8,7 +8,7 @@ namespace TransactionProcessor.BusinessLogic.RequestHandlers
     using Requests;
     using TransactionProcessor.BusinessLogic.Services;
 
-    public class FloatRequestHandler :IRequestHandler<FloatCommands.CreateFloatForContractProductCommand, Result>,
+    public class FloatRequestHandler :IRequestHandler<FloatCommands.CreateFloatCommand, Result>,
                                       IRequestHandler<FloatCommands.RecordCreditPurchaseForFloatCommand, Result>,
     IRequestHandler<FloatActivityCommands.RecordCreditPurchaseCommand, Result>,
     IRequestHandler<FloatActivityCommands.RecordTransactionCommand, Result>
@@ -21,8 +21,8 @@ namespace TransactionProcessor.BusinessLogic.RequestHandlers
 
         
 
-        public async Task<Result> Handle(FloatCommands.CreateFloatForContractProductCommand command, CancellationToken cancellationToken){
-            return await this.FloatDomainService.CreateFloatForContractProduct(command, cancellationToken);
+        public async Task<Result> Handle(FloatCommands.CreateFloatCommand command, CancellationToken cancellationToken){
+            return await this.FloatDomainService.CreateFloat(command, cancellationToken);
         }
 
         public async Task<Result> Handle(FloatCommands.RecordCreditPurchaseForFloatCommand command, CancellationToken cancellationToken){

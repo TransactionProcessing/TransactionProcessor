@@ -15,7 +15,7 @@ namespace TransactionProcessor.BusinessLogic.Services
     using TransactionProcessor.Aggregates;
 
     public interface IFloatDomainService {
-        Task<Result> CreateFloatForContractProduct(FloatCommands.CreateFloatForContractProductCommand command,
+        Task<Result> CreateFloat(FloatCommands.CreateFloatCommand command,
                                                    CancellationToken cancellationToken);
 
         Task<Result> RecordCreditPurchase(FloatCommands.RecordCreditPurchaseForFloatCommand command,
@@ -49,48 +49,47 @@ namespace TransactionProcessor.BusinessLogic.Services
             return Result.Success();
         }
 
-        private async Task<Result> ValidateContractProduct(Guid estateId, Guid contractId, Guid productId, CancellationToken cancellationToken)
+        private async Task<Result<EstateAggregate>> GetEstateAggregate(Guid estateId, CancellationToken cancellationToken)
         {
-            Result<ContractAggregate> getContractResult = await DomainServiceHelper.GetAggregateOrFailure(
-                (token) => this.AggregateService.Get<ContractAggregate>(contractId, token),
-                contractId,
+            return await DomainServiceHelper.GetAggregateOrFailure(
+                token => this.AggregateService.Get<EstateAggregate>(estateId, token),
+                estateId,
                 cancellationToken,
                 isNotFoundError: true);
-
-            ContractAggregate contractAggregate = getContractResult.Data;
-            Models.Contract.Contract contract = contractAggregate.GetContract();
-            Boolean productExists = contract.Products.Any(cp => cp.ContractProductId == productId);
-
-            return productExists switch {
-                false => Result.NotFound($"Contract Product with Id {productId} not found in Contract Id {contractId} for Estate Id {estateId}"),
-                _ => Result.Success()
-            };
         }
 
-        public async Task<Result> CreateFloatForContractProduct(FloatCommands.CreateFloatForContractProductCommand command,
+        private static Result ValidateOperator(EstateAggregate estateAggregate, Guid operatorId)
+        {
+            TransactionProcessor.Models.Estate.Estate estate = estateAggregate.GetEstate();
+            Boolean operatorExists = estate.Operators.Any(o => o.OperatorId == operatorId && o.IsDeleted == false);
+            if (operatorExists == false) {
+                return Result.Invalid($"Operator with Id {operatorId} is not supported on Estate [{estate.Name}]");
+            }
+
+            return Result.Success();
+        }
+
+        public async Task<Result> CreateFloat(FloatCommands.CreateFloatCommand command,
                                                                 CancellationToken cancellationToken){
 
             try {
-                Result validateEstateResult = await this.ValidateEstate(command.EstateId, cancellationToken);
-                if (validateEstateResult.IsFailed) {
-                    return ResultHelpers.CreateFailure(validateEstateResult);
+                Result<EstateAggregate> getEstateResult = await this.GetEstateAggregate(command.EstateId, cancellationToken);
+                if (getEstateResult.IsFailed) {
+                    return ResultHelpers.CreateFailure(getEstateResult);
                 }
 
-                Result validateProductResult = await this.ValidateContractProduct(command.EstateId, command.ContractId, command.ProductId, cancellationToken);
-                if (validateProductResult.IsFailed) {
-                    return ResultHelpers.CreateFailure(validateProductResult);
+                Result validateOperatorResult = ValidateOperator(getEstateResult.Data, command.FloatId);
+                if (validateOperatorResult.IsFailed) {
+                    return ResultHelpers.CreateFailure(validateOperatorResult);
                 }
-
-                // Generate the float id
-                Guid floatId = IdGenerationService.GenerateFloatAggregateId(command.EstateId, command.ContractId, command.ProductId);
-
-                Result<FloatAggregate> getFloatResult = await DomainServiceHelper.GetAggregateOrFailure(ct => this.AggregateService.GetLatest<FloatAggregate>(floatId, ct), floatId, cancellationToken, false);
+                
+                Result<FloatAggregate> getFloatResult = await DomainServiceHelper.GetAggregateOrFailure(ct => this.AggregateService.GetLatest<FloatAggregate>(command.FloatId, ct), command.FloatId, cancellationToken, false);
                 if (getFloatResult.IsFailed)
                     return ResultHelpers.CreateFailure(getFloatResult);
 
                 FloatAggregate floatAggregate = getFloatResult.Data;
 
-                Result stateResult = floatAggregate.CreateFloat(command.EstateId, command.ContractId, command.ProductId, command.CreateDateTime);
+                Result stateResult = floatAggregate.CreateFloat(command.EstateId, command.CreateDateTime);
                 if (stateResult.IsFailed)
                     return ResultHelpers.CreateFailure(stateResult);
 
@@ -164,7 +163,7 @@ namespace TransactionProcessor.BusinessLogic.Services
                 if (getTransactionResult.IsFailed)
                     return ResultHelpers.CreateFailure(getTransactionResult);
                 
-                Guid floatId = IdGenerationService.GenerateFloatAggregateId(command.EstateId, getTransactionResult.Data.ContractId, getTransactionResult.Data.ProductId);
+                Guid floatId = getTransactionResult.Data.OperatorId;
 
                 // Generate the id for the activity aggregate
                 Guid floatActivityAggregateId = IdGenerationService.GenerateFloatActivityAggregateId(command.EstateId, floatId, getTransactionResult.Data.TransactionDateTime.Date);

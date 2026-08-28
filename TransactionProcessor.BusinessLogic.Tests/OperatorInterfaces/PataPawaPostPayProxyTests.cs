@@ -1,4 +1,4 @@
-﻿using SimpleResults;
+using SimpleResults;
 using System;
 using System.Threading.Tasks;
 
@@ -47,7 +47,7 @@ namespace TransactionProcessor.BusinessLogic.Tests.OperatorInterfaces
 
             PataPawaPostPayService.Setup(s => s.getLoginRequestAsync(It.IsAny<String>(), It.IsAny<String>())).ReturnsAsync(TestData.PataPawaPostPaidSuccessfulLoginResponse);
 
-            var logonResponseResult = await PataPawaPostPayProxy.ProcessLogonMessage(CancellationToken.None);
+            var logonResponseResult = await PataPawaPostPayProxy.ProcessLogonMessage(TestContext.Current.CancellationToken);
             logonResponseResult.IsSuccess.ShouldBeTrue();
             BusinessLogic.OperatorInterfaces.OperatorResponse logonResponse = logonResponseResult.Data;
             logonResponse.ShouldNotBeNull();
@@ -68,7 +68,7 @@ namespace TransactionProcessor.BusinessLogic.Tests.OperatorInterfaces
 
             this.MemoryCache.Set("PataPawaPostPayLogon", operatorResponse, new MemoryCacheEntryOptions());
 
-            var result = await PataPawaPostPayProxy.ProcessLogonMessage(CancellationToken.None);
+            var result = await PataPawaPostPayProxy.ProcessLogonMessage(TestContext.Current.CancellationToken);
 
             result.IsSuccess.ShouldBeTrue();
             result.Data.TransactionId.ShouldBe(operatorResponse.TransactionId);
@@ -79,7 +79,7 @@ namespace TransactionProcessor.BusinessLogic.Tests.OperatorInterfaces
 
             PataPawaPostPayService.Setup(s => s.getLoginRequestAsync(It.IsAny<String>(), It.IsAny<String>())).ReturnsAsync(TestData.PataPawaPostPaidFailedLoginResponse);
             
-            var result = await this.PataPawaPostPayProxy.ProcessLogonMessage(CancellationToken.None);
+            var result = await this.PataPawaPostPayProxy.ProcessLogonMessage(TestContext.Current.CancellationToken);
 
             result.IsFailed.ShouldBeTrue();
             result.Status.ShouldBe(ResultStatus.Failure);
@@ -98,7 +98,7 @@ namespace TransactionProcessor.BusinessLogic.Tests.OperatorInterfaces
                                                                                                 TestData.TransactionDateTime,
                                                                                                 TestData.TransactionReference,
                                                                                                 TestData.AdditionalTransactionMetaDataForPataPawaVerifyAccount(),
-                                                                                                CancellationToken.None);
+                                                                                                TestContext.Current.CancellationToken);
 
             processSaleMessageResult.IsSuccess.ShouldBeTrue();
             BusinessLogic.OperatorInterfaces.OperatorResponse saleResponse = processSaleMessageResult.Data;
@@ -127,7 +127,7 @@ namespace TransactionProcessor.BusinessLogic.Tests.OperatorInterfaces
                                                                                                                                                                     TestData.TransactionDateTime,
                                                                                                                                                                     TestData.TransactionReference,
                                                                                                                                                                     TestData.AdditionalTransactionMetaDataForPataPawaVerifyAccount(),
-                                                                                                                                                                    CancellationToken.None);
+                                                                                                                                                                    TestContext.Current.CancellationToken);
             result.IsFailed.ShouldBeTrue();
             result.Status.ShouldBe(ResultStatus.Invalid);
             result.Message.Contains("PataPawaPostPaidAPIKey");
@@ -143,7 +143,7 @@ namespace TransactionProcessor.BusinessLogic.Tests.OperatorInterfaces
                                                                                                     TestData.TransactionDateTime,
                                                                                                     TestData.TransactionReference,
                                                                                                     TestData.AdditionalTransactionMetaDataForPataPawaVerifyAccount_NoMessageType(),
-                                                                                                    CancellationToken.None);
+                                                                                                    TestContext.Current.CancellationToken);
             result.IsFailed.ShouldBeTrue();
             result.Status.ShouldBe(ResultStatus.Invalid);
             result.Message.Contains("PataPawaPostPaidMessageType");
@@ -160,7 +160,7 @@ namespace TransactionProcessor.BusinessLogic.Tests.OperatorInterfaces
                                                                                                                                                                     TestData.TransactionDateTime,
                                                                                                                                                                     TestData.TransactionReference,
                                                                                                                                                                     TestData.AdditionalTransactionMetaDataForPataPawaVerifyAccount_NoCustomerAccountNumber(),
-                                                                                                                                                                    CancellationToken.None);
+                                                                                                                                                                    TestContext.Current.CancellationToken);
             result.IsFailed.ShouldBeTrue();
             result.Status.ShouldBe(ResultStatus.Invalid);
             result.Message.Contains("CustomerAccountNumber");
@@ -177,7 +177,7 @@ namespace TransactionProcessor.BusinessLogic.Tests.OperatorInterfaces
                                                                                                                                                                                 TestData.TransactionDateTime,
                                                                                                                                                                                 TestData.TransactionReference,
                                                                                                                                                                                 TestData.AdditionalTransactionMetaDataForPataPawaVerifyAccount(pataPawaPostPaidMessageType:"Unknown"),
-                                                                                                                                                                                CancellationToken.None);
+                                                                                                                                                                                TestContext.Current.CancellationToken);
 
 
             result.IsFailed.ShouldBeTrue();
@@ -198,7 +198,7 @@ namespace TransactionProcessor.BusinessLogic.Tests.OperatorInterfaces
                                                                                                                                             TestData.TransactionDateTime,
                                                                                                                                             TestData.TransactionReference,
                                                                                                                                             TestData.AdditionalTransactionMetaDataForPataPawaVerifyAccount(customerAccountNumber: TestData.PataPawaPostPaidAccountNumber),
-                                                                                                                                            CancellationToken.None);
+                                                                                                                                            TestContext.Current.CancellationToken);
             result.IsFailed.ShouldBeTrue();
             result.Status.ShouldBe(ResultStatus.NotFound);
             result.Message.Contains($"Error verifying account number {TestData.PataPawaPostPaidAccountNumber}");
@@ -217,7 +217,7 @@ namespace TransactionProcessor.BusinessLogic.Tests.OperatorInterfaces
                                                                                                TestData.TransactionDateTime,
                                                                                                TestData.TransactionReference,
                                                                                                TestData.AdditionalTransactionMetaDataForPataPawaVerifyAccount(customerAccountNumber: TestData.PataPawaPostPaidAccountNumber),
-                                                                                               CancellationToken.None);
+                                                                                               TestContext.Current.CancellationToken);
 
             result.IsFailed.ShouldBeTrue();
             result.Status.ShouldBe(ResultStatus.Failure);
@@ -239,7 +239,7 @@ namespace TransactionProcessor.BusinessLogic.Tests.OperatorInterfaces
                                                                                                TestData.TransactionDateTime,
                                                                                                TestData.TransactionReference,
                                                                                                TestData.AdditionalTransactionMetaDataForPataPawaProcessBill(customerAccountNumber: TestData.PataPawaPostPaidAccountNumber),
-                                                                                               CancellationToken.None);
+                                                                                               TestContext.Current.CancellationToken);
 
             result.IsFailed.ShouldBeTrue();
             result.Status.ShouldBe(ResultStatus.Failure);
@@ -262,7 +262,7 @@ namespace TransactionProcessor.BusinessLogic.Tests.OperatorInterfaces
                                                                                                 TestData.TransactionDateTime,
                                                                                                 TestData.TransactionReference,
                                                                                                 TestData.AdditionalTransactionMetaDataForPataPawaProcessBill(),
-                                                                                                CancellationToken.None);
+                                                                                                TestContext.Current.CancellationToken);
             processSaleMessageResult.IsSuccess.ShouldBeTrue();
             BusinessLogic.OperatorInterfaces.OperatorResponse saleResponse = processSaleMessageResult.Data;
             saleResponse.ShouldNotBeNull();
@@ -279,7 +279,7 @@ namespace TransactionProcessor.BusinessLogic.Tests.OperatorInterfaces
 
             var result = await this.PataPawaPostPayProxy.ProcessSaleMessage(TestData.TransactionId, TestData.OperatorId, TestData.Merchant, TestData.TransactionDateTime,
                 TestData.TransactionReference, TestData.AdditionalTransactionMetaDataForPataPawaProcessBill(),
-                CancellationToken.None);
+                TestContext.Current.CancellationToken);
             
             result.IsFailed.ShouldBeTrue();
             result.Status.ShouldBe(ResultStatus.Invalid);
@@ -296,7 +296,7 @@ namespace TransactionProcessor.BusinessLogic.Tests.OperatorInterfaces
                                                                                                                                                              TestData.TransactionDateTime,
                                                                                                                                                              TestData.TransactionReference,
                                                                                                                                                              TestData.AdditionalTransactionMetaDataForPataPawaProcessBill_NoMessageType(),
-                                                                                                                                                             CancellationToken.None);
+                                                                                                                                                             TestContext.Current.CancellationToken);
             result.IsFailed.ShouldBeTrue();
             result.Status.ShouldBe(ResultStatus.Invalid);
             result.Message.Contains("PataPawaPostPaidAPIKey");
@@ -313,7 +313,7 @@ namespace TransactionProcessor.BusinessLogic.Tests.OperatorInterfaces
                                                                                               TestData.TransactionDateTime,
                                                                                               TestData.TransactionReference,
                                                                                               TestData.AdditionalTransactionMetaDataForPataPawaProcessBill_NoCustomerAccountNumber(),
-                                                                                              CancellationToken.None);
+                                                                                              TestContext.Current.CancellationToken);
 
             result.IsFailed.ShouldBeTrue();
             result.Status.ShouldBe(ResultStatus.Invalid);
@@ -331,7 +331,7 @@ namespace TransactionProcessor.BusinessLogic.Tests.OperatorInterfaces
                                                                                                                                                              TestData.TransactionDateTime,
                                                                                                                                                              TestData.TransactionReference,
                                                                                                                                                              TestData.AdditionalTransactionMetaDataForPataPawaProcessBill_NoMobileNumber(),
-                                                                                                                                                             CancellationToken.None);
+                                                                                                                                                             TestContext.Current.CancellationToken);
             result.IsFailed.ShouldBeTrue();
             result.Status.ShouldBe(ResultStatus.Invalid);
             result.Message.Contains("MobileNumber");
@@ -348,7 +348,7 @@ namespace TransactionProcessor.BusinessLogic.Tests.OperatorInterfaces
                                                                                               TestData.TransactionDateTime,
                                                                                               TestData.TransactionReference,
                                                                                               TestData.AdditionalTransactionMetaDataForPataPawaProcessBill_NoCustomerName(),
-                                                                                              CancellationToken.None);
+                                                                                              TestContext.Current.CancellationToken);
             result.IsFailed.ShouldBeTrue();
             result.Status.ShouldBe(ResultStatus.Invalid);
             result.Message.Contains("CustomerName");
@@ -365,7 +365,7 @@ namespace TransactionProcessor.BusinessLogic.Tests.OperatorInterfaces
                                                                                                                                                              TestData.TransactionDateTime,
                                                                                                                                                              TestData.TransactionReference,
                                                                                                                                                              TestData.AdditionalTransactionMetaDataForPataPawaProcessBill_NoAmount(),
-                                                                                                                                                             CancellationToken.None);
+                                                                                                                                                             TestContext.Current.CancellationToken);
             result.IsFailed.ShouldBeTrue();
             result.Status.ShouldBe(ResultStatus.Invalid);
             result.Message.Contains("Amount");
@@ -382,7 +382,7 @@ namespace TransactionProcessor.BusinessLogic.Tests.OperatorInterfaces
                                                                                                                                                                          TestData.TransactionDateTime,
                                                                                                                                                                          TestData.TransactionReference,
                                                                                                                                                                          TestData.AdditionalTransactionMetaDataForPataPawaProcessBill(pataPawaPostPaidAmount:"A1"),
-                                                                                                                                                                         CancellationToken.None);
+                                                                                                                                                                         TestContext.Current.CancellationToken);
             result.IsFailed.ShouldBeTrue();
             result.Status.ShouldBe(ResultStatus.Invalid);
             result.Message.Contains("Amount");
@@ -399,7 +399,7 @@ namespace TransactionProcessor.BusinessLogic.Tests.OperatorInterfaces
                                                                                                                                                                          TestData.TransactionDateTime,
                                                                                                                                                                          TestData.TransactionReference,
                                                                                                                                                                          TestData.AdditionalTransactionMetaDataForPataPawaProcessBill(pataPawaPostPaidMessageType: "Unknown"),
-                                                                                                                                                                         CancellationToken.None);
+                                                                                                                                                                         TestContext.Current.CancellationToken);
             result.IsFailed.ShouldBeTrue();
             result.Status.ShouldBe(ResultStatus.Invalid);
             result.Message.Contains("PataPawaPostPaidMessageType");
@@ -419,7 +419,7 @@ namespace TransactionProcessor.BusinessLogic.Tests.OperatorInterfaces
                                                                                                      TestData.TransactionDateTime,
                                                                                                      TestData.TransactionReference,
                                                                                                      TestData.AdditionalTransactionMetaDataForPataPawaProcessBill(customerAccountNumber:TestData.PataPawaPostPaidAccountNumber),
-                                                                                                     CancellationToken.None);
+                                                                                                     TestContext.Current.CancellationToken);
 
             result.IsFailed.ShouldBeTrue();
             result.Status.ShouldBe(ResultStatus.Failure);
@@ -427,3 +427,4 @@ namespace TransactionProcessor.BusinessLogic.Tests.OperatorInterfaces
         }
     }
 }
+

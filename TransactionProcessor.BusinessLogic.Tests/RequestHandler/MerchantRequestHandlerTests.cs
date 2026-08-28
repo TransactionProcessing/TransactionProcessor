@@ -50,7 +50,7 @@ public class MerchantRequestHandlerTests
 
         MerchantQueries.GetMerchantQuery query = TestData.Queries.GetMerchantQuery;
 
-        var result = await handler.Handle(query, CancellationToken.None);
+        var result = await handler.Handle(query, TestContext.Current.CancellationToken);
 
         result.IsSuccess.ShouldBeTrue();
         result.Data.ShouldNotBeNull();
@@ -58,3 +58,4 @@ public class MerchantRequestHandlerTests
         manager.Verify(m => m.GetMerchant(TestData.EstateId, TestData.MerchantId, It.IsAny<CancellationToken>()), Times.Once);
     }
 }
+

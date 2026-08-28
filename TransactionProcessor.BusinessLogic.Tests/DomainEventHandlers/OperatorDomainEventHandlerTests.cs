@@ -1,4 +1,4 @@
-﻿using Moq;
+using Moq;
 using Shared.Logger;
 using Shared.Serialisation;
 using Shouldly;
@@ -30,7 +30,7 @@ public class OperatorDomainEventHandlerTests
     {
         OperatorDomainEvents.OperatorCreatedEvent operatorCreatedEvent = TestData.DomainEvents.OperatorCreatedEvent;
 
-        Should.NotThrow(async () => { await this.DomainEventHandler.Handle(operatorCreatedEvent, CancellationToken.None); });
+        Should.NotThrow(async () => { await this.DomainEventHandler.Handle(operatorCreatedEvent, TestContext.Current.CancellationToken); });
     }
 
     [Fact]
@@ -38,7 +38,7 @@ public class OperatorDomainEventHandlerTests
     {
         OperatorDomainEvents.OperatorNameUpdatedEvent operatorCreatedEvent = TestData.DomainEvents.OperatorNameUpdatedEvent;
 
-        Should.NotThrow(async () => { await this.DomainEventHandler.Handle(operatorCreatedEvent, CancellationToken.None); });
+        Should.NotThrow(async () => { await this.DomainEventHandler.Handle(operatorCreatedEvent, TestContext.Current.CancellationToken); });
     }
 
     [Fact]
@@ -46,7 +46,7 @@ public class OperatorDomainEventHandlerTests
     {
         OperatorDomainEvents.OperatorRequireCustomMerchantNumberChangedEvent operatorCreatedEvent = TestData.DomainEvents.OperatorRequireCustomMerchantNumberChangedEvent;
 
-        Should.NotThrow(async () => { await this.DomainEventHandler.Handle(operatorCreatedEvent, CancellationToken.None); });
+        Should.NotThrow(async () => { await this.DomainEventHandler.Handle(operatorCreatedEvent, TestContext.Current.CancellationToken); });
     }
 
     [Fact]
@@ -54,6 +54,6 @@ public class OperatorDomainEventHandlerTests
     {
         OperatorDomainEvents.OperatorRequireCustomTerminalNumberChangedEvent operatorCreatedEvent = TestData.DomainEvents.OperatorRequireCustomTerminalNumberChangedEvent;
 
-        Should.NotThrow(async () => { await this.DomainEventHandler.Handle(operatorCreatedEvent, CancellationToken.None); });
+        Should.NotThrow(async () => { await this.DomainEventHandler.Handle(operatorCreatedEvent, TestContext.Current.CancellationToken); });
     }
 }

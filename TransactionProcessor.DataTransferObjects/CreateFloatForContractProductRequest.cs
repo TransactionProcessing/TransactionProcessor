@@ -2,20 +2,13 @@
 
 namespace TransactionProcessor.DataTransferObjects{
 
-    public class CreateFloatForContractProductRequest{
+    public class CreateFloatRequest{
 
-        public Guid ContractId{ get; set; }
-
-        public Guid ProductId{ get; set; }
+        public Guid FloatId { get; set; }
 
         public DateTime CreateDateTime{ get; set; }
     }
-
-    public class CreateFloatForContractProductResponse
-    {
-        public Guid FloatId { get; set; }
-    }
-
+    
     public class RecordFloatCreditPurchaseRequest{
         public Guid FloatId { get; set; }
 

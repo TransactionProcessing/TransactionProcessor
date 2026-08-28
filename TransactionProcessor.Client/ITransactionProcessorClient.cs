@@ -78,9 +78,9 @@ namespace TransactionProcessor.Client
                                                   RedeemVoucherRequest redeemVoucherRequest,
                                                   CancellationToken cancellationToken);
 
-        Task<Result> CreateFloatForContractProduct(String accessToken,
-                                                                                  Guid estateId,
-                         CreateFloatForContractProductRequest createFloatForContractProductRequest,
+        Task<Result> CreateFloat(String accessToken,
+                                 Guid estateId,
+                         CreateFloatRequest createFloatForContractProductRequest,
                          CancellationToken cancellationToken);
 
         Task<Result> UpdateMerchantOpeningHours(String accessToken,

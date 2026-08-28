@@ -134,7 +134,7 @@ namespace TransactionProcessor.BusinessLogic.Tests.Mediator
             {
                 try
                 {
-                    await mediator.Send(baseRequest);
+                    await mediator.Send(baseRequest, TestContext.Current.CancellationToken);
                 }
                 catch (Exception ex)
                 {

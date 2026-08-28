@@ -1,4 +1,4 @@
-﻿using System.Diagnostics;
+using System.Diagnostics;
 using DotNet.Testcontainers.Builders;
 using DotNet.Testcontainers.Networks;
 using Microsoft.Extensions.DependencyInjection;
@@ -28,7 +28,7 @@ namespace TransactionProcessor.DatabaseTests
             await this.StartSqlContainer();
             await this.GetRepository();
             EstateManagementContext context = this.GetContext();
-            await context.Database.EnsureCreatedAsync(CancellationToken.None);
+            await context.Database.EnsureCreatedAsync(TestContext.Current.CancellationToken);
         }
 
         public EstateManagementContext GetContext()
@@ -116,3 +116,4 @@ namespace TransactionProcessor.DatabaseTests
     }
 
 }
+

@@ -176,6 +176,7 @@ namespace TransactionProcessor.BusinessLogic.EventHandling
         private Task<Result> HandleFloatDomainEvent(IDomainEvent domainEvent,
                                                     CancellationToken cancellationToken) => domainEvent switch
         {
+            FloatCreatedEvent de => this.EstateReportingRepository.CreateFloat(de, cancellationToken),
             FloatCreatedForContractProductEvent de => this.EstateReportingRepository.CreateFloat(de, cancellationToken),
             FloatCreditPurchasedEvent de => this.EstateReportingRepository.CreateFloatActivity(de, cancellationToken),
             FloatDecreasedByTransactionEvent de => this.EstateReportingRepository.CreateFloatActivity(de, cancellationToken),
