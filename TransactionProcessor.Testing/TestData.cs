@@ -1276,7 +1276,7 @@ namespace TransactionProcessor.Testing
         public static FloatAggregate GetFloatAggregateWithCostValues(){
             
             FloatAggregate floatAggregate = FloatAggregate.Create(TestData.FloatAggregateId);
-            floatAggregate.CreateFloat(TestData.EstateId, TestData.ContractId, TestData.ProductId, TestData.FloatCreatedDateTime);
+            floatAggregate.CreateFloat(TestData.EstateId, TestData.FloatCreatedDateTime);
             floatAggregate.RecordCreditPurchase(DateTime.Now, TestData.FloatCreditAmount, TestData.FloatCreditCostPrice);
             return floatAggregate;
         }
@@ -1739,7 +1739,7 @@ namespace TransactionProcessor.Testing
 
         public static FloatCommands.RecordCreditPurchaseForFloatCommand RecordCreditPurchaseForFloatCommand => new(TestData.EstateId, TestData.FloatAggregateId, TestData.FloatCreditAmount, TestData.FloatCreditCostPrice, TestData.CreditPurchasedDateTime);
 
-        public static FloatCommands.CreateFloatForContractProductCommand CreateFloatForContractProductCommand => new(TestData.EstateId, TestData.ContractId, TestData.ProductId, TestData.FloatCreatedDateTime);
+        public static FloatCommands.CreateFloatCommand CreateFloatCommand => new(TestData.EstateId, TestData.FloatAggregateId, TestData.FloatCreatedDateTime);
 
         public static RedeemVoucherResponse RedeemVoucherResponse =>
             new RedeemVoucherResponse
@@ -2622,7 +2622,7 @@ namespace TransactionProcessor.Testing
 
             public static ReconciliationDomainEvents.ReconciliationHasStartedEvent ReconciliationHasStartedEvent => new ReconciliationDomainEvents.ReconciliationHasStartedEvent(TestData.TransactionId, TestData.EstateId, TestData.MerchantId, TestData.TransactionDateTime);
 
-            public static FloatDomainEvents.FloatCreatedForContractProductEvent FloatCreatedForContractProductEvent => new FloatDomainEvents.FloatCreatedForContractProductEvent(FloatAggregateId, EstateId, ContractId, VariableContractProductId, FloatCreatedDateTime);
+            public static FloatDomainEvents.FloatCreatedEvent FloatCreatedForContractProductEvent => new FloatDomainEvents.FloatCreatedEvent(FloatAggregateId, EstateId, FloatCreatedDateTime);
             public static TransactionDomainEvents.TransactionHasStartedEvent TransactionHasStartedEvent => new TransactionDomainEvents.TransactionHasStartedEvent(TestData.TransactionId, TestData.EstateId, TestData.MerchantId, TestData.TransactionDateTime1, TestData.TransactionNumber, TestData.TransactionTypeSale.ToString(), TestData.TransactionReference, TestData.DeviceIdentifier, TestData.TransactionAmount);
             public static TransactionDomainEvents.AdditionalRequestDataRecordedEvent AdditionalRequestDataRecordedEvent => new TransactionDomainEvents.AdditionalRequestDataRecordedEvent(TestData.TransactionId, TestData.EstateId, TestData.MerchantId, TestData.OperatorId, new Dictionary<String, String>
             {

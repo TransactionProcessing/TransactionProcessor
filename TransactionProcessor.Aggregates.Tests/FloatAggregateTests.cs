@@ -23,22 +23,20 @@ namespace TransactionProcessor.Aggregates.Tests
         public void FloatAggregate_CreateFloat_IsCreated()
         {
             Aggregates.FloatAggregate aggregate = Aggregates.FloatAggregate.Create(TestData.FloatAggregateId);
-            Result result = aggregate.CreateFloat(TestData.EstateId, TestData.ContractId, TestData.ProductId, TestData.FloatCreatedDateTime);
+            Result result = aggregate.CreateFloat(TestData.EstateId, TestData.FloatCreatedDateTime);
             result.IsSuccess.ShouldBeTrue();
 
             aggregate.AggregateId.ShouldBe(TestData.FloatAggregateId);
             aggregate.EstateId.ShouldBe(TestData.EstateId);
-            aggregate.ContractId.ShouldBe(TestData.ContractId);
-            aggregate.ProductId.ShouldBe(TestData.ProductId);
             aggregate.CreatedDateTime.ShouldBe(TestData.FloatCreatedDateTime);
         }
 
         [Fact]
         public void FloatAggregate_CreateFloat_FloatAlreadyCreated_NoErrorThrown() {
             Aggregates.FloatAggregate aggregate = Aggregates.FloatAggregate.Create(TestData.FloatAggregateId);
-            aggregate.CreateFloat(TestData.EstateId, TestData.ContractId, TestData.ProductId, TestData.FloatCreatedDateTime);
+            aggregate.CreateFloat(TestData.EstateId, TestData.FloatCreatedDateTime);
 
-            Result result = aggregate.CreateFloat(TestData.EstateId, TestData.ContractId, TestData.ProductId, TestData.FloatCreatedDateTime);
+            Result result = aggregate.CreateFloat(TestData.EstateId, TestData.FloatCreatedDateTime);
             result.IsSuccess.ShouldBeTrue();
         }
 
@@ -46,7 +44,7 @@ namespace TransactionProcessor.Aggregates.Tests
         public void FloatAggregate_RecordCreditPurchase_CreditPurchaseIsRecorded()
         {
             Aggregates.FloatAggregate aggregate = Aggregates.FloatAggregate.Create(TestData.FloatAggregateId);
-            aggregate.CreateFloat(TestData.EstateId, TestData.ContractId, TestData.ProductId, TestData.FloatCreatedDateTime);
+            aggregate.CreateFloat(TestData.EstateId, TestData.FloatCreatedDateTime);
             Result result = aggregate.RecordCreditPurchase(DateTime.Now, 1000, 900);
             result.IsSuccess.ShouldBeTrue();
             aggregate.NumberOfCreditPurchases.ShouldBe(1);
@@ -70,7 +68,7 @@ namespace TransactionProcessor.Aggregates.Tests
         public void FloatAggregate_RecordCreditPurchase_MultipleCreditPurchases_AllCreditPurchasesAreRecorded()
         {
             Aggregates.FloatAggregate aggregate = Aggregates.FloatAggregate.Create(TestData.FloatAggregateId);
-            aggregate.CreateFloat(TestData.EstateId, TestData.ContractId, TestData.ProductId, TestData.FloatCreatedDateTime);
+            aggregate.CreateFloat(TestData.EstateId, TestData.FloatCreatedDateTime);
             aggregate.RecordCreditPurchase(DateTime.Now, 1000, 900);
 
             aggregate.NumberOfCreditPurchases.ShouldBe(1);
@@ -103,7 +101,7 @@ namespace TransactionProcessor.Aggregates.Tests
         public void FloatAggregate_RecordCreditPurchase_DuplicateCreditPurchase_ErrorThrown()
         {
             Aggregates.FloatAggregate aggregate = Aggregates.FloatAggregate.Create(TestData.FloatAggregateId);
-            aggregate.CreateFloat(TestData.EstateId, TestData.ContractId, TestData.ProductId, TestData.FloatCreatedDateTime);
+            aggregate.CreateFloat(TestData.EstateId, TestData.FloatCreatedDateTime);
             DateTime purchaseDateTime = DateTime.Now;
             aggregate.RecordCreditPurchase(purchaseDateTime, 1000, 900);
 
@@ -118,7 +116,7 @@ namespace TransactionProcessor.Aggregates.Tests
         public void FloatAggregate_GetTotalCostPrice_TotalCostReturned()
         {
             Aggregates.FloatAggregate aggregate = Aggregates.FloatAggregate.Create(TestData.FloatAggregateId);
-            aggregate.CreateFloat(TestData.EstateId, TestData.ContractId, TestData.ProductId, TestData.FloatCreatedDateTime);
+            aggregate.CreateFloat(TestData.EstateId, TestData.FloatCreatedDateTime);
             DateTime purchaseDateTime = DateTime.Now;
             aggregate.RecordCreditPurchase(purchaseDateTime, 1000, 900);
 

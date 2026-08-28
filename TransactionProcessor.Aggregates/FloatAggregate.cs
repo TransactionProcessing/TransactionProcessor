@@ -9,11 +9,9 @@ namespace TransactionProcessor.Aggregates
 {
     public static class FloatAggregateExtensions
     {
-        public static void PlayEvent(this FloatAggregate aggregate, FloatDomainEvents.FloatCreatedForContractProductEvent domainEvent)
+        public static void PlayEvent(this FloatAggregate aggregate, FloatDomainEvents.FloatCreatedEvent domainEvent)
         {
             aggregate.EstateId = domainEvent.EstateId;
-            aggregate.ContractId = domainEvent.ContractId;
-            aggregate.ProductId = domainEvent.ProductId;
             aggregate.CreatedDateTime = domainEvent.CreatedDateTime;
             aggregate.IsCreated = true;
         }
@@ -29,16 +27,14 @@ namespace TransactionProcessor.Aggregates
 
         public static Result CreateFloat(this FloatAggregate aggregate,
                                                Guid estateId,
-                                               Guid contractId,
-                                               Guid productId,
                                                DateTime createdDateTime)
         {
             if (aggregate.IsCreated) {
                 return Result.Success(); // Idempotent
             }
 
-            FloatDomainEvents.FloatCreatedForContractProductEvent floatCreatedForContractProductEvent = new(aggregate.AggregateId,
-                estateId, contractId, productId, createdDateTime);
+            FloatDomainEvents.FloatCreatedEvent floatCreatedForContractProductEvent = new(aggregate.AggregateId,
+                estateId, createdDateTime);
 
             aggregate.ApplyAndAppend(floatCreatedForContractProductEvent);
 
@@ -129,9 +125,6 @@ namespace TransactionProcessor.Aggregates
         public Boolean IsCreated { get; internal set; }
 
         public Guid EstateId { get; internal set; }
-
-        public Guid ContractId { get; internal set; }
-        public Guid ProductId { get; internal set; }
         public DateTime CreatedDateTime { get; internal set; }
 
         public Int32 NumberOfCreditPurchases { get; internal set; }

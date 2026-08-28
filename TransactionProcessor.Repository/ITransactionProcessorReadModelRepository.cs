@@ -122,7 +122,7 @@ namespace TransactionProcessor.Repository {
         Task<Result> CompleteTransaction(TransactionDomainEvents.TransactionHasBeenCompletedEvent domainEvent,
                                          CancellationToken cancellationToken);
 
-        Task<Result> CreateFloat(FloatDomainEvents.FloatCreatedForContractProductEvent domainEvent,
+        Task<Result> CreateFloat(FloatDomainEvents.FloatCreatedEvent domainEvent,
                                  CancellationToken cancellationToken);
 
         Task<Result> CreateFloatActivity(FloatDomainEvents.FloatCreditPurchasedEvent domainEvent,
@@ -1274,7 +1274,7 @@ namespace TransactionProcessor.Repository {
             return await context.SaveChangesAsync(cancellationToken);
         }
 
-        public async Task<Result> CreateFloat(FloatDomainEvents.FloatCreatedForContractProductEvent domainEvent,
+        public async Task<Result> CreateFloat(FloatDomainEvents.FloatCreatedEvent domainEvent,
                                               CancellationToken cancellationToken) {
             using ResolvedDbContext<EstateManagementContext>? resolvedContext = this.Resolver.Resolve(EstateManagementDatabaseName, domainEvent.EstateId.ToString());
             await using EstateManagementContext context = resolvedContext.Context;
@@ -1283,10 +1283,8 @@ namespace TransactionProcessor.Repository {
             {
                 CreatedDate = domainEvent.CreatedDateTime.Date,
                 CreatedDateTime = domainEvent.CreatedDateTime,
-                ContractId = domainEvent.ContractId,
                 EstateId = domainEvent.EstateId,
                 FloatId = domainEvent.FloatId,
-                ProductId = domainEvent.ProductId
             };
             await context.Floats.AddAsync(floatRecord, cancellationToken);
             return await context.SaveChangesWithDuplicateHandling(cancellationToken);

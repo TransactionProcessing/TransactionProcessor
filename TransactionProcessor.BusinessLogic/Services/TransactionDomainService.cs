@@ -625,7 +625,7 @@ namespace TransactionProcessor.BusinessLogic.Services{
 
         private async Task<(decimal UnitCost, decimal TotalCost)> GetFloatCost(TransactionCommands.ProcessSaleTransactionCommand command,
                                                                                     CancellationToken cancellationToken) {
-            Guid floatAggregateId = IdGenerationService.GenerateFloatAggregateId(command.EstateId, command.ContractId, command.ProductId);
+            Guid floatAggregateId = command.OperatorId;
 
             Logger.LogDebug($"Fetching FloatAggregate {floatAggregateId}");
 

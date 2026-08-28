@@ -363,19 +363,16 @@ public class WebHandlersTests
     {
         yield return Case(
             "CreateFloatForContractProduct",
-            SetupSuccess<FloatCommands.CreateFloatForContractProductCommand>(command =>
+            SetupSuccess<FloatCommands.CreateFloatCommand>(command =>
             {
                 command.EstateId.ShouldBe(EstateId);
-                command.ContractId.ShouldBe(ContractId);
-                command.ProductId.ShouldBe(ProductId);
             }),
-            mediator => FloatHandlers.CreateFloatForContractProduct(mediator,
+            mediator => FloatHandlers.CreateFloat(mediator,
                                                                     new DefaultHttpContext(),
                                                                     EstateId,
-                                                                    new CreateFloatForContractProductRequest
+                                                                    new CreateFloatRequest
                                                                     {
-                                                                        ContractId = ContractId,
-                                                                        ProductId = ProductId,
+                                                                        FloatId = FloatId,
                                                                         CreateDateTime = Instant
                                                                     },
                                                                     CancellationToken.None));

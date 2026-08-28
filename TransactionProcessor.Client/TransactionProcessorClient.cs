@@ -103,14 +103,14 @@ public class TransactionProcessorClient : ClientProxyBase, ITransactionProcessor
         }
     }
 
-    public async Task<Result> CreateFloatForContractProduct(String accessToken,
+    public async Task<Result> CreateFloat(String accessToken,
                                                             Guid estateId,
-                                                            CreateFloatForContractProductRequest createFloatForContractProductRequest,
+                                                            CreateFloatRequest createFloatForContractProductRequest,
                                                             CancellationToken cancellationToken) {
         String requestUri = this.BuildRequestUrl($"/api/estates/{estateId}/floats");
 
         try {
-            var result = await this.Post<CreateFloatForContractProductRequest>(requestUri, createFloatForContractProductRequest, accessToken, cancellationToken);
+            var result = await this.Post<CreateFloatRequest>(requestUri, createFloatForContractProductRequest, accessToken, cancellationToken);
 
             if (result.IsFailed)
                 return ResultHelpers.CreateFailure(result);
@@ -119,7 +119,7 @@ public class TransactionProcessorClient : ClientProxyBase, ITransactionProcessor
         }
         catch (Exception ex) {
             // An exception has occurred, add some additional information to the message
-            Exception exception = new("Error creating contract product float.", ex);
+            Exception exception = new("Error creating float.", ex);
 
             throw exception;
         }
