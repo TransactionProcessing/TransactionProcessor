@@ -1,4 +1,4 @@
-﻿using Moq;
+using Moq;
 using Shared.DomainDrivenDesign.EventSourcing;
 using Shared.EventStore.Aggregate;
 using Shared.Serialisation;
@@ -37,7 +37,7 @@ public class OperatorDomainServiceTests{
         this.AggregateService.Setup(o => o.GetLatest<OperatorAggregate>(It.IsAny<Guid>(), It.IsAny<CancellationToken>())).ReturnsAsync(SimpleResults.Result.Success(TestData.Aggregates.EmptyOperatorAggregate()));
         this.AggregateService
             .Setup(o => o.Save(It.IsAny<OperatorAggregate>(), It.IsAny<CancellationToken>())).ReturnsAsync(Result.Success());
-        Result result = await this.OperatorDomainService.CreateOperator(TestData.Commands.CreateOperatorCommand, CancellationToken.None);
+        Result result = await this.OperatorDomainService.CreateOperator(TestData.Commands.CreateOperatorCommand, TestContext.Current.CancellationToken);
         result.IsSuccess.ShouldBeTrue();
 
     }
@@ -60,7 +60,7 @@ public class OperatorDomainServiceTests{
                 RequireCustomTerminalNumber = TestData.RequireCustomTerminalNumber
             });
 
-        Result result = await this.OperatorDomainService.CreateOperator(emptyIdCommand, CancellationToken.None);
+        Result result = await this.OperatorDomainService.CreateOperator(emptyIdCommand, TestContext.Current.CancellationToken);
         result.IsSuccess.ShouldBeTrue();
     }
 
@@ -71,7 +71,7 @@ public class OperatorDomainServiceTests{
             .ReturnsAsync(TestData.Aggregates.EmptyEstateAggregate);
         this.AggregateService.Setup(o => o.GetLatest<OperatorAggregate>(It.IsAny<Guid>(), It.IsAny<CancellationToken>())).ReturnsAsync(SimpleResults.Result.Success(TestData.Aggregates.EmptyOperatorAggregate()));
 
-        Result result = await this.OperatorDomainService.CreateOperator(TestData.Commands.CreateOperatorCommand, CancellationToken.None);
+        Result result = await this.OperatorDomainService.CreateOperator(TestData.Commands.CreateOperatorCommand, TestContext.Current.CancellationToken);
         result.IsFailed.ShouldBeTrue();
 
     }
@@ -83,7 +83,7 @@ public class OperatorDomainServiceTests{
 
         this.AggregateService.Setup(o => o.GetLatest<OperatorAggregate>(It.IsAny<Guid>(), It.IsAny<CancellationToken>())).ReturnsAsync(SimpleResults.Result.Success(TestData.Aggregates.CreatedOperatorAggregate()));
 
-        Result result = await this.OperatorDomainService.CreateOperator(TestData.Commands.CreateOperatorCommand, CancellationToken.None);
+        Result result = await this.OperatorDomainService.CreateOperator(TestData.Commands.CreateOperatorCommand, TestContext.Current.CancellationToken);
         result.IsFailed.ShouldBeTrue();
     }
 
@@ -103,7 +103,7 @@ public class OperatorDomainServiceTests{
                 RequireCustomTerminalNumber = TestData.RequireCustomTerminalNumber
             });
 
-        Result result = await this.OperatorDomainService.CreateOperator(emptyNameCommand, CancellationToken.None);
+        Result result = await this.OperatorDomainService.CreateOperator(emptyNameCommand, TestContext.Current.CancellationToken);
         result.IsFailed.ShouldBeTrue();
     }
 
@@ -115,7 +115,7 @@ public class OperatorDomainServiceTests{
         this.AggregateService.Setup(o => o.GetLatest<OperatorAggregate>(It.IsAny<Guid>(), It.IsAny<CancellationToken>())).ReturnsAsync(SimpleResults.Result.Success(TestData.Aggregates.CreatedOperatorAggregate()));
         this.AggregateService
             .Setup(o => o.Save(It.IsAny<OperatorAggregate>(), It.IsAny<CancellationToken>())).ReturnsAsync(Result.Success());
-        Result result = await this.OperatorDomainService.UpdateOperator(TestData.Commands.UpdateOperatorCommand, CancellationToken.None);
+        Result result = await this.OperatorDomainService.UpdateOperator(TestData.Commands.UpdateOperatorCommand, TestContext.Current.CancellationToken);
         result.IsSuccess.ShouldBeTrue();
     }
 
@@ -126,7 +126,7 @@ public class OperatorDomainServiceTests{
             .ReturnsAsync(TestData.Aggregates.CreatedEstateAggregate());
         this.AggregateService.Setup(o => o.GetLatest<OperatorAggregate>(It.IsAny<Guid>(), It.IsAny<CancellationToken>())).ReturnsAsync(SimpleResults.Result.Success(TestData.Aggregates.EmptyOperatorAggregate()));
 
-        Result result = await this.OperatorDomainService.UpdateOperator(TestData.Commands.UpdateOperatorCommand, CancellationToken.None);
+        Result result = await this.OperatorDomainService.UpdateOperator(TestData.Commands.UpdateOperatorCommand, TestContext.Current.CancellationToken);
         result.IsFailed.ShouldBeTrue();
     }
 
@@ -136,7 +136,7 @@ public class OperatorDomainServiceTests{
         this.AggregateService.Setup(e => e.Get<EstateAggregate>(It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(Result.Failure());
 
-        Result result = await this.OperatorDomainService.CreateOperator(TestData.Commands.CreateOperatorCommand, CancellationToken.None);
+        Result result = await this.OperatorDomainService.CreateOperator(TestData.Commands.CreateOperatorCommand, TestContext.Current.CancellationToken);
         result.IsFailed.ShouldBeTrue();
     }
 
@@ -148,7 +148,7 @@ public class OperatorDomainServiceTests{
         this.AggregateService.Setup(o => o.GetLatest<OperatorAggregate>(It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(Result.Failure());
 
-        Result result = await this.OperatorDomainService.CreateOperator(TestData.Commands.CreateOperatorCommand, CancellationToken.None);
+        Result result = await this.OperatorDomainService.CreateOperator(TestData.Commands.CreateOperatorCommand, TestContext.Current.CancellationToken);
         result.IsFailed.ShouldBeTrue();
     }
 
@@ -162,7 +162,7 @@ public class OperatorDomainServiceTests{
         this.AggregateService.Setup(o => o.Save(It.IsAny<OperatorAggregate>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(Result.Failure());
 
-        Result result = await this.OperatorDomainService.CreateOperator(TestData.Commands.CreateOperatorCommand, CancellationToken.None);
+        Result result = await this.OperatorDomainService.CreateOperator(TestData.Commands.CreateOperatorCommand, TestContext.Current.CancellationToken);
         result.IsFailed.ShouldBeTrue();
     }
 
@@ -172,7 +172,7 @@ public class OperatorDomainServiceTests{
         this.AggregateService.Setup(e => e.Get<EstateAggregate>(It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
             .ThrowsAsync(new Exception());
 
-        Result result = await this.OperatorDomainService.CreateOperator(TestData.Commands.CreateOperatorCommand, CancellationToken.None);
+        Result result = await this.OperatorDomainService.CreateOperator(TestData.Commands.CreateOperatorCommand, TestContext.Current.CancellationToken);
         result.IsFailed.ShouldBeTrue();
     }
 
@@ -182,7 +182,7 @@ public class OperatorDomainServiceTests{
         this.AggregateService.Setup(e => e.Get<EstateAggregate>(It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(Result.Failure());
 
-        Result result = await this.OperatorDomainService.UpdateOperator(TestData.Commands.UpdateOperatorCommand, CancellationToken.None);
+        Result result = await this.OperatorDomainService.UpdateOperator(TestData.Commands.UpdateOperatorCommand, TestContext.Current.CancellationToken);
         result.IsFailed.ShouldBeTrue();
     }
 
@@ -194,7 +194,7 @@ public class OperatorDomainServiceTests{
         this.AggregateService.Setup(o => o.GetLatest<OperatorAggregate>(It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(SimpleResults.Result.Success(TestData.Aggregates.CreatedOperatorAggregate()));
 
-        Result result = await this.OperatorDomainService.UpdateOperator(TestData.Commands.UpdateOperatorCommand, CancellationToken.None);
+        Result result = await this.OperatorDomainService.UpdateOperator(TestData.Commands.UpdateOperatorCommand, TestContext.Current.CancellationToken);
         result.IsFailed.ShouldBeTrue();
     }
 
@@ -206,7 +206,7 @@ public class OperatorDomainServiceTests{
         this.AggregateService.Setup(o => o.GetLatest<OperatorAggregate>(It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(Result.Failure());
 
-        Result result = await this.OperatorDomainService.UpdateOperator(TestData.Commands.UpdateOperatorCommand, CancellationToken.None);
+        Result result = await this.OperatorDomainService.UpdateOperator(TestData.Commands.UpdateOperatorCommand, TestContext.Current.CancellationToken);
         result.IsFailed.ShouldBeTrue();
     }
 
@@ -220,7 +220,7 @@ public class OperatorDomainServiceTests{
         this.AggregateService.Setup(o => o.Save(It.IsAny<OperatorAggregate>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(Result.Failure());
 
-        Result result = await this.OperatorDomainService.UpdateOperator(TestData.Commands.UpdateOperatorCommand, CancellationToken.None);
+        Result result = await this.OperatorDomainService.UpdateOperator(TestData.Commands.UpdateOperatorCommand, TestContext.Current.CancellationToken);
         result.IsFailed.ShouldBeTrue();
     }
 
@@ -230,7 +230,7 @@ public class OperatorDomainServiceTests{
         this.AggregateService.Setup(e => e.Get<EstateAggregate>(It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
             .ThrowsAsync(new Exception());
 
-        Result result = await this.OperatorDomainService.UpdateOperator(TestData.Commands.UpdateOperatorCommand, CancellationToken.None);
+        Result result = await this.OperatorDomainService.UpdateOperator(TestData.Commands.UpdateOperatorCommand, TestContext.Current.CancellationToken);
         result.IsFailed.ShouldBeTrue();
     }
 }

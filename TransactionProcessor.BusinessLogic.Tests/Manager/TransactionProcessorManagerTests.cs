@@ -1,4 +1,4 @@
-﻿using Moq;
+using Moq;
 using Shared.DomainDrivenDesign.EventSourcing;
 using Shared.EventStore.Aggregate;
 using Shared.Logger;
@@ -48,7 +48,7 @@ namespace TransactionProcessor.BusinessLogic.Tests.Manager
             this.AggregateService.Setup(a => a.GetLatest<EstateAggregate>(It.IsAny<Guid>(), It.IsAny<CancellationToken>())).ReturnsAsync(Result.Success(TestData.Aggregates.CreatedEstateAggregate()));
             this.TransactionProcessorReadModelRepository.Setup(e => e.GetEstate(It.IsAny<Guid>(), It.IsAny<CancellationToken>())).ReturnsAsync(Result.Success(TestData.EstateModel));
 
-            Result<List<Estate>> getEstatesResult = await this.TransactionProcessorManager.GetEstates(TestData.EstateId, CancellationToken.None);
+            Result<List<Estate>> getEstatesResult = await this.TransactionProcessorManager.GetEstates(TestData.EstateId, TestContext.Current.CancellationToken);
             getEstatesResult.IsSuccess.ShouldBeTrue();
             List<Estate> estateModels = getEstatesResult.Data;
             estateModels.ShouldNotBeNull();
@@ -63,7 +63,7 @@ namespace TransactionProcessor.BusinessLogic.Tests.Manager
             this.AggregateService.Setup(a => a.GetLatest<EstateAggregate>(It.IsAny<Guid>(), It.IsAny<CancellationToken>())).ReturnsAsync(Result.Success(TestData.Aggregates.CreatedEstateAggregate()));
             this.TransactionProcessorReadModelRepository.Setup(e => e.GetEstate(It.IsAny<Guid>(), It.IsAny<CancellationToken>())).ReturnsAsync(Result.Failure());
 
-            Result<List<Estate>> getEstatesResult = await this.TransactionProcessorManager.GetEstates(TestData.EstateId, CancellationToken.None);
+            Result<List<Estate>> getEstatesResult = await this.TransactionProcessorManager.GetEstates(TestData.EstateId, TestContext.Current.CancellationToken);
             getEstatesResult.IsFailed.ShouldBeTrue();
         }
 
@@ -72,9 +72,9 @@ namespace TransactionProcessor.BusinessLogic.Tests.Manager
         {
             this.AggregateService.Setup(a => a.GetLatest<EstateAggregate>(It.IsAny<Guid>(), It.IsAny<CancellationToken>())).ReturnsAsync(Result.Success(TestData.Aggregates.EstateAggregateWithOperator()));
             this.TransactionProcessorReadModelRepository.Setup(e => e.GetEstate(It.IsAny<Guid>(), It.IsAny<CancellationToken>())).ReturnsAsync(Result.Success(TestData.EstateModel));
-            this.AggregateService.Setup(o => o.GetLatest<OperatorAggregate>(It.IsAny<Guid>(), CancellationToken.None)).ReturnsAsync(Result.Success(TestData.Aggregates.CreatedOperatorAggregate()));
+            this.AggregateService.Setup(o => o.GetLatest<OperatorAggregate>(It.IsAny<Guid>(), TestContext.Current.CancellationToken)).ReturnsAsync(Result.Success(TestData.Aggregates.CreatedOperatorAggregate()));
 
-            Result<Estate> getEstateResult = await this.TransactionProcessorManager.GetEstate(TestData.EstateId, CancellationToken.None);
+            Result<Estate> getEstateResult = await this.TransactionProcessorManager.GetEstate(TestData.EstateId, TestContext.Current.CancellationToken);
             getEstateResult.IsSuccess.ShouldBeTrue();
             Estate estateModel = getEstateResult.Data;
             estateModel.ShouldNotBeNull();
@@ -92,7 +92,7 @@ namespace TransactionProcessor.BusinessLogic.Tests.Manager
             this.AggregateService.Setup(a => a.GetLatest<EstateAggregate>(It.IsAny<Guid>(), It.IsAny<CancellationToken>())).ReturnsAsync(Result.Success(TestData.Aggregates.EmptyEstateAggregate));
             this.TransactionProcessorReadModelRepository.Setup(e => e.GetEstate(It.IsAny<Guid>(), It.IsAny<CancellationToken>())).ReturnsAsync(Result.Success(TestData.EstateModel));
 
-            Result<Estate> getEstateResult = await this.TransactionProcessorManager.GetEstate(TestData.EstateId, CancellationToken.None);
+            Result<Estate> getEstateResult = await this.TransactionProcessorManager.GetEstate(TestData.EstateId, TestContext.Current.CancellationToken);
             getEstateResult.IsFailed.ShouldBeTrue();
         }
 
@@ -102,7 +102,7 @@ namespace TransactionProcessor.BusinessLogic.Tests.Manager
             this.AggregateService.Setup(a => a.GetLatest<EstateAggregate>(It.IsAny<Guid>(), It.IsAny<CancellationToken>())).ReturnsAsync(Result.Failure());
             this.TransactionProcessorReadModelRepository.Setup(e => e.GetEstate(It.IsAny<Guid>(), It.IsAny<CancellationToken>())).ReturnsAsync(Result.Success(TestData.EstateModel));
 
-            Result<Estate> getEstateResult = await this.TransactionProcessorManager.GetEstate(TestData.EstateId, CancellationToken.None);
+            Result<Estate> getEstateResult = await this.TransactionProcessorManager.GetEstate(TestData.EstateId, TestContext.Current.CancellationToken);
             getEstateResult.IsFailed.ShouldBeTrue();
         }
 
@@ -111,7 +111,7 @@ namespace TransactionProcessor.BusinessLogic.Tests.Manager
         {
             this.AggregateService.Setup(c => c.GetLatest<ContractAggregate>(It.IsAny<Guid>(), It.IsAny<CancellationToken>())).ReturnsAsync(Result.Success(TestData.Aggregates.CreatedContractAggregateWithAProductAndTransactionFee(CalculationType.Fixed, FeeType.Merchant)));
 
-            Result<Contract> getContractResult = await this.TransactionProcessorManager.GetContract(TestData.EstateId, TestData.ContractId, CancellationToken.None);
+            Result<Contract> getContractResult = await this.TransactionProcessorManager.GetContract(TestData.EstateId, TestData.ContractId, TestContext.Current.CancellationToken);
             getContractResult.IsSuccess.ShouldBeTrue();
             Contract contractModel = getContractResult.Data;
 
@@ -130,7 +130,7 @@ namespace TransactionProcessor.BusinessLogic.Tests.Manager
         {
             this.AggregateService.Setup(c => c.GetLatest<ContractAggregate>(It.IsAny<Guid>(), It.IsAny<CancellationToken>())).ReturnsAsync(Result.Success(TestData.Aggregates.EmptyContractAggregate()));
 
-            Result<Contract> getContractResult = await this.TransactionProcessorManager.GetContract(TestData.EstateId, TestData.ContractId, CancellationToken.None);
+            Result<Contract> getContractResult = await this.TransactionProcessorManager.GetContract(TestData.EstateId, TestData.ContractId, TestContext.Current.CancellationToken);
             getContractResult.IsFailed.ShouldBeTrue();
         }
 
@@ -139,7 +139,7 @@ namespace TransactionProcessor.BusinessLogic.Tests.Manager
         {
             this.AggregateService.Setup(c => c.GetLatest<ContractAggregate>(It.IsAny<Guid>(), It.IsAny<CancellationToken>())).ReturnsAsync(Result.Failure());
 
-            Result<Contract> getContractResult = await this.TransactionProcessorManager.GetContract(TestData.EstateId, TestData.ContractId, CancellationToken.None);
+            Result<Contract> getContractResult = await this.TransactionProcessorManager.GetContract(TestData.EstateId, TestData.ContractId, TestContext.Current.CancellationToken);
             getContractResult.IsFailed.ShouldBeTrue();
         }
 
@@ -148,7 +148,7 @@ namespace TransactionProcessor.BusinessLogic.Tests.Manager
         {
             this.TransactionProcessorReadModelRepository.Setup(e => e.GetContracts(It.IsAny<Guid>(), It.IsAny<CancellationToken>())).ReturnsAsync(Result.Success(new List<Contract>() { TestData.ContractModelWithProductsAndTransactionFees }));
 
-            Result<List<Contract>> getContractsResult = await this.TransactionProcessorManager.GetContracts(TestData.EstateId, CancellationToken.None);
+            Result<List<Contract>> getContractsResult = await this.TransactionProcessorManager.GetContracts(TestData.EstateId, TestContext.Current.CancellationToken);
             getContractsResult.IsSuccess.ShouldBeTrue();
             List<Contract> contractModelList = getContractsResult.Data;
             contractModelList.ShouldNotBeNull();
@@ -160,7 +160,7 @@ namespace TransactionProcessor.BusinessLogic.Tests.Manager
         {
             this.TransactionProcessorReadModelRepository.Setup(e => e.GetContracts(It.IsAny<Guid>(), It.IsAny<CancellationToken>())).ReturnsAsync(Result.Failure());
 
-            Result<List<Contract>> getContractsResult = await this.TransactionProcessorManager.GetContracts(TestData.EstateId, CancellationToken.None);
+            Result<List<Contract>> getContractsResult = await this.TransactionProcessorManager.GetContracts(TestData.EstateId, TestContext.Current.CancellationToken);
             getContractsResult.IsFailed.ShouldBeTrue();
         }
 
@@ -169,7 +169,7 @@ namespace TransactionProcessor.BusinessLogic.Tests.Manager
         {
             this.AggregateService.Setup(c => c.GetLatest<ContractAggregate>(It.IsAny<Guid>(), It.IsAny<CancellationToken>())).ReturnsAsync(Result.Success(TestData.Aggregates.CreatedContractAggregateWithAProductAndTransactionFee(CalculationType.Fixed, FeeType.Merchant)));
 
-            Result<List<ContractProductTransactionFee>> getTransactionFeesForProductResult = await this.TransactionProcessorManager.GetTransactionFeesForProduct(TestData.EstateId, TestData.MerchantId, TestData.ContractId, TestData.VariableContractProductId, CancellationToken.None);
+            Result<List<ContractProductTransactionFee>> getTransactionFeesForProductResult = await this.TransactionProcessorManager.GetTransactionFeesForProduct(TestData.EstateId, TestData.MerchantId, TestData.ContractId, TestData.VariableContractProductId, TestContext.Current.CancellationToken);
             getTransactionFeesForProductResult.IsSuccess.ShouldBeTrue();
             List<ContractProductTransactionFee> transactionFees = getTransactionFeesForProductResult.Data;
             transactionFees.ShouldNotBeNull();
@@ -182,7 +182,7 @@ namespace TransactionProcessor.BusinessLogic.Tests.Manager
         {
             this.AggregateService.Setup(c => c.GetLatest<ContractAggregate>(It.IsAny<Guid>(), It.IsAny<CancellationToken>())).ReturnsAsync(Result.Success(TestData.Aggregates.EmptyContractAggregate()));
 
-            Result<List<ContractProductTransactionFee>> result = await this.TransactionProcessorManager.GetTransactionFeesForProduct(TestData.EstateId, TestData.MerchantId, TestData.ContractId, TestData.FixedContractProductId, CancellationToken.None);
+            Result<List<ContractProductTransactionFee>> result = await this.TransactionProcessorManager.GetTransactionFeesForProduct(TestData.EstateId, TestData.MerchantId, TestData.ContractId, TestData.FixedContractProductId, TestContext.Current.CancellationToken);
             result.IsFailed.ShouldBeTrue();
         }
 
@@ -191,7 +191,7 @@ namespace TransactionProcessor.BusinessLogic.Tests.Manager
         {
             this.AggregateService.Setup(c => c.GetLatest<ContractAggregate>(It.IsAny<Guid>(), It.IsAny<CancellationToken>())).ReturnsAsync(Result.Success(TestData.Aggregates.CreatedContractAggregate()));
 
-            Result<List<ContractProductTransactionFee>> result = await this.TransactionProcessorManager.GetTransactionFeesForProduct(TestData.EstateId, TestData.MerchantId, TestData.ContractId, TestData.FixedContractProductId, CancellationToken.None);
+            Result<List<ContractProductTransactionFee>> result = await this.TransactionProcessorManager.GetTransactionFeesForProduct(TestData.EstateId, TestData.MerchantId, TestData.ContractId, TestData.FixedContractProductId, TestContext.Current.CancellationToken);
             result.IsFailed.ShouldBeTrue();
         }
 
@@ -200,7 +200,7 @@ namespace TransactionProcessor.BusinessLogic.Tests.Manager
         {
             this.AggregateService.Setup(c => c.GetLatest<ContractAggregate>(It.IsAny<Guid>(), It.IsAny<CancellationToken>())).ReturnsAsync(Result.Failure());
 
-            Result<List<ContractProductTransactionFee>> result = await this.TransactionProcessorManager.GetTransactionFeesForProduct(TestData.EstateId, TestData.MerchantId, TestData.ContractId, TestData.FixedContractProductId, CancellationToken.None);
+            Result<List<ContractProductTransactionFee>> result = await this.TransactionProcessorManager.GetTransactionFeesForProduct(TestData.EstateId, TestData.MerchantId, TestData.ContractId, TestData.FixedContractProductId, TestContext.Current.CancellationToken);
             result.IsFailed.ShouldBeTrue();
         }
         /*
@@ -210,7 +210,7 @@ namespace TransactionProcessor.BusinessLogic.Tests.Manager
         {
             this.EstateManagementRepository.Setup(e => e.GetFileDetails(It.IsAny<Guid>(), It.IsAny<Guid>(), It.IsAny<CancellationToken>())).ReturnsAsync(Result.Success(TestData.FileModel));
 
-            var getFileDetailsResult = await this.EstateManagementManager.GetFileDetails(TestData.EstateId, TestData.FileId, CancellationToken.None);
+            var getFileDetailsResult = await this.EstateManagementManager.GetFileDetails(TestData.EstateId, TestData.FileId, TestContext.Current.CancellationToken);
             getFileDetailsResult.IsSuccess.ShouldBeTrue();
             var fileDetails = getFileDetailsResult.Data;
             fileDetails.ShouldNotBeNull();
@@ -221,7 +221,7 @@ namespace TransactionProcessor.BusinessLogic.Tests.Manager
         {
             this.EstateManagementRepository.Setup(e => e.GetFileDetails(It.IsAny<Guid>(), It.IsAny<Guid>(), It.IsAny<CancellationToken>())).ReturnsAsync(Result.Failure());
 
-            var getFileDetailsResult = await this.EstateManagementManager.GetFileDetails(TestData.EstateId, TestData.FileId, CancellationToken.None);
+            var getFileDetailsResult = await this.EstateManagementManager.GetFileDetails(TestData.EstateId, TestData.FileId, TestContext.Current.CancellationToken);
             getFileDetailsResult.IsFailed.ShouldBeTrue();
         }
         */
@@ -230,7 +230,7 @@ namespace TransactionProcessor.BusinessLogic.Tests.Manager
         {
             this.AggregateService.Setup(o => o.GetLatest<OperatorAggregate>(It.IsAny<Guid>(), It.IsAny<CancellationToken>())).ReturnsAsync(Result.Success(TestData.Aggregates.CreatedOperatorAggregate()));
 
-            Result<Operator> getOperatorResult = await this.TransactionProcessorManager.GetOperator(TestData.EstateId, TestData.OperatorId, CancellationToken.None);
+            Result<Operator> getOperatorResult = await this.TransactionProcessorManager.GetOperator(TestData.EstateId, TestData.OperatorId, TestContext.Current.CancellationToken);
             getOperatorResult.IsSuccess.ShouldBeTrue();
             Operator operatorDetails = getOperatorResult.Data;
             operatorDetails.ShouldNotBeNull();
@@ -241,7 +241,7 @@ namespace TransactionProcessor.BusinessLogic.Tests.Manager
         {
             this.AggregateService.Setup(o => o.GetLatest<OperatorAggregate>(It.IsAny<Guid>(), It.IsAny<CancellationToken>())).ReturnsAsync(Result.Success(TestData.Aggregates.EmptyOperatorAggregate()));
 
-            Result<Operator> getOperatorResult = await this.TransactionProcessorManager.GetOperator(TestData.EstateId, TestData.OperatorId, CancellationToken.None);
+            Result<Operator> getOperatorResult = await this.TransactionProcessorManager.GetOperator(TestData.EstateId, TestData.OperatorId, TestContext.Current.CancellationToken);
             getOperatorResult.IsFailed.ShouldBeTrue();
         }
 
@@ -250,7 +250,7 @@ namespace TransactionProcessor.BusinessLogic.Tests.Manager
         {
             this.AggregateService.Setup(o => o.GetLatest<OperatorAggregate>(It.IsAny<Guid>(), It.IsAny<CancellationToken>())).ReturnsAsync(Result.Failure());
 
-            Result<Operator> getOperatorResult = await this.TransactionProcessorManager.GetOperator(TestData.EstateId, TestData.OperatorId, CancellationToken.None);
+            Result<Operator> getOperatorResult = await this.TransactionProcessorManager.GetOperator(TestData.EstateId, TestData.OperatorId, TestContext.Current.CancellationToken);
             getOperatorResult.IsFailed.ShouldBeTrue();
         }
 
@@ -261,7 +261,7 @@ namespace TransactionProcessor.BusinessLogic.Tests.Manager
                                                                                                                                                            TestData.OperatorModel
                                                                                                                                                        }));
 
-            Result<List<Operator>> getOperatorsResult = await this.TransactionProcessorManager.GetOperators(TestData.EstateId, CancellationToken.None);
+            Result<List<Operator>> getOperatorsResult = await this.TransactionProcessorManager.GetOperators(TestData.EstateId, TestContext.Current.CancellationToken);
             getOperatorsResult.IsSuccess.ShouldBeTrue();
             List<Operator> operators = getOperatorsResult.Data;
             operators.ShouldNotBeNull();
@@ -274,7 +274,7 @@ namespace TransactionProcessor.BusinessLogic.Tests.Manager
         {
             this.TransactionProcessorReadModelRepository.Setup(e => e.GetOperators(It.IsAny<Guid>(), It.IsAny<CancellationToken>())).ReturnsAsync(Result.Success(new List<Operator>()));
 
-            Result<List<Operator>> getOperatorsResult = await this.TransactionProcessorManager.GetOperators(TestData.EstateId, CancellationToken.None);
+            Result<List<Operator>> getOperatorsResult = await this.TransactionProcessorManager.GetOperators(TestData.EstateId, TestContext.Current.CancellationToken);
             getOperatorsResult.IsSuccess.ShouldBeTrue();
         }
 
@@ -283,7 +283,7 @@ namespace TransactionProcessor.BusinessLogic.Tests.Manager
         {
             this.TransactionProcessorReadModelRepository.Setup(e => e.GetOperators(It.IsAny<Guid>(), It.IsAny<CancellationToken>())).ReturnsAsync(Result.Failure());
 
-            Result<List<Operator>> getOperatorsResult = await this.TransactionProcessorManager.GetOperators(TestData.EstateId, CancellationToken.None);
+            Result<List<Operator>> getOperatorsResult = await this.TransactionProcessorManager.GetOperators(TestData.EstateId, TestContext.Current.CancellationToken);
             getOperatorsResult.IsFailed.ShouldBeTrue();
         }
 
@@ -291,14 +291,14 @@ namespace TransactionProcessor.BusinessLogic.Tests.Manager
         public async Task TransactionProcessorManager_GetMerchant_MerchantIsReturned()
         {
             this.AggregateService.Setup(m => m.GetLatest<MerchantAggregate>(It.IsAny<Guid>(), It.IsAny<CancellationToken>())).ReturnsAsync(Result.Success(TestData.Aggregates.MerchantAggregateWithEverything(SettlementSchedule.Immediate)));
-            this.AggregateService.Setup(o => o.GetLatest<OperatorAggregate>(It.IsAny<Guid>(), CancellationToken.None)).ReturnsAsync(Result.Success(TestData.Aggregates.CreatedOperatorAggregate()));
+            this.AggregateService.Setup(o => o.GetLatest<OperatorAggregate>(It.IsAny<Guid>(), TestContext.Current.CancellationToken)).ReturnsAsync(Result.Success(TestData.Aggregates.CreatedOperatorAggregate()));
             this.TransactionProcessorReadModelRepository
                 .Setup(r => r.GetMerchant(It.IsAny<Guid>(), It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
                 .ReturnsAsync(Result.Success(TestData.MerchantModelWithAddressesContactsDevicesAndOperatorsAndContracts()));
 
             Merchant expectedModel = TestData.MerchantModelWithAddressesContactsDevicesAndOperatorsAndContracts();
 
-            Result<Merchant> getMerchantResult = await this.TransactionProcessorManager.GetMerchant(TestData.EstateId, TestData.MerchantId, CancellationToken.None);
+            Result<Merchant> getMerchantResult = await this.TransactionProcessorManager.GetMerchant(TestData.EstateId, TestData.MerchantId, TestContext.Current.CancellationToken);
             getMerchantResult.IsSuccess.ShouldBeTrue();
             Merchant merchantModel = getMerchantResult.Data;
 
@@ -345,7 +345,7 @@ namespace TransactionProcessor.BusinessLogic.Tests.Manager
         {
             this.AggregateService.Setup(m => m.GetLatest<MerchantAggregate>(It.IsAny<Guid>(), It.IsAny<CancellationToken>())).ReturnsAsync(Result.Success(TestData.Aggregates.EmptyMerchantAggregate()));
 
-            Result<Merchant> result = await this.TransactionProcessorManager.GetMerchant(TestData.EstateId, TestData.MerchantId, CancellationToken.None);
+            Result<Merchant> result = await this.TransactionProcessorManager.GetMerchant(TestData.EstateId, TestData.MerchantId, TestContext.Current.CancellationToken);
             result.IsFailed.ShouldBeTrue();
         }
 
@@ -354,7 +354,7 @@ namespace TransactionProcessor.BusinessLogic.Tests.Manager
         {
             this.AggregateService.Setup(m => m.GetLatest<MerchantAggregate>(It.IsAny<Guid>(), It.IsAny<CancellationToken>())).ReturnsAsync(Result.Failure());
 
-            Result<Merchant> result = await this.TransactionProcessorManager.GetMerchant(TestData.EstateId, TestData.MerchantId, CancellationToken.None);
+            Result<Merchant> result = await this.TransactionProcessorManager.GetMerchant(TestData.EstateId, TestData.MerchantId, TestContext.Current.CancellationToken);
             result.IsFailed.ShouldBeTrue();
         }
 
@@ -368,7 +368,7 @@ namespace TransactionProcessor.BusinessLogic.Tests.Manager
                 .Setup(m => m.GetLatest<MerchantScheduleAggregate>(It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
                 .ReturnsAsync(Result.Success(merchantScheduleAggregate));
 
-            Result<MerchantScheduleModel> result = await this.TransactionProcessorManager.GetMerchantSchedule(TestData.EstateId, TestData.MerchantId, TestData.MerchantScheduleYear, CancellationToken.None);
+            Result<MerchantScheduleModel> result = await this.TransactionProcessorManager.GetMerchantSchedule(TestData.EstateId, TestData.MerchantId, TestData.MerchantScheduleYear, TestContext.Current.CancellationToken);
 
             result.IsSuccess.ShouldBeTrue();
             result.Data.Year.ShouldBe(TestData.MerchantScheduleYear);
@@ -384,7 +384,7 @@ namespace TransactionProcessor.BusinessLogic.Tests.Manager
                 .Setup(m => m.GetLatest<MerchantScheduleAggregate>(It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
                 .ReturnsAsync(Result.Success(TestData.Aggregates.EmptyMerchantScheduleAggregate()));
 
-            Result<MerchantScheduleModel> result = await this.TransactionProcessorManager.GetMerchantSchedule(TestData.EstateId, TestData.MerchantId, TestData.MerchantScheduleYear, CancellationToken.None);
+            Result<MerchantScheduleModel> result = await this.TransactionProcessorManager.GetMerchantSchedule(TestData.EstateId, TestData.MerchantId, TestData.MerchantScheduleYear, TestContext.Current.CancellationToken);
 
             result.IsFailed.ShouldBeTrue();
         }
@@ -397,7 +397,7 @@ namespace TransactionProcessor.BusinessLogic.Tests.Manager
                 .Setup(m => m.GetMerchantSchedule(It.IsAny<Guid>(), It.IsAny<Guid>(), It.IsAny<Int32>(), It.IsAny<CancellationToken>()))
                 .ReturnsAsync(Result.Success(expectedSchedule));
 
-            Result<MerchantScheduleModel> result = await this.TransactionProcessorManager.GetMerchantScheduleFromReadModel(TestData.EstateId, TestData.MerchantId, TestData.MerchantScheduleYear, CancellationToken.None);
+            Result<MerchantScheduleModel> result = await this.TransactionProcessorManager.GetMerchantScheduleFromReadModel(TestData.EstateId, TestData.MerchantId, TestData.MerchantScheduleYear, TestContext.Current.CancellationToken);
 
             result.IsSuccess.ShouldBeTrue();
             result.Data.Year.ShouldBe(TestData.MerchantScheduleYear);
@@ -413,7 +413,7 @@ namespace TransactionProcessor.BusinessLogic.Tests.Manager
                 .Setup(m => m.GetMerchantSchedule(It.IsAny<Guid>(), It.IsAny<Guid>(), It.IsAny<Int32>(), It.IsAny<CancellationToken>()))
                 .ReturnsAsync(Result.Failure());
 
-            Result<MerchantScheduleModel> result = await this.TransactionProcessorManager.GetMerchantScheduleFromReadModel(TestData.EstateId, TestData.MerchantId, TestData.MerchantScheduleYear, CancellationToken.None);
+            Result<MerchantScheduleModel> result = await this.TransactionProcessorManager.GetMerchantScheduleFromReadModel(TestData.EstateId, TestData.MerchantId, TestData.MerchantScheduleYear, TestContext.Current.CancellationToken);
 
             result.IsFailed.ShouldBeTrue();
         }
@@ -423,7 +423,7 @@ namespace TransactionProcessor.BusinessLogic.Tests.Manager
         {
             this.TransactionProcessorReadModelRepository.Setup(e => e.GetMerchantContracts(It.IsAny<Guid>(), It.IsAny<Guid>(), It.IsAny<CancellationToken>())).ReturnsAsync(Result.Success(TestData.MerchantContracts));
 
-            Result<List<Contract>> getMerchantContractsResult = await this.TransactionProcessorManager.GetMerchantContracts(TestData.EstateId, TestData.MerchantId, CancellationToken.None);
+            Result<List<Contract>> getMerchantContractsResult = await this.TransactionProcessorManager.GetMerchantContracts(TestData.EstateId, TestData.MerchantId, TestContext.Current.CancellationToken);
             getMerchantContractsResult.IsSuccess.ShouldBeTrue();
             List<Contract> merchantContracts = getMerchantContractsResult.Data;
             merchantContracts.ShouldNotBeNull();
@@ -436,7 +436,7 @@ namespace TransactionProcessor.BusinessLogic.Tests.Manager
         {
             this.TransactionProcessorReadModelRepository.Setup(e => e.GetMerchantContracts(It.IsAny<Guid>(), It.IsAny<Guid>(), It.IsAny<CancellationToken>())).ReturnsAsync(Result.Success(TestData.MerchantContractsEmptyList));
 
-            Result<List<Contract>> getMerchantContractsResult = await this.TransactionProcessorManager.GetMerchantContracts(TestData.EstateId, TestData.MerchantId, CancellationToken.None);
+            Result<List<Contract>> getMerchantContractsResult = await this.TransactionProcessorManager.GetMerchantContracts(TestData.EstateId, TestData.MerchantId, TestContext.Current.CancellationToken);
             getMerchantContractsResult.IsFailed.ShouldBeTrue();
         }
 
@@ -445,7 +445,7 @@ namespace TransactionProcessor.BusinessLogic.Tests.Manager
         {
             this.TransactionProcessorReadModelRepository.Setup(e => e.GetMerchantContracts(It.IsAny<Guid>(), It.IsAny<Guid>(), It.IsAny<CancellationToken>())).ReturnsAsync(Result.Failure());
 
-            Result<List<Contract>> getMerchantContractsResult = await this.TransactionProcessorManager.GetMerchantContracts(TestData.EstateId, TestData.MerchantId, CancellationToken.None);
+            Result<List<Contract>> getMerchantContractsResult = await this.TransactionProcessorManager.GetMerchantContracts(TestData.EstateId, TestData.MerchantId, TestContext.Current.CancellationToken);
             getMerchantContractsResult.IsFailed.ShouldBeTrue();
         }
 
@@ -456,7 +456,7 @@ namespace TransactionProcessor.BusinessLogic.Tests.Manager
                 .Setup(e => e.GetMerchantContracts(It.IsAny<Guid>(), It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
                 .ThrowsAsync(new Exception("Test exception"));
 
-            Result<List<Contract>> getMerchantContractsResult = await this.TransactionProcessorManager.GetMerchantContracts(TestData.EstateId, TestData.MerchantId, CancellationToken.None);
+            Result<List<Contract>> getMerchantContractsResult = await this.TransactionProcessorManager.GetMerchantContracts(TestData.EstateId, TestData.MerchantId, TestContext.Current.CancellationToken);
 
             getMerchantContractsResult.IsFailed.ShouldBeTrue();
             getMerchantContractsResult.Message.ShouldBe("Test exception");
@@ -471,7 +471,7 @@ namespace TransactionProcessor.BusinessLogic.Tests.Manager
                                                                                                                                              .MerchantModelWithAddressesContactsDevicesAndOperatorsAndContracts()
                                                                                                                                      }));
 
-            Result<List<Merchant>> getMerchantsResult = await this.TransactionProcessorManager.GetMerchants(TestData.EstateId, CancellationToken.None);
+            Result<List<Merchant>> getMerchantsResult = await this.TransactionProcessorManager.GetMerchants(TestData.EstateId, TestContext.Current.CancellationToken);
             getMerchantsResult.IsSuccess.ShouldBeTrue();
             List<Merchant> merchantList = getMerchantsResult.Data;
 
@@ -486,7 +486,7 @@ namespace TransactionProcessor.BusinessLogic.Tests.Manager
             List<Merchant> merchants = null;
             this.TransactionProcessorReadModelRepository.Setup(e => e.GetMerchants(It.IsAny<Guid>(), It.IsAny<CancellationToken>())).ReturnsAsync(Result.Success(merchants));
 
-            Result<List<Merchant>> getMerchantsResult = await this.TransactionProcessorManager.GetMerchants(TestData.EstateId, CancellationToken.None);
+            Result<List<Merchant>> getMerchantsResult = await this.TransactionProcessorManager.GetMerchants(TestData.EstateId, TestContext.Current.CancellationToken);
             getMerchantsResult.IsFailed.ShouldBeTrue();
         }
 
@@ -496,7 +496,7 @@ namespace TransactionProcessor.BusinessLogic.Tests.Manager
             List<Merchant> merchants = new List<Merchant>();
             this.TransactionProcessorReadModelRepository.Setup(e => e.GetMerchants(It.IsAny<Guid>(), It.IsAny<CancellationToken>())).ReturnsAsync(Result.Success(merchants));
 
-            Result<List<Merchant>> getMerchantsResult = await this.TransactionProcessorManager.GetMerchants(TestData.EstateId, CancellationToken.None);
+            Result<List<Merchant>> getMerchantsResult = await this.TransactionProcessorManager.GetMerchants(TestData.EstateId, TestContext.Current.CancellationToken);
             getMerchantsResult.IsFailed.ShouldBeTrue();
         }
 
@@ -506,8 +506,9 @@ namespace TransactionProcessor.BusinessLogic.Tests.Manager
             List<Merchant> merchants = new List<Merchant>();
             this.TransactionProcessorReadModelRepository.Setup(e => e.GetMerchants(It.IsAny<Guid>(), It.IsAny<CancellationToken>())).ReturnsAsync(Result.Failure());
 
-            Result<List<Merchant>> getMerchantsResult = await this.TransactionProcessorManager.GetMerchants(TestData.EstateId, CancellationToken.None);
+            Result<List<Merchant>> getMerchantsResult = await this.TransactionProcessorManager.GetMerchants(TestData.EstateId, TestContext.Current.CancellationToken);
             getMerchantsResult.IsFailed.ShouldBeTrue();
         }
     }
 }
+

@@ -1,4 +1,4 @@
-﻿using Moq;
+using Moq;
 using Shared.Logger;
 using Shared.Serialisation;
 using Shouldly;
@@ -38,7 +38,7 @@ public class EstateDomainEventHandlerTests
             .Setup(r => r.CreateReadModel(It.IsAny<EstateDomainEvents.EstateCreatedEvent>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(Result.Success);
 
-        Should.NotThrow(async () => { await this.DomainEventHandler.Handle(estateCreatedEvent, CancellationToken.None); });
+        Should.NotThrow(async () => { await this.DomainEventHandler.Handle(estateCreatedEvent, TestContext.Current.CancellationToken); });
     }
 
     [Fact]
@@ -49,7 +49,7 @@ public class EstateDomainEventHandlerTests
             .Setup(r => r.CreateReadModel(It.IsAny<EstateDomainEvents.EstateCreatedEvent>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(Result.Failure);
 
-        Result result = await this.DomainEventHandler.Handle(estateCreatedEvent, CancellationToken.None);
+        Result result = await this.DomainEventHandler.Handle(estateCreatedEvent, TestContext.Current.CancellationToken);
         result.IsFailed.ShouldBeTrue();
     }
 
@@ -58,7 +58,7 @@ public class EstateDomainEventHandlerTests
     {
         EstateDomainEvents.EstateReferenceAllocatedEvent estateReferenceAllocatedEvent = TestData.DomainEvents.EstateReferenceAllocatedEvent;
 
-        Should.NotThrow(async () => { await this.DomainEventHandler.Handle(estateReferenceAllocatedEvent, CancellationToken.None); });
+        Should.NotThrow(async () => { await this.DomainEventHandler.Handle(estateReferenceAllocatedEvent, TestContext.Current.CancellationToken); });
     }
 
     [Fact]
@@ -66,7 +66,7 @@ public class EstateDomainEventHandlerTests
     {
         EstateDomainEvents.SecurityUserAddedToEstateEvent securityUserAddedEvent = TestData.DomainEvents.EstateSecurityUserAddedEvent;
 
-        Should.NotThrow(async () => { await this.DomainEventHandler.Handle(securityUserAddedEvent, CancellationToken.None); });
+        Should.NotThrow(async () => { await this.DomainEventHandler.Handle(securityUserAddedEvent, TestContext.Current.CancellationToken); });
     }
 
     #endregion

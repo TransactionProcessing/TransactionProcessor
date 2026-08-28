@@ -1,4 +1,4 @@
-﻿using Moq;
+using Moq;
 using Shared.Serialisation;
 using Shouldly;
 using SimpleResults;
@@ -28,7 +28,7 @@ namespace TransactionProcessor.BusinessLogic.Tests.RequestHandler
                 It.IsAny<CancellationToken>())).ReturnsAsync(Result.Success());
             TransactionCommands.ProcessLogonTransactionCommand command = TestData.Commands.ProcessLogonTransactionCommand;
 
-            var result = await handler.Handle(command, CancellationToken.None);
+            var result = await handler.Handle(command, TestContext.Current.CancellationToken);
             result.IsSuccess.ShouldBeTrue();
 
         }
@@ -42,7 +42,7 @@ namespace TransactionProcessor.BusinessLogic.Tests.RequestHandler
                 It.IsAny<CancellationToken>())).ReturnsAsync(Result.Success());
             TransactionCommands.ProcessSaleTransactionCommand command = TestData.Commands.ProcessSaleTransactionCommand;
 
-            var result = await handler.Handle(command, CancellationToken.None);
+            var result = await handler.Handle(command, TestContext.Current.CancellationToken);
             result.IsSuccess.ShouldBeTrue();
 
         }
@@ -56,7 +56,7 @@ namespace TransactionProcessor.BusinessLogic.Tests.RequestHandler
                 It.IsAny<CancellationToken>())).ReturnsAsync(Result.Success());
             TransactionCommands.ProcessReconciliationCommand command = TestData.Commands.ProcessReconciliationCommand;
 
-            var result = await handler.Handle(command, CancellationToken.None);
+            var result = await handler.Handle(command, TestContext.Current.CancellationToken);
             result.IsSuccess.ShouldBeTrue();
 
         }
@@ -71,7 +71,7 @@ namespace TransactionProcessor.BusinessLogic.Tests.RequestHandler
                     It.IsAny<CancellationToken>())).ReturnsAsync(Result.Success());
             TransactionCommands.ResendTransactionReceiptCommand command = TestData.Commands.ResendTransactionReceiptCommand;
 
-            var result = await handler.Handle(command, CancellationToken.None);
+            var result = await handler.Handle(command, TestContext.Current.CancellationToken);
             result.IsSuccess.ShouldBeTrue();
         }
     }

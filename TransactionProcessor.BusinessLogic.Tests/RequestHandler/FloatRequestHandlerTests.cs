@@ -1,4 +1,4 @@
-﻿using SimpleResults;
+using SimpleResults;
 using System.Threading.Tasks;
 
 namespace TransactionProcessor.BusinessLogic.Tests.RequestHandler;
@@ -27,7 +27,7 @@ public class FloatRequestHandlerTests
         floatDomainService.Setup(f => f.CreateFloat(It.IsAny<FloatCommands.CreateFloatCommand>(), It.IsAny<CancellationToken>())).ReturnsAsync(Result.Success());
         var command = TestData.CreateFloatCommand;
 
-        var result = await handler.Handle(command, CancellationToken.None);
+        var result = await handler.Handle(command, TestContext.Current.CancellationToken);
         result.IsSuccess.ShouldBeTrue();
     }
 
@@ -41,7 +41,7 @@ public class FloatRequestHandlerTests
 
         var command = TestData.RecordCreditPurchaseForFloatCommand;
 
-        var result = await handler.Handle(command, CancellationToken.None);
+        var result = await handler.Handle(command, TestContext.Current.CancellationToken);
         result.IsSuccess.ShouldBeTrue();
 
     }

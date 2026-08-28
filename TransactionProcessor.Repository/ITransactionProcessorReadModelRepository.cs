@@ -125,6 +125,9 @@ namespace TransactionProcessor.Repository {
         Task<Result> CreateFloat(FloatDomainEvents.FloatCreatedEvent domainEvent,
                                  CancellationToken cancellationToken);
 
+        Task<Result> CreateFloat(FloatDomainEvents.FloatCreatedForContractProductEvent domainEvent,
+                                 CancellationToken cancellationToken);
+
         Task<Result> CreateFloatActivity(FloatDomainEvents.FloatCreditPurchasedEvent domainEvent,
                                          CancellationToken cancellationToken);
 
@@ -1288,6 +1291,12 @@ namespace TransactionProcessor.Repository {
             };
             await context.Floats.AddAsync(floatRecord, cancellationToken);
             return await context.SaveChangesWithDuplicateHandling(cancellationToken);
+        }
+
+        public async Task<Result> CreateFloat(FloatDomainEvents.FloatCreatedForContractProductEvent domainEvent,
+                                              CancellationToken cancellationToken)
+        {
+            return await this.CreateFloat(new FloatDomainEvents.FloatCreatedEvent(domainEvent.FloatId, domainEvent.EstateId, domainEvent.CreatedDateTime), cancellationToken);
         }
 
         public async Task<Result> CreateFloatActivity(FloatDomainEvents.FloatCreditPurchasedEvent domainEvent,

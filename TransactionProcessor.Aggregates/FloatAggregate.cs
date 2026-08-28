@@ -16,6 +16,13 @@ namespace TransactionProcessor.Aggregates
             aggregate.IsCreated = true;
         }
 
+        public static void PlayEvent(this FloatAggregate aggregate, FloatDomainEvents.FloatCreatedForContractProductEvent domainEvent)
+        {
+            aggregate.EstateId = domainEvent.EstateId;
+            aggregate.CreatedDateTime = domainEvent.CreatedDateTime;
+            aggregate.IsCreated = true;
+        }
+
         public static void PlayEvent(this FloatAggregate aggregate, FloatDomainEvents.FloatCreditPurchasedEvent domainEvent)
         {
             aggregate.NumberOfCreditPurchases++;
@@ -33,10 +40,10 @@ namespace TransactionProcessor.Aggregates
                 return Result.Success(); // Idempotent
             }
 
-            FloatDomainEvents.FloatCreatedEvent floatCreatedForContractProductEvent = new(aggregate.AggregateId,
+            FloatDomainEvents.FloatCreatedEvent floatCreatedEvent = new(aggregate.AggregateId,
                 estateId, createdDateTime);
 
-            aggregate.ApplyAndAppend(floatCreatedForContractProductEvent);
+            aggregate.ApplyAndAppend(floatCreatedEvent);
 
             return Result.Success();
         }

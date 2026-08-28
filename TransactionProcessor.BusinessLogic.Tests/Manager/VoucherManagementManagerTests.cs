@@ -1,4 +1,4 @@
-﻿using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Moq;
 using Shared.DomainDrivenDesign.EventSourcing;
@@ -65,12 +65,12 @@ namespace TransactionProcessor.BusinessLogic.Tests.Manager
                 VoucherCode = TestData.VoucherCode,
                 Barcode = TestData.Barcode,
                 Timestamp = b
-            });
-            await this.Context.SaveChangesAsync(CancellationToken.None);
+            }, TestContext.Current.CancellationToken);
+            await this.Context.SaveChangesAsync(TestContext.Current.CancellationToken);
             
             this.AggregateService.Setup(v => v.Get<VoucherAggregate>(It.IsAny<Guid>(), It.IsAny<CancellationToken>())).ReturnsAsync(Result.Success(TestData.GetVoucherAggregateWithRecipientMobile()));
 
-            Result<Voucher> result = await this.VoucherManagementManager.GetVoucherByCode(TestData.EstateId, TestData.VoucherCode, CancellationToken.None);
+            Result<Voucher> result = await this.VoucherManagementManager.GetVoucherByCode(TestData.EstateId, TestData.VoucherCode, TestContext.Current.CancellationToken);
             result.IsSuccess.ShouldBeTrue();
             Models.Voucher voucher = result.Data;
             voucher.ShouldNotBeNull();
@@ -84,7 +84,7 @@ namespace TransactionProcessor.BusinessLogic.Tests.Manager
 
             Should.Throw<NotFoundException>(async () =>
             {
-                await this.VoucherManagementManager.GetVoucherByCode(TestData.EstateId, TestData.VoucherCode, CancellationToken.None);
+                await this.VoucherManagementManager.GetVoucherByCode(TestData.EstateId, TestData.VoucherCode, TestContext.Current.CancellationToken);
             });
         }
         
@@ -100,12 +100,12 @@ namespace TransactionProcessor.BusinessLogic.Tests.Manager
                 VoucherCode = TestData.VoucherCode,
                 Barcode = TestData.Barcode,
                 Timestamp = b
-            });
-            await this.Context.SaveChangesAsync(CancellationToken.None);
+            }, TestContext.Current.CancellationToken);
+            await this.Context.SaveChangesAsync(TestContext.Current.CancellationToken);
 
             this.AggregateService.Setup(v => v.Get<VoucherAggregate>(It.IsAny<Guid>(), It.IsAny<CancellationToken>())).ReturnsAsync(Result.Success(TestData.GetVoucherAggregateWithRecipientMobile()));
             
-            var result = await VoucherManagementManager.GetVoucherByTransactionId(TestData.EstateId, TestData.TransactionId, CancellationToken.None);
+            var result = await VoucherManagementManager.GetVoucherByTransactionId(TestData.EstateId, TestData.TransactionId, TestContext.Current.CancellationToken);
             result.IsSuccess.ShouldBeTrue();
             Models.Voucher voucher = result.Data;
             voucher.ShouldNotBeNull();
@@ -118,8 +118,9 @@ namespace TransactionProcessor.BusinessLogic.Tests.Manager
 
             Should.Throw<NotFoundException>(async () =>
             {
-                await this.VoucherManagementManager.GetVoucherByTransactionId(TestData.EstateId, TestData.TransactionId, CancellationToken.None);
+                await this.VoucherManagementManager.GetVoucherByTransactionId(TestData.EstateId, TestData.TransactionId, TestContext.Current.CancellationToken);
             });
         }
     }
 }
+

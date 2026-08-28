@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
@@ -30,7 +30,7 @@ public class MerchantStatementDomainEventHandlerTests : DomainEventHandlerTests
         this.Mediator.Setup(m => m.Send(It.IsAny<IRequest<Result>>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(Result.Success());
 
-        Result result = await this.EventHandler.Handle(TestData.DomainEvents.StatementGeneratedEvent, CancellationToken.None);
+        Result result = await this.EventHandler.Handle(TestData.DomainEvents.StatementGeneratedEvent, TestContext.Current.CancellationToken);
         result.IsSuccess.ShouldBeTrue();
     }
 
@@ -40,7 +40,7 @@ public class MerchantStatementDomainEventHandlerTests : DomainEventHandlerTests
         this.Mediator.Setup(m => m.Send(It.IsAny<IRequest<Result>>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(Result.Success());
 
-        Result result = await this.EventHandler.Handle(TestData.DomainEvents.StatementBuiltEvent, CancellationToken.None);
+        Result result = await this.EventHandler.Handle(TestData.DomainEvents.StatementBuiltEvent, TestContext.Current.CancellationToken);
         result.IsSuccess.ShouldBeTrue();
     }
 
@@ -50,7 +50,7 @@ public class MerchantStatementDomainEventHandlerTests : DomainEventHandlerTests
         this.Mediator.Setup(m => m.Send(It.IsAny<IRequest<Result>>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(Result.Success());
 
-        Result result = await this.EventHandler.Handle(TestData.DomainEvents.TransactionHasBeenCompletedEvent, CancellationToken.None);
+        Result result = await this.EventHandler.Handle(TestData.DomainEvents.TransactionHasBeenCompletedEvent, TestContext.Current.CancellationToken);
         result.IsSuccess.ShouldBeTrue();
     }
 
@@ -63,7 +63,7 @@ public class MerchantStatementDomainEventHandlerTests : DomainEventHandlerTests
             .ReturnsAsync(Result.Failure(errors))
             .ReturnsAsync(Result.Success());
 
-        Result result = await this.EventHandler.Handle(TestData.DomainEvents.TransactionHasBeenCompletedEvent, CancellationToken.None);
+        Result result = await this.EventHandler.Handle(TestData.DomainEvents.TransactionHasBeenCompletedEvent, TestContext.Current.CancellationToken);
         result.IsSuccess.ShouldBeTrue();
         this.Mediator.Verify(m => m.Send(It.IsAny<IRequest<Result>>(), It.IsAny<CancellationToken>()), Times.Exactly(2));
     }
@@ -80,7 +80,7 @@ public class MerchantStatementDomainEventHandlerTests : DomainEventHandlerTests
             .ReturnsAsync(Result.Failure(errors))
             .ReturnsAsync(Result.Failure(errors));
 
-        Result result = await this.EventHandler.Handle(TestData.DomainEvents.TransactionHasBeenCompletedEvent, CancellationToken.None);
+        Result result = await this.EventHandler.Handle(TestData.DomainEvents.TransactionHasBeenCompletedEvent, TestContext.Current.CancellationToken);
         result.IsFailed.ShouldBeTrue();
         this.Mediator.Verify(m => m.Send(It.IsAny<IRequest<Result>>(), It.IsAny<CancellationToken>()), Times.Exactly(6));
     }
@@ -91,7 +91,7 @@ public class MerchantStatementDomainEventHandlerTests : DomainEventHandlerTests
         this.Mediator.Setup(m => m.Send(It.IsAny<IRequest<Result>>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(Result.Success());
 
-        Result result = await this.EventHandler.Handle(TestData.DomainEvents.MerchantFeeSettledEvent, CancellationToken.None);
+        Result result = await this.EventHandler.Handle(TestData.DomainEvents.MerchantFeeSettledEvent, TestContext.Current.CancellationToken);
         result.IsSuccess.ShouldBeTrue();
     }
 
@@ -104,7 +104,7 @@ public class MerchantStatementDomainEventHandlerTests : DomainEventHandlerTests
             .ReturnsAsync(Result.Failure(errors))
             .ReturnsAsync(Result.Success());
 
-        Result result = await this.EventHandler.Handle(TestData.DomainEvents.MerchantFeeSettledEvent, CancellationToken.None);
+        Result result = await this.EventHandler.Handle(TestData.DomainEvents.MerchantFeeSettledEvent, TestContext.Current.CancellationToken);
         result.IsSuccess.ShouldBeTrue();
         this.Mediator.Verify(m => m.Send(It.IsAny<IRequest<Result>>(), It.IsAny<CancellationToken>()), Times.Exactly(2));
     }
@@ -121,7 +121,7 @@ public class MerchantStatementDomainEventHandlerTests : DomainEventHandlerTests
             .ReturnsAsync(Result.Failure(errors))
             .ReturnsAsync(Result.Failure(errors));
 
-        Result result = await this.EventHandler.Handle(TestData.DomainEvents.MerchantFeeSettledEvent, CancellationToken.None);
+        Result result = await this.EventHandler.Handle(TestData.DomainEvents.MerchantFeeSettledEvent, TestContext.Current.CancellationToken);
         result.IsFailed.ShouldBeTrue();
         this.Mediator.Verify(m => m.Send(It.IsAny<IRequest<Result>>(), It.IsAny<CancellationToken>()), Times.Exactly(6));
     }
@@ -132,7 +132,7 @@ public class MerchantStatementDomainEventHandlerTests : DomainEventHandlerTests
         this.Mediator.Setup(m => m.Send(It.IsAny<IRequest<Result>>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(Result.Success());
 
-        Result result = await this.EventHandler.Handle(TestData.DomainEvents.StatementCreatedForDateEvent, CancellationToken.None);
+        Result result = await this.EventHandler.Handle(TestData.DomainEvents.StatementCreatedForDateEvent, TestContext.Current.CancellationToken);
         result.IsSuccess.ShouldBeTrue();
     }
 
@@ -142,7 +142,7 @@ public class MerchantStatementDomainEventHandlerTests : DomainEventHandlerTests
         this.Mediator.Setup(m => m.Send(It.IsAny<IRequest<Result>>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(Result.Success());
 
-        Result result = await this.EventHandler.Handle(TestData.DomainEvents.AutomaticDepositMadeEvent, CancellationToken.None);
+        Result result = await this.EventHandler.Handle(TestData.DomainEvents.AutomaticDepositMadeEvent, TestContext.Current.CancellationToken);
         result.IsSuccess.ShouldBeTrue();
     }
 
@@ -152,7 +152,7 @@ public class MerchantStatementDomainEventHandlerTests : DomainEventHandlerTests
         this.Mediator.Setup(m => m.Send(It.IsAny<IRequest<Result>>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(Result.Success());
 
-        Result result = await this.EventHandler.Handle(TestData.DomainEvents.ManualDepositMadeEvent, CancellationToken.None);
+        Result result = await this.EventHandler.Handle(TestData.DomainEvents.ManualDepositMadeEvent, TestContext.Current.CancellationToken);
         result.IsSuccess.ShouldBeTrue();
     }
 
@@ -162,7 +162,7 @@ public class MerchantStatementDomainEventHandlerTests : DomainEventHandlerTests
         this.Mediator.Setup(m => m.Send(It.IsAny<IRequest<Result>>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(Result.Success());
 
-        Result result = await this.EventHandler.Handle(TestData.DomainEvents.WithdrawalMadeEvent, CancellationToken.None);
+        Result result = await this.EventHandler.Handle(TestData.DomainEvents.WithdrawalMadeEvent, TestContext.Current.CancellationToken);
         result.IsSuccess.ShouldBeTrue();
     }
 }

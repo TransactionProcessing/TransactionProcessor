@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Threading;
 using System.Threading.Tasks;
 using Moq;
@@ -43,7 +43,7 @@ namespace TransactionProcessor.BusinessLogic.Tests.Services
                 .ReturnsAsync("{\r\n  \"total\": 0,\r\n  \"contract_Id\": \"\"\r\n}");
 
             ContractCommands.CreateContractCommand command = TestData.Commands.CreateContractCommand;
-            Result result = await this.DomainService.CreateContract(command, CancellationToken.None);
+            Result result = await this.DomainService.CreateContract(command, TestContext.Current.CancellationToken);
             result.IsSuccess.ShouldBeTrue();
         }
 
@@ -59,7 +59,7 @@ namespace TransactionProcessor.BusinessLogic.Tests.Services
                 .ReturnsAsync(queryResult);
 
             ContractCommands.CreateContractCommand command = TestData.Commands.CreateContractCommand;
-            Result result = await this.DomainService.CreateContract(command, CancellationToken.None);
+            Result result = await this.DomainService.CreateContract(command, TestContext.Current.CancellationToken);
             result.IsFailed.ShouldBeTrue();
         }
 
@@ -75,7 +75,7 @@ namespace TransactionProcessor.BusinessLogic.Tests.Services
                 .ReturnsAsync("{\r\n  \"total\": 0,\r\n  \"contract_Id\": \"\"\r\n}");
 
             ContractCommands.CreateContractCommand command = TestData.Commands.CreateContractCommand;
-            Result result = await this.DomainService.CreateContract(command, CancellationToken.None);
+            Result result = await this.DomainService.CreateContract(command, TestContext.Current.CancellationToken);
             result.IsFailed.ShouldBeTrue();
         }
 
@@ -88,7 +88,7 @@ namespace TransactionProcessor.BusinessLogic.Tests.Services
                 .ReturnsAsync("{\r\n  \"total\": 0,\r\n  \"contract_Id\": \"\"\r\n}");
 
             ContractCommands.CreateContractCommand command = TestData.Commands.CreateContractCommand;
-            Result result = await this.DomainService.CreateContract(command, CancellationToken.None);
+            Result result = await this.DomainService.CreateContract(command, TestContext.Current.CancellationToken);
             result.IsFailed.ShouldBeTrue();
         }
 
@@ -101,7 +101,7 @@ namespace TransactionProcessor.BusinessLogic.Tests.Services
                 .ReturnsAsync("{\r\n  \"total\": 0,\r\n  \"contract_Id\": \"\"\r\n}");
 
             ContractCommands.CreateContractCommand command = TestData.Commands.CreateContractCommand;
-            Result result = await this.DomainService.CreateContract(command, CancellationToken.None);
+            Result result = await this.DomainService.CreateContract(command, TestContext.Current.CancellationToken);
             result.IsFailed.ShouldBeTrue();
         }
         
@@ -115,7 +115,7 @@ namespace TransactionProcessor.BusinessLogic.Tests.Services
                 .ReturnsAsync("{\r\n  \"total\": 0,\r\n  \"contract_Id\": \"\"\r\n}");
 
             ContractCommands.CreateContractCommand command = TestData.Commands.CreateContractCommand;
-            Result result = await this.DomainService.CreateContract(command, CancellationToken.None);
+            Result result = await this.DomainService.CreateContract(command, TestContext.Current.CancellationToken);
             result.IsFailed.ShouldBeTrue();
         }
 
@@ -130,7 +130,7 @@ namespace TransactionProcessor.BusinessLogic.Tests.Services
                 .ReturnsAsync("{\r\n  \"total\": 0,\r\n  \"contract_Id\": \"\"\r\n}");
 
             ContractCommands.AddProductToContractCommand command = TestData.Commands.AddProductToContractCommand_FixedValue;
-            Result result = await this.DomainService.AddProductToContract(command, CancellationToken.None);
+            Result result = await this.DomainService.AddProductToContract(command, TestContext.Current.CancellationToken);
             result.IsSuccess.ShouldBeTrue();
         }
         
@@ -144,7 +144,7 @@ namespace TransactionProcessor.BusinessLogic.Tests.Services
                 .ReturnsAsync("{\r\n  \"total\": 0,\r\n  \"contract_Id\": \"\"\r\n}");
 
             ContractCommands.AddProductToContractCommand command = TestData.Commands.AddProductToContractCommand_FixedValue;
-            Result result = await this.DomainService.AddProductToContract(command, CancellationToken.None);
+            Result result = await this.DomainService.AddProductToContract(command, TestContext.Current.CancellationToken);
             result.IsFailed.ShouldBeTrue();
         }
 
@@ -160,7 +160,7 @@ namespace TransactionProcessor.BusinessLogic.Tests.Services
                 .ReturnsAsync("{\r\n  \"total\": 0,\r\n  \"contract_Id\": \"\"\r\n}");
 
             ContractCommands.AddProductToContractCommand command = TestData.Commands.AddProductToContractCommand_VariableValue;
-            Result result = await this.DomainService.AddProductToContract(command, CancellationToken.None);
+            Result result = await this.DomainService.AddProductToContract(command, TestContext.Current.CancellationToken);
             result.IsSuccess.ShouldBeTrue();
         }
         
@@ -174,7 +174,7 @@ namespace TransactionProcessor.BusinessLogic.Tests.Services
                 .ReturnsAsync("{\r\n  \"total\": 0,\r\n  \"contract_Id\": \"\"\r\n}");
 
             ContractCommands.AddProductToContractCommand command = TestData.Commands.AddProductToContractCommand_VariableValue;
-            Result result = await this.DomainService.AddProductToContract(command, CancellationToken.None);
+            Result result = await this.DomainService.AddProductToContract(command, TestContext.Current.CancellationToken);
             result.IsFailed.ShouldBeTrue();
         }
 
@@ -188,7 +188,7 @@ namespace TransactionProcessor.BusinessLogic.Tests.Services
                 .ReturnsAsync("{\r\n  \"total\": 0,\r\n  \"contract_Id\": \"\"\r\n}");
 
             ContractCommands.AddProductToContractCommand command = TestData.Commands.AddProductToContractCommand_VariableValue;
-            Result result = await this.DomainService.AddProductToContract(command, CancellationToken.None);
+            Result result = await this.DomainService.AddProductToContract(command, TestContext.Current.CancellationToken);
             result.IsFailed.ShouldBeTrue();
         }
 
@@ -202,7 +202,7 @@ namespace TransactionProcessor.BusinessLogic.Tests.Services
                 .ReturnsAsync("{\r\n  \"total\": 0,\r\n  \"contract_Id\": \"\"\r\n}");
 
             ContractCommands.AddProductToContractCommand command = TestData.Commands.AddProductToContractCommand_FixedValue;
-            Result result = await this.DomainService.AddProductToContract(command, CancellationToken.None);
+            Result result = await this.DomainService.AddProductToContract(command, TestContext.Current.CancellationToken);
             result.IsFailed.ShouldBeTrue();
         }
 
@@ -224,7 +224,7 @@ namespace TransactionProcessor.BusinessLogic.Tests.Services
 
             ContractCommands.AddTransactionFeeForProductToContractCommand command =
                 TestData.Commands.AddTransactionFeeForProductToContractCommand(calculationType, feeType);
-            Result result = await this.DomainService.AddTransactionFeeForProductToContract(command, CancellationToken.None);
+            Result result = await this.DomainService.AddTransactionFeeForProductToContract(command, TestContext.Current.CancellationToken);
             result.IsSuccess.ShouldBeTrue();
         }
         
@@ -244,7 +244,7 @@ namespace TransactionProcessor.BusinessLogic.Tests.Services
 
             ContractCommands.AddTransactionFeeForProductToContractCommand command =
                 TestData.Commands.AddTransactionFeeForProductToContractCommand(calculationType,feeType);
-            Result result = await this.DomainService.AddTransactionFeeForProductToContract(command, CancellationToken.None);
+            Result result = await this.DomainService.AddTransactionFeeForProductToContract(command, TestContext.Current.CancellationToken);
             result.IsFailed.ShouldBeTrue();
         }
 
@@ -265,7 +265,7 @@ namespace TransactionProcessor.BusinessLogic.Tests.Services
 
             ContractCommands.AddTransactionFeeForProductToContractCommand command =
                 TestData.Commands.AddTransactionFeeForProductToContractCommand(calculationType, feeType);
-            Result result = await this.DomainService.AddTransactionFeeForProductToContract(command, CancellationToken.None);
+            Result result = await this.DomainService.AddTransactionFeeForProductToContract(command, TestContext.Current.CancellationToken);
             result.IsFailed.ShouldBeTrue();
         }
 
@@ -289,7 +289,7 @@ namespace TransactionProcessor.BusinessLogic.Tests.Services
                 .ReturnsAsync("{\r\n  \"total\": 0,\r\n  \"contract_Id\": \"\"\r\n}");
 
             ContractCommands.DisableTransactionFeeForProductCommand command = TestData.Commands.DisableTransactionFeeForProductCommand;
-            Result result = await this.DomainService.DisableTransactionFeeForProduct(command, CancellationToken.None);
+            Result result = await this.DomainService.DisableTransactionFeeForProduct(command, TestContext.Current.CancellationToken);
             result.IsSuccess.ShouldBeTrue();
         }
 
@@ -300,7 +300,7 @@ namespace TransactionProcessor.BusinessLogic.Tests.Services
                 .ReturnsAsync(Result.Failure());
 
             ContractCommands.DisableTransactionFeeForProductCommand command = TestData.Commands.DisableTransactionFeeForProductCommand;
-            Result result = await this.DomainService.DisableTransactionFeeForProduct(command, CancellationToken.None);
+            Result result = await this.DomainService.DisableTransactionFeeForProduct(command, TestContext.Current.CancellationToken);
             result.IsFailed.ShouldBeTrue();
         }
 
@@ -311,7 +311,7 @@ namespace TransactionProcessor.BusinessLogic.Tests.Services
                 .ReturnsAsync(Result.Success(TestData.Aggregates.CreatedContractAggregate()));
 
             ContractCommands.DisableTransactionFeeForProductCommand command = TestData.Commands.DisableTransactionFeeForProductCommand;
-            Result result = await this.DomainService.DisableTransactionFeeForProduct(command, CancellationToken.None);
+            Result result = await this.DomainService.DisableTransactionFeeForProduct(command, TestContext.Current.CancellationToken);
             result.IsFailed.ShouldBeTrue();
         }
 
@@ -324,7 +324,7 @@ namespace TransactionProcessor.BusinessLogic.Tests.Services
                 .ReturnsAsync(Result.Failure());
 
             ContractCommands.DisableTransactionFeeForProductCommand command = TestData.Commands.DisableTransactionFeeForProductCommand;
-            Result result = await this.DomainService.DisableTransactionFeeForProduct(command, CancellationToken.None);
+            Result result = await this.DomainService.DisableTransactionFeeForProduct(command, TestContext.Current.CancellationToken);
             result.IsFailed.ShouldBeTrue();
         }
 
@@ -336,7 +336,7 @@ namespace TransactionProcessor.BusinessLogic.Tests.Services
             this.AggregateService.Setup(c => c.Save(It.IsAny<ContractAggregate>(), It.IsAny<CancellationToken>())).ThrowsAsync(new Exception());
 
             ContractCommands.DisableTransactionFeeForProductCommand command = TestData.Commands.DisableTransactionFeeForProductCommand;
-            Result result = await this.DomainService.DisableTransactionFeeForProduct(command, CancellationToken.None);
+            Result result = await this.DomainService.DisableTransactionFeeForProduct(command, TestContext.Current.CancellationToken);
             result.IsFailed.ShouldBeTrue();
         }
 
@@ -347,7 +347,7 @@ namespace TransactionProcessor.BusinessLogic.Tests.Services
                 .ReturnsAsync(Result.Failure());
 
             ContractCommands.CreateContractCommand command = TestData.Commands.CreateContractCommand;
-            Result result = await this.DomainService.CreateContract(command, CancellationToken.None);
+            Result result = await this.DomainService.CreateContract(command, TestContext.Current.CancellationToken);
             result.IsFailed.ShouldBeTrue();
         }
 
@@ -360,7 +360,7 @@ namespace TransactionProcessor.BusinessLogic.Tests.Services
                 .ReturnsAsync(Result.Failure());
 
             ContractCommands.CreateContractCommand command = TestData.Commands.CreateContractCommand;
-            Result result = await this.DomainService.CreateContract(command, CancellationToken.None);
+            Result result = await this.DomainService.CreateContract(command, TestContext.Current.CancellationToken);
             result.IsFailed.ShouldBeTrue();
         }
 
@@ -375,7 +375,7 @@ namespace TransactionProcessor.BusinessLogic.Tests.Services
                 .ReturnsAsync(Result.Failure());
 
             ContractCommands.CreateContractCommand command = TestData.Commands.CreateContractCommand;
-            Result result = await this.DomainService.CreateContract(command, CancellationToken.None);
+            Result result = await this.DomainService.CreateContract(command, TestContext.Current.CancellationToken);
             result.IsFailed.ShouldBeTrue();
         }
 
@@ -396,7 +396,7 @@ namespace TransactionProcessor.BusinessLogic.Tests.Services
                     OperatorId = TestData.Commands.CreateContractCommand.RequestDTO.OperatorId
                 }
             };
-            Result result = await this.DomainService.CreateContract(command, CancellationToken.None);
+            Result result = await this.DomainService.CreateContract(command, TestContext.Current.CancellationToken);
             result.IsFailed.ShouldBeTrue();
         }
 
@@ -413,7 +413,7 @@ namespace TransactionProcessor.BusinessLogic.Tests.Services
                 .ReturnsAsync(Result.Failure());
 
             ContractCommands.CreateContractCommand command = TestData.Commands.CreateContractCommand;
-            Result result = await this.DomainService.CreateContract(command, CancellationToken.None);
+            Result result = await this.DomainService.CreateContract(command, TestContext.Current.CancellationToken);
             result.IsFailed.ShouldBeTrue();
         }
 
@@ -429,7 +429,7 @@ namespace TransactionProcessor.BusinessLogic.Tests.Services
             this.AggregateService.Setup(c => c.Save(It.IsAny<ContractAggregate>(), It.IsAny<CancellationToken>())).ThrowsAsync(new Exception());
 
             ContractCommands.CreateContractCommand command = TestData.Commands.CreateContractCommand;
-            Result result = await this.DomainService.CreateContract(command, CancellationToken.None);
+            Result result = await this.DomainService.CreateContract(command, TestContext.Current.CancellationToken);
             result.IsFailed.ShouldBeTrue();
         }
 
@@ -440,7 +440,7 @@ namespace TransactionProcessor.BusinessLogic.Tests.Services
                 .ReturnsAsync(Result.Failure());
 
             ContractCommands.AddProductToContractCommand command = TestData.Commands.AddProductToContractCommand_FixedValue;
-            Result result = await this.DomainService.AddProductToContract(command, CancellationToken.None);
+            Result result = await this.DomainService.AddProductToContract(command, TestContext.Current.CancellationToken);
             result.IsFailed.ShouldBeTrue();
         }
 
@@ -451,7 +451,7 @@ namespace TransactionProcessor.BusinessLogic.Tests.Services
                 .ReturnsAsync(Result.Failure());
 
             ContractCommands.AddProductToContractCommand command = TestData.Commands.AddProductToContractCommand_VariableValue;
-            Result result = await this.DomainService.AddProductToContract(command, CancellationToken.None);
+            Result result = await this.DomainService.AddProductToContract(command, TestContext.Current.CancellationToken);
             result.IsFailed.ShouldBeTrue();
         }
 
@@ -465,7 +465,7 @@ namespace TransactionProcessor.BusinessLogic.Tests.Services
 
             ContractCommands.AddProductToContractCommand command = TestData.Commands.AddProductToContractCommand_FixedValue;
             command = command with { ProductId = Guid.Empty };
-            Result result = await this.DomainService.AddProductToContract(command, CancellationToken.None);
+            Result result = await this.DomainService.AddProductToContract(command, TestContext.Current.CancellationToken);
             result.IsFailed.ShouldBeTrue();
         }
 
@@ -478,7 +478,7 @@ namespace TransactionProcessor.BusinessLogic.Tests.Services
                 .ReturnsAsync(Result.Failure());
 
             ContractCommands.AddProductToContractCommand command = TestData.Commands.AddProductToContractCommand_FixedValue;
-            Result result = await this.DomainService.AddProductToContract(command, CancellationToken.None);
+            Result result = await this.DomainService.AddProductToContract(command, TestContext.Current.CancellationToken);
             result.IsFailed.ShouldBeTrue();
         }
 
@@ -491,7 +491,7 @@ namespace TransactionProcessor.BusinessLogic.Tests.Services
                 .ReturnsAsync(Result.Failure());
 
             ContractCommands.AddProductToContractCommand command = TestData.Commands.AddProductToContractCommand_VariableValue;
-            Result result = await this.DomainService.AddProductToContract(command, CancellationToken.None);
+            Result result = await this.DomainService.AddProductToContract(command, TestContext.Current.CancellationToken);
             result.IsFailed.ShouldBeTrue();
         }
 
@@ -509,7 +509,7 @@ namespace TransactionProcessor.BusinessLogic.Tests.Services
 
             ContractCommands.AddTransactionFeeForProductToContractCommand command =
                 TestData.Commands.AddTransactionFeeForProductToContractCommand(calculationType, feeType);
-            Result result = await this.DomainService.AddTransactionFeeForProductToContract(command, CancellationToken.None);
+            Result result = await this.DomainService.AddTransactionFeeForProductToContract(command, TestContext.Current.CancellationToken);
             result.IsFailed.ShouldBeTrue();
         }
 
@@ -529,7 +529,7 @@ namespace TransactionProcessor.BusinessLogic.Tests.Services
 
             ContractCommands.AddTransactionFeeForProductToContractCommand command =
                 TestData.Commands.AddTransactionFeeForProductToContractCommand(calculationType, feeType);
-            Result result = await this.DomainService.AddTransactionFeeForProductToContract(command, CancellationToken.None);
+            Result result = await this.DomainService.AddTransactionFeeForProductToContract(command, TestContext.Current.CancellationToken);
             result.IsFailed.ShouldBeTrue();
         }
 
@@ -544,8 +544,9 @@ namespace TransactionProcessor.BusinessLogic.Tests.Services
             ContractCommands.AddTransactionFeeForProductToContractCommand command =
                 TestData.Commands.AddTransactionFeeForProductToContractCommand(DataTransferObjects.Responses.Contract.CalculationType.Fixed, DataTransferObjects.Responses.Contract.FeeType.Merchant);
             command = command with { TransactionFeeId = Guid.Empty };
-            Result result = await this.DomainService.AddTransactionFeeForProductToContract(command, CancellationToken.None);
+            Result result = await this.DomainService.AddTransactionFeeForProductToContract(command, TestContext.Current.CancellationToken);
             result.IsFailed.ShouldBeTrue();
         }
     }
 }
+

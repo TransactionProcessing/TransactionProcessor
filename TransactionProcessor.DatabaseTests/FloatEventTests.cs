@@ -26,7 +26,7 @@ public class FloatEventTests : BaseTest {
     [Fact]
     public async Task CreateFloat_EventReplayHandled()
     {
-        FloatDomainEvents.FloatCreatedEvent @event = TestData.DomainEvents.FloatCreatedForContractProductEvent;
+        FloatDomainEvents.FloatCreatedForContractProductEvent @event = TestData.DomainEvents.FloatCreatedForContractProductEvent;
 
         Result result = await this.Repository.CreateFloat(@event, TestContext.Current.CancellationToken);
         result.IsSuccess.ShouldBeTrue();

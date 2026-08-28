@@ -1,4 +1,4 @@
-﻿using SimpleResults;
+using SimpleResults;
 using System;
 using System.Collections.Generic;
 
@@ -37,7 +37,7 @@ namespace TransactionProcessor.BusinessLogic.Tests.OperatorInterfaces
             HttpClient httpClient = SetupMockHttpClient(responseMessage);
 
             IOperatorProxy safaricomPinlessproxy = new SafaricomPinlessProxy(safaricomConfiguration, httpClient);
-            var processLogonMessageResult = await safaricomPinlessproxy.ProcessLogonMessage(CancellationToken.None);
+            var processLogonMessageResult = await safaricomPinlessproxy.ProcessLogonMessage(TestContext.Current.CancellationToken);
             processLogonMessageResult.IsSuccess.ShouldBeTrue();
             OperatorResponse operatorResponse = processLogonMessageResult.Data;
             operatorResponse.ShouldBeNull();
@@ -64,7 +64,7 @@ namespace TransactionProcessor.BusinessLogic.Tests.OperatorInterfaces
                                                                                                 TestData.TransactionDateTime,
                                                                                                 TestData.TransactionReference,
                                                                                                 TestData.AdditionalTransactionMetaDataForMobileTopup(),
-                                                                                                CancellationToken.None);
+                                                                                                TestContext.Current.CancellationToken);
             result.IsSuccess.ShouldBeTrue();
             result.Data.ShouldNotBeNull();
             result.Data.IsSuccessful.ShouldBeTrue();
@@ -95,7 +95,7 @@ namespace TransactionProcessor.BusinessLogic.Tests.OperatorInterfaces
                                                                                                 TestData.TransactionDateTime,
                                                                                                 TestData.TransactionReference,
                                                                                                 TestData.AdditionalTransactionMetaDataForMobileTopup(amountName: amountFieldName),
-                                                                                                CancellationToken.None);
+                                                                                                TestContext.Current.CancellationToken);
 
             result.IsSuccess.ShouldBeTrue();
             result.Data.ShouldNotBeNull();
@@ -128,7 +128,7 @@ namespace TransactionProcessor.BusinessLogic.Tests.OperatorInterfaces
                                                                                                 TestData.TransactionDateTime,
                                                                                                 TestData.TransactionReference,
                                                                                                 TestData.AdditionalTransactionMetaDataForMobileTopup(customerAccountNumberName: customerAccountNumberFieldName),
-                                                                                                CancellationToken.None);
+                                                                                                TestContext.Current.CancellationToken);
 
             result.IsSuccess.ShouldBeTrue();
             result.Data.ShouldNotBeNull();
@@ -157,7 +157,7 @@ namespace TransactionProcessor.BusinessLogic.Tests.OperatorInterfaces
                                                                                                TestData.TransactionDateTime,
                                                                                                TestData.TransactionReference,
                                                                                                TestData.AdditionalTransactionMetaDataForMobileTopup(),
-                                                                                               CancellationToken.None);
+                                                                                               TestContext.Current.CancellationToken);
 
             result.IsFailed.ShouldBeTrue();
             result.Status.ShouldBe(ResultStatus.Failure);
@@ -182,7 +182,7 @@ namespace TransactionProcessor.BusinessLogic.Tests.OperatorInterfaces
                                                                                        TestData.TransactionDateTime,
                                                                                        TestData.TransactionReference,
                                                                                        TestData.AdditionalTransactionMetaDataForMobileTopup(),
-                                                                                       CancellationToken.None);
+                                                                                       TestContext.Current.CancellationToken);
 
             result.IsFailed.ShouldBeTrue();
             result.Status.ShouldBe(ResultStatus.Failure);
@@ -207,7 +207,7 @@ namespace TransactionProcessor.BusinessLogic.Tests.OperatorInterfaces
                                                                                        TestData.TransactionDateTime,
                                                                                        TestData.TransactionReference,
                                                                                        TestData.AdditionalTransactionMetaDataForMobileTopup(),
-                                                                                       CancellationToken.None);
+                                                                                       TestContext.Current.CancellationToken);
 
             result.IsFailed.ShouldBeTrue();
             result.Status.ShouldBe(ResultStatus.Failure);
@@ -246,7 +246,7 @@ namespace TransactionProcessor.BusinessLogic.Tests.OperatorInterfaces
                                                                                        TestData.TransactionDateTime,
                                                                                        TestData.TransactionReference,
                                                                                        additionalMetatdata,
-                                                                                       CancellationToken.None);
+                                                                                       TestContext.Current.CancellationToken);
             result.IsFailed.ShouldBeTrue();
             result.Status.ShouldBe(ResultStatus.Invalid);
         }
@@ -266,3 +266,4 @@ namespace TransactionProcessor.BusinessLogic.Tests.OperatorInterfaces
         }
     }
 }
+

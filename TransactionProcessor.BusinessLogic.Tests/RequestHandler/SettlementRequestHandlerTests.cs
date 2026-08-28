@@ -1,4 +1,4 @@
-﻿using Moq;
+using Moq;
 using Shared.DomainDrivenDesign.EventSourcing;
 using Shared.EventStore.Aggregate;
 using Shared.Serialisation;
@@ -33,7 +33,8 @@ public class SettlementRequestHandlerTests
             .Setup(s => s.ProcessSettlement(It.IsAny<SettlementCommands.ProcessSettlementCommand>(), It.IsAny<CancellationToken>())).ReturnsAsync(Result.Success());
         var command = TestData.Commands.ProcessSettlementCommand;
 
-        var result = await handler.Handle(command, CancellationToken.None);
+        var result = await handler.Handle(command, TestContext.Current.CancellationToken);
         result.IsSuccess.ShouldBeTrue();
     }
 }
+

@@ -1,4 +1,4 @@
-﻿using SimpleResults;
+using SimpleResults;
 using TransactionProcessor.Aggregates;
 using TransactionProcessor.Database.Contexts;
 using TransactionProcessor.Models;
@@ -60,7 +60,7 @@ namespace TransactionProcessor.BusinessLogic.Tests.Services
             this.AggregateService.Setup(v => v.GetLatest<VoucherAggregate>(It.IsAny<Guid>(), It.IsAny<CancellationToken>())).ReturnsAsync(Result.Success(new VoucherAggregate()));
             this.AggregateService.Setup(f => f.Get<EstateAggregate>(It.IsAny<Guid>(), It.IsAny<CancellationToken>())).ReturnsAsync(TestData.Aggregates.CreatedEstateAggregate());
             var result = await this.VoucherDomainService.IssueVoucher(TestData.IssueVoucherCommand,
-                                                                                 CancellationToken.None);
+                                                                                 TestContext.Current.CancellationToken);
             result.IsFailed.ShouldBeTrue();
         }
 
@@ -97,7 +97,7 @@ namespace TransactionProcessor.BusinessLogic.Tests.Services
         //                                                                         TestData.Value,
         //                                                                         TestData.RecipientEmail,
         //                                                                         TestData.RecipientMobile,
-        //                                                                         CancellationToken.None);
+        //                                                                         TestContext.Current.CancellationToken);
         //    result.IsFailed.ShouldBeTrue();
         //}
 
@@ -108,7 +108,7 @@ namespace TransactionProcessor.BusinessLogic.Tests.Services
             this.AggregateService.Setup(f => f.Get<EstateAggregate>(It.IsAny<Guid>(), It.IsAny<CancellationToken>())).ReturnsAsync(TestData.Aggregates.EmptyEstateAggregate);
             
             Result<IssueVoucherResponse> result = await this.VoucherDomainService.IssueVoucher(TestData.IssueVoucherCommand,
-                                                                                 CancellationToken.None);
+                                                                                 TestContext.Current.CancellationToken);
             result.IsFailed.ShouldBeTrue();
         }
         
@@ -118,7 +118,7 @@ namespace TransactionProcessor.BusinessLogic.Tests.Services
             this.AggregateService.Setup(f => f.Get<EstateAggregate>(It.IsAny<Guid>(), It.IsAny<CancellationToken>())).ReturnsAsync(Result.Success(TestData.Aggregates.EstateAggregateWithOperator()));
 
             Result<IssueVoucherResponse> result = await this.VoucherDomainService.IssueVoucher(TestData.IssueVoucherCommand,
-                                                                                 CancellationToken.None);
+                                                                                 TestContext.Current.CancellationToken);
             result.IsFailed.ShouldBeTrue();
         }
 
@@ -130,7 +130,7 @@ namespace TransactionProcessor.BusinessLogic.Tests.Services
             this.AggregateService.Setup(f => f.Get<EstateAggregate>(It.IsAny<Guid>(), It.IsAny<CancellationToken>())).ReturnsAsync(Result.Success(TestData.Aggregates.EstateAggregateWithOperator()));
 
             Result<IssueVoucherResponse> result = await this.VoucherDomainService.IssueVoucher(TestData.IssueVoucherCommand,
-                                                                                         CancellationToken.None);
+                                                                                         TestContext.Current.CancellationToken);
 
             result.IsSuccess.ShouldBeTrue();
             result.Data.ShouldNotBeNull();
@@ -149,12 +149,12 @@ namespace TransactionProcessor.BusinessLogic.Tests.Services
                                                  Barcode = TestData.Barcode,
                                                  Timestamp = BitConverter.GetBytes(DateTime.UtcNow.Ticks)
             });
-            await this.Context.SaveChangesAsync();
+            await this.Context.SaveChangesAsync(TestContext.Current.CancellationToken);
             
             Result<RedeemVoucherResponse> result = await this.VoucherDomainService.RedeemVoucher(TestData.EstateId,
                                                                                   TestData.VoucherCode,
                                                                                   TestData.RedeemedDateTime,
-                                                                                  CancellationToken.None);
+                                                                                  TestContext.Current.CancellationToken);
             result.IsFailed.ShouldBeTrue();
         }
 
@@ -173,12 +173,12 @@ namespace TransactionProcessor.BusinessLogic.Tests.Services
                                                  Barcode = TestData.Barcode,
                                                  Timestamp = BitConverter.GetBytes(DateTime.UtcNow.Ticks)
             });
-            await this.Context.SaveChangesAsync();
+            await this.Context.SaveChangesAsync(TestContext.Current.CancellationToken);
             
             Result<RedeemVoucherResponse> result = await this.VoucherDomainService.RedeemVoucher(TestData.EstateId,
                                                                                             TestData.VoucherCode,
                                                                                             TestData.RedeemedDateTime,
-                                                                                            CancellationToken.None);
+                                                                                            TestContext.Current.CancellationToken);
 
             result.IsSuccess.ShouldBeTrue();
             result.Data.ShouldNotBeNull();
@@ -193,7 +193,7 @@ namespace TransactionProcessor.BusinessLogic.Tests.Services
             Result<RedeemVoucherResponse> result = await this.VoucherDomainService.RedeemVoucher(TestData.EstateId,
                                                                                   TestData.VoucherCode,
                                                                                   TestData.RedeemedDateTime,
-                                                                                  CancellationToken.None);
+                                                                                  TestContext.Current.CancellationToken);
             result.IsFailed.ShouldBeTrue();
         }
 
@@ -203,7 +203,7 @@ namespace TransactionProcessor.BusinessLogic.Tests.Services
             this.AggregateService.Setup(f => f.Get<EstateAggregate>(It.IsAny<Guid>(), It.IsAny<CancellationToken>())).ReturnsAsync(Result.Success(TestData.Aggregates.EstateAggregateWithOperator()));
 
             Result<IssueVoucherResponse> result = await this.VoucherDomainService.IssueVoucher(TestData.IssueVoucherCommand,
-                                                                                 CancellationToken.None);
+                                                                                 TestContext.Current.CancellationToken);
             result.IsFailed.ShouldBeTrue();
         }
 
@@ -214,7 +214,7 @@ namespace TransactionProcessor.BusinessLogic.Tests.Services
             this.AggregateService.Setup(f => f.Get<EstateAggregate>(It.IsAny<Guid>(), It.IsAny<CancellationToken>())).ReturnsAsync(Result.Success(TestData.Aggregates.EstateAggregateWithOperator()));
 
             Result<IssueVoucherResponse> result = await this.VoucherDomainService.IssueVoucher(TestData.IssueVoucherCommand,
-                                                                                 CancellationToken.None);
+                                                                                 TestContext.Current.CancellationToken);
             result.IsFailed.ShouldBeTrue();
         }
 
@@ -229,12 +229,12 @@ namespace TransactionProcessor.BusinessLogic.Tests.Services
                 Barcode = TestData.Barcode,
                 Timestamp = BitConverter.GetBytes(DateTime.UtcNow.Ticks)
             });
-            await this.Context.SaveChangesAsync();
+            await this.Context.SaveChangesAsync(TestContext.Current.CancellationToken);
 
             Result<RedeemVoucherResponse> result = await this.VoucherDomainService.RedeemVoucher(TestData.EstateId,
                                                                                   TestData.VoucherCode,
                                                                                   TestData.RedeemedDateTime,
-                                                                                  CancellationToken.None);
+                                                                                  TestContext.Current.CancellationToken);
             result.IsFailed.ShouldBeTrue();
         }
 
@@ -251,12 +251,12 @@ namespace TransactionProcessor.BusinessLogic.Tests.Services
                 Barcode = TestData.Barcode,
                 Timestamp = BitConverter.GetBytes(DateTime.UtcNow.Ticks)
             });
-            await this.Context.SaveChangesAsync();
+            await this.Context.SaveChangesAsync(TestContext.Current.CancellationToken);
 
             Result<RedeemVoucherResponse> result = await this.VoucherDomainService.RedeemVoucher(TestData.EstateId,
                                                                                             TestData.VoucherCode,
                                                                                             TestData.RedeemedDateTime,
-                                                                                            CancellationToken.None);
+                                                                                            TestContext.Current.CancellationToken);
             result.IsFailed.ShouldBeTrue();
         }
         

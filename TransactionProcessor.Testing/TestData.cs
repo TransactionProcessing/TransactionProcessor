@@ -2622,7 +2622,8 @@ namespace TransactionProcessor.Testing
 
             public static ReconciliationDomainEvents.ReconciliationHasStartedEvent ReconciliationHasStartedEvent => new ReconciliationDomainEvents.ReconciliationHasStartedEvent(TestData.TransactionId, TestData.EstateId, TestData.MerchantId, TestData.TransactionDateTime);
 
-            public static FloatDomainEvents.FloatCreatedEvent FloatCreatedForContractProductEvent => new FloatDomainEvents.FloatCreatedEvent(FloatAggregateId, EstateId, FloatCreatedDateTime);
+            public static FloatDomainEvents.FloatCreatedForContractProductEvent FloatCreatedForContractProductEvent => new FloatDomainEvents.FloatCreatedForContractProductEvent(FloatAggregateId, EstateId, ContractId, ProductId, FloatCreatedDateTime);
+            public static FloatDomainEvents.FloatCreatedEvent FloatCreatedEvent => new FloatDomainEvents.FloatCreatedEvent(FloatAggregateId, EstateId, FloatCreatedDateTime);
             public static TransactionDomainEvents.TransactionHasStartedEvent TransactionHasStartedEvent => new TransactionDomainEvents.TransactionHasStartedEvent(TestData.TransactionId, TestData.EstateId, TestData.MerchantId, TestData.TransactionDateTime1, TestData.TransactionNumber, TestData.TransactionTypeSale.ToString(), TestData.TransactionReference, TestData.DeviceIdentifier, TestData.TransactionAmount);
             public static TransactionDomainEvents.AdditionalRequestDataRecordedEvent AdditionalRequestDataRecordedEvent => new TransactionDomainEvents.AdditionalRequestDataRecordedEvent(TestData.TransactionId, TestData.EstateId, TestData.MerchantId, TestData.OperatorId, new Dictionary<String, String>
             {
