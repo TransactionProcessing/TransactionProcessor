@@ -30,6 +30,11 @@ jobs:
           rmz_version: "3.1.1"  # Required when rm_cmd is 'rmz'
           testing: false
           
+    - name: Setup .NET SDK
+      uses: actions/setup-dotnet@v4
+      with:
+        dotnet-version: 10.0.400
+
     - name: Set Up Variables
       run: echo "action_url=$GITHUB_SERVER_URL/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID" >> $GITHUB_ENV
 
