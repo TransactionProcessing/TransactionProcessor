@@ -35,11 +35,11 @@ jobs:
     - name: Run Unit Tests
       run: |
         echo "ASPNETCORE_ENVIRONMENT are > ${ASPNETCORE_ENVIRONMENT}"
-        dotnet test "TransactionProcessor.BusinessLogic.Tests\TransactionProcessor.BusinessLogic.Tests.csproj"  --configuration Release --no-build --verbosity normal --logger "trx;LogFileName=buslogic-test-results.trx"
-        dotnet test "TransactionProcessor.ProjectionEngine.Tests\TransactionProcessor.ProjectionEngine.Tests.csproj" --configuration Release --no-build --verbosity normal --logger "trx;LogFileName=projection-test-results.trx"
-        dotnet test "TransactionProcessor.Aggregates.Tests\TransactionProcessor.Aggregates.Tests.csproj"  --configuration Release --no-build --verbosity normal --logger "trx;LogFileName=aggregates-test-results.trx"
-        dotnet test "TransactionProcessor.Tests\TransactionProcessor.Tests.csproj"  --configuration Release --no-build --verbosity normal --logger "trx;LogFileName=tests-test-results.trx"
-        dotnet test "TransactionProcessor.DatabaseTests\TransactionProcessor.DatabaseTests.csproj"  --configuration Release --no-build --verbosity normal --logger "trx;LogFileName=database-test-results.trx"
+        dotnet test "TransactionProcessor.BusinessLogic.Tests\TransactionProcessor.BusinessLogic.Tests.csproj"  --configuration Release --no-build --verbosity normal --report-xunit-trx --report-xunit-trx-filename "buslogic-test-results.trx"
+        dotnet test "TransactionProcessor.ProjectionEngine.Tests\TransactionProcessor.ProjectionEngine.Tests.csproj" --configuration Release --no-build --verbosity normal --report-xunit-trx --report-xunit-trx-filename "projection-test-results.trx"
+        dotnet test "TransactionProcessor.Aggregates.Tests\TransactionProcessor.Aggregates.Tests.csproj"  --configuration Release --no-build --verbosity normal --report-xunit-trx --report-xunit-trx-filename "aggregates-test-results.trx"
+        dotnet test "TransactionProcessor.Tests\TransactionProcessor.Tests.csproj"  --configuration Release --no-build --verbosity normal --report-xunit-trx --report-xunit-trx-filename "tests-test-results.trx"
+        dotnet test "TransactionProcessor.DatabaseTests\TransactionProcessor.DatabaseTests.csproj"  --configuration Release --no-build --verbosity normal --report-xunit-trx --report-xunit-trx-filename "database-test-results.trx"
 
     - name: Build Docker Image
       run: docker build . --file TransactionProcessor/Dockerfile --tag transactionprocessor:latest
@@ -59,7 +59,7 @@ jobs:
         FLUENTDOCKER_DOCKER_USE_SUDO: "false"
         FLUENTDOCKER_DOCKER_PATH: "/usr/bin/docker"
       run: |
-        dotnet test "TransactionProcessor.IntegrationTests/TransactionProcessor.IntegrationTests.csproj" --filter Category=PRTest  --configuration Release --no-build --verbosity normal --logger "trx;LogFileName=integration-test-results.trx"
+        dotnet test "TransactionProcessor.IntegrationTests/TransactionProcessor.IntegrationTests.csproj" --filter Category=PRTest  --configuration Release --no-build --verbosity normal --report-xunit-trx --report-xunit-trx-filename "integration-test-results.trx"
 
     - uses: actions/upload-artifact@v4.4.0
       if: always()
