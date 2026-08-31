@@ -4,6 +4,9 @@
 	  <TargetFramework>net10.0</TargetFramework>
 	  <DebugType>Full</DebugType>
     <IsPackable>false</IsPackable>
+    <EnableNUnitRunner>true</EnableNUnitRunner>
+    <OutputType>Exe</OutputType>
+    <TestingPlatformDotnetTestSupport>true</TestingPlatformDotnetTestSupport>
   </PropertyGroup>
 
   <ItemGroup>
@@ -27,6 +30,7 @@
     <PackageReference Include="NUnit3TestAdapter" />
     <PackageReference Include="Reqnroll" />
     <PackageReference Include="Reqnroll.NUnit" />      
+    <PackageReference Include="Microsoft.Testing.Extensions.TrxReport" />
     <PackageReference Include="coverlet.collector">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
