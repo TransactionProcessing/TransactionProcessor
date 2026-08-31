@@ -6,6 +6,8 @@
     <Nullable>enable</Nullable>
 	  <DebugType>None</DebugType>
     <IsPackable>false</IsPackable>
+    <OutputType>Exe</OutputType>
+    <UseMicrosoftTestingPlatformRunner>true</UseMicrosoftTestingPlatformRunner>
   </PropertyGroup>
 
   <ItemGroup>
