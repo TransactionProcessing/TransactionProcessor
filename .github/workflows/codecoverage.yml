@@ -23,23 +23,27 @@ jobs:
 
     - name: Build Code
       run: dotnet build TransactionProcessor.sln --configuration Release
-        
-    - name: Run Unit Tests
+
+    - name: Install Coverlet console
       run: |
-        echo "ASPNETCORE_ENVIRONMENT are > ${ASPNETCORE_ENVIRONMENT}"
-        dotnet test "TransactionProcessor.BusinessLogic.Tests\TransactionProcessor.BusinessLogic.Tests.csproj" /p:CollectCoverage=true /p:Exclude="[xunit*]*" /p:ExcludeByAttribute="Obsolete" /p:ExcludeByAttribute="GeneratedCodeAttribute" /p:ExcludeByAttribute="CompilerGeneratedAttribute" /p:ExcludeByAttribute="ExcludeFromCodeCoverageAttribute" /p:CoverletOutput="../lcov1.info" /maxcpucount:1 /p:CoverletOutputFormat="lcov"
-        dotnet test "TransactionProcessor.ProjectionEngine.Tests\TransactionProcessor.ProjectionEngine.Tests.csproj" /p:CollectCoverage=true /p:Exclude="[xunit*]*" /p:ExcludeByAttribute="Obsolete" /p:ExcludeByAttribute="GeneratedCodeAttribute" /p:ExcludeByAttribute="CompilerGeneratedAttribute" /p:ExcludeByAttribute="ExcludeFromCodeCoverageAttribute" /p:CoverletOutput="../lcov2.info" /maxcpucount:1 /p:CoverletOutputFormat="lcov"
-        dotnet test "TransactionProcessor.Aggregates.Tests\TransactionProcessor.Aggregates.Tests.csproj" /p:CollectCoverage=true /p:Exclude="[xunit*]*" /p:ExcludeByAttribute="Obsolete" /p:ExcludeByAttribute="GeneratedCodeAttribute" /p:ExcludeByAttribute="CompilerGeneratedAttribute" /p:ExcludeByAttribute="ExcludeFromCodeCoverageAttribute" /p:CoverletOutput="../lcov3.info" /maxcpucount:1 /p:CoverletOutputFormat="lcov"
-        dotnet test "TransactionProcessor.Tests\TransactionProcessor.Tests.csproj" /p:CollectCoverage=true /p:Exclude="[xunit*]*" /p:ExcludeByAttribute="Obsolete" /p:ExcludeByAttribute="GeneratedCodeAttribute" /p:ExcludeByAttribute="CompilerGeneratedAttribute" /p:ExcludeByAttribute="ExcludeFromCodeCoverageAttribute" /p:CoverletOutput="../lcov4.info" /maxcpucount:1 /p:CoverletOutputFormat="lcov"
-        dotnet test "TransactionProcessor.DatabaseTests\TransactionProcessor.DatabaseTests.csproj"  /p:CollectCoverage=true /p:Exclude="[xunit*]*" /p:ExcludeByAttribute="Obsolete" /p:ExcludeByAttribute="GeneratedCodeAttribute" /p:ExcludeByAttribute="CompilerGeneratedAttribute" /p:ExcludeByAttribute="ExcludeFromCodeCoverageAttribute" /p:CoverletOutput="../lcov5.info" /maxcpucount:1 /p:CoverletOutputFormat="lcov"
+        dotnet tool install --global coverlet.console --version 6.0.4
+        echo "$HOME/.dotnet/tools" >> "$GITHUB_PATH"
 
     - name: Install LCOV merger
       run: npm install -g lcov-result-merger
+    - name: Run Unit Tests
+      run: |
+        echo "ASPNETCORE_ENVIRONMENT are > ${ASPNETCORE_ENVIRONMENT}"
+        mkdir -p coverage
+        coverlet TransactionProcessor.BusinessLogic.Tests/bin/Release/net10.0/TransactionProcessor.BusinessLogic.Tests.dll --target dotnet --targetargs "TransactionProcessor.BusinessLogic.Tests/bin/Release/net10.0/TransactionProcessor.BusinessLogic.Tests.dll" --format lcov --output coverage/lcov1.info --exclude "[xunit*]*" --exclude-by-attribute Obsolete --exclude-by-attribute GeneratedCodeAttribute --exclude-by-attribute CompilerGeneratedAttribute --exclude-by-attribute ExcludeFromCodeCoverageAttribute
+        coverlet TransactionProcessor.ProjectionEngine.Tests/bin/Release/net10.0/TransactionProcessor.ProjectionEngine.Tests.dll --target dotnet --targetargs "TransactionProcessor.ProjectionEngine.Tests/bin/Release/net10.0/TransactionProcessor.ProjectionEngine.Tests.dll" --format lcov --output coverage/lcov2.info --exclude "[xunit*]*" --exclude-by-attribute Obsolete --exclude-by-attribute GeneratedCodeAttribute --exclude-by-attribute CompilerGeneratedAttribute --exclude-by-attribute ExcludeFromCodeCoverageAttribute
+        coverlet TransactionProcessor.Aggregates.Tests/bin/Release/net10.0/TransactionProcessor.Aggregates.Tests.dll --target dotnet --targetargs "TransactionProcessor.Aggregates.Tests/bin/Release/net10.0/TransactionProcessor.Aggregates.Tests.dll" --format lcov --output coverage/lcov3.info --exclude "[xunit*]*" --exclude-by-attribute Obsolete --exclude-by-attribute GeneratedCodeAttribute --exclude-by-attribute CompilerGeneratedAttribute --exclude-by-attribute ExcludeFromCodeCoverageAttribute
+        coverlet TransactionProcessor.Tests/bin/Release/net10.0/TransactionProcessor.Tests.dll --target dotnet --targetargs "TransactionProcessor.Tests/bin/Release/net10.0/TransactionProcessor.Tests.dll" --format lcov --output coverage/lcov4.info --exclude "[xunit*]*" --exclude-by-attribute Obsolete --exclude-by-attribute GeneratedCodeAttribute --exclude-by-attribute CompilerGeneratedAttribute --exclude-by-attribute ExcludeFromCodeCoverageAttribute
+        coverlet TransactionProcessor.DatabaseTests/bin/Release/net10.0/TransactionProcessor.DatabaseTests.dll --target dotnet --targetargs "TransactionProcessor.DatabaseTests/bin/Release/net10.0/TransactionProcessor.DatabaseTests.dll" --format lcov --output coverage/lcov5.info --exclude "[xunit*]*" --exclude-by-attribute Obsolete --exclude-by-attribute GeneratedCodeAttribute --exclude-by-attribute CompilerGeneratedAttribute --exclude-by-attribute ExcludeFromCodeCoverageAttribute
 
     - name: Merge LCOV reports
       run: |
-        mkdir -p coverage
-        lcov-result-merger "*.info" > lcov.info
+        lcov-result-merger "coverage/*.info" > lcov.info
 
     - name: Upload merged coverage to Codacy
       uses: codacy/codacy-coverage-reporter-action@v1
