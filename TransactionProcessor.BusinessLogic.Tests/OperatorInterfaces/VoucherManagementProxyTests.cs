@@ -6,7 +6,7 @@ namespace TransactionProcessor.BusinessLogic.Tests.OperatorInterfaces
     using BusinessLogic.OperatorInterfaces;
     using BusinessLogic.OperatorInterfaces.VoucherManagement;
     using MediatR;
-    using Moq;
+    using Imposter.Abstractions;
     using Requests;
     using Shared.Serialisation;
     using Shouldly;
@@ -27,9 +27,9 @@ namespace TransactionProcessor.BusinessLogic.Tests.OperatorInterfaces
 
         [Fact]
         public async Task VoucherManagementProxy_ProcessLogonMessage_NullReturned() {
-            Mock<IMediator> mediator = new Mock<IMediator>();
+            IMediatorImposter mediator = new();
             
-            IOperatorProxy voucherManagementProxy = new VoucherManagementProxy(mediator.Object);
+            IOperatorProxy voucherManagementProxy = new VoucherManagementProxy(mediator.Instance());
 
             var processLogonMessageResult = await voucherManagementProxy.ProcessLogonMessage(TestContext.Current.CancellationToken);
             processLogonMessageResult.IsSuccess.ShouldBeTrue();
@@ -39,9 +39,9 @@ namespace TransactionProcessor.BusinessLogic.Tests.OperatorInterfaces
         
         [Fact]
         public async Task VoucherManagementProxy_ProcessSaleMessage_VoucherIssueSuccessful_SaleMessageIsProcessed() {
-            Mock<IMediator> mediator = new Mock<IMediator>();
-            mediator.Setup(m => m.Send(It.IsAny<VoucherCommands.IssueVoucherCommand>(), It.IsAny<CancellationToken>())).ReturnsAsync(Result.Success(TestData.IssueVoucherResponse));
-            IOperatorProxy voucherManagementProxy = new VoucherManagementProxy(mediator.Object);
+            IMediatorImposter mediator = new();
+            mediator.Send<Result<TransactionProcessor.Models.IssueVoucherResponse>>(Arg<IRequest<Result<TransactionProcessor.Models.IssueVoucherResponse>>>.Any(), Arg<CancellationToken>.Any()).ReturnsAsync(Result.Success(TestData.IssueVoucherResponse));
+            IOperatorProxy voucherManagementProxy = new VoucherManagementProxy(mediator.Instance());
 
             var result = await voucherManagementProxy.ProcessSaleMessage(TestData.TransactionId,
                                                                                                 TestData.OperatorId,
@@ -63,9 +63,9 @@ namespace TransactionProcessor.BusinessLogic.Tests.OperatorInterfaces
         [Fact]
         public async Task VoucherManagementProxy_ProcessSaleMessage_VoucherIssueFailed_FailedResultReturned()
         {
-            Mock<IMediator> mediator = new Mock<IMediator>();
-            mediator.Setup(m => m.Send(It.IsAny<VoucherCommands.IssueVoucherCommand>(), It.IsAny<CancellationToken>())).ReturnsAsync(Result.Failure("Some grim error"));
-            IOperatorProxy voucherManagementProxy = new VoucherManagementProxy(mediator.Object);
+            IMediatorImposter mediator = new();
+            mediator.Send<Result<TransactionProcessor.Models.IssueVoucherResponse>>(Arg<IRequest<Result<TransactionProcessor.Models.IssueVoucherResponse>>>.Any(), Arg<CancellationToken>.Any()).ReturnsAsync(Result.Failure("Some grim error"));
+            IOperatorProxy voucherManagementProxy = new VoucherManagementProxy(mediator.Instance());
 
             var result = await voucherManagementProxy.ProcessSaleMessage(TestData.TransactionId,
                 TestData.OperatorId,
@@ -81,10 +81,10 @@ namespace TransactionProcessor.BusinessLogic.Tests.OperatorInterfaces
         [Fact]
         public async Task VoucherManagementProxy_ProcessSaleMessage_VoucherIssueThrowsTimeout_FailedResultReturned()
         {
-            Mock<IMediator> mediator = new Mock<IMediator>();
-            mediator.Setup(m => m.Send(It.IsAny<VoucherCommands.IssueVoucherCommand>(), It.IsAny<CancellationToken>()))
-                    .ThrowsAsync(new TimeoutException("Execution Timeout Expired"));
-            IOperatorProxy voucherManagementProxy = new VoucherManagementProxy(mediator.Object);
+            IMediatorImposter mediator = new();
+            mediator.Send<Result<TransactionProcessor.Models.IssueVoucherResponse>>(Arg<IRequest<Result<TransactionProcessor.Models.IssueVoucherResponse>>>.Any(), Arg<CancellationToken>.Any())
+                    .Throws(new TimeoutException("Execution Timeout Expired"));
+            IOperatorProxy voucherManagementProxy = new VoucherManagementProxy(mediator.Instance());
 
             var result = await voucherManagementProxy.ProcessSaleMessage(TestData.TransactionId,
                                                                                          TestData.OperatorId,
@@ -106,12 +106,12 @@ namespace TransactionProcessor.BusinessLogic.Tests.OperatorInterfaces
         [InlineData("A")]
         public async Task VoucherManagementProxy_ProcessSaleMessage_InvalidData_TransactionAmount_ErrorThrown(String transactionAmount)
         {
-            Mock<IMediator> mediator = new Mock<IMediator>();
+            IMediatorImposter mediator = new();
 
             Dictionary<String, String> additionalMetatdata = TestData.AdditionalTransactionMetaDataForVoucher();
             additionalMetatdata["Amount"] = transactionAmount;
 
-            IOperatorProxy voucherManagementProxy = new VoucherManagementProxy(mediator.Object);
+            IOperatorProxy voucherManagementProxy = new VoucherManagementProxy(mediator.Instance());
 
             var result = await voucherManagementProxy.ProcessSaleMessage(TestData.TransactionId,
                                                                                         TestData.OperatorId,
@@ -133,7 +133,7 @@ namespace TransactionProcessor.BusinessLogic.Tests.OperatorInterfaces
         [InlineData(null, null)]
         public async Task VoucherManagementProxy_ProcessSaleMessage_InvalidData_RecipientDetails_ErrorThrown(String recipientEmail, String recipientMobile)
         {
-            Mock<IMediator> mediator = new Mock<IMediator>();
+            IMediatorImposter mediator = new();
 
             Dictionary<String, String> additionalMetatdata = new Dictionary<String, String>
                                                              {
@@ -143,7 +143,7 @@ namespace TransactionProcessor.BusinessLogic.Tests.OperatorInterfaces
 
                                                              };
 
-            IOperatorProxy voucherManagementProxy = new VoucherManagementProxy(mediator.Object);
+            IOperatorProxy voucherManagementProxy = new VoucherManagementProxy(mediator.Instance());
 
             var result = await voucherManagementProxy.ProcessSaleMessage(TestData.TransactionId,
                                                                                         TestData.OperatorId,

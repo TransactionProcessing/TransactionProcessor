@@ -1,4 +1,4 @@
-using Moq;
+using Imposter.Abstractions;
 using Shared.Logger;
 using Shared.Serialisation;
 using Shouldly;
@@ -18,7 +18,7 @@ public class EstateDomainEventHandlerTests
 {
     #region Methods
 
-    private Mock<ITransactionProcessorReadModelRepository> EstateReportingRepository;
+    private ITransactionProcessorReadModelRepositoryImposter EstateReportingRepository;
 
     private ReadModelDomainEventHandler DomainEventHandler;
 
@@ -26,17 +26,16 @@ public class EstateDomainEventHandlerTests
     {
         Logger.Initialise(NullLogger.Instance);
         StringSerialiser.Initialise(new Shared.Serialisation.SystemTextJsonSerializer(new System.Text.Json.JsonSerializerOptions()));
-        this.EstateReportingRepository = new Mock<ITransactionProcessorReadModelRepository>();
+        this.EstateReportingRepository = new ITransactionProcessorReadModelRepositoryImposter();
 
-        this.DomainEventHandler = new ReadModelDomainEventHandler(this.EstateReportingRepository.Object);
+        this.DomainEventHandler = new ReadModelDomainEventHandler(this.EstateReportingRepository.Instance());
     }
     [Fact]
     public void EstateDomainEventHandler_EstateCreatedEvent_EventIsHandled()
     {
         EstateDomainEvents.EstateCreatedEvent estateCreatedEvent = TestData.DomainEvents.EstateCreatedEvent;
-        this.EstateReportingRepository
-            .Setup(r => r.CreateReadModel(It.IsAny<EstateDomainEvents.EstateCreatedEvent>(), It.IsAny<CancellationToken>()))
-            .ReturnsAsync(Result.Success);
+        this.EstateReportingRepository.CreateReadModel(Arg<EstateDomainEvents.EstateCreatedEvent>.Any(), Arg<CancellationToken>.Any())
+            .ReturnsAsync(Result.Success());
 
         Should.NotThrow(async () => { await this.DomainEventHandler.Handle(estateCreatedEvent, TestContext.Current.CancellationToken); });
     }
@@ -45,9 +44,8 @@ public class EstateDomainEventHandlerTests
     public async Task EstateDomainEventHandler_EstateCreatedEvent_CreateReadModelFailed_EventIsHandled()
     {
         EstateDomainEvents.EstateCreatedEvent estateCreatedEvent = TestData.DomainEvents.EstateCreatedEvent;
-        this.EstateReportingRepository
-            .Setup(r => r.CreateReadModel(It.IsAny<EstateDomainEvents.EstateCreatedEvent>(), It.IsAny<CancellationToken>()))
-            .ReturnsAsync(Result.Failure);
+        this.EstateReportingRepository.CreateReadModel(Arg<EstateDomainEvents.EstateCreatedEvent>.Any(), Arg<CancellationToken>.Any())
+            .ReturnsAsync(Result.Failure());
 
         Result result = await this.DomainEventHandler.Handle(estateCreatedEvent, TestContext.Current.CancellationToken);
         result.IsFailed.ShouldBeTrue();

@@ -4,7 +4,7 @@ using System.Threading.Tasks;
 namespace TransactionProcessor.BusinessLogic.Tests.RequestHandler;
 
 using BusinessLogic.Services;
-using Moq;
+using Imposter.Abstractions;
 using RequestHandlers;
 using Requests;
 using Shared.Serialisation;
@@ -22,9 +22,9 @@ public class FloatRequestHandlerTests
 
     [Fact]
     public async Task FloatRequestHandler_CreateFloatForContractProductRequest_IsHandled(){
-        Mock<IFloatDomainService> floatDomainService = new Mock<IFloatDomainService>();
-        FloatRequestHandler handler = new FloatRequestHandler(floatDomainService.Object);
-        floatDomainService.Setup(f => f.CreateFloat(It.IsAny<FloatCommands.CreateFloatCommand>(), It.IsAny<CancellationToken>())).ReturnsAsync(Result.Success());
+        IFloatDomainServiceImposter floatDomainService = new();
+        FloatRequestHandler handler = new FloatRequestHandler(floatDomainService.Instance());
+        floatDomainService.CreateFloat(Arg<FloatCommands.CreateFloatCommand>.Any(), Arg<CancellationToken>.Any()).ReturnsAsync(Result.Success());
         var command = TestData.CreateFloatCommand;
 
         var result = await handler.Handle(command, TestContext.Current.CancellationToken);
@@ -34,10 +34,10 @@ public class FloatRequestHandlerTests
     [Fact]
     public async Task FloatRequestHandler_RecordCreditPurchaseForFloatRequest_IsHandled()
     {
-        Mock<IFloatDomainService> floatDomainService = new Mock<IFloatDomainService>();
-        FloatRequestHandler handler = new FloatRequestHandler(floatDomainService.Object);
+        IFloatDomainServiceImposter floatDomainService = new();
+        FloatRequestHandler handler = new FloatRequestHandler(floatDomainService.Instance());
         
-        floatDomainService.Setup(f => f.RecordCreditPurchase(It.IsAny<FloatCommands.RecordCreditPurchaseForFloatCommand>(), It.IsAny<CancellationToken>())).ReturnsAsync(Result.Success());
+        floatDomainService.RecordCreditPurchase(Arg<FloatCommands.RecordCreditPurchaseForFloatCommand>.Any(), Arg<CancellationToken>.Any()).ReturnsAsync(Result.Success());
 
         var command = TestData.RecordCreditPurchaseForFloatCommand;
 

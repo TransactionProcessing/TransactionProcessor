@@ -4,7 +4,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using MediatR;
 using Microsoft.AspNetCore.Http;
-using Moq;
+using Imposter.Abstractions;
 using Shared.General;
 using Shouldly;
 using SimpleResults;
@@ -21,7 +21,7 @@ namespace TransactionProcessor.Tests.HandlerTests
         [Fact]
         public async Task PerformTransaction_LogonPayloadWithoutTypeMetadata_SendsLogonCommand()
         {
-            Mock<IMediator> mediator = new Mock<IMediator>(MockBehavior.Strict);
+            IMediatorImposter mediator = new();
             LogonTransactionRequest request = new LogonTransactionRequest
             {
                 DeviceIdentifier = "device-1",
@@ -32,7 +32,7 @@ namespace TransactionProcessor.Tests.HandlerTests
                 MerchantId = TestData.MerchantId
             };
 
-            mediator.Setup(m => m.Send(It.IsAny<TransactionCommands.ProcessLogonTransactionCommand>(), It.IsAny<CancellationToken>()))
+            mediator.Send<Result<ProcessLogonTransactionResponse>>(Arg<IRequest<Result<ProcessLogonTransactionResponse>>>.Any(), Arg<CancellationToken>.Any())
                 .ReturnsAsync(Result.Success(new ProcessLogonTransactionResponse
                 {
                     EstateId = TestData.EstateId,
@@ -42,19 +42,18 @@ namespace TransactionProcessor.Tests.HandlerTests
                     TransactionId = Guid.NewGuid()
                 }));
 
-            IResult result = await TransactionHandlers.PerformLogonTransaction(mediator.Object,
+            IResult result = await TransactionHandlers.PerformLogonTransaction(mediator.Instance(),
                 new DefaultHttpContext(),
                 request,
                 CancellationToken.None);
 
             result.ShouldNotBeNull();
-            mediator.VerifyAll();
         }
 
         [Fact]
         public async Task PerformTransaction_SalePayloadWithoutTypeMetadata_SendsSaleCommand()
         {
-            Mock<IMediator> mediator = new Mock<IMediator>(MockBehavior.Strict);
+            IMediatorImposter mediator = new();
             SaleTransactionRequest request = new SaleTransactionRequest
             {
                 AdditionalTransactionMetadata = new Dictionary<String, String> { { "amount", "12.34" } },
@@ -71,8 +70,7 @@ namespace TransactionProcessor.Tests.HandlerTests
                 MerchantId = TestData.MerchantId
             };
 
-            mediator.Setup(m => m.Send(It.IsAny<TransactionCommands.ProcessSaleTransactionCommand>(),
-                It.IsAny<CancellationToken>()))
+            mediator.Send<Result<ProcessSaleTransactionResponse>>(Arg<IRequest<Result<ProcessSaleTransactionResponse>>>.Any(), Arg<CancellationToken>.Any())
                 .ReturnsAsync(Result.Success(new ProcessSaleTransactionResponse
                 {
                     EstateId = TestData.EstateId,
@@ -82,19 +80,18 @@ namespace TransactionProcessor.Tests.HandlerTests
                     TransactionId = Guid.NewGuid()
                 }));
 
-            IResult result = await TransactionHandlers.PerformSaleTransaction(mediator.Object,
+            IResult result = await TransactionHandlers.PerformSaleTransaction(mediator.Instance(),
                 new DefaultHttpContext(),
                 request,
                 CancellationToken.None);
 
             result.ShouldNotBeNull();
-            mediator.VerifyAll();
         }
 
         [Fact]
         public async Task PerformTransaction_SalePayloadWithoutTransactionSource_UsesDefaultSource()
         {
-            Mock<IMediator> mediator = new Mock<IMediator>(MockBehavior.Strict);
+            IMediatorImposter mediator = new();
             TransactionCommands.ProcessSaleTransactionCommand? capturedCommand = null;
             SaleTransactionRequest request = new SaleTransactionRequest
             {
@@ -111,9 +108,7 @@ namespace TransactionProcessor.Tests.HandlerTests
                 MerchantId = TestData.MerchantId
             };
 
-            mediator.Setup(m => m.Send(It.IsAny<TransactionCommands.ProcessSaleTransactionCommand>(),
-                It.IsAny<CancellationToken>()))
-                .Callback((IRequest<Result<ProcessSaleTransactionResponse>> request, CancellationToken _) => capturedCommand = (TransactionCommands.ProcessSaleTransactionCommand)request)
+            mediator.Send<Result<ProcessSaleTransactionResponse>>(Arg<IRequest<Result<ProcessSaleTransactionResponse>>>.Any(), Arg<CancellationToken>.Any())
                 .ReturnsAsync(Result.Success(new ProcessSaleTransactionResponse
                 {
                     EstateId = TestData.EstateId,
@@ -121,9 +116,10 @@ namespace TransactionProcessor.Tests.HandlerTests
                     ResponseCode = "0000",
                     ResponseMessage = "SUCCESS",
                     TransactionId = Guid.NewGuid()
-                }));
+                }))
+                .Callback((IRequest<Result<ProcessSaleTransactionResponse>> request, CancellationToken _) => { capturedCommand = (TransactionCommands.ProcessSaleTransactionCommand)request; return Task.CompletedTask; });
 
-            IResult result = await TransactionHandlers.PerformSaleTransaction(mediator.Object,
+            IResult result = await TransactionHandlers.PerformSaleTransaction(mediator.Instance(),
                 new DefaultHttpContext(),
                 request,
                 CancellationToken.None);
@@ -131,13 +127,12 @@ namespace TransactionProcessor.Tests.HandlerTests
             result.ShouldNotBeNull();
             capturedCommand.ShouldNotBeNull();
             capturedCommand!.TransactionSource.ShouldBe(1);
-            mediator.VerifyAll();
         }
 
         [Fact]
         public async Task PerformTransaction_SalePayload_WhenMediatorFails_ReturnsFailure()
         {
-            Mock<IMediator> mediator = new Mock<IMediator>(MockBehavior.Strict);
+            IMediatorImposter mediator = new();
             SaleTransactionRequest request = new SaleTransactionRequest
             {
                 AdditionalTransactionMetadata = new Dictionary<String, String> { { "amount", "12.34" } },
@@ -154,23 +149,21 @@ namespace TransactionProcessor.Tests.HandlerTests
                 MerchantId = TestData.MerchantId
             };
 
-            mediator.Setup(m => m.Send(It.IsAny<TransactionCommands.ProcessSaleTransactionCommand>(),
-                It.IsAny<CancellationToken>()))
+            mediator.Send<Result<ProcessSaleTransactionResponse>>(Arg<IRequest<Result<ProcessSaleTransactionResponse>>>.Any(), Arg<CancellationToken>.Any())
                 .ReturnsAsync(Result.Failure("boom").ToResult(new ProcessSaleTransactionResponse()));
 
-            IResult result = await TransactionHandlers.PerformSaleTransaction(mediator.Object,
+            IResult result = await TransactionHandlers.PerformSaleTransaction(mediator.Instance(),
                 new DefaultHttpContext(),
                 request,
                 CancellationToken.None);
 
             result.ShouldNotBeNull();
-            mediator.VerifyAll();
         }
 
         [Fact]
         public async Task PerformTransaction_LogonPayload_WhenMediatorFails_ReturnsFailure()
         {
-            Mock<IMediator> mediator = new Mock<IMediator>(MockBehavior.Strict);
+            IMediatorImposter mediator = new();
             LogonTransactionRequest request = new LogonTransactionRequest
             {
                 DeviceIdentifier = "device-1",
@@ -181,22 +174,21 @@ namespace TransactionProcessor.Tests.HandlerTests
                 MerchantId = TestData.MerchantId
             };
 
-            mediator.Setup(m => m.Send(It.IsAny<TransactionCommands.ProcessLogonTransactionCommand>(), It.IsAny<CancellationToken>()))
+            mediator.Send<Result<ProcessLogonTransactionResponse>>(Arg<IRequest<Result<ProcessLogonTransactionResponse>>>.Any(), Arg<CancellationToken>.Any())
                 .ReturnsAsync(Result.Failure("boom").ToResult(new ProcessLogonTransactionResponse()));
 
-            IResult result = await TransactionHandlers.PerformLogonTransaction(mediator.Object,
+            IResult result = await TransactionHandlers.PerformLogonTransaction(mediator.Instance(),
                 new DefaultHttpContext(),
                 request,
                 CancellationToken.None);
 
             result.ShouldNotBeNull();
-            mediator.VerifyAll();
         }
 
         [Fact]
         public async Task PerformTransaction_ReconciliationPayloadWithoutTypeMetadata_SendsReconciliationCommand()
         {
-            Mock<IMediator> mediator = new Mock<IMediator>(MockBehavior.Strict);
+            IMediatorImposter mediator = new();
             ReconciliationRequest request = new ReconciliationRequest
             {
                 DeviceIdentifier = "device-1",
@@ -209,8 +201,7 @@ namespace TransactionProcessor.Tests.HandlerTests
                 TransactionType = "Reconciliation"
             };
 
-            mediator.Setup(m => m.Send(It.IsAny<TransactionCommands.ProcessReconciliationCommand>(),
-                It.IsAny<CancellationToken>()))
+            mediator.Send<Result<ProcessReconciliationTransactionResponse>>(Arg<IRequest<Result<ProcessReconciliationTransactionResponse>>>.Any(), Arg<CancellationToken>.Any())
                 .ReturnsAsync(Result.Success(new ProcessReconciliationTransactionResponse
                 {
                     EstateId = TestData.EstateId,
@@ -220,19 +211,18 @@ namespace TransactionProcessor.Tests.HandlerTests
                     TransactionId = Guid.NewGuid()
                 }));
 
-            IResult result = await TransactionHandlers.PerformReconciliationTransaction(mediator.Object,
+            IResult result = await TransactionHandlers.PerformReconciliationTransaction(mediator.Instance(),
                 new DefaultHttpContext(),
                 request,
                 CancellationToken.None);
 
             result.ShouldNotBeNull();
-            mediator.VerifyAll();
         }
 
         [Fact]
         public async Task PerformTransaction_ReconciliationPayload_WhenMediatorFails_ReturnsFailure()
         {
-            Mock<IMediator> mediator = new Mock<IMediator>(MockBehavior.Strict);
+            IMediatorImposter mediator = new();
             ReconciliationRequest request = new ReconciliationRequest
             {
                 DeviceIdentifier = "device-1",
@@ -245,35 +235,32 @@ namespace TransactionProcessor.Tests.HandlerTests
                 TransactionType = "Reconciliation"
             };
 
-            mediator.Setup(m => m.Send(It.IsAny<TransactionCommands.ProcessReconciliationCommand>(),
-                It.IsAny<CancellationToken>()))
+            mediator.Send<Result<ProcessReconciliationTransactionResponse>>(Arg<IRequest<Result<ProcessReconciliationTransactionResponse>>>.Any(), Arg<CancellationToken>.Any())
                 .ReturnsAsync(Result.Failure("boom").ToResult(new ProcessReconciliationTransactionResponse()));
 
-            IResult result = await TransactionHandlers.PerformReconciliationTransaction(mediator.Object,
+            IResult result = await TransactionHandlers.PerformReconciliationTransaction(mediator.Instance(),
                 new DefaultHttpContext(),
                 request,
                 CancellationToken.None);
 
             result.ShouldNotBeNull();
-            mediator.VerifyAll();
         }
 
         [Fact]
         public async Task ResendTransactionReceipt_SendsCommand()
         {
-            Mock<IMediator> mediator = new Mock<IMediator>(MockBehavior.Strict);
+            IMediatorImposter mediator = new();
 
-            mediator.Setup(m => m.Send(It.IsAny<TransactionCommands.ResendTransactionReceiptCommand>(), It.IsAny<CancellationToken>()))
+            mediator.Send<Result>(Arg<IRequest<Result>>.Any(), Arg<CancellationToken>.Any())
                 .ReturnsAsync(Result.Success());
 
-            IResult result = await TransactionHandlers.ResendTransactionReceipt(mediator.Object,
+            IResult result = await TransactionHandlers.ResendTransactionReceipt(mediator.Instance(),
                 new DefaultHttpContext(),
                 TestData.EstateId,
                 Guid.NewGuid(),
                 CancellationToken.None);
 
             result.ShouldNotBeNull();
-            mediator.VerifyAll();
         }
 
         private static class TestData

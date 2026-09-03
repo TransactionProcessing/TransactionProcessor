@@ -13,7 +13,7 @@
 	  <PackageReference Include="Lamar" />
 	  <PackageReference Include="Microsoft.EntityFrameworkCore.InMemory" />
 	  <PackageReference Include="Microsoft.EntityFrameworkCore.Relational" />
-    <PackageReference Include="Moq" />
+    <PackageReference Include="Imposter" />
     <PackageReference Include="NuGet.Packaging" />
     <PackageReference Include="NuGet.Protocol" />
     <PackageReference Include="OpenTelemetry.Api" />

@@ -1,4 +1,4 @@
-using Moq;
+using Imposter.Abstractions;
 using Shared.DomainDrivenDesign.EventSourcing;
 using Shared.EventStore.Aggregate;
 using Shared.Serialisation;
@@ -26,11 +26,11 @@ public class SettlementRequestHandlerTests
     [Fact]
     public async Task SettlementRequestHandler_ProcessSettlementRequest_IsHandled()
     {
-        Mock<ISettlementDomainService> settlementDomainService = new Mock<ISettlementDomainService>();
-        Mock<ITransactionProcessorManager> manager = new Mock<ITransactionProcessorManager>();
-        SettlementRequestHandler handler = new SettlementRequestHandler(settlementDomainService.Object, manager.Object);
+        ISettlementDomainServiceImposter settlementDomainService = new();
+        ITransactionProcessorManagerImposter manager = new();
+        SettlementRequestHandler handler = new SettlementRequestHandler(settlementDomainService.Instance(), manager.Instance());
         settlementDomainService
-            .Setup(s => s.ProcessSettlement(It.IsAny<SettlementCommands.ProcessSettlementCommand>(), It.IsAny<CancellationToken>())).ReturnsAsync(Result.Success());
+            .ProcessSettlement(Arg<SettlementCommands.ProcessSettlementCommand>.Any(), Arg<CancellationToken>.Any()).ReturnsAsync(Result.Success());
         var command = TestData.Commands.ProcessSettlementCommand;
 
         var result = await handler.Handle(command, TestContext.Current.CancellationToken);

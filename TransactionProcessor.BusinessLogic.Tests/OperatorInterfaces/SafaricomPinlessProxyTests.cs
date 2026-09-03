@@ -6,8 +6,6 @@ namespace TransactionProcessor.BusinessLogic.Tests.OperatorInterfaces
 {
     using BusinessLogic.OperatorInterfaces;
     using BusinessLogic.OperatorInterfaces.SafaricomPinless;
-    using Moq;
-    using Moq.Protected;
     using Shared.Logger;
     using Shared.Serialisation;
     using Shouldly;
@@ -191,13 +189,10 @@ namespace TransactionProcessor.BusinessLogic.Tests.OperatorInterfaces
         [Fact]
         public async Task SafaricomPinlessProxy_ProcessSaleMessage_Timeout_ErrorThrown()
         {
-            Mock<HttpMessageHandler> handlerMock = new Mock<HttpMessageHandler>(MockBehavior.Strict);
-            handlerMock.Protected()
-                       .Setup<Task<HttpResponseMessage>>("SendAsync", ItExpr.IsAny<HttpRequestMessage>(), ItExpr.IsAny<CancellationToken>())
-                       .ThrowsAsync(new TimeoutException("Execution Timeout Expired"));
-
+            HttpMessageHandler handler = new StubHttpMessageHandler((_, _) =>
+                Task.FromException<HttpResponseMessage>(new TimeoutException("Execution Timeout Expired")));
             SafaricomConfiguration safaricomConfiguration = TestData.SafaricomConfiguration;
-            HttpClient httpClient = new HttpClient(handlerMock.Object);
+            HttpClient httpClient = new HttpClient(handler);
 
             IOperatorProxy safaricomPinlessproxy = new SafaricomPinlessProxy(safaricomConfiguration, httpClient);
 
@@ -253,16 +248,25 @@ namespace TransactionProcessor.BusinessLogic.Tests.OperatorInterfaces
 
         private HttpClient SetupMockHttpClient(HttpResponseMessage responseMessage)
         {
-            Mock<HttpMessageHandler> handlerMock = new Mock<HttpMessageHandler>(MockBehavior.Strict);
-            handlerMock.Protected().Setup<Task<HttpResponseMessage>>("SendAsync", ItExpr.IsAny<HttpRequestMessage>(), ItExpr.IsAny<CancellationToken>())
-                       .ReturnsAsync(responseMessage);
-
-            var httpClient = new HttpClient(handlerMock.Object)
+            var httpClient = new HttpClient(new StubHttpMessageHandler((_, _) => Task.FromResult(responseMessage)))
                              {
                                  BaseAddress = new Uri("http://test.com")
                              };
 
             return httpClient;
+        }
+
+        private sealed class StubHttpMessageHandler : HttpMessageHandler
+        {
+            private readonly Func<HttpRequestMessage, CancellationToken, Task<HttpResponseMessage>> SendHandler;
+
+            public StubHttpMessageHandler(Func<HttpRequestMessage, CancellationToken, Task<HttpResponseMessage>> sendHandler)
+            {
+                this.SendHandler = sendHandler;
+            }
+
+            protected override Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
+                => this.SendHandler(request, cancellationToken);
         }
     }
 }

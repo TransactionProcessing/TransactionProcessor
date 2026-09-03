@@ -1,4 +1,4 @@
-using Moq;
+using Imposter.Abstractions;
 using Shared.Serialisation;
 using Shouldly;
 using SimpleResults;
@@ -22,10 +22,10 @@ namespace TransactionProcessor.BusinessLogic.Tests.RequestHandler
         [Fact]
         public async Task TransactionRequestHandler_ProcessLogonTransactionRequest_IsHandled()
         {
-            Mock<ITransactionDomainService> transactionDomainService = new Mock<ITransactionDomainService>();
-            TransactionRequestHandler handler = new TransactionRequestHandler(transactionDomainService.Object);
-            transactionDomainService.Setup(t => t.ProcessLogonTransaction(It.IsAny<TransactionCommands.ProcessLogonTransactionCommand>(),
-                It.IsAny<CancellationToken>())).ReturnsAsync(Result.Success());
+            ITransactionDomainServiceImposter transactionDomainService = new ITransactionDomainServiceImposter();
+            TransactionRequestHandler handler = new TransactionRequestHandler(transactionDomainService.Instance());
+            transactionDomainService.ProcessLogonTransaction(Arg<TransactionCommands.ProcessLogonTransactionCommand>.Any(),
+                Arg<CancellationToken>.Any()).ReturnsAsync(Result.Success());
             TransactionCommands.ProcessLogonTransactionCommand command = TestData.Commands.ProcessLogonTransactionCommand;
 
             var result = await handler.Handle(command, TestContext.Current.CancellationToken);
@@ -36,10 +36,10 @@ namespace TransactionProcessor.BusinessLogic.Tests.RequestHandler
         [Fact]
         public async Task TransactionRequestHandler_ProcessSaleTransactionRequest_IsHandled()
         {
-            Mock<ITransactionDomainService> transactionDomainService = new Mock<ITransactionDomainService>();
-            TransactionRequestHandler handler = new TransactionRequestHandler(transactionDomainService.Object);
-            transactionDomainService.Setup(t => t.ProcessSaleTransaction(It.IsAny<TransactionCommands.ProcessSaleTransactionCommand>(),
-                It.IsAny<CancellationToken>())).ReturnsAsync(Result.Success());
+            ITransactionDomainServiceImposter transactionDomainService = new ITransactionDomainServiceImposter();
+            TransactionRequestHandler handler = new TransactionRequestHandler(transactionDomainService.Instance());
+            transactionDomainService.ProcessSaleTransaction(Arg<TransactionCommands.ProcessSaleTransactionCommand>.Any(),
+                Arg<CancellationToken>.Any()).ReturnsAsync(Result.Success());
             TransactionCommands.ProcessSaleTransactionCommand command = TestData.Commands.ProcessSaleTransactionCommand;
 
             var result = await handler.Handle(command, TestContext.Current.CancellationToken);
@@ -50,10 +50,10 @@ namespace TransactionProcessor.BusinessLogic.Tests.RequestHandler
         [Fact]
         public async Task TransactionRequestHandler_ProcessReconciliationRequest_IsHandled()
         {
-            Mock<ITransactionDomainService> transactionDomainService = new Mock<ITransactionDomainService>();
-            TransactionRequestHandler handler = new TransactionRequestHandler(transactionDomainService.Object);
-            transactionDomainService.Setup(t => t.ProcessReconciliationTransaction(It.IsAny<TransactionCommands.ProcessReconciliationCommand>(),
-                It.IsAny<CancellationToken>())).ReturnsAsync(Result.Success());
+            ITransactionDomainServiceImposter transactionDomainService = new ITransactionDomainServiceImposter();
+            TransactionRequestHandler handler = new TransactionRequestHandler(transactionDomainService.Instance());
+            transactionDomainService.ProcessReconciliationTransaction(Arg<TransactionCommands.ProcessReconciliationCommand>.Any(),
+                Arg<CancellationToken>.Any()).ReturnsAsync(Result.Success());
             TransactionCommands.ProcessReconciliationCommand command = TestData.Commands.ProcessReconciliationCommand;
 
             var result = await handler.Handle(command, TestContext.Current.CancellationToken);
@@ -64,11 +64,10 @@ namespace TransactionProcessor.BusinessLogic.Tests.RequestHandler
         [Fact]
         public async Task TransactionRequestHandler_ResendTransactionReceiptRequest_IsHandled()
         {
-            Mock<ITransactionDomainService> transactionDomainService = new Mock<ITransactionDomainService>();
-            TransactionRequestHandler handler = new TransactionRequestHandler(transactionDomainService.Object);
-            transactionDomainService
-                .Setup(t => t.ResendTransactionReceipt(It.IsAny<TransactionCommands.ResendTransactionReceiptCommand>(),
-                    It.IsAny<CancellationToken>())).ReturnsAsync(Result.Success());
+            ITransactionDomainServiceImposter transactionDomainService = new ITransactionDomainServiceImposter();
+            TransactionRequestHandler handler = new TransactionRequestHandler(transactionDomainService.Instance());
+            transactionDomainService.ResendTransactionReceipt(Arg<TransactionCommands.ResendTransactionReceiptCommand>.Any(),
+                    Arg<CancellationToken>.Any()).ReturnsAsync(Result.Success());
             TransactionCommands.ResendTransactionReceiptCommand command = TestData.Commands.ResendTransactionReceiptCommand;
 
             var result = await handler.Handle(command, TestContext.Current.CancellationToken);

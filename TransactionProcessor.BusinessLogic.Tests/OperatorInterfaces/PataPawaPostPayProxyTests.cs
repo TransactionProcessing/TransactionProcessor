@@ -6,7 +6,7 @@ namespace TransactionProcessor.BusinessLogic.Tests.OperatorInterfaces
 {
     using Common;
     using Microsoft.Extensions.Caching.Memory;
-    using Moq;
+    using Imposter.Abstractions;
     using PataPawaPostPay;
     using Shared.Serialisation;
     using Shouldly;
@@ -17,9 +17,9 @@ namespace TransactionProcessor.BusinessLogic.Tests.OperatorInterfaces
     using Xunit;
 
     public class PataPawaPostPayProxyTests{
-        private readonly Mock<IPataPawaPostPayService> PataPawaPostPayService;
+        private readonly IPataPawaPostPayServiceImposter PataPawaPostPayService;
 
-        private readonly Mock<PataPawaPostPayServiceClient> PataPawaPostPayServiceClient;
+        private readonly PataPawaPostPayServiceClientImposter PataPawaPostPayServiceClient;
 
         private readonly Func<PataPawaPostPayServiceClient, String, String, IPataPawaPostPayService> ChannelResolver;
 
@@ -29,23 +29,23 @@ namespace TransactionProcessor.BusinessLogic.Tests.OperatorInterfaces
 
         public PataPawaPostPayProxyTests(){
             StringSerialiser.Initialise(new SystemTextJsonSerializer(new JsonSerializerOptions()));
-            PataPawaPostPayService = new Mock<IPataPawaPostPayService>();
-            PataPawaPostPayServiceClient = new Mock<PataPawaPostPayServiceClient>();
+            PataPawaPostPayService = new IPataPawaPostPayServiceImposter();
+            PataPawaPostPayServiceClient = new PataPawaPostPayServiceClientImposter();
 
             ChannelResolver = (client,
                                clientName,
                                s) => {
-                                  return PataPawaPostPayService.Object;
+                                  return PataPawaPostPayService.Instance();
                               };
 
             MemoryCache = new MemoryCache(new MemoryCacheOptions());
-            PataPawaPostPayProxy = new PataPawaPostPayProxy(PataPawaPostPayServiceClient.Object, ChannelResolver, TestData.PataPawaPostPaidConfiguration, this.MemoryCache);
+            PataPawaPostPayProxy = new PataPawaPostPayProxy(PataPawaPostPayServiceClient.Instance(), ChannelResolver, TestData.PataPawaPostPaidConfiguration, this.MemoryCache);
         }
 
         [Fact]
         public async Task PataPawaPostPayProxy_ProcessLogonMessage_SuccessfulResponse_MessageIsProcessed() {
 
-            PataPawaPostPayService.Setup(s => s.getLoginRequestAsync(It.IsAny<String>(), It.IsAny<String>())).ReturnsAsync(TestData.PataPawaPostPaidSuccessfulLoginResponse);
+            PataPawaPostPayService.getLoginRequestAsync(Arg<String>.Any(), Arg<String>.Any()).ReturnsAsync(TestData.PataPawaPostPaidSuccessfulLoginResponse);
 
             var logonResponseResult = await PataPawaPostPayProxy.ProcessLogonMessage(TestContext.Current.CancellationToken);
             logonResponseResult.IsSuccess.ShouldBeTrue();
@@ -77,7 +77,7 @@ namespace TransactionProcessor.BusinessLogic.Tests.OperatorInterfaces
         [Fact]
         public async Task PataPawaPostPayProxy_ProcessLogonMessage_FailedResponse_MessageIsProcessed() {
 
-            PataPawaPostPayService.Setup(s => s.getLoginRequestAsync(It.IsAny<String>(), It.IsAny<String>())).ReturnsAsync(TestData.PataPawaPostPaidFailedLoginResponse);
+            PataPawaPostPayService.getLoginRequestAsync(Arg<String>.Any(), Arg<String>.Any()).ReturnsAsync(TestData.PataPawaPostPaidFailedLoginResponse);
             
             var result = await this.PataPawaPostPayProxy.ProcessLogonMessage(TestContext.Current.CancellationToken);
 
@@ -88,7 +88,7 @@ namespace TransactionProcessor.BusinessLogic.Tests.OperatorInterfaces
         
         [Fact]
         public async Task PataPawaPostPayProxy_ProcessSaleMessage_VerifyAccount_SuccessfulResponse_MessageIsProcessed() {
-            PataPawaPostPayService.Setup(s => s.getVerifyRequestAsync(It.IsAny<String>(), It.IsAny<String>(), It.IsAny<String>()))
+            PataPawaPostPayService.getVerifyRequestAsync(Arg<String>.Any(), Arg<String>.Any(), Arg<String>.Any())
                                   .ReturnsAsync(TestData.PataPawaPostPaidSuccessfulVerifyAccountResponse);
             MemoryCache.Set("PataPawaPostPayLogon", TestData.PataPawaPostPaidSuccessfulLoginOperatorResponse);
             
@@ -117,7 +117,7 @@ namespace TransactionProcessor.BusinessLogic.Tests.OperatorInterfaces
         
         [Fact]
         public async Task PataPawaPostPayProxy_ProcessSaleMessage_VerifyAccount_FailedLogon_ErrorIsThrown() {
-            this.PataPawaPostPayService.Setup(s => s.getVerifyRequestAsync(It.IsAny<String>(), It.IsAny<String>(), It.IsAny<String>()))
+            this.PataPawaPostPayService.getVerifyRequestAsync(Arg<String>.Any(), Arg<String>.Any(), Arg<String>.Any())
                 .ReturnsAsync(TestData.PataPawaPostPaidSuccessfulVerifyAccountResponse);
             MemoryCache.Set("PataPawaPostPayLogon", TestData.PataPawaPostPaidFailedLoginOperatorResponse);
             
@@ -188,7 +188,7 @@ namespace TransactionProcessor.BusinessLogic.Tests.OperatorInterfaces
         [Fact]
         public async Task PataPawaPostPayProxy_ProcessSaleMessage_VerifyAccount_RequestFailedAtHost_ErrorIsThrown()
         {
-            this.PataPawaPostPayService.Setup(s => s.getVerifyRequestAsync(It.IsAny<String>(), It.IsAny<String>(), It.IsAny<String>()))
+            this.PataPawaPostPayService.getVerifyRequestAsync(Arg<String>.Any(), Arg<String>.Any(), Arg<String>.Any())
                 .ReturnsAsync(TestData.PataPawaPostPaidFailedVerifyAccountResponse);
             MemoryCache.Set("PataPawaPostPayLogon", TestData.PataPawaPostPaidSuccessfulLoginOperatorResponse);
             
@@ -207,7 +207,7 @@ namespace TransactionProcessor.BusinessLogic.Tests.OperatorInterfaces
         [Fact]
         public async Task PataPawaPostPayProxy_ProcessSaleMessage_VerifyAccount_Timeout_ErrorIsThrown()
         {
-            this.PataPawaPostPayService.Setup(s => s.getVerifyRequestAsync(It.IsAny<String>(), It.IsAny<String>(), It.IsAny<String>()))
+            this.PataPawaPostPayService.getVerifyRequestAsync(Arg<String>.Any(), Arg<String>.Any(), Arg<String>.Any())
                 .ThrowsAsync(new TimeoutException("Execution Timeout Expired"));
             MemoryCache.Set("PataPawaPostPayLogon", TestData.PataPawaPostPaidSuccessfulLoginOperatorResponse);
 
@@ -228,8 +228,8 @@ namespace TransactionProcessor.BusinessLogic.Tests.OperatorInterfaces
         [Fact]
         public async Task PataPawaPostPayProxy_ProcessSaleMessage_ProcessBill_Timeout_ErrorIsThrown()
         {
-            this.PataPawaPostPayService.Setup(s => s.getPayBillRequestAsync(It.IsAny<String>(), It.IsAny<String>(), It.IsAny<String>(),
-                                                                              It.IsAny<String>(), It.IsAny<String>(), It.IsAny<Decimal>()))
+            this.PataPawaPostPayService.getPayBillRequestAsync(Arg<String>.Any(), Arg<String>.Any(), Arg<String>.Any(),
+                                                               Arg<String>.Any(), Arg<String>.Any(), Arg<Decimal>.Any())
                 .ThrowsAsync(new TimeoutException("Execution Timeout Expired"));
             MemoryCache.Set("PataPawaPostPayLogon", TestData.PataPawaPostPaidSuccessfulLoginOperatorResponse);
 
@@ -250,8 +250,8 @@ namespace TransactionProcessor.BusinessLogic.Tests.OperatorInterfaces
         [Fact]
         public async Task PataPawaPostPayProxy_ProcessSaleMessage_ProcessBill_SuccessfulResponse_MessageIsProcessed()
         {
-            this.PataPawaPostPayService.Setup(s => s.getPayBillRequestAsync(It.IsAny<String>(), It.IsAny<String>(), It.IsAny<String>(),
-                                                                             It.IsAny<String>(), It.IsAny<String>(), It.IsAny<Decimal>()))
+            this.PataPawaPostPayService.getPayBillRequestAsync(Arg<String>.Any(), Arg<String>.Any(), Arg<String>.Any(),
+                                                               Arg<String>.Any(), Arg<String>.Any(), Arg<Decimal>.Any())
                 .ReturnsAsync(TestData.PataPawaPostPaidSuccessfulProcessBillResponse);
             this.MemoryCache.Set("PataPawaPostPayLogon", TestData.PataPawaPostPaidSuccessfulLoginOperatorResponse);
 
@@ -408,8 +408,8 @@ namespace TransactionProcessor.BusinessLogic.Tests.OperatorInterfaces
         [Fact]
         public async Task PataPawaPostPayProxy_ProcessSaleMessage_ProcessBill_RequestFailedAtHost_ErrorThrown()
         {
-            this.PataPawaPostPayService.Setup(s => s.getPayBillRequestAsync(It.IsAny<String>(), It.IsAny<String>(), It.IsAny<String>(),
-                                                                             It.IsAny<String>(), It.IsAny<String>(), It.IsAny<Decimal>()))
+            this.PataPawaPostPayService.getPayBillRequestAsync(Arg<String>.Any(), Arg<String>.Any(), Arg<String>.Any(),
+                                                               Arg<String>.Any(), Arg<String>.Any(), Arg<Decimal>.Any())
                 .ReturnsAsync(TestData.PataPawaPostPaidFailedProcessBillResponse);
             MemoryCache.Set("PataPawaPostPayLogon", TestData.PataPawaPostPaidSuccessfulLoginOperatorResponse);
 

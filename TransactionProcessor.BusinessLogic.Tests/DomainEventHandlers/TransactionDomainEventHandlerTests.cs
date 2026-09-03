@@ -8,7 +8,7 @@ namespace TransactionProcessor.BusinessLogic.Tests.DomainEventHandlers
 {
     using EventHandling;
     using Microsoft.Extensions.Configuration;
-    using Moq;
+    using Imposter.Abstractions;
     using Shared.DomainDrivenDesign.EventSourcing;
     using Shared.General;
     using Shared.Logger;
@@ -25,14 +25,14 @@ namespace TransactionProcessor.BusinessLogic.Tests.DomainEventHandlers
     [Collection("Sequential")]
     public abstract class DomainEventHandlerTests
     {
-        public Mock<IMediator> Mediator;
+        public IMediatorImposter Mediator;
 
         public DomainEventHandlerTests(ITestOutputHelper testOutputHelper) {
-            this.Mediator = new Mock<IMediator>();
+            this.Mediator = new IMediatorImposter();
             StringSerialiser.Initialise(new SystemTextJsonSerializer(new JsonSerializerOptions()));
             IConfigurationRoot configurationRoot = new ConfigurationBuilder().AddInMemoryCollection(TestData.DefaultAppSettings).Build();
             ConfigurationReader.Initialise(configurationRoot);
-            this.Mediator.Setup(s => s.Send(It.IsAny<IRequest<Result>>(), It.IsAny<CancellationToken>())).ReturnsAsync(Result.Success());
+            this.Mediator.Send<Result>(Arg<IRequest<Result>>.Any(), Arg<CancellationToken>.Any()).ReturnsAsync(Result.Success());
         }
     }
 
@@ -42,7 +42,7 @@ namespace TransactionProcessor.BusinessLogic.Tests.DomainEventHandlers
         
         public TransactionDomainEventHandlerTests(ITestOutputHelper testOutputHelper) : base(testOutputHelper)
         {
-            this.TransactionDomainEventHandler = new TransactionDomainEventHandler(this.Mediator.Object);
+            this.TransactionDomainEventHandler = new TransactionDomainEventHandler(this.Mediator.Instance());
         }
         
         

@@ -1,6 +1,6 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
-using Moq;
+using Imposter.Abstractions;
 using Shared.DomainDrivenDesign.EventSourcing;
 using Shared.EventStore.Aggregate;
 using Shared.Exceptions;
@@ -39,19 +39,19 @@ namespace TransactionProcessor.BusinessLogic.Tests.Manager
 
         public VoucherManagementManagerTests() {
             StringSerialiser.Initialise(new SystemTextJsonSerializer(new JsonSerializerOptions()));
-            this.AggregateService = new Mock<IAggregateService>();
-            this.DbContextFactory = new Mock<IDbContextResolver<EstateManagementContext>>();
+            this.AggregateService = new IAggregateServiceImposter();
+            this.DbContextFactory = new IDbContextResolverImposter<EstateManagementContext>();
             this.Context = this.GetContext(Guid.NewGuid().ToString("N"));
             var services = new ServiceCollection();
             services.AddTransient<EstateManagementContext>(_ => this.Context);
             var serviceProvider = services.BuildServiceProvider();
             var scope = serviceProvider.CreateScope();
-            this.DbContextFactory.Setup(d => d.Resolve(It.IsAny<String>(), It.IsAny<String>())).Returns(new ResolvedDbContext<EstateManagementContext>(scope));
-            this.VoucherManagementManager = new VoucherManagementManager(this.AggregateService.Object, this.DbContextFactory.Object);
+            this.DbContextFactory.Resolve(Arg<String>.Any(), Arg<String>.Any()).Returns(new ResolvedDbContext<EstateManagementContext>(scope));
+            this.VoucherManagementManager = new VoucherManagementManager(this.AggregateService.Instance(), this.DbContextFactory.Instance());
         }
 
-        private Mock<IAggregateService> AggregateService;
-        private Mock<IDbContextResolver<EstateManagementContext>> DbContextFactory;
+        private IAggregateServiceImposter AggregateService;
+        private IDbContextResolverImposter<EstateManagementContext> DbContextFactory;
         private VoucherManagementManager VoucherManagementManager;
         private EstateManagementContext Context;
 
@@ -68,7 +68,7 @@ namespace TransactionProcessor.BusinessLogic.Tests.Manager
             }, TestContext.Current.CancellationToken);
             await this.Context.SaveChangesAsync(TestContext.Current.CancellationToken);
             
-            this.AggregateService.Setup(v => v.Get<VoucherAggregate>(It.IsAny<Guid>(), It.IsAny<CancellationToken>())).ReturnsAsync(Result.Success(TestData.GetVoucherAggregateWithRecipientMobile()));
+            this.AggregateService.Get<VoucherAggregate>(Arg<Guid>.Any(), Arg<CancellationToken>.Any()).ReturnsAsync(Result.Success(TestData.GetVoucherAggregateWithRecipientMobile()));
 
             Result<Voucher> result = await this.VoucherManagementManager.GetVoucherByCode(TestData.EstateId, TestData.VoucherCode, TestContext.Current.CancellationToken);
             result.IsSuccess.ShouldBeTrue();
@@ -80,7 +80,7 @@ namespace TransactionProcessor.BusinessLogic.Tests.Manager
         public async Task VoucherManagementManager_GetVoucherByCode_VoucherNotFound_ErrorThrown()
         {
             
-            this.AggregateService.Setup(v => v.GetLatest<VoucherAggregate>(It.IsAny<Guid>(), It.IsAny<CancellationToken>())).ReturnsAsync(Result.NotFound());
+            this.AggregateService.GetLatest<VoucherAggregate>(Arg<Guid>.Any(), Arg<CancellationToken>.Any()).ReturnsAsync(Result.NotFound());
 
             Should.Throw<NotFoundException>(async () =>
             {
@@ -103,7 +103,7 @@ namespace TransactionProcessor.BusinessLogic.Tests.Manager
             }, TestContext.Current.CancellationToken);
             await this.Context.SaveChangesAsync(TestContext.Current.CancellationToken);
 
-            this.AggregateService.Setup(v => v.Get<VoucherAggregate>(It.IsAny<Guid>(), It.IsAny<CancellationToken>())).ReturnsAsync(Result.Success(TestData.GetVoucherAggregateWithRecipientMobile()));
+            this.AggregateService.Get<VoucherAggregate>(Arg<Guid>.Any(), Arg<CancellationToken>.Any()).ReturnsAsync(Result.Success(TestData.GetVoucherAggregateWithRecipientMobile()));
             
             var result = await VoucherManagementManager.GetVoucherByTransactionId(TestData.EstateId, TestData.TransactionId, TestContext.Current.CancellationToken);
             result.IsSuccess.ShouldBeTrue();
@@ -114,7 +114,7 @@ namespace TransactionProcessor.BusinessLogic.Tests.Manager
         [Fact]
         public async Task VoucherManagementManager_GetVoucherByTransactionId_VoucherNotFound_ErrorThrown()
         {
-            this.AggregateService.Setup(v => v.GetLatest<VoucherAggregate>(It.IsAny<Guid>(), It.IsAny<CancellationToken>())).ReturnsAsync(Result.NotFound());
+            this.AggregateService.GetLatest<VoucherAggregate>(Arg<Guid>.Any(), Arg<CancellationToken>.Any()).ReturnsAsync(Result.NotFound());
 
             Should.Throw<NotFoundException>(async () =>
             {

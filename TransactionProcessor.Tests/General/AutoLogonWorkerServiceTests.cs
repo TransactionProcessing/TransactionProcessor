@@ -1,7 +1,7 @@
 using Grpc.Core;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging.Abstractions;
-using Moq;
+using Imposter.Abstractions;
 using Shared.Logger;
 using Shouldly;
 using System;
@@ -19,12 +19,12 @@ public class AutoLogonWorkerServiceTests {
 
     [Fact]
     public async Task OperatorLogonAsync_TransientGrpcUnavailable_ExceptionIsHandled() {
-        Mock<IOperatorProxy> proxy = new Mock<IOperatorProxy>();
-        proxy.Setup(x => x.ProcessLogonMessage(It.IsAny<CancellationToken>()))
-             .ThrowsAsync(new RpcException(new Status(StatusCode.Unavailable, "RPC server unavailable")));
+        IOperatorProxyImposter proxy = new IOperatorProxyImposter();
+        proxy.ProcessLogonMessage(Arg<CancellationToken>.Any())
+             .Throws(new RpcException(new Status(StatusCode.Unavailable, "RPC server unavailable")));
 
         ServiceCollection services = new ServiceCollection();
-        services.AddSingleton<Func<String, IOperatorProxy>>(_ => _ => proxy.Object);
+        services.AddSingleton<Func<String, IOperatorProxy>>(_ => _ => proxy.Instance());
         IServiceProvider previousServiceProvider = Startup.ServiceProvider;
 
         try {
@@ -46,12 +46,12 @@ public class AutoLogonWorkerServiceTests {
 
     [Fact]
     public async Task OperatorLogonAsync_NonTransientException_ExceptionIsHandled() {
-        Mock<IOperatorProxy> proxy = new Mock<IOperatorProxy>();
-        proxy.Setup(x => x.ProcessLogonMessage(It.IsAny<CancellationToken>()))
-             .ThrowsAsync(new InvalidOperationException("boom"));
+        IOperatorProxyImposter proxy = new IOperatorProxyImposter();
+        proxy.ProcessLogonMessage(Arg<CancellationToken>.Any())
+             .Throws(new InvalidOperationException("boom"));
 
         ServiceCollection services = new ServiceCollection();
-        services.AddSingleton<Func<String, IOperatorProxy>>(_ => _ => proxy.Object);
+        services.AddSingleton<Func<String, IOperatorProxy>>(_ => _ => proxy.Instance());
         IServiceProvider previousServiceProvider = Startup.ServiceProvider;
 
         try {
