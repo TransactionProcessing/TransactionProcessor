@@ -653,16 +653,16 @@ public class MerchantDomainServiceTests {
 
         this.AggregateService
             .Save(Arg<MerchantScheduleAggregate>.Any(), Arg<CancellationToken>.Any())
-            .Callback((MerchantScheduleAggregate aggregate, CancellationToken _) => { savedSchedule = aggregate; return Task.CompletedTask; });
-
-        this.AggregateService
-            .Save(Arg<MerchantScheduleAggregate>.Any(), Arg<CancellationToken>.Any())
             .ReturnsAsync(Result.Success());
 
         var result = await this.DomainService.CreateMerchantSchedule(TestData.Commands.CreateMerchantScheduleCommand, TestContext.Current.CancellationToken);
 
         result.IsSuccess.ShouldBeTrue();
-        this.AggregateService.Save(Arg<MerchantScheduleAggregate>.Any(), Arg<CancellationToken>.Any()).Called(Count.Once());
+        this.AggregateService.Save(Arg<MerchantScheduleAggregate>.Is(aggregate =>
+        {
+            savedSchedule = aggregate;
+            return true;
+        }), Arg<CancellationToken>.Any()).Called(Count.Once());
         savedSchedule.ShouldNotBeNull();
         savedSchedule!.IsCreated.ShouldBeTrue();
         savedSchedule.Year.ShouldBe(TestData.MerchantScheduleYear);
@@ -745,16 +745,16 @@ public class MerchantDomainServiceTests {
 
         this.AggregateService
             .Save(Arg<MerchantScheduleAggregate>.Any(), Arg<CancellationToken>.Any())
-            .Callback((MerchantScheduleAggregate aggregate, CancellationToken _) => { savedSchedule = aggregate; return Task.CompletedTask; });
-
-        this.AggregateService
-            .Save(Arg<MerchantScheduleAggregate>.Any(), Arg<CancellationToken>.Any())
             .ReturnsAsync(Result.Success());
 
         var result = await this.DomainService.UpdateMerchantSchedule(TestData.Commands.UpdateMerchantScheduleCommand, TestContext.Current.CancellationToken);
 
         result.IsSuccess.ShouldBeTrue();
-        this.AggregateService.Save(Arg<MerchantScheduleAggregate>.Any(), Arg<CancellationToken>.Any()).Called(Count.Once());
+        this.AggregateService.Save(Arg<MerchantScheduleAggregate>.Is(aggregate =>
+        {
+            savedSchedule = aggregate;
+            return true;
+        }), Arg<CancellationToken>.Any()).Called(Count.Once());
         savedSchedule.ShouldNotBeNull();
         savedSchedule!.GetSchedule().Months.Any(month => month.Month == 2 && month.ClosedDays.SequenceEqual(new[] { 14 })).ShouldBeTrue();
     }
