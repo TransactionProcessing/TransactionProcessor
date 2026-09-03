@@ -87,10 +87,10 @@ Background:
 	| Test Estate 1 | Voucher          | Hospital 1 Contract       | 10 KES            | 10 KES          |       | Voucher     |
 	| Test Estate 1 | PataPawa PostPay | PataPawa PostPay Contract | Post Pay Bill Pay | Bill Pay (Post) |       | BillPayment |
 	| Test Estate 1 | PataPawa PrePay  | PataPawa PrePay Contract  | Pre Pay Bill Pay  | Bill Pay (Pre)  |       | BillPayment |
-	| Test Estate 1 | AgencyBanking    | AgencyBanking Contract    | Balance Enquiry   | Balance Enquiry |       | MobileTopup |
-	| Test Estate 1 | AgencyBanking    | AgencyBanking Contract    | Deposit           | Deposit         |       | MobileTopup |
-	| Test Estate 1 | AgencyBanking    | AgencyBanking Contract    | Withdrawal        | Withdrawal      |       | MobileTopup |	
-	| Test Estate 1 | AgencyBanking    | AgencyBanking Contract    | MiniStatement     | Mini Statement  |       | MobileTopup |
+	| Test Estate 1 | AgencyBanking    | AgencyBanking Contract    | Balance Enquiry   | Balance Enquiry |       | AgencyBanking |
+	| Test Estate 1 | AgencyBanking    | AgencyBanking Contract    | Deposit           | Deposit         |       | AgencyBanking |
+	| Test Estate 1 | AgencyBanking    | AgencyBanking Contract    | Withdrawal        | Withdrawal      |       | AgencyBanking |	
+	| Test Estate 1 | AgencyBanking    | AgencyBanking Contract    | MiniStatement     | Mini Statement  |       | AgencyBanking |
 	
 	When I add the following Transaction Fees
 	| EstateName    | OperatorName     | ContractDescription       | ProductName       | CalculationType | FeeDescription      | Value |

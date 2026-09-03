@@ -5,5 +5,6 @@ public enum ProductType
     NotSet =0,
     MobileTopup,
     Voucher,
-    BillPayment
+    BillPayment,
+    AgencyBanking
 }

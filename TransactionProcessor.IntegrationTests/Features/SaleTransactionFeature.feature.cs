@@ -396,7 +396,7 @@ namespace TransactionProcessor.IntegrationTests.Features
                         "Balance Enquiry",
                         "Balance Enquiry",
                         "",
-                        "MobileTopup"});
+                        "AgencyBanking"});
             table154.AddRow(new string[] {
                         "Test Estate 1",
                         "AgencyBanking",
@@ -404,7 +404,7 @@ namespace TransactionProcessor.IntegrationTests.Features
                         "Deposit",
                         "Deposit",
                         "",
-                        "MobileTopup"});
+                        "AgencyBanking"});
             table154.AddRow(new string[] {
                         "Test Estate 1",
                         "AgencyBanking",
@@ -412,7 +412,7 @@ namespace TransactionProcessor.IntegrationTests.Features
                         "Withdrawal",
                         "Withdrawal",
                         "",
-                        "MobileTopup"});
+                        "AgencyBanking"});
             table154.AddRow(new string[] {
                         "Test Estate 1",
                         "AgencyBanking",
@@ -420,7 +420,7 @@ namespace TransactionProcessor.IntegrationTests.Features
                         "MiniStatement",
                         "Mini Statement",
                         "",
-                        "MobileTopup"});
+                        "AgencyBanking"});
 #line 84
  await testRunner.WhenAsync("I create the following Products", ((string)(null)), table154, "When ");
 #line hidden
