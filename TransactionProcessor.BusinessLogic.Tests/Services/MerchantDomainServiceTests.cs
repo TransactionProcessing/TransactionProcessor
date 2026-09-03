@@ -653,7 +653,10 @@ public class MerchantDomainServiceTests {
 
         this.AggregateService
             .Save(Arg<MerchantScheduleAggregate>.Any(), Arg<CancellationToken>.Any())
-            .Callback((MerchantScheduleAggregate aggregate, CancellationToken _) => { savedSchedule = aggregate; return Task.CompletedTask; })
+            .Callback((MerchantScheduleAggregate aggregate, CancellationToken _) => { savedSchedule = aggregate; return Task.CompletedTask; });
+
+        this.AggregateService
+            .Save(Arg<MerchantScheduleAggregate>.Any(), Arg<CancellationToken>.Any())
             .ReturnsAsync(Result.Success());
 
         var result = await this.DomainService.CreateMerchantSchedule(TestData.Commands.CreateMerchantScheduleCommand, TestContext.Current.CancellationToken);
@@ -742,7 +745,10 @@ public class MerchantDomainServiceTests {
 
         this.AggregateService
             .Save(Arg<MerchantScheduleAggregate>.Any(), Arg<CancellationToken>.Any())
-            .Callback((MerchantScheduleAggregate aggregate, CancellationToken _) => { savedSchedule = aggregate; return Task.CompletedTask; })
+            .Callback((MerchantScheduleAggregate aggregate, CancellationToken _) => { savedSchedule = aggregate; return Task.CompletedTask; });
+
+        this.AggregateService
+            .Save(Arg<MerchantScheduleAggregate>.Any(), Arg<CancellationToken>.Any())
             .ReturnsAsync(Result.Success());
 
         var result = await this.DomainService.UpdateMerchantSchedule(TestData.Commands.UpdateMerchantScheduleCommand, TestContext.Current.CancellationToken);
