@@ -8,6 +8,7 @@
 
         Voucher,
 
-        BillPayment
+        BillPayment,
+        AgencyBanking
     }
 }
