@@ -12,7 +12,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Diagnostics;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-using Moq;
+using Imposter.Abstractions;
 using SecurityService.Client;
 using Shared.DomainDrivenDesign.EventSourcing;
 using Shared.EntityFramework;
@@ -39,11 +39,11 @@ public enum TestDatabaseType
 
 public class VoucherDomainEventHandlerTests
 {
-    private readonly Mock<IAggregateService> AggregateService;
-    private readonly Mock<IDbContextResolver<EstateManagementContext>> DbContextFactory;
+    private readonly IAggregateServiceImposter AggregateService;
+    private readonly IDbContextResolverImposter<EstateManagementContext> DbContextFactory;
     private readonly EstateManagementContext Context;
-    private readonly Mock<ISecurityServiceClient> SecurityServiceClient;
-    private readonly Mock<IMessagingServiceClient> MessagingServiceClient;
+    private readonly ISecurityServiceClientImposter SecurityServiceClient;
+    private readonly IMessagingServiceClientImposter MessagingServiceClient;
     private readonly VoucherDomainEventHandler VoucherDomainEventHandler;
 
     private EstateManagementContext GetContext(String databaseName)
@@ -60,8 +60,8 @@ public class VoucherDomainEventHandlerTests
         Logger.Initialise(NullLogger.Instance);
         
 
-        SecurityServiceClient = new Mock<ISecurityServiceClient>();
-        MessagingServiceClient = new Mock<IMessagingServiceClient>();
+        SecurityServiceClient = new ISecurityServiceClientImposter();
+        MessagingServiceClient = new IMessagingServiceClientImposter();
 
         DirectoryInfo path = Directory.GetParent(Assembly.GetExecutingAssembly().Location);
         MockFileSystem fileSystem = new MockFileSystem(new Dictionary<string, MockFileData>
@@ -70,19 +70,19 @@ public class VoucherDomainEventHandlerTests
             { $"{path}/VoucherMessages/VoucherSMS.txt", new MockFileData("Transaction Number: [TransactionNumber]") }
         });
 
-        this.AggregateService = new Mock<IAggregateService>();
-        this.DbContextFactory = new Mock<IDbContextResolver<EstateManagementContext>>();
+        this.AggregateService = new IAggregateServiceImposter();
+        this.DbContextFactory = new IDbContextResolverImposter<EstateManagementContext>();
         this.Context = this.GetContext(Guid.NewGuid().ToString("N"));
         var services = new ServiceCollection();
         services.AddTransient<EstateManagementContext>(_ => this.Context);
         var serviceProvider = services.BuildServiceProvider();
         var scope = serviceProvider.CreateScope();
-        this.DbContextFactory.Setup(d => d.Resolve(It.IsAny<String>(), It.IsAny<String>())).Returns(new ResolvedDbContext<EstateManagementContext>(scope));
+        this.DbContextFactory.Resolve(Arg<String>.Any(), Arg<String>.Any()).Returns(new ResolvedDbContext<EstateManagementContext>(scope));
 
-        VoucherDomainEventHandler = new VoucherDomainEventHandler(this.SecurityServiceClient.Object,
-                                                                                            this.AggregateService.Object,
-                                                                                            this.DbContextFactory.Object,
-                                                                                            this.MessagingServiceClient.Object,
+        VoucherDomainEventHandler = new VoucherDomainEventHandler(this.SecurityServiceClient.Instance(),
+                                                                                            this.AggregateService.Instance(),
+                                                                                            this.DbContextFactory.Instance(),
+                                                                                            this.MessagingServiceClient.Instance(),
                                                                                             fileSystem);
 
     }
@@ -90,9 +90,9 @@ public class VoucherDomainEventHandlerTests
     [Fact]
     public async Task VoucherDomainEventHandler_VoucherIssuedEvent_WithEmailAddress_IsHandled()
     {
-        this.SecurityServiceClient.Setup(s => s.GetToken(It.IsAny<String>(), It.IsAny<String>(), It.IsAny<CancellationToken>())).ReturnsAsync(Result.Success(TestData.GetTokenResponse()));
+        this.SecurityServiceClient.GetToken(Arg<String>.Any(), Arg<String>.Any(), Arg<CancellationToken>.Any()).ReturnsAsync(Result.Success(TestData.GetTokenResponse()));
 
-        this.AggregateService.Setup(t => t.Get<VoucherAggregate>(It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
+        this.AggregateService.Get<VoucherAggregate>(Arg<Guid>.Any(), Arg<CancellationToken>.Any())
                                   .ReturnsAsync(Result.Success(TestData.GetVoucherAggregateWithRecipientEmail()));
 
         this.Context.Transactions.Add(new Database.Entities.Transaction()
@@ -115,9 +115,9 @@ public class VoucherDomainEventHandlerTests
     [Fact]
     public async Task VoucherDomainEventHandler_VoucherIssuedEvent_WithRecipientMobile_IsHandled()
     {
-        this.SecurityServiceClient.Setup(s => s.GetToken(It.IsAny<String>(), It.IsAny<String>(), It.IsAny<CancellationToken>())).ReturnsAsync(Result.Success(TestData.GetTokenResponse()));
+        this.SecurityServiceClient.GetToken(Arg<String>.Any(), Arg<String>.Any(), Arg<CancellationToken>.Any()).ReturnsAsync(Result.Success(TestData.GetTokenResponse()));
 
-        this.AggregateService.Setup(t => t.Get<VoucherAggregate>(It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
+        this.AggregateService.Get<VoucherAggregate>(Arg<Guid>.Any(), Arg<CancellationToken>.Any())
                                   .ReturnsAsync(Result.Success(TestData.GetVoucherAggregateWithRecipientMobile()));
 
         this.Context.Transactions.Add(new Database.Entities.Transaction()

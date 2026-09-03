@@ -1,7 +1,7 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Data.Sqlite;
-using Moq;
+using Imposter.Abstractions;
 using Shared.EntityFramework;
 using Shouldly;
 using System;
@@ -58,11 +58,11 @@ namespace TransactionProcessor.Tests.RepositoryTests
                 IServiceScope scope = serviceProvider.CreateScope();
                 _ = scope.ServiceProvider.GetRequiredService<TrackingDisposable>();
 
-                Mock<IDbContextResolver<EstateManagementContext>> resolver = new();
-                resolver.Setup(r => r.Resolve(It.IsAny<String>(), It.IsAny<String>()))
+                IDbContextResolverImposter<EstateManagementContext> resolver = new();
+                resolver.Resolve(Arg<String>.Any(), Arg<String>.Any())
                         .Returns(new ResolvedDbContext<EstateManagementContext>(scope));
 
-                TransactionProcessorReadModelRepository repository = new TransactionProcessorReadModelRepository(resolver.Object);
+                TransactionProcessorReadModelRepository repository = new TransactionProcessorReadModelRepository(resolver.Instance());
 
                 var result = await repository.GetEstate(estateId, CancellationToken.None);
 

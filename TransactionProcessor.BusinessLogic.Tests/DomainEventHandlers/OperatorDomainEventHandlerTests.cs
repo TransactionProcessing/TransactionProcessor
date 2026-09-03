@@ -1,4 +1,4 @@
-using Moq;
+using Imposter.Abstractions;
 using Shared.Logger;
 using Shared.Serialisation;
 using Shouldly;
@@ -14,15 +14,15 @@ namespace TransactionProcessor.BusinessLogic.Tests.DomainEventHandlers;
 
 public class OperatorDomainEventHandlerTests
 {
-    private Mock<ITransactionProcessorReadModelRepository> EstateReportingRepository;
+    private ITransactionProcessorReadModelRepositoryImposter EstateReportingRepository;
     private ReadModelDomainEventHandler DomainEventHandler;
 
     public OperatorDomainEventHandlerTests()
     {
         Logger.Initialise(NullLogger.Instance);
         StringSerialiser.Initialise(new SystemTextJsonSerializer(new JsonSerializerOptions()));
-        this.EstateReportingRepository = new Mock<ITransactionProcessorReadModelRepository>();
-        this.DomainEventHandler = new ReadModelDomainEventHandler(this.EstateReportingRepository.Object);
+        this.EstateReportingRepository = new ITransactionProcessorReadModelRepositoryImposter();
+        this.DomainEventHandler = new ReadModelDomainEventHandler(this.EstateReportingRepository.Instance());
     }
 
     [Fact]

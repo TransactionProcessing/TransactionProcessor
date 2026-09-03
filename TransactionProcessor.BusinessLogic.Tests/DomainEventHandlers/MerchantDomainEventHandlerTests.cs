@@ -1,8 +1,8 @@
 using System;
 using System.Threading;
 using System.Threading.Tasks;
+using Imposter.Abstractions;
 using MediatR;
-using Moq;
 using Shared.DomainDrivenDesign.EventSourcing;
 using Shared.EventStore.Aggregate;
 using Shared.Logger;
@@ -22,22 +22,22 @@ namespace TransactionProcessor.BusinessLogic.Tests.DomainEventHandlers
 {
     public class MerchantDomainEventHandlerTests : DomainEventHandlerTests
     {
-        private readonly Mock<ITransactionProcessorReadModelRepository> TransactionProcessorReadModelRepository;
+        private readonly ITransactionProcessorReadModelRepositoryImposter TransactionProcessorReadModelRepository;
         private readonly MerchantDomainEventHandler DomainEventHandler;
 
         public MerchantDomainEventHandlerTests(ITestOutputHelper testOutputHelper) : base(testOutputHelper)  {
-            this.TransactionProcessorReadModelRepository = new Mock<ITransactionProcessorReadModelRepository>();
+            this.TransactionProcessorReadModelRepository = new ITransactionProcessorReadModelRepositoryImposter();
 
-            this.DomainEventHandler = new MerchantDomainEventHandler(this.TransactionProcessorReadModelRepository.Object,
-                                                                     this.Mediator.Object);
+            this.DomainEventHandler = new MerchantDomainEventHandler(this.TransactionProcessorReadModelRepository.Instance(),
+                                                                     this.Mediator.Instance());
         }
 
         [Fact]
         public async Task MerchantDomainEventHandler_Handle_CallbackReceivedEnrichedEvent_Deposit_EventIsHandled()
         {
-            this.TransactionProcessorReadModelRepository.Setup(e => e.GetMerchantFromReference(It.IsAny<Guid>(), It.IsAny<String>(), It.IsAny<CancellationToken>()))
+            this.TransactionProcessorReadModelRepository.GetMerchantFromReference(Arg<Guid>.Any(), Arg<String>.Any(), Arg<CancellationToken>.Any())
                                       .ReturnsAsync(Result.Success(TestData.MerchantModelWithAddressesContactsDevicesAndOperatorsAndContracts()));
-            this.Mediator.Setup(m => m.Send(It.IsAny<MerchantCommands.MakeMerchantDepositCommand>(), It.IsAny<CancellationToken>())).ReturnsAsync(Result.Success);
+            this.Mediator.Send<Result>(Arg<IRequest<Result>>.Any(), Arg<CancellationToken>.Any()).ReturnsAsync(Result.Success());
             CallbackReceivedEnrichedEvent domainEvent = TestData.DomainEvents.CallbackReceivedEnrichedEventDeposit;
 
             var result = await this.DomainEventHandler.Handle(domainEvent, TestContext.Current.CancellationToken);
@@ -57,7 +57,7 @@ namespace TransactionProcessor.BusinessLogic.Tests.DomainEventHandlers
         [Fact]
         public async Task MerchantDomainEventHandler_Handle_CallbackReceivedEnrichedEvent_Deposit_GetMerchantFailed_ResultIsFailure()
         {
-            this.TransactionProcessorReadModelRepository.Setup(e => e.GetMerchantFromReference(It.IsAny<Guid>(), It.IsAny<String>(), It.IsAny<CancellationToken>()))
+            this.TransactionProcessorReadModelRepository.GetMerchantFromReference(Arg<Guid>.Any(), Arg<String>.Any(), Arg<CancellationToken>.Any())
                 .ReturnsAsync(Result.Failure());
 
             CallbackReceivedEnrichedEvent domainEvent = TestData.DomainEvents.CallbackReceivedEnrichedEventDeposit;

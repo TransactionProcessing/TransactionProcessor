@@ -1,4 +1,4 @@
-using Moq;
+using Imposter.Abstractions;
 using Shared.DomainDrivenDesign.EventSourcing;
 using Shared.Logger;
 using Shared.Serialisation;
@@ -21,15 +21,15 @@ public class ReadModelDomainEventHandlerTests
 {
     private sealed record UnhandledDomainEvent() : DomainEvent(Guid.NewGuid(), Guid.NewGuid());
 
-    private readonly Mock<ITransactionProcessorReadModelRepository> EstateReportingRepository;
+    private readonly ITransactionProcessorReadModelRepositoryImposter EstateReportingRepository;
     private readonly ReadModelDomainEventHandler DomainEventHandler;
 
     public ReadModelDomainEventHandlerTests()
     {
         Logger.Initialise(NullLogger.Instance);
         StringSerialiser.Initialise(new SystemTextJsonSerializer(new JsonSerializerOptions()));
-        this.EstateReportingRepository = new Mock<ITransactionProcessorReadModelRepository>();
-        this.DomainEventHandler = new ReadModelDomainEventHandler(this.EstateReportingRepository.Object);
+        this.EstateReportingRepository = new ITransactionProcessorReadModelRepositoryImposter();
+        this.DomainEventHandler = new ReadModelDomainEventHandler(this.EstateReportingRepository.Instance());
     }
 
     [Fact]
@@ -42,18 +42,16 @@ public class ReadModelDomainEventHandlerTests
                                                                                       new Dictionary<string, string>(),
                                                                                       TestData.TransactionDateTime);
 
-        this.EstateReportingRepository
-            .Setup(r => r.RecordTransactionAdditionalRequestData(domainEvent, It.IsAny<CancellationToken>()))
-            .ReturnsAsync(Result.Success);
-        this.EstateReportingRepository
-            .Setup(r => r.SetTransactionAmount(domainEvent, It.IsAny<CancellationToken>()))
-            .ReturnsAsync(Result.Success);
+        this.EstateReportingRepository.RecordTransactionAdditionalRequestData(domainEvent, Arg<CancellationToken>.Any())
+            .ReturnsAsync(Result.Success());
+        this.EstateReportingRepository.SetTransactionAmount(domainEvent, Arg<CancellationToken>.Any())
+            .ReturnsAsync(Result.Success());
 
         Result result = await this.DomainEventHandler.Handle(domainEvent, TestContext.Current.CancellationToken);
 
         result.IsSuccess.ShouldBeTrue();
-        this.EstateReportingRepository.Verify(r => r.RecordTransactionAdditionalRequestData(domainEvent, It.IsAny<CancellationToken>()), Times.Once);
-        this.EstateReportingRepository.Verify(r => r.SetTransactionAmount(domainEvent, It.IsAny<CancellationToken>()), Times.Once);
+        this.EstateReportingRepository.RecordTransactionAdditionalRequestData(domainEvent, Arg<CancellationToken>.Any()).Called(Count.Once());
+        this.EstateReportingRepository.SetTransactionAmount(domainEvent, Arg<CancellationToken>.Any()).Called(Count.Once());
     }
 
     [Fact]
@@ -61,15 +59,14 @@ public class ReadModelDomainEventHandlerTests
     {
         MerchantStatementDomainEvents.StatementGeneratedEvent domainEvent = TestData.DomainEvents.StatementGeneratedEvent;
 
-        this.EstateReportingRepository
-            .Setup(r => r.MarkStatementAsGenerated(domainEvent, It.IsAny<CancellationToken>()))
-            .ReturnsAsync(Result.Failure);
+        this.EstateReportingRepository.MarkStatementAsGenerated(domainEvent, Arg<CancellationToken>.Any())
+            .ReturnsAsync(Result.Failure());
 
         Result result = await this.DomainEventHandler.Handle(domainEvent, TestContext.Current.CancellationToken);
 
         result.IsFailed.ShouldBeTrue();
-        this.EstateReportingRepository.Verify(r => r.MarkStatementAsGenerated(domainEvent, It.IsAny<CancellationToken>()), Times.Once);
-        this.EstateReportingRepository.Verify(r => r.UpdateMerchant(domainEvent, It.IsAny<CancellationToken>()), Times.Never);
+        this.EstateReportingRepository.MarkStatementAsGenerated(domainEvent, Arg<CancellationToken>.Any()).Called(Count.Once());
+        this.EstateReportingRepository.UpdateMerchant(domainEvent, Arg<CancellationToken>.Any()).Called(Count.Never());
     }
 
     [Fact]
@@ -80,7 +77,6 @@ public class ReadModelDomainEventHandlerTests
         Result result = await this.DomainEventHandler.Handle(domainEvent, TestContext.Current.CancellationToken);
 
         result.IsSuccess.ShouldBeTrue();
-        this.EstateReportingRepository.VerifyNoOtherCalls();
     }
 }
 

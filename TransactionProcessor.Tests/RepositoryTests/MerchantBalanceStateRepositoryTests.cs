@@ -2,7 +2,7 @@ using Microsoft.Data.Sqlite;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Diagnostics;
 using Microsoft.Extensions.DependencyInjection;
-using Moq;
+using Imposter.Abstractions;
 using Shared.EntityFramework;
 using Shouldly;
 using System;
@@ -46,11 +46,11 @@ public class MerchantBalanceStateRepositoryTests
 
         using IServiceScope scope = serviceProvider.CreateScope();
 
-        Mock<IDbContextResolver<EstateManagementContext>> resolver = new();
-        resolver.Setup(r => r.Resolve(It.IsAny<string>(), It.IsAny<string>()))
+        IDbContextResolverImposter<EstateManagementContext> resolver = new();
+        resolver.Resolve(Arg<string>.Any(), Arg<string>.Any())
                 .Returns(new ResolvedDbContext<EstateManagementContext>(scope));
 
-        MerchantBalanceStateRepository repository = new(resolver.Object);
+        MerchantBalanceStateRepository repository = new(resolver.Instance());
 
         var result = await repository.Load(estateId, merchantId, CancellationToken.None);
 

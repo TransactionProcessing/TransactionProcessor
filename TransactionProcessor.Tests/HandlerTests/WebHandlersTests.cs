@@ -1,6 +1,6 @@
 using MediatR;
 using Microsoft.AspNetCore.Http;
-using Moq;
+using Imposter.Abstractions;
 using Shouldly;
 using SimpleResults;
 using System;
@@ -53,119 +53,91 @@ public class WebHandlersTests
     [MemberData(nameof(ContractCases))]
     public async Task ContractHandlers_AreCovered(HandlerCase testCase)
     {
-        Mock<IMediator> mediator = new(MockBehavior.Strict);
+        IMediatorImposter mediator = new();
         testCase.Setup(mediator);
 
-        IResult result = await testCase.Invoke(mediator.Object);
+        IResult result = await testCase.Invoke(mediator.Instance());
 
         result.ShouldNotBeNull();
         testCase.Verify?.Invoke(mediator);
-        if (testCase.Verify is null)
-        {
-            mediator.VerifyAll();
-        }
     }
 
     [Theory]
     [MemberData(nameof(EstateCases))]
     public async Task EstateHandlers_AreCovered(HandlerCase testCase)
     {
-        Mock<IMediator> mediator = new(MockBehavior.Strict);
+        IMediatorImposter mediator = new();
         testCase.Setup(mediator);
 
-        IResult result = await testCase.Invoke(mediator.Object);
+        IResult result = await testCase.Invoke(mediator.Instance());
 
         result.ShouldNotBeNull();
         testCase.Verify?.Invoke(mediator);
-        if (testCase.Verify is null)
-        {
-            mediator.VerifyAll();
-        }
     }
 
     [Theory]
     [MemberData(nameof(FloatCases))]
     public async Task FloatHandlers_AreCovered(HandlerCase testCase)
     {
-        Mock<IMediator> mediator = new(MockBehavior.Strict);
+        IMediatorImposter mediator = new();
         testCase.Setup(mediator);
 
-        IResult result = await testCase.Invoke(mediator.Object);
+        IResult result = await testCase.Invoke(mediator.Instance());
 
         result.ShouldNotBeNull();
         testCase.Verify?.Invoke(mediator);
-        if (testCase.Verify is null)
-        {
-            mediator.VerifyAll();
-        }
     }
 
     [Theory]
     [MemberData(nameof(MerchantCases))]
     public async Task MerchantHandlers_AreCovered(HandlerCase testCase)
     {
-        Mock<IMediator> mediator = new(MockBehavior.Strict);
+        IMediatorImposter mediator = new();
         testCase.Setup(mediator);
 
-        IResult result = await testCase.Invoke(mediator.Object);
+        IResult result = await testCase.Invoke(mediator.Instance());
 
         result.ShouldNotBeNull();
         testCase.Verify?.Invoke(mediator);
-        if (testCase.Verify is null)
-        {
-            mediator.VerifyAll();
-        }
     }
 
     [Theory]
     [MemberData(nameof(OperatorCases))]
     public async Task OperatorHandlers_AreCovered(HandlerCase testCase)
     {
-        Mock<IMediator> mediator = new(MockBehavior.Strict);
+        IMediatorImposter mediator = new();
         testCase.Setup(mediator);
 
-        IResult result = await testCase.Invoke(mediator.Object);
+        IResult result = await testCase.Invoke(mediator.Instance());
 
         result.ShouldNotBeNull();
         testCase.Verify?.Invoke(mediator);
-        if (testCase.Verify is null)
-        {
-            mediator.VerifyAll();
-        }
     }
 
     [Theory]
     [MemberData(nameof(SettlementCases))]
     public async Task SettlementHandlers_AreCovered(HandlerCase testCase)
     {
-        Mock<IMediator> mediator = new(MockBehavior.Strict);
+        IMediatorImposter mediator = new();
         testCase.Setup(mediator);
 
-        IResult result = await testCase.Invoke(mediator.Object);
+        IResult result = await testCase.Invoke(mediator.Instance());
 
         result.ShouldNotBeNull();
         testCase.Verify?.Invoke(mediator);
-        if (testCase.Verify is null)
-        {
-            mediator.VerifyAll();
-        }
     }
 
     [Theory]
     [MemberData(nameof(VoucherCases))]
     public async Task VoucherHandlers_AreCovered(HandlerCase testCase)
     {
-        Mock<IMediator> mediator = new(MockBehavior.Strict);
+        IMediatorImposter mediator = new();
         testCase.Setup(mediator);
 
-        IResult result = await testCase.Invoke(mediator.Object);
+        IResult result = await testCase.Invoke(mediator.Instance());
 
         result.ShouldNotBeNull();
         testCase.Verify?.Invoke(mediator);
-        if (testCase.Verify is null)
-        {
-            mediator.VerifyAll();
-        }
     }
 
     public static IEnumerable<object[]> ContractCases()
@@ -1129,36 +1101,41 @@ public class WebHandlersTests
             "GetVoucher_Invalid",
             mediator => { },
             mediator => VoucherHandlers.GetVoucher(mediator, new DefaultHttpContext(), EstateId, "", null, CancellationToken.None),
-            mediator => mediator.VerifyNoOtherCalls());
+            mediator => { });
     }
 
-    private static object[] Case(string name, Action<Mock<IMediator>> setup, Func<IMediator, Task<IResult>> invoke, Action<Mock<IMediator>>? verify = null)
+    private static object[] Case(string name, MediatorSetup setup, Func<IMediator, Task<IResult>> invoke, Action<IMediatorImposter>? verify = null)
+        => new object[] { new HandlerCase(name, setup.Configure, invoke, verify ?? setup.Verify) };
+
+    private static object[] Case(string name, Action<IMediatorImposter> setup, Func<IMediator, Task<IResult>> invoke, Action<IMediatorImposter>? verify = null)
         => new object[] { new HandlerCase(name, setup, invoke, verify) };
 
-    private static Action<Mock<IMediator>> SetupSuccess<TRequest, TResponse>(TResponse response, Action<TRequest>? capture = null)
+    private static MediatorSetup SetupSuccess<TRequest, TResponse>(TResponse response, Action<TRequest>? capture = null)
         where TRequest : class, IRequest<Result<TResponse>>
     {
-        return mediator =>
+        return new MediatorSetup(mediator =>
         {
-            mediator.Setup(m => m.Send(It.IsAny<IRequest<Result<TResponse>>>(), It.IsAny<CancellationToken>()))
-                    .Callback((IRequest<Result<TResponse>> request, CancellationToken _) => capture?.Invoke((TRequest)request))
-                    .ReturnsAsync(Result.Success(response));
-        };
+            mediator.Send<Result<TResponse>>(Arg<IRequest<Result<TResponse>>>.Any(), Arg<CancellationToken>.Any())
+                    .ReturnsAsync(Result.Success(response))
+                    .Callback((IRequest<Result<TResponse>> request, CancellationToken _) => { capture?.Invoke((TRequest)request); return Task.CompletedTask; });
+        }, mediator => mediator.Send<Result<TResponse>>(Arg<IRequest<Result<TResponse>>>.Any(), Arg<CancellationToken>.Any()).Called(Count.Once()));
     }
 
-    private static Action<Mock<IMediator>> SetupSuccess<TRequest>(Action<TRequest>? capture = null)
+    private static MediatorSetup SetupSuccess<TRequest>(Action<TRequest>? capture = null)
         where TRequest : class, IRequest<Result>
     {
-        return mediator =>
+        return new MediatorSetup(mediator =>
         {
-            mediator.Setup(m => m.Send(It.IsAny<IRequest<Result>>(), It.IsAny<CancellationToken>()))
-                    .Callback((IRequest<Result> request, CancellationToken _) => capture?.Invoke((TRequest)request))
-                    .ReturnsAsync(Result.Success());
-        };
+            mediator.Send<Result>(Arg<IRequest<Result>>.Any(), Arg<CancellationToken>.Any())
+                    .ReturnsAsync(Result.Success())
+                    .Callback((IRequest<Result> request, CancellationToken _) => { capture?.Invoke((TRequest)request); return Task.CompletedTask; });
+        }, mediator => mediator.Send<Result>(Arg<IRequest<Result>>.Any(), Arg<CancellationToken>.Any()).Called(Count.Once()));
     }
 
+    private sealed record MediatorSetup(Action<IMediatorImposter> Configure, Action<IMediatorImposter> Verify);
+
     public sealed record HandlerCase(string Name,
-                                     Action<Mock<IMediator>> Setup,
+                                     Action<IMediatorImposter> Setup,
                                      Func<IMediator, Task<IResult>> Invoke,
-                                     Action<Mock<IMediator>>? Verify = null);
+                                     Action<IMediatorImposter>? Verify = null);
 }

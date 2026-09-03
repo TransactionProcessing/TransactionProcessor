@@ -12,7 +12,7 @@ namespace TransactionProcessor.Tests.Common
     using Microsoft.AspNetCore.Mvc.Authorization;
     using Microsoft.AspNetCore.Mvc.Testing;
     using Microsoft.Extensions.DependencyInjection;
-    using Moq;
+    using Imposter.Abstractions;
     using Xunit;
 
     public class TransactionProcessorWebFactory<TStartup> : WebApplicationFactory<TStartup> where TStartup : class
@@ -20,13 +20,13 @@ namespace TransactionProcessor.Tests.Common
         protected override void ConfigureWebHost(IWebHostBuilder builder)
         {
             // Setup my mocks in here
-            Mock<IMediator> mediatorMock = this.CreateMediatorMock();
+            IMediatorImposter mediatorMock = this.CreateMediatorMock();
 
             builder.ConfigureServices((builderContext, services) =>
             {
                 if (mediatorMock != null)
                 {
-                    services.AddSingleton<IMediator>(mediatorMock.Object);
+                    services.AddSingleton<IMediator>(mediatorMock.Instance());
                 }
 
                 services.AddMvc(options =>
@@ -38,11 +38,11 @@ namespace TransactionProcessor.Tests.Common
             ;
         }
 
-        private Mock<IMediator> CreateMediatorMock()
+        private IMediatorImposter CreateMediatorMock()
         {
-            Mock<IMediator> mediatorMock = new Mock<IMediator>(MockBehavior.Strict);
+            IMediatorImposter mediatorMock = new();
 
-            mediatorMock.Setup(c => c.Send(It.IsAny<IRequest<String>>(), It.IsAny<CancellationToken>())).Returns(Task.FromResult("Hello"));
+            mediatorMock.Send<String>(Arg<IRequest<String>>.Any(), Arg<CancellationToken>.Any()).Returns(Task.FromResult("Hello"));
 
             return mediatorMock;
         }

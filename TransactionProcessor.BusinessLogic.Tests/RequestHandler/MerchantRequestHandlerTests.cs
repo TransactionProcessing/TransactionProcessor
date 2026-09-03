@@ -1,4 +1,5 @@
-using Moq;
+using Imposter;
+using Imposter.Abstractions;
 using Shared.EventStore.EventStore;
 using Shared.Serialisation;
 using Shouldly;
@@ -29,23 +30,22 @@ public class MerchantRequestHandlerTests
     [Fact]
     public async Task MerchantRequestHandler_GetMerchantQuery_ReturnsMerchantReportingId()
     {
-        Mock<IProjectionStateRepository<MerchantBalanceState>> merchantBalanceStateRepository = new();
-        Mock<IEventStoreContext> eventStoreContext = new();
-        Mock<ITransactionProcessorReadRepository> transactionProcessorReadRepository = new();
-        Mock<IMerchantDomainService> merchantDomainService = new();
-        Mock<ITransactionProcessorManager> manager = new();
+        IProjectionStateRepository<MerchantBalanceState> merchantBalanceStateRepository = new NullProjectionStateRepository();
+        IEventStoreContextImposter eventStoreContext = new();
+        ITransactionProcessorReadRepositoryImposter transactionProcessorReadRepository = new();
+        IMerchantDomainServiceImposter merchantDomainService = new();
+        ITransactionProcessorManagerImposter manager = new();
         MerchantRequestHandler handler = new(
-            merchantBalanceStateRepository.Object,
-            eventStoreContext.Object,
-            transactionProcessorReadRepository.Object,
-            merchantDomainService.Object,
-            manager.Object);
+            merchantBalanceStateRepository,
+            eventStoreContext.Instance(),
+            transactionProcessorReadRepository.Instance(),
+            merchantDomainService.Instance(),
+            manager.Instance());
 
         MerchantModel expectedMerchant = TestData.MerchantModelWithAddressesContactsDevicesAndOperatorsAndContracts();
         expectedMerchant.MerchantReportingId = TestData.MerchantReportingId;
 
-        manager
-            .Setup(m => m.GetMerchant(TestData.EstateId, TestData.MerchantId, It.IsAny<CancellationToken>()))
+        manager.GetMerchant(TestData.EstateId, TestData.MerchantId, Arg<CancellationToken>.Any())
             .ReturnsAsync(Result.Success(expectedMerchant));
 
         MerchantQueries.GetMerchantQuery query = TestData.Queries.GetMerchantQuery;
@@ -55,7 +55,19 @@ public class MerchantRequestHandlerTests
         result.IsSuccess.ShouldBeTrue();
         result.Data.ShouldNotBeNull();
         result.Data.MerchantReportingId.ShouldBe(TestData.MerchantReportingId);
-        manager.Verify(m => m.GetMerchant(TestData.EstateId, TestData.MerchantId, It.IsAny<CancellationToken>()), Times.Once);
+        manager.GetMerchant(TestData.EstateId, TestData.MerchantId, Arg<CancellationToken>.Any()).Called(Count.Once());
+    }
+
+    private sealed class NullProjectionStateRepository : IProjectionStateRepository<MerchantBalanceState>
+    {
+        public Task<Result<MerchantBalanceState>> Load(Shared.DomainDrivenDesign.EventSourcing.IDomainEvent @event, CancellationToken cancellationToken) =>
+            Task.FromResult(new Result<MerchantBalanceState>());
+
+        public Task<Result<MerchantBalanceState>> Load(System.Guid estateId, System.Guid stateId, CancellationToken cancellationToken) =>
+            Task.FromResult(new Result<MerchantBalanceState>());
+
+        public Task<Result<MerchantBalanceState>> Save(MerchantBalanceState state, Shared.DomainDrivenDesign.EventSourcing.IDomainEvent @event, CancellationToken cancellationToken) =>
+            Task.FromResult(new Result<MerchantBalanceState>());
     }
 }
 

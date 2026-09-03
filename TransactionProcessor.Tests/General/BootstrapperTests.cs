@@ -7,7 +7,7 @@ namespace TransactionProcessor.Tests.General
     using Microsoft.Extensions.Configuration;
     using Microsoft.Extensions.DependencyInjection;
     using Microsoft.Extensions.Hosting;
-    using Moq;
+    using Imposter.Abstractions;
     using Shared.Serialisation;
     using System;
     using System.Collections.Generic;
@@ -26,22 +26,22 @@ namespace TransactionProcessor.Tests.General
         [Fact]
         public void ConfigureContainer_PopulatesAutoApiLogonOperators_WithoutDuplicates()
         {
-            Mock<IWebHostEnvironment> hostingEnvironment = new Mock<IWebHostEnvironment>();
-            hostingEnvironment.Setup(he => he.EnvironmentName).Returns("Development");
-            hostingEnvironment.Setup(he => he.ContentRootPath).Returns("/home");
-            hostingEnvironment.Setup(he => he.ApplicationName).Returns("Test Application");
+            IWebHostEnvironmentImposter hostingEnvironment = new IWebHostEnvironmentImposter();
+            hostingEnvironment.EnvironmentName.Getter().Returns("Development");
+            hostingEnvironment.ContentRootPath.Getter().Returns("/home");
+            hostingEnvironment.ApplicationName.Getter().Returns("Test Application");
 
-            Startup s = new Startup(hostingEnvironment.Object);
+            Startup s = new Startup(hostingEnvironment.Instance());
             Startup.Configuration = this.SetupMemoryConfiguration();
 
             ServiceRegistry firstServices = new ServiceRegistry();
-            this.AddTestRegistrations(firstServices, hostingEnvironment.Object);
+            this.AddTestRegistrations(firstServices, hostingEnvironment.Instance());
             s.ConfigureContainer(firstServices);
 
             Assert.Equal(new[] { "Safaricom", "PataPawaPostPay" }, Startup.AutoApiLogonOperators.ToArray());
 
             ServiceRegistry secondServices = new ServiceRegistry();
-            this.AddTestRegistrations(secondServices, hostingEnvironment.Object);
+            this.AddTestRegistrations(secondServices, hostingEnvironment.Instance());
             s.ConfigureContainer(secondServices);
 
             Assert.Equal(new[] { "Safaricom", "PataPawaPostPay" }, Startup.AutoApiLogonOperators.ToArray());

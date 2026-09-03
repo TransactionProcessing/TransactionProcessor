@@ -1,5 +1,3 @@
-using Moq;
-using Moq.Protected;
 using Shared.Logger;
 using Shared.Serialisation;
 using Shouldly;
@@ -155,12 +153,8 @@ namespace TransactionProcessor.BusinessLogic.Tests.OperatorInterfaces
         [Fact]
         public async Task AgencyBankingProxy_ProcessSaleMessage_BalanceEnquiryTimeout_ReturnsFailureResult()
         {
-            Mock<HttpMessageHandler> handlerMock = new Mock<HttpMessageHandler>(MockBehavior.Strict);
-            handlerMock.Protected()
-                       .Setup<Task<HttpResponseMessage>>("SendAsync", ItExpr.IsAny<HttpRequestMessage>(), ItExpr.IsAny<CancellationToken>())
-                       .ThrowsAsync(new TimeoutException("Execution Timeout Expired"));
-
-            HttpClient httpClient = new HttpClient(handlerMock.Object);
+            HttpClient httpClient = new HttpClient(new StubHttpMessageHandler((_, _) =>
+                Task.FromException<HttpResponseMessage>(new TimeoutException("Execution Timeout Expired"))));
             AgencyBankingConfiguration configuration = CreateConfiguration();
             IOperatorProxy proxy = new AgencyBankingProxy(httpClient, configuration);
 
@@ -300,8 +294,8 @@ namespace TransactionProcessor.BusinessLogic.Tests.OperatorInterfaces
         [Fact]
         public async Task AgencyBankingProxy_ProcessSaleMessage_DepositInvalidAmount_ReturnsInvalidResult()
         {
-            Mock<HttpMessageHandler> handlerMock = new Mock<HttpMessageHandler>(MockBehavior.Strict);
-            HttpClient httpClient = new HttpClient(handlerMock.Object);
+            HttpClient httpClient = new HttpClient(new StubHttpMessageHandler((_, _) =>
+                Task.FromResult(new HttpResponseMessage(HttpStatusCode.OK))));
             AgencyBankingConfiguration configuration = CreateConfiguration();
             IOperatorProxy proxy = new AgencyBankingProxy(httpClient, configuration);
 
@@ -445,8 +439,8 @@ namespace TransactionProcessor.BusinessLogic.Tests.OperatorInterfaces
         [Fact]
         public async Task AgencyBankingProxy_ProcessSaleMessage_WithdrawalInvalidAmount_ReturnsInvalidResult()
         {
-            Mock<HttpMessageHandler> handlerMock = new Mock<HttpMessageHandler>(MockBehavior.Strict);
-            HttpClient httpClient = new HttpClient(handlerMock.Object);
+            HttpClient httpClient = new HttpClient(new StubHttpMessageHandler((_, _) =>
+                Task.FromResult(new HttpResponseMessage(HttpStatusCode.OK))));
             AgencyBankingConfiguration configuration = CreateConfiguration();
             IOperatorProxy proxy = new AgencyBankingProxy(httpClient, configuration);
 
@@ -691,13 +685,24 @@ namespace TransactionProcessor.BusinessLogic.Tests.OperatorInterfaces
 
         private static HttpClient SetupMockHttpClient(HttpResponseMessage responseMessage, Action<HttpRequestMessage> onRequest = null)
         {
-            Mock<HttpMessageHandler> handlerMock = new Mock<HttpMessageHandler>(MockBehavior.Strict);
-            handlerMock.Protected()
-                       .Setup<Task<HttpResponseMessage>>("SendAsync", ItExpr.IsAny<HttpRequestMessage>(), ItExpr.IsAny<CancellationToken>())
-                       .Callback<HttpRequestMessage, CancellationToken>((request, cancellationToken) => onRequest?.Invoke(request))
-                       .ReturnsAsync(responseMessage);
+            return new HttpClient(new StubHttpMessageHandler((request, _) =>
+            {
+                onRequest?.Invoke(request);
+                return Task.FromResult(responseMessage);
+            }));
+        }
 
-            return new HttpClient(handlerMock.Object);
+        private sealed class StubHttpMessageHandler : HttpMessageHandler
+        {
+            private readonly Func<HttpRequestMessage, CancellationToken, Task<HttpResponseMessage>> SendHandler;
+
+            public StubHttpMessageHandler(Func<HttpRequestMessage, CancellationToken, Task<HttpResponseMessage>> send)
+            {
+                this.SendHandler = send;
+            }
+
+            protected override Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
+                => this.SendHandler(request, cancellationToken);
         }
     }
 }

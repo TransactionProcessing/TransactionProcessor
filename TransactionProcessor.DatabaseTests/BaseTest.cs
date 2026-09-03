@@ -1,5 +1,5 @@
 using Microsoft.Extensions.DependencyInjection;
-using Moq;
+using Imposter.Abstractions;
 using Shared.EntityFramework;
 using TransactionProcessor.Database.Contexts;
 using TransactionProcessor.Repository;
@@ -34,20 +34,18 @@ namespace TransactionProcessor.DatabaseTests
         {
             string dbConnString = this.GetLocalConnectionString($"TransactionProcessorReadModel-{this.TestId}");
 
-            Mock<IDbContextResolver<EstateManagementContext>> resolver = new Mock<IDbContextResolver<EstateManagementContext>>();
-            resolver.Setup(r => r.Resolve(It.IsAny<string>(), It.IsAny<string>()))
-                .Returns(() =>
+            IDbContextResolverImposter<EstateManagementContext> resolver = new();
+            resolver.Resolve(Arg<string>.Any(), Arg<string>.Any())
+                .Returns((_, _) =>
                 {
-                    Mock<IServiceScope> innerScope = new Mock<IServiceScope>();
                     EstateManagementContext context = new EstateManagementContext(dbConnString);
-
-                    innerScope.Setup(s => s.ServiceProvider.GetService(typeof(EstateManagementContext)))
-                        .Returns(context);
-
-                    return new ResolvedDbContext<EstateManagementContext>(innerScope.Object);
+                    ServiceProvider serviceProvider = new ServiceCollection()
+                        .AddSingleton(context)
+                        .BuildServiceProvider();
+                    return new ResolvedDbContext<EstateManagementContext>(serviceProvider.CreateScope());
                 });
 
-            this.Repository = new TransactionProcessorReadModelRepository(resolver.Object);
+            this.Repository = new TransactionProcessorReadModelRepository(resolver.Instance());
         }
 
         public virtual ValueTask DisposeAsync()

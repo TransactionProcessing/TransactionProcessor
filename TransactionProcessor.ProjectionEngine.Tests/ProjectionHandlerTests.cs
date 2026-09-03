@@ -1,4 +1,4 @@
-﻿using Shared.Logger;
+using Shared.Logger;
 using SimpleResults;
 using TransactionProcessor.DomainEvents;
 using TransactionProcessor.ProjectionEngine.Models;
@@ -7,7 +7,6 @@ namespace TransactionProcessor.ProjectionEngine.Tests;
 
 using Dispatchers;
 using Microsoft.Extensions.Configuration;
-using Moq;
 using Projections;
 using Repository;
 using Shared.DomainDrivenDesign.EventSourcing;
@@ -25,11 +24,11 @@ public class ProjectionHandlerTests{
 
     [Fact]
     public async Task ProjectionHandler_Handle_NullEvent_EventHandled(){
-        Mock<IProjectionStateRepository<MerchantBalanceState>> repo = new Mock<IProjectionStateRepository<MerchantBalanceState>>();
-        Mock<IProjection<MerchantBalanceState>> projection = new Mock<IProjection<MerchantBalanceState>>();
-        Mock<IStateDispatcher<MerchantBalanceState>> stateDispatcher = new Mock<IStateDispatcher<MerchantBalanceState>>();
-        ProjectionHandler.ProjectionHandler<MerchantBalanceState> ph = new ProjectionHandler.ProjectionHandler<MerchantBalanceState>(repo.Object,projection.Object,
-                                                                                                                                     stateDispatcher.Object);
+        TestProjectionStateRepository repo = new();
+        TestProjection projection = new();
+        TestStateDispatcher stateDispatcher = new();
+        ProjectionHandler.ProjectionHandler<MerchantBalanceState> ph = new ProjectionHandler.ProjectionHandler<MerchantBalanceState>(repo,projection,
+                                                                                                                                     stateDispatcher);
         var result = await ph.Handle(null, CancellationToken.None);
         result.IsSuccess.ShouldBeTrue();
     }
@@ -37,13 +36,13 @@ public class ProjectionHandlerTests{
     [Fact]
     public async Task ProjectionHandler_Handle_EventNotSupported_EventHandled()
     {
-        Mock<IProjectionStateRepository<MerchantBalanceState>> repo = new Mock<IProjectionStateRepository<MerchantBalanceState>>();
-        Mock<IProjection<MerchantBalanceState>> projection = new Mock<IProjection<MerchantBalanceState>>();
-        Mock<IStateDispatcher<MerchantBalanceState>> stateDispatcher = new Mock<IStateDispatcher<MerchantBalanceState>>();
-        ProjectionHandler.ProjectionHandler<MerchantBalanceState> ph = new ProjectionHandler.ProjectionHandler<MerchantBalanceState>(repo.Object, projection.Object,
-                                                                                                                                     stateDispatcher.Object);
+        TestProjectionStateRepository repo = new();
+        TestProjection projection = new();
+        TestStateDispatcher stateDispatcher = new();
+        ProjectionHandler.ProjectionHandler<MerchantBalanceState> ph = new ProjectionHandler.ProjectionHandler<MerchantBalanceState>(repo, projection,
+                                                                                                                                     stateDispatcher);
 
-        projection.Setup(p=> p.ShouldIHandleEvent(It.IsAny<IDomainEvent>())).Returns(false);
+        projection.ShouldHandle = false;
         var result = await ph.Handle(TestData.MerchantCreatedEvent, CancellationToken.None);
         result.IsSuccess.ShouldBeTrue();
     }
@@ -51,18 +50,16 @@ public class ProjectionHandlerTests{
     [Fact]
     public async Task ProjectionHandler_Handle_StateNotFoundInRepository_EventHandled()
     {
-        Mock<IProjectionStateRepository<MerchantBalanceState>> repo = new Mock<IProjectionStateRepository<MerchantBalanceState>>();
-        Mock<IProjection<MerchantBalanceState>> projection = new Mock<IProjection<MerchantBalanceState>>();
-        Mock<IStateDispatcher<MerchantBalanceState>> stateDispatcher = new Mock<IStateDispatcher<MerchantBalanceState>>();
-        ProjectionHandler.ProjectionHandler<MerchantBalanceState> ph = new ProjectionHandler.ProjectionHandler<MerchantBalanceState>(repo.Object, projection.Object,
-                                                                                                                                     stateDispatcher.Object);
+        TestProjectionStateRepository repo = new();
+        TestProjection projection = new();
+        TestStateDispatcher stateDispatcher = new();
+        ProjectionHandler.ProjectionHandler<MerchantBalanceState> ph = new ProjectionHandler.ProjectionHandler<MerchantBalanceState>(repo, projection,
+                                                                                                                                     stateDispatcher);
 
         MerchantBalanceState state = new MerchantBalanceState();
-        projection.Setup(p => p.ShouldIHandleEvent(It.IsAny<IDomainEvent>())).Returns(true);
-        projection.Setup(p =>
-                p.Handle(It.IsAny<MerchantBalanceState>(), It.IsAny<IDomainEvent>(), It.IsAny<CancellationToken>()))
-            .ReturnsAsync(state);
-        repo.Setup(r => r.Load(It.IsAny<IDomainEvent>(), It.IsAny<CancellationToken>())).ReturnsAsync(Result.Success(state));
+        projection.ShouldHandle = true;
+        projection.HandleFunc = (_, _, _) => state;
+        repo.LoadResult = Result.Success(state);
         var result = await ph.Handle(TestData.MerchantCreatedEvent, CancellationToken.None);
         result.IsSuccess.ShouldBeTrue();
     }
@@ -70,18 +67,18 @@ public class ProjectionHandlerTests{
     [Fact]
     public async Task ProjectionHandler_Handle_StateFoundInRepository_NoChanges_EventHandled()
     {
-        Mock<IProjectionStateRepository<MerchantBalanceState>> repo = new Mock<IProjectionStateRepository<MerchantBalanceState>>();
-        Mock<IProjection<MerchantBalanceState>> projection = new Mock<IProjection<MerchantBalanceState>>();
-        Mock<IStateDispatcher<MerchantBalanceState>> stateDispatcher = new Mock<IStateDispatcher<MerchantBalanceState>>();
-        ProjectionHandler.ProjectionHandler<MerchantBalanceState> ph = new ProjectionHandler.ProjectionHandler<MerchantBalanceState>(repo.Object, projection.Object,
-                                                                                                                                     stateDispatcher.Object);
+        TestProjectionStateRepository repo = new();
+        TestProjection projection = new();
+        TestStateDispatcher stateDispatcher = new();
+        ProjectionHandler.ProjectionHandler<MerchantBalanceState> ph = new ProjectionHandler.ProjectionHandler<MerchantBalanceState>(repo, projection,
+                                                                                                                                     stateDispatcher);
 
         MerchantBalanceState state = new MerchantBalanceState();
 
-        projection.Setup(p => p.ShouldIHandleEvent(It.IsAny<IDomainEvent>())).Returns(true);
-        projection.Setup(p => p.Handle(It.IsAny<MerchantBalanceState>(), It.IsAny<IDomainEvent>(), It.IsAny<CancellationToken>())).ReturnsAsync(state.InitialiseBalances);
+        projection.ShouldHandle = true;
+        projection.HandleFunc = (_, _, _) => state.InitialiseBalances();
             
-        repo.Setup(r => r.Load(It.IsAny<IDomainEvent>(), It.IsAny<CancellationToken>())).ReturnsAsync(state);
+        repo.LoadResult = state;
 
         var result = await ph.Handle(TestData.MerchantCreatedEvent, CancellationToken.None);
         result.IsSuccess.ShouldBeTrue();
@@ -90,21 +87,21 @@ public class ProjectionHandlerTests{
     [Fact]
     public async Task ProjectionHandler_Handle_StateFoundInRepository_ChangesMade_EventHandled()
     {
-        Mock<IProjectionStateRepository<MerchantBalanceState>> repo = new Mock<IProjectionStateRepository<MerchantBalanceState>>();
-        Mock<IProjection<MerchantBalanceState>> projection = new Mock<IProjection<MerchantBalanceState>>();
-        Mock<IStateDispatcher<MerchantBalanceState>> stateDispatcher = new Mock<IStateDispatcher<MerchantBalanceState>>();
-        ProjectionHandler.ProjectionHandler<MerchantBalanceState> ph = new ProjectionHandler.ProjectionHandler<MerchantBalanceState>(repo.Object, projection.Object,
-                                                                                                                                     stateDispatcher.Object);
+        TestProjectionStateRepository repo = new();
+        TestProjection projection = new();
+        TestStateDispatcher stateDispatcher = new();
+        ProjectionHandler.ProjectionHandler<MerchantBalanceState> ph = new ProjectionHandler.ProjectionHandler<MerchantBalanceState>(repo, projection,
+                                                                                                                                     stateDispatcher);
         MerchantBalanceState state = new MerchantBalanceState();
         MerchantBalanceState newState = new MerchantBalanceState();
         newState = newState.HandleMerchantCreated(TestData.MerchantCreatedEvent);
-        projection.Setup(p => p.ShouldIHandleEvent(It.IsAny<IDomainEvent>())).Returns(true);
-        projection.Setup(p => p.Handle(It.IsAny<MerchantBalanceState>(), It.IsAny<IDomainEvent>(), It.IsAny<CancellationToken>())).ReturnsAsync(newState);
+        projection.ShouldHandle = true;
+        projection.HandleFunc = (_, _, _) => newState;
             
-        repo.Setup(r => r.Load(It.IsAny<IDomainEvent>(), It.IsAny<CancellationToken>())).ReturnsAsync(state);
-        repo.Setup(r => r.Save(It.IsAny<MerchantBalanceState>(),It.IsAny<IDomainEvent>(), It.IsAny<CancellationToken>())).ReturnsAsync(Result.Success(state));
+        repo.LoadResult = state;
+        repo.SaveResult = Result.Success(state);
 
-        stateDispatcher.Setup(d => d.Dispatch(It.IsAny<MerchantBalanceState>(), It.IsAny<IDomainEvent>(), It.IsAny<CancellationToken>())).ReturnsAsync(Result.Success());
+        stateDispatcher.DispatchResult = Result.Success();
         var result = await ph.Handle(TestData.MerchantCreatedEvent, CancellationToken.None);
         result.IsSuccess.ShouldBeTrue();
     }
@@ -112,21 +109,21 @@ public class ProjectionHandlerTests{
     [Fact]
     public async Task ProjectionHandler_Handle_LoadFails_FailedResult()
     {
-        Mock<IProjectionStateRepository<MerchantBalanceState>> repo = new Mock<IProjectionStateRepository<MerchantBalanceState>>();
-        Mock<IProjection<MerchantBalanceState>> projection = new Mock<IProjection<MerchantBalanceState>>();
-        Mock<IStateDispatcher<MerchantBalanceState>> stateDispatcher = new Mock<IStateDispatcher<MerchantBalanceState>>();
-        ProjectionHandler.ProjectionHandler<MerchantBalanceState> ph = new ProjectionHandler.ProjectionHandler<MerchantBalanceState>(repo.Object, projection.Object,
-            stateDispatcher.Object);
+        TestProjectionStateRepository repo = new();
+        TestProjection projection = new();
+        TestStateDispatcher stateDispatcher = new();
+        ProjectionHandler.ProjectionHandler<MerchantBalanceState> ph = new ProjectionHandler.ProjectionHandler<MerchantBalanceState>(repo, projection,
+            stateDispatcher);
         MerchantBalanceState state = new MerchantBalanceState();
         MerchantBalanceState newState = new MerchantBalanceState();
         newState = newState.HandleMerchantCreated(TestData.MerchantCreatedEvent);
-        projection.Setup(p => p.ShouldIHandleEvent(It.IsAny<IDomainEvent>())).Returns(true);
-        projection.Setup(p => p.Handle(It.IsAny<MerchantBalanceState>(), It.IsAny<IDomainEvent>(), It.IsAny<CancellationToken>())).ReturnsAsync(newState);
+        projection.ShouldHandle = true;
+        projection.HandleFunc = (_, _, _) => newState;
 
-        repo.Setup(r => r.Load(It.IsAny<IDomainEvent>(), It.IsAny<CancellationToken>())).ReturnsAsync(Result.Failure());
-        //repo.Setup(r => r.Save(It.IsAny<MerchantBalanceState>(), It.IsAny<IDomainEvent>(), It.IsAny<CancellationToken>())).ReturnsAsync(Result.Success(state));
+        repo.LoadResult = Result.Failure();
+        //repo.SaveResult = Result.Success(state);
 
-        //stateDispatcher.Setup(d => d.Dispatch(It.IsAny<MerchantBalanceState>(), It.IsAny<IDomainEvent>(), It.IsAny<CancellationToken>())).ReturnsAsync(Result.Success());
+        //stateDispatcher.DispatchResult = Result.Success();
         var result = await ph.Handle(TestData.MerchantCreatedEvent, CancellationToken.None);
         result.IsFailed.ShouldBeTrue();
     }
@@ -134,21 +131,21 @@ public class ProjectionHandlerTests{
     [Fact]
     public async Task ProjectionHandler_Handle_SaveFails_FailedResult()
     {
-        Mock<IProjectionStateRepository<MerchantBalanceState>> repo = new Mock<IProjectionStateRepository<MerchantBalanceState>>();
-        Mock<IProjection<MerchantBalanceState>> projection = new Mock<IProjection<MerchantBalanceState>>();
-        Mock<IStateDispatcher<MerchantBalanceState>> stateDispatcher = new Mock<IStateDispatcher<MerchantBalanceState>>();
-        ProjectionHandler.ProjectionHandler<MerchantBalanceState> ph = new ProjectionHandler.ProjectionHandler<MerchantBalanceState>(repo.Object, projection.Object,
-            stateDispatcher.Object);
+        TestProjectionStateRepository repo = new();
+        TestProjection projection = new();
+        TestStateDispatcher stateDispatcher = new();
+        ProjectionHandler.ProjectionHandler<MerchantBalanceState> ph = new ProjectionHandler.ProjectionHandler<MerchantBalanceState>(repo, projection,
+            stateDispatcher);
         MerchantBalanceState state = new MerchantBalanceState();
         MerchantBalanceState newState = new MerchantBalanceState();
         newState = newState.HandleMerchantCreated(TestData.MerchantCreatedEvent);
-        projection.Setup(p => p.ShouldIHandleEvent(It.IsAny<IDomainEvent>())).Returns(true);
-        projection.Setup(p => p.Handle(It.IsAny<MerchantBalanceState>(), It.IsAny<IDomainEvent>(), It.IsAny<CancellationToken>())).ReturnsAsync(newState);
+        projection.ShouldHandle = true;
+        projection.HandleFunc = (_, _, _) => newState;
 
-        repo.Setup(r => r.Load(It.IsAny<IDomainEvent>(), It.IsAny<CancellationToken>())).ReturnsAsync(state);
-        repo.Setup(r => r.Save(It.IsAny<MerchantBalanceState>(), It.IsAny<IDomainEvent>(), It.IsAny<CancellationToken>())).ReturnsAsync(Result.Failure());
+        repo.LoadResult = state;
+        repo.SaveResult = Result.Failure();
 
-        //stateDispatcher.Setup(d => d.Dispatch(It.IsAny<MerchantBalanceState>(), It.IsAny<IDomainEvent>(), It.IsAny<CancellationToken>())).ReturnsAsync(Result.Success());
+        //stateDispatcher.DispatchResult = Result.Success();
         var result = await ph.Handle(TestData.MerchantCreatedEvent, CancellationToken.None);
         result.IsFailed.ShouldBeTrue();
     }
@@ -156,21 +153,21 @@ public class ProjectionHandlerTests{
     [Fact]
     public async Task ProjectionHandler_Handle_DispatchFails_FailedResult()
     {
-        Mock<IProjectionStateRepository<MerchantBalanceState>> repo = new Mock<IProjectionStateRepository<MerchantBalanceState>>();
-        Mock<IProjection<MerchantBalanceState>> projection = new Mock<IProjection<MerchantBalanceState>>();
-        Mock<IStateDispatcher<MerchantBalanceState>> stateDispatcher = new Mock<IStateDispatcher<MerchantBalanceState>>();
-        ProjectionHandler.ProjectionHandler<MerchantBalanceState> ph = new ProjectionHandler.ProjectionHandler<MerchantBalanceState>(repo.Object, projection.Object,
-            stateDispatcher.Object);
+        TestProjectionStateRepository repo = new();
+        TestProjection projection = new();
+        TestStateDispatcher stateDispatcher = new();
+        ProjectionHandler.ProjectionHandler<MerchantBalanceState> ph = new ProjectionHandler.ProjectionHandler<MerchantBalanceState>(repo, projection,
+            stateDispatcher);
         MerchantBalanceState state = new MerchantBalanceState();
         MerchantBalanceState newState = new MerchantBalanceState();
         newState = newState.HandleMerchantCreated(TestData.MerchantCreatedEvent);
-        projection.Setup(p => p.ShouldIHandleEvent(It.IsAny<IDomainEvent>())).Returns(true);
-        projection.Setup(p => p.Handle(It.IsAny<MerchantBalanceState>(), It.IsAny<IDomainEvent>(), It.IsAny<CancellationToken>())).ReturnsAsync(newState);
+        projection.ShouldHandle = true;
+        projection.HandleFunc = (_, _, _) => newState;
 
-        repo.Setup(r => r.Load(It.IsAny<IDomainEvent>(), It.IsAny<CancellationToken>())).ReturnsAsync(state);
-        repo.Setup(r => r.Save(It.IsAny<MerchantBalanceState>(), It.IsAny<IDomainEvent>(), It.IsAny<CancellationToken>())).ReturnsAsync(Result.Success(state));
+        repo.LoadResult = state;
+        repo.SaveResult = Result.Success(state);
 
-        stateDispatcher.Setup(d => d.Dispatch(It.IsAny<MerchantBalanceState>(), It.IsAny<IDomainEvent>(), It.IsAny<CancellationToken>())).ReturnsAsync(Result.Failure);
+        stateDispatcher.DispatchResult = Result.Failure();
         var result = await ph.Handle(TestData.MerchantCreatedEvent, CancellationToken.None);
         result.IsFailed.ShouldBeTrue();
     }
@@ -198,11 +195,11 @@ public class VoucherStateDispatcherTests {
 public class MerchantBalanceStateDispatcherTests
 {
     private readonly IStateDispatcher<MerchantBalanceState> Dispatcher;
-    private readonly Mock<ITransactionProcessorReadRepository> Repository;
+    private readonly TestReadRepository Repository;
 
     public MerchantBalanceStateDispatcherTests() {
-        this.Repository = new Mock<ITransactionProcessorReadRepository>();
-        this.Dispatcher = new MerchantBalanceStateDispatcher(this.Repository.Object);
+        this.Repository = new TestReadRepository();
+        this.Dispatcher = new MerchantBalanceStateDispatcher(this.Repository);
         Logger.Initialise(new NullLogger());
     }
 
@@ -216,7 +213,7 @@ public class MerchantBalanceStateDispatcherTests
     public async Task MerchantBalanceStateDispatcher_EventIsDispatched_ResultSuccessful(Type type) {
         MerchantBalanceState state = new();
 
-        this.Repository.Setup(t => t.AddMerchantBalanceChangedEntry(It.IsAny<MerchantBalanceChangedEntry>(), It.IsAny<CancellationToken>())).ReturnsAsync(Result.Success);
+        this.Repository.AddResult = Result.Success();
 
         IDomainEvent domainEvent = type.Name switch {
             nameof(MerchantDomainEvents.MerchantCreatedEvent) => TestData.MerchantCreatedEvent,
@@ -231,7 +228,7 @@ public class MerchantBalanceStateDispatcherTests
         if (domainEvent != null) {
             var result = await this.Dispatcher.Dispatch(state, domainEvent, CancellationToken.None);
             result.IsSuccess.ShouldBeTrue();
-            this.Repository.Verify(t => t.AddMerchantBalanceChangedEntry(It.IsAny<MerchantBalanceChangedEntry>(), It.IsAny<CancellationToken>()), Times.Once);
+            this.Repository.AddCalls.ShouldBe(1);
         }
     }
 
@@ -240,14 +237,14 @@ public class MerchantBalanceStateDispatcherTests
     {
         MerchantBalanceState state = new();
 
-        this.Repository.Setup(t => t.AddMerchantBalanceChangedEntry(It.IsAny<MerchantBalanceChangedEntry>(), It.IsAny<CancellationToken>())).ReturnsAsync(Result.Success);
+        this.Repository.AddResult = Result.Success();
 
         IDomainEvent domainEvent = TestData.TransactionHasBeenCompletedEvent with {
                 IsAuthorised = false
             };
             var result = await this.Dispatcher.Dispatch(state, domainEvent, CancellationToken.None);
             result.IsSuccess.ShouldBeTrue();
-            this.Repository.Verify(t => t.AddMerchantBalanceChangedEntry(It.IsAny<MerchantBalanceChangedEntry>(), It.IsAny<CancellationToken>()), Times.Never);
+            this.Repository.AddCalls.ShouldBe(0);
     }
 
     [Fact]
@@ -255,7 +252,7 @@ public class MerchantBalanceStateDispatcherTests
     {
         MerchantBalanceState state = new();
 
-        this.Repository.Setup(t => t.AddMerchantBalanceChangedEntry(It.IsAny<MerchantBalanceChangedEntry>(), It.IsAny<CancellationToken>())).ReturnsAsync(Result.Success);
+        this.Repository.AddResult = Result.Success();
 
         IDomainEvent domainEvent = TestData.TransactionHasBeenCompletedEvent with
         {
@@ -263,7 +260,7 @@ public class MerchantBalanceStateDispatcherTests
         };
         var result = await this.Dispatcher.Dispatch(state, domainEvent, CancellationToken.None);
         result.IsSuccess.ShouldBeTrue();
-        this.Repository.Verify(t => t.AddMerchantBalanceChangedEntry(It.IsAny<MerchantBalanceChangedEntry>(), It.IsAny<CancellationToken>()), Times.Never);
+        this.Repository.AddCalls.ShouldBe(0);
     }
 
     [Fact]
@@ -271,7 +268,7 @@ public class MerchantBalanceStateDispatcherTests
     {
         MerchantBalanceState state = new();
 
-        this.Repository.Setup(t => t.AddMerchantBalanceChangedEntry(It.IsAny<MerchantBalanceChangedEntry>(), It.IsAny<CancellationToken>())).ReturnsAsync(Result.Success);
+        this.Repository.AddResult = Result.Success();
 
         IDomainEvent domainEvent = TestData.TransactionHasBeenCompletedEvent with
         {
@@ -279,7 +276,49 @@ public class MerchantBalanceStateDispatcherTests
         };
         var result = await this.Dispatcher.Dispatch(state, domainEvent, CancellationToken.None);
         result.IsSuccess.ShouldBeTrue();
-        this.Repository.Verify(t => t.AddMerchantBalanceChangedEntry(It.IsAny<MerchantBalanceChangedEntry>(), It.IsAny<CancellationToken>()), Times.Once);
+        this.Repository.AddCalls.ShouldBe(1);
     }
 
+}
+
+internal sealed class TestProjectionStateRepository : IProjectionStateRepository<MerchantBalanceState>
+{
+    public Result<MerchantBalanceState> LoadResult { get; set; } = new();
+    public Result<MerchantBalanceState> SaveResult { get; set; } = new();
+
+    public Task<Result<MerchantBalanceState>> Load(IDomainEvent @event, CancellationToken cancellationToken) => Task.FromResult(LoadResult);
+    public Task<Result<MerchantBalanceState>> Load(Guid estateId, Guid stateId, CancellationToken cancellationToken) => Task.FromResult(LoadResult);
+    public Task<Result<MerchantBalanceState>> Save(MerchantBalanceState state, IDomainEvent @event, CancellationToken cancellationToken) => Task.FromResult(SaveResult);
+}
+
+internal sealed class TestProjection : IProjection<MerchantBalanceState>
+{
+    public bool ShouldHandle { get; set; }
+    public Func<MerchantBalanceState, IDomainEvent, CancellationToken, MerchantBalanceState> HandleFunc { get; set; } = (state, _, _) => state;
+
+    public Task<MerchantBalanceState> Handle(MerchantBalanceState state, IDomainEvent domainEvent, CancellationToken cancellationToken) =>
+        Task.FromResult(HandleFunc(state, domainEvent, cancellationToken));
+
+    public bool ShouldIHandleEvent(IDomainEvent domainEvent) => ShouldHandle;
+}
+
+internal sealed class TestStateDispatcher : IStateDispatcher<MerchantBalanceState>
+{
+    public Result DispatchResult { get; set; } = Result.Success();
+    public Task<Result> Dispatch(MerchantBalanceState state, IDomainEvent @event, CancellationToken cancellationToken) => Task.FromResult(DispatchResult);
+}
+
+internal sealed class TestReadRepository : ITransactionProcessorReadRepository
+{
+    public Result AddResult { get; set; } = Result.Success();
+    public int AddCalls { get; private set; }
+
+    public Task<Result> AddMerchantBalanceChangedEntry(MerchantBalanceChangedEntry entry, CancellationToken cancellationToken)
+    {
+        AddCalls++;
+        return Task.FromResult(AddResult);
+    }
+
+    public Task<Result<List<MerchantBalanceChangedEntry>>> GetMerchantBalanceHistory(Guid estateId, Guid merchantId, DateTime startDate, DateTime endDate, CancellationToken cancellationToken) =>
+        Task.FromResult(new Result<List<MerchantBalanceChangedEntry>>());
 }
