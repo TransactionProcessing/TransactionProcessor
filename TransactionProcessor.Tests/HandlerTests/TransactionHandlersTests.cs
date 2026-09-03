@@ -48,6 +48,7 @@ namespace TransactionProcessor.Tests.HandlerTests
                 CancellationToken.None);
 
             result.ShouldNotBeNull();
+            mediator.Send<Result<ProcessLogonTransactionResponse>>(Arg<IRequest<Result<ProcessLogonTransactionResponse>>>.Any(), Arg<CancellationToken>.Any()).Called(Count.Once());
         }
 
         [Fact]
@@ -86,6 +87,7 @@ namespace TransactionProcessor.Tests.HandlerTests
                 CancellationToken.None);
 
             result.ShouldNotBeNull();
+            mediator.Send<Result<ProcessSaleTransactionResponse>>(Arg<IRequest<Result<ProcessSaleTransactionResponse>>>.Any(), Arg<CancellationToken>.Any()).Called(Count.Once());
         }
 
         [Fact]
@@ -127,6 +129,7 @@ namespace TransactionProcessor.Tests.HandlerTests
             result.ShouldNotBeNull();
             capturedCommand.ShouldNotBeNull();
             capturedCommand!.TransactionSource.ShouldBe(1);
+            mediator.Send<Result<ProcessSaleTransactionResponse>>(Arg<IRequest<Result<ProcessSaleTransactionResponse>>>.Any(), Arg<CancellationToken>.Any()).Called(Count.Once());
         }
 
         [Fact]
@@ -158,6 +161,7 @@ namespace TransactionProcessor.Tests.HandlerTests
                 CancellationToken.None);
 
             result.ShouldNotBeNull();
+            mediator.Send<Result<ProcessSaleTransactionResponse>>(Arg<IRequest<Result<ProcessSaleTransactionResponse>>>.Any(), Arg<CancellationToken>.Any()).Called(Count.Once());
         }
 
         [Fact]
@@ -183,6 +187,7 @@ namespace TransactionProcessor.Tests.HandlerTests
                 CancellationToken.None);
 
             result.ShouldNotBeNull();
+            mediator.Send<Result<ProcessLogonTransactionResponse>>(Arg<IRequest<Result<ProcessLogonTransactionResponse>>>.Any(), Arg<CancellationToken>.Any()).Called(Count.Once());
         }
 
         [Fact]
@@ -217,6 +222,7 @@ namespace TransactionProcessor.Tests.HandlerTests
                 CancellationToken.None);
 
             result.ShouldNotBeNull();
+            mediator.Send<Result<ProcessReconciliationTransactionResponse>>(Arg<IRequest<Result<ProcessReconciliationTransactionResponse>>>.Any(), Arg<CancellationToken>.Any()).Called(Count.Once());
         }
 
         [Fact]
@@ -244,6 +250,7 @@ namespace TransactionProcessor.Tests.HandlerTests
                 CancellationToken.None);
 
             result.ShouldNotBeNull();
+            mediator.Send<Result<ProcessReconciliationTransactionResponse>>(Arg<IRequest<Result<ProcessReconciliationTransactionResponse>>>.Any(), Arg<CancellationToken>.Any()).Called(Count.Once());
         }
 
         [Fact]
@@ -261,6 +268,7 @@ namespace TransactionProcessor.Tests.HandlerTests
                 CancellationToken.None);
 
             result.ShouldNotBeNull();
+            mediator.Send<Result>(Arg<IRequest<Result>>.Any(), Arg<CancellationToken>.Any()).Called(Count.Once());
         }
 
         private static class TestData

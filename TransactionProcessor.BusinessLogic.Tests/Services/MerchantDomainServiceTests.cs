@@ -641,6 +641,7 @@ public class MerchantDomainServiceTests {
     [Fact]
     public async Task MerchantDomainService_CreateMerchantSchedule_Success()
     {
+        MerchantScheduleAggregate? savedSchedule = null;
         this.AggregateService.Get<EstateAggregate>(Arg<Guid>.Any(), Arg<CancellationToken>.Any())
             .ReturnsAsync(TestData.Aggregates.CreatedEstateAggregate());
 
@@ -652,12 +653,18 @@ public class MerchantDomainServiceTests {
 
         this.AggregateService
             .Save(Arg<MerchantScheduleAggregate>.Any(), Arg<CancellationToken>.Any())
+            .Callback((MerchantScheduleAggregate aggregate, CancellationToken _) => { savedSchedule = aggregate; return Task.CompletedTask; })
             .ReturnsAsync(Result.Success());
 
         var result = await this.DomainService.CreateMerchantSchedule(TestData.Commands.CreateMerchantScheduleCommand, TestContext.Current.CancellationToken);
 
         result.IsSuccess.ShouldBeTrue();
         this.AggregateService.Save(Arg<MerchantScheduleAggregate>.Any(), Arg<CancellationToken>.Any()).Called(Count.Once());
+        savedSchedule.ShouldNotBeNull();
+        savedSchedule!.IsCreated.ShouldBeTrue();
+        savedSchedule.Year.ShouldBe(TestData.MerchantScheduleYear);
+        savedSchedule.GetSchedule().Months.Single().Month.ShouldBe(1);
+        savedSchedule.GetSchedule().Months.Single().ClosedDays.ShouldBe(new[] { 1, 26 });
     }
 
     [Fact]
@@ -723,6 +730,7 @@ public class MerchantDomainServiceTests {
     [Fact]
     public async Task MerchantDomainService_UpdateMerchantSchedule_Success()
     {
+        MerchantScheduleAggregate? savedSchedule = null;
         this.AggregateService.Get<EstateAggregate>(Arg<Guid>.Any(), Arg<CancellationToken>.Any())
             .ReturnsAsync(TestData.Aggregates.CreatedEstateAggregate());
 
@@ -734,12 +742,15 @@ public class MerchantDomainServiceTests {
 
         this.AggregateService
             .Save(Arg<MerchantScheduleAggregate>.Any(), Arg<CancellationToken>.Any())
+            .Callback((MerchantScheduleAggregate aggregate, CancellationToken _) => { savedSchedule = aggregate; return Task.CompletedTask; })
             .ReturnsAsync(Result.Success());
 
         var result = await this.DomainService.UpdateMerchantSchedule(TestData.Commands.UpdateMerchantScheduleCommand, TestContext.Current.CancellationToken);
 
         result.IsSuccess.ShouldBeTrue();
         this.AggregateService.Save(Arg<MerchantScheduleAggregate>.Any(), Arg<CancellationToken>.Any()).Called(Count.Once());
+        savedSchedule.ShouldNotBeNull();
+        savedSchedule!.GetSchedule().Months.Any(month => month.Month == 2 && month.ClosedDays.SequenceEqual(new[] { 14 })).ShouldBeTrue();
     }
 
     [Fact]

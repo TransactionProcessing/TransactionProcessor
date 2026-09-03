@@ -1104,28 +1104,35 @@ public class WebHandlersTests
             mediator => { });
     }
 
+    private static object[] Case(string name, MediatorSetup setup, Func<IMediator, Task<IResult>> invoke, Action<IMediatorImposter>? verify = null)
+        => new object[] { new HandlerCase(name, setup.Configure, invoke, verify ?? setup.Verify) };
+
     private static object[] Case(string name, Action<IMediatorImposter> setup, Func<IMediator, Task<IResult>> invoke, Action<IMediatorImposter>? verify = null)
         => new object[] { new HandlerCase(name, setup, invoke, verify) };
 
-    private static Action<IMediatorImposter> SetupSuccess<TRequest, TResponse>(TResponse response, Action<TRequest>? capture = null)
+    private static MediatorSetup SetupSuccess<TRequest, TResponse>(TResponse response, Action<TRequest>? capture = null)
         where TRequest : class, IRequest<Result<TResponse>>
     {
-        return mediator =>
+        return new MediatorSetup(mediator =>
         {
             mediator.Send<Result<TResponse>>(Arg<IRequest<Result<TResponse>>>.Any(), Arg<CancellationToken>.Any())
-                    .ReturnsAsync(Result.Success(response));
-        };
+                    .ReturnsAsync(Result.Success(response))
+                    .Callback((IRequest<Result<TResponse>> request, CancellationToken _) => { capture?.Invoke((TRequest)request); return Task.CompletedTask; });
+        }, mediator => mediator.Send<Result<TResponse>>(Arg<IRequest<Result<TResponse>>>.Any(), Arg<CancellationToken>.Any()).Called(Count.Once()));
     }
 
-    private static Action<IMediatorImposter> SetupSuccess<TRequest>(Action<TRequest>? capture = null)
+    private static MediatorSetup SetupSuccess<TRequest>(Action<TRequest>? capture = null)
         where TRequest : class, IRequest<Result>
     {
-        return mediator =>
+        return new MediatorSetup(mediator =>
         {
             mediator.Send<Result>(Arg<IRequest<Result>>.Any(), Arg<CancellationToken>.Any())
-                    .ReturnsAsync(Result.Success());
-        };
+                    .ReturnsAsync(Result.Success())
+                    .Callback((IRequest<Result> request, CancellationToken _) => { capture?.Invoke((TRequest)request); return Task.CompletedTask; });
+        }, mediator => mediator.Send<Result>(Arg<IRequest<Result>>.Any(), Arg<CancellationToken>.Any()).Called(Count.Once()));
     }
+
+    private sealed record MediatorSetup(Action<IMediatorImposter> Configure, Action<IMediatorImposter> Verify);
 
     public sealed record HandlerCase(string Name,
                                      Action<IMediatorImposter> Setup,
