@@ -23,7 +23,7 @@ jobs:
       run: dotnet restore TransactionProcessor.sln -r win-x64 --source ${{ secrets.PUBLICFEEDURL }} --source ${{ secrets.PRIVATEFEED_URL }}
 
     - name: Build Code
-      run: dotnet build TransactionProcessor.sln --configuration Release
+      run: dotnet build TransactionProcessor.sln --configuration Release -r win-x64
 
     - name: 'Get Previous tag'
       id: get-latest-tag
