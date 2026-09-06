@@ -20,10 +20,10 @@ jobs:
         fetch-depth: 0
 
     - name: Restore Nuget Packages
-      run: dotnet restore TransactionProcessor.sln -r win-x64 --source ${{ secrets.PUBLICFEEDURL }} --source ${{ secrets.PRIVATEFEED_URL }}
+      run: dotnet restore TransactionProcessor.sln --source ${{ secrets.PUBLICFEEDURL }} --source ${{ secrets.PRIVATEFEED_URL }}
 
     - name: Build Code
-      run: dotnet build TransactionProcessor.sln --configuration Release -r win-x64
+      run: dotnet build TransactionProcessor.sln --configuration Release
 
     - name: 'Get Previous tag'
       id: get-latest-tag
@@ -61,7 +61,7 @@ jobs:
 
     - name: Publish API
       run: |
-        dotnet publish "TransactionProcessor/TransactionProcessor.csproj" --configuration Release --output publishOutput -r win-x64 --self-contained --no-restore \
+        dotnet publish "TransactionProcessor/TransactionProcessor.csproj" --configuration Release --output publishOutput -r win-x64 --self-contained false \
           -p:Version=${{ steps.next_version.outputs.VERSION }} \
           -p:AssemblyVersion=${{ steps.next_version.outputs.VERSION }} \
           -p:FileVersion=${{ steps.next_version.outputs.VERSION }} \
