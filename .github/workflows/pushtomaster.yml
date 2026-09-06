@@ -108,4 +108,4 @@ jobs:
           $serviceName = "Transaction Processing - Transaction Processor"
           $servicePath = "C:\txnproc\transactionprocessing\transactionprocessor\TransactionProcessor.exe"                   
           New-Service -Name $serviceName -BinaryPathName $servicePath -Description $serviceName -DisplayName $serviceName -StartupType Automatic
-          Start-Service -Name $serviceNam        
+          Start-Service -Name $serviceName        
