@@ -111,9 +111,8 @@ namespace TransactionProcessor.Controllers
 
         private List<IDomainEventHandler> GetDomainEventHandlers(IDomainEvent domainEvent) {
 
-            if (this.Request.Headers.ContainsKey("EventHandler")) {
-                var eventHandler = this.Request.Headers["EventHandler"];
-                var eventHandlerType = this.Request.Headers["EventHandlerType"];
+            if (this.Request.Headers.ContainsKey("subscriptionId")) {
+                var eventHandlerType = this.Request.Headers["subscriptionId"];
                 var resolver = Startup.Container.GetInstance<IDomainEventHandlerResolver>(eventHandlerType);
                 // We are being told by the caller to use a specific handler
                 var allhandlers = resolver.GetDomainEventHandlers(domainEvent);
@@ -121,11 +120,9 @@ namespace TransactionProcessor.Controllers
                 if (allhandlers.IsFailed)
                     return new List<IDomainEventHandler>();
 
-                var handlers = allhandlers.Data.Where(h => h.GetType().Name.Contains(eventHandler));
-                
-                return handlers.ToList();
-
+                return allhandlers.Data.ToList();
             }
+
 
             var eventHandlersResult = this.DomainEventHandlerResolver.GetDomainEventHandlers(domainEvent);
             if (eventHandlersResult.IsFailed)
