@@ -1,6 +1,7 @@
 using Prometheus;
 using System.Linq;
 using System.Threading;
+using Shared.Monitoring;
 using TransactionProcessor.BusinessLogic.Services;
 using TransactionProcessor.Endpoints;
 
@@ -16,6 +17,7 @@ namespace TransactionProcessor
     using Microsoft.Extensions.DependencyInjection;
     using Microsoft.Extensions.Hosting;
     using Microsoft.Extensions.Logging;
+    using Microsoft.IdentityModel.Protocols.WsTrust;
     using NLog;
     using NLog.Extensions.Logging;
     using Shared.EventStore.Aggregate;
@@ -93,7 +95,8 @@ namespace TransactionProcessor
         /// <param name="provider">The provider.</param>
         public void Configure(IApplicationBuilder app,
                               IWebHostEnvironment env,
-                              ILoggerFactory loggerFactory) {
+                              ILoggerFactory loggerFactory,
+                              IHostApplicationLifetime lifetime, IHost host) {
             ConfigurationReader.Initialise(Startup.Configuration);
             
             if (env.IsDevelopment()) {
@@ -119,6 +122,14 @@ namespace TransactionProcessor
             this.ConfigureEndpoints(app);
 
             app.PreWarm();
+
+            lifetime.ApplicationStarted.Register(() =>
+            {
+                host.RegisterWithUptimeKumaAsync()
+                    .GetAwaiter()
+                    .GetResult();
+            });
+
             this.TraceLoadedTokenAssemblies();
         }
 

@@ -4,6 +4,7 @@ using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi;
 using OpenIddict.Validation.AspNetCore;
 using Shared.Logger;
+using Shared.Monitoring;
 
 namespace TransactionProcessor.Bootstrapper
 {
@@ -54,6 +55,7 @@ namespace TransactionProcessor.Bootstrapper
             this.ConfigureMvc();
             this.ConfigureAuthorization();
             this.ConfigureJsonOptions();
+            this.AddUptimeKuma();
         }
 
         #endregion
