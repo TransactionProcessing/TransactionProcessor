@@ -96,7 +96,7 @@ public class TransactionEventTests : BaseTest {
     [Fact]
     public async Task RecordTransactionAdditionalRequestData_RequestDataIsStored()
     {
-        Result result = await this.Repository.RecordTransactionAdditionalRequestData(TestData.DomainEvents.AdditionalRequestDataRecordedEvent, TestContext.Current.CancellationToken);
+        Result result = await this.Repository.RecordTransactionAdditionalRequestData(TestData.DomainEvents.AdditionalRequestDataRecordedEvent.AdditionalTransactionRequestMetadata, TestContext.Current.CancellationToken);
         result.IsSuccess.ShouldBeTrue();
 
         EstateManagementContext context = this.GetContext();
@@ -118,7 +118,7 @@ public class TransactionEventTests : BaseTest {
         responseData.ShouldNotBeNull();
         responseData.TransactionId.ShouldBe(TestData.DomainEvents.AdditionalResponseDataRecordedEvent.TransactionId);
         responseData.TransactionReportingId.ShouldBe(0);
-        responseData.Metadata.ShouldBe(StringSerialiser.Serialise(TestData.DomainEvents.AdditionalResponseDataRecordedEvent));
+        responseData.Metadata.ShouldBe(StringSerialiser.Serialise(TestData.DomainEvents.AdditionalResponseDataRecordedEvent.AdditionalTransactionResponseMetadata));
     }
 
     [Fact]
