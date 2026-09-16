@@ -8,6 +8,7 @@ using Shared.Results;
 using SimpleResults;
 using System.Diagnostics.CodeAnalysis;
 using System.Reflection;
+using Shared.Serialisation;
 using TransactionProcessor.Database.Contexts;
 using TransactionProcessor.Database.Entities;
 using TransactionProcessor.Database.ViewEntities;
@@ -1456,7 +1457,8 @@ namespace TransactionProcessor.Repository {
 
             TransactionAdditionalRequestData additionalRequestData = new TransactionAdditionalRequestData
             {
-                TransactionId = domainEvent.TransactionId
+                TransactionId = domainEvent.TransactionId,
+                Metadata = StringSerialiser.Serialise(domainEvent.AdditionalTransactionRequestMetadata)
             };
 
             foreach (String additionalRequestField in this.AdditionalRequestFields)
@@ -1500,7 +1502,8 @@ namespace TransactionProcessor.Repository {
 
             TransactionAdditionalResponseData additionalResponseData = new TransactionAdditionalResponseData
             {
-                TransactionId = domainEvent.TransactionId
+                TransactionId = domainEvent.TransactionId,
+                Metadata = StringSerialiser.Serialise(domainEvent.AdditionalTransactionResponseMetadata)
             };
 
             foreach (String additionalResponseField in this.AdditionalResponseFields)

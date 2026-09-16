@@ -8,8 +8,6 @@ namespace TransactionProcessor.Database.Entities
     [Table("transactionadditionalrequestdata")]
     public class TransactionAdditionalRequestData
     {
-        #region Properties
-
         public String? Amount { get; set; }
 
 
@@ -18,6 +16,6 @@ namespace TransactionProcessor.Database.Entities
         [DatabaseGenerated(DatabaseGeneratedOption.None)]
         public Guid TransactionId { get; set; }
 
-        #endregion
+        public String? Metadata { get; set; }
     }
 }
