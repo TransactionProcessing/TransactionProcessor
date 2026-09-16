@@ -6,6 +6,7 @@ using TransactionProcessor.Database.Contexts;
 using TransactionProcessor.Database.Entities;
 using TransactionProcessor.Testing;
 using System.Collections.Generic;
+using Shared.Serialisation;
 
 namespace TransactionProcessor.DatabaseTests;
 
@@ -103,6 +104,7 @@ public class TransactionEventTests : BaseTest {
         requestData.ShouldNotBeNull();
         requestData.Amount.ShouldBe("123.45");
         requestData.CustomerAccountNumber.ShouldBe("12345678");
+        requestData.Metadata.ShouldBe(StringSerialiser.Serialise(TestData.DomainEvents.AdditionalRequestDataRecordedEvent.AdditionalTransactionRequestMetadata));
     }
 
     [Fact]
@@ -116,6 +118,7 @@ public class TransactionEventTests : BaseTest {
         responseData.ShouldNotBeNull();
         responseData.TransactionId.ShouldBe(TestData.DomainEvents.AdditionalResponseDataRecordedEvent.TransactionId);
         responseData.TransactionReportingId.ShouldBe(0);
+        responseData.Metadata.ShouldBe(StringSerialiser.Serialise(TestData.DomainEvents.AdditionalResponseDataRecordedEvent.AdditionalTransactionResponseMetadata));
     }
 
     [Fact]
