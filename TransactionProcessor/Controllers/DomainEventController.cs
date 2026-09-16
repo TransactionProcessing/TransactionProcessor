@@ -75,16 +75,31 @@ namespace TransactionProcessor.Controllers
                     return this.Ok();
                 }
 
-                List<Task<Result>> tasks = new();
-                foreach (IDomainEventHandler domainEventHandler in eventHandlers)
+                List<HandlerExecution> executions = eventHandlers
+                    .Select(domainEventHandler => this.ExecuteHandler(domainEventHandler, domainEvent, cancellationToken))
+                    .ToList();
+
+                try
                 {
-                    tasks.Add(domainEventHandler.Handle(domainEvent, cancellationToken));
+                    await Task.WhenAll(executions.Select(execution => execution.Task));
+                }
+                catch (Exception ex)
+                {
+                    Logger.LogError(new Exception($"One or more handlers threw while processing event [{domainEvent.EventId}]", ex));
                 }
 
-                Task.WaitAll(tasks.ToArray());
-                var anyFailed = tasks.Any(t => t.Result.IsFailed);
-                if (anyFailed)
-                    return this.StatusCode(500);
+                List<HandlerFailure> failures = executions.SelectMany(this.GetFailures).ToList();
+                if (failures.Any())
+                {
+                    return this.Problem(title: "One or more event handlers failed",
+                                        statusCode: 500,
+                                        extensions: new Dictionary<String, Object>
+                                        {
+                                            ["eventId"] = domainEvent.EventId,
+                                            ["eventType"] = domainEvent.GetType().Name,
+                                            ["failures"] = failures
+                                        });
+                }
 
                 Logger.LogWarning($"Finished processing event - ID [{domainEvent.EventId}]");
                 
@@ -106,6 +121,38 @@ namespace TransactionProcessor.Controllers
             {
                 Logger.LogInformation($"Cancel request for EventId {eventId}");
                 cancellationToken.ThrowIfCancellationRequested();
+            }
+        }
+
+        private IEnumerable<HandlerFailure> GetFailures(HandlerExecution execution)
+        {
+            if (execution.Task.IsFaulted)
+            {
+                String error = String.Join("; ", execution.Task.Exception?.Flatten().InnerExceptions
+                    .SelectMany(exception => exception.GetExceptionMessages()) ?? Enumerable.Empty<String>());
+                yield return new HandlerFailure(execution.Handler.GetType().Name, error);
+            }
+            else if (execution.Task.IsCanceled)
+            {
+                yield return new HandlerFailure(execution.Handler.GetType().Name, "Handler execution was cancelled");
+            }
+            else if (execution.Task.Result.IsFailed)
+            {
+                yield return new HandlerFailure(execution.Handler.GetType().Name, execution.Task.Result.Message);
+            }
+        }
+
+        private HandlerExecution ExecuteHandler(IDomainEventHandler handler,
+                                                IDomainEvent domainEvent,
+                                                CancellationToken cancellationToken)
+        {
+            try
+            {
+                return new HandlerExecution(handler, handler.Handle(domainEvent, cancellationToken));
+            }
+            catch (Exception ex)
+            {
+                return new HandlerExecution(handler, Task.FromException<Result>(ex));
             }
         }
 
@@ -163,6 +210,10 @@ namespace TransactionProcessor.Controllers
         /// The controller route
         /// </summary>
         private const String ControllerRoute = "api/" + DomainEventController.ControllerName;
+
+        private sealed record HandlerExecution(IDomainEventHandler Handler, Task<Result> Task);
+
+        private sealed record HandlerFailure(String Handler, String Error);
 
         #endregion
     }
