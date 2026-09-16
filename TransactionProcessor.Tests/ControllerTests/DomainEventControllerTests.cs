@@ -1,6 +1,7 @@
 using Imposter.Abstractions;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.DependencyInjection;
 using Shouldly;
 using SimpleResults;
 using System;
@@ -98,7 +99,16 @@ public class DomainEventControllerTests
 
         DomainEventController controller = new(resolver.Instance())
         {
-            ControllerContext = new ControllerContext { HttpContext = new DefaultHttpContext() }
+            ControllerContext = new ControllerContext
+            {
+                HttpContext = new DefaultHttpContext
+                {
+                    RequestServices = new ServiceCollection()
+                        .AddMvcCore()
+                        .Services
+                        .BuildServiceProvider()
+                }
+            }
         };
         controller.Request.Headers["eventType"] = domainEvent.GetType().Name;
         return controller;
