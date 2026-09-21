@@ -11,6 +11,7 @@ namespace TransactionProcessor.Bootstrapper
     using Common;
     using EventStore.Client;
     using Google.Api;
+    using HealthMonitoring.Client;
     using Lamar;
     using Microsoft.AspNetCore.Authentication.JwtBearer;
     using Microsoft.AspNetCore.Http.Json;
@@ -55,7 +56,8 @@ namespace TransactionProcessor.Bootstrapper
             this.ConfigureMvc();
             this.ConfigureAuthorization();
             this.ConfigureJsonOptions();
-            this.AddUptimeKuma();
+
+            this.AddHealthMonitoringRegistration(Startup.Configuration);
         }
 
         #endregion
