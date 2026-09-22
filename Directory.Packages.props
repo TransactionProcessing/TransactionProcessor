@@ -18,6 +18,7 @@
     <PackageVersion Include="EventStoreProjections" Version="2023.12.3" />
     <PackageVersion Include="FileProcessor.File.DomainEvents" Version="2026.9.2.153" />
     <PackageVersion Include="FileProcessor.FileImportLog.DomainEvents" Version="2026.9.2.153" />
+    <PackageVersion Include="HealthMonitoring.Client" Version="2026.9.2.30" />
     <PackageVersion Include="Lamar" Version="16.0.0" />
     <PackageVersion Include="Lamar.Microsoft.DependencyInjection" Version="16.0.0" />
     <PackageVersion Include="MediatR" Version="14.2.0" />

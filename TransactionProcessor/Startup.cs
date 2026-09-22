@@ -122,14 +122,7 @@ namespace TransactionProcessor
             this.ConfigureEndpoints(app);
 
             app.PreWarm();
-
-            lifetime.ApplicationStarted.Register(() =>
-            {
-                host.RegisterWithUptimeKumaAsync()
-                    .GetAwaiter()
-                    .GetResult();
-            });
-
+            
             this.TraceLoadedTokenAssemblies();
         }
 
