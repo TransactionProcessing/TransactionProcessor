@@ -3,7 +3,11 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Http.HttpResults;
 using Shared.Exceptions;
+using Shared.Results;
+using Shared.Results.Web;
 
 namespace TransactionProcessor.Controllers
 {
@@ -55,10 +59,15 @@ namespace TransactionProcessor.Controllers
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns></returns>
         [HttpPost]
-        public async Task<IActionResult> PostEventAsync([FromBody] Object request,
+        public async Task<IResult> PostEventAsync([FromBody] Object request,
                                                         CancellationToken cancellationToken)
         {
-            IDomainEvent domainEvent = await this.GetDomainEvent(request);
+            Result<IDomainEvent> domainEventResult = await this.GetDomainEvent(request);
+
+            if (domainEventResult.IsFailed)
+                return ResponseFactory.FromResult(domainEventResult, SuccessFactory);
+            
+            IDomainEvent domainEvent = domainEventResult.Data;
 
             List<IDomainEventHandler> eventHandlers = this.GetDomainEventHandlers(domainEvent);
 
@@ -72,7 +81,7 @@ namespace TransactionProcessor.Controllers
                 {
                     // Log a warning out 
                     Logger.LogInformation($"No event handlers configured for Event Type [{domainEvent.GetType().Name}]");
-                    return this.Ok();
+                    return Results.Ok();
                 }
 
                 List<HandlerExecution> executions = eventHandlers
@@ -91,7 +100,7 @@ namespace TransactionProcessor.Controllers
                 List<HandlerFailure> failures = executions.SelectMany(this.GetFailures).ToList();
                 if (failures.Any())
                 {
-                    return this.Problem(title: "One or more event handlers failed",
+                    return Results.Problem(title: "One or more event handlers failed",
                                         statusCode: 500,
                                         extensions: new Dictionary<String, Object>
                                         {
@@ -102,8 +111,8 @@ namespace TransactionProcessor.Controllers
                 }
 
                 Logger.LogWarning($"Finished processing event - ID [{domainEvent.EventId}]");
-                
-                return this.Ok();
+
+                return Results.Ok();
             }
             catch (Exception ex)
             {
@@ -112,6 +121,10 @@ namespace TransactionProcessor.Controllers
 
                 throw;
             }
+        }
+
+        private IDomainEvent SuccessFactory(IDomainEvent arg) {
+            return arg;
         }
 
         private void Callback(CancellationToken cancellationToken,
@@ -177,21 +190,29 @@ namespace TransactionProcessor.Controllers
             return eventHandlersResult.Data;
         }
 
-        private async Task<IDomainEvent> GetDomainEvent(Object domainEvent)
+        private async Task<Result<IDomainEvent>> GetDomainEvent(Object domainEvent)
         {
             String eventType = this.Request.Headers["eventType"].ToString();
 
-            Type type = TypeMap.GetType(eventType);
+            Type type;
+
+            try {
+                type = TypeMap.GetType(eventType);
+            }
+            catch (Exception ex) {
+                // Just swallowing exception here...
+                type = null;
+            }
 
             if (type == null)
-                throw new NotFoundException($"Failed to find a domain event with type {eventType}");
+                return Result.NotFound($"Failed to find a domain event with type {eventType}");
             
             if (type.IsSubclassOf(typeof(DomainEvent)))
             {
                 String json = StringSerialiser.Serialise(domainEvent);
 
                 DomainEventFactory domainEventFactory = new();
-                return domainEventFactory.CreateDomainEvent(json, type);
+                return Result.Success(domainEventFactory.CreateDomainEvent(json, type) as IDomainEvent);
             }
 
             return null;

@@ -182,6 +182,9 @@ namespace TransactionProcessor.Repository {
 
         Task<Result> UpdateFileLine(FileLineProcessingSuccessfulEvent domainEvent,
                                     CancellationToken cancellationToken);
+        
+        Task<Result> UpdateFileLine(FileLineTransactionDispatchFailedEvent domainEvent,
+                                    CancellationToken cancellationToken);
 
         Task<Result> UpdateFileLine(FileLineProcessingFailedEvent domainEvent,
                                     CancellationToken cancellationToken);
@@ -2050,6 +2053,19 @@ namespace TransactionProcessor.Repository {
                                             domainEvent.TransactionId,
                                             "S",
                                             cancellationToken);
+        }
+
+        public async Task<Result> UpdateFileLine(FileLineTransactionDispatchFailedEvent domainEvent,
+                                                 CancellationToken cancellationToken) {
+            using ResolvedDbContext<EstateManagementContext>? resolvedContext = this.Resolver.Resolve(EstateManagementDatabaseName, domainEvent.EstateId.ToString());
+            await using EstateManagementContext context = resolvedContext.Context;
+
+            return await this.UpdateFileLineStatus(context,
+                domainEvent.FileId,
+                domainEvent.LineNumber,
+                Guid.Empty,
+                "D",
+                cancellationToken);
         }
 
         private async Task<Result> UpdateFileLineStatus(EstateManagementContext context,
