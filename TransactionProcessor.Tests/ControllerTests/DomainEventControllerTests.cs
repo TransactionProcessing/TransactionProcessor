@@ -32,8 +32,8 @@ public class DomainEventControllerTests
             domainEvent,
             new ResultDomainEventHandler(Result.Success()));
 
-        IActionResult result = await controller.PostEventAsync(domainEvent, CancellationToken.None);
-
+        IResult result = await controller.PostEventAsync(domainEvent, CancellationToken.None);
+        
         result.ShouldBeOfType<OkResult>();
     }
 
@@ -44,7 +44,7 @@ public class DomainEventControllerTests
         DomainEvent domainEvent = CreateDomainEvent();
         DomainEventController controller = CreateController(domainEvent);
 
-        IActionResult result = await controller.PostEventAsync(domainEvent, CancellationToken.None);
+        IResult result = await controller.PostEventAsync(domainEvent, CancellationToken.None);
 
         result.ShouldBeOfType<OkResult>();
     }

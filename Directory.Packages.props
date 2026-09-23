@@ -16,7 +16,7 @@
     <PackageVersion Include="EntityFrameworkCore.Exceptions.Common" Version="10.0.1" />
     <PackageVersion Include="EntityFrameworkCore.Exceptions.SqlServer" Version="10.0.1" />
     <PackageVersion Include="EventStoreProjections" Version="2023.12.3" />
-    <PackageVersion Include="FileProcessor.File.DomainEvents" Version="2026.9.2.153" />
+    <PackageVersion Include="FileProcessor.File.DomainEvents" Version="2026.9.2.157" />
     <PackageVersion Include="FileProcessor.FileImportLog.DomainEvents" Version="2026.9.2.153" />
     <PackageVersion Include="HealthMonitoring.Client" Version="2026.9.2.30" />
     <PackageVersion Include="Lamar" Version="16.0.0" />
