@@ -1,5 +1,6 @@
 using Imposter.Abstractions;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.DependencyInjection;
 using Shouldly;
@@ -34,7 +35,7 @@ public class DomainEventControllerTests
 
         IResult result = await controller.PostEventAsync(domainEvent, CancellationToken.None);
         
-        result.ShouldBeOfType<OkResult>();
+        result.ShouldBeOfType<Ok>();
     }
 
     [Fact]
@@ -46,7 +47,7 @@ public class DomainEventControllerTests
 
         IResult result = await controller.PostEventAsync(domainEvent, CancellationToken.None);
 
-        result.ShouldBeOfType<OkResult>();
+        result.ShouldBeOfType<Ok>();
     }
 
     [Fact]
@@ -58,10 +59,10 @@ public class DomainEventControllerTests
 
         DomainEventController controller = CreateController(domainEvent, handler);
 
-        ObjectResult result = (ObjectResult)await controller.PostEventAsync(domainEvent, CancellationToken.None);
+        ProblemHttpResult result = (ProblemHttpResult)await controller.PostEventAsync(domainEvent, CancellationToken.None);
 
         result.StatusCode.ShouldBe(500);
-        ProblemDetails problemDetails = (ProblemDetails)result.Value;
+        var problemDetails = result.ProblemDetails;
         problemDetails.Title.ShouldBe("One or more event handlers failed");
         problemDetails.Status.ShouldBe(500);
         problemDetails.Extensions["eventId"].ShouldBeOfType<Guid>();
@@ -82,9 +83,9 @@ public class DomainEventControllerTests
             new ResultDomainEventHandler(Result.Failure("First failure")),
             new ThrowingDomainEventHandler("Second failure"));
 
-        ObjectResult result = (ObjectResult)await controller.PostEventAsync(domainEvent, CancellationToken.None);
+        ProblemHttpResult result = (ProblemHttpResult)await controller.PostEventAsync(domainEvent, CancellationToken.None);
 
-        String failuresJson = System.Text.Json.JsonSerializer.Serialize(((ProblemDetails)result.Value).Extensions["failures"]);
+        String failuresJson = System.Text.Json.JsonSerializer.Serialize(result.ProblemDetails.Extensions["failures"]);
         result.StatusCode.ShouldBe(500);
         failuresJson.ShouldContain("First failure");
         failuresJson.ShouldContain("Second failure");
