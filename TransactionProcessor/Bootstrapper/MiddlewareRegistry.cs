@@ -1,25 +1,15 @@
 ﻿using KurrentDB.Client;
 using Microsoft.IdentityModel.Logging;
-using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi;
 using OpenIddict.Validation.AspNetCore;
-using Shared.Logger;
-using Shared.Monitoring;
 
 namespace TransactionProcessor.Bootstrapper
 {
-    using Common;
-    using EventStore.Client;
-    using Google.Api;
     using HealthMonitoring.Client;
     using Lamar;
-    using Microsoft.AspNetCore.Authentication.JwtBearer;
-    using Microsoft.AspNetCore.Http.Json;
-    using Microsoft.AspNetCore.Mvc;
     using Microsoft.Extensions.Configuration;
     using Microsoft.Extensions.DependencyInjection;
     using Microsoft.Extensions.Diagnostics.HealthChecks;
-    using OpenIddict.Abstractions;
     using Shared.Authorisation;
     using Shared.EventStore.Extensions;
     using Shared.Extensions;

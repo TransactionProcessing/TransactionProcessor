@@ -1,8 +1,5 @@
 using Prometheus;
 using System.Linq;
-using System.Threading;
-using Shared.Monitoring;
-using TransactionProcessor.BusinessLogic.Services;
 using TransactionProcessor.Endpoints;
 
 namespace TransactionProcessor
@@ -17,9 +14,6 @@ namespace TransactionProcessor
     using Microsoft.Extensions.DependencyInjection;
     using Microsoft.Extensions.Hosting;
     using Microsoft.Extensions.Logging;
-    using Microsoft.IdentityModel.Protocols.WsTrust;
-    using NLog;
-    using NLog.Extensions.Logging;
     using Shared.EventStore.Aggregate;
     using Shared.Extensions;
     using Shared.General;
@@ -28,7 +22,6 @@ namespace TransactionProcessor
     using System;
     using System.Collections.Generic;
     using System.Diagnostics.CodeAnalysis;
-    using System.IO;
     using System.Reflection;
     using ILogger = Microsoft.Extensions.Logging.ILogger;
     using Logger = Shared.Logger.Logger;
