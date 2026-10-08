@@ -38,7 +38,8 @@ namespace TransactionProcessor.IntegrationTests.Shared
 
         private readonly TestingContext TestingContext;
 
-        private readonly SecurityServiceSteps SecurityServiceSteps;
+        private SecurityServiceSteps SecurityServiceSteps => new SecurityServiceSteps(this.TestingContext.DockerHelper.SecurityServiceClient,
+                                                                                         this.TestingContext.DockerHelper.AccessToken);
 
         private readonly TransactionProcessorSteps TransactionProcessorSteps;
 
@@ -46,7 +47,6 @@ namespace TransactionProcessor.IntegrationTests.Shared
                            TestingContext testingContext) {
             this.ScenarioContext = scenarioContext;
             this.TestingContext = testingContext;
-            this.SecurityServiceSteps = new SecurityServiceSteps(testingContext.DockerHelper.SecurityServiceClient, testingContext.DockerHelper.AccessToken);
             this.TransactionProcessorSteps = new TransactionProcessorSteps(testingContext.DockerHelper.TransactionProcessorClient, testingContext.DockerHelper.TestHostHttpClient,
                 testingContext.DockerHelper.ProjectionManagementClient, testingContext.DockerHelper.AgencyBankingClient);
         }
