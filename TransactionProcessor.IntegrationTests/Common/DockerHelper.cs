@@ -92,17 +92,6 @@ namespace TransactionProcessor.IntegrationTests.Common
                 responseMessage.IsSuccessStatusCode.ShouldBeTrue();
             });
         }
-
-        //public override ContainerBuilder SetupTestHostContainer()
-        //{
-        //    var variables = new Dictionary<String, String>();
-        //    variables.Add("ConnectionStrings:AgencyBankingReadModel", $"server={this.SqlServerContainerName};user id={this.SqlCredentials.usename};password={this.SqlCredentials.password};database=AgencyBankingReadModel;Encrypt=false");
-        //    variables.Add("ASPNETCORE_ENVIRONMENT", $"PRODUCTION");
-        //    this.AdditionalVariables.Add(ContainerType.TestHost, variables);
-
-        //    return base.SetupTestHostContainer();
-        //}
-
         public override ContainerBuilder SetupTransactionProcessorContainer() {
              Dictionary<String, String> additionalVariables = new();
             additionalVariables.Add("OperatorConfiguration:AgencyBanking:Url",$"http://{this.TestHostContainerName}:{DockerPorts.TestHostPort}/api/agencybanking");
@@ -110,6 +99,16 @@ namespace TransactionProcessor.IntegrationTests.Common
             this.AdditionalVariables.Add(ContainerType.TransactionProcessor, additionalVariables);
 
             return base.SetupTransactionProcessorContainer();
+        }
+
+        public override ContainerBuilder SetupSecurityServiceContainer()
+        {
+            Dictionary<String, String> additionalVariables = new();
+            additionalVariables.Add("ServiceOptions:OAuth:LegacyGrantTypeClients:password:1", "estateClient");
+
+            this.AdditionalVariables.Add(ContainerType.SecurityService, additionalVariables);
+
+            return base.SetupSecurityServiceContainer();
         }
 
         public override ContainerBuilder SetupTestHostContainer()
