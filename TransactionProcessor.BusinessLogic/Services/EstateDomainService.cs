@@ -38,10 +38,12 @@ namespace TransactionProcessor.BusinessLogic.Services
         private readonly IAggregateService AggregateService;
         private readonly ISecurityServiceClient SecurityServiceClient;
 
+        private TokenResponse TokenResponse;
+
         #endregion
 
         #region Constructors
-                
+
         public EstateDomainService(Func<IAggregateService> aggregateService,
                                    ISecurityServiceClient securityServiceClient) {
             this.AggregateService = aggregateService();
@@ -160,11 +162,16 @@ namespace TransactionProcessor.BusinessLogic.Services
 
         private async Task<Result<UserResponse>> CreateEstateSecurityUser(CreateUserRequest createUserRequest,
                                                                          CancellationToken cancellationToken) {
-            Result createUserResult = await this.SecurityServiceClient.CreateUser(createUserRequest, cancellationToken);
+            Result<TokenResponse> getTokenResult = await Helpers.GetToken(this.TokenResponse, this.SecurityServiceClient, cancellationToken);
+            if (getTokenResult.IsFailed)
+                return ResultHelpers.CreateFailure(getTokenResult);
+            this.TokenResponse = getTokenResult.Data;
+
+            Result createUserResult = await this.SecurityServiceClient.CreateUser(this.TokenResponse.AccessToken, createUserRequest, cancellationToken);
             if (createUserResult.IsFailed)
                 return ResultHelpers.CreateFailure(createUserResult);
 
-            Result<List<UserResponse>> userDetailsResult = await this.SecurityServiceClient.GetUsers(createUserRequest.EmailAddress, cancellationToken);
+            Result<List<UserResponse>> userDetailsResult = await this.SecurityServiceClient.GetUsers(this.TokenResponse.AccessToken, createUserRequest.EmailAddress, cancellationToken);
             if (userDetailsResult.IsFailed)
                 return ResultHelpers.CreateFailure(userDetailsResult);
 

@@ -46,7 +46,7 @@ namespace TransactionProcessor.IntegrationTests.Shared
                            TestingContext testingContext) {
             this.ScenarioContext = scenarioContext;
             this.TestingContext = testingContext;
-            this.SecurityServiceSteps = new SecurityServiceSteps(testingContext.DockerHelper.SecurityServiceClient);
+            this.SecurityServiceSteps = new SecurityServiceSteps(testingContext.DockerHelper.SecurityServiceClient, testingContext.DockerHelper.AccessToken);
             this.TransactionProcessorSteps = new TransactionProcessorSteps(testingContext.DockerHelper.TransactionProcessorClient, testingContext.DockerHelper.TestHostHttpClient,
                 testingContext.DockerHelper.ProjectionManagementClient, testingContext.DockerHelper.AgencyBankingClient);
         }

@@ -266,10 +266,10 @@ public class MerchantDomainServiceTests {
             .ReturnsAsync(Result.Success());
 
         this.SecurityServiceClient
-            .CreateUser(Arg<CreateUserRequest>.Any(), Arg<CancellationToken>.Any())
+            .CreateUser(Arg<String>.Any(), Arg<CreateUserRequest>.Any(), Arg<CancellationToken>.Any())
             .ReturnsAsync(Result.Success());
         this.SecurityServiceClient
-            .GetUsers(Arg<String>.Any(), Arg<CancellationToken>.Any())
+            .GetUsers(Arg<String>.Any(), Arg<String>.Any(), Arg<CancellationToken>.Any())
             .ReturnsAsync(Result.Success(new List<UserResponse>() {
                 new UserResponse {
                     UserId = "FA077CE3-B915-4048-88E3-9B500699317F"
@@ -292,7 +292,7 @@ public class MerchantDomainServiceTests {
             .ReturnsAsync(Result.Success());
 
         this.SecurityServiceClient
-            .CreateUser(Arg<CreateUserRequest>.Any(), Arg<CancellationToken>.Any())
+            .CreateUser(Arg<String>.Any(), Arg<CreateUserRequest>.Any(), Arg<CancellationToken>.Any())
             .ReturnsAsync(Result.Success());
 
         var result = await this.DomainService.CreateMerchantUser(TestData.Commands.CreateMerchantUserCommand, TestContext.Current.CancellationToken);
@@ -311,7 +311,7 @@ public class MerchantDomainServiceTests {
             .ReturnsAsync(Result.Success());
 
         this.SecurityServiceClient
-            .CreateUser(Arg<CreateUserRequest>.Any(), Arg<CancellationToken>.Any())
+            .CreateUser(Arg<String>.Any(), Arg<CreateUserRequest>.Any(), Arg<CancellationToken>.Any())
             .ReturnsAsync(Result.Success());
 
         var result = await this.DomainService.CreateMerchantUser(TestData.Commands.CreateMerchantUserCommand, TestContext.Current.CancellationToken);
@@ -330,7 +330,7 @@ public class MerchantDomainServiceTests {
             .ReturnsAsync(Result.Success());
 
         this.SecurityServiceClient
-            .CreateUser(Arg<CreateUserRequest>.Any(), Arg<CancellationToken>.Any())
+            .CreateUser(Arg<String>.Any(), Arg<CreateUserRequest>.Any(), Arg<CancellationToken>.Any())
             .ReturnsAsync(Result.Failure());
 
         var result = await this.DomainService.CreateMerchantUser(TestData.Commands.CreateMerchantUserCommand, TestContext.Current.CancellationToken);
@@ -350,10 +350,10 @@ public class MerchantDomainServiceTests {
             .ReturnsAsync(Result.Success());
 
         this.SecurityServiceClient
-            .CreateUser(Arg<CreateUserRequest>.Any(), Arg<CancellationToken>.Any())
+            .CreateUser(Arg<String>.Any(), Arg<CreateUserRequest>.Any(), Arg<CancellationToken>.Any())
             .ReturnsAsync(Result.Success());
         this.SecurityServiceClient
-            .GetUsers(Arg<String>.Any(), Arg<CancellationToken>.Any())
+            .GetUsers(Arg<String>.Any(), Arg<String>.Any(), Arg<CancellationToken>.Any())
             .ReturnsAsync(Result.Failure());
 
         var result = await this.DomainService.CreateMerchantUser(TestData.Commands.CreateMerchantUserCommand, TestContext.Current.CancellationToken);
@@ -373,10 +373,10 @@ public class MerchantDomainServiceTests {
             .ReturnsAsync(Result.Success());
 
         this.SecurityServiceClient
-            .CreateUser(Arg<CreateUserRequest>.Any(), Arg<CancellationToken>.Any())
+            .CreateUser(Arg<String>.Any(), Arg<CreateUserRequest>.Any(), Arg<CancellationToken>.Any())
             .ReturnsAsync(Result.Success());
         this.SecurityServiceClient
-            .GetUsers(Arg<String>.Any(), Arg<CancellationToken>.Any())
+            .GetUsers(Arg<String>.Any(), Arg<String>.Any(), Arg<CancellationToken>.Any())
             .ReturnsAsync(Result.Success(new List<UserResponse> {
                 null
             }));
@@ -1423,9 +1423,9 @@ public class MerchantDomainServiceTests {
             .ReturnsAsync(TestData.Aggregates.CreatedEstateAggregate());
         this.AggregateService.GetLatest<MerchantAggregate>(Arg<Guid>.Any(), Arg<CancellationToken>.Any())
             .ReturnsAsync(Result.Success(TestData.Aggregates.CreatedMerchantAggregate()));
-        this.SecurityServiceClient.CreateUser(Arg<CreateUserRequest>.Any(), Arg<CancellationToken>.Any())
+        this.SecurityServiceClient.CreateUser(Arg<String>.Any(), Arg<CreateUserRequest>.Any(), Arg<CancellationToken>.Any())
             .ReturnsAsync(Result.Success());
-        this.SecurityServiceClient.GetUsers(Arg<String>.Any(), Arg<CancellationToken>.Any())
+        this.SecurityServiceClient.GetUsers(Arg<String>.Any(), Arg<String>.Any(), Arg<CancellationToken>.Any())
             .ReturnsAsync(Result.Success(new List<UserResponse> { new UserResponse { UserId = "FA077CE3-B915-4048-88E3-9B500699317F" } }));
         this.AggregateService.Save(Arg<MerchantAggregate>.Any(), Arg<CancellationToken>.Any())
             .ReturnsAsync(Result.Failure());
