@@ -49,6 +49,9 @@ public class MerchantDomainServiceTests {
 
         this.AggregateService = new();
         this.SecurityServiceClient = new();
+        this.SecurityServiceClient
+            .GetToken(Arg<String>.Any(), Arg<String>.Any(), Arg<CancellationToken>.Any())
+            .ReturnsAsync(Result.Success(TestData.GetTokenResponse()));
         this.EventStoreContext = new();
         Func<IAggregateService> aggregateServiceResolver = () => this.AggregateService.Instance();
         this.DomainService = new MerchantDomainService(aggregateServiceResolver,

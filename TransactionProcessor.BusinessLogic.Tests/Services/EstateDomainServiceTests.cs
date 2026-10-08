@@ -1,8 +1,11 @@
+using Microsoft.Extensions.Configuration;
 using Imposter.Abstractions;
 using SecurityService.Client;
 using SecurityService.DataTransferObjects;
 using Shared.DomainDrivenDesign.EventSourcing;
 using Shared.EventStore.Aggregate;
+using Shared.General;
+using Shared.Logger;
 using Shared.Serialisation;
 using Shouldly;
 using SimpleResults;
@@ -26,8 +29,15 @@ namespace TransactionProcessor.BusinessLogic.Tests.Services
         private ISecurityServiceClientImposter SecurityServiceClient;
         public EstateDomainServiceTests() {
             StringSerialiser.Initialise(new SystemTextJsonSerializer(new JsonSerializerOptions()));
+            IConfigurationRoot configurationRoot = new ConfigurationBuilder().AddInMemoryCollection(TestData.DefaultAppSettings).Build();
+            ConfigurationReader.Initialise(configurationRoot);
+            Logger.Initialise(NullLogger.Instance);
+
             this.AggregateService= new IAggregateServiceImposter();
             this.SecurityServiceClient = new ISecurityServiceClientImposter();
+            this.SecurityServiceClient
+                .GetToken(Arg<String>.Any(), Arg<String>.Any(), Arg<CancellationToken>.Any())
+                .ReturnsAsync(Result.Success(TestData.GetTokenResponse()));
             IAggregateService AggregateServiceResolver() => this.AggregateService.Instance();
             this.DomainService = new EstateDomainService(AggregateServiceResolver, this.SecurityServiceClient.Instance());
         }
