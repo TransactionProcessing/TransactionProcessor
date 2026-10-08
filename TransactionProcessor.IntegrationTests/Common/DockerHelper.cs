@@ -92,17 +92,6 @@ namespace TransactionProcessor.IntegrationTests.Common
                 responseMessage.IsSuccessStatusCode.ShouldBeTrue();
             });
         }
-
-        //public override ContainerBuilder SetupTestHostContainer()
-        //{
-        //    var variables = new Dictionary<String, String>();
-        //    variables.Add("ConnectionStrings:AgencyBankingReadModel", $"server={this.SqlServerContainerName};user id={this.SqlCredentials.usename};password={this.SqlCredentials.password};database=AgencyBankingReadModel;Encrypt=false");
-        //    variables.Add("ASPNETCORE_ENVIRONMENT", $"PRODUCTION");
-        //    this.AdditionalVariables.Add(ContainerType.TestHost, variables);
-
-        //    return base.SetupTestHostContainer();
-        //}
-
         public override ContainerBuilder SetupTransactionProcessorContainer() {
              Dictionary<String, String> additionalVariables = new();
             additionalVariables.Add("OperatorConfiguration:AgencyBanking:Url",$"http://{this.TestHostContainerName}:{DockerPorts.TestHostPort}/api/agencybanking");
@@ -110,6 +99,16 @@ namespace TransactionProcessor.IntegrationTests.Common
             this.AdditionalVariables.Add(ContainerType.TransactionProcessor, additionalVariables);
 
             return base.SetupTransactionProcessorContainer();
+        }
+
+        public override ContainerBuilder SetupSecurityServiceContainer()
+        {
+            Dictionary<String, String> additionalVariables = new();
+            additionalVariables.Add("ServiceOptions:OAuth:LegacyGrantTypeClients:password:1", "estateClient");
+
+            this.AdditionalVariables.Add(ContainerType.SecurityService, additionalVariables);
+
+            return base.SetupSecurityServiceContainer();
         }
 
         public override ContainerBuilder SetupTestHostContainer()
@@ -153,56 +152,6 @@ namespace TransactionProcessor.IntegrationTests.Common
             }
         }
 
-        //public override ContainerBuilder SetupSecurityServiceContainer()
-        //{
-        //    this.Trace("About to Start Security Container");
-
-        //    List<String> environmentVariables = this.GetCommonEnvironmentVariables();
-        //    environmentVariables.Add($"ServiceOptions:PublicOrigin=https://{this.SecurityServiceContainerName}:{DockerPorts.SecurityServiceDockerPort}");
-        //    environmentVariables.Add($"ServiceOptions:IssuerUrl=https://{this.SecurityServiceContainerName}:{DockerPorts.SecurityServiceDockerPort}");
-        //    //environmentVariables.Add("ASPNETCORE_ENVIRONMENT=IntegrationTest");
-        //    environmentVariables.Add($"urls=https://*:{DockerPorts.SecurityServiceDockerPort}");
-
-        //    environmentVariables.Add("ServiceOptions:PasswordOptions:RequiredLength=6");
-        //    environmentVariables.Add("ServiceOptions:PasswordOptions:RequireDigit=false");
-        //    environmentVariables.Add("ServiceOptions:PasswordOptions:RequireUpperCase=false");
-        //    environmentVariables.Add("ServiceOptions:UserOptions:RequireUniqueEmail=false");
-        //    environmentVariables.Add("ServiceOptions:SignInOptions:RequireConfirmedEmail=false");
-
-        //    environmentVariables.Add(this.SetConnectionString("ConnectionStrings:PersistedGrantDbContext", $"PersistedGrantStore-{this.TestId}", this.UseSecureSqlServerDatabase));
-        //    environmentVariables.Add(this.SetConnectionString("ConnectionStrings:ConfigurationDbContext", $"Configuration-{this.TestId}", this.UseSecureSqlServerDatabase));
-        //    environmentVariables.Add(this.SetConnectionString("ConnectionStrings:AuthenticationDbContext", $"Authentication-{this.TestId}", this.UseSecureSqlServerDatabase));
-
-        //    List<String> additionalEnvironmentVariables = this.GetAdditionalVariables(ContainerType.SecurityService);
-
-        //    if (additionalEnvironmentVariables != null)
-        //    {
-        //        environmentVariables.AddRange(additionalEnvironmentVariables);
-        //    }
-
-        //    var imageDetails = this.GetImageDetails(ContainerType.SecurityService);
-        //    if (imageDetails.IsFailed)
-        //        throw new Exception(imageDetails.Message);
-        //    ContainerBuilder securityServiceContainer = new Builder().UseContainer().WithName(this.SecurityServiceContainerName)
-        //                                                             .WithEnvironment(environmentVariables.ToArray())
-        //                                                             .UseImageDetails(imageDetails.Data)
-        //                                                             .MountHostFolder(this.DockerPlatform, this.HostTraceFolder)
-        //                                                             .SetDockerCredentials(this.DockerCredentials);
-
-        //    Int32? hostPort = this.GetHostPort(ContainerType.SecurityService);
-        //    if (hostPort == null)
-        //    {
-        //        securityServiceContainer = securityServiceContainer.ExposePort(DockerPorts.SecurityServiceDockerPort);
-        //    }
-        //    else
-        //    {
-        //        securityServiceContainer = securityServiceContainer.ExposePort(hostPort.Value, DockerPorts.SecurityServiceDockerPort);
-        //    }
-
-        //    // Now build and return the container                
-        //    return securityServiceContainer;
-        //}
-
         String Serialise(Object arg)
         {
             return StringSerialiser.Serialise<Object>(arg, new SerialiserOptions(SerialiserPropertyFormat.SnakeCase));
@@ -222,6 +171,8 @@ namespace TransactionProcessor.IntegrationTests.Common
         {
             return StringSerialiser.DeserializeObject<Object>(arg, type, new SerialiserOptions(SerialiserPropertyFormat.CamelCase));
         }
+
+        public String AccessToken;
 
         /// <summary>
         /// Starts the containers for scenario run.
@@ -259,6 +210,13 @@ namespace TransactionProcessor.IntegrationTests.Common
             this.Trace("Test Bank Configured");
 
             this.ProjectionManagementClient = new EventStoreProjectionManagementClient(ConfigureEventStoreSettings());
+
+            SimpleResults.Result<SecurityService.DataTransferObjects.TokenResponse> bootstrapToken = await this.SecurityServiceClient.GetToken("management-bootstrap", "management-bootstrap-secret", CancellationToken.None);
+            if (bootstrapToken.IsFailed || String.IsNullOrWhiteSpace(bootstrapToken.Data?.AccessToken))
+            {
+                throw new InvalidOperationException("Unable to obtain the integration-test management bootstrap token.");
+            }
+            this.AccessToken = bootstrapToken.Data.AccessToken;
         }
 
         /// <summary>
