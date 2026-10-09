@@ -452,7 +452,7 @@ namespace TransactionProcessor.IntegrationTests.Shared
 
             //this.TestingContext.AccessToken = await this.SecurityServiceSteps.GetClientToken(clientDetails.ClientId, clientDetails.ClientSecret, CancellationToken.None);
             var token = await this.TestingContext.DockerHelper.SecurityServiceClient.GetToken(clientDetails.ClientId, clientDetails.ClientSecret, CancellationToken.None);
-            token.IsSuccess.ShouldBeTrue();
+            token.IsSuccess.ShouldBeTrue(token.Message);
             this.TestingContext.AccessToken = token.Data.AccessToken;
 
         }
@@ -517,7 +517,7 @@ namespace TransactionProcessor.IntegrationTests.Shared
             //    .GetPasswordToken(clientId, clientDetails.ClientSecret, username, password, CancellationToken.None).ConfigureAwait(false);
             Result<TokenResponse> token = await this.TestingContext.DockerHelper.SecurityServiceClient.GetToken(username, password, clientId, clientDetails.ClientSecret,
                 CancellationToken.None);
-            token.IsSuccess.ShouldBeTrue();
+            token.IsSuccess.ShouldBeTrue(token.Message);
             this.TestingContext.AccessToken = token.Data.AccessToken;
             estateDetails.SetEstateUserToken(token.Data.AccessToken);
         }
