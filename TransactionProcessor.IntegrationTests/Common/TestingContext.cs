@@ -203,7 +203,7 @@ namespace TransactionProcessor.IntegrationTests.Common
                                                                                                                                           estate.EstateId,
                                                                                                                                           transactionResponse.TransactionId,
                                                                                                                                           CancellationToken.None);
-                getVoucherByTransactionIdResult.IsSuccess.ShouldBeTrue();
+                getVoucherByTransactionIdResult.IsSuccess.ShouldBeTrue(getVoucherByTransactionIdResult.Message);
                 voucher = getVoucherByTransactionIdResult.Data;
 
             });
