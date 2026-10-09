@@ -1022,11 +1022,11 @@ public class TransactionProcessorSteps
                     MiddleName = createNewUserRequest.MiddleName,
                     Password = createNewUserRequest.Password
                 };
-                await this.TransactionProcessorClient.CreateEstateUser(accessToken,
+                Result estateResult = await this.TransactionProcessorClient.CreateEstateUser(accessToken,
                                                          estateDetails.EstateId,
                                                          request,
                                                          CancellationToken.None);
-
+                estateResult.IsSuccess.ShouldBeTrue(estateResult.Message);
                 estateDetails.SetEstateUser(request.EmailAddress, request.Password);
             }
             else
@@ -1047,11 +1047,12 @@ public class TransactionProcessorSteps
                     Password = createNewUserRequest.Password
                 };
 
-                await this.TransactionProcessorClient.CreateMerchantUser(token,
+                Result merchantResult = await this.TransactionProcessorClient.CreateMerchantUser(token,
                                                            estateDetails.EstateId,
                                                            createNewUserRequest.MerchantId.Value,
                                                            createMerchantUserRequest,
                                                            CancellationToken.None);
+                merchantResult.IsSuccess.ShouldBeTrue(merchantResult.Message);
 
                 estateDetails.AddMerchantUser(createNewUserRequest.MerchantName, createMerchantUserRequest.EmailAddress, createMerchantUserRequest.Password);
             }
