@@ -751,7 +751,7 @@ public class TransactionProcessorSteps
                     request.merchantId,
                     request.request,
                     CancellationToken.None).ConfigureAwait(false);
-            assignOperatorToMerchantResult.IsSuccess.ShouldBeTrue();
+            assignOperatorToMerchantResult.IsSuccess.ShouldBeTrue(assignOperatorToMerchantResult.Message);
             merchantOperators.Add((request.estate, request.merchantId, request.request.OperatorId));
         }
 
