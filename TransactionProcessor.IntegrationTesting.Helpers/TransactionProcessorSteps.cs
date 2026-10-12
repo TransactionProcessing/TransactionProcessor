@@ -1059,21 +1059,26 @@ public class TransactionProcessorSteps
 
             await Retry.For(async () =>
             {
-                Result<List<ContractResponse>> merchantContractsResult = await this.TransactionProcessorClient
-                    .GetMerchantContracts(accessToken, request.Item1.EstateId, request.Item2, CancellationToken.None)
+                Result<MerchantResponse> merchantResult = await this.TransactionProcessorClient
+                    .GetMerchant(accessToken, request.Item1.EstateId, request.Item2, CancellationToken.None)
                     .ConfigureAwait(false);
-                merchantContractsResult.IsSuccess.ShouldBeTrue(
-                    $"Unable to read contracts for estate '{request.Item1.EstateId}' and merchant '{request.Item2}' " +
-                    $"after adding contract '{request.Item3}'. {merchantContractsResult.Message}");
+                merchantResult.IsSuccess.ShouldBeTrue(
+                    $"Unable to read merchant '{request.Item2}' in estate '{request.Item1.EstateId}' " +
+                    $"after adding contract '{request.Item3}'. {merchantResult.Message}");
 
-                merchantContractsResult.Data.ShouldNotBeNull(
-                    $"The merchant-contract read model returned no data for estate '{request.Item1.EstateId}' " +
+                MerchantResponse? merchant = merchantResult.Data;
+                merchant.ShouldNotBeNull(
+                    $"The merchant response returned no data for estate '{request.Item1.EstateId}' " +
                     $"and merchant '{request.Item2}' after adding contract '{request.Item3}'.");
 
-                ContractResponse? contract = merchantContractsResult.Data
-                    .SingleOrDefault(c => c.ContractId == request.Item3);
+                merchant.Contracts.ShouldNotBeNull(
+                    $"The merchant response returned no contracts for estate '{request.Item1.EstateId}' " +
+                    $"and merchant '{request.Item2}' after adding contract '{request.Item3}'.");
+
+                MerchantContractResponse? contract = merchant.Contracts
+                    .SingleOrDefault(c => c.ContractId == request.Item3 && c.IsDeleted == false);
                 contract.ShouldNotBeNull(
-                    $"Contract '{request.Item3}' was not present in the merchant-contract read model for " +
+                    $"Contract '{request.Item3}' was not assigned to merchant '{request.Item2}' in " +
                     $"estate '{request.Item1.EstateId}' and merchant '{request.Item2}'.");
             });
         }
