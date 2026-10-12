@@ -198,6 +198,18 @@ public class TransactionProcessorSteps
                 CancellationToken.None);
             result.IsSuccess.ShouldBeTrue(result.Message);
 
+            await Retry.For(async () =>
+            {
+                Result<MerchantResponse> merchantResult = await this.TransactionProcessorClient.GetMerchant(
+                    accessToken,
+                    request.Item1.EstateId,
+                    request.Item2,
+                    CancellationToken.None);
+                merchantResult.IsSuccess.ShouldBeTrue(merchantResult.Message);
+                MerchantResponse? merchant = merchantResult.Data;
+                merchant.ShouldNotBeNull();
+                merchant.SettlementSchedule.ShouldBe(request.Item3.SettlementSchedule);
+            });
         }
     }
 
@@ -292,6 +304,14 @@ public class TransactionProcessorSteps
     {
         foreach ((EstateDetails, Guid, MakeMerchantWithdrawalRequest) makeMerchantWithdrawalRequest in requests)
         {
+            Result<MerchantBalanceResponse> balanceBeforeResult = await this.TransactionProcessorClient.GetMerchantBalance(
+                accessToken,
+                makeMerchantWithdrawalRequest.Item1.EstateId,
+                makeMerchantWithdrawalRequest.Item2,
+                CancellationToken.None);
+            balanceBeforeResult.IsSuccess.ShouldBeTrue(balanceBeforeResult.Message);
+            MerchantBalanceResponse? balanceBefore = balanceBeforeResult.Data;
+            balanceBefore.ShouldNotBeNull();
 
             Result? result = await this.TransactionProcessorClient
                 .MakeMerchantWithdrawal(accessToken,
@@ -301,6 +321,19 @@ public class TransactionProcessorSteps
                     CancellationToken.None).ConfigureAwait(false);
 
             result.IsSuccess.ShouldBeTrue(result.Message);
+
+            await Retry.For(async () =>
+            {
+                Result<MerchantBalanceResponse> balanceAfterResult = await this.TransactionProcessorClient.GetMerchantBalance(
+                    accessToken,
+                    makeMerchantWithdrawalRequest.Item1.EstateId,
+                    makeMerchantWithdrawalRequest.Item2,
+                    CancellationToken.None);
+                balanceAfterResult.IsSuccess.ShouldBeTrue(balanceAfterResult.Message);
+                MerchantBalanceResponse? balanceAfter = balanceAfterResult.Data;
+                balanceAfter.ShouldNotBeNull();
+                balanceAfter.Balance.ShouldBe(balanceBefore.Balance - makeMerchantWithdrawalRequest.Item3.Amount);
+            });
         }
     }
 
@@ -332,17 +365,51 @@ public class TransactionProcessorSteps
                 };
                 Result? enableAgencyBankingResult = await this.AgencyBankingClient.CreateRetailAgent(createAgentRequest, CancellationToken.None);
                 enableAgencyBankingResult.IsSuccess.ShouldBeTrue(enableAgencyBankingResult.Message);
+
+                await Retry.For(async () =>
+                {
+                    Result<AgentResponse> agentResult = await this.AgencyBankingClient.GetAgentById(createAgentRequest.AgentId, CancellationToken.None);
+                    agentResult.IsSuccess.ShouldBeTrue(agentResult.Message);
+                    AgentResponse? agent = agentResult.Data;
+                    agent.ShouldNotBeNull();
+                    agent.AgentId.ShouldBe(createAgentRequest.AgentId);
+                    agent.Name.ShouldBe(createAgentRequest.Name);
+                });
                 
                 // Activate the agent
                 ActivateAgentRequest activateAgentRequest = new ActivateAgentRequest { ActivatedBy = "INTEGRATIONTEST" };
                 var activateAgentResult = await this.AgencyBankingClient.ActivateAgent(createAgentRequest.AgentId, activateAgentRequest, CancellationToken.None);
                 activateAgentResult.IsSuccess.ShouldBeTrue(activateAgentResult.Message);
 
+                await Retry.For(async () =>
+                {
+                    Result<AgentResponse> agentResult = await this.AgencyBankingClient.GetAgentById(createAgentRequest.AgentId, CancellationToken.None);
+                    agentResult.IsSuccess.ShouldBeTrue(agentResult.Message);
+                    AgentResponse? agent = agentResult.Data;
+                    agent.ShouldNotBeNull();
+                    agent.Active.ShouldBeTrue();
+                    agent.ActivatedBy.ShouldBe(activateAgentRequest.ActivatedBy);
+                });
+
                 ConfigureFloatRequest configureFloatRequest = new ConfigureFloatRequest {
                     AgentId = createAgentRequest.AgentId, DailyFloatLimit = 100000, MaximumFloat = 100000, MinimumFloat = 10000,
                 };
                 var configureFloatResult = await this.AgencyBankingClient.ConfigureFloat(configureFloatRequest, CancellationToken.None);
                 configureFloatResult.IsSuccess.ShouldBeTrue(configureFloatResult.Message);
+
+                await Retry.For(async () =>
+                {
+                    Result<FloatConfigurationResponse> floatConfigurationResult = await this.AgencyBankingClient.GetFloatConfigurationByAgentId(
+                        createAgentRequest.AgentId,
+                        CancellationToken.None);
+                    floatConfigurationResult.IsSuccess.ShouldBeTrue(floatConfigurationResult.Message);
+                    FloatConfigurationResponse? floatConfiguration = floatConfigurationResult.Data;
+                    floatConfiguration.ShouldNotBeNull();
+                    floatConfiguration.AgentId.ShouldBe(createAgentRequest.AgentId);
+                    floatConfiguration.DailyFloatLimit.ShouldBe(configureFloatRequest.DailyFloatLimit);
+                    floatConfiguration.MaximumFloat.ShouldBe(configureFloatRequest.MaximumFloat);
+                    floatConfiguration.MinimumFloat.ShouldBe(configureFloatRequest.MinimumFloat);
+                });
                 
                 FloatCreditRequest floatCreditRequest = new FloatCreditRequest() {
                     AgentId = createAgentRequest.AgentId,
@@ -353,6 +420,22 @@ public class TransactionProcessorSteps
                 };
                 var floatCreditResult = await this.AgencyBankingClient.CreditFloat(floatCreditRequest, CancellationToken.None);
                 floatCreditResult.IsSuccess.ShouldBeTrue(floatCreditResult.Message);
+
+                await Retry.For(async () =>
+                {
+                    Result<FloatHistoryResponse[]> floatHistoryResult = await this.AgencyBankingClient.GetLastFloatEntries(
+                        createAgentRequest.AgentId,
+                        1,
+                        CancellationToken.None);
+                    floatHistoryResult.IsSuccess.ShouldBeTrue(floatHistoryResult.Message);
+                    FloatHistoryResponse[]? floatHistory = floatHistoryResult.Data;
+                    floatHistory.ShouldNotBeNull();
+                    floatHistory.ShouldNotBeEmpty();
+                    FloatHistoryResponse latestFloatEntry = floatHistory.Single();
+                    latestFloatEntry.AgentId.ShouldBe(createAgentRequest.AgentId);
+                    latestFloatEntry.TransactionId.ShouldBe(floatCreditRequest.TransactionId);
+                    latestFloatEntry.Amount.ShouldBe(floatCreditRequest.Amount);
+                });
             }
 
 
@@ -1081,8 +1164,30 @@ public class TransactionProcessorSteps
 
     public async Task GivenIMakeTheFollowingManualMerchantDeposits(String accessToken, (EstateDetails, Guid, MakeMerchantDepositRequest) request)
     {
+        Result<MerchantBalanceResponse> balanceBeforeResult = await this.TransactionProcessorClient.GetMerchantBalance(
+            accessToken,
+            request.Item1.EstateId,
+            request.Item2,
+            CancellationToken.None);
+        balanceBeforeResult.IsSuccess.ShouldBeTrue(balanceBeforeResult.Message);
+        MerchantBalanceResponse? balanceBefore = balanceBeforeResult.Data;
+        balanceBefore.ShouldNotBeNull();
+
         Result? result = await this.TransactionProcessorClient.MakeMerchantDeposit(accessToken, request.Item1.EstateId, request.Item2, request.Item3, CancellationToken.None).ConfigureAwait(false);
         result.IsSuccess.ShouldBeTrue(result.Message);
+
+        await Retry.For(async () =>
+        {
+            Result<MerchantBalanceResponse> balanceAfterResult = await this.TransactionProcessorClient.GetMerchantBalance(
+                accessToken,
+                request.Item1.EstateId,
+                request.Item2,
+                CancellationToken.None);
+            balanceAfterResult.IsSuccess.ShouldBeTrue(balanceAfterResult.Message);
+            MerchantBalanceResponse? balanceAfter = balanceAfterResult.Data;
+            balanceAfter.ShouldNotBeNull();
+            balanceAfter.Balance.ShouldBe(balanceBefore.Balance + request.Item3.Amount);
+        });
     }
 
     public async Task WhenICreateTheFollowingSecurityUsers(String accessToken, List<CreateNewUserRequest> requests, List<EstateDetails> estateDetailsList)
