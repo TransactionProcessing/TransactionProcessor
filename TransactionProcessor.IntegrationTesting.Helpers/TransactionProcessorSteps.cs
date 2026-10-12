@@ -554,13 +554,23 @@ public class TransactionProcessorSteps
 
     public async Task WhenIProcessTheSettlementForOnEstateThenFeesAreMarkedAsSettledAndTheSettlementIsCompleted(String accessToken, ReqnrollExtensions.ProcessSettlementRequest request, Int32 expectedNumberFeesSettled)
     {
-        var result = await this.TransactionProcessorClient.ProcessSettlement(accessToken,
-                                                                request.SettlementDate,
-                                                                request.EstateDetails.EstateId,
-                                                                request.MerchantId,
-                                                                CancellationToken.None);
+        // Processing an already-completed settlement is a no-op, so retrying the command is
+        // safe when the first request fails before the HTTP client can determine its outcome.
+        await Retry.For(async () =>
+                        {
+                            var result = await this.TransactionProcessorClient.ProcessSettlement(accessToken,
+                                request.SettlementDate,
+                                request.EstateDetails.EstateId,
+                                request.MerchantId,
+                                CancellationToken.None);
 
-        result.IsSuccess.ShouldBeTrue(result.Message);
+                            result.IsSuccess.ShouldBeTrue(
+                                $"Failed to process settlement for estate '{request.EstateDetails.EstateId}', " +
+                                $"merchant '{request.MerchantId}', date '{request.SettlementDate:yyyy-MM-dd}'. " +
+                                result.Message);
+                        },
+                        TimeSpan.FromMinutes(2),
+                        TimeSpan.FromSeconds(5));
 
         await Retry.For(async () => {
                             Result<SettlementResponse>? getSettlementByDateResult =
@@ -1052,11 +1062,19 @@ public class TransactionProcessorSteps
                 Result<List<ContractResponse>> merchantContractsResult = await this.TransactionProcessorClient
                     .GetMerchantContracts(accessToken, request.Item1.EstateId, request.Item2, CancellationToken.None)
                     .ConfigureAwait(false);
-                merchantContractsResult.IsSuccess.ShouldBeTrue(merchantContractsResult.Message);
+                merchantContractsResult.IsSuccess.ShouldBeTrue(
+                    $"Unable to read contracts for estate '{request.Item1.EstateId}' and merchant '{request.Item2}' " +
+                    $"after adding contract '{request.Item3}'. {merchantContractsResult.Message}");
+
+                merchantContractsResult.Data.ShouldNotBeNull(
+                    $"The merchant-contract read model returned no data for estate '{request.Item1.EstateId}' " +
+                    $"and merchant '{request.Item2}' after adding contract '{request.Item3}'.");
 
                 ContractResponse? contract = merchantContractsResult.Data
                     .SingleOrDefault(c => c.ContractId == request.Item3);
-                contract.ShouldNotBeNull();
+                contract.ShouldNotBeNull(
+                    $"Contract '{request.Item3}' was not present in the merchant-contract read model for " +
+                    $"estate '{request.Item1.EstateId}' and merchant '{request.Item2}'.");
             });
         }
     }

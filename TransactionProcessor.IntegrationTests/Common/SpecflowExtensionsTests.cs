@@ -99,6 +99,25 @@ public class SpecflowExtensionsTests
     }
 
     [Test]
+    public void ToTransactionRequests_InvalidEstate_PreservesInvalidEstateRequest()
+    {
+        EstateDetails estate = CreateTransactionEstate();
+        Reqnroll.Table table = CreateSaleTransactionTable(
+            "Known Contract",
+            "Known Product",
+            "InvalidEstate",
+            "Test Merchant 1",
+            "Safaricom");
+
+        List<(EstateDetails, Guid, String, TransactionRequest)> result =
+            table.Rows.ToTransactionRequests(new List<EstateDetails> { estate });
+
+        result.ShouldHaveSingleItem();
+        result[0].Item1.EstateName.ShouldBe("InvalidEstate");
+        result[0].Item1.EstateId.ShouldBe(Guid.Parse("79902550-64DF-4491-B0C1-4E78943928A3"));
+    }
+
+    [Test]
     public void ToAddressUpdates_ProcessesEachTableRowOnce()
     {
         EstateDetails estate = EstateDetails.Create(Guid.NewGuid(), "Test Estate", "estate-reference");
@@ -238,7 +257,12 @@ public class SpecflowExtensionsTests
         return estate;
     }
 
-    private static Reqnroll.Table CreateSaleTransactionTable(String contractName, String productName)
+    private static Reqnroll.Table CreateSaleTransactionTable(
+        String contractName,
+        String productName,
+        String estateName = "Test Estate",
+        String merchantName = "Test Merchant",
+        String operatorName = "Test Operator")
     {
         Reqnroll.Table table = new(new[]
         {
@@ -247,7 +271,7 @@ public class SpecflowExtensionsTests
         });
         table.AddRow(new[]
         {
-            "Sale", "2026-01-13", "transaction-1", "device-1", "Test Estate", "Test Merchant", "Test Operator",
+            "Sale", "2026-01-13", "transaction-1", "device-1", estateName, merchantName, operatorName,
             "10.00", contractName, productName, "1"
         });
 

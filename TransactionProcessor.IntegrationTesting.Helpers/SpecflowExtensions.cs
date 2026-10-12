@@ -519,7 +519,16 @@ public static class ReqnrollExtensions{
                 Guid productId = Guid.Empty;
                 Contract contract = null;
 
-                if (contractDescription == "EmptyContract")
+                // InvalidEstate is a deliberate negative-test fixture. It has enough metadata to
+                // build the request, but it intentionally has no real contracts or products.
+                // Keep this explicit exception local to that fixture; unknown names on normal
+                // estates must still fail fast instead of being converted to synthetic IDs.
+                if (estateDetails.EstateName == "InvalidEstate")
+                {
+                    contractId = Guid.NewGuid();
+                    productId = Guid.NewGuid();
+                }
+                else if (contractDescription == "EmptyContract")
                 {
                     contractId = Guid.Empty;
                 }
