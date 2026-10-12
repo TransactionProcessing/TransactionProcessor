@@ -964,7 +964,7 @@ public class TransactionProcessorSteps
                 ContractProduct product = contract.Products.SingleOrDefault(c => c.ProductId == estateContractProductsFee.Item3.ProductId);
                 product.ShouldNotBeNull();
 
-                ContractProductTransactionFee? transactionFee = product.TransactionFees.SingleOrDefault(f => f.Description == estateContractProductsFee.Item4.Description);
+                ContractProductTransactionFee? transactionFee = TransactionFeeMatcher.Find(product.TransactionFees, estateContractProductsFee.Item4);
                 transactionFee.ShouldNotBeNull();
 
                 estateContractProductsFee.Item3.AddTransactionFee(transactionFee.TransactionFeeId,

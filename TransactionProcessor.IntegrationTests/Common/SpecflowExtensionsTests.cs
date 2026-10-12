@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using NUnit.Framework;
 using Shouldly;
+using TransactionProcessor.DataTransferObjects.Requests.Contract;
 using TransactionProcessor.DataTransferObjects;
 using TransactionProcessor.DataTransferObjects.Responses.Contract;
 using TransactionProcessor.DataTransferObjects.Responses.Merchant;
@@ -169,6 +170,44 @@ public class SpecflowExtensionsTests
         table.AddRow(new[] { "Test Estate", "Test Merchant", "Updated contact" });
 
         Should.Throw<ShouldAssertException>(() => table.Rows.ToContactUpdates(new List<EstateDetails> { estate }));
+    }
+
+    [Test]
+    public void TransactionFeeMatcher_MatchesDuplicateDescriptionsByFullIdentity()
+    {
+        Guid expectedTransactionFeeId = Guid.NewGuid();
+        AddTransactionFeeForProductToContractRequest request = new()
+        {
+            CalculationType = CalculationType.Percentage,
+            FeeType = FeeType.Merchant,
+            Description = "Merchant Commission",
+            Value = 0.85m
+        };
+
+        List<ContractProductTransactionFee> fees = new()
+        {
+            new ContractProductTransactionFee
+            {
+                TransactionFeeId = Guid.NewGuid(),
+                CalculationType = CalculationType.Percentage,
+                FeeType = FeeType.Merchant,
+                Description = "Merchant Commission",
+                Value = 0.50m
+            },
+            new ContractProductTransactionFee
+            {
+                TransactionFeeId = expectedTransactionFeeId,
+                CalculationType = CalculationType.Percentage,
+                FeeType = FeeType.Merchant,
+                Description = "Merchant Commission",
+                Value = 0.85m
+            }
+        };
+
+        ContractProductTransactionFee? result = TransactionFeeMatcher.Find(fees, request);
+
+        result.ShouldNotBeNull();
+        result.TransactionFeeId.ShouldBe(expectedTransactionFeeId);
     }
 
     private static MerchantResponse CreateMerchant(String merchantName)
