@@ -26,7 +26,7 @@ namespace TransactionProcessor.DatabaseTests
 
         public async ValueTask InitializeAsync()
         {
-            await this.dockerHelper.StartContainersForScenarioRun("database-tests", DockerServices.SqlServer);
+            await this.dockerHelper.StartContainersForScenarioRun("database-tests", DockerServices.SqlServer, CancellationToken.None);
         }
 
         public async ValueTask DisposeAsync()
@@ -52,7 +52,7 @@ namespace TransactionProcessor.DatabaseTests
 
     public class TestDockerHelper : DockerHelper
     {
-        public override Task CreateSubscriptions()
+        public override Task CreateSubscriptions(CancellationToken cancellationToken)
         {
             return Task.CompletedTask;
         }

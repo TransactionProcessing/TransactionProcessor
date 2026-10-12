@@ -134,13 +134,13 @@ namespace TransactionProcessor.IntegrationTests.Common
                 .WithName(this.TestHostContainerName)  // similar to WithName()
                 .WithImage(imageDetails.imageName)
                 .WithEnvironment(environmentVariables)
-                .MountHostFolder(this.DockerPlatform, this.HostTraceFolder)
+                .MountHostFolder(this.HostTraceFolder)
                 .WithPortBinding(DockerPorts.TestHostPort, true);
 
             return testHostContainer;
         }
 
-        public override async Task CreateSubscriptions(){
+        public override async Task CreateSubscriptions(CancellationToken cancellationToken){
             List<(String streamName, String groupName, Int32 maxRetries)> subscriptions = new();
             subscriptions.AddRange(MessagingService.IntegrationTesting.Helpers.SubscriptionsHelper.GetSubscriptions());
             subscriptions.AddRange(TransactionProcessor.IntegrationTesting.Helpers.SubscriptionsHelper.GetSubscriptions());
@@ -178,9 +178,9 @@ namespace TransactionProcessor.IntegrationTests.Common
         /// Starts the containers for scenario run.
         /// </summary>
         /// <param name="scenarioName">Name of the scenario.</param>
-        public override async Task StartContainersForScenarioRun(String scenarioName, DockerServices dockerServices){
+        public override async Task StartContainersForScenarioRun(String scenarioName, DockerServices dockerServices, CancellationToken cancellationToken){
             this.HostTraceFolder = Path.Combine(Directory.GetCurrentDirectory(), "trace");
-            await base.StartContainersForScenarioRun(scenarioName, dockerServices);
+            await base.StartContainersForScenarioRun(scenarioName, dockerServices, cancellationToken);
             
             // Setup the base address resolvers
             String SecurityServiceBaseAddressResolver(String api) => $"https://127.0.0.1:{this.SecurityServicePort}";

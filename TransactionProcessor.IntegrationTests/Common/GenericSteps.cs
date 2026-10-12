@@ -2,6 +2,7 @@
 
 namespace TransactionProcessor.IntegrationTests.Common
 {
+    using System.Threading;
     using System.Threading.Tasks;
     using global::Shared.IntegrationTesting;
     using global::Shared.Logger;
@@ -53,7 +54,7 @@ namespace TransactionProcessor.IntegrationTests.Common
             
             this.TestingContext.Logger = logger;
             this.TestingContext.Logger.LogInformation("About to Start Containers for Scenario Run");
-            await this.TestingContext.DockerHelper.StartContainersForScenarioRun(scenarioName, dockerServices).ConfigureAwait(false);
+            await this.TestingContext.DockerHelper.StartContainersForScenarioRun(scenarioName, dockerServices, cancellationToken: CancellationToken.None).ConfigureAwait(false);
             this.TestingContext.Logger.LogInformation("Containers for Scenario Run Started");
         }
 
