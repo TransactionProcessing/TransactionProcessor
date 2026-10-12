@@ -2,7 +2,7 @@
 
 namespace TransactionProcessor.IntegrationTests
 {
-    using System.Threading;
+    using System.Diagnostics;
     using System.Threading.Tasks;
 
     public static class Retry
@@ -34,34 +34,31 @@ namespace TransactionProcessor.IntegrationTests
                                      TimeSpan? retryFor = null,
                                      TimeSpan? retryInterval = null)
         {
-            DateTime startTime = DateTime.Now;
-            Exception lastException = null;
+            TimeSpan retryDuration = retryFor ?? Retry.DefaultRetryFor;
+            TimeSpan retryDelay = retryInterval ?? Retry.DefaultRetryInterval;
+            Stopwatch stopwatch = Stopwatch.StartNew();
+            Exception lastException;
 
-            if (retryFor == null)
-            {
-                retryFor = Retry.DefaultRetryFor;
-            }
-
-            while (DateTime.Now.Subtract(startTime).TotalMilliseconds < retryFor.Value.TotalMilliseconds)
+            while (true)
             {
                 try
                 {
                     await action().ConfigureAwait(false);
-                    lastException = null;
-                    break;
+                    return;
                 }
                 catch (Exception e)
                 {
                     lastException = e;
-
-                    // wait before retrying
-                    Thread.Sleep(retryInterval ?? Retry.DefaultRetryInterval);
                 }
-            }
 
-            if (lastException != null)
-            {
-                throw lastException;
+                TimeSpan remaining = retryDuration - stopwatch.Elapsed;
+                if (remaining <= TimeSpan.Zero)
+                {
+                    throw lastException;
+                }
+
+                TimeSpan delay = retryDelay < remaining ? retryDelay : remaining;
+                await Task.Delay(delay).ConfigureAwait(false);
             }
         }
 

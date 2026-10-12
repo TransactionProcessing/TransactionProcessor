@@ -32,7 +32,13 @@ namespace TransactionProcessor.IntegrationTesting.Helpers
                 return Guid.Parse("D59320FA-4C3E-4900-A999-483F6A10C69A");
             }
 
-            return this.Merchants.Single(m => m.MerchantName == merchantName).MerchantId;
+            TransactionProcessor.DataTransferObjects.Responses.Merchant.MerchantResponse? merchant = this.Merchants.SingleOrDefault(m => m.MerchantName == merchantName);
+            if (merchant == null)
+            {
+                throw new InvalidOperationException($"Merchant '{merchantName}' was not found on estate '{this.EstateName}'.");
+            }
+
+            return merchant.MerchantId;
         }
 
         public void AddTransactionResponse(Guid merchantId,
@@ -104,7 +110,7 @@ namespace TransactionProcessor.IntegrationTesting.Helpers
             // make sure the merchant does not already exist
             if (this.Merchants.Any(m => m.MerchantId == merchant.MerchantId))
             {
-                return;
+                throw new InvalidOperationException($"Merchant [{merchant.MerchantId}] already exists in estate [{this.EstateId}].");
             }
 
             this.Merchants.Add(merchant);
@@ -112,7 +118,13 @@ namespace TransactionProcessor.IntegrationTesting.Helpers
 
         public Contract GetContract(String contractName)
         {
-            return this.Contracts.Single(c => c.Description == contractName);
+            Contract? contract = this.Contracts.SingleOrDefault(c => c.Description == contractName);
+            if (contract == null)
+            {
+                throw new InvalidOperationException($"Contract '{contractName}' was not found on estate '{this.EstateName}'.");
+            }
+
+            return contract;
         }
         public Contract GetContract(Guid contractId)
         {
@@ -121,7 +133,13 @@ namespace TransactionProcessor.IntegrationTesting.Helpers
 
         public TransactionProcessor.DataTransferObjects.Responses.Merchant.MerchantResponse GetMerchant(String merchantName)
         {
-            return this.Merchants.SingleOrDefault(m => m.MerchantName == merchantName);
+            TransactionProcessor.DataTransferObjects.Responses.Merchant.MerchantResponse? merchant = this.Merchants.SingleOrDefault(m => m.MerchantName == merchantName);
+            if (merchant == null)
+            {
+                throw new InvalidOperationException($"Merchant '{merchantName}' was not found on estate '{this.EstateName}'.");
+            }
+
+            return merchant;
         }
 
         public List<TransactionProcessor.DataTransferObjects.Responses.Merchant.MerchantResponse> GetMerchants()
@@ -238,7 +256,13 @@ namespace TransactionProcessor.IntegrationTesting.Helpers
 
         public Product GetProduct(String name)
         {
-            return this.Products.SingleOrDefault(p => p.Name == name);
+            Product? product = this.Products.SingleOrDefault(p => p.Name == name);
+            if (product == null)
+            {
+                throw new InvalidOperationException($"Product '{name}' was not found on contract '{this.Description}'.");
+            }
+
+            return product;
         }
     }
 
