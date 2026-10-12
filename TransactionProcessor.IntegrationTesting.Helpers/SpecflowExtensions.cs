@@ -124,6 +124,7 @@ public static class ReqnrollExtensions{
 
     public static SettlementDetails ToSettlementDetails(this DataTableRows tableRows, string estateName, List<EstateDetails> estateDetailsList)
     {
+        tableRows.Count.ShouldBe(1, "Settlement details require exactly one table row.");
         SettlementDetails result = new SettlementDetails();
 
         EstateDetails estateDetails = estateDetailsList.SingleOrDefault(e => e.EstateName == estateName);
@@ -152,6 +153,7 @@ public static class ReqnrollExtensions{
     public static SettlementDetails ToSettlementDetails(this DataTableRows tableRows, string estateName,
                                                         string merchantName, List<EstateDetails> estateDetailsList)
     {
+        tableRows.Count.ShouldBe(1, "Settlement details require exactly one table row.");
         SettlementDetails result = new SettlementDetails();
 
         EstateDetails estateDetails = estateDetailsList.SingleOrDefault(e => e.EstateName == estateName);
@@ -192,6 +194,7 @@ public static class ReqnrollExtensions{
             settlementFeeDetails.IsSettled = ReqnrollTableHelper.GetBooleanValue(tableRow, "IsSettled");
             settlementFeeDetails.Operator = ReqnrollTableHelper.GetStringRowValue(tableRow, "Operator");
             settlementFeeDetails.CalculatedValue = ReqnrollTableHelper.GetDecimalValue(tableRow, "CalculatedValue");
+            settlementFeeDetailsList.Add(settlementFeeDetails);
         }
         return settlementFeeDetailsList;
     }
@@ -207,27 +210,24 @@ public static class ReqnrollExtensions{
             EstateDetails estateDetails = estateDetailsList.SingleOrDefault(e => e.EstateName == estateName);
             estateDetails.ShouldNotBeNull();
 
-            foreach (DataTableRow dataTableRow in tableRows)
+            String merchantName = ReqnrollTableHelper.GetStringRowValue(tableRow, "MerchantName");
+            MerchantResponse merchant = estateDetails.GetMerchant(merchantName);
+
+            merchant.Addresses.ShouldHaveSingleItem();
+            Guid addressId = merchant.Addresses.Single().AddressId;
+
+            Address addressUpdateRequest = new Address()
             {
-
-                String merchantName = ReqnrollTableHelper.GetStringRowValue(tableRow, "MerchantName");
-                MerchantResponse merchant = estateDetails.GetMerchant(merchantName);
-
-                Guid addressId = merchant.Addresses.First().AddressId;
-
-                Address addressUpdateRequest = new Address()
-                {
-                    AddressLine1 = ReqnrollTableHelper.GetStringRowValue(tableRow, "AddressLine1"),
-                    AddressLine2 = ReqnrollTableHelper.GetStringRowValue(tableRow, "AddressLine2"),
-                    AddressLine3 = ReqnrollTableHelper.GetStringRowValue(tableRow, "AddressLine3"),
-                    AddressLine4 = ReqnrollTableHelper.GetStringRowValue(tableRow, "AddressLine4"),
-                    Town = ReqnrollTableHelper.GetStringRowValue(tableRow, "Town"),
-                    Region = ReqnrollTableHelper.GetStringRowValue(tableRow, "Region"),
-                    Country = ReqnrollTableHelper.GetStringRowValue(tableRow, "Country"),
-                    PostalCode = ReqnrollTableHelper.GetStringRowValue(tableRow, "PostalCode")
-                };
-                result.Add((estateDetails, merchant, addressId, addressUpdateRequest));
-            }
+                AddressLine1 = ReqnrollTableHelper.GetStringRowValue(tableRow, "AddressLine1"),
+                AddressLine2 = ReqnrollTableHelper.GetStringRowValue(tableRow, "AddressLine2"),
+                AddressLine3 = ReqnrollTableHelper.GetStringRowValue(tableRow, "AddressLine3"),
+                AddressLine4 = ReqnrollTableHelper.GetStringRowValue(tableRow, "AddressLine4"),
+                Town = ReqnrollTableHelper.GetStringRowValue(tableRow, "Town"),
+                Region = ReqnrollTableHelper.GetStringRowValue(tableRow, "Region"),
+                Country = ReqnrollTableHelper.GetStringRowValue(tableRow, "Country"),
+                PostalCode = ReqnrollTableHelper.GetStringRowValue(tableRow, "PostalCode")
+            };
+            result.Add((estateDetails, merchant, addressId, addressUpdateRequest));
 
         }
 
@@ -245,22 +245,19 @@ public static class ReqnrollExtensions{
             EstateDetails estateDetails = estateDetailsList.SingleOrDefault(e => e.EstateName == estateName);
             estateDetails.ShouldNotBeNull();
 
-            foreach (DataTableRow dataTableRow in tableRows)
+            String merchantName = ReqnrollTableHelper.GetStringRowValue(tableRow, "MerchantName");
+            MerchantResponse merchant = estateDetails.GetMerchant(merchantName);
+
+            merchant.Contacts.ShouldHaveSingleItem();
+            Guid contactId = merchant.Contacts.Single().ContactId;
+
+            Contact contactUpdateRequest = new Contact()
             {
-
-                String merchantName = ReqnrollTableHelper.GetStringRowValue(tableRow, "MerchantName");
-                MerchantResponse merchant = estateDetails.GetMerchant(merchantName);
-
-                Guid contactId = merchant.Contacts.First().ContactId;
-
-                Contact contactUpdateRequest = new Contact()
-                {
-                    ContactName = ReqnrollTableHelper.GetStringRowValue(tableRow, "ContactName"),
-                    EmailAddress = ReqnrollTableHelper.GetStringRowValue(tableRow, "EmailAddress"),
-                    PhoneNumber = ReqnrollTableHelper.GetStringRowValue(tableRow, "PhoneNumber"),
-                };
-                result.Add((estateDetails, merchant, contactId, contactUpdateRequest));
-            }
+                ContactName = ReqnrollTableHelper.GetStringRowValue(tableRow, "ContactName"),
+                EmailAddress = ReqnrollTableHelper.GetStringRowValue(tableRow, "EmailAddress"),
+                PhoneNumber = ReqnrollTableHelper.GetStringRowValue(tableRow, "PhoneNumber"),
+            };
+            result.Add((estateDetails, merchant, contactId, contactUpdateRequest));
         }
 
         return result;
@@ -521,37 +518,60 @@ public static class ReqnrollExtensions{
                 Guid contractId = Guid.Empty;
                 Guid productId = Guid.Empty;
                 Contract contract = null;
-                Product product = null;
-                try{
-                    contract = estateDetails.GetContract(contractDescription);
-                }
-                catch(Exception ex){
 
+                // InvalidEstate is a deliberate negative-test fixture. It has enough metadata to
+                // build the request, but it intentionally has no real contracts or products.
+                // Keep this explicit exception local to that fixture; unknown names on normal
+                // estates must still fail fast instead of being converted to synthetic IDs.
+                if (estateDetails.EstateName == "InvalidEstate")
+                {
+                    contractId = Guid.NewGuid();
+                    productId = Guid.NewGuid();
                 }
+                else if (contractDescription == "EmptyContract")
+                {
+                    contractId = Guid.Empty;
+                }
+                else if (contractDescription == "InvalidContract")
+                {
+                    contractId = Guid.Parse("934d8164-f36a-448e-b27b-4d671d41d180");
+                }
+                else
+                {
+                    try
+                    {
+                        contract = estateDetails.GetContract(contractDescription);
+                    }
+                    catch (InvalidOperationException)
+                    {
+                        throw new InvalidOperationException($"Contract '{contractDescription}' was not found on estate '{estateDetails.EstateName}'.");
+                    }
 
-                if (contract != null){
                     contractId = contract.ContractId;
-                    product = contract.GetProduct(productName);
-                    if (product != null){
-                        productId = product.ProductId;
-                    }
-                    else{
-                        productId = productName switch{
-                            "EmptyProduct" => Guid.Empty,
-                            "InvalidProduct" => Guid.Parse("934d8164-f36a-448e-b27b-4d671d41d180"),
-                            _ => Guid.NewGuid(),
-                        };
-                    }
                 }
-                else{
-                    // This is a nasty hack atm...
-                    contractId = contractDescription switch{
-                        "EmptyContract" => Guid.Empty,
-                        "InvalidContract" => Guid.Parse("934d8164-f36a-448e-b27b-4d671d41d180"),
-                        _ => Guid.NewGuid(),
-                    };
 
-
+                if (contract != null)
+                {
+                    if (productName == "EmptyProduct")
+                    {
+                        productId = Guid.Empty;
+                    }
+                    else if (productName == "InvalidProduct")
+                    {
+                        productId = Guid.Parse("934d8164-f36a-448e-b27b-4d671d41d180");
+                    }
+                    else
+                    {
+                        try
+                        {
+                            Product product = contract.GetProduct(productName);
+                            productId = product.ProductId;
+                        }
+                        catch (InvalidOperationException)
+                        {
+                            throw new InvalidOperationException($"Product '{productName}' was not found on contract '{contractDescription}'.");
+                        }
+                    }
                 }
 
                 Guid operatorId = estateDetails.GetOperatorId(operatorName);

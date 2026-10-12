@@ -446,6 +446,7 @@ namespace TransactionProcessor.IntegrationTests.Shared
         [Given(@"I have a token to access the estate management and transaction processor resources")]
         public async Task GivenIHaveATokenToAccessTheEstateManagementResource(DataTable table)
         {
+            table.Rows.Count.ShouldBe(1, "Token setup requires exactly one client row.");
             DataTableRow firstRow = table.Rows.First();
             String clientId = ReqnrollTableHelper.GetStringRowValue(firstRow, "ClientId");
             ClientDetails clientDetails = this.TestingContext.GetClientDetails(clientId);
@@ -453,6 +454,8 @@ namespace TransactionProcessor.IntegrationTests.Shared
             //this.TestingContext.AccessToken = await this.SecurityServiceSteps.GetClientToken(clientDetails.ClientId, clientDetails.ClientSecret, CancellationToken.None);
             var token = await this.TestingContext.DockerHelper.SecurityServiceClient.GetToken(clientDetails.ClientId, clientDetails.ClientSecret, CancellationToken.None);
             token.IsSuccess.ShouldBeTrue(token.Message);
+            token.Data.ShouldNotBeNull();
+            token.Data.AccessToken.ShouldNotBeNullOrWhiteSpace();
             this.TestingContext.AccessToken = token.Data.AccessToken;
 
         }
@@ -518,6 +521,8 @@ namespace TransactionProcessor.IntegrationTests.Shared
             Result<TokenResponse> token = await this.TestingContext.DockerHelper.SecurityServiceClient.GetToken(username, password, clientId, clientDetails.ClientSecret,
                 CancellationToken.None);
             token.IsSuccess.ShouldBeTrue(token.Message);
+            token.Data.ShouldNotBeNull();
+            token.Data.AccessToken.ShouldNotBeNullOrWhiteSpace();
             this.TestingContext.AccessToken = token.Data.AccessToken;
             estateDetails.SetEstateUserToken(token.Data.AccessToken);
         }

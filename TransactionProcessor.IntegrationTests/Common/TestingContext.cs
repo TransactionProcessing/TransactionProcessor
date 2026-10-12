@@ -43,6 +43,7 @@ namespace TransactionProcessor.IntegrationTests.Common
         {
             this.Estates = new List<EstateDetails>();
             this.Clients = new List<ClientDetails>();
+            this.Vouchers = new List<(IssueVoucherRequest request, IssueVoucherResponse response)>();
         }
 
         #endregion
