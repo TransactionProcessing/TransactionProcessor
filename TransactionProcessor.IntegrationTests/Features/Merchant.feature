@@ -173,6 +173,9 @@ Scenario: Update Merchant
 	When I add the following devices to the merchant
 	| DeviceIdentifier | MerchantName    | EstateName    |
 	| TestDevice1      | Test Merchant 1 | Test Estate 1 |
+	When I create the following Products
+	| EstateName    | OperatorName    | ContractDescription | ProductName       | DisplayText | Value | ProductType |
+	| Test Estate 1 | Test Operator 1 | Safaricom Contract  | Safaricom Topup   | Topup       | 10.00 | MobileTopup |
 	When I add the following contracts to the following merchants
 	| EstateName    | MerchantName    | ContractDescription          |
 	| Test Estate 1 | Test Merchant 1 | Safaricom Contract |
