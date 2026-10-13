@@ -41,6 +41,24 @@ public class SpecflowExtensionsTests
     }
 
     [Test]
+    public void ToContractTransactionFeeDetails_ReturnsEveryFeeRow()
+    {
+        Reqnroll.Table table = new(new[] { "CalculationType", "FeeDescription", "Value", "FeeType" });
+        table.AddRow(new[] { "Fixed", "Merchant Commission", "1.00", "Merchant" });
+        table.AddRow(new[] { "Percentage", "Merchant Commission", "0.015", "Merchant" });
+
+        List<(CalculationType, String, Decimal?, FeeType)> result = table.Rows.ToContractTransactionFeeDetails();
+
+        result.Count.ShouldBe(2);
+        result[0].Item1.ShouldBe(CalculationType.Fixed);
+        result[0].Item2.ShouldBe("Merchant Commission");
+        result[0].Item3.ShouldBe(1.00m);
+        result[0].Item4.ShouldBe(FeeType.Merchant);
+        result[1].Item1.ShouldBe(CalculationType.Percentage);
+        result[1].Item3.ShouldBe(0.015m);
+    }
+
+    [Test]
     public void ToSettlementDetails_RejectsMultipleRows()
     {
         EstateDetails estate = EstateDetails.Create(Guid.NewGuid(), "Test Estate", "estate-reference");
