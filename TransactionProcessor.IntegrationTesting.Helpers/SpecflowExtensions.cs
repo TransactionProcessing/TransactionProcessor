@@ -1121,6 +1121,7 @@ public static class ReqnrollExtensions{
             FeeType feeType = ReqnrollTableHelper.GetEnumValue<FeeType>(tableRow, "FeeType");
             String feeDescription = ReqnrollTableHelper.GetStringRowValue(tableRow, "FeeDescription");
             Decimal feeValue = ReqnrollTableHelper.GetDecimalValue(tableRow, "Value");
+            transactionFees.Add((calculationType, feeDescription, feeValue, feeType));
         }
 
         return transactionFees;
