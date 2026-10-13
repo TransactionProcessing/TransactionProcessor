@@ -246,6 +246,7 @@ namespace TransactionProcessor.BusinessLogic.Tests.Services{
                                                                                    Arg<String>.Any(),
                                                                                    Arg<Guid>.Any(),
                                                                                    Arg<Decimal?>.Any(),
+                                                                                   Arg<TransactionSource>.Any(),
                                                                                    Arg<CancellationToken>.Any()).ReturnsAsync(Result.Success(new TransactionValidationResult(TransactionResponseCode.Success, "SUCCESS")));
 
             this.OperatorProxy.ProcessSaleMessage(Arg<Guid>.Any(),
@@ -303,6 +304,7 @@ namespace TransactionProcessor.BusinessLogic.Tests.Services{
                                                                                    Arg<String>.Any(),
                                                                                    Arg<Guid>.Any(),
                                                                                    Arg<Decimal?>.Any(),
+                                                                                   Arg<TransactionSource>.Any(),
                                                                                    Arg<CancellationToken>.Any()).ReturnsAsync(Result.Success(new TransactionValidationResult(TransactionResponseCode.Success, "SUCCESS")));
 
             this.OperatorProxy.ProcessSaleMessage(Arg<Guid>.Any(), Arg<Guid>.Any(), Arg<Models.Merchant.Merchant>.Any(), Arg<DateTime>.Any(), Arg<String>.Any(), Arg<Dictionary<String, String>>.Any(), Arg<CancellationToken>.Any()).Throws(new Exception());
@@ -349,6 +351,7 @@ namespace TransactionProcessor.BusinessLogic.Tests.Services{
                                                                                    Arg<String>.Any(),
                                                                                    Arg<Guid>.Any(),
                                                                                    Arg<Decimal?>.Any(),
+                                                                                   Arg<TransactionSource>.Any(),
                                                                                    Arg<CancellationToken>.Any()).ReturnsAsync(Result.Success(new TransactionValidationResult(TransactionResponseCode.Success, "SUCCESS")));
 
             this.OperatorProxy.ProcessSaleMessage(Arg<Guid>.Any(),
@@ -412,6 +415,7 @@ namespace TransactionProcessor.BusinessLogic.Tests.Services{
                                                                                    Arg<String>.Any(),
                                                                                    Arg<Guid>.Any(),
                                                                                    Arg<Decimal?>.Any(),
+                                                                                   Arg<TransactionSource>.Any(),
                                                                                    Arg<CancellationToken>.Any()).ReturnsAsync(Result.Success(new TransactionValidationResult(TransactionResponseCode.Success, "SUCCESS")));
 
             this.OperatorProxy.ProcessSaleMessage(Arg<Guid>.Any(),
@@ -470,6 +474,7 @@ namespace TransactionProcessor.BusinessLogic.Tests.Services{
                                                                                    Arg<String>.Any(),
                                                                                    Arg<Guid>.Any(),
                                                                                    Arg<Decimal?>.Any(),
+                                                                                   Arg<TransactionSource>.Any(),
                                                                                    Arg<CancellationToken>.Any()).ReturnsAsync(Result.Success(new TransactionValidationResult(responseCode, responseCode.ToString())));
 
             this.AggregateService.GetLatest<FloatAggregate>(Arg<Guid>.Any(), Arg<CancellationToken>.Any()).ReturnsAsync(Result.Success(TestData.GetEmptyFloatAggregate()));
@@ -883,6 +888,7 @@ namespace TransactionProcessor.BusinessLogic.Tests.Services{
                                                                                    Arg<String>.Any(),
                                                                                    Arg<Guid>.Any(),
                                                                                    Arg<Decimal?>.Any(),
+                                                                                   Arg<TransactionSource>.Any(),
                                                                                    Arg<CancellationToken>.Any()).ReturnsAsync(Result.Success(new TransactionValidationResult(TransactionResponseCode.Success, "SUCCESS")));
             this.OperatorProxy.ProcessSaleMessage(Arg<Guid>.Any(),
                                                                Arg<Guid>.Any(),

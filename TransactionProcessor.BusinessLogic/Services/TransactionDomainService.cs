@@ -101,7 +101,7 @@ namespace TransactionProcessor.BusinessLogic.Services{
                 // Generate a transaction reference
                 String transactionReference = TransactionHelpers.GenerateTransactionReference();
 
-                Result stateResult = transactionAggregate.StartTransaction(command.TransactionDateTime, command.TransactionNumber, transactionType, transactionReference, new TransactionStartContext { EstateId = command.EstateId, MerchantId = command.MerchantId, DeviceIdentifier = command.DeviceIdentifier }, null); // Logon transaction has no amount
+                Result stateResult = transactionAggregate.StartTransaction(command.TransactionDateTime, command.TransactionNumber, transactionType, transactionReference, new TransactionStartContext { EstateId = command.EstateId, MerchantId = command.MerchantId, DeviceIdentifier = command.DeviceIdentifier, TransactionSource = TransactionSource.NotSet }, null); // Logon transaction has no amount
                 if (stateResult.IsFailed)
                     return ResultHelpers.CreateFailure(stateResult);
 
@@ -614,8 +614,9 @@ namespace TransactionProcessor.BusinessLogic.Services{
                                                                                          CancellationToken cancellationToken) {
             Decimal? amount = command.AdditionalTransactionMetadata.ExtractFieldFromMetadata<decimal?>("Amount");
             Logger.LogInformation($"Validating Sale Transaction for Merchant {command.MerchantId}, Product {command.ProductId}");
+            TransactionSource transactionSourceValue = (TransactionSource)command.TransactionSource;
 
-            Result<TransactionValidationResult> result = await TransactionValidationService.ValidateSaleTransaction(command.EstateId, command.MerchantId, command.ContractId, command.ProductId, command.DeviceIdentifier, command.OperatorId, amount, cancellationToken);
+            Result<TransactionValidationResult> result = await TransactionValidationService.ValidateSaleTransaction(command.EstateId, command.MerchantId, command.ContractId, command.ProductId, command.DeviceIdentifier, command.OperatorId, amount, transactionSourceValue, cancellationToken);
 
             Logger.LogInformation($"Validation completed with ResponseCode {result.Data?.ResponseCode}, Message {result.Data?.ResponseMessage}");
 
@@ -654,7 +655,8 @@ namespace TransactionProcessor.BusinessLogic.Services{
             String transactionReference = TransactionHelpers.GenerateTransactionReference();
             Decimal? amount = command.AdditionalTransactionMetadata.ExtractFieldFromMetadata<decimal?>("Amount");
 
-            Result result = transactionAggregate.StartTransaction(command.TransactionDateTime, command.TransactionNumber, transactionType, transactionReference, new TransactionStartContext { EstateId = command.EstateId, MerchantId = command.MerchantId, DeviceIdentifier = command.DeviceIdentifier }, amount);
+            Result result = transactionAggregate.StartTransaction(command.TransactionDateTime, command.TransactionNumber, transactionType, transactionReference, new TransactionStartContext { EstateId = command.EstateId, MerchantId = command.MerchantId, DeviceIdentifier = command.DeviceIdentifier,
+            TransactionSource = transactionSourceValue}, amount);
 
             if (result.IsFailed)
                 return result;

@@ -55,6 +55,7 @@ namespace TransactionProcessor.Aggregates
         public Guid EstateId { get; init; }
         public Guid MerchantId { get; init; }
         public String DeviceIdentifier { get; init; }
+        public TransactionSource TransactionSource { get; set; }
     }
 
     public static class TransactionAggregateExtensions{
@@ -556,7 +557,7 @@ namespace TransactionProcessor.Aggregates
                 return Result.Invalid($"Estate Id must not be [{Guid.Empty}]");
             if (transactionStartContext.MerchantId == Guid.Empty)
                 return Result.Invalid($"Merchant Id must not be [{Guid.Empty}]");
-            if (String.IsNullOrEmpty(transactionStartContext.DeviceIdentifier))
+            if (String.IsNullOrEmpty(transactionStartContext.DeviceIdentifier) && transactionStartContext.TransactionSource == TransactionSource.OnlineSale)
                 return Result.Invalid("Device Identifier must not be null or empty");
 
             return Result.Success();
