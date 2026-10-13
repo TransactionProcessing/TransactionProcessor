@@ -1,6 +1,7 @@
 using Shared.EventStore.Aggregate;
 using SimpleResults;
 using TransactionProcessor.Aggregates;
+using TransactionProcessor.Models;
 using TransactionProcessor.Models.Merchant;
 
 namespace TransactionProcessor.BusinessLogic.Tests.Services;
@@ -261,6 +262,7 @@ public class TransactionValidationServiceTests {
                                                                                                                                                   TestData.DeviceIdentifier1,
                                                                                                                                                   TestData.OperatorId,
                                                                                                                                                   TestData.TransactionAmount,
+                                                                                                                                                  TransactionSource.OnlineSale,
                                                                                                                                                   TestContext.Current.CancellationToken);
 
         result.IsFailed.ShouldBeTrue();
@@ -282,6 +284,7 @@ public class TransactionValidationServiceTests {
                                                                                                                                                   TestData.DeviceIdentifier,
                                                                                                                                                   TestData.OperatorId,
                                                                                                                                                   TestData.TransactionAmount,
+                                                                                                                                                  TransactionSource.OnlineSale,
                                                                                                                                                   TestContext.Current.CancellationToken);
 
         result.IsFailed.ShouldBeTrue();
@@ -303,6 +306,7 @@ public class TransactionValidationServiceTests {
                                                                                                                                                   TestData.DeviceIdentifier,
                                                                                                                                                   TestData.OperatorId,
                                                                                                                                                   TestData.TransactionAmount,
+                                                                                                                                                  TransactionSource.OnlineSale,
                                                                                                                                                   TestContext.Current.CancellationToken);
 
         result.IsFailed.ShouldBeTrue();
@@ -324,6 +328,7 @@ public class TransactionValidationServiceTests {
                                                                                                                                                   TestData.DeviceIdentifier,
                                                                                                                                                   TestData.OperatorId,
                                                                                                                                                   TestData.TransactionAmount,
+                                                                                                                                                  TransactionSource.OnlineSale,
                                                                                                                                                   TestContext.Current.CancellationToken);
 
         result.IsFailed.ShouldBeTrue();
@@ -345,6 +350,7 @@ public class TransactionValidationServiceTests {
                                                                                                                                                   TestData.DeviceIdentifier,
                                                                                                                                                   TestData.OperatorId2,
                                                                                                                                                   TestData.TransactionAmount,
+                                                                                                                                                  TransactionSource.OnlineSale,
                                                                                                                                                   TestContext.Current.CancellationToken);
 
         result.IsFailed.ShouldBeTrue();
@@ -366,6 +372,7 @@ public class TransactionValidationServiceTests {
                                                                                                                                                   TestData.DeviceIdentifier,
                                                                                                                                                   TestData.OperatorId,
                                                                                                                                                   TestData.TransactionAmount,
+                                                                                                                                                  TransactionSource.OnlineSale,
                                                                                                                                                   TestContext.Current.CancellationToken);
 
         result.IsFailed.ShouldBeTrue();
@@ -387,6 +394,7 @@ public class TransactionValidationServiceTests {
             TestData.DeviceIdentifier,
             TestData.OperatorId,
             TestData.TransactionAmount,
+            TransactionSource.OnlineSale,
             TestContext.Current.CancellationToken);
 
         result.IsFailed.ShouldBeTrue();
@@ -413,6 +421,7 @@ public class TransactionValidationServiceTests {
                                                                                                                                                   TestData.DeviceIdentifier,
                                                                                                                                                   TestData.OperatorId,
                                                                                                                                                   TestData.TransactionAmount,
+                                                                                                                                                  TransactionSource.OnlineSale,
                                                                                                                                                   TestContext.Current.CancellationToken);
 
         result.IsFailed.ShouldBeTrue();
@@ -438,6 +447,7 @@ public class TransactionValidationServiceTests {
                                                                                                                                                   TestData.DeviceIdentifier,
                                                                                                                                                   TestData.OperatorId,
                                                                                                                                                   TestData.TransactionAmount,
+                                                                                                                                                  TransactionSource.OnlineSale,
                                                                                                                                                   TestContext.Current.CancellationToken);
 
         result.IsFailed.ShouldBeTrue();
@@ -462,6 +472,7 @@ public class TransactionValidationServiceTests {
                                                                                                                                                   TestData.DeviceIdentifier,
                                                                                                                                                   TestData.OperatorId,
                                                                                                                                                   transactionAmount,
+                                                                                                                                                  TransactionSource.OnlineSale,
                                                                                                                                                   TestContext.Current.CancellationToken);
 
         result.IsFailed.ShouldBeTrue();
@@ -485,6 +496,7 @@ public class TransactionValidationServiceTests {
                                                                                                                                                   TestData.DeviceIdentifier1,
                                                                                                                                                   TestData.OperatorId,
                                                                                                                                                   TestData.TransactionAmount,
+                                                                                                                                                  TransactionSource.OnlineSale,
                                                                                                                                                   TestContext.Current.CancellationToken);
 
         result.IsFailed.ShouldBeTrue();
@@ -510,6 +522,7 @@ public class TransactionValidationServiceTests {
                                                                                                                                                   TestData.DeviceIdentifier,
                                                                                                                                                   TestData.OperatorId,
                                                                                                                                                   TestData.TransactionAmount,
+                                                                                                                                                  TransactionSource.OnlineSale,
                                                                                                                                                   TestContext.Current.CancellationToken);
 
         result.IsFailed.ShouldBeTrue();
@@ -537,6 +550,7 @@ public class TransactionValidationServiceTests {
                                                                                                                                                   TestData.DeviceIdentifier,
                                                                                                                                                   TestData.OperatorId,
                                                                                                                                                   TestData.TransactionAmount,
+                                                                                                                                                  TransactionSource.OnlineSale,
                                                                                                                                                   TestContext.Current.CancellationToken);
 
         result.IsFailed.ShouldBeTrue();
@@ -561,6 +575,7 @@ public class TransactionValidationServiceTests {
                                                                                                                                                   TestData.DeviceIdentifier,
                                                                                                                                                   TestData.OperatorId,
                                                                                                                                                   TestData.TransactionAmount,
+                                                                                                                                                  TransactionSource.OnlineSale,
                                                                                                                                                   TestContext.Current.CancellationToken);
 
         result.IsFailed.ShouldBeTrue();
@@ -585,6 +600,7 @@ public class TransactionValidationServiceTests {
                                                                                                                                                   TestData.DeviceIdentifier,
                                                                                                                                                   TestData.OperatorId,
                                                                                                                                                   TestData.TransactionAmount,
+                                                                                                                                                  TransactionSource.OnlineSale,
                                                                                                                                                   TestContext.Current.CancellationToken);
 
         result.IsFailed.ShouldBeTrue();
@@ -608,6 +624,7 @@ public class TransactionValidationServiceTests {
                                                                                                                                                   TestData.DeviceIdentifier,
                                                                                                                                                   TestData.OperatorId,
                                                                                                                                                   TestData.TransactionAmount,
+                                                                                                                                                  TransactionSource.OnlineSale,
                                                                                                                                                   TestContext.Current.CancellationToken);
 
         result.IsFailed.ShouldBeTrue();
@@ -636,6 +653,7 @@ public class TransactionValidationServiceTests {
                                                                                                                                                   TestData.DeviceIdentifier,
                                                                                                                                                   TestData.OperatorId,
                                                                                                                                                   TestData.TransactionAmount,
+                                                                                                                                                  TransactionSource.OnlineSale,
                                                                                                                                                   TestContext.Current.CancellationToken);
 
         result.IsFailed.ShouldBeTrue();
@@ -663,6 +681,7 @@ public class TransactionValidationServiceTests {
                                                                                                                                                   TestData.DeviceIdentifier,
                                                                                                                                                   TestData.OperatorId,
                                                                                                                                                   TestData.TransactionAmount,
+                                                                                                                                                  TransactionSource.OnlineSale,
                                                                                                                                                   TestContext.Current.CancellationToken);
 
         result.IsFailed.ShouldBeTrue();
@@ -687,6 +706,7 @@ public class TransactionValidationServiceTests {
                                                                                                                                                   TestData.DeviceIdentifier,
                                                                                                                                                   TestData.OperatorId,
                                                                                                                                                   TestData.TransactionAmount,
+                                                                                                                                                  TransactionSource.OnlineSale,
                                                                                                                                                   TestContext.Current.CancellationToken);
 
         result.IsFailed.ShouldBeTrue();
@@ -710,6 +730,7 @@ public class TransactionValidationServiceTests {
                                                                                                                                                   TestData.DeviceIdentifier,
                                                                                                                                                   TestData.OperatorId,
                                                                                                                                                   TestData.TransactionAmount,
+                                                                                                                                                  TransactionSource.OnlineSale,
                                                                                                                                                   TestContext.Current.CancellationToken);
 
         result.IsFailed.ShouldBeTrue();
@@ -733,6 +754,7 @@ public class TransactionValidationServiceTests {
                                                                                                                                                   TestData.DeviceIdentifier,
                                                                                                                                                   TestData.OperatorId2,
                                                                                                                                                   TestData.TransactionAmount,
+                                                                                                                                                  TransactionSource.OnlineSale,
                                                                                                                                                   TestContext.Current.CancellationToken);
         result.IsFailed.ShouldBeTrue();
         result.Data.ResponseCode.ShouldBe(TransactionResponseCode.OperatorNotValidForMerchant);
@@ -758,6 +780,7 @@ public class TransactionValidationServiceTests {
                                                                                                                                                   TestData.DeviceIdentifier,
                                                                                                                                                   TestData.OperatorId,
                                                                                                                                                   TestData.TransactionAmount,
+                                                                                                                                                  TransactionSource.OnlineSale,
                                                                                                                                                   TestContext.Current.CancellationToken);
 
         result.IsFailed.ShouldBeTrue();
@@ -783,7 +806,35 @@ public class TransactionValidationServiceTests {
                                                                                                                                                   TestData.DeviceIdentifier,
                                                                                                                                                   TestData.OperatorId,
                                                                                                                                                   TestData.TransactionAmount,
+                                                                                                                                                  TransactionSource.OnlineSale,
                                                                                                                                                   TestContext.Current.CancellationToken);
+        result.IsSuccess.ShouldBeTrue();
+        result.Data.ResponseCode.ShouldBe(TransactionResponseCode.Success);
+    }
+
+    [Theory]
+    [InlineData(TransactionSource.NotSet)]
+    [InlineData(TransactionSource.FileImport)]
+    public async Task TransactionValidationService_ValidateSaleTransaction_NonOnlineSaleWithMissingDevice_ResponseIsSuccess(TransactionSource transactionSource)
+    {
+        this.AggregateService.Get<EstateAggregate>(Arg<Guid>.Any(), Arg<CancellationToken>.Any())
+            .ReturnsAsync(Result.Success(TestData.Aggregates.EstateAggregateWithOperator()));
+        this.AggregateService.Get<MerchantAggregate>(Arg<Guid>.Any(), Arg<CancellationToken>.Any())
+            .ReturnsAsync(TestData.Aggregates.MerchantAggregateWithEverything(SettlementSchedule.Immediate));
+
+        this.EventStoreContext.GetPartitionStateFromProjection(Arg<String>.Any(), Arg<String>.Any(), Arg<CancellationToken>.Any())
+            .ReturnsAsync(StringSerialiser.Serialise(TestData.MerchantBalanceProjectionState));
+
+        var result = await this.TransactionValidationService.ValidateSaleTransaction(TestData.EstateId,
+                                                                                      TestData.MerchantId,
+                                                                                      TestData.ContractId,
+                                                                                      TestData.ProductId,
+                                                                                      null,
+                                                                                      TestData.OperatorId,
+                                                                                      TestData.TransactionAmount,
+                                                                                      transactionSource,
+                                                                                      TestContext.Current.CancellationToken);
+
         result.IsSuccess.ShouldBeTrue();
         result.Data.ResponseCode.ShouldBe(TransactionResponseCode.Success);
     }
@@ -808,6 +859,7 @@ public class TransactionValidationServiceTests {
                                                                                                                                                   TestData.DeviceIdentifier,
                                                                                                                                                   TestData.OperatorId,
                                                                                                                                                   TestData.TransactionAmount,
+                                                                                                                                                  TransactionSource.OnlineSale,
                                                                                                                                                   TestContext.Current.CancellationToken);
 
         result.IsFailed.ShouldBeTrue();

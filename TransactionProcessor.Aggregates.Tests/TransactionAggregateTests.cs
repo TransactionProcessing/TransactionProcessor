@@ -109,8 +109,6 @@ namespace TransactionProcessor.Aggregates.Tests{
         [InlineData(true, "ABCD", TransactionType.Logon, "ABCDEFG", true, true, "A1234567890")]
         [InlineData(true, "0001", TransactionType.Logon, "ABCDEFG", false, true, "A1234567890")]
         [InlineData(true, "0001", TransactionType.Logon, "ABCDEFG", true, false, "A1234567890")]
-        [InlineData(true, "0001", TransactionType.Logon, "ABCDEFG", true, true, "")]
-        [InlineData(true, "0001", TransactionType.Logon, "ABCDEFG", true, true, null)]
         [InlineData(true, "0001", (TransactionType)99, "ABCDEFG", true, true, "A1234567890")]
         [InlineData(true, "0001", TransactionType.Logon, "", true, true, "A1234567890")]
         [InlineData(true, "0001", TransactionType.Logon, null, true, true, "A1234567890")]
@@ -120,8 +118,6 @@ namespace TransactionProcessor.Aggregates.Tests{
         [InlineData(true, "ABCD", TransactionType.Sale, "ABCDEFG", true, true, "A1234567890")]
         [InlineData(true, "0001", TransactionType.Sale, "ABCDEFG", false, true, "A1234567890")]
         [InlineData(true, "0001", TransactionType.Sale, "ABCDEFG", true, false, "A1234567890")]
-        [InlineData(true, "0001", TransactionType.Sale, "ABCDEFG", true, true, "")]
-        [InlineData(true, "0001", TransactionType.Sale, "ABCDEFG", true, true, null)]
         [InlineData(true, "0001", TransactionType.Sale, "", true, true, "A1234567890")]
         [InlineData(true, "0001", TransactionType.Sale, null, true, true, "A1234567890")]
         public void TransactionAggregate_StartTransaction_InvalidData_ErrorThrown(Boolean validTransactionDateTime,
@@ -147,6 +143,52 @@ namespace TransactionProcessor.Aggregates.Tests{
             Aggregates.TransactionAggregate transactionAggregate = Aggregates.TransactionAggregate.Create(TestData.TransactionId);
 
             Result result = transactionAggregate.StartTransaction(TestData.TransactionDateTime, TestData.TransactionNumber, TransactionType.Sale, TestData.TransactionReference, null, TestData.TransactionAmount);
+            result.IsFailed.ShouldBeTrue();
+            result.Status.ShouldBe(ResultStatus.Invalid);
+        }
+
+        [Theory]
+        [InlineData(TransactionSource.NotSet, "")]
+        [InlineData(TransactionSource.NotSet, null)]
+        [InlineData(TransactionSource.FileImport, "")]
+        [InlineData(TransactionSource.FileImport, null)]
+        public void TransactionAggregate_StartTransaction_NonOnlineSaleWithoutDeviceIdentifier_TransactionIsStarted(TransactionSource transactionSource,
+                                                                                                                       String deviceIdentifier) {
+            Aggregates.TransactionAggregate transactionAggregate = Aggregates.TransactionAggregate.Create(TestData.TransactionId);
+
+            Result result = transactionAggregate.StartTransaction(TestData.TransactionDateTime,
+                                                                   TestData.TransactionNumber,
+                                                                   TransactionType.Sale,
+                                                                   TestData.TransactionReference,
+                                                                   new TransactionStartContext {
+                                                                       EstateId = TestData.EstateId,
+                                                                       MerchantId = TestData.MerchantId,
+                                                                       DeviceIdentifier = deviceIdentifier,
+                                                                       TransactionSource = transactionSource
+                                                                   },
+                                                                   TestData.TransactionAmount);
+
+            result.IsSuccess.ShouldBeTrue();
+        }
+
+        [Theory]
+        [InlineData("")]
+        [InlineData(null)]
+        public void TransactionAggregate_StartTransaction_OnlineSaleWithoutDeviceIdentifier_ErrorThrown(String deviceIdentifier) {
+            Aggregates.TransactionAggregate transactionAggregate = Aggregates.TransactionAggregate.Create(TestData.TransactionId);
+
+            Result result = transactionAggregate.StartTransaction(TestData.TransactionDateTime,
+                                                                   TestData.TransactionNumber,
+                                                                   TransactionType.Sale,
+                                                                   TestData.TransactionReference,
+                                                                   new TransactionStartContext {
+                                                                       EstateId = TestData.EstateId,
+                                                                       MerchantId = TestData.MerchantId,
+                                                                       DeviceIdentifier = deviceIdentifier,
+                                                                       TransactionSource = TransactionSource.OnlineSale
+                                                                   },
+                                                                   TestData.TransactionAmount);
+
             result.IsFailed.ShouldBeTrue();
             result.Status.ShouldBe(ResultStatus.Invalid);
         }

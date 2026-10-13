@@ -15,6 +15,7 @@ using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using TransactionProcessor.Models;
 
 public interface ITransactionValidationService
 {
@@ -36,6 +37,7 @@ public interface ITransactionValidationService
                                                                       String deviceIdentifier,
                                                                       Guid operatorId,
                                                                       Decimal? transactionAmount,
+                                                                      TransactionSource transactionSource,
                                                                       CancellationToken cancellationToken);
 
     #endregion
@@ -123,6 +125,7 @@ public class TransactionValidationService : ITransactionValidationService{
                                                                                String deviceIdentifier,
                                                                                Guid operatorId,
                                                                                Decimal? transactionAmount,
+                                                                               TransactionSource transactionSource,
                                                                                CancellationToken cancellationToken)
     {
         // Validate Estate
@@ -141,9 +144,12 @@ public class TransactionValidationService : ITransactionValidationService{
 
         Models.Merchant.Merchant merchant = merchantValidationResult.Data.additionalData.GetMerchant();
 
-        // Validate Device
-        Result<TransactionValidationResult> deviceValidationResult = ValidateDevice(merchant, deviceIdentifier);
-        if (deviceValidationResult.IsFailed) return deviceValidationResult;
+        if (transactionSource == TransactionSource.OnlineSale)
+        {
+            // Validate Device
+            Result<TransactionValidationResult> deviceValidationResult = ValidateDevice(merchant, deviceIdentifier);
+            if (deviceValidationResult.IsFailed) return deviceValidationResult;
+        }
 
         // Validate Operator for Merchant
         Result<TransactionValidationResult> merchantOperatorValidationResult = ValidateMerchantOperator(merchant, operatorId);
