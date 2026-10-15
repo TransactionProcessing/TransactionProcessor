@@ -19,6 +19,7 @@
     <PackageReference Include="Shared.DomainDrivenDesign" />
     <PackageReference Include="Shared.EventStore" />
     <PackageReference Include="MediatR" />
+    <PackageReference Include="SixLabors.ImageSharp" />
     <PackageReference Include="System.IO.Abstractions" />
     <PackageReference Include="System.Security.Cryptography.Xml" />
     <PackageReference Include="System.ServiceModel.Duplex" />

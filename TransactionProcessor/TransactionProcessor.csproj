@@ -39,6 +39,7 @@
     <PackageReference Include="Shared.EventStore" />
       <PackageReference Include="Microsoft.Extensions.Hosting.WindowsServices" />
       <PackageReference Include="Shared.Results.Web" />
+      <PackageReference Include="SixLabors.ImageSharp" />
 	  <PackageReference Include="Swashbuckle.AspNetCore" />
 	  <PackageReference Include="Swashbuckle.AspNetCore.Annotations" />
 	  <PackageReference Include="Swashbuckle.AspNetCore.Filters" />
