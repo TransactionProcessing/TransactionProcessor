@@ -13,6 +13,7 @@
     <PackageReference Include="NuGet.Protocol" />
     <PackageReference Include="OpenTelemetry.Api" />
     <PackageReference Include="SecurityService.Client" />
+    <PackageReference Include="SixLabors.ImageSharp" />
     <PackageReference Include="System.Security.Cryptography.Xml" />
     <PackageReference Include="System.ServiceModel.Federation" />
     <PackageReference Include="Microsoft.IdentityModel.Tokens" />

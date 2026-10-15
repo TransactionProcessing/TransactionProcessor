@@ -24,6 +24,7 @@
     <PackageReference Include="SecurityService.Client" />
     <PackageReference Include="SecurityService.IntegrationTesting.Helpers" />
     <PackageReference Include="Shared.IntegrationTesting" />
+    <PackageReference Include="SharpCompress" />
     <PackageReference Include="Shouldly" />
     <PackageReference Include="Reqnroll.Tools.MsBuild.Generation" />
 	  <PackageReference Include="NUnit" />
@@ -36,6 +37,7 @@
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
     <PackageReference Include="MessagingService.IntegrationTesting.Helpers" />
+    <PackageReference Include="SixLabors.ImageSharp" />
     <PackageReference Include="System.Security.Cryptography.Xml" />
     <PackageReference Include="System.ServiceModel.Federation" />
     <PackageReference Include="Microsoft.IdentityModel.Tokens" />
