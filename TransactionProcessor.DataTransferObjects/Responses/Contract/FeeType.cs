@@ -1,17 +1,16 @@
-﻿namespace TransactionProcessor.DataTransferObjects.Responses.Contract
+namespace TransactionProcessor.DataTransferObjects.Responses.Contract
 {
-    /// <summary>
-    /// 
-    /// </summary>
+    /// <summary>Parties that can receive a transaction fee.</summary>
+    /// <example>0</example>
     public enum FeeType
     {
         /// <summary>
-        /// The merchant
+        /// The fee is payable to the merchant.
         /// </summary>
         Merchant,
 
         /// <summary>
-        /// The service provider
+        /// The fee is payable to the service provider.
         /// </summary>
         ServiceProvider
     }

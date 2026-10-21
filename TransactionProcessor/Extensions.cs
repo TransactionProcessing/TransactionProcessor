@@ -67,26 +67,28 @@ using Microsoft.Extensions.DependencyInjection;
         public static void PreWarm(this IApplicationBuilder applicationBuilder) {
             TypeProvider.LoadDomainEventsTypeDynamically();
 
-            IConfigurationSection subscriptionConfigSection = Startup.Configuration.GetSection("AppSettings:SubscriptionConfiguration");
+            IConfiguration configuration = applicationBuilder.ApplicationServices.GetRequiredService<IConfiguration>();
+            IConfigurationSection subscriptionConfigSection = configuration.GetSection("AppSettings:SubscriptionConfiguration");
             SubscriptionWorkersRoot subscriptionWorkersRoot = new SubscriptionWorkersRoot();
             subscriptionConfigSection.Bind(subscriptionWorkersRoot);
 
             String eventStoreConnectionString = ConfigurationReader.GetValue("EventStoreSettings", "ConnectionString");
 
-            IDomainEventHandlerResolver mainEventHandlerResolver = Startup.Container.GetInstance<IDomainEventHandlerResolver>("Main");
-            IDomainEventHandlerResolver domainEventHandlerResolver = Startup.Container.GetInstance<IDomainEventHandlerResolver>("Domain");
-            IDomainEventHandlerResolver orderedEventHandlerResolver = Startup.Container.GetInstance<IDomainEventHandlerResolver>("Ordered");
+            IServiceProvider services = applicationBuilder.ApplicationServices;
+            IDomainEventHandlerResolver mainEventHandlerResolver = services.GetRequiredService<Lamar.IContainer>().GetInstance<IDomainEventHandlerResolver>("Main");
+            IDomainEventHandlerResolver domainEventHandlerResolver = services.GetRequiredService<Lamar.IContainer>().GetInstance<IDomainEventHandlerResolver>("Domain");
+            IDomainEventHandlerResolver orderedEventHandlerResolver = services.GetRequiredService<Lamar.IContainer>().GetInstance<IDomainEventHandlerResolver>("Ordered");
 
             Dictionary<String, IDomainEventHandlerResolver> eventHandlerResolvers = new Dictionary<String, IDomainEventHandlerResolver> { { "Main", mainEventHandlerResolver },
                 { "Domain", domainEventHandlerResolver }, { "Ordered", orderedEventHandlerResolver } };
 
 
-            Func<String, Int32, ISubscriptionRepository> subscriptionRepositoryResolver = Startup.Container.GetInstance<Func<String, Int32, ISubscriptionRepository>>();
+            Func<String, Int32, ISubscriptionRepository> subscriptionRepositoryResolver = services.GetRequiredService<Func<String, Int32, ISubscriptionRepository>>();
            
             applicationBuilder.ConfigureSubscriptionService(subscriptionWorkersRoot, eventStoreConnectionString, eventHandlerResolvers, Extensions.log, subscriptionRepositoryResolver).Wait(CancellationToken.None);
             
-            IMediator mediator = Startup.Container.GetInstance<IMediator>();
-            StatementFilePollerService statementFilePollerService = new(mediator);
+            IMediator mediator = services.GetRequiredService<IMediator>();
+            StatementFilePollerService statementFilePollerService = new(mediator, configuration);
             statementFilePollerService.Start();
         }
 
@@ -95,15 +97,23 @@ using Microsoft.Extensions.DependencyInjection;
     [ExcludeFromCodeCoverage]
     public record FileProfile(String Name, String ListeningDirectory, String Filter, Boolean IsEnabled);
 
+    public sealed class AutoLogonOperatorConfiguration {
+        public AutoLogonOperatorConfiguration(IEnumerable<String> operatorIds) {
+            this.OperatorIds = operatorIds.ToArray();
+        }
+
+        public IReadOnlyCollection<String> OperatorIds { get; }
+    }
+
     [ExcludeFromCodeCoverage]
     public class StatementFilePollerService {
         private readonly IMediator Mediator;
         private readonly IEnumerable<FileProfile> FileProfiles;
-        public StatementFilePollerService(IMediator mediator) {
+        public StatementFilePollerService(IMediator mediator, IConfiguration configuration) {
             this.Mediator = mediator;
 
             // Load up the file configuration
-            this.FileProfiles = Startup.Configuration.GetSection("AppSettings:FileProfiles").GetChildren().ToList().Select(x => new
+            this.FileProfiles = configuration.GetSection("AppSettings:FileProfiles").GetChildren().ToList().Select(x => new
             {
                 Name = x.GetValue<String>("Name"),
                 ListeningDirectory = x.GetValue<String>("ListeningDirectory"),
@@ -202,12 +212,21 @@ using Microsoft.Extensions.DependencyInjection;
 
     [ExcludeFromCodeCoverage]
     public class AutoLogonWorkerService : BackgroundService {
+        private readonly AutoLogonOperatorConfiguration AutoLogonConfiguration;
+        private readonly Func<String, IOperatorProxy> OperatorProxyResolver;
+
+        public AutoLogonWorkerService(AutoLogonOperatorConfiguration autoLogonConfiguration,
+                                      Func<String, IOperatorProxy> operatorProxyResolver) {
+            this.AutoLogonConfiguration = autoLogonConfiguration;
+            this.OperatorProxyResolver = operatorProxyResolver;
+        }
+
         protected override async Task ExecuteAsync(CancellationToken stoppingToken) {
 
             while (stoppingToken.IsCancellationRequested == false) {
 
-                if (Startup.AutoApiLogonOperators.Any()) {
-                    foreach (String autoApiLogonOperator in Startup.AutoApiLogonOperators) {
+                if (this.AutoLogonConfiguration.OperatorIds.Any()) {
+                    foreach (String autoApiLogonOperator in this.AutoLogonConfiguration.OperatorIds) {
                         await this.OperatorLogonAsync(autoApiLogonOperator, stoppingToken);
                     }
                 }
@@ -222,7 +241,7 @@ using Microsoft.Extensions.DependencyInjection;
             Logger.LogInformation($"About to do auto logon for operator Id [{operatorId}]");
 
             try {
-                Func<String, IOperatorProxy> resolver = Startup.ServiceProvider?.GetService<Func<String, IOperatorProxy>>();
+                Func<String, IOperatorProxy> resolver = this.OperatorProxyResolver;
                 if (resolver == null) {
                     Logger.LogWarning($"Auto logon for operator Id [{operatorId}] skipped because no operator proxy resolver was registered");
                     return;

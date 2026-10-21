@@ -1,5 +1,7 @@
 # Transaction Processor
 
+The interactive Scalar API reference is available at `/scalar` and its versioned OpenAPI documents are available under `/openapi/` (for example, `/openapi/v1.json`). The [endpoint and DTO inventory](docs/api-reference.md) is also available as Markdown.
+
 ## Build Status
 
 [![Last Nightly Build Status Badge](https://github.com/TransactionProcessing/TransactionProcessor/workflows/Nightly%20Build/badge.svg)](https://github.com/TransactionProcessing/TransactionProcessor/workflows/Nightly%20Build/badge.svg)

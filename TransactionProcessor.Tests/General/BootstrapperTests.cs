@@ -3,12 +3,8 @@ using Shouldly;
 namespace TransactionProcessor.Tests.General
 {
     using Lamar;
-    using Microsoft.AspNetCore.Hosting;
     using Microsoft.Extensions.Configuration;
-    using Microsoft.Extensions.DependencyInjection;
-    using Microsoft.Extensions.Hosting;
-    using Imposter.Abstractions;
-    using Shared.Serialisation;
+    using TransactionProcessor.Bootstrapper;
     using System;
     using System.Collections.Generic;
     using System.Diagnostics;
@@ -24,27 +20,12 @@ namespace TransactionProcessor.Tests.General
         #region Methods
 
         [Fact]
-        public void ConfigureContainer_PopulatesAutoApiLogonOperators_WithoutDuplicates()
+        public void OperatorRegistry_PopulatesAutoApiLogonOperators()
         {
-            IWebHostEnvironmentImposter hostingEnvironment = new IWebHostEnvironmentImposter();
-            hostingEnvironment.EnvironmentName.Getter().Returns("Development");
-            hostingEnvironment.ContentRootPath.Getter().Returns("/home");
-            hostingEnvironment.ApplicationName.Getter().Returns("Test Application");
+            OperatorRegistry registry = new(this.SetupMemoryConfiguration());
+            Container container = new(registry);
 
-            Startup s = new Startup(hostingEnvironment.Instance());
-            Startup.Configuration = this.SetupMemoryConfiguration();
-
-            ServiceRegistry firstServices = new ServiceRegistry();
-            this.AddTestRegistrations(firstServices, hostingEnvironment.Instance());
-            s.ConfigureContainer(firstServices);
-
-            Assert.Equal(new[] { "Safaricom", "PataPawaPostPay" }, Startup.AutoApiLogonOperators.ToArray());
-
-            ServiceRegistry secondServices = new ServiceRegistry();
-            this.AddTestRegistrations(secondServices, hostingEnvironment.Instance());
-            s.ConfigureContainer(secondServices);
-
-            Assert.Equal(new[] { "Safaricom", "PataPawaPostPay" }, Startup.AutoApiLogonOperators.ToArray());
+            Assert.Equal(new[] { "Safaricom", "PataPawaPostPay" }, container.GetInstance<AutoLogonOperatorConfiguration>().OperatorIds);
         }
 
         private IConfigurationRoot SetupMemoryConfiguration()
@@ -71,23 +52,6 @@ namespace TransactionProcessor.Tests.General
             builder.AddInMemoryCollection(configuration);
 
             return builder.Build();
-        }
-
-        /// <summary>
-        /// Adds the test registrations.
-        /// </summary>
-        /// <param name="services">The services.</param>
-        /// <param name="hostingEnvironment">The hosting environment.</param>
-        private void AddTestRegistrations(IServiceCollection services,
-                                          IWebHostEnvironment hostingEnvironment)
-        {
-            services.AddLogging();
-            DiagnosticListener diagnosticSource = new DiagnosticListener(hostingEnvironment.ApplicationName);
-            services.AddSingleton<DiagnosticSource>(diagnosticSource);
-            services.AddSingleton(diagnosticSource);
-            services.AddSingleton<IWebHostEnvironment>(hostingEnvironment);
-            services.AddSingleton<IHostEnvironment>(hostingEnvironment);
-            services.AddSingleton<IConfiguration>(Startup.Configuration);
         }
 
         #endregion

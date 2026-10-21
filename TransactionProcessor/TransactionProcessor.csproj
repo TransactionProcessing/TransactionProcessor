@@ -3,6 +3,8 @@
   <PropertyGroup>
     <TargetFramework>net10.0</TargetFramework>
     <DockerDefaultTargetOS>Linux</DockerDefaultTargetOS>
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
+    <NoWarn>$(NoWarn);1591</NoWarn>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
@@ -23,6 +25,7 @@
 	<PackageReference Include="AspNetCore.HealthChecks.UI.InMemory.Storage" />
 	<PackageReference Include="AspNetCore.HealthChecks.Uris" />
 	<PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" />
+    <PackageReference Include="Microsoft.AspNetCore.OpenApi" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.Tools">
       <PrivateAssets>all</PrivateAssets>
@@ -40,18 +43,13 @@
       <PackageReference Include="Microsoft.Extensions.Hosting.WindowsServices" />
       <PackageReference Include="Shared.Results.Web" />
       <PackageReference Include="SixLabors.ImageSharp" />
-	  <PackageReference Include="Swashbuckle.AspNetCore" />
-	  <PackageReference Include="Swashbuckle.AspNetCore.Annotations" />
-	  <PackageReference Include="Swashbuckle.AspNetCore.Filters" />
-	  <PackageReference Include="Swashbuckle.AspNetCore.Swagger" />
-	  <PackageReference Include="Swashbuckle.AspNetCore.SwaggerGen" />
-	  <PackageReference Include="Swashbuckle.AspNetCore.SwaggerUI" />
 	  <PackageReference Include="System.ServiceModel.Federation" />
 	  <PackageReference Include="System.ServiceModel.Http" />
 	  <PackageReference Include="System.ServiceModel.NetTcp" />
 	  <PackageReference Include="Microsoft.IdentityModel.Tokens" />
 	  <PackageReference Include="Microsoft.IdentityModel.JsonWebTokens" />
 	  <PackageReference Include="Sentry.AspNetCore" />
+	  <PackageReference Include="TransactionProcessing.ApiDefaults" />
   </ItemGroup>
 
   <ItemGroup>
@@ -59,6 +57,20 @@
     <ProjectReference Include="..\TransactionProcessor.DataTransferObjects\TransactionProcessor.DataTransferObjects.csproj" />
     <ProjectReference Include="..\TransactionProcessor.ProjectionEngine\TransactionProcessor.ProjectionEngine.csproj" />
   </ItemGroup>
+
+  <Target Name="IncludeDtoXmlDocumentation" BeforeTargets="AssignTargetPaths" DependsOnTargets="ResolveReferences">
+    <ItemGroup>
+      <_DtoAssembly Include="@(ReferenceCopyLocalPaths)"
+                    Condition="'%(ReferenceCopyLocalPaths.Filename)' == 'TransactionProcessor.DataTransferObjects'" />
+      <_DtoXml Include="@(_DtoAssembly->'%(RootDir)%(Directory)TransactionProcessor.DataTransferObjects.xml')" />
+      <AdditionalFiles Include="@(_DtoXml)" Condition="Exists('%(_DtoXml.Identity)')" />
+      <Content Include="@(_DtoXml)" Condition="Exists('%(_DtoXml.Identity)')">
+        <Link>TransactionProcessor.DataTransferObjects.xml</Link>
+        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+        <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
+      </Content>
+    </ItemGroup>
+  </Target>
 
   <ItemGroup>
     <Content Update="appsettings.json">

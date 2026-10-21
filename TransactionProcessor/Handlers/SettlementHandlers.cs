@@ -39,6 +39,10 @@ namespace TransactionProcessor.Handlers
             return ResponseFactory.FromResult(result, guid => guid);
         }
 
+        /// <summary>Gets settlement details and its fees.</summary>
+        /// <param name="estateId">Estate that owns the settlement.</param>
+        /// <param name="settlementId">Settlement identifier from the route.</param>
+        /// <param name="merchantId" example="00000000-0000-0000-0000-000000000227">Merchant identifier, bound from the query string because it is not in the route.</param>
         public static async Task<IResult> GetSettlement(IMediator mediator, HttpContext ctx, [FromRoute] Guid estateId, Guid settlementId, Guid merchantId, CancellationToken cancellationToken)
         {
             SettlementQueries.GetSettlementQuery query = new(estateId, merchantId, settlementId);
@@ -76,6 +80,11 @@ namespace TransactionProcessor.Handlers
             });
         }
 
+        /// <summary>Lists settlements for an estate with optional merchant and date filtering.</summary>
+        /// <param name="estateId">Estate whose settlements are listed.</param>
+        /// <param name="merchantId" example="00000000-0000-0000-0000-000000000227">Optional merchant filter.</param>
+        /// <param name="startDate" example="2026-01-01">Optional lower date bound from the start_date query parameter.</param>
+        /// <param name="endDate" example="2026-01-31">Optional upper date bound from the end_date query parameter.</param>
         public static async Task<IResult> GetSettlements(IMediator mediator, HttpContext ctx, 
                                                          [FromRoute] Guid estateId, [FromQuery] Guid? merchantId, [FromQuery(Name = "start_date")] string startDate, [FromQuery(Name = "end_date")] string endDate, CancellationToken cancellationToken)
         {

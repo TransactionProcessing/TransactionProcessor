@@ -23,6 +23,10 @@ namespace TransactionProcessor.Handlers
             return ResponseFactory.FromResult(result, ModelFactory.ConvertFrom);
         }
 
+        /// <summary>Looks up a voucher by voucher code or transaction ID.</summary>
+        /// <param name="estateId" example="00000000-0000-0000-0000-000000000023">Estate that owns the voucher; supplied as a query parameter.</param>
+        /// <param name="voucherCode" example="VOUCHER-2026-001">Voucher code query parameter. Takes precedence when non-empty.</param>
+        /// <param name="transactionId" example="00000000-0000-0000-0000-000000000057">Optional transaction ID query parameter used when voucherCode is empty.</param>
         public static async Task<IResult> GetVoucher(IMediator mediator, HttpContext ctx, Guid estateId, string voucherCode, Guid? transactionId, CancellationToken cancellationToken)
         {
             if (String.IsNullOrEmpty(voucherCode) == false)

@@ -1,11 +1,12 @@
-﻿namespace TransactionProcessor.DataTransferObjects
+namespace TransactionProcessor.DataTransferObjects
 {
     using System;
     using System.Diagnostics.CodeAnalysis;
 
     /// <summary>
-    /// 
+    /// Metadata key names used by transaction processing.
     /// </summary>
+    /// <example>{}</example>
     [ExcludeFromCodeCoverage]
     public static class MetadataContants
     {

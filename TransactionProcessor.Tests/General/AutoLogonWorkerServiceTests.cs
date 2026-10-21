@@ -1,7 +1,6 @@
 using Grpc.Core;
-using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Logging.Abstractions;
 using Imposter.Abstractions;
+using Microsoft.Extensions.Logging.Abstractions;
 using Shared.Logger;
 using Shouldly;
 using System;
@@ -9,65 +8,39 @@ using System.Threading;
 using System.Threading.Tasks;
 using TransactionProcessor.BusinessLogic.OperatorInterfaces;
 using Xunit;
+using NullLogger = Shared.Logger.NullLogger;
 
 namespace TransactionProcessor.Tests.General;
 
 public class AutoLogonWorkerServiceTests {
     public AutoLogonWorkerServiceTests() {
-        Logger.Initialise(Microsoft.Extensions.Logging.Abstractions.NullLogger.Instance);
+        Logger.Initialise(NullLogger.Instance);
     }
 
     [Fact]
     public async Task OperatorLogonAsync_TransientGrpcUnavailable_ExceptionIsHandled() {
-        IOperatorProxyImposter proxy = new IOperatorProxyImposter();
+        IOperatorProxyImposter proxy = new();
         proxy.ProcessLogonMessage(Arg<CancellationToken>.Any())
              .Throws(new RpcException(new Status(StatusCode.Unavailable, "RPC server unavailable")));
+        AutoLogonWorkerService worker = CreateWorker(proxy.Instance());
 
-        ServiceCollection services = new ServiceCollection();
-        services.AddSingleton<Func<String, IOperatorProxy>>(_ => _ => proxy.Instance());
-        IServiceProvider previousServiceProvider = Startup.ServiceProvider;
+        Exception exception = await Record.ExceptionAsync(() => worker.OperatorLogonAsync("operator-1", CancellationToken.None));
 
-        try {
-            Startup.ServiceProvider = services.BuildServiceProvider();
-
-            AutoLogonWorkerService worker = new AutoLogonWorkerService();
-
-            Exception exception = await Record.ExceptionAsync(async () =>
-                                                              {
-                                                                  await worker.OperatorLogonAsync("operator-1", CancellationToken.None);
-                                                              });
-
-            exception.ShouldBeNull();
-        }
-        finally {
-            Startup.ServiceProvider = previousServiceProvider;
-        }
+        exception.ShouldBeNull();
     }
 
     [Fact]
     public async Task OperatorLogonAsync_NonTransientException_ExceptionIsHandled() {
-        IOperatorProxyImposter proxy = new IOperatorProxyImposter();
+        IOperatorProxyImposter proxy = new();
         proxy.ProcessLogonMessage(Arg<CancellationToken>.Any())
              .Throws(new InvalidOperationException("boom"));
+        AutoLogonWorkerService worker = CreateWorker(proxy.Instance());
 
-        ServiceCollection services = new ServiceCollection();
-        services.AddSingleton<Func<String, IOperatorProxy>>(_ => _ => proxy.Instance());
-        IServiceProvider previousServiceProvider = Startup.ServiceProvider;
+        Exception exception = await Record.ExceptionAsync(() => worker.OperatorLogonAsync("operator-2", CancellationToken.None));
 
-        try {
-            Startup.ServiceProvider = services.BuildServiceProvider();
-
-            AutoLogonWorkerService worker = new AutoLogonWorkerService();
-
-            Exception exception = await Record.ExceptionAsync(async () =>
-                                                              {
-                                                                  await worker.OperatorLogonAsync("operator-2", CancellationToken.None);
-                                                              });
-
-            exception.ShouldBeNull();
-        }
-        finally {
-            Startup.ServiceProvider = previousServiceProvider;
-        }
+        exception.ShouldBeNull();
     }
+
+    private static AutoLogonWorkerService CreateWorker(IOperatorProxy proxy) =>
+        new(new AutoLogonOperatorConfiguration(Array.Empty<String>()), _ => proxy);
 }

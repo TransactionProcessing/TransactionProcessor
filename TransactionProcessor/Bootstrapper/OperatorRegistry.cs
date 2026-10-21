@@ -4,6 +4,7 @@ using TransactionProcessor.BusinessLogic.OperatorInterfaces.AgencyBanking;
 namespace TransactionProcessor.Bootstrapper
 {
     using System;
+    using System.Collections.Generic;
     using System.Diagnostics.CodeAnalysis;
     using System.ServiceModel;
     using BusinessLogic.OperatorInterfaces;
@@ -29,12 +30,14 @@ namespace TransactionProcessor.Bootstrapper
         /// <summary>
         /// Initializes a new instance of the <see cref="OperatorRegistry"/> class.
         /// </summary>
-        public OperatorRegistry()
+        public OperatorRegistry(IConfiguration configuration)
         {
-            this.ConfigureOperator<SafaricomConfiguration>("Safaricom");
-            this.ConfigureOperator<PataPawaPostPaidConfiguration>("PataPawaPostPay");
-            this.ConfigureOperator<PataPawaPrePaidConfiguration>("PataPawaPrePay");
-            this.ConfigureOperator<AgencyBankingConfiguration>("AgencyBanking");
+            List<String> autoLogonOperators = new();
+            this.ConfigureOperator<SafaricomConfiguration>(configuration, autoLogonOperators, "Safaricom");
+            this.ConfigureOperator<PataPawaPostPaidConfiguration>(configuration, autoLogonOperators, "PataPawaPostPay");
+            this.ConfigureOperator<PataPawaPrePaidConfiguration>(configuration, autoLogonOperators, "PataPawaPrePay");
+            this.ConfigureOperator<AgencyBankingConfiguration>(configuration, autoLogonOperators, "AgencyBanking");
+            this.AddSingleton(new AutoLogonOperatorConfiguration(autoLogonOperators));
             this.AddSingleton(new PataPawaPostPayServiceClient(PataPawaPostPayServiceClient.EndpointConfiguration.BasicHttpBinding_IPataPawaPostPayService));
 
             this.For<IOperatorProxy>().Add<SafaricomPinlessProxy>().Named("Safaricom").Singleton();
@@ -48,7 +51,7 @@ namespace TransactionProcessor.Bootstrapper
                 (client, clientName,
                     url) =>
                 {
-                    var loggingConfig = Startup.Container.GetInstance<RequestResponseMiddlewareLoggingConfig>();
+                    var loggingConfig = context.GetService<IContainer>().GetInstance<RequestResponseMiddlewareLoggingConfig>();
                     client.Endpoint.SetTraceLogging(clientName, loggingConfig);
                     IPataPawaPostPayService channel =
                         client.ChannelFactory.CreateChannel(new EndpointAddress(url));
@@ -57,21 +60,21 @@ namespace TransactionProcessor.Bootstrapper
             
 
             this.AddTransient<Func<String, IOperatorProxy>>(context => operatorIdentifier => {
-                                                                           return Startup.Container.GetInstance<IOperatorProxy>(operatorIdentifier);
+                                                                           return context.GetService<IContainer>().GetInstance<IOperatorProxy>(operatorIdentifier);
                                                                        });
         }
 
-        private void ConfigureOperator<T>(String operatorId) where T : class {
+        private void ConfigureOperator<T>(IConfiguration configuration, List<String> autoLogonOperators, String operatorId) where T : class {
             T configObject = (T)Activator.CreateInstance(typeof(T));
 
-            Startup.Configuration.GetSection($"OperatorConfiguration:{operatorId}").Bind(configObject);
+            configuration.GetSection($"OperatorConfiguration:{operatorId}").Bind(configObject);
 
             this.AddSingleton(configObject);
 
             BaseOperatorConfiguration cfg = configObject as BaseOperatorConfiguration;
 
             if (cfg.ApiLogonRequired) {
-                Startup.AddAutoApiLogonOperator(operatorId);
+                autoLogonOperators.Add(operatorId);
             }
         }
 

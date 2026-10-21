@@ -15,7 +15,7 @@ namespace TransactionProcessor.Tests.Common
     using Imposter.Abstractions;
     using Xunit;
 
-    public class TransactionProcessorWebFactory<TStartup> : WebApplicationFactory<TStartup> where TStartup : class
+    public class TransactionProcessorWebFactory<TProgram> : WebApplicationFactory<TProgram> where TProgram : class
     {
         protected override void ConfigureWebHost(IWebHostBuilder builder)
         {
@@ -33,7 +33,7 @@ namespace TransactionProcessor.Tests.Common
                 {
                     options.Filters.Add(new AllowAnonymousFilter());
                 })
-                        .AddApplicationPart(typeof(Startup).Assembly);
+                        .AddApplicationPart(typeof(Program).Assembly);
             });
             ;
         }
@@ -51,9 +51,9 @@ namespace TransactionProcessor.Tests.Common
 
     /// <summary>
     /// </summary>
-    /// <seealso cref="Startup" />
+    /// <seealso cref="Program" />
     [CollectionDefinition("TestCollection")]
-    public class TestCollection : ICollectionFixture<TransactionProcessorWebFactory<Startup>>
+    public class TestCollection : ICollectionFixture<TransactionProcessorWebFactory<Program>>
     {
         // A class with no code, only used to define the collection
     }
