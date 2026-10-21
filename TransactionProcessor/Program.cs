@@ -34,6 +34,10 @@ namespace TransactionProcessor;
 [ExcludeFromCodeCoverage]
 public partial class Program
 {
+    protected Program()
+    {
+    }
+
     public static void Main(string[] args)
     {
         BuildApplication(args).Run();

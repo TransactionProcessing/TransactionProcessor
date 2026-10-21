@@ -58,14 +58,19 @@
     <ProjectReference Include="..\TransactionProcessor.ProjectionEngine\TransactionProcessor.ProjectionEngine.csproj" />
   </ItemGroup>
 
-  <ItemGroup>
-    <AdditionalFiles Include="..\TransactionProcessor.DataTransferObjects\bin\$(Configuration)\$(TargetFramework)\TransactionProcessor.DataTransferObjects.xml" />
-    <Content Include="..\TransactionProcessor.DataTransferObjects\bin\$(Configuration)\$(TargetFramework)\TransactionProcessor.DataTransferObjects.xml">
-      <Link>TransactionProcessor.DataTransferObjects.xml</Link>
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-      <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
-    </Content>
-  </ItemGroup>
+  <Target Name="IncludeDtoXmlDocumentation" BeforeTargets="AssignTargetPaths" DependsOnTargets="ResolveReferences">
+    <ItemGroup>
+      <_DtoAssembly Include="@(ReferenceCopyLocalPaths)"
+                    Condition="'%(ReferenceCopyLocalPaths.Filename)' == 'TransactionProcessor.DataTransferObjects'" />
+      <_DtoXml Include="@(_DtoAssembly->'%(RootDir)%(Directory)TransactionProcessor.DataTransferObjects.xml')" />
+      <AdditionalFiles Include="@(_DtoXml)" Condition="Exists('%(_DtoXml.Identity)')" />
+      <Content Include="@(_DtoXml)" Condition="Exists('%(_DtoXml.Identity)')">
+        <Link>TransactionProcessor.DataTransferObjects.xml</Link>
+        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+        <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
+      </Content>
+    </ItemGroup>
+  </Target>
 
   <ItemGroup>
     <Content Update="appsettings.json">

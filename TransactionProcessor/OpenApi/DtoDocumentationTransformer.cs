@@ -26,104 +26,147 @@ public sealed class DtoDocumentationTransformer : IOpenApiDocumentTransformer
                                OpenApiDocumentTransformerContext context,
                                CancellationToken cancellationToken)
     {
-        string documentationPath = Path.Combine(AppContext.BaseDirectory, DocumentationFileName);
-        if (!File.Exists(documentationPath))
+        if (!TryLoadDocumentationMembers(out Dictionary<string, XElement> members))
         {
             return Task.CompletedTask;
         }
 
-        Dictionary<string, XElement> members = XDocument.Load(documentationPath)
-                                                         .Root?
-                                                         .Element("members")?
-                                                         .Elements("member")
-                                                         .Where(member => member.Attribute("name") is not null)
-                                                         .ToDictionary(member => member.Attribute("name")!.Value,
-                                                                       member => member,
-                                                                       StringComparer.Ordinal)
-            ?? new Dictionary<string, XElement>(StringComparer.Ordinal);
-
-        IDictionary<string, IOpenApiSchema> componentSchemas = document.Components?.Schemas ??
-            new Dictionary<string, IOpenApiSchema>(StringComparer.Ordinal);
-        foreach (KeyValuePair<string, IOpenApiSchema> schemaEntry in componentSchemas)
-        {
-            if (schemaEntry.Value is not OpenApiSchema schema)
-            {
-                continue;
-            }
-
-            schema.Properties ??= new Dictionary<string, IOpenApiSchema>(StringComparer.Ordinal);
-            if (string.Equals(schemaEntry.Key, "ProblemDetails", StringComparison.Ordinal))
-            {
-                schema.Description ??= "RFC 9457 problem details returned when a request fails.";
-                schema.Examples ??= new List<JsonNode>();
-                if (schema.Examples.Count == 0 && ReadExample("""{"type":"about:blank","title":"An error occurred.","detail":"The request could not be completed."}""") is JsonNode problemExample)
-                {
-                    schema.Examples.Add(problemExample);
-                }
-
-                AddProblemDetailsPropertyDescriptions(schema);
-            }
-
-            string? typeMemberName = FindTypeMember(schemaEntry.Key, schema, members);
-            if (typeMemberName is null)
-            {
-                continue;
-            }
-
-            XElement typeMember = members[typeMemberName];
-            schema.Description ??= ReadDocumentationText(typeMember.Element("summary"));
-            schema.Examples ??= new List<JsonNode>();
-            if (schema.Examples.Count == 0 && ReadExample(typeMember.Element("example")) is JsonNode example)
-            {
-                schema.Examples.Add(NormalizeExample(example, schema));
-            }
-
-            foreach (string documentedTypeMemberName in GetTypeMemberHierarchy(typeMemberName, members))
-            {
-                string memberPrefix = $"P:{documentedTypeMemberName[2..]}.";
-                foreach (KeyValuePair<string, IOpenApiSchema> propertyEntry in schema.Properties.ToArray())
-                {
-                    string propertyName = ToPascalCase(propertyEntry.Key);
-                    if (members.TryGetValue(memberPrefix + propertyName, out XElement? propertyMember))
-                    {
-                        schema.Properties[propertyEntry.Key] = WithDescription(
-                            propertyEntry.Value,
-                            ReadDocumentationText(propertyMember.Element("summary")));
-                    }
-                }
-            }
-
-        }
-
-        foreach (KeyValuePair<string, IOpenApiPathItem> pathEntry in document.Paths ??
-                 new Dictionary<string, IOpenApiPathItem>(StringComparer.Ordinal))
-        {
-            IOpenApiPathItem path = pathEntry.Value;
-            foreach (OpenApiOperation operation in path.Operations?.Values ?? Enumerable.Empty<OpenApiOperation>())
-            {
-                AddPathParameterDescriptions(pathEntry.Key, operation);
-
-                if (operation.RequestBody is OpenApiRequestBody requestBody)
-                {
-                    foreach (OpenApiMediaType mediaType in requestBody.Content?.Values ?? Enumerable.Empty<OpenApiMediaType>())
-                    {
-                        mediaType.Example ??= GetExample(mediaType.Schema);
-                    }
-                }
-
-                foreach (IOpenApiResponse response in operation.Responses?.Values ?? Enumerable.Empty<IOpenApiResponse>())
-                {
-                    foreach (OpenApiMediaType mediaType in response.Content?.Values ?? Enumerable.Empty<OpenApiMediaType>())
-                    {
-                        mediaType.Example ??= GetExample(mediaType.Schema);
-                    }
-                }
-            }
-        }
-
+        DocumentSchemas(document, members);
+        DocumentOperations(document);
         AddDomainEventExample(document);
 
         return Task.CompletedTask;
+    }
+
+    private static bool TryLoadDocumentationMembers(out Dictionary<string, XElement> members)
+    {
+        string documentationPath = Path.Combine(AppContext.BaseDirectory, DocumentationFileName);
+        if (!File.Exists(documentationPath))
+        {
+            members = new Dictionary<string, XElement>(StringComparer.Ordinal);
+            return false;
+        }
+
+        members = XDocument.Load(documentationPath)
+                           .Root?
+                           .Element("members")?
+                           .Elements("member")
+                           .Where(member => member.Attribute("name") is not null)
+                           .ToDictionary(member => member.Attribute("name")!.Value,
+                                         member => member,
+                                         StringComparer.Ordinal)
+            ?? new Dictionary<string, XElement>(StringComparer.Ordinal);
+        return true;
+    }
+
+    private static void DocumentSchemas(OpenApiDocument document, IReadOnlyDictionary<string, XElement> members)
+    {
+        IDictionary<string, IOpenApiSchema> schemas = document.Components?.Schemas ??
+            new Dictionary<string, IOpenApiSchema>(StringComparer.Ordinal);
+        foreach (KeyValuePair<string, IOpenApiSchema> schemaEntry in schemas)
+        {
+            if (schemaEntry.Value is OpenApiSchema schema)
+            {
+                DocumentSchema(schemaEntry.Key, schema, members);
+            }
+        }
+    }
+
+    private static void DocumentSchema(string schemaName,
+                                       OpenApiSchema schema,
+                                       IReadOnlyDictionary<string, XElement> members)
+    {
+        schema.Properties ??= new Dictionary<string, IOpenApiSchema>(StringComparer.Ordinal);
+        if (string.Equals(schemaName, "ProblemDetails", StringComparison.Ordinal))
+        {
+            DocumentProblemDetails(schema);
+        }
+
+        string? typeMemberName = FindTypeMember(schemaName, schema, members);
+        if (typeMemberName is null)
+        {
+            return;
+        }
+
+        XElement typeMember = members[typeMemberName];
+        schema.Description ??= ReadDocumentationText(typeMember.Element("summary"));
+        schema.Examples ??= new List<JsonNode>();
+        if (schema.Examples.Count == 0 && ReadExample(typeMember.Element("example")) is JsonNode example)
+        {
+            schema.Examples.Add(NormalizeExample(example, schema));
+        }
+
+        DocumentSchemaProperties(schema, typeMemberName, members);
+    }
+
+    private static void DocumentProblemDetails(OpenApiSchema schema)
+    {
+        schema.Description ??= "RFC 9457 problem details returned when a request fails.";
+        schema.Examples ??= new List<JsonNode>();
+        if (schema.Examples.Count == 0 && ReadExample("""{"type":"about:blank","title":"An error occurred.","detail":"The request could not be completed."}""") is JsonNode example)
+        {
+            schema.Examples.Add(example);
+        }
+
+        AddProblemDetailsPropertyDescriptions(schema);
+    }
+
+    private static void DocumentSchemaProperties(OpenApiSchema schema,
+                                                 string typeMemberName,
+                                                 IReadOnlyDictionary<string, XElement> members)
+    {
+        foreach (string documentedTypeMemberName in GetTypeMemberHierarchy(typeMemberName, members))
+        {
+            string memberPrefix = $"P:{documentedTypeMemberName[2..]}.";
+            foreach (KeyValuePair<string, IOpenApiSchema> propertyEntry in schema.Properties.ToArray())
+            {
+                string propertyName = ToPascalCase(propertyEntry.Key);
+                if (members.TryGetValue(memberPrefix + propertyName, out XElement? propertyMember))
+                {
+                    schema.Properties[propertyEntry.Key] = WithDescription(
+                        propertyEntry.Value,
+                        ReadDocumentationText(propertyMember.Element("summary")));
+                }
+            }
+        }
+    }
+
+    private static void DocumentOperations(OpenApiDocument document)
+    {
+        foreach (KeyValuePair<string, IOpenApiPathItem> pathEntry in document.Paths ??
+                 new Dictionary<string, IOpenApiPathItem>(StringComparer.Ordinal))
+        {
+            foreach (OpenApiOperation operation in pathEntry.Value.Operations?.Values ?? Enumerable.Empty<OpenApiOperation>())
+            {
+                AddPathParameterDescriptions(pathEntry.Key, operation);
+                AddRequestExamples(operation);
+                AddResponseExamples(operation);
+            }
+        }
+    }
+
+    private static void AddRequestExamples(OpenApiOperation operation)
+    {
+        if (operation.RequestBody is not OpenApiRequestBody requestBody)
+        {
+            return;
+        }
+
+        foreach (OpenApiMediaType mediaType in requestBody.Content?.Values ?? Enumerable.Empty<OpenApiMediaType>())
+        {
+            mediaType.Example ??= GetExample(mediaType.Schema);
+        }
+    }
+
+    private static void AddResponseExamples(OpenApiOperation operation)
+    {
+        foreach (IOpenApiResponse response in operation.Responses?.Values ?? Enumerable.Empty<IOpenApiResponse>())
+        {
+            foreach (OpenApiMediaType mediaType in response.Content?.Values ?? Enumerable.Empty<OpenApiMediaType>())
+            {
+                mediaType.Example ??= GetExample(mediaType.Schema);
+            }
+        }
     }
 
     private static void AddPathParameterDescriptions(string route, OpenApiOperation operation)
@@ -167,37 +210,50 @@ public sealed class DtoDocumentationTransformer : IOpenApiDocumentTransformer
 
     private static void AddDomainEventExample(OpenApiDocument document)
     {
+        if (!TryGetDomainEventRequestBody(document, out OpenApiRequestBody? requestBody))
+        {
+            return;
+        }
+
+        string? example = ReadDomainEventRequestExample();
+        JsonNode? parsedExample = ReadExample(example);
+        foreach (OpenApiMediaType mediaType in requestBody.Content?.Values ?? Enumerable.Empty<OpenApiMediaType>())
+        {
+            mediaType.Example ??= parsedExample?.DeepClone();
+        }
+    }
+
+    private static bool TryGetDomainEventRequestBody(OpenApiDocument document,
+                                                      out OpenApiRequestBody? requestBody)
+    {
         string documentationPath = Path.Combine(AppContext.BaseDirectory, "TransactionProcessor.xml");
         if (!File.Exists(documentationPath) ||
             document.Paths is null ||
             !document.Paths.TryGetValue("/api/domainevents", out IOpenApiPathItem? path) ||
             path.Operations is null ||
             !path.Operations.TryGetValue(System.Net.Http.HttpMethod.Post, out OpenApiOperation? operation) ||
-            operation.RequestBody is not OpenApiRequestBody requestBody)
+            operation.RequestBody is not OpenApiRequestBody foundRequestBody)
         {
-            return;
+            requestBody = null;
+            return false;
         }
 
-        XElement? parameterDocumentation = XDocument.Load(documentationPath)
-                                                     .Root?
-                                                     .Element("members")?
-                                                     .Elements("member")
-                                                     .Where(member => member.Attribute("name")?.Value.StartsWith(
-                                                         "M:TransactionProcessor.Controllers.DomainEventController.PostEventAsync(",
-                                                         StringComparison.Ordinal) == true)
-                                                     .SelectMany(member => member.Elements("param"))
-                                                     .FirstOrDefault(parameter => parameter.Attribute("name")?.Value == "request");
+        requestBody = foundRequestBody;
+        return true;
+    }
+
+    private static string? ReadDomainEventRequestExample()
+    {
+        string documentationPath = Path.Combine(AppContext.BaseDirectory, "TransactionProcessor.xml");
+        XElement? parameterDocumentation = XDocument.Load(documentationPath).Root?
+            .Element("members")?.Elements("member")
+            .Where(member => member.Attribute("name")?.Value.StartsWith(
+                "M:TransactionProcessor.Controllers.DomainEventController.PostEventAsync(",
+                StringComparison.Ordinal) == true)
+            .SelectMany(member => member.Elements("param"))
+            .FirstOrDefault(parameter => parameter.Attribute("name")?.Value == "request");
         string? example = parameterDocumentation?.Attribute("example")?.Value;
-        if (string.IsNullOrWhiteSpace(example))
-        {
-            return;
-        }
-
-        JsonNode? parsedExample = ReadExample(example);
-        foreach (OpenApiMediaType mediaType in requestBody.Content?.Values ?? Enumerable.Empty<OpenApiMediaType>())
-        {
-            mediaType.Example ??= parsedExample?.DeepClone();
-        }
+        return string.IsNullOrWhiteSpace(example) ? null : example;
     }
 
     private static string? FindTypeMember(string schemaName,
@@ -260,40 +316,46 @@ public sealed class DtoDocumentationTransformer : IOpenApiDocumentTransformer
             return example.DeepClone();
         }
 
-        IDictionary<string, IOpenApiSchema> properties = openApiSchema.Properties ??
-            new Dictionary<string, IOpenApiSchema>(StringComparer.Ordinal);
-        if (example is JsonObject exampleObject && properties.Count > 0)
+        if (example is JsonObject exampleObject && openApiSchema.Properties?.Count > 0)
         {
-            JsonObject normalizedObject = new();
-            foreach (KeyValuePair<string, JsonNode?> property in exampleObject)
-            {
-                string schemaPropertyName = properties.Keys.FirstOrDefault(name =>
-                    string.Equals(ToPascalCase(name), ToPascalCase(property.Key), StringComparison.OrdinalIgnoreCase))
-                    ?? property.Key;
-                JsonNode? value = property.Value;
-                normalizedObject[schemaPropertyName] = value is not null &&
-                                                       properties.TryGetValue(schemaPropertyName,
-                                                           out IOpenApiSchema? propertySchema)
-                    ? NormalizeExample(value, propertySchema)
-                    : value?.DeepClone();
-            }
-
-            return normalizedObject;
+            return NormalizeObjectExample(exampleObject, openApiSchema.Properties);
         }
 
-        IOpenApiSchema? itemsSchema = openApiSchema.Items;
-        if (example is JsonArray exampleArray && itemsSchema is not null)
+        if (example is JsonArray exampleArray && openApiSchema.Items is not null)
         {
-            JsonArray normalizedArray = new();
-            foreach (JsonNode? item in exampleArray)
-            {
-                normalizedArray.Add(item is null ? null : NormalizeExample(item, itemsSchema));
-            }
-
-            return normalizedArray;
+            return NormalizeArrayExample(exampleArray, openApiSchema.Items);
         }
 
         return example.DeepClone();
+    }
+
+    private static JsonObject NormalizeObjectExample(JsonObject example,
+                                                      IDictionary<string, IOpenApiSchema> properties)
+    {
+        JsonObject normalized = new();
+        foreach (KeyValuePair<string, JsonNode?> property in example)
+        {
+            string schemaName = properties.Keys.FirstOrDefault(name =>
+                string.Equals(ToPascalCase(name), ToPascalCase(property.Key), StringComparison.OrdinalIgnoreCase))
+                ?? property.Key;
+            JsonNode? value = property.Value;
+            normalized[schemaName] = value is not null && properties.TryGetValue(schemaName, out IOpenApiSchema? propertySchema)
+                ? NormalizeExample(value, propertySchema)
+                : value?.DeepClone();
+        }
+
+        return normalized;
+    }
+
+    private static JsonArray NormalizeArrayExample(JsonArray example, IOpenApiSchema itemsSchema)
+    {
+        JsonArray normalized = new();
+        foreach (JsonNode? item in example)
+        {
+            normalized.Add(item is null ? null : NormalizeExample(item, itemsSchema));
+        }
+
+        return normalized;
     }
 
     private static IEnumerable<string> GetTypeMemberHierarchy(string typeMemberName,
