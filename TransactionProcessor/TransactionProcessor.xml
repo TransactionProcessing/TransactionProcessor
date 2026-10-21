@@ -280,7 +280,7 @@
             The domain event handler resolver
             </summary>
         </member>
-        <member name="M:TransactionProcessor.Controllers.DomainEventController.#ctor(Shared.EventStore.EventHandling.IDomainEventHandlerResolver)">
+        <member name="M:TransactionProcessor.Controllers.DomainEventController.#ctor(Shared.EventStore.EventHandling.IDomainEventHandlerResolver,Lamar.IContainer)">
             <summary>
             Initializes a new instance of the <see cref="T:TransactionProcessor.Controllers.DomainEventController"/> class.
             </summary>
@@ -442,65 +442,6 @@
             </summary>
             <param name="trace">The trace.</param>
             <param name="logLevel">The log level.</param>
-        </member>
-        <member name="T:TransactionProcessor.Startup">
-            <summary>
-            
-            </summary>
-        </member>
-        <member name="M:TransactionProcessor.Startup.#ctor(Microsoft.AspNetCore.Hosting.IWebHostEnvironment)">
-            <summary>
-            Initializes a new instance of the <see cref="T:TransactionProcessor.Startup"/> class.
-            </summary>
-            <param name="webHostEnvironment">The web host environment.</param>
-        </member>
-        <member name="P:TransactionProcessor.Startup.Configuration">
-            <summary>
-            Gets or sets the configuration.
-            </summary>
-            <value>
-            The configuration.
-            </value>
-        </member>
-        <member name="P:TransactionProcessor.Startup.WebHostEnvironment">
-            <summary>
-            Gets or sets the web host environment.
-            </summary>
-            <value>
-            The web host environment.
-            </value>
-        </member>
-        <member name="M:TransactionProcessor.Startup.ConfigureServices(Microsoft.Extensions.DependencyInjection.IServiceCollection)">
-            <summary>
-            Configures the services.
-            </summary>
-            <param name="services">The services.</param>
-        </member>
-        <member name="F:TransactionProcessor.Startup.EventStoreClientSettings">
-            <summary>
-            The event store client settings
-            </summary>
-        </member>
-        <member name="M:TransactionProcessor.Startup.ConfigureEventStoreSettings(EventStore.Client.EventStoreClientSettings)">
-            <summary>
-            Configures the event store settings.
-            </summary>
-            <param name="settings">The settings.</param>
-        </member>
-        <member name="M:TransactionProcessor.Startup.ConfigureMiddlewareServices(Microsoft.Extensions.DependencyInjection.IServiceCollection)">
-            <summary>
-            Configures the middleware services.
-            </summary>
-            <param name="services">The services.</param>
-        </member>
-        <member name="M:TransactionProcessor.Startup.Configure(Microsoft.AspNetCore.Builder.IApplicationBuilder,Microsoft.AspNetCore.Hosting.IWebHostEnvironment,Microsoft.Extensions.Logging.ILoggerFactory)">
-            <summary>
-            Configures the specified application.
-            </summary>
-            <param name="app">The application.</param>
-            <param name="env">The env.</param>
-            <param name="loggerFactory">The logger factory.</param>
-            <param name="provider">The provider.</param>
         </member>
     </members>
 </doc>

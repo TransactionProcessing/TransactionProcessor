@@ -1,4 +1,5 @@
 using Imposter.Abstractions;
+using Lamar;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
@@ -98,7 +99,7 @@ public class DomainEventControllerTests
         resolver.GetDomainEventHandlers(Arg<IDomainEvent>.Any())
             .Returns(Result.Success(handlers.ToList()));
 
-        DomainEventController controller = new(resolver.Instance())
+        DomainEventController controller = new(resolver.Instance(), new Container(new ServiceRegistry()))
         {
             ControllerContext = new ControllerContext
             {

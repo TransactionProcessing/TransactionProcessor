@@ -17,19 +17,19 @@ namespace TransactionProcessor.Tests.ControllerTests {
     using Xunit;
 
     [Collection("TestCollection")]
-    public class TransactionControllerTests : IClassFixture<TransactionProcessorWebFactory<Startup>> {
+    public class TransactionControllerTests : IClassFixture<TransactionProcessorWebFactory<Program>> {
         #region Fields
 
         /// <summary>
         /// The web application factory
         /// </summary>
-        private readonly TransactionProcessorWebFactory<Startup> WebApplicationFactory;
+        private readonly TransactionProcessorWebFactory<Program> WebApplicationFactory;
 
         #endregion
 
         #region Constructors
 
-        public TransactionControllerTests(TransactionProcessorWebFactory<Startup> webApplicationFactory) {
+        public TransactionControllerTests(TransactionProcessorWebFactory<Program> webApplicationFactory) {
             this.WebApplicationFactory = webApplicationFactory;
         }
 

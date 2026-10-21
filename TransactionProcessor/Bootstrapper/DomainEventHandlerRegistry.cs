@@ -33,23 +33,23 @@ namespace TransactionProcessor.Bootstrapper
         /// <summary>
         /// Initializes a new instance of the <see cref="DomainEventHandlerRegistry"/> class.
         /// </summary>
-        public DomainEventHandlerRegistry()
+        public DomainEventHandlerRegistry(IConfiguration configuration)
         {
-            this.RegisterServices();
+            this.RegisterServices(configuration);
         }
 
         #endregion
 
         #region Methods
 
-        private void RegisterServices()
+        private void RegisterServices(IConfiguration configuration)
         {
             Dictionary<String, String[]> eventHandlersConfiguration =
-                this.GetEventHandlerConfiguration($"AppSettings:{MainRegistrationName}", MainRegistrationName);
+                this.GetEventHandlerConfiguration(configuration, $"AppSettings:{MainRegistrationName}", MainRegistrationName);
             Dictionary<String, String[]> eventHandlersConfigurationDomain =
-                this.GetEventHandlerConfiguration($"AppSettings:{DomainRegistrationName}", DomainRegistrationName);
+                this.GetEventHandlerConfiguration(configuration, $"AppSettings:{DomainRegistrationName}", DomainRegistrationName);
             Dictionary<String, String[]> eventHandlersConfigurationOrdered =
-                this.GetEventHandlerConfiguration($"AppSettings:{OrderedRegistrationName}", OrderedRegistrationName);
+                this.GetEventHandlerConfiguration(configuration, $"AppSettings:{OrderedRegistrationName}", OrderedRegistrationName);
 
             this.RegisterEventHandlers();
             this.RegisterProjections();
@@ -57,14 +57,15 @@ namespace TransactionProcessor.Bootstrapper
             this.AddSingleton<IDomainEventFactory<IDomainEvent>, DomainEventFactory>();
         }
 
-        private Dictionary<String, String[]> GetEventHandlerConfiguration(String sectionName,
+        private Dictionary<String, String[]> GetEventHandlerConfiguration(IConfiguration hostConfiguration,
+                                                                          String sectionName,
                                                                           String registrationName)
         {
             Dictionary<String, String[]> configuration = new Dictionary<String, String[]>();
 
-            if (Startup.Configuration != null)
+            if (hostConfiguration != null)
             {
-                IConfigurationSection section = Startup.Configuration.GetSection(sectionName);
+                IConfigurationSection section = hostConfiguration.GetSection(sectionName);
 
                 if (section != null)
                 {

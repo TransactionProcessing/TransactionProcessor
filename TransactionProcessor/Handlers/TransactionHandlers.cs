@@ -40,6 +40,9 @@ namespace TransactionProcessor.Handlers
             return ResponseFactory.FromResult(transactionResult, message => message);
         }
         
+        /// <summary>Resends the receipt for a transaction.</summary>
+        /// <param name="estateId" example="00000000-0000-0000-0000-000000000023">Estate owning the transaction. On the short route this is bound from the query string.</param>
+        /// <param name="transactionId">Transaction identifier from the route.</param>
         public static async Task<IResult> ResendTransactionReceipt(IMediator mediator, HttpContext ctx, Guid estateId, Guid transactionId, CancellationToken cancellationToken)
         {
             TransactionCommands.ResendTransactionReceiptCommand command = new(transactionId, estateId);

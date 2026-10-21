@@ -122,14 +122,14 @@ namespace TransactionProcessor.BusinessLogic.Tests.Mediator
             hostingEnvironment.ApplicationName.Getter().Returns("Test Application");
 
             ServiceRegistry services = new ServiceRegistry();
-            Startup s = new Startup(hostingEnvironment.Instance());
-            Startup.Configuration = this.SetupMemoryConfiguration();
+            IConfigurationRoot configuration = this.SetupMemoryConfiguration();
             
-            this.AddTestRegistrations(services, hostingEnvironment.Instance());
-            s.ConfigureContainer(services);
+            this.AddTestRegistrations(services, hostingEnvironment.Instance(), configuration);
+            Program.ConfigureServices(services, configuration, hostingEnvironment.Instance());
+            Container container = new(services);
 
             List<String> errors = new List<String>();
-            IMediator mediator = Startup.Container.GetService<IMediator>();
+            IMediator mediator = container.GetService<IMediator>();
             foreach (IBaseRequest baseRequest in this.Requests)
             {
                 try
@@ -161,7 +161,8 @@ namespace TransactionProcessor.BusinessLogic.Tests.Mediator
         }
 
         private void AddTestRegistrations(ServiceRegistry services,
-                                          IWebHostEnvironment hostingEnvironment)
+                                          IWebHostEnvironment hostingEnvironment,
+                                          IConfiguration configuration)
         {
             services.AddLogging();
             DiagnosticListener diagnosticSource = new DiagnosticListener(hostingEnvironment.ApplicationName);
@@ -169,7 +170,7 @@ namespace TransactionProcessor.BusinessLogic.Tests.Mediator
             services.AddSingleton<DiagnosticListener>(diagnosticSource);
             services.AddSingleton<IWebHostEnvironment>(hostingEnvironment);
             services.AddSingleton<IHostEnvironment>(hostingEnvironment);
-            services.AddSingleton<IConfiguration>(Startup.Configuration);
+            services.AddSingleton<IConfiguration>(configuration);
 
             services.OverrideServices(s => {
                                           s.AddSingleton<ISettlementDomainService, DummySettlementDomainService>();

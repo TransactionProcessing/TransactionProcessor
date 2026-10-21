@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
@@ -40,6 +40,11 @@ public static class MerchantHandlers {
         return ResponseFactory.FromResult(result, r => new MerchantBalanceResponse { Balance = r.merchant.balance, MerchantId = Guid.Parse(r.merchant.Id), AvailableBalance = r.merchant.balance, EstateId = estateId });
     }
 
+    /// <summary>Gets the balance change history for a merchant over a date range.</summary>
+    /// <param name="estateId">Estate that owns the merchant.</param>
+    /// <param name="merchantId">Merchant whose balance history is requested.</param>
+    /// <param name="startDate" example="2026-01-01T00:00:00Z">Inclusive start of the history range, supplied as a query parameter.</param>
+    /// <param name="endDate" example="2026-01-31T23:59:59Z">Inclusive end of the history range, supplied as a query parameter.</param>
     public static async Task<IResult> GetMerchantBalanceHistory(IMediator mediator,
                                                                 HttpContext ctx,
                                                                 Guid estateId,

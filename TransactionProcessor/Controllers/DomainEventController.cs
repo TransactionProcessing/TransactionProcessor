@@ -12,6 +12,7 @@ using Shared.Results.Web;
 namespace TransactionProcessor.Controllers
 {
     using Microsoft.AspNetCore.Mvc;
+    using Lamar;
     using Shared.DomainDrivenDesign.EventSourcing;
     using Shared.EventStore.Aggregate;
     using Shared.EventStore.EventHandling;
@@ -25,7 +26,6 @@ namespace TransactionProcessor.Controllers
     [Route(DomainEventController.ControllerRoute)]
     [ApiController]
     [ExcludeFromCodeCoverage]
-    [ApiExplorerSettings(IgnoreApi = true)]
     public class DomainEventController : ControllerBase
     {
         #region Fields
@@ -34,6 +34,7 @@ namespace TransactionProcessor.Controllers
         /// The domain event handler resolver
         /// </summary>
         private readonly IDomainEventHandlerResolver DomainEventHandlerResolver;
+        private readonly IContainer Container;
 
         #endregion
 
@@ -43,9 +44,11 @@ namespace TransactionProcessor.Controllers
         /// Initializes a new instance of the <see cref="DomainEventController"/> class.
         /// </summary>
         /// <param name="domainEventHandlerResolver">The domain event handler resolver.</param>
-        public DomainEventController(IDomainEventHandlerResolver domainEventHandlerResolver)
+        /// <param name="container">The application service container.</param>
+        public DomainEventController(IDomainEventHandlerResolver domainEventHandlerResolver, IContainer container)
         {
             this.DomainEventHandlerResolver = domainEventHandlerResolver;
+            this.Container = container;
         }
 
         #endregion
@@ -55,21 +58,31 @@ namespace TransactionProcessor.Controllers
         /// <summary>
         /// Posts the event asynchronous.
         /// </summary>
-        /// <param name="domainEvent">The domain event.</param>
+        /// <param name="request" example="{&quot;merchantId&quot;:&quot;00000000-0000-0000-0000-000000000227&quot;,&quot;estateId&quot;:&quot;00000000-0000-0000-0000-000000000023&quot;,&quot;merchantName&quot;:&quot;Example Merchant&quot;,&quot;dateCreated&quot;:&quot;2026-01-15T10:30:00Z&quot;}">The event payload. This example is for MerchantCreatedEvent; event fields vary with eventType.</param>
         /// <param name="cancellationToken">The cancellation token.</param>
+        /// <param name="eventType">Required eventType header naming the domain event type.</param>
+        /// <param name="subscriptionId">Optional subscriptionId header selecting a named event handler resolver.</param>
         /// <returns></returns>
+        /// <remarks>
+        /// Set eventType to <c>MerchantCreatedEvent</c> when using the body example. Other event types require their own payload shape.
+        /// </remarks>
         [HttpPost]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status500InternalServerError)]
         public async Task<IResult> PostEventAsync([FromBody] Object request,
-                                                        CancellationToken cancellationToken)
+                                                        CancellationToken cancellationToken,
+                                                        [FromHeader(Name = "eventType")] String eventType,
+                                                        [FromHeader(Name = "subscriptionId")] String subscriptionId = null)
         {
-            Result<IDomainEvent> domainEventResult = await this.GetDomainEvent(request);
+            Result<IDomainEvent> domainEventResult = await this.GetDomainEvent(request, eventType);
 
             if (domainEventResult.IsFailed)
                 return ResponseFactory.FromResult(domainEventResult, SuccessFactory);
             
             IDomainEvent domainEvent = domainEventResult.Data;
 
-            List<IDomainEventHandler> eventHandlers = this.GetDomainEventHandlers(domainEvent);
+            List<IDomainEventHandler> eventHandlers = this.GetDomainEventHandlers(domainEvent, subscriptionId);
 
             cancellationToken.Register(() => this.Callback(cancellationToken, domainEvent.EventId));
 
@@ -123,6 +136,18 @@ namespace TransactionProcessor.Controllers
             }
         }
 
+        [NonAction]
+        public Task<IResult> PostEventAsync(Object request, CancellationToken cancellationToken)
+        {
+            String subscriptionId = this.Request.Headers.ContainsKey("subscriptionId")
+                ? this.Request.Headers["subscriptionId"].ToString()
+                : null;
+            return this.PostEventAsync(request,
+                                       cancellationToken,
+                                       this.Request.Headers["eventType"].ToString(),
+                                       subscriptionId);
+        }
+
         private IDomainEvent SuccessFactory(IDomainEvent arg) {
             return arg;
         }
@@ -169,11 +194,10 @@ namespace TransactionProcessor.Controllers
             }
         }
 
-        private List<IDomainEventHandler> GetDomainEventHandlers(IDomainEvent domainEvent) {
+        private List<IDomainEventHandler> GetDomainEventHandlers(IDomainEvent domainEvent, String subscriptionId) {
 
-            if (this.Request.Headers.ContainsKey("subscriptionId")) {
-                var eventHandlerType = this.Request.Headers["subscriptionId"];
-                var resolver = Startup.Container.GetInstance<IDomainEventHandlerResolver>(eventHandlerType);
+            if (subscriptionId != null) {
+                var resolver = this.Container.GetInstance<IDomainEventHandlerResolver>(subscriptionId);
                 // We are being told by the caller to use a specific handler
                 var allhandlers = resolver.GetDomainEventHandlers(domainEvent);
 
@@ -190,10 +214,8 @@ namespace TransactionProcessor.Controllers
             return eventHandlersResult.Data;
         }
 
-        private async Task<Result<IDomainEvent>> GetDomainEvent(Object domainEvent)
+        private async Task<Result<IDomainEvent>> GetDomainEvent(Object domainEvent, String eventType)
         {
-            String eventType = this.Request.Headers["eventType"].ToString();
-
             Type type;
 
             try {

@@ -20,10 +20,12 @@ namespace TransactionProcessor.Endpoints
                                  .RequireAuthorization(AuthorizationExtensions.PolicyNames.ClientCredentialsOnlyPolicy);
 
             group.MapPost("/", FloatHandlers.CreateFloat)
-                 .WithName("CreateFloat");
+                 .WithName("CreateFloat").WithSummary("Create an estate float")
+                 .WithDescription("Creates the float identified by the request body for the specified estate.");
 
             group.MapPut("/", FloatHandlers.RecordFloatCreditPurchase)
-                 .WithName("RecordFloatCreditPurchase");
+                 .WithName("RecordFloatCreditPurchase").WithSummary("Record a float credit purchase")
+                 .WithDescription("Records a credit purchase, amount, cost price, and purchase time against the specified estate float.");
 
             return endpoints;
         }

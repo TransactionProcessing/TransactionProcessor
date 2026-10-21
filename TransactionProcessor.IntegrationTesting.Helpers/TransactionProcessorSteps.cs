@@ -1,4 +1,5 @@
 ﻿using EventStore.Client;
+using KurrentDB.Client;
 using Shared.Serialisation;
 using SimpleResults;
 using TestHosts.Clients;
@@ -30,11 +31,11 @@ public class TransactionProcessorSteps
     private readonly ITransactionProcessorClient TransactionProcessorClient;
 
     private readonly HttpClient TestHostHttpClient;
-    private readonly EventStoreProjectionManagementClient ProjectionManagementClient;
+    private readonly KurrentDBProjectionManagementClient ProjectionManagementClient;
     private readonly IAgencyBankingClient AgencyBankingClient;
 
     public TransactionProcessorSteps(ITransactionProcessorClient transactionProcessorClient, 
-                                     HttpClient testHostHttpClient, EventStoreProjectionManagementClient projectionManagementClient,
+                                     HttpClient testHostHttpClient, KurrentDBProjectionManagementClient projectionManagementClient,
                                      IAgencyBankingClient agencyBankingClient)
     {
         this.TransactionProcessorClient = transactionProcessorClient;

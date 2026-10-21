@@ -1,4 +1,5 @@
 ﻿using DotNet.Testcontainers.Builders;
+using KurrentDB.Client;
 using System.IO;
 using TestHosts.Clients;
 using TransactionProcessor.Database.Contexts;
@@ -49,8 +50,8 @@ namespace TransactionProcessor.IntegrationTests.Common
 
         private readonly TestingContext TestingContext;
 
-        public EventStoreProjectionManagementClient ProjectionManagementClient;
-
+        public KurrentDBProjectionManagementClient ProjectionManagementClient;
+        
         public IAgencyBankingClient AgencyBankingClient;
 
         #endregion
@@ -209,7 +210,7 @@ namespace TransactionProcessor.IntegrationTests.Common
             await this.ConfigureTestBank(DockerHelper.TestBankSortCode, DockerHelper.TestBankAccountNumber, callbackUrl);
             this.Trace("Test Bank Configured");
 
-            this.ProjectionManagementClient = new EventStoreProjectionManagementClient(ConfigureEventStoreSettings());
+            this.ProjectionManagementClient = new KurrentDBProjectionManagementClient(this.ConfigureKurrentDbSettings());
 
             SimpleResults.Result<SecurityService.DataTransferObjects.TokenResponse> bootstrapToken = await this.SecurityServiceClient.GetToken("management-bootstrap", "management-bootstrap-secret", CancellationToken.None);
             if (bootstrapToken.IsFailed || String.IsNullOrWhiteSpace(bootstrapToken.Data?.AccessToken))

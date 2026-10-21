@@ -50,8 +50,8 @@ namespace TransactionProcessor.Bootstrapper {
         private static bool CachedAggregatesAdded;
         private static readonly object CachedAggregatesLock = new();
 
-        public RepositoryRegistry() {
-            string eventStoreConnectionString = Startup.Configuration.GetValue<string>("EventStoreSettings:ConnectionString");
+        public RepositoryRegistry(IConfiguration configuration, IHostEnvironment environment) {
+            string eventStoreConnectionString = configuration.GetValue<string>("EventStoreSettings:ConnectionString");
 
             this.AddKurrentDBProjectionManagementClient(eventStoreConnectionString);
             this.AddKurrentDBPersistentSubscriptionsClient(eventStoreConnectionString);
@@ -62,7 +62,7 @@ namespace TransactionProcessor.Bootstrapper {
 
             this.AddSingleton(typeof(IDbContextResolver<>), typeof(DbContextResolver<>));
 
-            if (Startup.WebHostEnvironment.IsEnvironment("IntegrationTest") || Startup.Configuration.GetValue<bool>("ServiceOptions:UseInMemoryDatabase")) {
+            if (environment.IsEnvironment("IntegrationTest") || configuration.GetValue<bool>("ServiceOptions:UseInMemoryDatabase")) {
                 this.AddDbContext<EstateManagementContext>(builder => builder.UseInMemoryDatabase("TransactionProcessorReadModel"));
             }
             else {
