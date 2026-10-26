@@ -60,8 +60,7 @@
 
   <Target Name="IncludeDtoXmlDocumentation" BeforeTargets="AssignTargetPaths" DependsOnTargets="ResolveReferences">
     <ItemGroup>
-      <_DtoAssembly Include="@(ReferenceCopyLocalPaths)"
-                    Condition="'%(ReferenceCopyLocalPaths.Filename)' == 'TransactionProcessor.DataTransferObjects'" />
+      <_DtoAssembly Include="@(ReferenceCopyLocalPaths)" Condition="'%(ReferenceCopyLocalPaths.Filename)' == 'TransactionProcessor.DataTransferObjects'" />
       <_DtoXml Include="@(_DtoAssembly->'%(RootDir)%(Directory)TransactionProcessor.DataTransferObjects.xml')" />
       <AdditionalFiles Include="@(_DtoXml)" Condition="Exists('%(_DtoXml.Identity)')" />
       <Content Include="@(_DtoXml)" Condition="Exists('%(_DtoXml.Identity)')">
@@ -97,6 +96,10 @@
     <None Update="..\.dockerignore">
       <DependentUpon>dockerfile</DependentUpon>
     </None>
+  </ItemGroup>
+
+  <ItemGroup>
+    <Folder Include="Controllers\" />
   </ItemGroup>
 
 </Project>

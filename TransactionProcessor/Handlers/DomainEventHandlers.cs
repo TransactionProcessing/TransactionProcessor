@@ -12,6 +12,7 @@ using SimpleResults;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -20,13 +21,14 @@ namespace TransactionProcessor.Handlers;
 public static class DomainEventHandlers {
     public static async Task<IResult> HandleDomainEvent(IDomainEventHandlerResolver domainEventHandlerResolver, IContainer container, HttpContext ctx, CancellationToken cancellationToken) {
 
-        var eventType = ctx.Request.Headers["eventType"];
-        var subscriptionId = ctx.Request.Headers["subscriptionId"];
+        String eventType = ctx.Request.Headers["eventType"].ToString();
+        String subscriptionId = ctx.Request.Headers["subscriptionId"].ToString();
+        if (String.IsNullOrWhiteSpace(subscriptionId))
+            subscriptionId = null;
 
         // TODO: Reject empty event type
 
-
-        Result<IDomainEvent> domainEventResult = await GetDomainEvent(ctx.Request, eventType);
+        Result<IDomainEvent> domainEventResult = await GetDomainEvent(ctx.Request, eventType, cancellationToken);
 
         if (domainEventResult.IsFailed)
             return ResponseFactory.FromResult(domainEventResult, SuccessFactory);
@@ -54,7 +56,7 @@ public static class DomainEventHandlers {
                 await Task.WhenAll(executions.Select(execution => execution.Task));
             }
             catch (Exception ex) {
-                Logger.LogError(new Exception($"One or more handlers threw while processing event [{domainEvent.EventId}]", ex));
+                Logger.LogError(ex, "One or more handlers threw while processing event [{EventId}]", domainEvent.EventId);
             }
 
             List<HandlerFailure> failures = executions.SelectMany(GetFailures).ToList();
@@ -74,7 +76,7 @@ public static class DomainEventHandlers {
         }
         catch (Exception ex) {
             String domainEventData = StringSerialiser.Serialise(domainEvent);
-            Logger.LogError(new Exception($" Failed to Process Event, Event Data received [{domainEventData}]", ex));
+            Logger.LogError(ex, " Failed to Process Event Id {EventId}, Event Data received [" + domainEventData + "]", domainEvent.EventId);
 
             throw;
         }
@@ -120,7 +122,7 @@ public static class DomainEventHandlers {
         return arg;
     }
 
-    private static async Task<Result<IDomainEvent>> GetDomainEvent(Object domainEvent, String eventType) {
+    private static async Task<Result<IDomainEvent>> GetDomainEvent(HttpRequest request, String eventType, CancellationToken cancellationToken) {
         Type type;
 
         try {
@@ -135,7 +137,8 @@ public static class DomainEventHandlers {
             return Result.NotFound($"Failed to find a domain event with type {eventType}");
 
         if (type.IsSubclassOf(typeof(DomainEvent))) {
-            String json = StringSerialiser.Serialise(domainEvent);
+            using JsonDocument requestBody = await JsonDocument.ParseAsync(request.Body, cancellationToken: cancellationToken);
+            String json = requestBody.RootElement.GetRawText();
 
             DomainEventFactory domainEventFactory = new();
             return Result.Success(domainEventFactory.CreateDomainEvent(json, type) as IDomainEvent);

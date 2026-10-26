@@ -163,7 +163,7 @@ public partial class Program
 
     private static void ConfigureEndpoints(WebApplication app)
     {
-        app.MapControllers();
+        app.MapDomainEventEndpoints();
         app.MapHealthChecks("health", new HealthCheckOptions
         {
             Predicate = _ => true,
