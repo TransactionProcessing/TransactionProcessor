@@ -210,7 +210,7 @@ namespace TransactionProcessor.BusinessLogic.OperatorInterfaces.AgencyBanking
             request.Content = CreateContent(body);
             string requestBody = await request.Content.ReadAsStringAsync(cancellationToken);
             Logger.LogWarning("AgencyBanking deposit request starting. TransactionId=[{TransactionId}], AgentId=[{AgentId}], AccountNumber=[{AccountNumber}], RequestUri=[{RequestUri}], RequestBody=[{RequestBody}]",
-                transactionId, accountNumber, request.RequestUri, requestBody);
+                transactionId, agentId, accountNumber, request.RequestUri, requestBody);
 
             HttpResponseMessage response = await this.HttpClient.SendAsync(request, cancellationToken);
             String responseContent = await response.Content.ReadAsStringAsync(cancellationToken);
