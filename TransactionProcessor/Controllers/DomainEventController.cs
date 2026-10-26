@@ -88,26 +88,23 @@ namespace TransactionProcessor.Controllers
 
             try
             {
-                Logger.LogWarning($"Processing event - ID [{domainEvent.EventId}], Type[{domainEvent.GetType().Name}]");
+                Logger.LogWarning("Processing event - ID [{EventId}], Type[{EventType}]", domainEvent.EventId, domainEvent.GetType().Name);
 
-                if (eventHandlers == null || eventHandlers.Any() == false)
-                {
+                if (eventHandlers == null || eventHandlers.Any() == false) {
                     // Log a warning out 
-                    Logger.LogInformation($"No event handlers configured for Event Type [{domainEvent.GetType().Name}]");
+                    Logger.LogInformation("No event handlers configured for Event Type [{EventType}]", domainEvent.GetType().Name);
                     return Results.Ok();
                 }
 
                 List<HandlerExecution> executions = eventHandlers
-                    .Select(domainEventHandler => this.ExecuteHandler(domainEventHandler, domainEvent, cancellationToken))
-                    .ToList();
+                                                    .Select(domainEventHandler => this.ExecuteHandler(domainEventHandler, domainEvent, cancellationToken))
+                                                    .ToList();
 
-                try
-                {
+                try {
                     await Task.WhenAll(executions.Select(execution => execution.Task));
                 }
-                catch (Exception ex)
-                {
-                    Logger.LogError(new Exception($"One or more handlers threw while processing event [{domainEvent.EventId}]", ex));
+                catch (Exception ex) {
+                    Logger.LogError(ex, "One or more handlers threw while processing event [{EventId}]", domainEvent.EventId);
                 }
 
                 List<HandlerFailure> failures = executions.SelectMany(this.GetFailures).ToList();
@@ -123,14 +120,14 @@ namespace TransactionProcessor.Controllers
                                         });
                 }
 
-                Logger.LogWarning($"Finished processing event - ID [{domainEvent.EventId}]");
+                Logger.LogWarning("Finished processing event - ID [{EventId}]", domainEvent.EventId);
 
                 return Results.Ok();
             }
             catch (Exception ex)
             {
                 String domainEventData = StringSerialiser.Serialise(domainEvent);
-                Logger.LogError(new Exception($" Failed to Process Event, Event Data received [{domainEventData}]", ex));
+                Logger.LogError(ex,"Failed to Process Event Id {EventId}, Event Data received [{EventData}]", domainEvent.EventId, domainEventData);
 
                 throw;
             }
@@ -157,7 +154,7 @@ namespace TransactionProcessor.Controllers
         {
             if (cancellationToken.IsCancellationRequested) //I think this would always be true anyway
             {
-                Logger.LogInformation($"Cancel request for EventId {eventId}");
+                Logger.LogInformation("Cancel request for EventId {EventId}", eventId);
                 cancellationToken.ThrowIfCancellationRequested();
             }
         }

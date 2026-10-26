@@ -1,5 +1,6 @@
 using JasperFx.Core;
 using MediatR;
+using Microsoft.EntityFrameworkCore.Storage.ValueConversion.Internal;
 using SimpleResults;
 using System.IO;
 using TransactionProcessor.Aggregates;
@@ -24,6 +25,7 @@ using Microsoft.Extensions.DependencyInjection;
     using System.Collections.Generic;
     using System.Diagnostics;
     using System.Diagnostics.CodeAnalysis;
+    using System.IO.Abstractions;
     using System.Linq;
     using System.Threading;
     using System.Threading.Tasks;
@@ -38,10 +40,10 @@ using Microsoft.Extensions.DependencyInjection;
             String logMessage = $"{subType} - {message}";
             switch (tt) {
                 case TraceEventType.Critical:
-                    Logger.LogCritical(new Exception(logMessage));
+                    Logger.LogCritical(logMessage);
                     break;
                 case TraceEventType.Error:
-                    Logger.LogError(new Exception(logMessage));
+                    Logger.LogError(logMessage);
                     break;
                 case TraceEventType.Warning:
                     Logger.LogWarning(logMessage);
@@ -124,7 +126,8 @@ using Microsoft.Extensions.DependencyInjection;
         
         public void Start() {
             foreach (FileProfile fileProfile in this.FileProfiles) {
-                Logger.LogWarning($"File Profile: {fileProfile.Name} Listening on Folder: [{fileProfile.ListeningDirectory}] IsEnabled: {fileProfile.IsEnabled}");
+                String logMessage = $"Listening on Folder: [{fileProfile.ListeningDirectory}] IsEnabled: {fileProfile.IsEnabled}";
+                Logger.LogWarning("File Profile: {FileProfileName} " + logMessage, fileProfile.Name);
                 Directory.CreateDirectory(fileProfile.ListeningDirectory);
 
                 FileSystemWatcher fileSystemWatcher = new FileSystemWatcher
@@ -148,7 +151,7 @@ using Microsoft.Extensions.DependencyInjection;
                 String failedFolder = Path.Combine(fileProfile.ListeningDirectory, "failed");
 
                 try {
-                    Logger.LogInformation($"File detected on profile {fileProfile.Name} File name [{e.Name}]");
+                    Logger.LogInformation("File detected on profile {FileProfileName} File name [{FileName}]", fileProfile.Name, e.Name);
 
                     // Make sure the file is not locked by another process
                     await using (FileStream stream = new FileStream(e.FullPath, FileMode.Open, FileAccess.Read, FileShare.None)) {
@@ -186,14 +189,14 @@ using Microsoft.Extensions.DependencyInjection;
                         String failedFilePath = Path.Combine(failedFolder, e.Name);
                         File.Move(e.FullPath, failedFilePath);
                         // Log the error
-                        Logger.LogWarning($"Failed to process file [{e.FullPath}]: {result.Message}");
+                        Logger.LogWarning("Failed to process file [{FileName}]: " + result.Message, e.FullPath);
                     }
                     else {
                         // Move the file to the processed folder
                         String processedFilePath = Path.Combine(processedFolder, e.Name);
                         File.Move(e.FullPath, processedFilePath);
                         // Log success
-                        Logger.LogInformation($"Successfully processed file [{e.FullPath}]");
+                        Logger.LogInformation("Successfully processed file [{FileName}]", e.FullPath);
                     }
                 }
                 catch (Exception ex) {
@@ -202,8 +205,7 @@ using Microsoft.Extensions.DependencyInjection;
                     String failedFilePath = Path.Combine(failedFolder, e.Name);
                     File.Move(e.FullPath, failedFilePath);
                     // Log the error
-                    Console.Error.WriteLine($"Failed to process file [{e.FullPath}]: {ex.Message}");
-                    Logger.LogError($"Failed to process file [{e.FullPath}]", ex);
+                    Logger.LogError(ex, "Failed to process file [{FileName}]", e.FullPath);
                 }
             }); 
         }
@@ -243,30 +245,30 @@ using Microsoft.Extensions.DependencyInjection;
             try {
                 Func<String, IOperatorProxy> resolver = this.OperatorProxyResolver;
                 if (resolver == null) {
-                    Logger.LogWarning($"Auto logon for operator Id [{operatorId}] skipped because no operator proxy resolver was registered");
+                    Logger.LogWarning("Auto logon for operator Id [{OperatorId}] skipped because no operator proxy resolver was registered", operatorId);
                     return;
                 }
 
                 IOperatorProxy proxy = resolver(operatorId);
                 if (proxy == null) {
-                    Logger.LogWarning($"Auto logon for operator Id [{operatorId}] skipped because no operator proxy was resolved");
+                    Logger.LogWarning("Auto logon for operator Id [{OperatorId}] skipped because no operator proxy was resolved", operatorId);
                     return;
                 }
 
                 Result<OperatorResponse> logonResult = await proxy.ProcessLogonMessage(cancellationToken);
 
                 if (logonResult.IsSuccess) {
-                    Logger.LogInformation($"Auto logon for operator Id [{operatorId}] status [{logonResult.Data.IsSuccessful}]");
+                    Logger.LogInformation("Auto logon for operator Id [{OperatorId}] status [{" + logonResult.Data.IsSuccessful + "}]", operatorId);
                     return;
                 }
 
-                Logger.LogWarning($"Auto logon for operator Id [{operatorId}] status [{logonResult.Message}]");
+                Logger.LogWarning("Auto logon for operator Id [{OperatorId}] status [{" + logonResult.Message + "}]", operatorId);
             }
             catch (RpcException ex) when (ex.StatusCode == StatusCode.Unavailable) {
-                Logger.LogWarning($"Auto logon for operator Id [{operatorId}] deferred because the operator gRPC service is unavailable: {ex.Status.Detail}");
+                Logger.LogWarning("Auto logon for operator Id [{operatorId}] deferred because the operator gRPC service is unavailable: " + ex.Status.Detail, operatorId);
             }
             catch (Exception ex) {
-                Logger.LogError(new Exception($"Auto logon for operator Id [{operatorId}] failed", ex));
+                Logger.LogError(ex, "Auto logon for operator Id [{OperatorId}] failed", operatorId);
             }
         }
     }

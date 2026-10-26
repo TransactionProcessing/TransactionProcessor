@@ -47,11 +47,13 @@ namespace TransactionProcessor.BusinessLogic.OperatorInterfaces.VoucherManagemen
                 // Covert the transaction amount to Decimal and remove decimal places
                 if (Decimal.TryParse(transactionAmount, out Decimal amountAsDecimal) == false)
                 {
+                    Logger.LogWarning("Voucher sale request rejected. TransactionId=[{TransactionId}] - Transaction Amount is not a valid decimal value", transactionId);
                     return Result.Invalid("Transaction Amount is not a valid decimal value");
                 }
 
                 if (String.IsNullOrEmpty(recipientEmail) && String.IsNullOrEmpty(recipientMobile))
                 {
+                    Logger.LogWarning("Voucher sale request rejected. TransactionId=[{TransactionId}] - Recipient details (either email or mobile) is a required field for this transaction type", transactionId);
                     return Result.Invalid("Recipient details (either email or mobile) is a required field for this transaction type");
                 }
 

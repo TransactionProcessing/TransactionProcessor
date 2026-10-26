@@ -131,9 +131,8 @@ namespace TransactionProcessor.IntegrationTests.Common
 
             (String imageName, Boolean useLatest) imageDetails = this.GetImageDetails(ContainerType.TestHost).Data;
 
-            ContainerBuilder testHostContainer = new ContainerBuilder()
+            ContainerBuilder testHostContainer = new ContainerBuilder(imageDetails.imageName)
                 .WithName(this.TestHostContainerName)  // similar to WithName()
-                .WithImage(imageDetails.imageName)
                 .WithEnvironment(environmentVariables)
                 .MountHostFolder(this.HostTraceFolder)
                 .WithPortBinding(DockerPorts.TestHostPort, true);

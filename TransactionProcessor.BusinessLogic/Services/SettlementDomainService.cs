@@ -119,7 +119,7 @@ namespace TransactionProcessor.BusinessLogic.Services
                         return ResultHelpers.CreateFailure(saveResult);
                 }
                 catch (Exception ex) {
-                    Logger.LogError($"Failed to process transaction {feeToSettle.transactionId} for settlement {settlementAggregateId}", ex);
+                    Logger.LogError(ex,$"Failed to process transaction {feeToSettle.transactionId} for settlement {settlementAggregateId}");
                     failedResults.Add(Result.Failure($"Failed to process transaction {feeToSettle.transactionId} for settlement {settlementAggregateId}: {ex.Message}"));
                 }
             }
@@ -145,10 +145,8 @@ namespace TransactionProcessor.BusinessLogic.Services
 
             SettlementAggregate settlementAggregate = getSettlementResult.Data;
 
-            Logger.LogInformation("In ApplySettlementUpdates");
                 if (settlementAggregate.IsCreated == false)
                 {
-                    Logger.LogInformation("In ApplySettlementUpdates - aggregate not created");
                     Result createResult = settlementAggregate.Create(command.EstateId, command.MerchantId, command.SettlementDueDate.Date);
                     if (createResult.IsFailed)
                         return ResultHelpers.CreateFailure(createResult);
@@ -165,7 +163,6 @@ namespace TransactionProcessor.BusinessLogic.Services
                     FeeValue = command.FeeValue,
                     SettlementDueDate = command.SettlementDueDate
                 };
-                Logger.LogInformation("In ApplySettlementUpdates - about to add fee");
                 Result stateResult = settlementAggregate.AddFee(command.MerchantId, command.TransactionId, calculatedFee);
                 if (stateResult.IsFailed)
                     return ResultHelpers.CreateFailure(stateResult);

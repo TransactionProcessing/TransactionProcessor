@@ -43,9 +43,10 @@ namespace TransactionProcessor.DatabaseTests
 
         private NlogLogger CreateLogger()
         {
-            NlogLogger logger = new NlogLogger();
+            NlogLogger logger = new();
             logger.Initialise(LogManager.GetLogger("Specflow"), "Specflow");
-            LogManager.AddHiddenAssembly(typeof(NlogLogger).Assembly);
+            LogManager.Setup().SetupLogFactory(setup =>
+                setup.AddCallSiteHiddenAssembly(typeof(NlogLogger).Assembly));
             return logger;
         }
     }

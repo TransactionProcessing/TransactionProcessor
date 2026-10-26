@@ -43,29 +43,29 @@ internal sealed class ClientMessageLogger :
 
         if (reply.Properties.TryGetValue(
                 HttpResponseMessageProperty.Name,
-                out object httpResponseObj))
-        {
+                out object httpResponseObj)) {
             HttpResponseMessageProperty httpResponse = (HttpResponseMessageProperty)httpResponseObj;
 
             HttpStatusCode statusCode = httpResponse.StatusCode;
             if (statusCode != HttpStatusCode.OK) {
-                Logger.LogWarning($"Received failed SOAP reply from {this.ClientName}:\r\n{reply}");
+                Logger.LogWarning(
+                    "Received failed SOAP reply from {ClientName}:\r\n" + reply,
+                    this.ClientName);
                 return;
             }
 
-            LogMessage(LogType.Response, $"Received SOAP reply from {this.ClientName}:\r\n{reply}");
+            LogMessage(LogType.Response, "Received SOAP reply from {ClientName}:\r\n" + reply, this.ClientName);
         }
     }
 
 
-    public Object BeforeSendRequest(ref Message request, IClientChannel channel)
-    {
-        LogMessage(LogType.Request, $"Sending SOAP request to {this.ClientName}:\r\n{request}");
+    public Object BeforeSendRequest(ref Message request, IClientChannel channel) {
+        LogMessage(LogType.Request, $"Sending SOAP request to {ClientName}:\r\n" + request, this.ClientName);
         return null;
     }
 
 
-    private void LogMessage(LogType type, String message)
+    private void LogMessage(LogType type, String messageTemplate, params Object[]? args)
     {
         if (Config.LogRequests == false && type == LogType.Request)
             return;
@@ -74,11 +74,11 @@ internal sealed class ClientMessageLogger :
 
         Action action = Config.LoggingLevel switch
         {
-            LogLevel.Warning => () => Logger.LogWarning(message),
-            LogLevel.Information => () => Logger.LogInformation(message),
-            LogLevel.Debug => () => Logger.LogDebug(message),
-            LogLevel.Trace => () => Logger.LogTrace(message),
-            _ => () => Logger.LogInformation(message)
+            LogLevel.Warning => () => Logger.LogWarning(messageTemplate, args),
+            LogLevel.Information => () => Logger.LogInformation(messageTemplate, args),
+            LogLevel.Debug => () => Logger.LogDebug(messageTemplate, args),
+            LogLevel.Trace => () => Logger.LogTrace(messageTemplate, args),
+            _ => () => Logger.LogInformation(messageTemplate, args)
         };
 
         action();
