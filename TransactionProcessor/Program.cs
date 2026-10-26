@@ -77,7 +77,9 @@ public partial class Program
         });
 
         WebApplication app = builder.Build();
-        Logger.Initialise(app.Services.GetRequiredService<ILoggerFactory>().CreateLogger("TransactionProcessor"));
+        LogManager.Setup().LoadConfigurationFromFile("NLog.config");
+        NLog.Logger logger = LogManager.GetLogger("TransactionProcessor");
+        Shared.Logger.Logger.Initialise(logger, "TransactionProcessor");
         configuration.LogConfiguration(Logger.LogWarning);
         StringSerialiser.Initialise(app.Services.GetRequiredService<IStringSerialiser>());
         TypeProvider.LoadDomainEventsTypeDynamically();
