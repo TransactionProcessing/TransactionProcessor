@@ -46,21 +46,27 @@ public class PataPawaPrePayProxy : IOperatorProxy{
             content.Add(new StringContent(this.Configuration.Password), "password");
             requestMessage.Content = content;
 
+            String bodyForLog = $"request=login&username={Uri.EscapeDataString(this.Configuration.Username)}&password=[REDACTED]";
+
+            Logger.LogWarning("Sending logon request to PataPawaPrePay {Url}. Form fields: {RequestBody}", requestMessage.RequestUri, bodyForLog);
+            
             HttpResponseMessage responseMessage = await this.HttpClient.SendAsync(requestMessage, cancellationToken);
 
             // Check the send was successful
             if (responseMessage.IsSuccessStatusCode == false) {
+                Logger.LogWarning("Error sending logon request to PataPawaPrePay {Url}. Status Code {StatusCode}", requestMessage.RequestUri, responseMessage.StatusCode);
                 return Result.Failure($"Error sending logon request to Patapawa. Status Code [{responseMessage.StatusCode}]");
             }
 
             // Get the response
             String responseContent = await responseMessage.Content.ReadAsStringAsync(cancellationToken);
 
-            Logger.LogInformation($"Received response message from Patapawa [{responseContent}]");
+            Logger.LogWarning("Received logon response message from Patapawa [{ResponseContent}]", responseContent);
 
             return this.CreateFromLogon(responseContent);
         }
         catch (Exception ex) {
+            Logger.LogError(ex, "Error processing logon message for PataPawaPrePay");
             return Result.Failure($"Error processing logon message for PataPawaPrePay [{ex.Message}]");
         }
     }
@@ -69,22 +75,23 @@ public class PataPawaPrePayProxy : IOperatorProxy{
                                                                    Models.Merchant.Merchant merchant, DateTime transactionDateTime, String transactionReference, Dictionary<String, String> additionalTransactionMetadata, CancellationToken cancellationToken){
         // Get the logon response for the operator
         OperatorResponse logonResponse = this.MemoryCache.Get<OperatorResponse>("PataPawaPrePayLogon");
-        if (logonResponse == null)
-        {
+        if (logonResponse == null) {
+            Logger.LogWarning("PataPawaPrePay sale request rejected. TransactionId=[{TransactionId}] - logonResponse is null", transactionId);
             return Result.Invalid("PataPawaPrePayLogon - logonResponse is null");
         }
+
         String apiKey = logonResponse.AdditionalTransactionResponseMetadata.ExtractFieldFromMetadata<String>("PataPawaPrePaidAPIKey");
 
-        if (String.IsNullOrEmpty(apiKey))
-        {
+        if (String.IsNullOrEmpty(apiKey)) {
+            Logger.LogWarning("PataPawaPrePay sale request rejected. TransactionId=[{TransactionId}] - APIKey is a required field for this transaction type", transactionId);
             return Result.Invalid("PataPawaPrePayAPIKey - APIKey is a required field for this transaction type");
         }
 
         // Check the meta data for the sale message type
         String messageType = additionalTransactionMetadata.ExtractFieldFromMetadata<String>("PataPawaPrePayMessageType");
 
-        if (String.IsNullOrEmpty(messageType))
-        {
+        if (String.IsNullOrEmpty(messageType)) {
+            Logger.LogWarning("PataPawaPrePay sale request rejected. TransactionId=[{TransactionId}] - Message Type is a required field for this transaction type", transactionId);
             return Result.Invalid("PataPawaPrePayMessageType - Message Type is a required field for this transaction type");
         }
 
@@ -92,13 +99,14 @@ public class PataPawaPrePayProxy : IOperatorProxy{
 
         if (String.IsNullOrEmpty(meterNumber))
         {
+            Logger.LogWarning("PataPawaPrePay sale request rejected. TransactionId=[{TransactionId}] - Meter Number is a required field for this transaction type", transactionId);
             return Result.Invalid("MeterNumber - Meter Number is a required field for this transaction type");
         }
 
         return messageType switch
         {
             "meter" => await this.PerformMeterTransaction(meterNumber, apiKey, cancellationToken),
-            "vend" => await this.PerformVendTransaction(meterNumber, apiKey, additionalTransactionMetadata, cancellationToken),
+            "vend" => await this.PerformVendTransaction(transactionId, meterNumber, apiKey, additionalTransactionMetadata, cancellationToken),
             _ => Result.Invalid($"PataPawaPrePayMessageType - Unsupported Message Type {messageType}")
         };
     }
@@ -113,12 +121,18 @@ public class PataPawaPrePayProxy : IOperatorProxy{
             content.Add(new StringContent(apiKey), "key");
             requestMessage.Content = content;
 
+            string bodyForLog =
+                $"request=meter&username={Uri.EscapeDataString(this.Configuration.Username)}" +
+                $"&meter={Uri.EscapeDataString(meterNumber)}&key=[REDACTED]";
+
+            Logger.LogWarning("Sending meter request to PataPawaPrePay {Url}. Form fields: {RequestBody}", requestMessage.RequestUri, bodyForLog);
+
             HttpResponseMessage responseMessage = await this.HttpClient.SendAsync(requestMessage, cancellationToken);
 
             // Get the response
             String responseContent = await responseMessage.Content.ReadAsStringAsync(cancellationToken);
 
-            Logger.LogInformation($"Received response message from Patapawa [{responseContent}]");
+            Logger.LogInformation("Received response message from PataPawaPrePay [{ResponseContent}]", responseContent);
 
             return this.CreateFromMeter(responseContent);
         }
@@ -126,17 +140,19 @@ public class PataPawaPrePayProxy : IOperatorProxy{
             throw;
         }
         catch (Exception ex) {
+            Logger.LogError(ex, "Error processing meter message for PataPawaPrePay");
             return Result.Failure($"Error performing meter transaction for meter number {meterNumber} [{ex.Message}]");
         }
     }
 
-    private async Task<Result<OperatorResponse>> PerformVendTransaction(String meterNumber, String apiKey, Dictionary<String, String> additionalTransactionMetadata, CancellationToken cancellationToken)
+    private async Task<Result<OperatorResponse>> PerformVendTransaction(Guid transactionId, String meterNumber, String apiKey, Dictionary<String, String> additionalTransactionMetadata, CancellationToken cancellationToken)
     {
         try {
             String customerName = additionalTransactionMetadata.ExtractFieldFromMetadata<String>("CustomerName");
 
             if (String.IsNullOrEmpty(customerName))
             {
+                Logger.LogWarning("PataPawaPrePay vend request rejected. TransactionId=[{TransactionId}] - CustomerName is a required field for this transaction type", transactionId);
                 return Result.Invalid("CustomerName - Customer Name is a required field for this transaction type");
             }
 
@@ -144,9 +160,9 @@ public class PataPawaPrePayProxy : IOperatorProxy{
 
             if (String.IsNullOrEmpty(amount))
             {
+                Logger.LogWarning("PataPawaPrePay sale request rejected. TransactionId=[{TransactionId}] - Amount is a required field for this transaction type", transactionId);
                 return Result.Invalid("Amount - Amount is a required field for this transaction type");
             }
-
 
             HttpRequestMessage requestMessage = new HttpRequestMessage(HttpMethod.Post, this.Configuration.Url);
             MultipartFormDataContent content = new MultipartFormDataContent();
@@ -158,12 +174,21 @@ public class PataPawaPrePayProxy : IOperatorProxy{
             content.Add(new StringContent(customerName), "customerName");
             requestMessage.Content = content;
 
+            string bodyForLog =
+                $"request=vend&username={Uri.EscapeDataString(this.Configuration.Username)}" +
+                $"&meter={Uri.EscapeDataString(meterNumber)}" +
+                $"&key=[REDACTED]" +
+                $"&amount={Uri.EscapeDataString(amount)}" +
+                $"&customerName={Uri.EscapeDataString(customerName)}";
+
+            Logger.LogWarning("Sending vend request to PataPawaPrePay {Url}. Form fields: {RequestBody}", requestMessage.RequestUri, bodyForLog);
+
             HttpResponseMessage responseMessage = await this.HttpClient.SendAsync(requestMessage, cancellationToken);
 
             // Get the response
             String responseContent = await responseMessage.Content.ReadAsStringAsync(cancellationToken);
 
-            Logger.LogInformation($"Received response message from Patapawa [{responseContent}]");
+            Logger.LogInformation("Received response message from PataPawaPrePay [{ResponseContent}]", responseContent);
 
             return this.CreateFromVend(responseContent);
         }
@@ -171,6 +196,7 @@ public class PataPawaPrePayProxy : IOperatorProxy{
             throw;
         }
         catch (Exception ex) {
+            Logger.LogError(ex, "Error processing meter message for PataPawaPrePay");
             return Result.Failure($"Error performing vend transaction for meter number {meterNumber} [{ex.Message}]");
         }
     }

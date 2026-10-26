@@ -85,18 +85,20 @@ namespace TransactionProcessor.BusinessLogic.OperatorInterfaces.SafaricomPinless
 
                 if (String.IsNullOrEmpty(transactionAmount))
                 {
+                    Logger.LogWarning("Safaricom sale request rejected. TransactionId=[{TransactionId}] - Amount is a required field for this transaction type", transactionId);
                     return Result.Invalid("Amount is a required field for this transaction type");
                 }
 
                 if (String.IsNullOrEmpty(customerMsisdn))
                 {
+                    Logger.LogWarning("Safaricom sale request rejected. TransactionId=[{TransactionId}] - CustomerAccountNumber is a required field for this transaction type", transactionId);
                     return Result.Invalid("CustomerAccountNumber is a required field for this transaction type");
                 }
 
                 // Multiply amount before sending
                 // Covert the transaction amount to Decimal and remove decimal places
-                if (Decimal.TryParse(transactionAmount, out Decimal amountAsDecimal) == false)
-                {
+                if (Decimal.TryParse(transactionAmount, out Decimal amountAsDecimal) == false) {
+                    Logger.LogWarning("Safaricom sale request rejected. TransactionId=[{TransactionId}] - Transaction Amount is not a valid decimal value", transactionId);
                     return Result.Invalid("Transaction Amount is not a valid decimal value");
                 }
 
@@ -104,24 +106,24 @@ namespace TransactionProcessor.BusinessLogic.OperatorInterfaces.SafaricomPinless
             
                 String requestUrl = this.BuildRequest(transactionDateTime, transactionReference, customerMsisdn, operatorTransactionAmount);
 
-                Logger.LogInformation($"Sending message to Safaricom [{requestUrl}]");
+                Logger.LogInformation("Sending message to Safaricom [{RequestBody}]", requestUrl);
 
                 // Concatenate the request message
                 HttpRequestMessage requestMessage = new HttpRequestMessage(HttpMethod.Get, new Uri(requestUrl));
 
                 // Send the request to Safaricom
                 HttpResponseMessage responseMessage = await this.HttpClient.SendAsync(requestMessage, cancellationToken);
+                String responseContent = await responseMessage.Content.ReadAsStringAsync(cancellationToken);
+                Logger.LogWarning("Safaricom response received. TransactionId=[{TransactionId}], StatusCode=[{StatusCode}], ContentLength=[{ContentLength}]",
+                    transactionId, responseMessage.StatusCode, responseContent?.Length ?? 0);
 
                 // Check the send was successful
-                if (responseMessage.IsSuccessStatusCode == false)
-                {
+                if (responseMessage.IsSuccessStatusCode == false) {
+                    Logger.LogWarning("Safaricom sale failed. TransactionId=[{TransactionId}], StatusCode=[{StatusCode}], ResponseBody=[{ResponseContent}]", transactionId, responseMessage.StatusCode, responseContent);
                     return Result.Failure($"Error sending request [{requestUrl}] to Safaricom.  Status Code [{responseMessage.StatusCode}]");
                 }
-
-                // Get the response
-                String responseContent = await responseMessage.Content.ReadAsStringAsync();
-
-                Logger.LogInformation($"Received response message from Safaricom [{responseContent}]");
+                
+                Logger.LogInformation("Safaricom sale completed [{ResponseContent}]", responseContent);
 
                 return this.CreateFrom(responseContent);
             }
@@ -129,6 +131,7 @@ namespace TransactionProcessor.BusinessLogic.OperatorInterfaces.SafaricomPinless
                 throw;
             }
             catch (Exception ex) {
+                Logger.LogError(ex, "Error sending request to Safaricom");
                 return Result.Failure($"Error sending request to Safaricom [{ex.Message}]");
             }
         }

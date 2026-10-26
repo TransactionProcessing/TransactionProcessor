@@ -34,7 +34,7 @@ namespace TransactionProcessor.BusinessLogic.Tests.Manager
 
         public TransactionProcessorManagerTests()
         {
-            Logger.Initialise(Microsoft.Extensions.Logging.Abstractions.NullLogger.Instance);
+            Logger.Initialise(new NullLogger());
             this.TransactionProcessorReadModelRepository = new ITransactionProcessorReadModelRepositoryImposter();
             StringSerialiser.Initialise(new Shared.Serialisation.SystemTextJsonSerializer(new System.Text.Json.JsonSerializerOptions()));
             this.AggregateService = new IAggregateServiceImposter();

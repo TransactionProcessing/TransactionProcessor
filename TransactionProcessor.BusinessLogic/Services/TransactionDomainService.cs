@@ -474,8 +474,7 @@ namespace TransactionProcessor.BusinessLogic.Services{
             }
             catch (Exception e) {
                 // Log out the error
-                Logger.LogError(e);
-                Logger.LogWarning(e.StackTrace);
+                Logger.LogError(e, "Error processing operator message");
                 return ResultHelpers.CreateFailedResult(new OperatorResponse { IsSuccessful = false, ResponseCode = "9999", ResponseMessage = e.GetCombinedExceptionMessages() });
             }
         }
@@ -550,7 +549,7 @@ namespace TransactionProcessor.BusinessLogic.Services{
 
         public async Task<Result<ProcessSaleTransactionResponse>> ProcessSaleTransaction(TransactionCommands.ProcessSaleTransactionCommand command,
                                                                                          CancellationToken cancellationToken) {
-            Logger.LogInformation($"Starting ProcessSaleTransaction for TransactionId {command.TransactionId}");
+            Logger.LogInformation("Starting ProcessSaleTransaction for TransactionId {TransactionId}", command.TransactionId);
 
             try {
                 Result<TransactionAggregate> transactionResult = await GetTransactionAggregate(command, cancellationToken);
@@ -580,7 +579,7 @@ namespace TransactionProcessor.BusinessLogic.Services{
                     return ResultHelpers.CreateFailure(saveResult);
 
                 Transaction transaction = transactionAggregate.GetTransaction();
-                Logger.LogInformation($"Transaction {command.TransactionId} completed successfully");
+                Logger.LogInformation("Transaction {TransactionId} completed successfully", command.TransactionId);
 
                 return Result.Success(new ProcessSaleTransactionResponse {
                     ResponseMessage = transaction.ResponseMessage,
@@ -592,19 +591,19 @@ namespace TransactionProcessor.BusinessLogic.Services{
                 });
             }
             catch (Exception ex) {
-                Logger.LogError($"Unhandled exception during ProcessSaleTransaction for {command.TransactionId}", ex);
+                Logger.LogError(ex, "Unhandled exception during ProcessSaleTransaction for {TransactionId}", command.TransactionId);
                 return Result.Failure(ex.GetExceptionMessages());
             }
         }
 
         private async Task<Result<TransactionAggregate>> GetTransactionAggregate(TransactionCommands.ProcessSaleTransactionCommand command,
                                                                                       CancellationToken cancellationToken) {
-            Logger.LogDebug($"Fetching TransactionAggregate for TransactionId {command.TransactionId}");
+            Logger.LogDebug("Fetching TransactionAggregate for TransactionId {TransactionId}", command.TransactionId);
 
             Result<TransactionAggregate> result = await DomainServiceHelper.GetAggregateOrFailure(ct => AggregateService.GetLatest<TransactionAggregate>(command.TransactionId, ct), command.TransactionId, cancellationToken, false);
 
             if (result.IsFailed)
-                Logger.LogWarning($"TransactionAggregate not found for TransactionId {command.TransactionId}");
+                Logger.LogWarning("TransactionAggregate not found for TransactionId {TransactionId}", command.TransactionId);
 
             return result;
         }
@@ -613,12 +612,13 @@ namespace TransactionProcessor.BusinessLogic.Services{
         private async Task<Result<TransactionValidationResult>> ValidateTransaction(TransactionCommands.ProcessSaleTransactionCommand command,
                                                                                          CancellationToken cancellationToken) {
             Decimal? amount = command.AdditionalTransactionMetadata.ExtractFieldFromMetadata<decimal?>("Amount");
-            Logger.LogInformation($"Validating Sale Transaction for Merchant {command.MerchantId}, Product {command.ProductId}");
+            Logger.LogInformation("Validating Sale Transaction Id {TransactionId} for Merchant {MerchantId}, Product {ProductId}", command.TransactionId, command.MerchantId, command.ProductId);
             TransactionSource transactionSourceValue = (TransactionSource)command.TransactionSource;
 
             Result<TransactionValidationResult> result = await TransactionValidationService.ValidateSaleTransaction(command.EstateId, command.MerchantId, command.ContractId, command.ProductId, command.DeviceIdentifier, command.OperatorId, amount, transactionSourceValue, cancellationToken);
 
-            Logger.LogInformation($"Validation completed with ResponseCode {result.Data?.ResponseCode}, Message {result.Data?.ResponseMessage}");
+            Logger.LogInformation("Validation completed for Transaction Id {TransactionId} with ResponseCode {ResponseCode}, Message {ResponseMessage}",
+                command.TransactionId, result.Data?.ResponseCode, result.Data?.ResponseMessage);
 
             return result;
         }
@@ -628,7 +628,7 @@ namespace TransactionProcessor.BusinessLogic.Services{
                                                                                     CancellationToken cancellationToken) {
             Guid floatAggregateId = command.OperatorId;
 
-            Logger.LogDebug($"Fetching FloatAggregate {floatAggregateId}");
+            Logger.LogDebug("Fetching FloatAggregate {FloatId} for TransactionId {TransactionId}", floatAggregateId, command.TransactionId);
 
             Result<FloatAggregate> floatAggregateResult = await DomainServiceHelper.GetAggregateOrFailure(ct => AggregateService.GetLatest<FloatAggregate>(floatAggregateId, ct), floatAggregateId, cancellationToken, false);
 
@@ -640,7 +640,7 @@ namespace TransactionProcessor.BusinessLogic.Services{
             Decimal unitCost = floatAggregate.GetUnitCostPrice();
             Decimal totalCost = floatAggregate.GetTotalCostPrice(amount);
 
-            Logger.LogInformation($"Float cost calculated: UnitCost={unitCost}, TotalCost={totalCost}");
+            Logger.LogInformation("Float cost calculated for TransactionId {TransactionId}: UnitCost={UnitCost}, TotalCost={TotalCost}", command.TransactionId, unitCost, totalCost);
             return (unitCost, totalCost);
         }
 
@@ -704,12 +704,14 @@ namespace TransactionProcessor.BusinessLogic.Services{
             DateTime? start = null, end = null;
 
             if (validationResult.Data.ResponseCode != TransactionResponseCode.Success) {
-                Logger.LogInformation($"Validation failed with ResponseCode {validationResult.Data.ResponseCode}: {validationResult.Data.ResponseMessage}");
+                Logger.LogInformation("Validation failed for TransactionId {TransactionId} with ResponseCode {ResponseCode}: {ResponseMessage}", 
+                    command.TransactionId, validationResult.Data.ResponseCode, validationResult.Data.ResponseMessage);
+
                 transactionAggregate.DeclineTransactionLocally(validationResult.Data.ResponseCode, validationResult.Data.ResponseMessage);
                 return (start, end);
             }
 
-            Logger.LogInformation($"Validation success, processing with Operator {command.OperatorId}");
+            Logger.LogInformation("Validation success for TransactionId {TransactionId} processing with Operator {OperatorId}", command.TransactionId, command.OperatorId);
 
             transactionAggregate.RecordAdditionalRequestData(command.OperatorId, command.AdditionalTransactionMetadata);
             Result<Merchant> merchantResult = await GetMerchant(command.MerchantId, cancellationToken);
@@ -721,11 +723,11 @@ namespace TransactionProcessor.BusinessLogic.Services{
             end = DateTime.Now;
 
             if (operatorResult.IsSuccess) {
-                Logger.LogInformation("Operator authorised transaction successfully");
+                Logger.LogInformation("Operator {OperatorId} authorised transaction {TransactionId} successfully", command.OperatorId, command.TransactionId);
                 transactionAggregate.AuthoriseTransaction(command.OperatorId, operatorResult.Data.AuthorisationCode, operatorResult.Data.ResponseCode, operatorResult.Data.ResponseMessage, operatorResult.Data.TransactionId, TransactionResponseCode.Success, "SUCCESS");
             }
             else {
-                Logger.LogWarning($"Operator declined transaction: {operatorResult.Data.ResponseMessage}");
+                Logger.LogWarning("Operator {OperatorId} declined transaction {TransactionId}: {ResponseMessage}", command.OperatorId, command.TransactionId, operatorResult.Data.ResponseMessage);
                 transactionAggregate.DeclineTransaction(command.OperatorId, operatorResult.Data.ResponseCode, operatorResult.Data.ResponseMessage, TransactionResponseCode.TransactionDeclinedByOperator, "DECLINED BY OPERATOR");
             }
 

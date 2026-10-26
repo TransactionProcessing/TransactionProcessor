@@ -2369,7 +2369,7 @@ public static class AsyncExecutor
         }
         catch (Exception ex)
         {
-            Logger.LogError(new Exception("Error executing async operation", ex));
+            Logger.LogError(ex, "Error executing async operation");
             return Result.Failure(ex.Message);
         }
     }
@@ -2382,7 +2382,7 @@ public static class AsyncExecutor
         }
         catch (Exception ex)
         {
-            Logger.LogError(new Exception("Error executing async operation", ex));
+            Logger.LogError(ex, "Error executing async operation");
             return Result.Failure(ex.Message);
         }
     }
