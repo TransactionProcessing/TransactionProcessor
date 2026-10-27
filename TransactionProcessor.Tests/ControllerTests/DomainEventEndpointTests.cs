@@ -127,7 +127,7 @@ public class DomainEventEndpointTests
 
     private static async Task<HttpResponseMessage> PostDomainEvent(HttpClient client, DomainEvent domainEvent, String eventType = null)
     {
-        String json = StringSerialiser.Serialise(domainEvent);
+        String json = StringSerialiser.Serialise(domainEvent, new SerialiserOptions(SerialiserPropertyFormat.CamelCase));
         using StringContent content = new(json, Encoding.UTF8, "application/json");
         using HttpRequestMessage request = new(HttpMethod.Post, "/api/domainevents")
         {
