@@ -86,9 +86,7 @@ namespace TransactionProcessor.BusinessLogic.Tests.Services{
             this.AggregateService.GetLatest<MerchantAggregate>(Arg<Guid>.Any(), Arg<CancellationToken>.Any())
                 .ReturnsAsync(Result.Success(TestData.Aggregates.CreatedMerchantAggregate()));
             
-            this.TransactionValidationService.ValidateLogonTransaction(Arg<Guid>.Any(),
-                                                                                    Arg<Guid>.Any(),
-                                                                                    Arg<String>.Any(),
+            this.TransactionValidationService.ValidateLogonTransaction(Arg<TransactionValidationIdentifiers>.Any(),
                                                                                     Arg<CancellationToken>.Any()).ReturnsAsync(Result.Success(new TransactionValidationResult(TransactionResponseCode.SuccessNeedToAddDevice, "SUCCESS")));
 
             TransactionCommands.ProcessLogonTransactionCommand command = new(TestData.TransactionId,
@@ -117,9 +115,7 @@ namespace TransactionProcessor.BusinessLogic.Tests.Services{
             this.AggregateService.Save(Arg<TransactionAggregate>.Any(), Arg<CancellationToken>.Any())
                 .ReturnsAsync(Result.Success());
 
-            this.TransactionValidationService.ValidateLogonTransaction(Arg<Guid>.Any(),
-                                                                                    Arg<Guid>.Any(),
-                                                                                    Arg<String>.Any(),
+            this.TransactionValidationService.ValidateLogonTransaction(Arg<TransactionValidationIdentifiers>.Any(),
                                                                                     Arg<CancellationToken>.Any()).ReturnsAsync(Result.Success(new TransactionValidationResult(TransactionResponseCode.Success, "SUCCESS")));
 
             TransactionCommands.ProcessLogonTransactionCommand command = new(TestData.TransactionId,
@@ -148,9 +144,7 @@ namespace TransactionProcessor.BusinessLogic.Tests.Services{
                 .ReturnsAsync(Result.Success(TestData.GetEmptyTransactionAggregate()));
             this.AggregateService.Save(Arg<TransactionAggregate>.Any(), Arg<CancellationToken>.Any())
                 .ReturnsAsync(Result.Success());
-            this.TransactionValidationService.ValidateLogonTransaction(Arg<Guid>.Any(),
-                                                                                    Arg<Guid>.Any(),
-                                                                                    Arg<String>.Any(),
+            this.TransactionValidationService.ValidateLogonTransaction(Arg<TransactionValidationIdentifiers>.Any(),
                                                                                     Arg<CancellationToken>.Any()).ReturnsAsync(Result.Success(new TransactionValidationResult(responseCode, responseCode.ToString())));
 
             TransactionCommands.ProcessLogonTransactionCommand command = new(TestData.TransactionId,
@@ -176,9 +170,7 @@ namespace TransactionProcessor.BusinessLogic.Tests.Services{
                 .ReturnsAsync(new ReconciliationAggregate());
             this.AggregateService.Save(Arg<ReconciliationAggregate>.Any(), Arg<CancellationToken>.Any())
                 .ReturnsAsync(Result.Success());
-            this.TransactionValidationService.ValidateReconciliationTransaction(Arg<Guid>.Any(),
-                                                                                             Arg<Guid>.Any(),
-                                                                                             Arg<String>.Any(),
+            this.TransactionValidationService.ValidateReconciliationTransaction(Arg<TransactionValidationIdentifiers>.Any(),
                                                                                              Arg<CancellationToken>.Any()).ReturnsAsync(Result.Success(new TransactionValidationResult(TransactionResponseCode.Success, "SUCCESS")));
 
             TransactionCommands.ProcessReconciliationCommand command =
@@ -206,9 +198,7 @@ namespace TransactionProcessor.BusinessLogic.Tests.Services{
                 .ReturnsAsync(new ReconciliationAggregate());
             this.AggregateService.Save(Arg<ReconciliationAggregate>.Any(), Arg<CancellationToken>.Any())
                 .ReturnsAsync(Result.Success());
-            this.TransactionValidationService.ValidateReconciliationTransaction(Arg<Guid>.Any(),
-                                                                                             Arg<Guid>.Any(),
-                                                                                             Arg<String>.Any(),
+            this.TransactionValidationService.ValidateReconciliationTransaction(Arg<TransactionValidationIdentifiers>.Any(),
                                                                                              Arg<CancellationToken>.Any()).ReturnsAsync(Result.Success(new TransactionValidationResult(responseCode, responseCode.ToString())));
 
             TransactionCommands.ProcessReconciliationCommand command =
@@ -239,11 +229,9 @@ namespace TransactionProcessor.BusinessLogic.Tests.Services{
 
             this.AggregateService.GetLatest<FloatAggregate>(Arg<Guid>.Any(), Arg<CancellationToken>.Any()).ReturnsAsync(Result.Success(TestData.GetEmptyFloatAggregate()));
 
-            this.TransactionValidationService.ValidateSaleTransaction(Arg<Guid>.Any(),
+            this.TransactionValidationService.ValidateSaleTransaction(Arg<TransactionValidationIdentifiers>.Any(),
                                                                                    Arg<Guid>.Any(),
                                                                                    Arg<Guid>.Any(),
-                                                                                   Arg<Guid>.Any(),
-                                                                                   Arg<String>.Any(),
                                                                                    Arg<Guid>.Any(),
                                                                                    Arg<Decimal?>.Any(),
                                                                                    Arg<TransactionSource>.Any(),
@@ -297,11 +285,9 @@ namespace TransactionProcessor.BusinessLogic.Tests.Services{
 
             this.AggregateService.GetLatest<FloatAggregate>(Arg<Guid>.Any(), Arg<CancellationToken>.Any()).ReturnsAsync(Result.Success(TestData.GetEmptyFloatAggregate()));
 
-            this.TransactionValidationService.ValidateSaleTransaction(Arg<Guid>.Any(),
+            this.TransactionValidationService.ValidateSaleTransaction(Arg<TransactionValidationIdentifiers>.Any(),
                                                                                    Arg<Guid>.Any(),
                                                                                    Arg<Guid>.Any(),
-                                                                                   Arg<Guid>.Any(),
-                                                                                   Arg<String>.Any(),
                                                                                    Arg<Guid>.Any(),
                                                                                    Arg<Decimal?>.Any(),
                                                                                    Arg<TransactionSource>.Any(),
@@ -344,11 +330,9 @@ namespace TransactionProcessor.BusinessLogic.Tests.Services{
 
             this.AggregateService.GetLatest<FloatAggregate>(Arg<Guid>.Any(), Arg<CancellationToken>.Any()).ReturnsAsync(Result.Success(floatAggregate));
 
-            this.TransactionValidationService.ValidateSaleTransaction(Arg<Guid>.Any(),
+            this.TransactionValidationService.ValidateSaleTransaction(Arg<TransactionValidationIdentifiers>.Any(),
                                                                                    Arg<Guid>.Any(),
                                                                                    Arg<Guid>.Any(),
-                                                                                   Arg<Guid>.Any(),
-                                                                                   Arg<String>.Any(),
                                                                                    Arg<Guid>.Any(),
                                                                                    Arg<Decimal?>.Any(),
                                                                                    Arg<TransactionSource>.Any(),
@@ -408,11 +392,9 @@ namespace TransactionProcessor.BusinessLogic.Tests.Services{
 
             this.AggregateService.GetLatest<FloatAggregate>(Arg<Guid>.Any(), Arg<CancellationToken>.Any()).ReturnsAsync(Result.NotFound());
 
-            this.TransactionValidationService.ValidateSaleTransaction(Arg<Guid>.Any(),
+            this.TransactionValidationService.ValidateSaleTransaction(Arg<TransactionValidationIdentifiers>.Any(),
                                                                                    Arg<Guid>.Any(),
                                                                                    Arg<Guid>.Any(),
-                                                                                   Arg<Guid>.Any(),
-                                                                                   Arg<String>.Any(),
                                                                                    Arg<Guid>.Any(),
                                                                                    Arg<Decimal?>.Any(),
                                                                                    Arg<TransactionSource>.Any(),
@@ -467,11 +449,9 @@ namespace TransactionProcessor.BusinessLogic.Tests.Services{
             this.AggregateService.Save(Arg<TransactionAggregate>.Any(), Arg<CancellationToken>.Any())
                 .ReturnsAsync(Result.Success());
 
-            this.TransactionValidationService.ValidateSaleTransaction(Arg<Guid>.Any(),
+            this.TransactionValidationService.ValidateSaleTransaction(Arg<TransactionValidationIdentifiers>.Any(),
                                                                                    Arg<Guid>.Any(),
                                                                                    Arg<Guid>.Any(),
-                                                                                   Arg<Guid>.Any(),
-                                                                                   Arg<String>.Any(),
                                                                                    Arg<Guid>.Any(),
                                                                                    Arg<Decimal?>.Any(),
                                                                                    Arg<TransactionSource>.Any(),
@@ -776,9 +756,7 @@ namespace TransactionProcessor.BusinessLogic.Tests.Services{
                 .ReturnsAsync(Result.Success(TestData.GetEmptyTransactionAggregate()));
             this.AggregateService.Save(Arg<TransactionAggregate>.Any(), Arg<CancellationToken>.Any())
                 .ReturnsAsync(Result.Failure());
-            this.TransactionValidationService.ValidateLogonTransaction(Arg<Guid>.Any(),
-                                                                                    Arg<Guid>.Any(),
-                                                                                    Arg<String>.Any(),
+            this.TransactionValidationService.ValidateLogonTransaction(Arg<TransactionValidationIdentifiers>.Any(),
                                                                                     Arg<CancellationToken>.Any()).ReturnsAsync(Result.Success(new TransactionValidationResult(TransactionResponseCode.Success, "SUCCESS")));
 
             TransactionCommands.ProcessLogonTransactionCommand command = new(TestData.TransactionId,
@@ -815,9 +793,7 @@ namespace TransactionProcessor.BusinessLogic.Tests.Services{
                 .ReturnsAsync(new ReconciliationAggregate());
             this.AggregateService.Save(Arg<ReconciliationAggregate>.Any(), Arg<CancellationToken>.Any())
                 .ReturnsAsync(Result.Failure());
-            this.TransactionValidationService.ValidateReconciliationTransaction(Arg<Guid>.Any(),
-                                                                                             Arg<Guid>.Any(),
-                                                                                             Arg<String>.Any(),
+            this.TransactionValidationService.ValidateReconciliationTransaction(Arg<TransactionValidationIdentifiers>.Any(),
                                                                                              Arg<CancellationToken>.Any()).ReturnsAsync(Result.Success(new TransactionValidationResult(TransactionResponseCode.Success, "SUCCESS")));
 
             TransactionCommands.ProcessReconciliationCommand command =
@@ -881,11 +857,9 @@ namespace TransactionProcessor.BusinessLogic.Tests.Services{
             this.AggregateService.Save(Arg<TransactionAggregate>.Any(), Arg<CancellationToken>.Any())
                 .ReturnsAsync(Result.Failure());
             this.AggregateService.GetLatest<FloatAggregate>(Arg<Guid>.Any(), Arg<CancellationToken>.Any()).ReturnsAsync(Result.NotFound());
-            this.TransactionValidationService.ValidateSaleTransaction(Arg<Guid>.Any(),
+            this.TransactionValidationService.ValidateSaleTransaction(Arg<TransactionValidationIdentifiers>.Any(),
                                                                                    Arg<Guid>.Any(),
                                                                                    Arg<Guid>.Any(),
-                                                                                   Arg<Guid>.Any(),
-                                                                                   Arg<String>.Any(),
                                                                                    Arg<Guid>.Any(),
                                                                                    Arg<Decimal?>.Any(),
                                                                                    Arg<TransactionSource>.Any(),
