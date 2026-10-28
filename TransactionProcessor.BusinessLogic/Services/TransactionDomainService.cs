@@ -105,7 +105,8 @@ namespace TransactionProcessor.BusinessLogic.Services{
                 if (stateResult.IsFailed)
                     return ResultHelpers.CreateFailure(stateResult);
 
-                Result<TransactionValidationResult> validationResult = await this.TransactionValidationService.ValidateLogonTransaction(command.EstateId, command.MerchantId, command.DeviceIdentifier, cancellationToken);
+                TransactionValidationIdentifiers validationIdentifiers = new(command.EstateId, command.MerchantId, command.DeviceIdentifier);
+                Result<TransactionValidationResult> validationResult = await this.TransactionValidationService.ValidateLogonTransaction(validationIdentifiers, cancellationToken);
                 stateResult = await this.RecordLogonTransactionValidation(command, transactionAggregate, validationResult, cancellationToken);
                 if (stateResult.IsFailed)
                     return ResultHelpers.CreateFailure(stateResult);
@@ -136,7 +137,8 @@ namespace TransactionProcessor.BusinessLogic.Services{
                     return ResultHelpers.CreateFailure(reconciliationResult);
 
                 ReconciliationAggregate reconciliationAggregate = reconciliationResult.Data;
-                Result<TransactionValidationResult> validationResult = await this.TransactionValidationService.ValidateReconciliationTransaction(command.EstateId, command.MerchantId, command.DeviceIdentifier, cancellationToken);
+                TransactionValidationIdentifiers validationIdentifiers = new(command.EstateId, command.MerchantId, command.DeviceIdentifier);
+                Result<TransactionValidationResult> validationResult = await this.TransactionValidationService.ValidateReconciliationTransaction(validationIdentifiers, cancellationToken);
                 Result stateResult = this.ProcessReconciliation(reconciliationAggregate, command, validationResult);
                 if (stateResult.IsFailed)
                     return ResultHelpers.CreateFailure(stateResult);
@@ -614,8 +616,8 @@ namespace TransactionProcessor.BusinessLogic.Services{
             Decimal? amount = command.AdditionalTransactionMetadata.ExtractFieldFromMetadata<decimal?>("Amount");
             Logger.LogInformation("Validating Sale Transaction Id {TransactionId} for Merchant {MerchantId}, Product {ProductId}", command.TransactionId, command.MerchantId, command.ProductId);
             TransactionSource transactionSourceValue = (TransactionSource)command.TransactionSource;
-
-            Result<TransactionValidationResult> result = await TransactionValidationService.ValidateSaleTransaction(command.EstateId, command.MerchantId, command.ContractId, command.ProductId, command.DeviceIdentifier, command.OperatorId, amount, transactionSourceValue, cancellationToken);
+            TransactionValidationIdentifiers validationIdentifiers = new(command.EstateId, command.MerchantId, command.DeviceIdentifier);
+            Result<TransactionValidationResult> result = await TransactionValidationService.ValidateSaleTransaction(validationIdentifiers, command.ContractId, command.ProductId, command.OperatorId, amount, transactionSourceValue, cancellationToken);
 
             Logger.LogInformation("Validation completed for Transaction Id {TransactionId} with ResponseCode {ResponseCode}, Message {ResponseMessage}",
                 command.TransactionId, result.Data?.ResponseCode, result.Data?.ResponseMessage);

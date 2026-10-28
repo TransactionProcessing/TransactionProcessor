@@ -17,24 +17,22 @@ using System.Threading;
 using System.Threading.Tasks;
 using TransactionProcessor.Models;
 
+public record TransactionValidationIdentifiers(Guid EstateId,
+                                               Guid MerchantId,
+                                               String DeviceIdentifier);
+
 public interface ITransactionValidationService
 {
     #region Methods
 
-    Task<Result<TransactionValidationResult>> ValidateLogonTransaction(Guid estateId,
-                                                                       Guid merchantId,
-                                                                       String deviceIdentifier,
+    Task<Result<TransactionValidationResult>> ValidateLogonTransaction(TransactionValidationIdentifiers transactionValidationIdentifiers,
                                                                        CancellationToken cancellationToken);
-    Task<Result<TransactionValidationResult>> ValidateReconciliationTransaction(Guid estateId,
-                                                                                Guid merchantId,
-                                                                                String deviceIdentifier,
+    Task<Result<TransactionValidationResult>> ValidateReconciliationTransaction(TransactionValidationIdentifiers transactionValidationIdentifiers,
                                                                                 CancellationToken cancellationToken);
 
-    Task<Result<TransactionValidationResult>> ValidateSaleTransaction(Guid estateId,
-                                                                      Guid merchantId,
+    Task<Result<TransactionValidationResult>> ValidateSaleTransaction(TransactionValidationIdentifiers transactionValidationIdentifiers,
                                                                       Guid contractId,
                                                                       Guid productId,
-                                                                      String deviceIdentifier,
                                                                       Guid operatorId,
                                                                       Decimal? transactionAmount,
                                                                       TransactionSource transactionSource,
@@ -67,47 +65,43 @@ public class TransactionValidationService : ITransactionValidationService{
     }
 
 
-    public async Task<Result<TransactionValidationResult>> ValidateLogonTransaction(Guid estateId,
-                                                                                     Guid merchantId,
-                                                                                     String deviceIdentifier,
-                                                                                     CancellationToken cancellationToken) {
+    public async Task<Result<TransactionValidationResult>> ValidateLogonTransaction(TransactionValidationIdentifiers transactionValidationIdentifiers,
+                                                                                    CancellationToken cancellationToken) {
         // Validate Estate
-        Result<TransactionValidationResult<EstateAggregate>> estateValidationResult = await ValidateEstate(estateId, cancellationToken);
+        Result<TransactionValidationResult<EstateAggregate>> estateValidationResult = await ValidateEstate(transactionValidationIdentifiers.EstateId, cancellationToken);
         if (estateValidationResult.IsFailed) return CreateFailedResult(estateValidationResult.Data.validationResult);
 
         // Validate Merchant
-        var merchantValidationResult = await ValidateMerchant(estateValidationResult.Data.additionalData.EstateName, merchantId, cancellationToken);
+        var merchantValidationResult = await ValidateMerchant(estateValidationResult.Data.additionalData.EstateName, transactionValidationIdentifiers.MerchantId, cancellationToken);
         if (merchantValidationResult.IsFailed) return CreateFailedResult(merchantValidationResult.Data.validationResult);
 
         Models.Merchant.Merchant merchant = merchantValidationResult.Data.additionalData.GetMerchant();
 
         // Validate Device
-        Result<TransactionValidationResult> deviceValidationResult = ValidateDeviceForLogon(merchant, deviceIdentifier);
+        Result<TransactionValidationResult> deviceValidationResult = ValidateDeviceForLogon(merchant, transactionValidationIdentifiers.DeviceIdentifier);
         if (deviceValidationResult.IsFailed) return deviceValidationResult;
         
         // Validate the merchant device
         return deviceValidationResult;
     }
 
-    public async Task<Result<TransactionValidationResult>> ValidateReconciliationTransaction(Guid estateId,
-        Guid merchantId,
-        String deviceIdentifier,
-        CancellationToken cancellationToken)
+    public async Task<Result<TransactionValidationResult>> ValidateReconciliationTransaction(TransactionValidationIdentifiers transactionValidationIdentifiers,
+                                                                                             CancellationToken cancellationToken)
     {
         // Validate Estate
-        Result<TransactionValidationResult<EstateAggregate>> estateValidationResult = await ValidateEstate(estateId, cancellationToken);
+        Result<TransactionValidationResult<EstateAggregate>> estateValidationResult = await ValidateEstate(transactionValidationIdentifiers.EstateId, cancellationToken);
         if (estateValidationResult.IsFailed) return CreateFailedResult(estateValidationResult.Data.validationResult);
 
         EstateAggregate estate = estateValidationResult.Data.additionalData;
 
         // Validate Merchant
-        Result<TransactionValidationResult<MerchantAggregate>> merchantValidationResult = await ValidateMerchant(estate.EstateName, merchantId, cancellationToken);
+        Result<TransactionValidationResult<MerchantAggregate>> merchantValidationResult = await ValidateMerchant(estate.EstateName, transactionValidationIdentifiers.MerchantId, cancellationToken);
         if (merchantValidationResult.IsFailed) return CreateFailedResult(merchantValidationResult.Data.validationResult);
 
         var merchant = merchantValidationResult.Data.additionalData.GetMerchant();
 
         // Validate Device
-        Result<TransactionValidationResult> deviceValidationResult = ValidateDevice(merchant, deviceIdentifier);
+        Result<TransactionValidationResult> deviceValidationResult = ValidateDevice(merchant, transactionValidationIdentifiers.DeviceIdentifier);
         if (deviceValidationResult.IsFailed) return deviceValidationResult;
 
         // Validate the merchant device
@@ -118,18 +112,16 @@ public class TransactionValidationService : ITransactionValidationService{
 
     #endregion
 
-    public async Task<Result<TransactionValidationResult>> ValidateSaleTransaction(Guid estateId,
-                                                                               Guid merchantId,
-                                                                               Guid contractId,
-                                                                               Guid productId,
-                                                                               String deviceIdentifier,
-                                                                               Guid operatorId,
-                                                                               Decimal? transactionAmount,
-                                                                               TransactionSource transactionSource,
-                                                                               CancellationToken cancellationToken)
+    public async Task<Result<TransactionValidationResult>> ValidateSaleTransaction(TransactionValidationIdentifiers transactionValidationIdentifiers,
+                                                                                   Guid contractId,
+                                                                                   Guid productId,
+                                                                                   Guid operatorId,
+                                                                                   Decimal? transactionAmount,
+                                                                                   TransactionSource transactionSource,
+                                                                                   CancellationToken cancellationToken)
     {
         // Validate Estate
-        Result<TransactionValidationResult<EstateAggregate>> estateValidationResult = await ValidateEstate(estateId, cancellationToken);
+        Result<TransactionValidationResult<EstateAggregate>> estateValidationResult = await ValidateEstate(transactionValidationIdentifiers.EstateId, cancellationToken);
         if (estateValidationResult.IsFailed) return CreateFailedResult(estateValidationResult.Data.validationResult);
 
         EstateAggregate estate = estateValidationResult.Data.additionalData;
@@ -139,7 +131,7 @@ public class TransactionValidationService : ITransactionValidationService{
         if (estateOperatorValidationResult.IsFailed) return estateOperatorValidationResult;
 
         // Validate Merchant
-        Result<TransactionValidationResult<MerchantAggregate>> merchantValidationResult = await ValidateMerchant(estate.EstateName, merchantId, cancellationToken);
+        Result<TransactionValidationResult<MerchantAggregate>> merchantValidationResult = await ValidateMerchant(estate.EstateName, transactionValidationIdentifiers.MerchantId, cancellationToken);
         if (merchantValidationResult.IsFailed) return CreateFailedResult(merchantValidationResult.Data.validationResult);
 
         Models.Merchant.Merchant merchant = merchantValidationResult.Data.additionalData.GetMerchant();
@@ -147,7 +139,7 @@ public class TransactionValidationService : ITransactionValidationService{
         if (transactionSource == TransactionSource.OnlineSale)
         {
             // Validate Device
-            Result<TransactionValidationResult> deviceValidationResult = ValidateDevice(merchant, deviceIdentifier);
+            Result<TransactionValidationResult> deviceValidationResult = ValidateDevice(merchant, transactionValidationIdentifiers.DeviceIdentifier);
             if (deviceValidationResult.IsFailed) return deviceValidationResult;
         }
 
@@ -160,7 +152,7 @@ public class TransactionValidationService : ITransactionValidationService{
         if (contractProductValidationResult.IsFailed) return contractProductValidationResult;
 
         // Validate Transaction Amount
-        Result<TransactionValidationResult> transactionAmountValidationResult = await ValidateTransactionAmount(merchantId, merchant.MerchantName, transactionAmount, cancellationToken);
+        Result<TransactionValidationResult> transactionAmountValidationResult = await ValidateTransactionAmount(transactionValidationIdentifiers.MerchantId, merchant.MerchantName, transactionAmount, cancellationToken);
         if (transactionAmountValidationResult.IsFailed) return transactionAmountValidationResult;
 
         // If we get here everything is good
