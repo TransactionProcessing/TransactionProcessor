@@ -232,7 +232,6 @@ public class WebHandlersTests
             SetupSuccess<ContractCommands.CreateContractCommand>(command =>
             {
                 command.EstateId.ShouldBe(EstateId);
-                command.ContractId.ShouldNotBe(Guid.Empty);
                 command.RequestDTO.Description.ShouldBe("Contract");
             }),
             mediator => ContractHandlers.CreateContract(mediator,

@@ -31,13 +31,6 @@ namespace TransactionProcessor.BusinessLogic.Services
 
         public static Guid GenerateEventId(Object o) => IdGenerationService.GenerateUniqueId(o);
 
-        public static Guid GenerateFloatAggregateId(Guid estateId, Guid contractId, Guid productId) =>
-            IdGenerationService.GenerateUniqueId(new{
-                                                        estateId,
-                                                        contractId,
-                                                        productId
-                                                    });
-
         public static Guid GenerateFloatActivityAggregateId(Guid estateId, Guid floatId, DateTime dateTime) =>
             IdGenerationService.GenerateUniqueId(new
             {
@@ -70,5 +63,13 @@ namespace TransactionProcessor.BusinessLogic.Services
                 merchantId,
                 year
             });
+
+        public static Guid GenerateContractId(Guid estateId, Guid operatorId, String contractName) {
+
+            String normalisedContractName = contractName.ToLower().Replace(" ", String.Empty);
+
+            return IdGenerationService.GenerateUniqueId(new { estateId, operatorId, normalisedContractName });
+        }
+
     }
 }
