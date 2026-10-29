@@ -63,9 +63,7 @@ namespace TransactionProcessor.Handlers
 
         public static async Task<IResult> CreateContract(IMediator mediator, HttpContext ctx, Guid estateId, CreateContractRequest createContractRequest, CancellationToken cancellationToken)
         {
-            Guid contractId = Guid.NewGuid();
-
-            ContractCommands.CreateContractCommand command = new(estateId, contractId, createContractRequest);
+            ContractCommands.CreateContractCommand command = new(estateId, createContractRequest);
 
             Result result = await mediator.Send(command, cancellationToken);
             return ResponseFactory.FromResult(result);

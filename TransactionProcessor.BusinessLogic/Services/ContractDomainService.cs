@@ -32,25 +32,13 @@ namespace TransactionProcessor.BusinessLogic.Services
     }
     public class ContractDomainService : IContractDomainService
     {
-
-        #region Fields
-        
         private readonly IAggregateService AggregateService;
-        private readonly IEventStoreContext Context;
+        
 
-        #endregion
-
-        #region Constructors
-
-        public ContractDomainService(Func<IAggregateService> aggregateService, IEventStoreContext context) {
+        public ContractDomainService(Func<IAggregateService> aggregateService) {
             this.AggregateService = aggregateService();
-            this.Context = context;
         }
 
-        #endregion
-
-        #region Methods
-        
         public async Task<Result> AddProductToContract(ContractCommands.AddProductToContractCommand command, CancellationToken cancellationToken)
         {
             Models.Contract.ProductType productType = (Models.Contract.ProductType)command.RequestDTO.ProductType;
@@ -66,7 +54,7 @@ namespace TransactionProcessor.BusinessLogic.Services
                 if (contractAggregate.IsCreated == false) {
                     return Result.Forbidden($"Contract Id [{command.ContractId}] must be created to add products");
                 }
-
+                
                 Result stateResult = command.RequestDTO.Value.HasValue switch {
                     true => contractAggregate.AddFixedValueProduct(command.ProductId, command.RequestDTO.ProductName, command.RequestDTO.DisplayText, command.RequestDTO.Value.Value, productType),
                     _ => contractAggregate.AddVariableValueProduct(command.ProductId, command.RequestDTO.ProductName, command.RequestDTO.DisplayText, productType)
@@ -157,23 +145,29 @@ namespace TransactionProcessor.BusinessLogic.Services
         {
             try
             {
+                if (String.IsNullOrEmpty(command.RequestDTO.Description))
+                    return Result.Invalid("Contract description must not be null or empty");
+
+                // Generate the Contract Id
+                Guid contractId = IdGenerationService.GenerateContractId(command.EstateId, command.RequestDTO.OperatorId, command.RequestDTO.Description);
+
                 Result<EstateAggregate> estateResult = await DomainServiceHelper.GetAggregateOrFailure(ct => this.AggregateService.Get<EstateAggregate>(command.EstateId, ct), command.EstateId, cancellationToken);
                 if (estateResult.IsFailed)
                     return ResultHelpers.CreateFailure(estateResult);
 
-                Result<ContractAggregate> contractResult = await DomainServiceHelper.GetAggregateOrFailure(ct => this.AggregateService.GetLatest<ContractAggregate>(command.ContractId, ct), command.ContractId, cancellationToken, false);
+                Result<ContractAggregate> contractResult = await DomainServiceHelper.GetAggregateOrFailure(ct => this.AggregateService.GetLatest<ContractAggregate>(contractId, ct), contractId, cancellationToken, false);
                 if (contractResult.IsFailed)
                     return ResultHelpers.CreateFailure(contractResult);
-
+                
                 ContractAggregate contractAggregate = contractResult.Data;
                 Models.Estate.Estate estate = estateResult.Data.GetEstate();
-
-                Result preConditionResult = await this.ValidateContractCreationPreConditions(command, estate, cancellationToken);
-                if (preConditionResult.IsFailed)
-                    return preConditionResult;
-
+                
                 if (contractAggregate.IsCreated)
-                    return Result.Conflict($"Contract Id [{command.ContractId}] already created for estate [{estate.Name}]");
+                    return Result.Conflict($"Contract Name [{command.RequestDTO.Description}] already created for estate [{estate.Name}] and Operator [{command.RequestDTO.OperatorId}]");
+
+                if (estate.Operators.Any(o => o.OperatorId == command.RequestDTO.OperatorId) == false)
+                    return Result.NotFound($"Unable to create a contract for an operator that is not setup on estate [{estate.Name}]");
+                    
 
                 Result stateResult = contractAggregate.Create(command.EstateId, command.RequestDTO.OperatorId, command.RequestDTO.Description);
                 if (stateResult.IsFailed)
@@ -190,33 +184,5 @@ namespace TransactionProcessor.BusinessLogic.Services
                 return Result.Failure(ex.GetExceptionMessages());
             }
         }
-
-        private async Task<Result> ValidateContractCreationPreConditions(ContractCommands.CreateContractCommand command, Models.Estate.Estate estate, CancellationToken cancellationToken)
-        {
-            if (estate.Operators.Any(o => o.OperatorId == command.RequestDTO.OperatorId) == false)
-                return Result.NotFound($"Unable to create a contract for an operator that is not setup on estate [{estate.Name}]");
-
-            String projection =
-                $"fromCategory(\"ContractAggregate\")\n.when({{\n    $init: function (s, e) {{\n                        return {{\n                            total: 0,\n                            contractId: 0\n                        }};\n                    }},\n    'ContractCreatedEvent': function(s,e){{\n        // Check if it matches\n        if (e.data.description === '{command.RequestDTO.Description}' \n            && e.data.operatorId === '{command.RequestDTO.OperatorId}'){{\n            s.total += 1;\n            s.contract_id = e.data.contractId\n        }}\n    }}\n}})";
-
-            Result<String> result = await this.Context.RunTransientQuery(projection, cancellationToken);
-            if (result.IsFailed)
-                return ResultHelpers.CreateFailure(result);
-
-            String resultString = result.Data;
-            if (String.IsNullOrEmpty(resultString) == false) {
-                var resultObject = new { total = 0, contract_Id = String.Empty };
-                
-                var queryResult = StringSerialiser.DeserialiseAnonymousType(resultString, resultObject, new SerialiserOptions(SerialiserPropertyFormat.SnakeCase));
-
-                if (Guid.TryParse(queryResult.contract_Id, out Guid contractIdResult) && contractIdResult != Guid.Empty){
-                    return Result.Conflict($"Contract Description {command.RequestDTO.Description} already in use for operator {command.RequestDTO.OperatorId}");
-                }
-            }
-
-            return Result.Success();
-        }
-
-        #endregion
     }
 }
