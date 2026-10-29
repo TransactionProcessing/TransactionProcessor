@@ -173,7 +173,7 @@ namespace TransactionProcessor.BusinessLogic.Services
                     return preConditionResult;
 
                 if (contractAggregate.IsCreated)
-                    return Result.Forbidden($"Contract Id [{command.ContractId}] already created for estate [{estate.Name}]");
+                    return Result.Conflict($"Contract Id [{command.ContractId}] already created for estate [{estate.Name}]");
 
                 Result stateResult = contractAggregate.Create(command.EstateId, command.RequestDTO.OperatorId, command.RequestDTO.Description);
                 if (stateResult.IsFailed)
