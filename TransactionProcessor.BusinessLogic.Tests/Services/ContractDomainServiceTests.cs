@@ -42,6 +42,26 @@ namespace TransactionProcessor.BusinessLogic.Tests.Services
             result.IsSuccess.ShouldBeTrue();
         }
 
+        [Theory]
+        [InlineData(null)]
+        [InlineData("")]
+        public async Task ContractDomainService_CreateContract_DescriptionIsNullOrEmpty_ResultIsInvalid(String description)
+        {
+            ContractCommands.CreateContractCommand command = TestData.Commands.CreateContractCommand with
+            {
+                RequestDTO = new CreateContractRequest
+                {
+                    OperatorId = TestData.OperatorId,
+                    Description = description
+                }
+            };
+
+            Result result = await this.DomainService.CreateContract(command, TestContext.Current.CancellationToken);
+
+            result.Status.ShouldBe(ResultStatus.Invalid);
+            result.Message.ShouldBe("Contract description must not be null or empty");
+        }
+
         [Fact]
         public async Task ContractDomainService_CreateContract_DuplicateContractNameForOperator_ResultFailed()
         {
@@ -83,6 +103,7 @@ namespace TransactionProcessor.BusinessLogic.Tests.Services
         {
             this.AggregateService.GetLatest<ContractAggregate>(Arg<Guid>.Any(), Arg<CancellationToken>.Any()).ReturnsAsync(Result.Success(TestData.Aggregates.EmptyContractAggregate()));
             this.AggregateService.Get<EstateAggregate>(Arg<Guid>.Any(), Arg<CancellationToken>.Any()).ReturnsAsync(Result.Success(TestData.Aggregates.CreatedEstateAggregate()));
+            this.AggregateService.Save<ContractAggregate>(Arg<ContractAggregate>.Any(), Arg<CancellationToken>.Any()).ReturnsAsync(Result.Success());
 
             ContractCommands.CreateContractCommand command = TestData.Commands.CreateContractCommand;
             Result result = await this.DomainService.CreateContract(command, TestContext.Current.CancellationToken);
@@ -94,6 +115,7 @@ namespace TransactionProcessor.BusinessLogic.Tests.Services
         {
             this.AggregateService.GetLatest<ContractAggregate>(Arg<Guid>.Any(), Arg<CancellationToken>.Any()).ReturnsAsync(Result.Success(TestData.Aggregates.EmptyContractAggregate()));
             this.AggregateService.Get<EstateAggregate>(Arg<Guid>.Any(), Arg<CancellationToken>.Any()).ReturnsAsync(Result.Success(TestData.Aggregates.CreatedEstateAggregate()));
+            this.AggregateService.Save<ContractAggregate>(Arg<ContractAggregate>.Any(), Arg<CancellationToken>.Any()).ReturnsAsync(Result.Success());
 
             ContractCommands.CreateContractCommand command = TestData.Commands.CreateContractCommand;
             Result result = await this.DomainService.CreateContract(command, TestContext.Current.CancellationToken);

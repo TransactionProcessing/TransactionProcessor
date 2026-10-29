@@ -54,7 +54,7 @@ namespace TransactionProcessor.BusinessLogic.Services
                 if (contractAggregate.IsCreated == false) {
                     return Result.Forbidden($"Contract Id [{command.ContractId}] must be created to add products");
                 }
-
+                
                 Result stateResult = command.RequestDTO.Value.HasValue switch {
                     true => contractAggregate.AddFixedValueProduct(command.ProductId, command.RequestDTO.ProductName, command.RequestDTO.DisplayText, command.RequestDTO.Value.Value, productType),
                     _ => contractAggregate.AddVariableValueProduct(command.ProductId, command.RequestDTO.ProductName, command.RequestDTO.DisplayText, productType)
@@ -145,6 +145,9 @@ namespace TransactionProcessor.BusinessLogic.Services
         {
             try
             {
+                if (String.IsNullOrEmpty(command.RequestDTO.Description))
+                    return Result.Invalid("Contract description must not be null or empty");
+
                 // Generate the Contract Id
                 Guid contractId = IdGenerationService.GenerateContractId(command.EstateId, command.RequestDTO.OperatorId, command.RequestDTO.Description);
 
@@ -161,6 +164,9 @@ namespace TransactionProcessor.BusinessLogic.Services
                 
                 if (contractAggregate.IsCreated)
                     return Result.Forbidden($"Contract Name [{command.RequestDTO.Description}] already created for estate [{estate.Name}] and Operator [{command.RequestDTO.OperatorId}]");
+
+                if (estate.Operators.Any(o => o.OperatorId == command.RequestDTO.OperatorId) == false)
+                    return Result.NotFound($"Unable to create a contract for an operator that is not setup on estate [{estate.Name}]");
 
                 Result stateResult = contractAggregate.Create(command.EstateId, command.RequestDTO.OperatorId, command.RequestDTO.Description);
                 if (stateResult.IsFailed)
