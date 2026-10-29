@@ -2193,7 +2193,7 @@ namespace TransactionProcessor.Testing
                 new(EstateId, ContractId, VariableContractProductId, TestData.AddProductToContractRequest_VariableValue);
 
             public static ContractCommands.CreateContractCommand CreateContractCommand =>
-                new ContractCommands.CreateContractCommand(EstateId, ContractId, CreateContractRequest);
+                new ContractCommands.CreateContractCommand(EstateId, CreateContractRequest);
             public static EstateCommands.CreateEstateUserCommand CreateEstateUserCommand => new EstateCommands.CreateEstateUserCommand(TestData.EstateId, TestData.CreateEstateUserRequest);
             public static EstateCommands.AddOperatorToEstateCommand AddOperatorToEstateCommand => new EstateCommands.AddOperatorToEstateCommand(TestData.EstateId, TestData.AssignOperatorRequestToEstate);
             public static EstateCommands.CreateEstateCommand CreateEstateCommand => new EstateCommands.CreateEstateCommand(TestData.CreateEstateRequest);
