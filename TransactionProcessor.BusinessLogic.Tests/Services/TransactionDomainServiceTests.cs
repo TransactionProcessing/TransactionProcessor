@@ -176,7 +176,8 @@ namespace TransactionProcessor.BusinessLogic.Tests.Services{
             TransactionCommands.ProcessReconciliationCommand command =
                 new(TestData.TransactionId, TestData.EstateId,
                     TestData.MerchantId, TestData.DeviceIdentifier, TestData.TransactionDateTime,
-                    TestData.ReconciliationTransactionCount, TestData.ReconciliationTransactionValue);
+                    TestData.ReconciliationTransactionCount, TestData.ReconciliationTransactionValue,
+                    TestData.HostDateTime);
 
             var result  = await this.TransactionDomainService.ProcessReconciliationTransaction(command, TestContext.Current.CancellationToken);
             result.IsSuccess.ShouldBeTrue();
@@ -204,7 +205,8 @@ namespace TransactionProcessor.BusinessLogic.Tests.Services{
             TransactionCommands.ProcessReconciliationCommand command =
                 new(TestData.TransactionId, TestData.EstateId,
                     TestData.MerchantId, TestData.DeviceIdentifier, TestData.TransactionDateTime,
-                    TestData.ReconciliationTransactionCount, TestData.ReconciliationTransactionValue);
+                    TestData.ReconciliationTransactionCount, TestData.ReconciliationTransactionValue,
+                    TestData.HostDateTime);
 
             var result = await this.TransactionDomainService.ProcessReconciliationTransaction(command, TestContext.Current.CancellationToken);
             result.IsSuccess.ShouldBeTrue();
@@ -491,7 +493,7 @@ namespace TransactionProcessor.BusinessLogic.Tests.Services{
         public async Task TransactionDomainService_RequireFeeCalculation_IsNotAuthorised_ReturnsFalse(){
             
             TransactionAggregate transactionAggregate = TransactionAggregate.Create(TestData.TransactionId);
-            transactionAggregate.StartTransaction(TestData.TransactionDateTime, TestData.TransactionNumber, TransactionType.Sale, TestData.TransactionReference, new TransactionStartContext { EstateId = TestData.EstateId, MerchantId = TestData.MerchantId, DeviceIdentifier = TestData.DeviceIdentifier }, TestData.TransactionAmount);
+            transactionAggregate.StartTransaction(TestData.TransactionDateTime, TestData.HostDateTime, TestData.TransactionNumber, TransactionType.Sale, TestData.TransactionReference, new TransactionStartContext { EstateId = TestData.EstateId, MerchantId = TestData.MerchantId, DeviceIdentifier = TestData.DeviceIdentifier }, TestData.TransactionAmount);
             transactionAggregate.DeclineTransaction(TestData.OperatorId, "111", "SUCCESS", TransactionResponseCode.Success, "SUCCESS");
 
             var result = TransactionHelpers.RequireFeeCalculation(transactionAggregate);
@@ -502,7 +504,7 @@ namespace TransactionProcessor.BusinessLogic.Tests.Services{
         public async Task TransactionDomainService_RequireFeeCalculation_IsNotCompelted_ReturnsFalse()
         {
             TransactionAggregate transactionAggregate = TransactionAggregate.Create(TestData.TransactionId);
-            transactionAggregate.StartTransaction(TestData.TransactionDateTime, TestData.TransactionNumber, TransactionType.Sale, TestData.TransactionReference, new TransactionStartContext { EstateId = TestData.EstateId, MerchantId = TestData.MerchantId, DeviceIdentifier = TestData.DeviceIdentifier }, TestData.TransactionAmount);
+            transactionAggregate.StartTransaction(TestData.TransactionDateTime, TestData.HostDateTime, TestData.TransactionNumber, TransactionType.Sale, TestData.TransactionReference, new TransactionStartContext { EstateId = TestData.EstateId, MerchantId = TestData.MerchantId, DeviceIdentifier = TestData.DeviceIdentifier }, TestData.TransactionAmount);
             transactionAggregate.AuthoriseTransaction(TestData.OperatorId, "111", "111", "SUCCESS", "1234", TransactionResponseCode.Success, "SUCCESS");
 
             var result = TransactionHelpers.RequireFeeCalculation(transactionAggregate);
@@ -513,7 +515,7 @@ namespace TransactionProcessor.BusinessLogic.Tests.Services{
         public async Task TransactionDomainService_RequireFeeCalculation_IsALogon_ReturnsFalse()
         {
             TransactionAggregate transactionAggregate = TransactionAggregate.Create(TestData.TransactionId);
-            transactionAggregate.StartTransaction(TestData.TransactionDateTime, TestData.TransactionNumber, TransactionType.Logon, TestData.TransactionReference, new TransactionStartContext { EstateId = TestData.EstateId, MerchantId = TestData.MerchantId, DeviceIdentifier = TestData.DeviceIdentifier }, TestData.TransactionAmount);
+            transactionAggregate.StartTransaction(TestData.TransactionDateTime, TestData.HostDateTime, TestData.TransactionNumber, TransactionType.Logon, TestData.TransactionReference, new TransactionStartContext { EstateId = TestData.EstateId, MerchantId = TestData.MerchantId, DeviceIdentifier = TestData.DeviceIdentifier }, TestData.TransactionAmount);
             transactionAggregate.AuthoriseTransactionLocally("111", TransactionResponseCode.InvalidDeviceIdentifier, "SUCCESS");
             transactionAggregate.CompleteTransaction();
 
@@ -526,7 +528,7 @@ namespace TransactionProcessor.BusinessLogic.Tests.Services{
         public async Task TransactionDomainService_RequireFeeCalculation_NoContractId_ReturnsFalse()
         {
             TransactionAggregate transactionAggregate = TransactionAggregate.Create(TestData.TransactionId);
-            transactionAggregate.StartTransaction(TestData.TransactionDateTime, TestData.TransactionNumber, TransactionType.Sale, TestData.TransactionReference, new TransactionStartContext { EstateId = TestData.EstateId, MerchantId = TestData.MerchantId, DeviceIdentifier = TestData.DeviceIdentifier }, TestData.TransactionAmount);
+            transactionAggregate.StartTransaction(TestData.TransactionDateTime, TestData.HostDateTime, TestData.TransactionNumber, TransactionType.Sale, TestData.TransactionReference, new TransactionStartContext { EstateId = TestData.EstateId, MerchantId = TestData.MerchantId, DeviceIdentifier = TestData.DeviceIdentifier }, TestData.TransactionAmount);
             transactionAggregate.AuthoriseTransaction(TestData.OperatorId, "111", "111", "SUCCESS", "1234", TransactionResponseCode.Success, "SUCCESS");
             transactionAggregate.CompleteTransaction();
 
@@ -539,7 +541,7 @@ namespace TransactionProcessor.BusinessLogic.Tests.Services{
         public async Task TransactionDomainService_RequireFeeCalculation_NullAmount_ReturnsFalse()
         {
             TransactionAggregate transactionAggregate = TransactionAggregate.Create(TestData.TransactionId);
-            transactionAggregate.StartTransaction(TestData.TransactionDateTime, TestData.TransactionNumber, TransactionType.Sale, TestData.TransactionReference, new TransactionStartContext { EstateId = TestData.EstateId, MerchantId = TestData.MerchantId, DeviceIdentifier = TestData.DeviceIdentifier }, null);
+            transactionAggregate.StartTransaction(TestData.TransactionDateTime, TestData.HostDateTime, TestData.TransactionNumber, TransactionType.Sale, TestData.TransactionReference, new TransactionStartContext { EstateId = TestData.EstateId, MerchantId = TestData.MerchantId, DeviceIdentifier = TestData.DeviceIdentifier }, null);
             transactionAggregate.AddProductDetails(TestData.ContractId, TestData.ProductId);
             transactionAggregate.AuthoriseTransaction(TestData.OperatorId, "111", "111", "SUCCESS", "1234", TransactionResponseCode.Success, "SUCCESS");
             transactionAggregate.CompleteTransaction();
@@ -553,7 +555,7 @@ namespace TransactionProcessor.BusinessLogic.Tests.Services{
         public async Task TransactionDomainService_RequireFeeCalculation_ReturnsTrue()
         {
             TransactionAggregate transactionAggregate = TransactionAggregate.Create(TestData.TransactionId);
-            transactionAggregate.StartTransaction(TestData.TransactionDateTime, TestData.TransactionNumber, TransactionType.Sale, TestData.TransactionReference, new TransactionStartContext { EstateId = TestData.EstateId, MerchantId = TestData.MerchantId, DeviceIdentifier = TestData.DeviceIdentifier }, TestData.TransactionAmount);
+            transactionAggregate.StartTransaction(TestData.TransactionDateTime, TestData.HostDateTime, TestData.TransactionNumber, TransactionType.Sale, TestData.TransactionReference, new TransactionStartContext { EstateId = TestData.EstateId, MerchantId = TestData.MerchantId, DeviceIdentifier = TestData.DeviceIdentifier }, TestData.TransactionAmount);
             transactionAggregate.AddProductDetails(TestData.ContractId, TestData.ProductId);
             transactionAggregate.AuthoriseTransaction(TestData.OperatorId, "111", "111", "SUCCESS", "1234", TransactionResponseCode.Success, "SUCCESS");
             transactionAggregate.CompleteTransaction();
@@ -780,7 +782,8 @@ namespace TransactionProcessor.BusinessLogic.Tests.Services{
             TransactionCommands.ProcessReconciliationCommand command =
                 new(TestData.TransactionId, TestData.EstateId,
                     TestData.MerchantId, TestData.DeviceIdentifier, TestData.TransactionDateTime,
-                    TestData.ReconciliationTransactionCount, TestData.ReconciliationTransactionValue);
+                    TestData.ReconciliationTransactionCount, TestData.ReconciliationTransactionValue,
+                    TestData.HostDateTime);
 
             var result = await this.TransactionDomainService.ProcessReconciliationTransaction(command, TestContext.Current.CancellationToken);
             result.IsFailed.ShouldBeTrue();
@@ -799,7 +802,8 @@ namespace TransactionProcessor.BusinessLogic.Tests.Services{
             TransactionCommands.ProcessReconciliationCommand command =
                 new(TestData.TransactionId, TestData.EstateId,
                     TestData.MerchantId, TestData.DeviceIdentifier, TestData.TransactionDateTime,
-                    TestData.ReconciliationTransactionCount, TestData.ReconciliationTransactionValue);
+                    TestData.ReconciliationTransactionCount, TestData.ReconciliationTransactionValue,
+                    TestData.HostDateTime);
 
             var result = await this.TransactionDomainService.ProcessReconciliationTransaction(command, TestContext.Current.CancellationToken);
             result.IsFailed.ShouldBeTrue();

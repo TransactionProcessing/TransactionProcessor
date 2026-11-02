@@ -101,7 +101,7 @@ namespace TransactionProcessor.BusinessLogic.Services{
                 // Generate a transaction reference
                 String transactionReference = TransactionHelpers.GenerateTransactionReference();
 
-                Result stateResult = transactionAggregate.StartTransaction(command.TransactionDateTime, command.TransactionNumber, transactionType, transactionReference, new TransactionStartContext { EstateId = command.EstateId, MerchantId = command.MerchantId, DeviceIdentifier = command.DeviceIdentifier, TransactionSource = TransactionSource.NotSet }, null); // Logon transaction has no amount
+                Result stateResult = transactionAggregate.StartTransaction(command.TransactionDateTime, command.HostDateTime, command.TransactionNumber, transactionType, transactionReference, new TransactionStartContext { EstateId = command.EstateId, MerchantId = command.MerchantId, DeviceIdentifier = command.DeviceIdentifier, TransactionSource = TransactionSource.NotSet }, null); // Logon transaction has no amount
                 if (stateResult.IsFailed)
                     return ResultHelpers.CreateFailure(stateResult);
 
@@ -115,7 +115,7 @@ namespace TransactionProcessor.BusinessLogic.Services{
                 if (stateResult.IsFailed)
                     return ResultHelpers.CreateFailure(stateResult);
 
-                stateResult = transactionAggregate.RecordTransactionTimings(command.TransactionReceivedDateTime, null, null, DateTime.Now);
+                stateResult = transactionAggregate.RecordTransactionTimings(command.HostDateTime, null, null, DateTimeOffset.UtcNow);
                 if (stateResult.IsFailed)
                     return ResultHelpers.CreateFailure(stateResult);
 
@@ -567,9 +567,9 @@ namespace TransactionProcessor.BusinessLogic.Services{
                 if (startResult.IsFailed)
                     return ResultHelpers.CreateFailure(startResult);
 
-                (DateTime? Start, DateTime? End) operatorTiming = await HandleOperatorProcessing(transactionAggregate, command, validationResult, cancellationToken);
+                (DateTimeOffset? Start, DateTimeOffset? End) operatorTiming = await HandleOperatorProcessing(transactionAggregate, command, validationResult, cancellationToken);
 
-                transactionAggregate.RecordTransactionTimings(command.TransactionReceivedDateTime, operatorTiming.Start, operatorTiming.End, DateTime.Now);
+                transactionAggregate.RecordTransactionTimings(command.HostDateTime, operatorTiming.Start, operatorTiming.End, DateTimeOffset.UtcNow);
 
                 transactionAggregate.CompleteTransaction();
 
@@ -657,7 +657,7 @@ namespace TransactionProcessor.BusinessLogic.Services{
             String transactionReference = TransactionHelpers.GenerateTransactionReference();
             Decimal? amount = command.AdditionalTransactionMetadata.ExtractFieldFromMetadata<decimal?>("Amount");
 
-            Result result = transactionAggregate.StartTransaction(command.TransactionDateTime, command.TransactionNumber, transactionType, transactionReference, new TransactionStartContext { EstateId = command.EstateId, MerchantId = command.MerchantId, DeviceIdentifier = command.DeviceIdentifier,
+            Result result = transactionAggregate.StartTransaction(command.TransactionDateTime, command.HostDateTime, command.TransactionNumber, transactionType, transactionReference, new TransactionStartContext { EstateId = command.EstateId, MerchantId = command.MerchantId, DeviceIdentifier = command.DeviceIdentifier,
             TransactionSource = transactionSourceValue}, amount);
 
             if (result.IsFailed)
@@ -675,7 +675,7 @@ namespace TransactionProcessor.BusinessLogic.Services{
         private Result ProcessReconciliation(ReconciliationAggregate reconciliationAggregate,
                                              TransactionCommands.ProcessReconciliationCommand command,
                                              Result<TransactionValidationResult> validationResult) {
-            Result result = reconciliationAggregate.StartReconciliation(command.TransactionDateTime, command.EstateId, command.MerchantId);
+            Result result = reconciliationAggregate.StartReconciliation(command.TransactionDateTime, command.EstateId, command.MerchantId, command.HostDateTime);
             if (result.IsFailed)
                 return result;
 
@@ -699,11 +699,11 @@ namespace TransactionProcessor.BusinessLogic.Services{
             return reconciliationAggregate.Decline(validationResult.Data.ResponseCode, validationResult.Data.ResponseMessage);
         }
 
-        private async Task<(DateTime? Start, DateTime? End)> HandleOperatorProcessing(TransactionAggregate transactionAggregate,
+        private async Task<(DateTimeOffset? Start, DateTimeOffset? End)> HandleOperatorProcessing(TransactionAggregate transactionAggregate,
                                                                                             TransactionCommands.ProcessSaleTransactionCommand command,
                                                                                             Result<TransactionValidationResult> validationResult,
                                                                                             CancellationToken cancellationToken) {
-            DateTime? start = null, end = null;
+            DateTimeOffset? start = null, end = null;
 
             if (validationResult.Data.ResponseCode != TransactionResponseCode.Success) {
                 Logger.LogInformation("Validation failed for TransactionId {TransactionId} with ResponseCode {ResponseCode}: {ResponseMessage}", 
@@ -720,9 +720,9 @@ namespace TransactionProcessor.BusinessLogic.Services{
             if (merchantResult.IsFailed)
                 return (start, end);
 
-            start = DateTime.Now;
+            start = DateTimeOffset.UtcNow;
             Result<OperatorResponse> operatorResult = await ProcessMessageWithOperator(merchantResult.Data, command.TransactionId, command.TransactionDateTime, command.OperatorId, command.AdditionalTransactionMetadata, TransactionHelpers.GenerateTransactionReference(), cancellationToken);
-            end = DateTime.Now;
+            end = DateTimeOffset.UtcNow;
 
             if (operatorResult.IsSuccess) {
                 Logger.LogInformation("Operator {OperatorId} authorised transaction {TransactionId} successfully", command.OperatorId, command.TransactionId);

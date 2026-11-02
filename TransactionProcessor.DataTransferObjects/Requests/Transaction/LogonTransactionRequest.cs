@@ -4,9 +4,9 @@ namespace TransactionProcessor.DataTransferObjects.Requests.Transaction
     using System.Diagnostics.CodeAnalysis;
     
     /// <summary>
-    /// Terminal logon message fields, including the shared transaction identity and timestamp.
+    /// Terminal logon message fields, including the host timestamp and shared transaction identity and timestamp.
     /// </summary>
-    /// <example>{"estateId":"00000000-0000-0000-0000-000000000023","merchantId":"00000000-0000-0000-0000-000000000227","transactionDateTime":"2026-01-15T10:30:00Z","transactionType":"example","deviceIdentifier":"EXAMPLE-001","transactionNumber":"EXAMPLE-001"}</example>
+    /// <example>{"hostDateTime":"2026-01-15T10:30:00Z","estateId":"00000000-0000-0000-0000-000000000023","merchantId":"00000000-0000-0000-0000-000000000227","transactionDateTime":"2026-01-15T10:30:00Z","transactionType":"example","deviceIdentifier":"EXAMPLE-001","transactionNumber":"EXAMPLE-001"}</example>
     [ExcludeFromCodeCoverage]
     public class LogonTransactionRequest : TransactionRequest
     {

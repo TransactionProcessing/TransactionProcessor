@@ -47,7 +47,7 @@ namespace TransactionProcessor.Aggregates
             return Result.Success();
         }
 
-        public static Result RecordCreditPurchase(this FloatAggregate aggregate, DateTimeOffset creditPurchasedDate, Decimal amount, Decimal costPrice)
+        public static Result RecordCreditPurchase(this FloatAggregate aggregate, DateTimeOffset creditPurchasedDate, Decimal amount, Decimal costPrice, DateTimeOffset hostDateTime)
         {
             Result result = aggregate.ValidateFloatIsAlreadyCreated();
             if (result.IsFailed) {
@@ -59,7 +59,7 @@ namespace TransactionProcessor.Aggregates
             }
 
             FloatDomainEvents.FloatCreditPurchasedEvent floatCreditPurchasedEvent = new(aggregate.AggregateId, aggregate.EstateId,
-                                                                                                creditPurchasedDate, amount, costPrice);
+                                                                                                creditPurchasedDate, amount, costPrice, hostDateTime);
 
             aggregate.ApplyAndAppend(floatCreditPurchasedEvent);
 

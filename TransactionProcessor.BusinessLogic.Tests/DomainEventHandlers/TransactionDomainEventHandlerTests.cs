@@ -57,7 +57,7 @@ namespace TransactionProcessor.BusinessLogic.Tests.DomainEventHandlers
         [InlineData(typeof(TransactionDomainEvents.CustomerEmailReceiptResendRequestedEvent))]
         public async Task TransactionDomainEventHandler_EventPassedIn_EventIsHandled(Type eventType) {
             DomainEvent domainEvent = eventType.Name switch {
-                nameof(FloatDomainEvents.FloatCreditPurchasedEvent) => new FloatDomainEvents.FloatCreditPurchasedEvent(TestData.FloatAggregateId, TestData.EstateId, TestData.CreditPurchasedDateTime, TestData.FloatCreditAmount, TestData.FloatCreditCostPrice),
+                nameof(FloatDomainEvents.FloatCreditPurchasedEvent) => new FloatDomainEvents.FloatCreditPurchasedEvent(TestData.FloatAggregateId, TestData.EstateId, TestData.CreditPurchasedDateTime, TestData.FloatCreditAmount, TestData.FloatCreditCostPrice, TestData.HostDateTime),
                 nameof(TransactionDomainEvents.TransactionCostInformationRecordedEvent) => TestData.TransactionCostInformationRecordedEvent,
                 nameof(TransactionDomainEvents.TransactionHasBeenCompletedEvent) => TestData.DomainEvents.TransactionHasBeenCompletedEvent,
                 nameof(TransactionDomainEvents.MerchantFeePendingSettlementAddedToTransactionEvent) => new TransactionDomainEvents.MerchantFeePendingSettlementAddedToTransactionEvent(TestData.TransactionId, TestData.EstateId, TestData.MerchantId, TestData.CalculatedFeeValue, 0, TestData.TransactionFeeId, TestData.TransactionFeeValue, TestData.TransactionFeeCalculateDateTime, TestData.TransactionFeeSettlementDueDate, TestData.TransactionDateTime),

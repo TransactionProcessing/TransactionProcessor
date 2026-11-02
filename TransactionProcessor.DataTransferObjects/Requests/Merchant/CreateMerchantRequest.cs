@@ -38,6 +38,6 @@ namespace TransactionProcessor.DataTransferObjects.Requests.Merchant
         /// <summary>
         /// Optional merchant creation timestamp.
         /// </summary>
-        public DateTime? CreatedDateTime { get; set; }
+        public DateTimeOffset? CreatedDateTime { get; set; }
     }
 }

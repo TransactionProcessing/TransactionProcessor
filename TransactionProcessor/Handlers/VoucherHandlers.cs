@@ -15,8 +15,7 @@ namespace TransactionProcessor.Handlers
     {
         public static async Task<IResult> RedeemVoucher(IMediator mediator, HttpContext ctx, RedeemVoucherRequest redeemVoucherRequest, CancellationToken cancellationToken)
         {
-            DateTimeOffset redeemedDateTime = redeemVoucherRequest.RedeemedDateTime.HasValue ? redeemVoucherRequest.RedeemedDateTime.Value : DateTime.Now;
-            VoucherCommands.RedeemVoucherCommand command = new(redeemVoucherRequest.EstateId, redeemVoucherRequest.VoucherCode, redeemedDateTime);
+            VoucherCommands.RedeemVoucherCommand command = new(redeemVoucherRequest.EstateId, redeemVoucherRequest.VoucherCode, redeemVoucherRequest);
 
             Result<TransactionProcessor.Models.RedeemVoucherResponse> result = await mediator.Send(command, cancellationToken);
 

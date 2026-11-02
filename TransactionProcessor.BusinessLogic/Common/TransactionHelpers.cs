@@ -16,7 +16,7 @@ public static class TransactionHelpers {
             i *= (b + 1);
         }
 
-        return $"{i - DateTime.Now.Ticks:x}";
+        return $"{i - DateTimeOffset.UtcNow.Ticks:x}";
     }
 
     [ExcludeFromCodeCoverage]

@@ -17,9 +17,7 @@ public class DummyVoucherDomainService : IVoucherDomainService
         return Result.Success(new IssueVoucherResponse());
     }
 
-    public async Task<Result<RedeemVoucherResponse>> RedeemVoucher(Guid estateId,
-                                                                   String voucherCode,
-                                                                   DateTimeOffset redeemedDateTime,
+    public async Task<Result<RedeemVoucherResponse>> RedeemVoucher(VoucherCommands.RedeemVoucherCommand command,
                                                                    CancellationToken cancellationToken) {
         return Result.Success(new RedeemVoucherResponse());
     }

@@ -1,7 +1,8 @@
-﻿using System;
-using System.Diagnostics.CodeAnalysis;
-using MediatR;
+﻿using MediatR;
 using SimpleResults;
+using System;
+using System.Diagnostics.CodeAnalysis;
+using TransactionProcessor.DataTransferObjects.Requests.Float;
 
 namespace TransactionProcessor.BusinessLogic.Requests;
 
@@ -12,8 +13,5 @@ public record FloatCommands {
                                      DateTimeOffset CreateDateTime) : IRequest<Result>;
 
     public record RecordCreditPurchaseForFloatCommand(Guid EstateId,
-                                                      Guid FloatId,
-                                                      Decimal CreditAmount,
-                                                      Decimal CostPrice,
-                                                      DateTimeOffset PurchaseDateTime) : IRequest<Result>;
+                                                      RecordFloatCreditPurchaseRequest RecordFloatCreditPurchaseRequest) : IRequest<Result>;
 }

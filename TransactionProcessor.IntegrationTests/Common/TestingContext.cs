@@ -12,7 +12,6 @@ namespace TransactionProcessor.IntegrationTests.Common {
     using global::Shared.Logger;
     using Reqnroll;
     using Shouldly;
-    using TransactionProcessor.DataTransferObjects.Requests.Voucher;
     using TransactionProcessor.DataTransferObjects.Responses.Transaction;
     using TransactionProcessor.DataTransferObjects.Responses.Voucher;
     using Retry = IntegrationTests.Retry;
@@ -45,7 +44,6 @@ namespace TransactionProcessor.IntegrationTests.Common {
         {
             this.Estates = new List<EstateDetails>();
             this.Clients = new List<ClientDetails>();
-            this.Vouchers = new List<(IssueVoucherRequest request, IssueVoucherResponse response)>();
         }
 
         #endregion
@@ -185,13 +183,6 @@ namespace TransactionProcessor.IntegrationTests.Common {
         }
 
         #endregion
-
-        private readonly List<(IssueVoucherRequest request, IssueVoucherResponse response)> Vouchers;
-
-        public void AddVoucher((IssueVoucherRequest request, IssueVoucherResponse response) voucher)
-        {
-            this.Vouchers.Add(voucher);
-        }
 
         public async Task<GetVoucherResponse> GetVoucherByTransactionNumber(String estateName, String merchantName, Int32 transactionNumber) {
             EstateDetails estate = this.GetEstateDetails(estateName);

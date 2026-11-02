@@ -111,7 +111,7 @@ namespace TransactionProcessor.Aggregates
                 return Result.Success();
             }
 
-            SettlementDomainEvents.MerchantFeeSettledEvent merchantFeeSettledEvent = CreateMerchantFeeSettledEvent(aggregate, pendingFee,DateTime.Now);
+            SettlementDomainEvents.MerchantFeeSettledEvent merchantFeeSettledEvent = CreateMerchantFeeSettledEvent(aggregate, pendingFee, DateTimeOffset.UtcNow);
 
             aggregate.ApplyAndAppend(merchantFeeSettledEvent);
             

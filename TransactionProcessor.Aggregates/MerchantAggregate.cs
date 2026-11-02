@@ -449,7 +449,7 @@ namespace TransactionProcessor.Aggregates
                 DateTimeOffset dateForCalculation = aggregate.NextSettlementDueDate;
                 if (dateForCalculation == DateTimeOffset.MinValue) {
                     // No date set previously so use current date as start point
-                    dateForCalculation = DateTime.Now.Date;
+                    dateForCalculation = DateTimeOffset.UtcNow.Date;
                 }
 
                 if (settlementSchedule == SettlementSchedule.Weekly) {
@@ -488,7 +488,7 @@ namespace TransactionProcessor.Aggregates
         public static Result Create(this MerchantAggregate aggregate,
                                     Guid estateId,
                                     String merchantName,
-                                    DateTime dateCreated,
+                                    DateTimeOffset dateCreated,
                                     TransactionProcessor.Models.Merchant.Address address,
                                     TransactionProcessor.Models.Merchant.Contact contact,
                                     SettlementSchedule settlementSchedule) {

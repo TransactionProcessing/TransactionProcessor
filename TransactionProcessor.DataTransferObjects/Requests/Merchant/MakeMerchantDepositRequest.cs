@@ -4,11 +4,11 @@ using System.Diagnostics.CodeAnalysis;
 namespace TransactionProcessor.DataTransferObjects.Requests.Merchant
 {
     /// <summary>
-    /// Deposit amount, effective date and time, and reference.
+    /// Host timestamp, deposit amount, effective date and time, and reference.
     /// </summary>
-    /// <example>{"amount":42.5,"depositDateTime":"2026-01-15T10:30:00Z","reference":"REF-2026-001"}</example>
+    /// <example>{"hostDateTime":"2026-01-15T10:30:00Z","amount":42.5,"depositDateTime":"2026-01-15T10:30:00Z","reference":"REF-2026-001"}</example>
     [ExcludeFromCodeCoverage]
-    public class MakeMerchantDepositRequest {
+    public class MakeMerchantDepositRequest : RequestWithHostDateTime {
 
         /// <summary>
         /// Monetary amount of the deposit or withdrawal.

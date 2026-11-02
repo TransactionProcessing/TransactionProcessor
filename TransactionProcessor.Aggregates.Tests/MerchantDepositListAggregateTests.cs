@@ -71,7 +71,8 @@ namespace TransactionProcessor.Aggregates.Tests
             Result result = merchantDepositListAggregate.MakeDeposit(TestData.MerchantDepositSourceAutomatic,
                                                      TestData.DepositReference,
                                                      TestData.DepositDateTime,
-                                                     TestData.DepositAmount);
+                                                     TestData.DepositAmount,
+                                                     TestData.HostDateTime);
             result.IsSuccess.ShouldBeTrue();
 
             List<Deposit> depositListModel = merchantDepositListAggregate.GetDeposits();
@@ -91,7 +92,7 @@ namespace TransactionProcessor.Aggregates.Tests
             MerchantDepositListAggregate merchantDepositListAggregate = MerchantDepositListAggregate.Create(TestData.MerchantId);
             merchantDepositListAggregate.Create(merchantAggregate, TestData.DateMerchantCreated);
 
-            Result result = merchantDepositListAggregate.MakeDeposit(TestData.MerchantDepositSourceManual, TestData.DepositReference, TestData.DepositDateTime, TestData.DepositAmount);
+            Result result = merchantDepositListAggregate.MakeDeposit(TestData.MerchantDepositSourceManual, TestData.DepositReference, TestData.DepositDateTime, TestData.DepositAmount, TestData.HostDateTime);
             result.IsSuccess.ShouldBeTrue();
 
             List<Deposit> depositListModel = merchantDepositListAggregate.GetDeposits();
@@ -115,7 +116,7 @@ namespace TransactionProcessor.Aggregates.Tests
             Result result = merchantDepositListAggregate.MakeDeposit(MerchantDepositSource.NotSet,
                                                                                                  TestData.DepositReference,
                                                                                                  TestData.DepositDateTime,
-                                                                                                 TestData.DepositAmount);
+                                                                                                 TestData.DepositAmount, TestData.HostDateTime);
             result.IsFailed.ShouldBeTrue();
             result.Status.ShouldBe(ResultStatus.Invalid);
         }
@@ -133,7 +134,7 @@ namespace TransactionProcessor.Aggregates.Tests
             Result result = merchantDepositListAggregate.MakeDeposit((MerchantDepositSource)99,
                                                                                                  TestData.DepositReference,
                                                                                                  TestData.DepositDateTime,
-                                                                                                 TestData.DepositAmount);
+                                                                                                 TestData.DepositAmount, TestData.HostDateTime);
             result.IsFailed.ShouldBeTrue();
             result.Status.ShouldBe(ResultStatus.Invalid);
         }
@@ -147,14 +148,15 @@ namespace TransactionProcessor.Aggregates.Tests
             MerchantDepositListAggregate merchantDepositListAggregate = MerchantDepositListAggregate.Create(TestData.MerchantId);
             merchantDepositListAggregate.Create(merchantAggregate, TestData.DateMerchantCreated);
 
-            merchantDepositListAggregate.MakeDeposit(TestData.MerchantDepositSourceManual, TestData.DepositReference, TestData.DepositDateTime, TestData.DepositAmount);
+            merchantDepositListAggregate.MakeDeposit(TestData.MerchantDepositSourceManual, TestData.DepositReference, TestData.DepositDateTime, TestData.DepositAmount, TestData.HostDateTime);
             List<Deposit> depositListModel = merchantDepositListAggregate.GetDeposits();
             depositListModel.ShouldHaveSingleItem();
 
             Result result = merchantDepositListAggregate.MakeDeposit(TestData.MerchantDepositSourceManual,
                                                                                                  TestData.DepositReference,
                                                                                                  TestData.DepositDateTime,
-                                                                                                 TestData.DepositAmount);
+                                                                                                 TestData.DepositAmount,
+                                                                                                 TestData.HostDateTime);
             result.IsFailed.ShouldBeTrue();
             result.Status.ShouldBe(ResultStatus.Invalid);
         }
@@ -166,7 +168,8 @@ namespace TransactionProcessor.Aggregates.Tests
             Result result = merchantDepositListAggregate.MakeDeposit(TestData.MerchantDepositSourceManual,
                                                                                                  TestData.DepositReference,
                                                                                                  TestData.DepositDateTime,
-                                                                                                 TestData.DepositAmount);
+                                                                                                 TestData.DepositAmount,
+                                                                                                 TestData.HostDateTime);
             result.IsFailed.ShouldBeTrue();
             result.Status.ShouldBe(ResultStatus.Invalid);
         }
@@ -180,12 +183,13 @@ namespace TransactionProcessor.Aggregates.Tests
             MerchantDepositListAggregate merchantDepositListAggregate = MerchantDepositListAggregate.Create(TestData.MerchantId);
             merchantDepositListAggregate.Create(merchantAggregate, TestData.DateMerchantCreated);
 
-            Result result = merchantDepositListAggregate.MakeDeposit(TestData.MerchantDepositSourceManual, TestData.DepositReference, TestData.DepositDateTime, TestData.DepositAmount);
+            Result result = merchantDepositListAggregate.MakeDeposit(TestData.MerchantDepositSourceManual, TestData.DepositReference, TestData.DepositDateTime, TestData.DepositAmount, TestData.HostDateTime);
             result.IsSuccess.ShouldBeTrue();
             result = merchantDepositListAggregate.MakeDeposit(TestData.MerchantDepositSourceManual,
                                                      TestData.DepositReference2,
                                                      TestData.DepositDateTime2,
-                                                     TestData.DepositAmount2);
+                                                     TestData.DepositAmount2,
+                                                     TestData.HostDateTime);
             result.IsSuccess.ShouldBeTrue();
 
             List<Deposit> depositListModel = merchantDepositListAggregate.GetDeposits();
@@ -204,12 +208,14 @@ namespace TransactionProcessor.Aggregates.Tests
             Result result = merchantDepositListAggregate.MakeDeposit(TestData.MerchantDepositSourceManual,
                                                      "Test Data Gen Deposit",
                                                      new DateTime(2021, 1, 1, 0, 0, 0),
-                                                     PositiveMoney.Create(Money.Create(650.00m)));
+                                                     PositiveMoney.Create(Money.Create(650.00m)),
+                                                     TestData.HostDateTime);
             result.IsSuccess.ShouldBeTrue();
             result = merchantDepositListAggregate.MakeDeposit(TestData.MerchantDepositSourceManual,
                                                      "Test Data Gen Deposit",
                                                      new DateTime(2021, 2, 1, 0, 0, 0),
-                                                     PositiveMoney.Create(Money.Create(650.00m)));
+                                                     PositiveMoney.Create(Money.Create(650.00m)),
+                                                     TestData.HostDateTime);
             result.IsSuccess.ShouldBeTrue();
 
             List<Deposit> depositListModel = merchantDepositListAggregate.GetDeposits();
@@ -228,12 +234,12 @@ namespace TransactionProcessor.Aggregates.Tests
             Result result = merchantDepositListAggregate.MakeDeposit(TestData.MerchantDepositSourceManual,
                                                      "Test Data Gen Deposit",
                                                      new DateTime(2021, 1, 1, 0, 0, 0),
-                                                     PositiveMoney.Create(Money.Create(650.00m)));
+                                                     PositiveMoney.Create(Money.Create(650.00m)), TestData.HostDateTime);
             result.IsSuccess.ShouldBeTrue();
             result = merchantDepositListAggregate.MakeDeposit(TestData.MerchantDepositSourceManual,
                                                      "Test Data Gen Deposit",
                                                      new DateTime(2021, 1, 1, 0, 0, 0),
-                                                     PositiveMoney.Create(Money.Create(934.00m)));
+                                                     PositiveMoney.Create(Money.Create(934.00m)), TestData.HostDateTime);
             result.IsSuccess.ShouldBeTrue();
 
             List<Deposit> depositListModel = merchantDepositListAggregate.GetDeposits();
@@ -249,12 +255,14 @@ namespace TransactionProcessor.Aggregates.Tests
             MerchantDepositListAggregate merchantDepositListAggregate = MerchantDepositListAggregate.Create(TestData.MerchantId);
             merchantDepositListAggregate.Create(merchantAggregate, TestData.DateMerchantCreated);
 
-            merchantDepositListAggregate.MakeWithdrawal(TestData.WithdrawalDateTime, TestData.WithdrawalAmount);
+            merchantDepositListAggregate.MakeWithdrawal(TestData.WithdrawalDateTime, TestData.WithdrawalAmount,
+                TestData.HostDateTime);
             
             List<Withdrawal> withdrawalListModel = merchantDepositListAggregate.GetWithdrawals();
             withdrawalListModel.ShouldHaveSingleItem();
 
-            Result result = merchantDepositListAggregate.MakeWithdrawal(TestData.WithdrawalDateTime, TestData.WithdrawalAmount);
+            Result result = merchantDepositListAggregate.MakeWithdrawal(TestData.WithdrawalDateTime, TestData.WithdrawalAmount,
+                TestData.HostDateTime);
             result.IsFailed.ShouldBeTrue();
             result.Status.ShouldBe(ResultStatus.Invalid);
         }
@@ -263,7 +271,8 @@ namespace TransactionProcessor.Aggregates.Tests
         public void MerchantDepositListAggregate_MakeWithdrawal_MerchantDepositListNotCreated_ErrorThrown() {
             MerchantDepositListAggregate merchantDepositListAggregate = MerchantDepositListAggregate.Create(TestData.MerchantId);
 
-            Result result = merchantDepositListAggregate.MakeWithdrawal(TestData.WithdrawalDateTime, TestData.WithdrawalAmount);
+            Result result = merchantDepositListAggregate.MakeWithdrawal(TestData.WithdrawalDateTime, TestData.WithdrawalAmount,
+                TestData.HostDateTime);
             result.IsFailed.ShouldBeTrue();
             result.Status.ShouldBe(ResultStatus.Invalid);
         }
@@ -277,10 +286,12 @@ namespace TransactionProcessor.Aggregates.Tests
             MerchantDepositListAggregate merchantDepositListAggregate = MerchantDepositListAggregate.Create(TestData.MerchantId);
             merchantDepositListAggregate.Create(merchantAggregate, TestData.DateMerchantCreated);
 
-            Result result = merchantDepositListAggregate.MakeWithdrawal(TestData.WithdrawalDateTime, TestData.WithdrawalAmount);
+            Result result = merchantDepositListAggregate.MakeWithdrawal(TestData.WithdrawalDateTime, TestData.WithdrawalAmount,
+                TestData.HostDateTime);
             result.IsSuccess.ShouldBeTrue();
             
-            result = merchantDepositListAggregate.MakeWithdrawal(TestData.WithdrawalDateTime2, TestData.WithdrawalAmount2);
+            result = merchantDepositListAggregate.MakeWithdrawal(TestData.WithdrawalDateTime2, TestData.WithdrawalAmount2,
+                TestData.HostDateTime);
             result.IsSuccess.ShouldBeTrue();
 
             List<Withdrawal> withdrawalListModel = merchantDepositListAggregate.GetWithdrawals();
@@ -296,9 +307,11 @@ namespace TransactionProcessor.Aggregates.Tests
             MerchantDepositListAggregate merchantDepositListAggregate = MerchantDepositListAggregate.Create(TestData.MerchantId);
             merchantDepositListAggregate.Create(merchantAggregate, TestData.DateMerchantCreated);
 
-            Result result = merchantDepositListAggregate.MakeWithdrawal(new DateTime(2021, 1, 1, 0, 0, 0), PositiveMoney.Create(Money.Create(650.00m)));
+            Result result = merchantDepositListAggregate.MakeWithdrawal(new DateTime(2021, 1, 1, 0, 0, 0), PositiveMoney.Create(Money.Create(650.00m)),
+                TestData.HostDateTime);
             result.IsSuccess.ShouldBeTrue();
-            result = merchantDepositListAggregate.MakeWithdrawal(new DateTime(2021, 2, 1, 0, 0, 0), PositiveMoney.Create(Money.Create(650.00m)));
+            result = merchantDepositListAggregate.MakeWithdrawal(new DateTime(2021, 2, 1, 0, 0, 0), PositiveMoney.Create(Money.Create(650.00m)),
+                TestData.HostDateTime);
             result.IsSuccess.ShouldBeTrue();
 
             List<Withdrawal> withdrawalListModel = merchantDepositListAggregate.GetWithdrawals();
@@ -314,9 +327,11 @@ namespace TransactionProcessor.Aggregates.Tests
             MerchantDepositListAggregate merchantDepositListAggregate = MerchantDepositListAggregate.Create(TestData.MerchantId);
             merchantDepositListAggregate.Create(merchantAggregate, TestData.DateMerchantCreated);
 
-            Result result = merchantDepositListAggregate.MakeWithdrawal(new DateTime(2021, 1, 1, 0, 0, 0), PositiveMoney.Create(Money.Create(650.00m)));
+            Result result = merchantDepositListAggregate.MakeWithdrawal(new DateTime(2021, 1, 1, 0, 0, 0), PositiveMoney.Create(Money.Create(650.00m)),
+                TestData.HostDateTime);
             result.IsSuccess.ShouldBeTrue();
-            result = merchantDepositListAggregate.MakeWithdrawal(new DateTime(2021, 1, 1, 0, 0, 0), PositiveMoney.Create(Money.Create(934.00m)));
+            result = merchantDepositListAggregate.MakeWithdrawal(new DateTime(2021, 1, 1, 0, 0, 0), PositiveMoney.Create(Money.Create(934.00m)),
+                TestData.HostDateTime);
             result.IsSuccess.ShouldBeTrue();
 
             List<Withdrawal> withdrawalListModel = merchantDepositListAggregate.GetWithdrawals();
@@ -332,7 +347,8 @@ namespace TransactionProcessor.Aggregates.Tests
             MerchantDepositListAggregate merchantDepositListAggregate = MerchantDepositListAggregate.Create(TestData.MerchantId);
             merchantDepositListAggregate.Create(merchantAggregate, TestData.DateMerchantCreated);
 
-            Result result = merchantDepositListAggregate.MakeWithdrawal(TestData.WithdrawalDateTime, TestData.WithdrawalAmount);
+            Result result = merchantDepositListAggregate.MakeWithdrawal(TestData.WithdrawalDateTime, TestData.WithdrawalAmount,
+                TestData.HostDateTime);
             result.IsSuccess.ShouldBeTrue();
 
             List<Withdrawal> withdrawalListModel = merchantDepositListAggregate.GetWithdrawals();

@@ -355,9 +355,9 @@ public class WebHandlersTests
             SetupSuccess<FloatCommands.RecordCreditPurchaseForFloatCommand>(command =>
             {
                 command.EstateId.ShouldBe(EstateId);
-                command.FloatId.ShouldBe(FloatId);
-                command.CreditAmount.ShouldBe(10m);
-                command.CostPrice.ShouldBe(8m);
+                command.RecordFloatCreditPurchaseRequest.FloatId.ShouldBe(FloatId);
+                command.RecordFloatCreditPurchaseRequest.CreditAmount.ShouldBe(10m);
+                command.RecordFloatCreditPurchaseRequest.CostPrice.ShouldBe(8m);
             }),
             mediator => FloatHandlers.RecordFloatCreditPurchase(mediator,
                                                                 new DefaultHttpContext(),
@@ -1067,15 +1067,17 @@ public class WebHandlersTests
             {
                 command.EstateId.ShouldBe(EstateId);
                 command.VoucherCode.ShouldBe(VoucherCode);
-                command.RedeemedDateTime.ShouldBeGreaterThan(DateTime.Now.AddSeconds(-5));
-                command.RedeemedDateTime.ShouldBeLessThan(DateTime.Now.AddSeconds(5));
+                command.RedeemVoucherRequest.RedeemedDateTime.GetValueOrDefault().ShouldBeGreaterThan(DateTime.Now.AddSeconds(-5));
+                command.RedeemVoucherRequest.RedeemedDateTime.GetValueOrDefault().ShouldBeLessThan(DateTime.Now.AddSeconds(5));
             }),
             mediator => VoucherHandlers.RedeemVoucher(mediator,
                                                       new DefaultHttpContext(),
                                                       new RedeemVoucherRequest
                                                       {
                                                           EstateId = EstateId,
-                                                          VoucherCode = VoucherCode
+                                                          VoucherCode = VoucherCode,
+                                                          RedeemedDateTime = DateTime.Now,
+                                                          HostDateTime = DateTime.Now
                                                       },
                                                       CancellationToken.None));
 

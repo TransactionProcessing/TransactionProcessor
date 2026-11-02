@@ -27,9 +27,7 @@ public interface IVoucherDomainService
     Task<Result<IssueVoucherResponse>> IssueVoucher(VoucherCommands.IssueVoucherCommand command,
                                                         CancellationToken cancellationToken);
 
-    Task<Result<RedeemVoucherResponse>> RedeemVoucher(Guid estateId,
-                                              String voucherCode,
-                                              DateTimeOffset redeemedDateTime,
+    Task<Result<RedeemVoucherResponse>> RedeemVoucher(VoucherCommands.RedeemVoucherCommand command,
                                               CancellationToken cancellationToken);
 
     #endregion
@@ -100,25 +98,25 @@ public class VoucherDomainService : IVoucherDomainService
         }
     }
 
-    public async Task<Result<RedeemVoucherResponse>> RedeemVoucher(Guid estateId,
-                                                           String voucherCode,
-                                                           DateTimeOffset redeemedDateTime,
+    public async Task<Result<RedeemVoucherResponse>> RedeemVoucher(VoucherCommands.RedeemVoucherCommand command, 
                                                            CancellationToken cancellationToken)
     {
         try
         {
+            DateTimeOffset redeemedDateTime = command.RedeemVoucherRequest.RedeemedDateTime.HasValue ? command.RedeemVoucherRequest.RedeemedDateTime.Value : DateTimeOffset.UtcNow;
+
             // Find the voucher based on the voucher code
-            using ResolvedDbContext<EstateManagementContext>? resolvedContext = this.Resolver.Resolve(EstateManagementDatabaseName, estateId.ToString());
+            using ResolvedDbContext<EstateManagementContext>? resolvedContext = this.Resolver.Resolve(EstateManagementDatabaseName, command.EstateId.ToString());
             await using EstateManagementContext context = resolvedContext.Context;
 
-            TransactionProcessor.Database.Entities.VoucherProjectionState voucher = await context.VoucherProjectionStates.SingleOrDefaultAsync(v => v.VoucherCode == voucherCode, cancellationToken);
+            TransactionProcessor.Database.Entities.VoucherProjectionState voucher = await context.VoucherProjectionStates.SingleOrDefaultAsync(v => v.VoucherCode == command.VoucherCode, cancellationToken);
 
             if (voucher == null)
             {
-                return Result.NotFound($"No voucher found with voucher code [{voucherCode}]");
+                return Result.NotFound($"No voucher found with voucher code [{command.VoucherCode}]");
             }
 
-            Result<EstateResponse> validateResult = await this.ValidateVoucherRedemption(estateId, cancellationToken);
+            Result<EstateResponse> validateResult = await this.ValidateVoucherRedemption(command.EstateId, cancellationToken);
             if (validateResult.IsFailed)
                 return ResultHelpers.CreateFailure(validateResult);
             
@@ -129,7 +127,7 @@ public class VoucherDomainService : IVoucherDomainService
             VoucherAggregate voucherAggregate = voucherResult.Data;
 
             // Redeem the voucher
-            Result stateResult = voucherAggregate.Redeem(redeemedDateTime);
+            Result stateResult = voucherAggregate.Redeem(redeemedDateTime, command.RedeemVoucherRequest.HostDateTime);
             if (stateResult.IsFailed)
                 return ResultHelpers.CreateFailure(stateResult);
 

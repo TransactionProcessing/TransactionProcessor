@@ -3,10 +3,10 @@ namespace TransactionProcessor.DataTransferObjects.Requests.Voucher
     using System;
 
     /// <summary>
-    /// Voucher code and estate to redeem, with an optional redemption timestamp.
+    /// Host timestamp, voucher code, and estate to redeem, with an optional redemption timestamp.
     /// </summary>
-    /// <example>{"voucherCode":"VOUCHER-2026-001","estateId":"00000000-0000-0000-0000-000000000023","redeemedDateTime":"2026-01-15T10:30:00Z"}</example>
-    public class RedeemVoucherRequest {
+    /// <example>{"hostDateTime":"2026-01-15T10:30:00Z","voucherCode":"VOUCHER-2026-001","estateId":"00000000-0000-0000-0000-000000000023","redeemedDateTime":"2026-01-15T10:30:00Z"}</example>
+    public class RedeemVoucherRequest : RequestWithHostDateTime {
         /// <summary>
         /// Code printed on or assigned to the voucher.
         /// </summary>

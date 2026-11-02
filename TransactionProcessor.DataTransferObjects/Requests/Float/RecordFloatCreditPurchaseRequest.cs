@@ -3,10 +3,10 @@ using System;
 namespace TransactionProcessor.DataTransferObjects.Requests.Float;
 
 /// <summary>
-/// Float credit amount, cost price, and purchase timestamp.
+/// Host timestamp, float credit amount, cost price, and purchase timestamp.
 /// </summary>
-/// <example>{"floatId":"00000000-0000-0000-0000-000000000166","purchaseDateTime":"2026-01-15T10:30:00Z","creditAmount":42.5,"costPrice":42.5}</example>
-public class RecordFloatCreditPurchaseRequest {
+/// <example>{"hostDateTime":"2026-01-15T10:30:00Z","floatId":"00000000-0000-0000-0000-000000000166","purchaseDateTime":"2026-01-15T10:30:00Z","creditAmount":42.5,"costPrice":42.5}</example>
+public class RecordFloatCreditPurchaseRequest : RequestWithHostDateTime {
     /// <summary>
     /// Identifier of the float.
     /// </summary>

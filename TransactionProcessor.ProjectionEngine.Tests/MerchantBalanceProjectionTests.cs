@@ -256,7 +256,8 @@ public class MerchantBalanceProjectionTests
                                                                          TestData.AutomaticDepositMadeEvent.DepositId,
                                                                          TestData.AutomaticDepositMadeEvent.Reference,
                                                                          TestData.AutomaticDepositMadeEvent.DepositDateTime.AddDays(-1),
-                                                                         TestData.AutomaticDepositMadeEvent.Amount);
+                                                                         TestData.AutomaticDepositMadeEvent.Amount,
+                                                                         TestData.AutomaticDepositMadeEvent.HostDateTime);
 
         MerchantBalanceState newState = await projection.Handle(state, @event, CancellationToken.None);
 

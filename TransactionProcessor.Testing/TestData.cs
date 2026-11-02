@@ -9,9 +9,11 @@ using TransactionProcessor.BusinessLogic.Events;
 using TransactionProcessor.BusinessLogic.Services;
 using TransactionProcessor.DataTransferObjects.Requests.Contract;
 using TransactionProcessor.DataTransferObjects.Requests.Estate;
+using TransactionProcessor.DataTransferObjects.Requests.Float;
 using TransactionProcessor.DataTransferObjects.Requests.Merchant;
 using TransactionProcessor.DataTransferObjects.Requests.MerchantSchedule;
 using TransactionProcessor.DataTransferObjects.Requests.Operator;
+using TransactionProcessor.DataTransferObjects.Requests.Voucher;
 using TransactionProcessor.DataTransferObjects.Responses.Estate;
 using TransactionProcessor.DataTransferObjects.Responses.Merchant;
 using TransactionProcessor.DomainEvents;
@@ -1118,7 +1120,7 @@ namespace TransactionProcessor.Testing
         {
             TransactionAggregate transactionAggregate = TransactionAggregate.Create(TestData.TransactionId);
 
-            transactionAggregate.StartTransaction(TestData.TransactionDateTime, TestData.TransactionNumber, TestData.TransactionTypeLogon, TestData.TransactionReference, CreateTransactionStartContext(), TestData.TransactionAmount);
+            transactionAggregate.StartTransaction(TestData.TransactionDateTime, TestData.HostDateTime, TestData.TransactionNumber, TestData.TransactionTypeLogon, TestData.TransactionReference, CreateTransactionStartContext(), TestData.TransactionAmount);
 
             transactionAggregate.AuthoriseTransactionLocally(TestData.AuthorisationCode, TestData.ResponseCode, TestData.ResponseMessage);
 
@@ -1131,7 +1133,7 @@ namespace TransactionProcessor.Testing
         {
             TransactionAggregate transactionAggregate = TransactionAggregate.Create(TestData.TransactionId);
 
-            transactionAggregate.StartTransaction(TestData.TransactionDateTime, TestData.TransactionNumber, TestData.TransactionTypeSale, TestData.TransactionReference, CreateTransactionStartContext(), TestData.TransactionAmount);
+            transactionAggregate.StartTransaction(TestData.TransactionDateTime, TestData.HostDateTime, TestData.TransactionNumber, TestData.TransactionTypeSale, TestData.TransactionReference, CreateTransactionStartContext(), TestData.TransactionAmount);
 
             transactionAggregate.AddProductDetails(TestData.ContractId, TestData.ProductId);
 
@@ -1152,7 +1154,7 @@ namespace TransactionProcessor.Testing
         {
             TransactionAggregate transactionAggregate = TransactionAggregate.Create(TestData.TransactionId);
 
-            transactionAggregate.StartTransaction(TestData.TransactionDateTime, TestData.TransactionNumber, TestData.TransactionTypeSale, TestData.TransactionReference, CreateTransactionStartContext(), TestData.TransactionAmount);
+            transactionAggregate.StartTransaction(TestData.TransactionDateTime, TestData.HostDateTime, TestData.TransactionNumber, TestData.TransactionTypeSale, TestData.TransactionReference, CreateTransactionStartContext(), TestData.TransactionAmount);
 
             transactionAggregate.AddProductDetails(TestData.ContractId, TestData.ProductId);
 
@@ -1174,7 +1176,7 @@ namespace TransactionProcessor.Testing
         {
             TransactionAggregate transactionAggregate = TransactionAggregate.Create(TestData.TransactionId);
 
-            transactionAggregate.StartTransaction(TestData.TransactionDateTime, TestData.TransactionNumber, TestData.TransactionTypeSale, TestData.TransactionReference, CreateTransactionStartContext(), TestData.TransactionAmount);
+            transactionAggregate.StartTransaction(TestData.TransactionDateTime, TestData.HostDateTime, TestData.TransactionNumber, TestData.TransactionTypeSale, TestData.TransactionReference, CreateTransactionStartContext(), TestData.TransactionAmount);
 
             transactionAggregate.AddProductDetails(TestData.ContractId, TestData.ProductId);
 
@@ -1197,7 +1199,7 @@ namespace TransactionProcessor.Testing
         {
             TransactionAggregate transactionAggregate = TransactionAggregate.Create(TestData.TransactionId);
 
-            transactionAggregate.StartTransaction(TestData.TransactionDateTime, TestData.TransactionNumber, TestData.TransactionTypeSale, TestData.TransactionReference, CreateTransactionStartContext(), TestData.TransactionAmount);
+            transactionAggregate.StartTransaction(TestData.TransactionDateTime, TestData.HostDateTime, TestData.TransactionNumber, TestData.TransactionTypeSale, TestData.TransactionReference, CreateTransactionStartContext(), TestData.TransactionAmount);
 
             transactionAggregate.AddProductDetails(TestData.ContractId, TestData.ProductId);
 
@@ -1216,7 +1218,7 @@ namespace TransactionProcessor.Testing
         {
             TransactionAggregate transactionAggregate = TransactionAggregate.Create(TestData.TransactionId);
 
-            transactionAggregate.StartTransaction(TestData.TransactionDateTime, TestData.TransactionNumber, TestData.TransactionTypeSale, TestData.TransactionReference, CreateTransactionStartContext(), TestData.TransactionAmount);
+            transactionAggregate.StartTransaction(TestData.TransactionDateTime, TestData.HostDateTime, TestData.TransactionNumber, TestData.TransactionTypeSale, TestData.TransactionReference, CreateTransactionStartContext(), TestData.TransactionAmount);
 
             transactionAggregate.AddProductDetails(TestData.ContractId, TestData.ProductId);
 
@@ -1233,7 +1235,7 @@ namespace TransactionProcessor.Testing
         {
             TransactionAggregate transactionAggregate = TransactionAggregate.Create(TestData.TransactionId);
 
-            transactionAggregate.StartTransaction(TestData.TransactionDateTime, TestData.TransactionNumber, TestData.TransactionTypeLogon, TestData.TransactionReference, CreateTransactionStartContext(), TestData.TransactionAmount);
+            transactionAggregate.StartTransaction(TestData.TransactionDateTime, TestData.HostDateTime, TestData.TransactionNumber, TestData.TransactionTypeLogon, TestData.TransactionReference, CreateTransactionStartContext(), TestData.TransactionAmount);
 
             transactionAggregate.AuthoriseTransactionLocally(TestData.AuthorisationCode,
                                                              TestData.ResponseCode,
@@ -1248,7 +1250,7 @@ namespace TransactionProcessor.Testing
         {
             TransactionAggregate transactionAggregate = TransactionAggregate.Create(TestData.TransactionId);
 
-            transactionAggregate.StartTransaction(TestData.TransactionDateTime, TestData.TransactionNumber, TestData.TransactionTypeSale, TestData.TransactionReference, CreateTransactionStartContext(), TestData.TransactionAmount);
+            transactionAggregate.StartTransaction(TestData.TransactionDateTime, TestData.HostDateTime, TestData.TransactionNumber, TestData.TransactionTypeSale, TestData.TransactionReference, CreateTransactionStartContext(), TestData.TransactionAmount);
             
             transactionAggregate.AuthoriseTransaction(TestData.OperatorId,
                                                       TestData.AuthorisationCode,
@@ -1277,7 +1279,7 @@ namespace TransactionProcessor.Testing
             
             FloatAggregate floatAggregate = FloatAggregate.Create(TestData.FloatAggregateId);
             floatAggregate.CreateFloat(TestData.EstateId, TestData.FloatCreatedDateTime);
-            floatAggregate.RecordCreditPurchase(DateTime.Now, TestData.FloatCreditAmount, TestData.FloatCreditCostPrice);
+            floatAggregate.RecordCreditPurchase(DateTime.Now, TestData.FloatCreditAmount, TestData.FloatCreditCostPrice, DateTime.Now);
             return floatAggregate;
         }
 
@@ -1290,7 +1292,7 @@ namespace TransactionProcessor.Testing
         {
             TransactionAggregate transactionAggregate = TransactionAggregate.Create(TestData.TransactionId);
 
-            transactionAggregate.StartTransaction(TestData.TransactionDateTime, TestData.TransactionNumber, TestData.TransactionTypeLogon, TestData.TransactionReference, CreateTransactionStartContext(), TestData.TransactionAmount);
+            transactionAggregate.StartTransaction(TestData.TransactionDateTime, TestData.HostDateTime, TestData.TransactionNumber, TestData.TransactionTypeLogon, TestData.TransactionReference, CreateTransactionStartContext(), TestData.TransactionAmount);
 
             transactionAggregate.AuthoriseTransactionLocally(TestData.AuthorisationCode, TestData.ResponseCode, TestData.ResponseMessage);
 
@@ -1301,7 +1303,7 @@ namespace TransactionProcessor.Testing
         {
             TransactionAggregate transactionAggregate = TransactionAggregate.Create(TestData.TransactionId);
 
-            transactionAggregate.StartTransaction(TestData.TransactionDateTime, TestData.TransactionNumber, TestData.TransactionTypeLogon, TestData.TransactionReference, CreateTransactionStartContext(), TestData.TransactionAmount);
+            transactionAggregate.StartTransaction(TestData.TransactionDateTime, TestData.HostDateTime, TestData.TransactionNumber, TestData.TransactionTypeLogon, TestData.TransactionReference, CreateTransactionStartContext(), TestData.TransactionAmount);
 
             transactionAggregate.DeclineTransactionLocally(transactionResponseCode,
                                                            TestData.GetResponseCodeMessage(transactionResponseCode));
@@ -1313,7 +1315,7 @@ namespace TransactionProcessor.Testing
         {
             TransactionAggregate transactionAggregate = TransactionAggregate.Create(TestData.TransactionId);
 
-            transactionAggregate.StartTransaction(TestData.TransactionDateTime, TestData.TransactionNumber, TestData.TransactionTypeLogon, TestData.TransactionReference, CreateTransactionStartContext(), TestData.TransactionAmount);
+            transactionAggregate.StartTransaction(TestData.TransactionDateTime, TestData.HostDateTime, TestData.TransactionNumber, TestData.TransactionTypeLogon, TestData.TransactionReference, CreateTransactionStartContext(), TestData.TransactionAmount);
 
             transactionAggregate.DeclineTransaction(TestData.OperatorId, 
                                                     TestData.DeclinedOperatorResponseCode,
@@ -1338,7 +1340,7 @@ namespace TransactionProcessor.Testing
         {
             TransactionAggregate transactionAggregate = TransactionAggregate.Create(TestData.TransactionId);
 
-            transactionAggregate.StartTransaction(TestData.TransactionDateTime, TestData.TransactionNumber, TestData.TransactionTypeLogon, TestData.TransactionReference, CreateTransactionStartContext(), TestData.TransactionAmount);
+            transactionAggregate.StartTransaction(TestData.TransactionDateTime, TestData.HostDateTime, TestData.TransactionNumber, TestData.TransactionTypeLogon, TestData.TransactionReference, CreateTransactionStartContext(), TestData.TransactionAmount);
 
             return transactionAggregate;
         }
@@ -1706,7 +1708,10 @@ namespace TransactionProcessor.Testing
 
         public static DateTime RedeemedDateTime = new DateTime(2020, 11, 5);
 
-        public static VoucherCommands.RedeemVoucherCommand RedeemVoucherCommand => new(TestData.EstateId, TestData.VoucherCode, TestData.RedeemedDateTime);
+        public static VoucherCommands.RedeemVoucherCommand RedeemVoucherCommand => new( TestData.EstateId, TestData.VoucherCode, new RedeemVoucherRequest {
+                                                                                                                                                              RedeemedDateTime = RedeemedDateTime,
+                                                                                                                                                              HostDateTime = HostDateTime
+                                                                                                                                                          });
 
         private static Decimal RemainingBalance = 1.00m;
 
@@ -1737,7 +1742,17 @@ namespace TransactionProcessor.Testing
                                                         TestData.TotalCostPrice,
                                                         TestData.TransactionDateTime);
 
-        public static FloatCommands.RecordCreditPurchaseForFloatCommand RecordCreditPurchaseForFloatCommand => new(TestData.EstateId, TestData.FloatAggregateId, TestData.FloatCreditAmount, TestData.FloatCreditCostPrice, TestData.CreditPurchasedDateTime);
+        public static DateTime HostDateTime = DateTime.Now;
+
+        public static RecordFloatCreditPurchaseRequest RecordFloatCreditPurchaseRequest = new() {
+                                                                                                    CostPrice = FloatCreditCostPrice,
+                                                                                                    CreditAmount = FloatCreditAmount,
+                                                                                                    FloatId = FloatAggregateId,
+                                                                                                    PurchaseDateTime = CreditPurchasedDateTime,
+                                                                                                    HostDateTime = HostDateTime
+                                                                                                };
+
+        public static FloatCommands.RecordCreditPurchaseForFloatCommand RecordCreditPurchaseForFloatCommand => new(TestData.EstateId, TestData.RecordFloatCreditPurchaseRequest);
 
         public static FloatCommands.CreateFloatCommand CreateFloatCommand => new(TestData.EstateId, TestData.FloatAggregateId, TestData.FloatCreatedDateTime);
 
@@ -2104,7 +2119,8 @@ namespace TransactionProcessor.Testing
                                                      TestData.TransactionSource,
                                                      TestData.TransactionReceivedDateTime);
             public static TransactionCommands.ProcessReconciliationCommand ProcessReconciliationCommand =>
-                new(TestData.TransactionId, TestData.EstateId, TestData.MerchantId, TestData.DeviceIdentifier, TestData.TransactionDateTime, TestData.ReconciliationTransactionCount, TestData.ReconciliationTransactionValue);
+                new(TestData.TransactionId, TestData.EstateId, TestData.MerchantId, TestData.DeviceIdentifier, TestData.TransactionDateTime, TestData.ReconciliationTransactionCount, TestData.ReconciliationTransactionValue,
+                    TestData.HostDateTime);
             public static TransactionCommands.ProcessLogonTransactionCommand ProcessLogonTransactionCommand =>
                 new(TestData.TransactionId,
                     TestData.EstateId,
@@ -2212,6 +2228,8 @@ namespace TransactionProcessor.Testing
                     TestData.MerchantId,
                     MerchantDepositSourceManualDTO,
                     TestData.MakeMerchantDepositRequest);
+
+            public static VoucherCommands.RedeemVoucherCommand RedeemVoucherCommand => new(TestData.EstateId, TestData.VoucherCode, new RedeemVoucherRequest { RedeemedDateTime = RedeemedDateTime, HostDateTime = HostDateTime });
         }
         public static Guid SettlementId = Guid.Parse("7CF02BE4-4BF0-4BB2-93C1-D6E5EC769E56");
         public static String StartDate = "20210104";
@@ -2297,7 +2315,8 @@ namespace TransactionProcessor.Testing
 
                 MerchantDepositListAggregate merchantDepositListAggregate = MerchantDepositListAggregate.Create(TestData.MerchantId);
                 merchantDepositListAggregate.Create(merchantAggregate, TestData.DateMerchantCreated);
-                merchantDepositListAggregate.MakeDeposit(Models.Merchant.MerchantDepositSource.Manual, TestData.Commands.MakeMerchantDepositCommand.RequestDto.Reference, TestData.Commands.MakeMerchantDepositCommand.RequestDto.DepositDateTime, PositiveMoney.Create(Money.Create(TestData.Commands.MakeMerchantDepositCommand.RequestDto.Amount)));
+                merchantDepositListAggregate.MakeDeposit(Models.Merchant.MerchantDepositSource.Manual, TestData.Commands.MakeMerchantDepositCommand.RequestDto.Reference, TestData.Commands.MakeMerchantDepositCommand.RequestDto.DepositDateTime, PositiveMoney.Create(Money.Create(TestData.Commands.MakeMerchantDepositCommand.RequestDto.Amount)),
+                    TestData.Commands.MakeMerchantDepositCommand.RequestDto.HostDateTime);
                 return merchantDepositListAggregate;
             }
 
@@ -2310,7 +2329,8 @@ namespace TransactionProcessor.Testing
 
                 MerchantDepositListAggregate merchantDepositListAggregate = MerchantDepositListAggregate.Create(TestData.MerchantId);
                 merchantDepositListAggregate.Create(merchantAggregate, TestData.DateMerchantCreated);
-                merchantDepositListAggregate.MakeWithdrawal(TestData.Commands.MakeMerchantWithdrawalCommand.RequestDto.WithdrawalDateTime, PositiveMoney.Create(Money.Create(TestData.Commands.MakeMerchantWithdrawalCommand.RequestDto.Amount)));
+                merchantDepositListAggregate.MakeWithdrawal(TestData.Commands.MakeMerchantWithdrawalCommand.RequestDto.WithdrawalDateTime, PositiveMoney.Create(Money.Create(TestData.Commands.MakeMerchantWithdrawalCommand.RequestDto.Amount)),
+                    TestData.HostDateTime);
                 return merchantDepositListAggregate;
             }
 
@@ -2620,11 +2640,11 @@ namespace TransactionProcessor.Testing
 
         public static class DomainEvents {
 
-            public static ReconciliationDomainEvents.ReconciliationHasStartedEvent ReconciliationHasStartedEvent => new ReconciliationDomainEvents.ReconciliationHasStartedEvent(TestData.TransactionId, TestData.EstateId, TestData.MerchantId, TestData.TransactionDateTime);
+            public static ReconciliationDomainEvents.ReconciliationHasStartedEvent ReconciliationHasStartedEvent => new ReconciliationDomainEvents.ReconciliationHasStartedEvent(TestData.TransactionId, TestData.EstateId, TestData.MerchantId, TestData.TransactionDateTime, TestData.HostDateTime);
 
             public static FloatDomainEvents.FloatCreatedForContractProductEvent FloatCreatedForContractProductEvent => new FloatDomainEvents.FloatCreatedForContractProductEvent(FloatAggregateId, EstateId, ContractId, ProductId, FloatCreatedDateTime);
             public static FloatDomainEvents.FloatCreatedEvent FloatCreatedEvent => new FloatDomainEvents.FloatCreatedEvent(FloatAggregateId, EstateId, FloatCreatedDateTime);
-            public static TransactionDomainEvents.TransactionHasStartedEvent TransactionHasStartedEvent => new TransactionDomainEvents.TransactionHasStartedEvent(TestData.TransactionId, TestData.EstateId, TestData.MerchantId, TestData.TransactionDateTime1, TestData.TransactionNumber, TestData.TransactionTypeSale.ToString(), TestData.TransactionReference, TestData.DeviceIdentifier, TestData.TransactionAmount);
+            public static TransactionDomainEvents.TransactionHasStartedEvent TransactionHasStartedEvent => new TransactionDomainEvents.TransactionHasStartedEvent(TestData.TransactionId, TestData.EstateId, TestData.MerchantId, TestData.TransactionDateTime1, TestData.TransactionNumber, TestData.TransactionTypeSale.ToString(), TestData.TransactionReference, TestData.DeviceIdentifier, TestData.TransactionAmount, TestData.HostDateTime);
             public static TransactionDomainEvents.AdditionalRequestDataRecordedEvent AdditionalRequestDataRecordedEvent => new TransactionDomainEvents.AdditionalRequestDataRecordedEvent(TestData.TransactionId, TestData.EstateId, TestData.MerchantId, TestData.OperatorId, new Dictionary<String, String>
             {
                 { "Amount", "123.45" },
@@ -2653,10 +2673,10 @@ namespace TransactionProcessor.Testing
                 TestData.TransactionAmount,
                 TestData.TransactionDateTime);
 
-            public static MerchantDomainEvents.AutomaticDepositMadeEvent AutomaticDepositMadeEvent => new(MerchantId, EstateId, DepositId, DepositReference, DepositDateTime, DepositAmount.Value);
-            public static MerchantDomainEvents.ManualDepositMadeEvent ManualDepositMadeEvent => new(MerchantId, EstateId, DepositId, DepositReference, DepositDateTime, DepositAmount.Value);
+            public static MerchantDomainEvents.AutomaticDepositMadeEvent AutomaticDepositMadeEvent => new(MerchantId, EstateId, DepositId, DepositReference, DepositDateTime, DepositAmount.Value, HostDateTime);
+            public static MerchantDomainEvents.ManualDepositMadeEvent ManualDepositMadeEvent => new(MerchantId, EstateId, DepositId, DepositReference, DepositDateTime, DepositAmount.Value, HostDateTime);
 
-            public static MerchantDomainEvents.WithdrawalMadeEvent WithdrawalMadeEvent => new(MerchantId, EstateId, WithdrawalId, WithdrawalDateTime, WithdrawalAmount.Value);
+            public static MerchantDomainEvents.WithdrawalMadeEvent WithdrawalMadeEvent => new(MerchantId, EstateId, WithdrawalId, WithdrawalDateTime, WithdrawalAmount.Value,HostDateTime);
             public static MerchantStatementForDateDomainEvents.StatementCreatedForDateEvent StatementCreatedForDateEvent => new(MerchantStatementForDateId1, ActivityDate1, StatementDate, MerchantStatementId, EstateId, MerchantId);
 
             public static SettlementDomainEvents.SettlementCreatedForDateEvent SettlementCreatedForDateEvent => new(SettlementId, EstateId, MerchantId, SettlementDate);

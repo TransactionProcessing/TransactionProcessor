@@ -50,7 +50,8 @@ public class FloatEventTests : BaseTest {
             TestData.EstateId,
             TestData.CreditPurchasedDateTime,
             TestData.FloatCreditAmount,
-            TestData.FloatCreditCostPrice);
+            TestData.FloatCreditCostPrice,
+            TestData.HostDateTime);
 
         Result result = await this.Repository.CreateFloatActivity(@event, TestContext.Current.CancellationToken);
         result.IsSuccess.ShouldBeTrue();
@@ -74,7 +75,8 @@ public class FloatEventTests : BaseTest {
             TestData.EstateId,
             TestData.CreditPurchasedDateTime,
             TestData.FloatCreditAmount,
-            TestData.FloatCreditCostPrice);
+            TestData.FloatCreditCostPrice,
+            TestData.HostDateTime);
 
         Result result = await this.Repository.CreateFloatActivity(@event, TestContext.Current.CancellationToken);
         result.IsSuccess.ShouldBeTrue();

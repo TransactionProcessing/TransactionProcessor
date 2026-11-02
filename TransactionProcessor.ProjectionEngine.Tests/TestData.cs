@@ -13,6 +13,7 @@ namespace TransactionProcessor.ProjectionEngine.Tests
         public static DateTime CreatedDateTime = new DateTime(2022, 10, 13, 1, 2, 3);
 
         public static DateTime ManualDepositDateTime = new DateTime(2022, 10, 13, 2, 2, 3);
+        public static DateTime HostDateTime = new DateTime(2022, 10, 13, 2, 2, 3);
 
         public static Guid ManualDepositId = Guid.Parse("7BDB5FD8-F944-4864-844E-EF12F7B16A4F");
 
@@ -139,7 +140,8 @@ namespace TransactionProcessor.ProjectionEngine.Tests
                                                       type,
                                                       TestData.TransactionReference,
                                                       TestData.DeviceIdentifier,
-                                                      amount);
+                                                      amount,
+                                                      TestData.HostDateTime);
             }
 
         public static MerchantDomainEvents.MerchantCreatedEvent MerchantCreatedEvent =>
@@ -148,22 +150,26 @@ namespace TransactionProcessor.ProjectionEngine.Tests
         public static MerchantDomainEvents.ManualDepositMadeEvent ManualDepositMadeEvent =>
             new MerchantDomainEvents.ManualDepositMadeEvent(TestData.MerchantId, TestData.EstateId, TestData.ManualDepositId, 
                                        TestData.ManualDepositReference, TestData.ManualDepositDateTime,
-                                       TestData.ManualDepositAmount);
+                                       TestData.ManualDepositAmount,
+                                       TestData.HostDateTime);
 
         public static MerchantDomainEvents.AutomaticDepositMadeEvent AutomaticDepositMadeEvent =>
             new MerchantDomainEvents.AutomaticDepositMadeEvent(TestData.MerchantId, TestData.EstateId, TestData.AutomaticDepositId,
                                           TestData.AutomaticDepositReference, TestData.AutomaticDepositDateTime,
-                                          TestData.AutomaticDepositAmount);
+                                          TestData.AutomaticDepositAmount,
+                                          TestData.HostDateTime);
 
         public static MerchantDomainEvents.WithdrawalMadeEvent WithdrawalMadeEvent =>
             new MerchantDomainEvents.WithdrawalMadeEvent(TestData.MerchantId, TestData.EstateId, TestData.ManualWithdrawalId,
                                     TestData.WithdrawalDateTime,
-                                    TestData.WithdrawalAmount);
+                                    TestData.WithdrawalAmount,
+                                    TestData.HostDateTime);
 
         public static MerchantDomainEvents.WithdrawalMadeEvent WithdrawalMadeEvent1 =>
             new MerchantDomainEvents.WithdrawalMadeEvent(TestData.MerchantId, TestData.EstateId, TestData.ManualWithdrawalId,
                                     TestData.WithdrawalDateTime.AddDays(1),
-                                    TestData.WithdrawalAmount);
+                                    TestData.WithdrawalAmount,
+                                    TestData.HostDateTime);
 
         public static Dictionary<String, String> DefaultAppSettings =>
             new Dictionary<String, String>
@@ -211,7 +217,7 @@ namespace TransactionProcessor.ProjectionEngine.Tests
 
         public static VoucherDomainEvents.VoucherIssuedEvent VoucherIssuedEvent => new VoucherDomainEvents.VoucherIssuedEvent(TestData.VoucherId,TestData.EstateId, TestData.IssuedDateTime, TestData.RecipientEmail, TestData.RecipientMobile);
 
-        public static VoucherDomainEvents.VoucherFullyRedeemedEvent VoucherFullyRedeemedEvent => new VoucherDomainEvents.VoucherFullyRedeemedEvent(TestData.VoucherId, TestData.EstateId, TestData.RedeemedDateTime);
+        public static VoucherDomainEvents.VoucherFullyRedeemedEvent VoucherFullyRedeemedEvent => new VoucherDomainEvents.VoucherFullyRedeemedEvent(TestData.VoucherId, TestData.EstateId, TestData.RedeemedDateTime, TestData.HostDateTime);
 
         public static TransactionDomainEvents.TransactionHasBeenCompletedEvent TransactionHasBeenCompletedEvent => new TransactionDomainEvents.TransactionHasBeenCompletedEvent(TestData.TransactionId,
             TestData.EstateId,

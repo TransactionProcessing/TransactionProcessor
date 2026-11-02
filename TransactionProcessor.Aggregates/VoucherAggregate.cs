@@ -108,7 +108,7 @@ public static class VoucherAggregateExtensions{
         return Result.Success();
     }
 
-    public static Result Redeem(this VoucherAggregate aggregate, DateTimeOffset redeemedDateTime)
+    public static Result Redeem(this VoucherAggregate aggregate, DateTimeOffset redeemedDateTime, DateTimeOffset hostDateTime)
     {
         Result result = aggregate.CheckIfVoucherHasBeenGenerated();
         if (result.IsFailed)
@@ -120,7 +120,7 @@ public static class VoucherAggregateExtensions{
         if (result.IsFailed)
             return result;
 
-        VoucherDomainEvents.VoucherFullyRedeemedEvent voucherFullyRedeemedEvent = new(aggregate.AggregateId, aggregate.EstateId, redeemedDateTime);
+        VoucherDomainEvents.VoucherFullyRedeemedEvent voucherFullyRedeemedEvent = new(aggregate.AggregateId, aggregate.EstateId, redeemedDateTime, hostDateTime);
 
         aggregate.ApplyAndAppend(voucherFullyRedeemedEvent);
 

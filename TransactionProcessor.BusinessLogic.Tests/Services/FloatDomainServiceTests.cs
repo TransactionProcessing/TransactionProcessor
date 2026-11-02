@@ -88,8 +88,7 @@ namespace TransactionProcessor.BusinessLogic.Tests.Services
             this.AggregateService.Save<FloatAggregate>(Arg<FloatAggregate>.Any(), Arg<CancellationToken>.Any()).ReturnsAsync(Result.Success());
 
             FloatCommands.RecordCreditPurchaseForFloatCommand command = new FloatCommands.RecordCreditPurchaseForFloatCommand(TestData.EstateId,
-                TestData.FloatAggregateId, TestData.FloatCreditAmount, TestData.FloatCreditCostPrice,
-                TestData.CreditPurchasedDateTime);
+                TestData.RecordFloatCreditPurchaseRequest);
             Result result = await this.FloatDomainService.RecordCreditPurchase(command, TestContext.Current.CancellationToken);
             result.IsSuccess.ShouldBeTrue();
         }
@@ -103,8 +102,7 @@ namespace TransactionProcessor.BusinessLogic.Tests.Services
             this.AggregateService.Save<FloatAggregate>(Arg<FloatAggregate>.Any(), Arg<CancellationToken>.Any()).ReturnsAsync(Result.Failure());
 
             FloatCommands.RecordCreditPurchaseForFloatCommand command = new FloatCommands.RecordCreditPurchaseForFloatCommand(TestData.EstateId,
-                TestData.FloatAggregateId, TestData.FloatCreditAmount, TestData.FloatCreditCostPrice,
-                TestData.CreditPurchasedDateTime);
+                TestData.RecordFloatCreditPurchaseRequest);
             Result result = await this.FloatDomainService.RecordCreditPurchase(command, TestContext.Current.CancellationToken);
             result.IsFailed.ShouldBeTrue();
         }
@@ -118,8 +116,7 @@ namespace TransactionProcessor.BusinessLogic.Tests.Services
             this.AggregateService.Save<FloatAggregate>(Arg<FloatAggregate>.Any(), Arg<CancellationToken>.Any()).ThrowsAsync(new Exception());
 
             FloatCommands.RecordCreditPurchaseForFloatCommand command = new FloatCommands.RecordCreditPurchaseForFloatCommand(TestData.EstateId,
-                TestData.FloatAggregateId, TestData.FloatCreditAmount, TestData.FloatCreditCostPrice,
-                TestData.CreditPurchasedDateTime);
+                TestData.RecordFloatCreditPurchaseRequest);
             Result result = await this.FloatDomainService.RecordCreditPurchase(command, TestContext.Current.CancellationToken);
             result.IsFailed.ShouldBeTrue();
         }
@@ -204,8 +201,7 @@ namespace TransactionProcessor.BusinessLogic.Tests.Services
             this.AggregateService.GetLatest<FloatAggregate>(Arg<Guid>.Any(), Arg<CancellationToken>.Any()).ReturnsAsync(Result.Failure());
 
             FloatCommands.RecordCreditPurchaseForFloatCommand command = new FloatCommands.RecordCreditPurchaseForFloatCommand(TestData.EstateId,
-                TestData.FloatAggregateId, TestData.FloatCreditAmount, TestData.FloatCreditCostPrice,
-                TestData.CreditPurchasedDateTime);
+                TestData.RecordFloatCreditPurchaseRequest);
             Result result = await this.FloatDomainService.RecordCreditPurchase(command, TestContext.Current.CancellationToken);
             result.IsFailed.ShouldBeTrue();
         }

@@ -152,7 +152,7 @@ namespace TransactionProcessor.BusinessLogic.Services
                         return ResultHelpers.CreateFailure(result);
                 }
 
-                Result stateResult = merchantStatementAggregate.GenerateStatement(DateTime.Now);
+                Result stateResult = merchantStatementAggregate.GenerateStatement(DateTimeOffset.UtcNow);
                 if (stateResult.IsFailed)
                     return ResultHelpers.CreateFailure(stateResult);
 
@@ -192,7 +192,7 @@ namespace TransactionProcessor.BusinessLogic.Services
 
                 await this.MessagingServiceClient.SendEmail(this.TokenResponse.AccessToken, sendEmailRequest, cancellationToken);
 
-                Result stateResult = merchantStatementAggregate.EmailStatement(DateTime.Now, messageId);
+                Result stateResult = merchantStatementAggregate.EmailStatement(DateTimeOffset.UtcNow, messageId);
                 if (stateResult.IsFailed)
                     return ResultHelpers.CreateFailure(stateResult);
 
@@ -216,7 +216,7 @@ namespace TransactionProcessor.BusinessLogic.Services
             Guid messageId = IdGenerationService.GenerateEventId(new
             {
                 command.MerchantStatementId,
-                DateTime.Now
+                DateTimeOffset.UtcNow
             });
 
             SendEmailRequest sendEmailRequest = new SendEmailRequest

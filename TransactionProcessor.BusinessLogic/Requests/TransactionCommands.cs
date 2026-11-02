@@ -17,7 +17,7 @@ public record TransactionCommands {
                                                  String TransactionType,
                                                  DateTimeOffset TransactionDateTime,
                                                  String TransactionNumber,
-                                                 DateTimeOffset TransactionReceivedDateTime)
+                                                 DateTimeOffset HostDateTime)
         : IRequest<Result<ProcessLogonTransactionResponse>>;
 
     public record ProcessReconciliationCommand(Guid TransactionId,
@@ -26,7 +26,8 @@ public record TransactionCommands {
                                                String DeviceIdentifier,
                                                DateTimeOffset TransactionDateTime,
                                                Int32 TransactionCount,
-                                               Decimal TransactionValue)
+                                               Decimal TransactionValue,
+                                               DateTimeOffset HostDateTime)
         : IRequest<Result<ProcessReconciliationTransactionResponse>>;
 
     public record ProcessSaleTransactionCommand(Guid TransactionId,
@@ -42,7 +43,7 @@ public record TransactionCommands {
                                                 Guid ContractId,
                                                 Guid ProductId,
                                                 Int32 TransactionSource,
-                                                DateTimeOffset TransactionReceivedDateTime)
+                                                DateTimeOffset HostDateTime)
         : IRequest<Result<ProcessSaleTransactionResponse>>;
 
     public record ResendTransactionReceiptCommand(Guid TransactionId, Guid EstateId) : IRequest<Result>;

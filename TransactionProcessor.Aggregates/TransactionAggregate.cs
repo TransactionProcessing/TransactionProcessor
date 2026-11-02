@@ -501,6 +501,7 @@ namespace TransactionProcessor.Aggregates
 
         public static Result StartTransaction(this TransactionAggregate aggregate,
                                               DateTimeOffset transactionDateTime,
+                                              DateTimeOffset hostDateTime,
                                             String transactionNumber,
                                             TransactionType transactionType,
                                             String transactionReference,
@@ -527,7 +528,8 @@ namespace TransactionProcessor.Aggregates
                                                                                                      transactionType.ToString(),
                                                                                                      transactionReference,
                                                                                                      transactionStartContext.DeviceIdentifier,
-                                                                                                     transactionAmount);
+                                                                                                     transactionAmount,
+                                                                                                     hostDateTime);
 
             aggregate.ApplyAndAppend(transactionHasStartedEvent);
 

@@ -61,7 +61,7 @@ namespace TransactionProcessor.BusinessLogic.OperatorInterfaces.VoucherManagemen
                                                                          operatorId,
                                                                          merchant.EstateId,
                                                                          transactionId,
-                                                                         DateTime.Now,
+                                                                         DateTimeOffset.UtcNow,
                                                                          amountAsDecimal,
                                                                          recipientEmail,
                                                                          recipientMobile);

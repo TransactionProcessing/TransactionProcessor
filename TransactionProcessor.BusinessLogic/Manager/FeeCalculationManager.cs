@@ -39,7 +39,7 @@ namespace TransactionProcessor.BusinessLogic.Manager
                                            FeeCalculationType = transactionFeeToCalculate.CalculationType,
                                            FeeId = transactionFeeToCalculate.FeeId,
                                            FeeValue = transactionFeeToCalculate.Value,
-                                           FeeCalculatedDateTime = calculationDateTime == DateTime.MinValue ? DateTime.Now : calculationDateTime
+                                           FeeCalculatedDateTime = calculationDateTime == DateTimeOffset.MinValue ? DateTimeOffset.UtcNow : calculationDateTime
                                        });
                 }
                 else if (transactionFeeToCalculate.CalculationType == CalculationType.Fixed)
@@ -52,7 +52,7 @@ namespace TransactionProcessor.BusinessLogic.Manager
                                            FeeCalculationType = transactionFeeToCalculate.CalculationType,
                                            FeeId = transactionFeeToCalculate.FeeId,
                                            FeeValue = transactionFeeToCalculate.Value,
-                                           FeeCalculatedDateTime = calculationDateTime == DateTime.MinValue ? DateTime.Now : calculationDateTime
+                                           FeeCalculatedDateTime = calculationDateTime == DateTimeOffset.MinValue ? DateTimeOffset.UtcNow : calculationDateTime
                     });
                 }
             }

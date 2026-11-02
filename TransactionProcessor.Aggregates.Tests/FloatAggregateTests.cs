@@ -45,7 +45,7 @@ namespace TransactionProcessor.Aggregates.Tests
         {
             Aggregates.FloatAggregate aggregate = Aggregates.FloatAggregate.Create(TestData.FloatAggregateId);
             aggregate.CreateFloat(TestData.EstateId, TestData.FloatCreatedDateTime);
-            Result result = aggregate.RecordCreditPurchase(DateTime.Now, 1000, 900);
+            Result result = aggregate.RecordCreditPurchase(DateTime.Now, 1000, 900, DateTime.Now);
             result.IsSuccess.ShouldBeTrue();
             aggregate.NumberOfCreditPurchases.ShouldBe(1);
             aggregate.TotalCostPrice.ShouldBe(900);
@@ -58,7 +58,7 @@ namespace TransactionProcessor.Aggregates.Tests
         {
             Aggregates.FloatAggregate aggregate = Aggregates.FloatAggregate.Create(TestData.FloatAggregateId);
 
-            Result result = aggregate.RecordCreditPurchase(DateTime.Now, 1000, 900);
+            Result result = aggregate.RecordCreditPurchase(DateTime.Now, 1000, 900, DateTime.Now);
             result.IsFailed.ShouldBeTrue();
             result.Status.ShouldBe(ResultStatus.Invalid);
             
@@ -69,7 +69,7 @@ namespace TransactionProcessor.Aggregates.Tests
         {
             Aggregates.FloatAggregate aggregate = Aggregates.FloatAggregate.Create(TestData.FloatAggregateId);
             aggregate.CreateFloat(TestData.EstateId, TestData.FloatCreatedDateTime);
-            aggregate.RecordCreditPurchase(DateTime.Now, 1000, 900);
+            aggregate.RecordCreditPurchase(DateTime.Now, 1000, 900, DateTime.Now);
 
             aggregate.NumberOfCreditPurchases.ShouldBe(1);
             aggregate.TotalCostPrice.ShouldBe(900);
@@ -78,7 +78,7 @@ namespace TransactionProcessor.Aggregates.Tests
 
             Decimal roundedUnitCostPrice= aggregate.GetUnitCostPrice();
             roundedUnitCostPrice.ShouldBe(0.900m);
-            aggregate.RecordCreditPurchase(DateTime.Now, 2000, 1750);
+            aggregate.RecordCreditPurchase(DateTime.Now, 2000, 1750, DateTime.Now);
 
             aggregate.NumberOfCreditPurchases.ShouldBe(2);
             aggregate.TotalCostPrice.ShouldBe(2650);
@@ -87,7 +87,7 @@ namespace TransactionProcessor.Aggregates.Tests
             roundedUnitCostPrice.ShouldBe(0.8833m);
             aggregate.TotalCreditPurchases.ShouldBe(3000);
 
-            aggregate.RecordCreditPurchase(DateTime.Now, 20000, 16000);
+            aggregate.RecordCreditPurchase(DateTime.Now, 20000, 16000, DateTime.Now);
 
             aggregate.NumberOfCreditPurchases.ShouldBe(3);
             aggregate.TotalCostPrice.ShouldBe(18650);
@@ -103,9 +103,9 @@ namespace TransactionProcessor.Aggregates.Tests
             Aggregates.FloatAggregate aggregate = Aggregates.FloatAggregate.Create(TestData.FloatAggregateId);
             aggregate.CreateFloat(TestData.EstateId, TestData.FloatCreatedDateTime);
             DateTimeOffset purchaseDateTime = DateTimeOffset.Now;
-            aggregate.RecordCreditPurchase(purchaseDateTime, 1000, 900);
+            aggregate.RecordCreditPurchase(purchaseDateTime, 1000, 900, DateTime.Now);
 
-            Result result = aggregate.RecordCreditPurchase(purchaseDateTime, 1000, 900);
+            Result result = aggregate.RecordCreditPurchase(purchaseDateTime, 1000, 900, DateTime.Now);
             
             result.IsFailed.ShouldBeTrue();
             result.Status.ShouldBe(ResultStatus.Invalid);
@@ -118,7 +118,7 @@ namespace TransactionProcessor.Aggregates.Tests
             Aggregates.FloatAggregate aggregate = Aggregates.FloatAggregate.Create(TestData.FloatAggregateId);
             aggregate.CreateFloat(TestData.EstateId, TestData.FloatCreatedDateTime);
             DateTime purchaseDateTime = DateTime.Now;
-            aggregate.RecordCreditPurchase(purchaseDateTime, 1000, 900);
+            aggregate.RecordCreditPurchase(purchaseDateTime, 1000, 900, DateTime.Now);
 
             Decimal totalCost = aggregate.GetTotalCostPrice(10);
 
