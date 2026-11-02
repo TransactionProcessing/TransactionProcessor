@@ -23,10 +23,10 @@ public record MerchantBalanceState : Shared.EventStore.ProjectionEngine.State
     public Int32 FeeCount { get; init; }
     public Decimal ValueOfFees { get; init; }
 
-    public DateTime LastDeposit { get; init; }
-    public DateTime LastWithdrawal { get; init; }
-    public DateTime LastSale { get; init; }
-    public DateTime LastFee { get; init; }
+    public DateTimeOffset LastDeposit { get; init; }
+    public DateTimeOffset LastWithdrawal { get; init; }
+    public DateTimeOffset LastSale { get; init; }
+    public DateTimeOffset LastFee { get; init; }
 
     public Int32 StartedTransactionCount { get; init; }
     public Int32 CompletedTransactionCount { get; init; }

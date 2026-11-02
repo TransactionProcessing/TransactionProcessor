@@ -68,7 +68,7 @@ namespace TransactionProcessor.BusinessLogic.Services
         {
             try {
                 // Work out the next statement date
-                DateTime nextStatementDate = CalculateStatementDate(command.SettledDateTime);
+                DateTimeOffset nextStatementDate = CalculateStatementDate(command.SettledDateTime);
 
                 Guid merchantStatementId = IdGenerationService.GenerateMerchantStatementAggregateId(command.EstateId, command.MerchantId, nextStatementDate);
                 Guid merchantStatementForDateId = IdGenerationService.GenerateMerchantStatementForDateAggregateId(command.EstateId, command.MerchantId, nextStatementDate, command.SettledDateTime);
@@ -101,18 +101,18 @@ namespace TransactionProcessor.BusinessLogic.Services
             }
         }
 
-        internal static DateTime CalculateStatementDate(DateTime eventDateTime)
+        internal static DateTimeOffset CalculateStatementDate(DateTimeOffset eventDateTime)
         {
-            DateTime calculatedDateTime = eventDateTime.Date.AddMonths(1);
+            DateTimeOffset calculatedDateTime = eventDateTime.Date.AddMonths(1);
 
-            return new DateTime(calculatedDateTime.Year, calculatedDateTime.Month, 1);
+            return new DateTimeOffset(calculatedDateTime.Year, calculatedDateTime.Month, 1,0,0,0,TimeSpan.Zero);
         }
 
         public async Task<Result> GenerateStatement(MerchantCommands.GenerateMerchantStatementCommand command,
                                                     CancellationToken cancellationToken) {
             try {
                 // Need to rebuild the date time from the command as the Kind is Utc which is different from the date time used to generate the statement id
-                DateTime dt = new DateTime(command.RequestDto.MerchantStatementDate.Year, command.RequestDto.MerchantStatementDate.Month, command.RequestDto.MerchantStatementDate.Day);
+                DateTimeOffset dt = new DateTimeOffset(new DateTime(command.RequestDto.MerchantStatementDate.Year, command.RequestDto.MerchantStatementDate.Month, command.RequestDto.MerchantStatementDate.Day),TimeSpan.Zero);
                 Guid merchantStatementId = IdGenerationService.GenerateMerchantStatementAggregateId(command.EstateId, command.MerchantId, dt);
 
                 Result<MerchantStatementAggregate> getMerchantStatementResult = await DomainServiceHelper.GetAggregateOrFailure(ct => this.AggregateService.GetLatest<MerchantStatementAggregate>(merchantStatementId, ct), merchantStatementId, cancellationToken);
@@ -122,10 +122,10 @@ namespace TransactionProcessor.BusinessLogic.Services
                 MerchantStatementAggregate merchantStatementAggregate = getMerchantStatementResult.Data;
 
                 MerchantStatement statement = merchantStatementAggregate.GetStatement();
-                List<(Guid merchantStatementForDateId, DateTime activityDate)> activityDates = statement.GetActivityDates();
+                List<(Guid merchantStatementForDateId, DateTimeOffset activityDate)> activityDates = statement.GetActivityDates();
 
                 List<MerchantStatementForDate> statementForDateAggregates = new();
-                foreach ((Guid merchantStatementForDateId, DateTime activityDate) activityDate in activityDates) {
+                foreach ((Guid merchantStatementForDateId, DateTimeOffset activityDate) activityDate in activityDates) {
                     Result<MerchantStatementForDateAggregate> statementForDateResult = await this.AggregateService.GetLatest<MerchantStatementForDateAggregate>(activityDate.merchantStatementForDateId, cancellationToken);
                     if (statementForDateResult.IsFailed)
                         return ResultHelpers.CreateFailure(statementForDateResult);
@@ -348,7 +348,7 @@ namespace TransactionProcessor.BusinessLogic.Services
             try
             {
                 // Work out the next statement date
-                DateTime nextStatementDate = CalculateStatementDate(command.DepositDateTime.Date);
+                DateTimeOffset nextStatementDate = CalculateStatementDate(command.DepositDateTime.Date);
 
                 Guid merchantStatementId = IdGenerationService.GenerateMerchantStatementAggregateId(command.EstateId, command.MerchantId, nextStatementDate);
                 Guid merchantStatementForDateId = IdGenerationService.GenerateMerchantStatementForDateAggregateId(command.EstateId, command.MerchantId, nextStatementDate, command.DepositDateTime.Date);
@@ -389,7 +389,7 @@ namespace TransactionProcessor.BusinessLogic.Services
             try
             {
                 // Work out the next statement date
-                DateTime nextStatementDate = CalculateStatementDate(command.WithdrawalDateTime.Date);
+                DateTimeOffset nextStatementDate = CalculateStatementDate(command.WithdrawalDateTime.Date);
 
                 Guid merchantStatementId = IdGenerationService.GenerateMerchantStatementAggregateId(command.EstateId, command.MerchantId, nextStatementDate);
                 Guid merchantStatementForDateId = IdGenerationService.GenerateMerchantStatementForDateAggregateId(command.EstateId, command.MerchantId, nextStatementDate, command.WithdrawalDateTime.Date);
@@ -437,7 +437,7 @@ namespace TransactionProcessor.BusinessLogic.Services
                     return Result.Success();
 
                 // Work out the next statement date
-                DateTime nextStatementDate = CalculateStatementDate(command.TransactionDateTime);
+                DateTimeOffset nextStatementDate = CalculateStatementDate(command.TransactionDateTime);
 
                 Guid merchantStatementId = IdGenerationService.GenerateMerchantStatementAggregateId(command.EstateId, command.MerchantId, nextStatementDate);
                 Guid merchantStatementForDateId = IdGenerationService.GenerateMerchantStatementForDateAggregateId(command.EstateId, command.MerchantId, nextStatementDate, command.TransactionDateTime);

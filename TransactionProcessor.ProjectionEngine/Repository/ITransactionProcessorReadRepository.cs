@@ -10,7 +10,7 @@ public interface ITransactionProcessorReadRepository
 
     Task<Result<List<MerchantBalanceChangedEntry>>> GetMerchantBalanceHistory(Guid estateId,
                                                                      Guid merchantId,
-                                                                     DateTime startDate,
-                                                                     DateTime endDate,
+                                                                     DateTimeOffset startDate,
+                                                                     DateTimeOffset endDate,
                                                                      CancellationToken cancellationToken);
 }

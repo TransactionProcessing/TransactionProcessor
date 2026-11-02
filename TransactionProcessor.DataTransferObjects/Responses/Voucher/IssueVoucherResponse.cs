@@ -1,4 +1,4 @@
-namespace TransactionProcessor.DataTransferObjects
+namespace TransactionProcessor.DataTransferObjects.Responses.Voucher
 {
     using System;
     /// <summary>Data transfer object for IssueVoucherResponse.</summary>
@@ -10,7 +10,7 @@ namespace TransactionProcessor.DataTransferObjects
         public Guid VoucherId { get; set; }
         /// <summary>The expiry date.</summary>
 
-        public DateTime ExpiryDate { get; set; }
+        public DateTimeOffset ExpiryDate { get; set; }
         /// <summary>The voucher code.</summary>
 
         public String VoucherCode { get; set; }

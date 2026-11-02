@@ -28,7 +28,7 @@ public class MerchantBalanceStateRepository : IProjectionStateRepository<Merchan
                                IDomainEvent domainEvent) {
         return new() {
                          EventId = domainEvent.EventId,
-                         Date = domainEvent.EventTimestamp.Date.Date,
+                         Date = DateOnly.FromDateTime(domainEvent.EventTimestamp.Date),
                          Type = type
                      };
     }

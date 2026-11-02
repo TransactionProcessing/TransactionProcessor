@@ -21,9 +21,9 @@ namespace TransactionProcessor.Database.Entities
 
         public Int32 TransactionCount { get; set; }
 
-        public DateTime TransactionDate { get; set; }
+        public DateOnly TransactionDate { get; set; }
 
-        public DateTime TransactionDateTime { get; set; }
+        public DateTimeOffset TransactionDateTime { get; set; }
 
         public Guid TransactionId { get; set; }
 

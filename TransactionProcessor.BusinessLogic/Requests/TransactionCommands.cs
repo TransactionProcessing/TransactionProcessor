@@ -15,16 +15,16 @@ public record TransactionCommands {
                                                  Guid MerchantId,
                                                  String DeviceIdentifier,
                                                  String TransactionType,
-                                                 DateTime TransactionDateTime,
+                                                 DateTimeOffset TransactionDateTime,
                                                  String TransactionNumber,
-                                                 DateTime TransactionReceivedDateTime)
+                                                 DateTimeOffset TransactionReceivedDateTime)
         : IRequest<Result<ProcessLogonTransactionResponse>>;
 
     public record ProcessReconciliationCommand(Guid TransactionId,
                                                Guid EstateId,
                                                Guid MerchantId,
                                                String DeviceIdentifier,
-                                               DateTime TransactionDateTime,
+                                               DateTimeOffset TransactionDateTime,
                                                Int32 TransactionCount,
                                                Decimal TransactionValue)
         : IRequest<Result<ProcessReconciliationTransactionResponse>>;
@@ -34,7 +34,7 @@ public record TransactionCommands {
                                                 Guid MerchantId,
                                                 String DeviceIdentifier,
                                                 String TransactionType,
-                                                DateTime TransactionDateTime,
+                                                DateTimeOffset TransactionDateTime,
                                                 String TransactionNumber,
                                                 Guid OperatorId,
                                                 String CustomerEmailAddress,
@@ -42,14 +42,14 @@ public record TransactionCommands {
                                                 Guid ContractId,
                                                 Guid ProductId,
                                                 Int32 TransactionSource,
-                                                DateTime TransactionReceivedDateTime)
+                                                DateTimeOffset TransactionReceivedDateTime)
         : IRequest<Result<ProcessSaleTransactionResponse>>;
 
     public record ResendTransactionReceiptCommand(Guid TransactionId, Guid EstateId) : IRequest<Result>;
 
-    public record CalculateFeesForTransactionCommand(Guid TransactionId, DateTime CompletedDateTime, Guid EstateId, Guid MerchantId) : IRequest<Result>;
+    public record CalculateFeesForTransactionCommand(Guid TransactionId, DateTimeOffset CompletedDateTime, Guid EstateId, Guid MerchantId) : IRequest<Result>;
 
-    public record AddSettledMerchantFeeCommand(Guid TransactionId, Decimal CalculatedValue, DateTime FeeCalculatedDateTime, CalculationType FeeCalculationType, Guid FeeId, Decimal FeeValue, DateTime SettledDateTime, Guid SettlementId) : IRequest<Result>;
+    public record AddSettledMerchantFeeCommand(Guid TransactionId, Decimal CalculatedValue, DateTimeOffset FeeCalculatedDateTime, CalculationType FeeCalculationType, Guid FeeId, Decimal FeeValue, DateTimeOffset SettledDateTime, Guid SettlementId) : IRequest<Result>;
 
     public record SendCustomerEmailReceiptCommand(Guid EstateId, Guid TransactionId, Guid EventId, String CustomerEmailAddress) : IRequest<Result>;
     public record ResendCustomerEmailReceiptCommand(Guid EstateId, Guid TransactionId) : IRequest<Result>;

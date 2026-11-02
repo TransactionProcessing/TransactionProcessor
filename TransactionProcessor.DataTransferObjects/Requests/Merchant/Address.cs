@@ -9,8 +9,6 @@ namespace TransactionProcessor.DataTransferObjects.Requests.Merchant
     /// <example>{"addressLine1":"123 Example Street","addressLine2":"123 Example Street","addressLine3":"123 Example Street","addressLine4":"123 Example Street","country":"US","postalCode":"10001","region":"Example City","town":"Example City"}</example>
     public class Address
     {
-        #region Properties
-
         /// <summary>
         /// First line of the postal address.
         /// </summary>
@@ -49,7 +47,5 @@ namespace TransactionProcessor.DataTransferObjects.Requests.Merchant
         /// Town or city for the address.
         /// </summary>
         public String Town { get; set; }
-
-        #endregion
     }
 }

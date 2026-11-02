@@ -1,9 +1,8 @@
-namespace TransactionProcessor.DataTransferObjects
-{
+namespace TransactionProcessor.DataTransferObjects.Requests.Transaction {
     using System;
     using System.Collections.Generic;
     using System.Diagnostics.CodeAnalysis;
-    
+
     /// <summary>
     /// Terminal transaction totals and optional per-operator/per-contract breakdown.
     /// </summary>
@@ -11,8 +10,6 @@ namespace TransactionProcessor.DataTransferObjects
     [ExcludeFromCodeCoverage]
     public class ReconciliationRequest : TransactionRequest
     {
-        #region Properties
-
         /// <summary>
         /// Identifier assigned to the terminal device submitting the reconciliation.
         /// </summary>
@@ -32,7 +29,5 @@ namespace TransactionProcessor.DataTransferObjects
         /// Total value of transactions included in the reconciliation.
         /// </summary>
         public Decimal TransactionValue { get; set; }
-
-        #endregion
     }
 }

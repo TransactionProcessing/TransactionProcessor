@@ -70,7 +70,7 @@ namespace TransactionProcessor.BusinessLogic.Manager
 
         Task<Result<PendingSettlementModel>> GetPendingSettlement(Guid estateId,
                                                             Guid merchantId,
-                                                            DateTime settlementDate,
+                                                            DateTimeOffset settlementDate,
                                                             CancellationToken cancellationToken);
 
         #endregion

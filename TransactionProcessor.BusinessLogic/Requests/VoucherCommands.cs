@@ -12,11 +12,11 @@ public record VoucherCommands {
                                       Guid OperatorId,
                                       Guid EstateId,
                                       Guid TransactionId,
-                                      DateTime IssuedDateTime,
+                                      DateTimeOffset IssuedDateTime,
                                       Decimal Value,
                                       String RecipientEmail,
                                       String RecipientMobile) : IRequest<Result<IssueVoucherResponse>>;
 
-    public record RedeemVoucherCommand(Guid EstateId, String VoucherCode, DateTime RedeemedDateTime)
+    public record RedeemVoucherCommand(Guid EstateId, String VoucherCode, DateTimeOffset RedeemedDateTime)
         : IRequest<Result<RedeemVoucherResponse>>;
 }

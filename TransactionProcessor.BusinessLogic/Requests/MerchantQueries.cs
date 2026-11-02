@@ -15,7 +15,7 @@ public record MerchantQueries {
 
     public record GetMerchantLiveBalanceQuery(Guid MerchantId) : IRequest<Result<MerchantBalanceProjectionState1>>;
 
-    public record GetMerchantBalanceHistoryQuery(Guid EstateId, Guid MerchantId, DateTime StartDate, DateTime EndDate)
+    public record GetMerchantBalanceHistoryQuery(Guid EstateId, Guid MerchantId, DateTimeOffset StartDate, DateTimeOffset EndDate)
         : IRequest<Result<List<MerchantBalanceChangedEntry>>>;
 
     public record GetMerchantQuery(Guid EstateId, Guid MerchantId) : IRequest<Result<Models.Merchant.Merchant>>;

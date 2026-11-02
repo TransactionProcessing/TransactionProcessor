@@ -14,6 +14,8 @@ namespace TransactionProcessor.Tests.ControllerTests {
     using System.Threading;
     using System.Threading.Tasks;
     using TransactionProcessor.BusinessLogic.OperatorInterfaces.PataPawaPrePay;
+    using TransactionProcessor.DataTransferObjects.Requests.Transaction;
+    using TransactionProcessor.DataTransferObjects.Responses.Transaction;
     using Xunit;
 
     [Collection("TestCollection")]

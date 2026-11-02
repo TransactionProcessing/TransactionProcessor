@@ -191,7 +191,7 @@ namespace TransactionProcessor.BusinessLogic.Services
 
         private Result EnsureMerchantDepositListCreated(MerchantDepositListAggregate merchantDepositListAggregate,
                                                         MerchantAggregate merchantAggregate,
-                                                        DateTime depositDateTime) {
+                                                        DateTimeOffset depositDateTime) {
             if (merchantDepositListAggregate.IsCreated) {
                 return Result.Success();
             }

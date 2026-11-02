@@ -6,8 +6,8 @@ using Microsoft.AspNetCore.Http;
 using SimpleResults;
 using Shared.Results.Web;
 using TransactionProcessor.BusinessLogic.Requests;
-using TransactionProcessor.DataTransferObjects;
 using TransactionProcessor.Factories;
+using TransactionProcessor.DataTransferObjects.Requests.Float;
 
 namespace TransactionProcessor.Handlers
 {

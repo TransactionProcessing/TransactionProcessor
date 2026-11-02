@@ -92,7 +92,7 @@
         /// <value>
         /// The transaction date time.
         /// </value>
-        public DateTime TransactionDateTime { get; set; }
+        public DateTimeOffset TransactionDateTime { get; set; }
 
         /// <summary>
         /// Gets or sets the transaction number.

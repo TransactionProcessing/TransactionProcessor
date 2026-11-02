@@ -42,7 +42,7 @@ namespace TransactionProcessor.Aggregates.Tests
         {
             ReconciliationAggregate reconciliationAggregate = ReconciliationAggregate.Create(TestData.TransactionId);
 
-            DateTime transactionDateTime = validDateTime ? TestData.TransactionDateTime : DateTime.MinValue;
+            DateTimeOffset transactionDateTime = validDateTime ? TestData.TransactionDateTime : DateTime.MinValue;
             Guid estateId = validEstateId ? TestData.EstateId : Guid.Empty;
             Guid merchantId = validMerchantId ? TestData.MerchantId : Guid.Empty;
 

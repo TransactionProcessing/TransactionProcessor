@@ -10,6 +10,8 @@ using TransactionProcessor.BusinessLogic.Requests;
 using TransactionProcessor.DataTransferObjects;
 using TransactionProcessor.DataTransferObjects.Requests.Merchant;
 using TransactionProcessor.DataTransferObjects.Requests.MerchantSchedule;
+using TransactionProcessor.DataTransferObjects.Responses;
+using TransactionProcessor.DataTransferObjects.Responses.Merchant;
 using TransactionProcessor.Factories;
 using TransactionProcessor.Models.Contract;
 using TransactionProcessor.ProjectionEngine.Models;
@@ -49,15 +51,15 @@ public static class MerchantHandlers {
                                                                 HttpContext ctx,
                                                                 Guid estateId,
                                                                 Guid merchantId,
-                                                                DateTime startDate,
-                                                                DateTime endDate,
+                                                                DateTimeOffset startDate,
+                                                                DateTimeOffset endDate,
                                                                 CancellationToken cancellationToken) {
         MerchantQueries.GetMerchantBalanceHistoryQuery query = new(estateId, merchantId, startDate, endDate);
         Result<List<MerchantBalanceChangedEntry>> result = await mediator.Send(query, cancellationToken);
 
         return ResponseFactory.FromResult(result, r => {
-            List<TransactionProcessor.DataTransferObjects.MerchantBalanceChangedEntryResponse> response = new();
-            r.ForEach(h => response.Add(new TransactionProcessor.DataTransferObjects.MerchantBalanceChangedEntryResponse {
+            List<MerchantBalanceChangedEntryResponse> response = new();
+            r.ForEach(h => response.Add(new MerchantBalanceChangedEntryResponse {
                 Balance = h.Balance,
                 MerchantId = h.MerchantId,
                 EstateId = h.EstateId,

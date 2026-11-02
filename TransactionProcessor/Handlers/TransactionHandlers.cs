@@ -6,10 +6,11 @@ using Microsoft.AspNetCore.Http;
 using SimpleResults;
 using Shared.Results.Web;
 using Shared.Results;
-using TransactionProcessor.DataTransferObjects;
 using TransactionProcessor.Factories;
 using TransactionProcessor.BusinessLogic.Requests;
 using TransactionProcessor.Models;
+using TransactionProcessor.DataTransferObjects.Requests.Transaction;
+using TransactionProcessor.DataTransferObjects.Responses.Transaction;
 
 namespace TransactionProcessor.Handlers
 {
@@ -17,7 +18,7 @@ namespace TransactionProcessor.Handlers
     {
         public static async Task<IResult> PerformSaleTransaction(IMediator mediator, HttpContext ctx, SaleTransactionRequest transactionRequest, CancellationToken cancellationToken)
         {
-            DateTime transactionReceivedDateTime = DateTime.Now;
+            DateTimeOffset transactionReceivedDateTime = DateTime.Now;
             
             Result<SaleTransactionResponse> transactionResult = await ProcessSpecificMessage(mediator, transactionRequest, transactionReceivedDateTime, cancellationToken);
 
@@ -26,7 +27,7 @@ namespace TransactionProcessor.Handlers
 
         public static async Task<IResult> PerformLogonTransaction(IMediator mediator, HttpContext ctx, LogonTransactionRequest transactionRequest, CancellationToken cancellationToken)
         {
-            DateTime transactionReceivedDateTime = DateTime.Now;
+            DateTimeOffset transactionReceivedDateTime = DateTime.Now;
 
             Result<LogonTransactionResponse> transactionResult = await ProcessSpecificMessage(mediator, transactionRequest, transactionReceivedDateTime, cancellationToken);
 
@@ -52,7 +53,7 @@ namespace TransactionProcessor.Handlers
         }
 
         // Helpers copied from controller logic
-        private static async Task<Result<LogonTransactionResponse>> ProcessSpecificMessage(IMediator mediator, LogonTransactionRequest logon, DateTime transactionReceivedDateTime, CancellationToken cancellationToken)
+        private static async Task<Result<LogonTransactionResponse>> ProcessSpecificMessage(IMediator mediator, LogonTransactionRequest logon, DateTimeOffset transactionReceivedDateTime, CancellationToken cancellationToken)
         {
             Guid transactionId = Guid.NewGuid();
 
@@ -73,7 +74,7 @@ namespace TransactionProcessor.Handlers
             return ModelFactory.ConvertFrom(result.Data);
         }
 
-        private static async Task<Result<SaleTransactionResponse>> ProcessSpecificMessage(IMediator mediator, SaleTransactionRequest sale, DateTime transactionReceivedDateTime, CancellationToken cancellationToken)
+        private static async Task<Result<SaleTransactionResponse>> ProcessSpecificMessage(IMediator mediator, SaleTransactionRequest sale, DateTimeOffset transactionReceivedDateTime, CancellationToken cancellationToken)
         {
             Guid transactionId = Guid.NewGuid();
 

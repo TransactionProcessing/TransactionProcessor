@@ -20,7 +20,7 @@
         /// <returns></returns>
         List<CalculatedFee> CalculateFees(List<TransactionFeeToCalculate> feeList,
                                           Decimal transactionAmount,
-                                          DateTime calculationDateTime = new DateTime());
+                                          DateTimeOffset calculationDateTime = new DateTimeOffset());
 
         #endregion
     }

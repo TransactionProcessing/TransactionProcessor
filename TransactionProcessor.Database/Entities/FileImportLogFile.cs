@@ -16,9 +16,9 @@ namespace TransactionProcessor.Database.Entities
 
         public Guid FileProfileId { get; set; }
 
-        public DateTime FileUploadedDateTime { get; set; }
+        public DateTimeOffset FileUploadedDateTime { get; set; }
 
-        public DateTime FileUploadedDate { get; set; }
+        public DateOnly FileUploadedDate { get; set; }
 
         public Guid MerchantId { get; set; }
 

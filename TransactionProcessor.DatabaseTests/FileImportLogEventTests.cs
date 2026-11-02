@@ -42,7 +42,7 @@ public class FileImportLogEventTests : BaseTest {
         var fileImportLog = await context.FileImportLogs.SingleOrDefaultAsync(f => f.FileImportLogId == TestData.DomainEvents.ImportLogCreatedEvent.FileImportLogId, TestContext.Current.CancellationToken);
         fileImportLog.ShouldNotBeNull();
         fileImportLog.EstateId.ShouldBe(TestData.DomainEvents.ImportLogCreatedEvent.EstateId);
-        fileImportLog.ImportLogDate.ShouldBe(TestData.DomainEvents.ImportLogCreatedEvent.ImportLogDateTime.Date);
+        fileImportLog.ImportLogDate.ShouldBe(DateOnly.FromDateTime(TestData.DomainEvents.ImportLogCreatedEvent.ImportLogDateTime.Date));
     }
 
     [Fact]
@@ -91,7 +91,7 @@ public class FileImportLogEventTests : BaseTest {
         file.EstateId.ShouldBe(TestData.DomainEvents.FileCreatedEvent.EstateId);
         file.MerchantId.ShouldBe(TestData.DomainEvents.FileCreatedEvent.MerchantId);
         file.FileLocation.ShouldBe(TestData.DomainEvents.FileCreatedEvent.FileLocation);
-        file.FileReceivedDate.ShouldBe(TestData.DomainEvents.FileCreatedEvent.FileReceivedDateTime.Date);
+        file.FileReceivedDate.ShouldBe(DateOnly.FromDateTime(TestData.DomainEvents.FileCreatedEvent.FileReceivedDateTime.Date));
         file.IsCompleted.ShouldBeFalse();
     }
 

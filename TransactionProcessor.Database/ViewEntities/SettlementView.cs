@@ -70,7 +70,7 @@
         /// </value>
         public String OperatorIdentifier { get; set; }
 
-        public DateTime SettlementDate { get; set; }
+        public DateTimeOffset SettlementDate { get; set; }
 
         public Guid SettlementId { get; set; }
 

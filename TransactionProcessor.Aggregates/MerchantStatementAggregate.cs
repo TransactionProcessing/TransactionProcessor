@@ -15,16 +15,16 @@ namespace TransactionProcessor.Aggregates
     {
         #region Fields
 
-        internal DateTime StatementDate;
+        internal DateTimeOffset StatementDate;
 
-        internal DateTime EmailedDateTime;
-        internal DateTime BuiltDateTime;
+        internal DateTimeOffset EmailedDateTime;
+        internal DateTimeOffset BuiltDateTime;
 
         internal Guid EmailMessageId;
 
         internal Guid EstateId;
 
-        internal DateTime GeneratedDateTime;
+        internal DateTimeOffset GeneratedDateTime;
 
         internal Boolean HasBeenEmailed;
 
@@ -35,7 +35,7 @@ namespace TransactionProcessor.Aggregates
 
         internal Guid MerchantId;
 
-        internal List<(Guid merchantStatementForDateId, DateTime activityDate)> ActivityDates;
+        internal List<(Guid merchantStatementForDateId, DateTimeOffset activityDate)> ActivityDates;
 
         internal List<MerchantStatementSummary> MerchantStatementSummaries;
         #endregion
@@ -124,11 +124,11 @@ namespace TransactionProcessor.Aggregates
 
         public static Result RecordActivityDateOnStatement(this MerchantStatementAggregate aggregate,
                                                          Guid statementId,
-                                                         DateTime statementDate,
+                                                         DateTimeOffset statementDate,
                                                          Guid estateId,
                                                          Guid merchantId,
                                                          Guid merchantStatementForDateId,
-                                                         DateTime activityDate)
+                                                         DateTimeOffset activityDate)
         {
             if (aggregate.IsCreated == false) {
                 if (statementId == Guid.Empty)
@@ -168,7 +168,7 @@ namespace TransactionProcessor.Aggregates
                 IsBuilt = aggregate.IsBuilt
             };
 
-            foreach ((Guid merchantStatementForDateId, DateTime activityDate) aggregateActivityDate in aggregate.ActivityDates) {
+            foreach ((Guid merchantStatementForDateId, DateTimeOffset activityDate) aggregateActivityDate in aggregate.ActivityDates) {
                 merchantStatement.AddStatementActivityDate(aggregateActivityDate.merchantStatementForDateId, aggregateActivityDate.activityDate);
             }
 
@@ -180,7 +180,7 @@ namespace TransactionProcessor.Aggregates
         }
 
         public static Result BuildStatement(this MerchantStatementAggregate aggregate,
-                                          DateTime builtDateTime,
+                                            DateTimeOffset builtDateTime,
                                           String statementData)
         {
             if (aggregate.IsBuilt)
@@ -198,7 +198,7 @@ namespace TransactionProcessor.Aggregates
         }
 
         public static Result EmailStatement(this MerchantStatementAggregate aggregate,
-                                          DateTime emailedDateTime,
+                                            DateTimeOffset emailedDateTime,
                                           Guid messageId) {
             if (aggregate.HasBeenEmailed) {
                 return Result.Success();
@@ -216,7 +216,7 @@ namespace TransactionProcessor.Aggregates
         }
 
         public static Result GenerateStatement(this MerchantStatementAggregate aggregate,
-                                             DateTime generatedDateTime)
+                                               DateTimeOffset generatedDateTime)
         {
             if (aggregate.IsGenerated)
                 return Result.Success();
@@ -250,7 +250,7 @@ namespace TransactionProcessor.Aggregates
         }
 
         public static Result AddDailySummaryRecord(this MerchantStatementAggregate aggregate,
-                                                   DateTime activityDate,
+                                                   DateTimeOffset activityDate,
                                                    MerchantStatementSummaryTotals summaryTotals) {
             if (aggregate.MerchantStatementSummaries.Any(s => s.ActivityDate == activityDate)) {
                 return Result.Success();
@@ -275,7 +275,7 @@ namespace TransactionProcessor.Aggregates
         }
     }
 
-    public record MerchantStatementSummary(DateTime ActivityDate, Int32 NumberOfTransactions, Decimal ValueOfTransactions, Int32 NumberOfSettledFees, Decimal ValueOfSettledFees);
+    public record MerchantStatementSummary(DateTimeOffset ActivityDate, Int32 NumberOfTransactions, Decimal ValueOfTransactions, Int32 NumberOfSettledFees, Decimal ValueOfSettledFees);
     public record MerchantStatementSummaryTotals(Int32 NumberOfTransactions,
                                                  Decimal ValueOfTransactions,
                                                  Int32 NumberOfSettledFees,

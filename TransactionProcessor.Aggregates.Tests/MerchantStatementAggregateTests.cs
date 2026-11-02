@@ -30,7 +30,7 @@ namespace TransactionProcessor.Aggregates.Tests
 
             MerchantStatement merchantStatement = merchantStatementAggregate.GetStatement();
             merchantStatement.IsCreated.ShouldBe(merchantStatement.IsCreated);
-            List<(Guid merchantStatementForDateId, DateTime activityDate)>? activityDates = merchantStatement.GetActivityDates();
+            List<(Guid merchantStatementForDateId, DateTimeOffset activityDate)>? activityDates = merchantStatement.GetActivityDates();
             activityDates.ShouldNotBeNull();
             activityDates.ShouldNotBeEmpty();
             activityDates.Count.ShouldBe(1);
@@ -50,7 +50,7 @@ namespace TransactionProcessor.Aggregates.Tests
 
             MerchantStatement merchantStatement = merchantStatementAggregate.GetStatement();
             merchantStatement.IsCreated.ShouldBe(merchantStatement.IsCreated);
-            List<(Guid merchantStatementForDateId, DateTime activityDate)>? activityDates = merchantStatement.GetActivityDates();
+            List<(Guid merchantStatementForDateId, DateTimeOffset activityDate)>? activityDates = merchantStatement.GetActivityDates();
             activityDates.ShouldNotBeNull();
             activityDates.ShouldNotBeEmpty();
             activityDates.Count.ShouldBe(1);

@@ -18,7 +18,7 @@ public class SettlementFeeModel
 
     public String MerchantName { get; set; }
 
-    public DateTime SettlementDate { get; set; }
+    public DateTimeOffset SettlementDate { get; set; }
 
     public Guid SettlementId { get; set; }
 

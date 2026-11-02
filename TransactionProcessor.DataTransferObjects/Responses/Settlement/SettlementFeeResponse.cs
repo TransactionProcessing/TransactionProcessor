@@ -27,7 +27,7 @@ namespace TransactionProcessor.DataTransferObjects.Responses.Settlement
         public String MerchantName { get; set; }
         /// <summary>The settlement date.</summary>
 
-        public DateTime SettlementDate { get; set; }
+        public DateTimeOffset SettlementDate { get; set; }
         /// <summary>The settlement id.</summary>
 
         public Guid SettlementId { get; set; }

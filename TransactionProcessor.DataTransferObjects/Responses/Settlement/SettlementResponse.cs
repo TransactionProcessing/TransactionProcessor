@@ -29,7 +29,7 @@ namespace TransactionProcessor.DataTransferObjects.Responses.Settlement
         public Int32 NumberOfFeesSettled { get; set; }
         /// <summary>The settlement date.</summary>
 
-        public DateTime SettlementDate { get; set; }
+        public DateTimeOffset SettlementDate { get; set; }
         /// <summary>The settlement fees.</summary>
 
         public List<SettlementFeeResponse> SettlementFees { get; set; }

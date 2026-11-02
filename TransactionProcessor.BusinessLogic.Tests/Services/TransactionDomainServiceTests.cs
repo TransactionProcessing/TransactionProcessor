@@ -240,7 +240,7 @@ namespace TransactionProcessor.BusinessLogic.Tests.Services{
             this.OperatorProxy.ProcessSaleMessage(Arg<Guid>.Any(),
                                                                Arg<Guid>.Any(),
                                                                Arg<Models.Merchant.Merchant>.Any(),
-                                                               Arg<DateTime>.Any(),
+                                                               Arg<DateTimeOffset>.Any(),
                                                                Arg<String>.Any(),
                                                                Arg<Dictionary<String, String>>.Any(),
                                                                Arg<CancellationToken>.Any()).ReturnsAsync(new Result<OperatorResponse>{Data = new OperatorResponse{
@@ -293,7 +293,7 @@ namespace TransactionProcessor.BusinessLogic.Tests.Services{
                                                                                    Arg<TransactionSource>.Any(),
                                                                                    Arg<CancellationToken>.Any()).ReturnsAsync(Result.Success(new TransactionValidationResult(TransactionResponseCode.Success, "SUCCESS")));
 
-            this.OperatorProxy.ProcessSaleMessage(Arg<Guid>.Any(), Arg<Guid>.Any(), Arg<Models.Merchant.Merchant>.Any(), Arg<DateTime>.Any(), Arg<String>.Any(), Arg<Dictionary<String, String>>.Any(), Arg<CancellationToken>.Any()).Throws(new Exception());
+            this.OperatorProxy.ProcessSaleMessage(Arg<Guid>.Any(), Arg<Guid>.Any(), Arg<Models.Merchant.Merchant>.Any(), Arg<DateTimeOffset>.Any(), Arg<String>.Any(), Arg<Dictionary<String, String>>.Any(), Arg<CancellationToken>.Any()).Throws(new Exception());
             TransactionCommands.ProcessSaleTransactionCommand command =
                 new TransactionCommands.ProcessSaleTransactionCommand(TestData.TransactionId, TestData.EstateId,
                     TestData.MerchantId, TestData.DeviceIdentifier, TestData.TransactionTypeSale.ToString(),
@@ -341,7 +341,7 @@ namespace TransactionProcessor.BusinessLogic.Tests.Services{
             this.OperatorProxy.ProcessSaleMessage(Arg<Guid>.Any(),
                                                                Arg<Guid>.Any(),
                                                                Arg<Models.Merchant.Merchant>.Any(),
-                                                               Arg<DateTime>.Any(),
+                                                               Arg<DateTimeOffset>.Any(),
                                                                Arg<String>.Any(),
                                                                Arg<Dictionary<String, String>>.Any(),
                                                                Arg<CancellationToken>.Any()).ReturnsAsync(new OperatorResponse{
@@ -403,7 +403,7 @@ namespace TransactionProcessor.BusinessLogic.Tests.Services{
             this.OperatorProxy.ProcessSaleMessage(Arg<Guid>.Any(),
                                                                Arg<Guid>.Any(),
                                                                Arg<Models.Merchant.Merchant>.Any(),
-                                                               Arg<DateTime>.Any(),
+                                                               Arg<DateTimeOffset>.Any(),
                                                                Arg<String>.Any(),
                                                                Arg<Dictionary<String, String>>.Any(),
                                                                Arg<CancellationToken>.Any()).ReturnsAsync(new OperatorResponse
@@ -570,9 +570,9 @@ namespace TransactionProcessor.BusinessLogic.Tests.Services{
         [InlineData(SettlementSchedule.Monthly, "2024-05-01", "2024-06-01")]
         public async Task TransactionDomainService_CalculateSettlementDate_CorrectDateReturned(SettlementSchedule settlementSchedule, String completedDateString, String expectedDateString){
 
-            DateTime completedDate = DateTime.ParseExact(completedDateString, "yyyy-MM-dd", null);
-            DateTime expectedDate = DateTime.ParseExact(expectedDateString, "yyyy-MM-dd", null);
-            DateTime result = TransactionHelpers.CalculateSettlementDate(settlementSchedule, completedDate);
+            DateTimeOffset completedDate = DateTimeOffset.ParseExact(completedDateString, "yyyy-MM-dd", null);
+            DateTimeOffset expectedDate = DateTimeOffset.ParseExact(expectedDateString, "yyyy-MM-dd", null);
+            DateTimeOffset result = TransactionHelpers.CalculateSettlementDate(settlementSchedule, completedDate);
             result.Date.ShouldBe(expectedDate.Date);
         }
 
@@ -584,7 +584,7 @@ namespace TransactionProcessor.BusinessLogic.Tests.Services{
                 .ReturnsAsync(TestData.Aggregates.MerchantAggregateWithOperator());
             this.SecurityServiceClient.GetToken(Arg<String>.Any(), Arg<String>.Any(), Arg<CancellationToken>.Any()).ReturnsAsync(Result.Success(TestData.GetTokenResponse()));
             this.AggregateService.Get<ContractAggregate>(Arg<Guid>.Any(), Arg<CancellationToken>.Any()).ReturnsAsync(TestData.Aggregates.CreatedContractAggregateWithAProductAndTransactionFee(CalculationType.Fixed, FeeType.Merchant));
-            this.FeeCalculationManager.CalculateFees(Arg<List<TransactionFeeToCalculate>>.Any(), Arg<Decimal>.Any(), Arg<DateTime>.Any()).Returns(TestData.CalculatedMerchantFees);
+            this.FeeCalculationManager.CalculateFees(Arg<List<TransactionFeeToCalculate>>.Any(), Arg<Decimal>.Any(), Arg<DateTimeOffset>.Any()).Returns(TestData.CalculatedMerchantFees);
 
             TransactionCommands.CalculateFeesForTransactionCommand command = new(TestData.TransactionId, TestData.TransactionDateTime, TestData.EstateId, TestData.MerchantId);
 
@@ -600,7 +600,7 @@ namespace TransactionProcessor.BusinessLogic.Tests.Services{
             this.AggregateService.Get<MerchantAggregate>(Arg<Guid>.Any(), Arg<CancellationToken>.Any()).ReturnsAsync(TestData.Aggregates.MerchantAggregateWithEverything(SettlementSchedule.Immediate));
             this.SecurityServiceClient.GetToken(Arg<String>.Any(), Arg<String>.Any(), Arg<CancellationToken>.Any()).ReturnsAsync(Result.Success(TestData.GetTokenResponse()));
             this.AggregateService.Get<ContractAggregate>(Arg<Guid>.Any(), Arg<CancellationToken>.Any()).ReturnsAsync(TestData.Aggregates.CreatedContractAggregateWithAProductAndTransactionFee(CalculationType.Fixed, FeeType.Merchant));
-            this.FeeCalculationManager.CalculateFees(Arg<List<TransactionFeeToCalculate>>.Any(), Arg<Decimal>.Any(), Arg<DateTime>.Any()).Returns(TestData.CalculatedMerchantFees);
+            this.FeeCalculationManager.CalculateFees(Arg<List<TransactionFeeToCalculate>>.Any(), Arg<Decimal>.Any(), Arg<DateTimeOffset>.Any()).Returns(TestData.CalculatedMerchantFees);
 
             TransactionCommands.CalculateFeesForTransactionCommand command = new(TestData.TransactionId, TestData.TransactionDateTime, TestData.EstateId, TestData.MerchantId);
 
@@ -617,7 +617,7 @@ namespace TransactionProcessor.BusinessLogic.Tests.Services{
                 .ReturnsAsync(TestData.Aggregates.MerchantAggregateWithOperator());
             this.SecurityServiceClient.GetToken(Arg<String>.Any(), Arg<String>.Any(), Arg<CancellationToken>.Any()).ReturnsAsync(Result.Success(TestData.GetTokenResponse()));
             this.AggregateService.Get<ContractAggregate>(Arg<Guid>.Any(), Arg<CancellationToken>.Any()).ReturnsAsync(TestData.Aggregates.CreatedContractAggregateWithAProductAndTransactionFee(CalculationType.Fixed, FeeType.ServiceProvider));
-            this.FeeCalculationManager.CalculateFees(Arg<List<TransactionFeeToCalculate>>.Any(), Arg<Decimal>.Any(), Arg<DateTime>.Any()).Returns(TestData.CalculatedServiceProviderFees);
+            this.FeeCalculationManager.CalculateFees(Arg<List<TransactionFeeToCalculate>>.Any(), Arg<Decimal>.Any(), Arg<DateTimeOffset>.Any()).Returns(TestData.CalculatedServiceProviderFees);
 
             TransactionCommands.CalculateFeesForTransactionCommand command = new(TestData.TransactionId, TestData.TransactionDateTime, TestData.EstateId, TestData.MerchantId);
 
@@ -633,7 +633,7 @@ namespace TransactionProcessor.BusinessLogic.Tests.Services{
             this.AggregateService.Get<MerchantAggregate>(Arg<Guid>.Any(), Arg<CancellationToken>.Any()).ReturnsAsync(TestData.Aggregates.MerchantAggregateWithOperator());
             this.SecurityServiceClient.GetToken(Arg<String>.Any(), Arg<String>.Any(), Arg<CancellationToken>.Any()).ReturnsAsync(Result.Success(TestData.GetTokenResponse()));
 
-            this.FeeCalculationManager.CalculateFees(Arg<List<TransactionFeeToCalculate>>.Any(), Arg<Decimal>.Any(), Arg<DateTime>.Any()).Returns(TestData.CalculatedServiceProviderFees);
+            this.FeeCalculationManager.CalculateFees(Arg<List<TransactionFeeToCalculate>>.Any(), Arg<Decimal>.Any(), Arg<DateTimeOffset>.Any()).Returns(TestData.CalculatedServiceProviderFees);
 
             TransactionCommands.CalculateFeesForTransactionCommand command = new(TestData.TransactionId, TestData.TransactionDateTime, TestData.EstateId, TestData.MerchantId);
 
@@ -652,7 +652,7 @@ namespace TransactionProcessor.BusinessLogic.Tests.Services{
                 .ReturnsAsync(TestData.Aggregates.MerchantAggregateWithOperator());
             this.SecurityServiceClient.GetToken(Arg<String>.Any(), Arg<String>.Any(), Arg<CancellationToken>.Any()).ReturnsAsync(Result.Success(TestData.GetTokenResponse()));
 
-            this.FeeCalculationManager.CalculateFees(Arg<List<TransactionFeeToCalculate>>.Any(), Arg<Decimal>.Any(), Arg<DateTime>.Any()).Returns(TestData.CalculatedServiceProviderFees);
+            this.FeeCalculationManager.CalculateFees(Arg<List<TransactionFeeToCalculate>>.Any(), Arg<Decimal>.Any(), Arg<DateTimeOffset>.Any()).Returns(TestData.CalculatedServiceProviderFees);
 
             TransactionCommands.CalculateFeesForTransactionCommand command = new(TestData.TransactionId, TestData.TransactionDateTime, TestData.EstateId, TestData.MerchantId);
 
@@ -867,7 +867,7 @@ namespace TransactionProcessor.BusinessLogic.Tests.Services{
             this.OperatorProxy.ProcessSaleMessage(Arg<Guid>.Any(),
                                                                Arg<Guid>.Any(),
                                                                Arg<Models.Merchant.Merchant>.Any(),
-                                                               Arg<DateTime>.Any(),
+                                                               Arg<DateTimeOffset>.Any(),
                                                                Arg<String>.Any(),
                                                                Arg<Dictionary<String, String>>.Any(),
                                                                Arg<CancellationToken>.Any()).ReturnsAsync(new OperatorResponse {
@@ -909,7 +909,7 @@ namespace TransactionProcessor.BusinessLogic.Tests.Services{
             this.AggregateService.Get<MerchantAggregate>(Arg<Guid>.Any(), Arg<CancellationToken>.Any())
                 .ReturnsAsync(TestData.Aggregates.EmptyMerchantAggregate());
             this.AggregateService.Get<ContractAggregate>(Arg<Guid>.Any(), Arg<CancellationToken>.Any()).ReturnsAsync(TestData.Aggregates.CreatedContractAggregateWithAProductAndTransactionFee(CalculationType.Fixed, FeeType.Merchant));
-            this.FeeCalculationManager.CalculateFees(Arg<List<TransactionFeeToCalculate>>.Any(), Arg<Decimal>.Any(), Arg<DateTime>.Any()).Returns(TestData.CalculatedMerchantFees);
+            this.FeeCalculationManager.CalculateFees(Arg<List<TransactionFeeToCalculate>>.Any(), Arg<Decimal>.Any(), Arg<DateTimeOffset>.Any()).Returns(TestData.CalculatedMerchantFees);
 
             TransactionCommands.CalculateFeesForTransactionCommand command = new(TestData.TransactionId, TestData.TransactionDateTime, TestData.EstateId, TestData.MerchantId);
 
@@ -925,7 +925,7 @@ namespace TransactionProcessor.BusinessLogic.Tests.Services{
             this.AggregateService.Get<MerchantAggregate>(Arg<Guid>.Any(), Arg<CancellationToken>.Any())
                 .ReturnsAsync(TestData.Aggregates.MerchantAggregateWithOperator());
             this.AggregateService.Get<ContractAggregate>(Arg<Guid>.Any(), Arg<CancellationToken>.Any()).ReturnsAsync(TestData.Aggregates.CreatedContractAggregateWithAProductAndTransactionFee(CalculationType.Fixed, FeeType.Merchant));
-            this.FeeCalculationManager.CalculateFees(Arg<List<TransactionFeeToCalculate>>.Any(), Arg<Decimal>.Any(), Arg<DateTime>.Any()).Returns(TestData.CalculatedMerchantFees);
+            this.FeeCalculationManager.CalculateFees(Arg<List<TransactionFeeToCalculate>>.Any(), Arg<Decimal>.Any(), Arg<DateTimeOffset>.Any()).Returns(TestData.CalculatedMerchantFees);
 
             TransactionCommands.CalculateFeesForTransactionCommand command = new(TestData.TransactionId, TestData.TransactionDateTime, TestData.EstateId, TestData.MerchantId);
 

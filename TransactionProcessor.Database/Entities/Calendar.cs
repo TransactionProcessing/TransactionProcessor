@@ -12,7 +12,7 @@ namespace TransactionProcessor.Database.Entities
         #region Properties
 
         [Key]
-        public DateTime Date { get; set; }
+        public DateOnly Date { get; set; }
 
         public String DayOfWeek { get; set; }
 

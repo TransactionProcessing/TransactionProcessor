@@ -1,4 +1,4 @@
-namespace TransactionProcessor.DataTransferObjects
+namespace TransactionProcessor.DataTransferObjects.Requests.Transaction
 {
     using System;
     using System.Collections.Generic;
@@ -11,8 +11,6 @@ namespace TransactionProcessor.DataTransferObjects
     [ExcludeFromCodeCoverage]
     public class SaleTransactionRequest : TransactionRequest
     {
-        #region Properties
-
         /// <summary>
         /// Optional key/value metadata to include with the transaction.
         /// </summary>
@@ -52,7 +50,5 @@ namespace TransactionProcessor.DataTransferObjects
         /// Numeric transaction source code; omitted values default to online source code 1.
         /// </summary>
         public Int32? TransactionSource { get; set; }
-
-        #endregion
     }
 }

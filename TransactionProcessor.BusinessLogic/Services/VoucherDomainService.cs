@@ -29,7 +29,7 @@ public interface IVoucherDomainService
 
     Task<Result<RedeemVoucherResponse>> RedeemVoucher(Guid estateId,
                                               String voucherCode,
-                                              DateTime redeemedDateTime,
+                                              DateTimeOffset redeemedDateTime,
                                               CancellationToken cancellationToken);
 
     #endregion
@@ -102,7 +102,7 @@ public class VoucherDomainService : IVoucherDomainService
 
     public async Task<Result<RedeemVoucherResponse>> RedeemVoucher(Guid estateId,
                                                            String voucherCode,
-                                                           DateTime redeemedDateTime,
+                                                           DateTimeOffset redeemedDateTime,
                                                            CancellationToken cancellationToken)
     {
         try

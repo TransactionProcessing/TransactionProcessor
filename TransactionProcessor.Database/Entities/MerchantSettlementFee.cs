@@ -9,7 +9,7 @@ namespace TransactionProcessor.Database.Entities
 
         public Decimal CalculatedValue { get; set; }
 
-        public DateTime FeeCalculatedDateTime { get; set; }
+        public DateTimeOffset FeeCalculatedDateTime { get; set; }
 
         public Guid ContractProductTransactionFeeId { get; set; }
 

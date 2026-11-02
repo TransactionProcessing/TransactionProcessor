@@ -15,7 +15,7 @@ namespace TransactionProcessor.Aggregates{
 
         public static Result Create(this MerchantDepositListAggregate aggregate,
                                   MerchantAggregate merchantAggregate,
-                                  DateTime dateCreated){
+                                  DateTimeOffset dateCreated){
             Result result = aggregate.EnsureMerchantHasBeenCreated(merchantAggregate);
             if (result.IsFailed)
                 return result;
@@ -62,7 +62,7 @@ namespace TransactionProcessor.Aggregates{
         public static Result MakeDeposit(this MerchantDepositListAggregate aggregate,
                                        MerchantDepositSource source,
                                        String reference,
-                                       DateTime depositDateTime,
+                                       DateTimeOffset depositDateTime,
                                        PositiveMoney amount){
             String depositData = $"{depositDateTime:yyyyMMdd hh:mm:ss.fff}-{reference}-{amount:N2}-{source}";
             Guid depositId = aggregate.GenerateGuidFromString(depositData);
@@ -94,7 +94,7 @@ namespace TransactionProcessor.Aggregates{
         }
 
         public static Result MakeWithdrawal(this MerchantDepositListAggregate aggregate,
-                                          DateTime withdrawalDateTime,
+                                            DateTimeOffset withdrawalDateTime,
                                           PositiveMoney amount){
             String depositData = $"{withdrawalDateTime.ToString("yyyyMMdd hh:mm:ss.fff")}-{amount:N2}";
             Guid withdrawalId = aggregate.GenerateGuidFromString(depositData);
@@ -223,7 +223,7 @@ namespace TransactionProcessor.Aggregates{
 
         #region Properties
 
-        public DateTime DateCreated{ get; internal set; }
+        public DateTimeOffset DateCreated{ get; internal set; }
 
         public Guid EstateId{ get; internal set; }
 

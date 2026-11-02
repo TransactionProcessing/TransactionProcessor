@@ -24,7 +24,11 @@ using Client;
 using DataTransferObjects;
 using Shared.IntegrationTesting;
 using Shouldly;
+using TransactionProcessor.DataTransferObjects.Requests.Transaction;
+using TransactionProcessor.DataTransferObjects.Requests.Voucher;
 using TransactionProcessor.DataTransferObjects.Responses.Merchant;
+using TransactionProcessor.DataTransferObjects.Responses.Transaction;
+using TransactionProcessor.DataTransferObjects.Responses.Voucher;
 
 public class TransactionProcessorSteps
 {

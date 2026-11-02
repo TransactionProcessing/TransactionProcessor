@@ -1,4 +1,4 @@
-namespace TransactionProcessor.DataTransferObjects
+namespace TransactionProcessor.DataTransferObjects.Requests.Transaction
 {
     using System;
     using System.Diagnostics.CodeAnalysis;
@@ -10,8 +10,6 @@ namespace TransactionProcessor.DataTransferObjects
     [ExcludeFromCodeCoverage]
     public class LogonTransactionRequest : TransactionRequest
     {
-        #region Properties
-
         /// <summary>
         /// Identifier assigned to the terminal device submitting the logon.
         /// </summary>
@@ -26,7 +24,5 @@ namespace TransactionProcessor.DataTransferObjects
         /// Transaction type reported by the terminal.
         /// </summary>
         public String TransactionType { get; set; }
-
-        #endregion
     }
 }

@@ -15,12 +15,13 @@ using Contract = TransactionProcessor.Models.Contract.Contract;
 using ContractProductTransactionFee = TransactionProcessor.DataTransferObjects.Responses.Contract.ContractProductTransactionFee;
 using ProductType = TransactionProcessor.DataTransferObjects.Responses.Contract.ProductType;
 
-namespace TransactionProcessor.Tests.Factories
-{
+namespace TransactionProcessor.Tests.Factories {
     using DataTransferObjects;
     using Models;
     using Shouldly;
     using Testing;
+    using TransactionProcessor.DataTransferObjects.Responses.Transaction;
+    using TransactionProcessor.DataTransferObjects.Responses.Voucher;
     using TransactionProcessor.Factories;
     using Xunit;
     using IssueVoucherResponse = Models.IssueVoucherResponse;
@@ -265,7 +266,7 @@ namespace TransactionProcessor.Tests.Factories
         public void ModelFactory_ConvertFrom_IssueVoucherResponse_IsConverted()
         {
             IssueVoucherResponse model = TestData.IssueVoucherResponse;
-            DataTransferObjects.IssueVoucherResponse dto = ModelFactory.ConvertFrom(model);
+            DataTransferObjects.Responses.Voucher.IssueVoucherResponse dto = ModelFactory.ConvertFrom(model);
 
             dto.ShouldNotBeNull();
             dto.ExpiryDate.ShouldBe(model.ExpiryDate);
@@ -278,7 +279,7 @@ namespace TransactionProcessor.Tests.Factories
         public void ModelFactory_ConvertFrom_IssueVoucherResponse_NullInput_IsConverted()
         {
             IssueVoucherResponse model = null;
-            DataTransferObjects.IssueVoucherResponse dto = ModelFactory.ConvertFrom(model);
+            DataTransferObjects.Responses.Voucher.IssueVoucherResponse dto = ModelFactory.ConvertFrom(model);
 
             dto.ShouldBeNull();
         }
@@ -319,7 +320,7 @@ namespace TransactionProcessor.Tests.Factories
         {
             RedeemVoucherResponse model = TestData.RedeemVoucherResponse;
             
-            DataTransferObjects.RedeemVoucherResponse dto = ModelFactory.ConvertFrom(model);
+            DataTransferObjects.Responses.Voucher.RedeemVoucherResponse dto = ModelFactory.ConvertFrom(model);
             dto.ShouldNotBeNull();
             dto.ExpiryDate.ShouldBe(model.ExpiryDate);
             dto.VoucherCode.ShouldBe(model.VoucherCode);
@@ -330,7 +331,7 @@ namespace TransactionProcessor.Tests.Factories
         public void ModelFactory_ConvertFrom_RedeemVoucherResponse_NullInput_IsConverted()
         {
             RedeemVoucherResponse model = null;
-            DataTransferObjects.RedeemVoucherResponse result = ModelFactory.ConvertFrom(model);
+            DataTransferObjects.Responses.Voucher.RedeemVoucherResponse result = ModelFactory.ConvertFrom(model);
             result.ShouldBeNull();
         }
 

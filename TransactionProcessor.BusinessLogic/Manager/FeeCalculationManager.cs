@@ -22,7 +22,7 @@ namespace TransactionProcessor.BusinessLogic.Manager
         /// <returns></returns>
         public List<CalculatedFee> CalculateFees(List<TransactionFeeToCalculate> feeList,
                                                  Decimal transactionAmount,
-                                                 DateTime calculationDateTime = new DateTime())
+                                                 DateTimeOffset calculationDateTime = new DateTimeOffset())
         {
             List<CalculatedFee> calculatedFees = new List<CalculatedFee>();
 

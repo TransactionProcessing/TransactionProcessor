@@ -63,8 +63,8 @@ public class TransactionProcessorReadRepository : ITransactionProcessorReadRepos
 
     public async Task<Result<List<MerchantBalanceChangedEntry>>> GetMerchantBalanceHistory(Guid estateId,
                                                                                    Guid merchantId,
-                                                                                   DateTime startDate,
-                                                                                   DateTime endDate,
+                                                                                   DateTimeOffset startDate,
+                                                                                   DateTimeOffset endDate,
                                                                                    CancellationToken cancellationToken) {
         using ResolvedDbContext<EstateManagementContext>? resolvedContext = this.Resolver.Resolve(EstateManagementDatabaseName, estateId.ToString());
         await using EstateManagementContext context = resolvedContext.Context;

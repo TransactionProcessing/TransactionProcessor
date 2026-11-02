@@ -4,6 +4,6 @@ namespace TransactionProcessor.Aggregates.Models
 {
     [ExcludeFromCodeCoverage]
     internal record Withdrawal(Guid WithdrawalId,
-                                     DateTime WithdrawalDateTime,
+                               DateTimeOffset WithdrawalDateTime,
                                      Decimal Amount);
 }

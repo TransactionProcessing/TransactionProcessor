@@ -1,6 +1,6 @@
 using System;
 
-namespace TransactionProcessor.DataTransferObjects
+namespace TransactionProcessor.DataTransferObjects.Responses.Merchant
 {
     using System.Diagnostics.CodeAnalysis;
 
@@ -24,7 +24,7 @@ namespace TransactionProcessor.DataTransferObjects
         public Decimal ChangeAmount { get; set; }
         /// <summary>The date time.</summary>
 
-        public DateTime DateTime { get; set; }
+        public DateTimeOffset DateTime { get; set; }
         /// <summary>The reference.</summary>
 
         public String Reference { get; set; }

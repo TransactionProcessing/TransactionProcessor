@@ -102,7 +102,7 @@ namespace TransactionProcessor.Aggregates.Tests
         {
             Aggregates.FloatAggregate aggregate = Aggregates.FloatAggregate.Create(TestData.FloatAggregateId);
             aggregate.CreateFloat(TestData.EstateId, TestData.FloatCreatedDateTime);
-            DateTime purchaseDateTime = DateTime.Now;
+            DateTimeOffset purchaseDateTime = DateTimeOffset.Now;
             aggregate.RecordCreditPurchase(purchaseDateTime, 1000, 900);
 
             Result result = aggregate.RecordCreditPurchase(purchaseDateTime, 1000, 900);

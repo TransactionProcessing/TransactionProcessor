@@ -319,6 +319,6 @@ internal sealed class TestReadRepository : ITransactionProcessorReadRepository
         return Task.FromResult(AddResult);
     }
 
-    public Task<Result<List<MerchantBalanceChangedEntry>>> GetMerchantBalanceHistory(Guid estateId, Guid merchantId, DateTime startDate, DateTime endDate, CancellationToken cancellationToken) =>
+    public Task<Result<List<MerchantBalanceChangedEntry>>> GetMerchantBalanceHistory(Guid estateId, Guid merchantId, DateTimeOffset startDate, DateTimeOffset endDate, CancellationToken cancellationToken) =>
         Task.FromResult(new Result<List<MerchantBalanceChangedEntry>>());
 }

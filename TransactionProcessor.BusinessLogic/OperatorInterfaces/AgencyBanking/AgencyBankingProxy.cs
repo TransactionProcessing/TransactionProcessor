@@ -37,7 +37,7 @@ namespace TransactionProcessor.BusinessLogic.OperatorInterfaces.AgencyBanking
         public async Task<Result<OperatorResponse>> ProcessSaleMessage(Guid transactionId,
                                                                        Guid operatorId,
                                                                        Merchant merchant,
-                                                                       DateTime transactionDateTime,
+                                                                       DateTimeOffset transactionDateTime,
                                                                        String transactionReference,
                                                                        Dictionary<String, String> additionalTransactionMetadata,
                                                                        CancellationToken cancellationToken) {

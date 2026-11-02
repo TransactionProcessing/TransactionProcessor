@@ -363,7 +363,7 @@ namespace TransactionProcessor.BusinessLogic.Services{
         private Result ApplyMerchantFees(TransactionAggregate transactionAggregate,
                                          Merchant merchant,
                                          IEnumerable<CalculatedFee> calculatedFees,
-                                         DateTime completedDateTime,
+                                         DateTimeOffset completedDateTime,
                                          Guid merchantId,
                                          Guid estateId) {
             foreach (CalculatedFee calculatedFee in calculatedFees) {
@@ -378,10 +378,10 @@ namespace TransactionProcessor.BusinessLogic.Services{
         private Result ApplyMerchantFee(TransactionAggregate transactionAggregate,
                                         Merchant merchant,
                                         CalculatedFee calculatedFee,
-                                        DateTime completedDateTime,
+                                        DateTimeOffset completedDateTime,
                                         Guid merchantId,
                                         Guid estateId) {
-            DateTime settlementDate = TransactionHelpers.CalculateSettlementDate(merchant.SettlementSchedule, completedDateTime);
+            DateTimeOffset settlementDate = TransactionHelpers.CalculateSettlementDate(merchant.SettlementSchedule, completedDateTime);
 
             Result stateResult = transactionAggregate.AddFeePendingSettlement(calculatedFee, settlementDate);
             if (stateResult.IsFailed)
@@ -453,7 +453,7 @@ namespace TransactionProcessor.BusinessLogic.Services{
 
         private async Task<Result<OperatorResponse>> ProcessMessageWithOperator(Models.Merchant.Merchant merchant,
                                                                                 Guid transactionId,
-                                                                                DateTime transactionDateTime,
+                                                                                DateTimeOffset transactionDateTime,
                                                                                 Guid operatorId,
                                                                                 Dictionary<String, String> additionalTransactionMetadata,
                                                                                 String transactionReference,

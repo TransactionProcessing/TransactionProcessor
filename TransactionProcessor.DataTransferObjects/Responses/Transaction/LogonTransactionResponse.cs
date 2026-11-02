@@ -1,4 +1,4 @@
-namespace TransactionProcessor.DataTransferObjects
+namespace TransactionProcessor.DataTransferObjects.Responses.Transaction
 {
     using System;
     using System.Diagnostics.CodeAnalysis;

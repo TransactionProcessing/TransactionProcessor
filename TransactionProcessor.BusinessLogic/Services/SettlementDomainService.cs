@@ -101,7 +101,7 @@ namespace TransactionProcessor.BusinessLogic.Services
         }
 
         private async Task<Result<Guid>> ProcessSettlementFees(List<(Guid transactionId, Guid merchantId, CalculatedFee calculatedFee)> feesToBeSettled,
-                                                               DateTime settlementDate,
+                                                               DateTimeOffset settlementDate,
                                                                Guid settlementAggregateId,
                                                                CancellationToken cancellationToken) {
             List<Result> failedResults = new();

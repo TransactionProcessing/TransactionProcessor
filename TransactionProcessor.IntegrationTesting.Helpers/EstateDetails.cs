@@ -1,6 +1,7 @@
 ﻿using Shared.Serialisation;
 using TransactionProcessor.DataTransferObjects;
 using TransactionProcessor.DataTransferObjects.Responses.Contract;
+using TransactionProcessor.DataTransferObjects.Responses.Transaction;
 
 namespace TransactionProcessor.IntegrationTesting.Helpers
 {

@@ -12,13 +12,13 @@ namespace TransactionProcessor.Database.Entities
 
         public Guid MerchantId { get; set; }
 
-        public DateTime StatementCreatedDate { get; set; }
-
-        public DateTime StatementGeneratedDate { get; set; }
-
-        public DateTime StatementCreatedDateTime { get; set; }
-
-        public DateTime StatementGeneratedDateTime { get; set; }
+        public DateOnly StatementCreatedDate { get; set; }
+               
+        public DateOnly StatementGeneratedDate { get; set; }
+               
+        public DateTimeOffset StatementCreatedDateTime { get; set; }
+               
+        public DateTimeOffset StatementGeneratedDateTime { get; set; }
     }
 }
 

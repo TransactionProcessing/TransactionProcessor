@@ -20,7 +20,7 @@ public static class MerchantStatementForDateAggregateExtensions
 
     public static Result AddSettledFeeToStatement(this MerchantStatementForDateAggregate aggregate,
                                                 Guid merchantStatementId,
-                                                DateTime statementDate,
+                                                DateTimeOffset statementDate,
                                                 Guid eventId,
                                                 Guid estateId,
                                                 Guid merchantId,
@@ -39,7 +39,7 @@ public static class MerchantStatementForDateAggregateExtensions
 
     public static Result AddDepositToStatement(this MerchantStatementForDateAggregate aggregate,
                                                Guid merchantStatementId,
-                                               DateTime statementDate,
+                                               DateTimeOffset statementDate,
                                                Guid eventId,
                                                Guid estateId,
                                                Guid merchantId,
@@ -59,7 +59,7 @@ public static class MerchantStatementForDateAggregateExtensions
 
     public static Result AddWithdrawalToStatement(this MerchantStatementForDateAggregate aggregate,
                                                   Guid merchantStatementId,
-                                                  DateTime statementDate,
+                                                  DateTimeOffset statementDate,
                                                   Guid eventId,
                                                   Guid estateId,
                                                   Guid merchantId,
@@ -79,7 +79,7 @@ public static class MerchantStatementForDateAggregateExtensions
 
     public static Result AddTransactionToStatement(this MerchantStatementForDateAggregate aggregate,
                                                    Guid merchantStatementId,
-                                                   DateTime statementDate,
+                                                   DateTimeOffset statementDate,
                                                    Guid eventId,
                                                    Guid estateId,
                                                    Guid merchantId,
@@ -106,8 +106,8 @@ public static class MerchantStatementForDateAggregateExtensions
 
     private static Result CreateStatementForDate(this MerchantStatementForDateAggregate aggregate,
                                         Guid merchantStatementId,
-                                        DateTime activityDate,
-                                        DateTime statementDate,
+                                        DateTimeOffset activityDate,
+                                        DateTimeOffset statementDate,
                                         Guid estateId,
                                         Guid merchantId)
     {
@@ -200,7 +200,7 @@ public static class MerchantStatementForDateAggregateExtensions
     private static void AddStatementLines<T>(this MerchantStatementForDate merchantStatement,
                                              IEnumerable<T> source,
                                              Func<T, Decimal> amountSelector,
-                                             Func<T, DateTime> dateTimeSelector,
+                                             Func<T, DateTimeOffset> dateTimeSelector,
                                              Int32 lineType)
     {
         foreach (T item in source)
@@ -210,7 +210,7 @@ public static class MerchantStatementForDateAggregateExtensions
     }
 
     private static MerchantStatementLine CreateStatementLine(Decimal amount,
-                                                             DateTime dateTime,
+                                                             DateTimeOffset dateTime,
                                                              Int32 lineType) => new()
     {
         Amount = amount,
@@ -224,7 +224,7 @@ public record MerchantStatementForDateAggregate : Aggregate
 {
     #region Fields
 
-    internal DateTime ActivityDate;
+    internal DateTimeOffset ActivityDate;
     internal Guid EstateId;
     internal Boolean IsCreated;
     internal Guid MerchantId;
@@ -233,7 +233,7 @@ public record MerchantStatementForDateAggregate : Aggregate
     internal readonly List<Deposit> Deposits;
     internal readonly List<Withdrawal> Withdrawals;
     internal Guid MerchantStatementId;
-    internal DateTime StatementDate;
+    internal DateTimeOffset StatementDate;
     #endregion
 
     #region Constructors

@@ -31,9 +31,9 @@ namespace TransactionProcessor.Database.Entities
         
         public String? ResponseMessage { get; set; }
         
-        public DateTime TransactionDate { get; set; }
+        public DateOnly TransactionDate { get; set; }
         
-        public DateTime TransactionDateTime { get; set; }
+        public DateTimeOffset TransactionDateTime { get; set; }
         
         public Guid TransactionId { get; set; }
 

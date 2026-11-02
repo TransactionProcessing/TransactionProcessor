@@ -4,7 +4,7 @@
     {
         public bool IsCompleted { get; set; }
         public bool IsSettled { get; set; }
-        public DateTime SettlementDate { get; set; }
+        public DateOnly SettlementDate { get; set; }
         public int MerchantReportingId { get; set; }
         public int OperatorReportingId { get; set; }
         public int ContractProductReportingId { get; set; }
@@ -27,8 +27,8 @@
         public bool IsCompleted { get; set; }
         public string ResponseCode { get; set; }
         public string ResponseMessage { get; set; }
-        public DateTime TransactionDate { get; set; }
-        public DateTime TransactionDateTime { get; set; }
+        public DateOnly TransactionDate { get; set; }
+        public DateTimeOffset TransactionDateTime { get; set; }
         public string TransactionNumber { get; set; }
         public string TransactionReference { get; set; }
         public TimeSpan TransactionTime { get; set; }
@@ -52,8 +52,8 @@
         public bool IsCompleted { get; set; }
         public string ResponseCode { get; set; }
         public string ResponseMessage { get; set; }
-        public DateTime TransactionDate { get; set; }
-        public DateTime TransactionDateTime { get; set; }
+        public DateOnly TransactionDate { get; set; }
+        public DateTimeOffset TransactionDateTime { get; set; }
         public string TransactionNumber { get; set; }
         public string TransactionReference { get; set; }
         public TimeSpan TransactionTime { get; set; }

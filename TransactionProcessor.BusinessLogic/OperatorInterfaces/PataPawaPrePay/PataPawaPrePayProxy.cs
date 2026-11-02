@@ -72,7 +72,7 @@ public class PataPawaPrePayProxy : IOperatorProxy{
     }
 
     public async Task<Result<OperatorResponse>> ProcessSaleMessage(Guid transactionId, Guid operatorId,
-                                                                   Models.Merchant.Merchant merchant, DateTime transactionDateTime, String transactionReference, Dictionary<String, String> additionalTransactionMetadata, CancellationToken cancellationToken){
+                                                                   Models.Merchant.Merchant merchant, DateTimeOffset transactionDateTime, String transactionReference, Dictionary<String, String> additionalTransactionMetadata, CancellationToken cancellationToken){
         // Get the logon response for the operator
         OperatorResponse logonResponse = this.MemoryCache.Get<OperatorResponse>("PataPawaPrePayLogon");
         if (logonResponse == null) {
@@ -291,12 +291,12 @@ public class PataPawaPrePayProxy : IOperatorProxy{
         }
     }
 
-    public class DateTimeSpaceConverter : JsonConverter<DateTime>
+    public class DateTimeSpaceConverter : JsonConverter<DateTimeOffset>
     {
         private static readonly string[] AcceptedFormats = new[] {
                 "yyyy-MM-dd HH:mm:ss", "yyyy-MM-dd H:mm:ss", "yyyy-MM-ddTHH:mm:ss", "yyyy-MM-ddTHH:mm:ss.FFFFFFFK", "o" // ISO 8601 round-trip
                                                                                                                                                                                 };
-        public override DateTime Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
+        public override DateTimeOffset Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
         {
             if (reader.TokenType == JsonTokenType.Null)
             {
@@ -314,7 +314,7 @@ public class PataPawaPrePayProxy : IOperatorProxy{
                     return dtExact;
 
                 // Fall back to general parse
-                if (DateTime.TryParse(s, CultureInfo.InvariantCulture, DateTimeStyles.AssumeLocal, out var dt))
+                if (DateTimeOffset.TryParse(s, CultureInfo.InvariantCulture, DateTimeStyles.AssumeLocal, out var dt))
                     return dt;
 
                 throw new JsonException($"Unable to parse DateTime: '{s}'.");
@@ -329,7 +329,7 @@ public class PataPawaPrePayProxy : IOperatorProxy{
             throw new JsonException($"Unexpected token parsing DateTime. Token: {reader.TokenType}");
         }
 
-        public override void Write(Utf8JsonWriter writer, DateTime value, JsonSerializerOptions options)
+        public override void Write(Utf8JsonWriter writer, DateTimeOffset value, JsonSerializerOptions options)
         {
             // Write in the same "space" format so round-trip matches your input
             writer.WriteStringValue(value.ToString("yyyy-MM-dd HH:mm:ss", CultureInfo.InvariantCulture));

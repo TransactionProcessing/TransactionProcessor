@@ -9,11 +9,11 @@ namespace TransactionProcessor.BusinessLogic.Requests;
 public record FloatCommands {
     public record CreateFloatCommand(Guid EstateId,
                                      Guid FloatId,
-                                     DateTime CreateDateTime) : IRequest<Result>;
+                                     DateTimeOffset CreateDateTime) : IRequest<Result>;
 
     public record RecordCreditPurchaseForFloatCommand(Guid EstateId,
                                                       Guid FloatId,
                                                       Decimal CreditAmount,
                                                       Decimal CostPrice,
-                                                      DateTime PurchaseDateTime) : IRequest<Result>;
+                                                      DateTimeOffset PurchaseDateTime) : IRequest<Result>;
 }

@@ -29,8 +29,8 @@ public static class TransactionHelpers {
         return hex.Substring(0, 8);
     }
 
-    public static DateTime CalculateSettlementDate(Models.Merchant.SettlementSchedule merchantSettlementSchedule,
-                                                   DateTime completeDateTime)
+    public static DateTimeOffset CalculateSettlementDate(Models.Merchant.SettlementSchedule merchantSettlementSchedule,
+                                                         DateTimeOffset completeDateTime)
     {
         if (merchantSettlementSchedule == Models.Merchant.SettlementSchedule.Weekly)
         {

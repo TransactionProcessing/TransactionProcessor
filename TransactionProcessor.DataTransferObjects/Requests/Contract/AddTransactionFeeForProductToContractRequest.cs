@@ -9,8 +9,6 @@ namespace TransactionProcessor.DataTransferObjects.Requests.Contract
     /// <example>{"calculationType":0,"description":"Example description","feeType":0,"value":42.5}</example>
     public class AddTransactionFeeForProductToContractRequest
     {
-        #region Properties
-
         /// <summary>
         /// Method used to calculate the fee value.
         /// </summary>
@@ -30,7 +28,5 @@ namespace TransactionProcessor.DataTransferObjects.Requests.Contract
         /// Monetary value associated with the product or fee.
         /// </summary>
         public Decimal Value { get; set; }
-
-        #endregion
     }
 }

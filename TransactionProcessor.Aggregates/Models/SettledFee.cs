@@ -3,10 +3,10 @@
 namespace TransactionProcessor.Aggregates.Models
 {
     [ExcludeFromCodeCoverage]
-    public record SettledFee(Guid SettledFeeId, Guid TransactionId, DateTime DateTime, Decimal Amount);
+    public record SettledFee(Guid SettledFeeId, Guid TransactionId, DateTimeOffset DateTime, Decimal Amount);
 
     [ExcludeFromCodeCoverage]
-    public record Transaction(Guid TransactionId, DateTime DateTime, Decimal Amount);
+    public record Transaction(Guid TransactionId, DateTimeOffset DateTime, Decimal Amount);
 
     
 }

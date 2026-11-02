@@ -1,8 +1,7 @@
 ﻿using TransactionProcessor.DataTransferObjects.Responses.Merchant;
 using TransactionProcessor.IntegrationTesting.Helpers;
 
-namespace TransactionProcessor.IntegrationTests.Common
-{
+namespace TransactionProcessor.IntegrationTests.Common {
     using System;
     using System.Collections.Generic;
     using System.Linq;
@@ -13,6 +12,9 @@ namespace TransactionProcessor.IntegrationTests.Common
     using global::Shared.Logger;
     using Reqnroll;
     using Shouldly;
+    using TransactionProcessor.DataTransferObjects.Requests.Voucher;
+    using TransactionProcessor.DataTransferObjects.Responses.Transaction;
+    using TransactionProcessor.DataTransferObjects.Responses.Voucher;
     using Retry = IntegrationTests.Retry;
 
     /// <summary>

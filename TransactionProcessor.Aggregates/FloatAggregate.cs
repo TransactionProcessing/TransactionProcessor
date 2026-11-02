@@ -1,7 +1,6 @@
 ﻿using System.Diagnostics.CodeAnalysis;
 using Shared.DomainDrivenDesign.EventSourcing;
 using Shared.EventStore.Aggregate;
-using Shared.General;
 using SimpleResults;
 using TransactionProcessor.DomainEvents;
 
@@ -34,7 +33,7 @@ namespace TransactionProcessor.Aggregates
 
         public static Result CreateFloat(this FloatAggregate aggregate,
                                                Guid estateId,
-                                               DateTime createdDateTime)
+                                               DateTimeOffset createdDateTime)
         {
             if (aggregate.IsCreated) {
                 return Result.Success(); // Idempotent
@@ -48,7 +47,7 @@ namespace TransactionProcessor.Aggregates
             return Result.Success();
         }
 
-        public static Result RecordCreditPurchase(this FloatAggregate aggregate, DateTime creditPurchasedDate, Decimal amount, Decimal costPrice)
+        public static Result RecordCreditPurchase(this FloatAggregate aggregate, DateTimeOffset creditPurchasedDate, Decimal amount, Decimal costPrice)
         {
             Result result = aggregate.ValidateFloatIsAlreadyCreated();
             if (result.IsFailed) {
@@ -81,7 +80,7 @@ namespace TransactionProcessor.Aggregates
         }
 
         public static Result ValidateCreditIsNotADuplicate(this FloatAggregate aggregate,
-                                                           DateTime creditPurchasedDate,
+                                                           DateTimeOffset creditPurchasedDate,
                                                            Decimal amount,
                                                            Decimal costPrice) {
             Boolean isDuplicate = aggregate.Credits.Any(c => c.costPrice == costPrice && c.amount == amount && c.creditPurchasedDate == creditPurchasedDate);
@@ -115,7 +114,7 @@ namespace TransactionProcessor.Aggregates
         [ExcludeFromCodeCoverage]
         public FloatAggregate()
         {
-            this.Credits = new List<(DateTime creditPurchasedDate, Decimal amount, Decimal costPrice)>();
+            this.Credits = new List<(DateTimeOffset creditPurchasedDate, Decimal amount, Decimal costPrice)>();
         }
 
         private FloatAggregate(Guid aggregateId)
@@ -124,15 +123,15 @@ namespace TransactionProcessor.Aggregates
                 throw new ArgumentNullException(nameof(aggregateId));
 
             this.AggregateId = aggregateId;
-            this.Credits = new List<(DateTime creditPurchasedDate, Decimal amount, Decimal costPrice)>();
+            this.Credits = new List<(DateTimeOffset creditPurchasedDate, Decimal amount, Decimal costPrice)>();
         }
 
-        internal List<(DateTime creditPurchasedDate, Decimal amount, Decimal costPrice)> Credits;
+        internal List<(DateTimeOffset creditPurchasedDate, Decimal amount, Decimal costPrice)> Credits;
 
         public Boolean IsCreated { get; internal set; }
 
         public Guid EstateId { get; internal set; }
-        public DateTime CreatedDateTime { get; internal set; }
+        public DateTimeOffset CreatedDateTime { get; internal set; }
 
         public Int32 NumberOfCreditPurchases { get; internal set; }
 

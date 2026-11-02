@@ -1,5 +1,4 @@
 using System;
-using System.ComponentModel.DataAnnotations;
 
 namespace TransactionProcessor.DataTransferObjects.Requests.Merchant
 {
@@ -9,8 +8,6 @@ namespace TransactionProcessor.DataTransferObjects.Requests.Merchant
     /// <example>{"contactName":"Example Name","emailAddress":"customer@example.com","phoneNumber":"+15550100"}</example>
     public class Contact
     {
-        #region Properties
-
         /// <summary>
         /// Name of the contact person.
         /// </summary>
@@ -25,7 +22,5 @@ namespace TransactionProcessor.DataTransferObjects.Requests.Merchant
         /// Telephone number for the contact person.
         /// </summary>
         public String PhoneNumber { get; set; }
-
-        #endregion
     }
 }

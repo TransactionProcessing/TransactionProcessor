@@ -1288,7 +1288,7 @@ namespace TransactionProcessor.Repository {
 
             Database.Entities.Float floatRecord = new Database.Entities.Float
             {
-                CreatedDate = domainEvent.CreatedDateTime.Date,
+                CreatedDate = DateOnly.FromDateTime(domainEvent.CreatedDateTime.Date),
                 CreatedDateTime = domainEvent.CreatedDateTime,
                 EstateId = domainEvent.EstateId,
                 FloatId = domainEvent.FloatId,
@@ -1310,7 +1310,7 @@ namespace TransactionProcessor.Repository {
 
             FloatActivity floatActivity = new FloatActivity
             {
-                ActivityDate = domainEvent.CreditPurchasedDateTime.Date,
+                ActivityDate = DateOnly.FromDateTime(domainEvent.CreditPurchasedDateTime.Date),
                 ActivityDateTime = domainEvent.CreditPurchasedDateTime,
                 Amount = domainEvent.Amount,
                 CostPrice = domainEvent.CostPrice,
@@ -1370,7 +1370,7 @@ namespace TransactionProcessor.Repository {
                 EstateId = domainEvent.EstateId,
                 MerchantId = domainEvent.MerchantId,
                 IsCompleted = false,
-                SettlementDate = domainEvent.SettlementDate.Date,
+                SettlementDate = DateOnly.FromDateTime(domainEvent.SettlementDate.Date),
                 SettlementId = domainEvent.SettlementId
             };
 
@@ -1565,7 +1565,7 @@ namespace TransactionProcessor.Repository {
             Database.Entities.Reconciliation reconciliation = new Database.Entities.Reconciliation
             {
                 MerchantId = domainEvent.MerchantId,
-                TransactionDate = domainEvent.TransactionDateTime.Date,
+                TransactionDate = DateOnly.FromDateTime(domainEvent.TransactionDateTime.Date),
                 TransactionDateTime = domainEvent.TransactionDateTime,
                 TransactionTime = domainEvent.TransactionDateTime.TimeOfDay,
                 TransactionId = domainEvent.TransactionId,
@@ -1584,7 +1584,7 @@ namespace TransactionProcessor.Repository {
             Database.Entities.Transaction t = new Database.Entities.Transaction
             {
                 MerchantId = domainEvent.MerchantId,
-                TransactionDate = domainEvent.TransactionDateTime.Date,
+                TransactionDate = DateOnly.FromDateTime(domainEvent.TransactionDateTime.Date),
                 TransactionDateTime = domainEvent.TransactionDateTime,
                 TransactionTime = domainEvent.TransactionDateTime.TimeOfDay,
                 TransactionId = domainEvent.TransactionId,
@@ -1632,7 +1632,7 @@ namespace TransactionProcessor.Repository {
 
             if (domainEvent.CompletedDateTime > merchant.LastSaleDateTime)
             {
-                merchant.LastSaleDate = domainEvent.CompletedDateTime.Date;
+                merchant.LastSaleDate = DateOnly.FromDateTime(domainEvent.CompletedDateTime.Date);
                 merchant.LastSaleDateTime = domainEvent.CompletedDateTime;
             }
 
@@ -1916,7 +1916,7 @@ namespace TransactionProcessor.Repository {
                 return ResultHelpers.CreateFailure(getLoadStatementHeaderResult);
             var statementHeader = getLoadStatementHeaderResult.Data;
 
-            statementHeader.StatementGeneratedDate = domainEvent.DateGenerated;
+            statementHeader.StatementGeneratedDate = DateOnly.FromDateTime(domainEvent.DateGenerated.DateTime);
             return await context.SaveChangesAsync(cancellationToken);
         }
 
@@ -1930,7 +1930,7 @@ namespace TransactionProcessor.Repository {
             {
                 MerchantId = domainEvent.MerchantId,
                 StatementCreatedDateTime = domainEvent.StatementDate,
-                StatementCreatedDate = domainEvent.StatementDate.Date,
+                StatementCreatedDate = DateOnly.FromDateTime(domainEvent.StatementDate.Date),
                 StatementId = domainEvent.MerchantStatementId
             };
 
@@ -1955,7 +1955,7 @@ namespace TransactionProcessor.Repository {
                 FileProfileId = domainEvent.FileProfileId,
                 FileLocation = domainEvent.FileLocation,
                 FileReceivedDateTime = domainEvent.FileReceivedDateTime,
-                FileReceivedDate = domainEvent.FileReceivedDateTime.Date
+                FileReceivedDate = DateOnly.FromDateTime(domainEvent.FileReceivedDateTime.Date)
             };
 
             await context.Files.AddAsync(file, cancellationToken);
@@ -1974,7 +1974,7 @@ namespace TransactionProcessor.Repository {
                 EstateId = domainEvent.EstateId,
                 FileImportLogId = domainEvent.FileImportLogId,
                 ImportLogDateTime = domainEvent.ImportLogDateTime,
-                ImportLogDate = domainEvent.ImportLogDateTime.Date
+                ImportLogDate = DateOnly.FromDateTime(domainEvent.ImportLogDateTime.Date)
             };
 
             await context.FileImportLogs.AddAsync(fileImportLog, cancellationToken);
@@ -2015,7 +2015,7 @@ namespace TransactionProcessor.Repository {
                 FilePath = domainEvent.FilePath,
                 FileProfileId = domainEvent.FileProfileId,
                 FileUploadedDateTime = domainEvent.FileUploadedDateTime,
-                FileUploadedDate = domainEvent.FileUploadedDateTime.Date,
+                FileUploadedDate = DateOnly.FromDateTime(domainEvent.FileUploadedDateTime.Date),
                 OriginalFileName = domainEvent.OriginalFileName,
                 UserId = domainEvent.UserId
             };
@@ -2193,8 +2193,8 @@ namespace TransactionProcessor.Repository {
             using ResolvedDbContext<EstateManagementContext>? resolvedContext = this.Resolver.Resolve(EstateManagementDatabaseName, estateId.ToString());
             await using EstateManagementContext context = resolvedContext.Context;
 
-            DateTime queryStartDate = DateTime.ParseExact(startDate, "yyyyMMdd", null);
-            DateTime queryEndDate = DateTime.ParseExact(endDate, "yyyyMMdd", null);
+            DateTimeOffset queryStartDate = DateTimeOffset.ParseExact(startDate, "yyyyMMdd", null);
+            DateTimeOffset queryEndDate = DateTimeOffset.ParseExact(endDate, "yyyyMMdd", null);
 
             IQueryable<SettlementView> query = context.SettlementsView.Where(t => t.EstateId == estateId &&
                                                                                   t.SettlementDate >= queryStartDate.Date && t.SettlementDate <= queryEndDate.Date)
@@ -2272,7 +2272,7 @@ namespace TransactionProcessor.Repository {
             {
                 StatementId = domainEvent.MerchantStatementId,
                 ActivityDateTime = domainEvent.TransactionDateTime,
-                ActivityDate = domainEvent.TransactionDateTime.Date,
+                ActivityDate = DateOnly.FromDateTime(domainEvent.TransactionDateTime.Date),
                 ActivityDescription = $"{@operator.Name} Transaction",
                 ActivityType = 1, // Transaction
                 TransactionId = domainEvent.TransactionId,
@@ -2305,7 +2305,7 @@ namespace TransactionProcessor.Repository {
             {
                 StatementId = domainEvent.MerchantStatementId,
                 ActivityDateTime = domainEvent.SettledDateTime,
-                ActivityDate = domainEvent.SettledDateTime.Date,
+                ActivityDate = DateOnly.FromDateTime(domainEvent.SettledDateTime.Date),
                 ActivityDescription = $"{@operator.Name} Transaction Fee",
                 ActivityType = 2, // Transaction Fee
                 TransactionId = domainEvent.TransactionId,

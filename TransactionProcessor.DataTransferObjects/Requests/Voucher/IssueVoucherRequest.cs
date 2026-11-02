@@ -1,4 +1,4 @@
-namespace TransactionProcessor.DataTransferObjects
+namespace TransactionProcessor.DataTransferObjects.Requests.Voucher
 {
     using System;
     /// <summary>Data transfer object for IssueVoucherRequest.</summary>
@@ -8,23 +8,23 @@ namespace TransactionProcessor.DataTransferObjects
     {
         /// <summary>The operator identifier.</summary>
         public String OperatorIdentifier { get; set; }
+        
         /// <summary>The estate id.</summary>
-
         public Guid EstateId { get; set; }
+        
         /// <summary>The transaction id.</summary>
-
         public Guid TransactionId { get; set; }
+        
         /// <summary>The value.</summary>
-
         public Decimal Value { get; set; }
+        
         /// <summary>The recipient email.</summary>
-
         public String RecipientEmail { get; set; }
+        
         /// <summary>The recipient mobile.</summary>
-
         public String RecipientMobile { get; set; }
+        
         /// <summary>The issued date time.</summary>
-
         public DateTime? IssuedDateTime { get; set; }
     }
 }

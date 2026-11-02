@@ -20,6 +20,11 @@ using System.Threading.Tasks;
 using ClientProxyBase;
 using DataTransferObjects;
 using Shared.Results;
+using TransactionProcessor.DataTransferObjects.Requests.Float;
+using TransactionProcessor.DataTransferObjects.Requests.Transaction;
+using TransactionProcessor.DataTransferObjects.Requests.Voucher;
+using TransactionProcessor.DataTransferObjects.Responses.Transaction;
+using TransactionProcessor.DataTransferObjects.Responses.Voucher;
 
 public class TransactionProcessorClient : ClientProxyBase, ITransactionProcessorClient {
     #region Fields
@@ -178,8 +183,8 @@ public class TransactionProcessorClient : ClientProxyBase, ITransactionProcessor
     public async Task<Result<List<MerchantBalanceChangedEntryResponse>>> GetMerchantBalanceHistory(String accessToken,
                                                                                                    Guid estateId,
                                                                                                    Guid merchantId,
-                                                                                                   DateTime startDate,
-                                                                                                   DateTime endDate,
+                                                                                                   DateTimeOffset startDate,
+                                                                                                   DateTimeOffset endDate,
                                                                                                    CancellationToken cancellationToken) {
         String requestUri = this.BuildRequestUrl($"/api/estates/{estateId}/merchants/{merchantId}/balancehistory?startDate={startDate:yyyy-MM-dd}&endDate={endDate:yyyy-MM-dd}");
 
@@ -200,7 +205,7 @@ public class TransactionProcessorClient : ClientProxyBase, ITransactionProcessor
     }
 
     public async Task<Result<SettlementResponse>> GetSettlementByDate(String accessToken,
-                                                                      DateTime settlementDate,
+                                                                      DateTimeOffset settlementDate,
                                                                       Guid estateId,
                                                                       Guid merchantId,
                                                                       CancellationToken cancellationToken) {
@@ -332,7 +337,7 @@ public class TransactionProcessorClient : ClientProxyBase, ITransactionProcessor
     }
 
     public async Task<Result> ProcessSettlement(String accessToken,
-                                                DateTime settlementDate,
+                                                DateTimeOffset settlementDate,
                                                 Guid estateId,
                                                 Guid merchantId,
                                                 CancellationToken cancellationToken) {

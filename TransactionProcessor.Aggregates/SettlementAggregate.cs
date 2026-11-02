@@ -11,10 +11,9 @@ namespace TransactionProcessor.Aggregates
     using System.Linq;
     using Shared.DomainDrivenDesign.EventSourcing;
     using Shared.EventStore.Aggregate;
-    using Shared.General;
-
+    
     public static class SettlementAggregateExtensions{
-        public static Result StartProcessing(this SettlementAggregate aggregate, DateTime dateTime){
+        public static Result StartProcessing(this SettlementAggregate aggregate, DateTimeOffset dateTime){
 
             Result result = aggregate.CheckHasBeenCreated();
             if (result.IsFailed)
@@ -46,7 +45,7 @@ namespace TransactionProcessor.Aggregates
             return Result.Success();
         }
 
-        public static Result MarkFeeAsSettled(this SettlementAggregate aggregate, Guid merchantId, Guid transactionId, Guid feeId, DateTime settledDate)
+        public static Result MarkFeeAsSettled(this SettlementAggregate aggregate, Guid merchantId, Guid transactionId, Guid feeId, DateTimeOffset settledDate)
         {
             (Guid transactionId, Guid merchantId, CalculatedFee calculatedFee) pendingFee = GetPendingFee(aggregate, merchantId, transactionId, feeId);
 
@@ -82,7 +81,7 @@ namespace TransactionProcessor.Aggregates
         }
 
         private static SettlementDomainEvents.MerchantFeeSettledEvent CreateMerchantFeeSettledEvent(SettlementAggregate aggregate, (Guid transactionId, Guid merchantId, CalculatedFee calculatedFee) feeDetails,
-                                                                                                    DateTime settledDate){
+                                                                                                    DateTimeOffset settledDate){
             SettlementDomainEvents.MerchantFeeSettledEvent merchantFeeSettledEvent = new SettlementDomainEvents.MerchantFeeSettledEvent(aggregate.AggregateId,
                                                                                           aggregate.EstateId,
                                                                                           feeDetails.merchantId,
@@ -175,7 +174,7 @@ namespace TransactionProcessor.Aggregates
         }
 
         public static Result Create(this SettlementAggregate aggregate, Guid estateId,Guid merchantId,
-                           DateTime settlementDate)
+                                    DateTimeOffset settlementDate)
         {
             if (aggregate.IsCreated)
                 return Result.Success();
@@ -316,13 +315,13 @@ namespace TransactionProcessor.Aggregates
 
         public Boolean IsCreated { get; internal set; }
 
-        public DateTime SettlementDate { get; internal set; }
+        public DateTimeOffset SettlementDate { get; internal set; }
 
         public Boolean SettlementComplete { get; internal set; }
 
         public Boolean ProcessingStarted { get; internal set; }
 
-        public DateTime ProcessingStartedDateTime { get; internal set; }
+        public DateTimeOffset ProcessingStartedDateTime { get; internal set; }
         #endregion
 
         #region Methods

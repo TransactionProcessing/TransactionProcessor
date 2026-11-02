@@ -11,11 +11,11 @@ namespace TransactionProcessor.Database.Entities
         public Guid MerchantId { get; set; }
 
         public Boolean ProcessingStarted { get; set; }
-        public DateTime ProcessingStartedDateTIme { get; set; }
+        public DateTimeOffset ProcessingStartedDateTIme { get; set; }
 
         public Boolean IsCompleted { get; set; }
 
-        public DateTime SettlementDate { get; set; }
+        public DateOnly SettlementDate { get; set; }
 
         public Guid SettlementId { get; set; }
 

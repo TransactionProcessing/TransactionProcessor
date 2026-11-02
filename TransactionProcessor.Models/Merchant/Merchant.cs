@@ -34,9 +34,9 @@ namespace TransactionProcessor.Models.Merchant
 
         public SettlementSchedule SettlementSchedule { get; set; }
 
-        public DateTime NextSettlementDueDate { get; set; }
+        public DateTimeOffset NextSettlementDueDate { get; set; }
 
-        public DateTime NextStatementDate { get; set; }
+        public DateTimeOffset NextStatementDate { get; set; }
         
         public Dictionary<DayOfWeek, OpeningHours> OpeningHours { get; set; }
 

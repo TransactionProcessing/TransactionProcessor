@@ -17,7 +17,7 @@ namespace TransactionProcessor.DataTransferObjects
         public Guid MerchantId { get; set; }
         /// <summary>The settlement date.</summary>
 
-        public DateTime SettlementDate { get; set; }
+        public DateTimeOffset SettlementDate { get; set; }
         /// <summary>The number of fees pending settlement.</summary>
 
         public Int32 NumberOfFeesPendingSettlement { get; set; }

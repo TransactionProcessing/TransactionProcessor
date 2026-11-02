@@ -8,9 +8,7 @@ namespace TransactionProcessor.DataTransferObjects.Requests.Merchant
     /// </summary>
     /// <example>{"amount":42.5,"depositDateTime":"2026-01-15T10:30:00Z","reference":"REF-2026-001"}</example>
     [ExcludeFromCodeCoverage]
-    public class MakeMerchantDepositRequest
-    {
-        #region Properties
+    public class MakeMerchantDepositRequest {
 
         /// <summary>
         /// Monetary amount of the deposit or withdrawal.
@@ -20,13 +18,11 @@ namespace TransactionProcessor.DataTransferObjects.Requests.Merchant
         /// <summary>
         /// Date and time the deposit was made.
         /// </summary>
-        public DateTime DepositDateTime { get; set; }
+        public DateTimeOffset DepositDateTime { get; set; }
 
         /// <summary>
         /// External or user-supplied reference for the deposit or withdrawal.
         /// </summary>
         public String Reference { get; set; }
-
-        #endregion
     }
 }

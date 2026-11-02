@@ -6,8 +6,8 @@ using Microsoft.AspNetCore.Http;
 using SimpleResults;
 using Shared.Results.Web;
 using TransactionProcessor.BusinessLogic.Requests;
-using TransactionProcessor.DataTransferObjects;
 using TransactionProcessor.Factories;
+using TransactionProcessor.DataTransferObjects.Requests.Voucher;
 
 namespace TransactionProcessor.Handlers
 {
@@ -15,7 +15,7 @@ namespace TransactionProcessor.Handlers
     {
         public static async Task<IResult> RedeemVoucher(IMediator mediator, HttpContext ctx, RedeemVoucherRequest redeemVoucherRequest, CancellationToken cancellationToken)
         {
-            DateTime redeemedDateTime = redeemVoucherRequest.RedeemedDateTime.HasValue ? redeemVoucherRequest.RedeemedDateTime.Value : DateTime.Now;
+            DateTimeOffset redeemedDateTime = redeemVoucherRequest.RedeemedDateTime.HasValue ? redeemVoucherRequest.RedeemedDateTime.Value : DateTime.Now;
             VoucherCommands.RedeemVoucherCommand command = new(redeemVoucherRequest.EstateId, redeemVoucherRequest.VoucherCode, redeemedDateTime);
 
             Result<TransactionProcessor.Models.RedeemVoucherResponse> result = await mediator.Send(command, cancellationToken);

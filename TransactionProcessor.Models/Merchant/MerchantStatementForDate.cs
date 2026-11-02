@@ -30,8 +30,8 @@ public class MerchantStatementForDate
     public Guid MerchantId { get; set; }
     public Guid MerchantStatementId { get; set; }
     public Guid MerchantStatementForDateId { get; set; }
-    public DateTime StatementDate { get; set; }
-    public DateTime ActivityDate { get; set; }
+    public DateTimeOffset StatementDate { get; set; }
+    public DateTimeOffset ActivityDate { get; set; }
 
     #endregion
 
@@ -63,7 +63,7 @@ public class MerchantStatement
 {
     #region Fields
 
-    private readonly List<(Guid merchantStatementForDateId, DateTime activityDate)> StatementActivityDates;
+    private readonly List<(Guid merchantStatementForDateId, DateTimeOffset activityDate)> StatementActivityDates;
 
     #endregion
 
@@ -86,8 +86,8 @@ public class MerchantStatement
     public Boolean HasBeenEmailed { get; set; }
     public Guid MerchantId { get; set; }
     public Guid MerchantStatementId { get; set; }
-    public DateTime StatementDate { get; set; }
-    public DateTime BuiltDateTime { get; set; }
+    public DateTimeOffset StatementDate { get; set; }
+    public DateTimeOffset BuiltDateTime { get; set; }
     #endregion
 
     #region Methods
@@ -96,12 +96,12 @@ public class MerchantStatement
     /// Adds the statement line.
     /// </summary>
     /// <param name="statementLine">The statement line.</param>
-    public void AddStatementActivityDate(Guid merchantStatementForDateId, DateTime activityDate)
+    public void AddStatementActivityDate(Guid merchantStatementForDateId, DateTimeOffset activityDate)
     {
         this.StatementActivityDates.Add((merchantStatementForDateId, activityDate));
     }
 
-    public List<(Guid merchantStatementForDateId, DateTime activityDate)> GetActivityDates()
+    public List<(Guid merchantStatementForDateId, DateTimeOffset activityDate)> GetActivityDates()
     {
         return this.StatementActivityDates.OrderBy(s => s.activityDate).ToList();
     }
@@ -114,7 +114,7 @@ public class MerchantStatement
         return result.OrderBy(s => s.lineNumber).ToList();
     }
 
-    public void AddStatementDailySummary(DateTime activityDate, Decimal transactionAmount,Decimal feeAmount) {
+    public void AddStatementDailySummary(DateTimeOffset activityDate, Decimal transactionAmount,Decimal feeAmount) {
         // Build statement lines
         var lineNumber = this.StatementLines.Count;
         MerchantStatementLine transactionLine = new() {

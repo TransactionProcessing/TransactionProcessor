@@ -17,10 +17,9 @@ namespace TransactionProcessor.BusinessLogic.Common
     [ExcludeFromCodeCoverage]
     public static class Helpers
     {
-        public static Guid CalculateSettlementAggregateId(DateTime settlementDate,
-                                                    Guid merchantId, 
-                                                    Guid estateId)
-        {
+        public static Guid CalculateSettlementAggregateId(DateTimeOffset settlementDate,
+                                                          Guid merchantId,
+                                                          Guid estateId) {
             Guid aggregateId = GuidCalculator.Combine(estateId, merchantId, settlementDate.ToGuid());
             return aggregateId;
         }
@@ -84,7 +83,7 @@ namespace TransactionProcessor.BusinessLogic.Common
             return default(T);
         }
 
-        public static Guid ToGuid(this DateTime dt)
+        public static Guid ToGuid(this DateTimeOffset dt)
         {
             var bytes = BitConverter.GetBytes(dt.Ticks);
 
@@ -93,7 +92,7 @@ namespace TransactionProcessor.BusinessLogic.Common
             return new Guid(bytes);
         }
 
-        public static DateTime ToDateTime(this Guid guid)
+        public static DateTimeOffset ToDateTimeOffset(this Guid guid)
         {
             var bytes = guid.ToByteArray();
 

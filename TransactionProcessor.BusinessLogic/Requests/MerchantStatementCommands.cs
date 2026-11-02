@@ -10,7 +10,7 @@ namespace TransactionProcessor.BusinessLogic.Requests;
 public record MerchantStatementCommands {
     public record AddTransactionToMerchantStatementCommand(Guid EstateId,
                                                            Guid MerchantId,
-                                                           DateTime TransactionDateTime,
+                                                           DateTimeOffset TransactionDateTime,
                                                            Money? TransactionAmount,
                                                            Boolean IsAuthorised,
                                                            Guid TransactionId) : IRequest<Result>;
@@ -18,14 +18,14 @@ public record MerchantStatementCommands {
     public record AddDepositToMerchantStatementCommand(Guid EstateId,
                                                        Guid MerchantId,
                                                        Guid DepositId,
-                                                       String Reference, 
-                                                       DateTime DepositDateTime, 
+                                                       String Reference,
+                                                       DateTimeOffset DepositDateTime, 
                                                        PositiveMoney Amount) : IRequest<Result>;
 
     public record AddWithdrawalToMerchantStatementCommand(Guid EstateId,
                                                           Guid MerchantId,
-                                                          Guid WithdrawalId, 
-                                                          DateTime WithdrawalDateTime,
+                                                          Guid WithdrawalId,
+                                                          DateTimeOffset WithdrawalDateTime,
                                                           PositiveMoney Amount) : IRequest<Result>;
 
     public record BuildMerchantStatementCommand(Guid EstateId,
@@ -38,7 +38,7 @@ public record MerchantStatementCommands {
 
     public record AddSettledFeeToMerchantStatementCommand(Guid EstateId,
                                                           Guid MerchantId,
-                                                          DateTime SettledDateTime,
+                                                          DateTimeOffset SettledDateTime,
                                                           PositiveMoney SettledAmount,
                                                           Guid TransactionId,
                                                           Guid SettledFeeId) : IRequest<Result>;
@@ -46,7 +46,7 @@ public record MerchantStatementCommands {
     public record RecordActivityDateOnMerchantStatementCommand(Guid EstateId,
                                                  Guid MerchantId,
                                                  Guid MerchantStatementId,
-                                                 DateTime StatementDate,
+                                                 DateTimeOffset StatementDate,
                                                  Guid MerchantStatementForDateId,
-                                                 DateTime StatementActivityDate) : IRequest<Result>;
+                                                 DateTimeOffset StatementActivityDate) : IRequest<Result>;
 }

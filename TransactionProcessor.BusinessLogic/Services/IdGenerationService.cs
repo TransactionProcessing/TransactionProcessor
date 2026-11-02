@@ -31,7 +31,7 @@ namespace TransactionProcessor.BusinessLogic.Services
 
         public static Guid GenerateEventId(Object o) => IdGenerationService.GenerateUniqueId(o);
 
-        public static Guid GenerateFloatActivityAggregateId(Guid estateId, Guid floatId, DateTime dateTime) =>
+        public static Guid GenerateFloatActivityAggregateId(Guid estateId, Guid floatId, DateTimeOffset dateTime) =>
             IdGenerationService.GenerateUniqueId(new
             {
                 estateId,
@@ -39,7 +39,7 @@ namespace TransactionProcessor.BusinessLogic.Services
                 dateTime
             });
 
-        public static Guid GenerateMerchantStatementForDateAggregateId(Guid estateId, Guid merchantId, DateTime nextStatementDateTime, DateTime activityDateTime) =>
+        public static Guid GenerateMerchantStatementForDateAggregateId(Guid estateId, Guid merchantId, DateTimeOffset nextStatementDateTime, DateTimeOffset activityDateTime) =>
             IdGenerationService.GenerateUniqueId(new
             {
                 estateId,
@@ -48,7 +48,7 @@ namespace TransactionProcessor.BusinessLogic.Services
                 activityDate = activityDateTime.Date
             });
 
-        public static Guid GenerateMerchantStatementAggregateId(Guid estateId, Guid merchantId, DateTime nextStatementDateTime) =>
+        public static Guid GenerateMerchantStatementAggregateId(Guid estateId, Guid merchantId, DateTimeOffset nextStatementDateTime) =>
             IdGenerationService.GenerateUniqueId(new
             {
                 estateId,

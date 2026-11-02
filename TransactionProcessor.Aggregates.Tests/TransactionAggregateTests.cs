@@ -127,7 +127,7 @@ namespace TransactionProcessor.Aggregates.Tests{
                                                                                   Boolean validEstateId,
                                                                                   Boolean validMerchantId,
                                                                                   String deviceIdentifier) {
-            DateTime transactionDateTime = validTransactionDateTime ? TestData.TransactionDateTime : DateTime.MinValue;
+            DateTimeOffset transactionDateTime = validTransactionDateTime ? TestData.TransactionDateTime : DateTime.MinValue;
             Guid estateId = validEstateId ? TestData.EstateId : Guid.Empty;
             Guid merchantId = validMerchantId ? TestData.MerchantId : Guid.Empty;
 

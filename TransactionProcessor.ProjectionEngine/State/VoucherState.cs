@@ -14,9 +14,9 @@ public static class VoucherStateExtension{
                       EstateId = @event.EstateId,
                       IsGenerated = true,
                       Value = @event.Value,
-                      ExpiryDate = @event.ExpiryDateTime.Date,
+                      ExpiryDate = DateOnly.FromDateTime(@event.ExpiryDateTime.Date),
                       ExpiryDateTime = @event.ExpiryDateTime,
-                      GenerateDate = @event.GeneratedDateTime.Date,
+                      GenerateDate = DateOnly.FromDateTime(@event.GeneratedDateTime.Date),
                       GenerateDateTime = @event.GeneratedDateTime,
                       OperatorIdentifier = @event.OperatorId.ToString(),
         };
@@ -31,7 +31,7 @@ public static class VoucherStateExtension{
     public static VoucherState HandleVoucherIssuedEvent(this VoucherState state, VoucherDomainEvents.VoucherIssuedEvent @event) =>
         state with{
                       IsIssued = true,
-                      IssuedDate = @event.IssuedDateTime.Date,
+                      IssuedDate = DateOnly.FromDateTime(@event.IssuedDateTime.Date),
                       IssuedDateTime = @event.IssuedDateTime,
                       RecipientEmail = @event.RecipientEmail,
                       RecipientMobile = @event.RecipientMobile
@@ -42,7 +42,7 @@ public static class VoucherStateExtension{
     public static VoucherState HandleVoucherFullyRedeemedEvent(this VoucherState state, VoucherDomainEvents.VoucherFullyRedeemedEvent @event) =>
         state with{
                       IsFullyRedeemed = true,
-                      RedeemedDate = @event.RedeemedDateTime.Date,
+                      RedeemedDate = DateOnly.FromDateTime(@event.RedeemedDateTime.Date),
                       RedeemedDateTime = @event.RedeemedDateTime,
                       IsRedeemed = true
         };
@@ -50,8 +50,8 @@ public static class VoucherStateExtension{
 
 public record VoucherState : Shared.EventStore.ProjectionEngine.State
     {
-        public DateTime ExpiryDate { get; init; }
-        public DateTime ExpiryDateTime { get; init; }
+        public DateOnly ExpiryDate { get; init; }
+        public DateTimeOffset ExpiryDateTime { get; init; }
 
         public Boolean IsGenerated { get; init; }
 
@@ -75,17 +75,17 @@ public record VoucherState : Shared.EventStore.ProjectionEngine.State
 
         public Guid TransactionId { get; init; }
 
-        public DateTime GenerateDateTime { get; init; }
+        public DateTimeOffset GenerateDateTime { get; init; }
 
-        public DateTime IssuedDateTime { get; init; }
+        public DateTimeOffset IssuedDateTime { get; init; }
 
-        public DateTime RedeemedDateTime { get; init; }
+        public DateTimeOffset RedeemedDateTime { get; init; }
 
-        public DateTime GenerateDate { get; init; }
+        public DateOnly GenerateDate { get; init; }
 
-        public DateTime IssuedDate { get; init; }
+        public DateOnly IssuedDate { get; init; }
 
-        public DateTime RedeemedDate { get; init; }
+        public DateOnly RedeemedDate { get; init; }
         
         public String Barcode { get; init; }
 

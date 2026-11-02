@@ -50,7 +50,7 @@ namespace TransactionProcessor.Aggregates
         }
 
         public static Result StartReconciliation(this ReconciliationAggregate aggregate,
-                                                 DateTime transactionDateTime,
+                                                 DateTimeOffset transactionDateTime,
                                                  Guid estateId,
                                                  Guid merchantId) {
             if (estateId == Guid.Empty)
@@ -210,7 +210,7 @@ namespace TransactionProcessor.Aggregates
 
         public Decimal TransactionValue { get; internal set; }
 
-        public DateTime TransactionDateTime { get; internal set; }
+        public DateTimeOffset TransactionDateTime { get; internal set; }
 
         public static ReconciliationAggregate Create(Guid aggregateId)
         {

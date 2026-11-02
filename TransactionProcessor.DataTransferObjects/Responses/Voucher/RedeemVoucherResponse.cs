@@ -1,4 +1,4 @@
-namespace TransactionProcessor.DataTransferObjects
+namespace TransactionProcessor.DataTransferObjects.Responses.Voucher
 {
     using System;
     /// <summary>
@@ -8,7 +8,7 @@ namespace TransactionProcessor.DataTransferObjects
     public class RedeemVoucherResponse
     {
         /// <summary>The expiry date.</summary>
-        public DateTime ExpiryDate { get; set; }
+        public DateTimeOffset ExpiryDate { get; set; }
         /// <summary>The voucher code.</summary>
 
         public String VoucherCode { get; set; }
