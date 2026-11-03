@@ -114,9 +114,7 @@ namespace TransactionProcessor.BusinessLogic.Tests.Services
             });
             await this.Context.SaveChangesAsync(TestContext.Current.CancellationToken);
             
-            Result<RedeemVoucherResponse> result = await this.VoucherDomainService.RedeemVoucher(TestData.EstateId,
-                                                                                  TestData.VoucherCode,
-                                                                                  TestData.RedeemedDateTime,
+            Result<RedeemVoucherResponse> result = await this.VoucherDomainService.RedeemVoucher(TestData.Commands.RedeemVoucherCommand,
                                                                                   TestContext.Current.CancellationToken);
             result.IsFailed.ShouldBeTrue();
         }
@@ -138,9 +136,7 @@ namespace TransactionProcessor.BusinessLogic.Tests.Services
             });
             await this.Context.SaveChangesAsync(TestContext.Current.CancellationToken);
             
-            Result<RedeemVoucherResponse> result = await this.VoucherDomainService.RedeemVoucher(TestData.EstateId,
-                                                                                            TestData.VoucherCode,
-                                                                                            TestData.RedeemedDateTime,
+            Result<RedeemVoucherResponse> result = await this.VoucherDomainService.RedeemVoucher(TestData.Commands.RedeemVoucherCommand,
                                                                                             TestContext.Current.CancellationToken);
 
             result.IsSuccess.ShouldBeTrue();
@@ -153,9 +149,7 @@ namespace TransactionProcessor.BusinessLogic.Tests.Services
                                       .ReturnsAsync(Result.Success(TestData.GetVoucherAggregateWithRecipientMobile()));
             this.AggregateService.Get<EstateAggregate>(Arg<Guid>.Any(), Arg<CancellationToken>.Any()).ReturnsAsync(Result.Success(TestData.Aggregates.CreatedEstateAggregate()));
 
-            Result<RedeemVoucherResponse> result = await this.VoucherDomainService.RedeemVoucher(TestData.EstateId,
-                                                                                  TestData.VoucherCode,
-                                                                                  TestData.RedeemedDateTime,
+            Result<RedeemVoucherResponse> result = await this.VoucherDomainService.RedeemVoucher(TestData.Commands.RedeemVoucherCommand,
                                                                                   TestContext.Current.CancellationToken);
             result.IsFailed.ShouldBeTrue();
         }
@@ -194,9 +188,7 @@ namespace TransactionProcessor.BusinessLogic.Tests.Services
             });
             await this.Context.SaveChangesAsync(TestContext.Current.CancellationToken);
 
-            Result<RedeemVoucherResponse> result = await this.VoucherDomainService.RedeemVoucher(TestData.EstateId,
-                                                                                  TestData.VoucherCode,
-                                                                                  TestData.RedeemedDateTime,
+            Result<RedeemVoucherResponse> result = await this.VoucherDomainService.RedeemVoucher(TestData.Commands.RedeemVoucherCommand,
                                                                                   TestContext.Current.CancellationToken);
             result.IsFailed.ShouldBeTrue();
         }
@@ -216,9 +208,7 @@ namespace TransactionProcessor.BusinessLogic.Tests.Services
             });
             await this.Context.SaveChangesAsync(TestContext.Current.CancellationToken);
 
-            Result<RedeemVoucherResponse> result = await this.VoucherDomainService.RedeemVoucher(TestData.EstateId,
-                                                                                            TestData.VoucherCode,
-                                                                                            TestData.RedeemedDateTime,
+            Result<RedeemVoucherResponse> result = await this.VoucherDomainService.RedeemVoucher(TestData.Commands.RedeemVoucherCommand,
                                                                                             TestContext.Current.CancellationToken);
             result.IsFailed.ShouldBeTrue();
         }

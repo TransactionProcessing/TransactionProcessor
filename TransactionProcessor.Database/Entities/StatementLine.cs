@@ -7,9 +7,9 @@ public class StatementLine
 {
     public Guid StatementId { get; set; }
 
-    public DateTime ActivityDateTime { get; set; }
+    public DateTimeOffset ActivityDateTime { get; set; }
 
-    public DateTime ActivityDate { get; set; }
+    public DateOnly ActivityDate { get; set; }
 
     public Int32 ActivityType { get; set; }
 

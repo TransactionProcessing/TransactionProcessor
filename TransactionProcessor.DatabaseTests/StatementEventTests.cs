@@ -19,7 +19,7 @@ public class StatementEventTests : BaseTest {
         EstateManagementContext context = this.GetContext();
         StatementHeader? statement = await context.StatementHeaders.SingleOrDefaultAsync(c => c.StatementId == TestData.DomainEvents.StatementCreatedEvent.MerchantStatementId, TestContext.Current.CancellationToken);
         statement.ShouldNotBeNull();
-        statement.StatementCreatedDate.ShouldBe(TestData.DomainEvents.StatementCreatedEvent.StatementDate.Date);
+        statement.StatementCreatedDate.ShouldBe(DateOnly.FromDateTime(TestData.DomainEvents.StatementCreatedEvent.StatementDate.Date));
         statement.StatementCreatedDateTime.ShouldBe(TestData.DomainEvents.StatementCreatedEvent.StatementDate);
     }
     [Fact]
@@ -43,7 +43,7 @@ public class StatementEventTests : BaseTest {
         EstateManagementContext context = this.GetContext();
         StatementHeader? statement = await context.StatementHeaders.SingleOrDefaultAsync(c => c.StatementId == TestData.DomainEvents.StatementCreatedEvent.MerchantStatementId, TestContext.Current.CancellationToken);
         statement.ShouldNotBeNull();
-        statement.StatementGeneratedDate.ShouldBe(TestData.DomainEvents.StatementGeneratedEvent.DateGenerated);
+        statement.StatementGeneratedDate.ShouldBe(DateOnly.FromDateTime(TestData.DomainEvents.StatementGeneratedEvent.DateGenerated.DateTime));
     }
 }
 

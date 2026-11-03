@@ -211,10 +211,9 @@ namespace TransactionProcessor.Aggregates
         }
 
         public static Result AddFeePendingSettlement(this TransactionAggregate aggregate, CalculatedFee calculatedFee,
-                                             DateTime settlementDueDate)
+                                                     DateTimeOffset settlementDueDate)
         {
-            if (calculatedFee == null)
-            {
+            if (calculatedFee == null) {
                 return Result.Invalid("Calculated fee cannot be null");
             }
 
@@ -255,7 +254,7 @@ namespace TransactionProcessor.Aggregates
         }
 
         public static Result AddSettledFee(this TransactionAggregate aggregate, CalculatedFee calculatedFee,
-                                         DateTime settledDateTime, Guid settlementId)
+                                           DateTimeOffset settledDateTime, Guid settlementId)
         {
             if (calculatedFee == null) {
                 return Result.Invalid("Calculated fee cannot be null");
@@ -401,10 +400,10 @@ namespace TransactionProcessor.Aggregates
         }
 
         public static Result RecordTransactionTimings(this TransactionAggregate aggregate,
-                                                    DateTime TransactionStartedDateTime,
-                                                    DateTime? OperatorCommunicationsStartedEvent,
-                                                    DateTime? OperatorCommunicationsCompletedEvent,
-                                                    DateTime TransactionCompletedDateTime) {
+                                                    DateTimeOffset TransactionStartedDateTime,
+                                                    DateTimeOffset? OperatorCommunicationsStartedEvent,
+                                                    DateTimeOffset? OperatorCommunicationsCompletedEvent,
+                                                    DateTimeOffset TransactionCompletedDateTime) {
             TransactionDomainEvents.TransactionTimingsAddedToTransactionEvent transactionTimingsAddedToTransactionEvent =
                 new (aggregate.AggregateId,
                      aggregate.EstateId,
@@ -501,7 +500,8 @@ namespace TransactionProcessor.Aggregates
         }
 
         public static Result StartTransaction(this TransactionAggregate aggregate,
-                                            DateTime transactionDateTime,
+                                              DateTimeOffset transactionDateTime,
+                                              DateTimeOffset hostDateTime,
                                             String transactionNumber,
                                             TransactionType transactionType,
                                             String transactionReference,
@@ -528,14 +528,15 @@ namespace TransactionProcessor.Aggregates
                                                                                                      transactionType.ToString(),
                                                                                                      transactionReference,
                                                                                                      transactionStartContext.DeviceIdentifier,
-                                                                                                     transactionAmount);
+                                                                                                     transactionAmount,
+                                                                                                     hostDateTime);
 
             aggregate.ApplyAndAppend(transactionHasStartedEvent);
 
             return Result.Success();
         }
 
-        private static Result ValidateStartTransactionArguments(DateTime transactionDateTime,
+        private static Result ValidateStartTransactionArguments(DateTimeOffset transactionDateTime,
                                                                 String transactionNumber,
                                                                 TransactionType transactionType,
                                                                 String transactionReference,
@@ -563,10 +564,10 @@ namespace TransactionProcessor.Aggregates
             return Result.Success();
         }
 
-        private static Result ValidateCoreFields(DateTime dateTime, string number, string reference, TransactionType transactionType)
+        private static Result ValidateCoreFields(DateTimeOffset dateTime, string number, string reference, TransactionType transactionType)
         {
-            if (dateTime == DateTime.MinValue)
-                return Result.Invalid($"Transaction Date Time must not be [{DateTime.MinValue}]");
+            if (dateTime == DateTimeOffset.MinValue)
+                return Result.Invalid($"Transaction Date Time must not be [{DateTimeOffset.MinValue}]");
 
             if (string.IsNullOrEmpty(number))
                 return Result.Invalid("Transaction Number must not be null or empty");
@@ -982,7 +983,7 @@ namespace TransactionProcessor.Aggregates
 
         public Decimal? TotalCost { get; internal set; }
 
-        public DateTime TransactionDateTime { get; internal set; }
+        public DateTimeOffset TransactionDateTime { get; internal set; }
 
         public String TransactionNumber { get; internal set; }
 

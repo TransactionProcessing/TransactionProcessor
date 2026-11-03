@@ -22,7 +22,7 @@ namespace TransactionProcessor.Database.Entities
 
         public String? Country { get; set; }
 
-        public DateTime CreatedDateTime { get; set; }
+        public DateTimeOffset CreatedDateTime { get; set; }
         
         public Guid MerchantId { get; set; }
 

@@ -12,7 +12,7 @@ namespace TransactionProcessor.Database.Entities
 
         public Guid ContactId { get; set; }
 
-        public DateTime CreatedDateTime { get; set; }
+        public DateTimeOffset CreatedDateTime { get; set; }
 
         public String? EmailAddress { get; set; }
         

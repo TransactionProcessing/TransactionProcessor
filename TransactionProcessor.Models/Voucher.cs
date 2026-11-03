@@ -28,7 +28,7 @@ public class Voucher
     /// <value>
     /// The expiry date.
     /// </value>
-    public DateTime ExpiryDate { get; set; }
+    public DateTimeOffset ExpiryDate { get; set; }
 
     /// <summary>
     /// Gets a value indicating whether this instance is generated.
@@ -60,21 +60,21 @@ public class Voucher
     /// <value>
     /// The issued date time.
     /// </value>
-    public DateTime IssuedDateTime { get; set; }
+    public DateTimeOffset IssuedDateTime { get; set; }
     /// <summary>
     /// Gets or sets the generated date time.
     /// </summary>
     /// <value>
     /// The generated date time.
     /// </value>
-    public DateTime GeneratedDateTime { get; set; }
+    public DateTimeOffset GeneratedDateTime { get; set; }
     /// <summary>
     /// Gets or sets the redeemed date time.
     /// </summary>
     /// <value>
     /// The redeemed date time.
     /// </value>
-    public DateTime RedeemedDateTime { get; set; }
+    public DateTimeOffset RedeemedDateTime { get; set; }
 
     /// <summary>
     /// Gets the message.

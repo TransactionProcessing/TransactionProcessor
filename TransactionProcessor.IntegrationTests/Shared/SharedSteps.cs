@@ -8,14 +8,14 @@ using TransactionProcessor.DataTransferObjects.Requests.Contract;
 using TransactionProcessor.DataTransferObjects.Requests.Merchant;
 using TransactionProcessor.DataTransferObjects.Requests.MerchantSchedule;
 using TransactionProcessor.DataTransferObjects.Requests.Operator;
+using TransactionProcessor.DataTransferObjects.Requests.Transaction;
 using TransactionProcessor.DataTransferObjects.Responses.Contract;
 using TransactionProcessor.DataTransferObjects.Responses.Merchant;
 using TransactionProcessor.DataTransferObjects.Responses.Operator;
 using TransactionProcessor.ProjectionEngine.Projections;
 using TransactionProcessor.ProjectionEngine.State;
 
-namespace TransactionProcessor.IntegrationTests.Shared
-{
+namespace TransactionProcessor.IntegrationTests.Shared {
     using Common;
     using DataTransferObjects;
     using IntegrationTesting.Helpers;
@@ -27,10 +27,12 @@ namespace TransactionProcessor.IntegrationTests.Shared
     using System.Text.Json;
     using System.Threading;
     using System.Threading.Tasks;
+    using TransactionProcessor.DataTransferObjects.Responses.Transaction;
+    using TransactionProcessor.DataTransferObjects.Responses.Voucher;
     using AssignOperatorRequest = DataTransferObjects.Requests.Estate.AssignOperatorRequest;
     using ClientDetails = Common.ClientDetails;
     using ReqnrollExtensions = IntegrationTesting.Helpers.ReqnrollExtensions;
-    
+
     [Scope(Tag = "shared")]
     public partial class SharedSteps
     {

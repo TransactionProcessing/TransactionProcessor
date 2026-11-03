@@ -6,7 +6,7 @@
 
         public Guid EstateId { get; set; }
         
-        public DateTime CreatedDateTime { get; set; }
-        public DateTime CreatedDate { get; set; }
+        public DateTimeOffset CreatedDateTime { get; set; }
+        public DateOnly CreatedDate { get; set; }
     }
 }

@@ -23,10 +23,10 @@ public class MerchantBalanceProjectionState
     public Int32 FeeCount { get; set; }
     public Decimal ValueOfFees { get; set; }
 
-    public DateTime LastDeposit { get; set; }
-    public DateTime LastWithdrawal { get; set; }
-    public DateTime LastSale { get; set; }
-    public DateTime LastFee { get; set; }
+    public DateTimeOffset LastDeposit { get; set; }
+    public DateTimeOffset LastWithdrawal { get; set; }
+    public DateTimeOffset LastSale { get; set; }
+    public DateTimeOffset LastFee { get; set; }
 
     public Int32 StartedTransactionCount { get; set; }
     public Int32 CompletedTransactionCount { get; set; }

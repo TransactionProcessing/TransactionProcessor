@@ -10,13 +10,17 @@ using TransactionProcessor.DataTransferObjects.Responses.Merchant;
 using TransactionProcessor.DataTransferObjects.Responses.Operator;
 using AssignOperatorRequest = TransactionProcessor.DataTransferObjects.Requests.Estate.AssignOperatorRequest;
 
-namespace TransactionProcessor.Client
-{
+namespace TransactionProcessor.Client {
     using System;
     using System.Collections.Generic;
     using System.Threading;
     using System.Threading.Tasks;
     using DataTransferObjects;
+    using TransactionProcessor.DataTransferObjects.Requests.Float;
+    using TransactionProcessor.DataTransferObjects.Requests.Transaction;
+    using TransactionProcessor.DataTransferObjects.Requests.Voucher;
+    using TransactionProcessor.DataTransferObjects.Responses.Transaction;
+    using TransactionProcessor.DataTransferObjects.Responses.Voucher;
 
     public interface ITransactionProcessorClient
     {
@@ -34,14 +38,14 @@ namespace TransactionProcessor.Client
                                                                   LogonTransactionRequest transactionRequest,
                                                                   CancellationToken cancellationToken);
 
-        Task<Result<SettlementResponse>> GetSettlementByDate(String accessToken, 
-                                                                   DateTime settlementDate,
+        Task<Result<SettlementResponse>> GetSettlementByDate(String accessToken,
+                                                             DateTimeOffset settlementDate,
                                                                    Guid estateId,
                                                                    Guid merchantId,
                                                                    CancellationToken cancellationToken);
 
         Task<Result> ProcessSettlement(String accessToken,
-                               DateTime settlementDate,
+                                       DateTimeOffset settlementDate,
                                Guid estateId,
                                Guid merchantId,
                                CancellationToken cancellationToken);
@@ -60,8 +64,8 @@ namespace TransactionProcessor.Client
         Task<Result<List<MerchantBalanceChangedEntryResponse>>> GetMerchantBalanceHistory(String accessToken,
                                                                                   Guid estateId,
                                                                                   Guid merchantId,
-                                                                                  DateTime startDate,
-                                                                                  DateTime endDate,
+                                                                                  DateTimeOffset startDate,
+                                                                                  DateTimeOffset endDate,
                                                                                   CancellationToken cancellationToken);
 
         Task<Result<GetVoucherResponse>> GetVoucherByCode(String accessToken,

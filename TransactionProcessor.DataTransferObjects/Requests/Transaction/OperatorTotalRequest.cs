@@ -1,4 +1,4 @@
-namespace TransactionProcessor.DataTransferObjects
+namespace TransactionProcessor.DataTransferObjects.Requests.Transaction
 {
     using System;
     using System.Diagnostics.CodeAnalysis;
@@ -8,8 +8,6 @@ namespace TransactionProcessor.DataTransferObjects
     [ExcludeFromCodeCoverage]
     public class OperatorTotalRequest
     {
-        #region Properties
-
         /// <summary>
         /// Contract associated with the product or transaction.
         /// </summary>
@@ -29,7 +27,5 @@ namespace TransactionProcessor.DataTransferObjects
         /// Total value of transactions included in the reconciliation.
         /// </summary>
         public Decimal TransactionValue { get; set; }
-
-        #endregion
     }
 }

@@ -11,13 +11,9 @@ namespace TransactionProcessor.DataTransferObjects.Requests.Estate
     [ExcludeFromCodeCoverage]
     public class AssignOperatorRequest
     {
-        #region Properties
-
         /// <summary>
         /// Operator associated with the operation.
         /// </summary>
         public Guid OperatorId { get; set; }
-
-        #endregion
     }
 }

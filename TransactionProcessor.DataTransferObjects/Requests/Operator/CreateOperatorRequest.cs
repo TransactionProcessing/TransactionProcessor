@@ -11,8 +11,6 @@ namespace TransactionProcessor.DataTransferObjects.Requests.Operator
     [ExcludeFromCodeCoverage]
     public class CreateOperatorRequest
     {
-        #region Properties
-
         /// <summary>
         /// Display name for the estate, merchant, or operator.
         /// </summary>
@@ -32,7 +30,5 @@ namespace TransactionProcessor.DataTransferObjects.Requests.Operator
         /// Whether a custom terminal number is required for this operator.
         /// </summary>
         public Boolean? RequireCustomTerminalNumber { get; set; }
-
-        #endregion
     }
 }

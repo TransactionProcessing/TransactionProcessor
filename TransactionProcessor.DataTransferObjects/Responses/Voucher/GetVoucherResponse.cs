@@ -1,6 +1,6 @@
 using System;
 
-namespace TransactionProcessor.DataTransferObjects
+namespace TransactionProcessor.DataTransferObjects.Responses.Voucher
 {
     /// <summary>
     /// Voucher identity, value, balance, lifecycle status, dates, and associated transaction.
@@ -12,7 +12,7 @@ namespace TransactionProcessor.DataTransferObjects
         public Guid VoucherId { get; set; }
         /// <summary>The expiry date.</summary>
 
-        public DateTime ExpiryDate { get; set; }
+        public DateTimeOffset ExpiryDate { get; set; }
         /// <summary>The value.</summary>
 
         public Decimal Value { get; set; }
@@ -32,13 +32,13 @@ namespace TransactionProcessor.DataTransferObjects
         public Boolean IsRedeemed { get; set; }
         /// <summary>The issued date time.</summary>
 
-        public DateTime IssuedDateTime { get; set; }
+        public DateTimeOffset IssuedDateTime { get; set; }
         /// <summary>The generated date time.</summary>
 
-        public DateTime GeneratedDateTime { get; set; }
+        public DateTimeOffset GeneratedDateTime { get; set; }
         /// <summary>The redeemed date time.</summary>
         
-        public DateTime RedeemedDateTime { get; set; }
+        public DateTimeOffset RedeemedDateTime { get; set; }
         /// <summary>The transaction id.</summary>
         
         public Guid TransactionId { get; set; }

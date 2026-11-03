@@ -15,7 +15,7 @@ namespace TransactionProcessor.Aggregates{
 
         public static Result Create(this MerchantDepositListAggregate aggregate,
                                   MerchantAggregate merchantAggregate,
-                                  DateTime dateCreated){
+                                  DateTimeOffset dateCreated){
             Result result = aggregate.EnsureMerchantHasBeenCreated(merchantAggregate);
             if (result.IsFailed)
                 return result;
@@ -62,8 +62,9 @@ namespace TransactionProcessor.Aggregates{
         public static Result MakeDeposit(this MerchantDepositListAggregate aggregate,
                                        MerchantDepositSource source,
                                        String reference,
-                                       DateTime depositDateTime,
-                                       PositiveMoney amount){
+                                       DateTimeOffset depositDateTime,
+                                       PositiveMoney amount,
+                                       DateTimeOffset hostDateTime) {
             String depositData = $"{depositDateTime:yyyyMMdd hh:mm:ss.fff}-{reference}-{amount:N2}-{source}";
             Guid depositId = aggregate.GenerateGuidFromString(depositData);
 
@@ -80,22 +81,23 @@ namespace TransactionProcessor.Aggregates{
                 return result;
 
             if (source == MerchantDepositSource.Manual){
-                MerchantDomainEvents.ManualDepositMadeEvent manualDepositMadeEvent = new(aggregate.AggregateId, aggregate.EstateId, depositId, reference, depositDateTime, amount.Value);
+                MerchantDomainEvents.ManualDepositMadeEvent manualDepositMadeEvent = new(aggregate.AggregateId, aggregate.EstateId, depositId, reference, depositDateTime, amount.Value, hostDateTime);
                 aggregate.ApplyAndAppend(manualDepositMadeEvent);
                 return Result.Success();
             }
-            else if (source == MerchantDepositSource.Automatic){
-                MerchantDomainEvents.AutomaticDepositMadeEvent automaticDepositMadeEvent = new(aggregate.AggregateId, aggregate.EstateId, depositId, reference, depositDateTime, amount.Value);
+
+            if (source == MerchantDepositSource.Automatic){
+                MerchantDomainEvents.AutomaticDepositMadeEvent automaticDepositMadeEvent = new(aggregate.AggregateId, aggregate.EstateId, depositId, reference, depositDateTime, amount.Value, hostDateTime);
                 aggregate.ApplyAndAppend(automaticDepositMadeEvent);
                 return Result.Success();
             }
-            
+
             return Result.Invalid("Invalid Deposit Source");
         }
 
         public static Result MakeWithdrawal(this MerchantDepositListAggregate aggregate,
-                                          DateTime withdrawalDateTime,
-                                          PositiveMoney amount){
+                                            DateTimeOffset withdrawalDateTime,
+                                          PositiveMoney amount, DateTimeOffset hostDateTime){
             String depositData = $"{withdrawalDateTime.ToString("yyyyMMdd hh:mm:ss.fff")}-{amount:N2}";
             Guid withdrawalId = aggregate.GenerateGuidFromString(depositData);
 
@@ -106,7 +108,8 @@ namespace TransactionProcessor.Aggregates{
             if (result.IsFailed)
                 return result;
 
-            MerchantDomainEvents.WithdrawalMadeEvent withdrawalMadeEvent = new(aggregate.AggregateId, aggregate.EstateId, withdrawalId, withdrawalDateTime, amount.Value);
+            MerchantDomainEvents.WithdrawalMadeEvent withdrawalMadeEvent = new(aggregate.AggregateId, aggregate.EstateId, withdrawalId, withdrawalDateTime, amount.Value,
+                hostDateTime);
             aggregate.ApplyAndAppend(withdrawalMadeEvent);
 
             return Result.Success();
@@ -223,7 +226,7 @@ namespace TransactionProcessor.Aggregates{
 
         #region Properties
 
-        public DateTime DateCreated{ get; internal set; }
+        public DateTimeOffset DateCreated{ get; internal set; }
 
         public Guid EstateId{ get; internal set; }
 

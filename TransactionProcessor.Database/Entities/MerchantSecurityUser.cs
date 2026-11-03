@@ -10,7 +10,7 @@ namespace TransactionProcessor.Database.Entities
     {
         #region Properties
 
-        public DateTime CreatedDateTime { get; set; }
+        public DateTimeOffset CreatedDateTime { get; set; }
 
         public String EmailAddress { get; set; }
 

@@ -4,7 +4,7 @@ using Microsoft.AspNetCore.Routing;
 using Shared.Authorisation;
 using System.Diagnostics.CodeAnalysis;
 using TransactionProcessor.Handlers;
-using TransactionProcessor.DataTransferObjects;
+using TransactionProcessor.DataTransferObjects.Responses.Transaction;
 
 namespace TransactionProcessor.Endpoints
 {

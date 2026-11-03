@@ -25,7 +25,7 @@ namespace TransactionProcessor.Aggregates
 
         public static Result RecordCreditPurchase(this FloatActivityAggregate aggregate,
                                                 Guid estateId,
-                                                DateTime activityDateTime,
+                                                DateTimeOffset activityDateTime,
                                                 Decimal creditAmount,
                                                 Guid creditId)
         {
@@ -41,7 +41,7 @@ namespace TransactionProcessor.Aggregates
 
         public static Result RecordTransactionAgainstFloat(this FloatActivityAggregate aggregate,
                                                            Guid estateId,
-                                                           DateTime activityDateTime,
+                                                           DateTimeOffset activityDateTime,
                                                            Decimal transactionAmount,
                                                            Guid transactionId)
         {

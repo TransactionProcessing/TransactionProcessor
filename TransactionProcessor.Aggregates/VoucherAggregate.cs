@@ -31,13 +31,13 @@ public static class VoucherAggregateExtensions{
                         Guid operatorId,
                          Guid estateId,
                          Guid transactionId,
-                         DateTime generatedDateTime,
+                         DateTimeOffset generatedDateTime,
                          Decimal value)
     {
         if (aggregate.IsGenerated)
             return Result.Success();
 
-        if (generatedDateTime == DateTime.MinValue)
+        if (generatedDateTime == DateTimeOffset.MinValue)
             return Result.Invalid("Generated Date Time must be set");
         if (operatorId == Guid.Empty)
             return Result.Invalid("Operator Id must not be an empty Guid");
@@ -50,7 +50,7 @@ public static class VoucherAggregateExtensions{
 
         // Do the generate process here...
         String voucherCode = aggregate.GenerateVoucherCode();
-        DateTime expiryDateTime = generatedDateTime.AddDays(30); // Default to a 30 day expiry for now...
+        DateTimeOffset expiryDateTime = generatedDateTime.AddDays(30); // Default to a 30 day expiry for now...
         String message = string.Empty;
 
         VoucherDomainEvents.VoucherGeneratedEvent voucherGeneratedEvent =
@@ -88,7 +88,7 @@ public static class VoucherAggregateExtensions{
     public static Result Issue(this VoucherAggregate aggregate,
                              String recipientEmail,
                              String recipientMobile,
-                             DateTime issuedDateTime)
+                             DateTimeOffset issuedDateTime)
     {
         if (aggregate.IsIssued)
             return Result.Success();
@@ -108,7 +108,7 @@ public static class VoucherAggregateExtensions{
         return Result.Success();
     }
 
-    public static Result Redeem(this VoucherAggregate aggregate, DateTime redeemedDateTime)
+    public static Result Redeem(this VoucherAggregate aggregate, DateTimeOffset redeemedDateTime, DateTimeOffset hostDateTime)
     {
         Result result = aggregate.CheckIfVoucherHasBeenGenerated();
         if (result.IsFailed)
@@ -120,7 +120,7 @@ public static class VoucherAggregateExtensions{
         if (result.IsFailed)
             return result;
 
-        VoucherDomainEvents.VoucherFullyRedeemedEvent voucherFullyRedeemedEvent = new(aggregate.AggregateId, aggregate.EstateId, redeemedDateTime);
+        VoucherDomainEvents.VoucherFullyRedeemedEvent voucherFullyRedeemedEvent = new(aggregate.AggregateId, aggregate.EstateId, redeemedDateTime, hostDateTime);
 
         aggregate.ApplyAndAppend(voucherFullyRedeemedEvent);
 
@@ -213,7 +213,7 @@ public record VoucherAggregate : Aggregate
 
     internal Guid EstateId;
 
-    internal DateTime ExpiryDate;
+    internal DateTimeOffset ExpiryDate;
 
     internal Boolean IsGenerated;
 
@@ -221,11 +221,11 @@ public record VoucherAggregate : Aggregate
 
     internal Boolean IsRedeemed;
 
-    internal DateTime IssuedDateTime;
+    internal DateTimeOffset IssuedDateTime;
 
-    internal DateTime GeneratedDateTime;
+    internal DateTimeOffset GeneratedDateTime;
 
-    internal  DateTime RedeemedDateTime;
+    internal DateTimeOffset RedeemedDateTime;
     
     internal  String Message;
     

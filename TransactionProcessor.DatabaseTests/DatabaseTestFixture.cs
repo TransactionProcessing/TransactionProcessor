@@ -38,7 +38,7 @@ namespace TransactionProcessor.DatabaseTests
         {
             int? databaseHostPort = this.dockerHelper.GetHostPort(ContainerType.SqlServer);
 
-            return $"server=localhost,{databaseHostPort};database={databaseName};user id={BaseTest.SqlCredentials.usename};password={BaseTest.SqlCredentials.password};Encrypt=false";
+            return $"server=127.0.0.1,{databaseHostPort};database={databaseName};user id={BaseTest.SqlCredentials.usename};password={BaseTest.SqlCredentials.password};Encrypt=false";
         }
 
         private NlogLogger CreateLogger()

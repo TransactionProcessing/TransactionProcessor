@@ -31,7 +31,7 @@ public class VoucherStateRepository : IProjectionStateRepository<VoucherState>
         return new()
                {
                    EventId = domainEvent.EventId,
-                   Date = domainEvent.EventTimestamp.Date.Date,
+                   Date = DateOnly.FromDateTime(domainEvent.EventTimestamp.Date),
                    Type = type
                };
     }
@@ -96,30 +96,30 @@ public class VoucherStateRepository : IProjectionStateRepository<VoucherState>
         return state;
     }
     
-    private static VoucherProjectionState CreateVoucherProjectionState(VoucherState state){
-        VoucherProjectionState entity = new(){
-            EstateId = state.EstateId,
-            Timestamp = state.Version,
-                                                 VoucherCode = state.VoucherCode,
-                                                 TransactionId = state.TransactionId,
-                                                 Barcode = String.IsNullOrEmpty(state.Barcode) ? "" : state.Barcode,
-                                                 VoucherId = state.VoucherId,
-                                                 Value = state.Value,
-                                                 OperatorIdentifier = state.OperatorIdentifier,
-                                                 ExpiryDate = state.ExpiryDate,
-                                                 ExpiryDateTime = state.ExpiryDateTime,
-                                                 GenerateDate = state.GenerateDate,
-                                                 GenerateDateTime = state.GenerateDateTime,
-                                                 IsGenerated = state.IsGenerated,
-                                                 IsIssued = state.IsIssued,
-                                                 IsRedeemed = state.IsRedeemed,
-                                                 IssuedDate = state.IssuedDate,
-                                                 IssuedDateTime = state.IssuedDateTime,
-                                                 RecipientEmail = state.RecipientEmail,
-                                                 RecipientMobile = state.RecipientMobile,
-                                                 RedeemedDate = state.RedeemedDate,
-                                                 RedeemedDateTime = state.RedeemedDateTime
-        };
+    private static VoucherProjectionState CreateVoucherProjectionState(VoucherState state) {
+        VoucherProjectionState entity = new() {
+                                                  EstateId = state.EstateId,
+                                                  Timestamp = state.Version,
+                                                  VoucherCode = state.VoucherCode,
+                                                  TransactionId = state.TransactionId,
+                                                  Barcode = String.IsNullOrEmpty(state.Barcode) ? String.Empty : state.Barcode,
+                                                  VoucherId = state.VoucherId,
+                                                  Value = state.Value,
+                                                  OperatorIdentifier = state.OperatorIdentifier,
+                                                  ExpiryDate = state.ExpiryDate,
+                                                  ExpiryDateTime = state.ExpiryDateTime,
+                                                  GenerateDate = state.GenerateDate,
+                                                  GenerateDateTime = state.GenerateDateTime,
+                                                  IsGenerated = state.IsGenerated,
+                                                  IsIssued = state.IsIssued,
+                                                  IsRedeemed = state.IsRedeemed,
+                                                  IssuedDate = state.IssuedDate,
+                                                  IssuedDateTime = state.IssuedDateTime,
+                                                  RecipientEmail = state.RecipientEmail,
+                                                  RecipientMobile = state.RecipientMobile,
+                                                  RedeemedDate = state.RedeemedDate,
+                                                  RedeemedDateTime = state.RedeemedDateTime
+                                              };
         return entity;
     }
 

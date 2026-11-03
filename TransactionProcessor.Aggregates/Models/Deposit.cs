@@ -7,6 +7,6 @@ namespace TransactionProcessor.Aggregates.Models
     internal record Deposit(Guid DepositId,
                             MerchantDepositSource Source,
                             String Reference,
-                            DateTime DepositDateTime,
+                            DateTimeOffset DepositDateTime,
                             Decimal Amount);
 }

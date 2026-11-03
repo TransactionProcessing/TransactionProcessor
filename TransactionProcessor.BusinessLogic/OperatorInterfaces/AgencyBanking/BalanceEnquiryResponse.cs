@@ -84,7 +84,7 @@ namespace TransactionProcessor.BusinessLogic.OperatorInterfaces.AgencyBanking
 
     public class MiniStatementItem
     {
-        public DateTime TransactionDate { get; set; }
+        public DateTimeOffset TransactionDate { get; set; }
 
         public string TransactionType { get; set; }
 

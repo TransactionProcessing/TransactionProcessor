@@ -50,9 +50,10 @@ namespace TransactionProcessor.Aggregates
         }
 
         public static Result StartReconciliation(this ReconciliationAggregate aggregate,
-                                                 DateTime transactionDateTime,
+                                                 DateTimeOffset transactionDateTime,
                                                  Guid estateId,
-                                                 Guid merchantId) {
+                                                 Guid merchantId,
+                                                 DateTimeOffset hostDateTime) {
             if (estateId == Guid.Empty)
                 return Result.Invalid($"Estate Id must not be [{Guid.Empty}]");
             if (merchantId == Guid.Empty)
@@ -64,7 +65,7 @@ namespace TransactionProcessor.Aggregates
                 return Result.Success();
             }
 
-            ReconciliationDomainEvents.ReconciliationHasStartedEvent reconciliationHasStartedEvent = new(aggregate.AggregateId, estateId, merchantId, transactionDateTime);
+            ReconciliationDomainEvents.ReconciliationHasStartedEvent reconciliationHasStartedEvent = new(aggregate.AggregateId, estateId, merchantId, transactionDateTime, hostDateTime);
 
             aggregate.ApplyAndAppend(reconciliationHasStartedEvent);
 
@@ -210,7 +211,7 @@ namespace TransactionProcessor.Aggregates
 
         public Decimal TransactionValue { get; internal set; }
 
-        public DateTime TransactionDateTime { get; internal set; }
+        public DateTimeOffset TransactionDateTime { get; internal set; }
 
         public static ReconciliationAggregate Create(Guid aggregateId)
         {

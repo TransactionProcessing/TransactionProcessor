@@ -8,7 +8,7 @@
 
         public Decimal ChangeAmount { get; set; }
 
-        public DateTime EntryDateTime { get; set; }
+        public DateTimeOffset EntryDateTime { get; set; }
 
         public String Reference { get; set; }
 

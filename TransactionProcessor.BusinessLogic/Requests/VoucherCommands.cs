@@ -1,7 +1,8 @@
-﻿using System;
-using System.Diagnostics.CodeAnalysis;
-using MediatR;
+﻿using MediatR;
 using SimpleResults;
+using System;
+using System.Diagnostics.CodeAnalysis;
+using TransactionProcessor.DataTransferObjects.Requests.Voucher;
 using TransactionProcessor.Models;
 
 namespace TransactionProcessor.BusinessLogic.Requests;
@@ -12,11 +13,11 @@ public record VoucherCommands {
                                       Guid OperatorId,
                                       Guid EstateId,
                                       Guid TransactionId,
-                                      DateTime IssuedDateTime,
+                                      DateTimeOffset IssuedDateTime,
                                       Decimal Value,
                                       String RecipientEmail,
                                       String RecipientMobile) : IRequest<Result<IssueVoucherResponse>>;
 
-    public record RedeemVoucherCommand(Guid EstateId, String VoucherCode, DateTime RedeemedDateTime)
+    public record RedeemVoucherCommand(Guid EstateId, String VoucherCode, RedeemVoucherRequest RedeemVoucherRequest)
         : IRequest<Result<RedeemVoucherResponse>>;
 }

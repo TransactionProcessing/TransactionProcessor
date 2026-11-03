@@ -15,6 +15,8 @@ namespace TransactionProcessor.IntegrationTesting.Helpers;
 using DataTransferObjects;
 using Reqnroll;
 using Shared.General;
+using TransactionProcessor.DataTransferObjects.Requests.Transaction;
+using TransactionProcessor.DataTransferObjects.Responses.Transaction;
 using AssignOperatorToEstateRequest = DataTransferObjects.Requests.Estate.AssignOperatorRequest;
 using AssignOperatorToMerchantRequest = DataTransferObjects.Requests.Merchant.AssignOperatorRequest;
 

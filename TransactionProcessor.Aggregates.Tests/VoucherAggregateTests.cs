@@ -207,7 +207,7 @@ public class VoucherAggregateTests
             Aggregates.VoucherAggregate aggregate = Aggregates.VoucherAggregate.Create(TestData.VoucherId);
             aggregate.Generate(TestData.OperatorId, TestData.EstateId, TestData.TransactionId, TestData.GeneratedDateTime, TestData.Value);
             aggregate.Issue(TestData.RecipientEmail, TestData.RecipientMobile, TestData.IssuedDateTime);
-            aggregate.Redeem(TestData.RedeemedDateTime);
+            aggregate.Redeem(TestData.RedeemedDateTime, TestData.HostDateTime);
 
             var voucher = aggregate.GetVoucher();
             voucher.IsRedeemed.ShouldBeTrue();
@@ -218,7 +218,7 @@ public class VoucherAggregateTests
         {
             Aggregates.VoucherAggregate aggregate = Aggregates.VoucherAggregate.Create(TestData.VoucherId);
 
-        Result result = aggregate.Redeem(TestData.RedeemedDateTime);
+        Result result = aggregate.Redeem(TestData.RedeemedDateTime, TestData.HostDateTime);
         result.IsFailed.ShouldBeTrue();
         result.Status.ShouldBe(ResultStatus.Invalid);
     }
@@ -229,7 +229,7 @@ public class VoucherAggregateTests
             Aggregates.VoucherAggregate aggregate = Aggregates.VoucherAggregate.Create(TestData.VoucherId);
             aggregate.Generate(TestData.OperatorId, TestData.EstateId, TestData.TransactionId, TestData.GeneratedDateTime, TestData.Value);
 
-        Result result = aggregate.Redeem(TestData.RedeemedDateTime);
+        Result result = aggregate.Redeem(TestData.RedeemedDateTime, TestData.HostDateTime);
         result.IsFailed.ShouldBeTrue();
         result.Status.ShouldBe(ResultStatus.Invalid);
     }
@@ -240,9 +240,9 @@ public class VoucherAggregateTests
             Aggregates.VoucherAggregate aggregate = Aggregates.VoucherAggregate.Create(TestData.VoucherId);
             aggregate.Generate(TestData.OperatorId, TestData.EstateId, TestData.TransactionId, TestData.GeneratedDateTime, TestData.Value);
             aggregate.Issue(TestData.RecipientEmail, TestData.RecipientMobile, TestData.IssuedDateTime);
-            aggregate.Redeem(TestData.RedeemedDateTime);
+            aggregate.Redeem(TestData.RedeemedDateTime, TestData.HostDateTime);
             
-            Result result = aggregate.Redeem(TestData.RedeemedDateTime);
+            Result result = aggregate.Redeem(TestData.RedeemedDateTime, TestData.HostDateTime);
             result.IsFailed.ShouldBeTrue();
             result.Status.ShouldBe(ResultStatus.Invalid);
         }

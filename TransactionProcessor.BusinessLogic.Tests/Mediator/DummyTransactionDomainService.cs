@@ -77,8 +77,8 @@ public class DummyTransactionProcessorReadRepository : ITransactionProcessorRead
 
     public async Task<Result<List<MerchantBalanceChangedEntry>>> GetMerchantBalanceHistory(Guid estateId,
                                                                                            Guid merchantId,
-                                                                                           DateTime startDate,
-                                                                                           DateTime endDate,
+                                                                                           DateTimeOffset startDate,
+                                                                                           DateTimeOffset endDate,
                                                                                            CancellationToken cancellationToken) {
         return Result.Success();
     }

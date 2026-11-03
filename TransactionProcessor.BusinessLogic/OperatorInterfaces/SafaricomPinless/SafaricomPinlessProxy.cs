@@ -73,7 +73,7 @@ namespace TransactionProcessor.BusinessLogic.OperatorInterfaces.SafaricomPinless
         public async Task<Result<OperatorResponse>> ProcessSaleMessage(Guid transactionId,
                                                                        Guid operatorId,
                                                                        Models.Merchant.Merchant merchant,
-                                                                       DateTime transactionDateTime,
+                                                                       DateTimeOffset transactionDateTime,
                                                                        String transactionReference,
                                                                        Dictionary<String, String> additionalTransactionMetadata,
                                                                        CancellationToken cancellationToken)
@@ -144,7 +144,7 @@ namespace TransactionProcessor.BusinessLogic.OperatorInterfaces.SafaricomPinless
         /// <param name="customerMsisdn">The customer msisdn.</param>
         /// <param name="transactionAmount">The transaction amount.</param>
         /// <returns></returns>
-        private String BuildRequest(DateTime transactionDateTime,
+        private String BuildRequest(DateTimeOffset transactionDateTime,
                                     String externalReference,
                                     String customerMsisdn,
                                     Decimal transactionAmount)

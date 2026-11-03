@@ -16,7 +16,7 @@ namespace TransactionProcessor.Handlers
 {
     public static class SettlementHandlers
     {
-        public static async Task<IResult> GetPendingSettlement(IMediator mediator, HttpContext ctx, DateTime settlementDate, [FromRoute] Guid estateId, Guid merchantId, CancellationToken cancellationToken)
+        public static async Task<IResult> GetPendingSettlement(IMediator mediator, HttpContext ctx, DateTimeOffset settlementDate, [FromRoute] Guid estateId, Guid merchantId, CancellationToken cancellationToken)
         {
             SettlementQueries.GetPendingSettlementQuery query = new(settlementDate, merchantId, estateId);
             Result<PendingSettlementModel> getPendingSettlementResult = await mediator.Send(query, cancellationToken);
@@ -32,7 +32,7 @@ namespace TransactionProcessor.Handlers
             });
         }
 
-        public static async Task<IResult> ProcessSettlement(IMediator mediator, HttpContext ctx, DateTime settlementDate, Guid estateId, Guid merchantId, CancellationToken cancellationToken)
+        public static async Task<IResult> ProcessSettlement(IMediator mediator, HttpContext ctx, DateTimeOffset settlementDate, Guid estateId, Guid merchantId, CancellationToken cancellationToken)
         {
             SettlementCommands.ProcessSettlementCommand command = new(settlementDate, merchantId, estateId);
             Result<Guid> result = await mediator.Send(command, cancellationToken);

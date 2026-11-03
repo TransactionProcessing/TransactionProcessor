@@ -4,6 +4,7 @@ using NUnit.Framework;
 using Shouldly;
 using TransactionProcessor.DataTransferObjects.Requests.Contract;
 using TransactionProcessor.DataTransferObjects;
+using TransactionProcessor.DataTransferObjects.Requests.Transaction;
 using TransactionProcessor.DataTransferObjects.Responses.Contract;
 using TransactionProcessor.DataTransferObjects.Responses.Merchant;
 using TransactionProcessor.IntegrationTesting.Helpers;
@@ -75,15 +76,7 @@ public class SpecflowExtensionsTests
         Should.Throw<ShouldAssertException>(() => table.Rows.ToSettlementDetails("Test Estate", new List<EstateDetails> { estate }));
         Should.Throw<ShouldAssertException>(() => table.Rows.ToSettlementDetails("Test Estate", "Test Merchant", new List<EstateDetails> { estate }));
     }
-
-    [Test]
-    public void TestingContext_AddVoucher_DoesNotThrow()
-    {
-        TestingContext context = new();
-
-        Should.NotThrow(() => context.AddVoucher((new IssueVoucherRequest(), new IssueVoucherResponse())));
-    }
-
+    
     [Test]
     public void EstateDetails_AddMerchant_RejectsDuplicateMerchantId()
     {

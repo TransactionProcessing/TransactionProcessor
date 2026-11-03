@@ -4,7 +4,6 @@ using Microsoft.AspNetCore.Routing;
 using Shared.Authorisation;
 using System.Diagnostics.CodeAnalysis;
 using TransactionProcessor.Handlers;
-using TransactionProcessor.DataTransferObjects;
 using TransactionProcessor.DataTransferObjects.Responses.Contract;
 using TransactionProcessor.DataTransferObjects.Responses.Merchant;
 using System.Collections.Generic;

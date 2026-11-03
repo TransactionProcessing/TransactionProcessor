@@ -35,7 +35,7 @@ namespace TransactionProcessor.Models
         /// <value>
         /// The fee calculated date time.
         /// </value>
-        public DateTime FeeCalculatedDateTime { get; set; }
+        public DateTimeOffset FeeCalculatedDateTime { get; set; }
 
         /// <summary>
         /// Gets or sets the fee identifier.
@@ -63,7 +63,7 @@ namespace TransactionProcessor.Models
 
         public Boolean IsSettled{ get; set; }
 
-        public DateTime SettlementDueDate { get; set; }
+        public DateTimeOffset SettlementDueDate { get; set; }
 
         #endregion
     }

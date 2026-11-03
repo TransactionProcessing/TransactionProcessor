@@ -41,7 +41,7 @@ namespace TransactionProcessor.BusinessLogic.Tests.RequestHandler
         {
             IVoucherDomainServiceImposter voucherDomainService = new();
             IVoucherManagementManagerImposter voucherManagementManager = new();
-            voucherDomainService.RedeemVoucher(Arg<Guid>.Any(), Arg<String>.Any(), Arg<DateTime>.Any(),
+            voucherDomainService.RedeemVoucher(Arg<VoucherCommands.RedeemVoucherCommand>.Any(),
                                                            Arg<CancellationToken>.Any()).ReturnsAsync(TestData.RedeemVoucherResponse);
 
             VoucherManagementRequestHandler handler = new VoucherManagementRequestHandler(voucherDomainService.Instance(), voucherManagementManager.Instance());

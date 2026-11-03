@@ -59,7 +59,7 @@ public class TransactionEventTests : BaseTest {
         Transaction? transaction = await context.Transactions.SingleOrDefaultAsync(t => t.TransactionId == TestData.DomainEvents.TransactionHasStartedEvent.TransactionId, TestContext.Current.CancellationToken);
         transaction.ShouldNotBeNull();
         transaction.MerchantId.ShouldBe(TestData.DomainEvents.TransactionHasStartedEvent.MerchantId);
-        transaction.TransactionDate.ShouldBe(TestData.DomainEvents.TransactionHasStartedEvent.TransactionDateTime.Date);
+        transaction.TransactionDate.ShouldBe(DateOnly.FromDateTime(TestData.DomainEvents.TransactionHasStartedEvent.TransactionDateTime.Date));
         transaction.TransactionDateTime.ShouldBe(TestData.DomainEvents.TransactionHasStartedEvent.TransactionDateTime);
         transaction.TransactionNumber.ShouldBe(TestData.DomainEvents.TransactionHasStartedEvent.TransactionNumber);
         transaction.TransactionReference.ShouldBe(TestData.DomainEvents.TransactionHasStartedEvent.TransactionReference);
@@ -261,7 +261,7 @@ public class TransactionEventTests : BaseTest {
         EstateManagementContext context = this.GetContext();
         StatementLine? statementLine = await context.StatementLines.SingleOrDefaultAsync(s => s.StatementId == TestData.DomainEvents.TransactionAddedToStatementForDateEvent.MerchantStatementId && s.TransactionId == TestData.DomainEvents.TransactionAddedToStatementForDateEvent.TransactionId, TestContext.Current.CancellationToken);
         statementLine.ShouldNotBeNull();
-        statementLine.ActivityDate.ShouldBe(TestData.DomainEvents.TransactionAddedToStatementForDateEvent.TransactionDateTime.Date);
+        statementLine.ActivityDate.ShouldBe(DateOnly.FromDateTime(TestData.DomainEvents.TransactionAddedToStatementForDateEvent.TransactionDateTime.Date));
         statementLine.ActivityDateTime.ShouldBe(TestData.DomainEvents.TransactionAddedToStatementForDateEvent.TransactionDateTime);
         statementLine.ActivityDescription.ShouldBe($"{TestData.OperatorName} Transaction");
         statementLine.ActivityType.ShouldBe(1);
@@ -280,7 +280,7 @@ public class TransactionEventTests : BaseTest {
         EstateManagementContext context = this.GetContext();
         StatementLine? statementLine = await context.StatementLines.SingleOrDefaultAsync(s => s.StatementId == TestData.DomainEvents.SettledFeeAddedToStatementForDateEvent.MerchantStatementId && s.TransactionId == TestData.DomainEvents.SettledFeeAddedToStatementForDateEvent.TransactionId, TestContext.Current.CancellationToken);
         statementLine.ShouldNotBeNull();
-        statementLine.ActivityDate.ShouldBe(TestData.DomainEvents.SettledFeeAddedToStatementForDateEvent.SettledDateTime.Date);
+        statementLine.ActivityDate.ShouldBe(DateOnly.FromDateTime(TestData.DomainEvents.SettledFeeAddedToStatementForDateEvent.SettledDateTime.Date));
         statementLine.ActivityDateTime.ShouldBe(TestData.DomainEvents.SettledFeeAddedToStatementForDateEvent.SettledDateTime);
         statementLine.ActivityDescription.ShouldBe($"{TestData.OperatorName} Transaction Fee");
         statementLine.ActivityType.ShouldBe(2);
@@ -299,7 +299,7 @@ public class TransactionEventTests : BaseTest {
         EstateManagementContext context = this.GetContext();
         Merchant? merchant = await context.Merchants.SingleOrDefaultAsync(m => m.MerchantId == TestData.DomainEvents.TransactionHasBeenCompletedEvent.MerchantId, TestContext.Current.CancellationToken);
         merchant.ShouldNotBeNull();
-        merchant.LastSaleDate.ShouldBe(TestData.DomainEvents.TransactionHasBeenCompletedEvent.CompletedDateTime.Date);
+        merchant.LastSaleDate.ShouldBe(DateOnly.FromDateTime(TestData.DomainEvents.TransactionHasBeenCompletedEvent.CompletedDateTime.Date));
         merchant.LastSaleDateTime.ShouldBe(TestData.DomainEvents.TransactionHasBeenCompletedEvent.CompletedDateTime);
     }
 }

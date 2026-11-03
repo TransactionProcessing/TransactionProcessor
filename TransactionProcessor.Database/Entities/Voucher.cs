@@ -11,8 +11,8 @@ namespace TransactionProcessor.Database.Entities
     {
         #region Properties
         
-        public DateTime ExpiryDate { get; set; }
-        public DateTime ExpiryDateTime { get; set; }
+        public DateOnly ExpiryDate { get; set; }
+        public DateTimeOffset ExpiryDateTime { get; set; }
 
         public Boolean IsGenerated { get; set; }
         
@@ -34,17 +34,17 @@ namespace TransactionProcessor.Database.Entities
         public Guid EstateId { get; set; }
         public Guid TransactionId { get; set; }
 
-        public DateTime GenerateDateTime { get; set; }
+        public DateTimeOffset GenerateDateTime { get; set; }
 
-        public DateTime IssuedDateTime { get; set; }
+        public DateTimeOffset IssuedDateTime { get; set; }
 
-        public DateTime RedeemedDateTime { get; set; }
+        public DateTimeOffset RedeemedDateTime { get; set; }
 
-        public DateTime GenerateDate { get; set; }
+        public DateOnly GenerateDate { get; set; }
 
-        public DateTime IssuedDate { get; set; }
+        public DateOnly IssuedDate { get; set; }
 
-        public DateTime RedeemedDate { get; set; }
+        public DateOnly RedeemedDate { get; set; }
         [Timestamp]
         public Byte[] Timestamp { get; set; }
         public String Barcode { get; set; }

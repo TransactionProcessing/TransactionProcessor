@@ -33,7 +33,7 @@ namespace TransactionProcessor.BusinessLogic.OperatorInterfaces.VoucherManagemen
         public async Task<Result<OperatorResponse>> ProcessSaleMessage(Guid transactionId,
                                                                        Guid operatorId,
                                                                        Models.Merchant.Merchant merchant,
-                                                                       DateTime transactionDateTime,
+                                                                       DateTimeOffset transactionDateTime,
                                                                        String transactionReference,
                                                                        Dictionary<String, String> additionalTransactionMetadata,
                                                                        CancellationToken cancellationToken)
@@ -61,7 +61,7 @@ namespace TransactionProcessor.BusinessLogic.OperatorInterfaces.VoucherManagemen
                                                                          operatorId,
                                                                          merchant.EstateId,
                                                                          transactionId,
-                                                                         DateTime.Now,
+                                                                         DateTimeOffset.UtcNow,
                                                                          amountAsDecimal,
                                                                          recipientEmail,
                                                                          recipientMobile);

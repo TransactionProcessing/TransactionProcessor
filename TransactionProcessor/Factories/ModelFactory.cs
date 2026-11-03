@@ -5,19 +5,21 @@ using TransactionProcessor.DataTransferObjects.Responses.Contract;
 using TransactionProcessor.DataTransferObjects.Responses.Estate;
 using TransactionProcessor.DataTransferObjects.Responses.Merchant;
 using TransactionProcessor.DataTransferObjects.Responses.Operator;
+using TransactionProcessor.DataTransferObjects.Responses.Voucher;
 using ProductType = TransactionProcessor.DataTransferObjects.Responses.Contract.ProductType;
 
-namespace TransactionProcessor.Factories
-{
+namespace TransactionProcessor.Factories {
     using System;
     using System.Collections.Generic;
     using DataTransferObjects;
     using Models;
+    using TransactionProcessor.DataTransferObjects.Responses.Transaction;
+    using TransactionProcessor.DataTransferObjects.Responses.Voucher;
     using TransactionProcessor.Models.Estate;
     using TransactionProcessor.Models.Merchant;
     using CalculationType = DataTransferObjects.Responses.Contract.CalculationType;
-    using IssueVoucherResponse = DataTransferObjects.IssueVoucherResponse;
-    using RedeemVoucherResponse = DataTransferObjects.RedeemVoucherResponse;
+    using IssueVoucherResponse = IssueVoucherResponse;
+    using RedeemVoucherResponse = RedeemVoucherResponse;
 
     /// <summary>
     /// 

@@ -24,7 +24,7 @@ namespace TransactionProcessor.Aggregates.Tests
         {
             Aggregates.ReconciliationAggregate reconciliationAggregate = Aggregates.ReconciliationAggregate.Create(TestData.TransactionId);
 
-            Result result = reconciliationAggregate.StartReconciliation(TestData.TransactionDateTime, TestData.EstateId, TestData.MerchantId);
+            Result result = reconciliationAggregate.StartReconciliation(TestData.TransactionDateTime, TestData.EstateId, TestData.MerchantId, TestData.HostDateTime);
             result.IsSuccess.ShouldBeTrue();
 
             reconciliationAggregate.HasBeenStarted.ShouldBeTrue();
@@ -42,11 +42,11 @@ namespace TransactionProcessor.Aggregates.Tests
         {
             ReconciliationAggregate reconciliationAggregate = ReconciliationAggregate.Create(TestData.TransactionId);
 
-            DateTime transactionDateTime = validDateTime ? TestData.TransactionDateTime : DateTime.MinValue;
+            DateTimeOffset transactionDateTime = validDateTime ? TestData.TransactionDateTime : DateTime.MinValue;
             Guid estateId = validEstateId ? TestData.EstateId : Guid.Empty;
             Guid merchantId = validMerchantId ? TestData.MerchantId : Guid.Empty;
 
-            Result result = reconciliationAggregate.StartReconciliation(transactionDateTime, estateId, merchantId);
+            Result result = reconciliationAggregate.StartReconciliation(transactionDateTime, estateId, merchantId, TestData.HostDateTime);
             result.IsFailed.ShouldBeTrue();
             result.Status.ShouldBe(ResultStatus.Invalid);
         }
@@ -56,9 +56,9 @@ namespace TransactionProcessor.Aggregates.Tests
         {
             Aggregates.ReconciliationAggregate reconciliationAggregate = Aggregates.ReconciliationAggregate.Create(TestData.TransactionId);
 
-            reconciliationAggregate.StartReconciliation(TestData.TransactionDateTime, TestData.EstateId, TestData.MerchantId);
+            reconciliationAggregate.StartReconciliation(TestData.TransactionDateTime, TestData.EstateId, TestData.MerchantId, TestData.HostDateTime);
 
-            Result result = reconciliationAggregate.StartReconciliation(TestData.TransactionDateTime, TestData.EstateId, TestData.MerchantId);
+            Result result = reconciliationAggregate.StartReconciliation(TestData.TransactionDateTime, TestData.EstateId, TestData.MerchantId, TestData.HostDateTime);
             result.IsSuccess.ShouldBeTrue();
         }
 
@@ -67,12 +67,12 @@ namespace TransactionProcessor.Aggregates.Tests
         {
             Aggregates.ReconciliationAggregate reconciliationAggregate = Aggregates.ReconciliationAggregate.Create(TestData.TransactionId);
 
-            reconciliationAggregate.StartReconciliation(TestData.TransactionDateTime, TestData.EstateId, TestData.MerchantId);
+            reconciliationAggregate.StartReconciliation(TestData.TransactionDateTime, TestData.EstateId, TestData.MerchantId, TestData.HostDateTime);
             reconciliationAggregate.RecordOverallTotals(TestData.ReconciliationTransactionCount, TestData.ReconciliationTransactionValue);
             reconciliationAggregate.Authorise(TestData.ResponseCode, TestData.ResponseMessage);
             reconciliationAggregate.CompleteReconciliation();
 
-            Result result = reconciliationAggregate.StartReconciliation(TestData.TransactionDateTime, TestData.EstateId, TestData.MerchantId);
+            Result result = reconciliationAggregate.StartReconciliation(TestData.TransactionDateTime, TestData.EstateId, TestData.MerchantId, TestData.HostDateTime);
             result.IsSuccess.ShouldBeTrue();
         }
 
@@ -81,7 +81,7 @@ namespace TransactionProcessor.Aggregates.Tests
         {
             Aggregates.ReconciliationAggregate reconciliationAggregate = Aggregates.ReconciliationAggregate.Create(TestData.TransactionId);
 
-            reconciliationAggregate.StartReconciliation(TestData.TransactionDateTime, TestData.EstateId, TestData.MerchantId);
+            reconciliationAggregate.StartReconciliation(TestData.TransactionDateTime, TestData.EstateId, TestData.MerchantId, TestData.HostDateTime);
             Result result = reconciliationAggregate.RecordOverallTotals(TestData.ReconciliationTransactionCount, TestData.ReconciliationTransactionValue);
             result.IsSuccess.ShouldBeTrue();
 
@@ -105,7 +105,7 @@ namespace TransactionProcessor.Aggregates.Tests
         {
             ReconciliationAggregate reconciliationAggregate = ReconciliationAggregate.Create(TestData.TransactionId);
 
-            reconciliationAggregate.StartReconciliation(TestData.TransactionDateTime, TestData.EstateId, TestData.MerchantId);
+            reconciliationAggregate.StartReconciliation(TestData.TransactionDateTime, TestData.EstateId, TestData.MerchantId, TestData.HostDateTime);
             reconciliationAggregate.RecordOverallTotals(TestData.ReconciliationTransactionCount, TestData.ReconciliationTransactionValue);
             reconciliationAggregate.Authorise(TestData.ResponseCode, TestData.ResponseMessage);
             reconciliationAggregate.CompleteReconciliation();
@@ -121,7 +121,7 @@ namespace TransactionProcessor.Aggregates.Tests
         {
             Aggregates.ReconciliationAggregate reconciliationAggregate = Aggregates.ReconciliationAggregate.Create(TestData.TransactionId);
 
-            reconciliationAggregate.StartReconciliation(TestData.TransactionDateTime, TestData.EstateId, TestData.MerchantId);
+            reconciliationAggregate.StartReconciliation(TestData.TransactionDateTime, TestData.EstateId, TestData.MerchantId, TestData.HostDateTime);
             reconciliationAggregate.RecordOverallTotals(TestData.ReconciliationTransactionCount, TestData.ReconciliationTransactionValue);
             Result result = reconciliationAggregate.Authorise(TestData.ResponseCode, TestData.ResponseMessage);
             result.IsSuccess.ShouldBeTrue();
@@ -146,7 +146,7 @@ namespace TransactionProcessor.Aggregates.Tests
         {
             Aggregates.ReconciliationAggregate reconciliationAggregate = Aggregates.ReconciliationAggregate.Create(TestData.TransactionId);
 
-            reconciliationAggregate.StartReconciliation(TestData.TransactionDateTime, TestData.EstateId, TestData.MerchantId);
+            reconciliationAggregate.StartReconciliation(TestData.TransactionDateTime, TestData.EstateId, TestData.MerchantId, TestData.HostDateTime);
             reconciliationAggregate.RecordOverallTotals(TestData.ReconciliationTransactionCount, TestData.ReconciliationTransactionValue);
             reconciliationAggregate.Authorise(TestData.ResponseCode, TestData.ResponseMessage);
 
@@ -159,7 +159,7 @@ namespace TransactionProcessor.Aggregates.Tests
         {
             Aggregates.ReconciliationAggregate reconciliationAggregate = Aggregates.ReconciliationAggregate.Create(TestData.TransactionId);
 
-            reconciliationAggregate.StartReconciliation(TestData.TransactionDateTime, TestData.EstateId, TestData.MerchantId);
+            reconciliationAggregate.StartReconciliation(TestData.TransactionDateTime, TestData.EstateId, TestData.MerchantId, TestData.HostDateTime);
             reconciliationAggregate.RecordOverallTotals(TestData.ReconciliationTransactionCount, TestData.ReconciliationTransactionValue);
             reconciliationAggregate.Decline(TestData.ResponseCode, TestData.ResponseMessage);
 
@@ -172,7 +172,7 @@ namespace TransactionProcessor.Aggregates.Tests
         {
             Aggregates.ReconciliationAggregate reconciliationAggregate = Aggregates.ReconciliationAggregate.Create(TestData.TransactionId);
 
-            reconciliationAggregate.StartReconciliation(TestData.TransactionDateTime, TestData.EstateId, TestData.MerchantId);
+            reconciliationAggregate.StartReconciliation(TestData.TransactionDateTime, TestData.EstateId, TestData.MerchantId, TestData.HostDateTime);
             reconciliationAggregate.RecordOverallTotals(TestData.ReconciliationTransactionCount, TestData.ReconciliationTransactionValue);
             reconciliationAggregate.Authorise(TestData.ResponseCode, TestData.ResponseMessage);
             reconciliationAggregate.CompleteReconciliation();
@@ -186,7 +186,7 @@ namespace TransactionProcessor.Aggregates.Tests
         {
             Aggregates.ReconciliationAggregate reconciliationAggregate = Aggregates.ReconciliationAggregate.Create(TestData.TransactionId);
 
-            reconciliationAggregate.StartReconciliation(TestData.TransactionDateTime, TestData.EstateId, TestData.MerchantId);
+            reconciliationAggregate.StartReconciliation(TestData.TransactionDateTime, TestData.EstateId, TestData.MerchantId, TestData.HostDateTime);
             reconciliationAggregate.RecordOverallTotals(TestData.ReconciliationTransactionCount, TestData.ReconciliationTransactionValue);
             Result result = reconciliationAggregate.Decline(TestData.ResponseCode, TestData.ResponseMessage);
             result.IsSuccess.ShouldBeTrue();
@@ -211,7 +211,7 @@ namespace TransactionProcessor.Aggregates.Tests
         {
             Aggregates.ReconciliationAggregate reconciliationAggregate = Aggregates.ReconciliationAggregate.Create(TestData.TransactionId);
 
-            reconciliationAggregate.StartReconciliation(TestData.TransactionDateTime, TestData.EstateId, TestData.MerchantId);
+            reconciliationAggregate.StartReconciliation(TestData.TransactionDateTime, TestData.EstateId, TestData.MerchantId, TestData.HostDateTime);
             reconciliationAggregate.RecordOverallTotals(TestData.ReconciliationTransactionCount, TestData.ReconciliationTransactionValue);
             reconciliationAggregate.Authorise(TestData.ResponseCode, TestData.ResponseMessage);
 
@@ -224,7 +224,7 @@ namespace TransactionProcessor.Aggregates.Tests
         {
             Aggregates.ReconciliationAggregate reconciliationAggregate = Aggregates.ReconciliationAggregate.Create(TestData.TransactionId);
 
-            reconciliationAggregate.StartReconciliation(TestData.TransactionDateTime, TestData.EstateId, TestData.MerchantId);
+            reconciliationAggregate.StartReconciliation(TestData.TransactionDateTime, TestData.EstateId, TestData.MerchantId, TestData.HostDateTime);
             reconciliationAggregate.RecordOverallTotals(TestData.ReconciliationTransactionCount, TestData.ReconciliationTransactionValue);
             reconciliationAggregate.Decline(TestData.ResponseCode, TestData.ResponseMessage);
 
@@ -237,7 +237,7 @@ namespace TransactionProcessor.Aggregates.Tests
         {
             Aggregates.ReconciliationAggregate reconciliationAggregate = Aggregates.ReconciliationAggregate.Create(TestData.TransactionId);
 
-            reconciliationAggregate.StartReconciliation(TestData.TransactionDateTime, TestData.EstateId, TestData.MerchantId);
+            reconciliationAggregate.StartReconciliation(TestData.TransactionDateTime, TestData.EstateId, TestData.MerchantId, TestData.HostDateTime);
             reconciliationAggregate.RecordOverallTotals(TestData.ReconciliationTransactionCount, TestData.ReconciliationTransactionValue);
             reconciliationAggregate.Decline(TestData.ResponseCode, TestData.ResponseMessage);
             reconciliationAggregate.CompleteReconciliation();
@@ -253,7 +253,7 @@ namespace TransactionProcessor.Aggregates.Tests
         {
             Aggregates.ReconciliationAggregate reconciliationAggregate = Aggregates.ReconciliationAggregate.Create(TestData.TransactionId);
 
-            reconciliationAggregate.StartReconciliation(TestData.TransactionDateTime, TestData.EstateId, TestData.MerchantId);
+            reconciliationAggregate.StartReconciliation(TestData.TransactionDateTime, TestData.EstateId, TestData.MerchantId, TestData.HostDateTime);
             reconciliationAggregate.RecordOverallTotals(TestData.ReconciliationTransactionCount, TestData.ReconciliationTransactionValue);
             if (isAuthorised)
             {
@@ -286,7 +286,7 @@ namespace TransactionProcessor.Aggregates.Tests
         {
             Aggregates.ReconciliationAggregate reconciliationAggregate = Aggregates.ReconciliationAggregate.Create(TestData.TransactionId);
 
-            reconciliationAggregate.StartReconciliation(TestData.TransactionDateTime, TestData.EstateId, TestData.MerchantId);
+            reconciliationAggregate.StartReconciliation(TestData.TransactionDateTime, TestData.EstateId, TestData.MerchantId, TestData.HostDateTime);
             reconciliationAggregate.RecordOverallTotals(TestData.ReconciliationTransactionCount, TestData.ReconciliationTransactionValue);
 
             Result result = reconciliationAggregate.CompleteReconciliation();
@@ -301,7 +301,7 @@ namespace TransactionProcessor.Aggregates.Tests
         {
             Aggregates.ReconciliationAggregate reconciliationAggregate = Aggregates.ReconciliationAggregate.Create(TestData.TransactionId);
 
-            reconciliationAggregate.StartReconciliation(TestData.TransactionDateTime, TestData.EstateId, TestData.MerchantId);
+            reconciliationAggregate.StartReconciliation(TestData.TransactionDateTime, TestData.EstateId, TestData.MerchantId, TestData.HostDateTime);
             reconciliationAggregate.RecordOverallTotals(TestData.ReconciliationTransactionCount, TestData.ReconciliationTransactionValue);
             if (isAuthorised)
             {

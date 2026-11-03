@@ -1,14 +1,16 @@
+using MediatR;
+using Microsoft.AspNetCore.Http;
+using Shared.Results;
+using Shared.Results.Web;
+using SimpleResults;
 using System;
 using System.Threading;
 using System.Threading.Tasks;
-using MediatR;
-using Microsoft.AspNetCore.Http;
-using SimpleResults;
-using Shared.Results.Web;
-using Shared.Results;
-using TransactionProcessor.DataTransferObjects;
-using TransactionProcessor.Factories;
 using TransactionProcessor.BusinessLogic.Requests;
+using TransactionProcessor.DataTransferObjects.Requests.Float;
+using TransactionProcessor.DataTransferObjects.Requests.Transaction;
+using TransactionProcessor.DataTransferObjects.Responses.Transaction;
+using TransactionProcessor.Factories;
 using TransactionProcessor.Models;
 
 namespace TransactionProcessor.Handlers
@@ -17,18 +19,14 @@ namespace TransactionProcessor.Handlers
     {
         public static async Task<IResult> PerformSaleTransaction(IMediator mediator, HttpContext ctx, SaleTransactionRequest transactionRequest, CancellationToken cancellationToken)
         {
-            DateTime transactionReceivedDateTime = DateTime.Now;
-            
-            Result<SaleTransactionResponse> transactionResult = await ProcessSpecificMessage(mediator, transactionRequest, transactionReceivedDateTime, cancellationToken);
+            Result<SaleTransactionResponse> transactionResult = await ProcessSpecificMessage(mediator, transactionRequest, cancellationToken);
 
             return ResponseFactory.FromResult(transactionResult, message => message);
         }
 
         public static async Task<IResult> PerformLogonTransaction(IMediator mediator, HttpContext ctx, LogonTransactionRequest transactionRequest, CancellationToken cancellationToken)
         {
-            DateTime transactionReceivedDateTime = DateTime.Now;
-
-            Result<LogonTransactionResponse> transactionResult = await ProcessSpecificMessage(mediator, transactionRequest, transactionReceivedDateTime, cancellationToken);
+            Result<LogonTransactionResponse> transactionResult = await ProcessSpecificMessage(mediator, transactionRequest, cancellationToken);
 
             return ResponseFactory.FromResult(transactionResult, message => message);
         }
@@ -52,7 +50,7 @@ namespace TransactionProcessor.Handlers
         }
 
         // Helpers copied from controller logic
-        private static async Task<Result<LogonTransactionResponse>> ProcessSpecificMessage(IMediator mediator, LogonTransactionRequest logon, DateTime transactionReceivedDateTime, CancellationToken cancellationToken)
+        private static async Task<Result<LogonTransactionResponse>> ProcessSpecificMessage(IMediator mediator, LogonTransactionRequest logon,  CancellationToken cancellationToken)
         {
             Guid transactionId = Guid.NewGuid();
 
@@ -64,7 +62,7 @@ namespace TransactionProcessor.Handlers
                 logon.TransactionType,
                 logon.TransactionDateTime,
                 logon.TransactionNumber,
-                transactionReceivedDateTime);
+                logon.HostDateTime);
 
             Result<ProcessLogonTransactionResponse> result = await mediator.Send(command, cancellationToken);
             if (result.IsFailed)
@@ -73,7 +71,7 @@ namespace TransactionProcessor.Handlers
             return ModelFactory.ConvertFrom(result.Data);
         }
 
-        private static async Task<Result<SaleTransactionResponse>> ProcessSpecificMessage(IMediator mediator, SaleTransactionRequest sale, DateTime transactionReceivedDateTime, CancellationToken cancellationToken)
+        private static async Task<Result<SaleTransactionResponse>> ProcessSpecificMessage(IMediator mediator, SaleTransactionRequest sale, CancellationToken cancellationToken)
         {
             Guid transactionId = Guid.NewGuid();
 
@@ -92,7 +90,7 @@ namespace TransactionProcessor.Handlers
                 sale.ProductId,
                 // Default to an online sale
                 sale.TransactionSource.GetValueOrDefault(1),
-                transactionReceivedDateTime);
+                sale.HostDateTime);
 
             var result = await mediator.Send(command, cancellationToken);
             if (result.IsFailed)
@@ -112,7 +110,8 @@ namespace TransactionProcessor.Handlers
                 reconciliation.DeviceIdentifier,
                 reconciliation.TransactionDateTime,
                 reconciliation.TransactionCount,
-                reconciliation.TransactionValue);
+                reconciliation.TransactionValue,
+                reconciliation.HostDateTime);
 
             Result<ProcessReconciliationTransactionResponse> result = await mediator.Send(command, cancellationToken);
 

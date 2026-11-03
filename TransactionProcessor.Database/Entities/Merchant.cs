@@ -10,7 +10,7 @@ namespace TransactionProcessor.Database.Entities
     {
         #region Properties
 
-        public DateTime CreatedDateTime { get; set; }
+        public DateTimeOffset CreatedDateTime { get; set; }
 
         public Guid EstateId { get; set; }
 
@@ -25,11 +25,11 @@ namespace TransactionProcessor.Database.Entities
 
         public String? Reference { get; set; }
 
-        public DateTime LastStatementGenerated { get; set; }
+        public DateTimeOffset LastStatementGenerated { get; set; }
 
-        public DateTime LastSaleDate { get; set; }
+        public DateOnly LastSaleDate { get; set; }
 
-        public DateTime LastSaleDateTime { get; set; }
+        public DateTimeOffset LastSaleDateTime { get; set; }
 
         #endregion
     }

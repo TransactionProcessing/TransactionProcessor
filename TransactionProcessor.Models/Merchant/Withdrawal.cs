@@ -8,7 +8,7 @@ public class Withdrawal
         
     public Decimal Amount { get; set; }
         
-    public DateTime WithdrawalDateTime { get; set; }
+    public DateTimeOffset WithdrawalDateTime { get; set; }
         
     public Guid WithdrawalId { get; set; }
 

@@ -1,18 +1,16 @@
-namespace TransactionProcessor.DataTransferObjects
+namespace TransactionProcessor.DataTransferObjects.Requests.Transaction
 {
     using System;
     using System.Collections.Generic;
     using System.Diagnostics.CodeAnalysis;
     
     /// <summary>
-    /// Sale details including merchant, device, operator, contract, product, and optional metadata.
+    /// Sale details including host timestamp, merchant, device, operator, contract, product, and optional metadata.
     /// </summary>
-    /// <example>{"estateId":"00000000-0000-0000-0000-000000000023","merchantId":"00000000-0000-0000-0000-000000000227","transactionDateTime":"2026-01-15T10:30:00Z","transactionType":"example","contractId":"00000000-0000-0000-0000-000000000239","customerEmailAddress":"customer@example.com","deviceIdentifier":"EXAMPLE-001","operatorId":"00000000-0000-0000-0000-000000000253","productId":"00000000-0000-0000-0000-000000000146","transactionNumber":"EXAMPLE-001","transactionSource":1,"additionalTransactionMetadata":{"channel":"terminal"}}</example>
+    /// <example>{"hostDateTime":"2026-01-15T10:30:00Z","estateId":"00000000-0000-0000-0000-000000000023","merchantId":"00000000-0000-0000-0000-000000000227","transactionDateTime":"2026-01-15T10:30:00Z","transactionType":"example","contractId":"00000000-0000-0000-0000-000000000239","customerEmailAddress":"customer@example.com","deviceIdentifier":"EXAMPLE-001","operatorId":"00000000-0000-0000-0000-000000000253","productId":"00000000-0000-0000-0000-000000000146","transactionNumber":"EXAMPLE-001","transactionSource":1,"additionalTransactionMetadata":{"channel":"terminal"}}</example>
     [ExcludeFromCodeCoverage]
     public class SaleTransactionRequest : TransactionRequest
     {
-        #region Properties
-
         /// <summary>
         /// Optional key/value metadata to include with the transaction.
         /// </summary>
@@ -52,7 +50,5 @@ namespace TransactionProcessor.DataTransferObjects
         /// Numeric transaction source code; omitted values default to online source code 1.
         /// </summary>
         public Int32? TransactionSource { get; set; }
-
-        #endregion
     }
 }

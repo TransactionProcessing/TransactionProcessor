@@ -15,8 +15,8 @@ namespace TransactionProcessor.Database.Entities
 
         public Guid FileImportLogId { get; set; }
 
-        public DateTime ImportLogDateTime { get; set; }
+        public DateTimeOffset ImportLogDateTime { get; set; }
 
-        public DateTime ImportLogDate { get; set; }
+        public DateOnly ImportLogDate { get; set; }
     }
 }

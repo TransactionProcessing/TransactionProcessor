@@ -45,7 +45,7 @@ namespace TransactionProcessor.Bootstrapper
             this.AddSingleton<IStringSerialiser, SystemTextJsonSerializer>();
             this.AddSingleton<Func<Object, String>>(_ => obj => StringSerialiser.Serialise(obj));
             this.AddSingleton<Func<String, Type, Object>>(_ => (str, type) => StringSerialiser.DeserializeObject<Object>(str, type));
-            
+
             var serialiserSettings  = SystemTextJsonSerializer.GetDefaultJsonSerializerOptions().AddModifier(JsonTypeInfoModifierExtensions.ForType<PersistentSubscriptionInfo>(typeInfo =>
             {
                 typeInfo.RenameProperty<PersistentSubscriptionInfo>(x => x.StreamName, "eventStreamId");

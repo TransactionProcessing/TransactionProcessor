@@ -9,7 +9,7 @@
         public Decimal Balance{ get; set; }
         public Guid CauseOfChangeId{ get; set; }
         public Decimal ChangeAmount{ get; set; }
-        public DateTime DateTime{ get; set; }
+        public DateTimeOffset DateTime{ get; set; }
         public String DebitOrCredit{ get; set; }
         public Guid EstateId{ get; set; }
         public Guid MerchantId{ get; set; }

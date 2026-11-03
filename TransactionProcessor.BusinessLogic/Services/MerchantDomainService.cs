@@ -191,7 +191,7 @@ namespace TransactionProcessor.BusinessLogic.Services
 
         private Result EnsureMerchantDepositListCreated(MerchantDepositListAggregate merchantDepositListAggregate,
                                                         MerchantAggregate merchantAggregate,
-                                                        DateTime depositDateTime) {
+                                                        DateTimeOffset depositDateTime) {
             if (merchantDepositListAggregate.IsCreated) {
                 return Result.Success();
             }
@@ -227,7 +227,7 @@ namespace TransactionProcessor.BusinessLogic.Services
                 // Set the settlement schedule
                 SettlementSchedule settlementSchedule = ConvertSettlementSchedule(command.RequestDto.SettlementSchedule);
 
-                var stateResult = merchantAggregate.Create(command.EstateId, command.RequestDto.Name, command.RequestDto.CreatedDateTime.GetValueOrDefault(DateTime.Now),
+                var stateResult = merchantAggregate.Create(command.EstateId, command.RequestDto.Name, command.RequestDto.CreatedDateTime.GetValueOrDefault(DateTimeOffset.UtcNow),
                     address, contact, settlementSchedule);
                 if (stateResult.IsFailed)
                     return stateResult;
@@ -333,7 +333,7 @@ namespace TransactionProcessor.BusinessLogic.Services
 
                 PositiveMoney amount = PositiveMoney.Create(Money.Create(command.RequestDto.Amount));
                 MerchantDepositSource depositSource = this.ConvertDepositSource(command.DepositSource);
-                Result stateResult = depositListResult.Data.MakeDeposit(depositSource, command.RequestDto.Reference, command.RequestDto.DepositDateTime, amount);
+                Result stateResult = depositListResult.Data.MakeDeposit(depositSource, command.RequestDto.Reference, command.RequestDto.DepositDateTime, amount, command.RequestDto.HostDateTime);
                 if (stateResult.IsFailed)
                     return ResultHelpers.CreateFailure(stateResult);
 
@@ -367,7 +367,7 @@ namespace TransactionProcessor.BusinessLogic.Services
                 PositiveMoney amount = PositiveMoney.Create(Money.Create(command.RequestDto.Amount));
                 MerchantDepositListAggregate merchantDepositListAggregate = getDepositListResult.Data;
 
-                Result stateResult = merchantDepositListAggregate.MakeWithdrawal(command.RequestDto.WithdrawalDateTime, amount);
+                Result stateResult = merchantDepositListAggregate.MakeWithdrawal(command.RequestDto.WithdrawalDateTime, amount, command.RequestDto.HostDateTime);
                 if (stateResult.IsFailed)
                     return ResultHelpers.CreateFailure(stateResult);
 

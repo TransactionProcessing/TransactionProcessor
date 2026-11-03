@@ -441,15 +441,15 @@ namespace TransactionProcessor.Aggregates
             }
         }
 
-        static DateTime CalculateNextSettlementDate(this MerchantAggregate aggregate,
-                                                    SettlementSchedule settlementSchedule) {
-            DateTime nextSettlementDate = DateTime.MinValue;
+        static DateTimeOffset CalculateNextSettlementDate(this MerchantAggregate aggregate,
+                                                          SettlementSchedule settlementSchedule) {
+            DateTimeOffset nextSettlementDate = DateTimeOffset.MinValue;
             if (settlementSchedule != SettlementSchedule.Immediate) {
                 // Calculate next settlement date
-                DateTime dateForCalculation = aggregate.NextSettlementDueDate;
-                if (dateForCalculation == DateTime.MinValue) {
+                DateTimeOffset dateForCalculation = aggregate.NextSettlementDueDate;
+                if (dateForCalculation == DateTimeOffset.MinValue) {
                     // No date set previously so use current date as start point
-                    dateForCalculation = DateTime.Now.Date;
+                    dateForCalculation = DateTimeOffset.UtcNow.Date;
                 }
 
                 if (settlementSchedule == SettlementSchedule.Weekly) {
@@ -476,7 +476,7 @@ namespace TransactionProcessor.Aggregates
             if (aggregate.SettlementSchedule == settlementSchedule)
                 return Result.Success();
 
-            DateTime nextSettlementDate = CalculateNextSettlementDate(aggregate, settlementSchedule);
+            DateTimeOffset nextSettlementDate = CalculateNextSettlementDate(aggregate, settlementSchedule);
 
             MerchantDomainEvents.SettlementScheduleChangedEvent settlementScheduleChangedEvent = new(aggregate.AggregateId, aggregate.EstateId, (Int32)settlementSchedule, nextSettlementDate);
 
@@ -488,7 +488,7 @@ namespace TransactionProcessor.Aggregates
         public static Result Create(this MerchantAggregate aggregate,
                                     Guid estateId,
                                     String merchantName,
-                                    DateTime dateCreated,
+                                    DateTimeOffset dateCreated,
                                     TransactionProcessor.Models.Merchant.Address address,
                                     TransactionProcessor.Models.Merchant.Contact contact,
                                     SettlementSchedule settlementSchedule) {
@@ -526,7 +526,7 @@ namespace TransactionProcessor.Aggregates
 
             aggregate.ApplyAndAppend(contactAddedEvent);
 
-            DateTime nextSettlementDate = CalculateNextSettlementDate(aggregate, settlementSchedule);
+            DateTimeOffset nextSettlementDate = CalculateNextSettlementDate(aggregate, settlementSchedule);
 
             MerchantDomainEvents.SettlementScheduleChangedEvent settlementScheduleChangedEvent = new(aggregate.AggregateId, aggregate.EstateId, (Int32)settlementSchedule, nextSettlementDate);
 
@@ -903,9 +903,9 @@ namespace TransactionProcessor.Aggregates
 
         #region Properties
 
-        public DateTime DateCreated { get; internal set; }
+        public DateTimeOffset DateCreated { get; internal set; }
 
-        public DateTime NextSettlementDueDate { get; internal set; }
+        public DateTimeOffset NextSettlementDueDate { get; internal set; }
         
         public Guid EstateId { get; internal set; }
 

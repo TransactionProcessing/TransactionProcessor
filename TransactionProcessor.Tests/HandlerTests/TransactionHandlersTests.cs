@@ -9,10 +9,10 @@ using Shared.General;
 using Shouldly;
 using SimpleResults;
 using TransactionProcessor.BusinessLogic.Requests;
-using TransactionProcessor.DataTransferObjects;
 using TransactionProcessor.Handlers;
 using TransactionProcessor.Models;
 using Xunit;
+using TransactionProcessor.DataTransferObjects.Requests.Transaction;
 
 namespace TransactionProcessor.Tests.HandlerTests
 {

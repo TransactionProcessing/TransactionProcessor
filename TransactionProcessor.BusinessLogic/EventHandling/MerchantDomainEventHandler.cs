@@ -67,7 +67,7 @@ namespace TransactionProcessor.BusinessLogic.EventHandling
                 // We now need to deserialise the message from the callback
                 CallbackHandler.DataTransferObjects.Deposit callbackMessage = StringSerialiser.Deserialise<CallbackHandler.DataTransferObjects.Deposit>(domainEvent.CallbackMessage);
 
-                MerchantCommands.MakeMerchantDepositCommand command = new(domainEvent.EstateId, result.Data.MerchantId, DataTransferObjects.Requests.Merchant.MerchantDepositSource.Automatic, new MakeMerchantDepositRequest { DepositDateTime = callbackMessage.DateTime, Reference = callbackMessage.Reference, Amount = callbackMessage.Amount, });
+                MerchantCommands.MakeMerchantDepositCommand command = new(domainEvent.EstateId, result.Data.MerchantId, DataTransferObjects.Requests.Merchant.MerchantDepositSource.Automatic, new MakeMerchantDepositRequest { DepositDateTime = callbackMessage.DateTime, Reference = callbackMessage.Reference, Amount = callbackMessage.Amount,HostDateTime = DateTimeOffset.UtcNow });
                 return await this.Mediator.Send(command, cancellationToken);
             }
 

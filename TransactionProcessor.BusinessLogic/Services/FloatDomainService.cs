@@ -107,13 +107,14 @@ namespace TransactionProcessor.BusinessLogic.Services
 
             try
             {
-                Result<FloatAggregate> getFloatResult = await DomainServiceHelper.GetAggregateOrFailure(ct => this.AggregateService.GetLatest<FloatAggregate>(command.FloatId, ct), command.FloatId, cancellationToken);
+                Result<FloatAggregate> getFloatResult = await DomainServiceHelper.GetAggregateOrFailure(ct => this.AggregateService.GetLatest<FloatAggregate>(command.RecordFloatCreditPurchaseRequest.FloatId, ct), command.RecordFloatCreditPurchaseRequest.FloatId, cancellationToken);
                 if (getFloatResult.IsFailed)
                     return ResultHelpers.CreateFailure(getFloatResult);
 
                 FloatAggregate floatAggregate = getFloatResult.Data;
 
-                Result stateResult = floatAggregate.RecordCreditPurchase(command.PurchaseDateTime, command.CreditAmount, command.CostPrice);
+                Result stateResult = floatAggregate.RecordCreditPurchase(command.RecordFloatCreditPurchaseRequest.PurchaseDateTime, command.RecordFloatCreditPurchaseRequest.CreditAmount, command.RecordFloatCreditPurchaseRequest.CostPrice,
+                    command.RecordFloatCreditPurchaseRequest.HostDateTime);
                 if (stateResult.IsFailed)
                     return ResultHelpers.CreateFailure(stateResult);
 

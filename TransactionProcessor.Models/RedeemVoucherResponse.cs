@@ -12,7 +12,7 @@ public class RedeemVoucherResponse
     /// <value>
     /// The expiry date.
     /// </value>
-    public DateTime ExpiryDate { get; set; }
+    public DateTimeOffset ExpiryDate { get; set; }
 
     /// <summary>
     /// Gets or sets the remaining balance.

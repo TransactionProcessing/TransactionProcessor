@@ -79,7 +79,7 @@ namespace TransactionProcessor.BusinessLogic.Services
                                                                                                                                              CancellationToken cancellationToken) {
             Result settlementSaveResult = Result.Success();
             if (merchantAggregate.SettlementSchedule == SettlementSchedule.Immediate) {
-                settlementAggregate.StartProcessing(DateTime.Now);
+                settlementAggregate.StartProcessing(DateTimeOffset.UtcNow);
                 settlementAggregate.ManuallyComplete();
                 settlementSaveResult = await this.AggregateService.Save(settlementAggregate, cancellationToken);
             }
@@ -87,7 +87,7 @@ namespace TransactionProcessor.BusinessLogic.Services
             List<(Guid transactionId, Guid merchantId, CalculatedFee calculatedFee)> feesToBeSettled = settlementAggregate.GetFeesToBeSettled();
 
             if (feesToBeSettled.Any()) {
-                Result stateResult = settlementAggregate.StartProcessing(DateTime.Now);
+                Result stateResult = settlementAggregate.StartProcessing(DateTimeOffset.UtcNow);
                 if (stateResult.IsFailed)
                     return ResultHelpers.CreateFailure(stateResult);
 
@@ -101,7 +101,7 @@ namespace TransactionProcessor.BusinessLogic.Services
         }
 
         private async Task<Result<Guid>> ProcessSettlementFees(List<(Guid transactionId, Guid merchantId, CalculatedFee calculatedFee)> feesToBeSettled,
-                                                               DateTime settlementDate,
+                                                               DateTimeOffset settlementDate,
                                                                Guid settlementAggregateId,
                                                                CancellationToken cancellationToken) {
             List<Result> failedResults = new();

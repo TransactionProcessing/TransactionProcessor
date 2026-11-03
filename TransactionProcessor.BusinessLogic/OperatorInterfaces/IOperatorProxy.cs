@@ -18,7 +18,7 @@ namespace TransactionProcessor.BusinessLogic.OperatorInterfaces
         Task<Result<OperatorResponse>> ProcessSaleMessage(Guid transactionId,
                                                           Guid operatorId,
                                                           Models.Merchant.Merchant merchant,
-                                                          DateTime transactionDateTime,
+                                                          DateTimeOffset transactionDateTime,
                                                           String transactionReference,
                                                           Dictionary<String, String> additionalTransactionMetadata,
                                                           CancellationToken cancellationToken);

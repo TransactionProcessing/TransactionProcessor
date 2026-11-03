@@ -10,8 +10,6 @@ namespace TransactionProcessor.DataTransferObjects.Requests.Merchant
     [ExcludeFromCodeCoverage]
     public class AssignOperatorRequest
     {
-        #region Properties
-
         /// <summary>
         /// Merchant number used when this operator is assigned.
         /// </summary>
@@ -26,7 +24,5 @@ namespace TransactionProcessor.DataTransferObjects.Requests.Merchant
         /// Terminal number used when this operator is assigned.
         /// </summary>
         public String TerminalNumber { get; set; }
-
-        #endregion
     }
 }

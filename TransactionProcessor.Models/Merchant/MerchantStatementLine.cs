@@ -22,7 +22,7 @@ public class MerchantStatementLine
     /// <value>
     /// The date time.
     /// </value>
-    public DateTime DateTime { get; set; }
+    public DateTimeOffset DateTime { get; set; }
 
     /// <summary>
     /// Gets or sets the description.

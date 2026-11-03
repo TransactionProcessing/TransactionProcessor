@@ -68,7 +68,7 @@ namespace TransactionProcessor.BusinessLogic.RequestHandlers
         public async Task<Result<RedeemVoucherResponse>> Handle(VoucherCommands.RedeemVoucherCommand command,
                                                         CancellationToken cancellationToken)
         {
-            return await this.VoucherDomainService.RedeemVoucher(command.EstateId, command.VoucherCode, command.RedeemedDateTime, cancellationToken);
+            return await this.VoucherDomainService.RedeemVoucher(command, cancellationToken);
         }
 
         #endregion

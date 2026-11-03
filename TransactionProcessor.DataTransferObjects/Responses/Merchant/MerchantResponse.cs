@@ -41,7 +41,7 @@ namespace TransactionProcessor.DataTransferObjects.Responses.Merchant
         public String MerchantReference { get; set; }
         /// <summary>The next statement date.</summary>
 
-        public DateTime NextStatementDate { get; set; }
+        public DateTimeOffset NextStatementDate { get; set; }
         /// <summary>The operators.</summary>
 
         public List<MerchantOperatorResponse> Operators { get; set; }

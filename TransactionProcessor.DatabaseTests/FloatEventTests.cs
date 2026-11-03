@@ -22,7 +22,7 @@ public class FloatEventTests : BaseTest {
         Float? floatRecord = await context.Floats.SingleOrDefaultAsync(f => f.FloatId == TestData.DomainEvents.FloatCreatedForContractProductEvent.FloatId, TestContext.Current.CancellationToken);
         floatRecord.ShouldNotBeNull();
         floatRecord.EstateId.ShouldBe(TestData.DomainEvents.FloatCreatedForContractProductEvent.EstateId);
-        floatRecord.CreatedDate.ShouldBe(TestData.FloatCreatedDateTime.Date);
+        floatRecord.CreatedDate.ShouldBe(DateOnly.FromDateTime(TestData.FloatCreatedDateTime.Date));
         floatRecord.CreatedDateTime.ShouldBe(TestData.FloatCreatedDateTime);
     }
 
@@ -50,7 +50,8 @@ public class FloatEventTests : BaseTest {
             TestData.EstateId,
             TestData.CreditPurchasedDateTime,
             TestData.FloatCreditAmount,
-            TestData.FloatCreditCostPrice);
+            TestData.FloatCreditCostPrice,
+            TestData.HostDateTime);
 
         Result result = await this.Repository.CreateFloatActivity(@event, TestContext.Current.CancellationToken);
         result.IsSuccess.ShouldBeTrue();
@@ -59,7 +60,7 @@ public class FloatEventTests : BaseTest {
         FloatActivity? floatActivity = await context.FloatActivity.SingleOrDefaultAsync(f => f.EventId == @event.EventId, TestContext.Current.CancellationToken);
         floatActivity.ShouldNotBeNull();
         floatActivity.FloatId.ShouldBe(@event.FloatId);
-        floatActivity.ActivityDate.ShouldBe(TestData.CreditPurchasedDateTime.Date);
+        floatActivity.ActivityDate.ShouldBe(DateOnly.FromDateTime(TestData.CreditPurchasedDateTime.Date));
         floatActivity.ActivityDateTime.ShouldBe(TestData.CreditPurchasedDateTime);
         floatActivity.Amount.ShouldBe(TestData.FloatCreditAmount);
         floatActivity.CostPrice.ShouldBe(TestData.FloatCreditCostPrice);
@@ -74,7 +75,8 @@ public class FloatEventTests : BaseTest {
             TestData.EstateId,
             TestData.CreditPurchasedDateTime,
             TestData.FloatCreditAmount,
-            TestData.FloatCreditCostPrice);
+            TestData.FloatCreditCostPrice,
+            TestData.HostDateTime);
 
         Result result = await this.Repository.CreateFloatActivity(@event, TestContext.Current.CancellationToken);
         result.IsSuccess.ShouldBeTrue();
@@ -105,7 +107,7 @@ public class FloatEventTests : BaseTest {
         FloatActivity? floatActivity = await context.FloatActivity.SingleOrDefaultAsync(f => f.EventId == @event.EventId, TestContext.Current.CancellationToken);
         floatActivity.ShouldNotBeNull();
         floatActivity.FloatId.ShouldBe(@event.FloatId);
-        floatActivity.ActivityDate.ShouldBe(TestData.TransactionDateTime1.Date);
+        floatActivity.ActivityDate.ShouldBe(DateOnly.FromDateTime(TestData.TransactionDateTime1.Date));
         floatActivity.ActivityDateTime.ShouldBe(TestData.TransactionDateTime1);
         floatActivity.Amount.ShouldBe(TestData.FloatCreditAmount);
         floatActivity.CostPrice.ShouldBe(0);

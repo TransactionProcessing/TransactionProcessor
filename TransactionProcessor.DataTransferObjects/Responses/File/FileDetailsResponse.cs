@@ -10,10 +10,10 @@ namespace TransactionProcessor.DataTransferObjects.Responses.File{
         public Guid FileId{ get; set; }
         /// <summary>The file received date.</summary>
 
-        public DateTime FileReceivedDate{ get; set; }
+        public DateTimeOffset FileReceivedDate { get; set; }
         /// <summary>The file received date time.</summary>
 
-        public DateTime FileReceivedDateTime{ get; set; }
+        public DateTimeOffset FileReceivedDateTime { get; set; }
         /// <summary>The file line details.</summary>
 
         public List<FileLineDetailsResponse> FileLineDetails{ get; set; }

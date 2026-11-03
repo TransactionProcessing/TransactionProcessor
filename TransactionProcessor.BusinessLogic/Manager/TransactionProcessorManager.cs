@@ -309,7 +309,7 @@ namespace TransactionProcessor.BusinessLogic.Manager
 
         public async Task<Result<PendingSettlementModel>> GetPendingSettlement(Guid estateId,
                                                                                Guid merchantId,
-                                                                               DateTime settlementDate,
+                                                                               DateTimeOffset settlementDate,
                                                                                CancellationToken cancellationToken) {
 
             Guid aggregateId = Helpers.CalculateSettlementAggregateId(settlementDate, merchantId, estateId);

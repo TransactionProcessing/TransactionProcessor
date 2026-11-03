@@ -17,15 +17,15 @@ namespace EstateManagement.Database.Migrations.SqlServer
         {
 #pragma warning disable 612, 618
             modelBuilder
-                .HasAnnotation("ProductVersion", "10.0.12")
+                .HasAnnotation("ProductVersion", "10.0.14")
                 .HasAnnotation("Relational:MaxIdentifierLength", 128);
 
             SqlServerModelBuilderExtensions.UseIdentityColumns(modelBuilder);
 
             modelBuilder.Entity("TransactionProcessor.Database.Entities.Calendar", b =>
                 {
-                    b.Property<DateTime>("Date")
-                        .HasColumnType("datetime2");
+                    b.Property<DateOnly>("Date")
+                        .HasColumnType("date");
 
                     b.Property<string>("DayOfWeek")
                         .IsRequired()
@@ -176,8 +176,8 @@ namespace EstateManagement.Database.Migrations.SqlServer
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("EstateReportingId"));
 
-                    b.Property<DateTime>("CreatedDateTime")
-                        .HasColumnType("datetime2");
+                    b.Property<DateTimeOffset>("CreatedDateTime")
+                        .HasColumnType("datetimeoffset");
 
                     b.Property<Guid>("EstateId")
                         .HasColumnType("uniqueidentifier");
@@ -221,8 +221,8 @@ namespace EstateManagement.Database.Migrations.SqlServer
                     b.Property<Guid>("EstateId")
                         .HasColumnType("uniqueidentifier");
 
-                    b.Property<DateTime>("CreatedDateTime")
-                        .HasColumnType("datetime2");
+                    b.Property<DateTimeOffset>("CreatedDateTime")
+                        .HasColumnType("datetimeoffset");
 
                     b.Property<string>("EmailAddress")
                         .IsRequired()
@@ -257,11 +257,11 @@ namespace EstateManagement.Database.Migrations.SqlServer
                     b.Property<Guid>("FileProfileId")
                         .HasColumnType("uniqueidentifier");
 
-                    b.Property<DateTime>("FileReceivedDate")
+                    b.Property<DateOnly>("FileReceivedDate")
                         .HasColumnType("date");
 
-                    b.Property<DateTime>("FileReceivedDateTime")
-                        .HasColumnType("datetime2");
+                    b.Property<DateTimeOffset>("FileReceivedDateTime")
+                        .HasColumnType("datetimeoffset");
 
                     b.Property<bool>("IsCompleted")
                         .HasColumnType("bit");
@@ -312,11 +312,11 @@ namespace EstateManagement.Database.Migrations.SqlServer
                     b.Property<Guid>("FileImportLogId")
                         .HasColumnType("uniqueidentifier");
 
-                    b.Property<DateTime>("ImportLogDate")
+                    b.Property<DateOnly>("ImportLogDate")
                         .HasColumnType("date");
 
-                    b.Property<DateTime>("ImportLogDateTime")
-                        .HasColumnType("datetime2");
+                    b.Property<DateTimeOffset>("ImportLogDateTime")
+                        .HasColumnType("datetimeoffset");
 
                     b.HasKey("EstateId", "FileImportLogReportingId");
 
@@ -341,11 +341,11 @@ namespace EstateManagement.Database.Migrations.SqlServer
                     b.Property<Guid>("FileProfileId")
                         .HasColumnType("uniqueidentifier");
 
-                    b.Property<DateTime>("FileUploadedDate")
+                    b.Property<DateOnly>("FileUploadedDate")
                         .HasColumnType("date");
 
-                    b.Property<DateTime>("FileUploadedDateTime")
-                        .HasColumnType("datetime2");
+                    b.Property<DateTimeOffset>("FileUploadedDateTime")
+                        .HasColumnType("datetimeoffset");
 
                     b.Property<Guid>("MerchantId")
                         .HasColumnType("uniqueidentifier");
@@ -429,11 +429,11 @@ namespace EstateManagement.Database.Migrations.SqlServer
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uniqueidentifier");
 
-                    b.Property<DateTime>("CreatedDate")
+                    b.Property<DateOnly>("CreatedDate")
                         .HasColumnType("date");
 
-                    b.Property<DateTime>("CreatedDateTime")
-                        .HasColumnType("datetime2");
+                    b.Property<DateTimeOffset>("CreatedDateTime")
+                        .HasColumnType("datetimeoffset");
 
                     b.Property<Guid>("EstateId")
                         .HasColumnType("uniqueidentifier");
@@ -455,11 +455,11 @@ namespace EstateManagement.Database.Migrations.SqlServer
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uniqueidentifier");
 
-                    b.Property<DateTime>("ActivityDate")
+                    b.Property<DateOnly>("ActivityDate")
                         .HasColumnType("date");
 
-                    b.Property<DateTime>("ActivityDateTime")
-                        .HasColumnType("datetime2");
+                    b.Property<DateTimeOffset>("ActivityDateTime")
+                        .HasColumnType("datetimeoffset");
 
                     b.Property<decimal>("Amount")
                         .HasColumnType("decimal(18,2)");
@@ -493,20 +493,20 @@ namespace EstateManagement.Database.Migrations.SqlServer
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("MerchantReportingId"));
 
-                    b.Property<DateTime>("CreatedDateTime")
-                        .HasColumnType("datetime2");
+                    b.Property<DateTimeOffset>("CreatedDateTime")
+                        .HasColumnType("datetimeoffset");
 
                     b.Property<Guid>("EstateId")
                         .HasColumnType("uniqueidentifier");
 
-                    b.Property<DateTime>("LastSaleDate")
+                    b.Property<DateOnly>("LastSaleDate")
                         .HasColumnType("date");
 
-                    b.Property<DateTime>("LastSaleDateTime")
-                        .HasColumnType("datetime2");
+                    b.Property<DateTimeOffset>("LastSaleDateTime")
+                        .HasColumnType("datetimeoffset");
 
-                    b.Property<DateTime>("LastStatementGenerated")
-                        .HasColumnType("datetime2");
+                    b.Property<DateTimeOffset>("LastStatementGenerated")
+                        .HasColumnType("datetimeoffset");
 
                     b.Property<Guid>("MerchantId")
                         .HasColumnType("uniqueidentifier");
@@ -553,8 +553,8 @@ namespace EstateManagement.Database.Migrations.SqlServer
                     b.Property<string>("Country")
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<DateTime>("CreatedDateTime")
-                        .HasColumnType("datetime2");
+                    b.Property<DateTimeOffset>("CreatedDateTime")
+                        .HasColumnType("datetimeoffset");
 
                     b.Property<string>("PostalCode")
                         .HasColumnType("nvarchar(max)");
@@ -578,8 +578,8 @@ namespace EstateManagement.Database.Migrations.SqlServer
                     b.Property<Guid>("ContactId")
                         .HasColumnType("uniqueidentifier");
 
-                    b.Property<DateTime>("CreatedDateTime")
-                        .HasColumnType("datetime2");
+                    b.Property<DateTimeOffset>("CreatedDateTime")
+                        .HasColumnType("datetimeoffset");
 
                     b.Property<string>("EmailAddress")
                         .HasColumnType("nvarchar(max)");
@@ -620,8 +620,8 @@ namespace EstateManagement.Database.Migrations.SqlServer
                     b.Property<Guid>("DeviceId")
                         .HasColumnType("uniqueidentifier");
 
-                    b.Property<DateTime>("CreatedDateTime")
-                        .HasColumnType("datetime2");
+                    b.Property<DateTimeOffset>("CreatedDateTime")
+                        .HasColumnType("datetimeoffset");
 
                     b.Property<string>("DeviceIdentifier")
                         .IsRequired()
@@ -762,8 +762,8 @@ namespace EstateManagement.Database.Migrations.SqlServer
                     b.Property<Guid>("SecurityUserId")
                         .HasColumnType("uniqueidentifier");
 
-                    b.Property<DateTime>("CreatedDateTime")
-                        .HasColumnType("datetime2");
+                    b.Property<DateTimeOffset>("CreatedDateTime")
+                        .HasColumnType("datetimeoffset");
 
                     b.Property<string>("EmailAddress")
                         .IsRequired()
@@ -788,8 +788,8 @@ namespace EstateManagement.Database.Migrations.SqlServer
                     b.Property<decimal>("CalculatedValue")
                         .HasColumnType("decimal(18,2)");
 
-                    b.Property<DateTime>("FeeCalculatedDateTime")
-                        .HasColumnType("datetime2");
+                    b.Property<DateTimeOffset>("FeeCalculatedDateTime")
+                        .HasColumnType("datetimeoffset");
 
                     b.Property<decimal>("FeeValue")
                         .HasColumnType("decimal(18,2)");
@@ -866,11 +866,11 @@ namespace EstateManagement.Database.Migrations.SqlServer
                     b.Property<int>("TransactionCount")
                         .HasColumnType("int");
 
-                    b.Property<DateTime>("TransactionDate")
+                    b.Property<DateOnly>("TransactionDate")
                         .HasColumnType("date");
 
-                    b.Property<DateTime>("TransactionDateTime")
-                        .HasColumnType("datetime2");
+                    b.Property<DateTimeOffset>("TransactionDateTime")
+                        .HasColumnType("datetimeoffset");
 
                     b.Property<Guid>("TransactionId")
                         .HasColumnType("uniqueidentifier");
@@ -952,10 +952,10 @@ namespace EstateManagement.Database.Migrations.SqlServer
                     b.Property<bool>("ProcessingStarted")
                         .HasColumnType("bit");
 
-                    b.Property<DateTime>("ProcessingStartedDateTIme")
-                        .HasColumnType("datetime2");
+                    b.Property<DateTimeOffset>("ProcessingStartedDateTIme")
+                        .HasColumnType("datetimeoffset");
 
-                    b.Property<DateTime>("SettlementDate")
+                    b.Property<DateOnly>("SettlementDate")
                         .HasColumnType("date");
 
                     b.Property<Guid>("SettlementId")
@@ -985,17 +985,17 @@ namespace EstateManagement.Database.Migrations.SqlServer
                     b.Property<Guid>("StatementId")
                         .HasColumnType("uniqueidentifier");
 
-                    b.Property<DateTime>("StatementCreatedDate")
+                    b.Property<DateOnly>("StatementCreatedDate")
                         .HasColumnType("date");
 
-                    b.Property<DateTime>("StatementCreatedDateTime")
-                        .HasColumnType("datetime2");
+                    b.Property<DateTimeOffset>("StatementCreatedDateTime")
+                        .HasColumnType("datetimeoffset");
 
-                    b.Property<DateTime>("StatementGeneratedDate")
+                    b.Property<DateOnly>("StatementGeneratedDate")
                         .HasColumnType("date");
 
-                    b.Property<DateTime>("StatementGeneratedDateTime")
-                        .HasColumnType("datetime2");
+                    b.Property<DateTimeOffset>("StatementGeneratedDateTime")
+                        .HasColumnType("datetimeoffset");
 
                     b.Property<int>("StatementReportingId")
                         .ValueGeneratedOnAdd()
@@ -1022,13 +1022,13 @@ namespace EstateManagement.Database.Migrations.SqlServer
                     b.Property<Guid>("TransactionId")
                         .HasColumnType("uniqueidentifier");
 
-                    b.Property<DateTime>("ActivityDateTime")
-                        .HasColumnType("datetime2");
+                    b.Property<DateTimeOffset>("ActivityDateTime")
+                        .HasColumnType("datetimeoffset");
 
                     b.Property<int>("ActivityType")
                         .HasColumnType("int");
 
-                    b.Property<DateTime>("ActivityDate")
+                    b.Property<DateOnly>("ActivityDate")
                         .HasColumnType("date");
 
                     b.Property<string>("ActivityDescription")
@@ -1074,7 +1074,7 @@ namespace EstateManagement.Database.Migrations.SqlServer
                     b.Property<decimal?>("SalesValue")
                         .HasColumnType("decimal(18,2)");
 
-                    b.Property<DateTime>("SettlementDate")
+                    b.Property<DateOnly>("SettlementDate")
                         .HasColumnType("date");
 
                     b.HasIndex("SettlementDate");
@@ -1129,11 +1129,11 @@ namespace EstateManagement.Database.Migrations.SqlServer
                     b.Property<decimal>("TransactionAmount")
                         .HasColumnType("decimal(18,2)");
 
-                    b.Property<DateTime>("TransactionDate")
+                    b.Property<DateOnly>("TransactionDate")
                         .HasColumnType("date");
 
-                    b.Property<DateTime>("TransactionDateTime")
-                        .HasColumnType("datetime2");
+                    b.Property<DateTimeOffset>("TransactionDateTime")
+                        .HasColumnType("datetimeoffset");
 
                     b.Property<Guid>("TransactionId")
                         .HasColumnType("uniqueidentifier");
@@ -1211,11 +1211,11 @@ namespace EstateManagement.Database.Migrations.SqlServer
                     b.Property<decimal>("TransactionAmount")
                         .HasColumnType("decimal(18,2)");
 
-                    b.Property<DateTime>("TransactionDate")
+                    b.Property<DateOnly>("TransactionDate")
                         .HasColumnType("date");
 
-                    b.Property<DateTime>("TransactionDateTime")
-                        .HasColumnType("datetime2");
+                    b.Property<DateTimeOffset>("TransactionDateTime")
+                        .HasColumnType("datetimeoffset");
 
                     b.Property<Guid>("TransactionId")
                         .HasColumnType("uniqueidentifier");
@@ -1292,11 +1292,11 @@ namespace EstateManagement.Database.Migrations.SqlServer
                     b.Property<decimal>("TransactionAmount")
                         .HasColumnType("decimal(18,2)");
 
-                    b.Property<DateTime>("TransactionDate")
+                    b.Property<DateOnly>("TransactionDate")
                         .HasColumnType("date");
 
-                    b.Property<DateTime>("TransactionDateTime")
-                        .HasColumnType("datetime2");
+                    b.Property<DateTimeOffset>("TransactionDateTime")
+                        .HasColumnType("datetimeoffset");
 
                     b.Property<Guid>("TransactionId")
                         .HasColumnType("uniqueidentifier");
@@ -1373,26 +1373,26 @@ namespace EstateManagement.Database.Migrations.SqlServer
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uniqueidentifier");
 
-                    b.Property<DateTime?>("OperatorCommunicationsCompletedDateTime")
-                        .HasColumnType("datetime2");
+                    b.Property<DateTimeOffset?>("OperatorCommunicationsCompletedDateTime")
+                        .HasColumnType("datetimeoffset");
 
                     b.Property<double>("OperatorCommunicationsDurationInMilliseconds")
                         .HasColumnType("float");
 
-                    b.Property<DateTime?>("OperatorCommunicationsStartedDateTime")
-                        .HasColumnType("datetime2");
+                    b.Property<DateTimeOffset?>("OperatorCommunicationsStartedDateTime")
+                        .HasColumnType("datetimeoffset");
 
                     b.Property<double>("TotalTransactionInMilliseconds")
                         .HasColumnType("float");
 
-                    b.Property<DateTime>("TransactionCompletedDateTime")
-                        .HasColumnType("datetime2");
+                    b.Property<DateTimeOffset>("TransactionCompletedDateTime")
+                        .HasColumnType("datetimeoffset");
 
                     b.Property<double>("TransactionProcessingDurationInMilliseconds")
                         .HasColumnType("float");
 
-                    b.Property<DateTime>("TransactionStartedDateTime")
-                        .HasColumnType("datetime2");
+                    b.Property<DateTimeOffset>("TransactionStartedDateTime")
+                        .HasColumnType("datetimeoffset");
 
                     b.HasKey("TransactionId");
 
@@ -1414,17 +1414,17 @@ namespace EstateManagement.Database.Migrations.SqlServer
                     b.Property<Guid>("EstateId")
                         .HasColumnType("uniqueidentifier");
 
-                    b.Property<DateTime>("ExpiryDate")
+                    b.Property<DateOnly>("ExpiryDate")
                         .HasColumnType("date");
 
-                    b.Property<DateTime>("ExpiryDateTime")
-                        .HasColumnType("datetime2");
+                    b.Property<DateTimeOffset>("ExpiryDateTime")
+                        .HasColumnType("datetimeoffset");
 
-                    b.Property<DateTime>("GenerateDate")
+                    b.Property<DateOnly>("GenerateDate")
                         .HasColumnType("date");
 
-                    b.Property<DateTime>("GenerateDateTime")
-                        .HasColumnType("datetime2");
+                    b.Property<DateTimeOffset>("GenerateDateTime")
+                        .HasColumnType("datetimeoffset");
 
                     b.Property<bool>("IsGenerated")
                         .HasColumnType("bit");
@@ -1435,11 +1435,11 @@ namespace EstateManagement.Database.Migrations.SqlServer
                     b.Property<bool>("IsRedeemed")
                         .HasColumnType("bit");
 
-                    b.Property<DateTime>("IssuedDate")
+                    b.Property<DateOnly>("IssuedDate")
                         .HasColumnType("date");
 
-                    b.Property<DateTime>("IssuedDateTime")
-                        .HasColumnType("datetime2");
+                    b.Property<DateTimeOffset>("IssuedDateTime")
+                        .HasColumnType("datetimeoffset");
 
                     b.Property<string>("OperatorIdentifier")
                         .HasColumnType("nvarchar(max)");
@@ -1450,11 +1450,11 @@ namespace EstateManagement.Database.Migrations.SqlServer
                     b.Property<string>("RecipientMobile")
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<DateTime>("RedeemedDate")
-                        .HasColumnType("datetime2");
+                    b.Property<DateOnly>("RedeemedDate")
+                        .HasColumnType("date");
 
-                    b.Property<DateTime>("RedeemedDateTime")
-                        .HasColumnType("datetime2");
+                    b.Property<DateTimeOffset>("RedeemedDateTime")
+                        .HasColumnType("datetimeoffset");
 
                     b.Property<byte[]>("Timestamp")
                         .IsConcurrencyToken()
@@ -1552,7 +1552,7 @@ namespace EstateManagement.Database.Migrations.SqlServer
                     b.Property<string>("Type")
                         .HasColumnType("nvarchar(450)");
 
-                    b.Property<DateTime>("Date")
+                    b.Property<DateOnly>("Date")
                         .HasColumnType("date");
 
                     b.HasKey("EventId", "Type");
@@ -1576,8 +1576,8 @@ namespace EstateManagement.Database.Migrations.SqlServer
                     b.Property<decimal>("ChangeAmount")
                         .HasColumnType("decimal(18,2)");
 
-                    b.Property<DateTime>("DateTime")
-                        .HasColumnType("datetime2");
+                    b.Property<DateTimeOffset>("DateTime")
+                        .HasColumnType("datetimeoffset");
 
                     b.Property<string>("DebitOrCredit")
                         .IsRequired()
@@ -1627,17 +1627,17 @@ namespace EstateManagement.Database.Migrations.SqlServer
                     b.Property<int>("FeeCount")
                         .HasColumnType("int");
 
-                    b.Property<DateTime>("LastDeposit")
-                        .HasColumnType("datetime2");
+                    b.Property<DateTimeOffset>("LastDeposit")
+                        .HasColumnType("datetimeoffset");
 
-                    b.Property<DateTime>("LastFee")
-                        .HasColumnType("datetime2");
+                    b.Property<DateTimeOffset>("LastFee")
+                        .HasColumnType("datetimeoffset");
 
-                    b.Property<DateTime>("LastSale")
-                        .HasColumnType("datetime2");
+                    b.Property<DateTimeOffset>("LastSale")
+                        .HasColumnType("datetimeoffset");
 
-                    b.Property<DateTime>("LastWithdrawal")
-                        .HasColumnType("datetime2");
+                    b.Property<DateTimeOffset>("LastWithdrawal")
+                        .HasColumnType("datetimeoffset");
 
                     b.Property<string>("MerchantName")
                         .IsRequired()
@@ -1684,8 +1684,8 @@ namespace EstateManagement.Database.Migrations.SqlServer
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<DateTime>("EntryDateTime")
-                        .HasColumnType("datetime2");
+                    b.Property<DateTimeOffset>("EntryDateTime")
+                        .HasColumnType("datetimeoffset");
 
                     b.Property<Guid>("MerchantId")
                         .HasColumnType("uniqueidentifier");

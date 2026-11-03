@@ -6,8 +6,7 @@ using Microsoft.AspNetCore.Http;
 using SimpleResults;
 using Shared.Results.Web;
 using TransactionProcessor.BusinessLogic.Requests;
-using TransactionProcessor.DataTransferObjects;
-using TransactionProcessor.Factories;
+using TransactionProcessor.DataTransferObjects.Requests.Float;
 
 namespace TransactionProcessor.Handlers
 {
@@ -21,9 +20,9 @@ namespace TransactionProcessor.Handlers
             return ResponseFactory.FromResult(result);
         }
 
-        public static async Task<IResult> RecordFloatCreditPurchase(IMediator mediator, HttpContext ctx, Guid estateId, RecordFloatCreditPurchaseRequest recordFloatCreditPurchaseRequest, CancellationToken cancellationToken)
-        {
-            FloatCommands.RecordCreditPurchaseForFloatCommand command = new(estateId, recordFloatCreditPurchaseRequest.FloatId, recordFloatCreditPurchaseRequest.CreditAmount, recordFloatCreditPurchaseRequest.CostPrice, recordFloatCreditPurchaseRequest.PurchaseDateTime);
+        public static async Task<IResult> RecordFloatCreditPurchase(IMediator mediator, HttpContext ctx, Guid estateId, RecordFloatCreditPurchaseRequest recordFloatCreditPurchaseRequest, CancellationToken cancellationToken) {
+            
+            FloatCommands.RecordCreditPurchaseForFloatCommand command = new(estateId, recordFloatCreditPurchaseRequest);
             Result result = await mediator.Send(command, cancellationToken);
 
             return ResponseFactory.FromResult(result);
