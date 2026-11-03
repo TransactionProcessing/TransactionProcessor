@@ -2205,12 +2205,12 @@ namespace TransactionProcessor.Repository {
                 query = query.Where(t => t.MerchantId == merchantId);
             }
 
-            List<SettlementModel> result = await query.GroupBy(t => new
+            var settlementRows = await query.GroupBy(t => new
             {
                 t.SettlementId,
                 t.SettlementDate,
                 t.IsCompleted
-            }).Select(t => new SettlementModel
+            }).Select(t => new
             {
                 SettlementId = t.Key.SettlementId,
                 SettlementDate = t.Key.SettlementDate,
@@ -2219,6 +2219,15 @@ namespace TransactionProcessor.Repository {
                 IsCompleted = t.Key.IsCompleted
             }).OrderByDescending(t => t.SettlementDate)
                                                       .ToListAsync(cancellationToken);
+
+            List<SettlementModel> result = settlementRows.Select(t => new SettlementModel
+            {
+                SettlementId = t.SettlementId,
+                SettlementDate = new DateTimeOffset(DateTime.SpecifyKind(t.SettlementDate, DateTimeKind.Unspecified), TimeSpan.Zero),
+                NumberOfFeesSettled = t.NumberOfFeesSettled,
+                ValueOfFeesSettled = t.ValueOfFeesSettled,
+                IsCompleted = t.IsCompleted
+            }).ToList();
 
             return Result.Success(result);
         }

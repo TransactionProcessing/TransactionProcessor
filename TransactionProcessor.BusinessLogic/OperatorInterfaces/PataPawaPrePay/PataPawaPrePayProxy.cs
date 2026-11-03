@@ -310,7 +310,7 @@ public class PataPawaPrePayProxy : IOperatorProxy{
                     return default;
 
                 // Try exact known formats first (handles "2026-05-07 06:03:18")
-                if (DateTime.TryParseExact(s, AcceptedFormats, CultureInfo.InvariantCulture, DateTimeStyles.AssumeLocal | DateTimeStyles.AllowWhiteSpaces, out var dtExact))
+                if (DateTimeOffset.TryParseExact(s, AcceptedFormats, CultureInfo.InvariantCulture, DateTimeStyles.AssumeLocal | DateTimeStyles.AllowWhiteSpaces, out var dtExact))
                     return dtExact;
 
                 // Fall back to general parse
@@ -331,8 +331,8 @@ public class PataPawaPrePayProxy : IOperatorProxy{
 
         public override void Write(Utf8JsonWriter writer, DateTimeOffset value, JsonSerializerOptions options)
         {
-            // Write in the same "space" format so round-trip matches your input
-            writer.WriteStringValue(value.ToString("yyyy-MM-dd HH:mm:ss", CultureInfo.InvariantCulture));
+            // Preserve both the instant and the original offset in API responses.
+            writer.WriteStringValue(value.ToString("o", CultureInfo.InvariantCulture));
         }
     }
 }

@@ -1527,8 +1527,8 @@ namespace TransactionProcessor.Database.Migrations.SqlServer
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<DateTimeOffset>("SettlementDate")
-                        .HasColumnType("datetimeoffset");
+                    b.Property<DateTime>("SettlementDate")
+                        .HasColumnType("datetime2");
 
                     b.Property<Guid>("SettlementId")
                         .HasColumnType("uniqueidentifier");
