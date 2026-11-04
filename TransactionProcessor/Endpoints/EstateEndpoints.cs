@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Routing;
 using Shared.Authorisation;
 using Shared.General;
+using System;
 using System.Diagnostics.CodeAnalysis;
 using System.Security.Claims;
 using TransactionProcessor.Handlers;
@@ -27,7 +28,8 @@ namespace TransactionProcessor.Endpoints
 
             estateGroup.MapPost("/", EstateHandlers.CreateEstate)
                 .WithName("CreateEstate").WithSummary("Create an estate")
-                .WithDescription("Creates an estate using the supplied estate ID and display name.");
+                .WithDescription("Creates an estate from the supplied display name. The service generates and returns the estate ID.")
+                .Produces<Guid>();
 
             estateGroup.MapGet("/{estateId:guid}", EstateHandlers.GetEstate)
                 .WithName("GetEstate").WithSummary("Get an estate")

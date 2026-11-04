@@ -3,13 +3,14 @@ using System.Threading;
 using System.Threading.Tasks;
 using MediatR;
 using SimpleResults;
+using System;
 using TransactionProcessor.BusinessLogic.Manager;
 using TransactionProcessor.BusinessLogic.Requests;
 using TransactionProcessor.BusinessLogic.Services;
 
 namespace TransactionProcessor.BusinessLogic.RequestHandlers
 {
-    public class EstateRequestHandler : IRequestHandler<EstateCommands.CreateEstateCommand, Result>,
+    public class EstateRequestHandler : IRequestHandler<EstateCommands.CreateEstateCommand, Result<Guid>>,
                                         IRequestHandler<EstateCommands.AddOperatorToEstateCommand, Result>,
                                         IRequestHandler<EstateCommands.RemoveOperatorFromEstateCommand, Result>,
                                         IRequestHandler<EstateCommands.CreateEstateUserCommand, Result>,
@@ -35,7 +36,7 @@ namespace TransactionProcessor.BusinessLogic.RequestHandlers
 
         #region Methods
 
-        public async Task<Result> Handle(EstateCommands.CreateEstateCommand command, CancellationToken cancellationToken)
+        public async Task<Result<Guid>> Handle(EstateCommands.CreateEstateCommand command, CancellationToken cancellationToken)
         {
             return await this.EstateDomainService.CreateEstate(command, cancellationToken);
         }

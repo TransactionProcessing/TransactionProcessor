@@ -106,7 +106,7 @@ namespace TransactionProcessor.Client {
                                                       Guid estateId,
                                                       CancellationToken cancellationToken);
 
-        Task<Result> CreateEstate(String accessToken,
+        Task<Result<Guid>> CreateEstate(String accessToken,
                                   CreateEstateRequest createEstateRequest,
                                   CancellationToken cancellationToken);
 

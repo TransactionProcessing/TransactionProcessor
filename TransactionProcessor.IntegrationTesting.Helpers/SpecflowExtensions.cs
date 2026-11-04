@@ -935,7 +935,6 @@ public static class ReqnrollExtensions{
         {
             CreateEstateRequest createEstateRequest = new CreateEstateRequest
             {
-                EstateId = Guid.NewGuid(),
                 EstateName = ReqnrollTableHelper.GetStringRowValue(tableRow, "EstateName")
             };
             requests.Add(createEstateRequest);

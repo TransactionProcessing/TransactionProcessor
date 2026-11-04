@@ -66,18 +66,18 @@ public class TransactionProcessorClient : ClientProxyBase, ITransactionProcessor
         }
     }
     
-    public async Task<Result> CreateEstate(String accessToken,
+    public async Task<Result<Guid>> CreateEstate(String accessToken,
                                            CreateEstateRequest createEstateRequest,
                                            CancellationToken cancellationToken) {
         String requestUri = this.BuildRequestUrl("/api/estates/");
 
         try {
-            var result = await this.Post(requestUri, createEstateRequest, accessToken, cancellationToken);
+            Result<Guid> result = await this.Post<CreateEstateRequest, Guid>(requestUri, createEstateRequest, accessToken, cancellationToken);
             
             if (result.IsFailed)
                 return ResultHelpers.CreateFailure(result);
 
-            return Result.Success();
+            return Result.Success<Guid>(result.Data);
         }
         catch (Exception ex) {
             // An exception has occurred, add some additional information to the message

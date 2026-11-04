@@ -65,11 +65,15 @@ namespace TransactionProcessor.BusinessLogic.Services
             });
 
         public static Guid GenerateContractId(Guid estateId, Guid operatorId, String contractName) {
-
             String normalisedContractName = contractName.ToLower().Replace(" ", String.Empty);
 
             return IdGenerationService.GenerateUniqueId(new { estateId, operatorId, normalisedContractName });
         }
 
+        public static Guid GenerateEstateId(String estateName) {
+            String normalisedEstateName = estateName.ToLowerInvariant().Replace(" ", String.Empty);
+
+            return IdGenerationService.GenerateUniqueId(new { normalisedEstateName });
+        }
     }
 }

@@ -9,7 +9,7 @@ namespace TransactionProcessor.BusinessLogic.Requests
     [ExcludeFromCodeCoverage]
     public class EstateCommands
     {
-        public record CreateEstateCommand(CreateEstateRequest RequestDto) : IRequest<Result>;
+        public record CreateEstateCommand(CreateEstateRequest RequestDto) : IRequest<Result<Guid>>;
 
         public record CreateEstateUserCommand(Guid EstateId, CreateEstateUserRequest RequestDto) : IRequest<Result>;
 

@@ -17,9 +17,9 @@ public static class EstateHandlers
     public static async Task<IResult> CreateEstate(IMediator mediator, HttpContext context, CreateEstateRequest createEstateRequest, CancellationToken cancellationToken)
     {
         EstateCommands.CreateEstateCommand command = new(createEstateRequest);
-        Result result = await mediator.Send(command, cancellationToken);
+        Result<Guid> result = await mediator.Send(command, cancellationToken);
 
-        return ResponseFactory.FromResult(result);
+        return ResponseFactory.FromResult<Guid>(result, (estateId) => result.Data);
     }
 
     public static async Task<IResult> GetEstate(IMediator mediator, HttpContext context, Guid estateId, CancellationToken cancellationToken)
