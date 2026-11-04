@@ -51,8 +51,9 @@ namespace TransactionProcessor.BusinessLogic.Tests.Services
                 .Save(Arg<EstateAggregate>.Any(), Arg<CancellationToken>.Any())
                 .ReturnsAsync(SimpleResults.Result.Success());
             
-            Result result = await this.DomainService.CreateEstate(TestData.Commands.CreateEstateCommand, TestContext.Current.CancellationToken);
+            Result<Guid> result = await this.DomainService.CreateEstate(TestData.Commands.CreateEstateCommand, TestContext.Current.CancellationToken);
             result.IsSuccess.ShouldBeTrue();
+            result.Data.ShouldNotBe(Guid.Empty);
         }
 
         
@@ -274,7 +275,7 @@ namespace TransactionProcessor.BusinessLogic.Tests.Services
             this.AggregateService.GetLatest<EstateAggregate>(Arg<Guid>.Any(), Arg<CancellationToken>.Any())
                 .ReturnsAsync(Result.Failure());
 
-            Result result = await this.DomainService.CreateEstate(TestData.Commands.CreateEstateCommand, TestContext.Current.CancellationToken);
+            Result<Guid> result = await this.DomainService.CreateEstate(TestData.Commands.CreateEstateCommand, TestContext.Current.CancellationToken);
             result.IsFailed.ShouldBeTrue();
         }
 
@@ -285,9 +286,9 @@ namespace TransactionProcessor.BusinessLogic.Tests.Services
                 .ReturnsAsync(SimpleResults.Result.Success(new EstateAggregate()));
 
             EstateCommands.CreateEstateCommand emptyNameCommand = new EstateCommands.CreateEstateCommand(
-                new CreateEstateRequest { EstateId = TestData.EstateId, EstateName = String.Empty });
+                new CreateEstateRequest { EstateName = String.Empty });
 
-            Result result = await this.DomainService.CreateEstate(emptyNameCommand, TestContext.Current.CancellationToken);
+            Result<Guid> result = await this.DomainService.CreateEstate(emptyNameCommand, TestContext.Current.CancellationToken);
             result.IsFailed.ShouldBeTrue();
         }
 
@@ -300,7 +301,7 @@ namespace TransactionProcessor.BusinessLogic.Tests.Services
                 .Save(Arg<EstateAggregate>.Any(), Arg<CancellationToken>.Any())
                 .ReturnsAsync(Result.Failure());
 
-            Result result = await this.DomainService.CreateEstate(TestData.Commands.CreateEstateCommand, TestContext.Current.CancellationToken);
+            Result<Guid> result = await this.DomainService.CreateEstate(TestData.Commands.CreateEstateCommand, TestContext.Current.CancellationToken);
             result.IsFailed.ShouldBeTrue();
         }
 
@@ -402,7 +403,7 @@ namespace TransactionProcessor.BusinessLogic.Tests.Services
             this.AggregateService.GetLatest<EstateAggregate>(Arg<Guid>.Any(), Arg<CancellationToken>.Any())
                 .ThrowsAsync(new Exception());
 
-            Result result = await this.DomainService.CreateEstate(TestData.Commands.CreateEstateCommand, TestContext.Current.CancellationToken);
+            Result<Guid> result = await this.DomainService.CreateEstate(TestData.Commands.CreateEstateCommand, TestContext.Current.CancellationToken);
             result.IsFailed.ShouldBeTrue();
         }
 

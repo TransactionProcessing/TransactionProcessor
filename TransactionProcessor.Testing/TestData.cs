@@ -1791,11 +1791,9 @@ namespace TransactionProcessor.Testing
         public static Guid SecurityUserId = Guid.Parse("45B74A2E-BF92-44E9-A300-08E5CDEACFE3");
 
         public static CreateEstateRequest CreateEstateRequest =>
-            new CreateEstateRequest
-            {
-                EstateId = TestData.EstateId,
-                EstateName = TestData.EstateName,
-            };
+            new() {
+                      EstateName = TestData.EstateName,
+                  };
         public static CreateEstateUserRequest CreateEstateUserRequest =>
             new CreateEstateUserRequest
             {

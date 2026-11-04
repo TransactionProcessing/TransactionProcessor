@@ -5,7 +5,6 @@ using System.Threading;
 using System.Threading.Tasks;
 using SecurityService.Client;
 using SecurityService.DataTransferObjects;
-using Shared.DomainDrivenDesign.EventSourcing;
 using Shared.EventStore.Aggregate;
 using Shared.Exceptions;
 using Shared.Results;
@@ -20,7 +19,7 @@ namespace TransactionProcessor.BusinessLogic.Services
     {
         #region Methods
 
-        Task<Result> CreateEstate(EstateCommands.CreateEstateCommand command, CancellationToken cancellationToken);
+        Task<Result<Guid>> CreateEstate(EstateCommands.CreateEstateCommand command, CancellationToken cancellationToken);
 
         Task<Result> AddOperatorToEstate(EstateCommands.AddOperatorToEstateCommand command, CancellationToken cancellationToken);
 
@@ -54,10 +53,13 @@ namespace TransactionProcessor.BusinessLogic.Services
 
         #region Methods
         
-        public async Task<Result> CreateEstate(EstateCommands.CreateEstateCommand command,
+        public async Task<Result<Guid>> CreateEstate(EstateCommands.CreateEstateCommand command,
                                                CancellationToken cancellationToken) {
             try {
-                Result<EstateAggregate> estateResult = await DomainServiceHelper.GetAggregateOrFailure(ct => this.AggregateService.GetLatest<EstateAggregate>(command.RequestDto.EstateId, ct), command.RequestDto.EstateId, cancellationToken, false);
+
+                Guid estateId = IdGenerationService.GenerateEstateId(command.RequestDto.EstateName);
+                
+                Result<EstateAggregate> estateResult = await DomainServiceHelper.GetAggregateOrFailure(ct => this.AggregateService.GetLatest<EstateAggregate>(estateId, ct), estateId, cancellationToken, false);
                 if (estateResult.IsFailed)
                     return ResultHelpers.CreateFailure(estateResult);
 
@@ -71,7 +73,7 @@ namespace TransactionProcessor.BusinessLogic.Services
                 if (saveResult.IsFailed)
                     return ResultHelpers.CreateFailure(saveResult);
 
-                return Result.Success();
+                return Result.Success<Guid>(estateId);
             }
             catch (Exception ex) {
                 return Result.Failure(ex.GetExceptionMessages());

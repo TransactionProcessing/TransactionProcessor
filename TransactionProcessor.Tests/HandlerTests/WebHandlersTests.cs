@@ -251,16 +251,14 @@ public class WebHandlersTests
     {
         yield return Case(
             "CreateEstate",
-            SetupSuccess<EstateCommands.CreateEstateCommand>(command =>
+            SetupSuccess<EstateCommands.CreateEstateCommand, Guid>(EstateId, command =>
             {
-                command.RequestDto.EstateId.ShouldBe(EstateId);
                 command.RequestDto.EstateName.ShouldBe("Estate");
             }),
             mediator => EstateHandlers.CreateEstate(mediator,
                                                     new DefaultHttpContext(),
                                                     new CreateEstateRequest
                                                     {
-                                                        EstateId = EstateId,
                                                         EstateName = "Estate"
                                                     },
                                                     CancellationToken.None));

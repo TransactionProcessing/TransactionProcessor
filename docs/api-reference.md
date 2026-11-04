@@ -22,7 +22,7 @@ This reference covers the routes currently registered by `TransactionProcessor` 
 
 | Method | Path | Query | Request body | Success response |
 |---|---|---|---|---|
-| POST | `/api/estates/` | — | `CreateEstateRequest` | Result envelope/body from command result. |
+| POST | `/api/estates/` | — | `CreateEstateRequest` (`EstateName: string`) | Generated estate ID (`Guid`). |
 | GET | `/api/estates/{estateId}` | — | — | `EstateResponse` |
 | GET | `/api/estates/{estateId}/all` | — | — | `EstateResponse[]` |
 | PATCH | `/api/estates/{estateId}/users` | — | `CreateEstateUserRequest` | Result envelope/body from command result. |
@@ -133,7 +133,7 @@ Fields below are the declared DTO properties. Requiredness is not inferred from 
 
 | DTO | Fields |
 |---|---|
-| `CreateEstateRequest` | `EstateId: Guid`, `EstateName: string` |
+| `CreateEstateRequest` | `EstateName: string` (the service generates `EstateId` from the request data) |
 | `CreateEstateUserRequest` / `CreateMerchantUserRequest` | `EmailAddress: string`, `Password: string`, `GivenName: string`, `MiddleName: string`, `FamilyName: string` |
 | `Estate.AssignOperatorRequest` | `OperatorId: Guid` |
 | `CreateContractRequest` | `OperatorId: Guid`, `Description: string` |

@@ -719,24 +719,26 @@ public class TransactionProcessorSteps
         }
     }
 
-    public async Task<List<EstateResponse>> WhenICreateTheFollowingEstatesX(String accessToken, List<CreateEstateRequest> requests)
-    {
+    public async Task<List<EstateResponse>> WhenICreateTheFollowingEstatesX(String accessToken, List<CreateEstateRequest> requests) {
+        Dictionary<Guid, CreateEstateRequest> createdEstates = new();
+
         foreach (CreateEstateRequest createEstateRequest in requests)
         {
-            Result? result = await this.TransactionProcessorClient
-                .CreateEstate(accessToken, createEstateRequest, CancellationToken.None)
-                .ConfigureAwait(false);
+            Result<Guid> result = await this.TransactionProcessorClient
+                                            .CreateEstate(accessToken, createEstateRequest, CancellationToken.None)
+                                            .ConfigureAwait(false);
 
             result.IsSuccess.ShouldBeTrue(result.Message);
+            createdEstates.Add(result.Data, createEstateRequest);
         }
 
         List<EstateResponse> results = new List<EstateResponse>();
-        foreach (CreateEstateRequest createEstateRequest in requests)
+        foreach (KeyValuePair<Guid, CreateEstateRequest> createEstateRequest in createdEstates)
         {
             EstateResponse estate = null;
             await Retry.For(async () => {
                     Result<List<EstateResponse>>? getEstatesResult = await this.TransactionProcessorClient
-                        .GetEstates(accessToken, createEstateRequest.EstateId, CancellationToken.None).ConfigureAwait(false);
+                        .GetEstates(accessToken, createEstateRequest.Key, CancellationToken.None).ConfigureAwait(false);
 
                     List<EstateResponse>? estates = getEstatesResult.Data;
                     try
@@ -745,13 +747,13 @@ public class TransactionProcessorSteps
                         estates.ShouldNotBeNull();
                         estates.Count.ShouldBe(1);
                         estate = estates.Single();
-                        estate.EstateName.ShouldBe(createEstateRequest.EstateName);
+                        estate.EstateName.ShouldBe(createEstateRequest.Value.EstateName);
                         estate.EstateReference.ShouldNotBeNullOrWhiteSpace();
                     }
                     catch
                     {
                         StringBuilder snapshot = new StringBuilder();
-                        snapshot.Append($"estateId={createEstateRequest.EstateId}, expectedName={createEstateRequest.EstateName}, ");
+                        snapshot.Append($"estateId={createEstateRequest.Key}, expectedName={createEstateRequest.Value.EstateName}, ");
                         snapshot.Append($"isSuccess={getEstatesResult.IsSuccess}, ");
                         snapshot.Append($"rows={(estates == null ? "null" : estates.Count.ToString())}");
 
