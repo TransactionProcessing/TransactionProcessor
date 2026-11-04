@@ -30,7 +30,7 @@ namespace TransactionProcessor.BusinessLogic.Services
     public interface IMerchantDomainService
     {
         #region Methods
-        Task<Result> CreateMerchant(MerchantCommands.CreateMerchantCommand command, CancellationToken cancellationToken);
+        Task<Result<Guid>> CreateMerchant(MerchantCommands.CreateMerchantCommand command, CancellationToken cancellationToken);
         Task<Result> AssignOperatorToMerchant(MerchantCommands.AssignOperatorToMerchantCommand command, CancellationToken cancellationToken);
         Task<Result> CreateMerchantUser(MerchantCommands.CreateMerchantUserCommand command, CancellationToken cancellationToken);
         Task<Result> AddDeviceToMerchant(MerchantCommands.AddMerchantDeviceCommand command, CancellationToken cancellationToken);
@@ -199,11 +199,11 @@ namespace TransactionProcessor.BusinessLogic.Services
             return merchantDepositListAggregate.Create(merchantAggregate, depositDateTime);
         }
 
-        public async Task<Result> CreateMerchant(MerchantCommands.CreateMerchantCommand command, CancellationToken cancellationToken)
+        public async Task<Result<Guid>> CreateMerchant(MerchantCommands.CreateMerchantCommand command, CancellationToken cancellationToken)
         {
             try {
                 // Check if we have been sent a merchant id to use
-                Guid merchantId = command.RequestDto.MerchantId ?? Guid.NewGuid();
+                Guid merchantId = IdGenerationService.GenerateMerchantId(command.EstateId, command.RequestDto.Name);
 
                 Result<EstateAggregate> estateResult = await DomainServiceHelper.GetAggregateOrFailure(ct => this.AggregateService.Get<EstateAggregate>(command.EstateId, ct), command.EstateId, cancellationToken);
                 if (estateResult.IsFailed)
@@ -227,7 +227,7 @@ namespace TransactionProcessor.BusinessLogic.Services
                 // Set the settlement schedule
                 SettlementSchedule settlementSchedule = ConvertSettlementSchedule(command.RequestDto.SettlementSchedule);
 
-                var stateResult = merchantAggregate.Create(command.EstateId, command.RequestDto.Name, command.RequestDto.CreatedDateTime.GetValueOrDefault(DateTimeOffset.UtcNow),
+                Result stateResult = merchantAggregate.Create(command.EstateId, command.RequestDto.Name, command.RequestDto.CreatedDateTime.GetValueOrDefault(DateTimeOffset.UtcNow),
                     address, contact, settlementSchedule);
                 if (stateResult.IsFailed)
                     return stateResult;
@@ -237,7 +237,7 @@ namespace TransactionProcessor.BusinessLogic.Services
                 if (saveResult.IsFailed)
                     return ResultHelpers.CreateFailure(saveResult);
 
-                return saveResult;
+                return Result.Success(merchantId);
             }
             catch (Exception ex) {
                 return Result.Failure(ex.GetExceptionMessages());

@@ -65,7 +65,7 @@ namespace TransactionProcessor.BusinessLogic.Services
             });
 
         public static Guid GenerateContractId(Guid estateId, Guid operatorId, String contractName) {
-            String normalisedContractName = contractName.ToLower().Replace(" ", String.Empty);
+            String normalisedContractName = contractName.ToLowerInvariant().Replace(" ", String.Empty);
 
             return IdGenerationService.GenerateUniqueId(new { estateId, operatorId, normalisedContractName });
         }
@@ -74,6 +74,12 @@ namespace TransactionProcessor.BusinessLogic.Services
             String normalisedEstateName = estateName.ToLowerInvariant().Replace(" ", String.Empty);
 
             return IdGenerationService.GenerateUniqueId(new { normalisedEstateName });
+        }
+
+        public static Guid GenerateMerchantId(Guid estateId, String merchantName) {
+            String normalisedMerchantName = merchantName.ToLowerInvariant().Replace(" ", String.Empty);
+
+            return IdGenerationService.GenerateUniqueId(new { estateId, normalisedMerchantName });
         }
     }
 }

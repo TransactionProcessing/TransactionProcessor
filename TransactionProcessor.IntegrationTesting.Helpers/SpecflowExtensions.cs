@@ -1092,7 +1092,6 @@ public static class ReqnrollExtensions{
                     PostalCode = ReqnrollTableHelper.GetStringRowValue(tableRow, "PostalCode")
                 },
                 SettlementSchedule = schedule,
-                MerchantId = Guid.NewGuid()
             };
             requests.Add((estateDetails, createMerchantRequest, ReqnrollTableHelper.GetBooleanValue(tableRow, "AgencyBankingEnabled")));
         }

@@ -80,25 +80,7 @@ public class MerchantDomainServiceTests {
         Result<Guid> result = await this.DomainService.CreateMerchant(command, TestContext.Current.CancellationToken);
         result.IsSuccess.ShouldBeTrue();
     }
-
-    [Fact]
-    public async Task MerchantDomainService_CreateMerchant_MerchantIdNotSet_MerchantIsCreated() {
-        this.AggregateService.GetLatest<MerchantAggregate>(Arg<Guid>.Any(), Arg<CancellationToken>.Any())
-            .ReturnsAsync(Result.Success(TestData.Aggregates.EmptyMerchantAggregate()));
-        this.AggregateService
-            .Save(Arg<MerchantAggregate>.Any(), Arg<CancellationToken>.Any())
-            .ReturnsAsync(Result.Success());
-
-        this.AggregateService.Get<EstateAggregate>(Arg<Guid>.Any(), Arg<CancellationToken>.Any())
-            .ReturnsAsync(TestData.Aggregates.CreatedEstateAggregate());
-
-        MerchantCommands.CreateMerchantCommand command = TestData.Commands.CreateMerchantCommand;
-        command.RequestDto.MerchantId = null;
-
-        Result<Guid> result = await this.DomainService.CreateMerchant(command, TestContext.Current.CancellationToken);
-        result.IsSuccess.ShouldBeTrue();
-    }
-
+    
     [Fact]
     public async Task MerchantDomainService_CreateMerchant_AlreadyCreated_MerchantIsCreated() {
         this.AggregateService.GetLatest<MerchantAggregate>(Arg<Guid>.Any(), Arg<CancellationToken>.Any())

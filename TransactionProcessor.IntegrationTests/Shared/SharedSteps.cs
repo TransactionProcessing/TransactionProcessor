@@ -308,12 +308,12 @@ namespace TransactionProcessor.IntegrationTests.Shared {
         {
             List<(EstateDetails estate, CreateMerchantRequest, Boolean)> requests = table.Rows.ToCreateMerchantRequests(this.TestingContext.Estates);
 
-            List<DataTransferObjects.Responses.Merchant.MerchantResponse> verifiedMerchants = await this.TransactionProcessorSteps.WhenICreateTheFollowingMerchants(this.TestingContext.AccessToken, requests);
+            Dictionary<Guid, MerchantResponse> verifiedMerchants = await this.TransactionProcessorSteps.WhenICreateTheFollowingMerchants(this.TestingContext.AccessToken, requests);
 
-            foreach (DataTransferObjects.Responses.Merchant.MerchantResponse verifiedMerchant in verifiedMerchants){
-                EstateDetails estateDetails = this.TestingContext.GetEstateDetails(verifiedMerchant.EstateId);
-                estateDetails.AddMerchant(verifiedMerchant);
-                this.TestingContext.Logger.LogInformation($"Merchant {verifiedMerchant.MerchantName} created with Id {verifiedMerchant.MerchantId} for Estate {estateDetails.EstateName}");
+            foreach (KeyValuePair<Guid, MerchantResponse> verifiedMerchant in verifiedMerchants){
+                EstateDetails estateDetails = this.TestingContext.GetEstateDetails(verifiedMerchant.Value.EstateId);
+                estateDetails.AddMerchant(verifiedMerchant.Value);
+                this.TestingContext.Logger.LogInformation($"Merchant {verifiedMerchant.Value.MerchantName} created with Id {verifiedMerchant.Key} for Estate {estateDetails.EstateName}");
             }
         }
 
