@@ -71,7 +71,7 @@ namespace TransactionProcessor.BusinessLogic.Services
         }
 
         public static Guid GenerateEstateId(String estateName) {
-            String normalisedEstateName = estateName.ToLower().Replace(" ", String.Empty);
+            String normalisedEstateName = estateName.ToLowerInvariant().Replace(" ", String.Empty);
 
             return IdGenerationService.GenerateUniqueId(new { normalisedEstateName });
         }
