@@ -80,9 +80,9 @@ public static class MerchantHandlers {
                                                      CreateMerchantRequest createMerchantRequest,
                                                      CancellationToken cancellationToken) {
         MerchantCommands.CreateMerchantCommand command = new(estateId, createMerchantRequest);
-        Result result = await mediator.Send(command, cancellationToken);
+        Result<Guid> result = await mediator.Send(command, cancellationToken);
 
-        return ResponseFactory.FromResult(result);
+        return ResponseFactory.FromResult<Guid>(result, (merchantId) => result.Data);
     }
 
     public static async Task<IResult> AssignOperator(IMediator mediator,

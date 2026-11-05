@@ -415,7 +415,7 @@ public class WebHandlersTests
 
         yield return Case(
             "CreateMerchant",
-            SetupSuccess<MerchantCommands.CreateMerchantCommand>(command =>
+            SetupSuccess<MerchantCommands.CreateMerchantCommand, Guid>(MerchantId, command =>
             {
                 command.EstateId.ShouldBe(EstateId);
                 command.RequestDto.Name.ShouldBe("Merchant");
@@ -425,7 +425,6 @@ public class WebHandlersTests
                                                         EstateId,
                                                         new CreateMerchantRequest
                                                         {
-                                                            MerchantId = MerchantId,
                                                             Name = "Merchant"
                                                         },
                                                         CancellationToken.None));

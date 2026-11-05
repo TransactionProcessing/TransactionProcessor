@@ -29,8 +29,7 @@ namespace TransactionProcessor.BusinessLogic.Services
 {
     public interface IMerchantDomainService
     {
-        #region Methods
-        Task<Result> CreateMerchant(MerchantCommands.CreateMerchantCommand command, CancellationToken cancellationToken);
+        Task<Result<Guid>> CreateMerchant(MerchantCommands.CreateMerchantCommand command, CancellationToken cancellationToken);
         Task<Result> AssignOperatorToMerchant(MerchantCommands.AssignOperatorToMerchantCommand command, CancellationToken cancellationToken);
         Task<Result> CreateMerchantUser(MerchantCommands.CreateMerchantUserCommand command, CancellationToken cancellationToken);
         Task<Result> AddDeviceToMerchant(MerchantCommands.AddMerchantDeviceCommand command, CancellationToken cancellationToken);
@@ -48,22 +47,14 @@ namespace TransactionProcessor.BusinessLogic.Services
         Task<Result> UpdateMerchantOpeningHours(MerchantCommands.UpdateMerchantOpeningHoursCommand command, CancellationToken cancellationToken);
         Task<Result> CreateMerchantSchedule(MerchantCommands.CreateMerchantScheduleCommand command, CancellationToken cancellationToken);
         Task<Result> UpdateMerchantSchedule(MerchantCommands.UpdateMerchantScheduleCommand command, CancellationToken cancellationToken);
-
-        #endregion
     }
 
     public class MerchantDomainService : IMerchantDomainService
     {
-        #region Fields
-        
         private readonly IAggregateService AggregateService;
         private readonly ISecurityServiceClient SecurityServiceClient;
         private readonly IEventStoreContext EventStoreContext;
         private TokenResponse TokenResponse;
-
-        #endregion
-
-        #region Constructors
 
         public MerchantDomainService(Func<IAggregateService> aggregateService,
                                      ISecurityServiceClient securityServiceClient,
@@ -73,10 +64,6 @@ namespace TransactionProcessor.BusinessLogic.Services
             this.SecurityServiceClient = securityServiceClient;
             this.EventStoreContext = eventStoreContext;
         }
-
-        #endregion
-
-        #region Methods
 
         public async Task<Result> AddDeviceToMerchant(MerchantCommands.AddMerchantDeviceCommand command, CancellationToken cancellationToken) {
             try {
@@ -199,11 +186,17 @@ namespace TransactionProcessor.BusinessLogic.Services
             return merchantDepositListAggregate.Create(merchantAggregate, depositDateTime);
         }
 
-        public async Task<Result> CreateMerchant(MerchantCommands.CreateMerchantCommand command, CancellationToken cancellationToken)
+        public async Task<Result<Guid>> CreateMerchant(MerchantCommands.CreateMerchantCommand command, CancellationToken cancellationToken)
         {
             try {
+                if (command.RequestDto == null)
+                    return Result.Invalid("Request DTO must not be null");
+
+                if (String.IsNullOrEmpty(command.RequestDto.Name))
+                    return Result.Invalid("Merchant name is a required value");
+
                 // Check if we have been sent a merchant id to use
-                Guid merchantId = command.RequestDto.MerchantId ?? Guid.NewGuid();
+                Guid merchantId = IdGenerationService.GenerateMerchantId(command.EstateId, command.RequestDto.Name);
 
                 Result<EstateAggregate> estateResult = await DomainServiceHelper.GetAggregateOrFailure(ct => this.AggregateService.Get<EstateAggregate>(command.EstateId, ct), command.EstateId, cancellationToken);
                 if (estateResult.IsFailed)
@@ -227,7 +220,7 @@ namespace TransactionProcessor.BusinessLogic.Services
                 // Set the settlement schedule
                 SettlementSchedule settlementSchedule = ConvertSettlementSchedule(command.RequestDto.SettlementSchedule);
 
-                var stateResult = merchantAggregate.Create(command.EstateId, command.RequestDto.Name, command.RequestDto.CreatedDateTime.GetValueOrDefault(DateTimeOffset.UtcNow),
+                Result stateResult = merchantAggregate.Create(command.EstateId, command.RequestDto.Name, command.RequestDto.CreatedDateTime.GetValueOrDefault(DateTimeOffset.UtcNow),
                     address, contact, settlementSchedule);
                 if (stateResult.IsFailed)
                     return stateResult;
@@ -237,7 +230,7 @@ namespace TransactionProcessor.BusinessLogic.Services
                 if (saveResult.IsFailed)
                     return ResultHelpers.CreateFailure(saveResult);
 
-                return saveResult;
+                return Result.Success(merchantId);
             }
             catch (Exception ex) {
                 return Result.Failure(ex.GetExceptionMessages());
@@ -848,7 +841,5 @@ namespace TransactionProcessor.BusinessLogic.Services
                 return Result.Failure(ex.GetExceptionMessages());
             }
         }
-
-        #endregion
     }
 }

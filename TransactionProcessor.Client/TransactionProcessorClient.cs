@@ -728,19 +728,19 @@ public class TransactionProcessorClient : ClientProxyBase, ITransactionProcessor
         }
     }
 
-    public async Task<Result> CreateMerchant(String accessToken,
+    public async Task<Result<Guid>> CreateMerchant(String accessToken,
                                              Guid estateId,
                                              CreateMerchantRequest createMerchantRequest,
                                              CancellationToken cancellationToken) {
         String requestUri = this.BuildRequestUrl($"/api/estates/{estateId}/merchants");
 
         try {
-            var result = await this.Post<CreateMerchantRequest>(requestUri, createMerchantRequest, accessToken, cancellationToken);
+            Result<Guid> result = await this.Post<CreateMerchantRequest, Guid>(requestUri, createMerchantRequest, accessToken, cancellationToken);
 
             if (result.IsFailed)
                 return ResultHelpers.CreateFailure(result);
 
-            return Result.Success();
+            return Result.Success(result.Data);
         }
         catch (Exception ex) {
             // An exception has occurred, add some additional information to the message

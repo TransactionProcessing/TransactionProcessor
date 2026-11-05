@@ -17,8 +17,6 @@ namespace TransactionProcessor.BusinessLogic.Services
 {
     public interface IEstateDomainService
     {
-        #region Methods
-
         Task<Result<Guid>> CreateEstate(EstateCommands.CreateEstateCommand command, CancellationToken cancellationToken);
 
         Task<Result> AddOperatorToEstate(EstateCommands.AddOperatorToEstateCommand command, CancellationToken cancellationToken);
@@ -26,22 +24,14 @@ namespace TransactionProcessor.BusinessLogic.Services
         Task<Result> CreateEstateUser(EstateCommands.CreateEstateUserCommand command, CancellationToken cancellationToken);
 
         Task<Result> RemoveOperatorFromEstate(EstateCommands.RemoveOperatorFromEstateCommand command, CancellationToken cancellationToken);
-
-        #endregion
     }
 
     public class EstateDomainService : IEstateDomainService
     {
-        #region Fields
-
         private readonly IAggregateService AggregateService;
         private readonly ISecurityServiceClient SecurityServiceClient;
 
         private TokenResponse TokenResponse;
-
-        #endregion
-
-        #region Constructors
 
         public EstateDomainService(Func<IAggregateService> aggregateService,
                                    ISecurityServiceClient securityServiceClient) {
@@ -49,14 +39,9 @@ namespace TransactionProcessor.BusinessLogic.Services
             this.SecurityServiceClient = securityServiceClient;
         }
 
-        #endregion
-
-        #region Methods
-        
         public async Task<Result<Guid>> CreateEstate(EstateCommands.CreateEstateCommand command,
                                                CancellationToken cancellationToken) {
             try {
-
                 Guid estateId = IdGenerationService.GenerateEstateId(command.RequestDto.EstateName);
                 
                 Result<EstateAggregate> estateResult = await DomainServiceHelper.GetAggregateOrFailure(ct => this.AggregateService.GetLatest<EstateAggregate>(estateId, ct), estateId, cancellationToken, false);
@@ -209,7 +194,5 @@ namespace TransactionProcessor.BusinessLogic.Services
                 return Result.Failure(ex.GetExceptionMessages());
             }
         }
-
-        #endregion
     }
 }

@@ -10,7 +10,7 @@ namespace TransactionProcessor.BusinessLogic.Requests
     [ExcludeFromCodeCoverage]
     public class MerchantCommands{
 
-        public record CreateMerchantCommand(Guid EstateId, CreateMerchantRequest RequestDto) : IRequest<Result>;
+        public record CreateMerchantCommand(Guid EstateId, CreateMerchantRequest RequestDto) : IRequest<Result<Guid>>;
 
         public record AssignOperatorToMerchantCommand(Guid EstateId, Guid MerchantId, AssignOperatorRequest RequestDto) : IRequest<Result>;
 
