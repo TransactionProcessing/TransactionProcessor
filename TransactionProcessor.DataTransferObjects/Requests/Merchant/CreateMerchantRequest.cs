@@ -1,4 +1,5 @@
 using System;
+using System.ComponentModel.DataAnnotations;
 using TransactionProcessor.DataTransferObjects.Responses.Merchant;
 
 namespace TransactionProcessor.DataTransferObjects.Requests.Merchant
@@ -22,6 +23,7 @@ namespace TransactionProcessor.DataTransferObjects.Requests.Merchant
         /// <summary>
         /// Display name for the estate, merchant, or operator.
         /// </summary>
+        [Required]
         public String Name { get; set; }
         
         /// <summary>

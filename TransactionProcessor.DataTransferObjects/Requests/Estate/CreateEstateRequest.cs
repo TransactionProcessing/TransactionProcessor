@@ -1,4 +1,5 @@
 using System;
+using System.ComponentModel.DataAnnotations;
 
 namespace TransactionProcessor.DataTransferObjects.Requests.Estate
 {
@@ -11,6 +12,7 @@ namespace TransactionProcessor.DataTransferObjects.Requests.Estate
         /// <summary>
         /// Display name for the estate.
         /// </summary>
+        //[Required]
         public String EstateName { get; set; }
     }
 }

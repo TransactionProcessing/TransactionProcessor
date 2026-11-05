@@ -6,6 +6,7 @@
 
   <ItemGroup>
     <PackageReference Include="CallbackHandler.DataTransferObjects" />
+    <PackageReference Include="FluentValidation" />
     <PackageReference Include="ClientProxyBase" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.Relational" />
     <PackageReference Include="MessagingService.Client" />

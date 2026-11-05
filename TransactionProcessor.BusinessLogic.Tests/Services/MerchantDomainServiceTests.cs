@@ -13,6 +13,7 @@ using Shouldly;
 using SimpleResults;
 using System;
 using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using System.Text.Json;
 using System.Threading;
@@ -21,6 +22,7 @@ using TransactionProcessor.Aggregates;
 using TransactionProcessor.BusinessLogic.Requests;
 using TransactionProcessor.BusinessLogic.Services;
 using TransactionProcessor.DomainEvents;
+using TransactionProcessor.DataTransferObjects.Requests.Merchant;
 using TransactionProcessor.Models.Contract;
 using TransactionProcessor.Models.Merchant;
 using TransactionProcessor.Testing;
@@ -79,6 +81,31 @@ public class MerchantDomainServiceTests {
 
         Result<Guid> result = await this.DomainService.CreateMerchant(command, TestContext.Current.CancellationToken);
         result.IsSuccess.ShouldBeTrue();
+    }
+
+    [Theory]
+    [InlineData(null)]
+    [InlineData("")]
+    public async Task MerchantDomainService_CreateMerchant_NameIsMissing_ResultIsInvalid(String merchantName) {
+        MerchantCommands.CreateMerchantCommand command = new(TestData.EstateId, new CreateMerchantRequest { Name = merchantName });
+
+        Result<Guid> result = await this.DomainService.CreateMerchant(command, TestContext.Current.CancellationToken);
+
+        result.Status.ShouldBe(ResultStatus.Invalid);
+    }
+
+    [Theory]
+    [InlineData(null)]
+    [InlineData("")]
+    public void CreateMerchantRequest_NameIsMissing_ValidationFails(String merchantName) {
+        CreateMerchantRequest request = new() { Name = merchantName };
+        List<ValidationResult> validationResults = new();
+
+        Boolean isValid = Validator.TryValidateObject(request,
+            new ValidationContext(request), validationResults, validateAllProperties: true);
+
+        isValid.ShouldBeFalse();
+        validationResults.ShouldContain(result => result.MemberNames.Contains(nameof(CreateMerchantRequest.Name)));
     }
     
     [Fact]
