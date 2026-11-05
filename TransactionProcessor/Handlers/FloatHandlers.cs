@@ -15,9 +15,9 @@ namespace TransactionProcessor.Handlers
         public static async Task<IResult> CreateFloat(IMediator mediator, HttpContext ctx, Guid estateId, CreateFloatRequest createFloatRequest, CancellationToken cancellationToken)
         {
             FloatCommands.CreateFloatCommand command = new(estateId, createFloatRequest.OperatorId, createFloatRequest.CreateDateTime);
-            Result result = await mediator.Send(command, cancellationToken);
+            Result<Guid> result = await mediator.Send(command, cancellationToken);
 
-            return ResponseFactory.FromResult(result);
+            return ResponseFactory.FromResult<Guid>(result, (floatId) => result.Data);
         }
 
         public static async Task<IResult> RecordFloatCreditPurchase(IMediator mediator, HttpContext ctx, Guid estateId, RecordFloatCreditPurchaseRequest recordFloatCreditPurchaseRequest, CancellationToken cancellationToken) {

@@ -9,13 +9,12 @@ using TransactionProcessor.BusinessLogic.Requests;
 namespace TransactionProcessor.BusinessLogic.Services
 {
     using System.Threading;
-    using Shared.DomainDrivenDesign.EventSourcing;
     using Shared.EventStore.Aggregate;
     using Shared.Exceptions;
     using TransactionProcessor.Aggregates;
 
     public interface IFloatDomainService {
-        Task<Result> CreateFloat(FloatCommands.CreateFloatCommand command,
+        Task<Result<Guid>> CreateFloat(FloatCommands.CreateFloatCommand command,
                                                    CancellationToken cancellationToken);
 
         Task<Result> RecordCreditPurchase(FloatCommands.RecordCreditPurchaseForFloatCommand command,
@@ -69,7 +68,7 @@ namespace TransactionProcessor.BusinessLogic.Services
             return Result.Success();
         }
 
-        public async Task<Result> CreateFloat(FloatCommands.CreateFloatCommand command,
+        public async Task<Result<Guid>> CreateFloat(FloatCommands.CreateFloatCommand command,
                                                                 CancellationToken cancellationToken){
 
             try {
@@ -96,7 +95,8 @@ namespace TransactionProcessor.BusinessLogic.Services
                 Result saveResult = await this.AggregateService.Save(floatAggregate, cancellationToken);
                 if (saveResult.IsFailed)
                     return ResultHelpers.CreateFailure(saveResult);
-                return saveResult;
+                return Result.Success(command.OperatorId);
+
             }
             catch (Exception ex) {
                 return Result.Failure(ex.GetExceptionMessages());
@@ -107,7 +107,7 @@ namespace TransactionProcessor.BusinessLogic.Services
 
             try
             {
-                Result<FloatAggregate> getFloatResult = await DomainServiceHelper.GetAggregateOrFailure(ct => this.AggregateService.GetLatest<FloatAggregate>(command.RecordFloatCreditPurchaseRequest.OperatorId, ct), command.RecordFloatCreditPurchaseRequest.OperatorId, cancellationToken);
+                Result<FloatAggregate> getFloatResult = await DomainServiceHelper.GetAggregateOrFailure(ct => this.AggregateService.GetLatest<FloatAggregate>(command.RecordFloatCreditPurchaseRequest.FloatId, ct), command.RecordFloatCreditPurchaseRequest.FloatId, cancellationToken);
                 if (getFloatResult.IsFailed)
                     return ResultHelpers.CreateFailure(getFloatResult);
 
