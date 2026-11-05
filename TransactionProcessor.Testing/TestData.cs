@@ -1746,7 +1746,7 @@ namespace TransactionProcessor.Testing
         public static RecordFloatCreditPurchaseRequest RecordFloatCreditPurchaseRequest = new() {
                                                                                                     CostPrice = FloatCreditCostPrice,
                                                                                                     CreditAmount = FloatCreditAmount,
-                                                                                                    OperatorId = OperatorId,
+                                                                                                    FloatId = FloatAggregateId,
                                                                                                     PurchaseDateTime = CreditPurchasedDateTime,
                                                                                                     HostDateTime = HostDateTime
                                                                                                 };

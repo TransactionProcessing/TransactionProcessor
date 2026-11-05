@@ -1,5 +1,6 @@
 ﻿using System.Threading.Tasks;
 using SimpleResults;
+using System;
 
 namespace TransactionProcessor.BusinessLogic.RequestHandlers
 {
@@ -8,7 +9,7 @@ namespace TransactionProcessor.BusinessLogic.RequestHandlers
     using Requests;
     using TransactionProcessor.BusinessLogic.Services;
 
-    public class FloatRequestHandler :IRequestHandler<FloatCommands.CreateFloatCommand, Result>,
+    public class FloatRequestHandler :IRequestHandler<FloatCommands.CreateFloatCommand, Result<Guid>>,
                                       IRequestHandler<FloatCommands.RecordCreditPurchaseForFloatCommand, Result>,
     IRequestHandler<FloatActivityCommands.RecordCreditPurchaseCommand, Result>,
     IRequestHandler<FloatActivityCommands.RecordTransactionCommand, Result>
@@ -21,7 +22,7 @@ namespace TransactionProcessor.BusinessLogic.RequestHandlers
 
         
 
-        public async Task<Result> Handle(FloatCommands.CreateFloatCommand command, CancellationToken cancellationToken){
+        public async Task<Result<Guid>> Handle(FloatCommands.CreateFloatCommand command, CancellationToken cancellationToken){
             return await this.FloatDomainService.CreateFloat(command, cancellationToken);
         }
 

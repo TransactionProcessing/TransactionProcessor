@@ -334,7 +334,7 @@ public class WebHandlersTests
     {
         yield return Case(
             "CreateFloatForContractProduct",
-            SetupSuccess<FloatCommands.CreateFloatCommand>(command =>
+            SetupSuccess<FloatCommands.CreateFloatCommand, Guid>(FloatId, command =>
             {
                 command.EstateId.ShouldBe(EstateId);
             }),
@@ -353,7 +353,7 @@ public class WebHandlersTests
             SetupSuccess<FloatCommands.RecordCreditPurchaseForFloatCommand>(command =>
             {
                 command.EstateId.ShouldBe(EstateId);
-                command.RecordFloatCreditPurchaseRequest.OperatorId.ShouldBe(OperatorId);
+                command.RecordFloatCreditPurchaseRequest.FloatId.ShouldBe(FloatId);
                 command.RecordFloatCreditPurchaseRequest.CreditAmount.ShouldBe(10m);
                 command.RecordFloatCreditPurchaseRequest.CostPrice.ShouldBe(8m);
             }),
@@ -362,7 +362,7 @@ public class WebHandlersTests
                                                                 EstateId,
                                                                 new RecordFloatCreditPurchaseRequest
                                                                 {
-                                                                    OperatorId = OperatorId,
+                                                                    FloatId = FloatId,
                                                                     PurchaseDateTime = Instant,
                                                                     CreditAmount = 10m,
                                                                     CostPrice = 8m
