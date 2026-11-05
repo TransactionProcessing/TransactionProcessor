@@ -10,7 +10,7 @@ namespace TransactionProcessor.BusinessLogic.Requests;
 public record FloatCommands {
     public record CreateFloatCommand(Guid EstateId,
                                      Guid OperatorId,
-                                     DateTimeOffset CreateDateTime) : IRequest<Result>;
+                                     DateTimeOffset CreateDateTime) : IRequest<Result<Guid>>;
 
     public record RecordCreditPurchaseForFloatCommand(Guid EstateId,
                                                       RecordFloatCreditPurchaseRequest RecordFloatCreditPurchaseRequest) : IRequest<Result>;
