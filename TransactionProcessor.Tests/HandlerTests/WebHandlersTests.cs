@@ -343,7 +343,7 @@ public class WebHandlersTests
                                                                     EstateId,
                                                                     new CreateFloatRequest
                                                                     {
-                                                                        FloatId = FloatId,
+                                                                        OperatorId = OperatorId,
                                                                         CreateDateTime = Instant
                                                                     },
                                                                     CancellationToken.None));
@@ -353,7 +353,7 @@ public class WebHandlersTests
             SetupSuccess<FloatCommands.RecordCreditPurchaseForFloatCommand>(command =>
             {
                 command.EstateId.ShouldBe(EstateId);
-                command.RecordFloatCreditPurchaseRequest.FloatId.ShouldBe(FloatId);
+                command.RecordFloatCreditPurchaseRequest.OperatorId.ShouldBe(OperatorId);
                 command.RecordFloatCreditPurchaseRequest.CreditAmount.ShouldBe(10m);
                 command.RecordFloatCreditPurchaseRequest.CostPrice.ShouldBe(8m);
             }),
@@ -362,7 +362,7 @@ public class WebHandlersTests
                                                                 EstateId,
                                                                 new RecordFloatCreditPurchaseRequest
                                                                 {
-                                                                    FloatId = FloatId,
+                                                                    OperatorId = OperatorId,
                                                                     PurchaseDateTime = Instant,
                                                                     CreditAmount = 10m,
                                                                     CostPrice = 8m

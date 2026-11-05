@@ -78,12 +78,12 @@ namespace TransactionProcessor.BusinessLogic.Services
                     return ResultHelpers.CreateFailure(getEstateResult);
                 }
 
-                Result validateOperatorResult = ValidateOperator(getEstateResult.Data, command.FloatId);
+                Result validateOperatorResult = ValidateOperator(getEstateResult.Data, command.OperatorId);
                 if (validateOperatorResult.IsFailed) {
                     return ResultHelpers.CreateFailure(validateOperatorResult);
                 }
                 
-                Result<FloatAggregate> getFloatResult = await DomainServiceHelper.GetAggregateOrFailure(ct => this.AggregateService.GetLatest<FloatAggregate>(command.FloatId, ct), command.FloatId, cancellationToken, false);
+                Result<FloatAggregate> getFloatResult = await DomainServiceHelper.GetAggregateOrFailure(ct => this.AggregateService.GetLatest<FloatAggregate>(command.OperatorId, ct), command.OperatorId, cancellationToken, false);
                 if (getFloatResult.IsFailed)
                     return ResultHelpers.CreateFailure(getFloatResult);
 
@@ -107,7 +107,7 @@ namespace TransactionProcessor.BusinessLogic.Services
 
             try
             {
-                Result<FloatAggregate> getFloatResult = await DomainServiceHelper.GetAggregateOrFailure(ct => this.AggregateService.GetLatest<FloatAggregate>(command.RecordFloatCreditPurchaseRequest.FloatId, ct), command.RecordFloatCreditPurchaseRequest.FloatId, cancellationToken);
+                Result<FloatAggregate> getFloatResult = await DomainServiceHelper.GetAggregateOrFailure(ct => this.AggregateService.GetLatest<FloatAggregate>(command.RecordFloatCreditPurchaseRequest.OperatorId, ct), command.RecordFloatCreditPurchaseRequest.OperatorId, cancellationToken);
                 if (getFloatResult.IsFailed)
                     return ResultHelpers.CreateFailure(getFloatResult);
 
