@@ -279,7 +279,6 @@ namespace TransactionProcessor.Testing
                     PhoneNumber = TestData.MerchantContactPhoneNumber
                 },
                 CreatedDateTime = TestData.DateMerchantCreated,
-                MerchantId = TestData.MerchantId,
                 Name = TestData.MerchantName,
                 SettlementSchedule = TestData.SettlementScheduleDTO
             };

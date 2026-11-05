@@ -55,7 +55,6 @@ namespace TransactionProcessor.BusinessLogic.Tests.Services
             result.IsSuccess.ShouldBeTrue();
             result.Data.ShouldNotBe(Guid.Empty);
         }
-
         
         [Fact]
         public async Task EstateDomainService_AddOperatorEstate_OperatorIsAdded()

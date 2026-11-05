@@ -115,10 +115,10 @@ namespace TransactionProcessor.Client {
                                       CreateEstateUserRequest createEstateUserRequest,
                                       CancellationToken cancellationToken);
 
-        Task<Result> CreateMerchant(String accessToken,
-                                    Guid estateId,
-                                    CreateMerchantRequest createMerchantRequest,
-                                    CancellationToken cancellationToken);
+        Task<Result<Guid>> CreateMerchant(String accessToken,
+                                          Guid estateId,
+                                          CreateMerchantRequest createMerchantRequest,
+                                          CancellationToken cancellationToken);
 
         Task<Result> CreateMerchantSchedule(String accessToken,
                                             Guid estateId,

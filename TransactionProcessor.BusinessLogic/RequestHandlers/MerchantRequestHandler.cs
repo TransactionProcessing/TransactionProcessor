@@ -23,7 +23,7 @@ public class MerchantRequestHandler : IRequestHandler<MerchantQueries.GetMerchan
                                       IRequestHandler<MerchantQueries.GetMerchantBalanceHistoryQuery, Result<List<MerchantBalanceChangedEntry>>>,
                                       IRequestHandler<MerchantCommands.SwapMerchantDeviceCommand, Result>,
                                       IRequestHandler<MerchantCommands.AddMerchantContractCommand, Result>,
-                                      IRequestHandler<MerchantCommands.CreateMerchantCommand, Result>,
+                                      IRequestHandler<MerchantCommands.CreateMerchantCommand, Result<Guid>>,
                                       IRequestHandler<MerchantCommands.AssignOperatorToMerchantCommand, Result>,
                                       IRequestHandler<MerchantCommands.AddMerchantDeviceCommand, Result>,
                                       IRequestHandler<MerchantCommands.CreateMerchantUserCommand, Result>,
@@ -128,7 +128,7 @@ public class MerchantRequestHandler : IRequestHandler<MerchantQueries.GetMerchan
         return await this.MerchantDomainService.AddContractToMerchant(command, cancellationToken);
     }
 
-    public async Task<Result> Handle(MerchantCommands.CreateMerchantCommand command, CancellationToken cancellationToken)
+    public async Task<Result<Guid>> Handle(MerchantCommands.CreateMerchantCommand command, CancellationToken cancellationToken)
     {
         return await this.MerchantDomainService.CreateMerchant(command, cancellationToken);
     }

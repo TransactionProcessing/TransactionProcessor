@@ -342,25 +342,24 @@ public class TransactionProcessorSteps
         }
     }
 
-    public async Task<List<MerchantResponse>> WhenICreateTheFollowingMerchants(string accessToken, List<(EstateDetails estate, CreateMerchantRequest request, Boolean enableAgencyBanking)> requests)
+    public async Task<Dictionary<Guid, MerchantResponse>> WhenICreateTheFollowingMerchants(string accessToken, List<(EstateDetails estate, CreateMerchantRequest request, Boolean enableAgencyBanking)> requests)
     {
-        List<MerchantResponse> responses = new List<MerchantResponse>();
+        Dictionary<Guid, MerchantResponse> createdMerchants = new();
 
-        List<(Guid, Guid, String)> merchants = new List<(Guid, Guid, String)>();
+        List<(Guid, Guid, String)> merchants = new();
 
         foreach ((EstateDetails estate, CreateMerchantRequest request, Boolean enableAgencyBanking) request in requests)
         {
 
-            Result? result = await this.TransactionProcessorClient
+            Result<Guid> result = await this.TransactionProcessorClient
                 .CreateMerchant(accessToken, request.estate.EstateId, request.request, CancellationToken.None)
                 .ConfigureAwait(false);
 
             result.IsSuccess.ShouldBeTrue(result.Message);
 
-
             if (request.enableAgencyBanking) {
                 CreateAgentRequest createAgentRequest = new() {
-                    AgentId = request.request.MerchantId.Value.ToString(),
+                    AgentId = result.Data.ToString(),
                     DailyLimit = 100000,
                     Name = request.request.Name,
                     MinimumFloat = 10000,
@@ -383,7 +382,7 @@ public class TransactionProcessorSteps
                 
                 // Activate the agent
                 ActivateAgentRequest activateAgentRequest = new ActivateAgentRequest { ActivatedBy = "INTEGRATIONTEST" };
-                var activateAgentResult = await this.AgencyBankingClient.ActivateAgent(createAgentRequest.AgentId, activateAgentRequest, CancellationToken.None);
+                Result activateAgentResult = await this.AgencyBankingClient.ActivateAgent(createAgentRequest.AgentId, activateAgentRequest, CancellationToken.None);
                 activateAgentResult.IsSuccess.ShouldBeTrue(activateAgentResult.Message);
 
                 await Retry.For(async () =>
@@ -399,7 +398,7 @@ public class TransactionProcessorSteps
                 ConfigureFloatRequest configureFloatRequest = new ConfigureFloatRequest {
                     AgentId = createAgentRequest.AgentId, DailyFloatLimit = 100000, MaximumFloat = 100000, MinimumFloat = 10000,
                 };
-                var configureFloatResult = await this.AgencyBankingClient.ConfigureFloat(configureFloatRequest, CancellationToken.None);
+                Result configureFloatResult = await this.AgencyBankingClient.ConfigureFloat(configureFloatRequest, CancellationToken.None);
                 configureFloatResult.IsSuccess.ShouldBeTrue(configureFloatResult.Message);
 
                 await Retry.For(async () =>
@@ -423,7 +422,7 @@ public class TransactionProcessorSteps
                     SourceAccount = "Test Account",
                     TransactionId = Guid.NewGuid().ToString()
                 };
-                var floatCreditResult = await this.AgencyBankingClient.CreditFloat(floatCreditRequest, CancellationToken.None);
+                Result floatCreditResult = await this.AgencyBankingClient.CreditFloat(floatCreditRequest, CancellationToken.None);
                 floatCreditResult.IsSuccess.ShouldBeTrue(floatCreditResult.Message);
 
                 await Retry.For(async () =>
@@ -444,7 +443,7 @@ public class TransactionProcessorSteps
             }
 
 
-            merchants.Add((request.estate.EstateId, request.request.MerchantId.Value, request.request.Name));
+            merchants.Add((request.estate.EstateId, result.Data, request.request.Name));
         }
 
         foreach ((Guid, Guid, String) m in merchants)
@@ -471,10 +470,10 @@ public class TransactionProcessorSteps
                 getMerchantBalanceResult2.Data.ShouldNotBeNull();
             });
             merchant.ShouldNotBeNull();
-            responses.Add(merchant);
+            createdMerchants.Add(m.Item2, merchant);
         }
 
-        return responses;
+        return createdMerchants;
     }
 
     public void ValidateTransactions(List<(TransactionResponse, String, String, String)> transactions)
