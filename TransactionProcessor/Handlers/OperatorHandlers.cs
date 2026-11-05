@@ -18,9 +18,9 @@ namespace TransactionProcessor.Handlers
         public static async Task<IResult> CreateOperator(IMediator mediator, HttpContext ctx, Guid estateId, CreateOperatorRequest createOperatorRequest, CancellationToken cancellationToken)
         {
             OperatorCommands.CreateOperatorCommand command = new(estateId, createOperatorRequest);
-            Result result = await mediator.Send(command, cancellationToken);
+            Result<Guid> result = await mediator.Send(command, cancellationToken);
 
-            return ResponseFactory.FromResult(result);
+            return ResponseFactory.FromResult<Guid>(result, (operatorId) => result.Data);
         }
 
         public static async Task<IResult> UpdateOperator(IMediator mediator, HttpContext ctx, Guid estateId, Guid operatorId, UpdateOperatorRequest updateOperatorRequest, CancellationToken cancellationToken)

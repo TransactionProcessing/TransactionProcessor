@@ -1023,7 +1023,6 @@ public static class ReqnrollExtensions{
 
             CreateOperatorRequest createOperatorRequest = new CreateOperatorRequest
             {
-                OperatorId = operatorId,
                 Name = operatorName,
                 RequireCustomMerchantNumber = requireCustomMerchantNumber,
                 RequireCustomTerminalNumber = requireCustomTerminalNumber

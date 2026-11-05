@@ -7,20 +7,16 @@ namespace TransactionProcessor.DataTransferObjects.Requests.Operator
     /// <summary>
     /// Operator identity and configuration used to create an estate operator.
     /// </summary>
-    /// <example>{"name":"Example Name","operatorId":"00000000-0000-0000-0000-000000000253","requireCustomMerchantNumber":false,"requireCustomTerminalNumber":false}</example>
+    /// <example>{"name":"Example Name","requireCustomMerchantNumber":false,"requireCustomTerminalNumber":false}</example>
     [ExcludeFromCodeCoverage]
     public class CreateOperatorRequest
     {
         /// <summary>
-        /// Display name for the estate, merchant, or operator.
+        /// Display name for the operator.
         /// </summary>
+        [Required]
         public String Name { get; set; }
         
-        /// <summary>
-        /// Operator associated with the operation.
-        /// </summary>
-        public Guid OperatorId { get; set; }
-
         /// <summary>
         /// Whether a custom merchant number is required for this operator.
         /// </summary>

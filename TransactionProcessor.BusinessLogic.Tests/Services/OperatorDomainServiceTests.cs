@@ -36,30 +36,9 @@ public class OperatorDomainServiceTests{
 
         this.AggregateService.GetLatest<OperatorAggregate>(Arg<Guid>.Any(), Arg<CancellationToken>.Any()).ReturnsAsync(SimpleResults.Result.Success(TestData.Aggregates.EmptyOperatorAggregate()));
         this.AggregateService.Save(Arg<OperatorAggregate>.Any(), Arg<CancellationToken>.Any()).ReturnsAsync(Result.Success());
-        Result result = await this.OperatorDomainService.CreateOperator(TestData.Commands.CreateOperatorCommand, TestContext.Current.CancellationToken);
+        Result<Guid> result = await this.OperatorDomainService.CreateOperator(TestData.Commands.CreateOperatorCommand, TestContext.Current.CancellationToken);
         result.IsSuccess.ShouldBeTrue();
 
-    }
-
-    [Fact]
-    public async Task OperatorDomainService_CreateOperator_OperatorIdIsEmpty_OperatorIsCreated()
-    {
-        this.AggregateService.Get<EstateAggregate>(Arg<Guid>.Any(), Arg<CancellationToken>.Any())
-            .ReturnsAsync(TestData.Aggregates.CreatedEstateAggregate());
-        this.AggregateService.GetLatest<OperatorAggregate>(Arg<Guid>.Any(), Arg<CancellationToken>.Any())
-            .ReturnsAsync(SimpleResults.Result.Success(TestData.Aggregates.EmptyOperatorAggregate()));
-        this.AggregateService.Save(Arg<OperatorAggregate>.Any(), Arg<CancellationToken>.Any()).ReturnsAsync(Result.Success());
-
-        OperatorCommands.CreateOperatorCommand emptyIdCommand = new(TestData.EstateId,
-            new CreateOperatorRequest {
-                OperatorId = Guid.Empty,
-                Name = TestData.OperatorName,
-                RequireCustomMerchantNumber = TestData.RequireCustomMerchantNumber,
-                RequireCustomTerminalNumber = TestData.RequireCustomTerminalNumber
-            });
-
-        Result result = await this.OperatorDomainService.CreateOperator(emptyIdCommand, TestContext.Current.CancellationToken);
-        result.IsSuccess.ShouldBeTrue();
     }
 
     [Fact]
@@ -69,7 +48,7 @@ public class OperatorDomainServiceTests{
             .ReturnsAsync(TestData.Aggregates.EmptyEstateAggregate);
         this.AggregateService.GetLatest<OperatorAggregate>(Arg<Guid>.Any(), Arg<CancellationToken>.Any()).ReturnsAsync(SimpleResults.Result.Success(TestData.Aggregates.EmptyOperatorAggregate()));
 
-        Result result = await this.OperatorDomainService.CreateOperator(TestData.Commands.CreateOperatorCommand, TestContext.Current.CancellationToken);
+        Result<Guid> result = await this.OperatorDomainService.CreateOperator(TestData.Commands.CreateOperatorCommand, TestContext.Current.CancellationToken);
         result.IsFailed.ShouldBeTrue();
 
     }
@@ -81,7 +60,7 @@ public class OperatorDomainServiceTests{
 
         this.AggregateService.GetLatest<OperatorAggregate>(Arg<Guid>.Any(), Arg<CancellationToken>.Any()).ReturnsAsync(SimpleResults.Result.Success(TestData.Aggregates.CreatedOperatorAggregate()));
 
-        Result result = await this.OperatorDomainService.CreateOperator(TestData.Commands.CreateOperatorCommand, TestContext.Current.CancellationToken);
+        Result<Guid> result = await this.OperatorDomainService.CreateOperator(TestData.Commands.CreateOperatorCommand, TestContext.Current.CancellationToken);
         result.IsFailed.ShouldBeTrue();
     }
 
@@ -95,13 +74,12 @@ public class OperatorDomainServiceTests{
 
         OperatorCommands.CreateOperatorCommand emptyNameCommand = new(TestData.EstateId,
             new CreateOperatorRequest {
-                OperatorId = TestData.OperatorId,
                 Name = string.Empty,
                 RequireCustomMerchantNumber = TestData.RequireCustomMerchantNumber,
                 RequireCustomTerminalNumber = TestData.RequireCustomTerminalNumber
             });
 
-        Result result = await this.OperatorDomainService.CreateOperator(emptyNameCommand, TestContext.Current.CancellationToken);
+        Result<Guid> result = await this.OperatorDomainService.CreateOperator(emptyNameCommand, TestContext.Current.CancellationToken);
         result.IsFailed.ShouldBeTrue();
     }
 
@@ -133,7 +111,7 @@ public class OperatorDomainServiceTests{
         this.AggregateService.Get<EstateAggregate>(Arg<Guid>.Any(), Arg<CancellationToken>.Any())
             .ReturnsAsync(Result.Failure());
 
-        Result result = await this.OperatorDomainService.CreateOperator(TestData.Commands.CreateOperatorCommand, TestContext.Current.CancellationToken);
+        Result<Guid> result = await this.OperatorDomainService.CreateOperator(TestData.Commands.CreateOperatorCommand, TestContext.Current.CancellationToken);
         result.IsFailed.ShouldBeTrue();
     }
 
@@ -145,7 +123,7 @@ public class OperatorDomainServiceTests{
         this.AggregateService.GetLatest<OperatorAggregate>(Arg<Guid>.Any(), Arg<CancellationToken>.Any())
             .ReturnsAsync(Result.Failure());
 
-        Result result = await this.OperatorDomainService.CreateOperator(TestData.Commands.CreateOperatorCommand, TestContext.Current.CancellationToken);
+        Result<Guid> result = await this.OperatorDomainService.CreateOperator(TestData.Commands.CreateOperatorCommand, TestContext.Current.CancellationToken);
         result.IsFailed.ShouldBeTrue();
     }
 
@@ -159,7 +137,7 @@ public class OperatorDomainServiceTests{
         this.AggregateService.Save(Arg<OperatorAggregate>.Any(), Arg<CancellationToken>.Any())
             .ReturnsAsync(Result.Failure());
 
-        Result result = await this.OperatorDomainService.CreateOperator(TestData.Commands.CreateOperatorCommand, TestContext.Current.CancellationToken);
+        Result<Guid> result = await this.OperatorDomainService.CreateOperator(TestData.Commands.CreateOperatorCommand, TestContext.Current.CancellationToken);
         result.IsFailed.ShouldBeTrue();
     }
 
@@ -169,7 +147,7 @@ public class OperatorDomainServiceTests{
         this.AggregateService.Get<EstateAggregate>(Arg<Guid>.Any(), Arg<CancellationToken>.Any())
             .ThrowsAsync(new Exception());
 
-        Result result = await this.OperatorDomainService.CreateOperator(TestData.Commands.CreateOperatorCommand, TestContext.Current.CancellationToken);
+        Result<Guid> result = await this.OperatorDomainService.CreateOperator(TestData.Commands.CreateOperatorCommand, TestContext.Current.CancellationToken);
         result.IsFailed.ShouldBeTrue();
     }
 

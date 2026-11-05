@@ -22,7 +22,7 @@ public sealed class CreateEstateCommandValidationBehaviorTests
     [InlineData("   ")]
     public async Task Handle_InvalidEstateName_ReturnsInvalidWithoutCallingHandler(String estateName)
     {
-        ValidationBehavior<EstateCommands.CreateEstateCommand, Guid> behavior = new(new CreateEstateCommandValidator());
+        ValidationBehavior<EstateCommands.CreateEstateCommand, Guid> behavior = new(new[] { new CreateEstateCommandValidator() });
         EstateCommands.CreateEstateCommand command = new(new CreateEstateRequest { EstateName = estateName });
         Boolean handlerWasCalled = false;
         RequestHandlerDelegate<Result<Guid>> next = _ =>
@@ -40,7 +40,7 @@ public sealed class CreateEstateCommandValidationBehaviorTests
     [Fact]
     public async Task Handle_ValidEstateName_CallsHandler()
     {
-        ValidationBehavior<EstateCommands.CreateEstateCommand, Guid> behavior = new(new CreateEstateCommandValidator());
+        ValidationBehavior<EstateCommands.CreateEstateCommand, Guid> behavior = new(new[] { new CreateEstateCommandValidator() });
         EstateCommands.CreateEstateCommand command = new(new CreateEstateRequest { EstateName = "Example Estate" });
         Guid expectedEstateId = Guid.NewGuid();
         RequestHandlerDelegate<Result<Guid>> next = _ => Task.FromResult(Result.Success(expectedEstateId));
@@ -54,7 +54,7 @@ public sealed class CreateEstateCommandValidationBehaviorTests
     [Fact]
     public async Task Handle_NullRequestDto_ReturnsInvalidWithoutCallingHandler()
     {
-        ValidationBehavior<EstateCommands.CreateEstateCommand, Guid> behavior = new(new CreateEstateCommandValidator());
+        ValidationBehavior<EstateCommands.CreateEstateCommand, Guid> behavior = new(new[] { new CreateEstateCommandValidator() });
         EstateCommands.CreateEstateCommand command = new(null);
         Boolean handlerWasCalled = false;
         RequestHandlerDelegate<Result<Guid>> next = _ =>

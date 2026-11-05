@@ -70,6 +70,12 @@ namespace TransactionProcessor.BusinessLogic.Services
             return IdGenerationService.GenerateUniqueId(new { estateId, operatorId, normalisedContractName });
         }
 
+        public static Guid GenerateOperatorId(Guid estateId, String operatorName) {
+            String normalisedOperatorName = operatorName.ToLowerInvariant().Replace(" ", String.Empty);
+
+            return IdGenerationService.GenerateUniqueId(new { estateId, normalisedOperatorName });
+        }
+
         public static Guid GenerateEstateId(String estateName) {
             String normalisedEstateName = estateName.ToLowerInvariant().Replace(" ", String.Empty);
 
