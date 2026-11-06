@@ -2,6 +2,7 @@ using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Routing;
 using Shared.Authorisation;
+using System;
 using System.Diagnostics.CodeAnalysis;
 using TransactionProcessor.Handlers;
 using TransactionProcessor.DataTransferObjects.Responses.Operator;
@@ -26,7 +27,8 @@ namespace TransactionProcessor.Endpoints
             // Create
             operatorGroup.MapPost("/", OperatorHandlers.CreateOperator)
                 .WithName("CreateOperator").WithSummary("Create an operator")
-                .WithDescription("Creates an operator in the specified estate. The operator ID is supplied in the request body.");
+                .WithDescription("Creates an operator in the specified estate and returns the new operator ID.")
+                .Produces<Guid>();
 
             // Update 
             operatorGroup.MapPost("/{operatorId:guid}", OperatorHandlers.UpdateOperator)

@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Routing;
 using Shared.Authorisation;
+using System;
 using TransactionProcessor.Handlers;
 using TransactionProcessor.DataTransferObjects.Responses.Contract;
 using System.Collections.Generic;
@@ -47,7 +48,8 @@ namespace TransactionProcessor.Endpoints
 
             contractGroup.MapPost("/", ContractHandlers.CreateContract)
                 .WithName("CreateContract").WithSummary("Create a contract")
-                .WithDescription("Creates a contract in the specified estate for the supplied operator.");
+                .WithDescription("Creates a contract in the specified estate for the supplied operator and returns the new contract ID.")
+                .Produces<Guid>();
 
             return endpoints;
         }

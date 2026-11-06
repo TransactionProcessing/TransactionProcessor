@@ -26,7 +26,7 @@ namespace TransactionProcessor.BusinessLogic.Services
 
         Task<Result> DisableTransactionFeeForProduct(ContractCommands.DisableTransactionFeeForProductCommand command, CancellationToken cancellationToken);
 
-        Task<Result> CreateContract(ContractCommands.CreateContractCommand command, CancellationToken cancellationToken);
+        Task<Result<Guid>> CreateContract(ContractCommands.CreateContractCommand command, CancellationToken cancellationToken);
 
         #endregion
     }
@@ -141,7 +141,7 @@ namespace TransactionProcessor.BusinessLogic.Services
             }
         }
 
-        public async Task<Result> CreateContract(ContractCommands.CreateContractCommand command, CancellationToken cancellationToken)
+        public async Task<Result<Guid>> CreateContract(ContractCommands.CreateContractCommand command, CancellationToken cancellationToken)
         {
             try
             {
@@ -177,7 +177,7 @@ namespace TransactionProcessor.BusinessLogic.Services
                 if (saveResult.IsFailed)
                     return ResultHelpers.CreateFailure(saveResult);
 
-                return saveResult;
+                return Result.Success(contractId);
             }
             catch (Exception ex)
             {

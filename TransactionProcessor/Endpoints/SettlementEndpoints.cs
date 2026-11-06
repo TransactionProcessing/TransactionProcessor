@@ -53,7 +53,7 @@ namespace TransactionProcessor.Endpoints
 
             group.MapGet("/", SettlementHandlers.GetSettlements)
                  .WithName("GetSettlements").WithSummary("List settlements")
-                 .WithDescription("Returns settlements for this estate, optionally filtered by merchantId, start_date, and end_date. Date filters are passed as strings to the business layer.")
+                 .WithDescription("Returns settlements for this estate between the required start_date and end_date values. Dates must use yyyyMMdd format; merchantId is an optional filter.")
                  .Produces<List<SettlementResponse>>();
 
             return endpoints;
