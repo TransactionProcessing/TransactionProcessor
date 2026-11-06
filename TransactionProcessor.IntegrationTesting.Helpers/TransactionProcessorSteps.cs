@@ -899,11 +899,11 @@ public class TransactionProcessorSteps
         List<(Guid, EstateOperatorResponse)> results = new List<(Guid, EstateOperatorResponse)>();
         foreach ((EstateDetails estate, CreateOperatorRequest request) request in requests)
         {
-            Result? result = await this.TransactionProcessorClient
-                .CreateOperator(accessToken,
-                    request.estate.EstateId,
-                    request.request,
-                    CancellationToken.None).ConfigureAwait(false);
+            Result<Guid> result = await this.TransactionProcessorClient
+                                            .CreateOperator(accessToken,
+                                                request.estate.EstateId,
+                                                request.request,
+                                                CancellationToken.None).ConfigureAwait(false);
 
             result.IsSuccess.ShouldBeTrue(result.Message);
         }
@@ -974,7 +974,7 @@ public class TransactionProcessorSteps
 
         foreach ((EstateDetails, CreateContractRequest) request in requests)
         {
-            Result? result = await this.TransactionProcessorClient.CreateContract(accessToken, request.Item1.EstateId, request.Item2,
+            Result<Guid> result = await this.TransactionProcessorClient.CreateContract(accessToken, request.Item1.EstateId, request.Item2,
                 CancellationToken.None);
             result.IsSuccess.ShouldBeTrue(result.Message);
         }
@@ -1551,7 +1551,7 @@ public class TransactionProcessorSteps
     {
         (EstateDetails, CreateContractRequest) createContractRequest = requests.Single();
 
-        Result? result = await this.TransactionProcessorClient.CreateContract(accessToken, createContractRequest.Item1.EstateId,
+        Result<Guid> result = await this.TransactionProcessorClient.CreateContract(accessToken, createContractRequest.Item1.EstateId,
             createContractRequest.Item2, CancellationToken.None);
 
         result.IsFailed.ShouldBeTrue();
