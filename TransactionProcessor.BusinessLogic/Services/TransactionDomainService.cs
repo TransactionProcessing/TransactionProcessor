@@ -98,6 +98,20 @@ namespace TransactionProcessor.BusinessLogic.Services{
                     return ResultHelpers.CreateFailure(transactionResult);
                 TransactionAggregate transactionAggregate = transactionResult.Data;
 
+                if (transactionAggregate.IsCompleted) {
+                    if (transactionAggregate.EstateId != command.EstateId ||
+                        transactionAggregate.MerchantId != command.MerchantId ||
+                        transactionAggregate.DeviceIdentifier != command.DeviceIdentifier ||
+                        transactionAggregate.TransactionDateTime != command.TransactionDateTime ||
+                        transactionAggregate.TransactionNumber != command.TransactionNumber ||
+                        transactionAggregate.TransactionType != TransactionType.Logon ||
+                        String.Equals(command.TransactionType, TransactionType.Logon.ToString(), StringComparison.OrdinalIgnoreCase) == false) {
+                        return Result.Invalid($"Transaction Id [{transactionId}] has already been completed with different request details");
+                    }
+
+                    return Result.Success(this.CreateLogonTransactionResponse(command, transactionAggregate));
+                }
+
                 TransactionType transactionType = TransactionType.Logon;
 
                 // Generate a transaction reference
@@ -585,6 +599,46 @@ namespace TransactionProcessor.BusinessLogic.Services{
 
                 TransactionAggregate transactionAggregate = transactionResult.Data;
 
+                if (transactionAggregate.IsCompleted) {
+                    Decimal? amount = command.AdditionalTransactionMetadata.ExtractFieldFromMetadata<Decimal?>("Amount");
+                    Boolean matchingSaleSpecificDetails = transactionAggregate.HasSaleRequestDetailsBeenRecorded
+                        ? transactionAggregate.RequestedContractId == command.ContractId &&
+                          transactionAggregate.RequestedProductId == command.ProductId &&
+                          transactionAggregate.RequestedCustomerEmailAddress == command.CustomerEmailAddress
+                        : transactionAggregate.IsProductDetailsAdded &&
+                          transactionAggregate.ContractId == command.ContractId &&
+                          transactionAggregate.ProductId == command.ProductId &&
+                          (String.IsNullOrEmpty(command.CustomerEmailAddress)
+                              ? transactionAggregate.CustomerEmailReceiptHasBeenRequested == false
+                              : transactionAggregate.CustomerEmailReceiptHasBeenRequested && transactionAggregate.CustomerEmailAddress == command.CustomerEmailAddress);
+
+                    if (transactionAggregate.EstateId != command.EstateId ||
+                        transactionAggregate.MerchantId != command.MerchantId ||
+                        transactionAggregate.DeviceIdentifier != command.DeviceIdentifier ||
+                        transactionAggregate.TransactionDateTime != command.TransactionDateTime ||
+                        transactionAggregate.TransactionNumber != command.TransactionNumber ||
+                        transactionAggregate.TransactionType != TransactionType.Sale ||
+                        String.Equals(command.TransactionType, TransactionType.Sale.ToString(), StringComparison.OrdinalIgnoreCase) == false ||
+                        transactionAggregate.OperatorId != command.OperatorId ||
+                        transactionAggregate.TransactionSource != (TransactionSource)command.TransactionSource ||
+                        transactionAggregate.TransactionAmount != amount ||
+                        matchingSaleSpecificDetails == false ||
+                        transactionAggregate.HasMatchingAdditionalTransactionRequestMetadata(command.AdditionalTransactionMetadata) == false) {
+                        return Result.Invalid($"Transaction Id [{transactionId}] has already been completed with different request details");
+                    }
+
+                    Models.Transaction storedTransaction = transactionAggregate.GetTransaction();
+                    return Result.Success(new ProcessSaleTransactionResponse {
+                        ResponseMessage = storedTransaction.ResponseMessage,
+                        ResponseCode = storedTransaction.ResponseCode,
+                        EstateId = transactionAggregate.EstateId,
+                        MerchantId = transactionAggregate.MerchantId,
+                        AdditionalTransactionMetadata = storedTransaction.AdditionalResponseMetadata,
+                        TransactionId = transactionId,
+                        TransactionIsComplete = storedTransaction.IsComplete
+                    });
+                }
+
                 Result<TransactionValidationResult> validationResult = await ValidateTransaction(command, transactionId, cancellationToken);
                 (Decimal unitCost, Decimal totalCost) = await GetFloatCost(command, transactionId, cancellationToken);
 
@@ -697,7 +751,10 @@ namespace TransactionProcessor.BusinessLogic.Services{
 
             transactionAggregate.RecordCostPrice(unitCost, totalCost);
             transactionAggregate.AddTransactionSource(transactionSourceValue);
-            return Result.Success();
+            Result saleRequestDetailsResult = transactionAggregate.RecordSaleRequestDetails(command.ContractId, command.ProductId, command.CustomerEmailAddress);
+            if (saleRequestDetailsResult.IsFailed)
+                return saleRequestDetailsResult;
+            return transactionAggregate.RecordAdditionalRequestData(command.OperatorId, command.AdditionalTransactionMetadata);
         }
 
         private Result ProcessReconciliation(ReconciliationAggregate reconciliationAggregate,
@@ -743,7 +800,6 @@ namespace TransactionProcessor.BusinessLogic.Services{
 
             Logger.LogInformation("Validation success for TransactionId {TransactionId} processing with Operator {OperatorId}", transactionAggregate.AggregateId, command.OperatorId);
 
-            transactionAggregate.RecordAdditionalRequestData(command.OperatorId, command.AdditionalTransactionMetadata);
             Result<Merchant> merchantResult = await GetMerchant(command.MerchantId, cancellationToken);
             if (merchantResult.IsFailed)
                 return (start, end);

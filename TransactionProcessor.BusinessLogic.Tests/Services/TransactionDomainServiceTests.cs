@@ -133,6 +133,44 @@ namespace TransactionProcessor.BusinessLogic.Tests.Services{
             result.Data.TransactionId.ShouldBe(TestData.TransactionId);
         }
 
+        [Fact]
+        public async Task TransactionDomainService_ProcessLogonTransaction_CompletedDuplicate_ReturnsStoredResponse(){
+            TransactionAggregate transactionAggregate = CreateCompletedLogonAggregate();
+            this.AggregateService.GetLatest<TransactionAggregate>(Arg<Guid>.Any(), Arg<CancellationToken>.Any())
+                .ReturnsAsync(Result.Success(transactionAggregate));
+
+            TransactionCommands.ProcessLogonTransactionCommand command = new(TestData.EstateId,
+                TestData.MerchantId, TestData.DeviceIdentifier, TestData.TransactionTypeLogon.ToString(),
+                TestData.TransactionDateTime, TestData.TransactionNumber, TestData.HostDateTime);
+
+            Result<ProcessLogonTransactionResponse> result = await this.TransactionDomainService.ProcessLogonTransaction(command, TestContext.Current.CancellationToken);
+
+            result.IsSuccess.ShouldBeTrue();
+            result.Data.ResponseCode.ShouldBe(transactionAggregate.ResponseCode);
+            result.Data.ResponseMessage.ShouldBe(transactionAggregate.ResponseMessage);
+            result.Data.TransactionId.ShouldBe(transactionAggregate.AggregateId);
+            this.AggregateService.Save(Arg<TransactionAggregate>.Any(), Arg<CancellationToken>.Any()).Called(Count.Never());
+            this.TransactionValidationService.ValidateLogonTransaction(Arg<TransactionValidationIdentifiers>.Any(), Arg<CancellationToken>.Any()).Called(Count.Never());
+        }
+
+        [Fact]
+        public async Task TransactionDomainService_ProcessLogonTransaction_CompletedDuplicateWithDifferentType_Fails(){
+            TransactionAggregate transactionAggregate = CreateCompletedLogonAggregate();
+            this.AggregateService.GetLatest<TransactionAggregate>(Arg<Guid>.Any(), Arg<CancellationToken>.Any())
+                .ReturnsAsync(Result.Success(transactionAggregate));
+
+            TransactionCommands.ProcessLogonTransactionCommand command = new(TestData.EstateId,
+                TestData.MerchantId, TestData.DeviceIdentifier, TestData.TransactionTypeSale.ToString(),
+                TestData.TransactionDateTime, TestData.TransactionNumber, TestData.HostDateTime);
+
+            Result<ProcessLogonTransactionResponse> result = await this.TransactionDomainService.ProcessLogonTransaction(command, TestContext.Current.CancellationToken);
+
+            result.IsFailed.ShouldBeTrue();
+            result.Message.ShouldContain("already been completed with different request details");
+            this.AggregateService.Save(Arg<TransactionAggregate>.Any(), Arg<CancellationToken>.Any()).Called(Count.Never());
+            this.TransactionValidationService.ValidateLogonTransaction(Arg<TransactionValidationIdentifiers>.Any(), Arg<CancellationToken>.Any()).Called(Count.Never());
+        }
+
         [Theory]
         [InlineData(TransactionResponseCode.InvalidEstateId)]
         [InlineData(TransactionResponseCode.InvalidMerchantId)]
@@ -323,6 +361,125 @@ namespace TransactionProcessor.BusinessLogic.Tests.Services{
             response.MerchantId.ShouldBe(TestData.MerchantId);
             response.ResponseCode.ShouldBe("1008");
             response.TransactionId.ShouldNotBe(Guid.Empty);
+        }
+
+        [Fact]
+        public async Task TransactionDomainService_ProcessSaleTransaction_CompletedDuplicate_ReturnsStoredResponse(){
+            TransactionCommands.ProcessSaleTransactionCommand command = CreateSaleCommand();
+            TransactionAggregate transactionAggregate = CreateCompletedSaleAggregate(command);
+            this.AggregateService.GetLatest<TransactionAggregate>(Arg<Guid>.Any(), Arg<CancellationToken>.Any())
+                .ReturnsAsync(Result.Success(transactionAggregate));
+
+            Result<ProcessSaleTransactionResponse> result = await this.TransactionDomainService.ProcessSaleTransaction(command, TestContext.Current.CancellationToken);
+
+            result.IsSuccess.ShouldBeTrue();
+            result.Data.ResponseCode.ShouldBe(transactionAggregate.ResponseCode);
+            result.Data.ResponseMessage.ShouldBe(transactionAggregate.ResponseMessage);
+            result.Data.TransactionId.ShouldBe(transactionAggregate.AggregateId);
+            result.Data.AdditionalTransactionMetadata.ShouldBe(transactionAggregate.GetTransaction().AdditionalResponseMetadata);
+            result.Data.TransactionIsComplete.ShouldBeTrue();
+            this.AggregateService.Save(Arg<TransactionAggregate>.Any(), Arg<CancellationToken>.Any()).Called(Count.Never());
+            this.TransactionValidationService.ValidateSaleTransaction(Arg<TransactionValidationIdentifiers>.Any(), Arg<Guid>.Any(), Arg<Guid>.Any(), Arg<Guid>.Any(), Arg<Decimal?>.Any(), Arg<TransactionSource>.Any(), Arg<CancellationToken>.Any()).Called(Count.Never());
+        }
+
+        [Fact]
+        public async Task TransactionDomainService_ProcessSaleTransaction_CompletedLocallyDeclinedDuplicate_ReturnsStoredResponse(){
+            TransactionCommands.ProcessSaleTransactionCommand command = CreateSaleCommand();
+            TransactionAggregate transactionAggregate = CreateCompletedLocallyDeclinedSaleAggregate(command);
+            this.AggregateService.GetLatest<TransactionAggregate>(Arg<Guid>.Any(), Arg<CancellationToken>.Any())
+                .ReturnsAsync(Result.Success(transactionAggregate));
+
+            Result<ProcessSaleTransactionResponse> result = await this.TransactionDomainService.ProcessSaleTransaction(command, TestContext.Current.CancellationToken);
+
+            result.IsSuccess.ShouldBeTrue();
+            result.Data.ResponseCode.ShouldBe(transactionAggregate.ResponseCode);
+            result.Data.ResponseMessage.ShouldBe(transactionAggregate.ResponseMessage);
+            result.Data.TransactionId.ShouldBe(transactionAggregate.AggregateId);
+            this.AggregateService.Save(Arg<TransactionAggregate>.Any(), Arg<CancellationToken>.Any()).Called(Count.Never());
+            this.TransactionValidationService.ValidateSaleTransaction(Arg<TransactionValidationIdentifiers>.Any(), Arg<Guid>.Any(), Arg<Guid>.Any(), Arg<Guid>.Any(), Arg<Decimal?>.Any(), Arg<TransactionSource>.Any(), Arg<CancellationToken>.Any()).Called(Count.Never());
+        }
+
+        [Fact]
+        public async Task TransactionDomainService_ProcessSaleTransaction_CompletedDuplicateWithDifferentRequestData_Fails(){
+            TransactionCommands.ProcessSaleTransactionCommand originalCommand = CreateSaleCommand();
+            TransactionAggregate transactionAggregate = CreateCompletedSaleAggregate(originalCommand);
+            this.AggregateService.GetLatest<TransactionAggregate>(Arg<Guid>.Any(), Arg<CancellationToken>.Any())
+                .ReturnsAsync(Result.Success(transactionAggregate));
+            Dictionary<String, String> changedMetadata = TestData.AdditionalTransactionMetaDataForMobileTopup(customerAccountNumber: "different-account");
+            TransactionCommands.ProcessSaleTransactionCommand changedCommand = originalCommand with { AdditionalTransactionMetadata = changedMetadata };
+
+            Result<ProcessSaleTransactionResponse> result = await this.TransactionDomainService.ProcessSaleTransaction(changedCommand, TestContext.Current.CancellationToken);
+
+            result.IsFailed.ShouldBeTrue();
+            result.Message.ShouldContain("already been completed with different request details");
+            this.AggregateService.Save(Arg<TransactionAggregate>.Any(), Arg<CancellationToken>.Any()).Called(Count.Never());
+            this.TransactionValidationService.ValidateSaleTransaction(Arg<TransactionValidationIdentifiers>.Any(), Arg<Guid>.Any(), Arg<Guid>.Any(), Arg<Guid>.Any(), Arg<Decimal?>.Any(), Arg<TransactionSource>.Any(), Arg<CancellationToken>.Any()).Called(Count.Never());
+        }
+
+        [Fact]
+        public async Task TransactionDomainService_ProcessSaleTransaction_CompletedDuplicateWithDifferentContract_Fails(){
+            TransactionCommands.ProcessSaleTransactionCommand originalCommand = CreateSaleCommand();
+            TransactionAggregate transactionAggregate = CreateCompletedSaleAggregate(originalCommand);
+            this.AggregateService.GetLatest<TransactionAggregate>(Arg<Guid>.Any(), Arg<CancellationToken>.Any())
+                .ReturnsAsync(Result.Success(transactionAggregate));
+            TransactionCommands.ProcessSaleTransactionCommand changedCommand = originalCommand with { ContractId = TestData.ContractId1 };
+
+            Result<ProcessSaleTransactionResponse> result = await this.TransactionDomainService.ProcessSaleTransaction(changedCommand, TestContext.Current.CancellationToken);
+
+            result.IsFailed.ShouldBeTrue();
+            result.Message.ShouldContain("already been completed with different request details");
+            this.AggregateService.Save(Arg<TransactionAggregate>.Any(), Arg<CancellationToken>.Any()).Called(Count.Never());
+            this.TransactionValidationService.ValidateSaleTransaction(Arg<TransactionValidationIdentifiers>.Any(), Arg<Guid>.Any(), Arg<Guid>.Any(), Arg<Guid>.Any(), Arg<Decimal?>.Any(), Arg<TransactionSource>.Any(), Arg<CancellationToken>.Any()).Called(Count.Never());
+        }
+
+        private static TransactionAggregate CreateCompletedLogonAggregate(){
+            Guid transactionId = IdGenerationService.GenerateTransactionId(TestData.EstateId, TestData.MerchantId, TestData.DeviceIdentifier, TestData.TransactionDateTime, TestData.TransactionNumber);
+            TransactionAggregate aggregate = TransactionAggregate.Create(transactionId);
+            aggregate.StartTransaction(TestData.TransactionDateTime, TestData.HostDateTime, TestData.TransactionNumber, TransactionType.Logon, TestData.TransactionReference,
+                new TransactionStartContext { EstateId = TestData.EstateId, MerchantId = TestData.MerchantId, DeviceIdentifier = TestData.DeviceIdentifier, TransactionSource = TransactionSource.NotSet }, null);
+            aggregate.AuthoriseTransactionLocally(TestData.AuthorisationCode, TransactionResponseCode.Success, "STORED LOGON");
+            aggregate.CompleteTransaction();
+            return aggregate;
+        }
+
+        private static TransactionCommands.ProcessSaleTransactionCommand CreateSaleCommand(){
+            return new TransactionCommands.ProcessSaleTransactionCommand(TestData.EstateId, TestData.MerchantId, TestData.DeviceIdentifier,
+                TestData.TransactionTypeSale.ToString(), TestData.TransactionDateTime, TestData.TransactionNumber, TestData.OperatorId,
+                TestData.CustomerEmailAddress, TestData.AdditionalTransactionMetaDataForMobileTopup(), TestData.ContractId, TestData.ProductId,
+                TestData.TransactionSource, TestData.HostDateTime);
+        }
+
+        private static TransactionAggregate CreateCompletedSaleAggregate(TransactionCommands.ProcessSaleTransactionCommand command){
+            Guid transactionId = IdGenerationService.GenerateTransactionId(command.EstateId, command.MerchantId, command.DeviceIdentifier, command.TransactionDateTime, command.TransactionNumber);
+            Decimal? amount = command.AdditionalTransactionMetadata.ExtractFieldFromMetadata<Decimal?>("Amount");
+            TransactionAggregate aggregate = TransactionAggregate.Create(transactionId);
+            aggregate.StartTransaction(command.TransactionDateTime, command.HostDateTime, command.TransactionNumber, TransactionType.Sale, TestData.TransactionReference,
+                new TransactionStartContext { EstateId = command.EstateId, MerchantId = command.MerchantId, DeviceIdentifier = command.DeviceIdentifier, TransactionSource = (TransactionSource)command.TransactionSource }, amount);
+            aggregate.AddProductDetails(command.ContractId, command.ProductId);
+            aggregate.AddTransactionSource((TransactionSource)command.TransactionSource);
+            aggregate.RecordSaleRequestDetails(command.ContractId, command.ProductId, command.CustomerEmailAddress);
+            aggregate.RecordAdditionalRequestData(command.OperatorId, command.AdditionalTransactionMetadata);
+            aggregate.AuthoriseTransaction(command.OperatorId, TestData.AuthorisationCode, TestData.OperatorResponseCode, TestData.OperatorResponseMessage,
+                TestData.OperatorTransactionId, TransactionResponseCode.Success, "STORED SALE");
+            aggregate.RecordAdditionalResponseData(command.OperatorId, new Dictionary<String, String> { { "Result", "stored" } });
+            aggregate.CompleteTransaction();
+            if (String.IsNullOrEmpty(command.CustomerEmailAddress) == false)
+                aggregate.RequestEmailReceipt(command.CustomerEmailAddress);
+            return aggregate;
+        }
+
+        private static TransactionAggregate CreateCompletedLocallyDeclinedSaleAggregate(TransactionCommands.ProcessSaleTransactionCommand command){
+            Guid transactionId = IdGenerationService.GenerateTransactionId(command.EstateId, command.MerchantId, command.DeviceIdentifier, command.TransactionDateTime, command.TransactionNumber);
+            Decimal? amount = command.AdditionalTransactionMetadata.ExtractFieldFromMetadata<Decimal?>("Amount");
+            TransactionAggregate aggregate = TransactionAggregate.Create(transactionId);
+            aggregate.StartTransaction(command.TransactionDateTime, command.HostDateTime, command.TransactionNumber, TransactionType.Sale, TestData.TransactionReference,
+                new TransactionStartContext { EstateId = command.EstateId, MerchantId = command.MerchantId, DeviceIdentifier = command.DeviceIdentifier, TransactionSource = (TransactionSource)command.TransactionSource }, amount);
+            aggregate.AddTransactionSource((TransactionSource)command.TransactionSource);
+            aggregate.RecordSaleRequestDetails(command.ContractId, command.ProductId, command.CustomerEmailAddress);
+            aggregate.RecordAdditionalRequestData(command.OperatorId, command.AdditionalTransactionMetadata);
+            aggregate.DeclineTransactionLocally(TransactionResponseCode.InvalidProductIdValue, "Invalid product");
+            aggregate.CompleteTransaction();
+            return aggregate;
         }
 
         [Fact]
