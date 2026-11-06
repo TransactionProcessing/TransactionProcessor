@@ -76,6 +76,10 @@ namespace TransactionProcessor.BusinessLogic.Services
             return IdGenerationService.GenerateUniqueId(new { estateId, normalisedOperatorName });
         }
 
+        public static Guid GenerateSettlementId(Guid estateId, Guid merchantId, DateTimeOffset nextSettlementDate) {
+            return IdGenerationService.GenerateUniqueId(new { estateId, merchantId, timeInMilliseconds = nextSettlementDate.ToUnixTimeSeconds() });
+        }
+
         public static Guid GenerateEstateId(String estateName) {
             String normalisedEstateName = estateName.ToLowerInvariant().Replace(" ", String.Empty);
 

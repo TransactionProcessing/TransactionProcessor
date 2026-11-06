@@ -24,6 +24,7 @@ namespace TransactionProcessor.BusinessLogic.Services{
     using System.Threading.Tasks;
     using TransactionProcessor.BusinessLogic.Manager;
     using TransactionProcessor.BusinessLogic.Requests;
+    using static Microsoft.EntityFrameworkCore.DbLoggerCategory.Database;
 
     public interface ITransactionDomainService
     {
@@ -389,8 +390,8 @@ namespace TransactionProcessor.BusinessLogic.Services{
 
             if (merchant.SettlementSchedule != Models.Merchant.SettlementSchedule.Immediate)
                 return Result.Success();
-
-            Guid settlementId = Helpers.CalculateSettlementAggregateId(settlementDate, merchantId, estateId);
+            
+            Guid settlementId = IdGenerationService.GenerateSettlementId(estateId, merchantId, settlementDate);
 
             return transactionAggregate.AddSettledFee(calculatedFee, settlementDate, settlementId);
         }
@@ -580,7 +581,7 @@ namespace TransactionProcessor.BusinessLogic.Services{
                 if (saveResult.IsFailed)
                     return ResultHelpers.CreateFailure(saveResult);
 
-                Transaction transaction = transactionAggregate.GetTransaction();
+                Models.Transaction transaction = transactionAggregate.GetTransaction();
                 Logger.LogInformation("Transaction {TransactionId} completed successfully", command.TransactionId);
 
                 return Result.Success(new ProcessSaleTransactionResponse {

@@ -17,12 +17,12 @@ namespace TransactionProcessor.BusinessLogic.Common
     [ExcludeFromCodeCoverage]
     public static class Helpers
     {
-        public static Guid CalculateSettlementAggregateId(DateTimeOffset settlementDate,
-                                                          Guid merchantId,
-                                                          Guid estateId) {
-            Guid aggregateId = GuidCalculator.Combine(estateId, merchantId, settlementDate.ToGuid());
-            return aggregateId;
-        }
+        //public static Guid CalculateSettlementAggregateId(DateTimeOffset settlementDate,
+        //                                                  Guid merchantId,
+        //                                                  Guid estateId) {
+        //    Guid aggregateId = GuidCalculator.Combine(estateId, merchantId, settlementDate.ToGuid());
+        //    return aggregateId;
+        //}
 
         public static async Task<Result<TokenResponse>> GetToken(TokenResponse currentToken, ISecurityServiceClient securityServiceClient, CancellationToken cancellationToken)
         {
