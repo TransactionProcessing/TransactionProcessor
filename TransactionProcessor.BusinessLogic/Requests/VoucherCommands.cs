@@ -9,8 +9,7 @@ namespace TransactionProcessor.BusinessLogic.Requests;
 
 [ExcludeFromCodeCoverage]
 public record VoucherCommands {
-    public record IssueVoucherCommand(Guid VoucherId,
-                                      Guid OperatorId,
+    public record IssueVoucherCommand(Guid OperatorId,
                                       Guid EstateId,
                                       Guid TransactionId,
                                       DateTimeOffset IssuedDateTime,

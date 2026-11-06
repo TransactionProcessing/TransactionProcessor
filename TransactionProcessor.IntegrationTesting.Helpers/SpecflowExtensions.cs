@@ -145,14 +145,6 @@ public static class ReqnrollExtensions{
         return result;
     }
 
-    //public static Guid CalculateSettlementAggregateId(DateTime settlementDate,
-    //                                                  Guid merchantId,
-    //                                                  Guid estateId)
-    //{
-    //    Guid aggregateId = GuidCalculator.Combine(estateId, merchantId, settlementDate.ToGuid());
-    //    return aggregateId;
-    //}
-
     public static SettlementDetails ToSettlementDetails(this DataTableRows tableRows, string estateName,
                                                         string merchantName, List<EstateDetails> estateDetailsList)
     {
