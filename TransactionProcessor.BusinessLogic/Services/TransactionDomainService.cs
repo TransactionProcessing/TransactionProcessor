@@ -24,8 +24,7 @@ namespace TransactionProcessor.BusinessLogic.Services{
     using System.Threading.Tasks;
     using TransactionProcessor.BusinessLogic.Manager;
     using TransactionProcessor.BusinessLogic.Requests;
-    using static Microsoft.EntityFrameworkCore.DbLoggerCategory.Database;
-
+    
     public interface ITransactionDomainService
     {
         Task<Result<ProcessLogonTransactionResponse>> ProcessLogonTransaction(TransactionCommands.ProcessLogonTransactionCommand command,
@@ -132,12 +131,32 @@ namespace TransactionProcessor.BusinessLogic.Services{
         
         public async Task<Result<ProcessReconciliationTransactionResponse>> ProcessReconciliationTransaction(TransactionCommands.ProcessReconciliationCommand command,
                                                                                                              CancellationToken cancellationToken) {
-            try{
-                Result<ReconciliationAggregate> reconciliationResult = await DomainServiceHelper.GetAggregateOrFailure(ct => this.AggregateService.GetLatest<ReconciliationAggregate>(command.TransactionId, ct), command.TransactionId, cancellationToken, false);
+            try {
+                Guid transactionId = IdGenerationService.GenerateReconciliationId(command.EstateId, command.MerchantId, command.DeviceIdentifier, command.TransactionDateTime);
+
+                Result<ReconciliationAggregate> reconciliationResult = await DomainServiceHelper.GetAggregateOrFailure(ct => this.AggregateService.GetLatest<ReconciliationAggregate>(transactionId, ct), transactionId, cancellationToken, false);
                 if (reconciliationResult.IsFailed)
                     return ResultHelpers.CreateFailure(reconciliationResult);
 
                 ReconciliationAggregate reconciliationAggregate = reconciliationResult.Data;
+                if (reconciliationAggregate.IsCompleted) {
+                    if (reconciliationAggregate.EstateId != command.EstateId ||
+                        reconciliationAggregate.MerchantId != command.MerchantId ||
+                        reconciliationAggregate.TransactionDateTime != command.TransactionDateTime ||
+                        reconciliationAggregate.TransactionCount != command.TransactionCount ||
+                        reconciliationAggregate.TransactionValue != command.TransactionValue) {
+                        return Result.Invalid($"Reconciliation Id [{transactionId}] has already been completed with different request details");
+                    }
+
+                    return Result.Success(new ProcessReconciliationTransactionResponse {
+                        EstateId = reconciliationAggregate.EstateId,
+                        MerchantId = reconciliationAggregate.MerchantId,
+                        ResponseCode = reconciliationAggregate.ResponseCode,
+                        ResponseMessage = reconciliationAggregate.ResponseMessage,
+                        TransactionId = transactionId
+                    });
+                }
+
                 TransactionValidationIdentifiers validationIdentifiers = new(command.EstateId, command.MerchantId, command.DeviceIdentifier);
                 Result<TransactionValidationResult> validationResult = await this.TransactionValidationService.ValidateReconciliationTransaction(validationIdentifiers, cancellationToken);
                 Result stateResult = this.ProcessReconciliation(reconciliationAggregate, command, validationResult);
@@ -154,7 +173,7 @@ namespace TransactionProcessor.BusinessLogic.Services{
                     MerchantId = reconciliationAggregate.MerchantId,
                     ResponseCode = reconciliationAggregate.ResponseCode,
                     ResponseMessage = reconciliationAggregate.ResponseMessage,
-                    TransactionId = command.TransactionId
+                    TransactionId = transactionId
                 });
             }
             catch (Exception ex)
