@@ -174,7 +174,7 @@ namespace TransactionProcessor.BusinessLogic.Tests.Services{
                                                                                              Arg<CancellationToken>.Any()).ReturnsAsync(Result.Success(new TransactionValidationResult(TransactionResponseCode.Success, "SUCCESS")));
 
             TransactionCommands.ProcessReconciliationCommand command =
-                new(TestData.TransactionId, TestData.EstateId,
+                new(TestData.EstateId,
                     TestData.MerchantId, TestData.DeviceIdentifier, TestData.TransactionDateTime,
                     TestData.ReconciliationTransactionCount, TestData.ReconciliationTransactionValue,
                     TestData.HostDateTime);
@@ -186,7 +186,7 @@ namespace TransactionProcessor.BusinessLogic.Tests.Services{
             response.EstateId.ShouldBe(TestData.EstateId);
             response.MerchantId.ShouldBe(TestData.MerchantId);
             response.ResponseCode.ShouldBe("0000");
-            response.TransactionId.ShouldBe(TestData.TransactionId);
+            response.TransactionId.ShouldNotBe(Guid.Empty);
         }
 
         [Theory]
@@ -203,7 +203,7 @@ namespace TransactionProcessor.BusinessLogic.Tests.Services{
                                                                                              Arg<CancellationToken>.Any()).ReturnsAsync(Result.Success(new TransactionValidationResult(responseCode, responseCode.ToString())));
 
             TransactionCommands.ProcessReconciliationCommand command =
-                new(TestData.TransactionId, TestData.EstateId,
+                new(TestData.EstateId,
                     TestData.MerchantId, TestData.DeviceIdentifier, TestData.TransactionDateTime,
                     TestData.ReconciliationTransactionCount, TestData.ReconciliationTransactionValue,
                     TestData.HostDateTime);
@@ -215,7 +215,7 @@ namespace TransactionProcessor.BusinessLogic.Tests.Services{
             response.EstateId.ShouldBe(TestData.EstateId);
             response.MerchantId.ShouldBe(TestData.MerchantId);
             response.ResponseCode.ShouldBe(((Int32)responseCode).ToString().PadLeft(4, '0'));
-            response.TransactionId.ShouldBe(TestData.TransactionId);
+            response.TransactionId.ShouldNotBe(Guid.Empty);
         }
 
         [Fact]
@@ -780,7 +780,7 @@ namespace TransactionProcessor.BusinessLogic.Tests.Services{
                 .ReturnsAsync(Result.Failure());
 
             TransactionCommands.ProcessReconciliationCommand command =
-                new(TestData.TransactionId, TestData.EstateId,
+                new(TestData.EstateId,
                     TestData.MerchantId, TestData.DeviceIdentifier, TestData.TransactionDateTime,
                     TestData.ReconciliationTransactionCount, TestData.ReconciliationTransactionValue,
                     TestData.HostDateTime);
@@ -800,7 +800,7 @@ namespace TransactionProcessor.BusinessLogic.Tests.Services{
                                                                                              Arg<CancellationToken>.Any()).ReturnsAsync(Result.Success(new TransactionValidationResult(TransactionResponseCode.Success, "SUCCESS")));
 
             TransactionCommands.ProcessReconciliationCommand command =
-                new(TestData.TransactionId, TestData.EstateId,
+                new(TestData.EstateId,
                     TestData.MerchantId, TestData.DeviceIdentifier, TestData.TransactionDateTime,
                     TestData.ReconciliationTransactionCount, TestData.ReconciliationTransactionValue,
                     TestData.HostDateTime);

@@ -24,8 +24,7 @@ namespace TransactionProcessor.BusinessLogic.Services{
     using System.Threading.Tasks;
     using TransactionProcessor.BusinessLogic.Manager;
     using TransactionProcessor.BusinessLogic.Requests;
-    using static Microsoft.EntityFrameworkCore.DbLoggerCategory.Database;
-
+    
     public interface ITransactionDomainService
     {
         Task<Result<ProcessLogonTransactionResponse>> ProcessLogonTransaction(TransactionCommands.ProcessLogonTransactionCommand command,
@@ -132,8 +131,10 @@ namespace TransactionProcessor.BusinessLogic.Services{
         
         public async Task<Result<ProcessReconciliationTransactionResponse>> ProcessReconciliationTransaction(TransactionCommands.ProcessReconciliationCommand command,
                                                                                                              CancellationToken cancellationToken) {
-            try{
-                Result<ReconciliationAggregate> reconciliationResult = await DomainServiceHelper.GetAggregateOrFailure(ct => this.AggregateService.GetLatest<ReconciliationAggregate>(command.TransactionId, ct), command.TransactionId, cancellationToken, false);
+            try {
+                Guid transactionId = IdGenerationService.GenerateReconciliationId(command.EstateId, command.MerchantId, command.DeviceIdentifier, command.TransactionDateTime);
+
+                Result<ReconciliationAggregate> reconciliationResult = await DomainServiceHelper.GetAggregateOrFailure(ct => this.AggregateService.GetLatest<ReconciliationAggregate>(transactionId, ct), transactionId, cancellationToken, false);
                 if (reconciliationResult.IsFailed)
                     return ResultHelpers.CreateFailure(reconciliationResult);
 
@@ -154,7 +155,7 @@ namespace TransactionProcessor.BusinessLogic.Services{
                     MerchantId = reconciliationAggregate.MerchantId,
                     ResponseCode = reconciliationAggregate.ResponseCode,
                     ResponseMessage = reconciliationAggregate.ResponseMessage,
-                    TransactionId = command.TransactionId
+                    TransactionId = transactionId
                 });
             }
             catch (Exception ex)
