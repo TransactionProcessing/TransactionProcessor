@@ -89,8 +89,7 @@ namespace TransactionProcessor.BusinessLogic.Tests.Services{
             this.TransactionValidationService.ValidateLogonTransaction(Arg<TransactionValidationIdentifiers>.Any(),
                                                                                     Arg<CancellationToken>.Any()).ReturnsAsync(Result.Success(new TransactionValidationResult(TransactionResponseCode.SuccessNeedToAddDevice, "SUCCESS")));
 
-            TransactionCommands.ProcessLogonTransactionCommand command = new(TestData.TransactionId,
-                TestData.EstateId,
+            TransactionCommands.ProcessLogonTransactionCommand command = new(TestData.EstateId,
                 TestData.MerchantId,
                 TestData.DeviceIdentifier,
                 TestData.TransactionTypeLogon.ToString(),
@@ -118,8 +117,7 @@ namespace TransactionProcessor.BusinessLogic.Tests.Services{
             this.TransactionValidationService.ValidateLogonTransaction(Arg<TransactionValidationIdentifiers>.Any(),
                                                                                     Arg<CancellationToken>.Any()).ReturnsAsync(Result.Success(new TransactionValidationResult(TransactionResponseCode.Success, "SUCCESS")));
 
-            TransactionCommands.ProcessLogonTransactionCommand command = new(TestData.TransactionId,
-                TestData.EstateId,
+            TransactionCommands.ProcessLogonTransactionCommand command = new(TestData.EstateId,
                 TestData.MerchantId,
                 TestData.DeviceIdentifier,
                 TestData.TransactionTypeLogon.ToString(),
@@ -147,8 +145,7 @@ namespace TransactionProcessor.BusinessLogic.Tests.Services{
             this.TransactionValidationService.ValidateLogonTransaction(Arg<TransactionValidationIdentifiers>.Any(),
                                                                                     Arg<CancellationToken>.Any()).ReturnsAsync(Result.Success(new TransactionValidationResult(responseCode, responseCode.ToString())));
 
-            TransactionCommands.ProcessLogonTransactionCommand command = new(TestData.TransactionId,
-                TestData.EstateId,
+            TransactionCommands.ProcessLogonTransactionCommand command = new(TestData.EstateId,
                 TestData.MerchantId,
                 TestData.DeviceIdentifier,
                 TestData.TransactionTypeLogon.ToString(),
@@ -255,7 +252,7 @@ namespace TransactionProcessor.BusinessLogic.Tests.Services{
             }, IsSuccess = false});
 
             TransactionCommands.ProcessSaleTransactionCommand command =
-                new TransactionCommands.ProcessSaleTransactionCommand(TestData.TransactionId, TestData.EstateId,
+                new TransactionCommands.ProcessSaleTransactionCommand(TestData.EstateId,
                     TestData.MerchantId, TestData.DeviceIdentifier, TestData.TransactionTypeSale.ToString(),
                     TestData.TransactionDateTime, TestData.TransactionNumber, TestData.OperatorId,
                     TestData.CustomerEmailAddress, TestData.AdditionalTransactionMetaDataForMobileTopup(),
@@ -268,7 +265,7 @@ namespace TransactionProcessor.BusinessLogic.Tests.Services{
             response.EstateId.ShouldBe(TestData.EstateId);
             response.MerchantId.ShouldBe(TestData.MerchantId);
             response.ResponseCode.ShouldBe("1008");
-            response.TransactionId.ShouldBe(TestData.TransactionId);
+            response.TransactionId.ShouldNotBe(Guid.Empty);
         }
 
         [Fact]
@@ -297,7 +294,7 @@ namespace TransactionProcessor.BusinessLogic.Tests.Services{
 
             this.OperatorProxy.ProcessSaleMessage(Arg<Guid>.Any(), Arg<Guid>.Any(), Arg<Models.Merchant.Merchant>.Any(), Arg<DateTimeOffset>.Any(), Arg<String>.Any(), Arg<Dictionary<String, String>>.Any(), Arg<CancellationToken>.Any()).Throws(new Exception());
             TransactionCommands.ProcessSaleTransactionCommand command =
-                new TransactionCommands.ProcessSaleTransactionCommand(TestData.TransactionId, TestData.EstateId,
+                new TransactionCommands.ProcessSaleTransactionCommand(TestData.EstateId,
                     TestData.MerchantId, TestData.DeviceIdentifier, TestData.TransactionTypeSale.ToString(),
                     TestData.TransactionDateTime, TestData.TransactionNumber, TestData.OperatorId,
                     TestData.CustomerEmailAddress, TestData.AdditionalTransactionMetaDataForMobileTopup(),
@@ -310,7 +307,7 @@ namespace TransactionProcessor.BusinessLogic.Tests.Services{
             response.EstateId.ShouldBe(TestData.EstateId);
             response.MerchantId.ShouldBe(TestData.MerchantId);
             response.ResponseCode.ShouldBe("1008");
-            response.TransactionId.ShouldBe(TestData.TransactionId);
+            response.TransactionId.ShouldNotBe(Guid.Empty);
         }
 
         [Fact]
@@ -356,7 +353,7 @@ namespace TransactionProcessor.BusinessLogic.Tests.Services{
                                                                });
 
             TransactionCommands.ProcessSaleTransactionCommand command =
-                new TransactionCommands.ProcessSaleTransactionCommand(TestData.TransactionId, TestData.EstateId,
+                new TransactionCommands.ProcessSaleTransactionCommand(TestData.EstateId,
                     TestData.MerchantId, TestData.DeviceIdentifier, TestData.TransactionTypeSale.ToString(),
                     TestData.TransactionDateTime, TestData.TransactionNumber, TestData.OperatorId,
                     TestData.CustomerEmailAddress, TestData.AdditionalTransactionMetaDataForMobileTopup(),
@@ -369,7 +366,7 @@ namespace TransactionProcessor.BusinessLogic.Tests.Services{
             response.EstateId.ShouldBe(TestData.EstateId);
             response.MerchantId.ShouldBe(TestData.MerchantId);
             response.ResponseCode.ShouldBe("0000");
-            response.TransactionId.ShouldBe(TestData.TransactionId);
+            response.TransactionId.ShouldNotBe(Guid.Empty);
 
             // check the cost values
             transactionAggregate.UnitCost.ShouldBe(floatAggregate.GetUnitCostPrice());
@@ -419,7 +416,7 @@ namespace TransactionProcessor.BusinessLogic.Tests.Services{
                                                                });
 
             TransactionCommands.ProcessSaleTransactionCommand command =
-                new TransactionCommands.ProcessSaleTransactionCommand(TestData.TransactionId, TestData.EstateId,
+                new TransactionCommands.ProcessSaleTransactionCommand(TestData.EstateId,
                     TestData.MerchantId, TestData.DeviceIdentifier, TestData.TransactionTypeSale.ToString(),
                     TestData.TransactionDateTime, TestData.TransactionNumber, TestData.OperatorId,
                     TestData.CustomerEmailAddress, TestData.AdditionalTransactionMetaDataForMobileTopup(),
@@ -432,7 +429,7 @@ namespace TransactionProcessor.BusinessLogic.Tests.Services{
             response.EstateId.ShouldBe(TestData.EstateId);
             response.MerchantId.ShouldBe(TestData.MerchantId);
             response.ResponseCode.ShouldBe("0000");
-            response.TransactionId.ShouldBe(TestData.TransactionId);
+            response.TransactionId.ShouldNotBe(Guid.Empty);
 
             // check the cost values
             transactionAggregate.UnitCost.ShouldBeNull();
@@ -462,7 +459,7 @@ namespace TransactionProcessor.BusinessLogic.Tests.Services{
             this.AggregateService.GetLatest<FloatAggregate>(Arg<Guid>.Any(), Arg<CancellationToken>.Any()).ReturnsAsync(Result.Success(TestData.GetEmptyFloatAggregate()));
 
             TransactionCommands.ProcessSaleTransactionCommand command =
-                new TransactionCommands.ProcessSaleTransactionCommand(TestData.TransactionId, TestData.EstateId,
+                new TransactionCommands.ProcessSaleTransactionCommand(TestData.EstateId,
                     TestData.MerchantId, TestData.DeviceIdentifier, TestData.TransactionTypeSale.ToString(),
                     TestData.TransactionDateTime, TestData.TransactionNumber, TestData.OperatorId,
                     TestData.CustomerEmailAddress, TestData.AdditionalTransactionMetaDataForMobileTopup(),
@@ -475,7 +472,7 @@ namespace TransactionProcessor.BusinessLogic.Tests.Services{
             response.EstateId.ShouldBe(TestData.EstateId);
             response.MerchantId.ShouldBe(TestData.MerchantId);
             response.ResponseCode.ShouldBe(((Int32)responseCode).ToString().PadLeft(4, '0'));
-            response.TransactionId.ShouldBe(TestData.TransactionId);
+            response.TransactionId.ShouldNotBe(Guid.Empty);
         }
 
         [Fact]
@@ -739,8 +736,7 @@ namespace TransactionProcessor.BusinessLogic.Tests.Services{
             this.AggregateService.GetLatest<TransactionAggregate>(Arg<Guid>.Any(), Arg<CancellationToken>.Any())
                 .ReturnsAsync(Result.Failure());
 
-            TransactionCommands.ProcessLogonTransactionCommand command = new(TestData.TransactionId,
-                TestData.EstateId,
+            TransactionCommands.ProcessLogonTransactionCommand command = new(TestData.EstateId,
                 TestData.MerchantId,
                 TestData.DeviceIdentifier,
                 TestData.TransactionTypeLogon.ToString(),
@@ -761,8 +757,7 @@ namespace TransactionProcessor.BusinessLogic.Tests.Services{
             this.TransactionValidationService.ValidateLogonTransaction(Arg<TransactionValidationIdentifiers>.Any(),
                                                                                     Arg<CancellationToken>.Any()).ReturnsAsync(Result.Success(new TransactionValidationResult(TransactionResponseCode.Success, "SUCCESS")));
 
-            TransactionCommands.ProcessLogonTransactionCommand command = new(TestData.TransactionId,
-                TestData.EstateId,
+            TransactionCommands.ProcessLogonTransactionCommand command = new(TestData.EstateId,
                 TestData.MerchantId,
                 TestData.DeviceIdentifier,
                 TestData.TransactionTypeLogon.ToString(),
@@ -840,7 +835,7 @@ namespace TransactionProcessor.BusinessLogic.Tests.Services{
                 .ReturnsAsync(Result.Failure());
 
             TransactionCommands.ProcessSaleTransactionCommand command =
-                new TransactionCommands.ProcessSaleTransactionCommand(TestData.TransactionId, TestData.EstateId,
+                new TransactionCommands.ProcessSaleTransactionCommand(TestData.EstateId,
                     TestData.MerchantId, TestData.DeviceIdentifier, TestData.TransactionTypeSale.ToString(),
                     TestData.TransactionDateTime, TestData.TransactionNumber, TestData.OperatorId,
                     TestData.CustomerEmailAddress, TestData.AdditionalTransactionMetaDataForMobileTopup(),
@@ -883,7 +878,7 @@ namespace TransactionProcessor.BusinessLogic.Tests.Services{
                                                                });
 
             TransactionCommands.ProcessSaleTransactionCommand command =
-                new TransactionCommands.ProcessSaleTransactionCommand(TestData.TransactionId, TestData.EstateId,
+                new TransactionCommands.ProcessSaleTransactionCommand(TestData.EstateId,
                     TestData.MerchantId, TestData.DeviceIdentifier, TestData.TransactionTypeSale.ToString(),
                     TestData.TransactionDateTime, TestData.TransactionNumber, TestData.OperatorId,
                     TestData.CustomerEmailAddress, TestData.AdditionalTransactionMetaDataForMobileTopup(),
