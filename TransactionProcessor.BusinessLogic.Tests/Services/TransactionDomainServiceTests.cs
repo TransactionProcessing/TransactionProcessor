@@ -189,6 +189,63 @@ namespace TransactionProcessor.BusinessLogic.Tests.Services{
             response.TransactionId.ShouldNotBe(Guid.Empty);
         }
 
+        [Fact]
+        public async Task TransactionDomainService_ProcessReconciliationTransaction_CompletedDuplicate_ReturnsStoredResponse(){
+            ReconciliationAggregate reconciliationAggregate = CreateCompletedReconciliationAggregate(TestData.ReconciliationTransactionCount,
+                                                                                                    TestData.ReconciliationTransactionValue);
+            this.AggregateService.GetLatest<ReconciliationAggregate>(Arg<Guid>.Any(), Arg<CancellationToken>.Any())
+                .ReturnsAsync(reconciliationAggregate);
+
+            TransactionCommands.ProcessReconciliationCommand command = new(TestData.EstateId,
+                TestData.MerchantId, TestData.DeviceIdentifier, TestData.TransactionDateTime,
+                TestData.ReconciliationTransactionCount, TestData.ReconciliationTransactionValue,
+                TestData.HostDateTime);
+
+            Result<ProcessReconciliationTransactionResponse> result = await this.TransactionDomainService.ProcessReconciliationTransaction(command, TestContext.Current.CancellationToken);
+
+            result.IsSuccess.ShouldBeTrue();
+            result.Data.EstateId.ShouldBe(TestData.EstateId);
+            result.Data.MerchantId.ShouldBe(TestData.MerchantId);
+            result.Data.ResponseCode.ShouldBe("0000");
+            result.Data.ResponseMessage.ShouldBe("SUCCESS");
+            result.Data.TransactionId.ShouldBe(reconciliationAggregate.AggregateId);
+            this.AggregateService.Save(Arg<ReconciliationAggregate>.Any(), Arg<CancellationToken>.Any()).Called(Count.Never());
+            this.TransactionValidationService.ValidateReconciliationTransaction(Arg<TransactionValidationIdentifiers>.Any(), Arg<CancellationToken>.Any()).Called(Count.Never());
+        }
+
+        [Theory]
+        [InlineData(2, 100)]
+        [InlineData(1, 101)]
+        public async Task TransactionDomainService_ProcessReconciliationTransaction_CompletedDuplicateWithDifferentTotals_Fails(Int32 transactionCount,
+                                                                                                                               Decimal transactionValue){
+            ReconciliationAggregate reconciliationAggregate = CreateCompletedReconciliationAggregate(TestData.ReconciliationTransactionCount,
+                                                                                                    TestData.ReconciliationTransactionValue);
+            this.AggregateService.GetLatest<ReconciliationAggregate>(Arg<Guid>.Any(), Arg<CancellationToken>.Any())
+                .ReturnsAsync(reconciliationAggregate);
+
+            TransactionCommands.ProcessReconciliationCommand command = new(TestData.EstateId,
+                TestData.MerchantId, TestData.DeviceIdentifier, TestData.TransactionDateTime,
+                transactionCount, transactionValue, TestData.HostDateTime);
+
+            Result<ProcessReconciliationTransactionResponse> result = await this.TransactionDomainService.ProcessReconciliationTransaction(command, TestContext.Current.CancellationToken);
+
+            result.IsFailed.ShouldBeTrue();
+            result.Message.ShouldContain("already been completed with different request details");
+            this.AggregateService.Save(Arg<ReconciliationAggregate>.Any(), Arg<CancellationToken>.Any()).Called(Count.Never());
+            this.TransactionValidationService.ValidateReconciliationTransaction(Arg<TransactionValidationIdentifiers>.Any(), Arg<CancellationToken>.Any()).Called(Count.Never());
+        }
+
+        private static ReconciliationAggregate CreateCompletedReconciliationAggregate(Int32 transactionCount, Decimal transactionValue){
+            Guid reconciliationId = IdGenerationService.GenerateReconciliationId(TestData.EstateId,
+                TestData.MerchantId, TestData.DeviceIdentifier, TestData.TransactionDateTime);
+            ReconciliationAggregate aggregate = ReconciliationAggregate.Create(reconciliationId);
+            aggregate.StartReconciliation(TestData.TransactionDateTime, TestData.EstateId, TestData.MerchantId, TestData.HostDateTime);
+            aggregate.RecordOverallTotals(transactionCount, transactionValue);
+            aggregate.Authorise(TransactionResponseCode.Success, "SUCCESS");
+            aggregate.CompleteReconciliation();
+            return aggregate;
+        }
+
         [Theory]
         [InlineData(TransactionResponseCode.InvalidEstateId)]
         [InlineData(TransactionResponseCode.InvalidMerchantId)]

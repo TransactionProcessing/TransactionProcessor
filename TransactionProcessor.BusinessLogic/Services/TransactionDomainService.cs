@@ -139,6 +139,24 @@ namespace TransactionProcessor.BusinessLogic.Services{
                     return ResultHelpers.CreateFailure(reconciliationResult);
 
                 ReconciliationAggregate reconciliationAggregate = reconciliationResult.Data;
+                if (reconciliationAggregate.IsCompleted) {
+                    if (reconciliationAggregate.EstateId != command.EstateId ||
+                        reconciliationAggregate.MerchantId != command.MerchantId ||
+                        reconciliationAggregate.TransactionDateTime != command.TransactionDateTime ||
+                        reconciliationAggregate.TransactionCount != command.TransactionCount ||
+                        reconciliationAggregate.TransactionValue != command.TransactionValue) {
+                        return Result.Invalid($"Reconciliation Id [{transactionId}] has already been completed with different request details");
+                    }
+
+                    return Result.Success(new ProcessReconciliationTransactionResponse {
+                        EstateId = reconciliationAggregate.EstateId,
+                        MerchantId = reconciliationAggregate.MerchantId,
+                        ResponseCode = reconciliationAggregate.ResponseCode,
+                        ResponseMessage = reconciliationAggregate.ResponseMessage,
+                        TransactionId = transactionId
+                    });
+                }
+
                 TransactionValidationIdentifiers validationIdentifiers = new(command.EstateId, command.MerchantId, command.DeviceIdentifier);
                 Result<TransactionValidationResult> validationResult = await this.TransactionValidationService.ValidateReconciliationTransaction(validationIdentifiers, cancellationToken);
                 Result stateResult = this.ProcessReconciliation(reconciliationAggregate, command, validationResult);
