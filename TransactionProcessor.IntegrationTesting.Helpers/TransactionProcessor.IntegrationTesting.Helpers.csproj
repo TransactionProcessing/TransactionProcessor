@@ -20,6 +20,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\TransactionProcessor.BusinessLogic\TransactionProcessor.BusinessLogic.csproj" />
     <ProjectReference Include="..\TransactionProcessor.Client\TransactionProcessor.Client.csproj" PrivateAssets="All" />
     <ProjectReference Include="..\TransactionProcessor.DataTransferObjects\TransactionProcessor.DataTransferObjects.csproj" PrivateAssets="All" />
   </ItemGroup>

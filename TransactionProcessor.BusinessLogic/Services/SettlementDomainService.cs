@@ -50,9 +50,9 @@ namespace TransactionProcessor.BusinessLogic.Services
 
         private async Task<Result<Guid>> ProcessSettlementInternal(SettlementCommands.ProcessSettlementCommand command,
                                                                    CancellationToken cancellationToken) {
-            Guid settlementAggregateId = Helpers.CalculateSettlementAggregateId(command.SettlementDate, command.MerchantId, command.EstateId);
+            Guid settlementId = IdGenerationService.GenerateSettlementId(command.EstateId, command.MerchantId,command.SettlementDate);
 
-            Result<SettlementAggregate> getSettlementResult = await DomainServiceHelper.GetAggregateOrFailure(ct => this.AggregateService.GetLatest<SettlementAggregate>(settlementAggregateId, ct), settlementAggregateId, cancellationToken, false);
+            Result<SettlementAggregate> getSettlementResult = await DomainServiceHelper.GetAggregateOrFailure(ct => this.AggregateService.GetLatest<SettlementAggregate>(settlementId, ct), settlementId, cancellationToken, false);
             if (getSettlementResult.IsFailed)
                 return ResultHelpers.CreateFailure(getSettlementResult);
 
@@ -71,7 +71,7 @@ namespace TransactionProcessor.BusinessLogic.Services
             if (settlementPreparationResult.IsFailed)
                 return ResultHelpers.CreateFailure(settlementPreparationResult);
 
-            return await this.ProcessSettlementFees(settlementPreparationResult.Data, command.SettlementDate, settlementAggregateId, cancellationToken);
+            return await this.ProcessSettlementFees(settlementPreparationResult.Data, command.SettlementDate, settlementId, cancellationToken);
         }
 
         private async Task<Result<List<(Guid transactionId, Guid merchantId, CalculatedFee calculatedFee)>>> PrepareSettlementForProcessing(SettlementAggregate settlementAggregate,
@@ -102,7 +102,7 @@ namespace TransactionProcessor.BusinessLogic.Services
 
         private async Task<Result<Guid>> ProcessSettlementFees(List<(Guid transactionId, Guid merchantId, CalculatedFee calculatedFee)> feesToBeSettled,
                                                                DateTimeOffset settlementDate,
-                                                               Guid settlementAggregateId,
+                                                               Guid settlementId,
                                                                CancellationToken cancellationToken) {
             List<Result> failedResults = new();
             foreach ((Guid transactionId, Guid merchantId, CalculatedFee calculatedFee) feeToSettle in feesToBeSettled) {
@@ -112,15 +112,15 @@ namespace TransactionProcessor.BusinessLogic.Services
                         return ResultHelpers.CreateFailure(getTransactionResult);
 
                     TransactionAggregate transactionAggregate = getTransactionResult.Data;
-                    transactionAggregate.AddSettledFee(feeToSettle.calculatedFee, settlementDate, settlementAggregateId);
+                    transactionAggregate.AddSettledFee(feeToSettle.calculatedFee, settlementDate, settlementId);
 
                     Result saveResult = await this.AggregateService.Save(transactionAggregate, cancellationToken);
                     if (saveResult.IsFailed)
                         return ResultHelpers.CreateFailure(saveResult);
                 }
                 catch (Exception ex) {
-                    Logger.LogError(ex,$"Failed to process transaction {feeToSettle.transactionId} for settlement {settlementAggregateId}");
-                    failedResults.Add(Result.Failure($"Failed to process transaction {feeToSettle.transactionId} for settlement {settlementAggregateId}: {ex.Message}"));
+                    Logger.LogError(ex,$"Failed to process transaction {feeToSettle.transactionId} for settlement {settlementId}");
+                    failedResults.Add(Result.Failure($"Failed to process transaction {feeToSettle.transactionId} for settlement {settlementId}: {ex.Message}"));
                 }
             }
 
@@ -128,7 +128,7 @@ namespace TransactionProcessor.BusinessLogic.Services
                 return Result.Failure($"Not all fees were processed successfully {failedResults.Count} have failed");
             }
 
-            return Result.Success(settlementAggregateId);
+            return Result.Success(settlementId);
         }
 
         public async Task<Result> AddMerchantFeePendingSettlement(SettlementCommands.AddMerchantFeePendingSettlementCommand command,
@@ -137,9 +137,9 @@ namespace TransactionProcessor.BusinessLogic.Services
             try{
             Logger.LogInformation("Processing command AddMerchantFeePendingSettlementCommand");
             
-            Guid settlementAggregateId = Helpers.CalculateSettlementAggregateId(command.SettlementDueDate.Date, command.MerchantId, command.EstateId);
+            Guid settlementId = IdGenerationService.GenerateSettlementId(command.EstateId, command.MerchantId, command.SettlementDueDate);
 
-            Result<SettlementAggregate> getSettlementResult = await DomainServiceHelper.GetAggregateOrFailure(ct => this.AggregateService.GetLatest<SettlementAggregate>(settlementAggregateId, ct), settlementAggregateId, cancellationToken, false);
+                Result<SettlementAggregate> getSettlementResult = await DomainServiceHelper.GetAggregateOrFailure(ct => this.AggregateService.GetLatest<SettlementAggregate>(settlementId, ct), settlementId, cancellationToken, false);
             if (getSettlementResult.IsFailed)
                 return ResultHelpers.CreateFailure(getSettlementResult);
 
@@ -183,9 +183,9 @@ namespace TransactionProcessor.BusinessLogic.Services
                                                             CancellationToken cancellationToken) {
 
             try {
-                Guid settlementAggregateId = Helpers.CalculateSettlementAggregateId(command.SettledDate.Date, command.MerchantId, command.EstateId);
+                Guid settlementId = IdGenerationService.GenerateSettlementId(command.EstateId, command.MerchantId, command.SettledDate);
 
-                Result<SettlementAggregate> getSettlementResult = await DomainServiceHelper.GetAggregateOrFailure(ct => this.AggregateService.GetLatest<SettlementAggregate>(settlementAggregateId, ct), settlementAggregateId, cancellationToken, false);
+                Result<SettlementAggregate> getSettlementResult = await DomainServiceHelper.GetAggregateOrFailure(ct => this.AggregateService.GetLatest<SettlementAggregate>(settlementId, ct), settlementId, cancellationToken, false);
                 if (getSettlementResult.IsFailed)
                     return ResultHelpers.CreateFailure(getSettlementResult);
 

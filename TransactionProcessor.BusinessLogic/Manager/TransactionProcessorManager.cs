@@ -312,7 +312,7 @@ namespace TransactionProcessor.BusinessLogic.Manager
                                                                                DateTimeOffset settlementDate,
                                                                                CancellationToken cancellationToken) {
 
-            Guid aggregateId = Helpers.CalculateSettlementAggregateId(settlementDate, merchantId, estateId);
+            Guid aggregateId = IdGenerationService.GenerateSettlementId(estateId, merchantId, settlementDate);
 
             Result<SettlementAggregate> getSettlementResult = await this.AggregateService.GetLatest<SettlementAggregate>(aggregateId, cancellationToken);
             if (getSettlementResult.IsFailed)
