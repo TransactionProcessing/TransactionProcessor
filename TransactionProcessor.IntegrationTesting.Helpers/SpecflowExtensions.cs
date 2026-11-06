@@ -1,6 +1,7 @@
 using Shared.Extensions;
 using Shared.Serialisation;
 using Shouldly;
+using TransactionProcessor.BusinessLogic.Services;
 using TransactionProcessor.DataTransferObjects.Requests.Contract;
 using TransactionProcessor.DataTransferObjects.Requests.Estate;
 using TransactionProcessor.DataTransferObjects.Requests.Merchant;
@@ -144,13 +145,13 @@ public static class ReqnrollExtensions{
         return result;
     }
 
-    public static Guid CalculateSettlementAggregateId(DateTime settlementDate,
-                                                      Guid merchantId,
-                                                      Guid estateId)
-    {
-        Guid aggregateId = GuidCalculator.Combine(estateId, merchantId, settlementDate.ToGuid());
-        return aggregateId;
-    }
+    //public static Guid CalculateSettlementAggregateId(DateTime settlementDate,
+    //                                                  Guid merchantId,
+    //                                                  Guid estateId)
+    //{
+    //    Guid aggregateId = GuidCalculator.Combine(estateId, merchantId, settlementDate.ToGuid());
+    //    return aggregateId;
+    //}
 
     public static SettlementDetails ToSettlementDetails(this DataTableRows tableRows, string estateName,
                                                         string merchantName, List<EstateDetails> estateDetailsList)
@@ -188,7 +189,7 @@ public static class ReqnrollExtensions{
         {
             SettlementFeeDetails settlementFeeDetails = new SettlementFeeDetails();
             DateTime settlementDate = ReqnrollTableHelper.GetDateForDateString(settlementDateString, DateTime.UtcNow.Date);
-            Guid settlementId = ReqnrollExtensions.CalculateSettlementAggregateId(settlementDate, estateDetails.GetMerchant(merchantName).MerchantId, estateDetails.EstateId);
+            Guid settlementId = IdGenerationService.GenerateSettlementId(estateDetails.EstateId, estateDetails.GetMerchant(merchantName).MerchantId, settlementDate);
             settlementFeeDetails.SettlementId = settlementId;
             settlementFeeDetails.EstateId = estateDetails.EstateId;
             settlementFeeDetails.MerchantId = estateDetails.GetMerchant(merchantName).MerchantId;
