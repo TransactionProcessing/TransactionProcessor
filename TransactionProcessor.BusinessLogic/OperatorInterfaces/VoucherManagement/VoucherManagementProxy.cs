@@ -57,14 +57,13 @@ namespace TransactionProcessor.BusinessLogic.OperatorInterfaces.VoucherManagemen
                     return Result.Invalid("Recipient details (either email or mobile) is a required field for this transaction type");
                 }
 
-                VoucherCommands.IssueVoucherCommand command = new(Guid.NewGuid(),
-                                                                         operatorId,
-                                                                         merchant.EstateId,
-                                                                         transactionId,
-                                                                         DateTimeOffset.UtcNow,
-                                                                         amountAsDecimal,
-                                                                         recipientEmail,
-                                                                         recipientMobile);
+                VoucherCommands.IssueVoucherCommand command = new(operatorId,
+                                                                 merchant.EstateId,
+                                                                 transactionId,
+                                                                 DateTimeOffset.UtcNow,
+                                                                 amountAsDecimal,
+                                                                 recipientEmail,
+                                                                 recipientMobile);
 
                 Result<IssueVoucherResponse> result= await this.Mediator.Send(command, cancellationToken);
 

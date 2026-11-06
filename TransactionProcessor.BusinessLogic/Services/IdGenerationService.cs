@@ -91,5 +91,9 @@ namespace TransactionProcessor.BusinessLogic.Services
 
             return IdGenerationService.GenerateUniqueId(new { estateId, normalisedMerchantName });
         }
+
+        public static Guid GenerateVoucherId(Guid estateId, Guid operatorId, Guid transactionId) {
+            return IdGenerationService.GenerateUniqueId(new { estateId, operatorId, transactionId });
+        }
     }
 }

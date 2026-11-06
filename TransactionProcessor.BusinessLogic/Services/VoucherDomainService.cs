@@ -58,7 +58,10 @@ public class VoucherDomainService : IVoucherDomainService
             if (validateResult.IsFailed)
                 return ResultHelpers.CreateFailure(validateResult);
 
-            Result<VoucherAggregate> voucherResult = await DomainServiceHelper.GetAggregateOrFailure(ct => this.AggregateService.GetLatest<VoucherAggregate>(command.VoucherId, ct), command.VoucherId, cancellationToken, false);
+            Guid voucherId = IdGenerationService.GenerateVoucherId(command.EstateId, command.OperatorId, command.TransactionId);
+
+
+            Result<VoucherAggregate> voucherResult = await DomainServiceHelper.GetAggregateOrFailure(ct => this.AggregateService.GetLatest<VoucherAggregate>(voucherId, ct), voucherId, cancellationToken, false);
             if (voucherResult.IsFailed)
                 return ResultHelpers.CreateFailure(voucherResult);
 
@@ -89,7 +92,7 @@ public class VoucherDomainService : IVoucherDomainService
                 ExpiryDate = voucherModel.ExpiryDate,
                 Message = voucherModel.Message,
                 VoucherCode = voucherModel.VoucherCode,
-                VoucherId = command.VoucherId
+                VoucherId = voucherId
             });
         }
         catch (Exception ex)

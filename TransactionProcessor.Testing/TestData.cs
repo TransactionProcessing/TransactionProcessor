@@ -1688,8 +1688,7 @@ namespace TransactionProcessor.Testing
 
         public static DateTime IssuedDateTime = new DateTime(2020, 11, 5);
 
-        public static VoucherCommands.IssueVoucherCommand IssueVoucherCommand => new(TestData.VoucherId,
-                                                                                           TestData.OperatorId,
+        public static VoucherCommands.IssueVoucherCommand IssueVoucherCommand => new(TestData.OperatorId,
                                                                                            TestData.EstateId,
                                                                                            TestData.TransactionId,
                                                                                            TestData.IssuedDateTime,
