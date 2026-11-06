@@ -1874,7 +1874,6 @@ namespace TransactionProcessor.Testing
         public static CreateOperatorRequest CreateOperatorRequest =>
             new CreateOperatorRequest()
             {
-                OperatorId = TestData.OperatorId,
                 RequireCustomTerminalNumber = TestData.RequireCustomTerminalNumber,
                 RequireCustomMerchantNumber = TestData.RequireCustomMerchantNumber,
                 Name = TestData.OperatorName

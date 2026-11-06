@@ -895,7 +895,7 @@ public class WebHandlersTests
     {
         yield return Case(
             "CreateOperator",
-            SetupSuccess<OperatorCommands.CreateOperatorCommand>(command =>
+            SetupSuccess<OperatorCommands.CreateOperatorCommand, Guid >(OperatorId, command =>
             {
                 command.EstateId.ShouldBe(EstateId);
                 command.RequestDto.Name.ShouldBe("Operator");
@@ -905,7 +905,6 @@ public class WebHandlersTests
                                                         EstateId,
                                                         new CreateOperatorRequest
                                                         {
-                                                            OperatorId = OperatorId,
                                                             Name = "Operator"
                                                         },
                                                         CancellationToken.None));

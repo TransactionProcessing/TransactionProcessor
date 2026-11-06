@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -7,13 +8,17 @@ using SimpleResults;
 
 namespace TransactionProcessor.BusinessLogic.Validation;
 
-public sealed class ValidationBehavior<TRequest>(IValidator<TRequest> validator) : IPipelineBehavior<TRequest, Result>
-    where TRequest : notnull
+public sealed class ValidationBehavior<TRequest>(IEnumerable<IValidator<TRequest>> validators) : IPipelineBehavior<TRequest, Result>
+    where TRequest : notnull, IRequest<Result>
 {
     public async Task<Result> Handle(TRequest request,
                                      RequestHandlerDelegate<Result> next,
                                      CancellationToken cancellationToken)
     {
+        IValidator<TRequest>? validator = validators.SingleOrDefault();
+        if (validator is null)
+            return await next(cancellationToken);
+
         FluentValidation.Results.ValidationResult validationResult =
             await validator.ValidateAsync(request, cancellationToken);
         if (validationResult.IsValid == false)
@@ -23,13 +28,17 @@ public sealed class ValidationBehavior<TRequest>(IValidator<TRequest> validator)
     }
 }
 
-public sealed class ValidationBehavior<TRequest, TValue>(IValidator<TRequest> validator) : IPipelineBehavior<TRequest, Result<TValue>>
-    where TRequest : notnull
+public sealed class ValidationBehavior<TRequest, TValue>(IEnumerable<IValidator<TRequest>> validators) : IPipelineBehavior<TRequest, Result<TValue>>
+    where TRequest : notnull, IRequest<Result<TValue>>
 {
     public async Task<Result<TValue>> Handle(TRequest request,
                                              RequestHandlerDelegate<Result<TValue>> next,
                                              CancellationToken cancellationToken)
     {
+        IValidator<TRequest>? validator = validators.SingleOrDefault();
+        if (validator is null)
+            return await next(cancellationToken);
+
         FluentValidation.Results.ValidationResult validationResult =
             await validator.ValidateAsync(request, cancellationToken);
         if (validationResult.IsValid == false)

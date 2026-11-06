@@ -12,7 +12,7 @@ namespace TransactionProcessor.DataTransferObjects.Requests.Estate
         /// <summary>
         /// Display name for the estate.
         /// </summary>
-        //[Required]
+        [Required]
         public String EstateName { get; set; }
     }
 }

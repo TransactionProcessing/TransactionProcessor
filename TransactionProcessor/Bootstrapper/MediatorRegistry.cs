@@ -33,8 +33,18 @@ namespace TransactionProcessor.Bootstrapper
                 cfg.RegisterServicesFromAssembly(typeof(EstateRequestHandler).Assembly);
                 cfg.AddBehavior<IPipelineBehavior<EstateCommands.CreateEstateCommand, Result<Guid>>,
                     ValidationBehavior<EstateCommands.CreateEstateCommand, Guid>>();
+                cfg.AddBehavior<IPipelineBehavior<MerchantCommands.CreateMerchantCommand, Result<Guid>>,
+                    ValidationBehavior<MerchantCommands.CreateMerchantCommand, Guid>>();
+                cfg.AddBehavior<IPipelineBehavior<OperatorCommands.CreateOperatorCommand, Result<Guid>>,
+                    ValidationBehavior<OperatorCommands.CreateOperatorCommand, Guid>>();
+                cfg.AddBehavior<IPipelineBehavior<FloatCommands.CreateFloatCommand, Result<Guid>>,
+                    ValidationBehavior<FloatCommands.CreateFloatCommand, Guid>>();
             });
-            this.For<IValidator<EstateCommands.CreateEstateCommand>>().Use<CreateEstateCommandValidator>();
+            this.Scan(scanner =>
+            {
+                scanner.AssemblyContainingType<CreateEstateCommandValidator>();
+                scanner.ConnectImplementationsToTypesClosing(typeof(IValidator<>));
+            });
             this.AddSingleton<Func<String, String>>(container => (serviceName) => ConfigurationReader.GetBaseServerUri(serviceName).OriginalString);
         }
     }

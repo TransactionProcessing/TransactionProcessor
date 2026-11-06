@@ -3,13 +3,14 @@ using System.Threading;
 using System.Threading.Tasks;
 using MediatR;
 using SimpleResults;
+using System;
 using TransactionProcessor.BusinessLogic.Manager;
 using TransactionProcessor.BusinessLogic.Requests;
 using TransactionProcessor.BusinessLogic.Services;
 
 namespace TransactionProcessor.BusinessLogic.RequestHandlers
 {
-    public class OperatorRequestHandler : IRequestHandler<OperatorCommands.CreateOperatorCommand, Result>,
+    public class OperatorRequestHandler : IRequestHandler<OperatorCommands.CreateOperatorCommand, Result<Guid>>,
         IRequestHandler<OperatorQueries.GetOperatorQuery, Result<Models.Operator.Operator>>,
         IRequestHandler<OperatorQueries.GetOperatorsQuery, Result<List<Models.Operator.Operator>>>,
         IRequestHandler<OperatorCommands.UpdateOperatorCommand, Result>
@@ -23,7 +24,7 @@ namespace TransactionProcessor.BusinessLogic.RequestHandlers
             this.OperatorDomainService = operatorDomainService;
             this.TransactionProcessorManager = manager;
         }
-        public async Task<Result> Handle(OperatorCommands.CreateOperatorCommand command, CancellationToken cancellationToken)
+        public async Task<Result<Guid>> Handle(OperatorCommands.CreateOperatorCommand command, CancellationToken cancellationToken)
         {
             return await this.OperatorDomainService.CreateOperator(command, cancellationToken);
         }

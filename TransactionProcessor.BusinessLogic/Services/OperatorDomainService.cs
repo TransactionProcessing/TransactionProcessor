@@ -15,7 +15,7 @@ namespace TransactionProcessor.BusinessLogic.Services
 {
     public interface IOperatorDomainService
     {
-        Task<Result> CreateOperator(OperatorCommands.CreateOperatorCommand command, CancellationToken cancellationToken);
+        Task<Result<Guid>> CreateOperator(OperatorCommands.CreateOperatorCommand command, CancellationToken cancellationToken);
 
         Task<Result> UpdateOperator(OperatorCommands.UpdateOperatorCommand command, CancellationToken cancellationToken);
     }
@@ -28,14 +28,11 @@ namespace TransactionProcessor.BusinessLogic.Services
             this.AggregateService = aggregateService();
         }
         
-        public async Task<Result> CreateOperator(OperatorCommands.CreateOperatorCommand command, CancellationToken cancellationToken)
+        public async Task<Result<Guid>> CreateOperator(OperatorCommands.CreateOperatorCommand command, CancellationToken cancellationToken)
         {
             try {
                 // Check if we have been sent a merchant id to use
-                Guid operatorId = command.RequestDto.OperatorId switch {
-                    _ when command.RequestDto.OperatorId == Guid.Empty => Guid.NewGuid(),
-                    _ => command.RequestDto.OperatorId
-                };
+                Guid operatorId = IdGenerationService.GenerateOperatorId(command.EstateId, command.RequestDto.Name);
 
                 Result<EstateAggregate> estateResult = await DomainServiceHelper.GetAggregateOrFailure(ct => this.AggregateService.Get<EstateAggregate>(command.EstateId, ct), command.EstateId, cancellationToken);
                 if (estateResult.IsFailed)
@@ -53,7 +50,7 @@ namespace TransactionProcessor.BusinessLogic.Services
                 }
 
                 if (operatorAggregate.IsCreated) {
-                    return Result.Forbidden($"Operator with Id {command.RequestDto.OperatorId} already created");
+                    return Result.Forbidden($"Operator with Id {operatorId} already created");
                 }
 
                 Result stateResult = operatorAggregate.Create(command.EstateId, command.RequestDto.Name, command.RequestDto.RequireCustomMerchantNumber.GetValueOrDefault(), command.RequestDto.RequireCustomTerminalNumber.GetValueOrDefault());
@@ -64,7 +61,7 @@ namespace TransactionProcessor.BusinessLogic.Services
                 if (saveResult.IsFailed)
                     return ResultHelpers.CreateFailure(saveResult);
 
-                return Result.Success();
+                return Result.Success(operatorId);
             }
             catch (Exception ex) {
                 return Result.Failure(ex.GetExceptionMessages());

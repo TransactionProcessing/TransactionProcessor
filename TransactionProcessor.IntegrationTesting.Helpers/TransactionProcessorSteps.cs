@@ -918,14 +918,6 @@ public class TransactionProcessorSteps
                 operators.Data.ShouldNotBeNull();
                 @operator = operators.Data.SingleOrDefault(o => o.Name == request.request.Name);
                 @operator.ShouldNotBeNull();
-                //@operator.OperatorId.ShouldNotBe();
-                if (request.request.OperatorId != Guid.Empty) {
-                    @operator.OperatorId.ShouldBe(request.request.OperatorId);
-                }
-                else {
-                    @operator.OperatorId.ShouldNotBe(Guid.Empty);
-                }
-
             });
             @operator.ShouldNotBeNull();
             request.estate.AddOperator(@operator.OperatorId, request.request.Name);

@@ -1,4 +1,5 @@
 using System;
+using System.ComponentModel.DataAnnotations;
 
 namespace TransactionProcessor.DataTransferObjects.Requests.Float;
 
@@ -11,6 +12,7 @@ public class CreateFloatRequest{
     /// <summary>
     /// Identifier of the operator.
     /// </summary>
+    [Required]
     public Guid OperatorId { get; set; }
 
     /// <summary>
