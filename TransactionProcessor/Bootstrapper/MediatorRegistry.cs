@@ -11,6 +11,7 @@ namespace TransactionProcessor.Bootstrapper
     using System.Collections.Generic;
     using System.Diagnostics.CodeAnalysis;
     using BusinessLogic.RequestHandlers;
+    using BusinessLogic.Requests;
     using BusinessLogic.Validation;
     using Lamar;
     using MediatR;
@@ -30,8 +31,14 @@ namespace TransactionProcessor.Bootstrapper
             this.AddMediatR(cfg =>
             {
                 cfg.RegisterServicesFromAssembly(typeof(EstateRequestHandler).Assembly);
-                cfg.AddOpenBehavior(typeof(ValidationBehavior<>));
-                cfg.AddOpenBehavior(typeof(ValidationBehavior<,>));
+                cfg.AddBehavior<IPipelineBehavior<EstateCommands.CreateEstateCommand, Result<Guid>>,
+                    ValidationBehavior<EstateCommands.CreateEstateCommand, Guid>>();
+                cfg.AddBehavior<IPipelineBehavior<MerchantCommands.CreateMerchantCommand, Result<Guid>>,
+                    ValidationBehavior<MerchantCommands.CreateMerchantCommand, Guid>>();
+                cfg.AddBehavior<IPipelineBehavior<OperatorCommands.CreateOperatorCommand, Result>,
+                    ValidationBehavior<OperatorCommands.CreateOperatorCommand>>();
+                cfg.AddBehavior<IPipelineBehavior<FloatCommands.CreateFloatCommand, Result>,
+                    ValidationBehavior<FloatCommands.CreateFloatCommand>>();
             });
             this.Scan(scanner =>
             {
