@@ -95,10 +95,7 @@ namespace TransactionProcessor.Handlers
 
         private static async Task<Result<ReconciliationResponse>> ProcessSpecificMessage(IMediator mediator, ReconciliationRequest reconciliation, CancellationToken cancellationToken)
         {
-            Guid transactionId = Guid.NewGuid();
-
             TransactionCommands.ProcessReconciliationCommand command = new(
-                transactionId,
                 reconciliation.EstateId,
                 reconciliation.MerchantId,
                 reconciliation.DeviceIdentifier,

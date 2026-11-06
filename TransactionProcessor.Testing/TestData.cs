@@ -2114,7 +2114,7 @@ namespace TransactionProcessor.Testing
                                                      TestData.TransactionSource,
                                                      TestData.TransactionReceivedDateTime);
             public static TransactionCommands.ProcessReconciliationCommand ProcessReconciliationCommand =>
-                new(TestData.TransactionId, TestData.EstateId, TestData.MerchantId, TestData.DeviceIdentifier, TestData.TransactionDateTime, TestData.ReconciliationTransactionCount, TestData.ReconciliationTransactionValue,
+                new(TestData.EstateId, TestData.MerchantId, TestData.DeviceIdentifier, TestData.TransactionDateTime, TestData.ReconciliationTransactionCount, TestData.ReconciliationTransactionValue,
                     TestData.HostDateTime);
             public static TransactionCommands.ProcessLogonTransactionCommand ProcessLogonTransactionCommand =>
                 new(TestData.EstateId,

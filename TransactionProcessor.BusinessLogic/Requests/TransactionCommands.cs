@@ -19,8 +19,7 @@ public record TransactionCommands {
                                                  DateTimeOffset HostDateTime)
         : IRequest<Result<ProcessLogonTransactionResponse>>;
 
-    public record ProcessReconciliationCommand(Guid TransactionId,
-                                               Guid EstateId,
+    public record ProcessReconciliationCommand(Guid EstateId,
                                                Guid MerchantId,
                                                String DeviceIdentifier,
                                                DateTimeOffset TransactionDateTime,
