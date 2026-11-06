@@ -52,10 +52,7 @@ namespace TransactionProcessor.Handlers
         // Helpers copied from controller logic
         private static async Task<Result<LogonTransactionResponse>> ProcessSpecificMessage(IMediator mediator, LogonTransactionRequest logon,  CancellationToken cancellationToken)
         {
-            Guid transactionId = Guid.NewGuid();
-
             TransactionCommands.ProcessLogonTransactionCommand command = new(
-                transactionId,
                 logon.EstateId,
                 logon.MerchantId,
                 logon.DeviceIdentifier,
@@ -73,10 +70,7 @@ namespace TransactionProcessor.Handlers
 
         private static async Task<Result<SaleTransactionResponse>> ProcessSpecificMessage(IMediator mediator, SaleTransactionRequest sale, CancellationToken cancellationToken)
         {
-            Guid transactionId = Guid.NewGuid();
-
             TransactionCommands.ProcessSaleTransactionCommand command = new(
-                transactionId,
                 sale.EstateId,
                 sale.MerchantId,
                 sale.DeviceIdentifier,
@@ -92,7 +86,7 @@ namespace TransactionProcessor.Handlers
                 sale.TransactionSource.GetValueOrDefault(1),
                 sale.HostDateTime);
 
-            var result = await mediator.Send(command, cancellationToken);
+            Result<ProcessSaleTransactionResponse> result = await mediator.Send(command, cancellationToken);
             if (result.IsFailed)
                 return ResultHelpers.CreateFailure(result);
 

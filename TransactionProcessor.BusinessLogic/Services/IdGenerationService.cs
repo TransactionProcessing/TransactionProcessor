@@ -99,5 +99,9 @@ namespace TransactionProcessor.BusinessLogic.Services
         public static Guid GenerateReconciliationId(Guid estateId, Guid merchantId, String deviceIdentifier, DateTimeOffset transactionDateTime) {
             return IdGenerationService.GenerateUniqueId(new { estateId, merchantId, deviceIdentifier, transactionDateTime });
         }
+
+        public static Guid GenerateTransactionId(Guid estateId, Guid merchantId, String deviceIdentifier, DateTimeOffset transactionDateTime, String transactionNumber) {
+            return IdGenerationService.GenerateUniqueId(new { estateId, merchantId, deviceIdentifier, transactionDateTime, transactionNumber });
+        }
     }
 }

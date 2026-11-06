@@ -141,6 +141,18 @@ namespace TransactionProcessor.Aggregates
             };
         }
 
+        public static Boolean HasMatchingAdditionalTransactionRequestMetadata(this TransactionAggregate aggregate,
+                                                                                Dictionary<String, String> additionalTransactionRequestMetadata) {
+            if (aggregate.AdditionalTransactionRequestMetadata == null || additionalTransactionRequestMetadata == null)
+                return aggregate.AdditionalTransactionRequestMetadata == null && additionalTransactionRequestMetadata == null;
+
+            if (aggregate.AdditionalTransactionRequestMetadata.Count != additionalTransactionRequestMetadata.Count)
+                return false;
+
+            return aggregate.AdditionalTransactionRequestMetadata.All(pair =>
+                additionalTransactionRequestMetadata.TryGetValue(pair.Key, out String value) && value == pair.Value);
+        }
+
         public static Result AddFee(this TransactionAggregate aggregate, CalculatedFee calculatedFee)
         {
             if (aggregate.HasFeeAlreadyBeenAdded(calculatedFee))
@@ -313,6 +325,22 @@ namespace TransactionProcessor.Aggregates
 
             aggregate.ApplyAndAppend(transactionSourceAddedToTransactionEvent);
 
+            return Result.Success();
+        }
+
+        public static Result RecordSaleRequestDetails(this TransactionAggregate aggregate, Guid contractId, Guid productId, String customerEmailAddress) {
+            Result result = aggregate.CheckTransactionHasBeenStarted();
+            if (result.IsFailed)
+                return result;
+            result = aggregate.CheckTransactionNotAlreadyCompleted();
+            if (result.IsFailed)
+                return result;
+            if (aggregate.HasSaleRequestDetailsBeenRecorded)
+                return Result.Invalid("Sale request details already recorded");
+
+            TransactionDomainEvents.SaleRequestDetailsRecordedEvent saleRequestDetailsRecordedEvent =
+                new(aggregate.AggregateId, aggregate.EstateId, aggregate.MerchantId, contractId, productId, customerEmailAddress, aggregate.TransactionDateTime);
+            aggregate.ApplyAndAppend(saleRequestDetailsRecordedEvent);
             return Result.Success();
         }
 
@@ -859,6 +887,13 @@ namespace TransactionProcessor.Aggregates
             aggregate.TransactionSource = (TransactionSource)domainEvent.TransactionSource;
         }
 
+        public static void PlayEvent(this TransactionAggregate aggregate, TransactionDomainEvents.SaleRequestDetailsRecordedEvent domainEvent) {
+            aggregate.RequestedContractId = domainEvent.ContractId;
+            aggregate.RequestedProductId = domainEvent.ProductId;
+            aggregate.RequestedCustomerEmailAddress = domainEvent.CustomerEmailAddress;
+            aggregate.HasSaleRequestDetailsBeenRecorded = true;
+        }
+
         public static void PlayEvent(this TransactionAggregate aggregate, TransactionDomainEvents.TransactionCostInformationRecordedEvent domainEvent){
             aggregate.UnitCost = domainEvent.UnitCostValue;
             aggregate.TotalCost = domainEvent.TotalCostValue;
@@ -972,6 +1007,14 @@ namespace TransactionProcessor.Aggregates
         public String OperatorTransactionId { get; internal set; }
 
         public Guid ProductId { get; internal set; }
+
+        public Guid RequestedContractId { get; internal set; }
+
+        public Guid RequestedProductId { get; internal set; }
+
+        public String RequestedCustomerEmailAddress { get; internal set; }
+
+        public Boolean HasSaleRequestDetailsBeenRecorded { get; internal set; }
 
         public String ResponseCode { get; internal set; }
 

@@ -10,8 +10,7 @@ namespace TransactionProcessor.BusinessLogic.Requests;
 
 [ExcludeFromCodeCoverage]
 public record TransactionCommands {
-    public record ProcessLogonTransactionCommand(Guid TransactionId,
-                                                 Guid EstateId,
+    public record ProcessLogonTransactionCommand(Guid EstateId,
                                                  Guid MerchantId,
                                                  String DeviceIdentifier,
                                                  String TransactionType,
@@ -29,8 +28,7 @@ public record TransactionCommands {
                                                DateTimeOffset HostDateTime)
         : IRequest<Result<ProcessReconciliationTransactionResponse>>;
 
-    public record ProcessSaleTransactionCommand(Guid TransactionId,
-                                                Guid EstateId,
+    public record ProcessSaleTransactionCommand(Guid EstateId,
                                                 Guid MerchantId,
                                                 String DeviceIdentifier,
                                                 String TransactionType,

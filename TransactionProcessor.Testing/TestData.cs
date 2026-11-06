@@ -2100,7 +2100,7 @@ namespace TransactionProcessor.Testing
             public static MerchantCommands.UpdateMerchantScheduleCommand UpdateMerchantScheduleCommand => new(TestData.EstateId, TestData.MerchantId, TestData.MerchantScheduleYear, TestData.UpdateMerchantScheduleRequest);
 
             public static TransactionCommands.ProcessSaleTransactionCommand ProcessSaleTransactionCommand =>
-                new(TestData.TransactionId, TestData.EstateId,
+                new(TestData.EstateId,
                                                      TestData.MerchantId,
                                                      TestData.DeviceIdentifier,
                                                      TestData.TransactionTypeLogon.ToString(),
@@ -2117,8 +2117,7 @@ namespace TransactionProcessor.Testing
                 new(TestData.EstateId, TestData.MerchantId, TestData.DeviceIdentifier, TestData.TransactionDateTime, TestData.ReconciliationTransactionCount, TestData.ReconciliationTransactionValue,
                     TestData.HostDateTime);
             public static TransactionCommands.ProcessLogonTransactionCommand ProcessLogonTransactionCommand =>
-                new(TestData.TransactionId,
-                    TestData.EstateId,
+                new(TestData.EstateId,
                     TestData.MerchantId,
                     TestData.DeviceIdentifier,
                     TestData.TransactionTypeLogon.ToString(),
