@@ -35,10 +35,10 @@ namespace TransactionProcessor.Bootstrapper
                     ValidationBehavior<EstateCommands.CreateEstateCommand, Guid>>();
                 cfg.AddBehavior<IPipelineBehavior<MerchantCommands.CreateMerchantCommand, Result<Guid>>,
                     ValidationBehavior<MerchantCommands.CreateMerchantCommand, Guid>>();
-                cfg.AddBehavior<IPipelineBehavior<OperatorCommands.CreateOperatorCommand, Result>,
-                    ValidationBehavior<OperatorCommands.CreateOperatorCommand>>();
-                cfg.AddBehavior<IPipelineBehavior<FloatCommands.CreateFloatCommand, Result>,
-                    ValidationBehavior<FloatCommands.CreateFloatCommand>>();
+                cfg.AddBehavior<IPipelineBehavior<OperatorCommands.CreateOperatorCommand, Result<Guid>>,
+                    ValidationBehavior<OperatorCommands.CreateOperatorCommand, Guid>>();
+                cfg.AddBehavior<IPipelineBehavior<FloatCommands.CreateFloatCommand, Result<Guid>>,
+                    ValidationBehavior<FloatCommands.CreateFloatCommand, Guid>>();
             });
             this.Scan(scanner =>
             {
