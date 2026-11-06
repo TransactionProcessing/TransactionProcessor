@@ -3,9 +3,11 @@ using System.Threading;
 using System.Threading.Tasks;
 using MediatR;
 using SimpleResults;
+using System;
 using TransactionProcessor.BusinessLogic.Manager;
 using TransactionProcessor.BusinessLogic.Requests;
 using TransactionProcessor.BusinessLogic.Services;
+using TransactionProcessor.DataTransferObjects.Requests.Contract;
 
 namespace TransactionProcessor.BusinessLogic.RequestHandlers
 {
@@ -15,7 +17,7 @@ namespace TransactionProcessor.BusinessLogic.RequestHandlers
     /// <seealso cref="CreateContractRequest.String}" />
     /// <seealso cref="AddProductToContractRequest.String}" />
     /// <seealso cref="AddTransactionFeeForProductToContractRequest.String}" />
-    public class ContractRequestHandler : IRequestHandler<ContractCommands.CreateContractCommand, Result>,
+    public class ContractRequestHandler : IRequestHandler<ContractCommands.CreateContractCommand, Result<Guid>>,
                                           IRequestHandler<ContractCommands.AddProductToContractCommand, Result>,
                                           IRequestHandler<ContractCommands.AddTransactionFeeForProductToContractCommand, Result>,
                                           IRequestHandler<ContractCommands.DisableTransactionFeeForProductCommand, Result>,
@@ -40,7 +42,7 @@ namespace TransactionProcessor.BusinessLogic.RequestHandlers
 
         #region Methods
 
-        public async Task<Result> Handle(ContractCommands.CreateContractCommand command,
+        public async Task<Result<Guid>> Handle(ContractCommands.CreateContractCommand command,
                                  CancellationToken cancellationToken)
         {
             return await this.ContractDomainService.CreateContract(command, cancellationToken);

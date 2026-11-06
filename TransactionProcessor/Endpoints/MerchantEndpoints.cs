@@ -57,7 +57,8 @@ public static class MerchantEndpoints
         // Write/modify endpoints
         merchantGroup.MapPost("/", MerchantHandlers.CreateMerchant).WithName("CreateMerchant")
             .WithSummary("Create a merchant")
-            .WithDescription("Creates a merchant in the specified estate, including its address, contact, and settlement schedule.");
+            .WithDescription("Creates a merchant in the specified estate, including its address, contact, and settlement schedule. Returns the new merchant ID.")
+            .Produces<Guid>();
 
         merchantGroup.MapPatch("/{merchantId:guid}/operators", MerchantHandlers.AssignOperator).WithName("AssignMerchantOperator")
             .WithSummary("Assign an operator to a merchant").WithDescription("Associates the request's operator and terminal identifiers with the merchant.");

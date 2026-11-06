@@ -80,11 +80,11 @@ namespace TransactionProcessor.Handlers
             });
         }
 
-        /// <summary>Lists settlements for an estate with optional merchant and date filtering.</summary>
+        /// <summary>Lists settlements for an estate between the required date bounds, optionally filtered by merchant.</summary>
         /// <param name="estateId">Estate whose settlements are listed.</param>
         /// <param name="merchantId" example="00000000-0000-0000-0000-000000000227">Optional merchant filter.</param>
-        /// <param name="startDate" example="2026-01-01">Optional lower date bound from the start_date query parameter.</param>
-        /// <param name="endDate" example="2026-01-31">Optional upper date bound from the end_date query parameter.</param>
+        /// <param name="startDate" example="20260101">Required lower date bound from the start_date query parameter, formatted as yyyyMMdd.</param>
+        /// <param name="endDate" example="20260131">Required upper date bound from the end_date query parameter, formatted as yyyyMMdd.</param>
         public static async Task<IResult> GetSettlements(IMediator mediator, HttpContext ctx, 
                                                          [FromRoute] Guid estateId, [FromQuery] Guid? merchantId, [FromQuery(Name = "start_date")] string startDate, [FromQuery(Name = "end_date")] string endDate, CancellationToken cancellationToken)
         {

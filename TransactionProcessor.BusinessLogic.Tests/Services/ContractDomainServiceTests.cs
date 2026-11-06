@@ -38,7 +38,7 @@ namespace TransactionProcessor.BusinessLogic.Tests.Services
             this.AggregateService.Save<ContractAggregate>(Arg<ContractAggregate>.Any(), Arg<CancellationToken>.Any()).ReturnsAsync(Result.Success());
             
             ContractCommands.CreateContractCommand command = TestData.Commands.CreateContractCommand;
-            Result result = await this.DomainService.CreateContract(command, TestContext.Current.CancellationToken);
+            Result<Guid> result = await this.DomainService.CreateContract(command, TestContext.Current.CancellationToken);
             result.IsSuccess.ShouldBeTrue();
         }
 
@@ -56,7 +56,7 @@ namespace TransactionProcessor.BusinessLogic.Tests.Services
                 }
             };
 
-            Result result = await this.DomainService.CreateContract(command, TestContext.Current.CancellationToken);
+            Result<Guid> result = await this.DomainService.CreateContract(command, TestContext.Current.CancellationToken);
 
             result.Status.ShouldBe(ResultStatus.Invalid);
             result.Message.ShouldBe("Contract description must not be null or empty");
@@ -70,7 +70,7 @@ namespace TransactionProcessor.BusinessLogic.Tests.Services
             this.AggregateService.GetLatest<ContractAggregate>(Arg<Guid>.Any(), Arg<CancellationToken>.Any()).ReturnsAsync(Result.Success(TestData.Aggregates.EmptyContractAggregate()));
             
             ContractCommands.CreateContractCommand command = TestData.Commands.CreateContractCommand;
-            Result result = await this.DomainService.CreateContract(command, TestContext.Current.CancellationToken);
+            Result<Guid> result = await this.DomainService.CreateContract(command, TestContext.Current.CancellationToken);
             result.IsFailed.ShouldBeTrue();
         }
 
@@ -83,7 +83,7 @@ namespace TransactionProcessor.BusinessLogic.Tests.Services
             this.AggregateService.GetLatest<ContractAggregate>(Arg<Guid>.Any(), Arg<CancellationToken>.Any()).ReturnsAsync(Result.Success(TestData.Aggregates.CreatedContractAggregate()));
             
             ContractCommands.CreateContractCommand command = TestData.Commands.CreateContractCommand;
-            Result result = await this.DomainService.CreateContract(command, TestContext.Current.CancellationToken);
+            Result<Guid> result = await this.DomainService.CreateContract(command, TestContext.Current.CancellationToken);
             result.IsFailed.ShouldBeTrue();
         }
 
@@ -94,7 +94,7 @@ namespace TransactionProcessor.BusinessLogic.Tests.Services
             this.AggregateService.Get<EstateAggregate>(Arg<Guid>.Any(), Arg<CancellationToken>.Any()).ReturnsAsync(Result.Success(TestData.Aggregates.EmptyEstateAggregate));
 
             ContractCommands.CreateContractCommand command = TestData.Commands.CreateContractCommand;
-            Result result = await this.DomainService.CreateContract(command, TestContext.Current.CancellationToken);
+            Result<Guid> result = await this.DomainService.CreateContract(command, TestContext.Current.CancellationToken);
             result.IsFailed.ShouldBeTrue();
         }
 
@@ -106,7 +106,7 @@ namespace TransactionProcessor.BusinessLogic.Tests.Services
             this.AggregateService.Save<ContractAggregate>(Arg<ContractAggregate>.Any(), Arg<CancellationToken>.Any()).ReturnsAsync(Result.Success());
 
             ContractCommands.CreateContractCommand command = TestData.Commands.CreateContractCommand;
-            Result result = await this.DomainService.CreateContract(command, TestContext.Current.CancellationToken);
+            Result<Guid> result = await this.DomainService.CreateContract(command, TestContext.Current.CancellationToken);
             result.IsFailed.ShouldBeTrue();
         }
         
@@ -118,7 +118,7 @@ namespace TransactionProcessor.BusinessLogic.Tests.Services
             this.AggregateService.Save<ContractAggregate>(Arg<ContractAggregate>.Any(), Arg<CancellationToken>.Any()).ReturnsAsync(Result.Success());
 
             ContractCommands.CreateContractCommand command = TestData.Commands.CreateContractCommand;
-            Result result = await this.DomainService.CreateContract(command, TestContext.Current.CancellationToken);
+            Result<Guid> result = await this.DomainService.CreateContract(command, TestContext.Current.CancellationToken);
             result.IsFailed.ShouldBeTrue();
         }
 
@@ -321,7 +321,7 @@ namespace TransactionProcessor.BusinessLogic.Tests.Services
                 .ReturnsAsync(Result.Failure());
 
             ContractCommands.CreateContractCommand command = TestData.Commands.CreateContractCommand;
-            Result result = await this.DomainService.CreateContract(command, TestContext.Current.CancellationToken);
+            Result<Guid> result = await this.DomainService.CreateContract(command, TestContext.Current.CancellationToken);
             result.IsFailed.ShouldBeTrue();
         }
 
@@ -334,7 +334,7 @@ namespace TransactionProcessor.BusinessLogic.Tests.Services
                 .ReturnsAsync(Result.Failure());
 
             ContractCommands.CreateContractCommand command = TestData.Commands.CreateContractCommand;
-            Result result = await this.DomainService.CreateContract(command, TestContext.Current.CancellationToken);
+            Result<Guid> result = await this.DomainService.CreateContract(command, TestContext.Current.CancellationToken);
             result.IsFailed.ShouldBeTrue();
         }
 
@@ -354,7 +354,7 @@ namespace TransactionProcessor.BusinessLogic.Tests.Services
                     OperatorId = TestData.Commands.CreateContractCommand.RequestDTO.OperatorId
                 }
             };
-            Result result = await this.DomainService.CreateContract(command, TestContext.Current.CancellationToken);
+            Result<Guid> result = await this.DomainService.CreateContract(command, TestContext.Current.CancellationToken);
             result.IsFailed.ShouldBeTrue();
         }
 
@@ -369,7 +369,7 @@ namespace TransactionProcessor.BusinessLogic.Tests.Services
                 .ReturnsAsync(Result.Failure());
 
             ContractCommands.CreateContractCommand command = TestData.Commands.CreateContractCommand;
-            Result result = await this.DomainService.CreateContract(command, TestContext.Current.CancellationToken);
+            Result<Guid> result = await this.DomainService.CreateContract(command, TestContext.Current.CancellationToken);
             result.IsFailed.ShouldBeTrue();
         }
 
@@ -383,7 +383,7 @@ namespace TransactionProcessor.BusinessLogic.Tests.Services
             this.AggregateService.Save(Arg<ContractAggregate>.Any(), Arg<CancellationToken>.Any()).ThrowsAsync(new Exception());
 
             ContractCommands.CreateContractCommand command = TestData.Commands.CreateContractCommand;
-            Result result = await this.DomainService.CreateContract(command, TestContext.Current.CancellationToken);
+            Result<Guid> result = await this.DomainService.CreateContract(command, TestContext.Current.CancellationToken);
             result.IsFailed.ShouldBeTrue();
         }
 

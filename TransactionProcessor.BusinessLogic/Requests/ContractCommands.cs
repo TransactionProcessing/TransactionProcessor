@@ -9,7 +9,7 @@ namespace TransactionProcessor.BusinessLogic.Requests;
 [ExcludeFromCodeCoverage]
 public record ContractCommands {
     public record CreateContractCommand(Guid EstateId,
-                                        CreateContractRequest RequestDTO) : IRequest<Result>;
+                                        CreateContractRequest RequestDTO) : IRequest<Result<Guid>>;
 
     public record AddProductToContractCommand(Guid EstateId,
                                               Guid ContractId,

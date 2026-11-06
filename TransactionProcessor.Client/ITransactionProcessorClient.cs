@@ -44,7 +44,7 @@ namespace TransactionProcessor.Client {
                                                                    Guid merchantId,
                                                                    CancellationToken cancellationToken);
 
-        Task<Result> ProcessSettlement(String accessToken,
+        Task<Result<Guid>> ProcessSettlement(String accessToken,
                                        DateTimeOffset settlementDate,
                                Guid estateId,
                                Guid merchantId,
@@ -78,11 +78,11 @@ namespace TransactionProcessor.Client {
                                                   Guid transactionId,
                                                   CancellationToken cancellationToken);
 
-        Task<Result> RedeemVoucher(String accessToken,
+        Task<Result<RedeemVoucherResponse>> RedeemVoucher(String accessToken,
                                                   RedeemVoucherRequest redeemVoucherRequest,
                                                   CancellationToken cancellationToken);
 
-        Task<Result> CreateFloat(String accessToken,
+        Task<Result<Guid>> CreateFloat(String accessToken,
                                  Guid estateId,
                          CreateFloatRequest createFloatForContractProductRequest,
                          CancellationToken cancellationToken);
@@ -156,7 +156,7 @@ namespace TransactionProcessor.Client {
                                               DataTransferObjects.Requests.Merchant.AssignOperatorRequest assignOperatorRequest,
                                               CancellationToken cancellationToken);
 
-        Task<Result> CreateOperator(String accessToken,
+        Task<Result<Guid>> CreateOperator(String accessToken,
                                     Guid estateId,
                                     CreateOperatorRequest createOperatorRequest,
                                     CancellationToken cancellationToken);
@@ -170,7 +170,7 @@ namespace TransactionProcessor.Client {
                                             AssignOperatorRequest assignOperatorRequest,
                                             CancellationToken cancellationToken);
 
-        Task<Result> CreateContract(String accessToken,
+        Task<Result<Guid>> CreateContract(String accessToken,
                                     Guid estateId,
                                     CreateContractRequest createContractRequest,
                                     CancellationToken cancellationToken);

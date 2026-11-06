@@ -26,7 +26,8 @@ namespace TransactionProcessor.Endpoints
             // Create
             operatorGroup.MapPost("/", OperatorHandlers.CreateOperator)
                 .WithName("CreateOperator").WithSummary("Create an operator")
-                .WithDescription("Creates an operator in the specified estate. The operator ID is supplied in the request body.");
+                .WithDescription("Creates an operator in the specified estate and returns the new operator ID.")
+                .Produces<Guid>();
 
             // Update 
             operatorGroup.MapPost("/{operatorId:guid}", OperatorHandlers.UpdateOperator)

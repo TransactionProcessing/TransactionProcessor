@@ -47,7 +47,8 @@ namespace TransactionProcessor.Endpoints
 
             contractGroup.MapPost("/", ContractHandlers.CreateContract)
                 .WithName("CreateContract").WithSummary("Create a contract")
-                .WithDescription("Creates a contract in the specified estate for the supplied operator.");
+                .WithDescription("Creates a contract in the specified estate for the supplied operator and returns the new contract ID.")
+                .Produces<Guid>();
 
             return endpoints;
         }

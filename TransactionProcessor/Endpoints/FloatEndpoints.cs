@@ -21,7 +21,8 @@ namespace TransactionProcessor.Endpoints
 
             group.MapPost("/", FloatHandlers.CreateFloat)
                  .WithName("CreateFloat").WithSummary("Create an estate float")
-                 .WithDescription("Creates the float identified by the request body for the specified estate.");
+                 .WithDescription("Creates a float for the operator and date in the request body and returns the new float ID.")
+                 .Produces<Guid>();
 
             group.MapPut("/", FloatHandlers.RecordFloatCreditPurchase)
                  .WithName("RecordFloatCreditPurchase").WithSummary("Record a float credit purchase")

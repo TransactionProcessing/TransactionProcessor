@@ -231,7 +231,7 @@ public class WebHandlersTests
 
         yield return Case(
             "CreateContract",
-            SetupSuccess<ContractCommands.CreateContractCommand>(command =>
+            SetupSuccess<ContractCommands.CreateContractCommand, Guid>(ContractId, command =>
             {
                 command.EstateId.ShouldBe(EstateId);
                 command.RequestDTO.Description.ShouldBe("Contract");

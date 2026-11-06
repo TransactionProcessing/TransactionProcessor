@@ -108,19 +108,19 @@ public class TransactionProcessorClient : ClientProxyBase, ITransactionProcessor
         }
     }
 
-    public async Task<Result> CreateFloat(String accessToken,
+    public async Task<Result<Guid>> CreateFloat(String accessToken,
                                                             Guid estateId,
                                                             CreateFloatRequest createFloatForContractProductRequest,
                                                             CancellationToken cancellationToken) {
         String requestUri = this.BuildRequestUrl($"/api/estates/{estateId}/floats");
 
         try {
-            var result = await this.Post<CreateFloatRequest>(requestUri, createFloatForContractProductRequest, accessToken, cancellationToken);
+            Result<Guid> result = await this.Post<CreateFloatRequest, Guid>(requestUri, createFloatForContractProductRequest, accessToken, cancellationToken);
 
             if (result.IsFailed)
                 return ResultHelpers.CreateFailure(result);
 
-            return Result.Success();
+            return Result.Success(result.Data);
         }
         catch (Exception ex) {
             // An exception has occurred, add some additional information to the message
@@ -336,7 +336,7 @@ public class TransactionProcessorClient : ClientProxyBase, ITransactionProcessor
         }
     }
 
-    public async Task<Result> ProcessSettlement(String accessToken,
+    public async Task<Result<Guid>> ProcessSettlement(String accessToken,
                                                 DateTimeOffset settlementDate,
                                                 Guid estateId,
                                                 Guid merchantId,
@@ -344,12 +344,12 @@ public class TransactionProcessorClient : ClientProxyBase, ITransactionProcessor
         String requestUri = this.BuildRequestUrl($"/api/estates/{estateId}/settlements/{settlementDate.Date:yyyy-MM-dd}/merchants/{merchantId}");
 
         try {
-            Result result = await this.Post(requestUri, new StringContent(""), accessToken, cancellationToken);
+            Result<Guid> result = await this.Post<Guid>(requestUri, new StringContent(""), accessToken, cancellationToken);
 
             if (result.IsFailed)
                 return ResultHelpers.CreateFailure(result);
 
-            return result;
+            return Result.Success(result.Data);
         }
         catch (Exception ex) {
             // An exception has occurred, add some additional information to the message
@@ -372,7 +372,7 @@ public class TransactionProcessorClient : ClientProxyBase, ITransactionProcessor
         String requestUri = this.BuildRequestUrl($"/api/estates/{estateId}/floats");
 
         try {
-            var result = await this.Post<RecordFloatCreditPurchaseRequest>(requestUri, recordFloatCreditPurchaseRequest, accessToken, cancellationToken);
+            var result = await this.Put<RecordFloatCreditPurchaseRequest>(requestUri, recordFloatCreditPurchaseRequest, accessToken, cancellationToken);
 
             if (result.IsFailed)
                 return ResultHelpers.CreateFailure(result);
@@ -387,20 +387,20 @@ public class TransactionProcessorClient : ClientProxyBase, ITransactionProcessor
         }
     }
 
-    public async Task<Result> RedeemVoucher(String accessToken,
+    public async Task<Result<RedeemVoucherResponse>> RedeemVoucher(String accessToken,
                                             RedeemVoucherRequest redeemVoucherRequest,
                                             CancellationToken cancellationToken) {
         String requestUri = this.BuildRequestUrl($"/api/vouchers");
 
         try {
 
-            Result result = await this.Put(requestUri, redeemVoucherRequest, accessToken, cancellationToken);
+            Result<RedeemVoucherResponse> result = await this.Put<RedeemVoucherRequest, RedeemVoucherResponse>(requestUri, redeemVoucherRequest, accessToken, cancellationToken);
 
             if (result.IsFailed)
                 return ResultHelpers.CreateFailure(result);
 
 
-            return result;
+            return Result.Success(result.Data);
         }
         catch (Exception ex) {
             // An exception has occurred, add some additional information to the message
@@ -662,19 +662,19 @@ public class TransactionProcessorClient : ClientProxyBase, ITransactionProcessor
         }
     }
 
-    public async Task<Result> CreateContract(String accessToken,
+    public async Task<Result<Guid>> CreateContract(String accessToken,
                                              Guid estateId,
                                              CreateContractRequest createContractRequest,
                                              CancellationToken cancellationToken) {
         String requestUri = this.BuildRequestUrl($"/api/estates/{estateId}/contracts/");
 
         try {
-            var result = await this.Post<CreateContractRequest>(requestUri, createContractRequest, accessToken, cancellationToken);
+            Result<Guid> result = await this.Post<CreateContractRequest, Guid>(requestUri, createContractRequest, accessToken, cancellationToken);
 
             if (result.IsFailed)
                 return ResultHelpers.CreateFailure(result);
 
-            return Result.Success();
+            return Result.Success(result.Data);
         }
         catch (Exception ex) {
             // An exception has occurred, add some additional information to the message
@@ -684,19 +684,19 @@ public class TransactionProcessorClient : ClientProxyBase, ITransactionProcessor
         }
     }
 
-    public async Task<Result> CreateOperator(String accessToken,
+    public async Task<Result<Guid>> CreateOperator(String accessToken,
                                              Guid estateId,
                                              CreateOperatorRequest createOperatorRequest,
                                              CancellationToken cancellationToken) {
         String requestUri = this.BuildRequestUrl($"/api/estates/{estateId}/operators");
 
         try {
-            var result = await this.Post<CreateOperatorRequest>(requestUri, createOperatorRequest, accessToken, cancellationToken);
+            Result<Guid> result = await this.Post<CreateOperatorRequest, Guid>(requestUri, createOperatorRequest, accessToken, cancellationToken);
 
             if (result.IsFailed)
                 return ResultHelpers.CreateFailure(result);
 
-            return Result.Success();
+            return Result.Success(result.Data);
         }
         catch (Exception ex) {
             // An exception has occurred, add some additional information to the message

@@ -65,8 +65,8 @@ namespace TransactionProcessor.Handlers
         {
             ContractCommands.CreateContractCommand command = new(estateId, createContractRequest);
 
-            Result result = await mediator.Send(command, cancellationToken);
-            return ResponseFactory.FromResult(result);
+            Result<Guid> result = await mediator.Send(command, cancellationToken);
+            return ResponseFactory.FromResult<Guid>(result, (contractId) => result.Data);
         }
     }
 }
