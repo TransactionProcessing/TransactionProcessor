@@ -1,7 +1,6 @@
 using Shared.Extensions;
 using Shared.Serialisation;
 using Shouldly;
-using TransactionProcessor.BusinessLogic.Services;
 using TransactionProcessor.DataTransferObjects.Requests.Contract;
 using TransactionProcessor.DataTransferObjects.Requests.Estate;
 using TransactionProcessor.DataTransferObjects.Requests.Merchant;
