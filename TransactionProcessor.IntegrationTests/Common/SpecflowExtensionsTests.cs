@@ -1,7 +1,9 @@
 using System;
 using System.Collections.Generic;
 using NUnit.Framework;
+using Shared.Serialisation;
 using Shouldly;
+using System.Text.Json;
 using TransactionProcessor.DataTransferObjects.Requests.Contract;
 using TransactionProcessor.DataTransferObjects;
 using TransactionProcessor.DataTransferObjects.Requests.Transaction;
@@ -16,6 +18,8 @@ public class SpecflowExtensionsTests
     [Test]
     public void ToSettlementFeeDetails_ReturnsEveryFeeRow()
     {
+        StringSerialiser.Initialise(new SystemTextJsonSerializer(new JsonSerializerOptions()));
+
         EstateDetails estate = EstateDetails.Create(Guid.NewGuid(), "Test Estate", "estate-reference");
         estate.AddMerchant(new MerchantResponse
         {
