@@ -23,7 +23,6 @@
     <PackageReference Include="NuGet.Protocol" />
     <PackageReference Include="OpenTelemetry.Api" />
     <PackageReference Include="SharpCompress" />
-    <PackageReference Include="SixLabors.ImageSharp" />
     <PackageReference Include="System.Security.Cryptography.Xml" />
     <PackageReference Include="xunit.v3.mtp-v2" />
 	  <PackageReference Include="Shared.IntegrationTesting" />

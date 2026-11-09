@@ -37,7 +37,6 @@
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
     <PackageReference Include="MessagingService.IntegrationTesting.Helpers" />
-    <PackageReference Include="SixLabors.ImageSharp" />
     <PackageReference Include="System.Security.Cryptography.Xml" />
     <PackageReference Include="System.ServiceModel.Federation" />
     <PackageReference Include="Microsoft.IdentityModel.Tokens" />
