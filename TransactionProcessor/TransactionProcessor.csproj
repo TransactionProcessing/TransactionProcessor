@@ -42,7 +42,7 @@
     <PackageReference Include="Shared.EventStore" />
       <PackageReference Include="Microsoft.Extensions.Hosting.WindowsServices" />
       <PackageReference Include="Shared.Results.Web" />
-      <PackageReference Include="SixLabors.ImageSharp" />
+      <PackageReference Include="SkiaSharp.NativeAssets.Linux.NoDependencies" />
 	  <PackageReference Include="System.ServiceModel.Federation" />
 	  <PackageReference Include="System.ServiceModel.Http" />
 	  <PackageReference Include="System.ServiceModel.NetTcp" />

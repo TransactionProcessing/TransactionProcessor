@@ -19,7 +19,8 @@
     <PackageReference Include="OpenTelemetry.Api" />
     <PackageReference Include="RichardSzalay.MockHttp" />
     <PackageReference Include="Shouldly" />
-    <PackageReference Include="SixLabors.ImageSharp" />
+    <PackageReference Include="SkiaSharp" />
+    <PackageReference Include="SkiaSharp.NativeAssets.Linux.NoDependencies" />
     <PackageReference Include="System.IO.Abstractions.TestingHelpers" />
     <PackageReference Include="System.Security.Cryptography.Xml" />
     <PackageReference Include="System.ServiceModel.Federation" />
@@ -28,6 +29,7 @@
     <PackageReference Include="System.ServiceModel.Http" />
     <PackageReference Include="System.ServiceModel.NetTcp" />
     <PackageReference Include="xunit.v3.mtp-v2" />
+    <PackageReference Include="ZXing.Net.Bindings.SkiaSharp" />
     <PackageReference Include="coverlet.msbuild">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>

@@ -10,7 +10,6 @@ namespace TransactionProcessor.BusinessLogic.Services;
 
 using Microsoft.EntityFrameworkCore;
 using Models;
-using NetBarcode;
 using Shared.EntityFramework;
 using Shared.EventStore.Aggregate;
 using Shared.Exceptions;
@@ -74,8 +73,8 @@ public class VoucherDomainService : IVoucherDomainService
             Models.Voucher voucherModel = voucherAggregate.GetVoucher();
 
             // Generate the barcode
-            Barcode barcode = new Barcode(voucherModel.VoucherCode);
-            stateResult = voucherAggregate.AddBarcode(barcode.GetBase64Image());
+            String barcode = VoucherBarcodeGenerator.GenerateBase64Png(voucherModel.VoucherCode);
+            stateResult = voucherAggregate.AddBarcode(barcode);
             if (stateResult.IsFailed)
                 return ResultHelpers.CreateFailure(stateResult);
             

@@ -20,7 +20,7 @@
     <PackageReference Include="Shared.DomainDrivenDesign" />
     <PackageReference Include="Shared.EventStore" />
     <PackageReference Include="MediatR" />
-    <PackageReference Include="SixLabors.ImageSharp" />
+    <PackageReference Include="SkiaSharp" />
     <PackageReference Include="System.IO.Abstractions" />
     <PackageReference Include="System.Security.Cryptography.Xml" />
     <PackageReference Include="System.ServiceModel.Duplex" />
@@ -30,7 +30,7 @@
     <PackageReference Include="System.ServiceModel.Http" />
     <PackageReference Include="System.ServiceModel.NetTcp" />
     <PackageReference Include="System.ServiceModel.Security" />
-    <PackageReference Include="NetBarcode" />
+    <PackageReference Include="ZXing.Net.Bindings.SkiaSharp" />
   </ItemGroup>
 
   <ItemGroup>
