@@ -520,7 +520,7 @@ namespace TransactionProcessor.IntegrationTests.Shared {
 
             //String tokenResponse = await this.SecurityServiceSteps
             //    .GetPasswordToken(clientId, clientDetails.ClientSecret, username, password, CancellationToken.None).ConfigureAwait(false);
-            Result<TokenResponse> token = await this.TestingContext.DockerHelper.SecurityServiceClient.GetToken(username, password, clientId, clientDetails.ClientSecret,
+            var token = await this.TestingContext.DockerHelper.SecurityServiceClient.GetToken(username, password, clientId, clientDetails.ClientSecret,
                 CancellationToken.None);
             token.IsSuccess.ShouldBeTrue(token.Message);
             token.Data.ShouldNotBeNull();
@@ -712,7 +712,7 @@ namespace TransactionProcessor.IntegrationTests.Shared {
                     GlName = ReqnrollTableHelper.GetStringRowValue(dataTableRow, "Name"),
                     GlType = ReqnrollTableHelper.GetStringRowValue(dataTableRow, "Type")
                 };
-                Result result = await this.TestingContext.DockerHelper.AgencyBankingClient.CreateGlAccount(request, CancellationToken.None);
+                var result = await this.TestingContext.DockerHelper.AgencyBankingClient.CreateGlAccount(request, CancellationToken.None);
                 result.IsSuccess.ShouldBeTrue($"Error creating GL account {request.GlCode}");
             }
         }
@@ -731,7 +731,7 @@ namespace TransactionProcessor.IntegrationTests.Shared {
                     PhoneNumber = ReqnrollTableHelper.GetStringRowValue(dataTableRow, "PhoneNumber"),
                     NationalId = ReqnrollTableHelper.GetStringRowValue(dataTableRow, "NationalId")
                 };
-                Result result = await this.TestingContext.DockerHelper.AgencyBankingClient.CreateCustomer(request, CancellationToken.None);
+                var result = await this.TestingContext.DockerHelper.AgencyBankingClient.CreateCustomer(request, CancellationToken.None);
                 result.IsSuccess.ShouldBeTrue($"Error creating customer {request.AccountNumber}");
             }
         }
@@ -748,7 +748,7 @@ namespace TransactionProcessor.IntegrationTests.Shared {
                     BankCode = ReqnrollTableHelper.GetStringRowValue(dataTableRow, "BankCode"),
                     Currency = ReqnrollTableHelper.GetStringRowValue(dataTableRow, "Currency")
                 };
-                Result result = await this.TestingContext.DockerHelper.AgencyBankingClient.CreateSettlementAccount(request, CancellationToken.None);
+                var result = await this.TestingContext.DockerHelper.AgencyBankingClient.CreateSettlementAccount(request, CancellationToken.None);
                 result.IsSuccess.ShouldBeTrue($"Error creating settlement account {request.AccountNumber}");
             }
         }

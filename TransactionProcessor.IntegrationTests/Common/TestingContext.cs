@@ -1,5 +1,6 @@
 using TransactionProcessor.DataTransferObjects.Responses.Merchant;
 using TransactionProcessor.IntegrationTesting.Helpers;
+using TransactionProcessing.UnionResults;
 
 namespace TransactionProcessor.IntegrationTests.Common {
     using System;

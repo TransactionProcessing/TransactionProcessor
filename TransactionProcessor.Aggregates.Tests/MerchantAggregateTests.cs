@@ -76,7 +76,7 @@ namespace TransactionProcessor.Aggregates.Tests
             Result result = aggregate.Create(TestData.EstateId, merchantName, TestData.DateMerchantCreated, TestData.AddressModel, TestData.ContactModel,
                 TestData.SettlementScheduleModel);
             result.IsFailed.ShouldBeTrue();
-            result.Status.ShouldBe(ResultStatus.Invalid);
+            result.Errors.ErrorType.ShouldBe(ErrorType.Validation);
             result.Message.ShouldBe("Merchant name must be provided when registering a new merchant");
         }
 
@@ -87,7 +87,7 @@ namespace TransactionProcessor.Aggregates.Tests
             Result result = aggregate.Create(TestData.EstateId, TestData.MerchantName, TestData.DateMerchantCreated, null, TestData.ContactModel,
                 TestData.SettlementScheduleModel);
             result.IsFailed.ShouldBeTrue();
-            result.Status.ShouldBe(ResultStatus.Invalid);
+            result.Errors.ErrorType.ShouldBe(ErrorType.Validation);
             result.Message.ShouldBe("An Address must be provided when registering a new merchant");
         }
 
@@ -98,7 +98,7 @@ namespace TransactionProcessor.Aggregates.Tests
             Result result = aggregate.Create(TestData.EstateId, TestData.MerchantName, TestData.DateMerchantCreated, TestData.AddressModel, null,
                 TestData.SettlementScheduleModel);
             result.IsFailed.ShouldBeTrue();
-            result.Status.ShouldBe(ResultStatus.Invalid);
+            result.Errors.ErrorType.ShouldBe(ErrorType.Validation);
             result.Message.ShouldBe("A Contact must be provided when registering a new merchant");
         }
 
@@ -109,7 +109,7 @@ namespace TransactionProcessor.Aggregates.Tests
             Result result = aggregate.Create(TestData.EstateId, TestData.MerchantName, TestData.DateMerchantCreated, TestData.AddressModel, TestData.ContactModel,
                 TestData.SettlementScheduleModelNotSet);
             result.IsFailed.ShouldBeTrue();
-            result.Status.ShouldBe(ResultStatus.Invalid);
+            result.Errors.ErrorType.ShouldBe(ErrorType.Validation);
             result.Message.ShouldBe("A valid settlement schedule must be provided when registering a new merchant");
         }
 
@@ -168,7 +168,7 @@ namespace TransactionProcessor.Aggregates.Tests
 
             Result result = aggregate.AddAddress(TestData.AddressModel);
             result.IsFailed.ShouldBeTrue();
-            result.Status.ShouldBe(ResultStatus.Invalid);
+            result.Errors.ErrorType.ShouldBe(ErrorType.Validation);
             result.Message.ShouldContain($"Merchant has not been created");
         }
         
@@ -216,7 +216,7 @@ namespace TransactionProcessor.Aggregates.Tests
                                                                                                                    TestData.MerchantContactPhoneNumber,
                                                                                                                    TestData.MerchantContactEmailAddress);
             result.IsFailed.ShouldBeTrue();
-            result.Status.ShouldBe(ResultStatus.Invalid);
+            result.Errors.ErrorType.ShouldBe(ErrorType.Validation);
             result.Message.ShouldContain($"Merchant has not been created");
         }
         
@@ -243,7 +243,7 @@ namespace TransactionProcessor.Aggregates.Tests
 
             Result result = aggregate.AssignOperator(TestData.OperatorId, TestData.OperatorName, TestData.OperatorMerchantNumber, TestData.OperatorTerminalNumber);
             result.IsFailed.ShouldBeTrue();
-            result.Status.ShouldBe(ResultStatus.Invalid);
+            result.Errors.ErrorType.ShouldBe(ErrorType.Validation);
         }
 
         [Fact]
@@ -255,7 +255,7 @@ namespace TransactionProcessor.Aggregates.Tests
 
             Result result = aggregate.AssignOperator(TestData.OperatorId, TestData.OperatorName, TestData.OperatorMerchantNumber, TestData.OperatorTerminalNumber);
             result.IsFailed.ShouldBeTrue();
-            result.Status.ShouldBe(ResultStatus.Invalid);
+            result.Errors.ErrorType.ShouldBe(ErrorType.Validation);
         }
         
         [Fact]
@@ -280,7 +280,7 @@ namespace TransactionProcessor.Aggregates.Tests
 
             Result result = aggregate.AddSecurityUser(TestData.SecurityUserId, TestData.EstateUserEmailAddress);
             result.IsFailed.ShouldBeTrue();
-            result.Status.ShouldBe(ResultStatus.Invalid);
+            result.Errors.ErrorType.ShouldBe(ErrorType.Validation);
             result.Message.ShouldContain("Merchant has not been created");
         }
         
@@ -309,7 +309,7 @@ namespace TransactionProcessor.Aggregates.Tests
 
             Result result = aggregate.AddDevice(TestData.DeviceId, deviceIdentifier);
             result.IsFailed.ShouldBeTrue();
-            result.Status.ShouldBe(ResultStatus.Invalid);
+            result.Errors.ErrorType.ShouldBe(ErrorType.Validation);
         }
 
         [Fact]
@@ -318,7 +318,7 @@ namespace TransactionProcessor.Aggregates.Tests
 
             Result result = aggregate.AddDevice(TestData.DeviceId, TestData.DeviceIdentifier);
             result.IsFailed.ShouldBeTrue();
-            result.Status.ShouldBe(ResultStatus.Invalid);
+            result.Errors.ErrorType.ShouldBe(ErrorType.Validation);
         }
 
         [Fact]
@@ -330,7 +330,7 @@ namespace TransactionProcessor.Aggregates.Tests
 
             Result result = aggregate.AddDevice(TestData.DeviceId, TestData.DeviceIdentifier);
             result.IsFailed.ShouldBeTrue();
-            result.Status.ShouldBe(ResultStatus.Invalid);
+            result.Errors.ErrorType.ShouldBe(ErrorType.Validation);
         }
 
         [Fact]
@@ -342,7 +342,7 @@ namespace TransactionProcessor.Aggregates.Tests
 
             Result result = aggregate.AddDevice(TestData.DeviceId, TestData.DeviceIdentifier);
             result.IsFailed.ShouldBeTrue();
-            result.Status.ShouldBe(ResultStatus.Invalid);
+            result.Errors.ErrorType.ShouldBe(ErrorType.Validation);
         }
         
         [Fact]
@@ -378,7 +378,7 @@ namespace TransactionProcessor.Aggregates.Tests
             
             Result result = aggregate.SetSettlementSchedule(SettlementSchedule.Immediate);
             result.IsFailed.ShouldBeTrue();
-            result.Status.ShouldBe(ResultStatus.Invalid);
+            result.Errors.ErrorType.ShouldBe(ErrorType.Validation);
         }
 
 
@@ -390,7 +390,7 @@ namespace TransactionProcessor.Aggregates.Tests
                 TestData.SettlementScheduleModel);
             Result result = aggregate.SetSettlementSchedule(SettlementSchedule.NotSet);
             result.IsFailed.ShouldBeTrue();
-            result.Status.ShouldBe(ResultStatus.Invalid);
+            result.Errors.ErrorType.ShouldBe(ErrorType.Validation);
         }
 
         [Theory]
@@ -533,7 +533,7 @@ namespace TransactionProcessor.Aggregates.Tests
 
             Result result = aggregate.SwapDevice(originalDeviceIdentifier, TestData.NewDeviceIdentifier);
             result.IsFailed.ShouldBeTrue();
-            result.Status.ShouldBe(ResultStatus.Invalid);
+            result.Errors.ErrorType.ShouldBe(ErrorType.Validation);
         }
 
         [Theory]
@@ -544,7 +544,7 @@ namespace TransactionProcessor.Aggregates.Tests
 
             Result result = aggregate.SwapDevice(TestData.DeviceIdentifier, newDeviceIdentifier);
             result.IsFailed.ShouldBeTrue();
-            result.Status.ShouldBe(ResultStatus.Invalid);
+            result.Errors.ErrorType.ShouldBe(ErrorType.Validation);
         }
 
         [Fact]
@@ -553,7 +553,7 @@ namespace TransactionProcessor.Aggregates.Tests
 
             Result result = aggregate.SwapDevice(TestData.DeviceIdentifier, TestData.NewDeviceIdentifier);
             result.IsFailed.ShouldBeTrue();
-            result.Status.ShouldBe(ResultStatus.Invalid);
+            result.Errors.ErrorType.ShouldBe(ErrorType.Validation);
         }
 
         [Fact]
@@ -563,7 +563,7 @@ namespace TransactionProcessor.Aggregates.Tests
                 TestData.SettlementScheduleModel);
             Result result = aggregate.SwapDevice(TestData.DeviceIdentifier, TestData.NewDeviceIdentifier);
             result.IsFailed.ShouldBeTrue();
-            result.Status.ShouldBe(ResultStatus.Invalid);
+            result.Errors.ErrorType.ShouldBe(ErrorType.Validation);
         }
 
         [Fact]
@@ -575,7 +575,7 @@ namespace TransactionProcessor.Aggregates.Tests
 
             Result result = aggregate.SwapDevice(TestData.NewDeviceIdentifier, TestData.NewDeviceIdentifier);
             result.IsFailed.ShouldBeTrue();
-            result.Status.ShouldBe(ResultStatus.Invalid);
+            result.Errors.ErrorType.ShouldBe(ErrorType.Validation);
         }
         
         [Fact]
@@ -603,7 +603,7 @@ namespace TransactionProcessor.Aggregates.Tests
             ContractAggregate contractAggregate = TestData.Aggregates.CreatedContractAggregateWithAProduct();
             Result result = merchantAggregate.AddContract(contractAggregate);
             result.IsFailed.ShouldBeTrue();
-            result.Status.ShouldBe(ResultStatus.Invalid);
+            result.Errors.ErrorType.ShouldBe(ErrorType.Validation);
         }
 
         [Fact]
@@ -617,7 +617,7 @@ namespace TransactionProcessor.Aggregates.Tests
 
             Result result = aggregate.AddContract(contractAggregate);
             result.IsFailed.ShouldBeTrue();
-            result.Status.ShouldBe(ResultStatus.Invalid);
+            result.Errors.ErrorType.ShouldBe(ErrorType.Validation);
         }
         
         [Fact]
@@ -649,7 +649,7 @@ namespace TransactionProcessor.Aggregates.Tests
             
             Result result = aggregate.UpdateMerchant(TestData.MerchantNameUpdated);
             result.IsFailed.ShouldBeTrue();
-            result.Status.ShouldBe(ResultStatus.Invalid);
+            result.Errors.ErrorType.ShouldBe(ErrorType.Validation);
         }
 
         [Theory]
@@ -698,7 +698,7 @@ namespace TransactionProcessor.Aggregates.Tests
             Address newAddress = Address.Create(Guid.NewGuid(), new AddressLines(TestData.MerchantAddressLine1Update, TestData.MerchantAddressLine2Update, TestData.MerchantAddressLine3Update, TestData.MerchantAddressLine4Update), TestData.MerchantTownUpdate, TestData.MerchantRegionUpdate, TestData.MerchantPostalCodeUpdate, TestData.MerchantCountryUpdate);
             Result result = aggregate.UpdateAddress(newAddress);
             result.IsFailed.ShouldBeTrue();
-            result.Status.ShouldBe(ResultStatus.Invalid);
+            result.Errors.ErrorType.ShouldBe(ErrorType.Validation);
         }
 
         [Fact]
@@ -802,7 +802,7 @@ namespace TransactionProcessor.Aggregates.Tests
                 TestData.ContactEmail,
                 TestData.ContactPhone);
             result.IsFailed.ShouldBeTrue();
-            result.Status.ShouldBe(ResultStatus.Invalid);
+            result.Errors.ErrorType.ShouldBe(ErrorType.Validation);
         }
 
         [Fact]
@@ -833,7 +833,7 @@ namespace TransactionProcessor.Aggregates.Tests
 
             Result result = aggregate.RemoveOperator(TestData.OperatorId);
             result.IsFailed.ShouldBeTrue();
-            result.Status.ShouldBe(ResultStatus.Invalid);
+            result.Errors.ErrorType.ShouldBe(ErrorType.Validation);
         }
         
         [Fact]
@@ -845,7 +845,7 @@ namespace TransactionProcessor.Aggregates.Tests
 
             Result result = aggregate.RemoveOperator(TestData.OperatorId);
             result.IsFailed.ShouldBeTrue();
-            result.Status.ShouldBe(ResultStatus.Invalid);
+            result.Errors.ErrorType.ShouldBe(ErrorType.Validation);
         }
         
         [Fact]
@@ -873,7 +873,7 @@ namespace TransactionProcessor.Aggregates.Tests
 
             Result result = aggregate.RemoveContract(TestData.ContractId);
             result.IsFailed.ShouldBeTrue();
-            result.Status.ShouldBe(ResultStatus.Invalid);
+            result.Errors.ErrorType.ShouldBe(ErrorType.Validation);
         }
 
         [Fact]
@@ -885,7 +885,7 @@ namespace TransactionProcessor.Aggregates.Tests
 
             Result result = aggregate.RemoveContract(TestData.ContractId);
             result.IsFailed.ShouldBeTrue();
-            result.Status.ShouldBe(ResultStatus.Invalid);
+            result.Errors.ErrorType.ShouldBe(ErrorType.Validation);
         }
 
         [Fact]

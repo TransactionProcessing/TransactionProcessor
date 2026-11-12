@@ -40,7 +40,7 @@ namespace TransactionProcessor.Aggregates.Tests
             OperatorAggregate aggregate = OperatorAggregate.Create(TestData.OperatorId);
             var result = aggregate.Create(Guid.Empty, TestData.OperatorName, TestData.RequireCustomMerchantNumber, TestData.RequireCustomTerminalNumber);
             result.IsFailed.ShouldBeTrue();
-            result.Status.ShouldBe(ResultStatus.Invalid);
+            result.Errors.ErrorType.ShouldBe(ErrorType.Validation);
             result.Message.ShouldBe("Estate Id must not be an empty Guid");
         }
 
@@ -52,7 +52,7 @@ namespace TransactionProcessor.Aggregates.Tests
             OperatorAggregate aggregate = OperatorAggregate.Create(TestData.OperatorId);
             var result = aggregate.Create(TestData.EstateId, operatorName, TestData.RequireCustomMerchantNumber, TestData.RequireCustomTerminalNumber);
             result.IsFailed.ShouldBeTrue();
-            result.Status.ShouldBe(ResultStatus.Invalid);
+            result.Errors.ErrorType.ShouldBe(ErrorType.Validation);
             result.Message.ShouldBe("Operator name must not be null or empty");
         }
 

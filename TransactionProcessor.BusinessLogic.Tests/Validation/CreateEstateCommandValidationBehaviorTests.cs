@@ -33,7 +33,7 @@ public sealed class CreateEstateCommandValidationBehaviorTests
 
         Result<Guid> result = await behavior.Handle(command, next, CancellationToken.None);
 
-        result.Status.ShouldBe(ResultStatus.Invalid);
+        result.Errors.ErrorType.ShouldBe(ErrorType.Validation);
         handlerWasCalled.ShouldBeFalse();
     }
 
@@ -65,7 +65,7 @@ public sealed class CreateEstateCommandValidationBehaviorTests
 
         Result<Guid> result = await behavior.Handle(command, next, CancellationToken.None);
 
-        result.Status.ShouldBe(ResultStatus.Invalid);
+        result.Errors.ErrorType.ShouldBe(ErrorType.Validation);
         handlerWasCalled.ShouldBeFalse();
     }
 
@@ -81,6 +81,6 @@ public sealed class CreateEstateCommandValidationBehaviorTests
             new EstateCommands.CreateEstateCommand(new CreateEstateRequest { EstateName = "   " }),
             TestContext.Current.CancellationToken);
 
-        result.Status.ShouldBe(ResultStatus.Invalid);
+        result.Errors.ErrorType.ShouldBe(ErrorType.Validation);
     }
 }

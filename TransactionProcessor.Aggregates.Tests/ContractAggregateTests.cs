@@ -41,7 +41,7 @@ namespace TransactionProcessor.Aggregates.Tests
 
             Result result = aggregate.Create(Guid.Empty, TestData.OperatorId, TestData.ContractDescription);
             result.IsFailed.ShouldBeTrue();
-            result.Status.ShouldBe(ResultStatus.Invalid);
+            result.Errors.ErrorType.ShouldBe(ErrorType.Validation);
             result.Message.ShouldContain("Estate Id must not be an empty Guid");
         }
 
@@ -52,7 +52,7 @@ namespace TransactionProcessor.Aggregates.Tests
 
             Result result = aggregate.Create(TestData.EstateId, Guid.Empty, TestData.ContractDescription);
             result.IsFailed.ShouldBeTrue();
-            result.Status.ShouldBe(ResultStatus.Invalid);
+            result.Errors.ErrorType.ShouldBe(ErrorType.Validation);
             result.Message.ShouldContain("Operator Id must not be an empty Guid");
         }
 
@@ -65,7 +65,7 @@ namespace TransactionProcessor.Aggregates.Tests
 
             Result result = aggregate.Create(TestData.EstateId, TestData.OperatorId, description);
             result.IsFailed.ShouldBeTrue();
-            result.Status.ShouldBe(ResultStatus.Invalid);
+            result.Errors.ErrorType.ShouldBe(ErrorType.Validation);
             result.Message.ShouldContain("Contract description must not be null or empty");
         }
 
@@ -121,7 +121,7 @@ namespace TransactionProcessor.Aggregates.Tests
                 TestData.ProductFixedValue,
                 TestData.ProductTypeMobileTopup);
             result.IsFailed.ShouldBeTrue();
-            result.Status.ShouldBe(ResultStatus.Invalid);
+            result.Errors.ErrorType.ShouldBe(ErrorType.Validation);
             result.Message.ShouldContain("Product Id must not be an empty Guid");
         }
 
@@ -136,7 +136,7 @@ namespace TransactionProcessor.Aggregates.Tests
             
             Result result = aggregate.AddFixedValueProduct(TestData.FixedContractProductId, productName, TestData.ProductDisplayText, TestData.ProductFixedValue, TestData.ProductTypeMobileTopup);
             result.IsFailed.ShouldBeTrue();
-            result.Status.ShouldBe(ResultStatus.Invalid);
+            result.Errors.ErrorType.ShouldBe(ErrorType.Validation);
             result.Message.ShouldContain("Product Name must not be null or empty");
         }
 
@@ -150,7 +150,7 @@ namespace TransactionProcessor.Aggregates.Tests
 
             Result result = aggregate.AddFixedValueProduct(TestData.FixedContractProductId, TestData.ProductName, displayText, TestData.ProductFixedValue,TestData.ProductTypeMobileTopup);
             result.IsFailed.ShouldBeTrue();
-            result.Status.ShouldBe(ResultStatus.Invalid);
+            result.Errors.ErrorType.ShouldBe(ErrorType.Validation);
             result.Message.ShouldContain("Product Display Text must not be null or empty");
         }
 
@@ -164,7 +164,7 @@ namespace TransactionProcessor.Aggregates.Tests
 
             Result result =  aggregate.AddFixedValueProduct(TestData.FixedContractProductId, TestData.ProductName, TestData.ProductDisplayText, value, TestData.ProductTypeMobileTopup);
             result.IsFailed.ShouldBeTrue();
-            result.Status.ShouldBe(ResultStatus.Invalid);
+            result.Errors.ErrorType.ShouldBe(ErrorType.Validation);
             result.Message.ShouldContain("Product value must not be zero or negative");
         }
 
@@ -215,7 +215,7 @@ namespace TransactionProcessor.Aggregates.Tests
                 TestData.ProductDisplayText,
                 TestData.ProductTypeMobileTopup);
             result.IsFailed.ShouldBeTrue();
-            result.Status.ShouldBe(ResultStatus.Invalid);
+            result.Errors.ErrorType.ShouldBe(ErrorType.Validation);
             result.Message.ShouldContain("Product Id must not be an empty Guid");
         }
 
@@ -229,7 +229,7 @@ namespace TransactionProcessor.Aggregates.Tests
 
             Result result = aggregate.AddVariableValueProduct(TestData.VariableContractProductId, productName, TestData.ProductDisplayText, TestData.ProductTypeMobileTopup);
             result.IsFailed.ShouldBeTrue();
-            result.Status.ShouldBe(ResultStatus.Invalid);
+            result.Errors.ErrorType.ShouldBe(ErrorType.Validation);
             result.Message.ShouldContain("Product Name must not be null or empty");
         }
 
@@ -243,7 +243,7 @@ namespace TransactionProcessor.Aggregates.Tests
 
             Result result = aggregate.AddVariableValueProduct(TestData.VariableContractProductId, TestData.ProductName, displayText, TestData.ProductTypeMobileTopup);
             result.IsFailed.ShouldBeTrue();
-            result.Status.ShouldBe(ResultStatus.Invalid);
+            result.Errors.ErrorType.ShouldBe(ErrorType.Validation);
             result.Message.ShouldContain("Product Display Text must not be null or empty");
         }
 
@@ -306,7 +306,7 @@ namespace TransactionProcessor.Aggregates.Tests
 
             var result = aggregate.AddTransactionFee(product, Guid.Empty, TestData.TransactionFeeDescription, calculationType, feeType, TestData.TransactionFeeValue);
             result.IsFailed.ShouldBeTrue();
-            result.Status.ShouldBe(ResultStatus.Invalid);
+            result.Errors.ErrorType.ShouldBe(ErrorType.Validation);
         }
 
         [Theory]
@@ -329,7 +329,7 @@ namespace TransactionProcessor.Aggregates.Tests
 
             var result = aggregate.AddTransactionFee(product, TestData.TransactionFeeId, feeDescription, calculationType, feeType, TestData.TransactionFeeValue);
             result.IsFailed.ShouldBeTrue();
-            result.Status.ShouldBe(ResultStatus.Invalid);
+            result.Errors.ErrorType.ShouldBe(ErrorType.Validation);
         }
 
         [Theory]
@@ -377,7 +377,7 @@ namespace TransactionProcessor.Aggregates.Tests
 
             var result = aggregate.AddTransactionFee(product, Guid.Empty, TestData.TransactionFeeDescription, calculationType, feeType, TestData.TransactionFeeValue);
             result.IsFailed.ShouldBeTrue();
-            result.Status.ShouldBe(ResultStatus.Invalid);
+            result.Errors.ErrorType.ShouldBe(ErrorType.Validation);
         }
 
         [Theory]
@@ -400,7 +400,7 @@ namespace TransactionProcessor.Aggregates.Tests
 
             var result = aggregate.AddTransactionFee(product, TestData.TransactionFeeId, feeDescription, calculationType, feeType, TestData.TransactionFeeValue);
             result.IsFailed.ShouldBeTrue();
-            result.Status.ShouldBe(ResultStatus.Invalid);
+            result.Errors.ErrorType.ShouldBe(ErrorType.Validation);
         }
 
         [Theory]
@@ -415,7 +415,7 @@ namespace TransactionProcessor.Aggregates.Tests
 
             var result = aggregate.AddTransactionFee(null, TestData.TransactionFeeId, TestData.TransactionFeeDescription, calculationType, feeType, TestData.TransactionFeeValue);
             result.IsFailed.ShouldBeTrue();
-            result.Status.ShouldBe(ResultStatus.Invalid);
+            result.Errors.ErrorType.ShouldBe(ErrorType.Validation);
         }
 
         [Theory]
@@ -431,7 +431,7 @@ namespace TransactionProcessor.Aggregates.Tests
 
             var result =  aggregate.AddTransactionFee(new Product(), TestData.TransactionFeeId, TestData.TransactionFeeDescription, calculationType, feeType,TestData.TransactionFeeValue);
             result.IsFailed.ShouldBeTrue();
-            result.Status.ShouldBe(ResultStatus.Invalid);
+            result.Errors.ErrorType.ShouldBe(ErrorType.Validation);
         }
 
         [Theory]
@@ -448,7 +448,7 @@ namespace TransactionProcessor.Aggregates.Tests
 
             var result = aggregate.AddTransactionFee(product, TestData.TransactionFeeId, TestData.TransactionFeeDescription, (CalculationType)99, feeType, TestData.TransactionFeeValue);
             result.IsFailed.ShouldBeTrue();
-            result.Status.ShouldBe(ResultStatus.Invalid);
+            result.Errors.ErrorType.ShouldBe(ErrorType.Validation);
         }
 
         [Theory]
@@ -465,7 +465,7 @@ namespace TransactionProcessor.Aggregates.Tests
 
             var result = aggregate.AddTransactionFee(product, TestData.TransactionFeeId, TestData.TransactionFeeDescription, calculationType, (FeeType)99, TestData.TransactionFeeValue);
             result.IsFailed.ShouldBeTrue();
-            result.Status.ShouldBe(ResultStatus.Invalid);
+            result.Errors.ErrorType.ShouldBe(ErrorType.Validation);
         }
 
         [Theory]
@@ -488,7 +488,7 @@ namespace TransactionProcessor.Aggregates.Tests
 
             var result = aggregate.AddTransactionFee(product, TestData.TransactionFeeId, TestData.TransactionFeeDescription, calculationType, feeType, feeValue);
             result.IsFailed.ShouldBeTrue();
-            result.Status.ShouldBe(ResultStatus.Invalid);
+            result.Errors.ErrorType.ShouldBe(ErrorType.Validation);
         }
 
         [Theory]
@@ -511,7 +511,7 @@ namespace TransactionProcessor.Aggregates.Tests
 
             var result =  aggregate.AddTransactionFee(product, TestData.TransactionFeeId, TestData.TransactionFeeDescription, calculationType,feeType, feeValue);
             result.IsFailed.ShouldBeTrue();
-            result.Status.ShouldBe(ResultStatus.Invalid);
+            result.Errors.ErrorType.ShouldBe(ErrorType.Validation);
 
         }
 
@@ -529,7 +529,7 @@ namespace TransactionProcessor.Aggregates.Tests
 
             var result = aggregate.AddTransactionFee(product, TestData.TransactionFeeId, TestData.TransactionFeeDescription, (CalculationType)99, feeType, TestData.TransactionFeeValue);
             result.IsFailed.ShouldBeTrue();
-            result.Status.ShouldBe(ResultStatus.Invalid);
+            result.Errors.ErrorType.ShouldBe(ErrorType.Validation);
         }
 
         [Theory]
@@ -546,7 +546,7 @@ namespace TransactionProcessor.Aggregates.Tests
 
             var result = aggregate.AddTransactionFee(product, TestData.TransactionFeeId, TestData.TransactionFeeDescription, calculationType,(FeeType)99, TestData.TransactionFeeValue);
             result.IsFailed.ShouldBeTrue();
-            result.Status.ShouldBe(ResultStatus.Invalid);
+            result.Errors.ErrorType.ShouldBe(ErrorType.Validation);
         }
 
         [Theory]
@@ -589,7 +589,7 @@ namespace TransactionProcessor.Aggregates.Tests
             Result result = aggregate.DisableTransactionFee(TestData.VariableContractProductId, TestData.TransactionFeeId);
 
             result.IsFailed.ShouldBeTrue();
-            result.Status.ShouldBe(ResultStatus.Invalid);
+            result.Errors.ErrorType.ShouldBe(ErrorType.Validation);
         }
 
         [Fact]
@@ -601,7 +601,7 @@ namespace TransactionProcessor.Aggregates.Tests
             
             Result result = aggregate.DisableTransactionFee(TestData.VariableContractProductId, TestData.TransactionFeeId);
             result.IsFailed.ShouldBeTrue();
-            result.Status.ShouldBe(ResultStatus.Invalid);
+            result.Errors.ErrorType.ShouldBe(ErrorType.Validation);
         }
     }
 }

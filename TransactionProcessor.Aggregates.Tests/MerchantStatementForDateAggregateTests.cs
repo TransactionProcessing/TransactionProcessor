@@ -95,7 +95,7 @@ public class MerchantStatementForDateAggregateTests
             estateIdGuid,
             merchantIdGuid, TestData.Transaction1);
         result.IsFailed.ShouldBeTrue();
-        result.Status.ShouldBe(ResultStatus.Invalid);
+        result.Errors.ErrorType.ShouldBe(ErrorType.Validation);
     }
 
     [Fact]
@@ -154,7 +154,7 @@ public class MerchantStatementForDateAggregateTests
         Result result = merchantStatementForDateAggregate.AddSettledFeeToStatement(statementIdGuid, TestData.StatementDate, TestData.EventId1, estateIdGuid, merchantIdGuid, TestData.SettledFee1);
 
         result.IsFailed.ShouldBeTrue();
-        result.Status.ShouldBe(ResultStatus.Invalid);
+        result.Errors.ErrorType.ShouldBe(ErrorType.Validation);
     }
 
     [Theory]
@@ -221,7 +221,7 @@ public class MerchantStatementForDateAggregateTests
             });
 
         result.IsFailed.ShouldBeTrue();
-        result.Status.ShouldBe(ResultStatus.Invalid);
+        result.Errors.ErrorType.ShouldBe(ErrorType.Validation);
     }
 
     [Fact]
@@ -326,6 +326,6 @@ public class MerchantStatementForDateAggregateTests
             });
 
         result.IsFailed.ShouldBeTrue();
-        result.Status.ShouldBe(ResultStatus.Invalid);
+        result.Errors.ErrorType.ShouldBe(ErrorType.Validation);
     }
 }

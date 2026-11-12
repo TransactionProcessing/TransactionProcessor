@@ -64,7 +64,7 @@ public class VoucherAggregateTests
 
             Result result = aggregate.Generate(Guid.Empty, TestData.EstateId, TestData.TransactionId, TestData.GeneratedDateTime, TestData.Value);
             result.IsFailed.ShouldBeTrue();
-            result.Status.ShouldBe(ResultStatus.Invalid);
+            result.Errors.ErrorType.ShouldBe(ErrorType.Validation);
         }
 
     [Fact]
@@ -74,7 +74,7 @@ public class VoucherAggregateTests
 
         Result result = aggregate.Generate(TestData.OperatorId, TestData.EstateId, Guid.Empty, TestData.GeneratedDateTime, TestData.Value);
         result.IsFailed.ShouldBeTrue();
-        result.Status.ShouldBe(ResultStatus.Invalid);
+        result.Errors.ErrorType.ShouldBe(ErrorType.Validation);
     }
 
     [Fact]
@@ -84,7 +84,7 @@ public class VoucherAggregateTests
 
         Result result = aggregate.Generate(TestData.OperatorId, TestData.EstateId, TestData.TransactionId, DateTime.MinValue, TestData.Value);
         result.IsFailed.ShouldBeTrue();
-        result.Status.ShouldBe(ResultStatus.Invalid);
+        result.Errors.ErrorType.ShouldBe(ErrorType.Validation);
     }
 
     [Fact]
@@ -94,7 +94,7 @@ public class VoucherAggregateTests
 
             Result result = aggregate.Generate(TestData.OperatorId, Guid.Empty, TestData.TransactionId, TestData.GeneratedDateTime, TestData.Value);
             result.IsFailed.ShouldBeTrue();
-            result.Status.ShouldBe(ResultStatus.Invalid);
+            result.Errors.ErrorType.ShouldBe(ErrorType.Validation);
         }
 
         [Theory]
@@ -106,7 +106,7 @@ public class VoucherAggregateTests
 
             Result result = aggregate.Generate(TestData.OperatorId, TestData.EstateId, TestData.TransactionId, TestData.GeneratedDateTime, value);
             result.IsFailed.ShouldBeTrue();
-            result.Status.ShouldBe(ResultStatus.Invalid);
+            result.Errors.ErrorType.ShouldBe(ErrorType.Validation);
         }
 
         [Fact]
@@ -128,7 +128,7 @@ public class VoucherAggregateTests
 
             Result result = aggregate.Issue(TestData.RecipientEmail, TestData.RecipientMobile, TestData.IssuedDateTime);
             result.IsFailed.ShouldBeTrue();
-            result.Status.ShouldBe(ResultStatus.Invalid);
+            result.Errors.ErrorType.ShouldBe(ErrorType.Validation);
         }
 
         [Fact]
@@ -153,7 +153,7 @@ public class VoucherAggregateTests
             aggregate.Generate(TestData.OperatorId, TestData.EstateId, TestData.TransactionId, TestData.GeneratedDateTime, TestData.Value);
             Result result = aggregate.Issue(recipientEmail, recipientMobile, TestData.IssuedDateTime);
             result.IsFailed.ShouldBeTrue();
-            result.Status.ShouldBe(ResultStatus.Invalid);
+            result.Errors.ErrorType.ShouldBe(ErrorType.Validation);
         }
 
         [Fact]
@@ -177,7 +177,7 @@ public class VoucherAggregateTests
 
             Result result = aggregate.AddBarcode(barcode);
             result.IsFailed.ShouldBeTrue();
-            result.Status.ShouldBe(ResultStatus.Invalid);
+            result.Errors.ErrorType.ShouldBe(ErrorType.Validation);
         }
 
         [Fact]
@@ -187,7 +187,7 @@ public class VoucherAggregateTests
 
             Result result = aggregate.AddBarcode(TestData.Barcode);
             result.IsFailed.ShouldBeTrue();
-            result.Status.ShouldBe(ResultStatus.Invalid);
+            result.Errors.ErrorType.ShouldBe(ErrorType.Validation);
         }
 
         [Fact]
@@ -198,7 +198,7 @@ public class VoucherAggregateTests
 
             Result result = aggregate.AddBarcode(TestData.Barcode);
             result.IsFailed.ShouldBeTrue();
-            result.Status.ShouldBe(ResultStatus.Invalid);
+            result.Errors.ErrorType.ShouldBe(ErrorType.Validation);
         }
 
         [Fact]
@@ -220,7 +220,7 @@ public class VoucherAggregateTests
 
         Result result = aggregate.Redeem(TestData.RedeemedDateTime, TestData.HostDateTime);
         result.IsFailed.ShouldBeTrue();
-        result.Status.ShouldBe(ResultStatus.Invalid);
+        result.Errors.ErrorType.ShouldBe(ErrorType.Validation);
     }
 
         [Fact]
@@ -231,7 +231,7 @@ public class VoucherAggregateTests
 
         Result result = aggregate.Redeem(TestData.RedeemedDateTime, TestData.HostDateTime);
         result.IsFailed.ShouldBeTrue();
-        result.Status.ShouldBe(ResultStatus.Invalid);
+        result.Errors.ErrorType.ShouldBe(ErrorType.Validation);
     }
 
         [Fact]
@@ -244,6 +244,6 @@ public class VoucherAggregateTests
             
             Result result = aggregate.Redeem(TestData.RedeemedDateTime, TestData.HostDateTime);
             result.IsFailed.ShouldBeTrue();
-            result.Status.ShouldBe(ResultStatus.Invalid);
+            result.Errors.ErrorType.ShouldBe(ErrorType.Validation);
         }
     }

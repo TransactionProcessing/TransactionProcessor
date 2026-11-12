@@ -18,7 +18,6 @@ using TransactionProcessor.Repository;
 using PersistentSubscriptionInfo = TransactionProcessing.Shared.EventStore.SubscriptionWorker.PersistentSubscriptionInfo;
 
 namespace TransactionProcessor.Bootstrapper {
-    using Azure.Core;
     using Lamar;
     using Microsoft.Data.SqlClient;
     using Microsoft.EntityFrameworkCore;

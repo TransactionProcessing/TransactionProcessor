@@ -95,7 +95,7 @@ namespace TransactionProcessor.BusinessLogic.Tests.OperatorInterfaces
                                                                                          TestContext.Current.CancellationToken);
 
             result.IsFailed.ShouldBeTrue();
-            result.Status.ShouldBe(ResultStatus.Failure);
+            result.Errors.ErrorType.ShouldBe(ErrorType.Failure);
             result.Message.ShouldContain("Error issuing voucher");
             result.Message.ShouldContain("Execution Timeout Expired");
         }
@@ -123,7 +123,7 @@ namespace TransactionProcessor.BusinessLogic.Tests.OperatorInterfaces
 
 
                                         result.IsFailed.ShouldBeTrue();
-                                        result.Status.ShouldBe(ResultStatus.Invalid);
+                                        result.Errors.ErrorType.ShouldBe(ErrorType.Validation);
         }
 
         [Theory]
@@ -153,7 +153,7 @@ namespace TransactionProcessor.BusinessLogic.Tests.OperatorInterfaces
                                                                                         additionalMetatdata,
                                                                                         TestContext.Current.CancellationToken);
             result.IsFailed.ShouldBeTrue();
-            result.Status.ShouldBe(ResultStatus.Invalid);
+            result.Errors.ErrorType.ShouldBe(ErrorType.Validation);
         }
     }
 }
