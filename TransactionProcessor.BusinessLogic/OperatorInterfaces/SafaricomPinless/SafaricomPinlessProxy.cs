@@ -50,7 +50,7 @@ namespace TransactionProcessor.BusinessLogic.OperatorInterfaces.SafaricomPinless
         #region Methods
 
         public async Task<Result<OperatorResponse>> ProcessLogonMessage(CancellationToken cancellationToken) {
-            return Result.Success();
+            return Result.Success(new OperatorResponse { IsSuccessful = true, ResponseCode = "0000", ResponseMessage = "SUCCESS" });
         }
 
         /// <summary>

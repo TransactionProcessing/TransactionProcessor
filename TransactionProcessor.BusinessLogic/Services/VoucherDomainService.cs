@@ -55,7 +55,7 @@ public class VoucherDomainService : IVoucherDomainService
         try{
             Result<EstateResponse> validateResult = await this.ValidateVoucherIssue(command.EstateId, command.OperatorId, cancellationToken);
             if (validateResult.IsFailed)
-                return ResultHelpers.CreateFailure(validateResult);
+                return Result<IssueVoucherResponse>.FromFailure(validateResult);
 
             Guid voucherId = IdGenerationService.GenerateVoucherId(command.EstateId, command.OperatorId, command.TransactionId);
 
@@ -120,7 +120,7 @@ public class VoucherDomainService : IVoucherDomainService
 
             Result<EstateResponse> validateResult = await this.ValidateVoucherRedemption(command.EstateId, cancellationToken);
             if (validateResult.IsFailed)
-                return ResultHelpers.CreateFailure(validateResult);
+                return Result<RedeemVoucherResponse>.FromFailure(validateResult);
             
             Result<VoucherAggregate> voucherResult = await DomainServiceHelper.GetAggregateOrFailure(ct => this.AggregateService.GetLatest<VoucherAggregate>(voucher.VoucherId, ct), voucher.VoucherId, cancellationToken);
             if (voucherResult.IsFailed)

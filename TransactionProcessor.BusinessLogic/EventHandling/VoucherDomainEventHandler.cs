@@ -171,7 +171,8 @@ public class VoucherDomainEventHandler : IDomainEventHandler
                                                          }
                                        };
 
-            return await this.MessagingServiceClient.SendEmail(this.TokenResponse.AccessToken, request, cancellationToken);
+            var result = await this.MessagingServiceClient.SendEmail(this.TokenResponse.AccessToken, request, cancellationToken);
+            return result.IsFailed ? Result.Fail(ResultHelpers.CreateFailure(result)) : Result.Success();
         }
 
         if (String.IsNullOrEmpty(voucherModel.RecipientMobile) == false)
@@ -187,7 +188,8 @@ public class VoucherDomainEventHandler : IDomainEventHandler
                                          Sender = "Your Voucher"
                                      };
 
-            return await this.MessagingServiceClient.SendSMS(this.TokenResponse.AccessToken, request, cancellationToken);
+            var result = await this.MessagingServiceClient.SendSMS(this.TokenResponse.AccessToken, request, cancellationToken);
+            return result.IsFailed ? Result.Fail(ResultHelpers.CreateFailure(result)) : Result.Success();
         }
         // No messages to be sent
         return Result.Success();

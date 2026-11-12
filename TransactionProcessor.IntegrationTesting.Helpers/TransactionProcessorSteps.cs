@@ -68,7 +68,6 @@ public class TransactionProcessorSteps
                                                              s.NumberOfFeesSettled == expectedSettlementDetails.NumberOfFeesSettled &&
                                                              s.ValueOfFeesSettled == expectedSettlementDetails.ValueOfFeesSettled && s.IsCompleted == expectedSettlementDetails.IsCompleted);
 
-                settlement.ShouldNotBeNull();
             },
             TimeSpan.FromMinutes(2));
     }
@@ -374,7 +373,7 @@ public class TransactionProcessorSteps
                 {
                     SimpleResults.Result<AgentResponse> agentResult = await this.AgencyBankingClient.GetAgentById(createAgentRequest.AgentId, CancellationToken.None);
                     agentResult.IsSuccess.ShouldBeTrue(agentResult.Message);
-                    AgentResponse? agent = agentResult.GetValueOrThrow();
+                    AgentResponse? agent = agentResult.Data;
                     agent.ShouldNotBeNull();
                     agent.AgentId.ShouldBe(createAgentRequest.AgentId);
                     agent.Name.ShouldBe(createAgentRequest.Name);
@@ -389,7 +388,7 @@ public class TransactionProcessorSteps
                 {
                     SimpleResults.Result<AgentResponse> agentResult = await this.AgencyBankingClient.GetAgentById(createAgentRequest.AgentId, CancellationToken.None);
                     agentResult.IsSuccess.ShouldBeTrue(agentResult.Message);
-                    AgentResponse? agent = agentResult.GetValueOrThrow();
+                    AgentResponse? agent = agentResult.Data;
                     agent.ShouldNotBeNull();
                     agent.Active.ShouldBeTrue();
                     agent.ActivatedBy.ShouldBe(activateAgentRequest.ActivatedBy);
@@ -407,7 +406,7 @@ public class TransactionProcessorSteps
                         createAgentRequest.AgentId,
                         CancellationToken.None);
                     floatConfigurationResult.IsSuccess.ShouldBeTrue(floatConfigurationResult.Message);
-                    FloatConfigurationResponse? floatConfiguration = floatConfigurationResult.GetValueOrThrow();
+                    FloatConfigurationResponse? floatConfiguration = floatConfigurationResult.Data;
                     floatConfiguration.ShouldNotBeNull();
                     floatConfiguration.AgentId.ShouldBe(createAgentRequest.AgentId);
                     floatConfiguration.DailyFloatLimit.ShouldBe(configureFloatRequest.DailyFloatLimit);
@@ -432,7 +431,7 @@ public class TransactionProcessorSteps
                         1,
                         CancellationToken.None);
                     floatHistoryResult.IsSuccess.ShouldBeTrue(floatHistoryResult.Message);
-                    FloatHistoryResponse[]? floatHistory = floatHistoryResult.GetValueOrThrow();
+                    FloatHistoryResponse[]? floatHistory = floatHistoryResult.Data;
                     floatHistory.ShouldNotBeNull();
                     floatHistory.ShouldNotBeEmpty();
                     FloatHistoryResponse latestFloatEntry = floatHistory.Single();

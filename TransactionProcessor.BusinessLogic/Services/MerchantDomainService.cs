@@ -223,7 +223,7 @@ namespace TransactionProcessor.BusinessLogic.Services
                 Result stateResult = merchantAggregate.Create(command.EstateId, command.RequestDto.Name, command.RequestDto.CreatedDateTime.GetValueOrDefault(DateTimeOffset.UtcNow),
                     address, contact, settlementSchedule);
                 if (stateResult.IsFailed)
-                    return stateResult;
+                    return Result<Guid>.FromFailure(stateResult);
 
 
                 Result saveResult = await this.AggregateService.Save(merchantAggregate, cancellationToken);
@@ -233,7 +233,7 @@ namespace TransactionProcessor.BusinessLogic.Services
                 return Result.Success(merchantId);
             }
             catch (Exception ex) {
-                return Result.Failure(ex.GetExceptionMessages());
+                return Result<Guid>.Fail(Error.Failure(ex.GetExceptionMessages()));
             }
         }
 
@@ -295,11 +295,11 @@ namespace TransactionProcessor.BusinessLogic.Services
                 return ResultHelpers.CreateFailure(getTokenResult);
             this.TokenResponse = getTokenResult.Data;
 
-            Result createUserResult = await this.SecurityServiceClient.CreateUser(this.TokenResponse.AccessToken, createUserRequest, cancellationToken);
+            var createUserResult = await this.SecurityServiceClient.CreateUser(this.TokenResponse.AccessToken, createUserRequest, cancellationToken);
             if (createUserResult.IsFailed)
                 return ResultHelpers.CreateFailure(createUserResult);
 
-            Result<List<UserResponse>> userDetailsResult = await this.SecurityServiceClient.GetUsers(this.TokenResponse.AccessToken, createUserRequest.EmailAddress, cancellationToken);
+            var userDetailsResult = await this.SecurityServiceClient.GetUsers(this.TokenResponse.AccessToken, createUserRequest.EmailAddress, cancellationToken);
             if (userDetailsResult.IsFailed)
                 return ResultHelpers.CreateFailure(userDetailsResult);
 

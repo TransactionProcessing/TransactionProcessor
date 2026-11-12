@@ -32,7 +32,7 @@ namespace TransactionProcessor.BusinessLogic.Common
             
             if (currentToken == null)
             {
-                Result<TokenResponse> tokenResult= await securityServiceClient.GetToken(clientId, clientSecret, cancellationToken);
+                var tokenResult = await securityServiceClient.GetToken(clientId, clientSecret, cancellationToken);
                 if (tokenResult.IsFailed)
                     return ResultHelpers.CreateFailure(tokenResult);
                 TokenResponse token =tokenResult.Data;
@@ -41,7 +41,7 @@ namespace TransactionProcessor.BusinessLogic.Common
 
             if (currentToken.Expires.UtcDateTime.Subtract(DateTime.UtcNow) < TimeSpan.FromMinutes(2))
             {
-                Result<TokenResponse> tokenResult = await securityServiceClient.GetToken(clientId, clientSecret, cancellationToken);
+                var tokenResult = await securityServiceClient.GetToken(clientId, clientSecret, cancellationToken);
                 if (tokenResult.IsFailed)
                     return ResultHelpers.CreateFailure(tokenResult);
                 TokenResponse token = tokenResult.Data;

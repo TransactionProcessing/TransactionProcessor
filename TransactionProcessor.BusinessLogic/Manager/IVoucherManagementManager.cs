@@ -85,7 +85,7 @@ namespace TransactionProcessor.BusinessLogic.Manager
                 return ResultHelpers.CreateFailure(result);
             }
 
-            return result.GetValueOrThrow().GetVoucher();
+            return Result.Success(result.GetValueOrThrow().GetVoucher());
         }
 
         public async Task<Result<Voucher>> GetVoucherByTransactionId(Guid estateId,
@@ -109,7 +109,7 @@ namespace TransactionProcessor.BusinessLogic.Manager
                 return ResultHelpers.CreateFailure(result);
             }
 
-            return result.GetValueOrThrow().GetVoucher();
+            return Result.Success(result.GetValueOrThrow().GetVoucher());
         }
 
         #endregion

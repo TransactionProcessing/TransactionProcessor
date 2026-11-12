@@ -31,7 +31,7 @@ namespace TransactionProcessor.BusinessLogic.OperatorInterfaces.AgencyBanking
 
         public async Task<Result<OperatorResponse>> ProcessLogonMessage(CancellationToken cancellationToken) {
             Logger.LogInformation("AgencyBanking logon requested");
-            return Result.Success();
+            return Result.Success(new OperatorResponse { IsSuccessful = true, ResponseCode = "0000", ResponseMessage = "SUCCESS" });
         }
 
         public async Task<Result<OperatorResponse>> ProcessSaleMessage(Guid transactionId,
@@ -70,10 +70,10 @@ namespace TransactionProcessor.BusinessLogic.OperatorInterfaces.AgencyBanking
                     "deposit" => await ProcessDeposit(transactionId, merchant.MerchantId.ToString(), accountNumber, additionalTransactionMetadata, cancellationToken),
                     "withdrawal" => await ProcessWithdrawal(transactionId, merchant.MerchantId.ToString(), accountNumber, additionalTransactionMetadata, cancellationToken),
                     "ministatement" => await ProcessMiniStatement(merchant.MerchantId.ToString(), accountNumber, cancellationToken),
-                    _ => Result.Invalid($"AgencyBankingMessageType - Message Type {messageType} is not supported for this transaction type")
+                    _ => Result<OperatorResponse>.Fail(Result.Invalid($"AgencyBankingMessageType - Message Type {messageType} is not supported for this transaction type"))
                 };
             
-                if (result.Status == ResultStatus.Invalid) {
+                if (result.Errors.Any(error => error.ErrorType == ErrorType.Invalid)) {
                     Logger.LogWarning("AgencyBanking sale request rejected. TransactionId=[{TransactionId}] unsupported message type [{MessageType}]", transactionId, messageType);
                 }
 

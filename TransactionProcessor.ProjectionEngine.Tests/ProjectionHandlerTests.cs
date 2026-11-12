@@ -78,7 +78,7 @@ public class ProjectionHandlerTests{
         projection.ShouldHandle = true;
         projection.HandleFunc = (_, _, _) => state.InitialiseBalances();
             
-        repo.LoadResult = state;
+        repo.LoadResult = Result.Success(state);
 
         var result = await ph.Handle(TestData.MerchantCreatedEvent, CancellationToken.None);
         result.IsSuccess.ShouldBeTrue();
@@ -98,7 +98,7 @@ public class ProjectionHandlerTests{
         projection.ShouldHandle = true;
         projection.HandleFunc = (_, _, _) => newState;
             
-        repo.LoadResult = state;
+        repo.LoadResult = Result.Success(state);
         repo.SaveResult = Result.Success(state);
 
         stateDispatcher.DispatchResult = Result.Success();
@@ -120,7 +120,7 @@ public class ProjectionHandlerTests{
         projection.ShouldHandle = true;
         projection.HandleFunc = (_, _, _) => newState;
 
-        repo.LoadResult = Result.Failure();
+        repo.LoadResult = Result<MerchantBalanceState>.Fail(Error.Failure("Load failed"));
         //repo.SaveResult = Result.Success(state);
 
         //stateDispatcher.DispatchResult = Result.Success();
@@ -142,8 +142,8 @@ public class ProjectionHandlerTests{
         projection.ShouldHandle = true;
         projection.HandleFunc = (_, _, _) => newState;
 
-        repo.LoadResult = state;
-        repo.SaveResult = Result.Failure();
+        repo.LoadResult = Result.Success(state);
+        repo.SaveResult = Result<MerchantBalanceState>.Fail(Error.Failure("Save failed"));
 
         //stateDispatcher.DispatchResult = Result.Success();
         var result = await ph.Handle(TestData.MerchantCreatedEvent, CancellationToken.None);
@@ -164,10 +164,10 @@ public class ProjectionHandlerTests{
         projection.ShouldHandle = true;
         projection.HandleFunc = (_, _, _) => newState;
 
-        repo.LoadResult = state;
+        repo.LoadResult = Result.Success(state);
         repo.SaveResult = Result.Success(state);
 
-        stateDispatcher.DispatchResult = Result.Failure();
+        stateDispatcher.DispatchResult = Result.Failure("Dispatch failed");
         var result = await ph.Handle(TestData.MerchantCreatedEvent, CancellationToken.None);
         result.IsFailed.ShouldBeTrue();
     }

@@ -496,7 +496,7 @@ namespace TransactionProcessor.BusinessLogic.Services{
                 return ResultHelpers.CreateFailure(getMerchantResult);
             Models.Merchant.Merchant merchant = getMerchantResult.GetValueOrThrow().GetMerchant();
 
-            return merchant;
+            return Result.Success(merchant);
         }
 
         private async Task<Result<OperatorResponse>> ProcessMessageWithOperator(Models.Merchant.Merchant merchant,
@@ -517,7 +517,8 @@ namespace TransactionProcessor.BusinessLogic.Services{
             try {
                 Result<OperatorResponse> saleResult = await operatorProxy.ProcessSaleMessage(transactionId, operatorId, merchant, transactionDateTime, transactionReference, additionalTransactionMetadata, cancellationToken);
                 if (saleResult.IsFailed) {
-                    return ResultHelpers.CreateFailedResult(new OperatorResponse { IsSuccessful = false, ResponseCode = "9999", ResponseMessage = saleResult.Message });
+                    String errorMessage = String.Join("; ", saleResult.Errors.Select(error => error.Message));
+                    return Result.Success(new OperatorResponse { IsSuccessful = false, ResponseCode = "9999", ResponseMessage = errorMessage });
                 }
 
                 return saleResult;
@@ -525,7 +526,7 @@ namespace TransactionProcessor.BusinessLogic.Services{
             catch (Exception e) {
                 // Log out the error
                 Logger.LogError(e, "Error processing operator message");
-                return ResultHelpers.CreateFailedResult(new OperatorResponse { IsSuccessful = false, ResponseCode = "9999", ResponseMessage = e.GetCombinedExceptionMessages() });
+                return Result.Success(new OperatorResponse { IsSuccessful = false, ResponseCode = "9999", ResponseMessage = e.GetCombinedExceptionMessages() });
             }
         }
 
@@ -548,14 +549,15 @@ namespace TransactionProcessor.BusinessLogic.Services{
             };
 
             try {
-                return await this.MessagingServiceClient.SendEmail(accessToken, sendEmailRequest, cancellationToken);
+                var result = await this.MessagingServiceClient.SendEmail(accessToken, sendEmailRequest, cancellationToken);
+                return result.IsFailed ? Result.Fail(ResultHelpers.CreateFailure(result)) : Result.Success();
             }
             catch (Exception ex) when (ex.InnerException != null && ex.InnerException.GetType() == typeof(InvalidOperationException)) {
                 if (ex.InnerException.Message.Contains("Cannot send a message to provider that has already been sent", StringComparison.InvariantCultureIgnoreCase) == false) {
                     return Result.Failure(ex.GetExceptionMessages());
                 }
 
-                return Result.Success("Duplicate message send");
+                return Result.Success();
             }
         }
 
@@ -566,7 +568,8 @@ namespace TransactionProcessor.BusinessLogic.Services{
                                                       CancellationToken cancellationToken) {
             ResendEmailRequest resendEmailRequest = new ResendEmailRequest { ConnectionIdentifier = estateId, MessageId = messageId };
             try {
-                return await this.MessagingServiceClient.ResendEmail(accessToken, resendEmailRequest, cancellationToken);
+                var result = await this.MessagingServiceClient.ResendEmail(accessToken, resendEmailRequest, cancellationToken);
+                return result.IsFailed ? Result.Fail(ResultHelpers.CreateFailure(result)) : Result.Success();
             }
             catch (Exception ex) when (ex.InnerException != null && ex.InnerException.GetType() == typeof(InvalidOperationException)) {
                 // Only bubble up if not a duplicate message
@@ -574,7 +577,7 @@ namespace TransactionProcessor.BusinessLogic.Services{
                     return Result.Failure(ex.GetExceptionMessages());
                 }
 
-                return Result.Success("Duplicate message send");
+                return Result.Success();
             }
         }
 

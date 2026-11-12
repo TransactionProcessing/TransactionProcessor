@@ -1,8 +1,8 @@
 using System;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using TransactionProcessing.Shared.EventStore.Aggregate;
-using TransactionProcessing.UnionResults;
 using TransactionProcessing.UnionResults;
 
 namespace TransactionProcessor.BusinessLogic.Common;
@@ -25,21 +25,18 @@ public static class DomainServiceHelper
     public static Result<T> HandleGetAggregateResult<T>(Result<T> result, Guid aggregateId, bool isNotFoundError = true)
         where T : Aggregate, new()  // Constraint: T is a subclass of Aggregate and has a parameterless constructor
     {
-        if (result.IsFailed && result.Status != ResultStatus.NotFound)
+        bool isNotFound = result.Errors.Any(error => error.ErrorType == ErrorType.NotFound);
+        if (result.IsFailed && !isNotFound)
         {
             return ResultHelpers.CreateFailure(result);
         }
 
-        if (result.Status == ResultStatus.NotFound && isNotFoundError)
+        if (isNotFound && isNotFoundError)
         {
             return ResultHelpers.CreateFailure(result);
         }
 
-        T aggregate = result.Status switch
-        {
-            ResultStatus.NotFound => new T { AggregateId = aggregateId },  // Set AggregateId when creating a new instance
-            _ => result.GetValueOrThrow()
-        };
+        T aggregate = isNotFound ? new T { AggregateId = aggregateId } : result.GetValueOrThrow();
 
         return Result.Success(aggregate);
     }

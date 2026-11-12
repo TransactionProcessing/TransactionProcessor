@@ -46,7 +46,7 @@ namespace TransactionProcessor.BusinessLogic.OperatorInterfaces.PataPawaPostPay
                 // Check if we need to do a logon with the operator
                 OperatorResponse operatorResponse = this.MemoryCache.Get<OperatorResponse>("PataPawaPostPayLogon");
                 if (operatorResponse != null) {
-                    return operatorResponse;
+                    return Result.Success(operatorResponse);
                 }
 
                 IPataPawaPostPayService channel = this.ChannelResolver(this.ServiceClient, "PataPawaPostPay", this.Configuration.Url);
