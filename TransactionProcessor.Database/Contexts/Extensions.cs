@@ -550,6 +550,16 @@ public static class Extensions{
 }
 
 public static class DbQueryHelpers {
+    public static Result<T> MapNotFound<T>(Result<T> result, string message)
+    {
+        if (result.IsFailed && result.Errors.Any(error => error.ErrorType == ErrorType.NotFound))
+        {
+            return Result<T>.Fail(Error.NotFound(message));
+        }
+
+        return result;
+    }
+
     public static async Task<Result<T>> ExecuteQuerySafeSum<T>(IQueryable query,
                                                                 CancellationToken cancellationToken,
                                                                 string contextMessage = null)
@@ -591,7 +601,7 @@ public static class DbQueryHelpers {
             T item = await query.SingleOrDefaultAsync(cancellationToken);
 
             if (item == null)
-                return Result.NotFound();
+                return Result<T>.Fail(Error.NotFound(contextMessage ?? "The requested record was not found."));
 
             return Result.Success(item);
         }

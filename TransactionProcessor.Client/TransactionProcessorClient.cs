@@ -26,7 +26,7 @@ using TransactionProcessor.DataTransferObjects.Requests.Voucher;
 using TransactionProcessor.DataTransferObjects.Responses.Transaction;
 using TransactionProcessor.DataTransferObjects.Responses.Voucher;
 
-public class TransactionProcessorClient : TransactionProcessing.ClientProxyBase, ITransactionProcessorClient {
+public class TransactionProcessorClient : TransactionProcessing.ClientProxyBase.ClientProxyBase, ITransactionProcessorClient {
     #region Fields
 
     private readonly Func<String, String> BaseAddressResolver;
