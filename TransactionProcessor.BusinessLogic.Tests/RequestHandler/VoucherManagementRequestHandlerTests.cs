@@ -27,7 +27,7 @@ namespace TransactionProcessor.BusinessLogic.Tests.RequestHandler
             IVoucherDomainServiceImposter voucherDomainService = new();
             IVoucherManagementManagerImposter voucherManagementManager = new();
             voucherDomainService.IssueVoucher(Arg<VoucherCommands.IssueVoucherCommand>.Any(),
-                                                           Arg<CancellationToken>.Any()).ReturnsAsync(TestData.IssueVoucherResponse);
+                                                           Arg<CancellationToken>.Any()).ReturnsAsync(TransactionProcessing.UnionResults.Result.Success(TestData.IssueVoucherResponse));
 
             VoucherManagementRequestHandler handler = new VoucherManagementRequestHandler(voucherDomainService.Instance(), voucherManagementManager.Instance());
             
@@ -42,7 +42,7 @@ namespace TransactionProcessor.BusinessLogic.Tests.RequestHandler
             IVoucherDomainServiceImposter voucherDomainService = new();
             IVoucherManagementManagerImposter voucherManagementManager = new();
             voucherDomainService.RedeemVoucher(Arg<VoucherCommands.RedeemVoucherCommand>.Any(),
-                                                           Arg<CancellationToken>.Any()).ReturnsAsync(TestData.RedeemVoucherResponse);
+                                                           Arg<CancellationToken>.Any()).ReturnsAsync(TransactionProcessing.UnionResults.Result.Success(TestData.RedeemVoucherResponse));
 
             VoucherManagementRequestHandler handler = new VoucherManagementRequestHandler(voucherDomainService.Instance(), voucherManagementManager.Instance());
 

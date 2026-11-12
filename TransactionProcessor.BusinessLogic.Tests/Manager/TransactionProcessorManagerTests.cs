@@ -61,7 +61,7 @@ namespace TransactionProcessor.BusinessLogic.Tests.Manager
         public async Task TransactionProcessorManager_GetEstates_RepoCallFails_ResultFailed()
         {
             this.AggregateService.GetLatest<EstateAggregate>(Arg<Guid>.Any(), Arg<CancellationToken>.Any()).ReturnsAsync(Result.Success(TestData.Aggregates.CreatedEstateAggregate()));
-            this.TransactionProcessorReadModelRepository.GetEstate(Arg<Guid>.Any(), Arg<CancellationToken>.Any()).ReturnsAsync(Result.Failure());
+            this.TransactionProcessorReadModelRepository.GetEstate(Arg<Guid>.Any(), Arg<CancellationToken>.Any()).ReturnsAsync(Result.Failure("Test failure"));
 
             Result<List<Estate>> getEstatesResult = await this.TransactionProcessorManager.GetEstates(TestData.EstateId, TestContext.Current.CancellationToken);
             getEstatesResult.IsFailed.ShouldBeTrue();
@@ -99,7 +99,7 @@ namespace TransactionProcessor.BusinessLogic.Tests.Manager
         [Fact]
         public async Task TransactionProcessorManager_GetEstate_GetLatestFailed_ErrorIsThrown()
         {
-            this.AggregateService.GetLatest<EstateAggregate>(Arg<Guid>.Any(), Arg<CancellationToken>.Any()).ReturnsAsync(Result.Failure());
+            this.AggregateService.GetLatest<EstateAggregate>(Arg<Guid>.Any(), Arg<CancellationToken>.Any()).ReturnsAsync(Result.Failure("Test failure"));
             this.TransactionProcessorReadModelRepository.GetEstate(Arg<Guid>.Any(), Arg<CancellationToken>.Any()).ReturnsAsync(Result.Success(TestData.EstateModel));
 
             Result<Estate> getEstateResult = await this.TransactionProcessorManager.GetEstate(TestData.EstateId, TestContext.Current.CancellationToken);
@@ -137,7 +137,7 @@ namespace TransactionProcessor.BusinessLogic.Tests.Manager
         [Fact]
         public async Task TransactionProcessorManager_GetContract_GetLatestFails_ErrorIsThrown()
         {
-            this.AggregateService.GetLatest<ContractAggregate>(Arg<Guid>.Any(), Arg<CancellationToken>.Any()).ReturnsAsync(Result.Failure());
+            this.AggregateService.GetLatest<ContractAggregate>(Arg<Guid>.Any(), Arg<CancellationToken>.Any()).ReturnsAsync(Result.Failure("Test failure"));
 
             Result<Contract> getContractResult = await this.TransactionProcessorManager.GetContract(TestData.EstateId, TestData.ContractId, TestContext.Current.CancellationToken);
             getContractResult.IsFailed.ShouldBeTrue();
@@ -158,7 +158,7 @@ namespace TransactionProcessor.BusinessLogic.Tests.Manager
         [Fact]
         public async Task TransactionProcessorManager_GetContracts_RepoCallFails_ContractAreReturned()
         {
-            this.TransactionProcessorReadModelRepository.GetContracts(Arg<Guid>.Any(), Arg<CancellationToken>.Any()).ReturnsAsync(Result.Failure());
+            this.TransactionProcessorReadModelRepository.GetContracts(Arg<Guid>.Any(), Arg<CancellationToken>.Any()).ReturnsAsync(Result.Failure("Test failure"));
 
             Result<List<Contract>> getContractsResult = await this.TransactionProcessorManager.GetContracts(TestData.EstateId, TestContext.Current.CancellationToken);
             getContractsResult.IsFailed.ShouldBeTrue();
@@ -198,7 +198,7 @@ namespace TransactionProcessor.BusinessLogic.Tests.Manager
         [Fact]
         public async Task TransactionProcessorManager_GetTransactionFeesForProduct_GetLatestFails_ErrorThrown()
         {
-            this.AggregateService.GetLatest<ContractAggregate>(Arg<Guid>.Any(), Arg<CancellationToken>.Any()).ReturnsAsync(Result.Failure());
+            this.AggregateService.GetLatest<ContractAggregate>(Arg<Guid>.Any(), Arg<CancellationToken>.Any()).ReturnsAsync(Result.Failure("Test failure"));
 
             Result<List<ContractProductTransactionFee>> result = await this.TransactionProcessorManager.GetTransactionFeesForProduct(TestData.EstateId, TestData.MerchantId, TestData.ContractId, TestData.FixedContractProductId, TestContext.Current.CancellationToken);
             result.IsFailed.ShouldBeTrue();
@@ -219,7 +219,7 @@ namespace TransactionProcessor.BusinessLogic.Tests.Manager
         [Fact]
         public async Task EstateManagementManager_GetFileDetails_RepoCallFailed_FileDetailsAreReturned()
         {
-            this.EstateManagementRepository.GetFileDetails(Arg<Guid>.Any(), Arg<Guid>.Any(), Arg<CancellationToken>.Any()).ReturnsAsync(Result.Failure());
+            this.EstateManagementRepository.GetFileDetails(Arg<Guid>.Any(), Arg<Guid>.Any(), Arg<CancellationToken>.Any()).ReturnsAsync(Result.Failure("Test failure"));
 
             var getFileDetailsResult = await this.EstateManagementManager.GetFileDetails(TestData.EstateId, TestData.FileId, TestContext.Current.CancellationToken);
             getFileDetailsResult.IsFailed.ShouldBeTrue();
@@ -248,7 +248,7 @@ namespace TransactionProcessor.BusinessLogic.Tests.Manager
         [Fact]
         public async Task TransactionProcessorManager_GetOperator_GetLatestFails_ExceptionThrown()
         {
-            this.AggregateService.GetLatest<OperatorAggregate>(Arg<Guid>.Any(), Arg<CancellationToken>.Any()).ReturnsAsync(Result.Failure());
+            this.AggregateService.GetLatest<OperatorAggregate>(Arg<Guid>.Any(), Arg<CancellationToken>.Any()).ReturnsAsync(Result.Failure("Test failure"));
 
             Result<Operator> getOperatorResult = await this.TransactionProcessorManager.GetOperator(TestData.EstateId, TestData.OperatorId, TestContext.Current.CancellationToken);
             getOperatorResult.IsFailed.ShouldBeTrue();
@@ -281,7 +281,7 @@ namespace TransactionProcessor.BusinessLogic.Tests.Manager
         [Fact]
         public async Task TransactionProcessorManager_GetOperators_RepoCallFails_ExceptionThrown()
         {
-            this.TransactionProcessorReadModelRepository.GetOperators(Arg<Guid>.Any(), Arg<CancellationToken>.Any()).ReturnsAsync(Result.Failure());
+            this.TransactionProcessorReadModelRepository.GetOperators(Arg<Guid>.Any(), Arg<CancellationToken>.Any()).ReturnsAsync(Result.Failure("Test failure"));
 
             Result<List<Operator>> getOperatorsResult = await this.TransactionProcessorManager.GetOperators(TestData.EstateId, TestContext.Current.CancellationToken);
             getOperatorsResult.IsFailed.ShouldBeTrue();
@@ -351,7 +351,7 @@ namespace TransactionProcessor.BusinessLogic.Tests.Manager
         [Fact]
         public async Task TransactionProcessorManager_GetMerchant_GetLatestFails_ErrorThrown()
         {
-            this.AggregateService.GetLatest<MerchantAggregate>(Arg<Guid>.Any(), Arg<CancellationToken>.Any()).ReturnsAsync(Result.Failure());
+            this.AggregateService.GetLatest<MerchantAggregate>(Arg<Guid>.Any(), Arg<CancellationToken>.Any()).ReturnsAsync(Result.Failure("Test failure"));
 
             Result<Merchant> result = await this.TransactionProcessorManager.GetMerchant(TestData.EstateId, TestData.MerchantId, TestContext.Current.CancellationToken);
             result.IsFailed.ShouldBeTrue();
@@ -406,7 +406,7 @@ namespace TransactionProcessor.BusinessLogic.Tests.Manager
         public async Task TransactionProcessorManager_GetMerchantScheduleFromReadModel_MerchantScheduleNotFound_ReturnsFailure()
         {
             this.TransactionProcessorReadModelRepository.GetMerchantSchedule(Arg<Guid>.Any(), Arg<Guid>.Any(), Arg<Int32>.Any(), Arg<CancellationToken>.Any())
-                .ReturnsAsync(Result.Failure());
+                .ReturnsAsync(Result.Failure("Test failure"));
 
             Result<MerchantScheduleModel> result = await this.TransactionProcessorManager.GetMerchantScheduleFromReadModel(TestData.EstateId, TestData.MerchantId, TestData.MerchantScheduleYear, TestContext.Current.CancellationToken);
 
@@ -438,7 +438,7 @@ namespace TransactionProcessor.BusinessLogic.Tests.Manager
         [Fact]
         public async Task TransactionProcessorManager_GetMerchantContracts_RepoCallFailed_ResultFailed()
         {
-            this.TransactionProcessorReadModelRepository.GetMerchantContracts(Arg<Guid>.Any(), Arg<Guid>.Any(), Arg<CancellationToken>.Any()).ReturnsAsync(Result.Failure());
+            this.TransactionProcessorReadModelRepository.GetMerchantContracts(Arg<Guid>.Any(), Arg<Guid>.Any(), Arg<CancellationToken>.Any()).ReturnsAsync(Result.Failure("Test failure"));
 
             Result<List<Contract>> getMerchantContractsResult = await this.TransactionProcessorManager.GetMerchantContracts(TestData.EstateId, TestData.MerchantId, TestContext.Current.CancellationToken);
             getMerchantContractsResult.IsFailed.ShouldBeTrue();
@@ -498,7 +498,7 @@ namespace TransactionProcessor.BusinessLogic.Tests.Manager
         public async Task TransactionProcessorManager_GetMerchants_RepoCallFails_ExceptionThrown()
         {
             List<Merchant> merchants = new List<Merchant>();
-            this.TransactionProcessorReadModelRepository.GetMerchants(Arg<Guid>.Any(), Arg<CancellationToken>.Any()).ReturnsAsync(Result.Failure());
+            this.TransactionProcessorReadModelRepository.GetMerchants(Arg<Guid>.Any(), Arg<CancellationToken>.Any()).ReturnsAsync(Result.Failure("Test failure"));
 
             Result<List<Merchant>> getMerchantsResult = await this.TransactionProcessorManager.GetMerchants(TestData.EstateId, TestContext.Current.CancellationToken);
             getMerchantsResult.IsFailed.ShouldBeTrue();

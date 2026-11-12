@@ -58,7 +58,7 @@ namespace TransactionProcessor.BusinessLogic.Tests.DomainEventHandlers
         public async Task MerchantDomainEventHandler_Handle_CallbackReceivedEnrichedEvent_Deposit_GetMerchantFailed_ResultIsFailure()
         {
             this.TransactionProcessorReadModelRepository.GetMerchantFromReference(Arg<Guid>.Any(), Arg<String>.Any(), Arg<CancellationToken>.Any())
-                .ReturnsAsync(Result.Failure());
+                .ReturnsAsync(Result.Failure("Test failure"));
 
             CallbackReceivedEnrichedEvent domainEvent = TestData.DomainEvents.CallbackReceivedEnrichedEventDeposit;
 

@@ -30,7 +30,7 @@ public class SettlementRequestHandlerTests
         ITransactionProcessorManagerImposter manager = new();
         SettlementRequestHandler handler = new SettlementRequestHandler(settlementDomainService.Instance(), manager.Instance());
         settlementDomainService
-            .ProcessSettlement(Arg<SettlementCommands.ProcessSettlementCommand>.Any(), Arg<CancellationToken>.Any()).ReturnsAsync(Result.Success());
+            .ProcessSettlement(Arg<SettlementCommands.ProcessSettlementCommand>.Any(), Arg<CancellationToken>.Any()).ReturnsAsync(Result.Success(Guid.NewGuid()));
         var command = TestData.Commands.ProcessSettlementCommand;
 
         var result = await handler.Handle(command, TestContext.Current.CancellationToken);

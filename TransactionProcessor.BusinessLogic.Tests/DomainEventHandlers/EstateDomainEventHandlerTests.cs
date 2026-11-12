@@ -45,7 +45,7 @@ public class EstateDomainEventHandlerTests
     {
         EstateDomainEvents.EstateCreatedEvent estateCreatedEvent = TestData.DomainEvents.EstateCreatedEvent;
         this.EstateReportingRepository.CreateReadModel(Arg<EstateDomainEvents.EstateCreatedEvent>.Any(), Arg<CancellationToken>.Any())
-            .ReturnsAsync(Result.Failure());
+            .ReturnsAsync(Result.Failure("Test failure"));
 
         Result result = await this.DomainEventHandler.Handle(estateCreatedEvent, TestContext.Current.CancellationToken);
         result.IsFailed.ShouldBeTrue();

@@ -60,7 +60,7 @@ public class ReadModelDomainEventHandlerTests
         MerchantStatementDomainEvents.StatementGeneratedEvent domainEvent = TestData.DomainEvents.StatementGeneratedEvent;
 
         this.EstateReportingRepository.MarkStatementAsGenerated(domainEvent, Arg<CancellationToken>.Any())
-            .ReturnsAsync(Result.Failure());
+            .ReturnsAsync(Result.Failure("Test failure"));
 
         Result result = await this.DomainEventHandler.Handle(domainEvent, TestContext.Current.CancellationToken);
 
