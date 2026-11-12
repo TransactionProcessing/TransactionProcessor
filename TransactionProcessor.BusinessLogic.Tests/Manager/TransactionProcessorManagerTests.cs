@@ -475,13 +475,10 @@ namespace TransactionProcessor.BusinessLogic.Tests.Manager
         }
 
         [Fact]
-        public async Task TransactionProcessorManager_GetMerchants_NullMerchants_ExceptionThrown()
+        public void TransactionProcessorManager_GetMerchants_NullResultCannotBeCreated()
         {
             List<Merchant> merchants = null;
-            this.TransactionProcessorReadModelRepository.GetMerchants(Arg<Guid>.Any(), Arg<CancellationToken>.Any()).ReturnsAsync(Result.Success(merchants));
-
-            Result<List<Merchant>> getMerchantsResult = await this.TransactionProcessorManager.GetMerchants(TestData.EstateId, TestContext.Current.CancellationToken);
-            getMerchantsResult.IsFailed.ShouldBeTrue();
+            Should.Throw<ArgumentNullException>(() => Result.Success(merchants));
         }
 
         [Fact]

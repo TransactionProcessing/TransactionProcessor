@@ -25,7 +25,7 @@ namespace TransactionProcessor.BusinessLogic.Tests.OperatorInterfaces
         }
 
         [Fact]
-        public async Task SafaricomPinlessProxy_ProcessLogonMessage_NullIsReturned() {
+        public async Task SafaricomPinlessProxy_ProcessLogonMessage_ReturnsSuccessfulResponse() {
             HttpResponseMessage responseMessage = new HttpResponseMessage
                                                   {
                                                       StatusCode = HttpStatusCode.OK,
@@ -38,7 +38,9 @@ namespace TransactionProcessor.BusinessLogic.Tests.OperatorInterfaces
             var processLogonMessageResult = await safaricomPinlessproxy.ProcessLogonMessage(TestContext.Current.CancellationToken);
             processLogonMessageResult.IsSuccess.ShouldBeTrue();
             OperatorResponse operatorResponse = processLogonMessageResult.GetValueOrThrow();
-            operatorResponse.ShouldBeNull();
+            operatorResponse.ShouldNotBeNull();
+            operatorResponse.IsSuccessful.ShouldBeTrue();
+            operatorResponse.ResponseCode.ShouldBe("0000");
 
         }
 

@@ -26,7 +26,7 @@ namespace TransactionProcessor.BusinessLogic.Tests.OperatorInterfaces
         }
 
         [Fact]
-        public async Task VoucherManagementProxy_ProcessLogonMessage_NullReturned() {
+        public async Task VoucherManagementProxy_ProcessLogonMessage_ReturnsSuccessfulResponse() {
             IMediatorImposter mediator = new();
             
             IOperatorProxy voucherManagementProxy = new VoucherManagementProxy(mediator.Instance());
@@ -34,7 +34,9 @@ namespace TransactionProcessor.BusinessLogic.Tests.OperatorInterfaces
             var processLogonMessageResult = await voucherManagementProxy.ProcessLogonMessage(TestContext.Current.CancellationToken);
             processLogonMessageResult.IsSuccess.ShouldBeTrue();
             OperatorResponse operatorResponse = processLogonMessageResult.GetValueOrThrow();
-            operatorResponse.ShouldBeNull();
+            operatorResponse.ShouldNotBeNull();
+            operatorResponse.IsSuccessful.ShouldBeTrue();
+            operatorResponse.ResponseCode.ShouldBe("0000");
         }
         
         [Fact]

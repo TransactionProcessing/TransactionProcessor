@@ -297,7 +297,7 @@ namespace TransactionProcessor.BusinessLogic.Services{
             Result<TokenResponse> getTokenResult = await Helpers.GetToken(this.TokenResponse, this.SecurityServiceClient, cancellationToken);
             if (getTokenResult.IsFailed)
                 return ResultHelpers.CreateFailure(getTokenResult);
-            this.TokenResponse = getTokenResult.Data;
+            this.TokenResponse = getTokenResult.GetValueOrThrow();
             Result<TransactionAggregate> transactionResult = await DomainServiceHelper.GetAggregateOrFailure(ct => this.AggregateService.GetLatest<TransactionAggregate>(command.TransactionId, ct), command.TransactionId, cancellationToken, false);
             if (transactionResult.IsFailed)
                 return ResultHelpers.CreateFailure(transactionResult);
@@ -331,7 +331,7 @@ namespace TransactionProcessor.BusinessLogic.Services{
             Result<TokenResponse> getTokenResult = await Helpers.GetToken(this.TokenResponse, this.SecurityServiceClient, cancellationToken);
             if (getTokenResult.IsFailed)
                 return ResultHelpers.CreateFailure(getTokenResult);
-            this.TokenResponse = getTokenResult.Data;
+            this.TokenResponse = getTokenResult.GetValueOrThrow();
 
             Result<TransactionAggregate> transactionResult = await DomainServiceHelper.GetAggregateOrFailure(ct => this.AggregateService.GetLatest<TransactionAggregate>(command.TransactionId, ct), command.TransactionId, cancellationToken, false);
             if (transactionResult.IsFailed)
@@ -853,7 +853,7 @@ namespace TransactionProcessor.BusinessLogic.Services{
             Result<OperatorResponse> operatorResult = await ProcessMessageWithOperator(merchantResult.GetValueOrThrow(), transactionAggregate.AggregateId, command.TransactionDateTime, command.OperatorId, command.AdditionalTransactionMetadata, TransactionHelpers.GenerateTransactionReference(), cancellationToken);
             end = DateTimeOffset.UtcNow;
 
-            if (operatorResult.IsSuccess) {
+            if (operatorResult.IsSuccess && operatorResult.GetValueOrThrow()?.IsSuccessful == true) {
                 Logger.LogInformation("Operator {OperatorId} authorised transaction {TransactionId} successfully", command.OperatorId, transactionAggregate.AggregateId);
                 transactionAggregate.AuthoriseTransaction(command.OperatorId, operatorResult.GetValueOrThrow().AuthorisationCode, operatorResult.GetValueOrThrow().ResponseCode, operatorResult.GetValueOrThrow().ResponseMessage, operatorResult.GetValueOrThrow().TransactionId, TransactionResponseCode.Success, "SUCCESS");
             }

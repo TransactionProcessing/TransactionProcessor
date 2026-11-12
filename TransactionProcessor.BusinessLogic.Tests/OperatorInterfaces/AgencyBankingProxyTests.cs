@@ -36,7 +36,9 @@ namespace TransactionProcessor.BusinessLogic.Tests.OperatorInterfaces
             var result = await proxy.ProcessLogonMessage(TestContext.Current.CancellationToken);
 
             result.IsSuccess.ShouldBeTrue();
-            result.GetValueOrThrow().ShouldBeNull();
+            result.GetValueOrThrow().ShouldNotBeNull();
+            result.GetValueOrThrow().IsSuccessful.ShouldBeTrue();
+            result.GetValueOrThrow().ResponseCode.ShouldBe("0000");
         }
 
         [Fact]

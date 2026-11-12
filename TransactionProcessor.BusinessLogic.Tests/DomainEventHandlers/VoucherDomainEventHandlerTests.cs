@@ -8,6 +8,7 @@ namespace TransactionProcessor.BusinessLogic.Tests.DomainEventHandlers;
 
 using EventHandling;
 using MessagingService.Client;
+using MessagingService.DataTransferObjects;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Diagnostics;
 using Microsoft.Extensions.Configuration;
@@ -91,6 +92,7 @@ public class VoucherDomainEventHandlerTests
     public async Task VoucherDomainEventHandler_VoucherIssuedEvent_WithEmailAddress_IsHandled()
     {
         this.SecurityServiceClient.GetToken(Arg<String>.Any(), Arg<String>.Any(), Arg<CancellationToken>.Any()).ReturnsAsync(SimpleResults.Result.Success(TestData.GetTokenResponse()));
+        this.MessagingServiceClient.SendEmail(Arg<String>.Any(), Arg<SendEmailRequest>.Any(), Arg<CancellationToken>.Any()).ReturnsAsync(SimpleResults.Result.Success());
 
         this.AggregateService.Get<VoucherAggregate>(Arg<Guid>.Any(), Arg<CancellationToken>.Any())
                                   .ReturnsAsync(Result.Success(TestData.GetVoucherAggregateWithRecipientEmail()));
@@ -116,6 +118,7 @@ public class VoucherDomainEventHandlerTests
     public async Task VoucherDomainEventHandler_VoucherIssuedEvent_WithRecipientMobile_IsHandled()
     {
         this.SecurityServiceClient.GetToken(Arg<String>.Any(), Arg<String>.Any(), Arg<CancellationToken>.Any()).ReturnsAsync(SimpleResults.Result.Success(TestData.GetTokenResponse()));
+        this.MessagingServiceClient.SendSMS(Arg<String>.Any(), Arg<SendSMSRequest>.Any(), Arg<CancellationToken>.Any()).ReturnsAsync(SimpleResults.Result.Success());
 
         this.AggregateService.Get<VoucherAggregate>(Arg<Guid>.Any(), Arg<CancellationToken>.Any())
                                   .ReturnsAsync(Result.Success(TestData.GetVoucherAggregateWithRecipientMobile()));

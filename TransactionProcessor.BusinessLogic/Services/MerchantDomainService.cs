@@ -293,7 +293,7 @@ namespace TransactionProcessor.BusinessLogic.Services
             Result<TokenResponse> getTokenResult = await Helpers.GetToken(this.TokenResponse, this.SecurityServiceClient, cancellationToken);
             if (getTokenResult.IsFailed)
                 return ResultHelpers.CreateFailure(getTokenResult);
-            this.TokenResponse = getTokenResult.Data;
+            this.TokenResponse = getTokenResult.GetValueOrThrow();
 
             var createUserResult = await this.SecurityServiceClient.CreateUser(this.TokenResponse.AccessToken, createUserRequest, cancellationToken);
             if (createUserResult.IsFailed)

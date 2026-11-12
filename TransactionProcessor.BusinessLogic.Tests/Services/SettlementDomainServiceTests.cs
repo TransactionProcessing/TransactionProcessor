@@ -131,7 +131,7 @@ namespace TransactionProcessor.BusinessLogic.Tests.Services
             Result<Guid> result = await settlementDomainService.ProcessSettlement(command, TestContext.Current.CancellationToken);
 
             result.IsSuccess.ShouldBeFalse();
-            this.AggregateService.Save(Arg<SettlementAggregate>.Any(), Arg<CancellationToken>.Any()).Called(Count.Exactly(12));
+            this.AggregateService.Save(Arg<SettlementAggregate>.Any(), Arg<CancellationToken>.Any()).Called(Count.Exactly(8));
         }
 
         [Fact]

@@ -188,7 +188,7 @@ namespace TransactionProcessor.BusinessLogic.Services
                 Result<TokenResponse> getTokenResult = await Helpers.GetToken(this.TokenResponse, this.SecurityServiceClient, cancellationToken);
                 if (getTokenResult.IsFailed)
                     return ResultHelpers.CreateFailure(getTokenResult);
-                this.TokenResponse = getTokenResult.Data;
+                this.TokenResponse = getTokenResult.GetValueOrThrow();
 
                 await this.MessagingServiceClient.SendEmail(this.TokenResponse.AccessToken, sendEmailRequest, cancellationToken);
 

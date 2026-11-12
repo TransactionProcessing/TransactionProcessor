@@ -83,7 +83,7 @@ public class MerchantStatementDomainEventHandlerTests : DomainEventHandlerTests
 
         Result result = await this.EventHandler.Handle(TestData.DomainEvents.TransactionHasBeenCompletedEvent, TestContext.Current.CancellationToken);
         result.IsFailed.ShouldBeTrue();
-        this.Mediator.Send<Result>(Arg<IRequest<Result>>.Any(), Arg<CancellationToken>.Any()).Called(Count.Exactly(6));
+        this.Mediator.Send<Result>(Arg<IRequest<Result>>.Any(), Arg<CancellationToken>.Any()).Called(Count.Exactly(4));
     }
 
     [Fact]
@@ -125,7 +125,7 @@ public class MerchantStatementDomainEventHandlerTests : DomainEventHandlerTests
 
         Result result = await this.EventHandler.Handle(TestData.DomainEvents.MerchantFeeSettledEvent, TestContext.Current.CancellationToken);
         result.IsFailed.ShouldBeTrue();
-        this.Mediator.Send<Result>(Arg<IRequest<Result>>.Any(), Arg<CancellationToken>.Any()).Called(Count.Exactly(6));
+        this.Mediator.Send<Result>(Arg<IRequest<Result>>.Any(), Arg<CancellationToken>.Any()).Called(Count.Exactly(4));
     }
 
     [Fact]
