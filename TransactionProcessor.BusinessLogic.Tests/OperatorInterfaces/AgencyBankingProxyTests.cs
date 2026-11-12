@@ -60,7 +60,7 @@ namespace TransactionProcessor.BusinessLogic.Tests.OperatorInterfaces
                                                         TestContext.Current.CancellationToken);
 
             result.IsFailed.ShouldBeTrue();
-            result.Errors.ErrorType.ShouldBe(ErrorType.Validation);
+            result.Errors[0].ErrorType.ShouldBe(ErrorType.Validation);
             result.Message.ShouldBe("AgencyBankingMessageType - Message Type is a required field for this transaction type");
         }
 
@@ -85,7 +85,7 @@ namespace TransactionProcessor.BusinessLogic.Tests.OperatorInterfaces
                                                         TestContext.Current.CancellationToken);
 
             result.IsFailed.ShouldBeTrue();
-            result.Errors.ErrorType.ShouldBe(ErrorType.Validation);
+            result.Errors[0].ErrorType.ShouldBe(ErrorType.Validation);
             result.Message.ShouldBe("AgencyBankingAccountNumber - Account Number is a required field for this transaction type");
         }
 
@@ -111,7 +111,7 @@ namespace TransactionProcessor.BusinessLogic.Tests.OperatorInterfaces
                                                         TestContext.Current.CancellationToken);
 
             result.IsFailed.ShouldBeTrue();
-            result.Errors.ErrorType.ShouldBe(ErrorType.Validation);
+            result.Errors[0].ErrorType.ShouldBe(ErrorType.Validation);
             result.Message.ShouldBe("AgencyBankingMessageType - Message Type cashwithdrawal is not supported for this transaction type");
         }
 
@@ -143,7 +143,7 @@ namespace TransactionProcessor.BusinessLogic.Tests.OperatorInterfaces
                                                         TestContext.Current.CancellationToken);
 
             result.IsFailed.ShouldBeTrue();
-            result.Errors.ErrorType.ShouldBe(ErrorType.Validation);
+            result.Errors[0].ErrorType.ShouldBe(ErrorType.Validation);
             result.Message.ShouldBe("Failed to process balance enquiry operator unavailable");
             capturedRequest.ShouldNotBeNull();
             capturedRequest.Method.ShouldBe(HttpMethod.Post);
@@ -173,7 +173,7 @@ namespace TransactionProcessor.BusinessLogic.Tests.OperatorInterfaces
                                                         TestContext.Current.CancellationToken);
 
             result.IsFailed.ShouldBeTrue();
-            result.Errors.ErrorType.ShouldBe(ErrorType.Failure);
+            result.Errors[0].ErrorType.ShouldBe(ErrorType.Failure);
             result.Message.ShouldContain("AgencyBanking request failed");
             result.Message.ShouldContain("Execution Timeout Expired");
         }
@@ -250,7 +250,7 @@ namespace TransactionProcessor.BusinessLogic.Tests.OperatorInterfaces
                                                         TestContext.Current.CancellationToken);
 
             result.IsFailed.ShouldBeTrue();
-            result.Errors.ErrorType.ShouldBe(ErrorType.Validation);
+            result.Errors[0].ErrorType.ShouldBe(ErrorType.Validation);
             result.Message.ShouldBe("Failed to process deposit deposit rejected");
 
             capturedRequest.ShouldNotBeNull();
@@ -287,7 +287,7 @@ namespace TransactionProcessor.BusinessLogic.Tests.OperatorInterfaces
                                                         TestContext.Current.CancellationToken);
 
             result.IsFailed.ShouldBeTrue();
-            result.Errors.ErrorType.ShouldBe(ErrorType.Validation);
+            result.Errors[0].ErrorType.ShouldBe(ErrorType.Validation);
             result.Message.ShouldBe("Amount - Amount is a required field for this transaction type");
         }
 
@@ -315,7 +315,7 @@ namespace TransactionProcessor.BusinessLogic.Tests.OperatorInterfaces
                                                         TestContext.Current.CancellationToken);
 
             result.IsFailed.ShouldBeTrue();
-            result.Errors.ErrorType.ShouldBe(ErrorType.Validation);
+            result.Errors[0].ErrorType.ShouldBe(ErrorType.Validation);
             result.Message.ShouldBe("Amount - Amount is not a valid decimal value");
         }
 
@@ -395,7 +395,7 @@ namespace TransactionProcessor.BusinessLogic.Tests.OperatorInterfaces
                                                         TestContext.Current.CancellationToken);
 
             result.IsFailed.ShouldBeTrue();
-            result.Errors.ErrorType.ShouldBe(ErrorType.Validation);
+            result.Errors[0].ErrorType.ShouldBe(ErrorType.Validation);
             result.Message.ShouldBe("Failed to process withdrawal withdrawal rejected");
 
             capturedRequest.ShouldNotBeNull();
@@ -432,7 +432,7 @@ namespace TransactionProcessor.BusinessLogic.Tests.OperatorInterfaces
                                                         TestContext.Current.CancellationToken);
 
             result.IsFailed.ShouldBeTrue();
-            result.Errors.ErrorType.ShouldBe(ErrorType.Validation);
+            result.Errors[0].ErrorType.ShouldBe(ErrorType.Validation);
             result.Message.ShouldBe("Amount - Amount is a required field for this transaction type");
         }
 
@@ -460,7 +460,7 @@ namespace TransactionProcessor.BusinessLogic.Tests.OperatorInterfaces
                                                         TestContext.Current.CancellationToken);
 
             result.IsFailed.ShouldBeTrue();
-            result.Errors.ErrorType.ShouldBe(ErrorType.Validation);
+            result.Errors[0].ErrorType.ShouldBe(ErrorType.Validation);
             result.Message.ShouldBe("Amount - Amount is not a valid decimal value");
         }
 
@@ -586,7 +586,7 @@ namespace TransactionProcessor.BusinessLogic.Tests.OperatorInterfaces
                                                         TestContext.Current.CancellationToken);
 
             result.IsFailed.ShouldBeTrue();
-            result.Errors.ErrorType.ShouldBe(ErrorType.Validation);
+            result.Errors[0].ErrorType.ShouldBe(ErrorType.Validation);
             result.Message.ShouldBe("Failed to process mini-statement mini statement rejected");
 
             capturedRequest.ShouldNotBeNull();

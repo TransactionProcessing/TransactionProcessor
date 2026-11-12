@@ -56,7 +56,7 @@ namespace TransactionProcessor.Aggregates.Tests
             MerchantDepositListAggregate merchantDepositListAggregate = MerchantDepositListAggregate.Create(TestData.MerchantId);
             Result result = merchantDepositListAggregate.Create(merchantAggregate, TestData.DateMerchantCreated);
             result.IsFailed.ShouldBeTrue();
-            result.Errors.ErrorType.ShouldBe(ErrorType.Validation);
+            result.Errors[0].ErrorType.ShouldBe(ErrorType.Validation);
         }
 
         [Fact]
@@ -118,7 +118,7 @@ namespace TransactionProcessor.Aggregates.Tests
                                                                                                  TestData.DepositDateTime,
                                                                                                  TestData.DepositAmount, TestData.HostDateTime);
             result.IsFailed.ShouldBeTrue();
-            result.Errors.ErrorType.ShouldBe(ErrorType.Validation);
+            result.Errors[0].ErrorType.ShouldBe(ErrorType.Validation);
         }
 
         [Fact]
@@ -136,7 +136,7 @@ namespace TransactionProcessor.Aggregates.Tests
                                                                                                  TestData.DepositDateTime,
                                                                                                  TestData.DepositAmount, TestData.HostDateTime);
             result.IsFailed.ShouldBeTrue();
-            result.Errors.ErrorType.ShouldBe(ErrorType.Validation);
+            result.Errors[0].ErrorType.ShouldBe(ErrorType.Validation);
         }
 
         [Fact]
@@ -158,7 +158,7 @@ namespace TransactionProcessor.Aggregates.Tests
                                                                                                  TestData.DepositAmount,
                                                                                                  TestData.HostDateTime);
             result.IsFailed.ShouldBeTrue();
-            result.Errors.ErrorType.ShouldBe(ErrorType.Validation);
+            result.Errors[0].ErrorType.ShouldBe(ErrorType.Validation);
         }
 
         [Fact]
@@ -171,7 +171,7 @@ namespace TransactionProcessor.Aggregates.Tests
                                                                                                  TestData.DepositAmount,
                                                                                                  TestData.HostDateTime);
             result.IsFailed.ShouldBeTrue();
-            result.Errors.ErrorType.ShouldBe(ErrorType.Validation);
+            result.Errors[0].ErrorType.ShouldBe(ErrorType.Validation);
         }
 
         [Fact]
@@ -264,7 +264,7 @@ namespace TransactionProcessor.Aggregates.Tests
             Result result = merchantDepositListAggregate.MakeWithdrawal(TestData.WithdrawalDateTime, TestData.WithdrawalAmount,
                 TestData.HostDateTime);
             result.IsFailed.ShouldBeTrue();
-            result.Errors.ErrorType.ShouldBe(ErrorType.Validation);
+            result.Errors[0].ErrorType.ShouldBe(ErrorType.Validation);
         }
 
         [Fact]
@@ -274,7 +274,7 @@ namespace TransactionProcessor.Aggregates.Tests
             Result result = merchantDepositListAggregate.MakeWithdrawal(TestData.WithdrawalDateTime, TestData.WithdrawalAmount,
                 TestData.HostDateTime);
             result.IsFailed.ShouldBeTrue();
-            result.Errors.ErrorType.ShouldBe(ErrorType.Validation);
+            result.Errors[0].ErrorType.ShouldBe(ErrorType.Validation);
         }
 
         [Fact]

@@ -72,7 +72,7 @@ namespace TransactionProcessor.Aggregates.Tests{
 
             Result result = transactionAggregate.StartTransaction(TestData.TransactionDateTime, TestData.HostDateTime, TestData.TransactionNumber, transactionType, TestData.TransactionReference, new TransactionStartContext { EstateId = TestData.EstateId, MerchantId = TestData.MerchantId, DeviceIdentifier = TestData.DeviceIdentifier }, TestData.TransactionAmount);
             result.IsFailed.ShouldBeTrue();
-            result.Errors.ErrorType.ShouldBe(ErrorType.Validation);
+            result.Errors[0].ErrorType.ShouldBe(ErrorType.Validation);
         }
 
         [Theory]
@@ -99,7 +99,7 @@ namespace TransactionProcessor.Aggregates.Tests{
 
             Result result = transactionAggregate.StartTransaction(TestData.TransactionDateTime, TestData.HostDateTime, TestData.TransactionNumber, transactionType, TestData.TransactionReference, new TransactionStartContext { EstateId = TestData.EstateId, MerchantId = TestData.MerchantId, DeviceIdentifier = TestData.DeviceIdentifier }, TestData.TransactionAmount);
             result.IsFailed.ShouldBeTrue();
-            result.Errors.ErrorType.ShouldBe(ErrorType.Validation);
+            result.Errors[0].ErrorType.ShouldBe(ErrorType.Validation);
         }
 
         [Theory]
@@ -135,7 +135,7 @@ namespace TransactionProcessor.Aggregates.Tests{
 
             Result result = transactionAggregate.StartTransaction(transactionDateTime, TestData.HostDateTime, transactionNumber, transactionType, transactionReference, new TransactionStartContext { EstateId = estateId, MerchantId = merchantId, DeviceIdentifier = deviceIdentifier }, TestData.TransactionAmount);
             result.IsFailed.ShouldBeTrue();
-            result.Errors.ErrorType.ShouldBe(ErrorType.Validation);
+            result.Errors[0].ErrorType.ShouldBe(ErrorType.Validation);
         }
 
         [Fact]
@@ -144,7 +144,7 @@ namespace TransactionProcessor.Aggregates.Tests{
 
             Result result = transactionAggregate.StartTransaction(TestData.TransactionDateTime, TestData.HostDateTime, TestData.TransactionNumber, TransactionType.Sale, TestData.TransactionReference, null, TestData.TransactionAmount);
             result.IsFailed.ShouldBeTrue();
-            result.Errors.ErrorType.ShouldBe(ErrorType.Validation);
+            result.Errors[0].ErrorType.ShouldBe(ErrorType.Validation);
         }
 
         [Theory]
@@ -190,7 +190,7 @@ namespace TransactionProcessor.Aggregates.Tests{
                                                                    TestData.TransactionAmount);
 
             result.IsFailed.ShouldBeTrue();
-            result.Errors.ErrorType.ShouldBe(ErrorType.Validation);
+            result.Errors[0].ErrorType.ShouldBe(ErrorType.Validation);
         }
 
         [Theory]
@@ -229,7 +229,7 @@ namespace TransactionProcessor.Aggregates.Tests{
             transactionAggregate.AddProductDetails(TestData.ContractId, TestData.ProductId);
             Result result = transactionAggregate.AddTransactionSource((TransactionSource)99);
             result.IsFailed.ShouldBeTrue();
-            result.Errors.ErrorType.ShouldBe(ErrorType.Validation);
+            result.Errors[0].ErrorType.ShouldBe(ErrorType.Validation);
         }
 
         [Theory]
@@ -253,7 +253,7 @@ namespace TransactionProcessor.Aggregates.Tests{
 
             Result result = transactionAggregate.AddProductDetails(Guid.Empty, TestData.ProductId);
             result.IsFailed.ShouldBeTrue();
-            result.Errors.ErrorType.ShouldBe(ErrorType.Validation);
+            result.Errors[0].ErrorType.ShouldBe(ErrorType.Validation);
         }
 
         [Theory]
@@ -264,7 +264,7 @@ namespace TransactionProcessor.Aggregates.Tests{
 
             Result result = transactionAggregate.AddProductDetails(TestData.ContractId, Guid.Empty);
             result.IsFailed.ShouldBeTrue();
-            result.Errors.ErrorType.ShouldBe(ErrorType.Validation);
+            result.Errors[0].ErrorType.ShouldBe(ErrorType.Validation);
         }
 
         [Theory]
@@ -277,7 +277,7 @@ namespace TransactionProcessor.Aggregates.Tests{
 
             Result result = transactionAggregate.AddProductDetails(TestData.ContractId, TestData.ProductId);
             result.IsFailed.ShouldBeTrue();
-            result.Errors.ErrorType.ShouldBe(ErrorType.Validation);result.IsFailed.ShouldBeTrue();
+            result.Errors[0].ErrorType.ShouldBe(ErrorType.Validation);result.IsFailed.ShouldBeTrue();
         }
 
         [Theory]
@@ -287,7 +287,7 @@ namespace TransactionProcessor.Aggregates.Tests{
 
             Result result = transactionAggregate.AddProductDetails(TestData.ContractId, TestData.ProductId);
             result.IsFailed.ShouldBeTrue();
-            result.Errors.ErrorType.ShouldBe(ErrorType.Validation);
+            result.Errors[0].ErrorType.ShouldBe(ErrorType.Validation);
         }
 
         [Theory]
@@ -316,7 +316,7 @@ namespace TransactionProcessor.Aggregates.Tests{
 
             Result result = transactionAggregate.AddProductDetails(TestData.ContractId, TestData.ProductId);
             result.IsFailed.ShouldBeTrue();
-            result.Errors.ErrorType.ShouldBe(ErrorType.Validation);
+            result.Errors[0].ErrorType.ShouldBe(ErrorType.Validation);
         }
 
         [Theory]
@@ -343,7 +343,7 @@ namespace TransactionProcessor.Aggregates.Tests{
                                                                                                          TestData.ResponseCode,
                                                                                                          TestData.ResponseMessage);
             result.IsFailed.ShouldBeTrue();
-            result.Errors.ErrorType.ShouldBe(ErrorType.Validation);
+            result.Errors[0].ErrorType.ShouldBe(ErrorType.Validation);
         }
 
         [Theory]
@@ -357,7 +357,7 @@ namespace TransactionProcessor.Aggregates.Tests{
                                                                                                          TestData.ResponseCode,
                                                                                                          TestData.ResponseMessage);
             result.IsFailed.ShouldBeTrue();
-            result.Errors.ErrorType.ShouldBe(ErrorType.Validation);
+            result.Errors[0].ErrorType.ShouldBe(ErrorType.Validation);
         }
 
         [Theory]
@@ -371,7 +371,7 @@ namespace TransactionProcessor.Aggregates.Tests{
                                                                                                          TestData.ResponseCode,
                                                                                                          TestData.ResponseMessage);
             result.IsFailed.ShouldBeTrue();
-            result.Errors.ErrorType.ShouldBe(ErrorType.Validation);
+            result.Errors[0].ErrorType.ShouldBe(ErrorType.Validation);
         }
 
         [Theory]
@@ -385,7 +385,7 @@ namespace TransactionProcessor.Aggregates.Tests{
                                                                                                          TestData.ResponseCode,
                                                                                                          TestData.ResponseMessage);
             result.IsFailed.ShouldBeTrue();
-            result.Errors.ErrorType.ShouldBe(ErrorType.Validation);
+            result.Errors[0].ErrorType.ShouldBe(ErrorType.Validation);
         }
 
 
@@ -416,7 +416,7 @@ namespace TransactionProcessor.Aggregates.Tests{
 
             Result result = transactionAggregate.AuthoriseTransaction(TestData.OperatorId, TestData.OperatorAuthorisationCode, TestData.OperatorResponseCode, TestData.OperatorResponseMessage, TestData.OperatorTransactionId, TestData.ResponseCode, TestData.ResponseMessage);
             result.IsFailed.ShouldBeTrue();
-            result.Errors.ErrorType.ShouldBe(ErrorType.Validation);
+            result.Errors[0].ErrorType.ShouldBe(ErrorType.Validation);
         }
 
         [Theory]
@@ -433,7 +433,7 @@ namespace TransactionProcessor.Aggregates.Tests{
 
             Result result = transactionAggregate.AuthoriseTransaction(TestData.OperatorId, TestData.OperatorAuthorisationCode, TestData.OperatorResponseCode, TestData.OperatorResponseMessage, TestData.OperatorTransactionId, TestData.ResponseCode, TestData.ResponseMessage);
             result.IsFailed.ShouldBeTrue();
-            result.Errors.ErrorType.ShouldBe(ErrorType.Validation);
+            result.Errors[0].ErrorType.ShouldBe(ErrorType.Validation);
         }
 
         [Theory]
@@ -464,7 +464,7 @@ namespace TransactionProcessor.Aggregates.Tests{
 
             Result result = transactionAggregate.DeclineTransactionLocally(TestData.ResponseCode, TestData.ResponseMessage);
             result.IsFailed.ShouldBeTrue();
-            result.Errors.ErrorType.ShouldBe(ErrorType.Validation);
+            result.Errors[0].ErrorType.ShouldBe(ErrorType.Validation);
         }
 
         [Theory]
@@ -476,7 +476,7 @@ namespace TransactionProcessor.Aggregates.Tests{
 
             Result result = transactionAggregate.DeclineTransactionLocally(TestData.ResponseCode, TestData.ResponseMessage);
             result.IsFailed.ShouldBeTrue();
-            result.Errors.ErrorType.ShouldBe(ErrorType.Validation);
+            result.Errors[0].ErrorType.ShouldBe(ErrorType.Validation);
         }
 
         [Theory]
@@ -493,7 +493,7 @@ namespace TransactionProcessor.Aggregates.Tests{
 
             Result result = transactionAggregate.DeclineTransactionLocally(TestData.ResponseCode, TestData.ResponseMessage);
             result.IsFailed.ShouldBeTrue();
-            result.Errors.ErrorType.ShouldBe(ErrorType.Validation);
+            result.Errors[0].ErrorType.ShouldBe(ErrorType.Validation);
         }
 
         [Theory]
@@ -510,7 +510,7 @@ namespace TransactionProcessor.Aggregates.Tests{
 
             Result result = transactionAggregate.DeclineTransactionLocally(TestData.ResponseCode, TestData.ResponseMessage);
             result.IsFailed.ShouldBeTrue();
-            result.Errors.ErrorType.ShouldBe(ErrorType.Validation);
+            result.Errors[0].ErrorType.ShouldBe(ErrorType.Validation);
         }
 
         [Theory]
@@ -527,7 +527,7 @@ namespace TransactionProcessor.Aggregates.Tests{
 
             Result result = transactionAggregate.DeclineTransactionLocally(TestData.DeclinedResponseCode, TestData.DeclinedResponseMessage);
             result.IsFailed.ShouldBeTrue();
-            result.Errors.ErrorType.ShouldBe(ErrorType.Validation);
+            result.Errors[0].ErrorType.ShouldBe(ErrorType.Validation);
         }
 
         [Theory]
@@ -558,7 +558,7 @@ namespace TransactionProcessor.Aggregates.Tests{
 
             Result result = transactionAggregate.DeclineTransaction(TestData.OperatorId, TestData.DeclinedOperatorResponseCode, TestData.DeclinedOperatorResponseMessage, TestData.DeclinedResponseCode, TestData.DeclinedResponseMessage);
             result.IsFailed.ShouldBeTrue();
-            result.Errors.ErrorType.ShouldBe(ErrorType.Validation);
+            result.Errors[0].ErrorType.ShouldBe(ErrorType.Validation);
         }
 
         //[Theory]
@@ -590,7 +590,7 @@ namespace TransactionProcessor.Aggregates.Tests{
 
             Result result = transactionAggregate.DeclineTransaction(TestData.OperatorId, TestData.DeclinedOperatorResponseCode, TestData.DeclinedOperatorResponseMessage, TestData.DeclinedResponseCode, TestData.DeclinedResponseMessage);
             result.IsFailed.ShouldBeTrue();
-            result.Errors.ErrorType.ShouldBe(ErrorType.Validation);
+            result.Errors[0].ErrorType.ShouldBe(ErrorType.Validation);
         }
 
         [Theory]
@@ -607,7 +607,7 @@ namespace TransactionProcessor.Aggregates.Tests{
 
             Result result = transactionAggregate.DeclineTransaction(TestData.OperatorId, TestData.DeclinedOperatorResponseCode, TestData.DeclinedOperatorResponseMessage, TestData.DeclinedResponseCode, TestData.DeclinedResponseMessage);
             result.IsFailed.ShouldBeTrue();
-            result.Errors.ErrorType.ShouldBe(ErrorType.Validation);
+            result.Errors[0].ErrorType.ShouldBe(ErrorType.Validation);
         }
 
         [Theory]
@@ -624,7 +624,7 @@ namespace TransactionProcessor.Aggregates.Tests{
 
             Result result =  transactionAggregate.DeclineTransaction(TestData.OperatorId, TestData.DeclinedOperatorResponseCode, TestData.DeclinedOperatorResponseMessage, TestData.DeclinedResponseCode, TestData.DeclinedResponseMessage);
             result.IsFailed.ShouldBeTrue();
-            result.Errors.ErrorType.ShouldBe(ErrorType.Validation);
+            result.Errors[0].ErrorType.ShouldBe(ErrorType.Validation);
         }
 
         [Theory]
@@ -652,7 +652,7 @@ namespace TransactionProcessor.Aggregates.Tests{
 
             Result result = transactionAggregate.CompleteTransaction();
             result.IsFailed.ShouldBeTrue();
-            result.Errors.ErrorType.ShouldBe(ErrorType.Validation);
+            result.Errors[0].ErrorType.ShouldBe(ErrorType.Validation);
         }
 
         [Theory]
@@ -667,7 +667,7 @@ namespace TransactionProcessor.Aggregates.Tests{
 
             Result result = transactionAggregate.CompleteTransaction();
             result.IsFailed.ShouldBeTrue();
-            result.Errors.ErrorType.ShouldBe(ErrorType.Validation);
+            result.Errors[0].ErrorType.ShouldBe(ErrorType.Validation);
         }
 
         [Theory]
@@ -689,7 +689,7 @@ namespace TransactionProcessor.Aggregates.Tests{
 
             Result result = transactionAggregate.CompleteTransaction();
             result.IsFailed.ShouldBeTrue();
-            result.Errors.ErrorType.ShouldBe(ErrorType.Validation);
+            result.Errors[0].ErrorType.ShouldBe(ErrorType.Validation);
         }
 
         [Theory]
@@ -714,7 +714,7 @@ namespace TransactionProcessor.Aggregates.Tests{
 
             Result result = transactionAggregate.RecordAdditionalRequestData(TestData.OperatorId, TestData.AdditionalTransactionMetaDataForMobileTopup());
             result.IsFailed.ShouldBeTrue();
-            result.Errors.ErrorType.ShouldBe(ErrorType.Validation);
+            result.Errors[0].ErrorType.ShouldBe(ErrorType.Validation);
         }
 
         [Theory]
@@ -731,7 +731,7 @@ namespace TransactionProcessor.Aggregates.Tests{
 
             Result result = transactionAggregate.RecordAdditionalRequestData(TestData.OperatorId, TestData.AdditionalTransactionMetaDataForMobileTopup());
             result.IsFailed.ShouldBeTrue();
-            result.Errors.ErrorType.ShouldBe(ErrorType.Validation);
+            result.Errors[0].ErrorType.ShouldBe(ErrorType.Validation);
         }
 
         [Theory]
@@ -755,7 +755,7 @@ namespace TransactionProcessor.Aggregates.Tests{
 
             Result result = transactionAggregate.RecordAdditionalRequestData(TestData.OperatorId, TestData.AdditionalTransactionMetaDataForMobileTopup());
             result.IsFailed.ShouldBeTrue();
-            result.Errors.ErrorType.ShouldBe(ErrorType.Validation);
+            result.Errors[0].ErrorType.ShouldBe(ErrorType.Validation);
         }
 
         [Theory]
@@ -779,7 +779,7 @@ namespace TransactionProcessor.Aggregates.Tests{
 
             Result result = transactionAggregate.RecordAdditionalRequestData(TestData.OperatorId, TestData.AdditionalTransactionMetaDataForMobileTopup());
             result.IsFailed.ShouldBeTrue();
-            result.Errors.ErrorType.ShouldBe(ErrorType.Validation);
+            result.Errors[0].ErrorType.ShouldBe(ErrorType.Validation);
         }
 
         [Theory]
@@ -804,7 +804,7 @@ namespace TransactionProcessor.Aggregates.Tests{
 
             Result result = transactionAggregate.RecordAdditionalRequestData(TestData.OperatorId, TestData.AdditionalTransactionMetaDataForMobileTopup());
             result.IsFailed.ShouldBeTrue();
-            result.Errors.ErrorType.ShouldBe(ErrorType.Validation);
+            result.Errors[0].ErrorType.ShouldBe(ErrorType.Validation);
         }
 
         //#######
@@ -840,7 +840,7 @@ namespace TransactionProcessor.Aggregates.Tests{
 
             Result result = transactionAggregate.RecordAdditionalResponseData(TestData.OperatorId, TestData.AdditionalTransactionMetaDataForMobileTopup());
             result.IsFailed.ShouldBeTrue();
-            result.Errors.ErrorType.ShouldBe(ErrorType.Validation);
+            result.Errors[0].ErrorType.ShouldBe(ErrorType.Validation);
         }
 
         [Theory]
@@ -865,7 +865,7 @@ namespace TransactionProcessor.Aggregates.Tests{
 
             Result result = transactionAggregate.RecordAdditionalResponseData(TestData.OperatorId, TestData.AdditionalTransactionMetaDataForMobileTopup());
             result.IsFailed.ShouldBeTrue();
-            result.Errors.ErrorType.ShouldBe(ErrorType.Validation);
+            result.Errors[0].ErrorType.ShouldBe(ErrorType.Validation);
         }
 
         [Theory]
@@ -891,7 +891,7 @@ namespace TransactionProcessor.Aggregates.Tests{
 
             Result result = transactionAggregate.RecordAdditionalResponseData(TestData.OperatorId, TestData.AdditionalTransactionMetaDataForMobileTopup());
             result.IsFailed.ShouldBeTrue();
-            result.Errors.ErrorType.ShouldBe(ErrorType.Validation);
+            result.Errors[0].ErrorType.ShouldBe(ErrorType.Validation);
         }
 
         [Fact]
@@ -922,7 +922,7 @@ namespace TransactionProcessor.Aggregates.Tests{
 
             Result result = transactionAggregate.RequestEmailReceipt(TestData.CustomerEmailAddress);
             result.IsFailed.ShouldBeTrue();
-            result.Errors.ErrorType.ShouldBe(ErrorType.Validation);
+            result.Errors[0].ErrorType.ShouldBe(ErrorType.Validation);
         }
 
         [Fact]
@@ -939,7 +939,7 @@ namespace TransactionProcessor.Aggregates.Tests{
 
             Result result = transactionAggregate.RequestEmailReceipt(TestData.CustomerEmailAddress);
             result.IsFailed.ShouldBeTrue();
-            result.Errors.ErrorType.ShouldBe(ErrorType.Validation);
+            result.Errors[0].ErrorType.ShouldBe(ErrorType.Validation);
         }
 
         [Fact]
@@ -970,7 +970,7 @@ namespace TransactionProcessor.Aggregates.Tests{
 
             var result = transactionAggregate.RequestEmailReceiptResend();
             result.IsFailed.ShouldBeTrue();
-            result.Errors.ErrorType.ShouldBe(ErrorType.Validation);
+            result.Errors[0].ErrorType.ShouldBe(ErrorType.Validation);
         }
 
         [Theory]
@@ -1012,7 +1012,7 @@ namespace TransactionProcessor.Aggregates.Tests{
 
             Result result = transactionAggregate.AddFee(null);
             result.IsFailed.ShouldBeTrue();
-            result.Errors.ErrorType.ShouldBe(ErrorType.Validation);
+            result.Errors[0].ErrorType.ShouldBe(ErrorType.Validation);
         }
 
         [Theory]
@@ -1028,7 +1028,7 @@ namespace TransactionProcessor.Aggregates.Tests{
 
             Result result = transactionAggregate.AddFee(this.GetCalculatedFeeToAdd(feeType));
             result.IsFailed.ShouldBeTrue();
-            result.Errors.ErrorType.ShouldBe(ErrorType.Validation);
+            result.Errors[0].ErrorType.ShouldBe(ErrorType.Validation);
         }
 
         private CalculatedFee GetCalculatedFeeToAdd(FeeType feeType){
@@ -1054,7 +1054,7 @@ namespace TransactionProcessor.Aggregates.Tests{
 
             Result result = transactionAggregate.AddFee(this.GetCalculatedFeeToAdd(feeType));
             result.IsFailed.ShouldBeTrue();
-            result.Errors.ErrorType.ShouldBe(ErrorType.Validation);
+            result.Errors[0].ErrorType.ShouldBe(ErrorType.Validation);
         }
 
         [Theory]
@@ -1086,7 +1086,7 @@ namespace TransactionProcessor.Aggregates.Tests{
 
             Result result = transactionAggregate.AddFee(TestData.CalculatedFeeUnsupportedFee);
             result.IsFailed.ShouldBeTrue();
-            result.Errors.ErrorType.ShouldBe(ErrorType.Validation);
+            result.Errors[0].ErrorType.ShouldBe(ErrorType.Validation);
         }
 
         [Theory]
@@ -1101,7 +1101,7 @@ namespace TransactionProcessor.Aggregates.Tests{
 
             Result result = transactionAggregate.AddFee(this.GetCalculatedFeeToAdd(feeType));
             result.IsFailed.ShouldBeTrue();
-            result.Errors.ErrorType.ShouldBe(ErrorType.Validation);
+            result.Errors[0].ErrorType.ShouldBe(ErrorType.Validation);
         }
 
         [Theory]
@@ -1143,7 +1143,7 @@ namespace TransactionProcessor.Aggregates.Tests{
 
             Result result = transactionAggregate.AddSettledFee(null, TestData.SettlementDate, TestData.SettlementAggregateId);
             result.IsFailed.ShouldBeTrue();
-            result.Errors.ErrorType.ShouldBe(ErrorType.Validation);
+            result.Errors[0].ErrorType.ShouldBe(ErrorType.Validation);
         }
 
         [Theory]
@@ -1158,7 +1158,7 @@ namespace TransactionProcessor.Aggregates.Tests{
 
             Result result = transactionAggregate.AddSettledFee(this.GetCalculatedFeeToAdd(feeType), TestData.SettlementDate, TestData.SettlementAggregateId);
             result.IsFailed.ShouldBeTrue();
-            result.Errors.ErrorType.ShouldBe(ErrorType.Validation);
+            result.Errors[0].ErrorType.ShouldBe(ErrorType.Validation);
         }
 
         [Theory]
@@ -1172,7 +1172,7 @@ namespace TransactionProcessor.Aggregates.Tests{
 
             Result result = transactionAggregate.AddSettledFee(this.GetCalculatedFeeToAdd(feeType), TestData.SettlementDate, TestData.SettlementAggregateId);
             result.IsFailed.ShouldBeTrue();
-            result.Errors.ErrorType.ShouldBe(ErrorType.Validation);
+            result.Errors[0].ErrorType.ShouldBe(ErrorType.Validation);
         }
 
         [Theory]
@@ -1208,7 +1208,7 @@ namespace TransactionProcessor.Aggregates.Tests{
             
             Result result = transactionAggregate.AddSettledFee(TestData.CalculatedFeeUnsupportedFee, TestData.SettlementDate, TestData.SettlementAggregateId);
             result.IsFailed.ShouldBeTrue();
-            result.Errors.ErrorType.ShouldBe(ErrorType.Validation);
+            result.Errors[0].ErrorType.ShouldBe(ErrorType.Validation);
         }
 
         [Theory]
@@ -1222,7 +1222,7 @@ namespace TransactionProcessor.Aggregates.Tests{
 
             Result result = transactionAggregate.AddSettledFee(this.GetCalculatedFeeToAdd(feeType), TestData.SettlementDate, TestData.SettlementAggregateId);
             result.IsFailed.ShouldBeTrue();
-            result.Errors.ErrorType.ShouldBe(ErrorType.Validation);
+            result.Errors[0].ErrorType.ShouldBe(ErrorType.Validation);
         }
 
         [Theory]
@@ -1264,7 +1264,7 @@ namespace TransactionProcessor.Aggregates.Tests{
 
             Result result = transactionAggregate.AddFeePendingSettlement(null, DateTime.Now);
             result.IsFailed.ShouldBeTrue();
-            result.Errors.ErrorType.ShouldBe(ErrorType.Validation);
+            result.Errors[0].ErrorType.ShouldBe(ErrorType.Validation);
         }
 
         [Theory]
@@ -1280,7 +1280,7 @@ namespace TransactionProcessor.Aggregates.Tests{
 
             Result result = transactionAggregate.AddFeePendingSettlement(this.GetCalculatedFeeToAdd(feeType), DateTime.Now);
             result.IsFailed.ShouldBeTrue();
-            result.Errors.ErrorType.ShouldBe(ErrorType.Validation);
+            result.Errors[0].ErrorType.ShouldBe(ErrorType.Validation);
         }
 
 
@@ -1295,7 +1295,7 @@ namespace TransactionProcessor.Aggregates.Tests{
 
             Result result = transactionAggregate.AddFeePendingSettlement(this.GetCalculatedFeeToAdd(feeType), DateTime.Now);
             result.IsFailed.ShouldBeTrue();
-            result.Errors.ErrorType.ShouldBe(ErrorType.Validation);
+            result.Errors[0].ErrorType.ShouldBe(ErrorType.Validation);
         }
 
         [Theory]
@@ -1326,7 +1326,7 @@ namespace TransactionProcessor.Aggregates.Tests{
 
             Result result = transactionAggregate.AddFeePendingSettlement(TestData.CalculatedFeeUnsupportedFee, DateTime.Now);
             result.IsFailed.ShouldBeTrue();
-            result.Errors.ErrorType.ShouldBe(ErrorType.Validation);
+            result.Errors[0].ErrorType.ShouldBe(ErrorType.Validation);
         }
 
         [Theory]
@@ -1341,7 +1341,7 @@ namespace TransactionProcessor.Aggregates.Tests{
 
             Result result = transactionAggregate.AddFeePendingSettlement(this.GetCalculatedFeeToAdd(feeType), DateTime.Now);
             result.IsFailed.ShouldBeTrue();
-            result.Errors.ErrorType.ShouldBe(ErrorType.Validation);
+            result.Errors[0].ErrorType.ShouldBe(ErrorType.Validation);
         }
 
         public static TheoryData<decimal, decimal, decimal?, decimal?, Boolean> TransactionAggregate_RecordCostPrice_SaleTransaction_CostPriceRecorded_Data =>
@@ -1385,7 +1385,7 @@ namespace TransactionProcessor.Aggregates.Tests{
 
             Result result = transactionAggregate.RecordCostPrice(TestData.UnitCostPrice, TestData.TotalCostPrice);
             result.IsFailed.ShouldBeTrue();
-            result.Errors.ErrorType.ShouldBe(ErrorType.Validation);
+            result.Errors[0].ErrorType.ShouldBe(ErrorType.Validation);
         }
     }
 }

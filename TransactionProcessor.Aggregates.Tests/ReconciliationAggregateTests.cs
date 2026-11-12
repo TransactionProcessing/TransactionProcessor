@@ -48,7 +48,7 @@ namespace TransactionProcessor.Aggregates.Tests
 
             Result result = reconciliationAggregate.StartReconciliation(transactionDateTime, estateId, merchantId, TestData.HostDateTime);
             result.IsFailed.ShouldBeTrue();
-            result.Errors.ErrorType.ShouldBe(ErrorType.Validation);
+            result.Errors[0].ErrorType.ShouldBe(ErrorType.Validation);
         }
 
         [Fact]
@@ -97,7 +97,7 @@ namespace TransactionProcessor.Aggregates.Tests
             Result result = reconciliationAggregate.RecordOverallTotals(TestData.ReconciliationTransactionCount,
                                                                                                     TestData.ReconciliationTransactionValue);
             result.IsFailed.ShouldBeTrue();
-            result.Errors.ErrorType.ShouldBe(ErrorType.Validation);
+            result.Errors[0].ErrorType.ShouldBe(ErrorType.Validation);
         }
 
         [Fact]
@@ -113,7 +113,7 @@ namespace TransactionProcessor.Aggregates.Tests
             Result result = reconciliationAggregate.RecordOverallTotals(TestData.ReconciliationTransactionCount,
                                                                                                     TestData.ReconciliationTransactionValue);
             result.IsFailed.ShouldBeTrue();
-            result.Errors.ErrorType.ShouldBe(ErrorType.Validation);
+            result.Errors[0].ErrorType.ShouldBe(ErrorType.Validation);
         }
 
         [Fact]
@@ -138,7 +138,7 @@ namespace TransactionProcessor.Aggregates.Tests
 
             Result result = reconciliationAggregate.Authorise(TestData.ResponseCode, TestData.ResponseMessage);
             result.IsFailed.ShouldBeTrue();
-            result.Errors.ErrorType.ShouldBe(ErrorType.Validation);
+            result.Errors[0].ErrorType.ShouldBe(ErrorType.Validation);
         }
 
         [Fact]
@@ -203,7 +203,7 @@ namespace TransactionProcessor.Aggregates.Tests
 
             Result result = reconciliationAggregate.Decline(TestData.ResponseCode, TestData.ResponseMessage);
             result.IsFailed.ShouldBeTrue();
-            result.Errors.ErrorType.ShouldBe(ErrorType.Validation);
+            result.Errors[0].ErrorType.ShouldBe(ErrorType.Validation);
         }
 
         [Fact]
@@ -278,7 +278,7 @@ namespace TransactionProcessor.Aggregates.Tests
 
             Result result = reconciliationAggregate.CompleteReconciliation();
             result.IsFailed.ShouldBeTrue();
-            result.Errors.ErrorType.ShouldBe(ErrorType.Validation);
+            result.Errors[0].ErrorType.ShouldBe(ErrorType.Validation);
         }
 
         [Fact]
@@ -291,7 +291,7 @@ namespace TransactionProcessor.Aggregates.Tests
 
             Result result = reconciliationAggregate.CompleteReconciliation();
             result.IsFailed.ShouldBeTrue();
-            result.Errors.ErrorType.ShouldBe(ErrorType.Validation);
+            result.Errors[0].ErrorType.ShouldBe(ErrorType.Validation);
         }
 
         [Theory]

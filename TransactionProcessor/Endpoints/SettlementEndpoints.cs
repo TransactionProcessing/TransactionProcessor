@@ -10,6 +10,7 @@ using TransactionProcessor.DataTransferObjects.Responses.Settlement;
 using System.Collections.Generic;
 using System.Text.Json.Nodes;
 using System.Threading.Tasks;
+using Microsoft.OpenApi;
 
 namespace TransactionProcessor.Endpoints
 {
@@ -38,9 +39,10 @@ namespace TransactionProcessor.Endpoints
                  {
                      if (operation.Responses.TryGetValue("200", out var response))
                      {
-                         foreach (var mediaType in response.Content.Values)
+                         foreach (IOpenApiMediaType mediaType in response.Content.Values)
                          {
-                             mediaType.Example = JsonNode.Parse("\"00000000-0000-0000-0000-000000000888\"");
+                             if (mediaType is OpenApiMediaType concreteMediaType)
+                                 concreteMediaType.Example = JsonNode.Parse("\"00000000-0000-0000-0000-000000000888\"");
                          }
                      }
 

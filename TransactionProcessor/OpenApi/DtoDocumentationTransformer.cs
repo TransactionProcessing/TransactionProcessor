@@ -152,7 +152,7 @@ public sealed class DtoDocumentationTransformer : IOpenApiDocumentTransformer
             return;
         }
 
-        foreach (OpenApiMediaType mediaType in requestBody.Content?.Values ?? Enumerable.Empty<OpenApiMediaType>())
+        foreach (OpenApiMediaType mediaType in requestBody.Content?.Values.OfType<OpenApiMediaType>() ?? Enumerable.Empty<OpenApiMediaType>())
         {
             mediaType.Example ??= GetExample(mediaType.Schema);
         }
@@ -162,7 +162,7 @@ public sealed class DtoDocumentationTransformer : IOpenApiDocumentTransformer
     {
         foreach (IOpenApiResponse response in operation.Responses?.Values ?? Enumerable.Empty<IOpenApiResponse>())
         {
-            foreach (OpenApiMediaType mediaType in response.Content?.Values ?? Enumerable.Empty<OpenApiMediaType>())
+            foreach (OpenApiMediaType mediaType in response.Content?.Values.OfType<OpenApiMediaType>() ?? Enumerable.Empty<OpenApiMediaType>())
             {
                 mediaType.Example ??= GetExample(mediaType.Schema);
             }
@@ -217,7 +217,7 @@ public sealed class DtoDocumentationTransformer : IOpenApiDocumentTransformer
 
         string? example = ReadDomainEventRequestExample();
         JsonNode? parsedExample = ReadExample(example);
-        foreach (OpenApiMediaType mediaType in requestBody.Content?.Values ?? Enumerable.Empty<OpenApiMediaType>())
+        foreach (OpenApiMediaType mediaType in requestBody.Content?.Values.OfType<OpenApiMediaType>() ?? Enumerable.Empty<OpenApiMediaType>())
         {
             mediaType.Example ??= parsedExample?.DeepClone();
         }

@@ -91,7 +91,7 @@ public class MerchantDomainServiceTests {
 
         Result<Guid> result = await this.DomainService.CreateMerchant(command, TestContext.Current.CancellationToken);
 
-        result.Errors.ErrorType.ShouldBe(ErrorType.Validation);
+        result.Errors[0].ErrorType.ShouldBe(ErrorType.Validation);
     }
 
     [Theory]

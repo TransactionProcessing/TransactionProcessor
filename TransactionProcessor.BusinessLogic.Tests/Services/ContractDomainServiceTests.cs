@@ -58,7 +58,7 @@ namespace TransactionProcessor.BusinessLogic.Tests.Services
 
             Result<Guid> result = await this.DomainService.CreateContract(command, TestContext.Current.CancellationToken);
 
-            result.Errors.ErrorType.ShouldBe(ErrorType.Validation);
+            result.Errors[0].ErrorType.ShouldBe(ErrorType.Validation);
             result.Message.ShouldBe("Contract description must not be null or empty");
         }
 

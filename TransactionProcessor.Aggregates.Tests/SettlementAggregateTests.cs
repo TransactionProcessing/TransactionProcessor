@@ -95,7 +95,7 @@ namespace TransactionProcessor.Aggregates.Tests
 
             Result result = aggregate.AddFee(TestData.MerchantId, TestData.TransactionId, TestData.CalculatedFeeMerchantFee());
             result.IsFailed.ShouldBeTrue();
-            result.Errors.ErrorType.ShouldBe(ErrorType.Validation);
+            result.Errors[0].ErrorType.ShouldBe(ErrorType.Validation);
         }
 
         [Fact]
@@ -133,7 +133,7 @@ namespace TransactionProcessor.Aggregates.Tests
             aggregate.Create(TestData.EstateId, TestData.MerchantId, TestData.SettlementDate);
             Result result = aggregate.AddFee(TestData.MerchantId, TestData.TransactionId, TestData.CalculatedFeeServiceProviderFee());
             result.IsFailed.ShouldBeTrue();
-            result.Errors.ErrorType.ShouldBe(ErrorType.Validation);
+            result.Errors[0].ErrorType.ShouldBe(ErrorType.Validation);
         }
 
         [Fact]
@@ -143,7 +143,7 @@ namespace TransactionProcessor.Aggregates.Tests
             
             Result result = aggregate.AddFee(Guid.Empty, TestData.TransactionId, TestData.CalculatedFeeMerchantFee());
             result.IsFailed.ShouldBeTrue();
-            result.Errors.ErrorType.ShouldBe(ErrorType.Validation);
+            result.Errors[0].ErrorType.ShouldBe(ErrorType.Validation);
         }
 
         [Fact]
@@ -154,7 +154,7 @@ namespace TransactionProcessor.Aggregates.Tests
 
             Result result = aggregate.AddFee(TestData.MerchantId, Guid.Empty, TestData.CalculatedFeeMerchantFee());
             result.IsFailed.ShouldBeTrue();
-            result.Errors.ErrorType.ShouldBe(ErrorType.Validation);
+            result.Errors[0].ErrorType.ShouldBe(ErrorType.Validation);
         }
 
         [Fact]
@@ -165,7 +165,7 @@ namespace TransactionProcessor.Aggregates.Tests
 
             Result result = aggregate.AddFee(TestData.MerchantId, TestData.TransactionId, null);
             result.IsFailed.ShouldBeTrue();
-            result.Errors.ErrorType.ShouldBe(ErrorType.Validation);
+            result.Errors[0].ErrorType.ShouldBe(ErrorType.Validation);
         }
 
         [Fact]
@@ -300,7 +300,7 @@ namespace TransactionProcessor.Aggregates.Tests
 
             Result result = aggregate.StartProcessing(TestData.SettlementProcessingStartedDateTime);
             result.IsFailed.ShouldBeTrue();
-            result.Errors.ErrorType.ShouldBe(ErrorType.Validation);
+            result.Errors[0].ErrorType.ShouldBe(ErrorType.Validation);
        }
 
        [Fact]
@@ -332,7 +332,7 @@ namespace TransactionProcessor.Aggregates.Tests
 
            Result result = aggregate.ManuallyComplete();
            result.IsFailed.ShouldBeTrue();
-           result.Errors.ErrorType.ShouldBe(ErrorType.Validation);
+           result.Errors[0].ErrorType.ShouldBe(ErrorType.Validation);
        }
 
        [Fact]

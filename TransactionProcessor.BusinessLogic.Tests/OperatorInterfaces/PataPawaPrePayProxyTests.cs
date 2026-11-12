@@ -168,7 +168,7 @@ public class PataPawaPrePayProxyTests {
             metaDataDictionary, TestContext.Current.CancellationToken);
 
         result.IsFailed.ShouldBeTrue();
-        result.Errors.ErrorType.ShouldBe(ErrorType.Failure);
+        result.Errors[0].ErrorType.ShouldBe(ErrorType.Failure);
         result.Message.ShouldContain("Error performing meter transaction for meter number 123456");
         result.Message.ShouldContain("Execution Timeout Expired");
     }
@@ -273,7 +273,7 @@ public class PataPawaPrePayProxyTests {
             metaDataDictionary, TestContext.Current.CancellationToken);
 
         result.IsFailed.ShouldBeTrue();
-        result.Errors.ErrorType.ShouldBe(ErrorType.Failure);
+        result.Errors[0].ErrorType.ShouldBe(ErrorType.Failure);
         result.Message.ShouldContain("Error performing vend transaction for meter number 123456");
         result.Message.ShouldContain("Execution Timeout Expired");
     }
@@ -394,7 +394,7 @@ public class PataPawaPrePayProxyTests {
             metaDataDictionary, TestContext.Current.CancellationToken);
 
         result.IsFailed.ShouldBeTrue();
-        result.Errors.ErrorType.ShouldBe(ErrorType.Validation);
+        result.Errors[0].ErrorType.ShouldBe(ErrorType.Validation);
     }
 
     [Fact]
@@ -423,7 +423,7 @@ public class PataPawaPrePayProxyTests {
             metaDataDictionary, TestContext.Current.CancellationToken);
 
         result.IsFailed.ShouldBeTrue();
-        result.Errors.ErrorType.ShouldBe(ErrorType.Validation);
+        result.Errors[0].ErrorType.ShouldBe(ErrorType.Validation);
     }
 
     [Theory]
@@ -454,7 +454,7 @@ public class PataPawaPrePayProxyTests {
             metaDataDictionary, TestContext.Current.CancellationToken);
 
         result.IsFailed.ShouldBeTrue();
-        result.Errors.ErrorType.ShouldBe(ErrorType.Validation);
+        result.Errors[0].ErrorType.ShouldBe(ErrorType.Validation);
     }
 
     [Theory]
@@ -485,7 +485,7 @@ public class PataPawaPrePayProxyTests {
             metaDataDictionary, TestContext.Current.CancellationToken);
 
         result.IsFailed.ShouldBeTrue();
-        result.Errors.ErrorType.ShouldBe(ErrorType.Validation);
+        result.Errors[0].ErrorType.ShouldBe(ErrorType.Validation);
     }
 
     [Theory]
@@ -516,7 +516,7 @@ public class PataPawaPrePayProxyTests {
             metaDataDictionary, TestContext.Current.CancellationToken);
 
         result.IsFailed.ShouldBeTrue();
-        result.Errors.ErrorType.ShouldBe(ErrorType.Validation);
+        result.Errors[0].ErrorType.ShouldBe(ErrorType.Validation);
     }
 
 }

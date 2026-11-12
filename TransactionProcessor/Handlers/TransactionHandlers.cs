@@ -64,7 +64,7 @@ namespace TransactionProcessor.Handlers
             if (result.IsFailed)
                 return ResultHelpers.CreateFailure(result);
 
-            return ModelFactory.ConvertFrom(result.GetValueOrThrow());
+            return Result.Success(ModelFactory.ConvertFrom(result.GetValueOrThrow()));
         }
 
         private static async Task<Result<SaleTransactionResponse>> ProcessSpecificMessage(IMediator mediator, SaleTransactionRequest sale, CancellationToken cancellationToken)
@@ -89,7 +89,7 @@ namespace TransactionProcessor.Handlers
             if (result.IsFailed)
                 return ResultHelpers.CreateFailure(result);
 
-            return ModelFactory.ConvertFrom(result.GetValueOrThrow());
+            return Result.Success(ModelFactory.ConvertFrom(result.GetValueOrThrow()));
         }
 
         private static async Task<Result<ReconciliationResponse>> ProcessSpecificMessage(IMediator mediator, ReconciliationRequest reconciliation, CancellationToken cancellationToken)
@@ -108,7 +108,7 @@ namespace TransactionProcessor.Handlers
             if (result.IsFailed)
                 return ResultHelpers.CreateFailure(result);
 
-            return ModelFactory.ConvertFrom(result.GetValueOrThrow());
+            return Result.Success(ModelFactory.ConvertFrom(result.GetValueOrThrow()));
         }
     }
 }

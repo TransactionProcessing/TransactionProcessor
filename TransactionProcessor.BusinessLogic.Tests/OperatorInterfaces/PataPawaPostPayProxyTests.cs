@@ -82,7 +82,7 @@ namespace TransactionProcessor.BusinessLogic.Tests.OperatorInterfaces
             var result = await this.PataPawaPostPayProxy.ProcessLogonMessage(TestContext.Current.CancellationToken);
 
             result.IsFailed.ShouldBeTrue();
-            result.Errors.ErrorType.ShouldBe(ErrorType.Failure);
+            result.Errors[0].ErrorType.ShouldBe(ErrorType.Failure);
             result.Message.ShouldBe(TestData.PataPawaPostPaidFailedLoginResponse.message);
         }
         
@@ -129,7 +129,7 @@ namespace TransactionProcessor.BusinessLogic.Tests.OperatorInterfaces
                                                                                                                                                                     TestData.AdditionalTransactionMetaDataForPataPawaVerifyAccount(),
                                                                                                                                                                     TestContext.Current.CancellationToken);
             result.IsFailed.ShouldBeTrue();
-            result.Errors.ErrorType.ShouldBe(ErrorType.Validation);
+            result.Errors[0].ErrorType.ShouldBe(ErrorType.Validation);
             result.Message.Contains("PataPawaPostPaidAPIKey");
         }
         [Fact]
@@ -145,7 +145,7 @@ namespace TransactionProcessor.BusinessLogic.Tests.OperatorInterfaces
                                                                                                     TestData.AdditionalTransactionMetaDataForPataPawaVerifyAccount_NoMessageType(),
                                                                                                     TestContext.Current.CancellationToken);
             result.IsFailed.ShouldBeTrue();
-            result.Errors.ErrorType.ShouldBe(ErrorType.Validation);
+            result.Errors[0].ErrorType.ShouldBe(ErrorType.Validation);
             result.Message.Contains("PataPawaPostPaidMessageType");
         }
         
@@ -162,7 +162,7 @@ namespace TransactionProcessor.BusinessLogic.Tests.OperatorInterfaces
                                                                                                                                                                     TestData.AdditionalTransactionMetaDataForPataPawaVerifyAccount_NoCustomerAccountNumber(),
                                                                                                                                                                     TestContext.Current.CancellationToken);
             result.IsFailed.ShouldBeTrue();
-            result.Errors.ErrorType.ShouldBe(ErrorType.Validation);
+            result.Errors[0].ErrorType.ShouldBe(ErrorType.Validation);
             result.Message.Contains("CustomerAccountNumber");
         }
 
@@ -181,7 +181,7 @@ namespace TransactionProcessor.BusinessLogic.Tests.OperatorInterfaces
 
 
             result.IsFailed.ShouldBeTrue();
-            result.Errors.ErrorType.ShouldBe(ErrorType.Validation);
+            result.Errors[0].ErrorType.ShouldBe(ErrorType.Validation);
             result.Message.Contains("PataPawaPostPaidMessageType");
         }
       
@@ -200,7 +200,7 @@ namespace TransactionProcessor.BusinessLogic.Tests.OperatorInterfaces
                                                                                                                                             TestData.AdditionalTransactionMetaDataForPataPawaVerifyAccount(customerAccountNumber: TestData.PataPawaPostPaidAccountNumber),
                                                                                                                                             TestContext.Current.CancellationToken);
             result.IsFailed.ShouldBeTrue();
-            result.Errors.ErrorType.ShouldBe(ErrorType.NotFound);
+            result.Errors[0].ErrorType.ShouldBe(ErrorType.NotFound);
             result.Message.Contains($"Error verifying account number {TestData.PataPawaPostPaidAccountNumber}");
         }
 
@@ -220,7 +220,7 @@ namespace TransactionProcessor.BusinessLogic.Tests.OperatorInterfaces
                                                                                                TestContext.Current.CancellationToken);
 
             result.IsFailed.ShouldBeTrue();
-            result.Errors.ErrorType.ShouldBe(ErrorType.Failure);
+            result.Errors[0].ErrorType.ShouldBe(ErrorType.Failure);
             result.Message.ShouldContain($"Error verifying account number {TestData.PataPawaPostPaidAccountNumber}");
             result.Message.ShouldContain("Execution Timeout Expired");
         }
@@ -242,7 +242,7 @@ namespace TransactionProcessor.BusinessLogic.Tests.OperatorInterfaces
                                                                                                TestContext.Current.CancellationToken);
 
             result.IsFailed.ShouldBeTrue();
-            result.Errors.ErrorType.ShouldBe(ErrorType.Failure);
+            result.Errors[0].ErrorType.ShouldBe(ErrorType.Failure);
             result.Message.ShouldContain($"Error paying bill for account number {TestData.PataPawaPostPaidAccountNumber}");
             result.Message.ShouldContain("Execution Timeout Expired");
         }
@@ -282,7 +282,7 @@ namespace TransactionProcessor.BusinessLogic.Tests.OperatorInterfaces
                 TestContext.Current.CancellationToken);
             
             result.IsFailed.ShouldBeTrue();
-            result.Errors.ErrorType.ShouldBe(ErrorType.Validation);
+            result.Errors[0].ErrorType.ShouldBe(ErrorType.Validation);
             result.Message.Contains("PataPawaPostPaidAPIKey");
         }
         [Fact]
@@ -298,7 +298,7 @@ namespace TransactionProcessor.BusinessLogic.Tests.OperatorInterfaces
                                                                                                                                                              TestData.AdditionalTransactionMetaDataForPataPawaProcessBill_NoMessageType(),
                                                                                                                                                              TestContext.Current.CancellationToken);
             result.IsFailed.ShouldBeTrue();
-            result.Errors.ErrorType.ShouldBe(ErrorType.Validation);
+            result.Errors[0].ErrorType.ShouldBe(ErrorType.Validation);
             result.Message.Contains("PataPawaPostPaidAPIKey");
         }
 
@@ -316,7 +316,7 @@ namespace TransactionProcessor.BusinessLogic.Tests.OperatorInterfaces
                                                                                               TestContext.Current.CancellationToken);
 
             result.IsFailed.ShouldBeTrue();
-            result.Errors.ErrorType.ShouldBe(ErrorType.Validation);
+            result.Errors[0].ErrorType.ShouldBe(ErrorType.Validation);
             result.Message.Contains("CustomerAccountNumber");
         }
 
@@ -333,7 +333,7 @@ namespace TransactionProcessor.BusinessLogic.Tests.OperatorInterfaces
                                                                                                                                                              TestData.AdditionalTransactionMetaDataForPataPawaProcessBill_NoMobileNumber(),
                                                                                                                                                              TestContext.Current.CancellationToken);
             result.IsFailed.ShouldBeTrue();
-            result.Errors.ErrorType.ShouldBe(ErrorType.Validation);
+            result.Errors[0].ErrorType.ShouldBe(ErrorType.Validation);
             result.Message.Contains("MobileNumber");
         }
 
@@ -350,7 +350,7 @@ namespace TransactionProcessor.BusinessLogic.Tests.OperatorInterfaces
                                                                                               TestData.AdditionalTransactionMetaDataForPataPawaProcessBill_NoCustomerName(),
                                                                                               TestContext.Current.CancellationToken);
             result.IsFailed.ShouldBeTrue();
-            result.Errors.ErrorType.ShouldBe(ErrorType.Validation);
+            result.Errors[0].ErrorType.ShouldBe(ErrorType.Validation);
             result.Message.Contains("CustomerName");
         }
 
@@ -367,7 +367,7 @@ namespace TransactionProcessor.BusinessLogic.Tests.OperatorInterfaces
                                                                                                                                                              TestData.AdditionalTransactionMetaDataForPataPawaProcessBill_NoAmount(),
                                                                                                                                                              TestContext.Current.CancellationToken);
             result.IsFailed.ShouldBeTrue();
-            result.Errors.ErrorType.ShouldBe(ErrorType.Validation);
+            result.Errors[0].ErrorType.ShouldBe(ErrorType.Validation);
             result.Message.Contains("Amount");
         }
 
@@ -384,7 +384,7 @@ namespace TransactionProcessor.BusinessLogic.Tests.OperatorInterfaces
                                                                                                                                                                          TestData.AdditionalTransactionMetaDataForPataPawaProcessBill(pataPawaPostPaidAmount:"A1"),
                                                                                                                                                                          TestContext.Current.CancellationToken);
             result.IsFailed.ShouldBeTrue();
-            result.Errors.ErrorType.ShouldBe(ErrorType.Validation);
+            result.Errors[0].ErrorType.ShouldBe(ErrorType.Validation);
             result.Message.Contains("Amount");
         }
 
@@ -401,7 +401,7 @@ namespace TransactionProcessor.BusinessLogic.Tests.OperatorInterfaces
                                                                                                                                                                          TestData.AdditionalTransactionMetaDataForPataPawaProcessBill(pataPawaPostPaidMessageType: "Unknown"),
                                                                                                                                                                          TestContext.Current.CancellationToken);
             result.IsFailed.ShouldBeTrue();
-            result.Errors.ErrorType.ShouldBe(ErrorType.Validation);
+            result.Errors[0].ErrorType.ShouldBe(ErrorType.Validation);
             result.Message.Contains("PataPawaPostPaidMessageType");
         }
 
@@ -422,7 +422,7 @@ namespace TransactionProcessor.BusinessLogic.Tests.OperatorInterfaces
                                                                                                      TestContext.Current.CancellationToken);
 
             result.IsFailed.ShouldBeTrue();
-            result.Errors.ErrorType.ShouldBe(ErrorType.Failure);
+            result.Errors[0].ErrorType.ShouldBe(ErrorType.Failure);
             result.Message.Contains($"Error paying bill for account number {TestData.PataPawaPostPaidAccountNumber}");
         }
     }

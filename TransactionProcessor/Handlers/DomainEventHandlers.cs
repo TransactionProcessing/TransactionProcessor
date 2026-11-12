@@ -45,7 +45,7 @@ public static class DomainEventHandlers {
             if (eventHandlers == null || eventHandlers.Any() == false) {
                 // Log a warning out 
                 Logger.LogInformation($"No event handlers configured for Event Type [{domainEvent.GetType().Name}]");
-                return Results.Ok();
+                return Result.Success();
             }
 
             List<HandlerExecution> executions = eventHandlers
@@ -61,18 +61,13 @@ public static class DomainEventHandlers {
 
             List<HandlerFailure> failures = executions.SelectMany(GetFailures).ToList();
             if (failures.Any()) {
-                return Results.Problem(title: "One or more event handlers failed",
-                                    statusCode: 500,
-                                    extensions: new Dictionary<String, Object> {
-                                        ["eventId"] = domainEvent.EventId,
-                                        ["eventType"] = domainEvent.GetType().Name,
-                                        ["failures"] = failures
-                                    });
+                String failureDetails = String.Join("; ", failures.Select(failure => $"{failure.Handler}: {failure.Error}"));
+                return Result.Fail(Error.Critical($"One or more event handlers failed for event {domainEvent.EventId} ({domainEvent.GetType().Name}): {failureDetails}"));
             }
 
             Logger.LogWarning($"Finished processing event - ID [{domainEvent.EventId}]");
 
-            return Results.Ok();
+            return Result.Success();
         }
         catch (Exception ex) {
             String domainEventData = StringSerialiser.Serialise(domainEvent);
@@ -144,7 +139,7 @@ public static class DomainEventHandlers {
             return Result.Success(domainEventFactory.CreateDomainEvent(json, type) as IDomainEvent);
         }
 
-        return null;
+        return Result.Invalid($"The requested type {type.FullName} is not a domain event type.");
     }
 
     private static List<IDomainEventHandler> GetDomainEventHandlers(IContainer container, IDomainEventHandlerResolver domainEventHandlerResolver, IDomainEvent domainEvent, String subscriptionId) {

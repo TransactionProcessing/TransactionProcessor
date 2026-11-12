@@ -60,7 +60,7 @@ namespace TransactionProcessor.Aggregates.Tests
 
             Result result = aggregate.RecordCreditPurchase(DateTime.Now, 1000, 900, DateTime.Now);
             result.IsFailed.ShouldBeTrue();
-            result.Errors.ErrorType.ShouldBe(ErrorType.Validation);
+            result.Errors[0].ErrorType.ShouldBe(ErrorType.Validation);
             
         }
 
@@ -108,7 +108,7 @@ namespace TransactionProcessor.Aggregates.Tests
             Result result = aggregate.RecordCreditPurchase(purchaseDateTime, 1000, 900, DateTime.Now);
             
             result.IsFailed.ShouldBeTrue();
-            result.Errors.ErrorType.ShouldBe(ErrorType.Validation);
+            result.Errors[0].ErrorType.ShouldBe(ErrorType.Validation);
 
         }
 
