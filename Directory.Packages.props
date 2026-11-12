@@ -13,8 +13,6 @@
     <PackageVersion Include="coverlet.collector" Version="10.1.0" />
     <PackageVersion Include="coverlet.msbuild" Version="10.1.0" />
     <PackageVersion Include="Ductus.FluentDocker" Version="2.85.0" />
-    <PackageVersion Include="EntityFrameworkCore.Exceptions.Common" Version="10.0.1" />
-    <PackageVersion Include="EntityFrameworkCore.Exceptions.SqlServer" Version="10.0.1" />
     <PackageVersion Include="EventStoreProjections" Version="2023.12.3" />
     <PackageVersion Include="FileProcessor.File.DomainEvents" Version="2026.10.3.181" />
     <PackageVersion Include="FileProcessor.FileImportLog.DomainEvents" Version="2026.10.3.181" />

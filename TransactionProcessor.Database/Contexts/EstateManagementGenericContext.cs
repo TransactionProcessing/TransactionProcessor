@@ -1,5 +1,3 @@
-using EntityFramework.Exceptions.Common;
-using EntityFramework.Exceptions.SqlServer;
 using Microsoft.EntityFrameworkCore;
 using TransactionProcessing.Shared.DomainDrivenDesign.EventSourcing;
 using TransactionProcessing.Shared.Exceptions;
@@ -172,7 +170,6 @@ public class EstateManagementContext : DbContext
             options.UseSqlServer(this.ConnectionString);
         }
 
-        options.UseExceptionProcessor();
     }
 
     private async Task CreateViews(CancellationToken cancellationToken)
@@ -384,29 +381,30 @@ ALTER DATABASE [{dbName}] SET MULTI_USER;
             await base.SaveChangesAsync(cancellationToken);
             return Result.Success();
         }
-        catch (UniqueConstraintException uex)
+        catch (DbUpdateException exception) when (IsUniqueConstraintViolation(exception))
         {
             // Swallow the error
-            Logger.LogInformation(BuildUniqueConstraintExceptionLogMessage(uex));
+            Logger.LogInformation("Ignoring duplicate event while replaying an event stream: {ExceptionMessage}", exception.GetExceptionMessages());
             return Result.Success();
         }
     }
 
-    private static String BuildUniqueConstraintExceptionLogMessage(UniqueConstraintException uex) {
-        String constraintName = "N/A";
-        if (String.IsNullOrEmpty(uex.ConstraintName) == false) {
-            constraintName = uex.ConstraintName;
-        }
-        String constraintProperties = "N/A";
-        if (uex.ConstraintProperties != null) {
-            constraintProperties = String.Join(",", uex.ConstraintProperties);
+    private static Boolean IsUniqueConstraintViolation(DbUpdateException exception) {
+        for (Exception? current = exception.InnerException; current != null; current = current.InnerException) {
+            Type exceptionType = current.GetType();
+
+            if (exceptionType.FullName == "Microsoft.Data.Sqlite.SqliteException") {
+                Object? extendedErrorCode = exceptionType.GetProperty("SqliteExtendedErrorCode")?.GetValue(current);
+                if (extendedErrorCode is Int32 sqliteCode && sqliteCode is 1555 or 2067)
+                    return true;
+            }
+
+            Object? errorNumber = exceptionType.GetProperty("Number")?.GetValue(current);
+            if (errorNumber is Int32 number && number is 2601 or 2627 or 1062)
+                return true;
         }
 
-        return uex.InnerException switch {
-            null => $"Unique Constraint Exception. Message [{uex.Message}] Constraint Name [{constraintName}] Constraint Properties [{constraintProperties}]",
-            _ => $"Unique Constraint Exception. Message [{uex.Message}] Inner Exception [{uex.InnerException.Message}]"
-        };
-
+        return false;
     }
 
 
