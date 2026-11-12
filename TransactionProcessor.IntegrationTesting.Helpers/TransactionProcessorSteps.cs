@@ -94,7 +94,6 @@ public class TransactionProcessorSteps
                                                           settlementFeeDetails.SettlementId,
                                                           CancellationToken.None);
 
-                settlement.ShouldNotBeNull();
                 settlement.IsSuccess.ShouldBeTrue(settlement.Message);
 
                 settlement.GetValueOrThrow().SettlementFees.ShouldNotBeNull();

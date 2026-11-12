@@ -233,7 +233,7 @@ namespace TransactionProcessor.BusinessLogic.Services
                 return Result.Success(merchantId);
             }
             catch (Exception ex) {
-                return Result<Guid>.Fail(Error.Failure(ex.GetExceptionMessages()));
+                return Result<Guid>.Fail(Error.Failure(String.Join(Environment.NewLine, ex.GetExceptionMessages())));
             }
         }
 

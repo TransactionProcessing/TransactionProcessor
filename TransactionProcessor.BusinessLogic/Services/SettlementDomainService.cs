@@ -44,7 +44,7 @@ namespace TransactionProcessor.BusinessLogic.Services
                 return await PolicyFactory.ExecuteWithPolicyAsync(() => this.ProcessSettlementInternal(command, cancellationToken), retryPolicy, "SettlementDomainService - ProcessSettlement");
             }
             catch (Exception ex) {
-                return Result<Guid>.Fail(Error.Failure(ex.GetExceptionMessages()));
+                return Result<Guid>.Fail(Error.Failure(String.Join(Environment.NewLine, ex.GetExceptionMessages())));
             }
         }
 

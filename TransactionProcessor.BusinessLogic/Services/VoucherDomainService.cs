@@ -53,7 +53,7 @@ public class VoucherDomainService : IVoucherDomainService
     
     public async Task<Result<IssueVoucherResponse>> IssueVoucher(VoucherCommands.IssueVoucherCommand command, CancellationToken cancellationToken) {
         try{
-            Result<EstateResponse> validateResult = await this.ValidateVoucherIssue(command.EstateId, command.OperatorId, cancellationToken);
+            Result validateResult = await this.ValidateVoucherIssue(command.EstateId, command.OperatorId, cancellationToken);
             if (validateResult.IsFailed)
                 return Result<IssueVoucherResponse>.FromFailure(validateResult);
 
@@ -118,7 +118,7 @@ public class VoucherDomainService : IVoucherDomainService
                 return Result.NotFound($"No voucher found with voucher code [{command.VoucherCode}]");
             }
 
-            Result<EstateResponse> validateResult = await this.ValidateVoucherRedemption(command.EstateId, cancellationToken);
+            Result validateResult = await this.ValidateVoucherRedemption(command.EstateId, cancellationToken);
             if (validateResult.IsFailed)
                 return Result<RedeemVoucherResponse>.FromFailure(validateResult);
             

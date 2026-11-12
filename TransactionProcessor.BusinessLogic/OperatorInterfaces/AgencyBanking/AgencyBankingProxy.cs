@@ -73,7 +73,7 @@ namespace TransactionProcessor.BusinessLogic.OperatorInterfaces.AgencyBanking
                     _ => Result<OperatorResponse>.Fail(Result.Invalid($"AgencyBankingMessageType - Message Type {messageType} is not supported for this transaction type"))
                 };
             
-                if (result.Errors.Any(error => error.ErrorType == ErrorType.Invalid)) {
+                if (result.IsFailed) {
                     Logger.LogWarning("AgencyBanking sale request rejected. TransactionId=[{TransactionId}] unsupported message type [{MessageType}]", transactionId, messageType);
                 }
 
