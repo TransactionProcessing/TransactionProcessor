@@ -1,6 +1,6 @@
-using Shared.DomainDrivenDesign.EventSourcing;
+using TransactionProcessing.Shared.DomainDrivenDesign.EventSourcing;
 using Shouldly;
-using SimpleResults;
+using TransactionProcessing.UnionResults;
 using System.Reflection;
 using TransactionProcessor.DomainEvents;
 using TransactionProcessor.Models.MerchantSchedule;

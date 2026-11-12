@@ -1,4 +1,4 @@
-﻿#nullable disable
+#nullable disable
 
 namespace TransactionProcessor.ProjectionEngine.Database.Migrations.TransactionProcessorMySql
 {
@@ -21,16 +21,16 @@ namespace TransactionProcessor.ProjectionEngine.Database.Migrations.TransactionP
                     ChangeAmount = table.Column<decimal>(type: "decimal(65,30)", nullable: false),
                     DateTime = table.Column<DateTime>(type: "datetime(6)", nullable: false),
                     Reference = table.Column<string>(type: "longtext", nullable: false)
-                        .Annotation("MySql:CharSet", "utf8mb4"),
+                        .Annotation("MySQL:CharSet", "utf8mb4"),
                     CauseOfChangeId = table.Column<Guid>(type: "char(36)", nullable: false, collation: "ascii_general_ci"),
                     DebitOrCredit = table.Column<string>(type: "longtext", nullable: false)
-                        .Annotation("MySql:CharSet", "utf8mb4")
+                        .Annotation("MySQL:CharSet", "utf8mb4")
                 },
                 constraints: table =>
                 {
                     table.PrimaryKey("PK_MerchantBalanceChangedEntry", x => new { x.AggregateId, x.OriginalEventId });
                 })
-                .Annotation("MySql:CharSet", "utf8mb4");
+                .Annotation("MySQL:CharSet", "utf8mb4");
         }
 
         protected override void Down(MigrationBuilder migrationBuilder)

@@ -1,8 +1,8 @@
-using Shared.EventStore.Aggregate;
-using Shared.Serialisation;
-using Shared.ValueObjects;
+using TransactionProcessing.Shared.EventStore.Aggregate;
+using TransactionProcessing.Shared.Serialisation;
+using TransactionProcessing.Shared.ValueObjects;
 using Shouldly;
-using SimpleResults;
+using TransactionProcessing.UnionResults;
 using TransactionProcessor.Models.Merchant;
 using TransactionProcessor.Testing;
 
@@ -11,7 +11,7 @@ namespace TransactionProcessor.Aggregates.Tests
     public class MerchantDepositListAggregateTests
     {
         public MerchantDepositListAggregateTests() {
-            StringSerialiser.Initialise(new Shared.Serialisation.SystemTextJsonSerializer(new System.Text.Json.JsonSerializerOptions()));
+            StringSerialiser.Initialise(new TransactionProcessing.Shared.Serialisation.SystemTextJsonSerializer(new System.Text.Json.JsonSerializerOptions()));
         }
 
         #region Methods

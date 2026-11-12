@@ -1,5 +1,5 @@
-using Shared.Logger;
-using SimpleResults;
+using TransactionProcessing.Shared.Logger;
+using TransactionProcessing.UnionResults;
 
 namespace TransactionProcessor.BusinessLogic.Tests.OperatorInterfaces
 {
@@ -8,7 +8,7 @@ namespace TransactionProcessor.BusinessLogic.Tests.OperatorInterfaces
     using MediatR;
     using Imposter.Abstractions;
     using Requests;
-    using Shared.Serialisation;
+    using TransactionProcessing.Shared.Serialisation;
     using Shouldly;
     using System;
     using System.Collections.Generic;
@@ -33,7 +33,7 @@ namespace TransactionProcessor.BusinessLogic.Tests.OperatorInterfaces
 
             var processLogonMessageResult = await voucherManagementProxy.ProcessLogonMessage(TestContext.Current.CancellationToken);
             processLogonMessageResult.IsSuccess.ShouldBeTrue();
-            OperatorResponse operatorResponse = processLogonMessageResult.Data;
+            OperatorResponse operatorResponse = processLogonMessageResult.GetValueOrThrow();
             operatorResponse.ShouldBeNull();
         }
         
@@ -51,7 +51,7 @@ namespace TransactionProcessor.BusinessLogic.Tests.OperatorInterfaces
                                                                                                 TestData.AdditionalTransactionMetaDataForVoucher(),
                                                                                                 TestContext.Current.CancellationToken);
             result.IsSuccess.ShouldBeTrue();
-            var operatorResponse = result.Data;
+            var operatorResponse = result.GetValueOrThrow();
             operatorResponse.ShouldNotBeNull();
             operatorResponse.IsSuccessful.ShouldBeTrue();
             operatorResponse.ResponseCode.ShouldBe("0000");

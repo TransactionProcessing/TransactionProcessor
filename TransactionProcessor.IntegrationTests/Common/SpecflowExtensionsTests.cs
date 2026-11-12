@@ -1,7 +1,7 @@
 using System;
 using System.Collections.Generic;
 using NUnit.Framework;
-using Shared.Serialisation;
+using TransactionProcessing.Shared.Serialisation;
 using Shouldly;
 using System.Text.Json;
 using TransactionProcessor.DataTransferObjects.Requests.Contract;

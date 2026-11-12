@@ -1,8 +1,8 @@
-﻿using Shared.DomainDrivenDesign.EventSourcing;
-using Shared.EventStore.Aggregate;
-using Shared.Serialisation;
+using TransactionProcessing.Shared.DomainDrivenDesign.EventSourcing;
+using TransactionProcessing.Shared.EventStore.Aggregate;
+using TransactionProcessing.Shared.Serialisation;
 using Shouldly;
-using SimpleResults;
+using TransactionProcessing.UnionResults;
 using System.Reflection;
 using TransactionProcessor.DataTransferObjects.Requests.Merchant;
 using TransactionProcessor.Models.Merchant;
@@ -17,7 +17,7 @@ namespace TransactionProcessor.Aggregates.Tests
     public class MerchantAggregateTests{
 
         public MerchantAggregateTests() {
-            StringSerialiser.Initialise(new Shared.Serialisation.SystemTextJsonSerializer(new System.Text.Json.JsonSerializerOptions()));
+            StringSerialiser.Initialise(new TransactionProcessing.Shared.Serialisation.SystemTextJsonSerializer(new System.Text.Json.JsonSerializerOptions()));
         }
 
         [Fact]

@@ -1,6 +1,6 @@
-﻿using System;
-using Shared.General;
-using SimpleResults;
+using System;
+using TransactionProcessing.Shared.General;
+using TransactionProcessing.UnionResults;
 using FluentValidation;
 using TransactionProcessor.Aggregates;
 using TransactionProcessor.Models.Settlement;

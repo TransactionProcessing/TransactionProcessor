@@ -1,12 +1,12 @@
-﻿using Shared.Exceptions;
-using SimpleResults;
+using TransactionProcessing.Shared.Exceptions;
+using TransactionProcessing.UnionResults;
 using TransactionProcessor.Database.Contexts;
 
 namespace TransactionProcessor.ProjectionEngine.Repository;
 
 using Microsoft.EntityFrameworkCore;
-using Shared.DomainDrivenDesign.EventSourcing;
-using Shared.EntityFramework;
+using TransactionProcessing.Shared.DomainDrivenDesign.EventSourcing;
+using TransactionProcessing.Shared.EntityFramework;
 using State;
 using System.Diagnostics.CodeAnalysis;
 using TransactionProcessor.ProjectionEngine.Database.Database;
@@ -133,7 +133,7 @@ public class MerchantBalanceStateRepository : IProjectionStateRepository<Merchan
             return Result.Failure(entityResult.Message);
         }
 
-        MerchantBalanceProjectionState entity = entityResult.Data;
+        MerchantBalanceProjectionState entity = entityResult.GetValueOrThrow();
         
         // We have located a state record so we need to translate to the Model type
         return Result.Success(new MerchantBalanceState {

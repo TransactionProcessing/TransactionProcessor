@@ -1,9 +1,9 @@
 using Imposter.Abstractions;
-using Shared.DomainDrivenDesign.EventSourcing;
-using Shared.Logger;
-using Shared.Serialisation;
+using TransactionProcessing.Shared.DomainDrivenDesign.EventSourcing;
+using TransactionProcessing.Shared.Logger;
+using TransactionProcessing.Shared.Serialisation;
 using Shouldly;
-using SimpleResults;
+using TransactionProcessing.UnionResults;
 using System;
 using System.Collections.Generic;
 using System.Text.Json;

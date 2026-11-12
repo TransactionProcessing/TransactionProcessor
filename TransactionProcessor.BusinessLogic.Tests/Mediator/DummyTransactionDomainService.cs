@@ -1,6 +1,6 @@
-﻿using KurrentDB.Client;
-using Shared.Serialisation;
-using SimpleResults;
+using KurrentDB.Client;
+using TransactionProcessing.Shared.Serialisation;
+using TransactionProcessing.UnionResults;
 using TransactionProcessor.BusinessLogic.Requests;
 using TransactionProcessor.ProjectionEngine.Models;
 using TransactionProcessor.ProjectionEngine.Repository;
@@ -14,8 +14,8 @@ using System.Threading;
 using System.Threading.Tasks;
 using BusinessLogic.Services;
 using Models;
-using Shared.DomainDrivenDesign.EventSourcing;
-using Shared.EventStore.EventStore;
+using TransactionProcessing.Shared.DomainDrivenDesign.EventSourcing;
+using TransactionProcessing.Shared.EventStore.EventStore;
 
 public class DummyTransactionDomainService : ITransactionDomainService
 {

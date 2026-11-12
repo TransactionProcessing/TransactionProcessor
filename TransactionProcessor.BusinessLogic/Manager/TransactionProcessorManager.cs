@@ -1,7 +1,7 @@
-﻿using Shared.DomainDrivenDesign.EventSourcing;
-using Shared.EventStore.Aggregate;
-using Shared.Results;
-using SimpleResults;
+using TransactionProcessing.Shared.DomainDrivenDesign.EventSourcing;
+using TransactionProcessing.Shared.EventStore.Aggregate;
+using TransactionProcessing.UnionResults;
+using TransactionProcessing.UnionResults;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -56,7 +56,7 @@ namespace TransactionProcessor.BusinessLogic.Manager
                 if (getContractsResult.IsFailed)
                     return ResultHelpers.CreateFailure(getContractsResult);
 
-                return Result.Success(getContractsResult.Data);
+                return Result.Success(getContractsResult.GetValueOrThrow());
             }, cancellationToken);
         }
 
@@ -69,7 +69,7 @@ namespace TransactionProcessor.BusinessLogic.Manager
                 if (getContractResult.IsFailed)
                     return ResultHelpers.CreateFailure(getContractResult);
 
-                ContractAggregate contractAggregate = getContractResult.Data;
+                ContractAggregate contractAggregate = getContractResult.GetValueOrThrow();
 
                 if (contractAggregate.IsCreated == false) {
                     return Result.NotFound($"No contract found with Id [{estateId}]");
@@ -89,7 +89,7 @@ namespace TransactionProcessor.BusinessLogic.Manager
                 if (getEstateResult.IsFailed)
                     return ResultHelpers.CreateFailure(getEstateResult);
 
-                EstateAggregate estateAggregate = getEstateResult.Data;
+                EstateAggregate estateAggregate = getEstateResult.GetValueOrThrow();
                 if (estateAggregate.IsCreated == false) {
                     return Result.NotFound($"No estate found with Id [{estateId}]");
                 }
@@ -100,7 +100,7 @@ namespace TransactionProcessor.BusinessLogic.Manager
                     foreach (Operator @operator in estateModel.Operators) {
                         var getOperatorResult = await this.AggregateService.GetLatest<OperatorAggregate>(@operator.OperatorId, ct);
                         if (getOperatorResult.IsSuccess) {
-                            OperatorAggregate operatorAggregate = getOperatorResult.Data;
+                            OperatorAggregate operatorAggregate = getOperatorResult.GetValueOrThrow();
                             @operator.Name = operatorAggregate.Name;
                         }
                     }
@@ -117,7 +117,7 @@ namespace TransactionProcessor.BusinessLogic.Manager
                     if (getEstateResult.IsFailed)
                         return Result.NotFound($"No estate found with Id [{estateId}]");
 
-                    return Result.Success(new List<Models.Estate.Estate>() { getEstateResult.Data });
+                    return Result.Success(new List<Models.Estate.Estate>() { getEstateResult.GetValueOrThrow() });
                 },
                 cancellationToken);
         }
@@ -130,7 +130,7 @@ namespace TransactionProcessor.BusinessLogic.Manager
             if (getMerchantResult.IsFailed)
                 return ResultHelpers.CreateFailure(getMerchantResult);
 
-            MerchantAggregate merchantAggregate = getMerchantResult.Data;
+            MerchantAggregate merchantAggregate = getMerchantResult.GetValueOrThrow();
             if (merchantAggregate.IsCreated == false)
             {
                 return Result.NotFound($"No merchant found with Id [{merchantId}]");
@@ -146,7 +146,7 @@ namespace TransactionProcessor.BusinessLogic.Manager
                     var getOperatorResult = await this.AggregateService.GetLatest<OperatorAggregate>(@operator.OperatorId, cancellationToken);
                     if (getOperatorResult.IsFailed)
                         return ResultHelpers.CreateFailure(getOperatorResult);
-                    OperatorAggregate operatorAggregate = getOperatorResult.Data;
+                    OperatorAggregate operatorAggregate = getOperatorResult.GetValueOrThrow();
                     Models.Merchant.Operator newOperator = @operator with { Name = operatorAggregate.Name };
                     operators.Add(newOperator);
                 }
@@ -157,7 +157,7 @@ namespace TransactionProcessor.BusinessLogic.Manager
                 return ResultHelpers.CreateFailure(merchantReadModelResult);
             }
 
-            merchantModel.MerchantReportingId = merchantReadModelResult.Data.MerchantReportingId;
+            merchantModel.MerchantReportingId = merchantReadModelResult.GetValueOrThrow().MerchantReportingId;
 
             return Result.Success(merchantModel);
         }
@@ -173,7 +173,7 @@ namespace TransactionProcessor.BusinessLogic.Manager
                 if (getMerchantScheduleResult.IsFailed)
                     return ResultHelpers.CreateFailure(getMerchantScheduleResult);
 
-                MerchantScheduleAggregate merchantScheduleAggregate = getMerchantScheduleResult.Data;
+                MerchantScheduleAggregate merchantScheduleAggregate = getMerchantScheduleResult.GetValueOrThrow();
                 if (merchantScheduleAggregate.IsCreated == false)
                     return Result.NotFound($"No merchant schedule found for Merchant [{merchantId}] in Year [{year}]");
 
@@ -193,7 +193,7 @@ namespace TransactionProcessor.BusinessLogic.Manager
                 if (getMerchantScheduleResult.IsFailed)
                     return ResultHelpers.CreateFailure(getMerchantScheduleResult);
 
-                return Result.Success(getMerchantScheduleResult.Data);
+                return Result.Success(getMerchantScheduleResult.GetValueOrThrow());
             }, cancellationToken);
         }
 
@@ -206,7 +206,7 @@ namespace TransactionProcessor.BusinessLogic.Manager
                 if (getMerchantContractsResult.IsFailed)
                     return ResultHelpers.CreateFailure(getMerchantContractsResult);
 
-                List<Contract> contractModels = getMerchantContractsResult.Data;
+                List<Contract> contractModels = getMerchantContractsResult.GetValueOrThrow();
                 if (contractModels.Any() == false)
                     return Result.NotFound($"No contracts for Estate {estateId} and Merchant {merchantId}");
 
@@ -221,7 +221,7 @@ namespace TransactionProcessor.BusinessLogic.Manager
                 Result<List<Merchant>> getMerchantsResult = await this.TransactionProcessorReadModelRepository.GetMerchants(estateId, ct);
                 if (getMerchantsResult.IsFailed)
                     return ResultHelpers.CreateFailure(getMerchantsResult);
-                List<Merchant> merchants = getMerchantsResult.Data;
+                List<Merchant> merchants = getMerchantsResult.GetValueOrThrow();
                 if (merchants == null || merchants.Any() == false) {
                     return Result.NotFound($"No Merchants found for estate Id {estateId}");
                 }
@@ -239,7 +239,7 @@ namespace TransactionProcessor.BusinessLogic.Manager
             Result<ContractAggregate> getContractResult = await this.AggregateService.GetLatest<ContractAggregate>(contractId, cancellationToken);
             if (getContractResult.IsFailed)
                 return ResultHelpers.CreateFailure(getContractResult);
-            ContractAggregate contract = getContractResult.Data;
+            ContractAggregate contract = getContractResult.GetValueOrThrow();
             if (contract.IsCreated == false)
             {
                 return Result.NotFound($"No contract found with Id [{contractId}]");
@@ -262,7 +262,7 @@ namespace TransactionProcessor.BusinessLogic.Manager
             Result<OperatorAggregate> getOperatorResult = await this.AggregateService.GetLatest<OperatorAggregate>(operatorId, cancellationToken);
             if (getOperatorResult.IsFailed)
                 return ResultHelpers.CreateFailure(getOperatorResult);
-            OperatorAggregate operatorAggregate = getOperatorResult.Data;
+            OperatorAggregate operatorAggregate = getOperatorResult.GetValueOrThrow();
             if (operatorAggregate.IsCreated == false)
             {
                 return Result.NotFound($"No operator found with Id [{operatorId}]");
@@ -280,7 +280,7 @@ namespace TransactionProcessor.BusinessLogic.Manager
                 if (getOperatorsResult.IsFailed)
                     return ResultHelpers.CreateFailure(getOperatorsResult);
 
-                return Result.Success(getOperatorsResult.Data);
+                return Result.Success(getOperatorsResult.GetValueOrThrow());
             }, cancellationToken);
         }
 
@@ -303,7 +303,7 @@ namespace TransactionProcessor.BusinessLogic.Manager
                 Result<List<SettlementModel>> getSettlementsResult = await this.TransactionProcessorReadModelRepository.GetSettlements(estateId, merchantId, startDate, endDate, ct);
                 if (getSettlementsResult.IsFailed) return ResultHelpers.CreateFailure(getSettlementsResult);
 
-                return Result.Success(getSettlementsResult.Data);
+                return Result.Success(getSettlementsResult.GetValueOrThrow());
             }, cancellationToken);
         }
 
@@ -318,7 +318,7 @@ namespace TransactionProcessor.BusinessLogic.Manager
             if (getSettlementResult.IsFailed)
                 return ResultHelpers.CreateFailure(getSettlementResult);
 
-            SettlementAggregate settlementAggregate = getSettlementResult.Data;
+            SettlementAggregate settlementAggregate = getSettlementResult.GetValueOrThrow();
 
             PendingSettlementModel model = new PendingSettlementModel {
                 EstateId = settlementAggregate.EstateId,

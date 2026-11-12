@@ -1,8 +1,8 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
-using SimpleResults;
+using TransactionProcessing.UnionResults;
 using TransactionProcessor.Models.Contract;
 using TransactionProcessor.Models.Merchant;
 using MerchantScheduleModel = TransactionProcessor.Models.MerchantSchedule.MerchantSchedule;

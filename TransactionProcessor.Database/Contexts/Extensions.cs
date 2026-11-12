@@ -1,7 +1,7 @@
-﻿using Microsoft.EntityFrameworkCore.DynamicLinq;
+using Microsoft.EntityFrameworkCore.DynamicLinq;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
-using SimpleResults;
+using TransactionProcessing.UnionResults;
 using TransactionProcessor.Database.Entities;
 using TransactionProcessor.Database.Entities.Summary;
 using TransactionProcessor.Database.ViewEntities;

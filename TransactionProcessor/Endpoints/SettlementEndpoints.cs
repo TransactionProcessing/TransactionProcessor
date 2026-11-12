@@ -1,7 +1,8 @@
+using TransactionProcessing.UnionResults.AspNetCore;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Routing;
-using Shared.Authorisation;
+using TransactionProcessing.Shared.Authorisation;
 using System;
 using System.Diagnostics.CodeAnalysis;
 using TransactionProcessor.Handlers;
@@ -19,7 +20,7 @@ namespace TransactionProcessor.Endpoints
 
         public static IEndpointRouteBuilder MapSettlementEndpoints(this IEndpointRouteBuilder endpoints)
         {
-            var group = endpoints.MapGroup(BaseRoute)
+            var group = endpoints.MapGroup(BaseRoute).AddUnionResultFilter()
                                  .WithTags("Settlements")
                                  .RequireAuthorization()
                                  .RequireAuthorization(AuthorizationExtensions.PolicyNames.ClientCredentialsOnlyPolicy);
@@ -27,12 +28,12 @@ namespace TransactionProcessor.Endpoints
             group.MapGet("/{settlementDate:datetime}/merchants/{merchantId:guid}/pending", SettlementHandlers.GetPendingSettlement)
                  .WithName("GetPendingSettlement").WithSummary("Get pending merchant settlement")
                  .WithDescription("Returns settlement counts and completion status for the merchant and settlement date.")
-                 .Produces<TransactionProcessor.DataTransferObjects.SettlementResponse>();
+                 .ProducesUnionResult<TransactionProcessor.DataTransferObjects.SettlementResponse>();
 
             group.MapPost("/{settlementDate:datetime}/merchants/{merchantId:guid}", SettlementHandlers.ProcessSettlement)
                  .WithName("ProcessSettlement").WithSummary("Process a merchant settlement")
                  .WithDescription("Processes eligible fees for the merchant and settlement date, and returns the settlement ID.")
-                 .Produces<Guid>()
+                 .ProducesUnionResult<Guid>()
                  .AddOpenApiOperationTransformer((operation, _, _) =>
                  {
                      if (operation.Responses.TryGetValue("200", out var response))
@@ -49,7 +50,7 @@ namespace TransactionProcessor.Endpoints
             group.MapGet("/{settlementId:guid}", SettlementHandlers.GetSettlement)
                  .WithName("GetSettlement").WithSummary("Get a settlement")
                  .WithDescription("Returns settlement details and fees. The merchantId query parameter is also required by the handler.")
-                 .Produces<SettlementResponse>();
+                 .ProducesUnionResult<SettlementResponse>();
 
             group.MapGet("/", SettlementHandlers.GetSettlements)
                  .WithName("GetSettlements").WithSummary("List settlements")

@@ -1,5 +1,5 @@
-﻿using Microsoft.AspNetCore.Html;
-using Shared.General;
+using Microsoft.AspNetCore.Html;
+using TransactionProcessing.Shared.General;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
@@ -11,7 +11,7 @@ using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
-using SimpleResults;
+using TransactionProcessing.UnionResults;
 using TransactionProcessor.Aggregates;
 using TransactionProcessor.Database.Entities;
 using TransactionProcessor.Models.Merchant;

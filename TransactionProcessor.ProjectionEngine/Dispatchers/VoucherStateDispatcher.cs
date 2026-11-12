@@ -1,8 +1,8 @@
-﻿using SimpleResults;
+using TransactionProcessing.UnionResults;
 
 namespace TransactionProcessor.ProjectionEngine.Dispatchers;
 
-using Shared.DomainDrivenDesign.EventSourcing;
+using TransactionProcessing.Shared.DomainDrivenDesign.EventSourcing;
 using State;
 
 public class VoucherStateDispatcher : IStateDispatcher<VoucherState>{

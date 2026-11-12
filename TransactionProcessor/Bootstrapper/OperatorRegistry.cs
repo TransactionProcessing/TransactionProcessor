@@ -1,4 +1,4 @@
-﻿using Shared.Middleware;
+using TransactionProcessing.Shared.Middleware;
 using TransactionProcessor.BusinessLogic.OperatorInterfaces.AgencyBanking;
 
 namespace TransactionProcessor.Bootstrapper

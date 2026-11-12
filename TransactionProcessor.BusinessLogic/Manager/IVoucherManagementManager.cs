@@ -1,8 +1,8 @@
-﻿using Shared.DomainDrivenDesign.EventSourcing;
-using Shared.EventStore.Aggregate;
-using Shared.Exceptions;
-using Shared.Results;
-using SimpleResults;
+using TransactionProcessing.Shared.DomainDrivenDesign.EventSourcing;
+using TransactionProcessing.Shared.EventStore.Aggregate;
+using TransactionProcessing.Shared.Exceptions;
+using TransactionProcessing.UnionResults;
+using TransactionProcessing.UnionResults;
 using System;
 using System.Threading;
 using System.Threading.Tasks;
@@ -16,7 +16,7 @@ namespace TransactionProcessor.BusinessLogic.Manager
     using Microsoft.EntityFrameworkCore;
     using ProjectionEngine.Database.Database;
     using ProjectionEngine.Database.Database.Entities;
-    using Shared.EntityFramework;
+    using TransactionProcessing.Shared.EntityFramework;
     using Voucher = Models.Voucher;
 
     public interface IVoucherManagementManager
@@ -85,7 +85,7 @@ namespace TransactionProcessor.BusinessLogic.Manager
                 return ResultHelpers.CreateFailure(result);
             }
 
-            return result.Data.GetVoucher();
+            return result.GetValueOrThrow().GetVoucher();
         }
 
         public async Task<Result<Voucher>> GetVoucherByTransactionId(Guid estateId,
@@ -109,7 +109,7 @@ namespace TransactionProcessor.BusinessLogic.Manager
                 return ResultHelpers.CreateFailure(result);
             }
 
-            return result.Data.GetVoucher();
+            return result.GetValueOrThrow().GetVoucher();
         }
 
         #endregion

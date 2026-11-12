@@ -1,11 +1,11 @@
-﻿using System.Diagnostics.CodeAnalysis;
+using System.Diagnostics.CodeAnalysis;
 using System.Security.Cryptography;
 using System.Text;
-using Shared.DomainDrivenDesign.EventSourcing;
-using Shared.EventStore.Aggregate;
-using Shared.General;
-using Shared.ValueObjects;
-using SimpleResults;
+using TransactionProcessing.Shared.DomainDrivenDesign.EventSourcing;
+using TransactionProcessing.Shared.EventStore.Aggregate;
+using TransactionProcessing.Shared.General;
+using TransactionProcessing.Shared.ValueObjects;
+using TransactionProcessing.UnionResults;
 using TransactionProcessor.DomainEvents;
 using TransactionProcessor.Models.Merchant;
 

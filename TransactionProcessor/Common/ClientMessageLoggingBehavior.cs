@@ -1,5 +1,5 @@
-﻿using System.Diagnostics.CodeAnalysis;
-using Shared.Middleware;
+using System.Diagnostics.CodeAnalysis;
+using TransactionProcessing.Shared.Middleware;
 
 namespace TransactionProcessor.Common;
 

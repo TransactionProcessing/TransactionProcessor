@@ -18,6 +18,11 @@ jobs:
     steps:
     - uses: actions/checkout@v2.3.4    
 
+    - name: Setup .NET SDK
+      uses: actions/setup-dotnet@v4
+      with:
+        dotnet-version: 11.0.100
+
     - name: Restore Nuget Packages
       run: dotnet restore TransactionProcessor.sln --source ${{ secrets.PUBLICFEEDURL }} --source ${{ secrets.PRIVATEFEED_URL }}
 
@@ -35,11 +40,11 @@ jobs:
       run: |
         echo "ASPNETCORE_ENVIRONMENT are > ${ASPNETCORE_ENVIRONMENT}"
         mkdir -p coverage
-        coverlet TransactionProcessor.BusinessLogic.Tests/bin/Release/net10.0/TransactionProcessor.BusinessLogic.Tests.dll --target dotnet --targetargs "TransactionProcessor.BusinessLogic.Tests/bin/Release/net10.0/TransactionProcessor.BusinessLogic.Tests.dll" --format lcov --output coverage/lcov1.info --exclude "[xunit*]*" --exclude-by-attribute Obsolete --exclude-by-attribute GeneratedCodeAttribute --exclude-by-attribute CompilerGeneratedAttribute --exclude-by-attribute ExcludeFromCodeCoverageAttribute
-        coverlet TransactionProcessor.ProjectionEngine.Tests/bin/Release/net10.0/TransactionProcessor.ProjectionEngine.Tests.dll --target dotnet --targetargs "TransactionProcessor.ProjectionEngine.Tests/bin/Release/net10.0/TransactionProcessor.ProjectionEngine.Tests.dll" --format lcov --output coverage/lcov2.info --exclude "[xunit*]*" --exclude-by-attribute Obsolete --exclude-by-attribute GeneratedCodeAttribute --exclude-by-attribute CompilerGeneratedAttribute --exclude-by-attribute ExcludeFromCodeCoverageAttribute
-        coverlet TransactionProcessor.Aggregates.Tests/bin/Release/net10.0/TransactionProcessor.Aggregates.Tests.dll --target dotnet --targetargs "TransactionProcessor.Aggregates.Tests/bin/Release/net10.0/TransactionProcessor.Aggregates.Tests.dll" --format lcov --output coverage/lcov3.info --exclude "[xunit*]*" --exclude-by-attribute Obsolete --exclude-by-attribute GeneratedCodeAttribute --exclude-by-attribute CompilerGeneratedAttribute --exclude-by-attribute ExcludeFromCodeCoverageAttribute
-        coverlet TransactionProcessor.Tests/bin/Release/net10.0/TransactionProcessor.Tests.dll --target dotnet --targetargs "TransactionProcessor.Tests/bin/Release/net10.0/TransactionProcessor.Tests.dll" --format lcov --output coverage/lcov4.info --exclude "[xunit*]*" --exclude-by-attribute Obsolete --exclude-by-attribute GeneratedCodeAttribute --exclude-by-attribute CompilerGeneratedAttribute --exclude-by-attribute ExcludeFromCodeCoverageAttribute
-        coverlet TransactionProcessor.DatabaseTests/bin/Release/net10.0/TransactionProcessor.DatabaseTests.dll --target dotnet --targetargs "TransactionProcessor.DatabaseTests/bin/Release/net10.0/TransactionProcessor.DatabaseTests.dll" --format lcov --output coverage/lcov5.info --exclude "[xunit*]*" --exclude-by-attribute Obsolete --exclude-by-attribute GeneratedCodeAttribute --exclude-by-attribute CompilerGeneratedAttribute --exclude-by-attribute ExcludeFromCodeCoverageAttribute
+        coverlet TransactionProcessor.BusinessLogic.Tests/bin/Release/net11.0/TransactionProcessor.BusinessLogic.Tests.dll --target dotnet --targetargs "TransactionProcessor.BusinessLogic.Tests/bin/Release/net11.0/TransactionProcessor.BusinessLogic.Tests.dll" --format lcov --output coverage/lcov1.info --exclude "[xunit*]*" --exclude-by-attribute Obsolete --exclude-by-attribute GeneratedCodeAttribute --exclude-by-attribute CompilerGeneratedAttribute --exclude-by-attribute ExcludeFromCodeCoverageAttribute
+        coverlet TransactionProcessor.ProjectionEngine.Tests/bin/Release/net11.0/TransactionProcessor.ProjectionEngine.Tests.dll --target dotnet --targetargs "TransactionProcessor.ProjectionEngine.Tests/bin/Release/net11.0/TransactionProcessor.ProjectionEngine.Tests.dll" --format lcov --output coverage/lcov2.info --exclude "[xunit*]*" --exclude-by-attribute Obsolete --exclude-by-attribute GeneratedCodeAttribute --exclude-by-attribute CompilerGeneratedAttribute --exclude-by-attribute ExcludeFromCodeCoverageAttribute
+        coverlet TransactionProcessor.Aggregates.Tests/bin/Release/net11.0/TransactionProcessor.Aggregates.Tests.dll --target dotnet --targetargs "TransactionProcessor.Aggregates.Tests/bin/Release/net11.0/TransactionProcessor.Aggregates.Tests.dll" --format lcov --output coverage/lcov3.info --exclude "[xunit*]*" --exclude-by-attribute Obsolete --exclude-by-attribute GeneratedCodeAttribute --exclude-by-attribute CompilerGeneratedAttribute --exclude-by-attribute ExcludeFromCodeCoverageAttribute
+        coverlet TransactionProcessor.Tests/bin/Release/net11.0/TransactionProcessor.Tests.dll --target dotnet --targetargs "TransactionProcessor.Tests/bin/Release/net11.0/TransactionProcessor.Tests.dll" --format lcov --output coverage/lcov4.info --exclude "[xunit*]*" --exclude-by-attribute Obsolete --exclude-by-attribute GeneratedCodeAttribute --exclude-by-attribute CompilerGeneratedAttribute --exclude-by-attribute ExcludeFromCodeCoverageAttribute
+        coverlet TransactionProcessor.DatabaseTests/bin/Release/net11.0/TransactionProcessor.DatabaseTests.dll --target dotnet --targetargs "TransactionProcessor.DatabaseTests/bin/Release/net11.0/TransactionProcessor.DatabaseTests.dll" --format lcov --output coverage/lcov5.info --exclude "[xunit*]*" --exclude-by-attribute Obsolete --exclude-by-attribute GeneratedCodeAttribute --exclude-by-attribute CompilerGeneratedAttribute --exclude-by-attribute ExcludeFromCodeCoverageAttribute
 
     - name: Merge LCOV reports
       run: |

@@ -1,8 +1,8 @@
-﻿using Shared.DomainDrivenDesign.EventSourcing;
-using Shared.EventStore.Aggregate;
-using Shared.General;
+using TransactionProcessing.Shared.DomainDrivenDesign.EventSourcing;
+using TransactionProcessing.Shared.EventStore.Aggregate;
+using TransactionProcessing.Shared.General;
 using System.Diagnostics.CodeAnalysis;
-using SimpleResults;
+using TransactionProcessing.UnionResults;
 using TransactionProcessor.Aggregates.Models;
 using TransactionProcessor.DomainEvents;
 using TransactionProcessor.Models.Merchant;

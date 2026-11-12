@@ -1,8 +1,9 @@
-﻿using KurrentDB.Client;
+using KurrentDB.Client;
 using Microsoft.IdentityModel.Logging;
 using Microsoft.AspNetCore.OpenApi;
 using OpenIddict.Validation.AspNetCore;
 using TransactionProcessing.ApiDefaults;
+using TransactionProcessing.UnionResults.AspNetCore;
 using TransactionProcessor.OpenApi;
 
 namespace TransactionProcessor.Bootstrapper
@@ -12,11 +13,11 @@ namespace TransactionProcessor.Bootstrapper
     using Microsoft.Extensions.Configuration;
     using Microsoft.Extensions.DependencyInjection;
     using Microsoft.Extensions.Diagnostics.HealthChecks;
-    using Shared.Authorisation;
-    using Shared.EventStore.Extensions;
-    using Shared.Extensions;
-    using Shared.General;
-    using Shared.Serialisation;
+    using TransactionProcessing.Shared.Authorisation;
+    using TransactionProcessing.Shared.EventStore.Extensions;
+    using TransactionProcessing.Shared.Extensions;
+    using TransactionProcessing.Shared.General;
+    using TransactionProcessing.Shared.Serialisation;
     using System;
     using System.Diagnostics.CodeAnalysis;
     using System.IO;
@@ -53,6 +54,7 @@ namespace TransactionProcessor.Bootstrapper
                 options.Title = "Transaction Processor";
                 options.Description = "API for all aspects of Transaction Processing and Estate Management";
             });
+            this.AddUnionResults();
             this.ConfigureAll<OpenApiOptions>(options =>
                 options.AddDocumentTransformer<DtoDocumentationTransformer>());
         }

@@ -1,11 +1,11 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Imposter.Abstractions;
-using Shared.DomainDrivenDesign.EventSourcing;
-using Shared.EventStore.Aggregate;
-using Shared.Exceptions;
+using TransactionProcessing.Shared.DomainDrivenDesign.EventSourcing;
+using TransactionProcessing.Shared.EventStore.Aggregate;
+using TransactionProcessing.Shared.Exceptions;
 using Shouldly;
-using SimpleResults;
+using TransactionProcessing.UnionResults;
 using System;
 using System.Threading;
 using System.Threading.Tasks;
@@ -24,8 +24,8 @@ namespace TransactionProcessor.BusinessLogic.Tests.Manager
     using Microsoft.EntityFrameworkCore.Internal;
     using ProjectionEngine.Database.Database;
     using ProjectionEngine.Database.Database.Entities;
-    using Shared.EntityFramework;
-    using Shared.Serialisation;
+    using TransactionProcessing.Shared.EntityFramework;
+    using TransactionProcessing.Shared.Serialisation;
     using System.Text.Json;
     using Testing;
 
@@ -72,7 +72,7 @@ namespace TransactionProcessor.BusinessLogic.Tests.Manager
 
             Result<Voucher> result = await this.VoucherManagementManager.GetVoucherByCode(TestData.EstateId, TestData.VoucherCode, TestContext.Current.CancellationToken);
             result.IsSuccess.ShouldBeTrue();
-            Models.Voucher voucher = result.Data;
+            Models.Voucher voucher = result.GetValueOrThrow();
             voucher.ShouldNotBeNull();
         }
 
@@ -107,7 +107,7 @@ namespace TransactionProcessor.BusinessLogic.Tests.Manager
             
             var result = await VoucherManagementManager.GetVoucherByTransactionId(TestData.EstateId, TestData.TransactionId, TestContext.Current.CancellationToken);
             result.IsSuccess.ShouldBeTrue();
-            Models.Voucher voucher = result.Data;
+            Models.Voucher voucher = result.GetValueOrThrow();
             voucher.ShouldNotBeNull();
         }
 

@@ -1,8 +1,8 @@
-﻿using FileProcessor.FileImportLog.DomainEvents;
+using FileProcessor.FileImportLog.DomainEvents;
 using Microsoft.IdentityModel.Tokens;
 using SecurityService.DataTransferObjects;
-using Shared.EventStore.ProjectionEngine;
-using Shared.ValueObjects;
+using TransactionProcessing.Shared.EventStore.ProjectionEngine;
+using TransactionProcessing.Shared.ValueObjects;
 using System.Text;
 using TransactionProcessor.Aggregates;
 using TransactionProcessor.BusinessLogic.Events;
@@ -38,7 +38,7 @@ namespace TransactionProcessor.Testing
     using Models;
     using PataPawaPostPay;
     using ProjectionEngine.State;
-    using Shared.Serialisation;
+    using TransactionProcessing.Shared.Serialisation;
     using System;
     using System.Collections.Generic;
     using System.Linq;
@@ -51,7 +51,7 @@ namespace TransactionProcessor.Testing
     public class TestData
     {
         static TestData() {
-            StringSerialiser.Initialise(new Shared.Serialisation.SystemTextJsonSerializer(new System.Text.Json.JsonSerializerOptions()));
+            StringSerialiser.Initialise(new TransactionProcessing.Shared.Serialisation.SystemTextJsonSerializer(new System.Text.Json.JsonSerializerOptions()));
         }
 
         public static String StatementData = "StatementData";

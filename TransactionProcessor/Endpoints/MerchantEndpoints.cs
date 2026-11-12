@@ -1,7 +1,8 @@
+using TransactionProcessing.UnionResults.AspNetCore;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Routing;
-using Shared.Authorisation;
+using TransactionProcessing.Shared.Authorisation;
 using System;
 using System.Diagnostics.CodeAnalysis;
 using TransactionProcessor.Handlers;
@@ -20,7 +21,7 @@ public static class MerchantEndpoints
     {
         // Apply client-credentials-only policy to the entire merchant group so all endpoints require client auth.
         RouteGroupBuilder merchantGroup = endpoints
-            .MapGroup(BaseRoute)
+            .MapGroup(BaseRoute).AddUnionResultFilter()
             .WithTags("Merchants")
             .RequireAuthorization()
             .RequireAuthorization(AuthorizationExtensions.PolicyNames.ClientCredentialsOnlyPolicy);
@@ -28,10 +29,10 @@ public static class MerchantEndpoints
         // Read endpoints (now also protected by client-credentials-only policy via the group)
         merchantGroup.MapGet("/{merchantId:guid}/balance", MerchantHandlers.GetMerchantBalance)
             .WithName("GetMerchantBalance").WithSummary("Get merchant balance")
-            .WithDescription("Returns the stored balance and available balance for this estate merchant.").Produces<MerchantBalanceResponse>();
+            .WithDescription("Returns the stored balance and available balance for this estate merchant.").ProducesUnionResult<MerchantBalanceResponse>();
         merchantGroup.MapGet("/{merchantId:guid}/livebalance", MerchantHandlers.GetMerchantBalanceLive)
             .WithName("GetMerchantBalanceLive").WithSummary("Get live merchant balance")
-            .WithDescription("Returns the current balance from the live balance projection for this merchant.").Produces<MerchantBalanceResponse>();
+            .WithDescription("Returns the current balance from the live balance projection for this merchant.").ProducesUnionResult<MerchantBalanceResponse>();
         merchantGroup.MapGet("/{merchantId:guid}/balancehistory", MerchantHandlers.GetMerchantBalanceHistory)
             .WithName("GetMerchantBalanceHistory").WithSummary("Get merchant balance history")
             .WithDescription("Returns balance changes for the merchant between the required startDate and endDate query values.").Produces<List<MerchantBalanceChangedEntryResponse>>();
@@ -40,16 +41,16 @@ public static class MerchantEndpoints
             .WithDescription("Returns all merchants belonging to the specified estate.").Produces<List<MerchantResponse>>();
         merchantGroup.MapGet("/{merchantId:guid}", MerchantHandlers.GetMerchant)
             .WithName("GetMerchant").WithSummary("Get a merchant")
-            .WithDescription("Returns merchant details, including addresses, contacts, devices, operators, contracts, opening hours, and schedules.").Produces<MerchantResponse>();
+            .WithDescription("Returns merchant details, including addresses, contacts, devices, operators, contracts, opening hours, and schedules.").ProducesUnionResult<MerchantResponse>();
         merchantGroup.MapGet("/{merchantId:guid}/contracts", MerchantHandlers.GetMerchantContracts)
             .WithName("GetMerchantContracts").WithSummary("List merchant contracts")
             .WithDescription("Returns contracts associated with the specified merchant.").Produces<List<ContractResponse>>();
         merchantGroup.MapGet("/{merchantId:guid}/schedules/{year:int}", MerchantHandlers.GetMerchantSchedule)
             .WithName("GetMerchantSchedule").WithSummary("Get merchant schedule")
-            .WithDescription("Returns the merchant schedule for the requested year from the primary schedule store.").Produces<MerchantScheduleResponse>();
+            .WithDescription("Returns the merchant schedule for the requested year from the primary schedule store.").ProducesUnionResult<MerchantScheduleResponse>();
         merchantGroup.MapGet("/{merchantId:guid}/schedules/{year:int}/readmodel", MerchantHandlers.GetMerchantScheduleFromReadModel)
             .WithName("GetMerchantScheduleFromReadModel").WithSummary("Get merchant schedule read model")
-            .WithDescription("Returns the requested year's merchant schedule from the read model.").Produces<MerchantScheduleResponse>();
+            .WithDescription("Returns the requested year's merchant schedule from the read model.").ProducesUnionResult<MerchantScheduleResponse>();
         merchantGroup.MapGet("/{merchantId:guid}/contracts/{contractId:guid}/products/{productId:guid}/transactionFees",
             MerchantHandlers.GetTransactionFeesForProduct).WithName("GetTransactionFeesForProduct")
             .WithSummary("List merchant product transaction fees")
@@ -59,7 +60,7 @@ public static class MerchantEndpoints
         merchantGroup.MapPost("/", MerchantHandlers.CreateMerchant).WithName("CreateMerchant")
             .WithSummary("Create a merchant")
             .WithDescription("Creates a merchant in the specified estate, including its address, contact, and settlement schedule. Returns the new merchant ID.")
-            .Produces<Guid>();
+            .ProducesUnionResult<Guid>();
 
         merchantGroup.MapPatch("/{merchantId:guid}/operators", MerchantHandlers.AssignOperator).WithName("AssignMerchantOperator")
             .WithSummary("Assign an operator to a merchant").WithDescription("Associates the request's operator and terminal identifiers with the merchant.");

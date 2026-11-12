@@ -1,5 +1,5 @@
-﻿using EventStore.Client;
-using SimpleResults;
+using EventStore.Client;
+using TransactionProcessing.UnionResults;
 using TransactionProcessor.Database.Contexts;
 using TransactionProcessor.Database.Entities;
 
@@ -7,9 +7,9 @@ namespace TransactionProcessor.ProjectionEngine.Repository;
 
 using Database.Database.Entities;
 using Microsoft.EntityFrameworkCore;
-using Shared.DomainDrivenDesign.EventSourcing;
-using Shared.EntityFramework;
-using Shared.EventStore.ProjectionEngine;
+using TransactionProcessing.Shared.DomainDrivenDesign.EventSourcing;
+using TransactionProcessing.Shared.EntityFramework;
+using TransactionProcessing.Shared.EventStore.ProjectionEngine;
 using State;
 using System.Diagnostics.CodeAnalysis;
 

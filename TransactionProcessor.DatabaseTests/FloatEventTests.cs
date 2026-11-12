@@ -1,6 +1,6 @@
 using Microsoft.EntityFrameworkCore;
 using Shouldly;
-using SimpleResults;
+using TransactionProcessing.UnionResults;
 using TransactionProcessor.Database.Contexts;
 using TransactionProcessor.Database.Entities;
 using TransactionProcessor.DomainEvents;

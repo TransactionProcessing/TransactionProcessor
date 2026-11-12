@@ -1,6 +1,6 @@
-﻿using NLog.LayoutRenderers.Wrappers;
+using NLog.LayoutRenderers.Wrappers;
 using SecurityService.DataTransferObjects;
-using SimpleResults;
+using TransactionProcessing.UnionResults;
 using System;
 using System.Collections.Generic;
 using TestHosts.DataTransferObjects.AgencyBanking;

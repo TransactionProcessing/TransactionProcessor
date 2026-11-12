@@ -2,13 +2,13 @@ using Microsoft.Extensions.Configuration;
 using Imposter.Abstractions;
 using SecurityService.Client;
 using SecurityService.DataTransferObjects;
-using Shared.DomainDrivenDesign.EventSourcing;
-using Shared.EventStore.Aggregate;
-using Shared.General;
-using Shared.Logger;
-using Shared.Serialisation;
+using TransactionProcessing.Shared.DomainDrivenDesign.EventSourcing;
+using TransactionProcessing.Shared.EventStore.Aggregate;
+using TransactionProcessing.Shared.General;
+using TransactionProcessing.Shared.Logger;
+using TransactionProcessing.Shared.Serialisation;
 using Shouldly;
-using SimpleResults;
+using TransactionProcessing.UnionResults;
 using System;
 using System.Collections.Generic;
 using System.Text.Json;
@@ -46,25 +46,25 @@ namespace TransactionProcessor.BusinessLogic.Tests.Services
         public async Task EstateDomainService_CreateEstate_EstateIsCreated() {
             
             this.AggregateService.GetLatest<EstateAggregate>(Arg<Guid>.Any(), Arg<CancellationToken>.Any())
-                .ReturnsAsync(SimpleResults.Result.Success(new EstateAggregate()));
+                .ReturnsAsync(TransactionProcessing.UnionResults.Result.Success(new EstateAggregate()));
             this.AggregateService
                 .Save(Arg<EstateAggregate>.Any(), Arg<CancellationToken>.Any())
-                .ReturnsAsync(SimpleResults.Result.Success());
+                .ReturnsAsync(TransactionProcessing.UnionResults.Result.Success());
             
             Result<Guid> result = await this.DomainService.CreateEstate(TestData.Commands.CreateEstateCommand, TestContext.Current.CancellationToken);
             result.IsSuccess.ShouldBeTrue();
-            result.Data.ShouldNotBe(Guid.Empty);
+            result.GetValueOrThrow().ShouldNotBe(Guid.Empty);
         }
         
         [Fact]
         public async Task EstateDomainService_AddOperatorEstate_OperatorIsAdded()
         {
             this.AggregateService.Get<OperatorAggregate>(Arg<Guid>.Any(), Arg<CancellationToken>.Any())
-                .ReturnsAsync(SimpleResults.Result.Success(TestData.Aggregates.CreatedOperatorAggregate()));
+                .ReturnsAsync(TransactionProcessing.UnionResults.Result.Success(TestData.Aggregates.CreatedOperatorAggregate()));
 
             this.AggregateService.GetLatest<EstateAggregate>(Arg<Guid>.Any(), Arg<CancellationToken>.Any())
-                .ReturnsAsync(SimpleResults.Result.Success(TestData.Aggregates.CreatedEstateAggregate()));
-            this.AggregateService.Save(Arg<EstateAggregate>.Any(), Arg<CancellationToken>.Any()).ReturnsAsync(SimpleResults.Result.Success());
+                .ReturnsAsync(TransactionProcessing.UnionResults.Result.Success(TestData.Aggregates.CreatedEstateAggregate()));
+            this.AggregateService.Save(Arg<EstateAggregate>.Any(), Arg<CancellationToken>.Any()).ReturnsAsync(TransactionProcessing.UnionResults.Result.Success());
 
             Result result = await this.DomainService.AddOperatorToEstate(TestData.Commands.AddOperatorToEstateCommand, TestContext.Current.CancellationToken);
             result.IsSuccess.ShouldBeTrue();
@@ -84,7 +84,7 @@ namespace TransactionProcessor.BusinessLogic.Tests.Services
             this.AggregateService.GetLatest<EstateAggregate>(Arg<Guid>.Any(), Arg<CancellationToken>.Any())
                 .ReturnsAsync(Result.Success(TestData.Aggregates.CreatedEstateAggregate()));
             this.AggregateService.Save(Arg<EstateAggregate>.Any(), Arg<CancellationToken>.Any())
-                .ReturnsAsync(SimpleResults.Result.Success());
+                .ReturnsAsync(TransactionProcessing.UnionResults.Result.Success());
 
             this.SecurityServiceClient
                 .CreateUser(Arg<String>.Any(),Arg<CreateUserRequest>.Any(), Arg<CancellationToken>.Any())
@@ -112,7 +112,7 @@ namespace TransactionProcessor.BusinessLogic.Tests.Services
                 this.AggregateService.GetLatest<EstateAggregate>(Arg<Guid>.Any(), Arg<CancellationToken>.Any())
                     .ReturnsAsync(Result.Success(TestData.Aggregates.CreatedEstateAggregate()));
                 this.AggregateService.Save(Arg<EstateAggregate>.Any(), Arg<CancellationToken>.Any())
-                    .ReturnsAsync(SimpleResults.Result.Success());
+                    .ReturnsAsync(TransactionProcessing.UnionResults.Result.Success());
 
                 this.SecurityServiceClient
                     .CreateUser(Arg<String>.Any(), Arg<CreateUserRequest>.Any(), Arg<CancellationToken>.Any())
@@ -144,7 +144,7 @@ namespace TransactionProcessor.BusinessLogic.Tests.Services
             this.AggregateService.GetLatest<EstateAggregate>(Arg<Guid>.Any(), Arg<CancellationToken>.Any())
                 .ReturnsAsync(Result.Success(TestData.Aggregates.CreatedEstateAggregate()));
             this.AggregateService.Save(Arg<EstateAggregate>.Any(), Arg<CancellationToken>.Any())
-                .ReturnsAsync(SimpleResults.Result.Success());
+                .ReturnsAsync(TransactionProcessing.UnionResults.Result.Success());
 
             this.SecurityServiceClient
                 .CreateUser(Arg<String>.Any(), Arg<CreateUserRequest>.Any(), Arg<CancellationToken>.Any())
@@ -167,7 +167,7 @@ namespace TransactionProcessor.BusinessLogic.Tests.Services
             this.AggregateService.GetLatest<EstateAggregate>(Arg<Guid>.Any(), Arg<CancellationToken>.Any())
                 .ReturnsAsync(Result.Success(TestData.Aggregates.CreatedEstateAggregate()));
             this.AggregateService.Save(Arg<EstateAggregate>.Any(), Arg<CancellationToken>.Any())
-                .ReturnsAsync(SimpleResults.Result.Success());
+                .ReturnsAsync(TransactionProcessing.UnionResults.Result.Success());
 
             this.SecurityServiceClient
                 .CreateUser(Arg<String>.Any(), Arg<CreateUserRequest>.Any(), Arg<CancellationToken>.Any())
@@ -186,7 +186,7 @@ namespace TransactionProcessor.BusinessLogic.Tests.Services
             this.AggregateService.GetLatest<EstateAggregate>(Arg<Guid>.Any(), Arg<CancellationToken>.Any())
                 .ReturnsAsync(Result.Success(TestData.Aggregates.CreatedEstateAggregate()));
             this.AggregateService.Save(Arg<EstateAggregate>.Any(), Arg<CancellationToken>.Any())
-                .ReturnsAsync(SimpleResults.Result.Success());
+                .ReturnsAsync(TransactionProcessing.UnionResults.Result.Success());
 
             this.SecurityServiceClient
                 .CreateUser(Arg<String>.Any(), Arg<CreateUserRequest>.Any(), Arg<CancellationToken>.Any())
@@ -228,7 +228,7 @@ namespace TransactionProcessor.BusinessLogic.Tests.Services
             this.AggregateService.GetLatest<EstateAggregate>(Arg<Guid>.Any(), Arg<CancellationToken>.Any())
                 .ReturnsAsync(Result.Success(TestData.Aggregates.EmptyEstateAggregate));
             this.AggregateService.Save(Arg<EstateAggregate>.Any(), Arg<CancellationToken>.Any())
-                .ReturnsAsync(SimpleResults.Result.Success());
+                .ReturnsAsync(TransactionProcessing.UnionResults.Result.Success());
 
             this.SecurityServiceClient
                 .CreateUser(Arg<String>.Any(), Arg<CreateUserRequest>.Any(), Arg<CancellationToken>.Any())
@@ -282,7 +282,7 @@ namespace TransactionProcessor.BusinessLogic.Tests.Services
         public async Task EstateDomainService_CreateEstate_EstateNameEmpty_ResultIsFailed()
         {
             this.AggregateService.GetLatest<EstateAggregate>(Arg<Guid>.Any(), Arg<CancellationToken>.Any())
-                .ReturnsAsync(SimpleResults.Result.Success(new EstateAggregate()));
+                .ReturnsAsync(TransactionProcessing.UnionResults.Result.Success(new EstateAggregate()));
 
             EstateCommands.CreateEstateCommand emptyNameCommand = new EstateCommands.CreateEstateCommand(
                 new CreateEstateRequest { EstateName = String.Empty });
@@ -295,7 +295,7 @@ namespace TransactionProcessor.BusinessLogic.Tests.Services
         public async Task EstateDomainService_CreateEstate_SaveFailed_ResultIsFailed()
         {
             this.AggregateService.GetLatest<EstateAggregate>(Arg<Guid>.Any(), Arg<CancellationToken>.Any())
-                .ReturnsAsync(SimpleResults.Result.Success(new EstateAggregate()));
+                .ReturnsAsync(TransactionProcessing.UnionResults.Result.Success(new EstateAggregate()));
             this.AggregateService
                 .Save(Arg<EstateAggregate>.Any(), Arg<CancellationToken>.Any())
                 .ReturnsAsync(Result.Failure());
@@ -310,7 +310,7 @@ namespace TransactionProcessor.BusinessLogic.Tests.Services
             this.AggregateService.Get<OperatorAggregate>(Arg<Guid>.Any(), Arg<CancellationToken>.Any())
                 .ReturnsAsync(Result.Failure());
             this.AggregateService.GetLatest<EstateAggregate>(Arg<Guid>.Any(), Arg<CancellationToken>.Any())
-                .ReturnsAsync(SimpleResults.Result.Success(TestData.Aggregates.CreatedEstateAggregate()));
+                .ReturnsAsync(TransactionProcessing.UnionResults.Result.Success(TestData.Aggregates.CreatedEstateAggregate()));
 
             Result result = await this.DomainService.AddOperatorToEstate(TestData.Commands.AddOperatorToEstateCommand, TestContext.Current.CancellationToken);
             result.IsFailed.ShouldBeTrue();
@@ -320,7 +320,7 @@ namespace TransactionProcessor.BusinessLogic.Tests.Services
         public async Task EstateDomainService_AddOperatorToEstate_GetEstateFailed_ResultIsFailed()
         {
             this.AggregateService.Get<OperatorAggregate>(Arg<Guid>.Any(), Arg<CancellationToken>.Any())
-                .ReturnsAsync(SimpleResults.Result.Success(TestData.Aggregates.CreatedOperatorAggregate()));
+                .ReturnsAsync(TransactionProcessing.UnionResults.Result.Success(TestData.Aggregates.CreatedOperatorAggregate()));
             this.AggregateService.GetLatest<EstateAggregate>(Arg<Guid>.Any(), Arg<CancellationToken>.Any())
                 .ReturnsAsync(Result.Failure());
 
@@ -332,9 +332,9 @@ namespace TransactionProcessor.BusinessLogic.Tests.Services
         public async Task EstateDomainService_AddOperatorToEstate_EstateNotCreated_ResultIsFailed()
         {
             this.AggregateService.Get<OperatorAggregate>(Arg<Guid>.Any(), Arg<CancellationToken>.Any())
-                .ReturnsAsync(SimpleResults.Result.Success(TestData.Aggregates.CreatedOperatorAggregate()));
+                .ReturnsAsync(TransactionProcessing.UnionResults.Result.Success(TestData.Aggregates.CreatedOperatorAggregate()));
             this.AggregateService.GetLatest<EstateAggregate>(Arg<Guid>.Any(), Arg<CancellationToken>.Any())
-                .ReturnsAsync(SimpleResults.Result.Success(TestData.Aggregates.EmptyEstateAggregate));
+                .ReturnsAsync(TransactionProcessing.UnionResults.Result.Success(TestData.Aggregates.EmptyEstateAggregate));
 
             Result result = await this.DomainService.AddOperatorToEstate(TestData.Commands.AddOperatorToEstateCommand, TestContext.Current.CancellationToken);
             result.IsFailed.ShouldBeTrue();
@@ -344,9 +344,9 @@ namespace TransactionProcessor.BusinessLogic.Tests.Services
         public async Task EstateDomainService_AddOperatorToEstate_SaveFailed_ResultIsFailed()
         {
             this.AggregateService.Get<OperatorAggregate>(Arg<Guid>.Any(), Arg<CancellationToken>.Any())
-                .ReturnsAsync(SimpleResults.Result.Success(TestData.Aggregates.CreatedOperatorAggregate()));
+                .ReturnsAsync(TransactionProcessing.UnionResults.Result.Success(TestData.Aggregates.CreatedOperatorAggregate()));
             this.AggregateService.GetLatest<EstateAggregate>(Arg<Guid>.Any(), Arg<CancellationToken>.Any())
-                .ReturnsAsync(SimpleResults.Result.Success(TestData.Aggregates.CreatedEstateAggregate()));
+                .ReturnsAsync(TransactionProcessing.UnionResults.Result.Success(TestData.Aggregates.CreatedEstateAggregate()));
             this.AggregateService.Save(Arg<EstateAggregate>.Any(), Arg<CancellationToken>.Any())
                 .ReturnsAsync(Result.Failure());
 

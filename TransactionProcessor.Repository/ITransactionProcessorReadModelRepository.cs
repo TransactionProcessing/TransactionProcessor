@@ -1,14 +1,14 @@
 using FileProcessor.File.DomainEvents;
 using FileProcessor.FileImportLog.DomainEvents;
 using Microsoft.EntityFrameworkCore;
-using Shared.DomainDrivenDesign.EventSourcing;
-using Shared.EntityFramework;
-using Shared.Logger;
-using Shared.Results;
-using SimpleResults;
+using TransactionProcessing.Shared.DomainDrivenDesign.EventSourcing;
+using TransactionProcessing.Shared.EntityFramework;
+using TransactionProcessing.Shared.Logger;
+using TransactionProcessing.UnionResults;
+using TransactionProcessing.UnionResults;
 using System.Diagnostics.CodeAnalysis;
 using System.Reflection;
-using Shared.Serialisation;
+using TransactionProcessing.Shared.Serialisation;
 using TransactionProcessor.Database.Contexts;
 using TransactionProcessor.Database.Entities;
 using TransactionProcessor.Database.ViewEntities;
@@ -339,7 +339,7 @@ namespace TransactionProcessor.Repository {
             Result<Merchant> merchantResult = await context.LoadMerchant(domainEvent, cancellationToken);
             if (merchantResult.IsFailed)
                 return ResultHelpers.CreateFailure(merchantResult);
-            Merchant? merchant = merchantResult.Data;
+            Merchant? merchant = merchantResult.GetValueOrThrow();
 
             if (merchant.LastStatementGenerated > domainEvent.DateGenerated)
                 return Result.Success();
@@ -411,7 +411,7 @@ namespace TransactionProcessor.Repository {
             Result<Merchant> merchantResult = await context.LoadMerchant(domainEvent, cancellationToken);
             if (merchantResult.IsFailed)
                 return ResultHelpers.CreateFailure(merchantResult);
-            var merchant = merchantResult.Data;
+            var merchant = merchantResult.GetValueOrThrow();
             merchant.Name = domainEvent.MerchantName;
 
             return await context.SaveChangesAsync(cancellationToken);
@@ -487,7 +487,7 @@ namespace TransactionProcessor.Repository {
             Result<MerchantDevice> getOriginalDeviceResult = await context.LoadOriginalMerchantDevice(domainEvent, cancellationToken);
             if (getOriginalDeviceResult.IsFailed)
                 return ResultHelpers.CreateFailure(getOriginalDeviceResult);
-            MerchantDevice? originalDevice = getOriginalDeviceResult.Data;
+            MerchantDevice? originalDevice = getOriginalDeviceResult.GetValueOrThrow();
 
             originalDevice.IsEnabled = false;
 
@@ -555,7 +555,7 @@ namespace TransactionProcessor.Repository {
             Result<Merchant> merchantResult = await context.LoadMerchant(domainEvent, cancellationToken);
             if (merchantResult.IsFailed)
                 return ResultHelpers.CreateFailure(merchantResult);
-            var merchant = merchantResult.Data;
+            var merchant = merchantResult.GetValueOrThrow();
 
             merchant.SettlementSchedule = domainEvent.SettlementSchedule;
             return await context.SaveChangesAsync(cancellationToken);
@@ -606,7 +606,7 @@ namespace TransactionProcessor.Repository {
             var getMerchantAddressResult = await context.LoadMerchantAddress(domainEvent, cancellationToken);
             if (getMerchantAddressResult.IsFailed)
                 return ResultHelpers.CreateFailure(getMerchantAddressResult);
-            var merchantAddress = getMerchantAddressResult.Data;
+            var merchantAddress = getMerchantAddressResult.GetValueOrThrow();
 
             merchantAddress.AddressLine1 = domainEvent.AddressLine1;
 
@@ -621,7 +621,7 @@ namespace TransactionProcessor.Repository {
             var getMerchantAddressResult = await context.LoadMerchantAddress(domainEvent, cancellationToken);
             if (getMerchantAddressResult.IsFailed)
                 return ResultHelpers.CreateFailure(getMerchantAddressResult);
-            var merchantAddress = getMerchantAddressResult.Data;
+            var merchantAddress = getMerchantAddressResult.GetValueOrThrow();
 
             merchantAddress.AddressLine2 = domainEvent.AddressLine2;
 
@@ -636,7 +636,7 @@ namespace TransactionProcessor.Repository {
             var getMerchantAddressResult = await context.LoadMerchantAddress(domainEvent, cancellationToken);
             if (getMerchantAddressResult.IsFailed)
                 return ResultHelpers.CreateFailure(getMerchantAddressResult);
-            var merchantAddress = getMerchantAddressResult.Data;
+            var merchantAddress = getMerchantAddressResult.GetValueOrThrow();
 
             merchantAddress.AddressLine3 = domainEvent.AddressLine3;
 
@@ -651,7 +651,7 @@ namespace TransactionProcessor.Repository {
             var getMerchantAddressResult = await context.LoadMerchantAddress(domainEvent, cancellationToken);
             if (getMerchantAddressResult.IsFailed)
                 return ResultHelpers.CreateFailure(getMerchantAddressResult);
-            var merchantAddress = getMerchantAddressResult.Data;
+            var merchantAddress = getMerchantAddressResult.GetValueOrThrow();
 
             merchantAddress.AddressLine4 = domainEvent.AddressLine4;
 
@@ -666,7 +666,7 @@ namespace TransactionProcessor.Repository {
             var getMerchantAddressResult = await context.LoadMerchantAddress(domainEvent, cancellationToken);
             if (getMerchantAddressResult.IsFailed)
                 return ResultHelpers.CreateFailure(getMerchantAddressResult);
-            var merchantAddress = getMerchantAddressResult.Data;
+            var merchantAddress = getMerchantAddressResult.GetValueOrThrow();
 
             merchantAddress.Country = domainEvent.Country;
 
@@ -681,7 +681,7 @@ namespace TransactionProcessor.Repository {
             var getMerchantAddressResult = await context.LoadMerchantAddress(domainEvent, cancellationToken);
             if (getMerchantAddressResult.IsFailed)
                 return ResultHelpers.CreateFailure(getMerchantAddressResult);
-            var merchantAddress = getMerchantAddressResult.Data;
+            var merchantAddress = getMerchantAddressResult.GetValueOrThrow();
 
             merchantAddress.Region = domainEvent.Region;
 
@@ -696,7 +696,7 @@ namespace TransactionProcessor.Repository {
             var getMerchantAddressResult = await context.LoadMerchantAddress(domainEvent, cancellationToken);
             if (getMerchantAddressResult.IsFailed)
                 return ResultHelpers.CreateFailure(getMerchantAddressResult);
-            var merchantAddress = getMerchantAddressResult.Data;
+            var merchantAddress = getMerchantAddressResult.GetValueOrThrow();
 
             merchantAddress.Town = domainEvent.Town;
 
@@ -711,7 +711,7 @@ namespace TransactionProcessor.Repository {
             var getMerchantAddressResult = await context.LoadMerchantAddress(domainEvent, cancellationToken);
             if (getMerchantAddressResult.IsFailed)
                 return ResultHelpers.CreateFailure(getMerchantAddressResult);
-            var merchantAddress = getMerchantAddressResult.Data;
+            var merchantAddress = getMerchantAddressResult.GetValueOrThrow();
 
             merchantAddress.PostalCode = domainEvent.PostalCode;
 
@@ -726,7 +726,7 @@ namespace TransactionProcessor.Repository {
             var getMerchantContactResult = await context.LoadMerchantContact(domainEvent, cancellationToken);
             if (getMerchantContactResult.IsFailed)
                 return ResultHelpers.CreateFailure(getMerchantContactResult);
-            var merchantContact = getMerchantContactResult.Data;
+            var merchantContact = getMerchantContactResult.GetValueOrThrow();
 
             merchantContact.Name = domainEvent.ContactName;
 
@@ -741,7 +741,7 @@ namespace TransactionProcessor.Repository {
             var getMerchantContactResult = await context.LoadMerchantContact(domainEvent, cancellationToken);
             if (getMerchantContactResult.IsFailed)
                 return ResultHelpers.CreateFailure(getMerchantContactResult);
-            var merchantContact = getMerchantContactResult.Data;
+            var merchantContact = getMerchantContactResult.GetValueOrThrow();
 
             merchantContact.EmailAddress = domainEvent.ContactEmailAddress;
 
@@ -756,7 +756,7 @@ namespace TransactionProcessor.Repository {
             var getMerchantContactResult = await context.LoadMerchantContact(domainEvent, cancellationToken);
             if (getMerchantContactResult.IsFailed)
                 return ResultHelpers.CreateFailure(getMerchantContactResult);
-            var merchantContact = getMerchantContactResult.Data;
+            var merchantContact = getMerchantContactResult.GetValueOrThrow();
 
             merchantContact.PhoneNumber = domainEvent.ContactPhoneNumber;
 
@@ -781,7 +781,7 @@ namespace TransactionProcessor.Repository {
             }
             else {
                 // Update the existing row
-                setOpeningHours[(DayOfWeek)domainEvent.DayOfWeek](getMerchantOpeningHoursResult.Data, domainEvent.Opening, domainEvent.Closing);
+                setOpeningHours[(DayOfWeek)domainEvent.DayOfWeek](getMerchantOpeningHoursResult.GetValueOrThrow(), domainEvent.Opening, domainEvent.Closing);
             }
 
             return await context.SaveChangesAsync(cancellationToken);
@@ -807,7 +807,7 @@ namespace TransactionProcessor.Repository {
             {
                 MerchantScheduleMonth merchantScheduleMonth = new()
                 {
-                    MerchantScheduleId = merchantScheduleResult.Data.MerchantScheduleId,
+                    MerchantScheduleId = merchantScheduleResult.GetValueOrThrow().MerchantScheduleId,
                     Month = domainEvent.Month,
                     ClosedDays = closedDays
                 };
@@ -816,7 +816,7 @@ namespace TransactionProcessor.Repository {
             }
             else
             {
-                merchantScheduleMonthResult.Data.ClosedDays = closedDays;
+                merchantScheduleMonthResult.GetValueOrThrow().ClosedDays = closedDays;
             }
 
             return await context.SaveChangesAsync(cancellationToken);
@@ -857,7 +857,7 @@ namespace TransactionProcessor.Repository {
             Result<Merchant> merchantResult = await context.LoadMerchant(domainEvent, cancellationToken);
             if (merchantResult.IsFailed)
                 return ResultHelpers.CreateFailure(merchantResult);
-            var merchant = merchantResult.Data;
+            var merchant = merchantResult.GetValueOrThrow();
 
             merchant.Reference = domainEvent.MerchantReference;
             return await context.SaveChangesAsync(cancellationToken);
@@ -1205,8 +1205,8 @@ namespace TransactionProcessor.Repository {
             if (getContractResult.IsFailed)
                 return ResultHelpers.CreateFailure(getContractResult);
 
-            var transaction = getTransactionResult.Data;
-            var contract = getContractResult.Data;
+            var transaction = getTransactionResult.GetValueOrThrow();
+            var contract = getContractResult.GetValueOrThrow();
 
             transaction.ContractId = domainEvent.ContractId;
             transaction.ContractProductId = domainEvent.ProductId;
@@ -1244,7 +1244,7 @@ namespace TransactionProcessor.Repository {
             var getTransactionResult = await context.LoadTransaction(domainEvent, cancellationToken);
             if (getTransactionResult.IsFailed)
                 return ResultHelpers.CreateFailure(getTransactionResult);
-            var transaction = getTransactionResult.Data;
+            var transaction = getTransactionResult.GetValueOrThrow();
 
             transaction.TransactionSource = domainEvent.TransactionSource;
 
@@ -1259,7 +1259,7 @@ namespace TransactionProcessor.Repository {
             var getReconcilationResult = await context.LoadReconcilation(domainEvent, cancellationToken);
             if (getReconcilationResult.IsFailed)
                 return ResultHelpers.CreateFailure(getReconcilationResult);
-            var reconciliation = getReconcilationResult.Data;
+            var reconciliation = getReconcilationResult.GetValueOrThrow();
 
             reconciliation.IsCompleted = true;
 
@@ -1274,7 +1274,7 @@ namespace TransactionProcessor.Repository {
             var getTransactionResult = await context.LoadTransaction(domainEvent, cancellationToken);
             if (getTransactionResult.IsFailed)
                 return ResultHelpers.CreateFailure(getTransactionResult);
-            var transaction = getTransactionResult.Data;
+            var transaction = getTransactionResult.GetValueOrThrow();
 
             transaction.IsCompleted = true;
 
@@ -1330,7 +1330,7 @@ namespace TransactionProcessor.Repository {
             var getTransactionResult = await context.LoadTransaction(domainEvent, cancellationToken);
             if (getTransactionResult.IsFailed)
                 return ResultHelpers.CreateFailure(getTransactionResult);
-            var transaction = getTransactionResult.Data;
+            var transaction = getTransactionResult.GetValueOrThrow();
 
             FloatActivity floatActivity = new FloatActivity
             {
@@ -1388,7 +1388,7 @@ namespace TransactionProcessor.Repository {
             if (loadContractProductTransactionFeeResult.IsFailed)
                 return ResultHelpers.CreateFailure(loadContractProductTransactionFeeResult);
 
-            ContractProductTransactionFee transactionFee = loadContractProductTransactionFeeResult.Data;
+            ContractProductTransactionFee transactionFee = loadContractProductTransactionFeeResult.GetValueOrThrow();
 
             transactionFee.IsEnabled = false;
 
@@ -1424,7 +1424,7 @@ namespace TransactionProcessor.Repository {
             var getSettlementResult = await context.LoadSettlement(domainEvent, cancellationToken);
             if (getSettlementResult.IsFailed)
                 return ResultHelpers.CreateFailure(getSettlementResult);
-            var settlement = getSettlementResult.Data;
+            var settlement = getSettlementResult.GetValueOrThrow();
 
             settlement.IsCompleted = true;
             return await context.SaveChangesAsync(cancellationToken);
@@ -1438,7 +1438,7 @@ namespace TransactionProcessor.Repository {
             var getSettlementResult = await context.LoadSettlement(domainEvent, cancellationToken);
             if (getSettlementResult.IsFailed)
                 return ResultHelpers.CreateFailure(getSettlementResult);
-            var settlement = getSettlementResult.Data;
+            var settlement = getSettlementResult.GetValueOrThrow();
             settlement.ProcessingStarted = true;
             settlement.ProcessingStartedDateTIme = domainEvent.ProcessingStartedDateTime;
 
@@ -1537,7 +1537,7 @@ namespace TransactionProcessor.Repository {
             var getTransactionResult = await context.LoadTransaction(domainEvent, cancellationToken);
             if (getTransactionResult.IsFailed)
                 return ResultHelpers.CreateFailure(getTransactionResult);
-            var transaction = getTransactionResult.Data;
+            var transaction = getTransactionResult.GetValueOrThrow();
 
             foreach (String additionalRequestField in this.AdditionalRequestFields)
             {
@@ -1614,7 +1614,7 @@ namespace TransactionProcessor.Repository {
             if (getEstateResult.IsFailed)
                 return ResultHelpers.CreateFailure(getEstateResult);
 
-            var estate = getEstateResult.Data;
+            var estate = getEstateResult.GetValueOrThrow();
             estate.Reference = domainEvent.EstateReference;
 
             return await context.SaveChangesAsync(cancellationToken);
@@ -1628,7 +1628,7 @@ namespace TransactionProcessor.Repository {
             Result<Merchant> merchantResult = await context.LoadMerchant(domainEvent, cancellationToken);
             if (merchantResult.IsFailed)
                 return ResultHelpers.CreateFailure(merchantResult);
-            var merchant = merchantResult.Data;
+            var merchant = merchantResult.GetValueOrThrow();
 
             if (domainEvent.CompletedDateTime > merchant.LastSaleDateTime)
             {
@@ -1648,7 +1648,7 @@ namespace TransactionProcessor.Repository {
             var getReconcilationResult = await context.LoadReconcilation(domainEvent, cancellationToken);
             if (getReconcilationResult.IsFailed)
                 return ResultHelpers.CreateFailure(getReconcilationResult);
-            var reconciliation = getReconcilationResult.Data;
+            var reconciliation = getReconcilationResult.GetValueOrThrow();
 
             reconciliation.TransactionCount = domainEvent.TransactionCount;
             reconciliation.TransactionValue = domainEvent.TransactionValue;
@@ -1664,7 +1664,7 @@ namespace TransactionProcessor.Repository {
             var getReconcilationResult = await context.LoadReconcilation(domainEvent, cancellationToken);
             if (getReconcilationResult.IsFailed)
                 return ResultHelpers.CreateFailure(getReconcilationResult);
-            var reconciliation = getReconcilationResult.Data;
+            var reconciliation = getReconcilationResult.GetValueOrThrow();
 
             reconciliation.IsAuthorised = true;
             reconciliation.ResponseCode = domainEvent.ResponseCode;
@@ -1681,7 +1681,7 @@ namespace TransactionProcessor.Repository {
             var getReconcilationResult = await context.LoadReconcilation(domainEvent, cancellationToken);
             if (getReconcilationResult.IsFailed)
                 return ResultHelpers.CreateFailure(getReconcilationResult);
-            var reconciliation = getReconcilationResult.Data;
+            var reconciliation = getReconcilationResult.GetValueOrThrow();
 
             reconciliation.IsAuthorised = false;
             reconciliation.ResponseCode = domainEvent.ResponseCode;
@@ -1698,7 +1698,7 @@ namespace TransactionProcessor.Repository {
             var getTransactionResult = await context.LoadTransaction(domainEvent, cancellationToken);
             if (getTransactionResult.IsFailed)
                 return ResultHelpers.CreateFailure(getTransactionResult);
-            var transaction = getTransactionResult.Data;
+            var transaction = getTransactionResult.GetValueOrThrow();
 
             transaction.IsAuthorised = true;
             transaction.ResponseCode = domainEvent.ResponseCode;
@@ -1716,7 +1716,7 @@ namespace TransactionProcessor.Repository {
             var getTransactionResult = await context.LoadTransaction(domainEvent, cancellationToken);
             if (getTransactionResult.IsFailed)
                 return ResultHelpers.CreateFailure(getTransactionResult);
-            var transaction = getTransactionResult.Data;
+            var transaction = getTransactionResult.GetValueOrThrow();
 
             transaction.IsAuthorised = false;
             transaction.ResponseCode = domainEvent.ResponseCode;
@@ -1733,7 +1733,7 @@ namespace TransactionProcessor.Repository {
             var getTransactionResult = await context.LoadTransaction(domainEvent, cancellationToken);
             if (getTransactionResult.IsFailed)
                 return ResultHelpers.CreateFailure(getTransactionResult);
-            var transaction = getTransactionResult.Data;
+            var transaction = getTransactionResult.GetValueOrThrow();
 
             transaction.IsAuthorised = true;
             transaction.ResponseCode = domainEvent.ResponseCode;
@@ -1751,7 +1751,7 @@ namespace TransactionProcessor.Repository {
             var getTransactionResult = await context.LoadTransaction(domainEvent, cancellationToken);
             if (getTransactionResult.IsFailed)
                 return ResultHelpers.CreateFailure(getTransactionResult);
-            var transaction = getTransactionResult.Data;
+            var transaction = getTransactionResult.GetValueOrThrow();
 
             transaction.IsAuthorised = false;
             transaction.ResponseCode = domainEvent.ResponseCode;
@@ -1792,7 +1792,7 @@ namespace TransactionProcessor.Repository {
             Result<Database.Entities.Operator> operatorResult = await context.LoadOperator(domainEvent, cancellationToken);
             if (operatorResult.IsFailed)
                 return ResultHelpers.CreateFailure(operatorResult);
-            Database.Entities.Operator @operator = operatorResult.Data;
+            Database.Entities.Operator @operator = operatorResult.GetValueOrThrow();
             @operator.Name = domainEvent.Name;
 
             return await context.SaveChangesAsync(cancellationToken);
@@ -1806,7 +1806,7 @@ namespace TransactionProcessor.Repository {
             Result<Database.Entities.Operator> operatorResult = await context.LoadOperator(domainEvent, cancellationToken);
             if (operatorResult.IsFailed)
                 return ResultHelpers.CreateFailure(operatorResult);
-            Database.Entities.Operator @operator = operatorResult.Data;
+            Database.Entities.Operator @operator = operatorResult.GetValueOrThrow();
 
             @operator.RequireCustomMerchantNumber = domainEvent.RequireCustomMerchantNumber;
 
@@ -1821,7 +1821,7 @@ namespace TransactionProcessor.Repository {
             Result<Database.Entities.Operator> operatorResult = await context.LoadOperator(domainEvent, cancellationToken);
             if (operatorResult.IsFailed)
                 return ResultHelpers.CreateFailure(operatorResult);
-            Database.Entities.Operator @operator = operatorResult.Data;
+            Database.Entities.Operator @operator = operatorResult.GetValueOrThrow();
 
             @operator.RequireCustomTerminalNumber = domainEvent.RequireCustomTerminalNumber;
 
@@ -1914,7 +1914,7 @@ namespace TransactionProcessor.Repository {
             var getLoadStatementHeaderResult = await context.LoadStatementHeader(domainEvent, cancellationToken);
             if (getLoadStatementHeaderResult.IsFailed)
                 return ResultHelpers.CreateFailure(getLoadStatementHeaderResult);
-            var statementHeader = getLoadStatementHeaderResult.Data;
+            var statementHeader = getLoadStatementHeaderResult.GetValueOrThrow();
 
             statementHeader.StatementGeneratedDate = DateOnly.FromDateTime(domainEvent.DateGenerated.DateTime);
             return await context.SaveChangesAsync(cancellationToken);
@@ -2035,7 +2035,7 @@ namespace TransactionProcessor.Repository {
             if (getFileResult.IsFailed)
                 return ResultHelpers.CreateFailure(getFileResult);
 
-            var file = getFileResult.Data;
+            var file = getFileResult.GetValueOrThrow();
             file.IsCompleted = true;
 
             return await context.SaveChangesAsync(cancellationToken);
@@ -2270,12 +2270,12 @@ namespace TransactionProcessor.Repository {
             if (transactionResult.IsFailed)
                 return ResultHelpers.CreateFailure(transactionResult);
 
-            Transaction transaction = transactionResult.Data;
+            Transaction transaction = transactionResult.GetValueOrThrow();
 
             Result<Operator> operatorResult = await context.LoadOperator(transaction.OperatorId, cancellationToken);
             if (operatorResult.IsFailed)
                 return ResultHelpers.CreateFailure(operatorResult);
-            Operator @operator = operatorResult.Data;
+            Operator @operator = operatorResult.GetValueOrThrow();
 
             StatementLine line = new StatementLine
             {
@@ -2303,12 +2303,12 @@ namespace TransactionProcessor.Repository {
             var getTransactionResult = await context.LoadTransaction(domainEvent, cancellationToken);
             if (getTransactionResult.IsFailed)
                 return ResultHelpers.CreateFailure(getTransactionResult);
-            var transaction = getTransactionResult.Data;
+            var transaction = getTransactionResult.GetValueOrThrow();
 
             Result<Operator> operatorResult = await context.LoadOperator(transaction.OperatorId, cancellationToken);
             if (operatorResult.IsFailed)
                 return ResultHelpers.CreateFailure(operatorResult);
-            var @operator = operatorResult.Data;
+            var @operator = operatorResult.GetValueOrThrow();
 
             StatementLine line = new StatementLine
             {

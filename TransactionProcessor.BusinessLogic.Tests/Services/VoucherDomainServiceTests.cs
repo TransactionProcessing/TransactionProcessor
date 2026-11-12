@@ -1,4 +1,4 @@
-using SimpleResults;
+using TransactionProcessing.UnionResults;
 using Imposter;
 using Imposter.Abstractions;
 using TransactionProcessor.Aggregates;
@@ -13,12 +13,12 @@ namespace TransactionProcessor.BusinessLogic.Tests.Services
     using Microsoft.EntityFrameworkCore.Diagnostics;
     using Microsoft.Extensions.Configuration;
     using Microsoft.Extensions.DependencyInjection;
-    using Shared.DomainDrivenDesign.EventSourcing;
-    using Shared.EntityFramework;
-    using Shared.EventStore.Aggregate;
-    using Shared.General;
-    using Shared.Logger;
-    using Shared.Serialisation;
+    using TransactionProcessing.Shared.DomainDrivenDesign.EventSourcing;
+    using TransactionProcessing.Shared.EntityFramework;
+    using TransactionProcessing.Shared.EventStore.Aggregate;
+    using TransactionProcessing.Shared.General;
+    using TransactionProcessing.Shared.Logger;
+    using TransactionProcessing.Shared.Serialisation;
     using Shouldly;
     using System;
     using System.Text.Json;
@@ -96,7 +96,7 @@ namespace TransactionProcessor.BusinessLogic.Tests.Services
                                                                                          TestContext.Current.CancellationToken);
 
             result.IsSuccess.ShouldBeTrue();
-            result.Data.ShouldNotBeNull();
+            result.GetValueOrThrow().ShouldNotBeNull();
         }
 
         [Fact]
@@ -140,7 +140,7 @@ namespace TransactionProcessor.BusinessLogic.Tests.Services
                                                                                             TestContext.Current.CancellationToken);
 
             result.IsSuccess.ShouldBeTrue();
-            result.Data.ShouldNotBeNull();
+            result.GetValueOrThrow().ShouldNotBeNull();
         }
 
         [Fact]

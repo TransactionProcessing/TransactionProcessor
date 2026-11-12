@@ -1,12 +1,12 @@
-﻿using SimpleResults;
+using TransactionProcessing.UnionResults;
 
 namespace TransactionProcessor.ProjectionEngine.EventHandling
 {
     using System.Diagnostics.CodeAnalysis;
     using System.Reflection;
-    using Shared.DomainDrivenDesign.EventSourcing;
-    using Shared.EventStore.EventHandling;
-    using Shared.General;
+    using TransactionProcessing.Shared.DomainDrivenDesign.EventSourcing;
+    using TransactionProcessing.Shared.EventStore.EventHandling;
+    using TransactionProcessing.Shared.General;
 
     [ExcludeFromCodeCoverage]
     public class EventHandler : IDomainEventHandler

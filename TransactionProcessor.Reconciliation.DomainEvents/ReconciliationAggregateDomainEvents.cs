@@ -1,9 +1,9 @@
-﻿namespace TransactionProcessor.Reconciliation.DomainEvents
+namespace TransactionProcessor.Reconciliation.DomainEvents
 {
     using System;
     using System.Diagnostics.CodeAnalysis;
     using Newtonsoft.Json;
-    using Shared.DomainDrivenDesign.EventSourcing;
+    using TransactionProcessing.Shared.DomainDrivenDesign.EventSourcing;
 
     [ExcludeFromCodeCoverage]
     public record OverallTotalsRecordedEvent(Guid TransactionId,

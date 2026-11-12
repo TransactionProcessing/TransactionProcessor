@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Linq;
 using System.Text;
 
@@ -6,7 +6,7 @@ namespace TransactionProcessor.BusinessLogic.Services
 {
     using System.Diagnostics.CodeAnalysis;
     using System.Security.Cryptography;
-    using Shared.Serialisation;
+    using TransactionProcessing.Shared.Serialisation;
 
     [ExcludeFromCodeCoverage]
     public class IdGenerationService

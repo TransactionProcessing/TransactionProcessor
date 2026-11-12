@@ -1,4 +1,4 @@
-﻿using TransactionProcessor.DataTransferObjects.Responses.Merchant;
+using TransactionProcessor.DataTransferObjects.Responses.Merchant;
 using TransactionProcessor.IntegrationTesting.Helpers;
 
 namespace TransactionProcessor.IntegrationTests.Common {
@@ -8,8 +8,8 @@ namespace TransactionProcessor.IntegrationTests.Common {
     using System.Threading;
     using System.Threading.Tasks;
     using DataTransferObjects;
-    using global::Shared.IntegrationTesting;
-    using global::Shared.Logger;
+    using global::TransactionProcessing.Shared.IntegrationTesting;
+    using global::TransactionProcessing.Shared.Logger;
     using Reqnroll;
     using Shouldly;
     using TransactionProcessor.DataTransferObjects.Responses.Transaction;
@@ -198,7 +198,7 @@ namespace TransactionProcessor.IntegrationTests.Common {
                                                                                                                                           transactionResponse.TransactionId,
                                                                                                                                           CancellationToken.None);
                 getVoucherByTransactionIdResult.IsSuccess.ShouldBeTrue(getVoucherByTransactionIdResult.Message);
-                voucher = getVoucherByTransactionIdResult.Data;
+                voucher = getVoucherByTransactionIdResult.GetValueOrThrow();
 
             });
             return voucher;

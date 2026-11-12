@@ -1,4 +1,4 @@
-using SimpleResults;
+using TransactionProcessing.UnionResults;
 using System;
 using System.Threading.Tasks;
 using TransactionProcessor.BusinessLogic.Requests;
@@ -7,11 +7,11 @@ namespace TransactionProcessor.BusinessLogic.Tests.Services
 {
     using Microsoft.Extensions.Configuration;
     using Imposter.Abstractions;
-    using Shared.DomainDrivenDesign.EventSourcing;
-    using Shared.EventStore.Aggregate;
-    using Shared.General;
-    using Shared.Logger;
-    using Shared.Serialisation;
+    using TransactionProcessing.Shared.DomainDrivenDesign.EventSourcing;
+    using TransactionProcessing.Shared.EventStore.Aggregate;
+    using TransactionProcessing.Shared.General;
+    using TransactionProcessing.Shared.Logger;
+    using TransactionProcessing.Shared.Serialisation;
     using Shouldly;
     using System.Text.Json;
     using System.Threading;

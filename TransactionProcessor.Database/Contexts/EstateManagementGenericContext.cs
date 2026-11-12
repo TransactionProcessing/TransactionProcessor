@@ -1,10 +1,10 @@
-﻿using EntityFramework.Exceptions.Common;
+using EntityFramework.Exceptions.Common;
 using EntityFramework.Exceptions.SqlServer;
 using Microsoft.EntityFrameworkCore;
-using Shared.DomainDrivenDesign.EventSourcing;
-using Shared.Exceptions;
-using Shared.Logger;
-using SimpleResults;
+using TransactionProcessing.Shared.DomainDrivenDesign.EventSourcing;
+using TransactionProcessing.Shared.Exceptions;
+using TransactionProcessing.Shared.Logger;
+using TransactionProcessing.UnionResults;
 using System.Reflection;
 using TransactionProcessor.Database.Entities;
 using TransactionProcessor.Database.Entities.Summary;

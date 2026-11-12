@@ -1,18 +1,18 @@
-﻿using MediatR;
-using SimpleResults;
+using MediatR;
+using TransactionProcessing.UnionResults;
 using System;
 using System.Diagnostics;
 using Prometheus;
 using SecurityService.DataTransferObjects;
-using Shared.EventStore.Aggregate;
+using TransactionProcessing.Shared.EventStore.Aggregate;
 using TransactionProcessor.BusinessLogic.Requests;
 using TransactionProcessor.DomainEvents;
 using TransactionProcessor.Models.Contract;
 
 namespace TransactionProcessor.BusinessLogic.EventHandling
 {
-    using Shared.DomainDrivenDesign.EventSourcing;
-    using Shared.EventStore.EventHandling;
+    using TransactionProcessing.Shared.DomainDrivenDesign.EventSourcing;
+    using TransactionProcessing.Shared.EventStore.EventHandling;
     using System.Threading;
     using System.Threading.Tasks;
     using static TransactionProcessor.BusinessLogic.Requests.SettlementCommands;
@@ -21,7 +21,7 @@ namespace TransactionProcessor.BusinessLogic.EventHandling
     /// <summary>
     /// 
     /// </summary>
-    /// <seealso cref="Shared.EventStore.EventHandling.IDomainEventHandler" />
+    /// <seealso cref="TransactionProcessing.Shared.EventStore.EventHandling.IDomainEventHandler" />
     /// <seealso cref="IDomainEventHandler" />
     public class TransactionDomainEventHandler : IDomainEventHandler
     {

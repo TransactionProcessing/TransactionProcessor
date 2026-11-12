@@ -1,4 +1,4 @@
-using SimpleResults;
+using TransactionProcessing.UnionResults;
 using TransactionProcessor.DataTransferObjects.Requests.Contract;
 using TransactionProcessor.DataTransferObjects.Requests.Estate;
 using TransactionProcessor.DataTransferObjects.Requests.Merchant;
@@ -17,16 +17,16 @@ using System.Collections.Generic;
 using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
-using ClientProxyBase;
+using TransactionProcessing.ClientProxyBase;
 using DataTransferObjects;
-using Shared.Results;
+using TransactionProcessing.UnionResults;
 using TransactionProcessor.DataTransferObjects.Requests.Float;
 using TransactionProcessor.DataTransferObjects.Requests.Transaction;
 using TransactionProcessor.DataTransferObjects.Requests.Voucher;
 using TransactionProcessor.DataTransferObjects.Responses.Transaction;
 using TransactionProcessor.DataTransferObjects.Responses.Voucher;
 
-public class TransactionProcessorClient : ClientProxyBase, ITransactionProcessorClient {
+public class TransactionProcessorClient : TransactionProcessing.ClientProxyBase, ITransactionProcessorClient {
     #region Fields
 
     private readonly Func<String, String> BaseAddressResolver;
@@ -77,7 +77,7 @@ public class TransactionProcessorClient : ClientProxyBase, ITransactionProcessor
             if (result.IsFailed)
                 return ResultHelpers.CreateFailure(result);
 
-            return Result.Success<Guid>(result.Data);
+            return Result.Success<Guid>(result.GetValueOrThrow());
         }
         catch (Exception ex) {
             // An exception has occurred, add some additional information to the message
@@ -120,7 +120,7 @@ public class TransactionProcessorClient : ClientProxyBase, ITransactionProcessor
             if (result.IsFailed)
                 return ResultHelpers.CreateFailure(result);
 
-            return Result.Success(result.Data);
+            return Result.Success(result.GetValueOrThrow());
         }
         catch (Exception ex) {
             // An exception has occurred, add some additional information to the message
@@ -280,7 +280,7 @@ public class TransactionProcessorClient : ClientProxyBase, ITransactionProcessor
             if (result.IsFailed)
                 return ResultHelpers.CreateFailure(result);
 
-            return Result.Success(result.Data);
+            return Result.Success(result.GetValueOrThrow());
         }
         catch (Exception ex) {
             // An exception has occurred, add some additional information to the message
@@ -302,7 +302,7 @@ public class TransactionProcessorClient : ClientProxyBase, ITransactionProcessor
             if (result.IsFailed)
                 return ResultHelpers.CreateFailure(result);
 
-            return Result.Success(result.Data);
+            return Result.Success(result.GetValueOrThrow());
         }
         catch (Exception ex)
         {
@@ -325,7 +325,7 @@ public class TransactionProcessorClient : ClientProxyBase, ITransactionProcessor
             if (result.IsFailed)
                 return ResultHelpers.CreateFailure(result);
 
-            return Result.Success(result.Data);
+            return Result.Success(result.GetValueOrThrow());
         }
         catch (Exception ex)
         {
@@ -349,7 +349,7 @@ public class TransactionProcessorClient : ClientProxyBase, ITransactionProcessor
             if (result.IsFailed)
                 return ResultHelpers.CreateFailure(result);
 
-            return Result.Success(result.Data);
+            return Result.Success(result.GetValueOrThrow());
         }
         catch (Exception ex) {
             // An exception has occurred, add some additional information to the message
@@ -400,7 +400,7 @@ public class TransactionProcessorClient : ClientProxyBase, ITransactionProcessor
                 return ResultHelpers.CreateFailure(result);
 
 
-            return Result.Success(result.Data);
+            return Result.Success(result.GetValueOrThrow());
         }
         catch (Exception ex) {
             // An exception has occurred, add some additional information to the message
@@ -674,7 +674,7 @@ public class TransactionProcessorClient : ClientProxyBase, ITransactionProcessor
             if (result.IsFailed)
                 return ResultHelpers.CreateFailure(result);
 
-            return Result.Success(result.Data);
+            return Result.Success(result.GetValueOrThrow());
         }
         catch (Exception ex) {
             // An exception has occurred, add some additional information to the message
@@ -696,7 +696,7 @@ public class TransactionProcessorClient : ClientProxyBase, ITransactionProcessor
             if (result.IsFailed)
                 return ResultHelpers.CreateFailure(result);
 
-            return Result.Success(result.Data);
+            return Result.Success(result.GetValueOrThrow());
         }
         catch (Exception ex) {
             // An exception has occurred, add some additional information to the message
@@ -740,7 +740,7 @@ public class TransactionProcessorClient : ClientProxyBase, ITransactionProcessor
             if (result.IsFailed)
                 return ResultHelpers.CreateFailure(result);
 
-            return Result.Success(result.Data);
+            return Result.Success(result.GetValueOrThrow());
         }
         catch (Exception ex) {
             // An exception has occurred, add some additional information to the message

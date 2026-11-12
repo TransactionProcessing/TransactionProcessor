@@ -5,7 +5,7 @@ using Lamar;
 using MediatR;
 using Microsoft.Extensions.DependencyInjection;
 using Shouldly;
-using SimpleResults;
+using TransactionProcessing.UnionResults;
 using TransactionProcessor.BusinessLogic.Requests;
 using TransactionProcessor.BusinessLogic.Validation;
 using TransactionProcessor.Bootstrapper;
@@ -48,7 +48,7 @@ public sealed class CreateEstateCommandValidationBehaviorTests
         Result<Guid> result = await behavior.Handle(command, next, CancellationToken.None);
 
         result.IsSuccess.ShouldBeTrue();
-        result.Data.ShouldBe(expectedEstateId);
+        result.GetValueOrThrow().ShouldBe(expectedEstateId);
     }
 
     [Fact]

@@ -1,9 +1,9 @@
-﻿using System;
+using System;
 using System.Threading;
 using System.Threading.Tasks;
-using Shared.EventStore.Aggregate;
-using Shared.Results;
-using SimpleResults;
+using TransactionProcessing.Shared.EventStore.Aggregate;
+using TransactionProcessing.UnionResults;
+using TransactionProcessing.UnionResults;
 
 namespace TransactionProcessor.BusinessLogic.Common;
 
@@ -18,7 +18,7 @@ public static class DomainServiceHelper
         return result.IsFailed switch
         {
             true => DomainServiceHelper.HandleGetAggregateResult(result, aggregateId, isNotFoundError),
-            _ => Result.Success(result.Data)
+            _ => Result.Success(result.GetValueOrThrow())
         };
     }
 
@@ -38,7 +38,7 @@ public static class DomainServiceHelper
         T aggregate = result.Status switch
         {
             ResultStatus.NotFound => new T { AggregateId = aggregateId },  // Set AggregateId when creating a new instance
-            _ => result.Data
+            _ => result.GetValueOrThrow()
         };
 
         return Result.Success(aggregate);

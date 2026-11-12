@@ -1,4 +1,4 @@
-using SimpleResults;
+using TransactionProcessing.UnionResults;
 using TransactionProcessor.Aggregates;
 using TransactionProcessor.BusinessLogic.Requests;
 using TransactionProcessor.Models.Contract;
@@ -10,11 +10,11 @@ namespace TransactionProcessor.BusinessLogic.Tests.Services
     using Microsoft.Extensions.Configuration;
     using Imposter;
     using Imposter.Abstractions;
-    using Shared.DomainDrivenDesign.EventSourcing;
-    using Shared.EventStore.Aggregate;
-    using Shared.General;
-    using Shared.Logger;
-    using Shared.Serialisation;
+    using TransactionProcessing.Shared.DomainDrivenDesign.EventSourcing;
+    using TransactionProcessing.Shared.EventStore.Aggregate;
+    using TransactionProcessing.Shared.General;
+    using TransactionProcessing.Shared.Logger;
+    using TransactionProcessing.Shared.Serialisation;
     using Shouldly;
     using System;
     using System.Collections.Generic;
@@ -83,7 +83,7 @@ namespace TransactionProcessor.BusinessLogic.Tests.Services
             Result<Guid> result = await settlementDomainService.ProcessSettlement(command, TestContext.Current.CancellationToken);
 
             result.IsSuccess.ShouldBeTrue();
-            result.Data.ShouldNotBe(Guid.Empty);
+            result.GetValueOrThrow().ShouldNotBe(Guid.Empty);
         }
 
         [Fact]
@@ -175,7 +175,7 @@ namespace TransactionProcessor.BusinessLogic.Tests.Services
             Result<Guid> result = await settlementDomainService.ProcessSettlement(command, TestContext.Current.CancellationToken);
 
             result.IsSuccess.ShouldBeTrue();
-            result.Data.ShouldNotBe(Guid.Empty);
+            result.GetValueOrThrow().ShouldNotBe(Guid.Empty);
             this.AggregateService.Save(Arg<SettlementAggregate>.Any(), Arg<CancellationToken>.Any()).Called(Count.Exactly(2));
         }
 
@@ -220,7 +220,7 @@ namespace TransactionProcessor.BusinessLogic.Tests.Services
             Result<Guid> result = await settlementDomainService.ProcessSettlement(command, TestContext.Current.CancellationToken);
 
             result.IsSuccess.ShouldBeTrue();
-            result.Data.ShouldNotBe(Guid.Empty);
+            result.GetValueOrThrow().ShouldNotBe(Guid.Empty);
         }
 
         [Fact]
@@ -256,7 +256,7 @@ namespace TransactionProcessor.BusinessLogic.Tests.Services
             Result<Guid> result = await settlementDomainService.ProcessSettlement(command, TestContext.Current.CancellationToken);
 
             result.IsSuccess.ShouldBeTrue();
-            result.Data.ShouldNotBe(Guid.Empty);
+            result.GetValueOrThrow().ShouldNotBe(Guid.Empty);
         }
 
         [Fact]
@@ -544,7 +544,7 @@ namespace TransactionProcessor.BusinessLogic.Tests.Services
             Result<Guid> result = await settlementDomainService.ProcessSettlement(command, TestContext.Current.CancellationToken);
 
             result.IsSuccess.ShouldBeTrue();
-            result.Data.ShouldNotBe(Guid.Empty);
+            result.GetValueOrThrow().ShouldNotBe(Guid.Empty);
         }
 
         [Fact]

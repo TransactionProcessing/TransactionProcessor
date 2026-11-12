@@ -1,4 +1,4 @@
-﻿using Shared.Serialisation;
+using TransactionProcessing.Shared.Serialisation;
 using System.Diagnostics.CodeAnalysis;
 using System.Security.Cryptography;
 using System.Text;

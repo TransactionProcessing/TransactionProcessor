@@ -1,14 +1,14 @@
-﻿using Lamar;
+using Lamar;
 using Microsoft.AspNetCore.Http;
-using Shared.DomainDrivenDesign.EventSourcing;
-using Shared.EventStore.Aggregate;
-using Shared.EventStore.EventHandling;
-using Shared.Exceptions;
-using Shared.General;
-using Shared.Logger;
-using Shared.Results.Web;
-using Shared.Serialisation;
-using SimpleResults;
+using TransactionProcessing.Shared.DomainDrivenDesign.EventSourcing;
+using TransactionProcessing.Shared.EventStore.Aggregate;
+using TransactionProcessing.Shared.EventStore.EventHandling;
+using TransactionProcessing.Shared.Exceptions;
+using TransactionProcessing.Shared.General;
+using TransactionProcessing.Shared.Logger;
+using TransactionProcessing.UnionResults.AspNetCore;
+using TransactionProcessing.Shared.Serialisation;
+using TransactionProcessing.UnionResults;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -19,7 +19,7 @@ using System.Threading.Tasks;
 namespace TransactionProcessor.Handlers;
 
 public static class DomainEventHandlers {
-    public static async Task<IResult> HandleDomainEvent(IDomainEventHandlerResolver domainEventHandlerResolver, IContainer container, HttpContext ctx, CancellationToken cancellationToken) {
+    public static async Task<IResultOutcome> HandleDomainEvent(IDomainEventHandlerResolver domainEventHandlerResolver, IContainer container, HttpContext ctx, CancellationToken cancellationToken) {
 
         String eventType = ctx.Request.Headers["eventType"].ToString();
         String subscriptionId = ctx.Request.Headers["subscriptionId"].ToString();
@@ -33,7 +33,7 @@ public static class DomainEventHandlers {
         if (domainEventResult.IsFailed)
             return ResponseFactory.FromResult(domainEventResult, SuccessFactory);
 
-        IDomainEvent domainEvent = domainEventResult.Data;
+        IDomainEvent domainEvent = domainEventResult.GetValueOrThrow();
 
         List<IDomainEventHandler> eventHandlers = GetDomainEventHandlers(container, domainEventHandlerResolver, domainEvent, subscriptionId);
 
@@ -157,13 +157,13 @@ public static class DomainEventHandlers {
             if (allhandlers.IsFailed)
                 return new List<IDomainEventHandler>();
 
-            return allhandlers.Data.ToList();
+            return allhandlers.GetValueOrThrow().ToList();
         }
 
         var eventHandlersResult = domainEventHandlerResolver.GetDomainEventHandlers(domainEvent);
         if (eventHandlersResult.IsFailed)
             return new List<IDomainEventHandler>();
-        return eventHandlersResult.Data;
+        return eventHandlersResult.GetValueOrThrow();
     }
 
 }

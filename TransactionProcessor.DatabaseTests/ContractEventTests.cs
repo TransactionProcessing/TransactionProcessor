@@ -1,9 +1,9 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-using Shared.EntityFramework;
+using TransactionProcessing.Shared.EntityFramework;
 using Shouldly;
-using SimpleResults;
+using TransactionProcessing.UnionResults;
 using System.ComponentModel.Design;
 using TransactionProcessor.Database.Contexts;
 using TransactionProcessor.Database.Entities;

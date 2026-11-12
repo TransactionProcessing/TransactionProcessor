@@ -1,4 +1,4 @@
-﻿#nullable disable
+#nullable disable
 
 namespace TransactionProcessor.ProjectionEngine.Database.Migrations.TransactionProcessorMySql
 {
@@ -15,14 +15,14 @@ namespace TransactionProcessor.ProjectionEngine.Database.Migrations.TransactionP
                 {
                     EventId = table.Column<Guid>(type: "char(36)", nullable: false, collation: "ascii_general_ci"),
                     Type = table.Column<string>(type: "varchar(255)", nullable: false)
-                        .Annotation("MySql:CharSet", "utf8mb4"),
+                        .Annotation("MySQL:CharSet", "utf8mb4"),
                     Date = table.Column<DateTime>(type: "date", nullable: false)
                 },
                 constraints: table =>
                 {
                     table.PrimaryKey("PK_Events", x => new { x.EventId, x.Type });
                 })
-                .Annotation("MySql:CharSet", "utf8mb4");
+                .Annotation("MySQL:CharSet", "utf8mb4");
         }
 
         protected override void Down(MigrationBuilder migrationBuilder)

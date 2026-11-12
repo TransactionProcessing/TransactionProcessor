@@ -10,7 +10,7 @@ using Xunit;
 
 namespace TransactionProcessor.BusinessLogic.Tests.RequestHandler
 {
-    using Shared.Serialisation;
+    using TransactionProcessing.Shared.Serialisation;
     using System.Text.Json;
     using System.Threading;
     using Testing;

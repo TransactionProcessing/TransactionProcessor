@@ -1,9 +1,9 @@
-﻿using SimpleResults;
+using TransactionProcessing.UnionResults;
 
 namespace TransactionProcessor.ProjectionEngine.Dispatchers{
-    using Shared.DomainDrivenDesign.EventSourcing;
+    using TransactionProcessing.Shared.DomainDrivenDesign.EventSourcing;
 
-    public interface IStateDispatcher<in TState> where TState : Shared.EventStore.ProjectionEngine.State{
+    public interface IStateDispatcher<in TState> where TState : TransactionProcessing.Shared.EventStore.ProjectionEngine.State{
         Task<Result> Dispatch(TState state, IDomainEvent @event, CancellationToken cancellationToken);
     }
 }

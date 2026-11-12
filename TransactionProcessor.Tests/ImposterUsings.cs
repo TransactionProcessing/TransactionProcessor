@@ -2,9 +2,9 @@ using Imposter.Abstractions;
 using Microsoft.AspNetCore.Hosting;
 using MediatR;
 using TransactionProcessor.BusinessLogic.OperatorInterfaces;
-using Shared.EntityFramework;
+using TransactionProcessing.Shared.EntityFramework;
 using TransactionProcessor.Database.Contexts;
-using Shared.EventStore.EventHandling;
+using TransactionProcessing.Shared.EventStore.EventHandling;
 
 [assembly: GenerateImposter(typeof(IMediator))]
 [assembly: GenerateImposter(typeof(IWebHostEnvironment))]

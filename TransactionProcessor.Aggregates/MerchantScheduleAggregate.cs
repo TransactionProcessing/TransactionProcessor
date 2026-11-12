@@ -1,6 +1,6 @@
-﻿using Shared.DomainDrivenDesign.EventSourcing;
-using Shared.EventStore.Aggregate;
-using SimpleResults;
+using TransactionProcessing.Shared.DomainDrivenDesign.EventSourcing;
+using TransactionProcessing.Shared.EventStore.Aggregate;
+using TransactionProcessing.UnionResults;
 using System.Diagnostics.CodeAnalysis;
 using TransactionProcessor.DomainEvents;
 using MerchantScheduleModel = TransactionProcessor.Models.MerchantSchedule.MerchantSchedule;

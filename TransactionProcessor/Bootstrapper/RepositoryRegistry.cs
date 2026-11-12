@@ -1,7 +1,7 @@
-﻿using KurrentDB.Client;
-using Shared.EventStore.SubscriptionWorker;
-using Shared.Serialisation;
-using SimpleResults;
+using KurrentDB.Client;
+using TransactionProcessing.Shared.EventStore.SubscriptionWorker;
+using TransactionProcessing.Shared.Serialisation;
+using TransactionProcessing.UnionResults;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -15,7 +15,7 @@ using TransactionProcessor.Aggregates;
 using TransactionProcessor.BusinessLogic.Services;
 using TransactionProcessor.Database.Contexts;
 using TransactionProcessor.Repository;
-using PersistentSubscriptionInfo = Shared.EventStore.SubscriptionWorker.PersistentSubscriptionInfo;
+using PersistentSubscriptionInfo = TransactionProcessing.Shared.EventStore.SubscriptionWorker.PersistentSubscriptionInfo;
 
 namespace TransactionProcessor.Bootstrapper {
     using Azure.Core;
@@ -29,12 +29,12 @@ namespace TransactionProcessor.Bootstrapper {
     using ProjectionEngine.Projections;
     using ProjectionEngine.Repository;
     using ProjectionEngine.State;
-    using Shared.DomainDrivenDesign.EventSourcing;
-    using Shared.EntityFramework;
-    using Shared.EventStore.Aggregate;
-    using Shared.EventStore.EventStore;
-    using Shared.EventStore.SubscriptionWorker;
-    using Shared.General;
+    using TransactionProcessing.Shared.DomainDrivenDesign.EventSourcing;
+    using TransactionProcessing.Shared.EntityFramework;
+    using TransactionProcessing.Shared.EventStore.Aggregate;
+    using TransactionProcessing.Shared.EventStore.EventStore;
+    using TransactionProcessing.Shared.EventStore.SubscriptionWorker;
+    using TransactionProcessing.Shared.General;
     using System;
     using System.Data.Common;
     using System.Diagnostics.CodeAnalysis;

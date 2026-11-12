@@ -1,5 +1,5 @@
-using Shared.Logger;
-using SimpleResults;
+using TransactionProcessing.Shared.Logger;
+using TransactionProcessing.UnionResults;
 using TransactionProcessor.DomainEvents;
 using TransactionProcessor.ProjectionEngine.Models;
 
@@ -9,15 +9,15 @@ using Dispatchers;
 using Microsoft.Extensions.Configuration;
 using Projections;
 using Repository;
-using Shared.DomainDrivenDesign.EventSourcing;
-using Shared.General;
+using TransactionProcessing.Shared.DomainDrivenDesign.EventSourcing;
+using TransactionProcessing.Shared.General;
 using Shouldly;
 using State;
 
 public class ProjectionHandlerTests{
 
     public ProjectionHandlerTests(){
-        Shared.Logger.Logger.Initialise(Shared.Logger.NullLogger.Instance);
+        TransactionProcessing.Shared.Logger.Logger.Initialise(TransactionProcessing.Shared.Logger.NullLogger.Instance);
         IConfigurationRoot configurationRoot = new ConfigurationBuilder().AddInMemoryCollection(TestData.DefaultAppSettings).Build();
         ConfigurationReader.Initialise(configurationRoot);
     }

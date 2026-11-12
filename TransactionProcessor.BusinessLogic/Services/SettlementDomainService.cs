@@ -1,5 +1,5 @@
-﻿using Shared.Results;
-using SimpleResults;
+using TransactionProcessing.UnionResults;
+using TransactionProcessing.UnionResults;
 using TransactionProcessor.Aggregates;
 using TransactionProcessor.BusinessLogic.Requests;
 using TransactionProcessor.Models.Contract;
@@ -10,10 +10,10 @@ namespace TransactionProcessor.BusinessLogic.Services
     using Common;
     using Models;
     using Polly;
-    using Shared.DomainDrivenDesign.EventSourcing;
-    using Shared.EventStore.Aggregate;
-    using Shared.Exceptions;
-    using Shared.Logger;
+    using TransactionProcessing.Shared.DomainDrivenDesign.EventSourcing;
+    using TransactionProcessing.Shared.EventStore.Aggregate;
+    using TransactionProcessing.Shared.Exceptions;
+    using TransactionProcessing.Shared.Logger;
     using System;
     using System.Collections.Generic;
     using System.Linq;
@@ -56,7 +56,7 @@ namespace TransactionProcessor.BusinessLogic.Services
             if (getSettlementResult.IsFailed)
                 return ResultHelpers.CreateFailure(getSettlementResult);
 
-            SettlementAggregate settlementAggregate = getSettlementResult.Data;
+            SettlementAggregate settlementAggregate = getSettlementResult.GetValueOrThrow();
 
             if (settlementAggregate.IsCreated == false) {
                 Logger.LogInformation($"No pending settlement for {command.SettlementDate:yyyy-MM-dd}");
@@ -67,11 +67,11 @@ namespace TransactionProcessor.BusinessLogic.Services
             if (getMerchantResult.IsFailed)
                 return ResultHelpers.CreateFailure(getMerchantResult);
 
-            Result<List<(Guid transactionId, Guid merchantId, CalculatedFee calculatedFee)>> settlementPreparationResult = await this.PrepareSettlementForProcessing(settlementAggregate, getMerchantResult.Data, cancellationToken);
+            Result<List<(Guid transactionId, Guid merchantId, CalculatedFee calculatedFee)>> settlementPreparationResult = await this.PrepareSettlementForProcessing(settlementAggregate, getMerchantResult.GetValueOrThrow(), cancellationToken);
             if (settlementPreparationResult.IsFailed)
                 return ResultHelpers.CreateFailure(settlementPreparationResult);
 
-            return await this.ProcessSettlementFees(settlementPreparationResult.Data, command.SettlementDate, settlementId, cancellationToken);
+            return await this.ProcessSettlementFees(settlementPreparationResult.GetValueOrThrow(), command.SettlementDate, settlementId, cancellationToken);
         }
 
         private async Task<Result<List<(Guid transactionId, Guid merchantId, CalculatedFee calculatedFee)>>> PrepareSettlementForProcessing(SettlementAggregate settlementAggregate,
@@ -111,7 +111,7 @@ namespace TransactionProcessor.BusinessLogic.Services
                     if (getTransactionResult.IsFailed)
                         return ResultHelpers.CreateFailure(getTransactionResult);
 
-                    TransactionAggregate transactionAggregate = getTransactionResult.Data;
+                    TransactionAggregate transactionAggregate = getTransactionResult.GetValueOrThrow();
                     transactionAggregate.AddSettledFee(feeToSettle.calculatedFee, settlementDate, settlementId);
 
                     Result saveResult = await this.AggregateService.Save(transactionAggregate, cancellationToken);
@@ -143,7 +143,7 @@ namespace TransactionProcessor.BusinessLogic.Services
             if (getSettlementResult.IsFailed)
                 return ResultHelpers.CreateFailure(getSettlementResult);
 
-            SettlementAggregate settlementAggregate = getSettlementResult.Data;
+            SettlementAggregate settlementAggregate = getSettlementResult.GetValueOrThrow();
 
                 if (settlementAggregate.IsCreated == false)
                 {
@@ -189,14 +189,14 @@ namespace TransactionProcessor.BusinessLogic.Services
                 if (getSettlementResult.IsFailed)
                     return ResultHelpers.CreateFailure(getSettlementResult);
 
-                SettlementAggregate settlementAggregate = getSettlementResult.Data;
+                SettlementAggregate settlementAggregate = getSettlementResult.GetValueOrThrow();
 
 
                 Result<MerchantAggregate> getMerchantResult = await DomainServiceHelper.GetAggregateOrFailure(ct => this.AggregateService.Get<MerchantAggregate>(command.MerchantId, ct), command.MerchantId, cancellationToken);
                 if (getMerchantResult.IsFailed)
                     return ResultHelpers.CreateFailure(getMerchantResult);
 
-                MerchantAggregate merchant = getMerchantResult.Data;
+                MerchantAggregate merchant = getMerchantResult.GetValueOrThrow();
                 Result stateResult;
                 if (merchant.SettlementSchedule == SettlementSchedule.Immediate) {
                     stateResult = settlementAggregate.ImmediatelyMarkFeeAsSettled(command.MerchantId, command.TransactionId, command.FeeId);

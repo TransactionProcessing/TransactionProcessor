@@ -1,19 +1,19 @@
-﻿using SecurityService.Client;
+using SecurityService.Client;
 using SecurityService.DataTransferObjects;
-using Shared.DomainDrivenDesign.EventSourcing;
-using Shared.EventStore.Aggregate;
-using Shared.EventStore.EventStore;
-using Shared.Exceptions;
-using Shared.Results;
-using Shared.ValueObjects;
-using SimpleResults;
+using TransactionProcessing.Shared.DomainDrivenDesign.EventSourcing;
+using TransactionProcessing.Shared.EventStore.Aggregate;
+using TransactionProcessing.Shared.EventStore.EventStore;
+using TransactionProcessing.Shared.Exceptions;
+using TransactionProcessing.UnionResults;
+using TransactionProcessing.Shared.ValueObjects;
+using TransactionProcessing.UnionResults;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using KurrentDB.Client;
-using Shared.Serialisation;
+using TransactionProcessing.Shared.Serialisation;
 using TransactionProcessor.Aggregates;
 using TransactionProcessor.BusinessLogic.Common;
 using TransactionProcessor.BusinessLogic.Requests;
@@ -71,7 +71,7 @@ namespace TransactionProcessor.BusinessLogic.Services
                 if (contextResult.IsFailed)
                     return ResultHelpers.CreateFailure(contextResult);
 
-                MerchantAggregate merchantAggregate = contextResult.Data.MerchantAggregate;
+                MerchantAggregate merchantAggregate = contextResult.GetValueOrThrow().MerchantAggregate;
 
                 Guid deviceId = Guid.NewGuid();
                 Result stateResult = merchantAggregate.AddDevice(deviceId, command.RequestDto.DeviceIdentifier);
@@ -97,8 +97,8 @@ namespace TransactionProcessor.BusinessLogic.Services
                 if (contextResult.IsFailed)
                     return ResultHelpers.CreateFailure(contextResult);
 
-                EstateAggregate estateAggregate = contextResult.Data.EstateAggregate;
-                MerchantAggregate merchantAggregate = contextResult.Data.MerchantAggregate;
+                EstateAggregate estateAggregate = contextResult.GetValueOrThrow().EstateAggregate;
+                MerchantAggregate merchantAggregate = contextResult.GetValueOrThrow().MerchantAggregate;
 
                 (Result validationResult, String operatorName) = await this.GetOperatorAssignmentDetails(command, estateAggregate, cancellationToken);
                 if (validationResult.IsFailed)
@@ -137,7 +137,7 @@ namespace TransactionProcessor.BusinessLogic.Services
             Result validationResult = this.ValidateOperatorAssignment(command.RequestDto.OperatorId,
                 command.RequestDto.MerchantNumber,
                 command.RequestDto.TerminalNumber,
-                operatorResult.Data);
+                operatorResult.GetValueOrThrow());
 
             return validationResult.IsFailed
                 ? (validationResult, String.Empty)
@@ -202,7 +202,7 @@ namespace TransactionProcessor.BusinessLogic.Services
                 if (estateResult.IsFailed)
                     return ResultHelpers.CreateFailure(estateResult);
 
-                EstateAggregate estateAggregate = estateResult.Data;
+                EstateAggregate estateAggregate = estateResult.GetValueOrThrow();
                 // Estate Id is a valid estate
                 if (estateAggregate.IsCreated == false)
                 {
@@ -213,7 +213,7 @@ namespace TransactionProcessor.BusinessLogic.Services
                 if (merchantResult.IsFailed)
                     return ResultHelpers.CreateFailure(merchantResult);
 
-                MerchantAggregate merchantAggregate = merchantResult.Data;
+                MerchantAggregate merchantAggregate = merchantResult.GetValueOrThrow();
                 // Build up the models for the Crete call
                 Address address = Address.Create(Guid.Empty, new AddressLines(command.RequestDto.Address.AddressLine1, command.RequestDto.Address.AddressLine2, command.RequestDto.Address.AddressLine3, command.RequestDto.Address.AddressLine4), command.RequestDto.Address.Town, command.RequestDto.Address.Region, command.RequestDto.Address.PostalCode, command.RequestDto.Address.Country);
                 Contact contact = new Contact(Guid.Empty, command.RequestDto.Contact.EmailAddress, command.RequestDto.Contact.ContactName, command.RequestDto.Contact.PhoneNumber);
@@ -246,7 +246,7 @@ namespace TransactionProcessor.BusinessLogic.Services
                 if (contextResult.IsFailed)
                     return ResultHelpers.CreateFailure(contextResult);
 
-                MerchantAggregate merchantAggregate = contextResult.Data.MerchantAggregate;
+                MerchantAggregate merchantAggregate = contextResult.GetValueOrThrow().MerchantAggregate;
 
                 Result<UserResponse> getUserResult = await this.CreateMerchantSecurityUser(createUserRequest, cancellationToken);
                 if (getUserResult.IsFailed)
@@ -318,7 +318,7 @@ namespace TransactionProcessor.BusinessLogic.Services
                 if (contextResult.IsFailed)
                     return ResultHelpers.CreateFailure(contextResult);
 
-                MerchantAggregate merchantAggregate = contextResult.Data.MerchantAggregate;
+                MerchantAggregate merchantAggregate = contextResult.GetValueOrThrow().MerchantAggregate;
 
                 Result<MerchantDepositListAggregate> depositListResult = await this.GetOrCreateMerchantDepositList(command, merchantAggregate, cancellationToken);
                 if (depositListResult.IsFailed)
@@ -326,11 +326,11 @@ namespace TransactionProcessor.BusinessLogic.Services
 
                 PositiveMoney amount = PositiveMoney.Create(Money.Create(command.RequestDto.Amount));
                 MerchantDepositSource depositSource = this.ConvertDepositSource(command.DepositSource);
-                Result stateResult = depositListResult.Data.MakeDeposit(depositSource, command.RequestDto.Reference, command.RequestDto.DepositDateTime, amount, command.RequestDto.HostDateTime);
+                Result stateResult = depositListResult.GetValueOrThrow().MakeDeposit(depositSource, command.RequestDto.Reference, command.RequestDto.DepositDateTime, amount, command.RequestDto.HostDateTime);
                 if (stateResult.IsFailed)
                     return ResultHelpers.CreateFailure(stateResult);
 
-                Result saveResult = await this.AggregateService.Save(depositListResult.Data, cancellationToken);
+                Result saveResult = await this.AggregateService.Save(depositListResult.GetValueOrThrow(), cancellationToken);
                 if (saveResult.IsFailed)
                     return ResultHelpers.CreateFailure(saveResult);
 
@@ -358,7 +358,7 @@ namespace TransactionProcessor.BusinessLogic.Services
 
                 // If we are here we have enough credit to withdraw
                 PositiveMoney amount = PositiveMoney.Create(Money.Create(command.RequestDto.Amount));
-                MerchantDepositListAggregate merchantDepositListAggregate = getDepositListResult.Data;
+                MerchantDepositListAggregate merchantDepositListAggregate = getDepositListResult.GetValueOrThrow();
 
                 Result stateResult = merchantDepositListAggregate.MakeWithdrawal(command.RequestDto.WithdrawalDateTime, amount, command.RequestDto.HostDateTime);
                 if (stateResult.IsFailed)
@@ -383,13 +383,13 @@ namespace TransactionProcessor.BusinessLogic.Services
                 if (contextResult.IsFailed)
                     return ResultHelpers.CreateFailure(contextResult);
 
-                MerchantAggregate merchantAggregate = contextResult.Data.MerchantAggregate;
+                MerchantAggregate merchantAggregate = contextResult.GetValueOrThrow().MerchantAggregate;
 
                 Result<ContractAggregate> contractResult = await this.GetCreatedContract(command.RequestDto.ContractId, cancellationToken);
                 if (contractResult.IsFailed)
                     return ResultHelpers.CreateFailure(contractResult);
 
-                Result stateResult = merchantAggregate.AddContract(contractResult.Data);
+                Result stateResult = merchantAggregate.AddContract(contractResult.GetValueOrThrow());
                 if (stateResult.IsFailed)
                     return stateResult;
 
@@ -411,7 +411,7 @@ namespace TransactionProcessor.BusinessLogic.Services
                 if (contextResult.IsFailed)
                     return ResultHelpers.CreateFailure(contextResult);
 
-                MerchantAggregate merchantAggregate = contextResult.Data.MerchantAggregate;
+                MerchantAggregate merchantAggregate = contextResult.GetValueOrThrow().MerchantAggregate;
 
                 Result stateResult = merchantAggregate.UpdateMerchant(command.RequestDto.Name);
                 if (stateResult.IsFailed)
@@ -440,7 +440,7 @@ namespace TransactionProcessor.BusinessLogic.Services
                 if (contextResult.IsFailed)
                     return ResultHelpers.CreateFailure(contextResult);
 
-                MerchantAggregate merchantAggregate = contextResult.Data.MerchantAggregate;
+                MerchantAggregate merchantAggregate = contextResult.GetValueOrThrow().MerchantAggregate;
 
                 Address address = Address.Create(Guid.Empty, new AddressLines(command.RequestDto.AddressLine1, command.RequestDto.AddressLine2, command.RequestDto.AddressLine3, command.RequestDto.AddressLine4), command.RequestDto.Town, command.RequestDto.Region, command.RequestDto.PostalCode, command.RequestDto.Country);
 
@@ -468,7 +468,7 @@ namespace TransactionProcessor.BusinessLogic.Services
                 if (contextResult.IsFailed)
                     return ResultHelpers.CreateFailure(contextResult);
 
-                MerchantAggregate merchantAggregate = contextResult.Data.MerchantAggregate;
+                MerchantAggregate merchantAggregate = contextResult.GetValueOrThrow().MerchantAggregate;
 
                 Address address = Address.Create(command.AddressId, new AddressLines(command.RequestDto.AddressLine1, command.RequestDto.AddressLine2, command.RequestDto.AddressLine3, command.RequestDto.AddressLine4), command.RequestDto.Town, command.RequestDto.Region, command.RequestDto.PostalCode, command.RequestDto.Country);
 
@@ -496,7 +496,7 @@ namespace TransactionProcessor.BusinessLogic.Services
                 if (contextResult.IsFailed)
                     return ResultHelpers.CreateFailure(contextResult);
 
-                MerchantAggregate merchantAggregate = contextResult.Data.MerchantAggregate;
+                MerchantAggregate merchantAggregate = contextResult.GetValueOrThrow().MerchantAggregate;
 
                 Result stateResult = merchantAggregate.AddContact(command.RequestDto.ContactName,
                                                                  command.RequestDto.PhoneNumber,
@@ -523,7 +523,7 @@ namespace TransactionProcessor.BusinessLogic.Services
                 if (contextResult.IsFailed)
                     return ResultHelpers.CreateFailure(contextResult);
 
-                MerchantAggregate merchantAggregate = contextResult.Data.MerchantAggregate;
+                MerchantAggregate merchantAggregate = contextResult.GetValueOrThrow().MerchantAggregate;
 
                 Result stateResult = merchantAggregate.UpdateContact(command.ContactId, command.RequestDto.ContactName, command.RequestDto.EmailAddress, command.RequestDto.PhoneNumber);
                 if (stateResult.IsFailed)
@@ -547,7 +547,7 @@ namespace TransactionProcessor.BusinessLogic.Services
                 if (contextResult.IsFailed)
                     return ResultHelpers.CreateFailure(contextResult);
 
-                MerchantAggregate merchantAggregate = contextResult.Data.MerchantAggregate;
+                MerchantAggregate merchantAggregate = contextResult.GetValueOrThrow().MerchantAggregate;
 
                 Result stateResult = merchantAggregate.RemoveOperator(command.OperatorId);
                 if (stateResult.IsFailed)
@@ -572,7 +572,7 @@ namespace TransactionProcessor.BusinessLogic.Services
                 if (contextResult.IsFailed)
                     return ResultHelpers.CreateFailure(contextResult);
 
-                MerchantAggregate merchantAggregate = contextResult.Data.MerchantAggregate;
+                MerchantAggregate merchantAggregate = contextResult.GetValueOrThrow().MerchantAggregate;
 
                 Result stateResult = merchantAggregate.RemoveContract(command.ContractId);
                 if (stateResult.IsFailed)
@@ -598,7 +598,7 @@ namespace TransactionProcessor.BusinessLogic.Services
                 if (contextResult.IsFailed)
                     return ResultHelpers.CreateFailure(contextResult);
 
-                MerchantAggregate merchantAggregate = contextResult.Data.MerchantAggregate;
+                MerchantAggregate merchantAggregate = contextResult.GetValueOrThrow().MerchantAggregate;
                 var dayMappings = new List<(DayOfWeek Day, TransactionProcessor.DataTransferObjects.Requests.Merchant.OpeningHours Hours)>() {
                     (DayOfWeek.Monday, command.RequestDto.Monday),
                     (DayOfWeek.Tuesday, command.RequestDto.Tuesday),
@@ -640,7 +640,7 @@ namespace TransactionProcessor.BusinessLogic.Services
                 if (merchantScheduleResult.IsFailed)
                     return ResultHelpers.CreateFailure(merchantScheduleResult);
 
-                MerchantScheduleAggregate merchantScheduleAggregate = merchantScheduleResult.Data;
+                MerchantScheduleAggregate merchantScheduleAggregate = merchantScheduleResult.GetValueOrThrow();
                 Result stateResult = merchantScheduleAggregate.Create(command.EstateId, command.MerchantId, command.RequestDto.Year, ConvertScheduleMonths(command.RequestDto.Months));
                 if (stateResult.IsFailed)
                     return stateResult;
@@ -668,7 +668,7 @@ namespace TransactionProcessor.BusinessLogic.Services
                 if (merchantScheduleResult.IsFailed)
                     return ResultHelpers.CreateFailure(merchantScheduleResult);
 
-                MerchantScheduleAggregate merchantScheduleAggregate = merchantScheduleResult.Data;
+                MerchantScheduleAggregate merchantScheduleAggregate = merchantScheduleResult.GetValueOrThrow();
 
                 Result stateResult = merchantScheduleAggregate.UpdateSchedule(ConvertScheduleMonths(command.RequestDto.Months));
                 if (stateResult.IsFailed)
@@ -712,11 +712,11 @@ namespace TransactionProcessor.BusinessLogic.Services
             if (merchantResult.IsFailed)
                 return ResultHelpers.CreateFailure(merchantResult);
 
-            Result validateResult = this.ValidateEstateAndMerchant(estateResult.Data, merchantResult.Data);
+            Result validateResult = this.ValidateEstateAndMerchant(estateResult.GetValueOrThrow(), merchantResult.GetValueOrThrow());
             if (validateResult.IsFailed)
                 return ResultHelpers.CreateFailure(validateResult);
 
-            return Result.Success(new ValidatedMerchantContext(estateResult.Data, merchantResult.Data));
+            return Result.Success(new ValidatedMerchantContext(estateResult.GetValueOrThrow(), merchantResult.GetValueOrThrow()));
         }
 
         private Result ValidateEstateAndMerchant(EstateAggregate estateAggregate,
@@ -749,7 +749,7 @@ namespace TransactionProcessor.BusinessLogic.Services
             if (contractResult.IsFailed)
                 return ResultHelpers.CreateFailure(contractResult);
 
-            ContractAggregate contractAggregate = contractResult.Data;
+            ContractAggregate contractAggregate = contractResult.GetValueOrThrow();
             if (contractAggregate.IsCreated == false)
                 return Result.Invalid($"Contract Id {contractId} has not been created");
 
@@ -764,7 +764,7 @@ namespace TransactionProcessor.BusinessLogic.Services
             if (getDepositListResult.IsFailed)
                 return ResultHelpers.CreateFailure(getDepositListResult);
 
-            MerchantDepositListAggregate merchantDepositListAggregate = getDepositListResult.Data;
+            MerchantDepositListAggregate merchantDepositListAggregate = getDepositListResult.GetValueOrThrow();
             Result createResult = this.EnsureMerchantDepositListCreated(merchantDepositListAggregate, merchantAggregate, command.RequestDto.DepositDateTime);
             if (createResult.IsFailed)
                 return ResultHelpers.CreateFailure(createResult);
@@ -783,7 +783,7 @@ namespace TransactionProcessor.BusinessLogic.Services
             if (getDepositListResult.IsFailed)
                 return ResultHelpers.CreateFailure(getDepositListResult);
 
-            MerchantDepositListAggregate merchantDepositListAggregate = getDepositListResult.Data;
+            MerchantDepositListAggregate merchantDepositListAggregate = getDepositListResult.GetValueOrThrow();
             if (merchantDepositListAggregate.IsCreated == false)
             {
                 return Result.Invalid($"Merchant [{command.MerchantId}] has not made any deposits yet");
@@ -801,7 +801,7 @@ namespace TransactionProcessor.BusinessLogic.Services
                 return Result.Invalid($"Failed to get Merchant Balance.");
             }
 
-            MerchantBalanceProjectionState1 projectionState = StringSerialiser.Deserialise<MerchantBalanceProjectionState1>(getBalanceResult.Data);
+            MerchantBalanceProjectionState1 projectionState = StringSerialiser.Deserialise<MerchantBalanceProjectionState1>(getBalanceResult.GetValueOrThrow());
             if (projectionState?.merchant == null)
             {
                 return Result.Invalid("Merchant Balance data is missing or invalid.");
@@ -824,7 +824,7 @@ namespace TransactionProcessor.BusinessLogic.Services
                 if (contextResult.IsFailed)
                     return ResultHelpers.CreateFailure(contextResult);
 
-                MerchantAggregate merchantAggregate = contextResult.Data.MerchantAggregate;
+                MerchantAggregate merchantAggregate = contextResult.GetValueOrThrow().MerchantAggregate;
 
                 Result stateResult = merchantAggregate.SwapDevice(command.DeviceIdentifier, command.RequestDto.NewDeviceIdentifier);
                 if (stateResult.IsFailed)

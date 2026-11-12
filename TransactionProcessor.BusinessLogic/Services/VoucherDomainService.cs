@@ -1,4 +1,4 @@
-﻿using Shared.Results;
+using TransactionProcessing.UnionResults;
 using TransactionProcessor.Aggregates;
 using TransactionProcessor.BusinessLogic.Common;
 using TransactionProcessor.BusinessLogic.Requests;
@@ -10,10 +10,10 @@ namespace TransactionProcessor.BusinessLogic.Services;
 
 using Microsoft.EntityFrameworkCore;
 using Models;
-using Shared.EntityFramework;
-using Shared.EventStore.Aggregate;
-using Shared.Exceptions;
-using SimpleResults;
+using TransactionProcessing.Shared.EntityFramework;
+using TransactionProcessing.Shared.EventStore.Aggregate;
+using TransactionProcessing.Shared.Exceptions;
+using TransactionProcessing.UnionResults;
 using System;
 using System.Linq;
 using System.Threading;
@@ -64,7 +64,7 @@ public class VoucherDomainService : IVoucherDomainService
             if (voucherResult.IsFailed)
                 return ResultHelpers.CreateFailure(voucherResult);
 
-            VoucherAggregate voucherAggregate = voucherResult.Data;
+            VoucherAggregate voucherAggregate = voucherResult.GetValueOrThrow();
 
             Result stateResult = voucherAggregate.Generate(command.OperatorId, command.EstateId, command.TransactionId, command.IssuedDateTime, command.Value);
             if (stateResult.IsFailed)
@@ -126,7 +126,7 @@ public class VoucherDomainService : IVoucherDomainService
             if (voucherResult.IsFailed)
                 return ResultHelpers.CreateFailure(voucherResult);
 
-            VoucherAggregate voucherAggregate = voucherResult.Data;
+            VoucherAggregate voucherAggregate = voucherResult.GetValueOrThrow();
 
             // Redeem the voucher
             Result stateResult = voucherAggregate.Redeem(redeemedDateTime, command.RedeemVoucherRequest.HostDateTime);
@@ -159,7 +159,7 @@ public class VoucherDomainService : IVoucherDomainService
         Result<EstateAggregate> estateResult = await DomainServiceHelper.GetAggregateOrFailure(ct => this.AggregateService.Get<EstateAggregate>(estateId, ct), estateId, cancellationToken);
         if (estateResult.IsFailed)
             return ResultHelpers.CreateFailure(estateResult);
-        EstateAggregate estateAggregate = estateResult.Data;
+        EstateAggregate estateAggregate = estateResult.GetValueOrThrow();
 
         Estate estate = estateAggregate.GetEstate();
         if (estate.Operators == null || estate.Operators.Any() == false)

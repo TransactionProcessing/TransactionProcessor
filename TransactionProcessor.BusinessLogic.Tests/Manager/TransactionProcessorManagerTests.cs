@@ -1,10 +1,10 @@
 using Imposter.Abstractions;
-using Shared.DomainDrivenDesign.EventSourcing;
-using Shared.EventStore.Aggregate;
-using Shared.Logger;
-using Shared.Serialisation;
+using TransactionProcessing.Shared.DomainDrivenDesign.EventSourcing;
+using TransactionProcessing.Shared.EventStore.Aggregate;
+using TransactionProcessing.Shared.Logger;
+using TransactionProcessing.Shared.Serialisation;
 using Shouldly;
-using SimpleResults;
+using TransactionProcessing.UnionResults;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -36,7 +36,7 @@ namespace TransactionProcessor.BusinessLogic.Tests.Manager
         {
             Logger.Initialise(new NullLogger());
             this.TransactionProcessorReadModelRepository = new ITransactionProcessorReadModelRepositoryImposter();
-            StringSerialiser.Initialise(new Shared.Serialisation.SystemTextJsonSerializer(new System.Text.Json.JsonSerializerOptions()));
+            StringSerialiser.Initialise(new TransactionProcessing.Shared.Serialisation.SystemTextJsonSerializer(new System.Text.Json.JsonSerializerOptions()));
             this.AggregateService = new IAggregateServiceImposter();
             
             this.TransactionProcessorManager = new TransactionProcessorManager(this.TransactionProcessorReadModelRepository.Instance(), this.AggregateService.Instance());
@@ -50,7 +50,7 @@ namespace TransactionProcessor.BusinessLogic.Tests.Manager
 
             Result<List<Estate>> getEstatesResult = await this.TransactionProcessorManager.GetEstates(TestData.EstateId, TestContext.Current.CancellationToken);
             getEstatesResult.IsSuccess.ShouldBeTrue();
-            List<Estate> estateModels = getEstatesResult.Data;
+            List<Estate> estateModels = getEstatesResult.GetValueOrThrow();
             estateModels.ShouldNotBeNull();
             estateModels.ShouldHaveSingleItem();
             estateModels.Single().EstateId.ShouldBe(TestData.EstateModel.EstateId);
@@ -76,7 +76,7 @@ namespace TransactionProcessor.BusinessLogic.Tests.Manager
 
             Result<Estate> getEstateResult = await this.TransactionProcessorManager.GetEstate(TestData.EstateId, TestContext.Current.CancellationToken);
             getEstateResult.IsSuccess.ShouldBeTrue();
-            Estate estateModel = getEstateResult.Data;
+            Estate estateModel = getEstateResult.GetValueOrThrow();
             estateModel.ShouldNotBeNull();
             estateModel.EstateId.ShouldBe(TestData.EstateModel.EstateId);
             estateModel.Name.ShouldBe(TestData.EstateModel.Name);
@@ -113,7 +113,7 @@ namespace TransactionProcessor.BusinessLogic.Tests.Manager
 
             Result<Contract> getContractResult = await this.TransactionProcessorManager.GetContract(TestData.EstateId, TestData.ContractId, TestContext.Current.CancellationToken);
             getContractResult.IsSuccess.ShouldBeTrue();
-            Contract contractModel = getContractResult.Data;
+            Contract contractModel = getContractResult.GetValueOrThrow();
 
             contractModel.ShouldNotBeNull();
             contractModel.ContractId.ShouldBe(TestData.ContractId);
@@ -150,7 +150,7 @@ namespace TransactionProcessor.BusinessLogic.Tests.Manager
 
             Result<List<Contract>> getContractsResult = await this.TransactionProcessorManager.GetContracts(TestData.EstateId, TestContext.Current.CancellationToken);
             getContractsResult.IsSuccess.ShouldBeTrue();
-            List<Contract> contractModelList = getContractsResult.Data;
+            List<Contract> contractModelList = getContractsResult.GetValueOrThrow();
             contractModelList.ShouldNotBeNull();
             contractModelList.ShouldNotBeEmpty();
         }
@@ -171,7 +171,7 @@ namespace TransactionProcessor.BusinessLogic.Tests.Manager
 
             Result<List<ContractProductTransactionFee>> getTransactionFeesForProductResult = await this.TransactionProcessorManager.GetTransactionFeesForProduct(TestData.EstateId, TestData.MerchantId, TestData.ContractId, TestData.VariableContractProductId, TestContext.Current.CancellationToken);
             getTransactionFeesForProductResult.IsSuccess.ShouldBeTrue();
-            List<ContractProductTransactionFee> transactionFees = getTransactionFeesForProductResult.Data;
+            List<ContractProductTransactionFee> transactionFees = getTransactionFeesForProductResult.GetValueOrThrow();
             transactionFees.ShouldNotBeNull();
             transactionFees.ShouldHaveSingleItem();
             transactionFees.First().TransactionFeeId.ShouldBe(TestData.TransactionFeeId);
@@ -212,7 +212,7 @@ namespace TransactionProcessor.BusinessLogic.Tests.Manager
 
             var getFileDetailsResult = await this.EstateManagementManager.GetFileDetails(TestData.EstateId, TestData.FileId, TestContext.Current.CancellationToken);
             getFileDetailsResult.IsSuccess.ShouldBeTrue();
-            var fileDetails = getFileDetailsResult.Data;
+            var fileDetails = getFileDetailsResult.GetValueOrThrow();
             fileDetails.ShouldNotBeNull();
         }
 
@@ -232,7 +232,7 @@ namespace TransactionProcessor.BusinessLogic.Tests.Manager
 
             Result<Operator> getOperatorResult = await this.TransactionProcessorManager.GetOperator(TestData.EstateId, TestData.OperatorId, TestContext.Current.CancellationToken);
             getOperatorResult.IsSuccess.ShouldBeTrue();
-            Operator operatorDetails = getOperatorResult.Data;
+            Operator operatorDetails = getOperatorResult.GetValueOrThrow();
             operatorDetails.ShouldNotBeNull();
         }
 
@@ -263,7 +263,7 @@ namespace TransactionProcessor.BusinessLogic.Tests.Manager
 
             Result<List<Operator>> getOperatorsResult = await this.TransactionProcessorManager.GetOperators(TestData.EstateId, TestContext.Current.CancellationToken);
             getOperatorsResult.IsSuccess.ShouldBeTrue();
-            List<Operator> operators = getOperatorsResult.Data;
+            List<Operator> operators = getOperatorsResult.GetValueOrThrow();
             operators.ShouldNotBeNull();
             operators.ShouldHaveSingleItem();
             operators.Single().OperatorId.ShouldBe(TestData.OperatorId);
@@ -299,7 +299,7 @@ namespace TransactionProcessor.BusinessLogic.Tests.Manager
 
             Result<Merchant> getMerchantResult = await this.TransactionProcessorManager.GetMerchant(TestData.EstateId, TestData.MerchantId, TestContext.Current.CancellationToken);
             getMerchantResult.IsSuccess.ShouldBeTrue();
-            Merchant merchantModel = getMerchantResult.Data;
+            Merchant merchantModel = getMerchantResult.GetValueOrThrow();
 
             merchantModel.ShouldNotBeNull();
             merchantModel.MerchantReportingId.ShouldBe(expectedModel.MerchantReportingId);
@@ -369,10 +369,10 @@ namespace TransactionProcessor.BusinessLogic.Tests.Manager
             Result<MerchantScheduleModel> result = await this.TransactionProcessorManager.GetMerchantSchedule(TestData.EstateId, TestData.MerchantId, TestData.MerchantScheduleYear, TestContext.Current.CancellationToken);
 
             result.IsSuccess.ShouldBeTrue();
-            result.Data.Year.ShouldBe(TestData.MerchantScheduleYear);
-            result.Data.Months.ShouldHaveSingleItem();
-            result.Data.Months.Single().Month.ShouldBe(1);
-            result.Data.Months.Single().ClosedDays.ShouldBe([1, 26]);
+            result.GetValueOrThrow().Year.ShouldBe(TestData.MerchantScheduleYear);
+            result.GetValueOrThrow().Months.ShouldHaveSingleItem();
+            result.GetValueOrThrow().Months.Single().Month.ShouldBe(1);
+            result.GetValueOrThrow().Months.Single().ClosedDays.ShouldBe([1, 26]);
         }
 
         [Fact]
@@ -396,10 +396,10 @@ namespace TransactionProcessor.BusinessLogic.Tests.Manager
             Result<MerchantScheduleModel> result = await this.TransactionProcessorManager.GetMerchantScheduleFromReadModel(TestData.EstateId, TestData.MerchantId, TestData.MerchantScheduleYear, TestContext.Current.CancellationToken);
 
             result.IsSuccess.ShouldBeTrue();
-            result.Data.Year.ShouldBe(TestData.MerchantScheduleYear);
-            result.Data.Months.ShouldHaveSingleItem();
-            result.Data.Months.Single().Month.ShouldBe(1);
-            result.Data.Months.Single().ClosedDays.ShouldBe([1, 26]);
+            result.GetValueOrThrow().Year.ShouldBe(TestData.MerchantScheduleYear);
+            result.GetValueOrThrow().Months.ShouldHaveSingleItem();
+            result.GetValueOrThrow().Months.Single().Month.ShouldBe(1);
+            result.GetValueOrThrow().Months.Single().ClosedDays.ShouldBe([1, 26]);
         }
 
         [Fact]
@@ -420,7 +420,7 @@ namespace TransactionProcessor.BusinessLogic.Tests.Manager
 
             Result<List<Contract>> getMerchantContractsResult = await this.TransactionProcessorManager.GetMerchantContracts(TestData.EstateId, TestData.MerchantId, TestContext.Current.CancellationToken);
             getMerchantContractsResult.IsSuccess.ShouldBeTrue();
-            List<Contract> merchantContracts = getMerchantContractsResult.Data;
+            List<Contract> merchantContracts = getMerchantContractsResult.GetValueOrThrow();
             merchantContracts.ShouldNotBeNull();
             merchantContracts.ShouldHaveSingleItem();
             merchantContracts.Single().ContractId.ShouldBe(TestData.ContractId);
@@ -467,7 +467,7 @@ namespace TransactionProcessor.BusinessLogic.Tests.Manager
 
             Result<List<Merchant>> getMerchantsResult = await this.TransactionProcessorManager.GetMerchants(TestData.EstateId, TestContext.Current.CancellationToken);
             getMerchantsResult.IsSuccess.ShouldBeTrue();
-            List<Merchant> merchantList = getMerchantsResult.Data;
+            List<Merchant> merchantList = getMerchantsResult.GetValueOrThrow();
 
             merchantList.ShouldNotBeNull();
             merchantList.ShouldNotBeEmpty();

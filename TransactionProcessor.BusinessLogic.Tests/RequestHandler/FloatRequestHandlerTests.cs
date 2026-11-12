@@ -1,4 +1,4 @@
-using SimpleResults;
+using TransactionProcessing.UnionResults;
 using System.Threading.Tasks;
 
 namespace TransactionProcessor.BusinessLogic.Tests.RequestHandler;
@@ -7,7 +7,7 @@ using BusinessLogic.Services;
 using Imposter.Abstractions;
 using RequestHandlers;
 using Requests;
-using Shared.Serialisation;
+using TransactionProcessing.Shared.Serialisation;
 using Shouldly;
 using System.Text.Json;
 using System.Threading;

@@ -1,10 +1,10 @@
-﻿using System;
+using System;
 
 namespace TransactionProcessor.IntegrationTests.Common
 {
     using Ductus.FluentDocker.Services;
     using Ductus.FluentDocker.Services.Extensions;
-    using global::Shared.IntegrationTesting;
+    using global::TransactionProcessing.Shared.IntegrationTesting;
     using Reqnroll;
     using Shouldly;
     using System.Threading;

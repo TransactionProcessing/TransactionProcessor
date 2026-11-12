@@ -1,5 +1,5 @@
 using MessagingService.DataTransferObjects;
-using SimpleResults;
+using TransactionProcessing.UnionResults;
 using TransactionProcessor.Aggregates;
 using TransactionProcessor.BusinessLogic.Common;
 using TransactionProcessor.BusinessLogic.Manager;
@@ -16,11 +16,11 @@ namespace TransactionProcessor.BusinessLogic.Tests.Services{
     using Imposter;
     using Imposter.Abstractions;
     using SecurityService.Client;
-    using Shared.DomainDrivenDesign.EventSourcing;
-    using Shared.EventStore.Aggregate;
-    using Shared.General;
-    using Shared.Logger;
-    using Shared.Serialisation;
+    using TransactionProcessing.Shared.DomainDrivenDesign.EventSourcing;
+    using TransactionProcessing.Shared.EventStore.Aggregate;
+    using TransactionProcessing.Shared.General;
+    using TransactionProcessing.Shared.Logger;
+    using TransactionProcessing.Shared.Serialisation;
     using Shouldly;
     using System;
     using System.Collections.Generic;
@@ -99,10 +99,10 @@ namespace TransactionProcessor.BusinessLogic.Tests.Services{
             var result = await this.TransactionDomainService.ProcessLogonTransaction(command, TestContext.Current.CancellationToken);
             
             result.IsSuccess.ShouldBeTrue();
-            result.Data.EstateId.ShouldBe(TestData.EstateId);
-            result.Data.MerchantId.ShouldBe(TestData.MerchantId);
-            result.Data.ResponseCode.ShouldBe("0001");
-            result.Data.TransactionId.ShouldBe(TestData.TransactionId);
+            result.GetValueOrThrow().EstateId.ShouldBe(TestData.EstateId);
+            result.GetValueOrThrow().MerchantId.ShouldBe(TestData.MerchantId);
+            result.GetValueOrThrow().ResponseCode.ShouldBe("0001");
+            result.GetValueOrThrow().TransactionId.ShouldBe(TestData.TransactionId);
             this.AggregateService.GetLatest<MerchantAggregate>(TestData.MerchantId, Arg<CancellationToken>.Any()).Called(Count.Once());
             this.AggregateService.Save(Arg<MerchantAggregate>.Any(), Arg<CancellationToken>.Any()).Called(Count.Once());
         }
@@ -127,10 +127,10 @@ namespace TransactionProcessor.BusinessLogic.Tests.Services{
             var result = await this.TransactionDomainService.ProcessLogonTransaction(command, TestContext.Current.CancellationToken);
 
             result.IsSuccess.ShouldBeTrue();
-            result.Data.EstateId.ShouldBe(TestData.EstateId);
-            result.Data.MerchantId.ShouldBe(TestData.MerchantId);
-            result.Data.ResponseCode.ShouldBe("0000");
-            result.Data.TransactionId.ShouldBe(TestData.TransactionId);
+            result.GetValueOrThrow().EstateId.ShouldBe(TestData.EstateId);
+            result.GetValueOrThrow().MerchantId.ShouldBe(TestData.MerchantId);
+            result.GetValueOrThrow().ResponseCode.ShouldBe("0000");
+            result.GetValueOrThrow().TransactionId.ShouldBe(TestData.TransactionId);
         }
 
         [Fact]
@@ -146,9 +146,9 @@ namespace TransactionProcessor.BusinessLogic.Tests.Services{
             Result<ProcessLogonTransactionResponse> result = await this.TransactionDomainService.ProcessLogonTransaction(command, TestContext.Current.CancellationToken);
 
             result.IsSuccess.ShouldBeTrue();
-            result.Data.ResponseCode.ShouldBe(transactionAggregate.ResponseCode);
-            result.Data.ResponseMessage.ShouldBe(transactionAggregate.ResponseMessage);
-            result.Data.TransactionId.ShouldBe(transactionAggregate.AggregateId);
+            result.GetValueOrThrow().ResponseCode.ShouldBe(transactionAggregate.ResponseCode);
+            result.GetValueOrThrow().ResponseMessage.ShouldBe(transactionAggregate.ResponseMessage);
+            result.GetValueOrThrow().TransactionId.ShouldBe(transactionAggregate.AggregateId);
             this.AggregateService.Save(Arg<TransactionAggregate>.Any(), Arg<CancellationToken>.Any()).Called(Count.Never());
             this.TransactionValidationService.ValidateLogonTransaction(Arg<TransactionValidationIdentifiers>.Any(), Arg<CancellationToken>.Any()).Called(Count.Never());
         }
@@ -193,10 +193,10 @@ namespace TransactionProcessor.BusinessLogic.Tests.Services{
             Result<ProcessLogonTransactionResponse> result = await this.TransactionDomainService.ProcessLogonTransaction(command, TestContext.Current.CancellationToken);
 
             result.IsSuccess.ShouldBeTrue();
-            result.Data.EstateId.ShouldBe(TestData.EstateId);
-            result.Data.MerchantId.ShouldBe(TestData.MerchantId);
-            result.Data.ResponseCode.ShouldBe(((Int32)responseCode).ToString().PadLeft(4, '0'));
-            result.Data.TransactionId.ShouldBe(TestData.TransactionId);
+            result.GetValueOrThrow().EstateId.ShouldBe(TestData.EstateId);
+            result.GetValueOrThrow().MerchantId.ShouldBe(TestData.MerchantId);
+            result.GetValueOrThrow().ResponseCode.ShouldBe(((Int32)responseCode).ToString().PadLeft(4, '0'));
+            result.GetValueOrThrow().TransactionId.ShouldBe(TestData.TransactionId);
         }
 
         [Fact]
@@ -216,7 +216,7 @@ namespace TransactionProcessor.BusinessLogic.Tests.Services{
 
             var result  = await this.TransactionDomainService.ProcessReconciliationTransaction(command, TestContext.Current.CancellationToken);
             result.IsSuccess.ShouldBeTrue();
-            ProcessReconciliationTransactionResponse response = result.Data;
+            ProcessReconciliationTransactionResponse response = result.GetValueOrThrow();
 
             response.EstateId.ShouldBe(TestData.EstateId);
             response.MerchantId.ShouldBe(TestData.MerchantId);
@@ -239,11 +239,11 @@ namespace TransactionProcessor.BusinessLogic.Tests.Services{
             Result<ProcessReconciliationTransactionResponse> result = await this.TransactionDomainService.ProcessReconciliationTransaction(command, TestContext.Current.CancellationToken);
 
             result.IsSuccess.ShouldBeTrue();
-            result.Data.EstateId.ShouldBe(TestData.EstateId);
-            result.Data.MerchantId.ShouldBe(TestData.MerchantId);
-            result.Data.ResponseCode.ShouldBe("0000");
-            result.Data.ResponseMessage.ShouldBe("SUCCESS");
-            result.Data.TransactionId.ShouldBe(reconciliationAggregate.AggregateId);
+            result.GetValueOrThrow().EstateId.ShouldBe(TestData.EstateId);
+            result.GetValueOrThrow().MerchantId.ShouldBe(TestData.MerchantId);
+            result.GetValueOrThrow().ResponseCode.ShouldBe("0000");
+            result.GetValueOrThrow().ResponseMessage.ShouldBe("SUCCESS");
+            result.GetValueOrThrow().TransactionId.ShouldBe(reconciliationAggregate.AggregateId);
             this.AggregateService.Save(Arg<ReconciliationAggregate>.Any(), Arg<CancellationToken>.Any()).Called(Count.Never());
             this.TransactionValidationService.ValidateReconciliationTransaction(Arg<TransactionValidationIdentifiers>.Any(), Arg<CancellationToken>.Any()).Called(Count.Never());
         }
@@ -302,7 +302,7 @@ namespace TransactionProcessor.BusinessLogic.Tests.Services{
 
             var result = await this.TransactionDomainService.ProcessReconciliationTransaction(command, TestContext.Current.CancellationToken);
             result.IsSuccess.ShouldBeTrue();
-            var response = result.Data;
+            var response = result.GetValueOrThrow();
 
             response.EstateId.ShouldBe(TestData.EstateId);
             response.MerchantId.ShouldBe(TestData.MerchantId);
@@ -355,7 +355,7 @@ namespace TransactionProcessor.BusinessLogic.Tests.Services{
             
             var result = await this.TransactionDomainService.ProcessSaleTransaction(command, TestContext.Current.CancellationToken);
             result.IsSuccess.ShouldBeTrue();
-            var response = result.Data;
+            var response = result.GetValueOrThrow();
 
             response.EstateId.ShouldBe(TestData.EstateId);
             response.MerchantId.ShouldBe(TestData.MerchantId);
@@ -373,11 +373,11 @@ namespace TransactionProcessor.BusinessLogic.Tests.Services{
             Result<ProcessSaleTransactionResponse> result = await this.TransactionDomainService.ProcessSaleTransaction(command, TestContext.Current.CancellationToken);
 
             result.IsSuccess.ShouldBeTrue();
-            result.Data.ResponseCode.ShouldBe(transactionAggregate.ResponseCode);
-            result.Data.ResponseMessage.ShouldBe(transactionAggregate.ResponseMessage);
-            result.Data.TransactionId.ShouldBe(transactionAggregate.AggregateId);
-            result.Data.AdditionalTransactionMetadata.ShouldBe(transactionAggregate.GetTransaction().AdditionalResponseMetadata);
-            result.Data.TransactionIsComplete.ShouldBeTrue();
+            result.GetValueOrThrow().ResponseCode.ShouldBe(transactionAggregate.ResponseCode);
+            result.GetValueOrThrow().ResponseMessage.ShouldBe(transactionAggregate.ResponseMessage);
+            result.GetValueOrThrow().TransactionId.ShouldBe(transactionAggregate.AggregateId);
+            result.GetValueOrThrow().AdditionalTransactionMetadata.ShouldBe(transactionAggregate.GetTransaction().AdditionalResponseMetadata);
+            result.GetValueOrThrow().TransactionIsComplete.ShouldBeTrue();
             this.AggregateService.Save(Arg<TransactionAggregate>.Any(), Arg<CancellationToken>.Any()).Called(Count.Never());
             this.TransactionValidationService.ValidateSaleTransaction(Arg<TransactionValidationIdentifiers>.Any(), Arg<Guid>.Any(), Arg<Guid>.Any(), Arg<Guid>.Any(), Arg<Decimal?>.Any(), Arg<TransactionSource>.Any(), Arg<CancellationToken>.Any()).Called(Count.Never());
         }
@@ -392,9 +392,9 @@ namespace TransactionProcessor.BusinessLogic.Tests.Services{
             Result<ProcessSaleTransactionResponse> result = await this.TransactionDomainService.ProcessSaleTransaction(command, TestContext.Current.CancellationToken);
 
             result.IsSuccess.ShouldBeTrue();
-            result.Data.ResponseCode.ShouldBe(transactionAggregate.ResponseCode);
-            result.Data.ResponseMessage.ShouldBe(transactionAggregate.ResponseMessage);
-            result.Data.TransactionId.ShouldBe(transactionAggregate.AggregateId);
+            result.GetValueOrThrow().ResponseCode.ShouldBe(transactionAggregate.ResponseCode);
+            result.GetValueOrThrow().ResponseMessage.ShouldBe(transactionAggregate.ResponseMessage);
+            result.GetValueOrThrow().TransactionId.ShouldBe(transactionAggregate.AggregateId);
             this.AggregateService.Save(Arg<TransactionAggregate>.Any(), Arg<CancellationToken>.Any()).Called(Count.Never());
             this.TransactionValidationService.ValidateSaleTransaction(Arg<TransactionValidationIdentifiers>.Any(), Arg<Guid>.Any(), Arg<Guid>.Any(), Arg<Guid>.Any(), Arg<Decimal?>.Any(), Arg<TransactionSource>.Any(), Arg<CancellationToken>.Any()).Called(Count.Never());
         }
@@ -516,7 +516,7 @@ namespace TransactionProcessor.BusinessLogic.Tests.Services{
 
             var result = await this.TransactionDomainService.ProcessSaleTransaction(command, TestContext.Current.CancellationToken);
             result.IsSuccess.ShouldBeTrue();
-            var response = result.Data;
+            var response = result.GetValueOrThrow();
 
             response.EstateId.ShouldBe(TestData.EstateId);
             response.MerchantId.ShouldBe(TestData.MerchantId);
@@ -575,7 +575,7 @@ namespace TransactionProcessor.BusinessLogic.Tests.Services{
 
             var result = await this.TransactionDomainService.ProcessSaleTransaction(command, TestContext.Current.CancellationToken);
             result.IsSuccess.ShouldBeTrue();
-            var response = result.Data;
+            var response = result.GetValueOrThrow();
 
             response.EstateId.ShouldBe(TestData.EstateId);
             response.MerchantId.ShouldBe(TestData.MerchantId);
@@ -638,7 +638,7 @@ namespace TransactionProcessor.BusinessLogic.Tests.Services{
 
             var result = await this.TransactionDomainService.ProcessSaleTransaction(command, TestContext.Current.CancellationToken);
             result.IsSuccess.ShouldBeTrue();
-            var response = result.Data;
+            var response = result.GetValueOrThrow();
 
             response.EstateId.ShouldBe(TestData.EstateId);
             response.MerchantId.ShouldBe(TestData.MerchantId);
@@ -681,7 +681,7 @@ namespace TransactionProcessor.BusinessLogic.Tests.Services{
 
             var result = await this.TransactionDomainService.ProcessSaleTransaction(command, TestContext.Current.CancellationToken);
             result.IsSuccess.ShouldBeTrue();
-            var response = result.Data;
+            var response = result.GetValueOrThrow();
 
             response.EstateId.ShouldBe(TestData.EstateId);
             response.MerchantId.ShouldBe(TestData.MerchantId);

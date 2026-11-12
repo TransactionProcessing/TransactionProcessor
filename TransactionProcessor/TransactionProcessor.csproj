@@ -1,7 +1,7 @@
-﻿<Project Sdk="Microsoft.NET.Sdk.Web">
+<Project Sdk="Microsoft.NET.Sdk.Web">
 
   <PropertyGroup>
-    <TargetFramework>net10.0</TargetFramework>
+    <TargetFramework>net11.0</TargetFramework>
     <DockerDefaultTargetOS>Linux</DockerDefaultTargetOS>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <NoWarn>$(NoWarn);1591</NoWarn>
@@ -17,7 +17,7 @@
 	  <PackageReference Include="NuGet.Protocol" />
 	  <PackageReference Include="OpenIddict.Validation.AspNetCore" />
 	  <PackageReference Include="OpenIddict.Validation.SystemNetHttp" />
-	  <PackageReference Include="ClientProxyBase" />
+	  <PackageReference Include="TransactionProcessing.ClientProxyBase" />
 	  <PackageReference Include="Lamar" />
 	  <PackageReference Include="Lamar.Microsoft.DependencyInjection" />
 	  <PackageReference Include="AspNetCore.HealthChecks.SqlServer" />
@@ -38,10 +38,10 @@
 	  <PackageReference Include="prometheus-net" />
 	  <PackageReference Include="prometheus-net.AspNetCore" />
     <PackageReference Include="SecurityService.Client" />
-    <PackageReference Include="Shared" />
-    <PackageReference Include="Shared.EventStore" />
+    <PackageReference Include="TransactionProcessing.Shared" />
+    <PackageReference Include="TransactionProcessing.Shared.EventStore" />
       <PackageReference Include="Microsoft.Extensions.Hosting.WindowsServices" />
-      <PackageReference Include="Shared.Results.Web" />
+      <PackageReference Include="TransactionProcessing.UnionResults.AspNetCore" />
       <PackageReference Include="SkiaSharp.NativeAssets.Linux.NoDependencies" />
 	  <PackageReference Include="System.ServiceModel.Federation" />
 	  <PackageReference Include="System.ServiceModel.Http" />
@@ -102,4 +102,7 @@
     <Folder Include="Controllers\" />
   </ItemGroup>
 
+  <ItemGroup>
+    <ProjectReference Include="..\TransactionProcessor.ResultHelpers\TransactionProcessor.ResultHelpers.csproj" />
+  </ItemGroup>
 </Project>

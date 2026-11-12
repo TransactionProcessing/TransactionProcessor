@@ -1,4 +1,4 @@
-using SimpleResults;
+using TransactionProcessing.UnionResults;
 using System;
 using System.Threading.Tasks;
 
@@ -8,7 +8,7 @@ namespace TransactionProcessor.BusinessLogic.Tests.OperatorInterfaces
     using Microsoft.Extensions.Caching.Memory;
     using Imposter.Abstractions;
     using PataPawaPostPay;
-    using Shared.Serialisation;
+    using TransactionProcessing.Shared.Serialisation;
     using Shouldly;
     using System.Text.Json;
     using System.Threading;
@@ -49,7 +49,7 @@ namespace TransactionProcessor.BusinessLogic.Tests.OperatorInterfaces
 
             var logonResponseResult = await PataPawaPostPayProxy.ProcessLogonMessage(TestContext.Current.CancellationToken);
             logonResponseResult.IsSuccess.ShouldBeTrue();
-            BusinessLogic.OperatorInterfaces.OperatorResponse logonResponse = logonResponseResult.Data;
+            BusinessLogic.OperatorInterfaces.OperatorResponse logonResponse = logonResponseResult.GetValueOrThrow();
             logonResponse.ShouldNotBeNull();
             logonResponse.IsSuccessful.ShouldBeTrue();
             logonResponse.ResponseMessage.ShouldBe(TestData.PataPawaPostPaidSuccessfulLoginResponse.message);
@@ -71,7 +71,7 @@ namespace TransactionProcessor.BusinessLogic.Tests.OperatorInterfaces
             var result = await PataPawaPostPayProxy.ProcessLogonMessage(TestContext.Current.CancellationToken);
 
             result.IsSuccess.ShouldBeTrue();
-            result.Data.TransactionId.ShouldBe(operatorResponse.TransactionId);
+            result.GetValueOrThrow().TransactionId.ShouldBe(operatorResponse.TransactionId);
         }
 
         [Fact]
@@ -101,7 +101,7 @@ namespace TransactionProcessor.BusinessLogic.Tests.OperatorInterfaces
                                                                                                 TestContext.Current.CancellationToken);
 
             processSaleMessageResult.IsSuccess.ShouldBeTrue();
-            BusinessLogic.OperatorInterfaces.OperatorResponse saleResponse = processSaleMessageResult.Data;
+            BusinessLogic.OperatorInterfaces.OperatorResponse saleResponse = processSaleMessageResult.GetValueOrThrow();
             saleResponse.ShouldNotBeNull();
             saleResponse.IsSuccessful.ShouldBeTrue();
             saleResponse.ResponseMessage.ShouldBe("SUCCESS");
@@ -264,7 +264,7 @@ namespace TransactionProcessor.BusinessLogic.Tests.OperatorInterfaces
                                                                                                 TestData.AdditionalTransactionMetaDataForPataPawaProcessBill(),
                                                                                                 TestContext.Current.CancellationToken);
             processSaleMessageResult.IsSuccess.ShouldBeTrue();
-            BusinessLogic.OperatorInterfaces.OperatorResponse saleResponse = processSaleMessageResult.Data;
+            BusinessLogic.OperatorInterfaces.OperatorResponse saleResponse = processSaleMessageResult.GetValueOrThrow();
             saleResponse.ShouldNotBeNull();
             saleResponse.IsSuccessful.ShouldBeTrue();
             saleResponse.ResponseMessage.ShouldBe(TestData.PataPawaPostPaidSuccessfulProcessBillResponse.msg);

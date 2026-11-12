@@ -5,8 +5,8 @@ using System.Threading.Tasks;
 using MediatR;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-using SimpleResults;
-using Shared.Results.Web;
+using TransactionProcessing.UnionResults;
+using TransactionProcessing.UnionResults.AspNetCore;
 using TransactionProcessor.Aggregates;
 using TransactionProcessor.BusinessLogic.Requests;
 using TransactionProcessor.Factories;
@@ -16,7 +16,7 @@ namespace TransactionProcessor.Handlers
 {
     public static class SettlementHandlers
     {
-        public static async Task<IResult> GetPendingSettlement(IMediator mediator, HttpContext ctx, DateTimeOffset settlementDate, [FromRoute] Guid estateId, Guid merchantId, CancellationToken cancellationToken)
+        public static async Task<IResultOutcome> GetPendingSettlement(IMediator mediator, HttpContext ctx, DateTimeOffset settlementDate, [FromRoute] Guid estateId, Guid merchantId, CancellationToken cancellationToken)
         {
             SettlementQueries.GetPendingSettlementQuery query = new(settlementDate, merchantId, estateId);
             Result<PendingSettlementModel> getPendingSettlementResult = await mediator.Send(query, cancellationToken);
@@ -32,7 +32,7 @@ namespace TransactionProcessor.Handlers
             });
         }
 
-        public static async Task<IResult> ProcessSettlement(IMediator mediator, HttpContext ctx, DateTimeOffset settlementDate, Guid estateId, Guid merchantId, CancellationToken cancellationToken)
+        public static async Task<IResultOutcome> ProcessSettlement(IMediator mediator, HttpContext ctx, DateTimeOffset settlementDate, Guid estateId, Guid merchantId, CancellationToken cancellationToken)
         {
             SettlementCommands.ProcessSettlementCommand command = new(settlementDate, merchantId, estateId);
             Result<Guid> result = await mediator.Send(command, cancellationToken);
@@ -43,7 +43,7 @@ namespace TransactionProcessor.Handlers
         /// <param name="estateId">Estate that owns the settlement.</param>
         /// <param name="settlementId">Settlement identifier from the route.</param>
         /// <param name="merchantId" example="00000000-0000-0000-0000-000000000227">Merchant identifier, bound from the query string because it is not in the route.</param>
-        public static async Task<IResult> GetSettlement(IMediator mediator, HttpContext ctx, [FromRoute] Guid estateId, Guid settlementId, Guid merchantId, CancellationToken cancellationToken)
+        public static async Task<IResultOutcome> GetSettlement(IMediator mediator, HttpContext ctx, [FromRoute] Guid estateId, Guid settlementId, Guid merchantId, CancellationToken cancellationToken)
         {
             SettlementQueries.GetSettlementQuery query = new(estateId, merchantId, settlementId);
             var result = await mediator.Send(query, cancellationToken);
@@ -85,7 +85,7 @@ namespace TransactionProcessor.Handlers
         /// <param name="merchantId" example="00000000-0000-0000-0000-000000000227">Optional merchant filter.</param>
         /// <param name="startDate" example="20260101">Required lower date bound from the start_date query parameter, formatted as yyyyMMdd.</param>
         /// <param name="endDate" example="20260131">Required upper date bound from the end_date query parameter, formatted as yyyyMMdd.</param>
-        public static async Task<IResult> GetSettlements(IMediator mediator, HttpContext ctx, 
+        public static async Task<IResultOutcome> GetSettlements(IMediator mediator, HttpContext ctx,
                                                          [FromRoute] Guid estateId, [FromQuery] Guid? merchantId, [FromQuery(Name = "start_date")] string startDate, [FromQuery(Name = "end_date")] string endDate, CancellationToken cancellationToken)
         {
             SettlementQueries.GetSettlementsQuery query = new(estateId, merchantId, startDate, endDate);

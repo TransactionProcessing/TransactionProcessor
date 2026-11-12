@@ -1,17 +1,17 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using SecurityService.DataTransferObjects;
-using Shared.Results;
-using SimpleResults;
+using TransactionProcessing.UnionResults;
+using TransactionProcessing.UnionResults;
 
 namespace TransactionProcessor.BusinessLogic.Common
 {
     using System.Diagnostics.CodeAnalysis;
     using System.Threading;
     using SecurityService.Client;
-    using Shared.General;
-    using Shared.Logger;
+    using TransactionProcessing.Shared.General;
+    using TransactionProcessing.Shared.Logger;
     using Type = System.Type;
 
     [ExcludeFromCodeCoverage]

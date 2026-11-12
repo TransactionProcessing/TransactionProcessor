@@ -1,7 +1,7 @@
 using MediatR;
 using Microsoft.AspNetCore.Http;
-using Shared.Results.Web;
-using SimpleResults;
+using TransactionProcessing.UnionResults.AspNetCore;
+using TransactionProcessing.UnionResults;
 using System;
 using System.Collections.Generic;
 using System.Threading;
@@ -21,7 +21,7 @@ using TransactionProcessor.ProjectionEngine.State;
 namespace TransactionProcessor.Handlers;
 
 public static class MerchantHandlers {
-    public static async Task<IResult> GetMerchantBalance(IMediator mediator,
+    public static async Task<IResultOutcome> GetMerchantBalance(IMediator mediator,
                                                          HttpContext ctx,
                                                          Guid estateId,
                                                          Guid merchantId,
@@ -32,7 +32,7 @@ public static class MerchantHandlers {
         return ResponseFactory.FromResult(result, r => new MerchantBalanceResponse { Balance = r.Balance, MerchantId = r.MerchantId, AvailableBalance = r.AvailableBalance, EstateId = r.EstateId });
     }
 
-    public static async Task<IResult> GetMerchantBalanceLive(IMediator mediator,
+    public static async Task<IResultOutcome> GetMerchantBalanceLive(IMediator mediator,
                                                              HttpContext ctx,
                                                              Guid estateId,
                                                              Guid merchantId,
@@ -48,7 +48,7 @@ public static class MerchantHandlers {
     /// <param name="merchantId">Merchant whose balance history is requested.</param>
     /// <param name="startDate" example="2026-01-01T00:00:00Z">Inclusive start of the history range, supplied as a query parameter.</param>
     /// <param name="endDate" example="2026-01-31T23:59:59Z">Inclusive end of the history range, supplied as a query parameter.</param>
-    public static async Task<IResult> GetMerchantBalanceHistory(IMediator mediator,
+    public static async Task<IResultOutcome> GetMerchantBalanceHistory(IMediator mediator,
                                                                 HttpContext ctx,
                                                                 Guid estateId,
                                                                 Guid merchantId,
@@ -74,7 +74,7 @@ public static class MerchantHandlers {
         });
     }
 
-    public static async Task<IResult> CreateMerchant(IMediator mediator,
+    public static async Task<IResultOutcome> CreateMerchant(IMediator mediator,
                                                      HttpContext ctx,
                                                      Guid estateId,
                                                      CreateMerchantRequest createMerchantRequest,
@@ -82,10 +82,10 @@ public static class MerchantHandlers {
         MerchantCommands.CreateMerchantCommand command = new(estateId, createMerchantRequest);
         Result<Guid> result = await mediator.Send(command, cancellationToken);
 
-        return ResponseFactory.FromResult<Guid>(result, (merchantId) => result.Data);
+        return ResponseFactory.FromResult<Guid>(result, (merchantId) => result.GetValueOrThrow());
     }
 
-    public static async Task<IResult> AssignOperator(IMediator mediator,
+    public static async Task<IResultOutcome> AssignOperator(IMediator mediator,
                                                      HttpContext ctx,
                                                      Guid estateId,
                                                      Guid merchantId,
@@ -97,7 +97,7 @@ public static class MerchantHandlers {
         return ResponseFactory.FromResult(result);
     }
 
-    public static async Task<IResult> RemoveOperator(IMediator mediator,
+    public static async Task<IResultOutcome> RemoveOperator(IMediator mediator,
                                                      HttpContext ctx,
                                                      Guid estateId,
                                                      Guid merchantId,
@@ -109,7 +109,7 @@ public static class MerchantHandlers {
         return ResponseFactory.FromResult(result);
     }
 
-    public static async Task<IResult> AddDevice(IMediator mediator,
+    public static async Task<IResultOutcome> AddDevice(IMediator mediator,
                                                 HttpContext ctx,
                                                 Guid estateId,
                                                 Guid merchantId,
@@ -121,7 +121,7 @@ public static class MerchantHandlers {
         return ResponseFactory.FromResult(result);
     }
 
-    public static async Task<IResult> SwapMerchantDevice(IMediator mediator,
+    public static async Task<IResultOutcome> SwapMerchantDevice(IMediator mediator,
                                                          HttpContext ctx,
                                                          Guid estateId,
                                                          Guid merchantId,
@@ -134,7 +134,7 @@ public static class MerchantHandlers {
         return ResponseFactory.FromResult(result);
     }
 
-    public static async Task<IResult> AddContract(IMediator mediator,
+    public static async Task<IResultOutcome> AddContract(IMediator mediator,
                                                   HttpContext ctx,
                                                   Guid estateId,
                                                   Guid merchantId,
@@ -146,7 +146,7 @@ public static class MerchantHandlers {
         return ResponseFactory.FromResult(result);
     }
 
-    public static async Task<IResult> RemoveContract(IMediator mediator,
+    public static async Task<IResultOutcome> RemoveContract(IMediator mediator,
                                                      HttpContext ctx,
                                                      Guid estateId,
                                                      Guid merchantId,
@@ -158,7 +158,7 @@ public static class MerchantHandlers {
         return ResponseFactory.FromResult(result);
     }
 
-    public static async Task<IResult> CreateMerchantUser(IMediator mediator,
+    public static async Task<IResultOutcome> CreateMerchantUser(IMediator mediator,
                                                          HttpContext ctx,
                                                          Guid estateId,
                                                          Guid merchantId,
@@ -170,7 +170,7 @@ public static class MerchantHandlers {
         return ResponseFactory.FromResult(result);
     }
 
-    public static async Task<IResult> MakeDeposit(IMediator mediator,
+    public static async Task<IResultOutcome> MakeDeposit(IMediator mediator,
                                                   HttpContext ctx,
                                                   Guid estateId,
                                                   Guid merchantId,
@@ -182,7 +182,7 @@ public static class MerchantHandlers {
         return ResponseFactory.FromResult(result);
     }
 
-    public static async Task<IResult> MakeWithdrawal(IMediator mediator,
+    public static async Task<IResultOutcome> MakeWithdrawal(IMediator mediator,
                                                      HttpContext ctx,
                                                      Guid estateId,
                                                      Guid merchantId,
@@ -194,7 +194,7 @@ public static class MerchantHandlers {
         return ResponseFactory.FromResult(result);
     }
 
-    public static async Task<IResult> GetMerchant(IMediator mediator,
+    public static async Task<IResultOutcome> GetMerchant(IMediator mediator,
                                                   HttpContext ctx,
                                                   Guid estateId,
                                                   Guid merchantId,
@@ -205,7 +205,7 @@ public static class MerchantHandlers {
         return ResponseFactory.FromResult(result, ModelFactory.ConvertFrom);
     }
 
-    public static async Task<IResult> GetMerchantContracts(IMediator mediator,
+    public static async Task<IResultOutcome> GetMerchantContracts(IMediator mediator,
                                                            HttpContext ctx,
                                                            Guid estateId,
                                                            Guid merchantId,
@@ -216,7 +216,7 @@ public static class MerchantHandlers {
         return ResponseFactory.FromResult(result, ModelFactory.ConvertFrom);
     }
 
-    public static async Task<IResult> GetMerchants(IMediator mediator,
+    public static async Task<IResultOutcome> GetMerchants(IMediator mediator,
                                                    HttpContext ctx,
                                                    Guid estateId,
                                                    CancellationToken cancellationToken) {
@@ -226,7 +226,7 @@ public static class MerchantHandlers {
         return ResponseFactory.FromResult(result, ModelFactory.ConvertFrom);
     }
 
-    public static async Task<IResult> GetTransactionFeesForProduct(IMediator mediator,
+    public static async Task<IResultOutcome> GetTransactionFeesForProduct(IMediator mediator,
                                                                    HttpContext ctx,
                                                                    Guid estateId,
                                                                    Guid merchantId,
@@ -239,7 +239,7 @@ public static class MerchantHandlers {
         return ResponseFactory.FromResult(result, ModelFactory.ConvertFrom);
     }
 
-    public static async Task<IResult> UpdateMerchant(IMediator mediator,
+    public static async Task<IResultOutcome> UpdateMerchant(IMediator mediator,
                                                      HttpContext ctx,
                                                      Guid estateId,
                                                      Guid merchantId,
@@ -251,7 +251,7 @@ public static class MerchantHandlers {
         return ResponseFactory.FromResult(result);
     }
 
-    public static async Task<IResult> UpdateMerchantOpening(IMediator mediator,
+    public static async Task<IResultOutcome> UpdateMerchantOpening(IMediator mediator,
                                                       HttpContext ctx,
                                                       Guid estateId,
                                                      Guid merchantId,
@@ -265,7 +265,7 @@ public static class MerchantHandlers {
         
     }
 
-    public static async Task<IResult> CreateMerchantSchedule(IMediator mediator,
+    public static async Task<IResultOutcome> CreateMerchantSchedule(IMediator mediator,
                                                              HttpContext ctx,
                                                              Guid estateId,
                                                              Guid merchantId,
@@ -277,7 +277,7 @@ public static class MerchantHandlers {
         return ResponseFactory.FromResult(result);
     }
 
-    public static async Task<IResult> GetMerchantSchedule(IMediator mediator,
+    public static async Task<IResultOutcome> GetMerchantSchedule(IMediator mediator,
                                                           HttpContext ctx,
                                                           Guid estateId,
                                                           Guid merchantId,
@@ -289,7 +289,7 @@ public static class MerchantHandlers {
         return ResponseFactory.FromResult(result, ModelFactory.ConvertFrom);
     }
 
-    public static async Task<IResult> GetMerchantScheduleFromReadModel(IMediator mediator,
+    public static async Task<IResultOutcome> GetMerchantScheduleFromReadModel(IMediator mediator,
                                                                        HttpContext ctx,
                                                                        Guid estateId,
                                                                        Guid merchantId,
@@ -301,7 +301,7 @@ public static class MerchantHandlers {
         return ResponseFactory.FromResult(result, ModelFactory.ConvertFrom);
     }
 
-    public static async Task<IResult> UpdateMerchantSchedule(IMediator mediator,
+    public static async Task<IResultOutcome> UpdateMerchantSchedule(IMediator mediator,
                                                              HttpContext ctx,
                                                              Guid estateId,
                                                              Guid merchantId,
@@ -314,7 +314,7 @@ public static class MerchantHandlers {
         return ResponseFactory.FromResult(result);
     }
 
-    public static async Task<IResult> AddMerchantAddress(IMediator mediator,
+    public static async Task<IResultOutcome> AddMerchantAddress(IMediator mediator,
                                                           HttpContext ctx,
                                                           Guid estateId,
                                                          Guid merchantId,
@@ -326,7 +326,7 @@ public static class MerchantHandlers {
         return ResponseFactory.FromResult(result);
     }
 
-    public static async Task<IResult> UpdateMerchantAddress(IMediator mediator,
+    public static async Task<IResultOutcome> UpdateMerchantAddress(IMediator mediator,
                                                             HttpContext ctx,
                                                             Guid estateId,
                                                             Guid merchantId,
@@ -339,7 +339,7 @@ public static class MerchantHandlers {
         return ResponseFactory.FromResult(result);
     }
 
-    public static async Task<IResult> AddMerchantContact(IMediator mediator,
+    public static async Task<IResultOutcome> AddMerchantContact(IMediator mediator,
                                                          HttpContext ctx,
                                                          Guid estateId,
                                                          Guid merchantId,
@@ -351,7 +351,7 @@ public static class MerchantHandlers {
         return ResponseFactory.FromResult(result);
     }
 
-    public static async Task<IResult> UpdateMerchantContact(IMediator mediator,
+    public static async Task<IResultOutcome> UpdateMerchantContact(IMediator mediator,
                                                             HttpContext ctx,
                                                             Guid estateId,
                                                             Guid merchantId,
@@ -364,7 +364,7 @@ public static class MerchantHandlers {
         return ResponseFactory.FromResult(result);
     }
 
-    public static async Task<IResult> GenerateMerchantStatement(IMediator mediator,
+    public static async Task<IResultOutcome> GenerateMerchantStatement(IMediator mediator,
                                                                 HttpContext ctx,
                                                                 Guid estateId,
                                                                 Guid merchantId,

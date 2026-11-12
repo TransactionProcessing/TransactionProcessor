@@ -1,8 +1,8 @@
-﻿using SecurityService.DataTransferObjects;
-using Shared.Exceptions;
-using Shared.General;
-using Shared.Results;
-using SimpleResults;
+using SecurityService.DataTransferObjects;
+using TransactionProcessing.Shared.Exceptions;
+using TransactionProcessing.Shared.General;
+using TransactionProcessing.UnionResults;
+using TransactionProcessing.UnionResults;
 using TransactionProcessor.Aggregates;
 using TransactionProcessor.Models.Contract;
 using TransactionProcessor.Models.Merchant;
@@ -14,8 +14,8 @@ namespace TransactionProcessor.BusinessLogic.Services{
     using Models;
     using OperatorInterfaces;
     using SecurityService.Client;
-    using Shared.EventStore.Aggregate;
-    using Shared.Logger;
+    using TransactionProcessing.Shared.EventStore.Aggregate;
+    using TransactionProcessing.Shared.Logger;
     using System;
     using System.Collections.Generic;
     using System.Diagnostics.CodeAnalysis;
@@ -96,7 +96,7 @@ namespace TransactionProcessor.BusinessLogic.Services{
                 Result<TransactionAggregate> transactionResult = await DomainServiceHelper.GetAggregateOrFailure(ct => this.AggregateService.GetLatest<TransactionAggregate>(transactionId, ct), transactionId, cancellationToken, false);
                 if (transactionResult.IsFailed)
                     return ResultHelpers.CreateFailure(transactionResult);
-                TransactionAggregate transactionAggregate = transactionResult.Data;
+                TransactionAggregate transactionAggregate = transactionResult.GetValueOrThrow();
 
                 if (transactionAggregate.IsCompleted) {
                     return this.ProcessCompletedLogonTransaction(command, transactionId, transactionAggregate);
@@ -150,7 +150,7 @@ namespace TransactionProcessor.BusinessLogic.Services{
                 if (reconciliationResult.IsFailed)
                     return ResultHelpers.CreateFailure(reconciliationResult);
 
-                ReconciliationAggregate reconciliationAggregate = reconciliationResult.Data;
+                ReconciliationAggregate reconciliationAggregate = reconciliationResult.GetValueOrThrow();
                 if (reconciliationAggregate.IsCompleted) {
                     if (reconciliationAggregate.EstateId != command.EstateId ||
                         reconciliationAggregate.MerchantId != command.MerchantId ||
@@ -203,7 +203,7 @@ namespace TransactionProcessor.BusinessLogic.Services{
                 if (transactionResult.IsFailed)
                     return ResultHelpers.CreateFailure(transactionResult);
 
-                TransactionAggregate transactionAggregate = transactionResult.Data;
+                TransactionAggregate transactionAggregate = transactionResult.GetValueOrThrow();
 
                 Result stateResult = transactionAggregate.RequestEmailReceiptResend();
                 if (stateResult.IsFailed)
@@ -231,7 +231,7 @@ namespace TransactionProcessor.BusinessLogic.Services{
                 if (transactionResult.IsFailed)
                     return ResultHelpers.CreateFailure(transactionResult);
 
-                TransactionAggregate transactionAggregate = transactionResult.Data;
+                TransactionAggregate transactionAggregate = transactionResult.GetValueOrThrow();
 
                 if (TransactionHelpers.RequireFeeCalculation(transactionAggregate) == false)
                     return Result.Success();
@@ -241,7 +241,7 @@ namespace TransactionProcessor.BusinessLogic.Services{
                 if (feesForCalculationResult.IsFailed)
                     return ResultHelpers.CreateFailure(feesForCalculationResult);
 
-                List<CalculatedFee> resultFees = this.FeeCalculationManager.CalculateFees(feesForCalculationResult.Data, transactionAggregate.TransactionAmount.Value, command.CompletedDateTime);
+                List<CalculatedFee> resultFees = this.FeeCalculationManager.CalculateFees(feesForCalculationResult.GetValueOrThrow(), transactionAggregate.TransactionAmount.Value, command.CompletedDateTime);
                 Result applyFeesResult = await this.ApplyCalculatedFees(transactionAggregate, resultFees, command, cancellationToken);
                 if (applyFeesResult.IsFailed)
                     return applyFeesResult;
@@ -265,7 +265,7 @@ namespace TransactionProcessor.BusinessLogic.Services{
                 if (transactionResult.IsFailed)
                     return ResultHelpers.CreateFailure(transactionResult);
 
-                TransactionAggregate transactionAggregate = transactionResult.Data;
+                TransactionAggregate transactionAggregate = transactionResult.GetValueOrThrow();
 
                 CalculatedFee calculatedFee = new CalculatedFee {
                     CalculatedValue = command.CalculatedValue,
@@ -302,7 +302,7 @@ namespace TransactionProcessor.BusinessLogic.Services{
             if (transactionResult.IsFailed)
                 return ResultHelpers.CreateFailure(transactionResult);
 
-            TransactionAggregate transactionAggregate = transactionResult.Data;
+            TransactionAggregate transactionAggregate = transactionResult.GetValueOrThrow();
 
             Models.Transaction transaction = transactionAggregate.GetTransaction();
 
@@ -315,12 +315,12 @@ namespace TransactionProcessor.BusinessLogic.Services{
             {
                 return ResultHelpers.CreateFailure(getEstateResult);
             }
-            EstateAggregate estateAggregate = getEstateResult.Data;
+            EstateAggregate estateAggregate = getEstateResult.GetValueOrThrow();
             Models.Estate.Estate estate = estateAggregate.GetEstate();
             Models.Estate.Operator @operator = estate.Operators.Single(o => o.OperatorId == transaction.OperatorId);
 
             // Determine the body of the email
-            String receiptMessage = await this.TransactionReceiptBuilder.GetEmailReceiptMessage(transaction, merchantResult.Data, @operator.Name, cancellationToken);
+            String receiptMessage = await this.TransactionReceiptBuilder.GetEmailReceiptMessage(transaction, merchantResult.GetValueOrThrow(), @operator.Name, cancellationToken);
 
             // Send the message
             return await this.SendEmailMessage(this.TokenResponse.AccessToken, command.EventId, command.EstateId, "Transaction Successful", receiptMessage, command.CustomerEmailAddress, cancellationToken);
@@ -337,7 +337,7 @@ namespace TransactionProcessor.BusinessLogic.Services{
             if (transactionResult.IsFailed)
                 return ResultHelpers.CreateFailure(transactionResult);
 
-            TransactionAggregate transactionAggregate = transactionResult.Data;
+            TransactionAggregate transactionAggregate = transactionResult.GetValueOrThrow();
 
             return await this.ResendEmailMessage(this.TokenResponse.AccessToken, transactionAggregate.ReceiptMessageId, command.EstateId, cancellationToken);
         }
@@ -352,11 +352,11 @@ namespace TransactionProcessor.BusinessLogic.Services{
                 return ResultHelpers.CreateFailure(feesForProduct);
             }
 
-            Logger.LogInformation($"After getting Fees {feesForProduct.Data.Count} returned");
+            Logger.LogInformation($"After getting Fees {feesForProduct.GetValueOrThrow().Count} returned");
 
             List<TransactionFeeToCalculate> feesForCalculation = new();
 
-            foreach (Models.Contract.ContractProductTransactionFee contractProductTransactionFee in feesForProduct.Data) {
+            foreach (Models.Contract.ContractProductTransactionFee contractProductTransactionFee in feesForProduct.GetValueOrThrow()) {
                 TransactionFeeToCalculate transactionFeeToCalculate = new TransactionFeeToCalculate { FeeId = contractProductTransactionFee.TransactionFeeId, Value = contractProductTransactionFee.Value, FeeType = (TransactionProcessor.Models.Contract.FeeType)contractProductTransactionFee.FeeType, CalculationType = (TransactionProcessor.Models.Contract.CalculationType)contractProductTransactionFee.CalculationType };
 
                 feesForCalculation.Add(transactionFeeToCalculate);
@@ -379,10 +379,10 @@ namespace TransactionProcessor.BusinessLogic.Services{
             if (merchantResult.IsFailed)
                 return ResultHelpers.CreateFailure(merchantResult);
 
-            if (merchantResult.Data.SettlementSchedule == Models.Merchant.SettlementSchedule.NotSet)
-                return Result.Failure($"Merchant {merchantResult.Data.MerchantId} does not have a settlement schedule configured");
+            if (merchantResult.GetValueOrThrow().SettlementSchedule == Models.Merchant.SettlementSchedule.NotSet)
+                return Result.Failure($"Merchant {merchantResult.GetValueOrThrow().MerchantId} does not have a settlement schedule configured");
 
-            return this.ApplyMerchantFees(transactionAggregate, merchantResult.Data, merchantFees, command.CompletedDateTime, command.MerchantId, command.EstateId);
+            return this.ApplyMerchantFees(transactionAggregate, merchantResult.GetValueOrThrow(), merchantFees, command.CompletedDateTime, command.MerchantId, command.EstateId);
         }
 
         private void ApplyNonMerchantFees(TransactionAggregate transactionAggregate,
@@ -434,10 +434,10 @@ namespace TransactionProcessor.BusinessLogic.Services{
             Result<MerchantAggregate> merchantAggregate = await this.AggregateService.GetLatest<MerchantAggregate>(merchantId, cancellationToken);
             if (merchantAggregate.IsFailed)
                 return ResultHelpers.CreateFailure(merchantAggregate);
-            Result stateResult = merchantAggregate.Data.AddDevice(Guid.NewGuid(), deviceIdentifier);
+            Result stateResult = merchantAggregate.GetValueOrThrow().AddDevice(Guid.NewGuid(), deviceIdentifier);
             if (stateResult.IsFailed)
                 return ResultHelpers.CreateFailure(stateResult);
-            return await this.AggregateService.Save(merchantAggregate.Data, cancellationToken);
+            return await this.AggregateService.Save(merchantAggregate.GetValueOrThrow(), cancellationToken);
         }
 
         private ProcessLogonTransactionResponse CreateLogonTransactionResponse(TransactionCommands.ProcessLogonTransactionCommand command,
@@ -471,15 +471,15 @@ namespace TransactionProcessor.BusinessLogic.Services{
                                                                     TransactionAggregate transactionAggregate,
                                                                     Result<TransactionValidationResult> validationResult,
                                                                     CancellationToken cancellationToken) {
-            if (validationResult.IsSuccess && this.IsSuccessfulLogonValidation(validationResult.Data.ResponseCode)) {
-                if (validationResult.Data.ResponseCode == TransactionResponseCode.SuccessNeedToAddDevice) {
+            if (validationResult.IsSuccess && this.IsSuccessfulLogonValidation(validationResult.GetValueOrThrow().ResponseCode)) {
+                if (validationResult.GetValueOrThrow().ResponseCode == TransactionResponseCode.SuccessNeedToAddDevice) {
                     await this.AddDeviceToMerchant(command.MerchantId, command.DeviceIdentifier, cancellationToken);
                 }
 
-                return transactionAggregate.AuthoriseTransactionLocally(TransactionHelpers.GenerateAuthCode(), validationResult.Data.ResponseCode, validationResult.Data.ResponseMessage);
+                return transactionAggregate.AuthoriseTransactionLocally(TransactionHelpers.GenerateAuthCode(), validationResult.GetValueOrThrow().ResponseCode, validationResult.GetValueOrThrow().ResponseMessage);
             }
 
-            return transactionAggregate.DeclineTransactionLocally(validationResult.Data.ResponseCode, validationResult.Data.ResponseMessage);
+            return transactionAggregate.DeclineTransactionLocally(validationResult.GetValueOrThrow().ResponseCode, validationResult.GetValueOrThrow().ResponseMessage);
         }
 
         private Boolean IsSuccessfulLogonValidation(TransactionResponseCode responseCode) {
@@ -494,7 +494,7 @@ namespace TransactionProcessor.BusinessLogic.Services{
 
             if (getMerchantResult.IsFailed)
                 return ResultHelpers.CreateFailure(getMerchantResult);
-            Models.Merchant.Merchant merchant = getMerchantResult.Data.GetMerchant();
+            Models.Merchant.Merchant merchant = getMerchantResult.GetValueOrThrow().GetMerchant();
 
             return merchant;
         }
@@ -510,7 +510,7 @@ namespace TransactionProcessor.BusinessLogic.Services{
             Result<OperatorAggregate> getOperatorResult = await DomainServiceHelper.GetAggregateOrFailure(ct => this.AggregateService.Get<OperatorAggregate>(operatorId, ct), operatorId, cancellationToken, false);
             if (getOperatorResult.IsFailed)
                 return ResultHelpers.CreateFailure(getOperatorResult);
-            OperatorAggregate operatorAggregate = getOperatorResult.Data;
+            OperatorAggregate operatorAggregate = getOperatorResult.GetValueOrThrow();
             
             Models.Operator.Operator operatorResult = operatorAggregate.GetOperator();
             IOperatorProxy operatorProxy = this.OperatorProxyResolver(operatorResult.Name.Replace(" ", ""));
@@ -584,7 +584,7 @@ namespace TransactionProcessor.BusinessLogic.Services{
             Result<ContractAggregate> contractAggregateResult = await DomainServiceHelper.GetAggregateOrFailure(ct => this.AggregateService.Get<ContractAggregate>(contractId, ct), contractId, cancellationToken, false);
             if (contractAggregateResult.IsFailed)
                 return ResultHelpers.CreateFailure(contractAggregateResult);
-            ContractAggregate contractAggregate = contractAggregateResult.Data;
+            ContractAggregate contractAggregate = contractAggregateResult.GetValueOrThrow();
 
 
             Models.Contract.Contract contract = contractAggregate.GetContract();
@@ -609,7 +609,7 @@ namespace TransactionProcessor.BusinessLogic.Services{
                 if (transactionResult.IsFailed)
                     return ResultHelpers.CreateFailure(transactionResult);
 
-                TransactionAggregate transactionAggregate = transactionResult.Data;
+                TransactionAggregate transactionAggregate = transactionResult.GetValueOrThrow();
 
                 if (transactionAggregate.IsCompleted) {
                     return this.ProcessCompletedSaleTransaction(command, transactionId, transactionAggregate);
@@ -743,7 +743,7 @@ namespace TransactionProcessor.BusinessLogic.Services{
             Result<TransactionValidationResult> result = await TransactionValidationService.ValidateSaleTransaction(validationIdentifiers, command.ContractId, command.ProductId, command.OperatorId, amount, transactionSourceValue, cancellationToken);
 
             Logger.LogInformation("Validation completed for Transaction Id {TransactionId} with ResponseCode {ResponseCode}, Message {ResponseMessage}",
-                transactionId, result.Data?.ResponseCode, result.Data?.ResponseMessage);
+                transactionId, result.GetValueOrThrow()?.ResponseCode, result.GetValueOrThrow()?.ResponseMessage);
 
             return result;
         }
@@ -761,7 +761,7 @@ namespace TransactionProcessor.BusinessLogic.Services{
             if (floatAggregateResult.IsFailed)
                 return (0, 0);
 
-            FloatAggregate floatAggregate = floatAggregateResult.Data;
+            FloatAggregate floatAggregate = floatAggregateResult.GetValueOrThrow();
             Decimal amount = command.AdditionalTransactionMetadata.ExtractFieldFromMetadata<decimal?>("Amount") ?? 0;
             Decimal unitCost = floatAggregate.GetUnitCostPrice();
             Decimal totalCost = floatAggregate.GetTotalCostPrice(amount);
@@ -787,7 +787,7 @@ namespace TransactionProcessor.BusinessLogic.Services{
             if (result.IsFailed)
                 return result;
 
-            if (validationResult.Data.ResponseCode is not (TransactionResponseCode.InvalidEstateId or TransactionResponseCode.InvalidContractIdValue or TransactionResponseCode.InvalidProductIdValue or TransactionResponseCode.ContractNotValidForMerchant or TransactionResponseCode.ProductNotValidForMerchant)) {
+            if (validationResult.GetValueOrThrow().ResponseCode is not (TransactionResponseCode.InvalidEstateId or TransactionResponseCode.InvalidContractIdValue or TransactionResponseCode.InvalidProductIdValue or TransactionResponseCode.ContractNotValidForMerchant or TransactionResponseCode.ProductNotValidForMerchant)) {
                 transactionAggregate.AddProductDetails(command.ContractId, command.ProductId);
             }
 
@@ -819,11 +819,11 @@ namespace TransactionProcessor.BusinessLogic.Services{
 
         private static Result ApplyReconciliationValidationResult(ReconciliationAggregate reconciliationAggregate,
                                                                   Result<TransactionValidationResult> validationResult) {
-            if (validationResult.IsSuccess && validationResult.Data.ResponseCode == TransactionResponseCode.Success) {
-                return reconciliationAggregate.Authorise(validationResult.Data.ResponseCode, validationResult.Data.ResponseMessage);
+            if (validationResult.IsSuccess && validationResult.GetValueOrThrow().ResponseCode == TransactionResponseCode.Success) {
+                return reconciliationAggregate.Authorise(validationResult.GetValueOrThrow().ResponseCode, validationResult.GetValueOrThrow().ResponseMessage);
             }
 
-            return reconciliationAggregate.Decline(validationResult.Data.ResponseCode, validationResult.Data.ResponseMessage);
+            return reconciliationAggregate.Decline(validationResult.GetValueOrThrow().ResponseCode, validationResult.GetValueOrThrow().ResponseMessage);
         }
 
         private async Task<(DateTimeOffset? Start, DateTimeOffset? End)> HandleOperatorProcessing(TransactionAggregate transactionAggregate,
@@ -832,11 +832,11 @@ namespace TransactionProcessor.BusinessLogic.Services{
                                                                                             CancellationToken cancellationToken) {
             DateTimeOffset? start = null, end = null;
 
-            if (validationResult.Data.ResponseCode != TransactionResponseCode.Success) {
+            if (validationResult.GetValueOrThrow().ResponseCode != TransactionResponseCode.Success) {
                 Logger.LogInformation("Validation failed for TransactionId {TransactionId} with ResponseCode {ResponseCode}: {ResponseMessage}", 
-                    transactionAggregate.AggregateId, validationResult.Data.ResponseCode, validationResult.Data.ResponseMessage);
+                    transactionAggregate.AggregateId, validationResult.GetValueOrThrow().ResponseCode, validationResult.GetValueOrThrow().ResponseMessage);
 
-                transactionAggregate.DeclineTransactionLocally(validationResult.Data.ResponseCode, validationResult.Data.ResponseMessage);
+                transactionAggregate.DeclineTransactionLocally(validationResult.GetValueOrThrow().ResponseCode, validationResult.GetValueOrThrow().ResponseMessage);
                 return (start, end);
             }
 
@@ -847,19 +847,19 @@ namespace TransactionProcessor.BusinessLogic.Services{
                 return (start, end);
 
             start = DateTimeOffset.UtcNow;
-            Result<OperatorResponse> operatorResult = await ProcessMessageWithOperator(merchantResult.Data, transactionAggregate.AggregateId, command.TransactionDateTime, command.OperatorId, command.AdditionalTransactionMetadata, TransactionHelpers.GenerateTransactionReference(), cancellationToken);
+            Result<OperatorResponse> operatorResult = await ProcessMessageWithOperator(merchantResult.GetValueOrThrow(), transactionAggregate.AggregateId, command.TransactionDateTime, command.OperatorId, command.AdditionalTransactionMetadata, TransactionHelpers.GenerateTransactionReference(), cancellationToken);
             end = DateTimeOffset.UtcNow;
 
             if (operatorResult.IsSuccess) {
                 Logger.LogInformation("Operator {OperatorId} authorised transaction {TransactionId} successfully", command.OperatorId, transactionAggregate.AggregateId);
-                transactionAggregate.AuthoriseTransaction(command.OperatorId, operatorResult.Data.AuthorisationCode, operatorResult.Data.ResponseCode, operatorResult.Data.ResponseMessage, operatorResult.Data.TransactionId, TransactionResponseCode.Success, "SUCCESS");
+                transactionAggregate.AuthoriseTransaction(command.OperatorId, operatorResult.GetValueOrThrow().AuthorisationCode, operatorResult.GetValueOrThrow().ResponseCode, operatorResult.GetValueOrThrow().ResponseMessage, operatorResult.GetValueOrThrow().TransactionId, TransactionResponseCode.Success, "SUCCESS");
             }
             else {
-                Logger.LogWarning("Operator {OperatorId} declined transaction {TransactionId}: {ResponseMessage}", command.OperatorId, transactionAggregate.AggregateId, operatorResult.Data.ResponseMessage);
-                transactionAggregate.DeclineTransaction(command.OperatorId, operatorResult.Data.ResponseCode, operatorResult.Data.ResponseMessage, TransactionResponseCode.TransactionDeclinedByOperator, "DECLINED BY OPERATOR");
+                Logger.LogWarning("Operator {OperatorId} declined transaction {TransactionId}: {ResponseMessage}", command.OperatorId, transactionAggregate.AggregateId, operatorResult.GetValueOrThrow().ResponseMessage);
+                transactionAggregate.DeclineTransaction(command.OperatorId, operatorResult.GetValueOrThrow().ResponseCode, operatorResult.GetValueOrThrow().ResponseMessage, TransactionResponseCode.TransactionDeclinedByOperator, "DECLINED BY OPERATOR");
             }
 
-            transactionAggregate.RecordAdditionalResponseData(command.OperatorId, operatorResult.Data.AdditionalTransactionResponseMetadata);
+            transactionAggregate.RecordAdditionalResponseData(command.OperatorId, operatorResult.GetValueOrThrow().AdditionalTransactionResponseMetadata);
             return (start, end);
         }
     }

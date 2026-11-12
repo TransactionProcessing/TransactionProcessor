@@ -1,5 +1,5 @@
-using Shared.EventStore.Aggregate;
-using SimpleResults;
+using TransactionProcessing.Shared.EventStore.Aggregate;
+using TransactionProcessing.UnionResults;
 using TransactionProcessor.Aggregates;
 using TransactionProcessor.Models;
 using TransactionProcessor.Models.Merchant;
@@ -11,10 +11,10 @@ using Microsoft.Extensions.Configuration;
 using Imposter;
 using Imposter.Abstractions;
 using SecurityService.Client;
-using Shared.EventStore.EventStore;
-using Shared.General;
-using Shared.Logger;
-using Shared.Serialisation;
+using TransactionProcessing.Shared.EventStore.EventStore;
+using TransactionProcessing.Shared.General;
+using TransactionProcessing.Shared.Logger;
+using TransactionProcessing.Shared.Serialisation;
 using Shouldly;
 using System;
 using System.Text.Json;
@@ -58,7 +58,7 @@ public class TransactionValidationServiceTests {
         Result<TransactionValidationResult> result = await this.TransactionValidationService.ValidateLogonTransaction(identifiers, TestContext.Current.CancellationToken);
 
         result.IsSuccess.ShouldBeTrue();
-        result.Data.ResponseCode.ShouldBe(TransactionResponseCode.Success);
+        result.GetValueOrThrow().ResponseCode.ShouldBe(TransactionResponseCode.Success);
     }
 
     [Fact]
@@ -70,7 +70,7 @@ public class TransactionValidationServiceTests {
         Result<TransactionValidationResult> result = await this.TransactionValidationService.ValidateLogonTransaction(identifiers, TestContext.Current.CancellationToken);
 
         result.IsFailed.ShouldBeTrue();
-        result.Data.ResponseCode.ShouldBe(TransactionResponseCode.InvalidEstateId);
+        result.GetValueOrThrow().ResponseCode.ShouldBe(TransactionResponseCode.InvalidEstateId);
     }
 
     [Fact]
@@ -83,7 +83,7 @@ public class TransactionValidationServiceTests {
         Result<TransactionValidationResult> result = await this.TransactionValidationService.ValidateLogonTransaction(identifiers, TestContext.Current.CancellationToken);
 
         result.IsFailed.ShouldBeTrue();
-        result.Data.ResponseCode.ShouldBe(TransactionResponseCode.UnknownFailure);
+        result.GetValueOrThrow().ResponseCode.ShouldBe(TransactionResponseCode.UnknownFailure);
     }
 
     [Fact]
@@ -98,7 +98,7 @@ public class TransactionValidationServiceTests {
         Result<TransactionValidationResult> result = await this.TransactionValidationService.ValidateLogonTransaction(identifiers, TestContext.Current.CancellationToken);
 
         result.IsFailed.ShouldBeTrue();
-        result.Data.ResponseCode.ShouldBe(TransactionResponseCode.InvalidMerchantId);
+        result.GetValueOrThrow().ResponseCode.ShouldBe(TransactionResponseCode.InvalidMerchantId);
     }
 
     [Fact]
@@ -113,7 +113,7 @@ public class TransactionValidationServiceTests {
         Result<TransactionValidationResult> result = await this.TransactionValidationService.ValidateLogonTransaction(identifiers, TestContext.Current.CancellationToken);
 
         result.IsFailed.ShouldBeTrue();
-        result.Data.ResponseCode.ShouldBe(TransactionResponseCode.UnknownFailure);
+        result.GetValueOrThrow().ResponseCode.ShouldBe(TransactionResponseCode.UnknownFailure);
     }
 
     [Fact]
@@ -129,7 +129,7 @@ public class TransactionValidationServiceTests {
         Result<TransactionValidationResult> result = await this.TransactionValidationService.ValidateLogonTransaction(identifiers, TestContext.Current.CancellationToken);
 
         result.IsFailed.ShouldBeTrue();
-        result.Data.ResponseCode.ShouldBe(TransactionResponseCode.InvalidDeviceIdentifier);
+        result.GetValueOrThrow().ResponseCode.ShouldBe(TransactionResponseCode.InvalidDeviceIdentifier);
     }
 
     [Fact]
@@ -145,7 +145,7 @@ public class TransactionValidationServiceTests {
         Result<TransactionValidationResult> result = await this.TransactionValidationService.ValidateLogonTransaction(identifiers, TestContext.Current.CancellationToken);
 
         result.IsSuccess.ShouldBeTrue();
-        result.Data.ResponseCode.ShouldBe(TransactionResponseCode.SuccessNeedToAddDevice);
+        result.GetValueOrThrow().ResponseCode.ShouldBe(TransactionResponseCode.SuccessNeedToAddDevice);
     }
 
     [Fact]
@@ -161,7 +161,7 @@ public class TransactionValidationServiceTests {
         Result<TransactionValidationResult> result = await this.TransactionValidationService.ValidateReconciliationTransaction(identifiers, TestContext.Current.CancellationToken);
 
         result.IsSuccess.ShouldBeTrue();
-        result.Data.ResponseCode.ShouldBe(TransactionResponseCode.Success);
+        result.GetValueOrThrow().ResponseCode.ShouldBe(TransactionResponseCode.Success);
     }
 
     [Fact]
@@ -175,7 +175,7 @@ public class TransactionValidationServiceTests {
         Result<TransactionValidationResult> result = await this.TransactionValidationService.ValidateReconciliationTransaction(identifiers, TestContext.Current.CancellationToken);
 
         result.IsFailed.ShouldBeTrue();
-        result.Data.ResponseCode.ShouldBe(TransactionResponseCode.InvalidEstateId);
+        result.GetValueOrThrow().ResponseCode.ShouldBe(TransactionResponseCode.InvalidEstateId);
     }
 
     [Fact]
@@ -189,7 +189,7 @@ public class TransactionValidationServiceTests {
         Result<TransactionValidationResult> result = await this.TransactionValidationService.ValidateReconciliationTransaction(identifiers, TestContext.Current.CancellationToken);
 
         result.IsFailed.ShouldBeTrue();
-        result.Data.ResponseCode.ShouldBe(TransactionResponseCode.UnknownFailure);
+        result.GetValueOrThrow().ResponseCode.ShouldBe(TransactionResponseCode.UnknownFailure);
     }
 
     [Fact]
@@ -205,7 +205,7 @@ public class TransactionValidationServiceTests {
         Result<TransactionValidationResult> result = await this.TransactionValidationService.ValidateReconciliationTransaction(identifiers, TestContext.Current.CancellationToken);
 
         result.IsFailed.ShouldBeTrue();
-        result.Data.ResponseCode.ShouldBe(TransactionResponseCode.InvalidMerchantId);
+        result.GetValueOrThrow().ResponseCode.ShouldBe(TransactionResponseCode.InvalidMerchantId);
     }
 
     [Fact]
@@ -221,7 +221,7 @@ public class TransactionValidationServiceTests {
         Result<TransactionValidationResult> result = await this.TransactionValidationService.ValidateReconciliationTransaction(identifiers, TestContext.Current.CancellationToken);
 
         result.IsFailed.ShouldBeTrue();
-        result.Data.ResponseCode.ShouldBe(TransactionResponseCode.UnknownFailure);
+        result.GetValueOrThrow().ResponseCode.ShouldBe(TransactionResponseCode.UnknownFailure);
     }
 
     [Fact]
@@ -237,7 +237,7 @@ public class TransactionValidationServiceTests {
         Result<TransactionValidationResult> result = await this.TransactionValidationService.ValidateReconciliationTransaction(identifiers, TestContext.Current.CancellationToken);
 
         result.IsFailed.ShouldBeTrue();
-        result.Data.ResponseCode.ShouldBe(TransactionResponseCode.InvalidDeviceIdentifier);
+        result.GetValueOrThrow().ResponseCode.ShouldBe(TransactionResponseCode.InvalidDeviceIdentifier);
     }
 
     [Fact]
@@ -253,7 +253,7 @@ public class TransactionValidationServiceTests {
         Result<TransactionValidationResult> result = await this.TransactionValidationService.ValidateReconciliationTransaction(identifiers, TestContext.Current.CancellationToken);
 
         result.IsFailed.ShouldBeTrue();
-        result.Data.ResponseCode.ShouldBe(TransactionResponseCode.NoValidDevices);
+        result.GetValueOrThrow().ResponseCode.ShouldBe(TransactionResponseCode.NoValidDevices);
     }
 
     [Fact]
@@ -277,7 +277,7 @@ public class TransactionValidationServiceTests {
             TestContext.Current.CancellationToken);
 
         result.IsFailed.ShouldBeTrue();
-        result.Data.ResponseCode.ShouldBe(TransactionResponseCode.InvalidDeviceIdentifier);
+        result.GetValueOrThrow().ResponseCode.ShouldBe(TransactionResponseCode.InvalidDeviceIdentifier);
     }
 
     [Fact]
@@ -298,7 +298,7 @@ public class TransactionValidationServiceTests {
             TestContext.Current.CancellationToken);
 
         result.IsFailed.ShouldBeTrue();
-        result.Data.ResponseCode.ShouldBe(TransactionResponseCode.NoEstateOperators);
+        result.GetValueOrThrow().ResponseCode.ShouldBe(TransactionResponseCode.NoEstateOperators);
     }
 
     [Fact]
@@ -319,7 +319,7 @@ public class TransactionValidationServiceTests {
             TestContext.Current.CancellationToken);
 
         result.IsFailed.ShouldBeTrue();
-        result.Data.ResponseCode.ShouldBe(TransactionResponseCode.OperatorNotEnabledForEstate);
+        result.GetValueOrThrow().ResponseCode.ShouldBe(TransactionResponseCode.OperatorNotEnabledForEstate);
     }
 
     [Fact]
@@ -341,7 +341,7 @@ public class TransactionValidationServiceTests {
             TestContext.Current.CancellationToken);
 
         result.IsFailed.ShouldBeTrue();
-        result.Data.ResponseCode.ShouldBe(TransactionResponseCode.NoEstateOperators);
+        result.GetValueOrThrow().ResponseCode.ShouldBe(TransactionResponseCode.NoEstateOperators);
     }
 
     [Fact]
@@ -363,7 +363,7 @@ public class TransactionValidationServiceTests {
             TestContext.Current.CancellationToken);
 
         result.IsFailed.ShouldBeTrue();
-        result.Data.ResponseCode.ShouldBe(TransactionResponseCode.OperatorNotValidForEstate);
+        result.GetValueOrThrow().ResponseCode.ShouldBe(TransactionResponseCode.OperatorNotValidForEstate);
     }
 
     [Fact]
@@ -385,7 +385,7 @@ public class TransactionValidationServiceTests {
             TestContext.Current.CancellationToken);
 
         result.IsFailed.ShouldBeTrue();
-        result.Data.ResponseCode.ShouldBe(TransactionResponseCode.InvalidEstateId);
+        result.GetValueOrThrow().ResponseCode.ShouldBe(TransactionResponseCode.InvalidEstateId);
     }
 
     [Fact]
@@ -407,7 +407,7 @@ public class TransactionValidationServiceTests {
             TestContext.Current.CancellationToken);
 
         result.IsFailed.ShouldBeTrue();
-        result.Data.ResponseCode.ShouldBe(TransactionResponseCode.UnknownFailure);
+        result.GetValueOrThrow().ResponseCode.ShouldBe(TransactionResponseCode.UnknownFailure);
     }
 
     [Fact]
@@ -434,7 +434,7 @@ public class TransactionValidationServiceTests {
             TestContext.Current.CancellationToken);
 
         result.IsFailed.ShouldBeTrue();
-        result.Data.ResponseCode.ShouldBe(TransactionResponseCode.InvalidContractIdValue);
+        result.GetValueOrThrow().ResponseCode.ShouldBe(TransactionResponseCode.InvalidContractIdValue);
     }
 
     [Fact]
@@ -460,7 +460,7 @@ public class TransactionValidationServiceTests {
             TestContext.Current.CancellationToken);
 
         result.IsFailed.ShouldBeTrue();
-        result.Data.ResponseCode.ShouldBe(TransactionResponseCode.InvalidProductIdValue);
+        result.GetValueOrThrow().ResponseCode.ShouldBe(TransactionResponseCode.InvalidProductIdValue);
     }
 
     [Theory]
@@ -485,7 +485,7 @@ public class TransactionValidationServiceTests {
             TestContext.Current.CancellationToken);
 
         result.IsFailed.ShouldBeTrue();
-        result.Data.ResponseCode.ShouldBe(TransactionResponseCode.InvalidSaleTransactionAmount);
+        result.GetValueOrThrow().ResponseCode.ShouldBe(TransactionResponseCode.InvalidSaleTransactionAmount);
     }
 
     [Fact]
@@ -509,7 +509,7 @@ public class TransactionValidationServiceTests {
             TestContext.Current.CancellationToken);
 
         result.IsFailed.ShouldBeTrue();
-        result.Data.ResponseCode.ShouldBe(TransactionResponseCode.NoValidDevices);
+        result.GetValueOrThrow().ResponseCode.ShouldBe(TransactionResponseCode.NoValidDevices);
     }
 
     [Fact]
@@ -535,7 +535,7 @@ public class TransactionValidationServiceTests {
             TestContext.Current.CancellationToken);
 
         result.IsFailed.ShouldBeTrue();
-        result.Data.ResponseCode.ShouldBe(TransactionResponseCode.ContractNotValidForMerchant);
+        result.GetValueOrThrow().ResponseCode.ShouldBe(TransactionResponseCode.ContractNotValidForMerchant);
     }
 
     [Fact]
@@ -563,7 +563,7 @@ public class TransactionValidationServiceTests {
             TestContext.Current.CancellationToken);
 
         result.IsFailed.ShouldBeTrue();
-        result.Data.ResponseCode.ShouldBe(TransactionResponseCode.MerchantHasNoContractsConfigured);
+        result.GetValueOrThrow().ResponseCode.ShouldBe(TransactionResponseCode.MerchantHasNoContractsConfigured);
     }
 
     [Fact]
@@ -588,7 +588,7 @@ public class TransactionValidationServiceTests {
             TestContext.Current.CancellationToken);
 
         result.IsFailed.ShouldBeTrue();
-        result.Data.ResponseCode.ShouldBe(TransactionResponseCode.MerchantDoesNotHaveEnoughCredit);
+        result.GetValueOrThrow().ResponseCode.ShouldBe(TransactionResponseCode.MerchantDoesNotHaveEnoughCredit);
     }
 
     [Fact]
@@ -611,7 +611,7 @@ public class TransactionValidationServiceTests {
             TestContext.Current.CancellationToken);
 
         result.IsFailed.ShouldBeTrue();
-        result.Data.ResponseCode.ShouldBe(TransactionResponseCode.InvalidMerchantId);
+        result.GetValueOrThrow().ResponseCode.ShouldBe(TransactionResponseCode.InvalidMerchantId);
     }
 
     [Fact]
@@ -635,7 +635,7 @@ public class TransactionValidationServiceTests {
             TestContext.Current.CancellationToken);
 
         result.IsFailed.ShouldBeTrue();
-        result.Data.ResponseCode.ShouldBe(TransactionResponseCode.UnknownFailure);
+        result.GetValueOrThrow().ResponseCode.ShouldBe(TransactionResponseCode.UnknownFailure);
     }
 
     [Fact(Skip = "Need to review if test is needed now")]
@@ -664,7 +664,7 @@ public class TransactionValidationServiceTests {
             TestContext.Current.CancellationToken);
 
         result.IsFailed.ShouldBeTrue();
-        result.Data.ResponseCode.ShouldBe(TransactionResponseCode.InvalidMerchantId);
+        result.GetValueOrThrow().ResponseCode.ShouldBe(TransactionResponseCode.InvalidMerchantId);
     }
 
     [Fact(Skip = "not sure if this needed now")]
@@ -692,7 +692,7 @@ public class TransactionValidationServiceTests {
             TestContext.Current.CancellationToken);
 
         result.IsFailed.ShouldBeTrue();
-        result.Data.ResponseCode.ShouldBe(TransactionResponseCode.UnknownFailure);
+        result.GetValueOrThrow().ResponseCode.ShouldBe(TransactionResponseCode.UnknownFailure);
     }
 
     [Fact]
@@ -717,7 +717,7 @@ public class TransactionValidationServiceTests {
             TestContext.Current.CancellationToken);
 
         result.IsFailed.ShouldBeTrue();
-        result.Data.ResponseCode.ShouldBe(TransactionResponseCode.NoMerchantOperators);
+        result.GetValueOrThrow().ResponseCode.ShouldBe(TransactionResponseCode.NoMerchantOperators);
     }
 
     [Fact]
@@ -741,7 +741,7 @@ public class TransactionValidationServiceTests {
             TestContext.Current.CancellationToken);
 
         result.IsFailed.ShouldBeTrue();
-        result.Data.ResponseCode.ShouldBe(TransactionResponseCode.OperatorNotEnabledForMerchant);
+        result.GetValueOrThrow().ResponseCode.ShouldBe(TransactionResponseCode.OperatorNotEnabledForMerchant);
     }
 
     [Fact]
@@ -762,7 +762,7 @@ public class TransactionValidationServiceTests {
             TransactionSource.OnlineSale,
             TestContext.Current.CancellationToken);
         result.IsFailed.ShouldBeTrue();
-        result.Data.ResponseCode.ShouldBe(TransactionResponseCode.OperatorNotValidForMerchant);
+        result.GetValueOrThrow().ResponseCode.ShouldBe(TransactionResponseCode.OperatorNotValidForMerchant);
     }
 
 
@@ -789,7 +789,7 @@ public class TransactionValidationServiceTests {
             TestContext.Current.CancellationToken);
 
         result.IsFailed.ShouldBeTrue();
-        result.Data.ResponseCode.ShouldBe(TransactionResponseCode.ProductNotValidForMerchant);
+        result.GetValueOrThrow().ResponseCode.ShouldBe(TransactionResponseCode.ProductNotValidForMerchant);
     }
 
     [Fact]
@@ -814,7 +814,7 @@ public class TransactionValidationServiceTests {
             TransactionSource.OnlineSale,
             TestContext.Current.CancellationToken);
         result.IsSuccess.ShouldBeTrue();
-        result.Data.ResponseCode.ShouldBe(TransactionResponseCode.Success);
+        result.GetValueOrThrow().ResponseCode.ShouldBe(TransactionResponseCode.Success);
     }
 
     [Theory]
@@ -841,7 +841,7 @@ public class TransactionValidationServiceTests {
             TestContext.Current.CancellationToken);
 
         result.IsSuccess.ShouldBeTrue();
-        result.Data.ResponseCode.ShouldBe(TransactionResponseCode.Success);
+        result.GetValueOrThrow().ResponseCode.ShouldBe(TransactionResponseCode.Success);
     }
 
     [Fact]
@@ -868,7 +868,7 @@ public class TransactionValidationServiceTests {
             TestContext.Current.CancellationToken);
 
         result.IsFailed.ShouldBeTrue();
-        result.Data.ResponseCode.ShouldBe(TransactionResponseCode.UnknownFailure);
+        result.GetValueOrThrow().ResponseCode.ShouldBe(TransactionResponseCode.UnknownFailure);
     }
 }
 

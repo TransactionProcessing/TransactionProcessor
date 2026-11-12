@@ -1,4 +1,4 @@
-﻿using SimpleResults;
+using TransactionProcessing.UnionResults;
 
 namespace TransactionProcessor.BusinessLogic.OperatorInterfaces.SafaricomPinless
 {
@@ -12,7 +12,7 @@ namespace TransactionProcessor.BusinessLogic.OperatorInterfaces.SafaricomPinless
     using System.Xml;
     using System.Xml.Serialization;
     using Common;
-    using Shared.Logger;
+    using TransactionProcessing.Shared.Logger;
 
     /// <summary>
     /// 

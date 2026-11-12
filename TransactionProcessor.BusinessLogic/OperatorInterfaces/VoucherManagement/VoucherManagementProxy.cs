@@ -1,8 +1,8 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
-using Shared.Logger;
-using Shared.Results;
-using SimpleResults;
+using TransactionProcessing.Shared.Logger;
+using TransactionProcessing.UnionResults;
+using TransactionProcessing.UnionResults;
 
 namespace TransactionProcessor.BusinessLogic.OperatorInterfaces.VoucherManagement
 {
@@ -74,9 +74,9 @@ namespace TransactionProcessor.BusinessLogic.OperatorInterfaces.VoucherManagemen
 
                 // Build the response metadata
                 Dictionary<String, String> additionalTransactionResponseMetadata = new Dictionary<String, String>();
-                additionalTransactionResponseMetadata.Add("VoucherCode", result.Data.VoucherCode);
-                additionalTransactionResponseMetadata.Add("VoucherMessage", result.Data.Message);
-                additionalTransactionResponseMetadata.Add("VoucherExpiryDate", result.Data.ExpiryDate.ToString("yyyy-MM-dd"));
+                additionalTransactionResponseMetadata.Add("VoucherCode", result.GetValueOrThrow().VoucherCode);
+                additionalTransactionResponseMetadata.Add("VoucherMessage", result.GetValueOrThrow().Message);
+                additionalTransactionResponseMetadata.Add("VoucherExpiryDate", result.GetValueOrThrow().ExpiryDate.ToString("yyyy-MM-dd"));
 
                 return Result.Success(new OperatorResponse
                 {

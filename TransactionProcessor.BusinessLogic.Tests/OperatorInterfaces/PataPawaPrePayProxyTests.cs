@@ -1,9 +1,9 @@
 using Microsoft.Extensions.Caching.Memory;
 using RichardSzalay.MockHttp;
-using Shared.Logger;
-using Shared.Serialisation;
+using TransactionProcessing.Shared.Logger;
+using TransactionProcessing.Shared.Serialisation;
 using Shouldly;
-using SimpleResults;
+using TransactionProcessing.UnionResults;
 using System;
 using System.Collections.Generic;
 using System.Net;
@@ -47,8 +47,8 @@ public class PataPawaPrePayProxyTests {
             
         var result = await this.PataPawaPrePayProxy.ProcessLogonMessage(TestContext.Current.CancellationToken);
         result.IsSuccess.ShouldBeTrue();
-        result.Data.ResponseCode.ShouldBe("0000");
-        result.Data.IsSuccessful.ShouldBeTrue();
+        result.GetValueOrThrow().ResponseCode.ShouldBe("0000");
+        result.GetValueOrThrow().IsSuccessful.ShouldBeTrue();
     }
 
     [Fact]
@@ -60,7 +60,7 @@ public class PataPawaPrePayProxyTests {
 
         var result = await this.PataPawaPrePayProxy.ProcessLogonMessage(TestContext.Current.CancellationToken);
         result.IsSuccess.ShouldBeTrue();
-        result.Data.TransactionId.ShouldBe(operatorResponse.TransactionId);
+        result.GetValueOrThrow().TransactionId.ShouldBe(operatorResponse.TransactionId);
     }
 
     [Fact]
@@ -111,8 +111,8 @@ public class PataPawaPrePayProxyTests {
             metaDataDictionary, TestContext.Current.CancellationToken);
             
         result.IsSuccess.ShouldBeTrue();
-        result.Data.ResponseCode.ShouldBe("0000");
-        result.Data.IsSuccessful.ShouldBeTrue();
+        result.GetValueOrThrow().ResponseCode.ShouldBe("0000");
+        result.GetValueOrThrow().IsSuccessful.ShouldBeTrue();
     }
 
     [Fact]
@@ -204,8 +204,8 @@ public class PataPawaPrePayProxyTests {
             metaDataDictionary, TestContext.Current.CancellationToken);
 
         result.IsSuccess.ShouldBeTrue();
-        result.Data.ResponseCode.ShouldBe("0000");
-        result.Data.IsSuccessful.ShouldBeTrue();
+        result.GetValueOrThrow().ResponseCode.ShouldBe("0000");
+        result.GetValueOrThrow().IsSuccessful.ShouldBeTrue();
     }
 
     [Fact]

@@ -1,9 +1,9 @@
-﻿using System;
+using System;
 using System.Threading;
 using System.Threading.Tasks;
-using Shared.DomainDrivenDesign.EventSourcing;
-using Shared.EventStore.EventHandling;
-using SimpleResults;
+using TransactionProcessing.Shared.DomainDrivenDesign.EventSourcing;
+using TransactionProcessing.Shared.EventStore.EventHandling;
+using TransactionProcessing.UnionResults;
 using TransactionProcessor.DomainEvents;
 using TransactionProcessor.Repository;
 using static TransactionProcessor.DomainEvents.FloatDomainEvents;

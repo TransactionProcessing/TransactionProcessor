@@ -1,7 +1,7 @@
-﻿namespace TransactionProcessor.ProjectionEngine.Database.Database;
+namespace TransactionProcessor.ProjectionEngine.Database.Database;
 
 using Microsoft.EntityFrameworkCore;
-using Shared.General;
+using TransactionProcessing.Shared.General;
 
 public class TransactionProcessorMySqlContext : TransactionProcessorGenericContext
 {
@@ -21,7 +21,7 @@ public class TransactionProcessorMySqlContext : TransactionProcessorGenericConte
     {
         if (!string.IsNullOrWhiteSpace(this.ConnectionString))
         {
-            options.UseMySql(this.ConnectionString, ServerVersion.Parse("8.0.27")).AddInterceptors(new MySqlIgnoreDuplicatesOnInsertInterceptor());
+            options.UseMySQL(this.ConnectionString).AddInterceptors(new MySqlIgnoreDuplicatesOnInsertInterceptor());
         }
     }
 }

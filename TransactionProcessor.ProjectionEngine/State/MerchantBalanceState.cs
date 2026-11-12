@@ -1,8 +1,8 @@
-﻿using System.Diagnostics.CodeAnalysis;
+using System.Diagnostics.CodeAnalysis;
 
 namespace TransactionProcessor.ProjectionEngine.State;
 
-public record MerchantBalanceState : Shared.EventStore.ProjectionEngine.State
+public record MerchantBalanceState : TransactionProcessing.Shared.EventStore.ProjectionEngine.State
 {
     public Guid EstateId { get; init; }
     public Guid MerchantId { get; init; }

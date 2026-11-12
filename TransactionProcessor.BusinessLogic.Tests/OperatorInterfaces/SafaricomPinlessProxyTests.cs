@@ -1,4 +1,4 @@
-using SimpleResults;
+using TransactionProcessing.UnionResults;
 using System;
 using System.Collections.Generic;
 
@@ -6,8 +6,8 @@ namespace TransactionProcessor.BusinessLogic.Tests.OperatorInterfaces
 {
     using BusinessLogic.OperatorInterfaces;
     using BusinessLogic.OperatorInterfaces.SafaricomPinless;
-    using Shared.Logger;
-    using Shared.Serialisation;
+    using TransactionProcessing.Shared.Logger;
+    using TransactionProcessing.Shared.Serialisation;
     using Shouldly;
     using System.Net;
     using System.Net.Http;
@@ -37,7 +37,7 @@ namespace TransactionProcessor.BusinessLogic.Tests.OperatorInterfaces
             IOperatorProxy safaricomPinlessproxy = new SafaricomPinlessProxy(safaricomConfiguration, httpClient);
             var processLogonMessageResult = await safaricomPinlessproxy.ProcessLogonMessage(TestContext.Current.CancellationToken);
             processLogonMessageResult.IsSuccess.ShouldBeTrue();
-            OperatorResponse operatorResponse = processLogonMessageResult.Data;
+            OperatorResponse operatorResponse = processLogonMessageResult.GetValueOrThrow();
             operatorResponse.ShouldBeNull();
 
         }
@@ -64,10 +64,10 @@ namespace TransactionProcessor.BusinessLogic.Tests.OperatorInterfaces
                                                                                                 TestData.AdditionalTransactionMetaDataForMobileTopup(),
                                                                                                 TestContext.Current.CancellationToken);
             result.IsSuccess.ShouldBeTrue();
-            result.Data.ShouldNotBeNull();
-            result.Data.IsSuccessful.ShouldBeTrue();
-            result.Data.ResponseCode.ShouldBe("200");
-            result.Data.ResponseMessage.ShouldBe("Topup Successful");
+            result.GetValueOrThrow().ShouldNotBeNull();
+            result.GetValueOrThrow().IsSuccessful.ShouldBeTrue();
+            result.GetValueOrThrow().ResponseCode.ShouldBe("200");
+            result.GetValueOrThrow().ResponseMessage.ShouldBe("Topup Successful");
         }
 
         [Theory]
@@ -96,10 +96,10 @@ namespace TransactionProcessor.BusinessLogic.Tests.OperatorInterfaces
                                                                                                 TestContext.Current.CancellationToken);
 
             result.IsSuccess.ShouldBeTrue();
-            result.Data.ShouldNotBeNull();
-            result.Data.IsSuccessful.ShouldBeTrue();
-            result.Data.ResponseCode.ShouldBe("200");
-            result.Data.ResponseMessage.ShouldBe("Topup Successful");
+            result.GetValueOrThrow().ShouldNotBeNull();
+            result.GetValueOrThrow().IsSuccessful.ShouldBeTrue();
+            result.GetValueOrThrow().ResponseCode.ShouldBe("200");
+            result.GetValueOrThrow().ResponseMessage.ShouldBe("Topup Successful");
         }
 
         [Theory]
@@ -129,10 +129,10 @@ namespace TransactionProcessor.BusinessLogic.Tests.OperatorInterfaces
                                                                                                 TestContext.Current.CancellationToken);
 
             result.IsSuccess.ShouldBeTrue();
-            result.Data.ShouldNotBeNull();
-            result.Data.IsSuccessful.ShouldBeTrue();
-            result.Data.ResponseCode.ShouldBe("200");
-            result.Data.ResponseMessage.ShouldBe("Topup Successful");
+            result.GetValueOrThrow().ShouldNotBeNull();
+            result.GetValueOrThrow().IsSuccessful.ShouldBeTrue();
+            result.GetValueOrThrow().ResponseCode.ShouldBe("200");
+            result.GetValueOrThrow().ResponseMessage.ShouldBe("Topup Successful");
         }
 
         [Fact]

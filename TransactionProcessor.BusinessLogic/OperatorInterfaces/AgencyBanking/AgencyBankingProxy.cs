@@ -1,6 +1,6 @@
-using Shared.Logger;
-using Shared.Serialisation;
-using SimpleResults;
+using TransactionProcessing.Shared.Logger;
+using TransactionProcessing.Shared.Serialisation;
+using TransactionProcessing.UnionResults;
 using System;
 using System.Collections.Generic;
 using System.Linq;

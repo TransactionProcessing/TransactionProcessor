@@ -1,6 +1,6 @@
 using Microsoft.Extensions.DependencyInjection;
 using Imposter.Abstractions;
-using Shared.EntityFramework;
+using TransactionProcessing.Shared.EntityFramework;
 using TransactionProcessor.Database.Contexts;
 using TransactionProcessor.Repository;
 

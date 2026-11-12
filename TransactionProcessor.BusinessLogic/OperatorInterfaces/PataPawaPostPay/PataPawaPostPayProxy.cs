@@ -1,5 +1,5 @@
-﻿using System.Diagnostics.CodeAnalysis;
-using SimpleResults;
+using System.Diagnostics.CodeAnalysis;
+using TransactionProcessing.UnionResults;
 
 namespace TransactionProcessor.BusinessLogic.OperatorInterfaces.PataPawaPostPay
 {

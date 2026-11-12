@@ -1,5 +1,5 @@
-﻿using Shared.DomainDrivenDesign.EventSourcing;
-using Shared.EventStore.Aggregate;
+using TransactionProcessing.Shared.DomainDrivenDesign.EventSourcing;
+using TransactionProcessing.Shared.EventStore.Aggregate;
 
 namespace TransactionProcessor.Bootstrapper
 {
@@ -15,7 +15,7 @@ namespace TransactionProcessor.Bootstrapper
     using ProjectionEngine.ProjectionHandler;
     using ProjectionEngine.Projections;
     using ProjectionEngine.State;
-    using Shared.EventStore.EventHandling;
+    using TransactionProcessing.Shared.EventStore.EventHandling;
 
     /// <summary>
     /// 

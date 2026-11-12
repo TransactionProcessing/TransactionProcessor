@@ -1,11 +1,11 @@
-﻿using System;
+using System;
 
 namespace TransactionProcessor.IntegrationTests.Common
 {
     using System.Threading;
     using System.Threading.Tasks;
-    using global::Shared.IntegrationTesting;
-    using global::Shared.Logger;
+    using global::TransactionProcessing.Shared.IntegrationTesting;
+    using global::TransactionProcessing.Shared.Logger;
     using NLog;
     using Reqnroll;
 
