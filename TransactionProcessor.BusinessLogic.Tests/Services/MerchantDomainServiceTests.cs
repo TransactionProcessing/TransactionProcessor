@@ -1007,7 +1007,7 @@ public class MerchantDomainServiceTests {
             .ReturnsAsync(Result.Success());
         this.AggregateService.Get<ContractAggregate>(Arg<Guid>.Any(), Arg<CancellationToken>.Any())
             .ReturnsAsync(
-                TestData.Aggregates.CreatedContractAggregateWithAProductAndTransactionFee(CalculationType.Fixed,
+                Result.Success(TestData.Aggregates.CreatedContractAggregateWithAProductAndTransactionFee(CalculationType.Fixed,
                     FeeType.Merchant)));
 
         var result = await this.DomainService.AddContractToMerchant(TestData.Commands.AddMerchantContractCommand, TestContext.Current.CancellationToken);
