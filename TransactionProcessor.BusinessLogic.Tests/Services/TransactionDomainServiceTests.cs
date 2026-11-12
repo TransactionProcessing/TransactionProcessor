@@ -557,14 +557,14 @@ namespace TransactionProcessor.BusinessLogic.Tests.Services{
                                                                Arg<DateTimeOffset>.Any(),
                                                                Arg<String>.Any(),
                                                                Arg<Dictionary<String, String>>.Any(),
-                                                               Arg<CancellationToken>.Any()).ReturnsAsync(new OperatorResponse{
+                                                               Arg<CancellationToken>.Any()).ReturnsAsync(Result.Success(new OperatorResponse{
                                                                                                                                     ResponseMessage = TestData.OperatorResponseMessage,
                                                                                                                                     IsSuccessful = true,
                                                                                                                                     AuthorisationCode =
                                                                                                                                         TestData.OperatorAuthorisationCode,
                                                                                                                                     TransactionId = TestData.OperatorTransactionId,
                                                                                                                                     ResponseCode = TestData.ResponseCode.ToCodeString()
-                                                               });
+                                                               }));
 
             TransactionCommands.ProcessSaleTransactionCommand command =
                 new TransactionCommands.ProcessSaleTransactionCommand(TestData.EstateId,
@@ -619,7 +619,7 @@ namespace TransactionProcessor.BusinessLogic.Tests.Services{
                                                                Arg<DateTimeOffset>.Any(),
                                                                Arg<String>.Any(),
                                                                Arg<Dictionary<String, String>>.Any(),
-                                                               Arg<CancellationToken>.Any()).ReturnsAsync(new OperatorResponse
+                                                               Arg<CancellationToken>.Any()).ReturnsAsync(Result.Success(new OperatorResponse
                                                                {
                                                                    ResponseMessage = TestData.OperatorResponseMessage,
                                                                    IsSuccessful = true,
@@ -627,7 +627,7 @@ namespace TransactionProcessor.BusinessLogic.Tests.Services{
                                                                                                                                         TestData.OperatorAuthorisationCode,
                                                                    TransactionId = TestData.OperatorTransactionId,
                                                                    ResponseCode = TestData.ResponseCode.ToCodeString()
-                                                               });
+                                                               }));
 
             TransactionCommands.ProcessSaleTransactionCommand command =
                 new TransactionCommands.ProcessSaleTransactionCommand(TestData.EstateId,
@@ -1083,13 +1083,13 @@ namespace TransactionProcessor.BusinessLogic.Tests.Services{
                                                                Arg<DateTimeOffset>.Any(),
                                                                Arg<String>.Any(),
                                                                Arg<Dictionary<String, String>>.Any(),
-                                                               Arg<CancellationToken>.Any()).ReturnsAsync(new OperatorResponse {
+                                                               Arg<CancellationToken>.Any()).ReturnsAsync(Result.Success(new OperatorResponse {
                                                                    ResponseMessage = TestData.OperatorResponseMessage,
                                                                    IsSuccessful = true,
                                                                    AuthorisationCode = TestData.OperatorAuthorisationCode,
                                                                    TransactionId = TestData.OperatorTransactionId,
                                                                    ResponseCode = TestData.ResponseCode.ToCodeString()
-                                                               });
+                                                               }));
 
             TransactionCommands.ProcessSaleTransactionCommand command =
                 new TransactionCommands.ProcessSaleTransactionCommand(TestData.EstateId,

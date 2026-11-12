@@ -1,3 +1,4 @@
+using System;
 using Imposter.Abstractions;
 using TransactionProcessing.Shared.DomainDrivenDesign.EventSourcing;
 using TransactionProcessing.Shared.EventStore.Aggregate;
