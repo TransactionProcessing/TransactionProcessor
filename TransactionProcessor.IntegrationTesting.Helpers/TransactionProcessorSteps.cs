@@ -38,7 +38,7 @@ public class TransactionProcessorSteps
     private readonly KurrentDBProjectionManagementClient ProjectionManagementClient;
     private readonly IAgencyBankingClient AgencyBankingClient;
 
-    public TransactionProcessorSteps(ITransactionProcessorClient transactionProcessorClient, 
+    public TransactionProcessorSteps(ITransactionProcessorClient transactionProcessorClient,
                                      HttpClient testHostHttpClient, KurrentDBProjectionManagementClient projectionManagementClient,
                                      IAgencyBankingClient agencyBankingClient)
     {
@@ -379,7 +379,7 @@ public class TransactionProcessorSteps
                     agent.AgentId.ShouldBe(createAgentRequest.AgentId);
                     agent.Name.ShouldBe(createAgentRequest.Name);
                 });
-                
+
                 // Activate the agent
                 ActivateAgentRequest activateAgentRequest = new ActivateAgentRequest { ActivatedBy = "INTEGRATIONTEST" };
                 SimpleResults.Result activateAgentResult = await this.AgencyBankingClient.ActivateAgent(createAgentRequest.AgentId, activateAgentRequest, CancellationToken.None);
@@ -414,7 +414,7 @@ public class TransactionProcessorSteps
                     floatConfiguration.MaximumFloat.ShouldBe(configureFloatRequest.MaximumFloat);
                     floatConfiguration.MinimumFloat.ShouldBe(configureFloatRequest.MinimumFloat);
                 });
-                
+
                 FloatCreditRequest floatCreditRequest = new FloatCreditRequest() {
                     AgentId = createAgentRequest.AgentId,
                     Amount = 10000,
@@ -682,7 +682,7 @@ public class TransactionProcessorSteps
         foreach ((EstateDetails, Guid, DateTime, Int32) request in requests)
         {
             await Retry.For(async () => {
-                Result<SettlementResponse> getSettlementByDateResult = 
+                Result<SettlementResponse> getSettlementByDateResult =
                     await this.TransactionProcessorClient.GetSettlementByDate(accessToken,
                                                                                               request.Item3,
                                                                                               request.Item1.EstateId,
@@ -1486,7 +1486,7 @@ public class TransactionProcessorSteps
             Result<List<ContractResponse>> getContractsResult =
                 await this.TransactionProcessorClient.GetMerchantContracts(token, estateDetails.EstateId, merchantId, CancellationToken.None);
             getContractsResult.IsSuccess.ShouldBeTrue(getContractsResult.Message);
-            
+
             List<ContractResponse> contracts = getContractsResult.GetValueOrThrow();
             contracts.ShouldNotBeNull();
             contracts.ShouldHaveSingleItem();
