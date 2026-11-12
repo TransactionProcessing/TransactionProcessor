@@ -93,7 +93,7 @@ public class VoucherStateRepository : IProjectionStateRepository<VoucherState>
                     };
         }
 
-        return state;
+        return Result.Success(state);
     }
     
     private static VoucherProjectionState CreateVoucherProjectionState(VoucherState state) {
@@ -123,7 +123,7 @@ public class VoucherStateRepository : IProjectionStateRepository<VoucherState>
         return entity;
     }
 
-    private async Task<VoucherState> LoadHelper(Guid estateId,
+    private async Task<Result<VoucherState>> LoadHelper(Guid estateId,
                                                         Guid voucherId,
                                                         CancellationToken cancellationToken)
     {
@@ -134,11 +134,11 @@ public class VoucherStateRepository : IProjectionStateRepository<VoucherState>
 
         if (entity == null)
         {
-            return new VoucherState();
+            return Result.Success(new VoucherState());
         }
 
         // We have located a state record so we need to translate to the Model type
-        return new VoucherState
+        return Result.Success(new VoucherState
         {
             EstateId = entity.EstateId,
             Version = entity.Timestamp,
@@ -161,7 +161,7 @@ public class VoucherStateRepository : IProjectionStateRepository<VoucherState>
             RecipientMobile = entity.RecipientMobile,
             RedeemedDate = entity.RedeemedDate,
             RedeemedDateTime = entity.RedeemedDateTime
-        };
+        });
     }
 
     #endregion

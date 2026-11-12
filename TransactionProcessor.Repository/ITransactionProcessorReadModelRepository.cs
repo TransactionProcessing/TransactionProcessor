@@ -768,10 +768,11 @@ namespace TransactionProcessor.Repository {
             using ResolvedDbContext<EstateManagementContext>? resolvedContext = this.Resolver.Resolve(EstateManagementDatabaseName, domainEvent.EstateId.ToString());
             await using EstateManagementContext context = resolvedContext.Context;
             Result<MerchantOpeningHours> getMerchantOpeningHoursResult = await context.LoadMerchantOpeningHours(domainEvent, cancellationToken);
-            if (getMerchantOpeningHoursResult.IsFailed && getMerchantOpeningHoursResult.Status != ResultStatus.NotFound)
+            Boolean merchantOpeningHoursNotFound = getMerchantOpeningHoursResult.Errors.Any(error => error.ErrorType == ErrorType.NotFound);
+            if (getMerchantOpeningHoursResult.IsFailed && !merchantOpeningHoursNotFound)
                 return ResultHelpers.CreateFailure(getMerchantOpeningHoursResult);
 
-            if (getMerchantOpeningHoursResult.Status == ResultStatus.NotFound) {
+            if (merchantOpeningHoursNotFound) {
                 // No opening hours so create a new row
                 MerchantOpeningHours merchantOpeningHours = new MerchantOpeningHours { MerchantId = domainEvent.MerchantId };
 
@@ -798,12 +799,13 @@ namespace TransactionProcessor.Repository {
                 return ResultHelpers.CreateFailure(merchantScheduleResult);
 
             Result<MerchantScheduleMonth> merchantScheduleMonthResult = await context.LoadMerchantScheduleMonth(domainEvent, cancellationToken);
-            if (merchantScheduleMonthResult.IsFailed && merchantScheduleMonthResult.Status != ResultStatus.NotFound)
+            Boolean merchantScheduleMonthNotFound = merchantScheduleMonthResult.Errors.Any(error => error.ErrorType == ErrorType.NotFound);
+            if (merchantScheduleMonthResult.IsFailed && !merchantScheduleMonthNotFound)
                 return ResultHelpers.CreateFailure(merchantScheduleMonthResult);
 
             String closedDays = String.Join(",", domainEvent.ClosedDays.OrderBy(day => day));
 
-            if (merchantScheduleMonthResult.Status == ResultStatus.NotFound)
+            if (merchantScheduleMonthNotFound)
             {
                 MerchantScheduleMonth merchantScheduleMonth = new()
                 {
@@ -2031,7 +2033,7 @@ namespace TransactionProcessor.Repository {
             using ResolvedDbContext<EstateManagementContext>? resolvedContext = this.Resolver.Resolve(EstateManagementDatabaseName, domainEvent.EstateId.ToString());
             await using EstateManagementContext context = resolvedContext.Context;
 
-            var getFileResult = await context.LoadFile(domainEvent, cancellationToken);
+            var getFileResult = await context.LoadFile(domainEvent.FileId, cancellationToken);
             if (getFileResult.IsFailed)
                 return ResultHelpers.CreateFailure(getFileResult);
 

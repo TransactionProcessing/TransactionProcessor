@@ -125,7 +125,7 @@ public class MerchantBalanceStateRepository : IProjectionStateRepository<Merchan
                                                                                                                   cancellationToken,
                                                                                                                   $"Error getting merchant balance state for estate {estateId} and merchant {merchantId}");
 
-        if (entityResult.Status == ResultStatus.NotFound) {
+        if (entityResult.IsFailed && entityResult.Errors.Any(error => error.ErrorType == ErrorType.NotFound)) {
             return Result.Success(new MerchantBalanceState());
         }
 

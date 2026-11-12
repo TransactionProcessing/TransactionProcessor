@@ -465,6 +465,11 @@ public static class EstateManagementContextExtensions
     public static async Task<Result<File>> LoadFile(this EstateManagementContext context, IDomainEvent domainEvent, CancellationToken cancellationToken)
     {
         Guid fileId = DomainEventHelper.GetFileId(domainEvent);
+        return await context.LoadFile(fileId, cancellationToken);
+    }
+
+    public static async Task<Result<File>> LoadFile(this EstateManagementContext context, Guid fileId, CancellationToken cancellationToken)
+    {
         IQueryable<File> query = context.Files.Where(e => e.FileId == fileId);
         Result<File> fileResult = await DbQueryHelpers.ExecuteQuerySafeSingleOrDefault(query, cancellationToken, $"Error getting file with Id {fileId}");
 

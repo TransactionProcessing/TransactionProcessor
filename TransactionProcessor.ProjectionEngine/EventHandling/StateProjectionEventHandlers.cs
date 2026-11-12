@@ -52,7 +52,7 @@ public class StateProjectionEventHandler<TState> : IDomainEventHandler where TSt
             return Result.Success();
         }
         catch (Exception ex) {
-            return Result.CriticalError(ex.GetExceptionMessages());
+            return Result.CriticalError(String.Join(Environment.NewLine, ex.GetExceptionMessages()));
         }
     }
 
