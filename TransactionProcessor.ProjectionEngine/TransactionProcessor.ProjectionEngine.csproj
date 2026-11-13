@@ -26,8 +26,4 @@
     <Folder Include="Common\" />
     <Folder Include="Models\" />
   </ItemGroup>
-
-  <ItemGroup>
-    <ProjectReference Include="..\TransactionProcessor.ResultHelpers\TransactionProcessor.ResultHelpers.csproj" />
-  </ItemGroup>
 </Project>

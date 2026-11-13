@@ -9,7 +9,7 @@
     <PackageVersion Include="AspNetCore.HealthChecks.UI.InMemory.Storage" Version="9.0.0" />
     <PackageVersion Include="AspNetCore.HealthChecks.Uris" Version="9.0.0" />
     <PackageVersion Include="CallbackHandler.DataTransferObjects" Version="2026.10.3.170" />
-    <PackageVersion Include="TransactionProcessing.ClientProxyBase" Version="2026.11.4" />
+    <PackageVersion Include="TransactionProcessing.ClientProxyBase" Version="2026.11.5" />
     <PackageVersion Include="coverlet.collector" Version="10.1.0" />
     <PackageVersion Include="coverlet.msbuild" Version="10.1.0" />
     <PackageVersion Include="Ductus.FluentDocker" Version="2.85.0" />
@@ -64,12 +64,12 @@
     <PackageVersion Include="SecurityService.Client" Version="2026.10.3.204" />
     <PackageVersion Include="SecurityService.IntegrationTesting.Helpers" Version="2026.10.3.204" />
     <PackageVersion Include="Sentry.AspNetCore" Version="6.12.1" />
-    <PackageVersion Include="TransactionProcessing.Shared" Version="2026.11.4" />
-    <PackageVersion Include="TransactionProcessing.Shared.DomainDrivenDesign" Version="2026.11.4" />
-    <PackageVersion Include="TransactionProcessing.Shared.EventStore" Version="2026.11.4" />
-    <PackageVersion Include="TransactionProcessing.Shared.IntegrationTesting" Version="2026.11.4" />
-    <PackageVersion Include="TransactionProcessing.UnionResults" Version="2026.11.4" />
-    <PackageVersion Include="TransactionProcessing.UnionResults.AspNetCore" Version="2026.11.4" />
+    <PackageVersion Include="TransactionProcessing.Shared" Version="2026.11.5" />
+    <PackageVersion Include="TransactionProcessing.Shared.DomainDrivenDesign" Version="2026.11.5" />
+    <PackageVersion Include="TransactionProcessing.Shared.EventStore" Version="2026.11.5" />
+    <PackageVersion Include="TransactionProcessing.Shared.IntegrationTesting" Version="2026.11.5" />
+    <PackageVersion Include="TransactionProcessing.UnionResults" Version="2026.11.5" />
+    <PackageVersion Include="TransactionProcessing.UnionResults.AspNetCore" Version="2026.11.5" />
     <PackageVersion Include="SharpCompress" Version="0.50.7" />
     <PackageVersion Include="Shouldly" Version="4.3.0" />
     <PackageVersion Include="SkiaSharp" Version="4.155.0" />
@@ -84,7 +84,7 @@
     <PackageVersion Include="System.ServiceModel.NetTcp" Version="10.1.0" />
     <PackageVersion Include="System.ServiceModel.Security" Version="6.0.0" />
     <PackageVersion Include="TestHosts.Clients" Version="2026.10.2.95" />
-    <PackageVersion Include="TransactionProcessing.ApiDefaults" Version="2026.11.4" />
+    <PackageVersion Include="TransactionProcessing.ApiDefaults" Version="2026.11.5" />
     <PackageVersion Include="xunit.v3" Version="4.0.0" />
     <PackageVersion Include="xunit.v3.mtp-v2" Version="4.0.2" />
     <PackageVersion Include="xunit.v3.extensibility.core" Version="4.0.0" />

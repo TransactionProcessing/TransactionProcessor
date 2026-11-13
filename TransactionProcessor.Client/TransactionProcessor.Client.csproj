@@ -19,8 +19,4 @@
       <BuildOutputInPackage Include="$(OutputPath)TransactionProcessor.DataTransferObjects.dll" />
     </ItemGroup>
   </Target>
-
-  <ItemGroup>
-    <ProjectReference Include="..\TransactionProcessor.ResultHelpers\TransactionProcessor.ResultHelpers.csproj" />
-  </ItemGroup>
 </Project>

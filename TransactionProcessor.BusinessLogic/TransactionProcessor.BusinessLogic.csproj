@@ -68,8 +68,4 @@
 			<Link>Templates\%(RecursiveDir)%(Filename)%(Extension)</Link>
 		</Content>
 	</ItemGroup>
-
-  <ItemGroup>
-    <ProjectReference Include="..\TransactionProcessor.ResultHelpers\TransactionProcessor.ResultHelpers.csproj" />
-  </ItemGroup>
 </Project>

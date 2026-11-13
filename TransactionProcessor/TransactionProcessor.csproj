@@ -101,8 +101,4 @@
   <ItemGroup>
     <Folder Include="Controllers\" />
   </ItemGroup>
-
-  <ItemGroup>
-    <ProjectReference Include="..\TransactionProcessor.ResultHelpers\TransactionProcessor.ResultHelpers.csproj" />
-  </ItemGroup>
 </Project>
