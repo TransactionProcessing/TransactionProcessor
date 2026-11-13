@@ -3,7 +3,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Diagnostics;
 using Microsoft.Extensions.DependencyInjection;
 using Imposter.Abstractions;
-using Shared.EntityFramework;
+using TransactionProcessing.Shared.EntityFramework;
 using Shouldly;
 using System;
 using System.Data.Common;

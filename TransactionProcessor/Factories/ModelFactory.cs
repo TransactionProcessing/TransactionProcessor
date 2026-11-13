@@ -1,5 +1,5 @@
-﻿using System.Linq;
-using SimpleResults;
+using System.Linq;
+using TransactionProcessing.UnionResults;
 using TransactionProcessor.DataTransferObjects.Requests.Merchant;
 using TransactionProcessor.DataTransferObjects.Responses.Contract;
 using TransactionProcessor.DataTransferObjects.Responses.Estate;

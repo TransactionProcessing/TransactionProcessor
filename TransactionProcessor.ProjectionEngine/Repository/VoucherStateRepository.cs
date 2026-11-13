@@ -1,5 +1,5 @@
-﻿using EventStore.Client;
-using SimpleResults;
+using EventStore.Client;
+using TransactionProcessing.UnionResults;
 using TransactionProcessor.Database.Contexts;
 using TransactionProcessor.Database.Entities;
 
@@ -7,9 +7,9 @@ namespace TransactionProcessor.ProjectionEngine.Repository;
 
 using Database.Database.Entities;
 using Microsoft.EntityFrameworkCore;
-using Shared.DomainDrivenDesign.EventSourcing;
-using Shared.EntityFramework;
-using Shared.EventStore.ProjectionEngine;
+using TransactionProcessing.Shared.DomainDrivenDesign.EventSourcing;
+using TransactionProcessing.Shared.EntityFramework;
+using TransactionProcessing.Shared.EventStore.ProjectionEngine;
 using State;
 using System.Diagnostics.CodeAnalysis;
 
@@ -93,7 +93,7 @@ public class VoucherStateRepository : IProjectionStateRepository<VoucherState>
                     };
         }
 
-        return state;
+        return Result.Success(state);
     }
     
     private static VoucherProjectionState CreateVoucherProjectionState(VoucherState state) {
@@ -123,7 +123,7 @@ public class VoucherStateRepository : IProjectionStateRepository<VoucherState>
         return entity;
     }
 
-    private async Task<VoucherState> LoadHelper(Guid estateId,
+    private async Task<Result<VoucherState>> LoadHelper(Guid estateId,
                                                         Guid voucherId,
                                                         CancellationToken cancellationToken)
     {
@@ -134,11 +134,11 @@ public class VoucherStateRepository : IProjectionStateRepository<VoucherState>
 
         if (entity == null)
         {
-            return new VoucherState();
+            return Result.Success(new VoucherState());
         }
 
         // We have located a state record so we need to translate to the Model type
-        return new VoucherState
+        return Result.Success(new VoucherState
         {
             EstateId = entity.EstateId,
             Version = entity.Timestamp,
@@ -161,7 +161,7 @@ public class VoucherStateRepository : IProjectionStateRepository<VoucherState>
             RecipientMobile = entity.RecipientMobile,
             RedeemedDate = entity.RedeemedDate,
             RedeemedDateTime = entity.RedeemedDateTime
-        };
+        });
     }
 
     #endregion

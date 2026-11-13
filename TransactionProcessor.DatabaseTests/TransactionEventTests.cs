@@ -1,12 +1,12 @@
 using Microsoft.EntityFrameworkCore;
 using Shouldly;
-using SimpleResults;
+using TransactionProcessing.UnionResults;
 using TransactionProcessor.Aggregates;
 using TransactionProcessor.Database.Contexts;
 using TransactionProcessor.Database.Entities;
 using TransactionProcessor.Testing;
 using System.Collections.Generic;
-using Shared.Serialisation;
+using TransactionProcessing.Shared.Serialisation;
 
 namespace TransactionProcessor.DatabaseTests;
 

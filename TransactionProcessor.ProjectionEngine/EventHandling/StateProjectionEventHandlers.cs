@@ -1,6 +1,6 @@
-﻿using Shared.Exceptions;
-using Shared.Logger;
-using SimpleResults;
+using TransactionProcessing.Shared.Exceptions;
+using TransactionProcessing.Shared.Logger;
+using TransactionProcessing.UnionResults;
 using TransactionProcessor.Database.Contexts;
 using TransactionProcessor.DomainEvents;
 
@@ -10,12 +10,12 @@ using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using Database.Database;
 using ProjectionHandler;
-using Shared.DomainDrivenDesign.EventSourcing;
-using Shared.EntityFramework;
-using Shared.EventStore.EventHandling;
+using TransactionProcessing.Shared.DomainDrivenDesign.EventSourcing;
+using TransactionProcessing.Shared.EntityFramework;
+using TransactionProcessing.Shared.EventStore.EventHandling;
 
 [ExcludeFromCodeCoverage]
-public class StateProjectionEventHandler<TState> : IDomainEventHandler where TState : Shared.EventStore.ProjectionEngine.State
+public class StateProjectionEventHandler<TState> : IDomainEventHandler where TState : TransactionProcessing.Shared.EventStore.ProjectionEngine.State
 {
     private readonly IProjectionHandler ProjectionHandler;
     private readonly IDbContextResolver<EstateManagementContext> Resolver;
@@ -52,7 +52,7 @@ public class StateProjectionEventHandler<TState> : IDomainEventHandler where TSt
             return Result.Success();
         }
         catch (Exception ex) {
-            return Result.CriticalError(ex.GetExceptionMessages());
+            return Result.CriticalError(String.Join(Environment.NewLine, ex.GetExceptionMessages()));
         }
     }
 

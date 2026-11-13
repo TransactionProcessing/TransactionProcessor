@@ -1,9 +1,10 @@
+using TransactionProcessing.UnionResults.AspNetCore;
 using MessagingService.DataTransferObjects;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Routing;
-using Shared.Authorisation;
-using Shared.General;
+using TransactionProcessing.Shared.Authorisation;
+using TransactionProcessing.Shared.General;
 using System;
 using System.Diagnostics.CodeAnalysis;
 using System.Security.Claims;
@@ -21,7 +22,7 @@ namespace TransactionProcessor.Endpoints
         public static IEndpointRouteBuilder MapEstateEndpoints(this IEndpointRouteBuilder endpoints)
         {
             RouteGroupBuilder estateGroup = endpoints
-                .MapGroup(BaseRoute)
+                .MapGroup(BaseRoute).AddUnionResultFilter()
                 .WithTags("Estates")
                 .RequireAuthorization()
                 .RequireAuthorization(AuthorizationExtensions.PolicyNames.ClientCredentialsOnlyPolicy);
@@ -29,11 +30,11 @@ namespace TransactionProcessor.Endpoints
             estateGroup.MapPost("/", EstateHandlers.CreateEstate)
                 .WithName("CreateEstate").WithSummary("Create an estate")
                 .WithDescription("Creates an estate from the supplied display name. The service generates and returns the estate ID.")
-                .Produces<Guid>();
+                .ProducesUnionResult<Guid>();
 
             estateGroup.MapGet("/{estateId:guid}", EstateHandlers.GetEstate)
                 .WithName("GetEstate").WithSummary("Get an estate")
-                .WithDescription("Returns estate details, assigned operators, and security users.").Produces<EstateResponse>();
+                .WithDescription("Returns estate details, assigned operators, and security users.").ProducesUnionResult<EstateResponse>();
 
             estateGroup.MapGet("/{estateId:guid}/all", EstateHandlers.GetEstates)
                 .WithName("GetEstates").WithSummary("List estate details")

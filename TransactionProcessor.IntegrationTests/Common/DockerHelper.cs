@@ -1,4 +1,4 @@
-﻿using DotNet.Testcontainers.Builders;
+using DotNet.Testcontainers.Builders;
 using KurrentDB.Client;
 using System.IO;
 using TestHosts.Clients;
@@ -8,9 +8,9 @@ namespace TransactionProcessor.IntegrationTests.Common
 {
     using Client;
     using EventStore.Client;
-    using global::Shared.IntegrationTesting;
-    using global::Shared.IntegrationTesting.TestContainers;
-    using global::Shared.Serialisation;
+    using global::TransactionProcessing.Shared.IntegrationTesting;
+    using global::TransactionProcessing.Shared.IntegrationTesting.TestContainers;
+    using global::TransactionProcessing.Shared.Serialisation;
     using SecurityService.Client;
     using Shouldly;
     using System;
@@ -25,8 +25,8 @@ namespace TransactionProcessor.IntegrationTests.Common
     /// <summary>
     /// 
     /// </summary>
-    /// <seealso cref="Shared.IntegrationTesting.DockerHelper" />
-    public class DockerHelper : global::Shared.IntegrationTesting.TestContainers.DockerHelper
+    /// <seealso cref="TransactionProcessing.Shared.IntegrationTesting.DockerHelper" />
+    public class DockerHelper : global::TransactionProcessing.Shared.IntegrationTesting.TestContainers.DockerHelper
     {
         #region Fields
         public static String TestBankAccountNumber = "12345678";
@@ -211,7 +211,7 @@ namespace TransactionProcessor.IntegrationTests.Common
 
             this.ProjectionManagementClient = new KurrentDBProjectionManagementClient(this.ConfigureKurrentDbSettings());
 
-            SimpleResults.Result<SecurityService.DataTransferObjects.TokenResponse> bootstrapToken = await this.SecurityServiceClient.GetToken("management-bootstrap", "management-bootstrap-secret", CancellationToken.None);
+            var bootstrapToken = await this.SecurityServiceClient.GetToken("management-bootstrap", "management-bootstrap-secret", CancellationToken.None);
             if (bootstrapToken.IsFailed || String.IsNullOrWhiteSpace(bootstrapToken.Data?.AccessToken))
             {
                 throw new InvalidOperationException("Unable to obtain the integration-test management bootstrap token.");

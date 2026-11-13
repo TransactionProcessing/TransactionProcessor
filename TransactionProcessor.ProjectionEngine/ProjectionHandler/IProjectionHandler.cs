@@ -1,5 +1,5 @@
-﻿using Shared.DomainDrivenDesign.EventSourcing;
-using SimpleResults;
+using TransactionProcessing.Shared.DomainDrivenDesign.EventSourcing;
+using TransactionProcessing.UnionResults;
 
 namespace TransactionProcessor.ProjectionEngine.ProjectionHandler
 {

@@ -1,10 +1,10 @@
-﻿using System.Diagnostics.CodeAnalysis;
+using System.Diagnostics.CodeAnalysis;
 using System.Diagnostics.Contracts;
 using System.Diagnostics.Tracing;
-using Shared.DomainDrivenDesign.EventSourcing;
-using Shared.EventStore.Aggregate;
-using Shared.General;
-using SimpleResults;
+using TransactionProcessing.Shared.DomainDrivenDesign.EventSourcing;
+using TransactionProcessing.Shared.EventStore.Aggregate;
+using TransactionProcessing.Shared.General;
+using TransactionProcessing.UnionResults;
 using TransactionProcessor.DomainEvents;
 
 namespace TransactionProcessor.Aggregates

@@ -1,4 +1,4 @@
-﻿using SimpleResults;
+using TransactionProcessing.UnionResults;
 
 namespace TransactionProcessor.BusinessLogic.RequestHandlers
 {

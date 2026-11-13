@@ -1,9 +1,9 @@
 using DotNet.Testcontainers.Builders;
 using NLog;
-using Shared.IntegrationTesting;
-using Shared.IntegrationTesting.TestContainers;
-using Shared.Logger;
-using Logger = Shared.Logger.Logger;
+using TransactionProcessing.Shared.IntegrationTesting;
+using TransactionProcessing.Shared.IntegrationTesting.TestContainers;
+using TransactionProcessing.Shared.Logger;
+using Logger = TransactionProcessing.Shared.Logger.Logger;
 
 namespace TransactionProcessor.DatabaseTests
 {
@@ -13,7 +13,7 @@ namespace TransactionProcessor.DatabaseTests
 
         public DatabaseTestFixture()
         {
-            Logger.Initialise(new Shared.Logger.NullLogger());
+            Logger.Initialise(new TransactionProcessing.Shared.Logger.NullLogger());
 
             this.dockerHelper = new TestDockerHelper
             {

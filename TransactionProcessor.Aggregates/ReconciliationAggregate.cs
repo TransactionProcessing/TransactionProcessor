@@ -1,12 +1,12 @@
-﻿using SimpleResults;
+using TransactionProcessing.UnionResults;
 using TransactionProcessor.DomainEvents;
 
 namespace TransactionProcessor.Aggregates
 {
     using System.Diagnostics.CodeAnalysis;
-    using Shared.DomainDrivenDesign.EventSourcing;
-    using Shared.EventStore.Aggregate;
-    using Shared.General;
+    using TransactionProcessing.Shared.DomainDrivenDesign.EventSourcing;
+    using TransactionProcessing.Shared.EventStore.Aggregate;
+    using TransactionProcessing.Shared.General;
 
     public static class ReconciliationAggregateExtensions{
         public static void PlayEvent(this ReconciliationAggregate aggregate, ReconciliationDomainEvents.ReconciliationHasStartedEvent domainEvent)

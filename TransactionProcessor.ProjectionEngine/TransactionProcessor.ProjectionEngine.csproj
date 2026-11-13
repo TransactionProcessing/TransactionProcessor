@@ -1,7 +1,7 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-	  <TargetFramework>net10.0</TargetFramework>
+	  <TargetFramework>net11.0</TargetFramework>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
   </PropertyGroup>
@@ -13,8 +13,8 @@
     <PackageReference Include="Microsoft.IdentityModel.Tokens" />
     <PackageReference Include="Microsoft.IdentityModel.JsonWebTokens" />
     <PackageReference Include="OpenTelemetry.Api" />
-    <PackageReference Include="Shared" />
-    <PackageReference Include="Shared.EventStore" />
+    <PackageReference Include="TransactionProcessing.Shared" />
+    <PackageReference Include="TransactionProcessing.Shared.EventStore" />
   </ItemGroup>
 
   <ItemGroup>
@@ -27,4 +27,7 @@
     <Folder Include="Models\" />
   </ItemGroup>
 
+  <ItemGroup>
+    <ProjectReference Include="..\TransactionProcessor.ResultHelpers\TransactionProcessor.ResultHelpers.csproj" />
+  </ItemGroup>
 </Project>

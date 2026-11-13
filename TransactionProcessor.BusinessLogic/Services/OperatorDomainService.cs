@@ -1,12 +1,12 @@
-﻿using System;
+using System;
 using System.Net.WebSockets;
 using System.Threading;
 using System.Threading.Tasks;
-using Shared.DomainDrivenDesign.EventSourcing;
-using Shared.EventStore.Aggregate;
-using Shared.Exceptions;
-using Shared.Results;
-using SimpleResults;
+using TransactionProcessing.Shared.DomainDrivenDesign.EventSourcing;
+using TransactionProcessing.Shared.EventStore.Aggregate;
+using TransactionProcessing.Shared.Exceptions;
+using TransactionProcessing.UnionResults;
+using TransactionProcessing.UnionResults;
 using TransactionProcessor.Aggregates;
 using TransactionProcessor.BusinessLogic.Common;
 using TransactionProcessor.BusinessLogic.Requests;
@@ -42,8 +42,8 @@ namespace TransactionProcessor.BusinessLogic.Services
                 if (operatorResult.IsFailed)
                     return ResultHelpers.CreateFailure(operatorResult);
 
-                EstateAggregate estateAggregate = estateResult.Data;
-                OperatorAggregate operatorAggregate = operatorResult.Data;
+                EstateAggregate estateAggregate = estateResult.GetValueOrThrow();
+                OperatorAggregate operatorAggregate = operatorResult.GetValueOrThrow();
 
                 if (estateAggregate.IsCreated == false) {
                     return Result.Forbidden($"Estate with Id {command.EstateId} not created");
@@ -80,8 +80,8 @@ namespace TransactionProcessor.BusinessLogic.Services
                 if (operatorResult.IsFailed)
                     return ResultHelpers.CreateFailure(operatorResult);
 
-                EstateAggregate estateAggregate = estateResult.Data;
-                OperatorAggregate operatorAggregate = operatorResult.Data;
+                EstateAggregate estateAggregate = estateResult.GetValueOrThrow();
+                OperatorAggregate operatorAggregate = operatorResult.GetValueOrThrow();
 
                 if (estateAggregate.IsCreated == false)
                 {

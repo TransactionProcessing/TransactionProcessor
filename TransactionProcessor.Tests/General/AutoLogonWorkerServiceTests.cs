@@ -1,14 +1,14 @@
 using Grpc.Core;
 using Imposter.Abstractions;
 using Microsoft.Extensions.Logging.Abstractions;
-using Shared.Logger;
+using TransactionProcessing.Shared.Logger;
 using Shouldly;
 using System;
 using System.Threading;
 using System.Threading.Tasks;
 using TransactionProcessor.BusinessLogic.OperatorInterfaces;
 using Xunit;
-using NullLogger = Shared.Logger.NullLogger;
+using NullLogger = TransactionProcessing.Shared.Logger.NullLogger;
 
 namespace TransactionProcessor.Tests.General;
 

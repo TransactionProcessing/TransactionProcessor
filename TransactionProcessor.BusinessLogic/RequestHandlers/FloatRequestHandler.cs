@@ -1,5 +1,5 @@
-﻿using System.Threading.Tasks;
-using SimpleResults;
+using System.Threading.Tasks;
+using TransactionProcessing.UnionResults;
 using System;
 
 namespace TransactionProcessor.BusinessLogic.RequestHandlers

@@ -1,6 +1,6 @@
-﻿using System.Net;
+using System.Net;
 using Microsoft.Extensions.Logging;
-using Shared.Middleware;
+using TransactionProcessing.Shared.Middleware;
 
 namespace TransactionProcessor.Common;
 
@@ -9,7 +9,7 @@ using System.Diagnostics.CodeAnalysis;
 using System.ServiceModel;
 using System.ServiceModel.Channels;
 using System.ServiceModel.Dispatcher;
-using Shared.Logger;
+using TransactionProcessing.Shared.Logger;
 
 [ExcludeFromCodeCoverage]
 internal sealed class ClientMessageLogger :

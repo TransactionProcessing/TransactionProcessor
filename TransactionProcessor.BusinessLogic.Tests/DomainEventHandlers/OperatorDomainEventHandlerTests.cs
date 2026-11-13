@@ -1,6 +1,6 @@
 using Imposter.Abstractions;
-using Shared.Logger;
-using Shared.Serialisation;
+using TransactionProcessing.Shared.Logger;
+using TransactionProcessing.Shared.Serialisation;
 using Shouldly;
 using System.Text.Json;
 using System.Threading;

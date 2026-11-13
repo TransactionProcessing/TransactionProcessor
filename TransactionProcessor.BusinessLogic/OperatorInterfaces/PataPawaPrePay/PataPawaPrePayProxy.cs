@@ -1,5 +1,5 @@
-﻿using Shared.Serialisation;
-using SimpleResults;
+using TransactionProcessing.Shared.Serialisation;
+using TransactionProcessing.UnionResults;
 using System.Diagnostics.CodeAnalysis;
 using System.Text.Json.Serialization;
 
@@ -7,7 +7,7 @@ namespace TransactionProcessor.BusinessLogic.OperatorInterfaces.PataPawaPrePay;
 
 using Common;
 using Microsoft.Extensions.Caching.Memory;
-using Shared.Logger;
+using TransactionProcessing.Shared.Logger;
 using System;
 using System.Collections.Generic;
 using System.Globalization;

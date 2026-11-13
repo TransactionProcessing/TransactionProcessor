@@ -1,12 +1,12 @@
-﻿using Shared.Logger;
-using SimpleResults;
+using TransactionProcessing.Shared.Logger;
+using TransactionProcessing.UnionResults;
 using TransactionProcessor.DomainEvents;
 
 namespace TransactionProcessor.ProjectionEngine.Dispatchers;
 
 using Models;
 using Repository;
-using Shared.DomainDrivenDesign.EventSourcing;
+using TransactionProcessing.Shared.DomainDrivenDesign.EventSourcing;
 using State;
 
 public class MerchantBalanceStateDispatcher : IStateDispatcher<MerchantBalanceState>

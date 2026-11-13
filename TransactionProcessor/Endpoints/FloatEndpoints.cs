@@ -1,7 +1,8 @@
+using TransactionProcessing.UnionResults.AspNetCore;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Routing;
-using Shared.Authorisation;
+using TransactionProcessing.Shared.Authorisation;
 using System;
 using System.Diagnostics.CodeAnalysis;
 using TransactionProcessor.Handlers;
@@ -15,7 +16,7 @@ namespace TransactionProcessor.Endpoints
 
         public static IEndpointRouteBuilder MapFloatEndpoints(this IEndpointRouteBuilder endpoints)
         {
-            var group = endpoints.MapGroup(BaseRoute)
+            var group = endpoints.MapGroup(BaseRoute).AddUnionResultFilter()
                                  .WithTags("Floats")
                                  .RequireAuthorization()
                                  .RequireAuthorization(AuthorizationExtensions.PolicyNames.ClientCredentialsOnlyPolicy);
@@ -23,7 +24,7 @@ namespace TransactionProcessor.Endpoints
             group.MapPost("/", FloatHandlers.CreateFloat)
                  .WithName("CreateFloat").WithSummary("Create an estate float")
                  .WithDescription("Creates a float for the operator and date in the request body and returns the new float ID.")
-                 .Produces<Guid>();
+                 .ProducesUnionResult<Guid>();
 
             group.MapPut("/", FloatHandlers.RecordFloatCreditPurchase)
                  .WithName("RecordFloatCreditPurchase").WithSummary("Record a float credit purchase")

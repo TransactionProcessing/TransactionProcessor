@@ -3,7 +3,7 @@ using TransactionProcessor.DomainEvents;
 namespace TransactionProcessor.ProjectionEngine.Tests;
 
 using Projections;
-using Shared.DomainDrivenDesign.EventSourcing;
+using TransactionProcessing.Shared.DomainDrivenDesign.EventSourcing;
 using Shouldly;
 using State;
 

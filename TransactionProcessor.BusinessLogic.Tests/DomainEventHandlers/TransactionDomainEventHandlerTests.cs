@@ -1,7 +1,7 @@
 using EventStore.Client;
 using Grpc.Core;
 using MediatR;
-using SimpleResults;
+using TransactionProcessing.UnionResults;
 using TransactionProcessor.DomainEvents;
 
 namespace TransactionProcessor.BusinessLogic.Tests.DomainEventHandlers
@@ -9,10 +9,10 @@ namespace TransactionProcessor.BusinessLogic.Tests.DomainEventHandlers
     using EventHandling;
     using Microsoft.Extensions.Configuration;
     using Imposter.Abstractions;
-    using Shared.DomainDrivenDesign.EventSourcing;
-    using Shared.General;
-    using Shared.Logger;
-    using Shared.Serialisation;
+    using TransactionProcessing.Shared.DomainDrivenDesign.EventSourcing;
+    using TransactionProcessing.Shared.General;
+    using TransactionProcessing.Shared.Logger;
+    using TransactionProcessing.Shared.Serialisation;
     using Shouldly;
     using System;
     using System.Collections.Generic;

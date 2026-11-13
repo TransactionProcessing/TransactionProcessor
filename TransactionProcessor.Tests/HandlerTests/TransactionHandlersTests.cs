@@ -5,9 +5,9 @@ using System.Threading.Tasks;
 using MediatR;
 using Microsoft.AspNetCore.Http;
 using Imposter.Abstractions;
-using Shared.General;
+using TransactionProcessing.Shared.General;
 using Shouldly;
-using SimpleResults;
+using TransactionProcessing.UnionResults;
 using TransactionProcessor.BusinessLogic.Requests;
 using TransactionProcessor.Handlers;
 using TransactionProcessor.Models;
@@ -42,7 +42,7 @@ namespace TransactionProcessor.Tests.HandlerTests
                     TransactionId = Guid.NewGuid()
                 }));
 
-            IResult result = await TransactionHandlers.PerformLogonTransaction(mediator.Instance(),
+            IResultOutcome result = await TransactionHandlers.PerformLogonTransaction(mediator.Instance(),
                 new DefaultHttpContext(),
                 request,
                 CancellationToken.None);
@@ -81,7 +81,7 @@ namespace TransactionProcessor.Tests.HandlerTests
                     TransactionId = Guid.NewGuid()
                 }));
 
-            IResult result = await TransactionHandlers.PerformSaleTransaction(mediator.Instance(),
+            IResultOutcome result = await TransactionHandlers.PerformSaleTransaction(mediator.Instance(),
                 new DefaultHttpContext(),
                 request,
                 CancellationToken.None);
@@ -121,7 +121,7 @@ namespace TransactionProcessor.Tests.HandlerTests
                 }))
                 .Callback((IRequest<Result<ProcessSaleTransactionResponse>> request, CancellationToken _) => { capturedCommand = (TransactionCommands.ProcessSaleTransactionCommand)request; return Task.CompletedTask; });
 
-            IResult result = await TransactionHandlers.PerformSaleTransaction(mediator.Instance(),
+            IResultOutcome result = await TransactionHandlers.PerformSaleTransaction(mediator.Instance(),
                 new DefaultHttpContext(),
                 request,
                 CancellationToken.None);
@@ -153,9 +153,9 @@ namespace TransactionProcessor.Tests.HandlerTests
             };
 
             mediator.Send<Result<ProcessSaleTransactionResponse>>(Arg<IRequest<Result<ProcessSaleTransactionResponse>>>.Any(), Arg<CancellationToken>.Any())
-                .ReturnsAsync(Result.Failure("boom").ToResult(new ProcessSaleTransactionResponse()));
+                .ReturnsAsync(Result<ProcessSaleTransactionResponse>.Fail(Error.Failure("boom")));
 
-            IResult result = await TransactionHandlers.PerformSaleTransaction(mediator.Instance(),
+            IResultOutcome result = await TransactionHandlers.PerformSaleTransaction(mediator.Instance(),
                 new DefaultHttpContext(),
                 request,
                 CancellationToken.None);
@@ -179,9 +179,9 @@ namespace TransactionProcessor.Tests.HandlerTests
             };
 
             mediator.Send<Result<ProcessLogonTransactionResponse>>(Arg<IRequest<Result<ProcessLogonTransactionResponse>>>.Any(), Arg<CancellationToken>.Any())
-                .ReturnsAsync(Result.Failure("boom").ToResult(new ProcessLogonTransactionResponse()));
+                .ReturnsAsync(Result<ProcessLogonTransactionResponse>.Fail(Error.Failure("boom")));
 
-            IResult result = await TransactionHandlers.PerformLogonTransaction(mediator.Instance(),
+            IResultOutcome result = await TransactionHandlers.PerformLogonTransaction(mediator.Instance(),
                 new DefaultHttpContext(),
                 request,
                 CancellationToken.None);
@@ -216,7 +216,7 @@ namespace TransactionProcessor.Tests.HandlerTests
                     TransactionId = Guid.NewGuid()
                 }));
 
-            IResult result = await TransactionHandlers.PerformReconciliationTransaction(mediator.Instance(),
+            IResultOutcome result = await TransactionHandlers.PerformReconciliationTransaction(mediator.Instance(),
                 new DefaultHttpContext(),
                 request,
                 CancellationToken.None);
@@ -242,9 +242,9 @@ namespace TransactionProcessor.Tests.HandlerTests
             };
 
             mediator.Send<Result<ProcessReconciliationTransactionResponse>>(Arg<IRequest<Result<ProcessReconciliationTransactionResponse>>>.Any(), Arg<CancellationToken>.Any())
-                .ReturnsAsync(Result.Failure("boom").ToResult(new ProcessReconciliationTransactionResponse()));
+                .ReturnsAsync(Result<ProcessReconciliationTransactionResponse>.Fail(Error.Failure("boom")));
 
-            IResult result = await TransactionHandlers.PerformReconciliationTransaction(mediator.Instance(),
+            IResultOutcome result = await TransactionHandlers.PerformReconciliationTransaction(mediator.Instance(),
                 new DefaultHttpContext(),
                 request,
                 CancellationToken.None);
@@ -261,7 +261,7 @@ namespace TransactionProcessor.Tests.HandlerTests
             mediator.Send<Result>(Arg<IRequest<Result>>.Any(), Arg<CancellationToken>.Any())
                 .ReturnsAsync(Result.Success());
 
-            IResult result = await TransactionHandlers.ResendTransactionReceipt(mediator.Instance(),
+            IResultOutcome result = await TransactionHandlers.ResendTransactionReceipt(mediator.Instance(),
                 new DefaultHttpContext(),
                 TestData.EstateId,
                 Guid.NewGuid(),

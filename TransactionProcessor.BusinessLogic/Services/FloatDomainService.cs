@@ -1,16 +1,16 @@
-﻿using System;
+using System;
 using System.Linq;
 using System.Threading.Tasks;
-using Shared.Results;
-using SimpleResults;
+using TransactionProcessing.UnionResults;
+using TransactionProcessing.UnionResults;
 using TransactionProcessor.BusinessLogic.Common;
 using TransactionProcessor.BusinessLogic.Requests;
 
 namespace TransactionProcessor.BusinessLogic.Services
 {
     using System.Threading;
-    using Shared.EventStore.Aggregate;
-    using Shared.Exceptions;
+    using TransactionProcessing.Shared.EventStore.Aggregate;
+    using TransactionProcessing.Shared.Exceptions;
     using TransactionProcessor.Aggregates;
 
     public interface IFloatDomainService {
@@ -77,7 +77,7 @@ namespace TransactionProcessor.BusinessLogic.Services
                     return ResultHelpers.CreateFailure(getEstateResult);
                 }
 
-                Result validateOperatorResult = ValidateOperator(getEstateResult.Data, command.OperatorId);
+                Result validateOperatorResult = ValidateOperator(getEstateResult.GetValueOrThrow(), command.OperatorId);
                 if (validateOperatorResult.IsFailed) {
                     return ResultHelpers.CreateFailure(validateOperatorResult);
                 }
@@ -86,7 +86,7 @@ namespace TransactionProcessor.BusinessLogic.Services
                 if (getFloatResult.IsFailed)
                     return ResultHelpers.CreateFailure(getFloatResult);
 
-                FloatAggregate floatAggregate = getFloatResult.Data;
+                FloatAggregate floatAggregate = getFloatResult.GetValueOrThrow();
 
                 Result stateResult = floatAggregate.CreateFloat(command.EstateId, command.CreateDateTime);
                 if (stateResult.IsFailed)
@@ -111,7 +111,7 @@ namespace TransactionProcessor.BusinessLogic.Services
                 if (getFloatResult.IsFailed)
                     return ResultHelpers.CreateFailure(getFloatResult);
 
-                FloatAggregate floatAggregate = getFloatResult.Data;
+                FloatAggregate floatAggregate = getFloatResult.GetValueOrThrow();
 
                 Result stateResult = floatAggregate.RecordCreditPurchase(command.RecordFloatCreditPurchaseRequest.PurchaseDateTime, command.RecordFloatCreditPurchaseRequest.CreditAmount, command.RecordFloatCreditPurchaseRequest.CostPrice,
                     command.RecordFloatCreditPurchaseRequest.HostDateTime);
@@ -140,7 +140,7 @@ namespace TransactionProcessor.BusinessLogic.Services
                 if (getFloatActivityResult.IsFailed)
                     return ResultHelpers.CreateFailure(getFloatActivityResult);
 
-                FloatActivityAggregate floatActivityAggregate = getFloatActivityResult.Data;
+                FloatActivityAggregate floatActivityAggregate = getFloatActivityResult.GetValueOrThrow();
 
                 Result stateResult = floatActivityAggregate.RecordCreditPurchase(command.EstateId, command.CreditPurchasedDateTime, command.Amount, command.CreditId);
                 if (stateResult.IsFailed)
@@ -164,18 +164,18 @@ namespace TransactionProcessor.BusinessLogic.Services
                 if (getTransactionResult.IsFailed)
                     return ResultHelpers.CreateFailure(getTransactionResult);
                 
-                Guid floatId = getTransactionResult.Data.OperatorId;
+                Guid floatId = getTransactionResult.GetValueOrThrow().OperatorId;
 
                 // Generate the id for the activity aggregate
-                Guid floatActivityAggregateId = IdGenerationService.GenerateFloatActivityAggregateId(command.EstateId, floatId, getTransactionResult.Data.TransactionDateTime.Date);
+                Guid floatActivityAggregateId = IdGenerationService.GenerateFloatActivityAggregateId(command.EstateId, floatId, getTransactionResult.GetValueOrThrow().TransactionDateTime.Date);
 
                 Result<FloatActivityAggregate> getFloatActivityResult = await DomainServiceHelper.GetAggregateOrFailure(ct => this.AggregateService.GetLatest<FloatActivityAggregate>(floatActivityAggregateId, ct), floatActivityAggregateId, cancellationToken, false);
                 if (getFloatActivityResult.IsFailed)
                     return ResultHelpers.CreateFailure(getFloatActivityResult);
 
-                FloatActivityAggregate floatActivityAggregate = getFloatActivityResult.Data;
+                FloatActivityAggregate floatActivityAggregate = getFloatActivityResult.GetValueOrThrow();
 
-                Result stateResult = floatActivityAggregate.RecordTransactionAgainstFloat(command.EstateId, getTransactionResult.Data.TransactionDateTime, getTransactionResult.Data.TransactionAmount.GetValueOrDefault(), command.TransactionId);
+                Result stateResult = floatActivityAggregate.RecordTransactionAgainstFloat(command.EstateId, getTransactionResult.GetValueOrThrow().TransactionDateTime, getTransactionResult.GetValueOrThrow().TransactionAmount.GetValueOrDefault(), command.TransactionId);
                 if (stateResult.IsFailed)
                     return ResultHelpers.CreateFailure(stateResult);
 

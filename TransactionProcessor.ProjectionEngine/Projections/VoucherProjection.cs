@@ -1,8 +1,8 @@
-﻿using TransactionProcessor.DomainEvents;
+using TransactionProcessor.DomainEvents;
 
 namespace TransactionProcessor.ProjectionEngine.Projections
 {
-    using Shared.DomainDrivenDesign.EventSourcing;
+    using TransactionProcessing.Shared.DomainDrivenDesign.EventSourcing;
     using State;
 
     public class VoucherProjection : IProjection<VoucherState>

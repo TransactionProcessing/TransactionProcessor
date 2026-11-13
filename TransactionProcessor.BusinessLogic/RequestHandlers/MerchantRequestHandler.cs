@@ -1,11 +1,11 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 using MediatR;
-using Shared.EventStore.EventStore;
-using Shared.Serialisation;
-using SimpleResults;
+using TransactionProcessing.Shared.EventStore.EventStore;
+using TransactionProcessing.Shared.Serialisation;
+using TransactionProcessing.UnionResults;
 using TransactionProcessor.BusinessLogic.Manager;
 using TransactionProcessor.BusinessLogic.Requests;
 using TransactionProcessor.BusinessLogic.Services;
@@ -76,7 +76,7 @@ public class MerchantRequestHandler : IRequestHandler<MerchantQueries.GetMerchan
         if (result.IsFailed)
             return Result.NotFound(
                 $"Merchant Balance not found for Merchant {query.MerchantId} on MerchantBalanceProjection");
-        var json = result.Data.ToLower();
+        var json = result.GetValueOrThrow().ToLower();
         MerchantBalanceProjectionState1 projectionState = StringSerialiser.Deserialise<MerchantBalanceProjectionState1>(json, new SerialiserOptions(SerialiserPropertyFormat.CamelCase));
 
         return Result.Success(projectionState);

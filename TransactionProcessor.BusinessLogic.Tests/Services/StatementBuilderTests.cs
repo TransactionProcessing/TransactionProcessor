@@ -1,6 +1,6 @@
-using Shared.Serialisation;
+using TransactionProcessing.Shared.Serialisation;
 using Shouldly;
-using SimpleResults;
+using TransactionProcessing.UnionResults;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -60,7 +60,7 @@ namespace TransactionProcessor.BusinessLogic.Tests.Services {
             Result<String> htmlResult = await _builder.GetStatementHtml(merchantStatementAggregate, _merchant, _cancellationToken);
 
             htmlResult.IsSuccess.ShouldBeTrue();
-            String html = htmlResult.Data;
+            String html = htmlResult.GetValueOrThrow();
             // Assert
             html.ShouldContain(this._merchant.MerchantName);
             html.ShouldContain(this._merchant.Addresses.First().AddressLine1);

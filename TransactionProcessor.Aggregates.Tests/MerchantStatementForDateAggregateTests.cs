@@ -1,6 +1,6 @@
-using Shared.Serialisation;
+using TransactionProcessing.Shared.Serialisation;
 using Shouldly;
-using SimpleResults;
+using TransactionProcessing.UnionResults;
 using TransactionProcessor.DataTransferObjects.Requests.Merchant;
 using TransactionProcessor.Models.Merchant;
 using TransactionProcessor.Testing;
@@ -11,7 +11,7 @@ namespace TransactionProcessor.Aggregates.Tests;
 public class MerchantStatementForDateAggregateTests
 {
     public MerchantStatementForDateAggregateTests() {
-        StringSerialiser.Initialise(new Shared.Serialisation.SystemTextJsonSerializer(new System.Text.Json.JsonSerializerOptions()));
+        StringSerialiser.Initialise(new TransactionProcessing.Shared.Serialisation.SystemTextJsonSerializer(new System.Text.Json.JsonSerializerOptions()));
     }
 
     private const Int32 TransactionLineType = 1;
@@ -95,7 +95,7 @@ public class MerchantStatementForDateAggregateTests
             estateIdGuid,
             merchantIdGuid, TestData.Transaction1);
         result.IsFailed.ShouldBeTrue();
-        result.Status.ShouldBe(ResultStatus.Invalid);
+        result.Errors[0].ErrorType.ShouldBe(ErrorType.Validation);
     }
 
     [Fact]
@@ -154,7 +154,7 @@ public class MerchantStatementForDateAggregateTests
         Result result = merchantStatementForDateAggregate.AddSettledFeeToStatement(statementIdGuid, TestData.StatementDate, TestData.EventId1, estateIdGuid, merchantIdGuid, TestData.SettledFee1);
 
         result.IsFailed.ShouldBeTrue();
-        result.Status.ShouldBe(ResultStatus.Invalid);
+        result.Errors[0].ErrorType.ShouldBe(ErrorType.Validation);
     }
 
     [Theory]
@@ -221,7 +221,7 @@ public class MerchantStatementForDateAggregateTests
             });
 
         result.IsFailed.ShouldBeTrue();
-        result.Status.ShouldBe(ResultStatus.Invalid);
+        result.Errors[0].ErrorType.ShouldBe(ErrorType.Validation);
     }
 
     [Fact]
@@ -326,6 +326,6 @@ public class MerchantStatementForDateAggregateTests
             });
 
         result.IsFailed.ShouldBeTrue();
-        result.Status.ShouldBe(ResultStatus.Invalid);
+        result.Errors[0].ErrorType.ShouldBe(ErrorType.Validation);
     }
 }

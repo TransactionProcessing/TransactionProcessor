@@ -1,6 +1,6 @@
-﻿using Shared.Serialisation;
+using TransactionProcessing.Shared.Serialisation;
 using Shouldly;
-using SimpleResults;
+using TransactionProcessing.UnionResults;
 using TransactionProcessor.Models.Estate;
 using TransactionProcessor.Testing;
 
@@ -9,7 +9,7 @@ namespace TransactionProcessor.Aggregates.Tests
     public class EstateAggregateTests
     {
         public EstateAggregateTests() {
-            StringSerialiser.Initialise(new Shared.Serialisation.SystemTextJsonSerializer(new System.Text.Json.JsonSerializerOptions()));
+            StringSerialiser.Initialise(new TransactionProcessing.Shared.Serialisation.SystemTextJsonSerializer(new System.Text.Json.JsonSerializerOptions()));
         }
 
         [Fact]
@@ -41,7 +41,7 @@ namespace TransactionProcessor.Aggregates.Tests
             Result result = aggregate.Create(estateName);
             
             result.IsFailed.ShouldBeTrue();
-            result.Status.ShouldBe(ResultStatus.Invalid);
+            result.Errors[0].ErrorType.ShouldBe(ErrorType.Validation);
 
             result.Message.ShouldContain("Estate name must be provided when registering a new estate");
         }
@@ -142,7 +142,7 @@ namespace TransactionProcessor.Aggregates.Tests
             Result result = aggregate.AddOperator(TestData.OperatorId);
             
             result.IsFailed.ShouldBeTrue();
-            result.Status.ShouldBe(ResultStatus.Invalid);
+            result.Errors[0].ErrorType.ShouldBe(ErrorType.Validation);
 
             result.Message.ShouldContain("Estate has not been created");
         }
@@ -156,7 +156,7 @@ namespace TransactionProcessor.Aggregates.Tests
 
             var result = aggregate.AddOperator(TestData.OperatorId);
             result.IsFailed.ShouldBeTrue();
-            result.Status.ShouldBe(ResultStatus.Invalid);
+            result.Errors[0].ErrorType.ShouldBe(ErrorType.Validation);
 
             result.Message.ShouldContain($"Duplicate operator details are not allowed, an operator already exists on this estate with Id [{TestData.OperatorId}]");
         }
@@ -181,7 +181,7 @@ namespace TransactionProcessor.Aggregates.Tests
             Result result = aggregate.AddSecurityUser(TestData.SecurityUserId, TestData.EstateUserEmailAddress);
 
             result.IsFailed.ShouldBeTrue();
-            result.Status.ShouldBe(ResultStatus.Invalid);
+            result.Errors[0].ErrorType.ShouldBe(ErrorType.Validation);
 
             result.Message.ShouldContain("Estate has not been created");
         }
@@ -207,7 +207,7 @@ namespace TransactionProcessor.Aggregates.Tests
 
             Result result = aggregate.RemoveOperator(TestData.OperatorId);
             result.IsFailed.ShouldBeTrue();
-            result.Status.ShouldBe(ResultStatus.Invalid);
+            result.Errors[0].ErrorType.ShouldBe(ErrorType.Validation);
 
             result.Message.ShouldContain("Estate has not been created");
         }
@@ -220,7 +220,7 @@ namespace TransactionProcessor.Aggregates.Tests
             
             var result = aggregate.RemoveOperator(TestData.OperatorId);
             result.IsFailed.ShouldBeTrue();
-            result.Status.ShouldBe(ResultStatus.Invalid);
+            result.Errors[0].ErrorType.ShouldBe(ErrorType.Validation);
 
             result.Message.ShouldContain($"Operator not added to this Estate with Id [{TestData.OperatorId}]");
         }

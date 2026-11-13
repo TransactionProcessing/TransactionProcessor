@@ -2,7 +2,7 @@ using MediatR;
 using Microsoft.AspNetCore.Http;
 using Imposter.Abstractions;
 using Shouldly;
-using SimpleResults;
+using TransactionProcessing.UnionResults;
 using System;
 using System.Collections.Generic;
 using System.Threading;
@@ -58,7 +58,7 @@ public class WebHandlersTests
         IMediatorImposter mediator = new();
         testCase.Setup(mediator);
 
-        IResult result = await testCase.Invoke(mediator.Instance());
+        IResultOutcome result = await testCase.Invoke(mediator.Instance());
 
         result.ShouldNotBeNull();
         testCase.Verify?.Invoke(mediator);
@@ -71,7 +71,7 @@ public class WebHandlersTests
         IMediatorImposter mediator = new();
         testCase.Setup(mediator);
 
-        IResult result = await testCase.Invoke(mediator.Instance());
+        IResultOutcome result = await testCase.Invoke(mediator.Instance());
 
         result.ShouldNotBeNull();
         testCase.Verify?.Invoke(mediator);
@@ -84,7 +84,7 @@ public class WebHandlersTests
         IMediatorImposter mediator = new();
         testCase.Setup(mediator);
 
-        IResult result = await testCase.Invoke(mediator.Instance());
+        IResultOutcome result = await testCase.Invoke(mediator.Instance());
 
         result.ShouldNotBeNull();
         testCase.Verify?.Invoke(mediator);
@@ -97,7 +97,7 @@ public class WebHandlersTests
         IMediatorImposter mediator = new();
         testCase.Setup(mediator);
 
-        IResult result = await testCase.Invoke(mediator.Instance());
+        IResultOutcome result = await testCase.Invoke(mediator.Instance());
 
         result.ShouldNotBeNull();
         testCase.Verify?.Invoke(mediator);
@@ -110,7 +110,7 @@ public class WebHandlersTests
         IMediatorImposter mediator = new();
         testCase.Setup(mediator);
 
-        IResult result = await testCase.Invoke(mediator.Instance());
+        IResultOutcome result = await testCase.Invoke(mediator.Instance());
 
         result.ShouldNotBeNull();
         testCase.Verify?.Invoke(mediator);
@@ -123,7 +123,7 @@ public class WebHandlersTests
         IMediatorImposter mediator = new();
         testCase.Setup(mediator);
 
-        IResult result = await testCase.Invoke(mediator.Instance());
+        IResultOutcome result = await testCase.Invoke(mediator.Instance());
 
         result.ShouldNotBeNull();
         testCase.Verify?.Invoke(mediator);
@@ -136,7 +136,7 @@ public class WebHandlersTests
         IMediatorImposter mediator = new();
         testCase.Setup(mediator);
 
-        IResult result = await testCase.Invoke(mediator.Instance());
+        IResultOutcome result = await testCase.Invoke(mediator.Instance());
 
         result.ShouldNotBeNull();
         testCase.Verify?.Invoke(mediator);
@@ -1103,10 +1103,10 @@ public class WebHandlersTests
             mediator => { });
     }
 
-    private static object[] Case(string name, MediatorSetup setup, Func<IMediator, Task<IResult>> invoke, Action<IMediatorImposter>? verify = null)
+    private static object[] Case(string name, MediatorSetup setup, Func<IMediator, Task<IResultOutcome>> invoke, Action<IMediatorImposter>? verify = null)
         => new object[] { new HandlerCase(name, setup.Configure, invoke, verify ?? setup.Verify) };
 
-    private static object[] Case(string name, Action<IMediatorImposter> setup, Func<IMediator, Task<IResult>> invoke, Action<IMediatorImposter>? verify = null)
+    private static object[] Case(string name, Action<IMediatorImposter> setup, Func<IMediator, Task<IResultOutcome>> invoke, Action<IMediatorImposter>? verify = null)
         => new object[] { new HandlerCase(name, setup, invoke, verify) };
 
     private static MediatorSetup SetupSuccess<TRequest, TResponse>(TResponse response, Action<TRequest>? capture = null)
@@ -1135,6 +1135,6 @@ public class WebHandlersTests
 
     public sealed record HandlerCase(string Name,
                                      Action<IMediatorImposter> Setup,
-                                     Func<IMediator, Task<IResult>> Invoke,
+                                     Func<IMediator, Task<IResultOutcome>> Invoke,
                                      Action<IMediatorImposter>? Verify = null);
 }

@@ -1,11 +1,11 @@
-﻿using MessagingService.Client;
+using MessagingService.Client;
 using MessagingService.DataTransferObjects;
 using SecurityService.Client;
-using Shared.EventStore.Aggregate;
-using Shared.Exceptions;
-using Shared.General;
-using Shared.Results;
-using SimpleResults;
+using TransactionProcessing.Shared.EventStore.Aggregate;
+using TransactionProcessing.Shared.Exceptions;
+using TransactionProcessing.Shared.General;
+using TransactionProcessing.UnionResults;
+using TransactionProcessing.UnionResults;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
@@ -78,7 +78,7 @@ namespace TransactionProcessor.BusinessLogic.Services
                 if (getMerchantStatementForDateResult.IsFailed)
                     return ResultHelpers.CreateFailure(getMerchantStatementForDateResult);
 
-                MerchantStatementForDateAggregate merchantStatementForDateAggregate = getMerchantStatementForDateResult.Data;
+                MerchantStatementForDateAggregate merchantStatementForDateAggregate = getMerchantStatementForDateResult.GetValueOrThrow();
 
                 SettledFee settledFee = new SettledFee(settlementFeeId, command.TransactionId, command.SettledDateTime, command.SettledAmount.Value);
 
@@ -119,7 +119,7 @@ namespace TransactionProcessor.BusinessLogic.Services
                 if (getMerchantStatementResult.IsFailed)
                     return ResultHelpers.CreateFailure(getMerchantStatementResult);
 
-                MerchantStatementAggregate merchantStatementAggregate = getMerchantStatementResult.Data;
+                MerchantStatementAggregate merchantStatementAggregate = getMerchantStatementResult.GetValueOrThrow();
 
                 MerchantStatement statement = merchantStatementAggregate.GetStatement();
                 List<(Guid merchantStatementForDateId, DateTimeOffset activityDate)> activityDates = statement.GetActivityDates();
@@ -129,7 +129,7 @@ namespace TransactionProcessor.BusinessLogic.Services
                     Result<MerchantStatementForDateAggregate> statementForDateResult = await this.AggregateService.GetLatest<MerchantStatementForDateAggregate>(activityDate.merchantStatementForDateId, cancellationToken);
                     if (statementForDateResult.IsFailed)
                         return ResultHelpers.CreateFailure(statementForDateResult);
-                    MerchantStatementForDate dailyStatement = statementForDateResult.Data.GetStatement(true);
+                    MerchantStatementForDate dailyStatement = statementForDateResult.GetValueOrThrow().GetStatement(true);
                     statementForDateAggregates.Add(dailyStatement);
                 }
 
@@ -176,19 +176,19 @@ namespace TransactionProcessor.BusinessLogic.Services
                 if (getMerchantStatementResult.IsFailed)
                     return ResultHelpers.CreateFailure(getMerchantStatementResult);
 
-                MerchantStatementAggregate merchantStatementAggregate = getMerchantStatementResult.Data;
+                MerchantStatementAggregate merchantStatementAggregate = getMerchantStatementResult.GetValueOrThrow();
                 MerchantStatement statement = merchantStatementAggregate.GetStatement();
                 Result<MerchantAggregate> getMerchantResult = await DomainServiceHelper.GetAggregateOrFailure(ct => this.AggregateService.Get<MerchantAggregate>(statement.MerchantId, ct), statement.MerchantId, cancellationToken);
                 if (getMerchantResult.IsFailed)
                     return ResultHelpers.CreateFailure(getMerchantResult);
 
-                Merchant merchantModel = getMerchantResult.Data.GetMerchant();
+                Merchant merchantModel = getMerchantResult.GetValueOrThrow().GetMerchant();
                 (SendEmailRequest sendEmailRequest, Guid messageId) = this.BuildStatementEmailRequest(command, statement, merchantModel);
 
                 Result<TokenResponse> getTokenResult = await Helpers.GetToken(this.TokenResponse, this.SecurityServiceClient, cancellationToken);
                 if (getTokenResult.IsFailed)
                     return ResultHelpers.CreateFailure(getTokenResult);
-                this.TokenResponse = getTokenResult.Data;
+                this.TokenResponse = getTokenResult.GetValueOrThrow();
 
                 await this.MessagingServiceClient.SendEmail(this.TokenResponse.AccessToken, sendEmailRequest, cancellationToken);
 
@@ -259,18 +259,18 @@ namespace TransactionProcessor.BusinessLogic.Services
                 Result<MerchantStatementAggregate> statementAggregate = await GetStatementAggregate(command, cancellationToken);
                 if (statementAggregate.IsFailed) return ResultHelpers.CreateFailure(statementAggregate);
 
-                Result<Merchant> merchant = await GetValidMerchant(statementAggregate.Data, cancellationToken);
+                Result<Merchant> merchant = await GetValidMerchant(statementAggregate.GetValueOrThrow(), cancellationToken);
                 if (merchant.IsFailed) return ResultHelpers.CreateFailure(merchant);
 
-                Result<String> htmlResult = await this.StatementBuilder.GetStatementHtml(statementAggregate.Data, merchant.Data, cancellationToken);
+                Result<String> htmlResult = await this.StatementBuilder.GetStatementHtml(statementAggregate.GetValueOrThrow(), merchant.GetValueOrThrow(), cancellationToken);
                 if (htmlResult.IsFailed) return ResultHelpers.CreateFailure(htmlResult);
 
-                String base64 = EncodeTo64(htmlResult.Data);
+                String base64 = EncodeTo64(htmlResult.GetValueOrThrow());
 
-                Result buildResult = statementAggregate.Data.BuildStatement(DateTime.Now, base64);
+                Result buildResult = statementAggregate.GetValueOrThrow().BuildStatement(DateTime.Now, base64);
                 if (buildResult.IsFailed) return buildResult;
 
-                Result saveResult = await this.AggregateService.Save(statementAggregate.Data, cancellationToken);
+                Result saveResult = await this.AggregateService.Save(statementAggregate.GetValueOrThrow(), cancellationToken);
                 if (saveResult.IsFailed) return saveResult;
 
                 return Result.Success();
@@ -303,10 +303,10 @@ namespace TransactionProcessor.BusinessLogic.Services
             if (merchantResult.IsFailed)
                 return ResultHelpers.CreateFailure(merchantResult);
 
-            if (!merchantResult.Data.IsCreated)
+            if (!merchantResult.GetValueOrThrow().IsCreated)
                 return Result.Invalid("Merchant must be created to build a statement");
 
-            Merchant merchant = merchantResult.Data.GetMerchant();
+            Merchant merchant = merchantResult.GetValueOrThrow().GetMerchant();
 
             if (!merchant.Addresses.Any())
                 return Result.Invalid("Merchant must have an address to build a statement");
@@ -323,7 +323,7 @@ namespace TransactionProcessor.BusinessLogic.Services
                 if (getMerchantStatementResult.IsFailed)
                     return ResultHelpers.CreateFailure(getMerchantStatementResult);
 
-                MerchantStatementAggregate merchantStatementAggregate = getMerchantStatementResult.Data;
+                MerchantStatementAggregate merchantStatementAggregate = getMerchantStatementResult.GetValueOrThrow();
 
                 Result stateResult = merchantStatementAggregate.RecordActivityDateOnStatement(command.MerchantStatementId, command.StatementDate,
                         command.EstateId, command.MerchantId,
@@ -357,7 +357,7 @@ namespace TransactionProcessor.BusinessLogic.Services
                 if (getMerchantStatementForDateResult.IsFailed)
                     return ResultHelpers.CreateFailure(getMerchantStatementForDateResult);
 
-                MerchantStatementForDateAggregate merchantStatementForDateAggregate = getMerchantStatementForDateResult.Data;
+                MerchantStatementForDateAggregate merchantStatementForDateAggregate = getMerchantStatementForDateResult.GetValueOrThrow();
 
                 Deposit deposit = new Deposit { DepositId = command.DepositId, Reference = command.Reference, DepositDateTime = command.DepositDateTime, Amount = command.Amount.Value };
 
@@ -398,7 +398,7 @@ namespace TransactionProcessor.BusinessLogic.Services
                 if (getMerchantStatementForDateResult.IsFailed)
                     return ResultHelpers.CreateFailure(getMerchantStatementForDateResult);
 
-                MerchantStatementForDateAggregate merchantStatementForDateAggregate = getMerchantStatementForDateResult.Data;
+                MerchantStatementForDateAggregate merchantStatementForDateAggregate = getMerchantStatementForDateResult.GetValueOrThrow();
 
                 Withdrawal withdrawal = new Withdrawal() { WithdrawalId = command.WithdrawalId, WithdrawalDateTime = command.WithdrawalDateTime, Amount = command.Amount.Value };
 
@@ -446,7 +446,7 @@ namespace TransactionProcessor.BusinessLogic.Services
                 if (getMerchantStatementForDateResult.IsFailed)
                     return ResultHelpers.CreateFailure(getMerchantStatementForDateResult);
 
-                MerchantStatementForDateAggregate merchantStatementForDateAggregate = getMerchantStatementForDateResult.Data;
+                MerchantStatementForDateAggregate merchantStatementForDateAggregate = getMerchantStatementForDateResult.GetValueOrThrow();
 
                 // Add transaction to statement
                 Transaction transaction = new(command.TransactionId, command.TransactionDateTime, command.TransactionAmount.Value);

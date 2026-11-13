@@ -1,14 +1,14 @@
-﻿using MediatR;
+using MediatR;
 using Polly;
-using Shared.DomainDrivenDesign.EventSourcing;
-using Shared.EventStore.Aggregate;
-using Shared.EventStore.EventHandling;
-using Shared.Results;
-using SimpleResults;
+using TransactionProcessing.Shared.DomainDrivenDesign.EventSourcing;
+using TransactionProcessing.Shared.EventStore.Aggregate;
+using TransactionProcessing.Shared.EventStore.EventHandling;
+using TransactionProcessing.UnionResults;
+using TransactionProcessing.UnionResults;
 using System;
 using System.Threading;
 using System.Threading.Tasks;
-using Shared.Serialisation;
+using TransactionProcessing.Shared.Serialisation;
 using TransactionProcessor.Aggregates;
 using TransactionProcessor.BusinessLogic.Common;
 using TransactionProcessor.BusinessLogic.Events;
@@ -67,7 +67,7 @@ namespace TransactionProcessor.BusinessLogic.EventHandling
                 // We now need to deserialise the message from the callback
                 CallbackHandler.DataTransferObjects.Deposit callbackMessage = StringSerialiser.Deserialise<CallbackHandler.DataTransferObjects.Deposit>(domainEvent.CallbackMessage);
 
-                MerchantCommands.MakeMerchantDepositCommand command = new(domainEvent.EstateId, result.Data.MerchantId, DataTransferObjects.Requests.Merchant.MerchantDepositSource.Automatic, new MakeMerchantDepositRequest { DepositDateTime = callbackMessage.DateTime, Reference = callbackMessage.Reference, Amount = callbackMessage.Amount,HostDateTime = DateTimeOffset.UtcNow });
+                MerchantCommands.MakeMerchantDepositCommand command = new(domainEvent.EstateId, result.GetValueOrThrow().MerchantId, DataTransferObjects.Requests.Merchant.MerchantDepositSource.Automatic, new MakeMerchantDepositRequest { DepositDateTime = callbackMessage.DateTime, Reference = callbackMessage.Reference, Amount = callbackMessage.Amount,HostDateTime = DateTimeOffset.UtcNow });
                 return await this.Mediator.Send(command, cancellationToken);
             }
 

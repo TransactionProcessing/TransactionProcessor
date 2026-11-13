@@ -1,9 +1,9 @@
-﻿namespace TransactionProcessor.ProjectionEngine.Database.Database;
+namespace TransactionProcessor.ProjectionEngine.Database.Database;
 
 using System.Reflection;
 using Entities;
 using Microsoft.EntityFrameworkCore;
-using Shared.Logger;
+using TransactionProcessing.Shared.Logger;
 using ViewEntities;
 
 public abstract class TransactionProcessorGenericContext : DbContext

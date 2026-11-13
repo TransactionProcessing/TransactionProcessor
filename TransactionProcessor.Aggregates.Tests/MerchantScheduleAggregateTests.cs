@@ -1,6 +1,6 @@
-using Shared.DomainDrivenDesign.EventSourcing;
+using TransactionProcessing.Shared.DomainDrivenDesign.EventSourcing;
 using Shouldly;
-using SimpleResults;
+using TransactionProcessing.UnionResults;
 using System.Reflection;
 using TransactionProcessor.DomainEvents;
 using TransactionProcessor.Models.MerchantSchedule;
@@ -58,7 +58,7 @@ namespace TransactionProcessor.Aggregates.Tests
             Result result = aggregate.Create(EstateId, MerchantId, 1899, []);
 
             result.IsFailed.ShouldBeTrue();
-            result.Status.ShouldBe(ResultStatus.Invalid);
+            result.Errors[0].ErrorType.ShouldBe(ErrorType.Validation);
             result.Message.ShouldBe("A valid year must be provided when creating a merchant schedule");
         }
 
@@ -106,7 +106,7 @@ namespace TransactionProcessor.Aggregates.Tests
             Result result = aggregate.SetMonthSchedule(2, [29]);
 
             result.IsFailed.ShouldBeTrue();
-            result.Status.ShouldBe(ResultStatus.Invalid);
+            result.Errors[0].ErrorType.ShouldBe(ErrorType.Validation);
             result.Message.ShouldBe("Only days between 1 and 28 can be supplied for 2025-02");
         }
 
@@ -122,7 +122,7 @@ namespace TransactionProcessor.Aggregates.Tests
             ]);
 
             result.IsFailed.ShouldBeTrue();
-            result.Status.ShouldBe(ResultStatus.Invalid);
+            result.Errors[0].ErrorType.ShouldBe(ErrorType.Validation);
             result.Message.ShouldBe("Each month can only be provided once when updating a merchant schedule");
         }
 

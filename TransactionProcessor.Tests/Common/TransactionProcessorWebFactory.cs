@@ -1,6 +1,6 @@
-﻿using System;
+using System;
 using System.Text;
-using Shared.Serialisation;
+using TransactionProcessing.Shared.Serialisation;
 
 namespace TransactionProcessor.Tests.Common
 {

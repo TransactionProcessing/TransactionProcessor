@@ -1,8 +1,9 @@
+using TransactionProcessing.UnionResults.AspNetCore;
 using Microsoft.AspNetCore.Builder;
 
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Routing;
-using Shared.Authorisation;
+using TransactionProcessing.Shared.Authorisation;
 using System.Diagnostics.CodeAnalysis;
 using TransactionProcessor.Handlers;
 using TransactionProcessor.DataTransferObjects.Responses.Voucher;
@@ -16,7 +17,7 @@ namespace TransactionProcessor.Endpoints
 
         public static IEndpointRouteBuilder MapVoucherEndpoints(this IEndpointRouteBuilder endpoints)
         {
-            var group = endpoints.MapGroup(BaseRoute)
+            var group = endpoints.MapGroup(BaseRoute).AddUnionResultFilter()
                                  .WithTags("Vouchers")
                                  .RequireAuthorization()
                                  .RequireAuthorization(AuthorizationExtensions.PolicyNames.ClientCredentialsOnlyPolicy);
@@ -25,14 +26,14 @@ namespace TransactionProcessor.Endpoints
             group.MapPut("/", VoucherHandlers.RedeemVoucher)
                  .WithName("RedeemVoucher").WithSummary("Redeem a voucher")
                  .WithDescription("Redeems the voucher identified by its code. If RedeemedDateTime is omitted, the server uses the current local time.")
-                 .Produces<RedeemVoucherResponse>();
+                 .ProducesUnionResult<RedeemVoucherResponse>();
 
             // GET with query parameters estateId, voucherCode, transactionId
             group.MapGet("/", VoucherHandlers.GetVoucher)
                  .WithName("GetVoucher").WithSummary("Get a voucher")
                  .WithDescription("Looks up a voucher by voucherCode when provided; otherwise it uses transactionId. estateId is required. At least one lookup key must be provided.")
 
-                 .Produces<GetVoucherResponse>();
+                 .ProducesUnionResult<GetVoucherResponse>();
 
             return endpoints;
         }

@@ -1,10 +1,10 @@
-﻿using SimpleResults;
+using TransactionProcessing.UnionResults;
 
 namespace TransactionProcessor.ProjectionEngine.Repository;
 
-using Shared.DomainDrivenDesign.EventSourcing;
+using TransactionProcessing.Shared.DomainDrivenDesign.EventSourcing;
 
-public interface IProjectionStateRepository<TState> where TState : Shared.EventStore.ProjectionEngine.State
+public interface IProjectionStateRepository<TState> where TState : TransactionProcessing.Shared.EventStore.ProjectionEngine.State
 {
     Task<Result<TState>> Load(IDomainEvent @event, CancellationToken cancellationToken);
 

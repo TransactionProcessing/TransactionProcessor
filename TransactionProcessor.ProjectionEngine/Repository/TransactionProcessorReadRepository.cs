@@ -1,6 +1,6 @@
-﻿using Shared.Exceptions;
-using Shared.Logger;
-using SimpleResults;
+using TransactionProcessing.Shared.Exceptions;
+using TransactionProcessing.Shared.Logger;
+using TransactionProcessing.UnionResults;
 using TransactionProcessor.Database.Contexts;
 
 namespace TransactionProcessor.ProjectionEngine.Repository;
@@ -8,7 +8,7 @@ namespace TransactionProcessor.ProjectionEngine.Repository;
 using Database.Database;
 using Microsoft.EntityFrameworkCore;
 using Models;
-using Shared.EntityFramework;
+using TransactionProcessing.Shared.EntityFramework;
 using System.Diagnostics.CodeAnalysis;
 using TransactionProcessor.ProjectionEngine.Database.Database.ViewEntities;
 

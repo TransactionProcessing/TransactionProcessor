@@ -1,7 +1,7 @@
-﻿using SecurityService.DataTransferObjects;
-using Shared.Exceptions;
-using Shared.Results;
-using SimpleResults;
+using SecurityService.DataTransferObjects;
+using TransactionProcessing.Shared.Exceptions;
+using TransactionProcessing.UnionResults;
+using TransactionProcessing.UnionResults;
 using TransactionProcessor.Aggregates;
 using TransactionProcessor.BusinessLogic.Services;
 using TransactionProcessor.Database.Contexts;
@@ -15,11 +15,11 @@ using MessagingService.Client;
 using MessagingService.DataTransferObjects;
 using Microsoft.EntityFrameworkCore;
 using SecurityService.Client;
-using Shared.DomainDrivenDesign.EventSourcing;
-using Shared.EntityFramework;
-using Shared.EventStore.Aggregate;
-using Shared.EventStore.EventHandling;
-using Shared.General;
+using TransactionProcessing.Shared.DomainDrivenDesign.EventSourcing;
+using TransactionProcessing.Shared.EntityFramework;
+using TransactionProcessing.Shared.EventStore.Aggregate;
+using TransactionProcessing.Shared.EventStore.EventHandling;
+using TransactionProcessing.Shared.General;
 using System;
 using System.Collections.Generic;
 using System.IO.Abstractions;
@@ -148,11 +148,11 @@ public class VoucherDomainEventHandler : IDomainEventHandler
         if (voucherAggregateResult.IsFailed)
             return ResultHelpers.CreateFailure(voucherAggregateResult);
 
-        Models.Voucher voucherModel = voucherAggregateResult.Data.GetVoucher();
+        Models.Voucher voucherModel = voucherAggregateResult.GetValueOrThrow().GetVoucher();
         Result<TokenResponse> getTokenResult = await Helpers.GetToken(this.TokenResponse, this.SecurityServiceClient, cancellationToken);
         if (getTokenResult.IsFailed)
             return ResultHelpers.CreateFailure(getTokenResult);
-        this.TokenResponse = getTokenResult.Data;
+        this.TokenResponse = getTokenResult.GetValueOrThrow();
         if (string.IsNullOrEmpty(voucherModel.RecipientEmail) == false)
         {
             String message = await this.GetEmailVoucherMessage(voucherModel, cancellationToken);
@@ -171,7 +171,8 @@ public class VoucherDomainEventHandler : IDomainEventHandler
                                                          }
                                        };
 
-            return await this.MessagingServiceClient.SendEmail(this.TokenResponse.AccessToken, request, cancellationToken);
+            var result = await this.MessagingServiceClient.SendEmail(this.TokenResponse.AccessToken, request, cancellationToken);
+            return result.IsFailed ? Result.Fail(ResultHelpers.CreateFailure(result)) : Result.Success();
         }
 
         if (String.IsNullOrEmpty(voucherModel.RecipientMobile) == false)
@@ -187,7 +188,8 @@ public class VoucherDomainEventHandler : IDomainEventHandler
                                          Sender = "Your Voucher"
                                      };
 
-            return await this.MessagingServiceClient.SendSMS(this.TokenResponse.AccessToken, request, cancellationToken);
+            var result = await this.MessagingServiceClient.SendSMS(this.TokenResponse.AccessToken, request, cancellationToken);
+            return result.IsFailed ? Result.Fail(ResultHelpers.CreateFailure(result)) : Result.Success();
         }
         // No messages to be sent
         return Result.Success();

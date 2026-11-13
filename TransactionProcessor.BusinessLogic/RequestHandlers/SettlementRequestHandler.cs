@@ -1,7 +1,7 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
-using SimpleResults;
+using TransactionProcessing.UnionResults;
 using TransactionProcessor.Aggregates;
 using TransactionProcessor.BusinessLogic.Common;
 using TransactionProcessor.BusinessLogic.Manager;
@@ -13,8 +13,8 @@ namespace TransactionProcessor.BusinessLogic.RequestHandlers
     using MediatR;
     using Requests;
     using Services;
-    using Shared.DomainDrivenDesign.EventSourcing;
-    using Shared.EventStore.Aggregate;
+    using TransactionProcessing.Shared.DomainDrivenDesign.EventSourcing;
+    using TransactionProcessing.Shared.EventStore.Aggregate;
 
     public class SettlementRequestHandler : IRequestHandler<SettlementCommands.ProcessSettlementCommand, Result<Guid>>,
                                             IRequestHandler<SettlementCommands.AddMerchantFeePendingSettlementCommand, Result>,

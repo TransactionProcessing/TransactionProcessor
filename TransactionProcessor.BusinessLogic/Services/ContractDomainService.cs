@@ -1,14 +1,14 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using Shared.EventStore.Aggregate;
-using Shared.EventStore.EventStore;
-using Shared.Exceptions;
-using Shared.Results;
-using Shared.Serialisation;
-using SimpleResults;
+using TransactionProcessing.Shared.EventStore.Aggregate;
+using TransactionProcessing.Shared.EventStore.EventStore;
+using TransactionProcessing.Shared.Exceptions;
+using TransactionProcessing.UnionResults;
+using TransactionProcessing.Shared.Serialisation;
+using TransactionProcessing.UnionResults;
 using TransactionProcessor.Aggregates;
 using TransactionProcessor.BusinessLogic.Common;
 using TransactionProcessor.BusinessLogic.Requests;
@@ -49,7 +49,7 @@ namespace TransactionProcessor.BusinessLogic.Services
                 if (contractResult.IsFailed)
                     return ResultHelpers.CreateFailure(contractResult);
 
-                ContractAggregate contractAggregate = contractResult.Data;
+                ContractAggregate contractAggregate = contractResult.GetValueOrThrow();
                 
                 if (contractAggregate.IsCreated == false) {
                     return Result.Forbidden($"Contract Id [{command.ContractId}] must be created to add products");
@@ -85,7 +85,7 @@ namespace TransactionProcessor.BusinessLogic.Services
                 if (contractResult.IsFailed)
                     return ResultHelpers.CreateFailure(contractResult);
 
-                ContractAggregate contractAggregate = contractResult.Data;
+                ContractAggregate contractAggregate = contractResult.GetValueOrThrow();
                 if (contractAggregate.IsCreated == false)
                 {
                     return Result.Forbidden($"Contract Id [{command.ContractId}] must be created to add transaction fees");
@@ -123,7 +123,7 @@ namespace TransactionProcessor.BusinessLogic.Services
                 if (contractResult.IsFailed)
                     return ResultHelpers.CreateFailure(contractResult);
 
-                ContractAggregate contractAggregate = contractResult.Data;
+                ContractAggregate contractAggregate = contractResult.GetValueOrThrow();
 
                 Result stateResult = contractAggregate.DisableTransactionFee(command.ProductId, command.TransactionFeeId);
                 if (stateResult.IsFailed)
@@ -159,8 +159,8 @@ namespace TransactionProcessor.BusinessLogic.Services
                 if (contractResult.IsFailed)
                     return ResultHelpers.CreateFailure(contractResult);
                 
-                ContractAggregate contractAggregate = contractResult.Data;
-                Models.Estate.Estate estate = estateResult.Data.GetEstate();
+                ContractAggregate contractAggregate = contractResult.GetValueOrThrow();
+                Models.Estate.Estate estate = estateResult.GetValueOrThrow().GetEstate();
                 
                 if (contractAggregate.IsCreated)
                     return Result.Conflict($"Contract Name [{command.RequestDTO.Description}] already created for estate [{estate.Name}] and Operator [{command.RequestDTO.OperatorId}]");

@@ -1,7 +1,7 @@
 using Microsoft.EntityFrameworkCore;
-using Shared.Logger;
+using TransactionProcessing.Shared.Logger;
 using Shouldly;
-using SimpleResults;
+using TransactionProcessing.UnionResults;
 using TransactionProcessor.Database.Contexts;
 using TransactionProcessor.Testing;
 

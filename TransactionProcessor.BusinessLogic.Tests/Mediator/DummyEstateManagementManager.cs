@@ -1,8 +1,8 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
-using SimpleResults;
+using TransactionProcessing.UnionResults;
 using TransactionProcessor.BusinessLogic.Manager;
 using TransactionProcessor.Models.Contract;
 using TransactionProcessor.Models.Merchant;
@@ -43,7 +43,7 @@ public class DummyTransactionProcessorManager : ITransactionProcessorManager {
     public async Task<Result<Merchant>> GetMerchant(Guid estateId,
                                                     Guid merchantId,
                                                     CancellationToken cancellationToken) {
-        return new Result<Merchant>();
+        return Result<Merchant>.Fail(Error.Failure("Merchant was not found."));
     }
 
     public async Task<Result<MerchantScheduleModel>> GetMerchantSchedule(Guid estateId,

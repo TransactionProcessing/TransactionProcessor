@@ -1,4 +1,4 @@
-﻿using SimpleResults;
+using TransactionProcessing.UnionResults;
 using TransactionProcessor.BusinessLogic.Manager;
 using TransactionProcessor.BusinessLogic.Requests;
 

@@ -1,4 +1,5 @@
-using SimpleResults;
+using System;
+using TransactionProcessing.UnionResults;
 using System.Threading.Tasks;
 
 namespace TransactionProcessor.BusinessLogic.Tests.RequestHandler;
@@ -7,7 +8,7 @@ using BusinessLogic.Services;
 using Imposter.Abstractions;
 using RequestHandlers;
 using Requests;
-using Shared.Serialisation;
+using TransactionProcessing.Shared.Serialisation;
 using Shouldly;
 using System.Text.Json;
 using System.Threading;
@@ -24,7 +25,7 @@ public class FloatRequestHandlerTests
     public async Task FloatRequestHandler_CreateFloatForContractProductRequest_IsHandled(){
         IFloatDomainServiceImposter floatDomainService = new();
         FloatRequestHandler handler = new FloatRequestHandler(floatDomainService.Instance());
-        floatDomainService.CreateFloat(Arg<FloatCommands.CreateFloatCommand>.Any(), Arg<CancellationToken>.Any()).ReturnsAsync(Result.Success());
+        floatDomainService.CreateFloat(Arg<FloatCommands.CreateFloatCommand>.Any(), Arg<CancellationToken>.Any()).ReturnsAsync(Result.Success(Guid.NewGuid()));
         var command = TestData.CreateFloatCommand;
 
         var result = await handler.Handle(command, TestContext.Current.CancellationToken);

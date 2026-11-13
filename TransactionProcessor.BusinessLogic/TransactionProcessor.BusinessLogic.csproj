@@ -1,13 +1,13 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-	  <TargetFramework>net10.0</TargetFramework>
+	  <TargetFramework>net11.0</TargetFramework>
   </PropertyGroup>
 
   <ItemGroup>
     <PackageReference Include="CallbackHandler.DataTransferObjects" />
     <PackageReference Include="FluentValidation" />
-    <PackageReference Include="ClientProxyBase" />
+    <PackageReference Include="TransactionProcessing.ClientProxyBase" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.Relational" />
     <PackageReference Include="MessagingService.Client" />
     <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" />
@@ -17,8 +17,8 @@
     <PackageReference Include="Polly" />
     <PackageReference Include="prometheus-net" />
     <PackageReference Include="SecurityService.Client" />
-    <PackageReference Include="Shared.DomainDrivenDesign" />
-    <PackageReference Include="Shared.EventStore" />
+    <PackageReference Include="TransactionProcessing.Shared.DomainDrivenDesign" />
+    <PackageReference Include="TransactionProcessing.Shared.EventStore" />
     <PackageReference Include="MediatR" />
     <PackageReference Include="SkiaSharp" />
     <PackageReference Include="System.IO.Abstractions" />
@@ -69,4 +69,7 @@
 		</Content>
 	</ItemGroup>
 
+  <ItemGroup>
+    <ProjectReference Include="..\TransactionProcessor.ResultHelpers\TransactionProcessor.ResultHelpers.csproj" />
+  </ItemGroup>
 </Project>

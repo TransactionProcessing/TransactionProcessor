@@ -3,11 +3,11 @@ using System.Threading;
 using System.Threading.Tasks;
 using Imposter.Abstractions;
 using MediatR;
-using Shared.DomainDrivenDesign.EventSourcing;
-using Shared.EventStore.Aggregate;
-using Shared.Logger;
+using TransactionProcessing.Shared.DomainDrivenDesign.EventSourcing;
+using TransactionProcessing.Shared.EventStore.Aggregate;
+using TransactionProcessing.Shared.Logger;
 using Shouldly;
-using SimpleResults;
+using TransactionProcessing.UnionResults;
 using TransactionProcessor.Aggregates;
 using TransactionProcessor.BusinessLogic.EventHandling;
 using TransactionProcessor.BusinessLogic.Events;
@@ -58,7 +58,7 @@ namespace TransactionProcessor.BusinessLogic.Tests.DomainEventHandlers
         public async Task MerchantDomainEventHandler_Handle_CallbackReceivedEnrichedEvent_Deposit_GetMerchantFailed_ResultIsFailure()
         {
             this.TransactionProcessorReadModelRepository.GetMerchantFromReference(Arg<Guid>.Any(), Arg<String>.Any(), Arg<CancellationToken>.Any())
-                .ReturnsAsync(Result.Failure());
+                .ReturnsAsync(Result.Failure("Test failure"));
 
             CallbackReceivedEnrichedEvent domainEvent = TestData.DomainEvents.CallbackReceivedEnrichedEventDeposit;
 

@@ -4,7 +4,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using FluentValidation;
 using MediatR;
-using SimpleResults;
+using TransactionProcessing.UnionResults;
 
 namespace TransactionProcessor.BusinessLogic.Validation;
 
@@ -22,7 +22,7 @@ public sealed class ValidationBehavior<TRequest>(IEnumerable<IValidator<TRequest
         FluentValidation.Results.ValidationResult validationResult =
             await validator.ValidateAsync(request, cancellationToken);
         if (validationResult.IsValid == false)
-            return Result.Invalid(validationResult.Errors.Select(error => error.ErrorMessage));
+            return Result.Fail(Result.Invalid("Validation failed.", validationResult.Errors.Select(error => error.ErrorMessage)));
 
         return await next(cancellationToken);
     }
@@ -42,7 +42,7 @@ public sealed class ValidationBehavior<TRequest, TValue>(IEnumerable<IValidator<
         FluentValidation.Results.ValidationResult validationResult =
             await validator.ValidateAsync(request, cancellationToken);
         if (validationResult.IsValid == false)
-            return Result.Invalid(validationResult.Errors.Select(error => error.ErrorMessage));
+            return Result<TValue>.Fail(Result.Invalid("Validation failed.", validationResult.Errors.Select(error => error.ErrorMessage)));
 
         return await next(cancellationToken);
     }

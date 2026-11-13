@@ -1,4 +1,4 @@
-﻿using Shared.DomainDrivenDesign.EventSourcing;
+using TransactionProcessing.Shared.DomainDrivenDesign.EventSourcing;
 using Shouldly;
 using TransactionProcessor.DomainEvents;
 using TransactionProcessor.ProjectionEngine.Projections;

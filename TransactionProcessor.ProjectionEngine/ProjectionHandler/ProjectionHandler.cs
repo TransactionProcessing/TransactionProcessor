@@ -1,5 +1,5 @@
-﻿using Shared.Results;
-using SimpleResults;
+using TransactionProcessing.UnionResults;
+using TransactionProcessing.UnionResults;
 
 namespace TransactionProcessor.ProjectionEngine.ProjectionHandler;
 
@@ -8,10 +8,10 @@ using System.Text;
 using Dispatchers;
 using Projections;
 using Repository;
-using Shared.DomainDrivenDesign.EventSourcing;
-using Shared.Logger;
+using TransactionProcessing.Shared.DomainDrivenDesign.EventSourcing;
+using TransactionProcessing.Shared.Logger;
 
-public class ProjectionHandler<TState> : IProjectionHandler where TState : Shared.EventStore.ProjectionEngine.State
+public class ProjectionHandler<TState> : IProjectionHandler where TState : TransactionProcessing.Shared.EventStore.ProjectionEngine.State
 {
     private readonly IProjectionStateRepository<TState> ProjectionStateRepository;
     private readonly IProjection<TState> Projection;
@@ -46,7 +46,7 @@ public class ProjectionHandler<TState> : IProjectionHandler where TState : Share
             return ResultHelpers.CreateFailure(loadResult);
         }
         Logger.LogInformation($"{@event.EventId}|State loaded for {@event.EventType}");
-        var state = loadResult.Data;
+        var state = loadResult.GetValueOrThrow();
         builder.Append($"{stopwatch.ElapsedMilliseconds}ms After Load|");
 
         builder.Append($"{stopwatch.ElapsedMilliseconds}ms Handling {@event.EventType} Id [{@event.EventId}] for state {state.GetType().Name}|");

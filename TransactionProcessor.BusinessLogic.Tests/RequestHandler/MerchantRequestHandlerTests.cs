@@ -1,9 +1,9 @@
 using Imposter;
 using Imposter.Abstractions;
-using Shared.EventStore.EventStore;
-using Shared.Serialisation;
+using TransactionProcessing.Shared.EventStore.EventStore;
+using TransactionProcessing.Shared.Serialisation;
 using Shouldly;
-using SimpleResults;
+using TransactionProcessing.UnionResults;
 using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
@@ -53,21 +53,21 @@ public class MerchantRequestHandlerTests
         var result = await handler.Handle(query, TestContext.Current.CancellationToken);
 
         result.IsSuccess.ShouldBeTrue();
-        result.Data.ShouldNotBeNull();
-        result.Data.MerchantReportingId.ShouldBe(TestData.MerchantReportingId);
+        result.GetValueOrThrow().ShouldNotBeNull();
+        result.GetValueOrThrow().MerchantReportingId.ShouldBe(TestData.MerchantReportingId);
         manager.GetMerchant(TestData.EstateId, TestData.MerchantId, Arg<CancellationToken>.Any()).Called(Count.Once());
     }
 
     private sealed class NullProjectionStateRepository : IProjectionStateRepository<MerchantBalanceState>
     {
-        public Task<Result<MerchantBalanceState>> Load(Shared.DomainDrivenDesign.EventSourcing.IDomainEvent @event, CancellationToken cancellationToken) =>
-            Task.FromResult(new Result<MerchantBalanceState>());
+        public Task<Result<MerchantBalanceState>> Load(TransactionProcessing.Shared.DomainDrivenDesign.EventSourcing.IDomainEvent @event, CancellationToken cancellationToken) =>
+            Task.FromResult(Result<MerchantBalanceState>.Fail(Error.Failure("No projection state is configured.")));
 
         public Task<Result<MerchantBalanceState>> Load(System.Guid estateId, System.Guid stateId, CancellationToken cancellationToken) =>
-            Task.FromResult(new Result<MerchantBalanceState>());
+            Task.FromResult(Result<MerchantBalanceState>.Fail(Error.Failure("No projection state is configured.")));
 
-        public Task<Result<MerchantBalanceState>> Save(MerchantBalanceState state, Shared.DomainDrivenDesign.EventSourcing.IDomainEvent @event, CancellationToken cancellationToken) =>
-            Task.FromResult(new Result<MerchantBalanceState>());
+        public Task<Result<MerchantBalanceState>> Save(MerchantBalanceState state, TransactionProcessing.Shared.DomainDrivenDesign.EventSourcing.IDomainEvent @event, CancellationToken cancellationToken) =>
+            Task.FromResult(Result<MerchantBalanceState>.Fail(Error.Failure("No projection state is configured.")));
     }
 }
 

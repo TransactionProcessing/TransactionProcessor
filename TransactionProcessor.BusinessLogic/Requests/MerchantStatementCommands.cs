@@ -1,8 +1,8 @@
-﻿using System;
+using System;
 using System.Diagnostics.CodeAnalysis;
 using MediatR;
-using Shared.ValueObjects;
-using SimpleResults;
+using TransactionProcessing.Shared.ValueObjects;
+using TransactionProcessing.UnionResults;
 
 namespace TransactionProcessor.BusinessLogic.Requests;
 

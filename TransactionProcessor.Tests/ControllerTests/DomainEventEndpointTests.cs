@@ -5,7 +5,7 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.TestHost;
 using Microsoft.Extensions.DependencyInjection;
 using Shouldly;
-using SimpleResults;
+using TransactionProcessing.UnionResults;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -15,12 +15,12 @@ using System.Text;
 using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
-using Shared.DomainDrivenDesign.EventSourcing;
-using Shared.EventStore.Aggregate;
-using Shared.EventStore.EventHandling;
-using Shared.General;
-using Shared.Logger;
-using Shared.Serialisation;
+using TransactionProcessing.Shared.DomainDrivenDesign.EventSourcing;
+using TransactionProcessing.Shared.EventStore.Aggregate;
+using TransactionProcessing.Shared.EventStore.EventHandling;
+using TransactionProcessing.Shared.General;
+using TransactionProcessing.Shared.Logger;
+using TransactionProcessing.Shared.Serialisation;
 using TransactionProcessor.DomainEvents;
 using TransactionProcessor.Endpoints;
 using Xunit;
@@ -66,7 +66,7 @@ public class DomainEventEndpointTests
     }
 
     [Fact]
-    public async Task PostEvent_WhenHandlerReturnsFailure_ReturnsDetailedProblemDetails()
+    public async Task PostEvent_WhenHandlerReturnsFailure_ReturnsCriticalProblemDetails()
     {
         DomainEvent domainEvent = CreateDomainEvent();
         await using WebApplication app = await CreateApplication(new ResultDomainEventHandler(Result.Failure("Transaction was not found")));
@@ -78,17 +78,12 @@ public class DomainEventEndpointTests
         JsonElement root = problem.RootElement;
 
         response.StatusCode.ShouldBe(HttpStatusCode.InternalServerError);
-        root.GetProperty("title").GetString().ShouldBe("One or more event handlers failed");
+        root.GetProperty("title").GetString().ShouldBe("An unexpected error occurred.");
         root.GetProperty("status").GetInt32().ShouldBe(500);
-        root.GetProperty("eventId").GetGuid().ShouldBe(domainEvent.EventId);
-        root.GetProperty("eventType").GetString().ShouldBe(domainEvent.GetType().Name);
-        String failuresJson = root.GetProperty("failures").GetRawText();
-        failuresJson.ShouldContain("Transaction was not found");
-        failuresJson.ShouldContain(nameof(ResultDomainEventHandler));
     }
 
     [Fact]
-    public async Task PostEvent_WhenMultipleHandlersFail_ReturnsEveryFailure()
+    public async Task PostEvent_WhenMultipleHandlersFail_ReturnsCriticalProblemDetails()
     {
         DomainEvent domainEvent = CreateDomainEvent();
         await using WebApplication app = await CreateApplication(
@@ -99,12 +94,10 @@ public class DomainEventEndpointTests
         using HttpResponseMessage response = await PostDomainEvent(client, domainEvent);
         String responseBody = await response.Content.ReadAsStringAsync();
         using JsonDocument problem = JsonDocument.Parse(responseBody);
-        String failuresJson = problem.RootElement.GetProperty("failures").GetRawText();
-
         response.StatusCode.ShouldBe(HttpStatusCode.InternalServerError);
-        failuresJson.ShouldContain("First failure");
-        failuresJson.ShouldContain("Second failure");
-        failuresJson.ShouldNotContain("StackTrace");
+        problem.RootElement.GetProperty("title").GetString().ShouldBe("An unexpected error occurred.");
+        problem.RootElement.GetProperty("status").GetInt32().ShouldBe(500);
+        responseBody.ShouldNotContain("StackTrace");
     }
 
     private static async Task<WebApplication> CreateApplication(params IDomainEventHandler[] handlers)

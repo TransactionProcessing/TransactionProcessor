@@ -1,8 +1,8 @@
-﻿using System;
-using Shared.DomainDrivenDesign.EventSourcing;
-using Shared.EventStore.Aggregate;
+using System;
+using TransactionProcessing.Shared.DomainDrivenDesign.EventSourcing;
+using TransactionProcessing.Shared.EventStore.Aggregate;
 using Shouldly;
-using SimpleResults;
+using TransactionProcessing.UnionResults;
 using TransactionProcessor.BusinessLogic.Common;
 using TransactionProcessor.BusinessLogic.Services;
 using Xunit;
@@ -19,8 +19,8 @@ namespace TransactionProcessor.BusinessLogic.Tests.Services
             
             var handleResult = DomainServiceHelper.HandleGetAggregateResult(result, aggregateId, true);
             handleResult.IsSuccess.ShouldBeTrue();
-            handleResult.Data.ShouldBeOfType(typeof(TestAggregate));
-            handleResult.Data.AggregateId.ShouldBe(aggregateId);
+            handleResult.GetValueOrThrow().ShouldBeOfType(typeof(TestAggregate));
+            handleResult.GetValueOrThrow().AggregateId.ShouldBe(aggregateId);
         }
 
         [Fact]
@@ -53,8 +53,8 @@ namespace TransactionProcessor.BusinessLogic.Tests.Services
 
             var handleResult = DomainServiceHelper.HandleGetAggregateResult(result, aggregateId, false);
             handleResult.IsSuccess.ShouldBeTrue();
-            handleResult.Data.ShouldBeOfType(typeof(TestAggregate));
-            handleResult.Data.AggregateId.ShouldBe(aggregateId);
+            handleResult.GetValueOrThrow().ShouldBeOfType(typeof(TestAggregate));
+            handleResult.GetValueOrThrow().AggregateId.ShouldBe(aggregateId);
         }
     }
 

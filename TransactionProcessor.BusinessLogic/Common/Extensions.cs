@@ -1,17 +1,17 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using SecurityService.DataTransferObjects;
-using Shared.Results;
-using SimpleResults;
+using TransactionProcessing.UnionResults;
+using TransactionProcessing.UnionResults;
 
 namespace TransactionProcessor.BusinessLogic.Common
 {
     using System.Diagnostics.CodeAnalysis;
     using System.Threading;
     using SecurityService.Client;
-    using Shared.General;
-    using Shared.Logger;
+    using TransactionProcessing.Shared.General;
+    using TransactionProcessing.Shared.Logger;
     using Type = System.Type;
 
     [ExcludeFromCodeCoverage]
@@ -32,7 +32,7 @@ namespace TransactionProcessor.BusinessLogic.Common
             
             if (currentToken == null)
             {
-                Result<TokenResponse> tokenResult= await securityServiceClient.GetToken(clientId, clientSecret, cancellationToken);
+                var tokenResult = await securityServiceClient.GetToken(clientId, clientSecret, cancellationToken);
                 if (tokenResult.IsFailed)
                     return ResultHelpers.CreateFailure(tokenResult);
                 TokenResponse token =tokenResult.Data;
@@ -41,7 +41,7 @@ namespace TransactionProcessor.BusinessLogic.Common
 
             if (currentToken.Expires.UtcDateTime.Subtract(DateTime.UtcNow) < TimeSpan.FromMinutes(2))
             {
-                Result<TokenResponse> tokenResult = await securityServiceClient.GetToken(clientId, clientSecret, cancellationToken);
+                var tokenResult = await securityServiceClient.GetToken(clientId, clientSecret, cancellationToken);
                 if (tokenResult.IsFailed)
                     return ResultHelpers.CreateFailure(tokenResult);
                 TokenResponse token = tokenResult.Data;

@@ -1,14 +1,14 @@
-﻿using Shared.EventStore.SubscriptionWorker;
+using TransactionProcessing.Shared.EventStore.SubscriptionWorker;
 
 namespace TransactionProcessor.Bootstrapper
 {
-    using ClientProxyBase;
+    using TransactionProcessing.ClientProxyBase;
     using Lamar;
     using MessagingService.Client;
     using Microsoft.Extensions.DependencyInjection;
     using SecurityService.Client;
-    using Shared.General;
-    using Shared.Serialisation;
+    using TransactionProcessing.Shared.General;
+    using TransactionProcessing.Shared.Serialisation;
     using System;
     using System.Diagnostics.CodeAnalysis;
     using System.Net.Http;

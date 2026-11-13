@@ -1,6 +1,6 @@
-﻿using KurrentDB.Client;
-using Shared.Serialisation;
-using SimpleResults;
+using KurrentDB.Client;
+using TransactionProcessing.Shared.Serialisation;
+using TransactionProcessing.UnionResults;
 using TransactionProcessor.BusinessLogic.Requests;
 using TransactionProcessor.ProjectionEngine.Models;
 using TransactionProcessor.ProjectionEngine.Repository;
@@ -14,8 +14,8 @@ using System.Threading;
 using System.Threading.Tasks;
 using BusinessLogic.Services;
 using Models;
-using Shared.DomainDrivenDesign.EventSourcing;
-using Shared.EventStore.EventStore;
+using TransactionProcessing.Shared.DomainDrivenDesign.EventSourcing;
+using TransactionProcessing.Shared.EventStore.EventStore;
 
 public class DummyTransactionDomainService : ITransactionDomainService
 {
@@ -56,16 +56,16 @@ public class DummyTransactionDomainService : ITransactionDomainService
 public class DummyMerchantBalanceStateRepository : IProjectionStateRepository<MerchantBalanceState>
 {
     public async Task<Result<MerchantBalanceState>> Load(IDomainEvent @event, CancellationToken cancellationToken) {
-        return new MerchantBalanceState();
+        return Result.Success(new MerchantBalanceState());
     }
 
     public async Task<Result<MerchantBalanceState>> Load(Guid estateId, Guid stateId, CancellationToken cancellationToken)
     {
-        return new MerchantBalanceState();
+        return Result.Success(new MerchantBalanceState());
     }
 
     public async Task<Result<MerchantBalanceState>> Save(MerchantBalanceState state, IDomainEvent @event, CancellationToken cancellationToken) {
-        return state;
+        return Result.Success(state);
     }
 }
 
@@ -80,7 +80,7 @@ public class DummyTransactionProcessorReadRepository : ITransactionProcessorRead
                                                                                            DateTimeOffset startDate,
                                                                                            DateTimeOffset endDate,
                                                                                            CancellationToken cancellationToken) {
-        return Result.Success();
+        return Result.Success(new List<MerchantBalanceChangedEntry>());
     }
 }
 
@@ -88,13 +88,13 @@ public class DummyEventStoreContext : IEventStoreContext {
     public async Task<Result<List<ResolvedEvent>>> GetEventsBackward(String streamName,
                                                                      Int32 maxNumberOfEventsToRetrieve,
                                                                      CancellationToken cancellationToken) {
-        return Result.Success();
+        return Result.Success(new List<ResolvedEvent>());
     }
 
     public async Task<Result<String>> GetPartitionResultFromProjection(String projectionName,
                                                                        String partitionId,
                                                                        CancellationToken cancellationToken) {
-        return Result.Success();
+        return Result.Success(String.Empty);
     }
 
     public async Task<Result<String>> GetPartitionStateFromProjection(String projectionName,
@@ -106,12 +106,12 @@ public class DummyEventStoreContext : IEventStoreContext {
 
     public async Task<Result<String>> GetResultFromProjection(String projectionName,
                                                               CancellationToken cancellationToken) {
-        return Result.Success();
+        return Result.Success(String.Empty);
     }
 
     public async Task<Result<String>> GetStateFromProjection(String projectionName,
                                                              CancellationToken cancellationToken) {
-        return Result.Success();
+        return Result.Success(String.Empty);
     }
 
     public async Task<Result> InsertEvents(String streamName,
@@ -132,17 +132,17 @@ public class DummyEventStoreContext : IEventStoreContext {
     public async Task<Result<List<ResolvedEvent>>> ReadEvents(String streamName,
                                                               Int64 fromVersion,
                                                               CancellationToken cancellationToken) {
-        return Result.Success();
+        return Result.Success(new List<ResolvedEvent>());
     }
 
     public async Task<Result<List<ResolvedEvent>>> ReadLastEventsFromAll(Int64 numberEvents,
                                                                          CancellationToken cancellationToken) {
-        return Result.Success();
+        return Result.Success(new List<ResolvedEvent>());
     }
 
     public async Task<Result<String>> RunTransientQuery(String query,
                                                         CancellationToken cancellationToken) {
-        return Result.Success();
+        return Result.Success(String.Empty);
     }
 
     public event TraceHandler TraceGenerated;

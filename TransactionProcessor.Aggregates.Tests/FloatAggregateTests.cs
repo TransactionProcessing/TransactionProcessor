@@ -1,6 +1,6 @@
-using Shared.Serialisation;
+using TransactionProcessing.Shared.Serialisation;
 using Shouldly;
-using SimpleResults;
+using TransactionProcessing.UnionResults;
 using TransactionProcessor.Testing;
 
 namespace TransactionProcessor.Aggregates.Tests
@@ -8,7 +8,7 @@ namespace TransactionProcessor.Aggregates.Tests
     public class FloatAggregateTests
     {
         public FloatAggregateTests() {
-            StringSerialiser.Initialise(new Shared.Serialisation.SystemTextJsonSerializer(new System.Text.Json.JsonSerializerOptions()));
+            StringSerialiser.Initialise(new TransactionProcessing.Shared.Serialisation.SystemTextJsonSerializer(new System.Text.Json.JsonSerializerOptions()));
         }
 
         [Fact]
@@ -60,7 +60,7 @@ namespace TransactionProcessor.Aggregates.Tests
 
             Result result = aggregate.RecordCreditPurchase(DateTime.Now, 1000, 900, DateTime.Now);
             result.IsFailed.ShouldBeTrue();
-            result.Status.ShouldBe(ResultStatus.Invalid);
+            result.Errors[0].ErrorType.ShouldBe(ErrorType.Validation);
             
         }
 
@@ -108,7 +108,7 @@ namespace TransactionProcessor.Aggregates.Tests
             Result result = aggregate.RecordCreditPurchase(purchaseDateTime, 1000, 900, DateTime.Now);
             
             result.IsFailed.ShouldBeTrue();
-            result.Status.ShouldBe(ResultStatus.Invalid);
+            result.Errors[0].ErrorType.ShouldBe(ErrorType.Validation);
 
         }
 

@@ -1,5 +1,5 @@
-﻿using MediatR;
-using SimpleResults;
+using MediatR;
+using TransactionProcessing.UnionResults;
 using System;
 using System.Diagnostics.CodeAnalysis;
 using TransactionProcessor.DataTransferObjects.Requests.Voucher;

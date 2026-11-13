@@ -1,6 +1,6 @@
-﻿using System;
+using System;
 using System.Diagnostics.CodeAnalysis;
-using Shared.DomainDrivenDesign.EventSourcing;
+using TransactionProcessing.Shared.DomainDrivenDesign.EventSourcing;
 
 namespace TransactionProcessor.BusinessLogic.Events
 {

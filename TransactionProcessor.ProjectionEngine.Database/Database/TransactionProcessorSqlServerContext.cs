@@ -1,7 +1,7 @@
-﻿namespace TransactionProcessor.ProjectionEngine.Database.Database;
+namespace TransactionProcessor.ProjectionEngine.Database.Database;
 
 using Microsoft.EntityFrameworkCore;
-using Shared.General;
+using TransactionProcessing.Shared.General;
 
 public class TransactionProcessorSqlServerContext : TransactionProcessorGenericContext
 {

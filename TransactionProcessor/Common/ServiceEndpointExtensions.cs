@@ -1,4 +1,4 @@
-﻿using Shared.Middleware;
+using TransactionProcessing.Shared.Middleware;
 
 namespace TransactionProcessor.Common;
 

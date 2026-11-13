@@ -1,7 +1,7 @@
 using TransactionProcessor.BusinessLogic.Tests;
 using Imposter.Abstractions;
-using Shared.Logger;
-using Shared.Serialisation;
+using TransactionProcessing.Shared.Logger;
+using TransactionProcessing.Shared.Serialisation;
 using Shouldly;
 using System.Text.Json;
 using System.Threading;
@@ -23,7 +23,7 @@ public class ContractDomainEventHandlerTests
     private ReadModelDomainEventHandler DomainEventHandler;
     public ContractDomainEventHandlerTests() {
         Logger.Initialise(NullLogger.Instance);
-        StringSerialiser.Initialise(new Shared.Serialisation.SystemTextJsonSerializer(new System.Text.Json.JsonSerializerOptions()));
+        StringSerialiser.Initialise(new TransactionProcessing.Shared.Serialisation.SystemTextJsonSerializer(new System.Text.Json.JsonSerializerOptions()));
         this.EstateReportingRepository= new ITransactionProcessorReadModelRepositoryImposter();
         this.DomainEventHandler = new ReadModelDomainEventHandler(this.EstateReportingRepository.Instance());
     }

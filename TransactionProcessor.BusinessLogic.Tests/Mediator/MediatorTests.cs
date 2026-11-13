@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
@@ -9,8 +9,8 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Hosting;
 using Imposter.Abstractions;
-using Shared.EventStore.EventStore;
-using Shared.Serialisation;
+using TransactionProcessing.Shared.EventStore.EventStore;
+using TransactionProcessing.Shared.Serialisation;
 using TransactionProcessor.BusinessLogic.Manager;
 using TransactionProcessor.DataTransferObjects.Responses.Contract;
 using TransactionProcessor.ProjectionEngine.Repository;

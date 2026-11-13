@@ -1,4 +1,4 @@
-﻿using SimpleResults;
+using TransactionProcessing.UnionResults;
 using TransactionProcessor.DomainEvents;
 using TransactionProcessor.Models;
 using TransactionProcessor.Models.Contract;
@@ -9,9 +9,9 @@ namespace TransactionProcessor.Aggregates
     using System.Collections.Generic;
     using System.Diagnostics.CodeAnalysis;
     using System.Linq;
-    using Shared.DomainDrivenDesign.EventSourcing;
-    using Shared.EventStore.Aggregate;
-    using Shared.General;
+    using TransactionProcessing.Shared.DomainDrivenDesign.EventSourcing;
+    using TransactionProcessing.Shared.EventStore.Aggregate;
+    using TransactionProcessing.Shared.General;
 
     public enum TransactionResponseCode
     {

@@ -9,11 +9,11 @@ using Microsoft.Extensions.Logging;
 using NLog;
 using NLog.Extensions.Logging;
 using Sentry.Extensibility;
-using Shared.General;
-using Logger = Shared.Logger.Logger;
-using NlogLogger = Shared.Logger.NlogLogger;
-using Shared.Middleware;
-using Shared.Serialisation;
+using TransactionProcessing.Shared.General;
+using Logger = TransactionProcessing.Shared.Logger.Logger;
+using NlogLogger = TransactionProcessing.Shared.Logger.NlogLogger;
+using TransactionProcessing.Shared.Middleware;
+using TransactionProcessing.Shared.Serialisation;
 using System.Diagnostics.CodeAnalysis;
 using System;
 using System.Collections.Generic;
@@ -25,8 +25,8 @@ using TransactionProcessor.Endpoints;
 using HealthChecks.UI.Client;
 using Microsoft.AspNetCore.Diagnostics.HealthChecks;
 using Prometheus;
-using Shared.EventStore.Aggregate;
-using Shared.Extensions;
+using TransactionProcessing.Shared.EventStore.Aggregate;
+using TransactionProcessing.Shared.Extensions;
 using TransactionProcessing.ApiDefaults;
 
 namespace TransactionProcessor;
@@ -53,7 +53,7 @@ public partial class Program
             b.SetupLogFactory(setup =>
             {
                 setup.AddCallSiteHiddenAssembly(typeof(NlogLogger).Assembly);
-                setup.AddCallSiteHiddenAssembly(typeof(Shared.Logger.Logger).Assembly);
+                setup.AddCallSiteHiddenAssembly(typeof(TransactionProcessing.Shared.Logger.Logger).Assembly);
                 setup.AddCallSiteHiddenAssembly(typeof(TenantMiddleware).Assembly);
             });
             b.LoadConfigurationFromFile(nlogConfigPath);
@@ -79,7 +79,7 @@ public partial class Program
         WebApplication app = builder.Build();
         LogManager.Setup().LoadConfigurationFromFile("NLog.config");
         NLog.Logger logger = LogManager.GetLogger("TransactionProcessor");
-        Shared.Logger.Logger.Initialise(logger, "TransactionProcessor");
+        TransactionProcessing.Shared.Logger.Logger.Initialise(logger, "TransactionProcessor");
         configuration.LogConfiguration(Logger.LogWarning);
         StringSerialiser.Initialise(app.Services.GetRequiredService<IStringSerialiser>());
         TypeProvider.LoadDomainEventsTypeDynamically();
@@ -167,7 +167,7 @@ public partial class Program
         app.MapHealthChecks("health", new HealthCheckOptions
         {
             Predicate = _ => true,
-            ResponseWriter = Shared.HealthChecks.HealthCheckMiddleware.WriteResponse
+            ResponseWriter = TransactionProcessing.Shared.HealthChecks.HealthCheckMiddleware.WriteResponse
         });
         app.MapHealthChecks("healthui", new HealthCheckOptions
         {

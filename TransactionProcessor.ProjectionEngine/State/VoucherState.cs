@@ -1,4 +1,4 @@
-﻿using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations;
 using System.Diagnostics.Contracts;
 using TransactionProcessor.DomainEvents;
 
@@ -48,7 +48,7 @@ public static class VoucherStateExtension{
         };
 }
 
-public record VoucherState : Shared.EventStore.ProjectionEngine.State
+public record VoucherState : TransactionProcessing.Shared.EventStore.ProjectionEngine.State
     {
         public DateOnly ExpiryDate { get; init; }
         public DateTimeOffset ExpiryDateTime { get; init; }

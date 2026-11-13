@@ -1,10 +1,8 @@
-﻿using EntityFramework.Exceptions.Common;
-using EntityFramework.Exceptions.SqlServer;
 using Microsoft.EntityFrameworkCore;
-using Shared.DomainDrivenDesign.EventSourcing;
-using Shared.Exceptions;
-using Shared.Logger;
-using SimpleResults;
+using TransactionProcessing.Shared.DomainDrivenDesign.EventSourcing;
+using TransactionProcessing.Shared.Exceptions;
+using TransactionProcessing.Shared.Logger;
+using TransactionProcessing.UnionResults;
 using System.Reflection;
 using TransactionProcessor.Database.Entities;
 using TransactionProcessor.Database.Entities.Summary;
@@ -172,7 +170,6 @@ public class EstateManagementContext : DbContext
             options.UseSqlServer(this.ConnectionString);
         }
 
-        options.UseExceptionProcessor();
     }
 
     private async Task CreateViews(CancellationToken cancellationToken)
@@ -384,29 +381,30 @@ ALTER DATABASE [{dbName}] SET MULTI_USER;
             await base.SaveChangesAsync(cancellationToken);
             return Result.Success();
         }
-        catch (UniqueConstraintException uex)
+        catch (DbUpdateException exception) when (IsUniqueConstraintViolation(exception))
         {
             // Swallow the error
-            Logger.LogInformation(BuildUniqueConstraintExceptionLogMessage(uex));
+            Logger.LogInformation("Ignoring duplicate event while replaying an event stream: {ExceptionMessage}", exception.GetExceptionMessages());
             return Result.Success();
         }
     }
 
-    private static String BuildUniqueConstraintExceptionLogMessage(UniqueConstraintException uex) {
-        String constraintName = "N/A";
-        if (String.IsNullOrEmpty(uex.ConstraintName) == false) {
-            constraintName = uex.ConstraintName;
-        }
-        String constraintProperties = "N/A";
-        if (uex.ConstraintProperties != null) {
-            constraintProperties = String.Join(",", uex.ConstraintProperties);
+    private static Boolean IsUniqueConstraintViolation(DbUpdateException exception) {
+        for (Exception? current = exception.InnerException; current != null; current = current.InnerException) {
+            Type exceptionType = current.GetType();
+
+            if (exceptionType.FullName == "Microsoft.Data.Sqlite.SqliteException") {
+                Object? extendedErrorCode = exceptionType.GetProperty("SqliteExtendedErrorCode")?.GetValue(current);
+                if (extendedErrorCode is Int32 sqliteCode && sqliteCode is 1555 or 2067)
+                    return true;
+            }
+
+            Object? errorNumber = exceptionType.GetProperty("Number")?.GetValue(current);
+            if (errorNumber is Int32 number && number is 2601 or 2627 or 1062)
+                return true;
         }
 
-        return uex.InnerException switch {
-            null => $"Unique Constraint Exception. Message [{uex.Message}] Constraint Name [{constraintName}] Constraint Properties [{constraintProperties}]",
-            _ => $"Unique Constraint Exception. Message [{uex.Message}] Inner Exception [{uex.InnerException.Message}]"
-        };
-
+        return false;
     }
 
 
@@ -421,11 +419,7 @@ public static class EstateManagementContextExtensions
         IQueryable<Estate> query = context.Estates.Where(e => e.EstateId == estateId);
         Result<Estate> estateResult = await DbQueryHelpers.ExecuteQuerySafeSingleOrDefault(query, cancellationToken, $"Error getting estate with Id {estateId}");
 
-        return estateResult.Status switch
-        {
-            ResultStatus.NotFound => Result.NotFound($"Estate not found with Id {estateId}"),
-            _ => estateResult
-        };
+        return DbQueryHelpers.MapNotFound(estateResult, $"Estate not found with Id {estateId}");
     }
 
     public static async Task<Result<Operator>> LoadOperator(this EstateManagementContext context, Guid operatorId, CancellationToken cancellationToken)
@@ -433,11 +427,7 @@ public static class EstateManagementContextExtensions
         IQueryable<Operator> query = context.Operators.Where(e => e.OperatorId == operatorId);
         Result<Operator> operatorResult = await DbQueryHelpers.ExecuteQuerySafeSingleOrDefault(query, cancellationToken, $"Error getting operator with Id {operatorId}");
 
-        return operatorResult.Status switch
-        {
-            ResultStatus.NotFound => Result.NotFound($"Operator not found with Id {operatorId}"),
-            _ => operatorResult
-        };
+        return DbQueryHelpers.MapNotFound(operatorResult, $"Operator not found with Id {operatorId}");
     }
 
     public static async Task<Result<Operator>> LoadOperator(this EstateManagementContext context, IDomainEvent domainEvent, CancellationToken cancellationToken)
@@ -456,11 +446,7 @@ public static class EstateManagementContextExtensions
                                                                               d.MerchantId == merchantId);
         Result<MerchantDevice> deviceResult = await DbQueryHelpers.ExecuteQuerySafeSingleOrDefault(query, cancellationToken, $"Error getting original device with Id {deviceId} for Merchant {merchantId}");
 
-        return deviceResult.Status switch
-        {
-            ResultStatus.NotFound => Result.NotFound($"Original Device Id {deviceId} not found for Merchant {merchantId}"),
-            _ => deviceResult
-        };
+        return DbQueryHelpers.MapNotFound(deviceResult, $"Original Device Id {deviceId} not found for Merchant {merchantId}");
     }
 
     public static async Task<Result<MerchantDevice>> LoadMerchantDevice(this EstateManagementContext context, IDomainEvent domainEvent, CancellationToken cancellationToken)
@@ -471,24 +457,21 @@ public static class EstateManagementContextExtensions
                                                                               d.MerchantId == merchantId);
         Result<MerchantDevice> deviceResult = await DbQueryHelpers.ExecuteQuerySafeSingleOrDefault(query, cancellationToken, $"Error getting device with Id {deviceId} for Merchant {merchantId}");
 
-        return deviceResult.Status switch
-        {
-            ResultStatus.NotFound => Result.NotFound($"Device Id {deviceId} not found for Merchant {merchantId}"),
-            _ => deviceResult
-        };
+        return DbQueryHelpers.MapNotFound(deviceResult, $"Device Id {deviceId} not found for Merchant {merchantId}");
     }
 
     public static async Task<Result<File>> LoadFile(this EstateManagementContext context, IDomainEvent domainEvent, CancellationToken cancellationToken)
     {
         Guid fileId = DomainEventHelper.GetFileId(domainEvent);
+        return await context.LoadFile(fileId, cancellationToken);
+    }
+
+    public static async Task<Result<File>> LoadFile(this EstateManagementContext context, Guid fileId, CancellationToken cancellationToken)
+    {
         IQueryable<File> query = context.Files.Where(e => e.FileId == fileId);
         Result<File> fileResult = await DbQueryHelpers.ExecuteQuerySafeSingleOrDefault(query, cancellationToken, $"Error getting file with Id {fileId}");
 
-        return fileResult.Status switch
-        {
-            ResultStatus.NotFound => Result.NotFound($"File not found with Id {fileId}"),
-            _ => fileResult
-        };
+        return DbQueryHelpers.MapNotFound(fileResult, $"File not found with Id {fileId}");
     }
 
     public static async Task<Result<Merchant>> LoadMerchant(this EstateManagementContext context, IDomainEvent domainEvent, CancellationToken cancellationToken)
@@ -497,11 +480,7 @@ public static class EstateManagementContextExtensions
         
         IQueryable<Merchant> query = context.Merchants.Where(e => e.MerchantId == merchantId);
         Result<Merchant> merchantResult = await DbQueryHelpers.ExecuteQuerySafeSingleOrDefault(query, cancellationToken, $"Error getting merchant with Id {merchantId}");
-        return merchantResult.Status switch
-        {
-            ResultStatus.NotFound => Result.NotFound($"Merchant not found with Id {merchantId}"),
-            _ => merchantResult
-        };
+        return DbQueryHelpers.MapNotFound(merchantResult, $"Merchant not found with Id {merchantId}");
     }
 
     public static async Task<Result<MerchantAddress>> LoadMerchantAddress(this EstateManagementContext context, IDomainEvent domainEvent, CancellationToken cancellationToken)
@@ -511,11 +490,7 @@ public static class EstateManagementContextExtensions
 
         IQueryable<MerchantAddress> query = context.MerchantAddresses.Where(e => e.MerchantId == merchantId && e.AddressId == addressId);
         Result<MerchantAddress> merchantAddressResult = await DbQueryHelpers.ExecuteQuerySafeSingleOrDefault(query, cancellationToken, $"Error getting merchant address with Id {addressId} for merchant {merchantId}");
-        return merchantAddressResult.Status switch
-        {
-            ResultStatus.NotFound => Result.NotFound($"Merchant Address {addressId} not found with merchant Id {merchantId}"),
-            _ => merchantAddressResult
-        };
+        return DbQueryHelpers.MapNotFound(merchantAddressResult, $"Merchant Address {addressId} not found with merchant Id {merchantId}");
     }
 
     public static async Task<Result<MerchantContact>> LoadMerchantContact(this EstateManagementContext context, IDomainEvent domainEvent, CancellationToken cancellationToken)
@@ -525,11 +500,7 @@ public static class EstateManagementContextExtensions
         Guid contactId = DomainEventHelper.GetContactId(domainEvent);
         IQueryable<MerchantContact> query = context.MerchantContacts.Where(e => e.MerchantId == merchantId && e.ContactId == contactId);
         Result<MerchantContact> merchantContactResult = await DbQueryHelpers.ExecuteQuerySafeSingleOrDefault(query, cancellationToken, $"Error getting merchant contact with Id {contactId} for merchant {merchantId}");
-        return merchantContactResult.Status switch
-        {
-            ResultStatus.NotFound => Result.NotFound($"Merchant Contact {contactId} not found with merchant Id {merchantId}"),
-            _ => merchantContactResult        
-        };
+        return DbQueryHelpers.MapNotFound(merchantContactResult, $"Merchant Contact {contactId} not found with merchant Id {merchantId}");
     }
 
     public static async Task<Result<MerchantOpeningHours>> LoadMerchantOpeningHours(this EstateManagementContext context, IDomainEvent domainEvent, CancellationToken cancellationToken)
@@ -538,11 +509,7 @@ public static class EstateManagementContextExtensions
 
         IQueryable<MerchantOpeningHours> query = context.MerchantOpeningHours.Where(e => e.MerchantId == merchantId);
         Result<MerchantOpeningHours> merchantOpeningHoursResult = await DbQueryHelpers.ExecuteQuerySafeSingleOrDefault(query, cancellationToken, $"Error getting merchant opening hours for merchant {merchantId}");
-        return merchantOpeningHoursResult.Status switch
-        {
-            ResultStatus.NotFound => Result.NotFound($"Merchant Opening Hours not found for merchant Id {merchantId}"),
-            _ => merchantOpeningHoursResult
-        };
+        return DbQueryHelpers.MapNotFound(merchantOpeningHoursResult, $"Merchant Opening Hours not found for merchant Id {merchantId}");
     }
 
     public static async Task<Result<MerchantSchedule>> LoadMerchantSchedule(this EstateManagementContext context, IDomainEvent domainEvent, CancellationToken cancellationToken)
@@ -551,11 +518,7 @@ public static class EstateManagementContextExtensions
 
         IQueryable<MerchantSchedule> query = context.MerchantSchedules.Where(e => e.MerchantScheduleId == merchantScheduleId);
         Result<MerchantSchedule> merchantScheduleResult = await DbQueryHelpers.ExecuteQuerySafeSingleOrDefault(query, cancellationToken, $"Error getting merchant schedule {merchantScheduleId}");
-        return merchantScheduleResult.Status switch
-        {
-            ResultStatus.NotFound => Result.NotFound($"Merchant Schedule not found for merchant schedule Id {merchantScheduleId}"),
-            _ => merchantScheduleResult
-        };
+        return DbQueryHelpers.MapNotFound(merchantScheduleResult, $"Merchant Schedule not found for merchant schedule Id {merchantScheduleId}");
     }
 
     public static async Task<Result<MerchantScheduleMonth>> LoadMerchantScheduleMonth(this EstateManagementContext context, IDomainEvent domainEvent, CancellationToken cancellationToken)
@@ -565,11 +528,7 @@ public static class EstateManagementContextExtensions
 
         IQueryable<MerchantScheduleMonth> query = context.MerchantScheduleMonths.Where(e => e.MerchantScheduleId == merchantScheduleId && e.Month == month);
         Result<MerchantScheduleMonth> merchantScheduleMonthResult = await DbQueryHelpers.ExecuteQuerySafeSingleOrDefault(query, cancellationToken, $"Error getting merchant schedule month {month} for merchant schedule {merchantScheduleId}");
-        return merchantScheduleMonthResult.Status switch
-        {
-            ResultStatus.NotFound => Result.NotFound($"Merchant Schedule Month {month} not found for merchant schedule Id {merchantScheduleId}"),
-            _ => merchantScheduleMonthResult
-        };
+        return DbQueryHelpers.MapNotFound(merchantScheduleMonthResult, $"Merchant Schedule Month {month} not found for merchant schedule Id {merchantScheduleId}");
     }
 
     public static async Task<Result<Reconciliation>> LoadReconcilation(this EstateManagementContext context, IDomainEvent domainEvent, CancellationToken cancellationToken)
@@ -577,11 +536,7 @@ public static class EstateManagementContextExtensions
         Guid transactionId = DomainEventHelper.GetTransactionId(domainEvent);
         IQueryable<Reconciliation> query = context.Reconciliations.Where(t => t.TransactionId == transactionId);
         Result<Reconciliation> reconciliationResult = await DbQueryHelpers.ExecuteQuerySafeSingleOrDefault(query, cancellationToken, $"Error getting reconciliation with Id {transactionId}");
-        return reconciliationResult.Status switch
-        {
-            ResultStatus.NotFound => Result.NotFound($"Reconciliation not found with Id {transactionId}"),
-            _ => reconciliationResult
-        };
+        return DbQueryHelpers.MapNotFound(reconciliationResult, $"Reconciliation not found with Id {transactionId}");
     }
 
     public static async Task<Result<Settlement>> LoadSettlement(this EstateManagementContext context, IDomainEvent domainEvent, CancellationToken cancellationToken)
@@ -589,11 +544,7 @@ public static class EstateManagementContextExtensions
         Guid settlementId = DomainEventHelper.GetSettlementId(domainEvent);
         IQueryable<Settlement> query = context.Settlements.Where(e => e.SettlementId == settlementId);
         Result<Settlement> settlementResult = await DbQueryHelpers.ExecuteQuerySafeSingleOrDefault(query, cancellationToken, $"Error getting settlement with Id {settlementId}");
-        return settlementResult.Status switch
-        {
-            ResultStatus.NotFound => Result.NotFound($"Settlement not found with Id {settlementId}"),
-            _ => settlementResult
-        };
+        return DbQueryHelpers.MapNotFound(settlementResult, $"Settlement not found with Id {settlementId}");
     }
 
     public static async Task<Result<StatementHeader>> LoadStatementHeader(this EstateManagementContext context, IDomainEvent domainEvent, CancellationToken cancellationToken)
@@ -601,11 +552,7 @@ public static class EstateManagementContextExtensions
         Guid statementHeaderId = DomainEventHelper.GetStatementHeaderId(domainEvent);
         IQueryable<StatementHeader> query = context.StatementHeaders.Where(e => e.StatementId == statementHeaderId);
         Result<StatementHeader> statementHeaderResult = await DbQueryHelpers.ExecuteQuerySafeSingleOrDefault(query, cancellationToken, $"Error getting statement header with Id {statementHeaderId}");
-        return statementHeaderResult.Status switch
-        {
-            ResultStatus.NotFound => Result.NotFound($"Statement Header not found with Id {statementHeaderId}"),
-            _ => statementHeaderResult
-        };
+        return DbQueryHelpers.MapNotFound(statementHeaderResult, $"Statement Header not found with Id {statementHeaderId}");
     }
 
     public static async Task<Result<Transaction>> LoadTransaction(this EstateManagementContext context, IDomainEvent domainEvent, CancellationToken cancellationToken)
@@ -613,11 +560,7 @@ public static class EstateManagementContextExtensions
         Guid transactionId = DomainEventHelper.GetTransactionId(domainEvent);
         IQueryable<Transaction> query = context.Transactions.Where(e => e.TransactionId == transactionId);
         Result<Transaction> transactionResult = await DbQueryHelpers.ExecuteQuerySafeSingleOrDefault(query, cancellationToken, $"Error getting transaction with Id {transactionId}");
-        return transactionResult.Status switch
-        {
-            ResultStatus.NotFound => Result.NotFound($"Transaction not found with Id {transactionId}"),
-            _ => transactionResult
-        };
+        return DbQueryHelpers.MapNotFound(transactionResult, $"Transaction not found with Id {transactionId}");
     }
 
     //public static async Task<Result<Voucher>> LoadVoucher(this EstateManagementGenericContext context, IDomainEvent domainEvent, CancellationToken cancellationToken)
@@ -637,11 +580,7 @@ public static class EstateManagementContextExtensions
         Guid contractId = DomainEventHelper.GetContractId(domainEvent);
         IQueryable<Entities.Contract> query = context.Contracts.Where(e => e.ContractId == contractId);
         Result<Entities.Contract> contractResult = await DbQueryHelpers.ExecuteQuerySafeSingleOrDefault(query, cancellationToken, $"Error getting contract with Id {contractId}");
-        return contractResult.Status switch
-        {
-            ResultStatus.NotFound => Result.NotFound($"Contract not found with Id {contractId}"),
-            _ => contractResult
-        };
+        return DbQueryHelpers.MapNotFound(contractResult, $"Contract not found with Id {contractId}");
     }
 
     public static async Task<Result<ContractProductTransactionFee>> LoadContractProductTransactionFee(this EstateManagementContext context, IDomainEvent domainEvent, CancellationToken cancellationToken)
@@ -649,11 +588,7 @@ public static class EstateManagementContextExtensions
         Guid contractProductTransactionFeeId = DomainEventHelper.GetContractProductTransactionFeeId(domainEvent);
         IQueryable<ContractProductTransactionFee> query = context.ContractProductTransactionFees.Where(e => e.ContractProductTransactionFeeId == contractProductTransactionFeeId);
         Result<ContractProductTransactionFee> contractProductTransactionFeeResult = await DbQueryHelpers.ExecuteQuerySafeSingleOrDefault(query, cancellationToken, $"Error getting contract product transaction fee with Id {contractProductTransactionFeeId}");
-        return contractProductTransactionFeeResult.Status switch
-        {
-            ResultStatus.NotFound => Result.NotFound($"Contract Product Transaction Fee not found with Id {contractProductTransactionFeeId}"),
-            _ => contractProductTransactionFeeResult
-        };
+        return DbQueryHelpers.MapNotFound(contractProductTransactionFeeResult, $"Contract Product Transaction Fee not found with Id {contractProductTransactionFeeId}");
     }
 }
 

@@ -1,4 +1,4 @@
-﻿using Shared.Extensions;
+using TransactionProcessing.Shared.Extensions;
 using System;
 
 namespace TransactionProcessor.BusinessLogic.Tests.Extensions

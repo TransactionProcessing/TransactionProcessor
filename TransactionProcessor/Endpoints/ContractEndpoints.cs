@@ -1,8 +1,9 @@
+using TransactionProcessing.UnionResults.AspNetCore;
 using System.Diagnostics.CodeAnalysis;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Routing;
-using Shared.Authorisation;
+using TransactionProcessing.Shared.Authorisation;
 using System;
 using TransactionProcessor.Handlers;
 using TransactionProcessor.DataTransferObjects.Responses.Contract;
@@ -18,7 +19,7 @@ namespace TransactionProcessor.Endpoints
         public static IEndpointRouteBuilder MapContractEndpoints(this IEndpointRouteBuilder endpoints)
         {
             RouteGroupBuilder contractGroup = endpoints
-                .MapGroup(BaseRoute)
+                .MapGroup(BaseRoute).AddUnionResultFilter()
                 .WithTags("Contracts")
                 .RequireAuthorization()
                 .RequireAuthorization(AuthorizationExtensions.PolicyNames.ClientCredentialsOnlyPolicy);
@@ -27,7 +28,7 @@ namespace TransactionProcessor.Endpoints
             contractGroup.MapGet("/{contractId:guid}", ContractHandlers.GetContract)
                 .WithName("GetContract").WithSummary("Get a contract")
                 .WithDescription("Returns one contract in the specified estate, including its products and transaction fees.")
-                .Produces<ContractResponse>();
+                .ProducesUnionResult<ContractResponse>();
             contractGroup.MapGet("/", ContractHandlers.GetContracts)
                 .WithName("GetContracts").WithSummary("List estate contracts")
                 .WithDescription("Returns all contracts belonging to the specified estate.")
@@ -49,7 +50,7 @@ namespace TransactionProcessor.Endpoints
             contractGroup.MapPost("/", ContractHandlers.CreateContract)
                 .WithName("CreateContract").WithSummary("Create a contract")
                 .WithDescription("Creates a contract in the specified estate for the supplied operator and returns the new contract ID.")
-                .Produces<Guid>();
+                .ProducesUnionResult<Guid>();
 
             return endpoints;
         }

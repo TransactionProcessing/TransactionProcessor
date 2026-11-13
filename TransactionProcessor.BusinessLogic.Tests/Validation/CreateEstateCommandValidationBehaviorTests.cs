@@ -5,7 +5,7 @@ using Lamar;
 using MediatR;
 using Microsoft.Extensions.DependencyInjection;
 using Shouldly;
-using SimpleResults;
+using TransactionProcessing.UnionResults;
 using TransactionProcessor.BusinessLogic.Requests;
 using TransactionProcessor.BusinessLogic.Validation;
 using TransactionProcessor.Bootstrapper;
@@ -33,7 +33,7 @@ public sealed class CreateEstateCommandValidationBehaviorTests
 
         Result<Guid> result = await behavior.Handle(command, next, CancellationToken.None);
 
-        result.Status.ShouldBe(ResultStatus.Invalid);
+        result.Errors[0].ErrorType.ShouldBe(ErrorType.Validation);
         handlerWasCalled.ShouldBeFalse();
     }
 
@@ -48,7 +48,7 @@ public sealed class CreateEstateCommandValidationBehaviorTests
         Result<Guid> result = await behavior.Handle(command, next, CancellationToken.None);
 
         result.IsSuccess.ShouldBeTrue();
-        result.Data.ShouldBe(expectedEstateId);
+        result.GetValueOrThrow().ShouldBe(expectedEstateId);
     }
 
     [Fact]
@@ -65,7 +65,7 @@ public sealed class CreateEstateCommandValidationBehaviorTests
 
         Result<Guid> result = await behavior.Handle(command, next, CancellationToken.None);
 
-        result.Status.ShouldBe(ResultStatus.Invalid);
+        result.Errors[0].ErrorType.ShouldBe(ErrorType.Validation);
         handlerWasCalled.ShouldBeFalse();
     }
 
@@ -81,6 +81,6 @@ public sealed class CreateEstateCommandValidationBehaviorTests
             new EstateCommands.CreateEstateCommand(new CreateEstateRequest { EstateName = "   " }),
             TestContext.Current.CancellationToken);
 
-        result.Status.ShouldBe(ResultStatus.Invalid);
+        result.Errors[0].ErrorType.ShouldBe(ErrorType.Validation);
     }
 }

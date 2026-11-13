@@ -1,7 +1,8 @@
+using TransactionProcessing.UnionResults.AspNetCore;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Routing;
-using Shared.Authorisation;
+using TransactionProcessing.Shared.Authorisation;
 using System;
 using System.Diagnostics.CodeAnalysis;
 using TransactionProcessor.Handlers;
@@ -18,7 +19,7 @@ namespace TransactionProcessor.Endpoints
         public static IEndpointRouteBuilder MapOperatorEndpoints(this IEndpointRouteBuilder endpoints)
         {
             RouteGroupBuilder operatorGroup = endpoints
-                .MapGroup(BaseRoute)
+                .MapGroup(BaseRoute).AddUnionResultFilter()
                 .WithTags("Operators")
                 .RequireAuthorization()
                 .RequireAuthorization(AuthorizationExtensions.PolicyNames.ClientCredentialsOnlyPolicy);
@@ -28,7 +29,7 @@ namespace TransactionProcessor.Endpoints
             operatorGroup.MapPost("/", OperatorHandlers.CreateOperator)
                 .WithName("CreateOperator").WithSummary("Create an operator")
                 .WithDescription("Creates an operator in the specified estate and returns the new operator ID.")
-                .Produces<Guid>();
+                .ProducesUnionResult<Guid>();
 
             // Update 
             operatorGroup.MapPost("/{operatorId:guid}", OperatorHandlers.UpdateOperator)
@@ -38,7 +39,7 @@ namespace TransactionProcessor.Endpoints
             // Read endpoints 
             operatorGroup.MapGet("/{operatorId:guid}", OperatorHandlers.GetOperator)
                 .WithName("GetOperator").WithSummary("Get an operator")
-                .WithDescription("Returns the selected operator's configuration.").Produces<OperatorResponse>();
+                .WithDescription("Returns the selected operator's configuration.").ProducesUnionResult<OperatorResponse>();
             operatorGroup.MapGet("/", OperatorHandlers.GetOperators)
                 .WithName("GetOperators").WithSummary("List estate operators")
                 .WithDescription("Returns operators configured for the specified estate.").Produces<List<OperatorResponse>>();

@@ -1,9 +1,10 @@
+using System;
 using Imposter.Abstractions;
-using Shared.DomainDrivenDesign.EventSourcing;
-using Shared.EventStore.Aggregate;
-using Shared.Serialisation;
+using TransactionProcessing.Shared.DomainDrivenDesign.EventSourcing;
+using TransactionProcessing.Shared.EventStore.Aggregate;
+using TransactionProcessing.Shared.Serialisation;
 using Shouldly;
-using SimpleResults;
+using TransactionProcessing.UnionResults;
 using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
@@ -30,7 +31,7 @@ public class SettlementRequestHandlerTests
         ITransactionProcessorManagerImposter manager = new();
         SettlementRequestHandler handler = new SettlementRequestHandler(settlementDomainService.Instance(), manager.Instance());
         settlementDomainService
-            .ProcessSettlement(Arg<SettlementCommands.ProcessSettlementCommand>.Any(), Arg<CancellationToken>.Any()).ReturnsAsync(Result.Success());
+            .ProcessSettlement(Arg<SettlementCommands.ProcessSettlementCommand>.Any(), Arg<CancellationToken>.Any()).ReturnsAsync(Result.Success(Guid.NewGuid()));
         var command = TestData.Commands.ProcessSettlementCommand;
 
         var result = await handler.Handle(command, TestContext.Current.CancellationToken);

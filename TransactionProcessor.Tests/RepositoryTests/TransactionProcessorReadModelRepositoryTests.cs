@@ -2,7 +2,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Data.Sqlite;
 using Imposter.Abstractions;
-using Shared.EntityFramework;
+using TransactionProcessing.Shared.EntityFramework;
 using Shouldly;
 using System;
 using System.Data.Common;

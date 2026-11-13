@@ -5,7 +5,7 @@ namespace TransactionProcessor.BusinessLogic.Tests.Services
 {
     using BusinessLogic.Services;
     using Models;
-    using Shared.Serialisation;
+    using TransactionProcessing.Shared.Serialisation;
     using Shouldly;
     using System.IO;
     using System.IO.Abstractions.TestingHelpers;

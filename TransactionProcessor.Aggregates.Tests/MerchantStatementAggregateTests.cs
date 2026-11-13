@@ -1,6 +1,6 @@
-using Shared.Serialisation;
+using TransactionProcessing.Shared.Serialisation;
 using Shouldly;
-using SimpleResults;
+using TransactionProcessing.UnionResults;
 using TransactionProcessor.Models.Merchant;
 using TransactionProcessor.Testing;
 
@@ -9,7 +9,7 @@ namespace TransactionProcessor.Aggregates.Tests
     public class MerchantStatementAggregateTests {
 
         public MerchantStatementAggregateTests() {
-            StringSerialiser.Initialise(new Shared.Serialisation.SystemTextJsonSerializer(new System.Text.Json.JsonSerializerOptions()));
+            StringSerialiser.Initialise(new TransactionProcessing.Shared.Serialisation.SystemTextJsonSerializer(new System.Text.Json.JsonSerializerOptions()));
         }
 
         [Fact]
@@ -64,7 +64,7 @@ namespace TransactionProcessor.Aggregates.Tests
                 TestData.StatementDate, TestData.EstateId, TestData.MerchantId, TestData.MerchantStatementForDateId1,
                 TestData.ActivityDate1);
             result.IsFailed.ShouldBeTrue();
-            result.Status.ShouldBe(ResultStatus.Invalid);
+            result.Errors[0].ErrorType.ShouldBe(ErrorType.Validation);
         }
 
         [Fact]
@@ -75,7 +75,7 @@ namespace TransactionProcessor.Aggregates.Tests
                 TestData.StatementDate, Guid.Empty, TestData.MerchantId, TestData.MerchantStatementForDateId1,
                 TestData.ActivityDate1);
             result.IsFailed.ShouldBeTrue();
-            result.Status.ShouldBe(ResultStatus.Invalid);
+            result.Errors[0].ErrorType.ShouldBe(ErrorType.Validation);
         }
 
         [Fact]
@@ -86,7 +86,7 @@ namespace TransactionProcessor.Aggregates.Tests
                 TestData.StatementDate, TestData.EstateId, Guid.Empty,  TestData.MerchantStatementForDateId1,
                 TestData.ActivityDate1);
             result.IsFailed.ShouldBeTrue();
-            result.Status.ShouldBe(ResultStatus.Invalid);
+            result.Errors[0].ErrorType.ShouldBe(ErrorType.Validation);
         }
 
         [Fact]
@@ -142,7 +142,7 @@ namespace TransactionProcessor.Aggregates.Tests
 
             Result result = merchantStatementAggregate.GenerateStatement(TestData.StatementGeneratedDate);
             result.IsFailed.ShouldBeTrue();
-            result.Status.ShouldBe(ResultStatus.Invalid);
+            result.Errors[0].ErrorType.ShouldBe(ErrorType.Validation);
         }
 
         [Fact]
@@ -181,7 +181,7 @@ namespace TransactionProcessor.Aggregates.Tests
 
             Result result = merchantStatementAggregate.BuildStatement(TestData.StatementBuiltDate, TestData.StatementData);
             result.IsFailed.ShouldBeTrue();
-            result.Status.ShouldBe(ResultStatus.Invalid);
+            result.Errors[0].ErrorType.ShouldBe(ErrorType.Validation);
         }
 
         [Fact]
@@ -224,7 +224,7 @@ namespace TransactionProcessor.Aggregates.Tests
 
             var result = merchantStatementAggregate.EmailStatement(TestData.StatementEmailedDate, TestData.MessageId);
             result.IsFailed.ShouldBeTrue();
-            result.Status.ShouldBe(ResultStatus.Invalid);
+            result.Errors[0].ErrorType.ShouldBe(ErrorType.Validation);
         }
     }
 }

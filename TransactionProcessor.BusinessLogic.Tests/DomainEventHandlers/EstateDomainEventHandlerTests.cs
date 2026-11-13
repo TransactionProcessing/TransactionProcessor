@@ -1,8 +1,8 @@
 using Imposter.Abstractions;
-using Shared.Logger;
-using Shared.Serialisation;
+using TransactionProcessing.Shared.Logger;
+using TransactionProcessing.Shared.Serialisation;
 using Shouldly;
-using SimpleResults;
+using TransactionProcessing.UnionResults;
 using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
@@ -25,7 +25,7 @@ public class EstateDomainEventHandlerTests
     public EstateDomainEventHandlerTests()
     {
         Logger.Initialise(NullLogger.Instance);
-        StringSerialiser.Initialise(new Shared.Serialisation.SystemTextJsonSerializer(new System.Text.Json.JsonSerializerOptions()));
+        StringSerialiser.Initialise(new TransactionProcessing.Shared.Serialisation.SystemTextJsonSerializer(new System.Text.Json.JsonSerializerOptions()));
         this.EstateReportingRepository = new ITransactionProcessorReadModelRepositoryImposter();
 
         this.DomainEventHandler = new ReadModelDomainEventHandler(this.EstateReportingRepository.Instance());
@@ -45,7 +45,7 @@ public class EstateDomainEventHandlerTests
     {
         EstateDomainEvents.EstateCreatedEvent estateCreatedEvent = TestData.DomainEvents.EstateCreatedEvent;
         this.EstateReportingRepository.CreateReadModel(Arg<EstateDomainEvents.EstateCreatedEvent>.Any(), Arg<CancellationToken>.Any())
-            .ReturnsAsync(Result.Failure());
+            .ReturnsAsync(Result.Failure("Test failure"));
 
         Result result = await this.DomainEventHandler.Handle(estateCreatedEvent, TestContext.Current.CancellationToken);
         result.IsFailed.ShouldBeTrue();

@@ -1,5 +1,5 @@
-using Shared.Logger;
-using SimpleResults;
+using TransactionProcessing.Shared.Logger;
+using TransactionProcessing.UnionResults;
 
 namespace TransactionProcessor.BusinessLogic.Tests.OperatorInterfaces
 {
@@ -8,7 +8,7 @@ namespace TransactionProcessor.BusinessLogic.Tests.OperatorInterfaces
     using MediatR;
     using Imposter.Abstractions;
     using Requests;
-    using Shared.Serialisation;
+    using TransactionProcessing.Shared.Serialisation;
     using Shouldly;
     using System;
     using System.Collections.Generic;
@@ -26,15 +26,17 @@ namespace TransactionProcessor.BusinessLogic.Tests.OperatorInterfaces
         }
 
         [Fact]
-        public async Task VoucherManagementProxy_ProcessLogonMessage_NullReturned() {
+        public async Task VoucherManagementProxy_ProcessLogonMessage_ReturnsSuccessfulResponse() {
             IMediatorImposter mediator = new();
             
             IOperatorProxy voucherManagementProxy = new VoucherManagementProxy(mediator.Instance());
 
             var processLogonMessageResult = await voucherManagementProxy.ProcessLogonMessage(TestContext.Current.CancellationToken);
             processLogonMessageResult.IsSuccess.ShouldBeTrue();
-            OperatorResponse operatorResponse = processLogonMessageResult.Data;
-            operatorResponse.ShouldBeNull();
+            OperatorResponse operatorResponse = processLogonMessageResult.GetValueOrThrow();
+            operatorResponse.ShouldNotBeNull();
+            operatorResponse.IsSuccessful.ShouldBeTrue();
+            operatorResponse.ResponseCode.ShouldBe("0000");
         }
         
         [Fact]
@@ -51,7 +53,7 @@ namespace TransactionProcessor.BusinessLogic.Tests.OperatorInterfaces
                                                                                                 TestData.AdditionalTransactionMetaDataForVoucher(),
                                                                                                 TestContext.Current.CancellationToken);
             result.IsSuccess.ShouldBeTrue();
-            var operatorResponse = result.Data;
+            var operatorResponse = result.GetValueOrThrow();
             operatorResponse.ShouldNotBeNull();
             operatorResponse.IsSuccessful.ShouldBeTrue();
             operatorResponse.ResponseCode.ShouldBe("0000");
@@ -95,7 +97,7 @@ namespace TransactionProcessor.BusinessLogic.Tests.OperatorInterfaces
                                                                                          TestContext.Current.CancellationToken);
 
             result.IsFailed.ShouldBeTrue();
-            result.Status.ShouldBe(ResultStatus.Failure);
+            result.Errors[0].ErrorType.ShouldBe(ErrorType.Failure);
             result.Message.ShouldContain("Error issuing voucher");
             result.Message.ShouldContain("Execution Timeout Expired");
         }
@@ -123,7 +125,7 @@ namespace TransactionProcessor.BusinessLogic.Tests.OperatorInterfaces
 
 
                                         result.IsFailed.ShouldBeTrue();
-                                        result.Status.ShouldBe(ResultStatus.Invalid);
+                                        result.Errors[0].ErrorType.ShouldBe(ErrorType.Validation);
         }
 
         [Theory]
@@ -153,7 +155,7 @@ namespace TransactionProcessor.BusinessLogic.Tests.OperatorInterfaces
                                                                                         additionalMetatdata,
                                                                                         TestContext.Current.CancellationToken);
             result.IsFailed.ShouldBeTrue();
-            result.Status.ShouldBe(ResultStatus.Invalid);
+            result.Errors[0].ErrorType.ShouldBe(ErrorType.Validation);
         }
     }
 }

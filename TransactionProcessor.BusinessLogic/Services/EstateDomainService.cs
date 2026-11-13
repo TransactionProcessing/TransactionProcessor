@@ -1,14 +1,14 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using SecurityService.Client;
 using SecurityService.DataTransferObjects;
-using Shared.EventStore.Aggregate;
-using Shared.Exceptions;
-using Shared.Results;
-using SimpleResults;
+using TransactionProcessing.Shared.EventStore.Aggregate;
+using TransactionProcessing.Shared.Exceptions;
+using TransactionProcessing.UnionResults;
+using TransactionProcessing.UnionResults;
 using TransactionProcessor.Aggregates;
 using TransactionProcessor.BusinessLogic.Common;
 using TransactionProcessor.BusinessLogic.Requests;
@@ -48,7 +48,7 @@ namespace TransactionProcessor.BusinessLogic.Services
                 if (estateResult.IsFailed)
                     return ResultHelpers.CreateFailure(estateResult);
 
-                EstateAggregate estateAggregate = estateResult.Data;
+                EstateAggregate estateAggregate = estateResult.GetValueOrThrow();
 
                 Result stateResult = estateAggregate.Create(command.RequestDto.EstateName);
                 if (stateResult.IsFailed)
@@ -77,7 +77,7 @@ namespace TransactionProcessor.BusinessLogic.Services
                 if (estateResult.IsFailed)
                     return ResultHelpers.CreateFailure(estateResult);
 
-                EstateAggregate estateAggregate = estateResult.Data;
+                EstateAggregate estateAggregate = estateResult.GetValueOrThrow();
 
                 Result stateResult =estateAggregate.AddOperator(command.RequestDto.OperatorId);
                 if (stateResult.IsFailed)
@@ -109,7 +109,7 @@ namespace TransactionProcessor.BusinessLogic.Services
                 if (estateResult.IsFailed)
                     return ResultHelpers.CreateFailure(estateResult);
 
-                EstateAggregate estateAggregate = estateResult.Data;
+                EstateAggregate estateAggregate = estateResult.GetValueOrThrow();
 
                 Result stateResult = estateAggregate.AddSecurityUser(Guid.Parse(getUserResult.Data.UserId), command.RequestDto.EmailAddress);
                 if (stateResult.IsFailed)
@@ -152,13 +152,13 @@ namespace TransactionProcessor.BusinessLogic.Services
             Result<TokenResponse> getTokenResult = await Helpers.GetToken(this.TokenResponse, this.SecurityServiceClient, cancellationToken);
             if (getTokenResult.IsFailed)
                 return ResultHelpers.CreateFailure(getTokenResult);
-            this.TokenResponse = getTokenResult.Data;
+            this.TokenResponse = getTokenResult.GetValueOrThrow();
 
-            Result createUserResult = await this.SecurityServiceClient.CreateUser(this.TokenResponse.AccessToken, createUserRequest, cancellationToken);
+            var createUserResult = await this.SecurityServiceClient.CreateUser(this.TokenResponse.AccessToken, createUserRequest, cancellationToken);
             if (createUserResult.IsFailed)
                 return ResultHelpers.CreateFailure(createUserResult);
 
-            Result<List<UserResponse>> userDetailsResult = await this.SecurityServiceClient.GetUsers(this.TokenResponse.AccessToken, createUserRequest.EmailAddress, cancellationToken);
+            var userDetailsResult = await this.SecurityServiceClient.GetUsers(this.TokenResponse.AccessToken, createUserRequest.EmailAddress, cancellationToken);
             if (userDetailsResult.IsFailed)
                 return ResultHelpers.CreateFailure(userDetailsResult);
 
@@ -177,7 +177,7 @@ namespace TransactionProcessor.BusinessLogic.Services
                 if (estateResult.IsFailed)
                     return ResultHelpers.CreateFailure(estateResult);
 
-                EstateAggregate estateAggregate = estateResult.Data;
+                EstateAggregate estateAggregate = estateResult.GetValueOrThrow();
 
                 Result stateResult = estateAggregate.RemoveOperator(command.OperatorId);
                 if (stateResult.IsFailed)

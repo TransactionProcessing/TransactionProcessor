@@ -2,12 +2,12 @@ using System;
 using System.Threading;
 using System.Threading.Tasks;
 using Imposter.Abstractions;
-using Shared.DomainDrivenDesign.EventSourcing;
-using Shared.EventStore.Aggregate;
-using Shared.EventStore.EventStore;
-using Shared.Serialisation;
+using TransactionProcessing.Shared.DomainDrivenDesign.EventSourcing;
+using TransactionProcessing.Shared.EventStore.Aggregate;
+using TransactionProcessing.Shared.EventStore.EventStore;
+using TransactionProcessing.Shared.Serialisation;
 using Shouldly;
-using SimpleResults;
+using TransactionProcessing.UnionResults;
 using TransactionProcessor.Aggregates;
 using TransactionProcessor.BusinessLogic.Requests;
 using TransactionProcessor.BusinessLogic.Services;
@@ -32,7 +32,7 @@ namespace TransactionProcessor.BusinessLogic.Tests.Services
         public async Task ContractDomainService_CreateContract_ContractIsCreated()
         {
             this.AggregateService.Get<EstateAggregate>(Arg<Guid>.Any(), Arg<CancellationToken>.Any())
-                                     .ReturnsAsync(TestData.Aggregates.EstateAggregateWithOperator());
+                                     .ReturnsAsync(Result.Success(TestData.Aggregates.EstateAggregateWithOperator()));
             
             this.AggregateService.GetLatest<ContractAggregate>(Arg<Guid>.Any(), Arg<CancellationToken>.Any()).ReturnsAsync(Result.Success(TestData.Aggregates.EmptyContractAggregate()));
             this.AggregateService.Save<ContractAggregate>(Arg<ContractAggregate>.Any(), Arg<CancellationToken>.Any()).ReturnsAsync(Result.Success());
@@ -58,7 +58,7 @@ namespace TransactionProcessor.BusinessLogic.Tests.Services
 
             Result<Guid> result = await this.DomainService.CreateContract(command, TestContext.Current.CancellationToken);
 
-            result.Status.ShouldBe(ResultStatus.Invalid);
+            result.Errors[0].ErrorType.ShouldBe(ErrorType.Validation);
             result.Message.ShouldBe("Contract description must not be null or empty");
         }
 
@@ -66,7 +66,7 @@ namespace TransactionProcessor.BusinessLogic.Tests.Services
         public async Task ContractDomainService_CreateContract_DuplicateContractNameForOperator_ResultFailed()
         {
             this.AggregateService.Get<EstateAggregate>(Arg<Guid>.Any(), Arg<CancellationToken>.Any())
-                .ReturnsAsync(TestData.Aggregates.EstateAggregateWithOperator());
+                .ReturnsAsync(Result.Success(TestData.Aggregates.EstateAggregateWithOperator()));
             this.AggregateService.GetLatest<ContractAggregate>(Arg<Guid>.Any(), Arg<CancellationToken>.Any()).ReturnsAsync(Result.Success(TestData.Aggregates.EmptyContractAggregate()));
             
             ContractCommands.CreateContractCommand command = TestData.Commands.CreateContractCommand;
@@ -78,7 +78,7 @@ namespace TransactionProcessor.BusinessLogic.Tests.Services
         public async Task ContractDomainService_CreateContract_ContractAlreadyCreated_ResultFailed()
         {
             this.AggregateService.Get<EstateAggregate>(Arg<Guid>.Any(), Arg<CancellationToken>.Any())
-                .ReturnsAsync(TestData.Aggregates.EstateAggregateWithOperator());
+                .ReturnsAsync(Result.Success(TestData.Aggregates.EstateAggregateWithOperator()));
 
             this.AggregateService.GetLatest<ContractAggregate>(Arg<Guid>.Any(), Arg<CancellationToken>.Any()).ReturnsAsync(Result.Success(TestData.Aggregates.CreatedContractAggregate()));
             
@@ -256,10 +256,10 @@ namespace TransactionProcessor.BusinessLogic.Tests.Services
             FeeType feeType) {
 
             this.AggregateService.Get<EstateAggregate>(Arg<Guid>.Any(), Arg<CancellationToken>.Any())
-                .ReturnsAsync(TestData.Aggregates.EstateAggregateWithOperator());
+                .ReturnsAsync(Result.Success(TestData.Aggregates.EstateAggregateWithOperator()));
 
             this.AggregateService.GetLatest<ContractAggregate>(Arg<Guid>.Any(), Arg<CancellationToken>.Any())
-                .ReturnsAsync(TestData.Aggregates.CreatedContractAggregateWithAProductAndTransactionFee(calculationType, feeType));
+                .ReturnsAsync(Result.Success(TestData.Aggregates.CreatedContractAggregateWithAProductAndTransactionFee(calculationType, feeType)));
             this.AggregateService.Save(Arg<ContractAggregate>.Any(), Arg<CancellationToken>.Any()).ReturnsAsync(Result.Success());
 
             ContractCommands.DisableTransactionFeeForProductCommand command = TestData.Commands.DisableTransactionFeeForProductCommand;
@@ -271,7 +271,7 @@ namespace TransactionProcessor.BusinessLogic.Tests.Services
         public async Task ContractDomainService_DisableTransactionFeeForProduct_GetContractFailed_ResultIsFailed()
         {
             this.AggregateService.GetLatest<ContractAggregate>(Arg<Guid>.Any(), Arg<CancellationToken>.Any())
-                .ReturnsAsync(Result.Failure());
+                .ReturnsAsync(Result.Failure("Test failure"));
 
             ContractCommands.DisableTransactionFeeForProductCommand command = TestData.Commands.DisableTransactionFeeForProductCommand;
             Result result = await this.DomainService.DisableTransactionFeeForProduct(command, TestContext.Current.CancellationToken);
@@ -293,9 +293,9 @@ namespace TransactionProcessor.BusinessLogic.Tests.Services
         public async Task ContractDomainService_DisableTransactionFeeForProduct_SaveFailed_ResultIsFailed()
         {
             this.AggregateService.GetLatest<ContractAggregate>(Arg<Guid>.Any(), Arg<CancellationToken>.Any())
-                .ReturnsAsync(TestData.Aggregates.CreatedContractAggregateWithAProductAndTransactionFee(CalculationType.Fixed, FeeType.Merchant));
+                .ReturnsAsync(Result.Success(TestData.Aggregates.CreatedContractAggregateWithAProductAndTransactionFee(CalculationType.Fixed, FeeType.Merchant)));
             this.AggregateService.Save(Arg<ContractAggregate>.Any(), Arg<CancellationToken>.Any())
-                .ReturnsAsync(Result.Failure());
+                .ReturnsAsync(Result.Failure("Test failure"));
 
             ContractCommands.DisableTransactionFeeForProductCommand command = TestData.Commands.DisableTransactionFeeForProductCommand;
             Result result = await this.DomainService.DisableTransactionFeeForProduct(command, TestContext.Current.CancellationToken);
@@ -306,7 +306,7 @@ namespace TransactionProcessor.BusinessLogic.Tests.Services
         public async Task ContractDomainService_DisableTransactionFeeForProduct_ExceptionThrown_ResultIsFailed()
         {
             this.AggregateService.GetLatest<ContractAggregate>(Arg<Guid>.Any(), Arg<CancellationToken>.Any())
-                .ReturnsAsync(TestData.Aggregates.CreatedContractAggregateWithAProductAndTransactionFee(CalculationType.Fixed, FeeType.Merchant));
+                .ReturnsAsync(Result.Success(TestData.Aggregates.CreatedContractAggregateWithAProductAndTransactionFee(CalculationType.Fixed, FeeType.Merchant)));
             this.AggregateService.Save(Arg<ContractAggregate>.Any(), Arg<CancellationToken>.Any()).ThrowsAsync(new Exception());
 
             ContractCommands.DisableTransactionFeeForProductCommand command = TestData.Commands.DisableTransactionFeeForProductCommand;
@@ -318,7 +318,7 @@ namespace TransactionProcessor.BusinessLogic.Tests.Services
         public async Task ContractDomainService_CreateContract_GetEstateFailed_ResultIsFailed()
         {
             this.AggregateService.Get<EstateAggregate>(Arg<Guid>.Any(), Arg<CancellationToken>.Any())
-                .ReturnsAsync(Result.Failure());
+                .ReturnsAsync(Result.Failure("Test failure"));
 
             ContractCommands.CreateContractCommand command = TestData.Commands.CreateContractCommand;
             Result<Guid> result = await this.DomainService.CreateContract(command, TestContext.Current.CancellationToken);
@@ -329,9 +329,9 @@ namespace TransactionProcessor.BusinessLogic.Tests.Services
         public async Task ContractDomainService_CreateContract_GetContractFailed_ResultIsFailed()
         {
             this.AggregateService.Get<EstateAggregate>(Arg<Guid>.Any(), Arg<CancellationToken>.Any())
-                .ReturnsAsync(TestData.Aggregates.EstateAggregateWithOperator());
+                .ReturnsAsync(Result.Success(TestData.Aggregates.EstateAggregateWithOperator()));
             this.AggregateService.GetLatest<ContractAggregate>(Arg<Guid>.Any(), Arg<CancellationToken>.Any())
-                .ReturnsAsync(Result.Failure());
+                .ReturnsAsync(Result.Failure("Test failure"));
 
             ContractCommands.CreateContractCommand command = TestData.Commands.CreateContractCommand;
             Result<Guid> result = await this.DomainService.CreateContract(command, TestContext.Current.CancellationToken);
@@ -343,7 +343,7 @@ namespace TransactionProcessor.BusinessLogic.Tests.Services
         public async Task ContractDomainService_CreateContract_StateChangeFailed_ResultIsFailed()
         {
             this.AggregateService.Get<EstateAggregate>(Arg<Guid>.Any(), Arg<CancellationToken>.Any())
-                .ReturnsAsync(TestData.Aggregates.EstateAggregateWithOperator());
+                .ReturnsAsync(Result.Success(TestData.Aggregates.EstateAggregateWithOperator()));
             this.AggregateService.GetLatest<ContractAggregate>(Arg<Guid>.Any(), Arg<CancellationToken>.Any())
                 .ReturnsAsync(Result.Success(TestData.Aggregates.EmptyContractAggregate()));
             
@@ -362,11 +362,11 @@ namespace TransactionProcessor.BusinessLogic.Tests.Services
         public async Task ContractDomainService_CreateContract_SaveFailed_ResultIsFailed()
         {
             this.AggregateService.Get<EstateAggregate>(Arg<Guid>.Any(), Arg<CancellationToken>.Any())
-                .ReturnsAsync(TestData.Aggregates.EstateAggregateWithOperator());
+                .ReturnsAsync(Result.Success(TestData.Aggregates.EstateAggregateWithOperator()));
             this.AggregateService.GetLatest<ContractAggregate>(Arg<Guid>.Any(), Arg<CancellationToken>.Any())
                 .ReturnsAsync(Result.Success(TestData.Aggregates.EmptyContractAggregate()));
             this.AggregateService.Save(Arg<ContractAggregate>.Any(), Arg<CancellationToken>.Any())
-                .ReturnsAsync(Result.Failure());
+                .ReturnsAsync(Result.Failure("Test failure"));
 
             ContractCommands.CreateContractCommand command = TestData.Commands.CreateContractCommand;
             Result<Guid> result = await this.DomainService.CreateContract(command, TestContext.Current.CancellationToken);
@@ -377,7 +377,7 @@ namespace TransactionProcessor.BusinessLogic.Tests.Services
         public async Task ContractDomainService_CreateContract_ExceptionThrown_ResultIsFailed()
         {
             this.AggregateService.Get<EstateAggregate>(Arg<Guid>.Any(), Arg<CancellationToken>.Any())
-                .ReturnsAsync(TestData.Aggregates.EstateAggregateWithOperator());
+                .ReturnsAsync(Result.Success(TestData.Aggregates.EstateAggregateWithOperator()));
             this.AggregateService.GetLatest<ContractAggregate>(Arg<Guid>.Any(), Arg<CancellationToken>.Any())
                 .ReturnsAsync(Result.Success(TestData.Aggregates.EmptyContractAggregate()));
             this.AggregateService.Save(Arg<ContractAggregate>.Any(), Arg<CancellationToken>.Any()).ThrowsAsync(new Exception());
@@ -391,7 +391,7 @@ namespace TransactionProcessor.BusinessLogic.Tests.Services
         public async Task ContractDomainService_AddProductToContract_FixedValue_GetContractFailed_ResultIsFailed()
         {
             this.AggregateService.GetLatest<ContractAggregate>(Arg<Guid>.Any(), Arg<CancellationToken>.Any())
-                .ReturnsAsync(Result.Failure());
+                .ReturnsAsync(Result.Failure("Test failure"));
 
             ContractCommands.AddProductToContractCommand command = TestData.Commands.AddProductToContractCommand_FixedValue;
             Result result = await this.DomainService.AddProductToContract(command, TestContext.Current.CancellationToken);
@@ -402,7 +402,7 @@ namespace TransactionProcessor.BusinessLogic.Tests.Services
         public async Task ContractDomainService_AddProductToContract_VariableValue_GetContractFailed_ResultIsFailed()
         {
             this.AggregateService.GetLatest<ContractAggregate>(Arg<Guid>.Any(), Arg<CancellationToken>.Any())
-                .ReturnsAsync(Result.Failure());
+                .ReturnsAsync(Result.Failure("Test failure"));
 
             ContractCommands.AddProductToContractCommand command = TestData.Commands.AddProductToContractCommand_VariableValue;
             Result result = await this.DomainService.AddProductToContract(command, TestContext.Current.CancellationToken);
@@ -415,7 +415,7 @@ namespace TransactionProcessor.BusinessLogic.Tests.Services
             this.AggregateService.GetLatest<ContractAggregate>(Arg<Guid>.Any(), Arg<CancellationToken>.Any())
                 .ReturnsAsync(Result.Success(TestData.Aggregates.CreatedContractAggregate()));
             this.AggregateService.Save(Arg<ContractAggregate>.Any(), Arg<CancellationToken>.Any())
-                .ReturnsAsync(Result.Failure());
+                .ReturnsAsync(Result.Failure("Test failure"));
 
             ContractCommands.AddProductToContractCommand command = TestData.Commands.AddProductToContractCommand_FixedValue;
             command = command with { ProductId = Guid.Empty };
@@ -429,7 +429,7 @@ namespace TransactionProcessor.BusinessLogic.Tests.Services
             this.AggregateService.GetLatest<ContractAggregate>(Arg<Guid>.Any(), Arg<CancellationToken>.Any())
                 .ReturnsAsync(Result.Success(TestData.Aggregates.CreatedContractAggregate()));
             this.AggregateService.Save(Arg<ContractAggregate>.Any(), Arg<CancellationToken>.Any())
-                .ReturnsAsync(Result.Failure());
+                .ReturnsAsync(Result.Failure("Test failure"));
 
             ContractCommands.AddProductToContractCommand command = TestData.Commands.AddProductToContractCommand_FixedValue;
             Result result = await this.DomainService.AddProductToContract(command, TestContext.Current.CancellationToken);
@@ -442,7 +442,7 @@ namespace TransactionProcessor.BusinessLogic.Tests.Services
             this.AggregateService.GetLatest<ContractAggregate>(Arg<Guid>.Any(), Arg<CancellationToken>.Any())
                 .ReturnsAsync(Result.Success(TestData.Aggregates.CreatedContractAggregate()));
             this.AggregateService.Save(Arg<ContractAggregate>.Any(), Arg<CancellationToken>.Any())
-                .ReturnsAsync(Result.Failure());
+                .ReturnsAsync(Result.Failure("Test failure"));
 
             ContractCommands.AddProductToContractCommand command = TestData.Commands.AddProductToContractCommand_VariableValue;
             Result result = await this.DomainService.AddProductToContract(command, TestContext.Current.CancellationToken);
@@ -459,7 +459,7 @@ namespace TransactionProcessor.BusinessLogic.Tests.Services
             DataTransferObjects.Responses.Contract.FeeType feeType)
         {
             this.AggregateService.GetLatest<ContractAggregate>(Arg<Guid>.Any(), Arg<CancellationToken>.Any())
-                .ReturnsAsync(Result.Failure());
+                .ReturnsAsync(Result.Failure("Test failure"));
 
             ContractCommands.AddTransactionFeeForProductToContractCommand command =
                 TestData.Commands.AddTransactionFeeForProductToContractCommand(calculationType, feeType);
@@ -479,7 +479,7 @@ namespace TransactionProcessor.BusinessLogic.Tests.Services
             this.AggregateService.GetLatest<ContractAggregate>(Arg<Guid>.Any(), Arg<CancellationToken>.Any())
                 .ReturnsAsync(Result.Success(TestData.Aggregates.CreatedContractAggregateWithAProduct()));
             this.AggregateService.Save(Arg<ContractAggregate>.Any(), Arg<CancellationToken>.Any())
-                .ReturnsAsync(Result.Failure());
+                .ReturnsAsync(Result.Failure("Test failure"));
 
             ContractCommands.AddTransactionFeeForProductToContractCommand command =
                 TestData.Commands.AddTransactionFeeForProductToContractCommand(calculationType, feeType);
@@ -493,7 +493,7 @@ namespace TransactionProcessor.BusinessLogic.Tests.Services
             this.AggregateService.GetLatest<ContractAggregate>(Arg<Guid>.Any(), Arg<CancellationToken>.Any())
                 .ReturnsAsync(Result.Success(TestData.Aggregates.CreatedContractAggregateWithAProduct()));
             this.AggregateService.Save(Arg<ContractAggregate>.Any(), Arg<CancellationToken>.Any())
-                .ReturnsAsync(Result.Failure());
+                .ReturnsAsync(Result.Failure("Test failure"));
 
             ContractCommands.AddTransactionFeeForProductToContractCommand command =
                 TestData.Commands.AddTransactionFeeForProductToContractCommand(DataTransferObjects.Responses.Contract.CalculationType.Fixed, DataTransferObjects.Responses.Contract.FeeType.Merchant);

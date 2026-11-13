@@ -1,6 +1,6 @@
-﻿using Shared.Serialisation;
+using TransactionProcessing.Shared.Serialisation;
 using Shouldly;
-using SimpleResults;
+using TransactionProcessing.UnionResults;
 using TransactionProcessor.Testing;
 
 namespace TransactionProcessor.Aggregates.Tests
@@ -8,7 +8,7 @@ namespace TransactionProcessor.Aggregates.Tests
     public class OperatorAggregateTests
     {
         public OperatorAggregateTests() {
-            StringSerialiser.Initialise(new Shared.Serialisation.SystemTextJsonSerializer(new System.Text.Json.JsonSerializerOptions()));
+            StringSerialiser.Initialise(new TransactionProcessing.Shared.Serialisation.SystemTextJsonSerializer(new System.Text.Json.JsonSerializerOptions()));
         }
 
         [Fact]
@@ -40,7 +40,7 @@ namespace TransactionProcessor.Aggregates.Tests
             OperatorAggregate aggregate = OperatorAggregate.Create(TestData.OperatorId);
             var result = aggregate.Create(Guid.Empty, TestData.OperatorName, TestData.RequireCustomMerchantNumber, TestData.RequireCustomTerminalNumber);
             result.IsFailed.ShouldBeTrue();
-            result.Status.ShouldBe(ResultStatus.Invalid);
+            result.Errors[0].ErrorType.ShouldBe(ErrorType.Validation);
             result.Message.ShouldBe("Estate Id must not be an empty Guid");
         }
 
@@ -52,7 +52,7 @@ namespace TransactionProcessor.Aggregates.Tests
             OperatorAggregate aggregate = OperatorAggregate.Create(TestData.OperatorId);
             var result = aggregate.Create(TestData.EstateId, operatorName, TestData.RequireCustomMerchantNumber, TestData.RequireCustomTerminalNumber);
             result.IsFailed.ShouldBeTrue();
-            result.Status.ShouldBe(ResultStatus.Invalid);
+            result.Errors[0].ErrorType.ShouldBe(ErrorType.Validation);
             result.Message.ShouldBe("Operator name must not be null or empty");
         }
 
