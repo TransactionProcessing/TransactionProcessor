@@ -14,8 +14,8 @@
     <PackageVersion Include="coverlet.msbuild" Version="10.1.0" />
     <PackageVersion Include="Ductus.FluentDocker" Version="2.85.0" />
     <PackageVersion Include="EventStoreProjections" Version="2023.12.3" />
-    <PackageVersion Include="FileProcessor.File.DomainEvents" Version="2026.10.3.181" />
-    <PackageVersion Include="FileProcessor.FileImportLog.DomainEvents" Version="2026.10.3.181" />
+    <PackageVersion Include="FileProcessor.File.DomainEvents" Version="2026.10.3.186" />
+    <PackageVersion Include="FileProcessor.FileImportLog.DomainEvents" Version="2026.10.3.186" />
     <PackageVersion Include="FluentValidation" Version="12.2.0" />
     <PackageVersion Include="HealthMonitoring.Client" Version="2026.10.2.55" />
     <PackageVersion Include="Lamar" Version="16.0.0" />
