@@ -24,25 +24,16 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 10
     steps:
-      - name: Create scoped reviewer token
-        id: app
-        uses: actions/create-github-app-token@v2
-        with:
-          app-id: ${{ secrets.PR_REVIEW_APP_ID }}
-          private-key: ${{ secrets.PR_REVIEW_APP_PRIVATE_KEY }}
-          permission-pull-requests: write
-          permission-issues: read
-          permission-checks: read
-          permission-contents: read
-
       - name: Verify Codex and CI, then approve
         uses: actions/github-script@v7
-        env:
-          REVIEWER_APP_SLUG: ${{ steps.app.outputs.app-slug }}
         with:
-          github-token: ${{ steps.app.outputs.token }}
+          github-token: ${{ secrets.PR_REVIEW_USER_TOKEN }}
           script: |
             const { owner, repo } = context.repo;
+            const reviewer = github;
+            const { data: reviewerIdentity } = await reviewer.rest.users.getAuthenticated();
+            const reviewerLogin = reviewerIdentity.login;
+            core.info(`Approval identity: ${reviewerLogin}`);
             const expectedBot = 'chatgpt-codex-connector[bot]';
             const required = [
               ['Build and Test Pull Requests', 'github-actions'],
@@ -128,10 +119,12 @@ jobs:
               const existing = await github.paginate(github.rest.pulls.listReviews, {
                 owner, repo, pull_number, per_page: 100
               });
-              const appLogin = `${process.env.REVIEWER_APP_SLUG}[bot]`;
-              if (existing.some(r => r.user?.login === appLogin &&
+              if (pr.user?.login?.toLowerCase() === reviewerLogin.toLowerCase()) {
+                skip('reviewer cannot approve own PR'); continue;
+              }
+              if (existing.some(r => r.user?.login?.toLowerCase() === reviewerLogin.toLowerCase() &&
                   r.state === 'APPROVED' && r.commit_id === sha)) {
-                skip('already approved by reviewer app'); continue;
+                skip('already approved by reviewer user'); continue;
               }
               // Re-read head immediately before submitting approval.
               const { data: latest } = await github.rest.pulls.get({

@@ -3,11 +3,11 @@
 This workflow **never merges PRs**. It does not check out or execute PR code.
 
 ## Enable only after validation
-1. Create a separate GitHub App (not the PR author's identity) installed on this repository. Grant **Pull requests: read/write**, **Checks: read**, **Issues: read**, **Contents: read** and Metadata read.
-2. Store its App ID and PEM private key as repository Actions secrets `PR_REVIEW_APP_ID` and `PR_REVIEW_APP_PRIVATE_KEY`.
-3. Verify GitHub permits this App to submit an APPROVE review and whether that review counts toward your branch protection requirements. GitHub may not count bot approvals as a required human review.
-4. Confirm the Codex summary format and exact required check names / GitHub App slugs still match PR #2039. Update the workflow if any check is renamed or removed.
-5. Set repository Actions variable `CODEX_AUTO_APPROVAL_ENABLED` to `true` **only after testing**. Without it, the workflow is inert.
+1. Add a separate, permitted reviewer GitHub user with **Write** access to this repository. It must not be the PR author. Create a fine-grained PAT scoped to this repository with **Pull requests: read/write**, **Contents: read** and Metadata read. Ensure it can read check-run results; if GitHub denies the checks API, the token may need additional access or a different authentication approach.
+2. Store that PAT as an Actions secret named `PR_REVIEW_USER_TOKEN` (repository secret or organisation secret with access granted to this repository). Never put the PAT in the workflow file.
+3. Confirm the Codex summary format and exact required check names / GitHub App slugs still match PR #2039. Update the workflow if any check is renamed or removed.
+4. Set repository Actions variable `CODEX_AUTO_APPROVAL_ENABLED` to `true` **only after testing**. Without it, the workflow is inert.
+5. Confirm a test PR shows a counted approval from the reviewer user; verify organisation policies and any token approvals. Do not relax branch protection to test.
 
 ## Behaviour
 - Runs when the Codex bot creates/edits its PR summary and every 15 minutes as a fallback for CI finishing later; also supports manual dispatch.
@@ -15,6 +15,7 @@ This workflow **never merges PRs**. It does not check out or execute PR code.
 - Requires the six named CI checks to have completed successfully on the same head SHA.
 - Fails closed if a requested security review is incomplete or has findings.
 - Only reviews open, non-draft, same-repository PRs targeting `main`; ignores forks.
+- Uses `PR_REVIEW_USER_TOKEN` for all GitHub API operations, including Codex/CI validation and submitting the final approval. Skips PRs authored by the reviewer user.
 - Does not auto-merge, enable auto-merge, push commits, or change branch protection.
 - Does not revoke prior approvals. Configure branch protection to dismiss stale approvals on new commits.
 - Review summaries are bot-authored PR comments, not a signed contract. This is a best-effort automation gate, **not** a security boundary or a substitute for human review of sensitive changes.
@@ -22,6 +23,9 @@ This workflow **never merges PRs**. It does not check out or execute PR code.
 ## Test
 1. With the enable variable unset, merge this workflow PR manually.
 2. Create a test PR and observe the workflow without approvals.
-3. Configure the App and enable the variable.
+3. Configure the reviewer-user token and enable the variable.
 4. Test clean review + all checks passing; Codex findings; failed checks; and a new commit after approval.
-5. Confirm the App's approval counts as expected. If it does not, keep formal human review mandatory.
+5. Confirm the reviewer user's approval counts as expected. If it does not, keep formal human review mandatory.
+
+## Retire the previous GitHub App
+After confirming this workflow succeeds and the reviewer account's approval counts towards branch protection, uninstall `TransactionProcessing PR Reviewer` and delete the unused `PR_REVIEW_APP_ID` and `PR_REVIEW_APP_PRIVATE_KEY` Actions secrets. Do not uninstall it before validation.
